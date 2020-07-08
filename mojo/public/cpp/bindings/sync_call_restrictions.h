@@ -19,14 +19,6 @@ namespace chromecast {
 class CastCdmOriginProvider;
 }  // namespace chromecast
 
-namespace sync_preferences {
-class PrefServiceSyncable;
-}
-
-namespace prefs {
-class PersistentPrefStoreClient;
-}
-
 namespace ui {
 class Compositor;
 }  // namespace ui
@@ -75,10 +67,6 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) SyncCallRestrictions {
   // BEGIN ALLOWED USAGE.
   // SynchronousCompositorHost is used for Android webview.
   friend class content::SynchronousCompositorHost;
-  // Pref service connection is sync at startup.
-  friend class prefs::PersistentPrefStoreClient;
-  // Incognito pref service instances are created synchronously.
-  friend class sync_preferences::PrefServiceSyncable;
   friend class mojo::ScopedAllowSyncCallForTesting;
   // For destroying the GL context/surface that draw to a platform window before
   // the platform window is destroyed.

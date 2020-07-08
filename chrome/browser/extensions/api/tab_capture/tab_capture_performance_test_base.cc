@@ -33,7 +33,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "services/service_manager/sandbox/features.h"
+#include "sandbox/policy/features.h"
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/gl/gl_switches.h"
 
@@ -51,7 +51,7 @@ void TabCapturePerformanceTestBase::SetUp() {
 
   feature_list_.InitWithFeatures(
       {
-          service_manager::features::kAudioServiceSandbox,
+          sandbox::policy::features::kAudioServiceSandbox,
           features::kAudioServiceLaunchOnStartup,
           features::kAudioServiceOutOfProcess,
       },

@@ -22,15 +22,20 @@ const base::Feature kV8OffThreadFinalization{"V8OffThreadFinalization",
 const base::Feature kV8LazyFeedbackAllocation{"V8LazyFeedbackAllocation",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enable concurrent inlining in TurboFan.
+// Enables concurrent inlining in TurboFan.
 const base::Feature kV8ConcurrentInlining{"V8ConcurrentInlining",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable per-context marking worklists in V8 GC.
+// Enables per-context marking worklists in V8 GC.
 const base::Feature kV8PerContextMarkingWorklist{
     "V8PerContextMarkingWorklist", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable flushing of the instruction cache for the embedded blob.
+// Enables flushing of the instruction cache for the embedded blob.
 const base::Feature kV8FlushEmbeddedBlobICache{
     "kV8FlushEmbeddedBlobICache", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables reduced number of concurrent marking tasks.
+const base::Feature kV8ReduceConcurrentMarkingTasks{
+    "kV8ReduceConcurrentMarkingTasks", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features

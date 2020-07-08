@@ -37,7 +37,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsProvider;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
@@ -167,12 +166,7 @@ public class PartnerHomepageIntegrationTest {
                 (Button) editHomepagePreferenceActivity.findViewById(R.id.homepage_save);
         TouchCommon.singleClickView(saveButton);
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return editHomepagePreferenceActivity.isDestroyed();
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> editHomepagePreferenceActivity.isDestroyed());
 
         Assert.assertEquals("http://chrome.com/", HomepageManager.getHomepageUri());
     }

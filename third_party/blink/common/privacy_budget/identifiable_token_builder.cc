@@ -72,6 +72,11 @@ IdentifiableTokenBuilder& IdentifiableTokenBuilder::AddAtomic(
   return *this;
 }
 
+IdentifiableTokenBuilder& IdentifiableTokenBuilder::AddToken(
+    IdentifiableToken token) {
+  return AddValue(token.value_);
+}
+
 IdentifiableTokenBuilder::operator IdentifiableToken() const {
   return GetToken();
 }

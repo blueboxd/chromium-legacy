@@ -32,16 +32,29 @@ class WM_PLATFORM_EXPORT WmDragHandler {
     virtual ~Delegate();
   };
 
-  // Starts dragging with |data| which it wants to deliver to the destination.
-  // |operation| is the suggested operation which is bitmask of DRAG_NONE,
-  // DRAG_MOVE, DRAG_COPY and DRAG_LINK in DragDropTypes::DragOperation to the
-  // destination and the destination sets the final operation when the drop
-  // action is performed.  In progress updates on the drag operation come back
-  // through the |delegate|.
-  virtual void StartDrag(const OSExchangeData& data,
+  // Starts dragging |data|.
+  // |operation| is bitmask of DRAG_NONE, DRAG_MOVE, DRAG_COPY and DRAG_LINK
+  // in DragDropTypes::DragOperation that defines operations possible for the
+  // drag source.  The destination sets the resulting operation when the drop
+  // action is performed.
+  // |can_grab_pointer| indicates whether the implementation can grab the mouse
+  // pointer (some platforms may need this).
+  // In progress updates on the drag operation come back through the |delegate|.
+  //
+  // This method runs a nested message loop, returning when the drag operation
+  // is done. Care must be taken when calling this as it's entirely possible
+  // that when this returns this object (and the calling object) have been
+  // destroyed.
+  //
+  // Returns whether the operation ended well (i.e., had not been canceled).
+  virtual bool StartDrag(const OSExchangeData& data,
                          int operation,
                          gfx::NativeCursor cursor,
+                         bool can_grab_pointer,
                          Delegate* delegate) = 0;
+
+  // Cancels the drag.
+  virtual void CancelDrag() = 0;
 
  protected:
   virtual ~WmDragHandler() {}

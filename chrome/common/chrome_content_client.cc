@@ -40,7 +40,6 @@
 #include "components/crash/core/common/crash_key.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/embedder_support/origin_trials/origin_trial_policy_impl.h"
-#include "components/net_log/chrome_net_log.h"
 #include "components/services/heap_profiling/public/cpp/profiling_client.h"
 #include "content/public/common/cdm_info.h"
 #include "content/public/common/content_constants.h"
@@ -70,10 +69,6 @@
 #include "chrome/common/component_flash_hint_file_linux.h"
 #include "sandbox/linux/services/credentials.h"
 #endif  // defined(OS_LINUX)
-
-#if defined(OS_MACOSX)
-#include "services/service_manager/sandbox/mac/nacl_loader.sb.h"
-#endif
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -792,16 +787,6 @@ gfx::Image& ChromeContentClient::GetNativeImageNamed(int resource_id) {
       resource_id);
 }
 
-base::DictionaryValue ChromeContentClient::GetNetLogConstants() {
-  auto platform_dict = net_log::GetPlatformConstantsForNetLog(
-      base::CommandLine::ForCurrentProcess()->GetCommandLineString(),
-      chrome::GetChannelName());
-  if (platform_dict)
-    return std::move(*platform_dict);
-  else
-    return base::DictionaryValue();
-}
-
 std::string ChromeContentClient::GetProcessTypeNameInEnglish(int type) {
 #if BUILDFLAG(ENABLE_NACL)
   switch (type) {
@@ -814,15 +799,6 @@ std::string ChromeContentClient::GetProcessTypeNameInEnglish(int type) {
 
   NOTREACHED() << "Unknown child process type!";
   return "Unknown";
-}
-
-bool ChromeContentClient::AllowScriptExtensionForServiceWorker(
-    const url::Origin& script_origin) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  return script_origin.scheme() == extensions::kExtensionScheme;
-#else
-  return false;
-#endif
 }
 
 blink::OriginTrialPolicy* ChromeContentClient::GetOriginTrialPolicy() {

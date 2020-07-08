@@ -42,11 +42,9 @@ class ArcInputMethodSurfaceManagerTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
     wm_helper_ = std::make_unique<exo::WMHelperChromeOS>();
-    exo::WMHelper::SetInstance(wm_helper_.get());
   }
 
   void TearDown() override {
-    exo::WMHelper::SetInstance(nullptr);
     wm_helper_.reset();
     AshTestBase::TearDown();
   }

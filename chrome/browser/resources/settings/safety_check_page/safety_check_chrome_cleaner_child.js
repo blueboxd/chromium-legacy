@@ -93,13 +93,13 @@ Polymer({
         return SafetyCheckIconStatus.SAFE;
       case SafetyCheckChromeCleanerStatus.REPORTER_FAILED:
       case SafetyCheckChromeCleanerStatus.SCANNING_FAILED:
-      case SafetyCheckChromeCleanerStatus.CONNECTION_LOST:
       case SafetyCheckChromeCleanerStatus.CLEANING_FAILED:
       case SafetyCheckChromeCleanerStatus.CLEANER_DOWNLOAD_FAILED:
       case SafetyCheckChromeCleanerStatus.CLEANING:
       case SafetyCheckChromeCleanerStatus.REBOOT_REQUIRED:
       case SafetyCheckChromeCleanerStatus.DISABLED_BY_ADMIN:
         return SafetyCheckIconStatus.INFO;
+      case SafetyCheckChromeCleanerStatus.CONNECTION_LOST:
       case SafetyCheckChromeCleanerStatus.USER_DECLINED_CLEANUP:
       case SafetyCheckChromeCleanerStatus.INFECTED:
         return SafetyCheckIconStatus.WARNING;
@@ -116,10 +116,11 @@ Polymer({
     switch (this.status_) {
       case SafetyCheckChromeCleanerStatus.REPORTER_FAILED:
       case SafetyCheckChromeCleanerStatus.SCANNING_FAILED:
-      case SafetyCheckChromeCleanerStatus.CONNECTION_LOST:
-      case SafetyCheckChromeCleanerStatus.USER_DECLINED_CLEANUP:
       case SafetyCheckChromeCleanerStatus.CLEANING_FAILED:
       case SafetyCheckChromeCleanerStatus.CLEANER_DOWNLOAD_FAILED:
+        return this.i18n('passwordViewDetails');
+      case SafetyCheckChromeCleanerStatus.CONNECTION_LOST:
+      case SafetyCheckChromeCleanerStatus.USER_DECLINED_CLEANUP:
       case SafetyCheckChromeCleanerStatus.INFECTED:
       case SafetyCheckChromeCleanerStatus.CLEANING:
         return this.i18n('safetyCheckReview');
@@ -138,10 +139,11 @@ Polymer({
     switch (this.status_) {
       case SafetyCheckChromeCleanerStatus.REPORTER_FAILED:
       case SafetyCheckChromeCleanerStatus.SCANNING_FAILED:
-      case SafetyCheckChromeCleanerStatus.CONNECTION_LOST:
-      case SafetyCheckChromeCleanerStatus.USER_DECLINED_CLEANUP:
       case SafetyCheckChromeCleanerStatus.CLEANING_FAILED:
       case SafetyCheckChromeCleanerStatus.CLEANER_DOWNLOAD_FAILED:
+        return this.i18n('safetyCheckReviewErrorDetails');
+      case SafetyCheckChromeCleanerStatus.CONNECTION_LOST:
+      case SafetyCheckChromeCleanerStatus.USER_DECLINED_CLEANUP:
       case SafetyCheckChromeCleanerStatus.INFECTED:
       case SafetyCheckChromeCleanerStatus.CLEANING:
         return this.i18n('safetyCheckChromeCleanerButtonAriaLabel');
@@ -158,6 +160,7 @@ Polymer({
    */
   getButtonClass_: function() {
     switch (this.status_) {
+      case SafetyCheckChromeCleanerStatus.CONNECTION_LOST:
       case SafetyCheckChromeCleanerStatus.USER_DECLINED_CLEANUP:
       case SafetyCheckChromeCleanerStatus.INFECTED:
       case SafetyCheckChromeCleanerStatus.REBOOT_REQUIRED:

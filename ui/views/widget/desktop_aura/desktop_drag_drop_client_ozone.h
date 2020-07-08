@@ -52,9 +52,6 @@ class VIEWS_EXPORT DesktopDragDropClientOzone
     DragContext();
     ~DragContext();
 
-    // Exits the drag loop.
-    base::OnceClosure quit_closure;
-
     // Widget that the user drags around.  May be nullptr.
     std::unique_ptr<Widget> widget;
 
@@ -107,8 +104,6 @@ class VIEWS_EXPORT DesktopDragDropClientOzone
       ui::DragDropTypes::DragOperation operation) override;
   void OnDragFinished(int operation) override;
 
-  void QuitRunLoop();
-
   // Returns a DropTargetEvent to be passed to the DragDropDelegate.
   // Updates the delegate if needed, which in its turn calls their
   // OnDragExited/OnDragEntered, so after getting the event the delegate
@@ -144,6 +139,9 @@ class VIEWS_EXPORT DesktopDragDropClientOzone
   // The most recent native coordinates of an incoming drag.  Updated while
   // the mouse is moved, and used at dropping.
   gfx::PointF last_drag_point_;
+  // The most recent drop operation. Updated while the mouse is moved, and
+  // used at dropping.
+  int last_drop_operation_ = 0;
 
   // The operation bitfield.
   int drag_operation_ = 0;

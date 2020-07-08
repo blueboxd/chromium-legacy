@@ -175,7 +175,7 @@ std::vector<display::Display> GetFallbackDisplayList(float scale) {
   display::Display gfx_display(0, bounds_in_pixels);
 
   if (!display::Display::HasForceDeviceScaleFactor() &&
-      !display::IsDisplaySizeBlackListed(physical_size)) {
+      display::IsDisplaySizeValid(physical_size)) {
     DCHECK_LE(1.0f, scale);
     gfx_display.SetScaleAndBounds(scale, bounds_in_pixels);
     gfx_display.set_work_area(

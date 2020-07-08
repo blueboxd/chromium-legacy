@@ -13,6 +13,7 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -67,16 +68,17 @@ public class ToolbarTest {
     }
 
     private void waitForFindInPageVisibility(final boolean visible) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                FindToolbar findToolbar =
-                        (FindToolbar) mActivityTestRule.getActivity().findViewById(
-                                R.id.find_toolbar);
-
-                boolean isVisible = findToolbar != null && findToolbar.isShown();
-                return (visible == isVisible) && !findToolbar.isAnimating();
+        CriteriaHelper.pollUiThread(() -> {
+            FindToolbar findToolbar =
+                    (FindToolbar) mActivityTestRule.getActivity().findViewById(R.id.find_toolbar);
+            if (visible) {
+                Criteria.checkThat(findToolbar, Matchers.notNullValue());
+                Criteria.checkThat(findToolbar.isShown(), Matchers.is(true));
+            } else {
+                if (findToolbar == null) return;
+                Criteria.checkThat(findToolbar.isShown(), Matchers.is(false));
             }
+            Criteria.checkThat(findToolbar.isAnimating(), Matchers.is(false));
         });
     }
 

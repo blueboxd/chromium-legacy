@@ -30,7 +30,7 @@ source_set("sandbox_hook") {
     ":tts",
     "//base",
     "//sandbox/linux:sandbox_services",
-    "//services/service_manager/sandbox:sandbox",
+    "//sandbox/policy",
   ]
 }
 

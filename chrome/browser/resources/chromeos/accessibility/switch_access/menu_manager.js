@@ -88,6 +88,13 @@ class MenuManager {
     MenuManager.instance.refreshActions_();
   }
 
+  static refreshMenu() {
+    if (!MenuManager.isMenuOpen()) {
+      return;
+    }
+    MenuManager.instance.refreshActions_();
+  }
+
   /**
    * Checks if the given node is the Switch Access menu node.
    * @param {AutomationNode} node
@@ -285,7 +292,8 @@ class MenuManager {
    * @private
    */
   refreshActions_() {
-    if (!this.actionNode_.location || this.actionNode_.actions.length <= 1) {
+    if (!this.actionNode_.isValidAndVisible() ||
+        this.actionNode_.actions.length <= 1) {
       MenuManager.exit();
       return;
     }

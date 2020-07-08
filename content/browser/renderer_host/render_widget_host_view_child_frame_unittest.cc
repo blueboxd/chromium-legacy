@@ -142,7 +142,13 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
         frame_widget_host.BindNewEndpointAndPassDedicatedReceiverForTesting(),
         frame_widget.Unbind());
 
-    view_ = RenderWidgetHostViewChildFrame::Create(widget_host_);
+    ScreenInfo screen_info;
+    screen_info.rect = gfx::Rect(1, 2, 3, 4);
+    view_ = RenderWidgetHostViewChildFrame::Create(widget_host_, screen_info);
+    // Test we get the expected ScreenInfo before the FrameDelegate is set.
+    ScreenInfo actual_screen_info;
+    view_->GetScreenInfo(&actual_screen_info);
+    EXPECT_EQ(screen_info, actual_screen_info);
 
     test_frame_connector_ =
         new MockFrameConnectorDelegate(use_zoom_for_device_scale_factor);

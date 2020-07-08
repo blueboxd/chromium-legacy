@@ -78,17 +78,14 @@ public class PartnerDisableIncognitoModeIntegrationTest {
     }
 
     private void waitForParentalControlsEnabledState(final boolean parentalControlsEnabled) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                // areParentalControlsEnabled is updated on a background thread, so we
-                // also wait on the isIncognitoModeEnabled to ensure the updates on the
-                // UI thread have also triggered.
-                boolean retVal = parentalControlsEnabled
-                        == PartnerBrowserCustomizations.isIncognitoDisabled();
-                retVal &= parentalControlsEnabled != IncognitoUtils.isIncognitoModeEnabled();
-                return retVal;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            // areParentalControlsEnabled is updated on a background thread, so we
+            // also wait on the isIncognitoModeEnabled to ensure the updates on the
+            // UI thread have also triggered.
+            Criteria.checkThat(PartnerBrowserCustomizations.isIncognitoDisabled(),
+                    Matchers.is(parentalControlsEnabled));
+            Criteria.checkThat(
+                    IncognitoUtils.isIncognitoModeEnabled(), Matchers.not(parentalControlsEnabled));
         });
     }
 

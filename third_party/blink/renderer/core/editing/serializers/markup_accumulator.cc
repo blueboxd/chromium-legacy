@@ -45,10 +45,6 @@
 
 namespace blink {
 
-namespace {
-const char kShadowRootAttributeName[] = "shadowroot";
-}
-
 class MarkupAccumulator::NamespaceContext final {
   USING_FAST_MALLOC(MarkupAccumulator::NamespaceContext);
 
@@ -572,9 +568,11 @@ std::pair<Node*, Element*> MarkupAccumulator::GetAuxiliaryDOMTree(
   // element.
   auto* template_element = MakeGarbageCollected<Element>(
       html_names::kTemplateTag, &(element.GetDocument()));
-  template_element->setAttribute(
-      QualifiedName(g_null_atom, kShadowRootAttributeName, g_null_atom),
-      shadowroot_type);
+  template_element->setAttribute(html_names::kShadowrootAttr, shadowroot_type);
+  if (shadow_root->delegatesFocus()) {
+    template_element->SetBooleanAttribute(
+        html_names::kShadowrootdelegatesfocusAttr, true);
+  }
   return std::pair<Node*, Element*>(shadow_root, template_element);
 }
 

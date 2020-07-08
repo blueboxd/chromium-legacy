@@ -181,8 +181,9 @@ class ScopedPixelUnpackState {
   DISALLOW_COPY_AND_ASSIGN(ScopedPixelUnpackState);
 };
 
-// Commands that are whitelisted as OK to occur between BeginRasterCHROMIUM
-// and EndRasterCHROMIUM. They do not invalidate GrContext state tracking.
+// Commands that are explicitly listed as OK to occur between
+// BeginRasterCHROMIUM and EndRasterCHROMIUM. They do not invalidate GrContext
+// state tracking.
 bool AllowedBetweenBeginEndRaster(CommandId command) {
   switch (command) {
     case kCreateTransferCacheEntryINTERNAL:

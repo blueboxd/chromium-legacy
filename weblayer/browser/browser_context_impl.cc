@@ -34,6 +34,7 @@
 #include "weblayer/browser/browsing_data_remover_delegate.h"
 #include "weblayer/browser/browsing_data_remover_delegate_factory.h"
 #include "weblayer/browser/client_hints_factory.h"
+#include "weblayer/browser/default_search_engine.h"
 #include "weblayer/browser/permissions/permission_manager_factory.h"
 #include "weblayer/browser/stateful_ssl_host_state_delegate_factory.h"
 #include "weblayer/public/common/switches.h"
@@ -89,6 +90,12 @@ BrowserContextImpl::BrowserContextImpl(ProfileImpl* profile_impl,
       this);
 
   site_isolation::SiteIsolationPolicy::ApplyPersistedIsolatedOrigins(this);
+
+  // Set the DSE permissions every time the browser context is created for
+  // simplicity. These permissions are not editable in site settings, so should
+  // not ever be changed by the user. The site settings entry will link to the
+  // client app's system level permissions page to handle these.
+  ResetDsePermissions(this);
 }
 
 BrowserContextImpl::~BrowserContextImpl() {

@@ -1408,7 +1408,7 @@ TEST_F(OfflinePageModelTaskifiedTest, PersistentPageConsistencyCheckExecuted) {
 
   // Delete the file associated with |page|, so the next time when the
   // consistency check is executed, the page will be marked as hidden.
-  base::DeleteFile(page.file_path, false);
+  base::DeleteFile(page.file_path);
 
   // Calling GetAllPages after only half of the enforced interval between
   // consistency check runs should not schedule the task.

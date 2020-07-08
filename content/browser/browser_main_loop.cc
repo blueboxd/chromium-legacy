@@ -180,7 +180,7 @@
 
 #include "content/browser/renderer_host/dwrite_font_lookup_table_builder_win.h"
 #include "net/base/winsock_init.h"
-#include "services/service_manager/sandbox/win/sandbox_win.h"
+#include "sandbox/policy/win/sandbox_win.h"
 #endif
 
 #if defined(OS_CHROMEOS)

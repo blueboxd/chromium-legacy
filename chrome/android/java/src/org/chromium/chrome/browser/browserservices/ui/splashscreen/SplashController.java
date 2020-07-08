@@ -19,12 +19,10 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaFinishHandler;
 import org.chromium.chrome.browser.compositor.CompositorView;
-import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabOrientationController;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
@@ -182,8 +180,7 @@ public class SplashController
 
     @Override
     public void onPostInflationStartup() {
-        if (mTranslucencyRemovalStrategy == TranslucencyRemoval.ON_SPLASH_SHOWN
-                && !mWasSplashHideAnimationStarted) {
+        if (mTranslucencyRemovalStrategy == TranslucencyRemoval.ON_SPLASH_SHOWN) {
             // In rare cases I see toolbar flickering. TODO(pshmakov): investigate why.
             mActivity.findViewById(R.id.coordinator).setVisibility(View.INVISIBLE);
         }
@@ -283,7 +280,6 @@ public class SplashController
     /** Hides the splash screen. */
     private void hideSplash(final Tab tab, boolean loadFailed) {
         if (mActivity.isActivityFinishingOrDestroyed()) {
-            RecordHistogram.recordBooleanHistogram("Mobile.Splash.HideSplashWhenFinishing", true);
             return;
         }
 
@@ -302,15 +298,14 @@ public class SplashController
             mParentView.invalidate();
         }
 
-        CompositorViewHolder compositorViewHolder = mActivity.getCompositorViewHolder();
-        if (loadFailed || compositorViewHolder == null) {
+        if (loadFailed) {
             animateHideSplash(tab);
             return;
         }
         // Delay hiding the splash screen till the compositor has finished drawing the next frame.
         // Without this callback we were seeing a short flash of white between the splash screen and
         // the web content (crbug.com/734500).
-        CompositorView compositorView = compositorViewHolder.getCompositorView();
+        CompositorView compositorView = mActivity.getCompositorViewHolder().getCompositorView();
         compositorView.surfaceRedrawNeededAsync(() -> { animateHideSplash(tab); });
     }
 
@@ -337,10 +332,7 @@ public class SplashController
         recordTraceEventsStartedHidingSplash();
 
         // Show browser UI in case we hid it in onPostInflationStartup().
-        View coordinatorView = mActivity.findViewById(R.id.coordinator);
-        if (coordinatorView != null) {
-            coordinatorView.setVisibility(View.VISIBLE);
-        }
+        mActivity.findViewById(R.id.coordinator).setVisibility(View.VISIBLE);
 
         if (mSplashHideAnimationDurationMs == 0) {
             hideSplashNow(tab);

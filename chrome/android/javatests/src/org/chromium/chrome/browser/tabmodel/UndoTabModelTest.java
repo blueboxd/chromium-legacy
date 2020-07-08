@@ -1489,12 +1489,8 @@ public class UndoTabModelTest {
                         mActivityTestRule.getActivity());
 
         // Wait for the second window to be fully initialized.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return secondActivity.getTabModelSelector().isTabStateInitialized();
-            }
-        });
+        CriteriaHelper.pollUiThread(
+                () -> secondActivity.getTabModelSelector().isTabStateInitialized());
         // First window context.
         final TabModelSelector firstSelector =
                 mActivityTestRule.getActivity().getTabModelSelector();
@@ -1568,12 +1564,8 @@ public class UndoTabModelTest {
                 MultiWindowTestHelper.createSecondChromeTabbedActivity(
                         mActivityTestRule.getActivity());
         // Wait for the second window to be fully initialized.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return secondActivity.getTabModelSelector().isTabStateInitialized();
-            }
-        });
+        CriteriaHelper.pollUiThread(
+                () -> secondActivity.getTabModelSelector().isTabStateInitialized());
 
         // First window context.
         final TabModelSelector firstSelector =

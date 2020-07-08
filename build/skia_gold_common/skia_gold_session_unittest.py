@@ -542,9 +542,10 @@ class SkiaGoldSessionCompareTest(fake_filesystem_unittest.TestCase):
                                                 'keys_file', None, None)
     rc, _ = session.Compare('name', 'png_file')
     self.assertEqual(rc, 0)
-    self.assertEqual(session._comparison_results['name'].triage_link, None)
-    self.assertNotEqual(
-        session._comparison_results['name'].triage_link_omission_reason, None)
+    comparison_result = session._comparison_results['name']
+    self.assertEqual(comparison_result.public_triage_link, None)
+    self.assertEqual(comparison_result.internal_triage_link, None)
+    self.assertNotEqual(comparison_result.triage_link_omission_reason, None)
 
   @mock.patch.object(skia_gold_session.SkiaGoldSession, '_RunCmdForRcAndOutput')
   def test_clLinkOnTrybot(self, cmd_mock):
@@ -561,31 +562,46 @@ class SkiaGoldSessionCompareTest(fake_filesystem_unittest.TestCase):
                                                 instance='instance')
     rc, _ = session.Compare('name', 'png_file')
     self.assertEqual(rc, 1)
-    self.assertNotEqual(session._comparison_results['name'].triage_link, None)
-    self.assertEqual(session._comparison_results['name'].triage_link,
-                     'https://instance-gold.skia.org/cl/gerrit/1')
-    self.assertEqual(
-        session._comparison_results['name'].triage_link_omission_reason, None)
+    comparison_result = session._comparison_results['name']
+    self.assertNotEqual(comparison_result.public_triage_link, None)
+    self.assertNotEqual(comparison_result.internal_triage_link, None)
+    internal_link = 'https://instance-gold.skia.org/cl/gerrit/1'
+    public_link = 'https://instance-public-gold.skia.org/cl/gerrit/1'
+    self.assertEqual(comparison_result.internal_triage_link, internal_link)
+    self.assertEqual(comparison_result.public_triage_link, public_link)
+    self.assertEqual(comparison_result.triage_link_omission_reason, None)
+    self.assertEqual(session.GetTriageLinks('name'),
+                     (public_link, internal_link))
 
   @mock.patch.object(skia_gold_session.SkiaGoldSession, '_RunCmdForRcAndOutput')
   def test_individualLinkOnCi(self, cmd_mock):
     args = createSkiaGoldArgs(git_revision='a')
     sgp = skia_gold_properties.SkiaGoldProperties(args)
-    session = skia_gold_session.SkiaGoldSession(self._working_dir, sgp,
-                                                'keys_file', None, None)
+    session = skia_gold_session.SkiaGoldSession(self._working_dir,
+                                                sgp,
+                                                'keys_file',
+                                                None,
+                                                instance='foobar')
+
+    internal_link = 'foobar-gold.skia.org'
+    public_link = 'foobar-public-gold.skia.org'
 
     def WriteTriageLinkFile(_):
       with open(session._triage_link_file, 'w') as f:
-        f.write('foobar')
+        f.write(internal_link)
       return (1, None)
 
     cmd_mock.side_effect = WriteTriageLinkFile
     rc, _ = session.Compare('name', 'png_file')
     self.assertEqual(rc, 1)
-    self.assertNotEqual(session._comparison_results['name'].triage_link, None)
-    self.assertEqual(session._comparison_results['name'].triage_link, 'foobar')
-    self.assertEqual(
-        session._comparison_results['name'].triage_link_omission_reason, None)
+    comparison_result = session._comparison_results['name']
+    self.assertNotEqual(comparison_result.public_triage_link, None)
+    self.assertNotEqual(comparison_result.internal_triage_link, None)
+    self.assertEqual(comparison_result.internal_triage_link, internal_link)
+    self.assertEqual(comparison_result.public_triage_link, public_link)
+    self.assertEqual(comparison_result.triage_link_omission_reason, None)
+    self.assertEqual(session.GetTriageLinks('name'),
+                     (public_link, internal_link))
 
   @mock.patch.object(skia_gold_session.SkiaGoldSession, '_RunCmdForRcAndOutput')
   def test_validOmissionOnIoError(self, cmd_mock):
@@ -602,12 +618,12 @@ class SkiaGoldSessionCompareTest(fake_filesystem_unittest.TestCase):
     cmd_mock.side_effect = DeleteTriageLinkFile
     rc, _ = session.Compare('name', 'png_file')
     self.assertEqual(rc, 1)
-    self.assertEqual(session._comparison_results['name'].triage_link, None)
-    self.assertNotEqual(
-        session._comparison_results['name'].triage_link_omission_reason, None)
-    self.assertIn(
-        'Failed to read',
-        session._comparison_results['name'].triage_link_omission_reason)
+    comparison_result = session._comparison_results['name']
+    self.assertEqual(comparison_result.public_triage_link, None)
+    self.assertEqual(comparison_result.internal_triage_link, None)
+    self.assertNotEqual(comparison_result.triage_link_omission_reason, None)
+    self.assertIn('Failed to read',
+                  comparison_result.triage_link_omission_reason)
 
 
 class SkiaGoldSessionDiffTest(fake_filesystem_unittest.TestCase):
@@ -677,7 +693,12 @@ class SkiaGoldSessionTriageLinkOmissionTest(fake_filesystem_unittest.TestCase):
 
   def test_onlyWithoutTriageLink(self):
     session = self._CreateSession()
-    session._comparison_results['foo'].triage_link = 'bar'
+    comparison_result = session._comparison_results['foo']
+    comparison_result.public_triage_link = 'bar'
+    with self.assertRaises(AssertionError):
+      session.GetTriageLinkOmissionReason('foo')
+    comparison_result.public_triage_link = None
+    comparison_result.internal_triage_link = 'bar'
     with self.assertRaises(AssertionError):
       session.GetTriageLinkOmissionReason('foo')
 

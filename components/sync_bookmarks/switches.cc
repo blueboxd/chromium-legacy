@@ -28,4 +28,7 @@ const base::Feature kSyncDeduplicateAllBookmarksWithSameGUID{
     "SyncDeduplicateAllBookmarksWithSameGUID",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kSyncIgnoreChangesInTouchIcons{
+    "SyncIgnoreChangesInTouchIcons", base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace switches

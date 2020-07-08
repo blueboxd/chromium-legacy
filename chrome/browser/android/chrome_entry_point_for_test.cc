@@ -14,7 +14,7 @@
 #include "chrome/utility/chrome_content_utility_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/network_service_test_helper.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "sandbox/policy/switches.h"
 
 namespace {
 
@@ -31,8 +31,8 @@ bool NativeInit(base::android::LibraryProcessType) {
   if (command_line->GetSwitchValueASCII(switches::kProcessType) ==
           switches::kUtilityProcess &&
       command_line->GetSwitchValueASCII(
-          service_manager::switches::kServiceSandboxType) ==
-          service_manager::switches::kNetworkSandbox) {
+          sandbox::policy::switches::kServiceSandboxType) ==
+          sandbox::policy::switches::kNetworkSandbox) {
     ChromeContentUtilityClient::SetNetworkBinderCreationCallback(base::BindOnce(
         [](content::NetworkServiceTestHelper* helper,
            service_manager::BinderRegistry* registry) {

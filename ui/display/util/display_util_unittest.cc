@@ -119,16 +119,16 @@ const unsigned char kBrokenBluePrimaries[] =
 
 }  // namespace
 
-TEST(DisplayUtilTest, TestBlackListedDisplay) {
-  EXPECT_TRUE(IsDisplaySizeBlackListed(gfx::Size(10, 10)));
-  EXPECT_TRUE(IsDisplaySizeBlackListed(gfx::Size(40, 30)));
-  EXPECT_TRUE(IsDisplaySizeBlackListed(gfx::Size(50, 40)));
-  EXPECT_TRUE(IsDisplaySizeBlackListed(gfx::Size(160, 90)));
-  EXPECT_TRUE(IsDisplaySizeBlackListed(gfx::Size(160, 100)));
+TEST(DisplayUtilTest, TestValidDisplaySize) {
+  EXPECT_FALSE(IsDisplaySizeValid(gfx::Size(10, 10)));
+  EXPECT_FALSE(IsDisplaySizeValid(gfx::Size(40, 30)));
+  EXPECT_FALSE(IsDisplaySizeValid(gfx::Size(50, 40)));
+  EXPECT_FALSE(IsDisplaySizeValid(gfx::Size(160, 90)));
+  EXPECT_FALSE(IsDisplaySizeValid(gfx::Size(160, 100)));
 
-  EXPECT_FALSE(IsDisplaySizeBlackListed(gfx::Size(50, 60)));
-  EXPECT_FALSE(IsDisplaySizeBlackListed(gfx::Size(100, 70)));
-  EXPECT_FALSE(IsDisplaySizeBlackListed(gfx::Size(272, 181)));
+  EXPECT_TRUE(IsDisplaySizeValid(gfx::Size(50, 60)));
+  EXPECT_TRUE(IsDisplaySizeValid(gfx::Size(100, 70)));
+  EXPECT_TRUE(IsDisplaySizeValid(gfx::Size(272, 181)));
 }
 
 TEST(DisplayUtilTest, GetColorSpaceFromEdid) {

@@ -43,14 +43,14 @@ std::vector<BrokerFilePermission> GetTtsFilePermissions() {
   return permissions;
 }
 
-bool TtsPreSandboxHook(service_manager::SandboxLinux::Options options) {
+bool TtsPreSandboxHook(sandbox::policy::SandboxLinux::Options options) {
   if (!dlopen(kLibchromettsPath, RTLD_LAZY))
     LOG(ERROR) << "Unable to open libchrometts.so: " << dlerror();
 
   // Ensure this directory is created.
   base::FilePath temp_data_dir(kTempDataDirectory);
   base::CreateDirectoryAndGetError(temp_data_dir, nullptr);
-  auto* instance = service_manager::SandboxLinux::GetInstance();
+  auto* instance = sandbox::policy::SandboxLinux::GetInstance();
   instance->StartBrokerProcess(MakeBrokerCommandSet({
                                    sandbox::syscall_broker::COMMAND_ACCESS,
                                    sandbox::syscall_broker::COMMAND_OPEN,
@@ -61,7 +61,7 @@ bool TtsPreSandboxHook(service_manager::SandboxLinux::Options options) {
                                    sandbox::syscall_broker::COMMAND_UNLINK,
                                }),
                                GetTtsFilePermissions(),
-                               service_manager::SandboxLinux::PreSandboxHook(),
+                               sandbox::policy::SandboxLinux::PreSandboxHook(),
                                options);
 
   instance->EngageNamespaceSandboxIfPossible();

@@ -25,7 +25,7 @@
 #include "content/public/test/test_launcher.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/test/extension_test_message_listener.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "sandbox/policy/switches.h"
 
 using extensions::PlatformAppBrowserTest;
 
@@ -34,7 +34,8 @@ namespace apps {
 namespace {
 
 const char* kSwitchesToCopy[] = {
-    service_manager::switches::kNoSandbox, switches::kUserDataDir,
+    sandbox::policy::switches::kNoSandbox,
+    switches::kUserDataDir,
 };
 
 constexpr char kTestExtensionId[] = "behllobkkfkfnphdnhnkndlbkcpglgmj";

@@ -45,6 +45,7 @@ class MockPasswordProtectionService : public PasswordProtectionService {
   MOCK_METHOD1(IsInPasswordAlertMode, bool(ReusedPasswordAccountType));
   MOCK_METHOD0(IsHistorySyncEnabled, bool());
   MOCK_METHOD0(IsUnderAdvancedProtection, bool());
+  MOCK_METHOD0(IsInExcludedCountry, bool());
   MOCK_METHOD0(ReportPasswordChanged, void());
   MOCK_METHOD1(UserClickedThroughSBInterstitial, bool(content::WebContents*));
   MOCK_METHOD1(MaybeLogPasswordReuseDetectedEvent, void(content::WebContents*));

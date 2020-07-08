@@ -66,7 +66,7 @@ void DeleteOldWindowsTempFiles(const base::FilePath& dir) {
     if (info.GetLastModifiedTime() > one_day_ago)
       continue;
 
-    base::DeleteFile(path, /*recursive=*/false);
+    base::DeleteFile(path);
   }
 }
 

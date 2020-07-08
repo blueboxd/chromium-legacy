@@ -79,7 +79,13 @@ void WebContentsViewChildFrame::CreateView(gfx::NativeView context) {
 
 RenderWidgetHostViewBase* WebContentsViewChildFrame::CreateViewForWidget(
     RenderWidgetHost* render_widget_host) {
-  return RenderWidgetHostViewChildFrame::Create(render_widget_host);
+  ScreenInfo screen_info;
+  if (auto* view = web_contents_->GetRenderWidgetHostView())
+    view->GetScreenInfo(&screen_info);
+  else
+    DisplayUtil::GetDefaultScreenInfo(&screen_info);
+  return RenderWidgetHostViewChildFrame::Create(render_widget_host,
+                                                screen_info);
 }
 
 RenderWidgetHostViewBase* WebContentsViewChildFrame::CreateViewForChildWidget(

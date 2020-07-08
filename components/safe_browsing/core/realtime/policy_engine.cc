@@ -30,16 +30,6 @@
 
 namespace safe_browsing {
 
-namespace {
-
-// This is a list of countries where real-time checks need to be disabled.
-static const std::vector<std::string> GetExcludedCountries() {
-  // The endpoint isn't available
-  return {"cn"};
-}
-
-}  // namespace
-
 #if defined(OS_ANDROID)
 const int kDefaultMemoryThresholdMb = 4096;
 #endif

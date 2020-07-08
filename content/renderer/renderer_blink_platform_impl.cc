@@ -873,6 +873,12 @@ void RendererBlinkPlatformImpl::WorkerContextCreated(
       worker);
 }
 
+bool RendererBlinkPlatformImpl::AllowScriptExtensionForServiceWorker(
+    const blink::WebSecurityOrigin& script_origin) {
+  return GetContentClient()->renderer()->AllowScriptExtensionForServiceWorker(
+      script_origin);
+}
+
 bool RendererBlinkPlatformImpl::IsExcludedHeaderForServiceWorkerFetchEvent(
     const blink::WebString& header_name) {
   return GetContentClient()

@@ -8,6 +8,7 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,7 +25,6 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.common.ContentUrlConstants;
 
 import java.io.File;
-import java.util.Locale;
 
 /**
  * Integration testing for the CustomTab Tab persistence logic.
@@ -67,13 +67,10 @@ public class CustomTabTabPersistenceIntegrationTest {
 
     private void waitForFileExistState(
             final boolean exists, final String fileName, final File filePath) {
-        CriteriaHelper.pollInstrumentationThread(new Criteria(
-                String.format(Locale.US, "File, %s, expected to exist: %b", fileName, exists)) {
-            @Override
-            public boolean isSatisfied() {
-                File file = new File(filePath, fileName);
-                return file.exists() == exists;
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            File file = new File(filePath, fileName);
+            Criteria.checkThat("Invalid file existence state for: " + fileName, file.exists(),
+                    Matchers.is(exists));
         });
     }
 

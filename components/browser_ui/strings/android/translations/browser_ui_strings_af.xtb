@@ -27,14 +27,11 @@
 <translation id="1743802530341753419">Vra voordat werwe toegelaat word om aan 'n toestel te koppel (aanbeveel)</translation>
 <translation id="1887786770086287077">Liggingtoegang is af vir hierdie toestel. Skakel dit in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aan.</translation>
 <translation id="1919345977826869612">Advertensies</translation>
-<translation id="1922076542920281912">Vir Chrome om toegang tot jou ligging te kry, moet jy ligging ook in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aanskakel.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> van <ph name="FILE_SIZE_WITH_UNITS" /></translation>
-<translation id="194341124344773587">Skakel toestemming vir Chrome aan in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" />.</translation>
 <translation id="1984937141057606926">Toegelaat, buiten van derde party af</translation>
 <translation id="1994173015038366702">Werf-URL</translation>
 <translation id="2025115093177348061">Aangevulde realiteit</translation>
 <translation id="2030769033451695672">Tik om na <ph name="URL_OF_THE_CURRENT_TAB" /> terug te keer</translation>
-<translation id="2041019821020695769">Vir Chrome om toegang tot jou kennisgewings te kry, moet jy kennisgewings ook in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aanskakel.</translation>
 <translation id="2079545284768500474">Ontdoen</translation>
 <translation id="2091887806945687916">Klank</translation>
 <translation id="2107397443965016585">Vra voordat jy werwe toelaat om beskermde inhoud te speel (aanbeveel)</translation>
@@ -71,7 +68,6 @@
 <translation id="301521992641321250">Outomaties geblokkeer</translation>
 <translation id="3115898365077584848">Wys inligting</translation>
 <translation id="3123473560110926937">Geblokkeer op sommige werwe</translation>
-<translation id="3190152372525844641">Skakel toestemmings vir Chrome aan in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> gestoorde data</translation>
 <translation id="3227137524299004712">Mikrofoon</translation>
 <translation id="3277252321222022663">Laat werwe toegang tot sensors toe (aanbeveel)</translation>
@@ -83,7 +79,6 @@
 <translation id="358794129225322306">Laat 'n werf toe om outomaties veelvuldige lêers af te laai</translation>
 <translation id="3596414637720633074">Blokkeer derdepartywebkoekies in Incognito</translation>
 <translation id="3600792891314830896">Demp werwe wat klank speel</translation>
-<translation id="3730075448226062617">Vir Chrome om toegang tot jou mikrofoon te kry, moet jy mikrofoon ook in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aanskakel.</translation>
 <translation id="3744111561329211289">Agtergrondsinkronisering</translation>
 <translation id="3822502789641063741">Vee werfberging uit?</translation>
 <translation id="385051799172605136">Terug</translation>
@@ -112,7 +107,6 @@
 <translation id="4883854917563148705">Bestuurde instellings kan nie teruggestel word nie</translation>
 <translation id="4887024562049524730">Vra voordat werwe toegelaat word om jou virtuelerealiteittoestel en -data te gebruik (aanbeveel)</translation>
 <translation id="4962975101802056554">Herroep alle toestemmings vir toestel</translation>
-<translation id="4964199952259983386">Skakel ook kamera in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aan sodat Chrome AR kan gebruik.</translation>
 <translation id="497421865427891073">Gaan vorentoe</translation>
 <translation id="4996978546172906250">Deel via</translation>
 <translation id="5039804452771397117">Laat toe</translation>
@@ -153,7 +147,6 @@
 <translation id="6177111841848151710">Geblokkeer vir huidige soekenjin</translation>
 <translation id="6181444274883918285">Voeg werfuitsondering by</translation>
 <translation id="6192792657125177640">Uitsonderings</translation>
-<translation id="6194112207524046168">Vir Chrome om toegang tot jou kamera te kry, moet jy kamera ook in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aanskakel.</translation>
 <translation id="6196640612572343990">Blokkeer derdeparty-webkoekies</translation>
 <translation id="6206551242102657620">Verbinding is veilig. Werfinligting</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />-opsies</translation>

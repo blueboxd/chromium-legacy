@@ -377,6 +377,7 @@
 <translation id="1468571364034902819">このプロフィールは使用できません</translation>
 <translation id="1470084204649225129">{NUM_TABS,plural, =1{タブを新しいグループに追加}other{タブを新しいグループに追加}}</translation>
 <translation id="1472675084647422956">表示項目を増やす</translation>
+<translation id="1474785664565228650">マイクの設定を変更するには、Parallels Desktop を再起動する必要があります。続行するには、Parallels Desktop を再起動してください。</translation>
 <translation id="1475502736924165259">他のどのカテゴリにも適合しない証明書がファイルに格納されています</translation>
 <translation id="1476088332184200792">デバイスにコピー</translation>
 <translation id="1476607407192946488">言語設定(&amp;L)</translation>
@@ -1395,7 +1396,7 @@
 <translation id="2712173769900027643">許可をリクエスト</translation>
 <translation id="2713444072780614174">白</translation>
 <translation id="2714393097308983682">Google Play ストア</translation>
-<translation id="2714997332747470971">個人情報の候補表示を有効にすると、あなたの名前や住所、電話番号が候補として表示され、すばやく入力できるようになります。個人用にカスタマイズされた候補は、そのアカウントを使用するユーザーにのみ表示されます。</translation>
+<translation id="2714997332747470971">個人情報の候補表示を有効にすると、あなたの名前や住所、電話番号が候補として表示され、すばやく入力できるようになります。個人用にカスタマイズされた候補は、そのアカウントを使用するユーザー本人にのみ表示されます。</translation>
 <translation id="2715751256863167692">このアップグレードを行うと、Chromebook がリセットされ、現在のユーザーデータは削除されます。</translation>
 <translation id="2716986496990888774">この設定は保護者によって管理されています。</translation>
 <translation id="2718395828230677721">夜間モード</translation>
@@ -2929,6 +2930,7 @@
 <translation id="4648499713050786492">ユーザーを追加するにはまずプロフィールのロックを解除してください。</translation>
 <translation id="4650591383426000695">スマートフォンを <ph name="DEVICE_TYPE" /> から切断します</translation>
 <translation id="4651484272688821107">デモモード リソースでオンライン コンポーネントを読み込めませんでした。</translation>
+<translation id="4652935475563630866">カメラの設定を変更するには、Parallels Desktop を再起動する必要があります。続行するには、Parallels Desktop を再起動してください。</translation>
 <translation id="4653405415038586100">Linux の設定中にエラーが発生しました</translation>
 <translation id="465878909996028221">ブラウザのリダイレクトでは、http、https、file プロトコルのみサポートされています。</translation>
 <translation id="4659077111144409915">メイン アカウント</translation>

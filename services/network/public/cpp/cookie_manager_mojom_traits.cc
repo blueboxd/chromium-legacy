@@ -93,6 +93,8 @@ network::mojom::CookieEffectiveSameSite EnumTraits<
       return network::mojom::CookieEffectiveSameSite::kStrictMode;
     case net::CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE:
       return network::mojom::CookieEffectiveSameSite::kLaxModeAllowUnsafe;
+    case net::CookieEffectiveSameSite::UNDEFINED:
+      return network::mojom::CookieEffectiveSameSite::kUndefined;
     default:
       break;
   }
@@ -116,6 +118,9 @@ bool EnumTraits<network::mojom::CookieEffectiveSameSite,
       return true;
     case network::mojom::CookieEffectiveSameSite::kLaxModeAllowUnsafe:
       *output = net::CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE;
+      return true;
+    case network::mojom::CookieEffectiveSameSite::kUndefined:
+      *output = net::CookieEffectiveSameSite::UNDEFINED;
       return true;
     default:
       break;

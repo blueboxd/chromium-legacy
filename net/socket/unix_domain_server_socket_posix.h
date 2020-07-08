@@ -74,16 +74,16 @@ class NET_EXPORT UnixDomainServerSocket : public ServerSocket {
   // A callback to wrap the setting of the out-parameter to Accept().
   // This allows the internal machinery of that call to be implemented in
   // a manner that's agnostic to the caller's desired output.
-  typedef base::Callback<void(std::unique_ptr<SocketPosix>)> SetterCallback;
+  typedef base::OnceCallback<void(std::unique_ptr<SocketPosix>)> SetterCallback;
 
-  int DoAccept(const SetterCallback& setter_callback);
-  void AcceptCompleted(const SetterCallback& setter_callback,
-                       int rv);
-  bool AuthenticateAndGetStreamSocket(const SetterCallback& setter_callback);
+  int DoAccept();
+  void AcceptCompleted(int rv);
+  bool AuthenticateAndGetStreamSocket();
 
   std::unique_ptr<SocketPosix> listen_socket_;
   const AuthCallback auth_callback_;
   CompletionOnceCallback callback_;
+  SetterCallback setter_callback_;
   const bool use_abstract_namespace_;
 
   std::unique_ptr<SocketPosix> accept_socket_;

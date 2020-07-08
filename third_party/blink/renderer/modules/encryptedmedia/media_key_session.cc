@@ -847,9 +847,9 @@ void MediaKeySession::ActionTimerFired(TimerBase*) {
 }
 
 // Queue a task to fire a simple event named keymessage at the new object.
-void MediaKeySession::Message(MessageType message_type,
-                              const unsigned char* message,
-                              size_t message_length) {
+void MediaKeySession::OnSessionMessage(MessageType message_type,
+                                       const unsigned char* message,
+                                       size_t message_length) {
   DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
 
   // Verify that 'message' not fired before session initialization is complete.
@@ -891,7 +891,7 @@ void MediaKeySession::Message(MessageType message_type,
   async_event_queue_->EnqueueEvent(FROM_HERE, *event);
 }
 
-void MediaKeySession::Close() {
+void MediaKeySession::OnSessionClosed() {
   // Note that this is the event from the CDM when this session is actually
   // closed. The CDM can close a session at any time. Normally it would happen
   // as the result of a close() call, but also happens when update() has been
@@ -911,10 +911,10 @@ void MediaKeySession::Close() {
 
   // 5. Run the Update Key Statuses algorithm on the session, providing
   //    an empty sequence.
-  KeysStatusesChange(WebVector<WebEncryptedMediaKeyInformation>(), false);
+  OnSessionKeysChange(WebVector<WebEncryptedMediaKeyInformation>(), false);
 
   // 6. Run the Update Expiration algorithm on the session, providing NaN.
-  ExpirationChanged(std::numeric_limits<double>::quiet_NaN());
+  OnSessionExpirationUpdate(std::numeric_limits<double>::quiet_NaN());
 
   // 7. Resolve promise.
   closed_promise_->ResolveWithUndefined();
@@ -936,7 +936,8 @@ void MediaKeySession::Close() {
   }
 }
 
-void MediaKeySession::ExpirationChanged(double updated_expiry_time_in_ms) {
+void MediaKeySession::OnSessionExpirationUpdate(
+    double updated_expiry_time_in_ms) {
   DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL)
       << __func__ << "(" << this << ") " << updated_expiry_time_in_ms;
 
@@ -955,7 +956,7 @@ void MediaKeySession::ExpirationChanged(double updated_expiry_time_in_ms) {
   expiration_ = expiration_time;
 }
 
-void MediaKeySession::KeysStatusesChange(
+void MediaKeySession::OnSessionKeysChange(
     const WebVector<WebEncryptedMediaKeyInformation>& keys,
     bool has_additional_usable_key) {
   DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL)

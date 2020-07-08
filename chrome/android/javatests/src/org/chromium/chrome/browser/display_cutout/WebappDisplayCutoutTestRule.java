@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 
+import org.hamcrest.Matchers;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
@@ -77,12 +78,9 @@ public class WebappDisplayCutoutTestRule extends DisplayCutoutTestRule<WebappAct
         launchActivity(intent);
 
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return getActivity().getActivityTab() != null
-                        && !getActivity().getActivityTab().isLoading();
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(getActivity().getActivityTab(), Matchers.notNullValue());
+            Criteria.checkThat(getActivity().getActivityTab().isLoading(), Matchers.is(false));
         }, STARTUP_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 

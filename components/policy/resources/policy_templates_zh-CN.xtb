@@ -2670,25 +2670,6 @@
       如果该政策设为True，<ph name="PRODUCT_OS_NAME" />将阻止相应设备进入开发者模式。当开发者模式开关处于打开状态时，系统将无法启动并显示错误屏幕。
 
       如果该政策未设置或设为False，相应设备将可以使用开发者模式。</translation>
-<translation id="5210980743015047124">配置允许使用的最低 <ph name="PRODUCT_NAME" /> 版本要求。
-
-      当此政策设为非空列表时：
-      如果所有条目的“chrome_version”都不高于设备中的当前版本，系统将不会应用任何限制，而且已有的限制会被撤消。
-      如果有至少 1 个条目的“chrome_version”高于当前版本，系统会选择其版本与当前版本最接近的那个条目。
-      如果存在冲突，系统会优先考虑“warning_period”或“eol_warning_period”期限较为紧急的那个条目，并会使用该条目应用此政策。
-
-      如果当前版本在用户使用期间变为过时版本，系统会显示屏幕通知，以要求用户在通知中显示的“warning_period”期限内更新设备。
-      “warning_period”期限自此政策被应用时起算。
-      如果设备在“warning_period”期限内一直未更新，用户会被强制退出系统。
-      如果当前版本在用户登录时已过时，并且“warning_period”期限已过，则用户必须更新设备才能登录。
-
-      如果设备的生命周期在用户使用期间结束，系统会显示屏幕通知，以提醒用户会在“eol_warning_period”期限过后退出登录。
-      如果在用户登录时设备的生命周期已结束，并且“eol_warning_period”期限已过，则任何用户都无法登录设备。
-
-      如果此政策未设置或设为空，系统将不会应用任何限制，已有的限制会被撤消，并且无论使用的是哪个 <ph name="PRODUCT_NAME" /> 版本，用户都能登录。
-
-      此处的“chrome_version”既可以是确切版本（如“61.0.3163.120”），也可以是版本前缀（如“61.0”）。
-      “warning_period”和“eol_warning_period”是以天数为单位指定的可选值。这两个期限的默认值为 0 天，表示没有等待期。 </translation>
 <translation id="5212118847531454979">您可以设置一个时间段（以毫秒为单位），在该时间段内，系统会通知用户必须重新启动 <ph name="PRODUCT_NAME" /> 或重启 <ph name="PRODUCT_OS_NAME" />设备以安装更新。
 
       在该时间段内，系统会反复通知用户需要更新。对于 <ph name="PRODUCT_OS_NAME" />设备，系统会根据 <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> 政策在系统任务栏中显示重启通知。对于 <ph name="PRODUCT_NAME" /> 浏览器，在通知时间段过去三分之一后，应用菜单会发生变化，示意需要重启浏览器。此通知会在通知时间段过去三分之二后改变颜色，并会在时间段结束后再次改变颜色。由 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策引发的其他通知也会遵循这一规律。
@@ -3020,20 +3001,6 @@
           只有在停用 <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> 之后，此政策才会生效。否则，系统会忽略此政策，因为屏幕变暗延迟时间是由机器学习模型确定的。
 
           调整因子不得小于 100%。所用值不得导致演示模式下的屏幕变暗延迟时间短于常规模式。</translation>
-<translation id="5590988845778885692">提供可用打印服务器的配置。
-
-      此政策让您能够以 JSON 文件的形式向 <ph name="PRODUCT_OS_NAME" />设备提供外部打印服务器的配置。
-
-      该文件的大小不得超过 1MB，且必须包含记录（JSON 对象）数组。每条记录都必须包含“id”、“url”和“display_name”字段以及字符串形式的值。“id”字段的值必须是独一无二的。
-
-      系统会下载并缓存该文件。相应的加密哈希值用于验证下载内容是否完整。只要网址或哈希值有任何变化，系统就会重新下载该文件。
-
-      如果此政策设为正确的值，设备将尝试使用 IPP 协议查询指定的打印服务器，以确认是否有可用的打印机。
-
-      如果此政策设为不正确的值或未设置，用户将看不到任何服务器打印机。
-
-      目前，打印服务器的数量上限为 16 台。系统仅会查询列表中显示的前 16 台打印服务器。
-      </translation>
 <translation id="5592242031005200087">
       如果此政策处于启用状态，则以英文逗号分隔的列表中指定的每个来源都将在自己的进程中运行。这还会隔离以子网域指定的来源；例如，指定 https://example.com/ 还会导致 https://foo.example.com/ 被隔离（作为 https://example.com/ 网站的一部分）。
       如果此政策处于停用状态，则不会发生明确的网站隔离，IsolateOriginsAndroid 和 SitePerProcessAndroid 的现场试验也将停用。用户仍能够通过命令行标记手动启用 IsolateOrigins。
@@ -3177,14 +3144,6 @@
       网址（如 https://example.com/some/path）将仅匹配为 U2F appID。网域（如 example.com）将仅匹配为 webauthn RP ID。因此，要同时涵盖指定网址的 U2F 和 webauthn API，必须同时列出 appID 网址和网域。</translation>
 <translation id="5836064773277134605">限制远程访问主机使用的UDP端口范围</translation>
 <translation id="585270638818921943">禁止用户使用来源不受信任的 Android 应用</translation>
-<translation id="5854749508571554984">仅当设备的生命周期已结束且不符合允许使用的最低 <ph name="PRODUCT_NAME" /> 版本（通过 <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> 政策设置）的要求时，此政策才有效。
-
-      当此政策设为非空字符串时：
-      如果 <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> 政策中提及的警告时间已过，当任何用户都无法登录设备时，系统会在登录屏幕上显示此消息。
-      如果 <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> 政策中提及的警告时间未过，当用户登录后，系统会在“设置”页面中显示此消息。
-
-      如果此政策未设置或设为空字符串，在上述两种情况下，系统都会向用户显示默认的生命周期结束消息。
-      生命周期结束消息必须是不带任何格式的纯文本，且不得使用任何标记。 </translation>
 <translation id="5855010364142818361">此政策旨在控制用于从 Internet Explorer 切换至 Chrome 的命令行参数。
 
       如果未安装适用于 Internet Explorer 的“旧版浏览器支持”插件，则此政策不会生效。
@@ -3814,7 +3773,6 @@
       将此政策设为 <ph name="BR_UNDER_USER_CONTROL" /> 意味着系统会提示用户使用备份和恢复服务。如果用户开启了该服务，系统就会将 Android 应用数据上传到 Android 备份服务器，并会在用户重新安装兼容的应用期间恢复这些数据。
 
       完成初始设置后，用户可以开启或关闭备份和恢复服务。</translation>
-<translation id="6993687707842131236">为 MinimumChromeVersionEnforced 政策配置生命周期结束消息</translation>
 <translation id="6994082778848658360">指定如何使用板载安全元件硬件提供双重身份验证（如果该硬件与此功能兼容的话）。使用机器电源按钮检测用户是否真实存在。
 
       如果选择“停用”，系统将不会提供任何双重身份验证。

@@ -4,8 +4,10 @@
 
 #include "chrome/browser/media/router/discovery/mdns/dns_sd_registry.h"
 
+#include <limits>
 #include <utility>
 
+#include "base/check.h"
 #include "base/stl_util.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chrome/browser/media/router/discovery/mdns/dns_sd_device_lister.h"
@@ -38,6 +40,7 @@ DnsSdRegistry::ServiceTypeData::~ServiceTypeData() {}
 
 void DnsSdRegistry::ServiceTypeData::ListenerAdded() {
   ref_count++;
+  CHECK(ref_count != std::numeric_limits<decltype(ref_count)>::max());
 }
 
 bool DnsSdRegistry::ServiceTypeData::ListenerRemoved() {

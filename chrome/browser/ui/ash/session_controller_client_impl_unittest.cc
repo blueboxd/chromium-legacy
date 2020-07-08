@@ -576,7 +576,7 @@ TEST_F(SessionControllerClientImplTest, SessionLengthLimit) {
 
   // Setting a session length limit in local state sends it to ash.
   const base::TimeDelta length_limit = base::TimeDelta::FromHours(1);
-  const base::TimeTicks start_time = base::TimeTicks::Now();
+  const base::Time start_time = base::Time::Now();
   PrefService* local_state = TestingBrowserProcess::GetGlobal()->local_state();
   local_state->SetInteger(prefs::kSessionLengthLimit,
                           length_limit.InMilliseconds());

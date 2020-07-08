@@ -56,17 +56,27 @@ void LayoutListItem::StyleDidChange(StyleDifference diff,
   }
 
   LayoutObject* marker = Marker();
-  ListMarker* list_marker = ListMarker::Get(marker);
-  if (!list_marker)
+  if (!marker)
     return;
 
-  list_marker->UpdateMarkerContentIfNeeded(*marker);
+  LayoutListMarker* legacy_marker = ToLayoutListMarkerOrNull(marker);
+  ListMarker* list_marker = legacy_marker ? nullptr : ListMarker::Get(marker);
+  DCHECK(legacy_marker || list_marker);
+
+  if (legacy_marker)
+    legacy_marker->UpdateMarkerImageIfNeeded(current_image);
+  else
+    list_marker->UpdateMarkerContentIfNeeded(*marker);
 
   if (old_style && (old_style->ListStyleType() != StyleRef().ListStyleType() ||
                     (StyleRef().ListStyleType() == EListStyleType::kString &&
                      old_style->ListStyleStringValue() !=
-                         StyleRef().ListStyleStringValue())))
-    list_marker->ListStyleTypeChanged(*marker);
+                         StyleRef().ListStyleStringValue()))) {
+    if (legacy_marker)
+      legacy_marker->ListStyleTypeChanged();
+    else
+      list_marker->ListStyleTypeChanged(*marker);
+  }
 }
 
 void LayoutListItem::InsertedIntoTree() {
@@ -86,8 +96,12 @@ void LayoutListItem::SubtreeDidChange() {
   if (!marker)
     return;
 
-  if (ListMarker* list_marker = ListMarker::Get(marker))
+  if (LayoutListMarker* legacy_marker = ToLayoutListMarkerOrNull(marker))
+    legacy_marker->UpdateMarkerImageIfNeeded(StyleRef().ListStyleImage());
+  else if (ListMarker* list_marker = ListMarker::Get(marker))
     list_marker->UpdateMarkerContentIfNeeded(*marker);
+  else
+    NOTREACHED();
 
   if (!UpdateMarkerLocation())
     return;
@@ -226,7 +240,7 @@ bool LayoutListItem::PrepareForBlockDirectionAlign(
     }
 
     if (marker->IsListMarkerForNormalContent())
-      ToLayoutListMarker(marker)->UpdateMarginsAndContent();
+      ToLayoutListMarker(marker)->UpdateMargins();
     else if (marker->IsOutsideListMarkerForCustomContent())
       ToLayoutOutsideListMarker(marker)->UpdateMargins();
     return true;
@@ -300,7 +314,7 @@ bool LayoutListItem::UpdateMarkerLocation() {
     // of referencing them delete marker_parent if it is an empty anonymous
     // block.
     if (marker->IsListMarkerForNormalContent())
-      ToLayoutListMarker(marker)->UpdateMarginsAndContent();
+      ToLayoutListMarker(marker)->UpdateMargins();
     else if (marker->IsOutsideListMarkerForCustomContent())
       ToLayoutOutsideListMarker(marker)->UpdateMargins();
     return true;
@@ -458,7 +472,7 @@ void LayoutListItem::UpdateOverflow() {
   // FIXME: Need to account for relative positioning in the layout overflow.
   LayoutUnit marker_line_offset =
       marker->IsListMarkerForNormalContent()
-          ? ToLayoutListMarker(marker)->LineOffset()
+          ? ToLayoutListMarker(marker)->ListItemInlineStartOffset()
           : ToLayoutOutsideListMarker(marker)->ListItemInlineStartOffset();
   if (StyleRef().IsLeftToRightDirection()) {
     marker_line_offset =

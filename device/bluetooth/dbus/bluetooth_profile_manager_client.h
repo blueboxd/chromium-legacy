@@ -76,6 +76,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothProfileManagerClient
   // an optional message in |error_message|.
   typedef base::Callback<void(const std::string& error_name,
                               const std::string& error_message)> ErrorCallback;
+  using ErrorOnceCallback =
+      base::OnceCallback<void(const std::string& error_name,
+                              const std::string& error_message)>;
 
   // Registers a profile implementation within the local process at the
   // D-bus object path |profile_path| with the remote profile manager.
@@ -84,14 +87,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothProfileManagerClient
   virtual void RegisterProfile(const dbus::ObjectPath& profile_path,
                                const std::string& uuid,
                                const Options& options,
-                               const base::Closure& callback,
-                               const ErrorCallback& error_callback) = 0;
+                               base::OnceClosure callback,
+                               ErrorOnceCallback error_callback) = 0;
 
   // Unregisters the profile with the D-Bus object path |agent_path| from the
   // remote profile manager.
   virtual void UnregisterProfile(const dbus::ObjectPath& profile_path,
-                                 const base::Closure& callback,
-                                 const ErrorCallback& error_callback) = 0;
+                                 base::OnceClosure callback,
+                                 ErrorOnceCallback error_callback) = 0;
 
   // Creates the instance.
   static BluetoothProfileManagerClient* Create();

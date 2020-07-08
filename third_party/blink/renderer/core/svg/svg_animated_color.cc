@@ -54,14 +54,23 @@ static inline Color FallbackColorForCurrentColor(SVGElement* target_element) {
   return Color::kTransparent;
 }
 
+static inline WebColorScheme ColorSchemeForSVGElement(
+    SVGElement* target_element) {
+  DCHECK(target_element);
+  if (const ComputedStyle* target_style = target_element->GetComputedStyle())
+    return target_style->UsedColorScheme();
+  return WebColorScheme::kLight;
+}
+
 void SVGColorProperty::Add(SVGPropertyBase* other,
                            SVGElement* context_element) {
   DCHECK(context_element);
 
   Color fallback_color = FallbackColorForCurrentColor(context_element);
-  Color from_color =
-      To<SVGColorProperty>(other)->style_color_.Resolve(fallback_color);
-  Color to_color = style_color_.Resolve(fallback_color);
+  WebColorScheme color_scheme = ColorSchemeForSVGElement(context_element);
+  Color from_color = To<SVGColorProperty>(other)->style_color_.Resolve(
+      fallback_color, color_scheme);
+  Color to_color = style_color_.Resolve(fallback_color, color_scheme);
   style_color_ = StyleColor(ColorDistance::AddColors(from_color, to_color));
 }
 
@@ -81,11 +90,12 @@ void SVGColorProperty::CalculateAnimatedValue(
   // Apply currentColor rules.
   DCHECK(context_element);
   Color fallback_color = FallbackColorForCurrentColor(context_element);
-  Color from_color = from_style_color.Resolve(fallback_color);
-  Color to_color = to_style_color.Resolve(fallback_color);
+  WebColorScheme color_scheme = ColorSchemeForSVGElement(context_element);
+  Color from_color = from_style_color.Resolve(fallback_color, color_scheme);
+  Color to_color = to_style_color.Resolve(fallback_color, color_scheme);
   Color to_at_end_of_duration_color =
-      to_at_end_of_duration_style_color.Resolve(fallback_color);
-  Color animated_color = style_color_.Resolve(fallback_color);
+      to_at_end_of_duration_style_color.Resolve(fallback_color, color_scheme);
+  Color animated_color = style_color_.Resolve(fallback_color, color_scheme);
 
   float animated_red = animated_color.Red();
   animation_element.AnimateAdditiveNumber(
@@ -116,10 +126,11 @@ float SVGColorProperty::CalculateDistance(SVGPropertyBase* to_value,
                                           SVGElement* context_element) {
   DCHECK(context_element);
   Color fallback_color = FallbackColorForCurrentColor(context_element);
+  WebColorScheme color_scheme = ColorSchemeForSVGElement(context_element);
 
-  Color from_color = style_color_.Resolve(fallback_color);
-  Color to_color =
-      To<SVGColorProperty>(to_value)->style_color_.Resolve(fallback_color);
+  Color from_color = style_color_.Resolve(fallback_color, color_scheme);
+  Color to_color = To<SVGColorProperty>(to_value)->style_color_.Resolve(
+      fallback_color, color_scheme);
   return ColorDistance::Distance(from_color, to_color);
 }
 

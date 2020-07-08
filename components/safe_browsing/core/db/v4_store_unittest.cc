@@ -37,7 +37,7 @@ class V4StoreTest : public PlatformTest {
   }
 
   void TearDown() override {
-    base::DeleteFile(store_path_, false);
+    base::DeleteFile(store_path_);
     PlatformTest::TearDown();
   }
 

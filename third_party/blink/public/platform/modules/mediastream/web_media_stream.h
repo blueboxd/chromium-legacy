@@ -62,31 +62,18 @@ class WebMediaStream {
 
   BLINK_PLATFORM_EXPORT void Assign(const WebMediaStream&);
 
-  BLINK_PLATFORM_EXPORT void Initialize(
-      const WebVector<WebMediaStreamTrack>& audio_tracks,
-      const WebVector<WebMediaStreamTrack>& video_tracks);
-  BLINK_PLATFORM_EXPORT void Initialize(
-      const WebString& label,
-      const WebVector<WebMediaStreamTrack>& audio_tracks,
-      const WebVector<WebMediaStreamTrack>& video_tracks);
-
   BLINK_PLATFORM_EXPORT void Reset();
   bool IsNull() const { return private_.IsNull(); }
 
   BLINK_PLATFORM_EXPORT WebString Id() const;
   BLINK_PLATFORM_EXPORT int UniqueId() const;
 
-  BLINK_PLATFORM_EXPORT WebVector<WebMediaStreamTrack> AudioTracks() const;
-  BLINK_PLATFORM_EXPORT WebVector<WebMediaStreamTrack> VideoTracks() const;
   // If a track is not found with the specified id, the returned track's
   // |IsNull| will return true.
   BLINK_PLATFORM_EXPORT WebMediaStreamTrack
   GetAudioTrack(const WebString& track_id) const;
   BLINK_PLATFORM_EXPORT WebMediaStreamTrack
   GetVideoTrack(const WebString& track_id) const;
-
-  BLINK_PLATFORM_EXPORT void AddTrack(const WebMediaStreamTrack&);
-  BLINK_PLATFORM_EXPORT void RemoveTrack(const WebMediaStreamTrack&);
 
   // These methods add/remove an observer to/from this WebMediaStream. The
   // caller is responsible for removing the observer before the destruction of
@@ -97,7 +84,7 @@ class WebMediaStream {
   BLINK_PLATFORM_EXPORT void RemoveObserver(WebMediaStreamObserver*);
 
 #if INSIDE_BLINK
-  BLINK_PLATFORM_EXPORT WebMediaStream(MediaStreamDescriptor*);
+  BLINK_PLATFORM_EXPORT explicit WebMediaStream(MediaStreamDescriptor*);
   BLINK_PLATFORM_EXPORT operator MediaStreamDescriptor*() const;
   BLINK_PLATFORM_EXPORT WebMediaStream& operator=(MediaStreamDescriptor*);
 #endif

@@ -13,7 +13,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
-#include "services/service_manager/sandbox/sandbox.h"
+#include "sandbox/policy/sandbox.h"
 
 namespace content {
 
@@ -34,24 +34,24 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   // https://chromium.googlesource.com/chromium/src/+/master/docs/linux/suid_sandbox.md
   //
   // Anything else is started in InitializeSandbox().
-  service_manager::SandboxLinux::Options options;
-  service_manager::Sandbox::Initialize(
-      service_manager::SandboxTypeFromCommandLine(
+  sandbox::policy::SandboxLinux::Options options;
+  sandbox::policy::Sandbox::Initialize(
+      sandbox::policy::SandboxTypeFromCommandLine(
           *base::CommandLine::ForCurrentProcess()),
-      service_manager::SandboxLinux::PreSandboxHook(), options);
+      sandbox::policy::SandboxLinux::PreSandboxHook(), options);
 
   // about:sandbox uses a value returned from SandboxLinux::GetStatus() before
   // any renderer has been started.
   // Here, we test that the status of SeccompBpf in the renderer is consistent
   // with what SandboxLinux::GetStatus() said we would do.
-  auto* linux_sandbox = service_manager::SandboxLinux::GetInstance();
-  if (linux_sandbox->GetStatus() & service_manager::SandboxLinux::kSeccompBPF) {
+  auto* linux_sandbox = sandbox::policy::SandboxLinux::GetInstance();
+  if (linux_sandbox->GetStatus() & sandbox::policy::SandboxLinux::kSeccompBPF) {
     CHECK(linux_sandbox->seccomp_bpf_started());
   }
 
   // Under the setuid sandbox, we should not be able to open any file via the
   // filesystem.
-  if (linux_sandbox->GetStatus() & service_manager::SandboxLinux::kSUID) {
+  if (linux_sandbox->GetStatus() & sandbox::policy::SandboxLinux::kSUID) {
     CHECK(!base::PathExists(base::FilePath("/proc/cpuinfo")));
   }
 

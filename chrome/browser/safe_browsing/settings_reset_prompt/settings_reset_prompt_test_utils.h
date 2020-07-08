@@ -41,12 +41,12 @@ class MockProfileResetter : public ProfileResetter {
   // real |ProfileResetter|'s behaviour.
   void Reset(ProfileResetter::ResettableFlags resettable_flags,
              std::unique_ptr<BrandcodedDefaultSettings> master_settings,
-             const base::Closure& callback) override;
+             base::OnceClosure callback) override;
 
   MOCK_METHOD3(MockReset,
                void(ProfileResetter::ResettableFlags resettable_flags,
                     BrandcodedDefaultSettings* master_settings,
-                    const base::Closure& callback));
+                    base::OnceClosure callback));
   MOCK_CONST_METHOD0(IsActive, bool());
 };
 

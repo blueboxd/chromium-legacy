@@ -72,6 +72,18 @@ suite('OSSettingsMenu', function() {
     Polymer.dom.flush();
     assertNotEquals(openIcon, ironIconElement.icon);
   });
+
+  test('Advanced menu expands on navigating to an advanced setting', () => {
+    assertFalse(settingsMenu.advancedOpened);
+    settings.Router.getInstance().navigateTo(settings.routes.RESET);
+    assertFalse(settingsMenu.advancedOpened);
+
+    // If there are search params and the current route is a descendant of
+    // the Advanced route, then ensure that the advanced menu expands.
+    const params = new URLSearchParams('search=test');
+    settings.Router.getInstance().navigateTo(settings.routes.RESET, params);
+    assertTrue(settingsMenu.advancedOpened);
+  });
 });
 
 suite('OSSettingsMenuReset', function() {

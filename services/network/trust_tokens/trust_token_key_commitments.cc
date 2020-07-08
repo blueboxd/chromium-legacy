@@ -36,10 +36,10 @@ ParseCommitmentsFromCommandLine() {
           raw_commitments)) {
     return std::move(*parsed);
   } else {
-    // Crash loudly here because the user presumably only provides key
+    // Complain loudly here because the user presumably only provides key
     // commitments through the command line out of a desire to _use_ the key
     // commitments.
-    LOG(FATAL)
+    LOG(ERROR)
         << "Couldn't parse Trust Tokens key commitments from the command line: "
         << raw_commitments;
   }

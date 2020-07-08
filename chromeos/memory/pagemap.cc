@@ -37,15 +37,15 @@ bool Pagemap::IsValid() const {
 
 bool Pagemap::GetEntries(uint64_t address,
                          uint64_t length,
-                         std::vector<PagemapEntry>* entries) {
+                         std::vector<PagemapEntry>* entries) const {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::WILL_BLOCK);
   DCHECK(IsValid());
-  CHECK(entries);
+  DCHECK(entries);
 
   const size_t kPageSize = base::GetPageSize();
-  CHECK(base::IsPageAligned(address));
-  CHECK(base::IsPageAligned(length));
+  DCHECK(base::IsPageAligned(address));
+  DCHECK(base::IsPageAligned(length));
 
   // The size of each pagemap entry to calculate our offset in the file.
   uint64_t num_pages = length / kPageSize;
@@ -73,6 +73,25 @@ bool Pagemap::GetEntries(uint64_t address,
       return false;
     }
     total_read += bytes_read;
+  }
+
+  return true;
+}
+
+bool Pagemap::GetNumberOfPagesInCore(uint64_t address,
+                                     uint64_t length,
+                                     uint64_t* pages_in_core) const {
+  DCHECK(pages_in_core);
+  *pages_in_core = 0;
+
+  std::vector<Pagemap::PagemapEntry> entries(length / base::GetPageSize());
+  if (!GetEntries(address, length, &entries)) {
+    return false;
+  }
+
+  for (const Pagemap::PagemapEntry& entry : entries) {
+    if (entry.page_present)
+      (*pages_in_core)++;
   }
 
   return true;

@@ -34,8 +34,10 @@
 #include "gpu/command_buffer/service/shared_image_representation_gl_texture_android.h"
 #include "gpu/command_buffer/service/shared_image_representation_skia_gl.h"
 #include "gpu/command_buffer/service/shared_image_representation_skia_vk_android.h"
+#include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/vulkan/vulkan_image.h"
+#include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/android/android_surface_control_compat.h"
@@ -175,6 +177,32 @@ class SharedImageBackingAHB : public SharedImageBackingAndroid {
   scoped_refptr<OverlayImage> overlay_image_ GUARDED_BY(lock_);
 
   DISALLOW_COPY_AND_ASSIGN(SharedImageBackingAHB);
+};
+
+// Vk backed Skia representation of SharedImageBackingAHB.
+class SharedImageRepresentationSkiaVkAHB
+    : public SharedImageRepresentationSkiaVkAndroid {
+ public:
+  SharedImageRepresentationSkiaVkAHB(
+      SharedImageManager* manager,
+      SharedImageBackingAndroid* backing,
+      scoped_refptr<SharedContextState> context_state,
+      std::unique_ptr<VulkanImage> vulkan_image,
+      MemoryTypeTracker* tracker)
+      : SharedImageRepresentationSkiaVkAndroid(manager,
+                                               backing,
+                                               std::move(context_state),
+                                               tracker) {
+    DCHECK(vulkan_image);
+
+    vulkan_image_ = std::move(vulkan_image);
+    // TODO(bsalomon): Determine whether it makes sense to attempt to reuse this
+    // if the vk_info stays the same on subsequent calls.
+    promise_texture_ = SkPromiseImageTexture::Make(
+        GrBackendTexture(size().width(), size().height(),
+                         CreateGrVkImageInfo(vulkan_image_.get())));
+    DCHECK(promise_texture_);
+  }
 };
 
 class SharedImageRepresentationOverlayAHB
@@ -342,9 +370,9 @@ SharedImageBackingAHB::ProduceSkia(
     if (!vulkan_image)
       return nullptr;
 
-    return std::make_unique<SharedImageRepresentationSkiaVkAndroid>(
+    return std::make_unique<SharedImageRepresentationSkiaVkAHB>(
         manager, this, std::move(context_state), std::move(vulkan_image),
-        base::ScopedFD(), tracker);
+        tracker);
   }
   DCHECK(context_state->GrContextIsGL());
   DCHECK(hardware_buffer_handle_.is_valid());

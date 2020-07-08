@@ -39,6 +39,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
+#include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -663,6 +664,32 @@ IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest, EolNotificationClick) {
   EXPECT_EQ(
       settings_browser->tab_strip_model()->GetActiveWebContents()->GetURL(),
       "chrome://management/");
+}
+
+IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest, RelaunchNotificationOverride) {
+  LoginManagedUser();
+
+  // Set policy value as a list of requirements.
+  base::Value requirement_list(base::Value::Type::LIST);
+  requirement_list.Append(
+      CreateRequirement(kNewVersion, kShortWarningInDays, kShortWarningInDays));
+  SetDevicePolicyAndWaitForSettingChange(requirement_list);
+  base::Time deadline =
+      GetMinimumVersionPolicyHandler()->update_required_deadline_for_testing();
+
+  // Simulate device updated.
+  SetUpdateEngineStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
+  // Relaunch notifications are shown and the relaunch deadline is configured as
+  // per the policy deadline.
+  UpgradeDetector* upgrade_detector = UpgradeDetector::GetInstance();
+  EXPECT_EQ(upgrade_detector->upgrade_notification_stage(),
+            UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED);
+  EXPECT_EQ(upgrade_detector->GetHighAnnoyanceDeadline(), deadline);
+
+  // Revoking update required should reset the overridden the relaunch
+  // notifications.
+  SetDevicePolicyAndWaitForSettingChange(base::Value(base::Value::Type::LIST));
+  EXPECT_NE(upgrade_detector->GetHighAnnoyanceDeadline(), deadline);
 }
 
 class MinimumVersionNoUsersLoginTest : public MinimumVersionPolicyTestBase {

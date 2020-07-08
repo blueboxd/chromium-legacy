@@ -592,9 +592,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
                   MatchesLoginAndRealm("user", "pass", GetPSLOrigin())));
 }
 
-IN_PROC_BROWSER_TEST_F(
-    PasswordManagerSyncTest,
-    SaveInProfileStoreIfSaveButtonClickedInUnsyncedPasswordsBubble) {
+IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
+                       SignOutWithUnsyncedPasswordsOpensBubble) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   content::WebContents* web_contents = nullptr;
   GetNewTab(GetBrowser(0), &web_contents);
@@ -616,15 +615,7 @@ IN_PROC_BROWSER_TEST_F(
               ElementsAre(MatchesLogin("accountuser", "accountpass")));
 
   SignOut();
-
-  // Fake user clicking the Save button in the UI.
   bubble_observer.WaitForSaveUnsyncedCredentialsPrompt();
-  bubble_observer.AcceptSaveUnsyncedCredentialsPrompt();
-
-  std::vector<std::unique_ptr<autofill::PasswordForm>> profile_credentials =
-      GetAllLoginsFromProfilePasswordStore();
-  EXPECT_THAT(profile_credentials,
-              ElementsAre(MatchesLogin("accountuser", "accountpass")));
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,

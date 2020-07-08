@@ -85,13 +85,10 @@ public class FullscreenManagerTestUtils {
      * @param tab The current activity tab.
      */
     public static void waitForPageToBeScrollable(final Tab tab) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return RenderCoordinates.fromWebContents(tab.getWebContents())
-                               .getContentHeightPixInt()
-                        > tab.getContentView().getHeight();
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(RenderCoordinates.fromWebContents(tab.getWebContents())
+                                       .getContentHeightPixInt(),
+                    Matchers.greaterThan(tab.getContentView().getHeight()));
         });
     }
 

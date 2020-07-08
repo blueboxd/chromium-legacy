@@ -98,7 +98,9 @@ class HTMLDocumentParserState
     // scheduled.
     kNotScheduled,
     // Indicates that a tokenizer pump is scheduled and hasn't completed yet.
-    kScheduled,
+    kScheduled = 1,
+    // Indicates that a tokenizer pump, followed by EndIfDelayed, is scheduled
+    kScheduledWithEndIfDelayed = 2
   };
 
   enum class MetaCSPTokenState {
@@ -128,12 +130,17 @@ class HTMLDocumentParserState
   void SetState(DeferredParserState state) { state_ = state; }
   DeferredParserState GetState() const { return state_; }
   bool IsScheduled() const { return state_ == DeferredParserState::kScheduled; }
+  bool IsScheduledToDelayEnd() const {
+    return state_ == DeferredParserState::kScheduledWithEndIfDelayed;
+  }
   const char* GetStateAsString() const {
     switch (state_) {
       case DeferredParserState::kNotScheduled:
         return "not_scheduled";
       case DeferredParserState::kScheduled:
         return "scheduled";
+      case DeferredParserState::kScheduledWithEndIfDelayed:
+        return "scheduled_with_synchronous_end_if_delayed";
     }
   }
 
@@ -433,6 +440,10 @@ void HTMLDocumentParser::DeferredPumpTokenizerIfPossible() {
 
   if (task_runner_state_->IsScheduled()) {
     HTMLDocumentParser::PumpTokenizerIfPossible();
+  } else if (task_runner_state_->IsScheduledToDelayEnd()) {
+    task_runner_state_->SetShouldComplete(true);
+    EndIfDelayed();
+    task_runner_state_->SetShouldComplete(false);
   }
 }
 
@@ -445,15 +456,23 @@ void HTMLDocumentParser::PumpTokenizerIfPossible() {
   bool yielded = false;
   const bool should_call_delay_end = task_runner_state_->ShouldEndIfDelayed();
   CheckIfBlockingStylesheetAdded();
-  if (!IsStopped() && !IsPaused()) {
+  if ((!IsStopped() && !IsPaused()) || should_call_delay_end) {
     yielded = PumpTokenizer();
   }
 
-  if (!yielded) {
+  if (yielded) {
+    DCHECK(!task_runner_state_->ShouldComplete());
+    SchedulePumpTokenizer();
+  } else {
     // If we did not exceed the budget or parsed everything there was to
     // parse, check if we should complete the document.
     if (should_call_delay_end) {
-      EndIfDelayed();
+      if (task_runner_state_->ShouldComplete() ||
+          task_runner_state_->GetMode() != kAllowDeferredParsing) {
+        EndIfDelayed();  // Synchronous case
+      } else {
+        ScheduleEndIfDelayed();  // async case
+      }
     }
     task_runner_state_->SetShouldComplete(false);
   }
@@ -901,18 +920,28 @@ bool HTMLDocumentParser::PumpTokenizer() {
 
   CHECK(!(should_yield && (task_runner_state_->ShouldComplete() ||
                            task_runner_state_->IsSynchronous())));
-  if (should_yield) {
-    TRACE_EVENT0("blink", "HTMLDocumentParser::ScheduleTokenizerPump");
-    DCHECK(RuntimeEnabledFeatures::ForceSynchronousHTMLParsingEnabled());
-    DCHECK(!should_run_until_completion);
-    loading_task_runner_->PostTask(
-        FROM_HERE,
-        WTF::Bind(&HTMLDocumentParser::DeferredPumpTokenizerIfPossible,
-                  WrapPersistent(this)));
-    task_runner_state_->SetState(
-        HTMLDocumentParserState::DeferredParserState::kScheduled);
-  }
   return should_yield;
+}
+
+void HTMLDocumentParser::SchedulePumpTokenizer() {
+  TRACE_EVENT0("blink", "HTMLDocumentParser::SchedulePumpTokenizer");
+  DCHECK(RuntimeEnabledFeatures::ForceSynchronousHTMLParsingEnabled());
+  loading_task_runner_->PostTask(
+      FROM_HERE, WTF::Bind(&HTMLDocumentParser::DeferredPumpTokenizerIfPossible,
+                           WrapPersistent(this)));
+  task_runner_state_->SetState(
+      HTMLDocumentParserState::DeferredParserState::kScheduled);
+}
+
+void HTMLDocumentParser::ScheduleEndIfDelayed() {
+  TRACE_EVENT0("blink", "HTMLDocumentParser::ScheduleEndIfDelayed");
+  DCHECK(RuntimeEnabledFeatures::ForceSynchronousHTMLParsingEnabled());
+  task_runner_state_->SetEndIfDelayed(true);
+  task_runner_state_->SetState(
+      HTMLDocumentParserState::DeferredParserState::kScheduledWithEndIfDelayed);
+  loading_task_runner_->PostTask(
+      FROM_HERE, WTF::Bind(&HTMLDocumentParser::DeferredPumpTokenizerIfPossible,
+                           WrapPersistent(this)));
 }
 
 void HTMLDocumentParser::ConstructTreeFromHTMLToken() {
@@ -1111,8 +1140,13 @@ void HTMLDocumentParser::Append(const String& input_source) {
       preload_scanner_.reset();
     } else {
       preload_scanner_->AppendToEnd(source);
-      if (IsPaused() && preloader_) {
-        ScanAndPreload(preload_scanner_.get());
+      if (preloader_) {
+        if (!task_runner_state_->IsSynchronous() || IsPaused()) {
+          // Should scan and preload if the parser's paused and operating
+          // synchronously, or if the parser's operating in an asynchronous
+          // mode.
+          ScanAndPreload(preload_scanner_.get());
+        }
       }
     }
   }
@@ -1128,7 +1162,12 @@ void HTMLDocumentParser::Append(const String& input_source) {
 
   // Schedule a tokenizer pump to process this new data.
   task_runner_state_->SetEndIfDelayed(true);
-  PumpTokenizerIfPossible();
+  if (task_runner_state_->GetMode() ==
+      ParserSynchronizationPolicy::kAllowDeferredParsing) {
+    SchedulePumpTokenizer();
+  } else {
+    PumpTokenizerIfPossible();
+  }
 }
 
 void HTMLDocumentParser::end() {
@@ -1328,12 +1367,15 @@ void HTMLDocumentParser::ResumeParsingAfterPause() {
   insertion_preload_scanner_.reset();
   if (tokenizer_) {
     // Case 1) or 4): kForceSynchronousParsing, kAllowDeferredParsing.
-    // kForceSynchronousParsing must pump the tokenizer synchronously.
-    // kDeferredParsing could (theoretically) defer the tokenizer pump.
-    // TODO(Richard.Townsend@arm.com) investigate this.
+    // kForceSynchronousParsing must pump the tokenizer synchronously,
+    // otherwise it can be deferred.
     task_runner_state_->SetEndIfDelayed(true);
-    task_runner_state_->SetShouldComplete(true);
-    PumpTokenizerIfPossible();
+    if (task_runner_state_->GetMode() == kAllowDeferredParsing) {
+      SchedulePumpTokenizer();
+    } else {
+      task_runner_state_->SetShouldComplete(true);
+      PumpTokenizerIfPossible();
+    }
   } else {
     // Case 2): kAllowAsynchronousParsing, no background parser available
     // (indicating possible Document shutdown).

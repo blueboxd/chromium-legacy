@@ -835,7 +835,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   std::unique_ptr<RendererFactorySelector> renderer_factory_selector_;
 
   // For canceling AndroidOverlay routing token requests.
-  base::CancelableCallback<void(const base::UnguessableToken&)>
+  base::CancelableOnceCallback<void(const base::UnguessableToken&)>
       token_available_cb_;
 
   // If overlay info is requested before we have it, then the request is saved

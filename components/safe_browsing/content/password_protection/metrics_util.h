@@ -114,7 +114,9 @@ enum class RequestOutcome {
   SAFE_BROWSING_DISABLED = 20,
   // No request sent because user is not signed-in.
   USER_NOT_SIGNED_IN = 21,
-  kMaxValue = USER_NOT_SIGNED_IN,
+  // The country is excluded from sending pings.
+  EXCLUDED_COUNTRY = 22,
+  kMaxValue = EXCLUDED_COUNTRY,
 };
 
 // Enum values indicates if a password protection warning is shown or

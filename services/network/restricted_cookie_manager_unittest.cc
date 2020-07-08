@@ -204,33 +204,31 @@ class RestrictedCookieManagerTest
   bool SetCanonicalCookie(const net::CanonicalCookie& cookie,
                           std::string source_scheme,
                           bool can_modify_httponly) {
-    net::ResultSavingCookieCallback<net::CookieInclusionStatus> callback;
+    net::ResultSavingCookieCallback<net::CookieAccessResult> callback;
     net::CookieOptions options;
     if (can_modify_httponly)
       options.set_include_httponly();
     cookie_monster_.SetCanonicalCookieAsync(
         std::make_unique<net::CanonicalCookie>(cookie),
         net::cookie_util::SimulatedCookieSource(cookie, source_scheme), options,
-        base::BindOnce(
-            &net::ResultSavingCookieCallback<net::CookieInclusionStatus>::Run,
-            base::Unretained(&callback)));
+        callback.MakeCallback());
     callback.WaitUntilDone();
-    return callback.result().IsInclude();
+    return callback.result().status.IsInclude();
   }
 
   // Set a canonical cookie directly into the store.
   // Uses a cookie options that will succeed at setting any cookie.
   bool EnsureSetCanonicalCookie(const net::CanonicalCookie& cookie) {
-    net::ResultSavingCookieCallback<net::CookieInclusionStatus> callback;
+    net::ResultSavingCookieCallback<net::CookieAccessResult> callback;
     cookie_monster_.SetCanonicalCookieAsync(
         std::make_unique<net::CanonicalCookie>(cookie),
         net::cookie_util::SimulatedCookieSource(cookie, "https"),
         net::CookieOptions::MakeAllInclusive(),
         base::BindOnce(
-            &net::ResultSavingCookieCallback<net::CookieInclusionStatus>::Run,
+            &net::ResultSavingCookieCallback<net::CookieAccessResult>::Run,
             base::Unretained(&callback)));
     callback.WaitUntilDone();
-    return callback.result().IsInclude();
+    return callback.result().status.IsInclude();
   }
 
   // Simplified helper for SetCanonicalCookie.
@@ -1290,14 +1288,12 @@ TEST_P(RestrictedCookieManagerTest, ChangeNotificationIncludesAccessSemantics) {
       base::nullopt);
 
   // Set cookie directly into the CookieMonster, using all-inclusive options.
-  net::ResultSavingCookieCallback<net::CookieInclusionStatus> callback;
+  net::ResultSavingCookieCallback<net::CookieAccessResult> callback;
   cookie_monster_.SetCanonicalCookieAsync(
       std::move(cookie), cookie_url, net::CookieOptions::MakeAllInclusive(),
-      base::BindOnce(
-          &net::ResultSavingCookieCallback<net::CookieInclusionStatus>::Run,
-          base::Unretained(&callback)));
+      callback.MakeCallback());
   callback.WaitUntilDone();
-  ASSERT_TRUE(callback.result().IsInclude());
+  ASSERT_TRUE(callback.result().status.IsInclude());
 
   // The listener only receives the change because the cookie is legacy.
   listener.WaitForChange();
@@ -1345,30 +1341,24 @@ TEST_P(RestrictedCookieManagerTest, NoChangeNotificationForNonlegacyCookie) {
       base::Time::Now(), base::nullopt);
 
   // Set cookies directly into the CookieMonster, using all-inclusive options.
-  net::ResultSavingCookieCallback<net::CookieInclusionStatus> callback1;
+  net::ResultSavingCookieCallback<net::CookieAccessResult> callback1;
   cookie_monster_.SetCanonicalCookieAsync(
       std::move(unspecified_cookie), cookie_url,
-      net::CookieOptions::MakeAllInclusive(),
-      base::BindOnce(
-          &net::ResultSavingCookieCallback<net::CookieInclusionStatus>::Run,
-          base::Unretained(&callback1)));
+      net::CookieOptions::MakeAllInclusive(), callback1.MakeCallback());
   callback1.WaitUntilDone();
-  ASSERT_TRUE(callback1.result().IsInclude());
+  ASSERT_TRUE(callback1.result().status.IsInclude());
 
   // Listener doesn't receive notification because cookie is not included for
   // request URL for being unspecified and treated as lax.
   base::RunLoop().RunUntilIdle();
   ASSERT_THAT(listener.observed_changes(), testing::SizeIs(0));
 
-  net::ResultSavingCookieCallback<net::CookieInclusionStatus> callback2;
+  net::ResultSavingCookieCallback<net::CookieAccessResult> callback2;
   cookie_monster_.SetCanonicalCookieAsync(
       std::move(samesite_none_cookie), cookie_url,
-      net::CookieOptions::MakeAllInclusive(),
-      base::BindOnce(
-          &net::ResultSavingCookieCallback<net::CookieInclusionStatus>::Run,
-          base::Unretained(&callback2)));
+      net::CookieOptions::MakeAllInclusive(), callback2.MakeCallback());
   callback2.WaitUntilDone();
-  ASSERT_TRUE(callback2.result().IsInclude());
+  ASSERT_TRUE(callback2.result().status.IsInclude());
 
   // Listener only receives notification about the SameSite=None cookie.
   listener.WaitForChange();

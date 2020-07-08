@@ -27,14 +27,14 @@ void WMHelper::LifetimeManager::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-WMHelper::WMHelper() {}
+WMHelper::WMHelper() {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
 
-WMHelper::~WMHelper() {}
-
-// static
-void WMHelper::SetInstance(WMHelper* helper) {
-  DCHECK_NE(!!helper, !!g_instance);
-  g_instance = helper;
+WMHelper::~WMHelper() {
+  DCHECK(g_instance);
+  g_instance = nullptr;
 }
 
 // static

@@ -40,6 +40,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothSocket
       AcceptCompletionCallback;
   typedef base::Callback<void(const std::string& error_message)>
       ErrorCompletionCallback;
+  using ErrorCompletionOnceCallback =
+      base::OnceCallback<void(const std::string& error_message)>;
   typedef base::Callback<void(ErrorReason, const std::string& error_message)>
       ReceiveErrorCompletionCallback;
 

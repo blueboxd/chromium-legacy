@@ -32,12 +32,12 @@
 #include "content/public/common/zygote/zygote_buildflags.h"
 #include "media/base/media_switches.h"
 #include "media/webrtc/webrtc_switches.h"
+#include "sandbox/policy/features.h"
+#include "sandbox/policy/sandbox_type.h"
+#include "sandbox/policy/switches.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/sandbox/features.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
-#include "services/service_manager/sandbox/switches.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_switches.h"
 
@@ -63,7 +63,7 @@ class UtilitySandboxedProcessLauncherDelegate
     : public SandboxedProcessLauncherDelegate {
  public:
   UtilitySandboxedProcessLauncherDelegate(
-      service_manager::SandboxType sandbox_type,
+      sandbox::policy::SandboxType sandbox_type,
       const base::EnvironmentMap& env,
       const base::CommandLine& cmd_line)
       :
@@ -74,30 +74,30 @@ class UtilitySandboxedProcessLauncherDelegate
         cmd_line_(cmd_line) {
 #if DCHECK_IS_ON()
     bool supported_sandbox_type =
-        sandbox_type_ == service_manager::SandboxType::kNoSandbox ||
+        sandbox_type_ == sandbox::policy::SandboxType::kNoSandbox ||
 #if defined(OS_WIN)
         sandbox_type_ ==
-            service_manager::SandboxType::kNoSandboxAndElevatedPrivileges ||
-        sandbox_type_ == service_manager::SandboxType::kXrCompositing ||
-        sandbox_type_ == service_manager::SandboxType::kProxyResolver ||
-        sandbox_type_ == service_manager::SandboxType::kPdfConversion ||
-        sandbox_type_ == service_manager::SandboxType::kIconReader ||
+            sandbox::policy::SandboxType::kNoSandboxAndElevatedPrivileges ||
+        sandbox_type_ == sandbox::policy::SandboxType::kXrCompositing ||
+        sandbox_type_ == sandbox::policy::SandboxType::kProxyResolver ||
+        sandbox_type_ == sandbox::policy::SandboxType::kPdfConversion ||
+        sandbox_type_ == sandbox::policy::SandboxType::kIconReader ||
 #endif
-        sandbox_type_ == service_manager::SandboxType::kUtility ||
-        sandbox_type_ == service_manager::SandboxType::kNetwork ||
-        sandbox_type_ == service_manager::SandboxType::kCdm ||
-        sandbox_type_ == service_manager::SandboxType::kPrintCompositor ||
-        sandbox_type_ == service_manager::SandboxType::kPpapi ||
-        sandbox_type_ == service_manager::SandboxType::kVideoCapture ||
+        sandbox_type_ == sandbox::policy::SandboxType::kUtility ||
+        sandbox_type_ == sandbox::policy::SandboxType::kNetwork ||
+        sandbox_type_ == sandbox::policy::SandboxType::kCdm ||
+        sandbox_type_ == sandbox::policy::SandboxType::kPrintCompositor ||
+        sandbox_type_ == sandbox::policy::SandboxType::kPpapi ||
+        sandbox_type_ == sandbox::policy::SandboxType::kVideoCapture ||
 #if defined(OS_CHROMEOS)
-        sandbox_type_ == service_manager::SandboxType::kIme ||
-        sandbox_type_ == service_manager::SandboxType::kTts ||
+        sandbox_type_ == sandbox::policy::SandboxType::kIme ||
+        sandbox_type_ == sandbox::policy::SandboxType::kTts ||
 #endif  // OS_CHROMEOS
-        sandbox_type_ == service_manager::SandboxType::kAudio ||
+        sandbox_type_ == sandbox::policy::SandboxType::kAudio ||
 #if !defined(OS_MACOSX)
-        sandbox_type_ == service_manager::SandboxType::kSharingService ||
+        sandbox_type_ == sandbox::policy::SandboxType::kSharingService ||
 #endif
-        sandbox_type_ == service_manager::SandboxType::kSpeechRecognition;
+        sandbox_type_ == sandbox::policy::SandboxType::kSpeechRecognition;
     DCHECK(supported_sandbox_type);
 #endif  // DCHECK_IS_ON()
   }
@@ -106,8 +106,8 @@ class UtilitySandboxedProcessLauncherDelegate
 
 #if defined(OS_WIN)
   bool GetAppContainerId(std::string* appcontainer_id) override {
-    if (sandbox_type_ == service_manager::SandboxType::kXrCompositing &&
-        base::FeatureList::IsEnabled(service_manager::features::kXRSandbox)) {
+    if (sandbox_type_ == sandbox::policy::SandboxType::kXrCompositing &&
+        base::FeatureList::IsEnabled(sandbox::policy::features::kXRSandbox)) {
       *appcontainer_id = base::WideToUTF8(cmd_line_.GetProgram().value());
       return true;
     }
@@ -116,17 +116,17 @@ class UtilitySandboxedProcessLauncherDelegate
 
   bool DisableDefaultPolicy() override {
     switch (sandbox_type_) {
-      case service_manager::SandboxType::kAudio:
+      case sandbox::policy::SandboxType::kAudio:
         // Default policy is disabled for audio process to allow audio drivers
         // to read device properties (https://crbug.com/883326).
         return true;
-      case service_manager::SandboxType::kNetwork:
+      case sandbox::policy::SandboxType::kNetwork:
         // Default policy is disabled for network process to allow incremental
         // sandbox mitigations to be applied via experiments.
         return true;
-      case service_manager::SandboxType::kXrCompositing:
+      case sandbox::policy::SandboxType::kXrCompositing:
         return base::FeatureList::IsEnabled(
-            service_manager::features::kXRSandbox);
+            sandbox::policy::features::kXRSandbox);
       default:
         return false;
     }
@@ -134,17 +134,17 @@ class UtilitySandboxedProcessLauncherDelegate
 
   bool ShouldLaunchElevated() override {
     return sandbox_type_ ==
-           service_manager::SandboxType::kNoSandboxAndElevatedPrivileges;
+           sandbox::policy::SandboxType::kNoSandboxAndElevatedPrivileges;
   }
 
   bool PreSpawnTarget(sandbox::TargetPolicy* policy) override {
-    if (sandbox_type_ == service_manager::SandboxType::kNetwork)
+    if (sandbox_type_ == sandbox::policy::SandboxType::kNetwork)
       return network::NetworkPreSpawnTarget(policy, cmd_line_);
 
-    if (sandbox_type_ == service_manager::SandboxType::kAudio)
+    if (sandbox_type_ == sandbox::policy::SandboxType::kAudio)
       return audio::AudioPreSpawnTarget(policy);
 
-    if (sandbox_type_ == service_manager::SandboxType::kProxyResolver) {
+    if (sandbox_type_ == sandbox::policy::SandboxType::kProxyResolver) {
       sandbox::MitigationFlags flags = policy->GetDelayedProcessMitigations();
       flags |= sandbox::MITIGATION_DYNAMIC_CODE_DISABLE;
       if (sandbox::SBOX_ALL_OK != policy->SetDelayedProcessMitigations(flags))
@@ -152,7 +152,7 @@ class UtilitySandboxedProcessLauncherDelegate
       return true;
     }
 
-    if (sandbox_type_ == service_manager::SandboxType::kIconReader) {
+    if (sandbox_type_ == sandbox::policy::SandboxType::kIconReader) {
       policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
                             sandbox::USER_LOCKDOWN);
       policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_UNTRUSTED);
@@ -177,8 +177,8 @@ class UtilitySandboxedProcessLauncherDelegate
                       L"\\??\\*.ico");
     }
 
-    if (sandbox_type_ == service_manager::SandboxType::kXrCompositing &&
-        base::FeatureList::IsEnabled(service_manager::features::kXRSandbox)) {
+    if (sandbox_type_ == sandbox::policy::SandboxType::kXrCompositing &&
+        base::FeatureList::IsEnabled(sandbox::policy::features::kXRSandbox)) {
       // There were issues with some mitigations, causing an inability
       // to load OpenVR and Oculus APIs.
       // TODO(https://crbug.com/881919): Try to harden the XR Compositor
@@ -191,7 +191,7 @@ class UtilitySandboxedProcessLauncherDelegate
         return false;
       }
       sandbox::ResultCode result =
-          service_manager::SandboxWin::AddAppContainerProfileToPolicy(
+          sandbox::policy::SandboxWin::AddAppContainerProfileToPolicy(
               cmd_line_, sandbox_type_, appcontainer_id, policy);
       if (result != sandbox::SBOX_ALL_OK) {
         return false;
@@ -200,14 +200,14 @@ class UtilitySandboxedProcessLauncherDelegate
       // Unprotected token/job.
       policy->SetTokenLevel(sandbox::USER_UNPROTECTED,
                             sandbox::USER_UNPROTECTED);
-      service_manager::SandboxWin::SetJobLevel(
+      sandbox::policy::SandboxWin::SetJobLevel(
           cmd_line_, sandbox::JOB_UNPROTECTED, 0, policy);
     }
 
-    if (sandbox_type_ == service_manager::SandboxType::kSharingService) {
-      if (service_manager::IsWin32kLockdownEnabled()) {
+    if (sandbox_type_ == sandbox::policy::SandboxType::kSharingService) {
+      if (sandbox::policy::IsWin32kLockdownEnabled()) {
         auto result =
-            service_manager::SandboxWin::AddWin32kLockdownPolicy(policy, false);
+            sandbox::policy::SandboxWin::AddWin32kLockdownPolicy(policy, false);
         if (result != sandbox::SBOX_ALL_OK)
           return false;
       }
@@ -226,19 +226,19 @@ class UtilitySandboxedProcessLauncherDelegate
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
   ZygoteHandle GetZygote() override {
     // If the sandbox has been disabled for a given type, don't use a zygote.
-    if (service_manager::IsUnsandboxedSandboxType(sandbox_type_))
+    if (sandbox::policy::IsUnsandboxedSandboxType(sandbox_type_))
       return nullptr;
 
     // Utility processes which need specialized sandboxes fork from the
     // unsandboxed zygote and then apply their actual sandboxes in the forked
     // process upon startup.
-    if (sandbox_type_ == service_manager::SandboxType::kNetwork ||
+    if (sandbox_type_ == sandbox::policy::SandboxType::kNetwork ||
 #if defined(OS_CHROMEOS)
-        sandbox_type_ == service_manager::SandboxType::kIme ||
-        sandbox_type_ == service_manager::SandboxType::kTts ||
+        sandbox_type_ == sandbox::policy::SandboxType::kIme ||
+        sandbox_type_ == sandbox::policy::SandboxType::kTts ||
 #endif  // OS_CHROMEOS
-        sandbox_type_ == service_manager::SandboxType::kAudio ||
-        sandbox_type_ == service_manager::SandboxType::kSpeechRecognition) {
+        sandbox_type_ == sandbox::policy::SandboxType::kAudio ||
+        sandbox_type_ == sandbox::policy::SandboxType::kSpeechRecognition) {
       return GetUnsandboxedZygote();
     }
 
@@ -251,7 +251,7 @@ class UtilitySandboxedProcessLauncherDelegate
   base::EnvironmentMap GetEnvironment() override { return env_; }
 #endif  // OS_POSIX
 
-  service_manager::SandboxType GetSandboxType() override {
+  sandbox::policy::SandboxType GetSandboxType() override {
     return sandbox_type_;
   }
 
@@ -259,7 +259,7 @@ class UtilitySandboxedProcessLauncherDelegate
 #if defined(OS_POSIX)
   base::EnvironmentMap env_;
 #endif  // OS_POSIX
-  service_manager::SandboxType sandbox_type_;
+  sandbox::policy::SandboxType sandbox_type_;
   base::CommandLine cmd_line_;
 };
 
@@ -274,7 +274,7 @@ UtilityProcessHost::UtilityProcessHost()
     : UtilityProcessHost(nullptr /* client */) {}
 
 UtilityProcessHost::UtilityProcessHost(std::unique_ptr<Client> client)
-    : sandbox_type_(service_manager::SandboxType::kUtility),
+    : sandbox_type_(sandbox::policy::SandboxType::kUtility),
 #if defined(OS_LINUX)
       child_flags_(ChildProcessHost::CHILD_ALLOW_SELF),
 #else
@@ -305,7 +305,7 @@ bool UtilityProcessHost::Send(IPC::Message* message) {
 }
 
 void UtilityProcessHost::SetSandboxType(
-    service_manager::SandboxType sandbox_type) {
+    sandbox::policy::SandboxType sandbox_type) {
   sandbox_type_ = sandbox_type;
 }
 
@@ -394,7 +394,7 @@ bool UtilityProcessHost::StartProcess() {
     // not needed on Android anyway. See crbug.com/500854.
     std::unique_ptr<base::CommandLine> cmd_line =
         std::make_unique<base::CommandLine>(base::CommandLine::NO_PROGRAM);
-    if (sandbox_type_ == service_manager::SandboxType::kNetwork &&
+    if (sandbox_type_ == sandbox::policy::SandboxType::kNetwork &&
         base::FeatureList::IsEnabled(features::kWarmUpNetworkProcess)) {
       process_->EnableWarmUpConnection();
     }
@@ -432,7 +432,7 @@ bool UtilityProcessHost::StartProcess() {
     cmd_line->AppendArg(switches::kPrefetchArgumentOther);
 #endif  // defined(OS_WIN)
 
-    service_manager::SetCommandLineFlagsForSandboxType(cmd_line.get(),
+    sandbox::policy::SetCommandLineFlagsForSandboxType(cmd_line.get(),
                                                        sandbox_type_);
 
     // Browser command-line switches to propagate to the utility process.
@@ -445,13 +445,13 @@ bool UtilityProcessHost::StartProcess() {
       network::switches::kLogNetLog,
       network::switches::kNetLogCaptureMode,
       network::switches::kExplicitlyAllowedPorts,
-      service_manager::switches::kNoSandbox,
+      sandbox::policy::switches::kNoSandbox,
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
       switches::kDisableDevShmUsage,
 #endif
-      service_manager::switches::kEnableAudioServiceSandbox,
+      sandbox::policy::switches::kEnableAudioServiceSandbox,
 #if defined(OS_MACOSX)
-      service_manager::switches::kEnableSandboxLogging,
+      sandbox::policy::switches::kEnableSandboxLogging,
       os_crypt::switches::kUseMockKeychain,
 #endif
       switches::kDisableTestCerts,
@@ -498,7 +498,7 @@ bool UtilityProcessHost::StartProcess() {
       switches::kTrySupportedChannelLayouts,
       switches::kWaveOutBuffers,
       switches::kWebXrForceRuntime,
-      service_manager::switches::kAddXrAppContainerCaps,
+      sandbox::policy::switches::kAddXrAppContainerCaps,
 #endif
     };
     cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,

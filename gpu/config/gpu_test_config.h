@@ -151,8 +151,8 @@ class GPU_EXPORT GPUTestBotConfig : public GPUTestConfig {
   static bool CurrentConfigMatches(const std::string& config_data);
   static bool CurrentConfigMatches(const std::vector<std::string>& configs);
 
-  // Check if the bot has blacklisted all GPU features.
-  static bool GpuBlacklistedOnBot();
+  // Check if the bot has blocklisted all GPU features.
+  static bool GpuBlocklistedOnBot();
 };
 
 }  // namespace gpu

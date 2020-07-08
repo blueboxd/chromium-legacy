@@ -1349,7 +1349,7 @@ TEST_F(V4LocalDatabaseManagerTest, DeleteUnusedStoreFileRandomFileNotDeleted) {
   ASSERT_TRUE(base::PathExists(random_store_file_path));
 
   // Cleanup
-  base::DeleteFile(random_store_file_path, false /* recursive */);
+  base::DeleteFile(random_store_file_path);
 }
 
 TEST_F(V4LocalDatabaseManagerTest, NotificationOnUpdate) {

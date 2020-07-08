@@ -30,8 +30,8 @@
 #if defined(OS_MACOSX)
 #include "base/mac/mach_logging.h"
 #include "sandbox/mac/system_services.h"
-#include "services/service_manager/sandbox/features.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
+#include "sandbox/policy/features.h"
+#include "sandbox/policy/sandbox_type.h"
 #endif
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -125,7 +125,7 @@ auto RunAudio(mojo::PendingReceiver<audio::mojom::AudioService> receiver) {
 #if defined(OS_MACOSX)
   // Don't connect to launch services when running sandboxed
   // (https://crbug.com/874785).
-  if (service_manager::IsAudioSandboxEnabled()) {
+  if (sandbox::policy::IsAudioSandboxEnabled()) {
     sandbox::DisableLaunchServices();
   }
 

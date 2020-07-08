@@ -38,8 +38,8 @@
 #include "media/base/media_log_record.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "services/service_manager/sandbox/features.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
+#include "sandbox/policy/features.h"
+#include "sandbox/policy/sandbox_type.h"
 
 #if !defined(OS_ANDROID)
 #include "media/filters/decrypting_video_decoder.h"
@@ -499,8 +499,8 @@ void MediaInternals::SendGeneralAudioInformation() {
                          base::Value(feature_value_string));
 
   set_feature_data(features::kAudioServiceLaunchOnStartup);
-  set_explicit_feature_data(service_manager::features::kAudioServiceSandbox,
-                            service_manager::IsAudioSandboxEnabled());
+  set_explicit_feature_data(sandbox::policy::features::kAudioServiceSandbox,
+                            sandbox::policy::IsAudioSandboxEnabled());
   base::string16 audio_info_update =
       SerializeUpdate("media.updateGeneralAudioInformation", &audio_info_data);
   SendUpdate(audio_info_update);

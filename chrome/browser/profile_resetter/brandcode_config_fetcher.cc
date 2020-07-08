@@ -51,10 +51,10 @@ std::string GetUploadData(const std::string& brand) {
 
 BrandcodeConfigFetcher::BrandcodeConfigFetcher(
     network::mojom::URLLoaderFactory* url_loader_factory,
-    const FetchCallback& callback,
+    FetchCallback callback,
     const GURL& url,
     const std::string& brandcode)
-    : fetch_callback_(callback), weak_ptr_factory_(this) {
+    : fetch_callback_(std::move(callback)), weak_ptr_factory_(this) {
   DCHECK(!brandcode.empty());
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("brandcode_config", R"(
@@ -101,8 +101,8 @@ BrandcodeConfigFetcher::BrandcodeConfigFetcher(
 
 BrandcodeConfigFetcher::~BrandcodeConfigFetcher() {}
 
-void BrandcodeConfigFetcher::SetCallback(const FetchCallback& callback) {
-  fetch_callback_ = callback;
+void BrandcodeConfigFetcher::SetCallback(FetchCallback callback) {
+  fetch_callback_ = std::move(callback);
 }
 
 void BrandcodeConfigFetcher::OnSimpleLoaderComplete(

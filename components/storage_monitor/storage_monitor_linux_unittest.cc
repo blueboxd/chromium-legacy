@@ -229,7 +229,7 @@ class StorageMonitorLinuxTest : public testing::Test {
   void RemoveDCIMDirFromMountPoint(const std::string& dir) {
     base::FilePath dcim =
         scoped_temp_dir_.GetPath().AppendASCII(dir).Append(kDCIMDirectoryName);
-    base::DeleteFile(dcim, false);
+    base::DeleteFile(dcim);
   }
 
   MockRemovableStorageObserver& observer() {
@@ -548,7 +548,7 @@ TEST_F(StorageMonitorLinuxTest,
   MtabTestData test_data5[] = {
     MtabTestData(kDeviceNoDCIM, test_path_b.value(), kValidFS),
   };
-  base::DeleteFile(test_path_b.Append(kDCIMDirectoryName), false);
+  base::DeleteFile(test_path_b.Append(kDCIMDirectoryName));
   AppendToMtabAndRunLoop(test_data5, base::size(test_data5));
   EXPECT_EQ(4, observer().attach_calls());
   EXPECT_EQ(2, observer().detach_calls());

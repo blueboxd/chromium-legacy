@@ -111,7 +111,7 @@ class PasswordStore : protected PasswordStoreSync,
   class UnsyncedCredentialsDeletionNotifier {
    public:
     // Should be called from the UI thread.
-    virtual void Notify(const std::vector<autofill::PasswordForm>&) = 0;
+    virtual void Notify(std::vector<autofill::PasswordForm>) = 0;
     virtual ~UnsyncedCredentialsDeletionNotifier() = default;
     virtual base::WeakPtr<UnsyncedCredentialsDeletionNotifier> GetWeakPtr() = 0;
   };
@@ -584,7 +584,7 @@ class PasswordStore : protected PasswordStoreSync,
   void NotifyDeletionsHaveSynced(bool success) override;
 
   void NotifyUnsyncedCredentialsWillBeDeleted(
-      const std::vector<autofill::PasswordForm>& unsynced_credentials) override;
+      std::vector<autofill::PasswordForm> unsynced_credentials) override;
 
   // Invokes callback and notifies observers if there was a change to the list
   // of compromised passwords.

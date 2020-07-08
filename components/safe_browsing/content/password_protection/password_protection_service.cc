@@ -134,6 +134,7 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT;
   ReusedPasswordAccountType reused_password_account_type =
       GetPasswordProtectionReusedPasswordAccountType(password_type, username);
+
   if (IsSupportedPasswordTypeForPinging(password_type)) {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
     // Collect metrics about typical page-zoom on login pages.
@@ -254,7 +255,8 @@ bool PasswordProtectionService::CanSendPing(
     const GURL& main_frame_url,
     ReusedPasswordAccountType password_type) {
   return IsPingingEnabled(trigger_type, password_type) &&
-         !IsURLWhitelistedForPasswordEntry(main_frame_url);
+         !IsURLWhitelistedForPasswordEntry(main_frame_url) &&
+         !IsInExcludedCountry();
 }
 
 void PasswordProtectionService::RequestFinished(
@@ -541,8 +543,7 @@ bool PasswordProtectionService::IsSupportedPasswordTypeForPinging(
     PasswordType password_type) const {
   switch (password_type) {
     case PasswordType::SAVED_PASSWORD:
-      return base::FeatureList::IsEnabled(
-          safe_browsing::kPasswordProtectionForSavedPasswords);
+      return true;
     case PasswordType::PRIMARY_ACCOUNT_PASSWORD:
       return true;
     case PasswordType::ENTERPRISE_PASSWORD:

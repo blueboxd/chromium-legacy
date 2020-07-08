@@ -80,7 +80,7 @@ DownloadInterruptReason DownloadCollectionBridge::MoveFileToIntermediateUri(
       ConvertUTF8ToJavaString(env, destination_uri.value());
   bool success = Java_DownloadCollectionBridge_copyFileToIntermediateUri(
       env, jsource, jdestination);
-  base::DeleteFile(source_path, false);
+  base::DeleteFile(source_path);
   return success ? DOWNLOAD_INTERRUPT_REASON_NONE
                  : DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
 }

@@ -709,6 +709,10 @@ const base::Feature kUserActivityEventLogging{"UserActivityEventLogging",
 const base::Feature kQuickUnlockPin{"QuickUnlockPin",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether the PIN auto submit feature is enabled.
+const base::Feature kQuickUnlockPinAutosubmit{
+    "QuickUnlockPinAutosubmit", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables pin on the login screen.
 const base::Feature kQuickUnlockPinSignin{"QuickUnlockPinSignin",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

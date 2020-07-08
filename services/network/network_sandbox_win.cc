@@ -4,8 +4,8 @@
 
 #include "services/network/network_sandbox_win.h"
 
+#include "sandbox/policy/win/sandbox_win.h"
 #include "sandbox/win/src/sandbox_types.h"
-#include "services/service_manager/sandbox/win/sandbox_win.h"
 
 // NOTE: changes to this code need to be reviewed by the security team.
 namespace network {
@@ -18,7 +18,7 @@ bool NetworkPreSpawnTarget(sandbox::TargetPolicy* policy,
                                                      sandbox::USER_UNPROTECTED);
   if (result != sandbox::ResultCode::SBOX_ALL_OK)
     return false;
-  result = service_manager::SandboxWin::SetJobLevel(
+  result = sandbox::policy::SandboxWin::SetJobLevel(
       cmd_line, sandbox::JOB_UNPROTECTED, 0, policy);
   if (result != sandbox::ResultCode::SBOX_ALL_OK)
     return false;

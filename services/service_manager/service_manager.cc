@@ -20,6 +20,7 @@
 #include "base/token.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "sandbox/policy/sandbox_type.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
@@ -28,7 +29,6 @@
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/public/mojom/service_control.mojom.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/service_instance.h"
 #include "services/service_manager/service_process_host.h"
 
@@ -77,16 +77,17 @@ class DefaultServiceProcessHost : public ServiceProcessHost {
 
   ~DefaultServiceProcessHost() override = default;
 
-  mojo::PendingRemote<mojom::Service> Launch(const Identity& identity,
-                                             SandboxType sandbox_type,
-                                             const base::string16& display_name,
-                                             LaunchCallback callback) override {
+  mojo::PendingRemote<mojom::Service> Launch(
+      const Identity& identity,
+      sandbox::policy::SandboxType sandbox_type,
+      const base::string16& display_name,
+      LaunchCallback callback) override {
 #if defined(OS_IOS)
     return mojo::NullRemote();
 #else
     // TODO(https://crbug.com/781334): Support sandboxing.
-    CHECK_EQ(sandbox_type, SandboxType::kNoSandbox);
-    return launcher_.Start(identity, SandboxType::kNoSandbox,
+    CHECK_EQ(sandbox_type, sandbox::policy::SandboxType::kNoSandbox);
+    return launcher_.Start(identity, sandbox::policy::SandboxType::kNoSandbox,
                            std::move(callback));
 #endif  // defined(OS_IOS)
   }
@@ -308,10 +309,10 @@ ServiceInstance* ServiceManager::FindOrCreateMatchingTargetInstance(
     case Manifest::ExecutionMode::kOutOfProcessBuiltin: {
       auto process_host = delegate_->CreateProcessHostForBuiltinServiceInstance(
           target_instance->identity());
-      if (!process_host ||
-          !target_instance->StartWithProcessHost(
-              std::move(process_host),
-              UtilitySandboxTypeFromString(manifest->options.sandbox_type))) {
+      if (!process_host || !target_instance->StartWithProcessHost(
+                               std::move(process_host),
+                               sandbox::policy::UtilitySandboxTypeFromString(
+                                   manifest->options.sandbox_type))) {
         DestroyInstance(target_instance);
         return nullptr;
       }
@@ -324,10 +325,10 @@ ServiceInstance* ServiceManager::FindOrCreateMatchingTargetInstance(
       auto process_host = delegate_->CreateProcessHostForServiceExecutable(
           service_exe_root.AppendASCII(manifest->service_name +
                                        kServiceExecutableExtension));
-      if (!process_host ||
-          !target_instance->StartWithProcessHost(
-              std::move(process_host),
-              UtilitySandboxTypeFromString(manifest->options.sandbox_type))) {
+      if (!process_host || !target_instance->StartWithProcessHost(
+                               std::move(process_host),
+                               sandbox::policy::UtilitySandboxTypeFromString(
+                                   manifest->options.sandbox_type))) {
         DestroyInstance(target_instance);
         return nullptr;
       }

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.locale;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 
 import org.chromium.base.task.PostTask;
@@ -29,12 +30,9 @@ public class DefaultSearchEngineDialogHelperUtils {
     /** Clicks on the first search engine option available. */
     public static void clickOnFirstEngine(final View rootView) {
         // Wait for the options to appear.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                ViewGroup options = (ViewGroup) rootView.findViewById(OPTION_LAYOUT_ID);
-                return options.getChildCount() > 0;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            ViewGroup options = (ViewGroup) rootView.findViewById(OPTION_LAYOUT_ID);
+            Criteria.checkThat(options.getChildCount(), Matchers.greaterThan(0));
         });
 
         // Click on the first search engine option available.
@@ -45,12 +43,10 @@ public class DefaultSearchEngineDialogHelperUtils {
         });
 
         // Wait for the OK button to be clicakble.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                View view = rootView.findViewById(OK_BUTTON_ID);
-                return view != null && view.isEnabled();
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            View view = rootView.findViewById(OK_BUTTON_ID);
+            Criteria.checkThat(view, Matchers.notNullValue());
+            Criteria.checkThat(view.isEnabled(), Matchers.is(true));
         });
 
         // Click on the OK button.

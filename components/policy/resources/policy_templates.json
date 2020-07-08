@@ -6259,7 +6259,7 @@
       'id': 268,
       'caption': '''Register protocol handlers''',
       'tags': [],
-      'desc': '''Setting the policy (as recommended only) lets you register a list of protocol handlers, which merge with the ones that the user registers, putting both sets in use. Set the property (protocol) to the scheme, such as mailto, and set the property (URL) to the URL pattern of the application that handles the scheme. The pattern can include a %s, which the handled URL replaces.
+      'desc': '''Setting the policy (as recommended only) lets you register a list of protocol handlers, which merge with the ones that the user registers, putting both sets in use. Set the property "protocol" to the scheme, such as "mailto", and set the property "URL" to the URL pattern of the application that handles the scheme specified in the "protocol" field. The pattern can include a "%s" placeholder, which the handled URL replaces.
 
       Users can't remove a protocol handler registered by policy. However, by installing a new default handler, they can change the protocol handlers installed by policy.''',
       'arc_support': 'The protocol handlers set via this policy are not used when handling Android intents.',

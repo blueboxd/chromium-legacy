@@ -18,7 +18,7 @@
 #include "components/nacl/loader/nacl_main_platform_delegate.h"
 #include "content/public/common/main_function_params.h"
 #include "mojo/core/embedder/embedder.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "sandbox/policy/switches.h"
 
 // main() routine for the NaCl loader process.
 int NaClMain(const content::MainFunctionParams& parameters) {
@@ -39,7 +39,7 @@ int NaClMain(const content::MainFunctionParams& parameters) {
     defined(OS_ANDROID)
   NaClMainPlatformDelegate platform;
   bool no_sandbox =
-      parsed_command_line.HasSwitch(service_manager::switches::kNoSandbox);
+      parsed_command_line.HasSwitch(sandbox::policy::switches::kNoSandbox);
 
 #if defined(OS_WIN)
   // NaCl processes exit differently from other Chromium processes (see NaClExit

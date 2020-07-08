@@ -23,7 +23,6 @@ import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
@@ -43,7 +42,6 @@ public class PrivacyPreferencesManagerNativeTest {
     public void testSyncUsageAndCrashReporting() {
         PermissionContext context =
                 new PermissionContext(InstrumentationRegistry.getTargetContext());
-        PrefServiceBridge prefBridge = PrefServiceBridge.getInstance();
         SharedPreferences pref = ContextUtils.getAppSharedPreferences();
         PrivacyPreferencesManager preferenceManager = new PrivacyPreferencesManager(context);
 
@@ -64,7 +62,6 @@ public class PrivacyPreferencesManagerNativeTest {
     public void testSetUsageAndCrashReporting() {
         PermissionContext context =
                 new PermissionContext(InstrumentationRegistry.getTargetContext());
-        PrefServiceBridge prefBridge = PrefServiceBridge.getInstance();
         SharedPreferences pref = ContextUtils.getAppSharedPreferences();
         PrivacyPreferencesManager preferenceManager = new PrivacyPreferencesManager(context);
 

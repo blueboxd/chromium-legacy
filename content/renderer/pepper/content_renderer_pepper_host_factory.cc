@@ -37,7 +37,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/shared_impl/ppb_image_data_shared.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "sandbox/policy/switches.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
@@ -133,7 +133,7 @@ ContentRendererPepperHostFactory::CreateResourceHost(
       // TODO(ananta)
       // Look into whether this causes a loss of functionality. From cursory
       // testing things seem to work well.
-      if (service_manager::IsWin32kLockdownEnabled())
+      if (sandbox::policy::IsWin32kLockdownEnabled())
         image_type = ppapi::PPB_ImageData_Shared::SIMPLE;
 #endif
       scoped_refptr<PPB_ImageData_Impl> image_data(new PPB_ImageData_Impl(

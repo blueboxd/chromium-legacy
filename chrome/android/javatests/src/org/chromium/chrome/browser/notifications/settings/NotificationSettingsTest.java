@@ -11,6 +11,7 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -131,11 +132,8 @@ public class NotificationSettingsTest {
             fromWebsites.performClick();
         });
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return getTopFragment() instanceof SingleCategorySettings;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(getTopFragment(), Matchers.instanceOf(SingleCategorySettings.class));
         });
 
         SingleCategorySettings fragment = (SingleCategorySettings) getTopFragment();

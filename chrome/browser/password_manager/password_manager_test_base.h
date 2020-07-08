@@ -96,10 +96,6 @@ class BubbleObserver {
   // checks that the prompt is no longer visible afterwards.
   void AcceptUpdatePrompt() const;
 
-  // Expecting that the prompt is available, saves the unsynced credentials.
-  // At the end, checks that the prompt is no longer visible afterwards.
-  void AcceptSaveUnsyncedCredentialsPrompt() const;
-
   // Returns once the account chooser pops up or it's already shown.
   // |web_contents| must be the custom one returned by
   // PasswordManagerBrowserTestBase.

@@ -62,10 +62,10 @@ bool SetGaiaCookieForProfile(Profile* profile) {
   bool success = false;
   base::RunLoop loop;
   base::OnceClosure loop_quit = loop.QuitClosure();
-  base::OnceCallback<void(net::CookieInclusionStatus)> callback =
+  base::OnceCallback<void(net::CookieAccessResult)> callback =
       base::BindLambdaForTesting(
-          [&success, &loop_quit](net::CookieInclusionStatus s) {
-            success = s.IsInclude();
+          [&success, &loop_quit](net::CookieAccessResult r) {
+            success = r.status.IsInclude();
             std::move(loop_quit).Run();
           });
   network::mojom::CookieManager* cookie_manager =
@@ -75,8 +75,8 @@ bool SetGaiaCookieForProfile(Profile* profile) {
       cookie, google_url, net::CookieOptions::MakeAllInclusive(),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           std::move(callback),
-          net::CookieInclusionStatus(
-              net::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR)));
+          net::CookieAccessResult(net::CookieInclusionStatus(
+              net::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR))));
   loop.Run();
   return success;
 }

@@ -92,7 +92,7 @@ class ManagePasswordsState {
       const password_manager::PasswordStoreChangeList& changes);
 
   void ProcessUnsyncedCredentialsWillBeDeleted(
-      const std::vector<autofill::PasswordForm>& unsynced_credentials);
+      std::vector<autofill::PasswordForm> unsynced_credentials);
 
   // Called when the user chooses a credential. |form| is passed to the
   // credentials callback. Method should be called in the

@@ -126,7 +126,6 @@ class ArcNotificationContentViewTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
     wm_helper_ = std::make_unique<exo::WMHelperChromeOS>();
-    exo::WMHelper::SetInstance(wm_helper_.get());
     DCHECK(exo::WMHelper::HasInstance());
 
     surface_manager_ = std::make_unique<ArcNotificationSurfaceManagerImpl>();
@@ -150,7 +149,6 @@ class ArcNotificationContentViewTest : public AshTestBase {
     surface_manager_.reset();
 
     DCHECK(exo::WMHelper::HasInstance());
-    exo::WMHelper::SetInstance(nullptr);
     wm_helper_.reset();
 
     AshTestBase::TearDown();

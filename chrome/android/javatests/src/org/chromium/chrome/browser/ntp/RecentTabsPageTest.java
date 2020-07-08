@@ -9,6 +9,7 @@ import android.view.View;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -106,11 +107,9 @@ public class RecentTabsPageTest {
      */
     private void leaveRecentTabsPage() {
         mActivityTestRule.loadUrl(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
-        CriteriaHelper.pollUiThread(new Criteria("RecentTabsPage is still there") {
-            @Override
-            public boolean isSatisfied() {
-                return !(mTab.getNativePage() instanceof RecentTabsPage);
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("RecentTabsPage is still there", mTab.getNativePage(),
+                    Matchers.not(Matchers.instanceOf(RecentTabsPage.class)));
         });
     }
 
@@ -119,12 +118,10 @@ public class RecentTabsPageTest {
      */
     private View waitForView(final String text) {
         final ArrayList<View> views = new ArrayList<>();
-        CriteriaHelper.pollUiThread(new Criteria("Could not find view with this text: " + text) {
-            @Override
-            public boolean isSatisfied() {
-                mPage.getView().findViewsWithText(views, text, View.FIND_VIEWS_WITH_TEXT);
-                return views.size() == 1;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            mPage.getView().findViewsWithText(views, text, View.FIND_VIEWS_WITH_TEXT);
+            Criteria.checkThat(
+                    "Could not find view with this text: " + text, views.size(), Matchers.is(1));
         });
         return views.get(0);
     }
@@ -133,13 +130,11 @@ public class RecentTabsPageTest {
      * Waits for the view with the specified text to disappear.
      */
     private void waitForViewToDisappear(final String text) {
-        CriteriaHelper.pollUiThread(new Criteria("View with this text is still present: " + text) {
-            @Override
-            public boolean isSatisfied() {
-                ArrayList<View> views = new ArrayList<>();
-                mPage.getView().findViewsWithText(views, text, View.FIND_VIEWS_WITH_TEXT);
-                return views.isEmpty();
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            ArrayList<View> views = new ArrayList<>();
+            mPage.getView().findViewsWithText(views, text, View.FIND_VIEWS_WITH_TEXT);
+            Criteria.checkThat(
+                    "View with this text is still present: " + text, views, Matchers.empty());
         });
     }
 

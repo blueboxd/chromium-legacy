@@ -38,12 +38,12 @@
 #include "ipc/ipc_channel.h"
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
+#include "sandbox/policy/linux/sandbox_linux.h"
+#include "sandbox/policy/sandbox.h"
 #include "services/service_manager/embedder/descriptors.h"
 #include "services/service_manager/embedder/result_codes.h"
 #include "services/service_manager/embedder/set_process_title.h"
 #include "services/service_manager/embedder/switches.h"
-#include "services/service_manager/sandbox/linux/sandbox_linux.h"
-#include "services/service_manager/sandbox/sandbox.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 
 // See
@@ -214,11 +214,11 @@ bool Zygote::GetProcessInfo(base::ProcessHandle pid,
 }
 
 bool Zygote::UsingSUIDSandbox() const {
-  return sandbox_flags_ & service_manager::SandboxLinux::kSUID;
+  return sandbox_flags_ & sandbox::policy::SandboxLinux::kSUID;
 }
 
 bool Zygote::UsingNSSandbox() const {
-  return sandbox_flags_ & service_manager::SandboxLinux::kUserNS;
+  return sandbox_flags_ & sandbox::policy::SandboxLinux::kUserNS;
 }
 
 bool Zygote::HandleRequestFromBrowser(int fd) {
@@ -422,8 +422,8 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
     CHECK_NE(pid, 0);
   } else {
     PCHECK(base::CreatePipe(&read_pipe, &write_pipe));
-    if (sandbox_flags_ & service_manager::SandboxLinux::kPIDNS &&
-        sandbox_flags_ & service_manager::SandboxLinux::kUserNS) {
+    if (sandbox_flags_ & sandbox::policy::SandboxLinux::kPIDNS &&
+        sandbox_flags_ & sandbox::policy::SandboxLinux::kUserNS) {
       pid = sandbox::NamespaceSandbox::ForkInNewPidNamespace(
           /*drop_capabilities_in_child=*/true);
     } else {

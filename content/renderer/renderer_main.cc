@@ -35,7 +35,7 @@
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/mojo_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "sandbox/policy/switches.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
@@ -181,7 +181,7 @@ int RendererMain(const MainFunctionParams& parameters) {
   {
     bool should_run_loop = true;
     bool need_sandbox =
-        !command_line.HasSwitch(service_manager::switches::kNoSandbox);
+        !command_line.HasSwitch(sandbox::policy::switches::kNoSandbox);
 
 #if !defined(OS_WIN) && !defined(OS_MACOSX)
     // Sandbox is enabled before RenderProcess initialization on all platforms,

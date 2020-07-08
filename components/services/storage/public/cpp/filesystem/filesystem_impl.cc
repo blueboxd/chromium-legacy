@@ -195,8 +195,7 @@ void FilesystemImpl::OpenFile(const base::FilePath& path,
 
 void FilesystemImpl::RemoveFile(const base::FilePath& path,
                                 RemoveFileCallback callback) {
-  std::move(callback).Run(
-      base::DeleteFile(MakeAbsolute(path), /*recursive=*/false));
+  std::move(callback).Run(base::DeleteFile(MakeAbsolute(path)));
 }
 
 void FilesystemImpl::CreateDirectory(const base::FilePath& path,
@@ -214,7 +213,7 @@ void FilesystemImpl::RemoveDirectory(const base::FilePath& path,
     return;
   }
 
-  std::move(callback).Run(base::DeleteFile(full_path, /*recursive=*/false));
+  std::move(callback).Run(base::DeleteFile(full_path));
 }
 
 void FilesystemImpl::GetFileInfo(const base::FilePath& path,

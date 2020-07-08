@@ -515,6 +515,13 @@ bool ShelfAppButton::ShouldEnterPushedState(const ui::Event& event) {
 }
 
 void ShelfAppButton::ReflectItemStatus(const ShelfItem& item) {
+  if (features::IsNotificationIndicatorEnabled()) {
+    if (item.has_notification)
+      AddState(ShelfAppButton::STATE_NOTIFICATION);
+    else
+      ClearState(ShelfAppButton::STATE_NOTIFICATION);
+  }
+
   const ShelfID active_id = shelf_view_->model()->active_shelf_id();
   if (!active_id.IsNull() && item.id == active_id) {
     // The active status trumps all other statuses.
@@ -539,13 +546,6 @@ void ShelfAppButton::ReflectItemStatus(const ShelfItem& item) {
       ClearState(ShelfAppButton::STATE_RUNNING);
       AddState(ShelfAppButton::STATE_ATTENTION);
       break;
-  }
-
-  if (features::IsNotificationIndicatorEnabled()) {
-    if (item.has_notification)
-      AddState(ShelfAppButton::STATE_NOTIFICATION);
-    else
-      ClearState(ShelfAppButton::STATE_NOTIFICATION);
   }
 }
 

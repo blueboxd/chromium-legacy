@@ -24,6 +24,6 @@ const base::Feature kImprovedCookieControlsForThirdPartyCookieBlocking{
 
 const base::Feature kDisallowWildcardsInPluginContentSettings{
     "DisallowWildcardsInPluginContentSettings",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace content_settings

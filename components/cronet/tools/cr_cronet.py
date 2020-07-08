@@ -85,10 +85,10 @@ def stack(out_dir):
 
 
 def use_goma():
-  home_goma = os.path.expanduser("~/goma")
-  if os.path.exists(home_goma) or os.environ.get("GOMA_DIR") or \
-     os.environ.get("GOMADIR"):
-    return 'use_goma=true '
+  goma_dir = subprocess.check_output(['goma_ctl', 'goma_dir']).strip()
+  result = run(['goma_ctl', 'ensure_start'])
+  if not result:
+    return 'use_goma=true goma_dir="' + goma_dir + '" '
   return ''
 
 

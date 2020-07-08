@@ -11,6 +11,7 @@ component("system") {
     "//base",
     "//chromeos:chromeos_export",
     "//chromeos/constants",
+    "//ui/ozone:ozone_base",
   ]
   sources = [
     "core_scheduling.cc",

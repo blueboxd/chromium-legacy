@@ -28,7 +28,7 @@ constexpr gfx::Size kBufferSize(100, 100);
 class RasterInProcessCommandBufferTest : public ::testing::Test {
  public:
   RasterInProcessCommandBufferTest() {
-    // Always enable gpu and oop raster, regardless of platform and blacklist.
+    // Always enable gpu and oop raster, regardless of platform and blocklist.
     auto* gpu_feature_info = gpu_thread_holder_.GetGpuFeatureInfo();
     gpu_feature_info->status_values[gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
         gpu::kGpuFeatureStatusEnabled;
@@ -85,8 +85,7 @@ class RasterInProcessCommandBufferTest : public ::testing::Test {
 
 }  // namespace
 
-TEST_F(RasterInProcessCommandBufferTest,
-       WhitelistBetweenBeginEndRasterCHROMIUM) {
+TEST_F(RasterInProcessCommandBufferTest, AllowedBetweenBeginEndRasterCHROMIUM) {
   if (!RasterInProcessContext::SupportedInTest())
     return;
 

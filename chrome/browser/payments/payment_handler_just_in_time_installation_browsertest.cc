@@ -106,7 +106,7 @@ IN_PROC_BROWSER_TEST_P(AlwaysAllowJustInTimePaymentAppTest,
                        HybridRequest_NoCreditCard) {
   base::HistogramTester histogram_tester;
   ResetEventWaiterForSingleEvent(GetParam() ? TestEvent::kPaymentCompleted
-                                            : TestEvent::kShowAppsReady);
+                                            : TestEvent::kAppListReady);
   EXPECT_TRUE(
       content::ExecJs(GetActiveWebContents(),
                       "testPaymentMethods([ "
@@ -139,7 +139,7 @@ IN_PROC_BROWSER_TEST_P(AlwaysAllowJustInTimePaymentAppTest,
   CreateAndAddCreditCardForProfile(CreateAndAddAutofillProfile());
 
   base::HistogramTester histogram_tester;
-  ResetEventWaiterForSingleEvent(TestEvent::kShowAppsReady);
+  ResetEventWaiterForSingleEvent(TestEvent::kAppListReady);
 
   EXPECT_TRUE(
       content::ExecJs(GetActiveWebContents(),

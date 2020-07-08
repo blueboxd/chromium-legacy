@@ -59,6 +59,10 @@ void UpgradeDetector::Shutdown() {
   pref_change_registrar_.RemoveAll();
 }
 
+void UpgradeDetector::OverrideRelaunchNotificationToRequired(bool override) {
+  NotifyRelaunchOverriddenToRequired(override);
+}
+
 UpgradeDetector::UpgradeDetector(const base::Clock* clock,
                                  const base::TickClock* tick_clock)
     : clock_(clock),
@@ -180,6 +184,15 @@ void UpgradeDetector::NotifyUpdateOverCellularOneTimePermissionGranted() {
 
   for (auto& observer : observer_list_)
     observer.OnUpdateOverCellularOneTimePermissionGranted();
+}
+
+void UpgradeDetector::NotifyRelaunchOverriddenToRequired(bool override) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!observer_list_.might_have_observers())
+    return;
+
+  for (auto& observer : observer_list_)
+    observer.OnRelaunchOverriddenToRequired(override);
 }
 
 void UpgradeDetector::TriggerCriticalUpdate() {

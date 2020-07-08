@@ -27,6 +27,7 @@ namespace {
 // TODO(petermarshall): find a way to share this.
 bool ShouldSendOnIO(crdtp::span<uint8_t> method) {
   static auto* kEntries = new std::vector<crdtp::span<uint8_t>>{
+      crdtp::SpanFrom("Debugger.getPossibleBreakpoints"),
       crdtp::SpanFrom("Debugger.getStackTrace"),
       crdtp::SpanFrom("Debugger.pause"),
       crdtp::SpanFrom("Debugger.removeBreakpoint"),

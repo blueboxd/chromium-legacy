@@ -469,8 +469,8 @@ void MDnsTest::DeleteBothListeners() {
 }
 
 void MDnsTest::RunFor(base::TimeDelta time_period) {
-  base::CancelableCallback<void()> callback(base::Bind(&MDnsTest::Stop,
-                                                       base::Unretained(this)));
+  base::CancelableOnceCallback<void()> callback(
+      base::BindOnce(&MDnsTest::Stop, base::Unretained(this)));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, callback.callback(), time_period);
 

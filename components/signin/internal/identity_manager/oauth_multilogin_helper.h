@@ -18,7 +18,7 @@
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
-#include "net/cookies/cookie_inclusion_status.h"
+#include "net/cookies/cookie_access_result.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
 class GaiaAuthFetcher;
@@ -72,7 +72,7 @@ class OAuthMultiloginHelper : public GaiaAuthConsumer {
   // Callback for CookieManager::SetCanonicalCookie.
   void OnCookieSet(const std::string& cookie_name,
                    const std::string& cookie_domain,
-                   net::CookieInclusionStatus status);
+                   net::CookieAccessResult access_result);
 
   SigninClient* signin_client_;
   AccountsCookieMutator::PartitionDelegate* partition_delegate_;

@@ -36,7 +36,8 @@ class SkiaGoldSession(object):
     """Struct-like object for storing results of an image comparison."""
 
     def __init__(self):
-      self.triage_link = None
+      self.public_triage_link = None
+      self.internal_triage_link = None
       self.triage_link_omission_reason = None
       self.local_diff_given_image = None
       self.local_diff_closest_image = None
@@ -224,7 +225,7 @@ class SkiaGoldSession(object):
   def Compare(self, name, png_file, inexact_matching_args=None):
     """Compares the given image to images known to Gold.
 
-    Triage links can later be retrieved using GetTriageLink().
+    Triage links can later be retrieved using GetTriageLinks().
 
     Args:
       name: The name of the image being compared.
@@ -274,12 +275,16 @@ class SkiaGoldSession(object):
           instance=self._instance,
           crs=self._gold_properties.code_review_system,
           issue=self._gold_properties.issue)
-      self._comparison_results[name].triage_link = cl_triage_link
+      self._comparison_results[name].internal_triage_link = cl_triage_link
+      self._comparison_results[name].public_triage_link =\
+          self._GeneratePublicTriageLink(cl_triage_link)
     else:
       try:
         with open(self._triage_link_file) as tlf:
           triage_link = tlf.read().strip()
-        self._comparison_results[name].triage_link = triage_link
+        self._comparison_results[name].internal_triage_link = triage_link
+        self._comparison_results[name].public_triage_link =\
+            self._GeneratePublicTriageLink(triage_link)
       except IOError:
         self._comparison_results[name].triage_link_omission_reason = (
             'Failed to read triage link from file')
@@ -333,19 +338,23 @@ class SkiaGoldSession(object):
     self._StoreDiffLinks(name, output_manager, output_dir)
     return rc, stdout
 
-  def GetTriageLink(self, name):
-    """Gets the triage link for the given image.
+  def GetTriageLinks(self, name):
+    """Gets the triage links for the given image.
 
     Args:
       name: The name of the image to retrieve the triage link for.
 
     Returns:
-      A string containing the triage link if it is available, or None if it is
-      not available for some reason. The reason can be retrieved using
-      GetTriageLinkOmissionReason.
+      A tuple (public, internal). |public| is a string containing the triage
+      link for the public Gold instance if it is available, or None if it is not
+      available for some reason. |internal| is the same as |public|, but
+      containing a link to the internal Gold instance. The reason for links not
+      being available can be retrieved using GetTriageLinkOmissionReason.
     """
-    return self._comparison_results.get(name,
-                                        self.ComparisonResults()).triage_link
+    comparison_results = self._comparison_results.get(name,
+                                                      self.ComparisonResults())
+    return (comparison_results.public_triage_link,
+            comparison_results.internal_triage_link)
 
   def GetTriageLinkOmissionReason(self, name):
     """Gets the reason why a triage link is not available for an image.
@@ -360,7 +369,8 @@ class SkiaGoldSession(object):
       return 'No image comparison performed for %s' % name
     results = self._comparison_results[name]
     # This method should not be called if there is a valid triage link.
-    assert results.triage_link is None
+    assert results.public_triage_link is None
+    assert results.internal_triage_link is None
     if results.triage_link_omission_reason:
       return results.triage_link_omission_reason
     if results.local_diff_given_image:
@@ -407,6 +417,20 @@ class SkiaGoldSession(object):
     """
     assert name in self._comparison_results
     return self._comparison_results[name].local_diff_diff_image
+
+  def _GeneratePublicTriageLink(self, internal_link):
+    """Generates a public triage link given an internal one.
+
+    Args:
+      internal_link: A string containing a triage link pointing to an internal
+          Gold instance.
+
+    Returns:
+      A string containing a triage link pointing to the public mirror of the
+      link pointed to by |internal_link|.
+    """
+    return internal_link.replace('%s-gold' % self._instance,
+                                 '%s-public-gold' % self._instance)
 
   def _ClearTriageLinkFile(self):
     """Clears the contents of the triage link file.

@@ -611,15 +611,15 @@ void SessionControllerClientImpl::SendSessionLengthLimit() {
                           kSessionLengthLimitMinMs),
                  kSessionLengthLimitMaxMs));
   }
-  base::TimeTicks session_start_time;
+  base::Time session_start_time;
   if (local_state->HasPrefPath(prefs::kSessionStartTime)) {
-    session_start_time = base::TimeTicks::FromInternalValue(
+    session_start_time = base::Time::FromInternalValue(
         local_state->GetInt64(prefs::kSessionStartTime));
   }
 
   policy::off_hours::DeviceOffHoursController* off_hours_controller =
       chromeos::DeviceSettingsService::Get()->device_off_hours_controller();
-  base::TimeTicks off_hours_session_end_time;
+  base::Time off_hours_session_end_time;
   // Use "OffHours" end time only if the session will be actually terminated.
   if (off_hours_controller->IsCurrentSessionAllowedOnlyForOffHours())
     off_hours_session_end_time = off_hours_controller->GetOffHoursEndTime();
@@ -644,7 +644,7 @@ void SessionControllerClientImpl::SendSessionLengthLimit() {
                                                session_start_time);
     return;
   }
-  base::TimeTicks off_hours_session_start_time = base::TimeTicks::Now();
+  base::Time off_hours_session_start_time = base::Time::Now();
   base::TimeDelta off_hours_session_length_limit =
       off_hours_session_end_time - off_hours_session_start_time;
   session_controller_->SetSessionLengthLimit(off_hours_session_length_limit,

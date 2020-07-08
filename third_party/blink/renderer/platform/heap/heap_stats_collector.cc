@@ -158,7 +158,7 @@ base::TimeDelta ThreadHeapStatsCollector::Event::incremental_marking_time()
 
 base::TimeDelta
 ThreadHeapStatsCollector::Event::worklist_processing_time_foreground() const {
-  return scope_data[kMarkProcessWorklist];
+  return scope_data[kMarkProcessWorklists];
 }
 
 base::TimeDelta ThreadHeapStatsCollector::Event::atomic_marking_time() const {

@@ -37,7 +37,10 @@ export let BrowserReportingResponse;
  *   managed: boolean,
  *   overview: string,
  *   customerLogo: string,
- *   threatProtectionDescription: string
+ *   threatProtectionDescription: string,
+ *   showUpdateRequiredEol: boolean,
+ *   eolMessage: string,
+ *   eolAdminMessage: string
  * }}
  */
 let ManagedDataResponse;

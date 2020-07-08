@@ -170,7 +170,7 @@ if (!is_android && !is_mac) {
         "//content/public/common:static_switches",
         "//crypto",
         "//sandbox",
-        "//services/service_manager/sandbox",
+        "//sandbox/policy",
         "//third_party/breakpad:breakpad_handler",
         "//third_party/breakpad:breakpad_sender",
         "//third_party/crashpad/crashpad/util",
@@ -1365,6 +1365,10 @@ group("extra_resources") {
       "//chrome/browser/resources:print_preview_pdf_resources",
       "//chrome/browser/resources:print_preview_resources",
     ]
+  }
+
+  if (enable_tab_search) {
+    public_deps += [ "//chrome/browser/resources:tab_search_resources" ]
   }
 }
 

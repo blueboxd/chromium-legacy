@@ -20,8 +20,8 @@ if (is_linux) {
       "//content/public/common:common_sources",
       "//ipc",
       "//sandbox",
+      "//sandbox/policy",
       "//services/service_manager/embedder",
-      "//services/service_manager/sandbox",
       "//third_party/icu",
     ]
 

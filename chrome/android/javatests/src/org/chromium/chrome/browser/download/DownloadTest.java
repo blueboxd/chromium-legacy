@@ -348,12 +348,10 @@ import java.util.List;
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
                 () -> TabModelUtils.setIndex(model, count - 1));
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Tab tab = mDownloadTestRule.getActivity().getActivityTab();
-                return tab == model.getTabAt(count - 1) && ChromeTabUtils.isRendererReady(tab);
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Tab tab = mDownloadTestRule.getActivity().getActivityTab();
+            Criteria.checkThat(tab, Matchers.is(model.getTabAt(count - 1)));
+            Criteria.checkThat(ChromeTabUtils.isRendererReady(tab), Matchers.is(true));
         });
     }
 
@@ -361,28 +359,18 @@ import java.util.List;
         // Wait until we have a new tab first. This should be called before checking the active
         // layout because the active layout changes StaticLayout --> SimpleAnimationLayout
         // --> (tab added) --> StaticLayout.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                updateFailureReason("Actual tab count: "
-                        + mDownloadTestRule.getActivity().getCurrentTabModel().getCount());
-                return mDownloadTestRule.getActivity().getCurrentTabModel().getCount()
-                        >= numTabsAfterNewTab;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mDownloadTestRule.getActivity().getCurrentTabModel().getCount(),
+                    Matchers.greaterThanOrEqualTo(numTabsAfterNewTab));
         });
 
         // Now wait until the new tab animation finishes. Something wonky happens
         // if we try to go to the new tab before this.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                CompositorViewHolder compositorViewHolder =
-                        mDownloadTestRule.getActivity().findViewById(
-                                R.id.compositor_view_holder);
-                LayoutManager layoutManager = compositorViewHolder.getLayoutManager();
-
-                return layoutManager.getActiveLayout() instanceof StaticLayout;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            CompositorViewHolder compositorViewHolder =
+                    mDownloadTestRule.getActivity().findViewById(R.id.compositor_view_holder);
+            LayoutManager layoutManager = compositorViewHolder.getLayoutManager();
+            Criteria.checkThat(layoutManager, Matchers.instanceOf(StaticLayout.class));
         });
     }
 
@@ -461,12 +449,10 @@ import java.util.List;
                     + "</script>"
                     + "<body id='body' onclick='download()'></body>"));
             DOMUtils.clickNode(mDownloadTestRule.getActivity().getCurrentWebContents(), "body");
-            CriteriaHelper.pollUiThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return interceptor.mDownloadItem != null
-                            && url.equals(interceptor.mDownloadItem.getDownloadInfo().getUrl());
-                }
+            CriteriaHelper.pollUiThread(() -> {
+                Criteria.checkThat(interceptor.mDownloadItem, Matchers.notNullValue());
+                Criteria.checkThat(
+                        interceptor.mDownloadItem.getDownloadInfo().getUrl(), Matchers.is(url));
             });
         } finally {
             webServer.shutdown();
@@ -488,13 +474,9 @@ import java.util.List;
      */
     private void assertPollForInfoBarSize(final int size) {
         final InfoBarContainer container = mDownloadTestRule.getInfoBarContainer();
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                updateFailureReason("There should be " + size + " infobar but there are "
-                        + mDownloadTestRule.getInfoBars().size() + " infobars.");
-                return mDownloadTestRule.getInfoBars().size() == size && !container.isAnimating();
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mDownloadTestRule.getInfoBars().size(), Matchers.is(size));
+            Criteria.checkThat(container.isAnimating(), Matchers.is(false));
         });
     }
 

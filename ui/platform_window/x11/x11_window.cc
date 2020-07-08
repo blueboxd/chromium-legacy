@@ -31,6 +31,7 @@
 #include "ui/base/x/x11_pointer_grab.h"
 #include "ui/base/x/x11_topmost_window_finder.h"
 #include "ui/events/ozone/events_ozone.h"
+#include "ui/events/x/x11_window_event_manager.h"
 #include "ui/platform_window/platform_window_handler/wm_drop_handler.h"
 #include "ui/platform_window/x11/x11_topmost_window_finder.h"
 #else
@@ -573,6 +574,15 @@ PlatformEventDispatcher* X11Window::GetPlatformEventDispatcher() {
 }
 
 bool X11Window::DispatchXEvent(x11::Event* xev) {
+#if defined(USE_OZONE)
+  auto* prop = xev->As<x11::PropertyNotifyEvent>();
+  auto* target_current_context = drag_drop_client_->target_current_context();
+  if (prop && target_current_context &&
+      prop->window == target_current_context->source_window()) {
+    return target_current_context->DispatchPropertyNotifyEvent(*prop);
+  }
+#endif
+
   if (!XWindow::IsTargetedBy(*xev))
     return false;
   XWindow::ProcessEvent(xev);
@@ -607,9 +617,6 @@ uint32_t X11Window::DispatchEvent(const PlatformEvent& event) {
 void X11Window::DispatchUiEvent(ui::Event* event, x11::Event* xev) {
   auto* window_manager = X11WindowManager::GetInstance();
   DCHECK(window_manager);
-
-  if (DispatchDraggingUiEvent(event))
-    return;
 
   // Process X11-specific bits
   if (XWindow::IsTargetedBy(*xev))
@@ -811,9 +818,10 @@ void X11Window::EndMoveLoop() {
 }
 
 #if defined(USE_OZONE)
-void X11Window::StartDrag(const OSExchangeData& data,
+bool X11Window::StartDrag(const OSExchangeData& data,
                           int operation,
                           gfx::NativeCursor cursor,
+                          bool can_grab_pointer,
                           WmDragHandler::Delegate* delegate) {
   DCHECK(drag_drop_client_);
   DCHECK(!drag_handler_delegate_);
@@ -823,9 +831,21 @@ void X11Window::StartDrag(const OSExchangeData& data,
   drag_operation_ = 0;
   notified_enter_ = false;
 
-  SetCapture();
+  drag_loop_ = std::make_unique<X11WholeScreenMoveLoop>(this);
 
-  dragging_ = true;
+  auto alive = weak_ptr_factory_.GetWeakPtr();
+  const bool dropped =
+      drag_loop_->RunMoveLoop(can_grab_pointer, last_cursor(), last_cursor());
+  if (!alive)
+    return false;
+
+  drag_loop_.reset();
+  drag_handler_delegate_ = nullptr;
+  return dropped;
+}
+
+void X11Window::CancelDrag() {
+  QuitDragLoop();
 }
 
 std::unique_ptr<XTopmostWindowFinder> X11Window::CreateWindowFinder() {
@@ -836,23 +856,35 @@ int X11Window::UpdateDrag(const gfx::Point& screen_point) {
   WmDropHandler* drop_handler = GetWmDropHandler(*this);
   if (!drop_handler)
     return DragDropTypes::DRAG_NONE;
+
   DCHECK(drag_drop_client_);
   auto* target_current_context = drag_drop_client_->target_current_context();
   DCHECK(target_current_context);
+
+  auto data = std::make_unique<OSExchangeData>(
+      std::make_unique<XOSExchangeDataProvider>(
+          drag_drop_client_->xwindow(),
+          target_current_context->fetched_targets()));
+  int suggested_operations = target_current_context->GetDragOperation();
+  // KDE-based file browsers such as Dolphin change the drag operation depending
+  // on whether alt/ctrl/shift was pressed. However once Chromium gets control
+  // over the X11 events, the source application does no longer receive X11
+  // events for key modifier changes, so the dnd operation gets stuck in an
+  // incorrect state. Blink can only dnd-open files of type DRAG_COPY, so the
+  // DRAG_COPY mask is added if the dnd object is a file.
+  if (data->HasFile() && (suggested_operations & (DragDropTypes::DRAG_MOVE |
+                                                  DragDropTypes::DRAG_LINK))) {
+    suggested_operations |= DragDropTypes::DRAG_COPY;
+  }
+
   if (!notified_enter_) {
     drop_handler->OnDragEnter(
-        gfx::PointF(screen_point),
-        std::make_unique<ui::OSExchangeData>(
-            std::make_unique<ui::XOSExchangeDataProvider>(
-                drag_drop_client_->xwindow(),
-                target_current_context->fetched_targets())),
-        ui::DragDropTypes::DRAG_COPY,
+        gfx::PointF(screen_point), std::move(data), suggested_operations,
         GetKeyModifiers(target_current_context->source_client()));
     notified_enter_ = true;
   }
-
   drag_operation_ = drop_handler->OnDragMotion(
-      gfx::PointF(screen_point), ui::DragDropTypes::DRAG_COPY,
+      gfx::PointF(screen_point), suggested_operations,
       GetKeyModifiers(target_current_context->source_client()));
   return drag_operation_;
 }
@@ -864,11 +896,12 @@ void X11Window::UpdateCursor(
 }
 
 void X11Window::OnBeginForeignDrag(x11::Window window) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  source_window_events_ =
+      std::make_unique<ui::XScopedEventSelector>(window, PropertyChangeMask);
 }
 
 void X11Window::OnEndForeignDrag() {
-  NOTIMPLEMENTED_LOG_ONCE();
+  source_window_events_.reset();
 }
 
 void X11Window::OnBeforeDragLeave() {
@@ -898,52 +931,32 @@ int X11Window::PerformDrop() {
 
 void X11Window::EndDragLoop() {
   DCHECK(drag_handler_delegate_);
+
   drag_handler_delegate_->OnDragFinished(drag_operation_);
-  drag_handler_delegate_ = nullptr;
+  drag_loop_->EndMoveLoop();
 }
-#endif  // defined(USE_OZONE)
 
-bool X11Window::DispatchDraggingUiEvent(Event* event) {
-#if defined(USE_OZONE)
-  // Drag and drop have a priority over other processing.
-  if (dragging_) {
-    DCHECK(drag_drop_client_);
-
-    switch (event->type()) {
-      case ET_MOUSE_MOVED:
-      case ET_MOUSE_DRAGGED: {
-        drag_handler_delegate_->OnDragLocationChanged(
-            event->AsLocatedEvent()->root_location());
-        drag_drop_client_->HandleMouseMovement(
-            event->AsLocatedEvent()->root_location(),
-            event->AsMouseEvent()->flags(),
-            event->AsMouseEvent()->time_stamp());
-        return true;
-      }
-      case ET_MOUSE_RELEASED:
-        if (!event->AsMouseEvent()->IsLeftMouseButton())
-          break;
-        // Assume that drags are being done with the left mouse button. Only
-        // break the drag if the left mouse button was released.
-        drag_drop_client_->HandleMouseReleased();
-        dragging_ = false;
-        ReleaseCapture();
-        return true;
-      case ET_KEY_PRESSED:
-        if (event->AsKeyEvent()->key_code() != VKEY_ESCAPE)
-          break;
-        EndMoveLoop();
-        drag_drop_client_->HandleMoveLoopEnded();
-        dragging_ = false;
-        ReleaseCapture();
-        return true;
-      default:
-        break;
-    }
-  }
-#endif  // defined(USE_OZONE)
-  return false;
+void X11Window::OnMouseMovement(const gfx::Point& screen_point,
+                                int flags,
+                                base::TimeTicks event_time) {
+  drag_handler_delegate_->OnDragLocationChanged(screen_point);
+  drag_drop_client_->HandleMouseMovement(screen_point, flags, event_time);
 }
+
+void X11Window::OnMouseReleased() {
+  drag_drop_client_->HandleMouseReleased();
+}
+
+void X11Window::OnMoveLoopEnded() {
+  drag_drop_client_->HandleMoveLoopEnded();
+}
+
+void X11Window::QuitDragLoop() {
+  DCHECK(drag_loop_);
+  drag_loop_->EndMoveLoop();
+}
+
+#endif  // defined(USE_OZONE)
 
 gfx::Size X11Window::AdjustSizeForDisplay(
     const gfx::Size& requested_size_in_pixels) {

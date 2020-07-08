@@ -269,25 +269,15 @@ cr.define('settings', function() {
         this.showDropShadows();
       }
 
-      const urlSearchQuery =
-          settings.Router.getInstance().getQueryParameters().get('search') ||
-          '';
-
-      if (urlSearchQuery) {
-        const route = settings.Router.getInstance().getCurrentRoute();
-        if (settings.routes.ADVANCED &&
-            settings.routes.ADVANCED.contains(route)) {
-          // If the route navigated to by a search result is in the advanced
-          // section, the advanced menu will expand.
-          this.advancedOpenedInMenu_ = true;
-        }
-      }
-
       if (loadTimeData.getBoolean('newOsSettingsSearch')) {
         // TODO(crbug/1080777): Remove when new os settings search complete.
         // This block prevents the old settings search code from being executed.
         return;
       }
+
+      const urlSearchQuery =
+          settings.Router.getInstance().getQueryParameters().get('search') ||
+          '';
 
       if (urlSearchQuery == this.lastSearchQuery_) {
         return;

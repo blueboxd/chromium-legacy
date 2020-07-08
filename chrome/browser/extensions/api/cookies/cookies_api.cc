@@ -463,11 +463,11 @@ ExtensionFunction::ResponseAction CookiesSetFunction::Run() {
 }
 
 void CookiesSetFunction::SetCanonicalCookieCallback(
-    net::CookieInclusionStatus set_cookie_result) {
+    net::CookieAccessResult set_cookie_result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(NO_RESPONSE, state_);
   state_ = SET_COMPLETED;
-  success_ = set_cookie_result.IsInclude();
+  success_ = set_cookie_result.status.IsInclude();
 }
 
 void CookiesSetFunction::GetCookieListCallback(

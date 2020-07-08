@@ -46,10 +46,10 @@
 #include "mojo/public/cpp/system/invitation.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "printing/emf_win.h"
+#include "sandbox/policy/sandbox_type.h"
+#include "sandbox/policy/switches.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/sandbox_types.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
-#include "services/service_manager/sandbox/switches.h"
 #include "ui/base/ui_base_switches.h"
 
 namespace {
@@ -91,8 +91,8 @@ class ServiceSandboxedProcessLauncherDelegate
     return true;
   }
 
-  service_manager::SandboxType GetSandboxType() override {
-    return service_manager::SandboxType::kUtility;
+  sandbox::policy::SandboxType GetSandboxType() override {
+    return sandbox::policy::SandboxType::kUtility;
   }
 
  private:
@@ -356,7 +356,7 @@ bool ServiceUtilityProcessHost::Launch(base::CommandLine* cmd_line,
     mojo::NamedPlatformChannel channel(options);
     channel.PassServerNameOnCommandLine(cmd_line);
 
-    cmd_line->AppendSwitch(service_manager::switches::kNoSandbox);
+    cmd_line->AppendSwitch(sandbox::policy::switches::kNoSandbox);
     process_ = base::LaunchProcess(*cmd_line, base::LaunchOptions());
     mojo::OutgoingInvitation::Send(std::move(mojo_invitation),
                                    process_.Handle(),

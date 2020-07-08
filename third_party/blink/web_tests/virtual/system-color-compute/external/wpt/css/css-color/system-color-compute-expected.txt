@@ -1,0 +1,16 @@
+This is a testharness.js-based test.
+PASS color-scheme property affects Menu system color keyword
+PASS System color computes to itself on background-color
+PASS System color computes to itself on box-shadow
+PASS System color computes to itself on text-shadow
+PASS System color computes to itself on border-left-color
+PASS System color computes to itself on border-top-color
+PASS System color computes to itself on border-right-color
+PASS System color computes to itself on border-bottom-color
+PASS System color computes to itself on column-rule-color
+PASS System color computes to itself on outline-color
+PASS System color computes to itself on caret-color
+PASS System color computes to itself on fill
+PASS System color computes to itself on stroke
+Harness: the test ran to completion.
+

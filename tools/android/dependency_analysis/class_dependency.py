@@ -1,10 +1,11 @@
+# Lint as: python3
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Implementation of the graph module for a [Java class] dependency graph."""
 
 import re
-from typing import Tuple
+from typing import List, Tuple
 
 import graph
 import class_json_consts
@@ -51,6 +52,7 @@ class JavaClass(graph.Node):
         self._class_name = class_name
 
         self._nested_classes = set()
+        self._build_targets = set()
 
     @property
     def package(self):
@@ -70,12 +72,20 @@ class JavaClass(graph.Node):
         """A set of nested classes contained within this class."""
         return self._nested_classes
 
+    @property
+    def build_targets(self) -> List[str]:
+        """Which build target(s) contain the class."""
+        return self._build_targets
+
     @nested_classes.setter
     def nested_classes(self, other):
         self._nested_classes = other
 
-    def add_nested_class(self, nested: str):  # pylint: disable=missing-function-docstring
+    def add_nested_class(self, nested: str):
         self._nested_classes.add(nested)
+
+    def add_build_target(self, build_target: str) -> None:
+        self._build_targets.add(build_target)
 
     def get_node_metadata(self):
         """Generates JSON metadata for the current node.
@@ -85,12 +95,14 @@ class JavaClass(graph.Node):
         {
             'package': str,
             'class': str,
+            'build_targets' [ str, ... ]
             'nested_classes': [ class_key, ... ],
         }
         """
         return {
             class_json_consts.PACKAGE: self.package,
             class_json_consts.CLASS: self.class_name,
+            class_json_consts.BUILD_TARGETS: sorted(self.build_targets),
             class_json_consts.NESTED_CLASSES: sorted(self.nested_classes),
         }
 
@@ -106,6 +118,3 @@ class JavaClassDependencyGraph(graph.Graph):
         package = re_match.group('package')
         class_name = re_match.group('class_name')
         return JavaClass(package, class_name)
-
-    def add_nested_class_to_key(self, key: str, nested: str):  # pylint: disable=missing-function-docstring
-        self.get_node_by_key(key).add_nested_class(nested)

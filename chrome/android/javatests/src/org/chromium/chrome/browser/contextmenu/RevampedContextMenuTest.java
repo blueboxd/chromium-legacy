@@ -157,20 +157,14 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
         RevampedContextMenuCoordinator menuCoordinator =
                 RevampedContextMenuUtils.openContextMenu(tab, "testImage");
         Assert.assertNotNull("Context menu was not properly created", menuCoordinator);
-        CriteriaHelper.pollUiThread(new Criteria("Context menu did not have window focus") {
-            @Override
-            public boolean isSatisfied() {
-                return !mDownloadTestRule.getActivity().hasWindowFocus();
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> {
+            return !mDownloadTestRule.getActivity().hasWindowFocus();
+        }, "Context menu did not have window focus");
 
         InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK);
-        CriteriaHelper.pollUiThread(new Criteria("Activity did not regain focus.") {
-            @Override
-            public boolean isSatisfied() {
-                return mDownloadTestRule.getActivity().hasWindowFocus();
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> {
+            return mDownloadTestRule.getActivity().hasWindowFocus();
+        }, "Activity did not regain focus.");
     }
 
     @Test
@@ -180,22 +174,16 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
         RevampedContextMenuCoordinator menuCoordinator =
                 RevampedContextMenuUtils.openContextMenu(tab, "testImage");
         Assert.assertNotNull("Context menu was not properly created", menuCoordinator);
-        CriteriaHelper.pollUiThread(new Criteria("Context menu did not have window focus") {
-            @Override
-            public boolean isSatisfied() {
-                return !mDownloadTestRule.getActivity().hasWindowFocus();
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> {
+            return !mDownloadTestRule.getActivity().hasWindowFocus();
+        }, "Context menu did not have window focus");
 
         TestTouchUtils.singleClickView(InstrumentationRegistry.getInstrumentation(), tab.getView(),
                 tab.getView().getWidth() - 5, tab.getView().getHeight() - 5);
 
-        CriteriaHelper.pollUiThread(new Criteria("Activity did not regain focus.") {
-            @Override
-            public boolean isSatisfied() {
-                return mDownloadTestRule.getActivity().hasWindowFocus();
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> {
+            return mDownloadTestRule.getActivity().hasWindowFocus();
+        }, "Activity did not regain focus.");
     }
 
     @Test
@@ -273,12 +261,9 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
         // Wait for any new tab animation to finish if we're being driven by the compositor.
         final LayoutManager layoutDriver =
                 mDownloadTestRule.getActivity().getCompositorViewHolder().getLayoutManager();
-        CriteriaHelper.pollUiThread(new Criteria("Background tab animation not finished.") {
-            @Override
-            public boolean isSatisfied() {
-                return layoutDriver.getActiveLayout().shouldDisplayContentOverlay();
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> {
+            return layoutDriver.getActiveLayout().shouldDisplayContentOverlay();
+        }, "Background tab animation not finished.");
 
         RevampedContextMenuUtils.selectContextMenuItem(InstrumentationRegistry.getInstrumentation(),
                 mDownloadTestRule.getActivity(), tab, "testLink2",

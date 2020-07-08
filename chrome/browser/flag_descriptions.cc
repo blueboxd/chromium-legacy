@@ -1269,6 +1269,15 @@ const char kLegacyTLSWarningsDescription[] =
     "Show security warnings for sites that use legacy TLS versions (TLS 1.0 "
     "and TLS 1.1), which are deprecated and will be removed in the future.";
 
+const char kLiteVideoName[] = "Enable LiteVideos";
+const char kLiteVideoDescription[] =
+    "Enable the LiteVideo optimization to throttle media requests to "
+    "reduce data usage";
+
+const char kLiteVideoForceOverrideDecisionName[] = "Force LiteVideos decision";
+const char kLiteVideoForceOverrideDecisionDescription[] =
+    "Force the LiteVideo decision to be allowed on every navigation.";
+
 const char kLoadMediaRouterComponentExtensionName[] =
     "Load Media Router Component Extension";
 const char kLoadMediaRouterComponentExtensionDescription[] =

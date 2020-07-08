@@ -30,18 +30,6 @@ const base::Feature kHideFileUrlScheme{
     // need to show the file scheme.
     enabled_by_default_desktop_only};
 
-// Feature used to hide the scheme from steady state URLs displayed in the
-// toolbar. It is restored during editing.
-const base::Feature kHideSteadyStateUrlScheme{
-    "OmniboxUIExperimentHideSteadyStateUrlScheme",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Feature used to hide trivial subdomains from steady state URLs displayed in
-// the toolbar. It is restored during editing.
-const base::Feature kHideSteadyStateUrlTrivialSubdomains{
-    "OmniboxUIExperimentHideSteadyStateUrlTrivialSubdomains",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Feature used to enable local entity suggestions. Similar to rich entities but
 // but location specific. E.g., typing 'starbucks near' could display the local
 // entity suggestion 'starbucks near disneyland \n starbucks * Anaheim, CA'.

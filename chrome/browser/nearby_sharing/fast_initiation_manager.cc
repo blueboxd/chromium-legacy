@@ -97,10 +97,10 @@ void FastInitiationManager::StartAdvertising(
 #if defined(CHROME_OS)
   adapter_->SetAdvertisingInterval(
       kMinFastInitAdvertisingInterval, kMaxFastInitAdvertisingInterval,
-      base::Bind(&FastInitiationManager::OnSetAdvertisingInterval,
-                 weak_ptr_factory_.GetWeakPtr(), type),
-      base::Bind(&FastInitiationManager::OnSetAdvertisingIntervalError,
-                 weak_ptr_factory_.GetWeakPtr(), type));
+      base::BindOnce(&FastInitiationManager::OnSetAdvertisingInterval,
+                     weak_ptr_factory_.GetWeakPtr(), type),
+      base::BindOnce(&FastInitiationManager::OnSetAdvertisingIntervalError,
+                     weak_ptr_factory_.GetWeakPtr(), type));
 #else
   RegisterAdvertisement(type);
 #endif
@@ -118,10 +118,10 @@ void FastInitiationManager::StopAdvertising(
 #if defined(CHROME_OS)
   adapter_->SetAdvertisingInterval(
       kMinDefaultAdvertisingInterval, kMaxDefaultAdvertisingInterval,
-      base::Bind(&FastInitiationManager::OnRestoreAdvertisingInterval,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&FastInitiationManager::OnRestoreAdvertisingIntervalError,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&FastInitiationManager::OnRestoreAdvertisingInterval,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&FastInitiationManager::OnRestoreAdvertisingIntervalError,
+                     weak_ptr_factory_.GetWeakPtr()));
 #else
   UnregisterAdvertisement();
 #endif
@@ -161,10 +161,10 @@ void FastInitiationManager::RegisterAdvertisement(
 
   adapter_->RegisterAdvertisement(
       std::move(advertisement_data),
-      base::Bind(&FastInitiationManager::OnRegisterAdvertisement,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&FastInitiationManager::OnRegisterAdvertisementError,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&FastInitiationManager::OnRegisterAdvertisement,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&FastInitiationManager::OnRegisterAdvertisementError,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FastInitiationManager::OnRegisterAdvertisement(
@@ -197,10 +197,10 @@ void FastInitiationManager::OnRestoreAdvertisingIntervalError(
 void FastInitiationManager::UnregisterAdvertisement() {
   advertisement_->RemoveObserver(this);
   advertisement_->Unregister(
-      base::Bind(&FastInitiationManager::OnUnregisterAdvertisement,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&FastInitiationManager::OnUnregisterAdvertisementError,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&FastInitiationManager::OnUnregisterAdvertisement,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&FastInitiationManager::OnUnregisterAdvertisementError,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FastInitiationManager::OnUnregisterAdvertisement() {

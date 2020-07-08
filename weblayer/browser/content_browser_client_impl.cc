@@ -126,8 +126,8 @@
 #endif
 
 #if defined(OS_WIN)
+#include "sandbox/policy/win/sandbox_win.h"
 #include "sandbox/win/src/sandbox.h"
-#include "services/service_manager/sandbox/win/sandbox_win.h"
 #endif
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)

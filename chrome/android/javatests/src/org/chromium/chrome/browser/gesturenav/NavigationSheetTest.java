@@ -118,14 +118,11 @@ public class NavigationSheetTest {
         NavigationSheetCoordinator sheet = (NavigationSheetCoordinator) showPopup(controller);
         ListView listview = sheet.getContentView().findViewById(R.id.navigation_entries);
 
-        CriteriaHelper.pollUiThread(new Criteria("All favicons did not get updated.") {
-            @Override
-            public boolean isSatisfied() {
-                for (int i = 0; i < controller.mHistory.getEntryCount(); i++) {
-                    ListItem item = (ListItem) listview.getAdapter().getItem(i);
-                    if (item.model.get(ItemProperties.ICON) == null) return false;
-                }
-                return true;
+        CriteriaHelper.pollUiThread(() -> {
+            for (int i = 0; i < controller.mHistory.getEntryCount(); i++) {
+                ListItem item = (ListItem) listview.getAdapter().getItem(i);
+                Criteria.checkThat(i + "th element", item.model.get(ItemProperties.ICON),
+                        Matchers.notNullValue());
             }
         });
     }

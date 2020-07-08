@@ -84,9 +84,9 @@ const int kRetryIntervalTranslatingTidInMs = 100;
 void CrashDumpTask(CrashHandlerHostLinux* handler,
                    std::unique_ptr<BreakpadInfo> info) {
   if (handler->IsShuttingDown() && info->upload) {
-    base::DeleteFile(base::FilePath(info->filename), false);
+    base::DeleteFile(base::FilePath(info->filename));
 #if defined(ADDRESS_SANITIZER)
-    base::DeleteFile(base::FilePath(info->log_filename), false);
+    base::DeleteFile(base::FilePath(info->log_filename));
 #endif
     return;
   }

@@ -333,6 +333,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   bool IsUnderAdvancedProtection() override;
 #endif
 
+  // If Safe browsing endpoint is not enabled in the country.
+  bool IsInExcludedCountry() override;
+
 #if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
   void MaybeLogPasswordReuseDetectedEvent(
       content::WebContents* web_contents) override;
@@ -441,6 +444,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
                            OnEnterpriseTriggerOff);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceBrowserTest,
                            OnEnterpriseTriggerOffGSuite);
+  FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceBrowserTest,
+                           VerifyIsInExcludedCountry);
 
  private:
   friend class MockChromePasswordProtectionService;

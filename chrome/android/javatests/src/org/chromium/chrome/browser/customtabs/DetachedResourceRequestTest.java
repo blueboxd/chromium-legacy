@@ -36,14 +36,16 @@ import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.embedder_support.util.Origin;
+import org.chromium.components.prefs.PrefService;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -370,7 +372,7 @@ public class DetachedResourceRequestTest {
         CustomTabsTestUtils.warmUpAndWait();
         mServer = EmbeddedTestServer.createAndStartHTTPSServer(mContext, ServerCertificate.CERT_OK);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PrefServiceBridge prefs = PrefServiceBridge.getInstance();
+            PrefService prefs = UserPrefs.get(Profile.getLastUsedRegularProfile());
             Assert.assertFalse(prefs.getBoolean(BLOCK_THIRD_PARTY_COOKIES));
             prefs.setBoolean(BLOCK_THIRD_PARTY_COOKIES, true);
         });
@@ -404,7 +406,7 @@ public class DetachedResourceRequestTest {
         mServer = EmbeddedTestServer.createAndStartHTTPSServer(mContext, ServerCertificate.CERT_OK);
         // This isn't blocking third-party cookies by preferences.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PrefServiceBridge prefs = PrefServiceBridge.getInstance();
+            PrefService prefs = UserPrefs.get(Profile.getLastUsedRegularProfile());
             Assert.assertFalse(prefs.getBoolean(BLOCK_THIRD_PARTY_COOKIES));
         });
 
@@ -434,7 +436,7 @@ public class DetachedResourceRequestTest {
         CustomTabsTestUtils.warmUpAndWait();
         mServer = EmbeddedTestServer.createAndStartServer(mContext);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PrefServiceBridge prefs = PrefServiceBridge.getInstance();
+            PrefService prefs = UserPrefs.get(Profile.getLastUsedRegularProfile());
             Assert.assertFalse(prefs.getBoolean(BLOCK_THIRD_PARTY_COOKIES));
             prefs.setBoolean(BLOCK_THIRD_PARTY_COOKIES, true);
         });

@@ -238,10 +238,10 @@ bool PPB_Graphics3D_Impl::InitRaw(
       render_thread->EstablishGpuChannelSync();
   if (!channel)
     return false;
-  // 3D access might be blacklisted.
+  // 3D access might be blocklisted.
   if (channel->gpu_feature_info()
           .status_values[gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL] ==
-      gpu::kGpuFeatureStatusBlacklisted) {
+      gpu::kGpuFeatureStatusBlocklisted) {
     return false;
   }
 

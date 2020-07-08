@@ -119,13 +119,13 @@ void BluetoothSocketBlueZ::Listen(
     SocketType socket_type,
     const BluetoothUUID& uuid,
     const BluetoothAdapter::ServiceOptions& service_options,
-    const base::Closure& success_callback,
-    const ErrorCompletionCallback& error_callback) {
+    base::OnceClosure success_callback,
+    ErrorCompletionOnceCallback error_callback) {
   DCHECK(ui_task_runner()->RunsTasksInCurrentSequence());
   DCHECK(!profile_);
 
   if (!uuid.IsValid()) {
-    error_callback.Run(kInvalidUUID);
+    std::move(error_callback).Run(kInvalidUUID);
     return;
   }
 
@@ -151,7 +151,7 @@ void BluetoothSocketBlueZ::Listen(
   }
 
   RegisterProfile(static_cast<BluetoothAdapterBlueZ*>(adapter.get()),
-                  success_callback, error_callback);
+                  std::move(success_callback), std::move(error_callback));
 }
 
 void BluetoothSocketBlueZ::Close() {
@@ -217,8 +217,8 @@ void BluetoothSocketBlueZ::Accept(
 
 void BluetoothSocketBlueZ::RegisterProfile(
     BluetoothAdapterBlueZ* adapter,
-    const base::Closure& success_callback,
-    const ErrorCompletionCallback& error_callback) {
+    base::OnceClosure success_callback,
+    ErrorCompletionOnceCallback error_callback) {
   DCHECK(ui_task_runner()->RunsTasksInCurrentSequence());
   DCHECK(!profile_);
   DCHECK(adapter);
@@ -229,23 +229,27 @@ void BluetoothSocketBlueZ::RegisterProfile(
   if (!adapter->IsPresent()) {
     DVLOG(1) << uuid_.canonical_value() << " on " << device_path_.value()
              << ": Delaying profile registration.";
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, success_callback);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(success_callback));
     return;
   }
 
   DVLOG(1) << uuid_.canonical_value() << " on " << device_path_.value()
            << ": Acquiring profile.";
 
-  adapter->UseProfile(uuid_, device_path_, *options_, this,
-                      base::Bind(&BluetoothSocketBlueZ::OnRegisterProfile, this,
-                                 success_callback, error_callback),
-                      base::Bind(&BluetoothSocketBlueZ::OnRegisterProfileError,
-                                 this, error_callback));
+  auto copyable_error_callback =
+      base::AdaptCallbackForRepeating(std::move(error_callback));
+  adapter->UseProfile(
+      uuid_, device_path_, *options_, this,
+      base::BindOnce(&BluetoothSocketBlueZ::OnRegisterProfile, this,
+                     std::move(success_callback), copyable_error_callback),
+      base::BindOnce(&BluetoothSocketBlueZ::OnRegisterProfileError, this,
+                     copyable_error_callback));
 }
 
 void BluetoothSocketBlueZ::OnRegisterProfile(
-    const base::Closure& success_callback,
-    const ErrorCompletionCallback& error_callback,
+    base::OnceClosure success_callback,
+    ErrorCompletionOnceCallback error_callback,
     BluetoothAdapterProfileBlueZ* profile) {
   DCHECK(ui_task_runner()->RunsTasksInCurrentSequence());
   DCHECK(!profile_);
@@ -254,7 +258,7 @@ void BluetoothSocketBlueZ::OnRegisterProfile(
 
   if (device_path_.value().empty()) {
     DVLOG(1) << uuid_.canonical_value() << ": Profile registered.";
-    success_callback.Run();
+    std::move(success_callback).Run();
     return;
   }
 
@@ -264,33 +268,33 @@ void BluetoothSocketBlueZ::OnRegisterProfile(
   bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->ConnectProfile(
       device_path_, uuid_.canonical_value(),
       base::BindOnce(&BluetoothSocketBlueZ::OnConnectProfile, this,
-                     success_callback),
+                     std::move(success_callback)),
       base::BindOnce(&BluetoothSocketBlueZ::OnConnectProfileError, this,
-                     error_callback));
+                     std::move(error_callback)));
 }
 
 void BluetoothSocketBlueZ::OnRegisterProfileError(
-    const ErrorCompletionCallback& error_callback,
+    ErrorCompletionOnceCallback error_callback,
     const std::string& error_message) {
   DCHECK(ui_task_runner()->RunsTasksInCurrentSequence());
 
   LOG(WARNING) << uuid_.canonical_value()
                << ": Failed to register profile: " << error_message;
-  error_callback.Run(error_message);
+  std::move(error_callback).Run(error_message);
 }
 
 void BluetoothSocketBlueZ::OnConnectProfile(
-    const base::Closure& success_callback) {
+    base::OnceClosure success_callback) {
   DCHECK(ui_task_runner()->RunsTasksInCurrentSequence());
   DCHECK(profile_);
 
   DVLOG(1) << profile_->object_path().value() << ": Profile connected.";
   UnregisterProfile();
-  success_callback.Run();
+  std::move(success_callback).Run();
 }
 
 void BluetoothSocketBlueZ::OnConnectProfileError(
-    const ErrorCompletionCallback& error_callback,
+    ErrorCompletionOnceCallback error_callback,
     const std::string& error_name,
     const std::string& error_message) {
   DCHECK(ui_task_runner()->RunsTasksInCurrentSequence());
@@ -300,7 +304,7 @@ void BluetoothSocketBlueZ::OnConnectProfileError(
                << ": Failed to connect profile: " << error_name << ": "
                << error_message;
   UnregisterProfile();
-  error_callback.Run(error_message);
+  std::move(error_callback).Run(error_message);
 }
 
 void BluetoothSocketBlueZ::AdapterPresentChanged(BluetoothAdapter* adapter,

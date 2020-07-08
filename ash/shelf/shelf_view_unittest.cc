@@ -2110,73 +2110,26 @@ class NotificationIndicatorTest : public ShelfViewTest {
   DISALLOW_COPY_AND_ASSIGN(NotificationIndicatorTest);
 };
 
-// Tests that an item has a notification indicator when it recieves a
-// notification.
-TEST_F(NotificationIndicatorTest, AddedItemHasNotificationIndicator) {
-  const ShelfID id_0 = AddApp();
-  const std::string notification_id_0("notification_id_0");
-  const ShelfAppButton* button_0 = GetButtonByID(id_0);
+// Tests that an item has a notification badge indicator when the notification
+// is added and removed.
+TEST_F(NotificationIndicatorTest, ItemHasCorrectNotificationBadgeIndicator) {
+  const ShelfID item_id = AddApp();
+  const ShelfAppButton* shelf_app_button = GetButtonByID(item_id);
 
-  EXPECT_FALSE(GetItemByID(id_0).has_notification);
-  EXPECT_FALSE(button_0->state() & ShelfAppButton::STATE_NOTIFICATION);
+  EXPECT_FALSE(GetItemByID(item_id).has_notification);
+  EXPECT_FALSE(shelf_app_button->state() & ShelfAppButton::STATE_NOTIFICATION);
 
-  // Post a test notification after the item was added.
-  model_->AddNotificationRecord(id_0.app_id, notification_id_0);
+  // Add a notification for the new shelf item.
+  model_->UpdateItemNotification(item_id.app_id, true /* has_badge */);
 
-  EXPECT_TRUE(GetItemByID(id_0).has_notification);
-  EXPECT_TRUE(button_0->state() & ShelfAppButton::STATE_NOTIFICATION);
+  EXPECT_TRUE(GetItemByID(item_id).has_notification);
+  EXPECT_TRUE(shelf_app_button->state() & ShelfAppButton::STATE_NOTIFICATION);
 
-  // Post another notification for a non existing item.
-  const std::string next_app_id(GetNextAppId());
-  const std::string notification_id_1("notification_id_1");
-  model_->AddNotificationRecord(next_app_id, notification_id_1);
+  // Remove notification.
+  model_->UpdateItemNotification(item_id.app_id, false /* has_badge */);
 
-  // Add an item with matching app id.
-  const ShelfID id_1 = AddApp();
-
-  // Ensure that the app id assigned to |id_1| is the same as |next_app_id|.
-  EXPECT_EQ(next_app_id, id_1.app_id);
-  const ShelfAppButton* button_1 = GetButtonByID(id_1);
-  EXPECT_TRUE(GetItemByID(id_1).has_notification);
-  EXPECT_TRUE(button_1->state() & ShelfAppButton::STATE_NOTIFICATION);
-
-  // Remove all notifications.
-  model_->RemoveNotificationRecord(notification_id_0);
-  model_->RemoveNotificationRecord(notification_id_1);
-
-  EXPECT_FALSE(GetItemByID(id_0).has_notification);
-  EXPECT_FALSE(button_0->state() & ShelfAppButton::STATE_NOTIFICATION);
-  EXPECT_FALSE(GetItemByID(id_1).has_notification);
-  EXPECT_FALSE(button_1->state() & ShelfAppButton::STATE_NOTIFICATION);
-}
-
-// Tests that the notification indicator is active until all notifications have
-// been removed.
-TEST_F(NotificationIndicatorTest,
-       NotificationIndicatorStaysActiveUntilNotificationsAreGone) {
-  const ShelfID app = AddApp();
-  const ShelfAppButton* button = GetButtonByID(app);
-
-  // Add two notifications for the same app.
-  const std::string notification_id_0("notification_id_0");
-  model_->AddNotificationRecord(app.app_id, notification_id_0);
-  const std::string notification_id_1("notification_id_1");
-  model_->AddNotificationRecord(app.app_id, notification_id_1);
-
-  EXPECT_TRUE(GetItemByID(app).has_notification);
-  EXPECT_TRUE(button->state() & ShelfAppButton::STATE_NOTIFICATION);
-
-  // Remove one notification, indicator should stay active.
-  model_->RemoveNotificationRecord(notification_id_0);
-
-  EXPECT_TRUE(GetItemByID(app).has_notification);
-  EXPECT_TRUE(button->state() & ShelfAppButton::STATE_NOTIFICATION);
-
-  // Remove the last notification, indicator should not be active.
-  model_->RemoveNotificationRecord(notification_id_1);
-
-  EXPECT_FALSE(GetItemByID(app).has_notification);
-  EXPECT_FALSE(button->state() & ShelfAppButton::STATE_NOTIFICATION);
+  EXPECT_FALSE(GetItemByID(item_id).has_notification);
+  EXPECT_FALSE(shelf_app_button->state() & ShelfAppButton::STATE_NOTIFICATION);
 }
 
 class ShelfViewVisibleBoundsTest : public ShelfViewTest,

@@ -4,3 +4,7 @@
 # Needs investigation.
 -All/RenderFrameHostManagerTest.BeginNavigationIgnoredWhenNotActive/*
 -WebContentsImplTest.ActiveContentsCountChangeBrowsingInstance
+-NavigatorTest.RendererNonUserInitiatedNavigationCancelSimilarNavigation
+-NavigatorTest.SimpleRendererInitiatedCrossSiteNavigation
+-NavigatorTest.RendererNonUserInitiatedNavigationCancelsRendererUserInitiated
+-NavigatorTest.RendererUserInitiatedNavigationCancel

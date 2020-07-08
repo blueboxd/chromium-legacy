@@ -27,7 +27,7 @@
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "sandbox/policy/switches.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -281,7 +281,7 @@ class NaClBrowserTestPnaclDebug : public NaClBrowserTestPnacl {
     // On windows, the debug stub requires --no-sandbox:
     // crbug.com/265624
 #if defined(OS_WIN)
-    command_line->AppendSwitch(service_manager::switches::kNoSandbox);
+    command_line->AppendSwitch(sandbox::policy::switches::kNoSandbox);
 #endif
   }
 

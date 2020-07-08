@@ -29,8 +29,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisementWinrt
   void Register(SuccessCallback callback, ErrorCallback error_callback);
 
   // BluetoothAdvertisement:
-  void Unregister(const SuccessCallback& success_callback,
-                  const ErrorCallback& error_callback) override;
+  void Unregister(SuccessCallback success_callback,
+                  ErrorCallback error_callback) override;
 
   ABI::Windows::Devices::Bluetooth::Advertisement::
       IBluetoothLEAdvertisementPublisher*

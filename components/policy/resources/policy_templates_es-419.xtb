@@ -1338,7 +1338,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
       Si la inhabilitas o no la estableces, se aplicará la protección de la Navegación segura a todos los recursos.
 
       Esta política solo está disponible en instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" /> o en instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos, además de instancias de macOS administradas mediante MDM o vinculadas a un dominio a través de MCX.</translation>
-<translation id="2985927503455169394">Usar el modo predeterminado de la experiencia de integración del Asistente</translation>
+<translation id="2985927503455169394">Usa el modo predeterminado de la experiencia de integración del Asistente</translation>
 <translation id="2987155890997901449">Habilitar ARC</translation>
 <translation id="2987227569419001736">Controlar el uso de la API de Bluetooth web</translation>
 <translation id="299519952839316970">Ten en cuenta que esta política es obsoleta y se quitará en la versión 88 de <ph name="PRODUCT_OS_NAME" />. Ya no se admiten las sesiones públicas. En su lugar, utiliza <ph name="DEVICE_LOCAL_ACCOUNTS_POLICY_NAME" /> para configurar las sesiones de invitado administradas.
@@ -1377,11 +1377,11 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
       En <ph name="PRODUCT_NAME" /> 81 y versiones posteriores, si no se establece la política, solo se habilitará la autenticación ambiental para las sesiones comunes.</translation>
 <translation id="3021288356473993647">Esta política controla la verificación de URL en tiempo real para identificar URL no seguras.
 
-      Si no estableces esta política o la inhabilitas, se aplicarán las verificaciones de la Navegación segura para los usuarios. Las verificaciones de la Navegación segura para los usuarios aún podrán incluir búsquedas en tiempo real, conforme al valor de configuración "Mejorar las búsquedas y la navegación" y el valor de la política UrlKeyedAnonymizedDataCollectionEnabled.
+Si no estableces esta política o la inhabilitas, se aplicarán las verificaciones predeterminadas de la Navegación segura para los usuarios comunes. No obstante, aún se podrán incluir en las búsquedas en tiempo real conforme al valor de configuración "Mejorar las búsquedas y la navegación" y el valor de la política UrlKeyedAnonymizedDataCollectionEnabled.
 
-      Si habilitas esta política, se enviarán las URL para su análisis en tiempo real conforme a las Condiciones del Servicio empresariales. Como resultado, Chrome enviará URL a Google Cloud o terceros que elijas para verificarlas en tiempo real. Se desactivarán las búsquedas en tiempo real de la versión predeterminada de la Navegación segura.
+      Si habilitas esta política, se enviarán las URL para su análisis en tiempo real conforme a las Condiciones del Servicio de Chrome Enterprise. Como resultado, Chrome enviará las URL a Google Cloud o a los terceros que elijas para verificarlas en tiempo real. Se desactivarán las búsquedas en tiempo real de la versión predeterminada de la Navegación segura.
 
-      Esta política solo se puede establecer en la Consola del administrador de Google.</translation>
+Esta política solo se puede establecer en la Consola del administrador de Google.</translation>
 <translation id="3021562480854470924">Cantidad de hitos que se permiten en la reversión</translation>
 <translation id="3023572080620427845">URL de un archivo XML que contiene URL para cargarlas en un navegador alternativo</translation>
 <translation id="3026740867910702435">Habilita la función de accesibilidad del cursor grande en la pantalla de acceso.
@@ -1457,7 +1457,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="3122082892722698079">Controla el uso de excepciones de contenido no seguro</translation>
 <translation id="3143265893557969814">Si estableces esta política, se excluirán todos los tipos de datos especificados de la sincronización para Google Sync y de la sincronización de perfiles en roaming. Es política puede ayudar a reducir el tamaño del perfil en roaming o limitar los tipos de datos que se suben a los servidores de Google Sync.
 
-      Los tipos de datos actuales para esta política son los siguientes: "bookmarks", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs", "wifiConfigurations". Estos nombres distinguen entre mayúsculas y minúsculas.</translation>
+      Los tipos de datos actuales para esta política son los siguientes: "bookmarks", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs" y "wifiConfigurations". Estos nombres distinguen entre mayúsculas y minúsculas.</translation>
 <translation id="3148152738273574834">Si estableces la política, se especificará una lista de sitios web que se instalan de manera discreta, sin la interacción del usuario y que este no puede desinstalar ni desactivar.
 
       Cada elemento de la lista de la política es un objeto con un miembro obligatorio: <ph name="URL_LABEL" /> (la URL de la aplicación web que se instalará) y 2 miembros opcionales: <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL" /> (establece la manera en la que se abrirá la aplicación web; la opción predeterminada es una nueva pestaña) y <ph name="CREATE_DESKTOP_SHORTCUT_LABEL" /> (verdadero, si se crean accesos directos de escritorio para <ph name="LINUX_OS_NAME" /> y Windows®).
@@ -1997,7 +1997,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="3950239119790560549">Actualizar las restricciones de tiempo</translation>
 <translation id="3956686688560604829">Usar la política SiteList de Internet Explorer para la extensión Compatibilidad con navegadores heredados</translation>
 <translation id="3958586912393694012">Permitir el uso de Smart Lock</translation>
-<translation id="3962445567482559878">Usar el modo EDU de la experiencia de integración del Asistente</translation>
+<translation id="3962445567482559878">Usa el modo EDU de la experiencia de integración del Asistente</translation>
 <translation id="3963602271515417124">Si esta política se establece como verdadera, se permite la verificación remota para el dispositivo y se generará un certificado de forma automática que se subirá al servidor de administración de dispositivos.
 
           Si se establece como falsa o no se establece, no se generará ningún certificado y las llamadas a la API enterprise.platformKeys extension fallarán.</translation>
@@ -2265,7 +2265,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="4372704773119750918">No permitir que el usuario de empresa forme parte de la función de varios perfiles (usuario principal o secundario)</translation>
 <translation id="4377599627073874279">Permitir a todos los sitios que muestren todas las imágenes</translation>
 <translation id="437791893267799639">No se estableció la política; no permitir la migración de datos y ARC</translation>
-<translation id="4382413175336720282">Se inhabilitó la verificación de URL en tiempo real.</translation>
+<translation id="4382413175336720282">Inhabilita la verificación de URL en tiempo real</translation>
 <translation id="4389073105055031853">Permitir que los usuarios administren todos los certificados</translation>
 <translation id="4389091865841123886">Permite configurar la atestación remota con el mecanismo de TPM.</translation>
 <translation id="4401496838830169080">Te permite controlar si se habilita o no la función de Navegación segura de <ph name="PRODUCT_NAME" /> y el modo en el que opera.
@@ -2723,25 +2723,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Si la política se establece en True, <ph name="PRODUCT_OS_NAME" /> impedirá que el dispositivo se inicie en modo de programador. El sistema no se iniciará y mostrará una pantalla de error cuando se active la opción de programador.
 
       Si la política se establece en False o no se establece, el modo de programador seguirá disponible para el dispositivo.</translation>
-<translation id="5210980743015047124">Configura el requisito de la versión mínima permitida de <ph name="PRODUCT_NAME" />.
-
-      Cuando se configura esta política con una lista no vacía:
-      Si ninguna de las entradas tiene un valor de "chrome_version" mayor que la versión actual del dispositivo, no se aplicarán restricciones y se revocarán las restricciones existentes.
-      Si al menos una de las entradas tiene un valor de "chrome_version" mayor que la versión actual, se seleccionará la entrada más resistente, cuya versión es la más cercana a la actual.
-      En caso de conflicto, se le da preferencia a la versión con un valor de "warning_period" o "eol_warning_period" menor, y se aplicará la política conforme a esa entrada.
-
-      Si la versión actual se vuelve obsoleta durante la sesión de usuario, se mostrará una notificación en pantalla para actualizar el dispositivo mientras se muestre el valor de "warning_period" en la notificación.
-      El valor de "warning_period" comienza a partir de que se aplica la política.
-      Si no se actualiza el dispositivo para cuando caduca el valor de "warning_period", se forzará al usuario a salir del sistema.
-      Si al momento de acceder la versión actual es obsoleta, y el valor de "warning_period" caducó, el usuario deberá actualizar el dispositivo para poder acceder.
-
-      Si finaliza el período durante la sesión del usuario, se mostrará una notificación en pantalla para indicar que se forzará al usuario a salir cuando caduque el valor de "eol_warning_period".
-      Si al momento de acceder el dispositivo es obsoleto, y el valor de "eol_warning_period" caducó, ningún usuario podrá acceder al dispositivo.
-
-      Si no se establece esta política o se establece como vacía, no se aplicarán restricciones, se revocarán las existentes, y el usuario podrá acceder independientemente de la versión de <ph name="PRODUCT_NAME" />.
-
-      Aquí, el valor de "chrome_version" puede ser exacto, como "61.0.3163.120" o el prefijo de una versión, como "61.0".
-      Los valores "warning_period" y "eol_warning_period" son opcionales y se especifican en número de días. El valor predeterminado de esos valores es 0 días, lo que significa que no hay un período de espera. </translation>
 <translation id="5212118847531454979">Te permite establecer el período, en milisegundos, en el que se notifica a los usuarios que deben reiniciar <ph name="PRODUCT_NAME" /> o un dispositivo <ph name="PRODUCT_OS_NAME" /> para aplicar una actualización pendiente.
 
       En este período, se le informará reiteradamente al usuario acerca de la necesidad de la actualización. En dispositivos <ph name="PRODUCT_OS_NAME" />, se muestra una notificación de reinicio en la bandeja del sistema, en conformidad con la política <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. En navegadores <ph name="PRODUCT_NAME" />, el menú de la app indica que se debe reiniciar después de transcurrido un tercio del período de la notificación. Esta notificación cambia de color tras dos tercios del período de la notificación y una vez más cuando finaliza este período. Las notificaciones adicionales que habilita la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> siguen el mismo patrón.
@@ -3069,20 +3050,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
           Esta política solo tendrá efecto si no se habilita la política <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" />. De lo contrario, se ignorará esta política, ya que un modelo de aprendizaje automático determinará la demora de atenuación de la pantalla.
 
           El factor de ajuste debe ser 100% o más. No se permiten los valores que harían que la duración de la demora de atenuación de la pantalla en el modo de presentación sea más breve que esta demora en la pantalla común.</translation>
-<translation id="5590988845778885692">Ofrece opciones de configuración de servidores de impresión disponibles.
-
-      Esta política permite ofrecer archivos JSON de configuración de servidores de impresión externos para dispositivos <ph name="PRODUCT_OS_NAME" />.
-
-      El tamaño del archivo no debe superar 1 MB y debe contener una serie de registros (objetos JSON). Cada registro debe incluir los campos "id", "url" y "display_name" con strings como valores. Los valores de los campos "id" deben ser únicos.
-
-      El archivo se descarga y almacena en caché. El hash criptográfico se usa para verificar la integridad de la descarga. El archivo se volverá a descargar cada vez que cambie la URL o el hash.
-
-      Si se establece la política en el valor correcto, los dispositivos intentarán buscar servidores de impresión específicos para las impresoras disponibles mediante el protocolo IPP.
-
-      Si no se establece o se establece con un valor incorrecto, los usuarios no podrán visualizar ninguna impresora de servidor.
-
-      Actualmente, el número de servidores de impresión está limitado a 16. Solo se buscarán los primeros 16 servidores de impresión de la lista.
-      </translation>
 <translation id="5592242031005200087">
       Si se habilita la política, cada origen designado en una lista de elementos
       separados por comas se ejecutará en su propio proceso. Esta acción
@@ -3234,14 +3201,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Las URL (como https://ejemplo.com/una/ruta) solo coincidirán como appID de U2F. Los dominios (como ejemplo.com) solo coincidirán como RP ID de webauthn. Por lo tanto, para abarcar las API de U2F y webauthn para un determinado sitio, deben enumerarse el dominio y la URL de appID.</translation>
 <translation id="5836064773277134605">Restringir el intervalo de puertos UDP que utiliza el host de acceso remoto</translation>
 <translation id="585270638818921943">Impide que el usuario use apps para Android de fuentes no confiables</translation>
-<translation id="5854749508571554984">Esta política solo es válida si el dispositivo llegó al final del ciclo de vida y no cumple con la versión mínima permitida de <ph name="PRODUCT_NAME" /> que se estableció en la política <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" />.
-
-      Cuando estableces esta política con una string no vacía:
-      Si caducó el tiempo de advertencia que se menciona en la política <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" />, se mostrará este mensaje en la pantalla de acceso cuando se bloquee el acceso al dispositivo para todos los usuarios.
-      Si no caducó el tiempo de advertencia que se menciona en la política <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" />, se mostrará este mensaje en la página de configuración después de que el usuario acceda.
-
-      Si no estableces esta política o la estableces como vacía, se le mostrará al usuario el mensaje predeterminado de final del ciclo de vida en los dos casos mencionados anteriormente.
-      El mensaje de final del ciclo de vida no debe tener ningún tipo de formato. No se permite ningún lenguaje de marcado. </translation>
 <translation id="5855010364142818361">Esta política controla los parámetros de la línea de comandos para Chrome desde Internet Explorer.
 
       Si el complemento "Compatibilidad con navegadores heredados" para Internet Explorer no está instalado, no se aplicará esta política.
@@ -3891,7 +3850,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Si la estableces como <ph name="BR_UNDER_USER_CONTROL" />, los usuarios recibirán mensajes para usar la Copia de seguridad y restablecimiento. Si activan este servicio, se subirán los datos de las apps para Android a los servidores de copia de seguridad de Android. Estos datos se restablecerán cuando se reinstalen apps compatibles.
 
       Después de la configuración inicial, los usuarios podrán activar o desactivar la Copia de seguridad y restablecimiento.</translation>
-<translation id="6993687707842131236">Configura el mensaje de final del ciclo de vida para la política MinimumChromeVersionEnforced</translation>
 <translation id="6994082778848658360">Especifica la forma en que los elementos de hardware de seguridad integrados se usan para la autenticación de dos factores, si son compatibles con esta función. El botón de encendido de la máquina se usa para detectar la presencia física del usuario.
 
 Si se selecciona "Inhabilitada", no se proporciona un segundo factor.
@@ -3899,7 +3857,7 @@ Si se selecciona "Inhabilitada", no se proporciona un segundo factor.
 Si se selecciona "U2F", el segundo factor integrado se comportará de acuerdo con la especificación de FIDO U2F.
 
 Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará funciones de U2F además de algunas extensiones para la atestación individual.</translation>
-<translation id="7002040773317582266">Se habilitó la verificación en tiempo real de las URL del marco principal.</translation>
+<translation id="7002040773317582266">Habilita la verificación en tiempo real de las URL del marco principal</translation>
 <translation id="7003334574344702284">Esta política, si se habilita, fuerza la importación de las contraseñas guardadas del navegador predeterminado anterior. Si se la habilita, esta política también afecta el cuadro de diálogo de importación. Si se la inhabilita, no se importan las contraseñas guardadas. Si no se configura, se le puede preguntar al usuario si desea importar las contraseñas guardadas o la importación puede realizarse de forma automática.</translation>
 <translation id="7003746348783715221">Preferencias de <ph name="PRODUCT_NAME" /></translation>
 <translation id="7008308728445338159">Revisiones habilitadas de la intercepción de DNS</translation>
@@ -4380,7 +4338,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
           Esta política es para uso interno de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7710950688502974809">Lista de opciones de configuración para los servicios de Chrome Enterprise Connectors que se aplicarán a Enterprise Connector <ph name="ON_BULK_DATA_ENTRY_ENTERPRISE_CONNECTOR" />, el cual se activa cuando se ingresan datos a Chrome desde el portapapeles o se arrastra y se suelta contenido web.
 
-      Los campos <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> y <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> se usan para determinar si el conector debe enviar datos para que se analicen cuando se descargan de una página específica y qué etiquetas deben incluirse en la solicitud de análisis de los datos. La solicitud de análisis incluirá la etiqueta correspondiente al patrón "enable" si la URL de la página coincide con un patrón asociado a esa etiqueta siempre y cuando no exista coincidencia entre un patrón "disable" con esa misma etiqueta y la URL de la página. Si la solicitud incluye al menos 1 etiqueta, se realizará el análisis.
+      Los campos <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> y <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> se usan para determinar si el conector debe enviar datos para que se analicen cuando se descargan de una página específica y qué etiquetas deben incluirse en la solicitud de análisis de los datos. La solicitud de análisis incluirá la etiqueta correspondiente al patrón "enable" si la URL de la página coincide con un patrón asociado a esa etiqueta, siempre y cuando no exista coincidencia entre un patrón "disable" con esa misma etiqueta y la URL de la página. Si la solicitud incluye al menos 1 etiqueta, se realizará el análisis.
 
       El campo <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> especifica el proveedor de servicios de análisis al que corresponde la configuración.
 
@@ -5445,7 +5403,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="9190456586252617675">Esta política controla el modo de la experiencia de integración del Asistente.
 
       Si no se establece la política o se establece en <ph name="ASSISTANT_ONBOARDING_MODE_DEFAULT" />, se utilizará el modo predeterminado de la experiencia de integración del Asistente.
-      Si la estableces en <ph name="ASSISTANT_ONBOARDING_MODE_EDUCATION" />, se utilizará el modo EDU de la experiencia de integración del Asistente.</translation>
+      Si la estableces en <ph name="ASSISTANT_ONBOARDING_MODE_EDUCATION" />, se utilizará el modo EDU de la experiencia de integración del Asistente (para usuarios de instituciones educativas).</translation>
 <translation id="9194447412184412480">Controla la configuración para los usuarios autenticados mediante SAML con un IdP externo</translation>
 <translation id="9197740283131855199">Indica el porcentaje en el que debe ajustarse el tiempo de espera de inactividad de la pantalla si el usuario vuelve a estar activo después de la inactividad.</translation>
 <translation id="9200828125069750521">Parámetros para URL de imagen que utiliza POST</translation>

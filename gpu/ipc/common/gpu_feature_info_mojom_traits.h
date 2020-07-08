@@ -19,8 +19,8 @@ struct EnumTraits<gpu::mojom::GpuFeatureStatus, gpu::GpuFeatureStatus> {
     switch (status) {
       case gpu::kGpuFeatureStatusEnabled:
         return gpu::mojom::GpuFeatureStatus::Enabled;
-      case gpu::kGpuFeatureStatusBlacklisted:
-        return gpu::mojom::GpuFeatureStatus::Blacklisted;
+      case gpu::kGpuFeatureStatusBlocklisted:
+        return gpu::mojom::GpuFeatureStatus::Blocklisted;
       case gpu::kGpuFeatureStatusDisabled:
         return gpu::mojom::GpuFeatureStatus::Disabled;
       case gpu::kGpuFeatureStatusSoftware:
@@ -40,8 +40,8 @@ struct EnumTraits<gpu::mojom::GpuFeatureStatus, gpu::GpuFeatureStatus> {
       case gpu::mojom::GpuFeatureStatus::Enabled:
         *out = gpu::kGpuFeatureStatusEnabled;
         return true;
-      case gpu::mojom::GpuFeatureStatus::Blacklisted:
-        *out = gpu::kGpuFeatureStatusBlacklisted;
+      case gpu::mojom::GpuFeatureStatus::Blocklisted:
+        *out = gpu::kGpuFeatureStatusBlocklisted;
         return true;
       case gpu::mojom::GpuFeatureStatus::Disabled:
         *out = gpu::kGpuFeatureStatusDisabled;
@@ -86,9 +86,9 @@ struct StructTraits<gpu::mojom::GpuFeatureInfoDataView, gpu::GpuFeatureInfo> {
     return info.disabled_webgl_extensions;
   }
 
-  static const std::vector<uint32_t>& applied_gpu_blacklist_entries(
+  static const std::vector<uint32_t>& applied_gpu_blocklist_entries(
       const gpu::GpuFeatureInfo& info) {
-    return info.applied_gpu_blacklist_entries;
+    return info.applied_gpu_blocklist_entries;
   }
 
   static const std::vector<uint32_t>& applied_gpu_driver_bug_list_entries(

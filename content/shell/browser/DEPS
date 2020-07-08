@@ -4,7 +4,6 @@ include_rules = [
   "+services/device/public/cpp",
   "+services/network/public",
   "+services/service_manager/public/cpp",
-  "+services/service_manager/sandbox",
   "+ui/ozone/public",
 ]
 

@@ -11,6 +11,7 @@ import static androidx.test.espresso.intent.matcher.IntentMatchers.hasData;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 
 import android.accounts.Account;
 import android.content.ClipData;
@@ -18,7 +19,6 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.provider.Browser;
-import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -44,7 +44,6 @@ import org.chromium.chrome.browser.history.HistoryTestUtils.TestObserver;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
@@ -56,6 +55,7 @@ import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemV
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemViewHolder;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.signin.metrics.SignoutReason;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -513,12 +513,8 @@ public class HistoryActivityTest {
                                             .getMenu()
                                             .performIdentifierAction(
                                                     R.id.selection_mode_copy_link, 0)));
-            CriteriaHelper.pollUiThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return TextUtils.equals(mItem1.getUrl(), clipboardManager.getText());
-                }
-            });
+            CriteriaHelper.pollUiThread(
+                    () -> Criteria.checkThat(mItem1.getUrl(), is(clipboardManager.getText())));
 
             // Check that the copy link item is not visible when more than one item is selected.
             toggleItemSelection(2);
@@ -579,20 +575,16 @@ public class HistoryActivityTest {
         Assert.assertEquals(account, mAccountManagerTestRule.getCurrentSignedInAccount());
 
         // Wait for recycler view changes after sign in.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return !mRecyclerView.isAnimating();
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> !mRecyclerView.isAnimating());
 
         // Set supervised user.
         int onPreferenceChangeCallCount = mTestObserver.onPreferenceChangeCallback.getCallCount();
         Assert.assertTrue(TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PrefServiceBridge.getInstance().setString(Pref.SUPERVISED_USER_ID, "ChildAccountSUID");
-            return Profile.getLastUsedRegularProfile().isChild()
-                    && !PrefServiceBridge.getInstance().getBoolean(
-                            Pref.ALLOW_DELETING_BROWSER_HISTORY)
+            Profile profile = Profile.getLastUsedRegularProfile();
+            UserPrefs.get(profile).setString(Pref.SUPERVISED_USER_ID, "ChildAccountSUID");
+            return profile.isChild()
+                    && !UserPrefs.get(Profile.getLastUsedRegularProfile())
+                                .getBoolean(Pref.ALLOW_DELETING_BROWSER_HISTORY)
                     && !IncognitoUtils.isIncognitoModeEnabled();
         }));
 
@@ -603,12 +595,7 @@ public class HistoryActivityTest {
         // Wait until animator finish removing history item delete icon
         // TODO(twellington): Figure out a better way to do this (e.g. listen for RecyclerView
         // data changes or add a testing callback)
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return !mRecyclerView.isAnimating();
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> !mRecyclerView.isAnimating());
 
         // Clean up PrefChangeRegistrar for test.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -620,7 +607,9 @@ public class HistoryActivityTest {
     private void signOut() throws Exception {
         // Clear supervised user id.
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> PrefServiceBridge.getInstance().setString(Pref.SUPERVISED_USER_ID, ""));
+                ()
+                        -> UserPrefs.get(Profile.getLastUsedRegularProfile())
+                                   .setString(Pref.SUPERVISED_USER_ID, ""));
 
         // Sign out of account.
         int currentCallCount = mTestObserver.onSigninStateChangedCallback.getCallCount();

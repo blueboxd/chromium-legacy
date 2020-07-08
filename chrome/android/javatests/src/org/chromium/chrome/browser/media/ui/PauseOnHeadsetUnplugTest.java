@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.media.MediaSwitches;
@@ -77,12 +76,9 @@ public class PauseOnHeadsetUnplugTest {
     }
 
     private void waitForNotificationReady() {
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return MediaNotificationManager.hasControllerForTesting(
-                        R.id.media_playback_notification);
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            return MediaNotificationManager.hasControllerForTesting(
+                    R.id.media_playback_notification);
         });
     }
 

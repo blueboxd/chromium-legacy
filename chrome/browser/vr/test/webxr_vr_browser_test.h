@@ -18,7 +18,7 @@
 #include "ui/gfx/geometry/vector3d_f.h"
 
 #if defined(OS_WIN)
-#include "services/service_manager/sandbox/features.h"
+#include "sandbox/policy/features.h"
 #endif
 
 namespace vr {

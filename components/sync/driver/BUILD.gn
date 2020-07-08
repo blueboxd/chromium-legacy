@@ -29,8 +29,6 @@ jumbo_static_library("driver") {
     "data_type_manager_observer.h",
     "data_type_status_table.cc",
     "data_type_status_table.h",
-    "file_based_trusted_vault_client.cc",
-    "file_based_trusted_vault_client.h",
     "glue/sync_engine_backend.cc",
     "glue/sync_engine_backend.h",
     "glue/sync_engine_impl.cc",

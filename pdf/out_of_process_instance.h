@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "pdf/paint_manager.h"
@@ -112,7 +113,7 @@ class OutOfProcessInstance : public pp::Instance,
   void NotifySelectedFindResultChanged(int current_find_index) override;
   void NotifyTouchSelectionOccurred() override;
   void GetDocumentPassword(
-      pp::CompletionCallbackWithOutput<pp::Var> callback) override;
+      base::OnceCallback<void(const std::string&)> callback) override;
   void Beep() override;
   void Alert(const std::string& message) override;
   bool Confirm(const std::string& message) override;
@@ -406,7 +407,7 @@ class OutOfProcessInstance : public pp::Instance,
   pp::CompletionCallbackFactory<OutOfProcessInstance> callback_factory_;
 
   // The callback for receiving the password from the page.
-  std::unique_ptr<pp::CompletionCallbackWithOutput<pp::Var>> password_callback_;
+  base::OnceCallback<void(const std::string&)> password_callback_;
 
   DocumentLoadState document_load_state_ = LOAD_STATE_LOADING;
   DocumentLoadState preview_document_load_state_ = LOAD_STATE_COMPLETE;

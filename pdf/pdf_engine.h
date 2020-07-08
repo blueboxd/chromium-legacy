@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/containers/span.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
@@ -182,7 +183,7 @@ class PDFEngine {
     // Prompts the user for a password to open this document. The callback is
     // called when the password is retrieved.
     virtual void GetDocumentPassword(
-        pp::CompletionCallbackWithOutput<pp::Var> callback) {}
+        base::OnceCallback<void(const std::string&)> callback) {}
 
     // Play a "beeping" sound.
     virtual void Beep() {}

@@ -40,11 +40,9 @@ ExoTestBase::~ExoTestBase() = default;
 void ExoTestBase::SetUp() {
   AshTestBase::SetUp();
   wm_helper_ = std::make_unique<WMHelperChromeOS>();
-  WMHelper::SetInstance(wm_helper_.get());
 }
 
 void ExoTestBase::TearDown() {
-  WMHelper::SetInstance(nullptr);
   wm_helper_.reset();
   AshTestBase::TearDown();
 }

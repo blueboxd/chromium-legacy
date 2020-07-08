@@ -141,17 +141,17 @@ gpu::ContextResult ContextGroup::Initialize(
     const DisallowedFeatures& disallowed_features) {
   switch (context_type) {
     case CONTEXT_TYPE_WEBGL1:
-      if (kGpuFeatureStatusBlacklisted ==
+      if (kGpuFeatureStatusBlocklisted ==
           gpu_feature_info_.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL]) {
-        LOG(ERROR) << "ContextResult::kFatalFailure: WebGL1 blacklisted";
+        LOG(ERROR) << "ContextResult::kFatalFailure: WebGL1 blocklisted";
         return gpu::ContextResult::kFatalFailure;
       }
       break;
     case CONTEXT_TYPE_WEBGL2:
-      if (kGpuFeatureStatusBlacklisted ==
+      if (kGpuFeatureStatusBlocklisted ==
           gpu_feature_info_
               .status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL2]) {
-        LOG(ERROR) << "ContextResult::kFatalFailure: WebGL2 blacklisted";
+        LOG(ERROR) << "ContextResult::kFatalFailure: WebGL2 blocklisted";
         return gpu::ContextResult::kFatalFailure;
       }
       break;
@@ -180,7 +180,7 @@ gpu::ContextResult ContextGroup::Initialize(
        context_type == CONTEXT_TYPE_OPENGLES3) &&
       !feature_info_->IsES3Capable()) {
     LOG(ERROR) << "ContextResult::kFatalFailure: "
-               << "ES3 is blacklisted/disabled/unsupported by driver.";
+               << "ES3 is blocklisted/disabled/unsupported by driver.";
     return gpu::ContextResult::kFatalFailure;
   }
 

@@ -17,6 +17,7 @@ import android.widget.Button;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -124,20 +125,10 @@ public class FirstRunIntegrationTest {
         mTestObserver.abortFirstRunExperienceCallback.waitForCallback(
                 "FirstRunActivity didn't abort", 0);
 
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mActivity.isFinishing();
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(() -> mActivity.isFinishing());
 
         // ChromeLauncherActivity should finish if FRE was aborted.
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return chromeLauncherActivity.isFinishing();
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(() -> chromeLauncherActivity.isFinishing());
     }
 
     @Test
@@ -242,12 +233,8 @@ public class FirstRunIntegrationTest {
     }
 
     private void clickButton(final Activity activity, final int id, final String message) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return activity.findViewById(id) != null;
-            }
-        });
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(activity.findViewById(id), Matchers.notNullValue()));
 
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             Button button = (Button) activity.findViewById(id);

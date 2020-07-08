@@ -9,7 +9,8 @@
 namespace base {
 namespace internal {
 
-#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL) && \
+    ENABLE_TAG_FOR_CHECKED_PTR2
 
 BASE_EXPORT bool CheckedPtr2ImplPartitionAllocSupport::EnabledForPtr(
     void* ptr) {

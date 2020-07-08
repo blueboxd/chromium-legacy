@@ -73,7 +73,7 @@ class DeviceOffHoursController : public chromeos::SystemClockClient::Observer,
 
   // Return "OffHours" mode end time during "OffHours" mode is on. Return null
   // when "OffHours" mode is off.
-  base::TimeTicks GetOffHoursEndTime() const { return off_hours_end_time_; }
+  base::Time GetOffHoursEndTime() const { return off_hours_end_time_; }
 
   // chromeos::PowerManagerClient::Observer:
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
@@ -104,7 +104,7 @@ class DeviceOffHoursController : public chromeos::SystemClockClient::Observer,
   void SetOffHoursMode(bool off_hours_enabled);
 
   // Set "OffHours" mode end time.
-  void SetOffHoursEndTime(base::TimeTicks off_hours_end_time);
+  void SetOffHoursEndTime(base::Time off_hours_end_time);
 
   // Timer for update "OffHours" mode.
   void StartOffHoursTimer(base::TimeDelta delay);
@@ -126,7 +126,7 @@ class DeviceOffHoursController : public chromeos::SystemClockClient::Observer,
 
   // "OffHours" mode end time. It is needed to show "OffHours" session limit
   // notification. When "OffHours" mode is off the value is null.
-  base::TimeTicks off_hours_end_time_;
+  base::Time off_hours_end_time_;
 
   // Timer for updating device settings at the begin of next “OffHours” interval
   // or at the end of current "OffHours" interval.

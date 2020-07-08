@@ -19,6 +19,7 @@ source_set("certificates") {
 
   deps = [
     "//base",
+    "//base/util/values:values_util",
     "//chrome/browser/nearby_sharing/proto",
     "//crypto",
   ]

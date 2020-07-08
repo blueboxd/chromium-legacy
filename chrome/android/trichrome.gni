@@ -108,7 +108,6 @@ template("trichrome_library_apk_tmpl") {
     }
 
     min_sdk_version = 29
-    target_sdk_version = android_sdk_version
 
     if (trichrome_synchronized_proguard) {
       product_version_resources_dep =

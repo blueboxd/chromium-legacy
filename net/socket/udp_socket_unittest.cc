@@ -151,9 +151,11 @@ class UDPSocketTest : public PlatformTest, public WithTaskEnvironment {
 
 const int UDPSocketTest::kMaxRead;
 
-void ReadCompleteCallback(int* result_out, base::Closure callback, int result) {
+void ReadCompleteCallback(int* result_out,
+                          base::OnceClosure callback,
+                          int result) {
   *result_out = result;
-  callback.Run();
+  std::move(callback).Run();
 }
 
 void UDPSocketTest::ConnectTest(bool use_nonblocking_io) {

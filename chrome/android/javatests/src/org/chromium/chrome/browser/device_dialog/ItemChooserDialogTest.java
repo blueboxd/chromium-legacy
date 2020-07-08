@@ -112,12 +112,8 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
         final ListView items = (ListView) dialog.findViewById(R.id.items);
         final Button button = (Button) dialog.findViewById(R.id.positive);
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return items.getChildAt(0) != null;
-            }
-        });
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(items.getChildAt(0), Matchers.notNullValue()));
 
         // Verify first item selected gets selected.
         TouchCommon.singleClickView(items.getChildAt(position - 1));

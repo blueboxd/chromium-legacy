@@ -108,6 +108,26 @@ base::Time UpgradeDetectorChromeos::GetHighAnnoyanceDeadline() {
   return high_deadline_;
 }
 
+void UpgradeDetectorChromeos::OverrideHighAnnoyanceDeadline(
+    base::Time deadline) {
+  DCHECK(!upgrade_detected_time().is_null());
+  if (deadline > upgrade_detected_time()) {
+    high_deadline_override_ = deadline;
+    CalculateDeadlines();
+    NotifyOnUpgrade();
+  }
+}
+
+void UpgradeDetectorChromeos::ResetOverriddenDeadline() {
+  if (high_deadline_override_.is_null())
+    return;
+
+  DCHECK(!upgrade_detected_time().is_null());
+  high_deadline_override_ = base::Time();
+  CalculateDeadlines();
+  NotifyOnUpgrade();
+}
+
 void UpgradeDetectorChromeos::OnUpdate(const BuildState* build_state) {
   if (upgrade_detected_time().is_null()) {
     set_upgrade_detected_time(clock()->Now());
@@ -194,6 +214,12 @@ void UpgradeDetectorChromeos::CalculateDeadlines() {
     heads_up_period = kDefaultHeadsUpPeriod;
   elevated_deadline_ =
       std::max(high_deadline_ - heads_up_period, upgrade_detected_time());
+
+  if (!high_deadline_override_.is_null() &&
+      high_deadline_ > high_deadline_override_) {
+    elevated_deadline_ = upgrade_detected_time();
+    high_deadline_ = std::max(elevated_deadline_, high_deadline_override_);
+  }
 }
 
 void UpgradeDetectorChromeos::OnRelaunchNotificationPeriodPrefChanged() {

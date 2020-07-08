@@ -392,6 +392,9 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual bool IsUnderAdvancedProtection() = 0;
 #endif
 
+  // If Safe browsing endpoint is not enabled in the country.
+  virtual bool IsInExcludedCountry() = 0;
+
 #if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
   // Records a Chrome Sync event for the result of the URL reputation lookup
   // if the user enters their sync password on a website.

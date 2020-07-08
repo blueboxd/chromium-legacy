@@ -63,9 +63,10 @@ class FakePlatformWindow : public ui::PlatformWindow, public ui::WmDragHandler {
   void SizeConstraintsChanged() override {}
 
   // ui::WmDragHandler
-  void StartDrag(const OSExchangeData& data,
+  bool StartDrag(const OSExchangeData& data,
                  int operation,
                  gfx::NativeCursor cursor,
+                 bool can_grab_pointer,
                  WmDragHandler::Delegate* delegate) override {
     drag_handler_delegate_ = delegate;
     source_data_ = std::make_unique<OSExchangeData>(data.provider().Clone());
@@ -73,7 +74,14 @@ class FakePlatformWindow : public ui::PlatformWindow, public ui::WmDragHandler {
         FROM_HERE,
         base::BindOnce(&FakePlatformWindow::ProcessDrag, base::Unretained(this),
                        std::move(source_data_), operation));
+
+    base::RunLoop run_loop;
+    drag_loop_quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+    return true;
   }
+
+  void CancelDrag() override { std::move(drag_loop_quit_closure_).Run(); }
 
   void OnDragEnter(const gfx::PointF& point,
                    std::unique_ptr<OSExchangeData> data,
@@ -108,6 +116,7 @@ class FakePlatformWindow : public ui::PlatformWindow, public ui::WmDragHandler {
 
   void CloseDrag(uint32_t dnd_action) {
     drag_handler_delegate_->OnDragFinished(dnd_action);
+    std::move(drag_loop_quit_closure_).Run();
   }
 
   void ProcessDrag(std::unique_ptr<OSExchangeData> data, int operation) {
@@ -121,6 +130,7 @@ class FakePlatformWindow : public ui::PlatformWindow, public ui::WmDragHandler {
  private:
   WmDragHandler::Delegate* drag_handler_delegate_ = nullptr;
   std::unique_ptr<ui::OSExchangeData> source_data_;
+  base::OnceClosure drag_loop_quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePlatformWindow);
 };

@@ -5,9 +5,6 @@
 package org.chromium.weblayer_private.test;
 
 import android.os.IBinder;
-import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -165,18 +162,5 @@ public final class TestWebLayerImpl extends ITestWebLayer.Stub {
     @Override
     public boolean canInfoBarContainerScroll(ITab tab) {
         return ((TabImpl) tab).canInfoBarContainerScrollForTesting();
-    }
-
-    @Override
-    public String getDisplayedUrl(IObjectWrapper /* View */ view) {
-        View urlBarView = ObjectWrapper.unwrap(view, View.class);
-        assert (urlBarView instanceof LinearLayout);
-        LinearLayout urlBarLayout = (LinearLayout) urlBarView;
-        assert (urlBarLayout.getChildCount() == 2);
-
-        View textView = urlBarLayout.getChildAt(1);
-        assert (textView instanceof TextView);
-        TextView urlBarTextView = (TextView) textView;
-        return urlBarTextView.getText().toString();
     }
 }

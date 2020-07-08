@@ -34,6 +34,10 @@ class UpgradeObserver {
   // disabled. No details are expected.
   virtual void OnOutdatedInstallNoAutoUpdate() {}
 
+  // Triggered when a request to override the relaunch notification style to
+  // required or reset the overridden style is received.
+  virtual void OnRelaunchOverriddenToRequired(bool override) {}
+
  protected:
   virtual ~UpgradeObserver() {}
 };

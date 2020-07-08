@@ -5,11 +5,11 @@
 package org.chromium.chrome.browser.tab;
 
 import android.support.test.InstrumentationRegistry;
-import android.text.TextUtils;
 
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -164,30 +164,20 @@ public class RepostFormWarningTest {
     }
 
     private void waitForNoReportFormWarningDialog() {
-        CriteriaHelper.pollUiThread(
-                new Criteria("Form resubmission dialog not dismissed correctly") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return getCurrentModalDialog() == null;
-                    }
-                });
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("Form resubmission dialog not dismissed correctly",
+                    getCurrentModalDialog(), Matchers.nullValue());
+        });
     }
 
     private PropertyModel waitForRepostFormWarningDialog() {
-        CriteriaHelper.pollUiThread(new Criteria("Form resubmission warning not shown") {
-            @Override
-            public boolean isSatisfied() {
-                PropertyModel dialogModel = getCurrentModalDialog();
-                if (dialogModel == null) {
-                    updateFailureReason("No modal dialog shown");
-                    return false;
-                }
-
-                updateFailureReason("Modal dialog is not a HTTP post dialog");
-                return TextUtils.equals(
-                        mActivityTestRule.getActivity().getString(R.string.http_post_warning_title),
-                        dialogModel.get(ModalDialogProperties.TITLE));
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            PropertyModel dialogModel = getCurrentModalDialog();
+            Criteria.checkThat("No modal dialog shown", dialogModel, Matchers.notNullValue());
+            Criteria.checkThat("Modal dialog is not a HTTP post dialog",
+                    dialogModel.get(ModalDialogProperties.TITLE),
+                    Matchers.is(mActivityTestRule.getActivity().getString(
+                            R.string.http_post_warning_title)));
         });
         return getCurrentModalDialog();
     }

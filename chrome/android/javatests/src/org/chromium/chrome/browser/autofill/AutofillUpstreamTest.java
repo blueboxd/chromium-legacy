@@ -26,7 +26,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.infobars.InfoBar;
 import org.chromium.components.infobars.InfoBarLayout;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -81,12 +80,9 @@ public class AutofillUpstreamTest {
 
     private void waitForSaveCardInfoBar() {
         CriteriaHelper.pollUiThread(
-                new Criteria("Autofill Save Card Infobar view was never added.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return hasAutofillSaveCardInfobar(mActivityTestRule.getInfoBars());
-                    }
-                });
+                ()
+                        -> hasAutofillSaveCardInfobar(mActivityTestRule.getInfoBars()),
+                "Autofill Save Card Infobar view was never added.");
     }
 
     private boolean hasAutofillSaveCardInfobar(List<InfoBar> infobars) {

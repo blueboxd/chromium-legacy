@@ -102,8 +102,8 @@ std::vector<BrokerFilePermission> GetImeFilePermissions() {
 
 }  // namespace
 
-bool ImePreSandboxHook(service_manager::SandboxLinux::Options options) {
-  auto* instance = service_manager::SandboxLinux::GetInstance();
+bool ImePreSandboxHook(sandbox::policy::SandboxLinux::Options options) {
+  auto* instance = sandbox::policy::SandboxLinux::GetInstance();
   instance->StartBrokerProcess(MakeBrokerCommandSet({
                                    sandbox::syscall_broker::COMMAND_ACCESS,
                                    sandbox::syscall_broker::COMMAND_OPEN,
@@ -114,7 +114,7 @@ bool ImePreSandboxHook(service_manager::SandboxLinux::Options options) {
                                    sandbox::syscall_broker::COMMAND_UNLINK,
                                }),
                                GetImeFilePermissions(),
-                               service_manager::SandboxLinux::PreSandboxHook(),
+                               sandbox::policy::SandboxLinux::PreSandboxHook(),
                                options);
 
   instance->EngageNamespaceSandboxIfPossible();

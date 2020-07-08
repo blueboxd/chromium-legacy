@@ -51,7 +51,7 @@ source_set("sandbox_hook") {
     "//base",
     "//chromeos/services/ime/public/cpp:buildflags",
     "//sandbox/linux:sandbox_services",
-    "//services/service_manager/sandbox:sandbox",
+    "//sandbox/policy",
   ]
 }
 

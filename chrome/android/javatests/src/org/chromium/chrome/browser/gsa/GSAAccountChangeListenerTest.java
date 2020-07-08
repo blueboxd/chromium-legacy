@@ -12,6 +12,7 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -41,13 +42,10 @@ public class GSAAccountChangeListenerTest {
         intent.putExtra(GSAAccountChangeListener.BROADCAST_INTENT_ACCOUNT_NAME_EXTRA, ACCOUNT_NAME);
         context.sendBroadcast(intent);
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                String currentAccount =
-                        GSAState.getInstance(context.getApplicationContext()).getGsaAccount();
-                return ACCOUNT_NAME.equals(currentAccount);
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            String currentAccount =
+                    GSAState.getInstance(context.getApplicationContext()).getGsaAccount();
+            Criteria.checkThat(currentAccount, Matchers.is(ACCOUNT_NAME));
         });
 
         // A broadcast with a permission that Chrome doesn't hold should not be received.
@@ -59,13 +57,10 @@ public class GSAAccountChangeListenerTest {
         context.sendBroadcast(intent, "permission.you.dont.have");
 
         // This is ugly, but so is checking that some asynchronous call was never received.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                String currentAccount =
-                        GSAState.getInstance(context.getApplicationContext()).getGsaAccount();
-                return ACCOUNT_NAME2.equals(currentAccount);
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            String currentAccount =
+                    GSAState.getInstance(context.getApplicationContext()).getGsaAccount();
+            Criteria.checkThat(currentAccount, Matchers.is(ACCOUNT_NAME2));
         }, 1000, 100);
     }
 }

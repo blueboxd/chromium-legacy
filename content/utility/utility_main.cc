@@ -21,14 +21,14 @@
 #include "content/public/common/sandbox_init.h"
 #include "content/public/utility/content_utility_client.h"
 #include "content/utility/utility_thread_impl.h"
-#include "services/service_manager/sandbox/sandbox.h"
+#include "sandbox/policy/sandbox.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 
 #if defined(OS_LINUX)
 #include "content/utility/speech/speech_recognition_sandbox_hook_linux.h"
+#include "sandbox/policy/linux/sandbox_linux.h"
 #include "services/audio/audio_sandbox_hook_linux.h"
 #include "services/network/network_sandbox_hook_linux.h"
-#include "services/service_manager/sandbox/linux/sandbox_linux.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -87,33 +87,33 @@ int UtilityMain(const MainFunctionParams& parameters) {
   // TODO(jorgelo): move this after GTK initialization when we enable a strict
   // Seccomp-BPF policy.
   auto sandbox_type =
-      service_manager::SandboxTypeFromCommandLine(parameters.command_line);
+      sandbox::policy::SandboxTypeFromCommandLine(parameters.command_line);
   if (parameters.zygote_child ||
-      sandbox_type == service_manager::SandboxType::kNetwork ||
+      sandbox_type == sandbox::policy::SandboxType::kNetwork ||
 #if defined(OS_CHROMEOS)
-      sandbox_type == service_manager::SandboxType::kIme ||
-      sandbox_type == service_manager::SandboxType::kTts ||
+      sandbox_type == sandbox::policy::SandboxType::kIme ||
+      sandbox_type == sandbox::policy::SandboxType::kTts ||
 #endif  // OS_CHROMEOS
-      sandbox_type == service_manager::SandboxType::kAudio ||
-      sandbox_type == service_manager::SandboxType::kSpeechRecognition) {
-    service_manager::SandboxLinux::PreSandboxHook pre_sandbox_hook;
-    if (sandbox_type == service_manager::SandboxType::kNetwork)
+      sandbox_type == sandbox::policy::SandboxType::kAudio ||
+      sandbox_type == sandbox::policy::SandboxType::kSpeechRecognition) {
+    sandbox::policy::SandboxLinux::PreSandboxHook pre_sandbox_hook;
+    if (sandbox_type == sandbox::policy::SandboxType::kNetwork)
       pre_sandbox_hook = base::BindOnce(&network::NetworkPreSandboxHook);
-    else if (sandbox_type == service_manager::SandboxType::kAudio)
+    else if (sandbox_type == sandbox::policy::SandboxType::kAudio)
       pre_sandbox_hook = base::BindOnce(&audio::AudioPreSandboxHook);
-    else if (sandbox_type == service_manager::SandboxType::kSpeechRecognition)
+    else if (sandbox_type == sandbox::policy::SandboxType::kSpeechRecognition)
       pre_sandbox_hook =
           base::BindOnce(&speech::SpeechRecognitionPreSandboxHook);
 #if defined(OS_CHROMEOS)
-    else if (sandbox_type == service_manager::SandboxType::kIme)
+    else if (sandbox_type == sandbox::policy::SandboxType::kIme)
       pre_sandbox_hook = base::BindOnce(&chromeos::ime::ImePreSandboxHook);
-    else if (sandbox_type == service_manager::SandboxType::kTts)
+    else if (sandbox_type == sandbox::policy::SandboxType::kTts)
       pre_sandbox_hook = base::BindOnce(&chromeos::tts::TtsPreSandboxHook);
 #endif  // OS_CHROMEOS
 
-    service_manager::Sandbox::Initialize(
+    sandbox::policy::Sandbox::Initialize(
         sandbox_type, std::move(pre_sandbox_hook),
-        service_manager::SandboxLinux::Options());
+        sandbox::policy::SandboxLinux::Options());
   }
 #elif defined(OS_WIN)
   g_utility_target_services = parameters.sandbox_info->target_services;
@@ -154,9 +154,9 @@ int UtilityMain(const MainFunctionParams& parameters) {
 
 #if defined(OS_WIN)
   auto sandbox_type =
-      service_manager::SandboxTypeFromCommandLine(parameters.command_line);
-  if (!service_manager::IsUnsandboxedSandboxType(sandbox_type) &&
-      sandbox_type != service_manager::SandboxType::kCdm) {
+      sandbox::policy::SandboxTypeFromCommandLine(parameters.command_line);
+  if (!sandbox::policy::IsUnsandboxedSandboxType(sandbox_type) &&
+      sandbox_type != sandbox::policy::SandboxType::kCdm) {
     if (!g_utility_target_services)
       return false;
     char buffer;

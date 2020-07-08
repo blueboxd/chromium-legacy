@@ -21,7 +21,6 @@
 #include "url/url_util.h"
 
 namespace base {
-class DictionaryValue;
 class RefCountedMemory;
 class SequencedTaskRunner;
 }
@@ -170,19 +169,6 @@ class CONTENT_EXPORT ContentClient {
   // Called by content::GetProcessTypeNameInEnglish for process types that it
   // doesn't know about because they're from the embedder.
   virtual std::string GetProcessTypeNameInEnglish(int type);
-
-  // Called once during initialization of NetworkService to provide constants
-  // to NetLog.  (Though it may be called multiples times if NetworkService
-  // crashes and needs to be reinitialized).  The return value is merged with
-  // |GetNetConstants()| and passed to FileNetLogObserver - see documentation
-  // of |FileNetLogObserver::CreateBounded()| for more information.  The
-  // convention is to put new constants under a subdict at the key "clientInfo".
-  virtual base::DictionaryValue GetNetLogConstants();
-
-  // Returns whether or not V8 script extensions should be allowed for a
-  // service worker.
-  virtual bool AllowScriptExtensionForServiceWorker(
-      const url::Origin& script_origin);
 
   // Returns the origin trial policy, or nullptr if origin trials are not
   // supported by the embedder.

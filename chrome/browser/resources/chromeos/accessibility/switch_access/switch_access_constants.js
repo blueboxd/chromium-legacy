@@ -78,6 +78,8 @@ const SAConstants = {
     MISSING_KEYBOARD: 10,
     ROW_TOO_SHORT: 11,
     MISSING_BASE_NODE: 12,
+    NEXT_INVALID: 13,
+    PREVIOUS_INVALID: 14,
   },
 
   /**

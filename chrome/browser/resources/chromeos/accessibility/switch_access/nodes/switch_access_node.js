@@ -22,6 +22,9 @@ class SAChildNode {
 
     /** @private {?SAChildNode} */
     this.previous_ = null;
+
+    /** @private {boolean} */
+    this.valid_ = true;
   }
 
   // ================= Getters and setters =================
@@ -56,13 +59,22 @@ class SAChildNode {
    * @return {!SAChildNode}
    */
   get next() {
-    if (!this.next_) {
-      setTimeout(NavigationManager.moveToValidNode, 0);
-      throw SwitchAccess.error(
-          SAConstants.ErrorType.NEXT_UNDEFINED,
-          'Next node must be set on all SAChildNodes before navigating');
+    let next = this;
+    while (true) {
+      next = next.next_;
+      if (!next) {
+        this.onInvalidNavigation_(
+            SAConstants.ErrorType.NEXT_UNDEFINED,
+            'Next node must be set on all SAChildNodes before navigating');
+      }
+      if (this === next) {
+        this.onInvalidNavigation_(
+            SAConstants.ErrorType.NEXT_INVALID, 'No valid next node');
+      }
+      if (next.isValidAndVisible()) {
+        return next;
+      }
     }
-    return this.next_;
   }
 
   /** @param {!SAChildNode} newVal */
@@ -75,13 +87,22 @@ class SAChildNode {
    * @return {!SAChildNode}
    */
   get previous() {
-    if (!this.previous_) {
-      setTimeout(NavigationManager.moveToValidNode, 0);
-      throw SwitchAccess.error(
-          SAConstants.ErrorType.PREVIOUS_UNDEFINED,
-          'Previous node must be set on all SAChildNodes before navigating');
+    let previous = this;
+    while (true) {
+      previous = previous.previous_;
+      if (!previous) {
+        this.onInvalidNavigation_(
+            SAConstants.ErrorType.PREVIOUS_UNDEFINED,
+            'Previous node must be set on all SAChildNodes before navigating');
+      }
+      if (this === previous) {
+        this.onInvalidNavigation_(
+            SAConstants.ErrorType.PREVIOUS_INVALID, 'No valid previous node');
+      }
+      if (previous.isValidAndVisible()) {
+        return previous;
+      }
     }
-    return this.previous_;
   }
 
   /**
@@ -147,11 +168,12 @@ class SAChildNode {
 
   /**
    * Returns whether this node is still both valid and visible onscreen (e.g.
-   *    not hidden, not offscreen, not invisible)
+   *    has a location, and, if representing an AutomationNode, not hidden,
+   *    not offscreen, not invisible).
    * @return {boolean}
    */
   isValidAndVisible() {
-    return !!this.location;
+    return this.valid_ && !!this.location;
   }
 
   /**
@@ -210,6 +232,19 @@ class SAChildNode {
     }
 
     return str;
+  }
+
+  // ================= Private methods =================
+
+  /**
+   *
+   * @param {SAConstants.ErrorType} error
+   * @param {string} message
+   */
+  onInvalidNavigation_(error, message) {
+    this.valid_ = false;
+    setTimeout(NavigationManager.moveToValidNode, 0);
+    throw SwitchAccess.error(error, message);
   }
 }
 
@@ -328,8 +363,19 @@ class SARootNode {
 
   /** @return {boolean} */
   isValidGroup() {
-    return this.children_.filter((child) => child.isValidAndVisible()).length >=
-        1;
+    // Must have one interesting child that is not the back button.
+    return this.children_
+               .filter(
+                   (child) => child.isValidAndVisible() &&
+                       !(child instanceof BackButtonNode))
+               .length >= 1;
+  }
+
+  /** @return {SAChildNode} */
+  firstValidChild() {
+    const children =
+        this.children_.filter((child) => child.isValidAndVisible());
+    return children.length > 0 ? children[0] : null;
   }
 
   /** Called when a group is set as the current group. */

@@ -16,7 +16,7 @@ namespace blink {
 using ReferenceSpaceType = device::mojom::blink::XRReferenceSpaceType;
 
 // Rough estimate of avg human eye height in meters.
-const double kDefaultEmulationHeightMeters = 1.6;
+const double kDefaultEmulationHeightMeters = -1.6;
 
 ReferenceSpaceType XRReferenceSpace::StringToReferenceSpaceType(
     const String& reference_space_type) {
@@ -68,22 +68,22 @@ XRPose* XRReferenceSpace::getPose(XRSpace* other_space) {
   }
 }
 
-void XRReferenceSpace::SetFloorFromMojo() {
+void XRReferenceSpace::SetMojoFromFloor() {
   const device::mojom::blink::VRDisplayInfoPtr& display_info =
       session()->GetVRDisplayInfo();
 
   if (display_info && display_info->stage_parameters) {
     // Use the transform given by xrDisplayInfo's stage_parameters if available.
-    floor_from_mojo_ = std::make_unique<TransformationMatrix>(
-        display_info->stage_parameters->standing_transform.matrix());
+    mojo_from_floor_ = std::make_unique<TransformationMatrix>(
+        display_info->stage_parameters->mojo_from_floor.matrix());
   } else {
-    floor_from_mojo_.reset();
+    mojo_from_floor_.reset();
   }
 
   display_info_id_ = session()->DisplayInfoPtrId();
 }
 
-base::Optional<TransformationMatrix> XRReferenceSpace::NativeFromMojo() {
+base::Optional<TransformationMatrix> XRReferenceSpace::MojoFromNative() {
   switch (type_) {
     case ReferenceSpaceType::kViewer:
     case ReferenceSpaceType::kLocal:
@@ -100,17 +100,16 @@ base::Optional<TransformationMatrix> XRReferenceSpace::NativeFromMojo() {
                    : base::nullopt;
       }
 
-      DCHECK(mojo_from_native->IsInvertible());
-      return mojo_from_native->Inverse();
+      return *mojo_from_native;
     }
     case ReferenceSpaceType::kLocalFloor: {
       // Check first to see if the xrDisplayInfo has updated since the last
       // call. If so, update the floor-level transform.
       if (display_info_id_ != session()->DisplayInfoPtrId())
-        SetFloorFromMojo();
+        SetMojoFromFloor();
 
-      if (floor_from_mojo_) {
-        return *floor_from_mojo_;
+      if (mojo_from_floor_) {
+        return *mojo_from_floor_;
       }
 
       // If the floor-level transform is unavailable, try to use the default
@@ -120,14 +119,11 @@ base::Optional<TransformationMatrix> XRReferenceSpace::NativeFromMojo() {
         return base::nullopt;
       }
 
-      DCHECK(mojo_from_local->IsInvertible());
-      auto local_from_mojo = mojo_from_local->Inverse();
-
-      // local-floor_from_local transform corresponding to the default height.
-      auto floor_from_local = TransformationMatrix().Translate3d(
+      // local_from_floor-local transform corresponding to the default height.
+      auto local_from_floor = TransformationMatrix().Translate3d(
           0, kDefaultEmulationHeightMeters, 0);
 
-      return floor_from_local * local_from_mojo;
+      return *mojo_from_local * local_from_floor;
     }
     case ReferenceSpaceType::kBoundedFloor: {
       NOTREACHED() << "kBoundedFloor should be handled by subclass";
@@ -155,10 +151,6 @@ base::Optional<TransformationMatrix> XRReferenceSpace::NativeFromViewer(
     return base::nullopt;
   native_from_viewer->Multiply(*mojo_from_viewer);
   return native_from_viewer;
-}
-
-base::Optional<TransformationMatrix> XRReferenceSpace::MojoFromNative() {
-  return XRSpace::TryInvert(NativeFromMojo());
 }
 
 TransformationMatrix XRReferenceSpace::NativeFromOffsetMatrix() {

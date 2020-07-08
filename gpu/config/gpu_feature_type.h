@@ -7,9 +7,9 @@
 
 namespace gpu {
 
-// Provides flags indicating which gpu features are blacklisted for the system
+// Provides flags indicating which gpu features are blocklisted for the system
 // on which chrome is currently running.
-// If a bit is set to 1, corresponding feature is blacklisted.
+// If a bit is set to 1, corresponding feature is blocklisted.
 enum GpuFeatureType {
   GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS = 0,
   GPU_FEATURE_TYPE_ACCELERATED_WEBGL,

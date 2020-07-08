@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/android_sms/android_sms_app_setup_controller.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/cookie_inclusion_status.h"
+#include "net/cookies/cookie_access_result.h"
 #include "url/gurl.h"
 
 class HostContentSettingsMap;
@@ -81,14 +81,13 @@ class AndroidSmsAppSetupControllerImpl : public AndroidSmsAppSetupController {
                     const GURL& install_url,
                     const GURL& migrated_to_app_url,
                     bool uninstalled);
-  void OnSetRememberDeviceByDefaultCookieResult(
-      const GURL& app_url,
-      const GURL& install_url,
-      SuccessCallback callback,
-      net::CookieInclusionStatus status);
+  void OnSetRememberDeviceByDefaultCookieResult(const GURL& app_url,
+                                                const GURL& install_url,
+                                                SuccessCallback callback,
+                                                net::CookieAccessResult result);
   void OnSetMigrationCookieResult(const GURL& app_url,
                                   SuccessCallback callback,
-                                  net::CookieInclusionStatus status);
+                                  net::CookieAccessResult result);
 
   void TryInstallApp(const GURL& install_url,
                      const GURL& app_url,

@@ -27,14 +27,11 @@
 <translation id="1743802530341753419">Pyet përpara se sajtet të lejohen të lidhen me një pajisje (rekomandohet)</translation>
 <translation id="1887786770086287077">Qasja te vendndodhja është joaktive për këtë pajisje. Aktivizoje te <ph name="BEGIN_LINK" />Cilësimet e Android<ph name="END_LINK" />.</translation>
 <translation id="1919345977826869612">Reklamat</translation>
-<translation id="1922076542920281912">Që të lejosh që Chrome të ketë qasje te vendndodhja jote, aktivizoje vendndodhjen edhe te <ph name="BEGIN_LINK" />Cilësimet e Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
-<translation id="194341124344773587">Aktivizo lejimin për Chrome te <ph name="BEGIN_LINK" />"Cilësimet" e Android<ph name="END_LINK" />.</translation>
 <translation id="1984937141057606926">Lejohet, përveç palëve të treta</translation>
 <translation id="1994173015038366702">URL-ja e sajtit</translation>
 <translation id="2025115093177348061">Realiteti i zgjeruar</translation>
 <translation id="2030769033451695672">Trokit për t'u kthyer te <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
-<translation id="2041019821020695769">Që të lejosh që Chrome të të dërgojë njoftime, aktivizoji njoftimet edhe te <ph name="BEGIN_LINK" />Cilësimet e Android<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Zhbëj</translation>
 <translation id="2091887806945687916">Tingulli</translation>
 <translation id="2107397443965016585">Pyet përpara se sajtet të lejohen të luajnë përmbajtje të mbrojtura (rekomandohet)</translation>
@@ -71,7 +68,6 @@
 <translation id="301521992641321250">Bllokuar automatikisht</translation>
 <translation id="3115898365077584848">Shfaq informacionin</translation>
 <translation id="3123473560110926937">Bllokuar në disa sajte</translation>
-<translation id="3190152372525844641">Aktivizo lejimet për Chrome te <ph name="BEGIN_LINK" />"Cilësimet" e Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">Të dhënat e ruajtura <ph name="STORAGE_AMOUNT" /></translation>
 <translation id="3227137524299004712">Mikrofoni</translation>
 <translation id="3277252321222022663">Lejoju faqeve të të hapin sensorët (rekomandohet)</translation>
@@ -83,7 +79,6 @@
 <translation id="358794129225322306">Lejo një sajt të shkarkojë shumë skedarë automatikisht.</translation>
 <translation id="3596414637720633074">Blloko kukit e palëve të treta në modalitetin "I fshehtë"</translation>
 <translation id="3600792891314830896">Hiq zërin për sajtet që luajnë tinguj</translation>
-<translation id="3730075448226062617">Që të lejosh që Chrome të ketë qasje te mikrofoni yt, aktivizoje mikrofonin edhe te <ph name="BEGIN_LINK" />Cilësimet e Android<ph name="END_LINK" />.</translation>
 <translation id="3744111561329211289">Sinkronizimi në sfond</translation>
 <translation id="3822502789641063741">Të pastrohet hapësira ruajtëse e sajtit?</translation>
 <translation id="385051799172605136">Prapa</translation>
@@ -112,7 +107,6 @@
 <translation id="4883854917563148705">Cilësimet e menaxhuara nuk mund të rivendosen</translation>
 <translation id="4887024562049524730">Pyet përpara se sajtet të lejohen të përdorin pajisjen e realitetit virtual dhe të dhënat e tua (rekomandohet)</translation>
 <translation id="4962975101802056554">Anulo të gjitha lejet për pajisjen</translation>
-<translation id="4964199952259983386">Për të lejuar që Chrome të përdorë AR, aktivizo gjithashtu kamerën në <ph name="BEGIN_LINK" />Cilësimet e Android<ph name="END_LINK" />.</translation>
 <translation id="497421865427891073">Vazhdo përpara</translation>
 <translation id="4996978546172906250">Ndaje nëpërmjet</translation>
 <translation id="5039804452771397117">Lejo</translation>
@@ -153,7 +147,6 @@
 <translation id="6177111841848151710">Bllokuar për motorin aktual të kërkimit</translation>
 <translation id="6181444274883918285">Shto përjashtim për sajt</translation>
 <translation id="6192792657125177640">Përjashtimet</translation>
-<translation id="6194112207524046168">Që të lejosh që Chrome të ketë qasje te kamera jote, aktivizoje kamerën edhe te <ph name="BEGIN_LINK" />Cilësimet e Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Blloko kukit e palëve të treta</translation>
 <translation id="6206551242102657620">Lidhja është e sigurt. Informacioni i faqes</translation>
 <translation id="6216432067784365534">Opsionet për <ph name="NAME_OF_LIST_ITEM" /></translation>

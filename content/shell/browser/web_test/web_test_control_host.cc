@@ -480,8 +480,7 @@ WebTestControlHost::WebTestControlHost()
     : main_window_(nullptr),
       secondary_window_(nullptr),
       test_phase_(BETWEEN_TESTS),
-      crash_when_leak_found_(false),
-      pending_layout_dumps_(0) {
+      crash_when_leak_found_(false) {
   CHECK(!instance_);
   instance_ = this;
 
@@ -515,8 +514,9 @@ WebTestControlHost::~WebTestControlHost() {
   CHECK(instance_ == this);
   CHECK(test_phase_ == BETWEEN_TESTS);
   GpuDataManager::GetInstance()->RemoveObserver(this);
-  DiscardMainWindow();
   instance_ = nullptr;
+  // The |main_window_| and |secondary_window_| are leaked here, but the
+  // WebTestBrowserMainRunner will close all Shell windows including those.
 }
 
 bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
@@ -537,8 +537,6 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
     printer_->set_capture_text_only(false);
   printer_->reset();
 
-  web_test_render_frame_map_.clear();
-  web_test_render_thread_map_.clear();
   accumulated_web_test_runtime_flags_changes_.Clear();
   main_window_render_view_hosts_.clear();
   main_window_render_process_hosts_.clear();
@@ -652,6 +650,11 @@ bool WebTestControlHost::ResetBrowserAfterWebTest() {
   // test.
   CloseTestOpenedWindows();
 
+  // Close IPC channels to avoid unexpected messages or replies after the test
+  // is done. New channels will be opened for the next test.
+  web_test_render_frame_map_.clear();
+  web_test_render_thread_map_.clear();
+
   printer_->PrintTextFooter();
   printer_->PrintImageFooter();
   printer_->CloseStderr();
@@ -669,14 +672,15 @@ bool WebTestControlHost::ResetBrowserAfterWebTest() {
       ->GetWebTestBrowserContext()
       ->GetWebTestPermissionManager()
       ->ResetPermissions();
-  navigation_history_dump_ = "";
-  pixel_dump_.reset();
   blink_test_client_receivers_.Clear();
-  actual_pixel_hash_ = "";
-  main_frame_dump_ = nullptr;
   check_for_leaked_windows_ = false;
+  renderer_dump_result_ = nullptr;
+  navigation_history_dump_ = "";
+  layout_dump_.reset();
+  waiting_for_layout_dumps_ = 0;
+  pixel_dump_.reset();
+  actual_pixel_hash_ = "";
   waiting_for_pixel_results_ = false;
-  waiting_for_main_frame_dump_ = false;
   composite_all_frames_node_queue_ = std::queue<Node*>();
   composite_all_frames_node_storage_.clear();
 
@@ -744,28 +748,14 @@ void WebTestControlHost::OpenURL(const GURL& url) {
                          gfx::Size());
 }
 
-void WebTestControlHost::InitiateLayoutDump() {
-  // There should be at most 1 layout dump in progress at any given time.
-  DCHECK_EQ(0, pending_layout_dumps_);
-
-  int number_of_messages = 0;
-  for (RenderFrameHost* rfh : main_window_->web_contents()->GetAllFrames()) {
-    if (!rfh->IsRenderFrameLive())
-      continue;
-
-    ++number_of_messages;
-    GetWebTestRenderFrameRemote(rfh)->DumpFrameLayout(
-        base::BindOnce(&WebTestControlHost::OnDumpFrameLayoutResponse,
-                       weak_factory_.GetWeakPtr(), rfh->GetFrameTreeNodeId()));
-  }
-
-  pending_layout_dumps_ = number_of_messages;
-}
-
-void WebTestControlHost::InitiateCaptureDump(bool capture_navigation_history,
-                                             bool capture_pixels) {
+void WebTestControlHost::InitiateCaptureDump(
+    mojom::WebTestRendererDumpResultPtr renderer_dump_result,
+    bool capture_navigation_history,
+    bool capture_pixels) {
   if (test_phase_ != DURING_TEST)
     return;
+
+  renderer_dump_result_ = std::move(renderer_dump_result);
 
   if (capture_navigation_history) {
     for (auto* window : Shell::windows()) {
@@ -782,10 +772,20 @@ void WebTestControlHost::InitiateCaptureDump(bool capture_navigation_history,
     }
   }
 
-  // Ensure to say that we need to wait for main frame dump here, since
-  // CopyFromSurface call below may synchronously issue the callback, meaning
-  // that we would report results too early.
-  waiting_for_main_frame_dump_ = true;
+  // Grab a layout dump if the renderer was not able to provide one.
+  if (!renderer_dump_result_->layout) {
+    DCHECK_EQ(0, waiting_for_layout_dumps_);
+
+    for (RenderFrameHost* rfh : main_window_->web_contents()->GetAllFrames()) {
+      if (!rfh->IsRenderFrameLive())
+        continue;
+
+      ++waiting_for_layout_dumps_;
+      GetWebTestRenderFrameRemote(rfh)->DumpFrameLayout(base::BindOnce(
+          &WebTestControlHost::OnDumpFrameLayoutResponse,
+          weak_factory_.GetWeakPtr(), rfh->GetFrameTreeNodeId()));
+    }
+  }
 
   if (capture_pixels) {
     waiting_for_pixel_results_ = true;
@@ -805,10 +805,8 @@ void WebTestControlHost::InitiateCaptureDump(bool capture_navigation_history,
     }
   }
 
-  RenderFrameHost* rfh = main_window_->web_contents()->GetMainFrame();
-  printer_->StartStateDump();
-  GetWebTestRenderFrameRemote(rfh)->CaptureDump(base::BindOnce(
-      &WebTestControlHost::OnCaptureDumpCompleted, weak_factory_.GetWeakPtr()));
+  // Try to report results now, if we aren't waiting for anything.
+  ReportResults();
 }
 
 void WebTestControlHost::TestFinishedInSecondaryRenderer() {
@@ -1084,20 +1082,32 @@ void WebTestControlHost::OnGpuProcessCrashed(
 }
 
 void WebTestControlHost::DiscardMainWindow() {
-  // If we're running a test, we need to close all windows and exit the message
-  // loop. Otherwise, we're already outside of the message loop, and we just
-  // discard the main window.
-  devtools_bindings_.reset();
-  devtools_protocol_test_bindings_.reset();
+  // We can get here for 2 different reasons:
+  // 1. The |main_window_| Shell is destroying, and the WebContents inside it
+  // has been destroyed. Then we dare not call Shell::Close() on the
+  // |main_window_|.
+  // 2. Some other fatal error has occurred. We can't tell this apart from the
+  // Shell destroying, since that is also something a test can do, and
+  // destroying the WebContents can also happen in order ways (like activating a
+  // portal).
+  //
+  // Since we can't tell at this point if |main_window_| is okay to use, we
+  // don't touch it, and we stop observing its WebContents.
   WebContentsObserver::Observe(nullptr);
-  if (test_phase_ != BETWEEN_TESTS) {
-    // CloseAllWindows will also signal the main message loop to exit.
-    Shell::CloseAllWindows();
-    test_phase_ = CLEAN_UP;
-  } else if (main_window_) {
-    main_window_->Close();
-  }
   main_window_ = nullptr;
+
+  // We don't want to leak any open windows when we finish a test, and the next
+  // test will create its own |main_window_|. So at this point we close all
+  // Shell windows, to avoid using the potentially-bad pointer.
+  Shell::CloseAllWindows();
+
+  // Then we immediately end the current test instead of timing out. This is
+  // like ReportResults() except we report only messages added to the
+  // |printer_| and no other test results.
+  printer_->StartStateDump();
+  printer_->PrintTextHeader();
+  printer_->PrintTextFooter();
+  OnTestFinished();
 }
 
 void WebTestControlHost::HandleNewRenderFrameHost(RenderFrameHost* frame) {
@@ -1223,10 +1233,29 @@ void WebTestControlHost::OnCleanupFinished() {
   ResetRendererAfterWebTestDone();
 }
 
-void WebTestControlHost::OnCaptureDumpCompleted(mojom::WebTestDumpPtr dump) {
-  main_frame_dump_ = std::move(dump);
+void WebTestControlHost::OnDumpFrameLayoutResponse(int frame_tree_node_id,
+                                                   const std::string& dump) {
+  // Store the result.
+  auto pair = frame_to_layout_dump_map_.emplace(frame_tree_node_id, dump);
+  bool insertion_took_place = pair.second;
+  DCHECK(insertion_took_place);
 
-  waiting_for_main_frame_dump_ = false;
+  // See if we need to wait for more responses.
+  if (--waiting_for_layout_dumps_ > 0)
+    return;
+
+  // Stitch the frame-specific results in the right order.
+  std::string stitched_layout_dump;
+  for (auto* render_frame_host : web_contents()->GetAllFrames()) {
+    auto it =
+        frame_to_layout_dump_map_.find(render_frame_host->GetFrameTreeNodeId());
+    if (it != frame_to_layout_dump_map_.end()) {
+      const std::string& dump = it->second;
+      stitched_layout_dump.append(dump);
+    }
+  }
+
+  layout_dump_.emplace(std::move(stitched_layout_dump));
   ReportResults();
 }
 
@@ -1238,18 +1267,28 @@ void WebTestControlHost::OnPixelDumpCaptured(const SkBitmap& snapshot) {
 }
 
 void WebTestControlHost::ReportResults() {
-  if (waiting_for_pixel_results_ || waiting_for_main_frame_dump_)
+  if (waiting_for_layout_dumps_ || waiting_for_pixel_results_)
     return;
-  if (main_frame_dump_->audio)
-    OnAudioDump(*main_frame_dump_->audio);
-  if (main_frame_dump_->layout)
-    OnTextDump(*main_frame_dump_->layout);
-  // If we have local pixels, report that. Otherwise report whatever the pixel
-  // dump received from the renderer contains.
+
+  printer_->StartStateDump();
+
+  // Audio results only come from the renderer.
+  if (renderer_dump_result_->audio)
+    OnAudioDump(*renderer_dump_result_->audio);
+
+  // Use the browser-generated |layout_dump_| if present, else use the
+  // renderer's.
+  if (layout_dump_)
+    OnTextDump(*layout_dump_);
+  else if (renderer_dump_result_->layout)
+    OnTextDump(*renderer_dump_result_->layout);
+
+  // Use the browser-generated |pixel_dump_| if present, else use the
+  // renderer's.
   if (pixel_dump_) {
     // See if we need to draw the selection bounds rect on top of the snapshot.
-    if (!main_frame_dump_->selection_rect.IsEmpty())
-      DrawSelectionRect(*pixel_dump_, main_frame_dump_->selection_rect);
+    if (!renderer_dump_result_->selection_rect.IsEmpty())
+      DrawSelectionRect(*pixel_dump_, renderer_dump_result_->selection_rect);
     // The snapshot arrives from the GPU process via shared memory. Because MSan
     // can't track initializedness across processes, we must assure it that the
     // pixels are in fact initialized.
@@ -1260,9 +1299,11 @@ void WebTestControlHost::ReportResults() {
     actual_pixel_hash_ = base::MD5DigestToBase16(digest);
 
     OnImageDump(actual_pixel_hash_, *pixel_dump_);
-  } else if (!main_frame_dump_->actual_pixel_hash.empty()) {
-    OnImageDump(main_frame_dump_->actual_pixel_hash, main_frame_dump_->pixels);
+  } else if (!renderer_dump_result_->actual_pixel_hash.empty()) {
+    OnImageDump(renderer_dump_result_->actual_pixel_hash,
+                renderer_dump_result_->pixels);
   }
+
   OnTestFinished();
 }
 
@@ -1339,44 +1380,6 @@ void WebTestControlHost::OnWebTestRuntimeFlagsChanged(
     GetWebTestRenderThreadRemote(process)->ReplicateWebTestRuntimeFlagsChanges(
         changed_web_test_runtime_flags.Clone());
   }
-}
-
-void WebTestControlHost::OnDumpFrameLayoutResponse(int frame_tree_node_id,
-                                                   const std::string& dump) {
-  // Store the result.
-  auto pair = frame_to_layout_dump_map_.insert(
-      std::make_pair(frame_tree_node_id, dump));
-  bool insertion_took_place = pair.second;
-  DCHECK(insertion_took_place);
-
-  // See if we need to wait for more responses.
-  pending_layout_dumps_--;
-  DCHECK_LE(0, pending_layout_dumps_);
-  if (pending_layout_dumps_ > 0)
-    return;
-
-  // If the main test window was destroyed while waiting for the responses, then
-  // there is nobody to receive the |stitched_layout_dump| and finish the test.
-  if (!web_contents()) {
-    OnTestFinished();
-    return;
-  }
-
-  // Stitch the frame-specific results in the right order.
-  std::string stitched_layout_dump;
-  for (auto* render_frame_host : web_contents()->GetAllFrames()) {
-    auto it =
-        frame_to_layout_dump_map_.find(render_frame_host->GetFrameTreeNodeId());
-    if (it != frame_to_layout_dump_map_.end()) {
-      const std::string& dump = it->second;
-      stitched_layout_dump.append(dump);
-    }
-  }
-
-  // Continue finishing the test.
-  GetWebTestRenderFrameRemote(
-      main_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
-      ->LayoutDumpCompleted(stitched_layout_dump);
 }
 
 void WebTestControlHost::PrintMessageToStderr(const std::string& message) {

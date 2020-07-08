@@ -10,6 +10,8 @@
 #include <cstring>
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -31,12 +33,17 @@
 namespace content {
 
 namespace {
-static const size_t kTestingMaxOpenCursors = 3;
+const size_t kTestingMaxOpenCursors = 3;
 }  // namespace
 
 class TransactionalLevelDBTransactionTest : public LevelDBScopesTestBase {
  public:
-  TransactionalLevelDBTransactionTest() {}
+  TransactionalLevelDBTransactionTest() = default;
+  TransactionalLevelDBTransactionTest(
+      const TransactionalLevelDBTransactionTest&) = delete;
+  TransactionalLevelDBTransactionTest& operator=(
+      const TransactionalLevelDBTransactionTest&) = delete;
+  ~TransactionalLevelDBTransactionTest() override = default;
 
   void TearDown() override {
     leveldb_database_.reset();
@@ -145,9 +152,7 @@ class TransactionalLevelDBTransactionTest : public LevelDBScopesTestBase {
  private:
   DefaultTransactionalLevelDBFactory transactional_leveldb_factory_;
   std::unique_ptr<TransactionalLevelDBDatabase> leveldb_database_;
-  DisjointRangeLockManager lock_manager_ = {3};
-
-  DISALLOW_COPY_AND_ASSIGN(TransactionalLevelDBTransactionTest);
+  DisjointRangeLockManager lock_manager_{3};
 };
 
 TEST_F(TransactionalLevelDBTransactionTest, GetPutDelete) {
@@ -498,7 +503,12 @@ class LevelDBTransactionRangeTest
     : public TransactionalLevelDBTransactionTest,
       public testing::WithParamInterface<RangePrepareMode> {
  public:
-  LevelDBTransactionRangeTest() {}
+  LevelDBTransactionRangeTest() = default;
+  LevelDBTransactionRangeTest(const LevelDBTransactionRangeTest&) = delete;
+  LevelDBTransactionRangeTest& operator=(const LevelDBTransactionRangeTest&) =
+      delete;
+  ~LevelDBTransactionRangeTest() override = default;
+
   void SetUp() override {
     TransactionalLevelDBTransactionTest::SetUp();
     SetUpRealDatabase();
@@ -551,9 +561,6 @@ class LevelDBTransactionRangeTest
   const std::string value_ = "value";
 
   scoped_refptr<TransactionalLevelDBTransaction> transaction_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LevelDBTransactionRangeTest);
 };
 
 TEST_P(LevelDBTransactionRangeTest, RemoveRangeUpperClosed) {

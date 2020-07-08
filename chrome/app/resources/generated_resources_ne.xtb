@@ -375,6 +375,7 @@
 <translation id="1468571364034902819">यो प्रोफाइल प्रयोग गर्न सकिँदैन</translation>
 <translation id="1470084204649225129">{NUM_TABS,plural, =1{नयाँ समूहमा ट्याब थप्नुहोस्}other{नयाँ समूहमा ट्याबहरू थप्नुहोस्}}</translation>
 <translation id="1472675084647422956">थप देखाउनुहोस्</translation>
+<translation id="1474785664565228650">माइक्रोफोनको सेटिङमा गरिएका परिवर्तन लागू गर्न Parallels Desktop बन्द गरेर फेरि खोल्नु पर्ने हुन्छ। अगाडि बढ्नका निम्ति Parallels Desktop बन्द गरेर फेरि खोल्नुहोस्।</translation>
 <translation id="1475502736924165259">तपाईँसँग फाइलमा कुनै पनि अन्य कोटिमा उपयुक्त नहुने खाले प्रमाणपत्रहरू छन्:</translation>
 <translation id="1476088332184200792">प्रतिलिपि गरी तपाईंको यन्त्रमा टाँस्नुहोस्</translation>
 <translation id="1476607407192946488">&amp;भाषा सेटिङहरू</translation>
@@ -2925,6 +2926,7 @@
 <translation id="4648499713050786492">कृपया कुनै व्यक्तिलाई थप्नु अघि आफ्नो प्रोफाइललाई अनलक गर्नुहोस्।</translation>
 <translation id="4650591383426000695">आफ्नो <ph name="DEVICE_TYPE" /> बाट आफ्नो फोन छुटाउनुहोस्</translation>
 <translation id="4651484272688821107">डेमो मोडका स्रोतहरूमार्फत अनलाइन कम्पोनेन्ट लोड गर्न सकिएन।</translation>
+<translation id="4652935475563630866">क्यामेराको सेटिङमा गरिएका परिवर्तन लागू गर्न Parallels Desktop बन्द गरेर फेरि खोल्नु पर्ने हुन्छ। अगाडि बढ्नका निम्ति Parallels Desktop बन्द गरेर फेरि खोल्नुहोस्।</translation>
 <translation id="4653405415038586100">Linux कन्फिगर गर्ने क्रममा त्रुटि भयो</translation>
 <translation id="465878909996028221">ब्राउजर रिडिरेक्ट गर्न http, https तथा फाइल प्रोटोकललाई मात्र समर्थन गरिन्छ।</translation>
 <translation id="4659077111144409915">प्राथमिक खाता</translation>
@@ -6481,7 +6483,7 @@
     <ph name="BEGIN_LIST" />
       <ph name="LIST_ITEM" />इन्टरनेटको तार, मोडेम र राउटर जाँच्ने
       <ph name="LIST_ITEM" />Wi-Fi मा पुनः कनेक्ट गर्ने
-      <ph name="LIST_ITEM" />Chrome को कनेक्टिभिटीसम्बन्धी निदान चलाउने
+      <ph name="LIST_ITEM" />Chrome Connectivity Diagnostics चलाउने
     <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Picture in Picture</translation>
 <translation id="9168436347345867845">यो कार्य पछि गर्नुहोस्‌</translation>

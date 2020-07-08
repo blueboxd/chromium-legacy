@@ -96,17 +96,8 @@ std::string ContentClient::GetProcessTypeNameInEnglish(int type) {
   return std::string();
 }
 
-base::DictionaryValue ContentClient::GetNetLogConstants() {
-  return base::DictionaryValue();
-}
-
 blink::OriginTrialPolicy* ContentClient::GetOriginTrialPolicy() {
   return nullptr;
-}
-
-bool ContentClient::AllowScriptExtensionForServiceWorker(
-    const url::Origin& script_origin) {
-  return false;
 }
 
 #if defined(OS_ANDROID)

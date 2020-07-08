@@ -301,7 +301,7 @@ bool BadAMDVulkanDriverVersion() {
 }
 
 // Vulkan 1.1 was released by the Khronos Group on March 7, 2018.
-// Blacklist all driver versions without Vulkan 1.1 support and those that cause
+// Blocklist all driver versions without Vulkan 1.1 support and those that cause
 // lots of crashes.
 bool BadGraphicsDriverVersions(const gpu::GPUInfo::GPUDevice& gpu_device) {
   // GPU Device info is not available in gpu_integration_test.info-collection
@@ -425,7 +425,7 @@ uint32_t GetGpuSupportedVulkanVersion(
     return 0;
   }
 
-  // Don't collect any info if the graphics vulkan driver is blacklisted or
+  // Don't collect any info if the graphics vulkan driver is blocklisted or
   // doesn't support Vulkan 1.1
   // Detected by the graphic driver version returned by DXGI
   if (BadGraphicsDriverVersions(gpu_device))

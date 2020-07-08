@@ -219,9 +219,8 @@ class MockPasswordStoreSync : public PasswordStoreSync {
   MOCK_METHOD1(NotifyLoginsChanged, void(const PasswordStoreChangeList&));
   MOCK_METHOD1(NotifyDeletionsHaveSynced, void(bool));
 
-  MOCK_METHOD1(
-      NotifyUnsyncedCredentialsWillBeDeleted,
-      void(const std::vector<autofill::PasswordForm>& unsynced_credentials));
+  MOCK_METHOD1(NotifyUnsyncedCredentialsWillBeDeleted,
+               void(std::vector<autofill::PasswordForm> unsynced_credentials));
   MOCK_METHOD0(BeginTransaction, bool());
   MOCK_METHOD0(CommitTransaction, bool());
   MOCK_METHOD0(RollbackTransaction, void());

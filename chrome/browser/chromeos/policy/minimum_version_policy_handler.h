@@ -154,13 +154,21 @@ class MinimumVersionPolicyHandler
   // Show notification on managed user login if it is the last day to deadline.
   void MaybeShowNotificationOnLogin();
 
+  // Returns true if an update is required and the device has reached
+  // End Of Life (Auto Update Expiration).
+  bool IsUpdateRequiredEol() const;
+
   // Callback used in tests and invoked after end-of-life status has been
   // fetched from the update_engine.
   void set_fetch_eol_callback_for_testing(base::OnceClosure callback) {
     fetch_eol_callback_ = std::move(callback);
   }
 
-  bool IsDeadlineTimerRunningForTesting();
+  base::Time update_required_deadline_for_testing() const {
+    return update_required_deadline_;
+  }
+
+  bool IsDeadlineTimerRunningForTesting() const;
 
  private:
   void OnPolicyChanged();
@@ -246,8 +254,13 @@ class MinimumVersionPolicyHandler
   // out and/or showing update required screen.
   bool deadline_reached = false;
 
+  // Time when the policy is applied and with respect to which the deadline to
+  // update the device is calculated.
   base::Time update_required_time_;
 
+  // Deadline for updating the device post which the user is restricted from
+  // using the session by force log out if a session is active and then blocking
+  // sign in at the login screen.
   base::Time update_required_deadline_;
 
   // Fires when the deadline to update the device has reached or passed.

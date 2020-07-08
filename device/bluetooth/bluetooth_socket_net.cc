@@ -112,14 +112,15 @@ void BluetoothSocketNet::SetTCPSocket(
   tcp_socket_ = std::move(tcp_socket);
 }
 
-void BluetoothSocketNet::PostSuccess(const base::Closure& callback) {
-  ui_task_runner_->PostTask(FROM_HERE, callback);
+void BluetoothSocketNet::PostSuccess(base::OnceClosure callback) {
+  ui_task_runner_->PostTask(FROM_HERE, std::move(callback));
 }
 
 void BluetoothSocketNet::PostErrorCompletion(
-    const ErrorCompletionCallback& callback,
+    ErrorCompletionOnceCallback callback,
     const std::string& error) {
-  ui_task_runner_->PostTask(FROM_HERE, base::BindOnce(callback, error));
+  ui_task_runner_->PostTask(FROM_HERE,
+                            base::BindOnce(std::move(callback), error));
 }
 
 void BluetoothSocketNet::DoClose() {

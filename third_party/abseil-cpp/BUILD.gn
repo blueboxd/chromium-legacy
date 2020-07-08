@@ -7,6 +7,7 @@
 # without these options will be part of the same program.
 
 import("//build/config/c++/c++.gni")
+import("//build/config/sanitizers/sanitizers.gni")
 import("//build/toolchain/toolchain.gni")
 import("//build_overrides/build.gni")
 import("//testing/test.gni")
@@ -29,7 +30,11 @@ component("absl") {
         if (is_debug) {
           sources = [ "symbols_x64_dbg.def" ]
         } else {
-          sources = [ "symbols_x64_rel.def" ]
+          if (is_asan) {
+            sources = [ "symbols_x64_rel_asan.def" ]
+          } else {
+            sources = [ "symbols_x64_rel.def" ]
+          }
         }
       }
       if (target_cpu == "x86") {

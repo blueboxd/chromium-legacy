@@ -1000,14 +1000,8 @@ crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/composited-layer-mu
 crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/composited-layer-multiple-fragments.html [ Failure Crash ]
 crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/composited-layer-nested.html [ Failure Crash ]
 crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/composited-layer-will-change.html [ Failure Crash ]
-crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/composited-relpos-in-clipped.html [ Failure Crash ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/composited-inner-multicol.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/composited-opacity-2nd-and-3rd-column.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/composited-relpos-clipped.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/composited-relpos.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/composited-relpos-overlapping-will-change.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/composited-relpos-resize.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/composited-with-child-layer-in-next-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/composited-with-overflow-in-next-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/doubly-nested-with-top-padding-crossing-row-boundaries.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/change-second-row-height.html [ Failure ]
@@ -2663,8 +2657,6 @@ crbug.com/1100119 [ Mac ] external/wpt/css/css-pseudo/active-selection-054.html 
 crbug.com/1018465 external/wpt/css/css-pseudo/active-selection-056.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Mac10.14 ] external/wpt/svg/extensibility/foreignObject/foreign-object-scale-scroll.html [ Failure ]
-crbug.com/626703 [ Mac10.15 ] external/wpt/svg/extensibility/foreignObject/foreign-object-scale-scroll.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/wasm/jsapi/functions/incumbent.html [ Crash ]
 crbug.com/626703 [ Mac ] external/wpt/wasm/jsapi/functions/incumbent.html [ Crash ]
 crbug.com/626703 [ Win ] external/wpt/wasm/jsapi/functions/incumbent.html [ Crash ]
@@ -2796,12 +2788,8 @@ crbug.com/626703 [ Linux ] external/wpt/mathml/presentation-markup/operators/mo-
 crbug.com/626703 [ Mac ] external/wpt/mathml/presentation-markup/operators/mo-lspace-rspace-dynamic.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/mathml/presentation-markup/operators/mo-lspace-rspace-dynamic.html [ Failure ]
 crbug.com/626703 [ Retina ] external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw-from-coop.https.html [ Timeout ]
-crbug.com/1099208 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/report-only-four-reports.https.html [ Failure ]
-crbug.com/1099208 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/report-only-from-unsafe-none.https.html [ Failure ]
-crbug.com/1099208 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/report-only-same-origin-report-to.https.html [ Failure ]
-crbug.com/1099208 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/report-only-same-origin.https.html [ Failure ]
-crbug.com/1099208 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/reporting-popup-same-origin.https.html [ Crash Failure ]
-crbug.com/1099208 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/reporting-popup-same-origin-coep-report-to.https.html [ Crash Failure ]
+crbug.com/1099208 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/reporting-popup-same-origin.https.html [ Crash ]
+crbug.com/1099208 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/reporting-popup-same-origin-coep-report-to.https.html [ Crash ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/preload/onload-event.html [ Timeout ]
@@ -3275,7 +3263,7 @@ crbug.com/626703 external/wpt/svg/painting/reftests/paint-context-002.svg [ Fail
 crbug.com/626703 external/wpt/css/css-scoping/shadow-directionality-002.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-scoping/shadow-directionality-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/screen-orientation/orientation-reading.html [ Timeout ]
-crbug.com/626703 external/wpt/html/browsers/browsing-the-web/unloading-documents/prompt-and-unload-script-closeable.html [ Timeout ]
+crbug.com/626703 external/wpt/html/browsers/browsing-the-web/unloading-documents/prompt-and-unload-script-closeable.html [ Failure ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/navigation.sub.html?encoding=x-cp1251 [ Timeout ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/navigation.sub.html?encoding=utf8 [ Timeout ]
 crbug.com/626703 external/wpt/css/css-transforms/transform-box/view-box-mutation-001.html [ Failure ]
@@ -5600,7 +5588,6 @@ crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-gradient.html [ Failure
 crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-invisible-3d-rotate-descendant.html [ Failure ]
 crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-invisible-3d-rotate.html [ Failure ]
 crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-out-of-bounds-translate.html [ Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-svg.html [ Failure ]
 crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-text-input.html [ Failure ]
 
 # Sheriff 2019-03-01
@@ -6126,7 +6113,6 @@ crbug.com/1006759 inspector-protocol/heap-profiler/heap-snapshot-with-no-detache
 # Sheriff 2019-12-13
 crbug.com/1032451 [ Win7 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/idlharness.https.window.html [ Failure Pass ]
 crbug.com/1033852 [ Win7 ] virtual/omt-worker-fetch/external/wpt/fetch/api/idlharness.any.sharedworker.html [ Failure ]
-crbug.com/1033387 [ Mac ] virtual/portals/http/tests/portals/crbug-1031677.html [ Pass Timeout Crash ]
 
 # Sheriff 2019-12-16
 crbug.com/1034374 http/tests/devtools/tracing/timeline-worker-events.js [ Pass Failure ]

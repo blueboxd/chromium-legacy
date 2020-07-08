@@ -122,9 +122,9 @@ class TraceNetLogObserverTest : public TestWithTaskEnvironment {
   void EndTraceAndFlush() {
     DisableTraceLog();
     base::RunLoop run_loop;
-    TraceLog::GetInstance()->Flush(
-        base::Bind(&TraceNetLogObserverTest::OnTraceDataCollected,
-                   base::Unretained(this), base::Unretained(&run_loop)));
+    TraceLog::GetInstance()->Flush(base::BindRepeating(
+        &TraceNetLogObserverTest::OnTraceDataCollected, base::Unretained(this),
+        base::Unretained(&run_loop)));
     run_loop.Run();
   }
 

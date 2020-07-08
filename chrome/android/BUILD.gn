@@ -308,6 +308,7 @@ android_library("chrome_java") {
     "//chrome/browser/download/android:factory_java",
     "//chrome/browser/download/android:java",
     "//chrome/browser/download/android:java_resources",
+    "//chrome/browser/engagement/android:java",
     "//chrome/browser/enterprise/util:java",
     "//chrome/browser/flags:java",
     "//chrome/browser/fullscreen/android:java",
@@ -498,6 +499,7 @@ android_library("chrome_java") {
     ":chrome_android_java_enums_srcjar",
     ":chrome_android_java_google_api_keys_srcjar",
     ":chrome_product_config",
+    ":chrome_strict_mode_switch",
     ":photo_picker_aidl",
     ":resource_id_javagen",
     ":sync_user_settings_enums_java",
@@ -574,6 +576,23 @@ android_library("chrome_java") {
   # TODO(crbug/1022172): Instead of adding source files, add it as a separate
   # dependency when circular deps is resolved.
   sources += share_java_sources
+}
+
+# Template for strict mode detection enabling/disabling so that proguard strips out
+# strict mode code when detection is disabled.
+java_cpp_template("chrome_strict_mode_switch") {
+  sources =
+      [ "java/src/org/chromium/chrome/browser/ChromeStrictModeSwitch.template" ]
+  package_path = "org/chromium/chrome/browser"
+
+  # Strict mode detection is disabled for canary channel in order to catch bugs
+  # related to strict mode detection being turned off early (before beta
+  # channel). Strict mode detection is enabled for dev channel because dev
+  # channel has more users than canary channel.
+  if (is_java_debug || android_channel == "default" ||
+      android_channel == "dev") {
+    defines = [ "STRICT_MODE_CHECKING" ]
+  }
 }
 
 generate_product_config_srcjar("chrome_product_config") {
@@ -901,6 +920,7 @@ android_library("chrome_test_util_java") {
     "//third_party/android_media:android_media_resources",
     "//third_party/android_sdk/androidx_browser:androidx_browser_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit:junit",
   ]
 }
@@ -940,6 +960,7 @@ android_library("chrome_test_java") {
     "//chrome/browser/android/lifecycle:java",
     "//chrome/browser/browser_controls/android:java",
     "//chrome/browser/download/android:java",
+    "//chrome/browser/engagement/android:java",
     "//chrome/browser/enterprise/util:java",
     "//chrome/browser/flags:java",
     "//chrome/browser/fullscreen/android:java",
@@ -1587,7 +1608,7 @@ if (current_toolchain == default_toolchain) {
           deps = [
             ":$_resource_whitelist_target",
             ":$_system_webview_locale_whitelist_target",
-            "//android_webview:system_webview_pak_whitelist",
+            "//android_webview:system_webview_pak_allowlist",
           ]
 
           args = [
@@ -2284,6 +2305,7 @@ chrome_test_apk_tmpl("chrome_public_test_apk") {
     "//chrome/android/webapk/libs/runtime_library:runtime_library_javatests",
     "//chrome/android/webapk/shell_apk:shell_apk_javatests",
     "//chrome/browser/download/android:download_java_tests",
+    "//chrome/browser/engagement/android:javatests",
     "//chrome/browser/flags:javatests",
     "//chrome/browser/password_check/android:test_java",
     "//chrome/browser/subresource_filter:subresource_filter_javatests",
@@ -2915,7 +2937,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/download/items/OfflineContentAggregatorFactory.java",
     "java/src/org/chromium/chrome/browser/download/service/DownloadBackgroundTask.java",
     "java/src/org/chromium/chrome/browser/download/service/DownloadTaskScheduler.java",
-    "java/src/org/chromium/chrome/browser/engagement/SiteEngagementService.java",
     "java/src/org/chromium/chrome/browser/explore_sites/ExploreSitesBridge.java",
     "java/src/org/chromium/chrome/browser/explore_sites/ExploreSitesBridgeExperimental.java",
     "java/src/org/chromium/chrome/browser/explore_sites/ExploreSitesCategory.java",

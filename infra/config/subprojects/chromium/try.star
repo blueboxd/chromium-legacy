@@ -64,6 +64,16 @@ try_.chromium_builder(
     name = 'linux-official',
 )
 
+try_.chromium_builder(
+    name = 'win-official',
+    os = os.WINDOWS_DEFAULT,
+)
+
+try_.chromium_builder(
+    name = 'win32-official',
+    os = os.WINDOWS_DEFAULT,
+)
+
 try_.chromium_android_builder(
     name = 'android-binary-size',
     executable = 'recipe:binary_size_trybot',

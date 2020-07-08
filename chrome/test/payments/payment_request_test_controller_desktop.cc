@@ -68,7 +68,7 @@ class PaymentRequestTestController::ObserverConverter
   void OnHasEnrolledInstrumentReturned() override {
     controller_->OnHasEnrolledInstrumentReturned();
   }
-  void OnShowAppsReady(base::WeakPtr<PaymentRequest> payment_request) override {
+  void OnAppListReady(base::WeakPtr<PaymentRequest> payment_request) override {
     DCHECK(payment_request);
     std::vector<AppDescription> descriptions(
         payment_request->state()->available_apps().size());
@@ -83,7 +83,7 @@ class PaymentRequestTestController::ObserverConverter
     }
     controller_->set_app_descriptions(descriptions);
 
-    controller_->OnShowAppsReady();
+    controller_->OnAppListReady();
   }
   void OnNotSupportedError() override { controller_->OnNotSupportedError(); }
   void OnConnectionTerminated() override {
@@ -202,9 +202,9 @@ void PaymentRequestTestController::OnHasEnrolledInstrumentReturned() {
     observer_->OnHasEnrolledInstrumentReturned();
 }
 
-void PaymentRequestTestController::OnShowAppsReady() {
+void PaymentRequestTestController::OnAppListReady() {
   if (observer_)
-    observer_->OnShowAppsReady();
+    observer_->OnAppListReady();
 }
 
 void PaymentRequestTestController::OnCompleteCalled() {

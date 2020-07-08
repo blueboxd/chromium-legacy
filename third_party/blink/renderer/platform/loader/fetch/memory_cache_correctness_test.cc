@@ -95,13 +95,15 @@ class MemoryCacheCorrectnessTest : public testing::Test {
     ResourceRequest resource_request{KURL(kResourceURL)};
     resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
     resource_request.SetRequestorOrigin(GetSecurityOrigin());
-    FetchParameters fetch_params(std::move(resource_request));
+    FetchParameters fetch_params =
+        FetchParameters::CreateForTest(std::move(resource_request));
     return RawResource::Fetch(fetch_params, Fetcher(), nullptr);
   }
   MockResource* FetchMockResource() {
     ResourceRequest resource_request{KURL(kResourceURL)};
     resource_request.SetRequestorOrigin(GetSecurityOrigin());
-    FetchParameters fetch_params(std::move(resource_request));
+    FetchParameters fetch_params =
+        FetchParameters::CreateForTest(std::move(resource_request));
     return MockResource::Fetch(fetch_params, Fetcher(), nullptr);
   }
   ResourceFetcher* Fetcher() const { return fetcher_.Get(); }
@@ -469,7 +471,7 @@ TEST_F(MemoryCacheCorrectnessTest, PostToSameURLTwice) {
   ResourceRequest request2{KURL(kResourceURL)};
   request2.SetHttpMethod(http_names::kPOST);
   request2.SetRequestorOrigin(GetSecurityOrigin());
-  FetchParameters fetch2(std::move(request2));
+  FetchParameters fetch2 = FetchParameters::CreateForTest(std::move(request2));
   RawResource* resource2 = RawResource::FetchSynchronously(fetch2, Fetcher());
   EXPECT_NE(resource1, resource2);
 }

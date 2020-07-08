@@ -31,7 +31,7 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/service_factory.h"
 #include "mojo/public/cpp/system/buffer.h"
-#include "services/service_manager/sandbox/sandbox.h"
+#include "sandbox/policy/sandbox.h"
 #include "services/test/echo/echo_service.h"
 
 #if defined(OS_LINUX)
@@ -108,7 +108,7 @@ class TestUtilityServiceImpl : public mojom::TestService {
   }
 
   void IsProcessSandboxed(IsProcessSandboxedCallback callback) override {
-    std::move(callback).Run(service_manager::Sandbox::IsProcessSandboxed());
+    std::move(callback).Run(sandbox::policy::Sandbox::IsProcessSandboxed());
   }
 
  private:

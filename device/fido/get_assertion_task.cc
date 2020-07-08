@@ -203,11 +203,13 @@ void GetAssertionTask::HandleResponseToSilentRequest(
 
   // One credential from the previous batch was recognized by the device. As
   // this authentication was a silent authentication (i.e. user touch was not
-  // provided), try again with that credential, user presence enforced, and with
+  // provided), try again with only that batch, user presence enforced and with
   // the original user verification configuration.
+  // TODO(martinkr): We could get the exact credential ID that was recognized
+  // from |response_data| and send only that.
   if (response_code == CtapDeviceResponseCode::kSuccess) {
     CtapGetAssertionRequest request = request_;
-    request.allow_list = {*response_data->credential()};
+    request.allow_list = allow_list_batches_.at(current_allow_list_batch_ - 1);
     sign_operation_ = std::make_unique<Ctap2DeviceOperation<
         CtapGetAssertionRequest, AuthenticatorGetAssertionResponse>>(
         device(), std::move(request),

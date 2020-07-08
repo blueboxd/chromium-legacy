@@ -18,6 +18,9 @@ COMPONENT_EXPORT(OZONE_BASE) extern const char kEnableWaylandIme[];
 
 COMPONENT_EXPORT(OZONE_BASE) extern const char kDisableExplicitDmaFences[];
 
+COMPONENT_EXPORT(OZONE_BASE)
+extern const char kDisableRunningAsSystemCompositor[];
+
 }  // namespace switches
 
 #endif  // UI_OZONE_PUBLIC_OZONE_SWITCHES_H_

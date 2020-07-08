@@ -17,8 +17,8 @@
 #include "content/public/common/injection_test_win.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/render_thread_impl.h"
+#include "sandbox/policy/switches.h"
 #include "sandbox/win/src/sandbox.h"
-#include "services/service_manager/sandbox/switches.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/web/win/web_font_rendering.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
@@ -41,7 +41,7 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
   // Be mindful of what resources you acquire here. They can be used by
   // malicious code if the renderer gets compromised.
   bool no_sandbox =
-      command_line.HasSwitch(service_manager::switches::kNoSandbox);
+      command_line.HasSwitch(sandbox::policy::switches::kNoSandbox);
 
   if (!no_sandbox) {
     // ICU DateFormat class (used in base/time_format.cc) needs to get the

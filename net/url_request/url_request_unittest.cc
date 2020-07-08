@@ -7278,15 +7278,15 @@ TEST_F(URLRequestTest, NoCookieInclusionStatusWarningIfWouldBeExcludedAnyway) {
     auto cookie1 = CanonicalCookie::Create(url, "cookienosamesite=1",
                                            base::Time::Now(), base::nullopt);
     base::RunLoop run_loop;
-    CookieInclusionStatus status;
+    CookieAccessResult access_result;
     cm.SetCanonicalCookieAsync(
         std::move(cookie1), url, CookieOptions::MakeAllInclusive(),
-        base::BindLambdaForTesting([&](CookieInclusionStatus result) {
-          status = result;
+        base::BindLambdaForTesting([&](CookieAccessResult result) {
+          access_result = result;
           run_loop.Quit();
         }));
     run_loop.Run();
-    EXPECT_TRUE(status.IsInclude());
+    EXPECT_TRUE(access_result.status.IsInclude());
 
     TestDelegate d;
     GURL test_url = test_server.GetURL("/echoheader?Cookie");
@@ -7321,15 +7321,15 @@ TEST_F(URLRequestTest, NoCookieInclusionStatusWarningIfWouldBeExcludedAnyway) {
                                            base::Time::Now(), base::nullopt);
     base::RunLoop run_loop;
     // Note: cookie1 from the previous testcase is still in the cookie store.
-    CookieInclusionStatus status;
+    CookieAccessResult access_result;
     cm.SetCanonicalCookieAsync(
         std::move(cookie2), url, CookieOptions::MakeAllInclusive(),
-        base::BindLambdaForTesting([&](CookieInclusionStatus result) {
-          status = result;
+        base::BindLambdaForTesting([&](CookieAccessResult result) {
+          access_result = result;
           run_loop.Quit();
         }));
     run_loop.Run();
-    EXPECT_TRUE(status.IsInclude());
+    EXPECT_TRUE(access_result.status.IsInclude());
 
     TestDelegate d;
     GURL test_url = test_server.GetURL("/echoheader?Cookie");

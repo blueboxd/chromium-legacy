@@ -247,11 +247,9 @@ public class SearchEngineSettingsTest {
 
     private static Preference waitForPreference(final PreferenceFragmentCompat prefFragment,
             final String preferenceKey) throws ExecutionException {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return prefFragment.findPreference(preferenceKey) != null;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("Expected valid preference for: " + preferenceKey,
+                    prefFragment.findPreference(preferenceKey), Matchers.notNullValue());
         });
 
         return TestThreadUtils.runOnUiThreadBlocking(

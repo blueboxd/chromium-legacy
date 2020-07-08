@@ -5,6 +5,7 @@
 #include "ui/views/examples/examples_main_proc.h"
 
 #include <memory>
+#include <string>
 
 #include "base/base_switches.h"
 #include "base/bind.h"
@@ -23,6 +24,7 @@
 #include "base/test/test_discardable_memory_allocator.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
+#include "components/viz/common/features.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -81,6 +83,14 @@ ExamplesExitCode ExamplesMainProc(bool under_test) {
   // InProcessContextFactory doesn't work with Direct Composition, causing the
   // window to not render. See http://crbug.com/936249.
   command_line->AppendSwitch(switches::kDisableDirectComposition);
+
+  // Disable skia renderer to use GL instead.
+  std::string disabled =
+      command_line->GetSwitchValueASCII(switches::kDisableFeatures);
+  if (!disabled.empty())
+    disabled += ",";
+  disabled += features::kUseSkiaRenderer.name;
+  command_line->AppendSwitchASCII(switches::kDisableFeatures, disabled);
 
   base::FeatureList::InitializeInstance(
       command_line->GetSwitchValueASCII(switches::kEnableFeatures),

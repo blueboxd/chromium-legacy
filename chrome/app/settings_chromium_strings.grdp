@@ -134,8 +134,8 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_INFECTED" desc="This text describes that Chrome found harmful software on the computer.">
     Chromium found harmful software on your computer
   </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_OFFLINE" desc="This text describes that Chrome can't check for unwanted software as there is no internet connection.">
-    Chromium can't check your device software. Try checking your internet connection.
+  <message name="IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_ERROR" desc="This text describes that Chrome can't check for unwanted software due to an error.">
+    An error occurred while Chromium was checking the device software
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_DISABLED_BY_ADMIN" desc="This text describes that Chrome can't check for unwanted software because an administrator disabled the feature.">
     Your administrator has disabled Chromium's check for harmful software

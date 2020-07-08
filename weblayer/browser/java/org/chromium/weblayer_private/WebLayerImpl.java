@@ -42,6 +42,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.components.embedder_support.application.ClassLoaderContextWrapperFactory;
 import org.chromium.components.embedder_support.application.FirebaseConfig;
+import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.ChildProcessCreationParams;
 import org.chromium.content_public.browser.DeviceUtils;
@@ -429,6 +430,13 @@ public final class WebLayerImpl extends IWebLayer.Stub {
                 .toString();
     }
 
+    public static boolean isLocationPermissionManaged(Origin origin) {
+        if (origin == null) {
+            return false;
+        }
+        return WebLayerImplJni.get().isLocationPermissionManaged(origin.toString());
+    }
+
     /**
      * Converts the given id into a resource ID that can be shown in system UI, such as
      * notifications.
@@ -710,5 +718,6 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         void setIsWebViewCompatMode(boolean value);
         String getUserAgentString();
         void registerExternalExperimentIDs(String trialName, int[] experimentIDs);
+        boolean isLocationPermissionManaged(String origin);
     }
 }

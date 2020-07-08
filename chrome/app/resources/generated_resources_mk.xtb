@@ -377,6 +377,7 @@
 <translation id="1468571364034902819">Профилов не може да се користи</translation>
 <translation id="1470084204649225129">{NUM_TABS,plural, =1{Додајте картичка во новата група}one{Додајте картички во новата група}other{Додајте картички во новата група}}</translation>
 <translation id="1472675084647422956">Прикажи повеќе</translation>
+<translation id="1474785664565228650">Промената во поставката за микрофонот бара рестартирање на Parallels Desktop. Рестартијатејте ја Parallels Desktop за да продолжите.</translation>
 <translation id="1475502736924165259">Имате сертификати што не припаѓаат во ниедна друга категорија</translation>
 <translation id="1476088332184200792">Копирај на уредот</translation>
 <translation id="1476607407192946488">&amp;Поставки за јазик</translation>
@@ -2929,6 +2930,7 @@
 <translation id="4648499713050786492">Отклучете го профилот пред да додадете некого.</translation>
 <translation id="4650591383426000695">Прекинете ја врската помеѓу телефонот и <ph name="DEVICE_TYPE" /></translation>
 <translation id="4651484272688821107">Не можеше да се вчита онлајн компонентата со ресурси во демо-режим.</translation>
+<translation id="4652935475563630866">Промената во поставката за камерата бара рестартирање на Parallels Desktop. Рестартијатејте ја Parallels Desktop за да продолжите.</translation>
 <translation id="4653405415038586100">Грешка при конфигурирање на Linux</translation>
 <translation id="465878909996028221">Само http, https и протоколите за датотеки се поддржани за пренасочувања на прелистувачот.</translation>
 <translation id="4659077111144409915">Примарна сметка</translation>

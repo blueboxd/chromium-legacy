@@ -8,8 +8,8 @@
 #include "base/posix/global_descriptors.h"
 #include "base/posix/unix_domain_socket.h"
 #include "build/build_config.h"
+#include "sandbox/policy/linux/sandbox_linux.h"
 #include "services/service_manager/embedder/descriptors.h"
-#include "services/service_manager/sandbox/linux/sandbox_linux.h"
 
 namespace content {
 
@@ -18,7 +18,7 @@ int SharedMemoryIPCSupport::MakeSharedMemorySegment(size_t length,
                                                     bool executable) {
   base::Pickle request;
   request.WriteInt(
-      service_manager::SandboxLinux::METHOD_MAKE_SHARED_MEMORY_SEGMENT);
+      sandbox::policy::SandboxLinux::METHOD_MAKE_SHARED_MEMORY_SEGMENT);
   request.WriteUInt32(length);
   request.WriteBool(executable);
   uint8_t reply_buf[10];

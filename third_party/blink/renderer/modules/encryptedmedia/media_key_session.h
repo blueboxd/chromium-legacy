@@ -131,13 +131,13 @@ class MediaKeySession final
   void RemoveTask(ContentDecryptionModuleResult*);
 
   // WebContentDecryptionModuleSession::Client
-  void Message(MessageType,
-               const unsigned char* message,
-               size_t message_length) override;
-  void Close() override;
-  void ExpirationChanged(double updated_expiry_time_in_ms) override;
-  void KeysStatusesChange(const WebVector<WebEncryptedMediaKeyInformation>&,
-                          bool has_additional_usable_key) override;
+  void OnSessionMessage(MessageType,
+                        const unsigned char* message,
+                        size_t message_length) override;
+  void OnSessionClosed() override;
+  void OnSessionExpirationUpdate(double updated_expiry_time_in_ms) override;
+  void OnSessionKeysChange(const WebVector<WebEncryptedMediaKeyInformation>&,
+                           bool has_additional_usable_key) override;
 
   Member<EventQueue> async_event_queue_;
   std::unique_ptr<WebContentDecryptionModuleSession> session_;

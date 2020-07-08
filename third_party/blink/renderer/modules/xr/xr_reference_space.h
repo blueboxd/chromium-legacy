@@ -29,14 +29,10 @@ class XRReferenceSpace : public XRSpace {
                    device::mojom::blink::XRReferenceSpaceType type);
   ~XRReferenceSpace() override;
 
-  base::Optional<TransformationMatrix> NativeFromMojo() override;
   base::Optional<TransformationMatrix> NativeFromViewer(
       const base::Optional<TransformationMatrix>& mojo_from_viewer) override;
 
-  // MojoFromNative is final to enforce that children should be returning
-  // NativeFromMojo, since this is simply written to always provide the inverse
-  // of NativeFromMojo
-  base::Optional<TransformationMatrix> MojoFromNative() final;
+  base::Optional<TransformationMatrix> MojoFromNative() override;
 
   bool IsStationary() const override;
 
@@ -64,14 +60,14 @@ class XRReferenceSpace : public XRSpace {
   virtual XRReferenceSpace* cloneWithOriginOffset(
       XRRigidTransform* origin_offset);
 
-  // Updates the floor_from_mojo_ transform to match the one present in the
+  // Updates the mojo_from_floor_ transform to match the one present in the
   // latest display parameters of a session.
-  void SetFloorFromMojo();
+  void SetMojoFromFloor();
 
   unsigned int display_info_id_ = 0;
 
   // Floor from mojo (aka local-floor_from_mojo) transform.
-  std::unique_ptr<TransformationMatrix> floor_from_mojo_;
+  std::unique_ptr<TransformationMatrix> mojo_from_floor_;
   Member<XRRigidTransform> origin_offset_;
   device::mojom::blink::XRReferenceSpaceType type_;
 };

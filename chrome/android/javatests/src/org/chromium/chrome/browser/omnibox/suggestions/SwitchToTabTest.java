@@ -16,6 +16,7 @@ import android.widget.ImageView;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -102,11 +103,9 @@ public class SwitchToTabTest {
         OmniboxTestUtils.waitForOmniboxSuggestions(locationBarLayout);
         // waitForOmniboxSuggestions only wait until one suggestion shows up, we need to wait util
         // autocomplete return more suggestions.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return findFirstTabMatchOmniboxSuggestion(locationBarLayout).first != INVALID_INDEX;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(findFirstTabMatchOmniboxSuggestion(locationBarLayout).first,
+                    Matchers.not(INVALID_INDEX));
         });
     }
 

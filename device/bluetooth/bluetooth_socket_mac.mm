@@ -440,8 +440,8 @@ void BluetoothSocketMac::ListenUsingRfcomm(
     scoped_refptr<BluetoothAdapterMac> adapter,
     const BluetoothUUID& uuid,
     const BluetoothAdapter::ServiceOptions& options,
-    const base::Closure& success_callback,
-    const ErrorCompletionCallback& error_callback) {
+    base::OnceClosure success_callback,
+    ErrorCompletionOnceCallback error_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   adapter_ = adapter;
@@ -452,7 +452,7 @@ void BluetoothSocketMac::ListenUsingRfcomm(
   service_record_.reset(
       RegisterRfcommService(uuid, options, &registered_channel_id));
   if (!service_record_.get()) {
-    error_callback.Run(kInvalidOrUsedChannel);
+    std::move(error_callback).Run(kInvalidOrUsedChannel);
     return;
   }
 
@@ -461,15 +461,15 @@ void BluetoothSocketMac::ListenUsingRfcomm(
           initWithSocket:this
                channelID:registered_channel_id]);
 
-  success_callback.Run();
+  std::move(success_callback).Run();
 }
 
 void BluetoothSocketMac::ListenUsingL2cap(
     scoped_refptr<BluetoothAdapterMac> adapter,
     const BluetoothUUID& uuid,
     const BluetoothAdapter::ServiceOptions& options,
-    const base::Closure& success_callback,
-    const ErrorCompletionCallback& error_callback) {
+    base::OnceClosure success_callback,
+    ErrorCompletionOnceCallback error_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   adapter_ = adapter;
@@ -479,7 +479,7 @@ void BluetoothSocketMac::ListenUsingL2cap(
   BluetoothL2CAPPSM registered_psm;
   service_record_.reset(RegisterL2capService(uuid, options, &registered_psm));
   if (!service_record_.get()) {
-    error_callback.Run(kInvalidOrUsedPsm);
+    std::move(error_callback).Run(kInvalidOrUsedPsm);
     return;
   }
 
@@ -487,7 +487,7 @@ void BluetoothSocketMac::ListenUsingL2cap(
       [[BluetoothL2capConnectionListener alloc] initWithSocket:this
                                                            psm:registered_psm]);
 
-  success_callback.Run();
+  std::move(success_callback).Run();
 }
 
 void BluetoothSocketMac::OnSDPQueryComplete(

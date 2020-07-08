@@ -27,7 +27,7 @@ void DeleteLegacyDirectoryFilesAndNigoriStorage(
   base::FileEnumerator fe(directory_path, false, base::FileEnumerator::FILES);
   for (base::FilePath current = fe.Next(); !current.empty();
        current = fe.Next()) {
-    if (!base::DeleteFile(current, false)) {
+    if (!base::DeleteFile(current)) {
       DLOG(ERROR) << "Could not delete all sync directory files.";
     }
   }

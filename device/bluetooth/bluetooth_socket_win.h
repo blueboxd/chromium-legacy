@@ -51,8 +51,8 @@ class BluetoothSocketWin : public BluetoothSocketNet {
   void Listen(scoped_refptr<BluetoothAdapter> adapter,
               const BluetoothUUID& uuid,
               const BluetoothAdapter::ServiceOptions& options,
-              const base::Closure& success_callback,
-              const ErrorCompletionCallback& error_callback);
+              base::OnceClosure success_callback,
+              ErrorCompletionOnceCallback error_callback);
 
   // BluetoothSocketNet:
   void ResetData() override;
@@ -73,9 +73,9 @@ class BluetoothSocketWin : public BluetoothSocketNet {
   void DoConnect(const base::Closure& success_callback,
                  const ErrorCompletionCallback& error_callback);
   void DoListen(const BluetoothUUID& uuid,
-      int rfcomm_channel,
-      const base::Closure& success_callback,
-      const ErrorCompletionCallback& error_callback);
+                int rfcomm_channel,
+                base::OnceClosure success_callback,
+                ErrorCompletionOnceCallback error_callback);
   void DoAccept(const AcceptCompletionCallback& success_callback,
                 const ErrorCompletionCallback& error_callback);
   void OnAcceptOnSocketThread(const AcceptCompletionCallback& success_callback,

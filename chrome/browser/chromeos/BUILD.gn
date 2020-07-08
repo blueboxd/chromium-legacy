@@ -3156,6 +3156,7 @@ source_set("unit_tests") {
     "input_method/ui/input_method_menu_item_unittest.cc",
     "input_method/ui/input_method_menu_manager_unittest.cc",
     "input_method/ui/suggestion_window_view_unittest.cc",
+    "input_method/ui/undo_window_unittest.cc",
     "kerberos/kerberos_credentials_manager_test.cc",
     "kerberos/kerberos_ticket_expiry_notification_test.cc",
     "lacros/lacros_util_unittest.cc",

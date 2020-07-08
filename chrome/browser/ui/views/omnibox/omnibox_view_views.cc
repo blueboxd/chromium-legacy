@@ -1289,13 +1289,12 @@ bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
       TextChanged();
       filter_drag_events_for_unelision_ = true;
     } else if (event.GetClickCount() == 1 && event.IsLeftMouseButton()) {
-      // Select the current word and record it for later. Selection will be
-      // immediately reset to cursor position, so no need to clean up. This is
-      // done to handle an edge case where the wrong word is selected on a
-      // double click when the elided URL is selected prior to the dobule click.
-      // Unelision happens between the first and second click, causing the
-      // wrong word to be selected because it's based on the click position in
-      // the newly unelided URL. See https://crbug.com/1084406.
+      // Select the current word and record it for later. This is done to handle
+      // an edge case where the wrong word is selected on a double click when
+      // the elided URL is selected prior to the dobule click. Unelision happens
+      // between the first and second click, causing the wrong word to be
+      // selected because it's based on the click position in the newly unelided
+      // URL. See https://crbug.com/1084406.
       if (IsSelectAll()) {
         SelectWordAt(event.location());
         base::string16 shown_url = GetText();
@@ -1307,6 +1306,8 @@ bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
           next_double_click_selection_offset_ =
               offset + GetCursorPosition() - next_double_click_selection_len_;
         }
+        // Reset selection
+        SelectAll(false);
       }
     } else if (event.GetClickCount() == 2 && event.IsLeftMouseButton()) {
       // If the user double clicked and we unelided between the first and second

@@ -44,7 +44,7 @@
 
 #if defined(OS_LINUX)
 #include "content/public/common/sandbox_init.h"
-#include "services/service_manager/sandbox/linux/sandbox_linux.h"
+#include "sandbox/policy/linux/sandbox_linux.h"
 #endif
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
@@ -121,10 +121,10 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
 #endif
 
 #if defined(OS_LINUX)
-  service_manager::SandboxLinux::GetInstance()->InitializeSandbox(
-      service_manager::SandboxTypeFromCommandLine(command_line),
-      service_manager::SandboxLinux::PreSandboxHook(),
-      service_manager::SandboxLinux::Options());
+  sandbox::policy::SandboxLinux::GetInstance()->InitializeSandbox(
+      sandbox::policy::SandboxTypeFromCommandLine(command_line),
+      sandbox::policy::SandboxLinux::PreSandboxHook(),
+      sandbox::policy::SandboxLinux::Options());
 #endif
 
   ChildProcess ppapi_process;

@@ -129,12 +129,7 @@ public class OMADownloadHandlerTest {
     }
 
     private void waitForQueryCompletion(final DownloadQueryResultVerifier verifier) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return verifier.mQueryCompleted;
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> verifier.mQueryCompleted);
     }
 
     /**
@@ -333,12 +328,10 @@ public class OMADownloadHandlerTest {
         omaHandler.clearPendingOMADownloads();
 
         // Wait for OMADownloadHandler to clear the pending downloads.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                OfflineItem item = mTestInfoBarController.getLastUpdatedItem();
-                return item != null && item.state == OfflineItemState.COMPLETE;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            OfflineItem item = mTestInfoBarController.getLastUpdatedItem();
+            Criteria.checkThat(item, Matchers.notNullValue());
+            Criteria.checkThat(item.state, Matchers.is(OfflineItemState.COMPLETE));
         });
 
         // The pending downloads set in the shared prefs should be empty now.
@@ -381,11 +374,9 @@ public class OMADownloadHandlerTest {
 
             omaHandler.clearPendingOMADownloads();
             omaHandler.downloadOMAContent(0, info, omaInfo);
-            CriteriaHelper.pollUiThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return omaHandler.mDownloadId != 0 && mTestInfoBarController.mDownloadStarted;
-                }
+            CriteriaHelper.pollUiThread(() -> {
+                Criteria.checkThat(omaHandler.mDownloadId, Matchers.not(0));
+                Criteria.checkThat(mTestInfoBarController.mDownloadStarted, Matchers.is(true));
             });
 
             Set<String> downloads = DownloadManagerService.getStoredDownloadInfo(

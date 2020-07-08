@@ -9,6 +9,7 @@ include_rules = [
   "+media/base",
   "+media/fuchsia",
   "+mojo/public",
+  "+sandbox/policy",
   "+services/service_manager",
   "+third_party/blink/public/common/switches.h",
   "+third_party/widevine/cdm/widevine_cdm_common.h",

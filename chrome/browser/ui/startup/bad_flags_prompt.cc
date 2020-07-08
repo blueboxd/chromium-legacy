@@ -36,8 +36,8 @@
 #include "gpu/config/gpu_switches.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
+#include "sandbox/policy/switches.h"
 #include "services/network/public/cpp/network_switches.h"
-#include "services/service_manager/sandbox/switches.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -58,12 +58,12 @@ namespace {
 static const char* kBadFlags[] = {
     network::switches::kIgnoreCertificateErrorsSPKIList,
     // These flags disable sandbox-related security.
-    service_manager::switches::kDisableGpuSandbox,
-    service_manager::switches::kDisableSeccompFilterSandbox,
-    service_manager::switches::kDisableSetuidSandbox,
-    service_manager::switches::kNoSandbox,
+    sandbox::policy::switches::kDisableGpuSandbox,
+    sandbox::policy::switches::kDisableSeccompFilterSandbox,
+    sandbox::policy::switches::kDisableSetuidSandbox,
+    sandbox::policy::switches::kNoSandbox,
 #if defined(OS_WIN)
-    service_manager::switches::kAllowThirdPartyModules,
+    sandbox::policy::switches::kAllowThirdPartyModules,
 #endif
     switches::kDisableSiteIsolation,
     switches::kDisableWebSecurity,

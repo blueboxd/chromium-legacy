@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/enterprise/reporting/report_request_queue_generator.h"
+#include "chrome/browser/enterprise/reporting/reporting_delegate_factory_desktop.h"
 #include "components/enterprise/browser/reporting/browser_report_generator.h"
 #include "components/enterprise/browser/reporting/report_request_definition.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -67,6 +68,11 @@ class ReportGenerator {
       ReportCallback callback,
       std::unique_ptr<ReportRequest> basic_request,
       std::unique_ptr<enterprise_management::BrowserReport> browser_report);
+
+  // TODO(crbug.com/1092442): Move the delegate factory ownership to
+  // ChromeBrowserCloudManagementController's delegate after CBCMController has
+  // been moved to components.
+  ReportingDelegateFactoryDesktop delegate_factory_;
 
   ReportRequestQueueGenerator report_request_queue_generator_;
   BrowserReportGenerator browser_report_generator_;

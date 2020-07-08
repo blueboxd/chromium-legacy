@@ -15,7 +15,7 @@
 #include "net/base/isolation_info.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/canonical_cookie_test_helpers.h"
-#include "net/cookies/cookie_inclusion_status.h"
+#include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
 #include "net/http/http_request_headers.h"
@@ -89,9 +89,9 @@ class WebSocketStreamClientUseCookieTest
   static void SetCookieHelperFunction(const base::RepeatingClosure& task,
                                       base::WeakPtr<bool> weak_is_called,
                                       base::WeakPtr<bool> weak_result,
-                                      CookieInclusionStatus status) {
+                                      CookieAccessResult access_result) {
     *weak_is_called = true;
-    *weak_result = status.IsInclude();
+    *weak_result = access_result.status.IsInclude();
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
   }
 };

@@ -322,8 +322,9 @@ class CupsPrintersManagerImpl
                          << "Printer not found. Printer id: " << printer_id;
       CupsPrinterStatus printer_status(printer_id);
       printer_status.AddStatusReason(
-          CupsPrinterStatus::CupsPrinterStatusReason::Reason::kUnknownReason,
-          CupsPrinterStatus::CupsPrinterStatusReason::Severity::kWarning);
+          CupsPrinterStatus::CupsPrinterStatusReason::Reason::
+              kConnectingToDevice,
+          CupsPrinterStatus::CupsPrinterStatusReason::Severity::kError);
       std::move(cb).Run(std::move(printer_status));
       return;
     }

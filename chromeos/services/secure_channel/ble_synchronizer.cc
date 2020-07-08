@@ -86,20 +86,20 @@ void BleSynchronizer::ProcessQueue() {
       DCHECK(register_args);
       bluetooth_adapter_->RegisterAdvertisement(
           std::move(register_args->advertisement_data),
-          base::Bind(&BleSynchronizer::OnAdvertisementRegistered,
-                     weak_ptr_factory_.GetWeakPtr()),
-          base::Bind(&BleSynchronizer::OnErrorRegisteringAdvertisement,
-                     weak_ptr_factory_.GetWeakPtr()));
+          base::BindOnce(&BleSynchronizer::OnAdvertisementRegistered,
+                         weak_ptr_factory_.GetWeakPtr()),
+          base::BindOnce(&BleSynchronizer::OnErrorRegisteringAdvertisement,
+                         weak_ptr_factory_.GetWeakPtr()));
       break;
     }
     case CommandType::UNREGISTER_ADVERTISEMENT: {
       UnregisterArgs* unregister_args = current_command_->unregister_args.get();
       DCHECK(unregister_args);
       unregister_args->advertisement->Unregister(
-          base::Bind(&BleSynchronizer::OnAdvertisementUnregistered,
-                     weak_ptr_factory_.GetWeakPtr()),
-          base::Bind(&BleSynchronizer::OnErrorUnregisteringAdvertisement,
-                     weak_ptr_factory_.GetWeakPtr()));
+          base::BindOnce(&BleSynchronizer::OnAdvertisementUnregistered,
+                         weak_ptr_factory_.GetWeakPtr()),
+          base::BindOnce(&BleSynchronizer::OnErrorUnregisteringAdvertisement,
+                         weak_ptr_factory_.GetWeakPtr()));
       break;
     }
     case CommandType::START_DISCOVERY: {
@@ -157,7 +157,7 @@ void BleSynchronizer::OnAdvertisementRegistered(
   ScheduleCommandCompletion();
   RegisterArgs* register_args = current_command_->register_args.get();
   DCHECK(register_args);
-  register_args->callback.Run(std::move(advertisement));
+  std::move(register_args->callback).Run(std::move(advertisement));
 }
 
 void BleSynchronizer::OnErrorRegisteringAdvertisement(
@@ -167,7 +167,7 @@ void BleSynchronizer::OnErrorRegisteringAdvertisement(
   ScheduleCommandCompletion();
   RegisterArgs* register_args = current_command_->register_args.get();
   DCHECK(register_args);
-  register_args->error_callback.Run(error_code);
+  std::move(register_args->error_callback).Run(error_code);
 }
 
 void BleSynchronizer::OnAdvertisementUnregistered() {
@@ -176,7 +176,7 @@ void BleSynchronizer::OnAdvertisementUnregistered() {
   ScheduleCommandCompletion();
   UnregisterArgs* unregister_args = current_command_->unregister_args.get();
   DCHECK(unregister_args);
-  unregister_args->callback.Run();
+  std::move(unregister_args->callback).Run();
 }
 
 void BleSynchronizer::OnErrorUnregisteringAdvertisement(
@@ -192,9 +192,9 @@ void BleSynchronizer::OnErrorUnregisteringAdvertisement(
     // should never happen since unregistration has not succeeded. Work around
     // this situation by simply invoking the success callback. See
     // https://crbug.com/738222 for details.
-    unregister_args->callback.Run();
+    std::move(unregister_args->callback).Run();
   } else {
-    unregister_args->error_callback.Run(error_code);
+    std::move(unregister_args->error_callback).Run(error_code);
   }
 }
 

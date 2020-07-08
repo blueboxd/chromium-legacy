@@ -145,7 +145,7 @@ void RunSetCookieCallbackWithSuccess(
     const GURL&,
     const net::CookieOptions&,
     network::mojom::CookieManager::SetCanonicalCookieCallback callback) {
-  std::move(callback).Run(net::CookieInclusionStatus());
+  std::move(callback).Run(net::CookieAccessResult());
 }
 
 class MockCookieManager

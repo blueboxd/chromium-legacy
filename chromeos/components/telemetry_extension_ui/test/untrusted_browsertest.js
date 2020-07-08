@@ -60,7 +60,17 @@ UNTRUSTED_TEST('UntustedRequestTelemetryInfo', async () => {
   /** @type {!ProbeTelemetryInfoResponse} */
   const response = await requestTelemetryInfo();
   assertDeepEquals(response, {
-    'telemetryInfo':
-        {'batteryResult': null, 'blockDeviceResult': null, 'vpdResult': null}
+    'telemetryInfo': {
+      'backlightResult': null,
+      'batteryResult': null,
+      'blockDeviceResult': null,
+      'bluetoothResult': null,
+      'cpuResult': null,
+      'fanResult': null,
+      'memoryResult': null,
+      'statefulPartitionResult': null,
+      'timezoneResult': null,
+      'vpdResult': null,
+    }
   });
 });

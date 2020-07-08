@@ -214,9 +214,9 @@ source_set("common") {
     "//cc/ipc",
     "//gpu/command_buffer/common",
     "//ipc",
+    "//sandbox/policy",
     "//services/network:network_service",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/sandbox",
     "//third_party/blink/public:blink_headers",
     "//third_party/blink/public/common",
     "//ui/accessibility",
@@ -309,8 +309,8 @@ source_set("common") {
   if (is_android && use_seccomp_bpf) {
     set_sources_assignment_filter([])
     sources += [
-      "//services/service_manager/sandbox/linux/bpf_base_policy_linux.cc",
-      "//services/service_manager/sandbox/linux/bpf_base_policy_linux.h",
+      "//sandbox/policy/linux/bpf_base_policy_linux.cc",
+      "//sandbox/policy/linux/bpf_base_policy_linux.h",
     ]
     set_sources_assignment_filter(sources_assignment_filter)
   }

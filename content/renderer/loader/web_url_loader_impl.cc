@@ -82,8 +82,10 @@
 #include "third_party/blink/public/platform/web_url_loader_client.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_security_policy.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
+#include "url/origin.h"
 
 using base::Time;
 using base::TimeTicks;
@@ -412,6 +414,10 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   static net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag(
       blink::mojom::ResourceType resource_type);
 
+  // Appends variations throttles to |throttles| if needed.
+  void AppendVariationsThrottles(
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>>* throttles);
+
   WebURLLoaderImpl* loader_;
 
   WebURL url_;
@@ -681,7 +687,7 @@ void WebURLLoaderImpl::Context::Start(
       throttles.push_back(std::move(throttle));
   }
 
-  VariationsRenderThreadObserver::AppendThrottleIfNeeded(&throttles);
+  AppendVariationsThrottles(&throttles);
 
   uint32_t loader_options = network::mojom::kURLLoadOptionNone;
   if (!no_mime_sniffing) {
@@ -1258,6 +1264,17 @@ WebURLLoaderImpl::Context::GetTrafficAnnotationTag(
   }
 
   return net::NetworkTrafficAnnotationTag::NotReached();
+}
+
+void WebURLLoaderImpl::Context::AppendVariationsThrottles(
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>>* throttles) {
+  // No frame is present if the context is associated with a Document that
+  // is not currently being displayed in a Frame.
+  blink::WebLocalFrame* frame = blink::WebLocalFrame::FrameForCurrentContext();
+  url::Origin origin;
+  if (frame)
+    origin = frame->Top()->GetSecurityOrigin();
+  VariationsRenderThreadObserver::AppendThrottleIfNeeded(origin, throttles);
 }
 
 }  // namespace content

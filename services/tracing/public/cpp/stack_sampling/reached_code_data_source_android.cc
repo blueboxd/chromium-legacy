@@ -56,6 +56,7 @@ void ReachedCodeDataSource::StopTracing(
     // TODO(ssid): add a new packed field to the trace packet proto.
     streaming_profile_packet->add_callstack_iid(offset);
   }
+  trace_packet->Finalize();
   trace_writer_.reset();
   std::move(stop_complete_callback).Run();
 }

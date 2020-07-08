@@ -23,6 +23,7 @@
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/layout.h"
 #include "ui/display/screen.h"
+#include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/platform_window_handler/wm_drag_handler.h"
 #include "ui/views/controls/image_view.h"
@@ -126,9 +127,6 @@ int DesktopDragDropClientOzone::StartDragAndDrop(
   DCHECK(!drag_context_);
   drag_context_ = std::make_unique<DragContext>();
 
-  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-  drag_context_->quit_closure = run_loop.QuitClosure();
-
   // Chrome expects starting drag and drop to release capture.
   aura::Window* capture_window =
       aura::client::GetCaptureClient(root_window)->GetGlobalCaptureWindow();
@@ -145,13 +143,17 @@ int DesktopDragDropClientOzone::StartDragAndDrop(
         ui::mojom::CursorType::kGrabbing));
   }
 
-  const auto& provider = data->provider();
-  gfx::ImageSkia drag_image = provider.GetDragImage();
-  if (IsValidDragImage(drag_image)) {
-    drag_context_->size = drag_image.size();
-    drag_context_->offset = provider.GetDragImageOffset();
-    drag_context_->widget =
-        CreateDragWidget(root_location, drag_image, drag_context_->offset);
+  if (!ui::OzonePlatform::GetInstance()
+           ->GetPlatformProperties()
+           .platform_shows_drag_image) {
+    const auto& provider = data->provider();
+    gfx::ImageSkia drag_image = provider.GetDragImage();
+    if (IsValidDragImage(drag_image)) {
+      drag_context_->size = drag_image.size();
+      drag_context_->offset = provider.GetDragImageOffset();
+      drag_context_->widget =
+          CreateDragWidget(root_location, drag_image, drag_context_->offset);
+    }
   }
 
   // This object is owned by a DesktopNativeWidgetAura that can be destroyed
@@ -159,12 +161,15 @@ int DesktopDragDropClientOzone::StartDragAndDrop(
   // of whether we are still alive after the drag ends.
   auto alive = weak_factory_.GetWeakPtr();
 
-  drag_handler_->StartDrag(*data.get(), operation, cursor_client->GetCursor(),
-                           this);
-  run_loop.Run();
+  const bool drag_succeeded = drag_handler_->StartDrag(
+      *data.get(), operation, cursor_client->GetCursor(),
+      !source_window->HasCapture(), this);
 
   if (!alive)
     return ui::DragDropTypes::DRAG_NONE;
+
+  if (!drag_succeeded)
+    drag_operation_ = ui::DragDropTypes::DRAG_NONE;
 
   if (cursor_client)
     cursor_client->SetCursor(initial_cursor);
@@ -174,11 +179,12 @@ int DesktopDragDropClientOzone::StartDragAndDrop(
 }
 
 void DesktopDragDropClientOzone::DragCancel() {
-  QuitRunLoop();
+  drag_handler_->CancelDrag();
+  drag_operation_ = ui::DragDropTypes::DRAG_NONE;
 }
 
 bool DesktopDragDropClientOzone::IsDragDropInProgress() {
-  return drag_context_ && !drag_context_->quit_closure.is_null();
+  return drag_context_.get();
 }
 
 void DesktopDragDropClientOzone::AddObserver(
@@ -197,7 +203,7 @@ void DesktopDragDropClientOzone::OnDragEnter(
     int operation,
     int modifiers) {
   last_drag_point_ = point;
-  drag_operation_ = operation;
+  last_drop_operation_ = operation;
 
   // If |data| is empty, we defer sending any events to the
   // |drag_drop_delegate_|.  All necessary events will be sent on dropping.
@@ -212,7 +218,7 @@ int DesktopDragDropClientOzone::OnDragMotion(const gfx::PointF& point,
                                              int operation,
                                              int modifiers) {
   last_drag_point_ = point;
-  drag_operation_ = operation;
+  last_drop_operation_ = operation;
 
   // If |data_to_drop_| doesn't have data, return that we accept everything.
   if (!data_to_drop_)
@@ -254,8 +260,7 @@ void DesktopDragDropClientOzone::OnDragDrop(
       // and quit?
       drag_drop_delegate_->OnDragUpdated(*event);
     }
-    drag_operation_ =
-        drag_drop_delegate_->OnPerformDrop(*event, std::move(data_to_drop_));
+    drag_drop_delegate_->OnPerformDrop(*event, std::move(data_to_drop_));
   }
   ResetDragDropTarget();
 }
@@ -320,13 +325,6 @@ void DesktopDragDropClientOzone::OnDragOperationChanged(
 
 void DesktopDragDropClientOzone::OnDragFinished(int dnd_action) {
   drag_operation_ = dnd_action;
-  QuitRunLoop();
-}
-
-void DesktopDragDropClientOzone::QuitRunLoop() {
-  if (!drag_context_->quit_closure)
-    return;
-  std::move(drag_context_->quit_closure).Run();
 }
 
 std::unique_ptr<ui::DropTargetEvent>
@@ -359,7 +357,7 @@ DesktopDragDropClientOzone::UpdateTargetAndCreateDropEvent(
 
   auto event = std::make_unique<ui::DropTargetEvent>(
       *data_to_drop_, target_location, gfx::PointF(root_location),
-      drag_operation_);
+      last_drop_operation_);
   event->set_flags(modifiers);
   if (delegate_has_changed)
     drag_drop_delegate_->OnDragEntered(*event);

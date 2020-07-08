@@ -20,6 +20,7 @@
 
 #if defined(USE_OZONE)
 #include "ui/base/x/x11_drag_drop_client.h"
+#include "ui/base/x/x11_move_loop_delegate.h"
 #include "ui/platform_window/platform_window_handler/wm_drag_handler.h"
 #endif
 
@@ -28,6 +29,7 @@ namespace ui {
 class PlatformWindowDelegate;
 class X11ExtensionDelegate;
 class X11DesktopWindowMoveClient;
+class X11MoveLoop;
 class LocatedEvent;
 class WorkspaceExtensionDelegate;
 
@@ -54,6 +56,7 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
 #if defined(USE_OZONE)
                                     public WmDragHandler,
                                     public XDragDropClient::Delegate,
+                                    public X11MoveLoopDelegate,
 #endif
                                     public WmMoveLoopHandler {
  public:
@@ -146,8 +149,6 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   // XWindow:
   void OnXWindowCreated() override;
 
-  virtual bool DispatchDraggingUiEvent(ui::Event* event);
-
   // XWindow:
   void OnXWindowStateChanged() override;
   void OnXWindowDamageEvent(const gfx::Rect& damage_rect) override;
@@ -181,21 +182,31 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
 
 #if defined(USE_OZONE)
   // WmDragHandler
-  void StartDrag(const ui::OSExchangeData& data,
+  bool StartDrag(const OSExchangeData& data,
                  int operation,
                  gfx::NativeCursor cursor,
+                 bool can_grab_pointer,
                  WmDragHandler::Delegate* delegate) override;
+  void CancelDrag() override;
 
-  // ui::XDragDropClient::Delegate
-  std::unique_ptr<ui::XTopmostWindowFinder> CreateWindowFinder() override;
+  // XDragDropClient::Delegate
+  std::unique_ptr<XTopmostWindowFinder> CreateWindowFinder() override;
   int UpdateDrag(const gfx::Point& screen_point) override;
-  void UpdateCursor(
-      ui::DragDropTypes::DragOperation negotiated_operation) override;
+  void UpdateCursor(DragDropTypes::DragOperation negotiated_operation) override;
   void OnBeginForeignDrag(x11::Window window) override;
   void OnEndForeignDrag() override;
   void OnBeforeDragLeave() override;
   int PerformDrop() override;
   void EndDragLoop() override;
+
+  // X11MoveLoopDelegate
+  void OnMouseMovement(const gfx::Point& screen_point,
+                       int flags,
+                       base::TimeTicks event_time) override;
+  void OnMouseReleased() override;
+  void OnMoveLoopEnded() override;
+
+  void QuitDragLoop();
 #endif  // defined(USE_OZONE)
 
   // Handles |xevent| as a Atk Key Event
@@ -242,8 +253,6 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   std::unique_ptr<X11DesktopWindowMoveClient> x11_window_move_client_;
 
 #if defined(USE_OZONE)
-  // True while the drag initiated in this window is in progress.
-  bool dragging_ = false;
   // Whether the drop handler has notified that the drag has entered.
   bool notified_enter_ = false;
   // Keeps the last negotiated operation returned by the drop handler.
@@ -252,6 +261,14 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   // Handles XDND events going through this window.
   std::unique_ptr<XDragDropClient> drag_drop_client_;
   WmDragHandler::Delegate* drag_handler_delegate_ = nullptr;
+
+  // Run loop used while dragging from this window.
+  std::unique_ptr<X11MoveLoop> drag_loop_;
+
+  // Events that we have selected on the source window of the incoming drag.
+  std::unique_ptr<ui::XScopedEventSelector> source_window_events_;
+
+  base::WeakPtrFactory<X11Window> weak_ptr_factory_{this};
 #endif  // defined(USE_OZONE)
 
   DISALLOW_COPY_AND_ASSIGN(X11Window);

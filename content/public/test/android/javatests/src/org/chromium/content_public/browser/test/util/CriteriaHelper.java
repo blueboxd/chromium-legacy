@@ -50,9 +50,6 @@ import java.util.concurrent.atomic.AtomicReference;
  * }
  * </code>
  * </pre>
- *
- * <p>
- * The Criteria variation is deprecated and should be avoided in favor of using a Runnable.
  */
 public class CriteriaHelper {
     /** The default maximum time to wait for a criteria to become valid. */
@@ -127,21 +124,6 @@ public class CriteriaHelper {
      * @see #pollInstrumentationThread(Criteria, long, long)
      */
     public static void pollInstrumentationThread(Runnable criteria) {
-        pollInstrumentationThread(criteria, DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
-    }
-
-    /**
-     * Deprecated, use {@link #pollInstrumentationThread(Runnable, long, long)}.
-     */
-    public static void pollInstrumentationThread(
-            Criteria criteria, long maxTimeoutMs, long checkIntervalMs) {
-        pollInstrumentationThread(toNotSatisfiedRunnable(criteria), maxTimeoutMs, checkIntervalMs);
-    }
-
-    /**
-     * Deprecated, use {@link #pollInstrumentationThread(Runnable)}.
-     */
-    public static void pollInstrumentationThread(Criteria criteria) {
         pollInstrumentationThread(criteria, DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
     }
 
@@ -263,21 +245,6 @@ public class CriteriaHelper {
     }
 
     /**
-     * Deprecated, use {@link #pollUiThread(Runnable, long, long)}.
-     */
-    public static void pollUiThread(
-            final Criteria criteria, long maxTimeoutMs, long checkIntervalMs) {
-        pollUiThread(toNotSatisfiedRunnable(criteria), maxTimeoutMs, checkIntervalMs);
-    }
-
-    /**
-     * Deprecated, use {@link #pollUiThread(Runnable)}.
-     */
-    public static void pollUiThread(final Criteria criteria) {
-        pollUiThread(criteria, DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
-    }
-
-    /**
      * Checks whether the given Callable<Boolean> is satisfied polling at a given interval on the UI
      * thread, until either the criteria is satisfied, or the maxTimeoutMs number of ms has elapsed.
      *
@@ -346,13 +313,6 @@ public class CriteriaHelper {
                 throw new RuntimeException(e);
             }
             Criteria.checkThat(failureReason, isSatisfied, Matchers.is(true));
-        };
-    }
-
-    private static Runnable toNotSatisfiedRunnable(Criteria criteria) {
-        return () -> {
-            boolean satisfied = criteria.isSatisfied();
-            Criteria.checkThat(criteria.getFailureReason(), satisfied, Matchers.is(true));
         };
     }
 }

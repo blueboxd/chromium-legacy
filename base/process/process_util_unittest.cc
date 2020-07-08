@@ -536,8 +536,7 @@ MULTIPROCESS_TEST_MAIN(CheckCwdProcess) {
   event.Wait();
 
   // Get a new cwd for the process.
-  FilePath home_dir;
-  CHECK(PathService::Get(DIR_HOME, &home_dir));
+  const FilePath home_dir = PathService::CheckedGet(DIR_HOME);
 
   // Change the cwd on the secondary thread. IgnoreResult is used when setting
   // because it is checked immediately after.

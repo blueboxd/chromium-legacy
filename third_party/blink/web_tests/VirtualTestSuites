@@ -558,6 +558,11 @@
              "--enable-blink-features=ForcedColors"]
   },
   {
+    "prefix": "system-color-compute",
+    "bases": ["external/wpt/css/css-color"],
+    "args": ["--enable-blink-features=CSSColorScheme,CSSColorSchemeUARendering,CSSSystemColorComputeToSelf"]
+  },
+  {
     "prefix": "dark-color-scheme",
     "bases": ["external/wpt/css/css-color-adjust/rendering/dark-color-scheme"],
     "args": ["--force-dark-mode",

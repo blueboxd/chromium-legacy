@@ -1,0 +1,21 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("trusted_vault") {
+  sources = [
+    "standalone_trusted_vault_backend.cc",
+    "standalone_trusted_vault_backend.h",
+    "standalone_trusted_vault_client.cc",
+    "standalone_trusted_vault_client.h",
+  ]
+  public_deps = [
+    "//base",
+    "//components/sync/driver",
+  ]
+  deps = [
+    "//components/os_crypt",
+    "//components/signin/public/identity_manager",
+    "//components/sync/protocol",
+  ]
+}

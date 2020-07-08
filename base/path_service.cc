@@ -228,6 +228,12 @@ bool PathService::Get(int key, FilePath* result) {
   return true;
 }
 
+FilePath PathService::CheckedGet(int key) {
+  FilePath path;
+  CHECK(Get(key, &path));
+  return path;
+}
+
 // static
 bool PathService::Override(int key, const FilePath& path) {
   // Just call the full function with true for the value of |create|, and

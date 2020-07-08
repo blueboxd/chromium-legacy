@@ -44,6 +44,4 @@ interface ITestWebLayer {
   void forceNetworkConnectivityState(in boolean networkAvailable) = 13;
 
   boolean canInfoBarContainerScroll(in ITab tab) = 14;
-
-  String getDisplayedUrl(IObjectWrapper /* View */ urlBarView) = 15;
 }

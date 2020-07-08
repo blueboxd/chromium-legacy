@@ -28,9 +28,11 @@ import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.payments.Event;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
@@ -227,8 +229,10 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     @MediumTest
     @Feature({"Payments"})
     public void testCanMakePaymentDisabled_Complete() throws TimeoutException {
-        TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> {
-            PrefServiceBridge.getInstance().setBoolean(Pref.CAN_MAKE_PAYMENT_ENABLED, false);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PrefService prefs = UserPrefs.get(Profile.fromWebContents(
+                    mPaymentRequestTestRule.getActivity().getCurrentWebContents()));
+            prefs.setBoolean(Pref.CAN_MAKE_PAYMENT_ENABLED, false);
         });
 
         // Install the app so CanMakePayment returns true if it is enabled.

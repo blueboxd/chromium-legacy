@@ -716,7 +716,7 @@
     },
     {
       "id": 96,
-      "description": "Blacklist GPU raster/canvas on all except known good GPUs and newer Android releases",
+      "description": "Blocklist GPU raster/canvas on all except known good GPUs and newer Android releases",
       "cr_bugs": [362779,424970],
       "os": {
         "type": "android"
@@ -778,7 +778,7 @@
     },
     {
       "id": 100,
-      "description": "GPU rasterization and canvas is blacklisted on Nexus 10",
+      "description": "GPU rasterization and canvas is blocklisted on Nexus 10",
       "cr_bugs": [407144],
       "os": {
         "type": "android"
@@ -1260,7 +1260,7 @@
     },
     {
       "id": 136,
-      "description": "GPU rasterization is blacklisted on NVidia Fermi architecture for now.",
+      "description": "GPU rasterization is blocklisted on NVidia Fermi architecture for now.",
       "cr_bugs": [1047002],
       "os": {
         "type": "win"
@@ -1291,7 +1291,7 @@
     },
     {
       "id": 137,
-      "description": "GPU rasterization on CrOS is blacklisted on anything but Intel, Mali T8/G, Imagination, Freedreno, or AMD GPU/drivers for now.",
+      "description": "GPU rasterization on CrOS is blocklisted on anything but Intel, Mali T8/G, Imagination, Freedreno, or AMD GPU/drivers for now.",
       "cr_bugs": [684094, 996858, 1020500],
       "os": {
         "type": "chromeos"
@@ -1530,7 +1530,7 @@
     },
     {
       "id": 152,
-      "description": "Test entry where all features except WebGL blacklisted",
+      "description": "Test entry where all features except WebGL blocklisted",
       "test_group": 1,
       "features": [
         "all",
@@ -1542,7 +1542,7 @@
     },
     {
       "id": 153,
-      "description": "Test entry where WebGL is blacklisted",
+      "description": "Test entry where WebGL is blocklisted",
       "test_group": 2,
       "features": [
         "accelerated_webgl"

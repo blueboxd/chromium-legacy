@@ -411,9 +411,9 @@ void ArCoreGl::GetFrameData(
 
     frame_data->stage_parameters_updated = true;
     frame_data->stage_parameters = mojom::VRStageParameters::New();
-    frame_data->stage_parameters->standing_transform = gfx::Transform();
-    frame_data->stage_parameters->standing_transform.Translate3d(
-        0, *floor_height_estimate_, 0);
+    frame_data->stage_parameters->mojo_from_floor = gfx::Transform();
+    frame_data->stage_parameters->mojo_from_floor.Translate3d(
+        0, (-1 * *floor_height_estimate_), 0);
   }
 
   frame_data->frame_id = webxr_->StartFrameAnimating();

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/system_proxy_manager.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
@@ -17,12 +18,20 @@
 #include "chromeos/dbus/system_proxy/system_proxy_service.pb.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::_;
+using testing::Invoke;
+using testing::WithArg;
 
 namespace {
 constexpr char kSystemServicesUsername[] = "test_username";
 constexpr char kSystemServicesPassword[] = "test_password";
 constexpr char kKerberosActivePrincipalName[] = "kerberos_princ_name";
+constexpr char kProxyAuthUrl[] = "http://example.com:3128";
+constexpr char kRealm[] = "My proxy";
+constexpr char kScheme[] = "BaSiC";
 }  // namespace
 
 namespace policy {
@@ -34,7 +43,6 @@ class SystemProxyManagerTest : public testing::Test {
   // testing::Test
   void SetUp() override {
     testing::Test::SetUp();
-
     profile_ = std::make_unique<TestingProfile>();
     chromeos::SystemProxyClient::InitializeFake();
   }
@@ -78,12 +86,12 @@ TEST_F(SystemProxyManagerTest, SetAuthenticationDetails) {
             "" /* system_services_password */);
   task_environment_.RunUntilIdle();
   // Don't send empty credentials.
-  EXPECT_EQ(0, client_test_interface()->GetSetAuthenticationDetailsCallCount());
+  EXPECT_EQ(1, client_test_interface()->GetSetAuthenticationDetailsCallCount());
 
   SetPolicy(true /* system_proxy_enabled */, kSystemServicesUsername,
             kSystemServicesPassword);
   task_environment_.RunUntilIdle();
-  EXPECT_EQ(1, client_test_interface()->GetSetAuthenticationDetailsCallCount());
+  EXPECT_EQ(2, client_test_interface()->GetSetAuthenticationDetailsCallCount());
 
   system_proxy::SetAuthenticationDetailsRequest request =
       client_test_interface()->GetLastAuthenticationDetailsRequest();
@@ -118,11 +126,11 @@ TEST_F(SystemProxyManagerTest, KerberosConfig) {
             "" /* system_services_password */);
   task_environment_.RunUntilIdle();
   local_state_.Get()->SetBoolean(prefs::kKerberosEnabled, true);
-  EXPECT_EQ(1, client_test_interface()->GetSetAuthenticationDetailsCallCount());
+  EXPECT_EQ(2, client_test_interface()->GetSetAuthenticationDetailsCallCount());
 
   // Listen for pref changes for the primary profile.
   system_proxy_manager.StartObservingPrimaryProfilePrefs(profile_.get());
-  EXPECT_EQ(2, client_test_interface()->GetSetAuthenticationDetailsCallCount());
+  EXPECT_EQ(3, client_test_interface()->GetSetAuthenticationDetailsCallCount());
   system_proxy::SetAuthenticationDetailsRequest request =
       client_test_interface()->GetLastAuthenticationDetailsRequest();
   EXPECT_FALSE(request.has_credentials());
@@ -131,7 +139,7 @@ TEST_F(SystemProxyManagerTest, KerberosConfig) {
   // Set an active principal name.
   profile_->GetPrefs()->SetString(prefs::kKerberosActivePrincipalName,
                                   kKerberosActivePrincipalName);
-  EXPECT_EQ(3, client_test_interface()->GetSetAuthenticationDetailsCallCount());
+  EXPECT_EQ(4, client_test_interface()->GetSetAuthenticationDetailsCallCount());
   request = client_test_interface()->GetLastAuthenticationDetailsRequest();
   EXPECT_EQ(kKerberosActivePrincipalName, request.active_principal_name());
 
@@ -149,4 +157,37 @@ TEST_F(SystemProxyManagerTest, KerberosConfig) {
   system_proxy_manager.StopObservingPrimaryProfilePrefs();
 }
 
+// Tests that when no user is signed in, credential requests are resolved to a
+// d-bus call which sends back to System-proxy empty credentials for the
+// specified protection space.
+TEST_F(SystemProxyManagerTest, UserCredentialsRequiredNoUser) {
+  SystemProxyManager system_proxy_manager(chromeos::CrosSettings::Get(),
+                                          local_state_.Get());
+  SetPolicy(true /* system_proxy_enabled */, "" /* system_services_username */,
+            "" /* system_services_password */);
+
+  system_proxy::ProtectionSpace protection_space;
+  protection_space.set_origin(kProxyAuthUrl);
+  protection_space.set_scheme(kScheme);
+  protection_space.set_realm(kRealm);
+
+  system_proxy::AuthenticationRequiredDetails details;
+  *details.mutable_proxy_protection_space() = protection_space;
+
+  client_test_interface()->SendAuthenticationRequiredSignal(details);
+  task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(2, client_test_interface()->GetSetAuthenticationDetailsCallCount());
+
+  system_proxy::SetAuthenticationDetailsRequest request =
+      client_test_interface()->GetLastAuthenticationDetailsRequest();
+
+  ASSERT_TRUE(request.has_protection_space());
+  ASSERT_EQ(protection_space.SerializeAsString(),
+            request.protection_space().SerializeAsString());
+
+  ASSERT_TRUE(request.has_credentials());
+  EXPECT_EQ("", request.credentials().username());
+  EXPECT_EQ("", request.credentials().password());
+}
 }  // namespace policy

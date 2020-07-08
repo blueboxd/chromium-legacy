@@ -27,14 +27,11 @@
 <translation id="1743802530341753419">ఏదైనా పరికరానికి కనెక్ట్ చేయగలిగేలా సైట్‌లను అనుమతించే ముందు మిమ్మల్ని అడుగుతుంది (సిఫార్సు చేయడమైనది)</translation>
 <translation id="1887786770086287077">ఈ పరికరానికి స్థానం యాక్సెస్ ఆఫ్ చేయబడింది. దీనిని <ph name="BEGIN_LINK" />Android సెట్టింగ్‌లు<ph name="END_LINK" />లో తిరిగి ఆన్ చేయండి.</translation>
 <translation id="1919345977826869612">ప్రకటనలు</translation>
-<translation id="1922076542920281912">మీ స్థానాన్ని యాక్సెస్ చేయడానికి Chromeను అనుమతించేందుకు, <ph name="BEGIN_LINK" />Android సెట్టింగ్‌ల<ph name="END_LINK" />లో కూడా స్థానాన్ని ఆన్ చేయండి.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
-<translation id="194341124344773587"><ph name="BEGIN_LINK" />Android సెట్టిం‌గ్‌లు<ph name="END_LINK" />లో Chrome కోసం అనుమతిని ఆన్ చేయండి.</translation>
 <translation id="1984937141057606926">మూడవ-పక్షం మినహా మిగిలినవి అనుమతించబడ్డాయి</translation>
 <translation id="1994173015038366702">సైట్ URL</translation>
 <translation id="2025115093177348061">అగ్‌మెంటెడ్ రియాలిటీ</translation>
 <translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" />కు తిరిగి వెళ్లడానికి ట్యాప్ చేయండి</translation>
-<translation id="2041019821020695769">మీకు నోటిఫికేషన్‌లను పంపడానికి Chromeను అనుమతించేందుకు, <ph name="BEGIN_LINK" />Android సెట్టింగ్‌ల<ph name="END_LINK" />లో కూడా నోటిఫికేషన్‌లను ఆన్ చేయండి.</translation>
 <translation id="2079545284768500474">చర్య రద్దు</translation>
 <translation id="2091887806945687916">ధ్వని</translation>
 <translation id="2107397443965016585">సైట్‌లు రక్షిత కంటెంట్‌ను ప్లే చేయడానికి ముందు అనుమతి కోసం అడుగుతాయి (సిఫార్సు చేయడమైనది)</translation>
@@ -71,7 +68,6 @@
 <translation id="301521992641321250">స్వయంచాలకంగా బ్లాక్ చేయబడింది</translation>
 <translation id="3115898365077584848">సమాచారాన్ని చూపు</translation>
 <translation id="3123473560110926937">కొన్ని సైట్‌లలో బ్లాక్ చేయబడింది</translation>
-<translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android సెట్టింగ్‌లు<ph name="END_LINK" />లో Chrome కోసం అనుమతులను ఆన్ చేయండి.</translation>
 <translation id="3198916472715691905">నిల్వ చేసిన డేటా <ph name="STORAGE_AMOUNT" /></translation>
 <translation id="3227137524299004712">మైక్రోఫోన్</translation>
 <translation id="3277252321222022663">సెన్సార్‌లను యాక్సెస్ చేయడానికి సైట్‌లను అనుమతిస్తుంది (సిఫార్సు చేస్తున్నాము)</translation>
@@ -83,7 +79,6 @@
 <translation id="358794129225322306">పలు ఫైల్‌లను ఆటోమేటిక్‌గా డౌన్‌లోడ్ చేయడం కోసం సైట్‌ని అనుమతించండి.</translation>
 <translation id="3596414637720633074">అజ్ఞాతంలో థర్డ్-పార్టీ కుక్కీలను బ్లాక్ చేయి</translation>
 <translation id="3600792891314830896">ధ్వనిని ప్లే చేసే సైట్‌లను మ్యూట్ చేస్తుంది</translation>
-<translation id="3730075448226062617">మీ మైక్రోఫోన్‌ను యాక్సెస్ చేయడానికి Chromeను అనుమతించేందుకు, <ph name="BEGIN_LINK" />Android సెట్టింగ్‌ల<ph name="END_LINK" />లో కూడా మైక్రోఫోన్‌ను ఆన్ చేయండి.</translation>
 <translation id="3744111561329211289">బ్యాక్‌గ్రౌండ్ సింక్</translation>
 <translation id="3822502789641063741">సైట్ నిల్వను తీసివేయాలా?</translation>
 <translation id="385051799172605136">వెనుకకు</translation>
@@ -112,7 +107,6 @@
 <translation id="4883854917563148705">నిర్వహిత సెట్టింగ్‌లు రీసెట్ చేయబడవు</translation>
 <translation id="4887024562049524730">మీ వర్చువల్ రియాలిటీ పరికరాన్ని, డేటాను ఉపయోగించడానికి సైట్‌లను అనుమతించే ముందు అడుగుతుంది (సిఫార్సు చేయబడింది)</translation>
 <translation id="4962975101802056554">పరికరానికి అన్ని అనుమతులను ఉపసంహరించు</translation>
-<translation id="4964199952259983386">ARను Chrome ఉపయోగించడానికి వీలుగా, <ph name="BEGIN_LINK" />Android సెట్టింగ్‌ల<ph name="END_LINK" />లో కూడా కెమెరాను ఆన్ చేయండి.</translation>
 <translation id="497421865427891073">ముందుకు వెళ్ళు</translation>
 <translation id="4996978546172906250">దీని ద్వారా భాగస్వామ్యం చే.</translation>
 <translation id="5039804452771397117">అనుమతించు</translation>
@@ -153,7 +147,6 @@
 <translation id="6177111841848151710">ప్రస్తుత శోధన ఇంజిన్‌కు బ్లాక్ చేయబడింది</translation>
 <translation id="6181444274883918285">సైట్ మినహాయింపును జోడించు</translation>
 <translation id="6192792657125177640">మినహాయింపులు</translation>
-<translation id="6194112207524046168">మీ కెమెరాను యాక్సెస్ చేయడానికి Chromeను అనుమతించేందుకు, <ph name="BEGIN_LINK" />Android సెట్టింగ్‌ల<ph name="END_LINK" />లో కూడా కెమెరాను ఆన్ చేయండి.</translation>
 <translation id="6196640612572343990">మూడవ పక్షం కుక్కీలను బ్లాక్ చేయి</translation>
 <translation id="6206551242102657620">కనెక్షన్ సురక్షితం. సైట్ సమాచారం</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> ఎంపికలు</translation>

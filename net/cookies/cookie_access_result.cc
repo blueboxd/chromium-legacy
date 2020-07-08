@@ -13,6 +13,9 @@ CookieAccessResult::CookieAccessResult(
     CookieInclusionStatus status)
     : effective_same_site(effective_same_site), status(status) {}
 
+CookieAccessResult::CookieAccessResult(CookieInclusionStatus status)
+    : status(status) {}
+
 CookieAccessResult::CookieAccessResult(const CookieAccessResult&) = default;
 
 CookieAccessResult& CookieAccessResult::operator=(

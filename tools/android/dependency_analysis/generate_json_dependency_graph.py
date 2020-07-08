@@ -5,8 +5,13 @@
 """Command-line tool to run jdeps and process its output into a JSON file."""
 
 import argparse
+import functools
+import math
+import multiprocessing
 import pathlib
 import subprocess
+
+from typing import List, Tuple
 
 import class_dependency
 import package_dependency
@@ -14,6 +19,7 @@ import serialization
 
 SRC_PATH = pathlib.Path(__file__).resolve().parents[3]  # src/
 JDEPS_PATH = SRC_PATH.joinpath('third_party/jdk/current/bin/jdeps')
+DEFAULT_ROOT_TARGET = 'chrome/android:monochrome_public_bundle'
 
 
 def class_is_interesting(name: str):
@@ -23,7 +29,8 @@ def class_is_interesting(name: str):
     return False
 
 
-class JavaClassJdepsParser(object):  # pylint: disable=useless-object-inheritance
+# pylint: disable=useless-object-inheritance
+class JavaClassJdepsParser(object):
     """A parser for jdeps class-level dependency output."""
     def __init__(self):  # pylint: disable=missing-function-docstring
         self._graph = class_dependency.JavaClassDependencyGraph()
@@ -36,12 +43,12 @@ class JavaClassJdepsParser(object):  # pylint: disable=useless-object-inheritanc
         """
         return self._graph
 
-    def parse_raw_jdeps_output(self, jdeps_output: str):
+    def parse_raw_jdeps_output(self, build_target: str, jdeps_output: str):
         """Parses the entirety of the jdeps output."""
         for line in jdeps_output.split('\n'):
-            self.parse_line(line)
+            self.parse_line(build_target, line)
 
-    def parse_line(self, line: str):
+    def parse_line(self, build_target: str, line: str):
         """Parses a line of jdeps output.
 
         The assumed format of the line starts with 'name_1 -> name_2'.
@@ -66,18 +73,23 @@ class JavaClassJdepsParser(object):  # pylint: disable=useless-object-inheritanc
         key_to, nested_to = class_dependency.split_nested_class_from_key(
             dep_to)
 
-        self._graph.add_node_if_new(key_from)
+        from_node: class_dependency.JavaClass = self._graph.add_node_if_new(
+            key_from)
+
         self._graph.add_node_if_new(key_to)
         if key_from != key_to:  # Skip self-edges (class-nested dependency)
             self._graph.add_edge_if_new(key_from, key_to)
         if nested_from is not None:
-            self._graph.add_nested_class_to_key(key_from, nested_from)
+            from_node.add_nested_class(nested_from)
         if nested_to is not None:
-            self._graph.add_nested_class_to_key(key_from, nested_to)
+            from_node.add_nested_class(nested_to)
+
+        from_node.add_build_target(build_target)
 
 
-def run_jdeps(jdeps_path: str, filepath: str):
+def _run_jdeps(jdeps_path: str, filepath: pathlib.Path):
     """Runs jdeps on the given filepath and returns the output."""
+    print(f'Running jdeps and parsing output for {filepath}')
     jdeps_res = subprocess.run([jdeps_path, '-R', '-verbose:class', filepath],
                                capture_output=True,
                                text=True,
@@ -85,17 +97,66 @@ def run_jdeps(jdeps_path: str, filepath: str):
     return jdeps_res.stdout
 
 
+def _run_gn_desc_list_dependencies(build_output_dir: str, target: str):
+    """Runs gn desc to list all jars that a target depends on.
+
+    This includes direct and indirect dependencies."""
+    gn_desc_res = subprocess.run(
+        ['gn', 'desc', '--all', build_output_dir, target, 'deps'],
+        capture_output=True,
+        text=True,
+        check=True)
+    return gn_desc_res.stdout
+
+
+JarTargetList = List[Tuple[str, pathlib.Path]]
+
+
+def list_original_targets_and_jars(gn_desc_output: str,
+                                   build_output_dir: str) -> JarTargetList:
+    """Parses gn desc output to list original java targets and output jar paths.
+
+    Returns a list of tuples (build_target: str, jar_path: str), where:
+    - build_target is the original java dependency target in the form
+      "//path/to:target"
+    - jar_path is the path to the built jar in the build_output_dir,
+      including the path to the output dir
+    """
+    jar_tuples: JarTargetList = []
+    for build_target_line in gn_desc_output.split('\n'):
+        if not build_target_line.endswith('__compile_java'):
+            continue
+        build_target = build_target_line.strip()
+        original_build_target = build_target.replace('__compile_java', '')
+        jar_path = _get_jar_path_for_target(build_output_dir, build_target)
+        jar_tuples.append((original_build_target, jar_path))
+    return jar_tuples
+
+
+def _get_jar_path_for_target(build_output_dir: str, build_target: str) -> str:
+    """Calculates the output location of a jar for a java build target."""
+    target_path, target_name = build_target.split(':')
+    assert target_path.startswith('//'), \
+        f'Build target should start with "//" but is: "{build_target}"'
+    jar_dir = target_path[len('//'):]
+    jar_name = target_name.replace('__compile_java', '.javac.jar')
+    return pathlib.Path(build_output_dir) / 'obj' / jar_dir / jar_name
+
+
 def main():
-    """Runs jdeps and creates a JSON file from the output."""
+    """Runs jdeps on all JARs a build target depends on.
+
+    Creates a JSON file from the jdeps output."""
     arg_parser = argparse.ArgumentParser(
-        description='Runs jdeps (dependency analysis tool) on a given JAR and '
-        'writes the resulting dependency graph into a JSON file.')
+        description='Runs jdeps (dependency analysis tool) on all JARs a root '
+        'build target depends on and writes the resulting dependency graph '
+        'into a JSON file. The default root build target is '
+        'chrome/android:monochrome_public_bundle.')
     required_arg_group = arg_parser.add_argument_group('required arguments')
-    required_arg_group.add_argument(
-        '-t',
-        '--target',
-        required=True,
-        help='Path to the JAR file to run jdeps on.')
+    required_arg_group.add_argument('-C',
+                                    '--build_output_dir',
+                                    required=True,
+                                    help='Build output directory.')
     required_arg_group.add_argument(
         '-o',
         '--output',
@@ -103,16 +164,34 @@ def main():
         help='Path to the file to write JSON output to. Will be created '
         'if it does not yet exist and overwrite existing '
         'content if it does.')
+    arg_parser.add_argument('-t',
+                            '--target',
+                            default=DEFAULT_ROOT_TARGET,
+                            help='Root build target.')
     arg_parser.add_argument('-j',
                             '--jdeps-path',
                             default=JDEPS_PATH,
                             help='Path to the jdeps executable.')
     arguments = arg_parser.parse_args()
 
-    print('Running jdeps and parsing output...')
-    raw_jdeps_output = run_jdeps(arguments.jdeps_path, arguments.target)
+    print('Getting list of dependency jars...')
+    gn_desc_output = _run_gn_desc_list_dependencies(arguments.build_output_dir,
+                                                    arguments.target)
+    target_jars: JarTargetList = list_original_targets_and_jars(
+        gn_desc_output, arguments.build_output_dir)
+
+    print('Running jdeps...')
+    # jdeps already has some parallelism
+    jdeps_process_number = math.ceil(multiprocessing.cpu_count() / 2)
+    with multiprocessing.Pool(jdeps_process_number) as pool:
+        jar_paths = [target_jar for _, target_jar in target_jars]
+        jdeps_outputs = pool.map(
+            functools.partial(_run_jdeps, arguments.jdeps_path), jar_paths)
+
+    print('Parsing jdeps output...')
     jdeps_parser = JavaClassJdepsParser()
-    jdeps_parser.parse_raw_jdeps_output(raw_jdeps_output)
+    for raw_jdeps_output, (build_target, _) in zip(jdeps_outputs, target_jars):
+        jdeps_parser.parse_raw_jdeps_output(build_target, raw_jdeps_output)
 
     class_graph = jdeps_parser.graph
     print(f'Parsed class-level dependency graph, '

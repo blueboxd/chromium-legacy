@@ -236,8 +236,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &omnibox::kAdaptiveSuggestionsCount,
     &omnibox::kCompactSuggestions,
     &omnibox::kDeferredKeyboardPopup,
-    &omnibox::kHideSteadyStateUrlScheme,
-    &omnibox::kHideSteadyStateUrlTrivialSubdomains,
     &omnibox::kOmniboxAssistantVoiceSearch,
     &omnibox::kOmniboxSearchEngineLogo,
     &omnibox::kOmniboxSearchReadyIncognito,

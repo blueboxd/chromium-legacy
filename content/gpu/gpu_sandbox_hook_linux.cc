@@ -26,12 +26,12 @@
 #include "sandbox/linux/syscall_broker/broker_command.h"
 #include "sandbox/linux/syscall_broker/broker_file_permission.h"
 #include "sandbox/linux/syscall_broker/broker_process.h"
+#include "sandbox/policy/chromecast_sandbox_whitelist_buildflags.h"
+#include "sandbox/policy/linux/bpf_cros_amd_gpu_policy_linux.h"
+#include "sandbox/policy/linux/bpf_cros_arm_gpu_policy_linux.h"
+#include "sandbox/policy/linux/bpf_gpu_policy_linux.h"
+#include "sandbox/policy/linux/sandbox_linux.h"
 #include "services/service_manager/embedder/set_process_title.h"
-#include "services/service_manager/sandbox/chromecast_sandbox_whitelist_buildflags.h"
-#include "services/service_manager/sandbox/linux/bpf_cros_amd_gpu_policy_linux.h"
-#include "services/service_manager/sandbox/linux/bpf_cros_arm_gpu_policy_linux.h"
-#include "services/service_manager/sandbox/linux/bpf_gpu_policy_linux.h"
-#include "services/service_manager/sandbox/linux/sandbox_linux.h"
 
 using sandbox::bpf_dsl::Policy;
 using sandbox::syscall_broker::BrokerFilePermission;
@@ -102,7 +102,7 @@ constexpr int dlopen_flag = RTLD_NOW | RTLD_GLOBAL | RTLD_NODELETE;
 
 void AddV4L2GpuWhitelist(
     std::vector<BrokerFilePermission>* permissions,
-    const service_manager::SandboxSeccompBPF::Options& options) {
+    const sandbox::policy::SandboxSeccompBPF::Options& options) {
   if (options.accelerated_video_decode_enabled) {
     // Device nodes for V4L2 video decode accelerator drivers.
     // We do not use a FileEnumerator because the device files may not exist
@@ -322,7 +322,7 @@ void AddStandardGpuWhiteList(std::vector<BrokerFilePermission>* permissions) {
 }
 
 std::vector<BrokerFilePermission> FilePermissionsForGpu(
-    const service_manager::SandboxSeccompBPF::Options& options) {
+    const sandbox::policy::SandboxSeccompBPF::Options& options) {
   // All GPU process policies need this file brokered out.
   static const char kDriRcPath[] = "/etc/drirc";
   std::vector<BrokerFilePermission> permissions = {
@@ -396,13 +396,13 @@ bool LoadAmdGpuLibraries() {
 }
 
 bool IsAcceleratedVideoEnabled(
-    const service_manager::SandboxSeccompBPF::Options& options) {
+    const sandbox::policy::SandboxSeccompBPF::Options& options) {
   return options.accelerated_video_encode_enabled ||
          options.accelerated_video_decode_enabled;
 }
 
 void LoadV4L2Libraries(
-    const service_manager::SandboxSeccompBPF::Options& options) {
+    const sandbox::policy::SandboxSeccompBPF::Options& options) {
   if (IsAcceleratedVideoEnabled(options) && UseLibV4L2()) {
     dlopen(kLibV4l2Path, dlopen_flag);
 
@@ -423,7 +423,7 @@ void LoadChromecastV4L2Libraries() {
 }
 
 bool LoadLibrariesForGpu(
-    const service_manager::SandboxSeccompBPF::Options& options) {
+    const sandbox::policy::SandboxSeccompBPF::Options& options) {
   if (IsChromeOS()) {
     if (UseV4L2Codec())
       LoadV4L2Libraries(options);
@@ -442,7 +442,7 @@ bool LoadLibrariesForGpu(
 }
 
 sandbox::syscall_broker::BrokerCommandSet CommandSetForGPU(
-    const service_manager::SandboxLinux::Options& options) {
+    const sandbox::policy::SandboxLinux::Options& options) {
   sandbox::syscall_broker::BrokerCommandSet command_set;
   command_set.set(sandbox::syscall_broker::COMMAND_ACCESS);
   command_set.set(sandbox::syscall_broker::COMMAND_OPEN);
@@ -455,7 +455,7 @@ sandbox::syscall_broker::BrokerCommandSet CommandSetForGPU(
 }
 
 bool BrokerProcessPreSandboxHook(
-    service_manager::SandboxLinux::Options options) {
+    sandbox::policy::SandboxLinux::Options options) {
   // Oddly enough, we call back into gpu to invoke this service manager
   // method, since it is part of the embedder component, and the service
   // mananger's sandbox component is a lower layer that can't depend on it.
@@ -465,8 +465,8 @@ bool BrokerProcessPreSandboxHook(
 
 }  // namespace
 
-bool GpuProcessPreSandboxHook(service_manager::SandboxLinux::Options options) {
-  service_manager::SandboxLinux::GetInstance()->StartBrokerProcess(
+bool GpuProcessPreSandboxHook(sandbox::policy::SandboxLinux::Options options) {
+  sandbox::policy::SandboxLinux::GetInstance()->StartBrokerProcess(
       CommandSetForGPU(options), FilePermissionsForGpu(options),
       base::BindOnce(BrokerProcessPreSandboxHook), options);
 

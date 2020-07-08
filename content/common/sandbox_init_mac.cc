@@ -18,9 +18,9 @@
 #include "media/gpu/mac/vt_video_decode_accelerator_mac.h"
 #include "sandbox/mac/seatbelt.h"
 #include "sandbox/mac/seatbelt_exec.h"
-#include "services/service_manager/sandbox/mac/sandbox_mac.h"
-#include "services/service_manager/sandbox/sandbox.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
+#include "sandbox/policy/mac/sandbox_mac.h"
+#include "sandbox/policy/sandbox.h"
+#include "sandbox/policy/sandbox_type.h"
 #include "ui/gl/init/gl_factory.h"
 
 namespace content {
@@ -29,9 +29,9 @@ namespace {
 
 // Helper method to make a closure from a closure.
 base::OnceClosure MaybeWrapWithGPUSandboxHook(
-    service_manager::SandboxType sandbox_type,
+    sandbox::policy::SandboxType sandbox_type,
     base::OnceClosure original) {
-  if (sandbox_type != service_manager::SandboxType::kGpu)
+  if (sandbox_type != sandbox::policy::SandboxType::kGpu)
     return original;
 
   return base::BindOnce(
@@ -78,12 +78,12 @@ base::OnceClosure MaybeWrapWithGPUSandboxHook(
 // Fill in |sandbox_type| based on the command line.  Returns false if the
 // current process type doesn't need to be sandboxed or if the sandbox was
 // disabled from the command line.
-bool GetSandboxTypeFromCommandLine(service_manager::SandboxType* sandbox_type) {
+bool GetSandboxTypeFromCommandLine(sandbox::policy::SandboxType* sandbox_type) {
   DCHECK(sandbox_type);
 
   auto* command_line = base::CommandLine::ForCurrentProcess();
-  *sandbox_type = service_manager::SandboxTypeFromCommandLine(*command_line);
-  if (service_manager::IsUnsandboxedSandboxType(*sandbox_type))
+  *sandbox_type = sandbox::policy::SandboxTypeFromCommandLine(*command_line);
+  if (IsUnsandboxedSandboxType(*sandbox_type))
     return false;
 
   if (command_line->HasSwitch(sandbox::switches::kSeatbeltClientName)) {
@@ -97,17 +97,17 @@ bool GetSandboxTypeFromCommandLine(service_manager::SandboxType* sandbox_type) {
 
 }  // namespace
 
-bool InitializeSandbox(service_manager::SandboxType sandbox_type) {
-  return service_manager::Sandbox::Initialize(
+bool InitializeSandbox(sandbox::policy::SandboxType sandbox_type) {
+  return sandbox::policy::Sandbox::Initialize(
       sandbox_type,
       MaybeWrapWithGPUSandboxHook(sandbox_type, base::OnceClosure()));
 }
 
 bool InitializeSandbox(base::OnceClosure post_warmup_hook) {
-  service_manager::SandboxType sandbox_type =
-      service_manager::SandboxType::kNoSandbox;
+  sandbox::policy::SandboxType sandbox_type =
+      sandbox::policy::SandboxType::kNoSandbox;
   return !GetSandboxTypeFromCommandLine(&sandbox_type) ||
-         service_manager::Sandbox::Initialize(
+         sandbox::policy::Sandbox::Initialize(
              sandbox_type, MaybeWrapWithGPUSandboxHook(
                                sandbox_type, std::move(post_warmup_hook)));
 }

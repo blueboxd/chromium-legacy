@@ -11,6 +11,5 @@ include_rules = [
   "+services/network/public/cpp/features.h",
   "+services/resource_coordinator/public",
   "+services/service_manager/embedder",
-  "+services/service_manager/sandbox/sandbox_type.h",
   "+services/tracing/public/cpp",
 ]

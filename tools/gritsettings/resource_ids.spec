@@ -186,22 +186,22 @@
     "includes": [1860],
     "structures": [1870],
   },
+  "chrome/browser/resources/tab_search/tab_search_resources.grd": {
+    "includes": [1880],
+  },
   "chrome/browser/resources/tab_strip/tab_strip_resources.grd": {
-    "structures": [1880],
-    "includes": [1900],
+    "structures": [1900],
+    "includes": [1920],
   },
   "chrome/browser/resources/welcome/welcome_resources.grd": {
-    "includes": [1920],
-    "structures": [1940],
+    "includes": [1940],
+    "structures": [1960],
   },
   "chrome/browser/supervised_user/supervised_user_unscaled_resources.grd": {
-    "includes": [1950],
+    "includes": [1970],
   },
   "chrome/browser/test_dummy/internal/android/resources/resources.grd": {
-    "includes": [1960],
-  },
-  "chrome/browser/vr/testapp/vr_testapp_resources.grd": {
-    "includes": [1970],
+    "includes": [1980],
   },
   # END chrome/browser section.
 

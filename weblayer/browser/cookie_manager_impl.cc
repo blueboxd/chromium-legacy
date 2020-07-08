@@ -147,9 +147,9 @@ bool CookieManagerImpl::SetCookieInternal(const GURL& url,
 
   content::BrowserContext::GetDefaultStoragePartition(browser_context_)
       ->GetCookieManagerForBrowserProcess()
-      ->SetCanonicalCookie(*cc, url, net::CookieOptions::MakeAllInclusive(),
-                           net::cookie_util::AdaptCookieInclusionStatusToBool(
-                               std::move(callback)));
+      ->SetCanonicalCookie(
+          *cc, url, net::CookieOptions::MakeAllInclusive(),
+          net::cookie_util::AdaptCookieAccessResultToBool(std::move(callback)));
   return true;
 }
 

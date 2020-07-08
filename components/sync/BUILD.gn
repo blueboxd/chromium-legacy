@@ -10,6 +10,7 @@ group("sync") {
   public_deps = [
     ":rest_of_sync",
     "//components/sync/driver",
+    "//components/sync/trusted_vault",
   ]
 }
 
@@ -451,7 +452,6 @@ source_set("unit_tests") {
     "driver/about_sync_util_unittest.cc",
     "driver/backend_migrator_unittest.cc",
     "driver/data_type_manager_impl_unittest.cc",
-    "driver/file_based_trusted_vault_client_unittest.cc",
     "driver/glue/sync_engine_impl_unittest.cc",
     "driver/model_association_manager_unittest.cc",
     "driver/model_type_controller_unittest.cc",
@@ -520,6 +520,7 @@ source_set("unit_tests") {
     "nigori/nigori_unittest.cc",
     "protocol/proto_enum_conversions_unittest.cc",
     "protocol/proto_value_conversions_unittest.cc",
+    "trusted_vault/standalone_trusted_vault_client_unittest.cc",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]

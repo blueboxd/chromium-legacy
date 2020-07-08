@@ -59,7 +59,7 @@ GPU_EXPORT bool PopGpuFeatureInfoCache(GpuFeatureInfo* gpu_feature_info);
 
 #if defined(OS_ANDROID)
 // Check if GL bindings are initialized. If not, initializes GL
-// bindings, create a GL context, collects GPUInfo, make blacklist and
+// bindings, create a GL context, collects GPUInfo, make blocklist and
 // GPU driver bug workaround decisions. This is intended to be called
 // by Android WebView render thread and in-process GPU thread.
 GPU_EXPORT bool InitializeGLThreadSafe(base::CommandLine* command_line,
@@ -74,7 +74,7 @@ GPU_EXPORT bool EnableSwiftShaderIfNeeded(
     base::CommandLine* command_line,
     const GpuFeatureInfo& gpu_feature_info,
     bool disable_software_rasterizer,
-    bool blacklist_needs_more_info);
+    bool blocklist_needs_more_info);
 
 GPU_EXPORT IntelGpuSeriesType GetIntelGpuSeriesType(uint32_t vendor_id,
                                                     uint32_t device_id);

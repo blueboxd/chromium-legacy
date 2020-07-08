@@ -48,9 +48,9 @@ source_set("service_manager") {
   public_deps = [
     "//base",
     "//mojo/public/cpp/bindings",
+    "//sandbox/policy",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
-    "//services/service_manager/sandbox",
   ]
 
   if (!is_ios) {

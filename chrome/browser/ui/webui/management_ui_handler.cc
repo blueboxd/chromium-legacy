@@ -44,6 +44,7 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
@@ -51,11 +52,13 @@
 #include "chrome/browser/chromeos/policy/status_uploader.h"
 #include "chrome/browser/chromeos/policy/system_log_uploader.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/management_ui_handler_chromeos.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/proxy/proxy_config_handler.h"
 #include "chromeos/network/proxy/ui_proxy_config_service.h"
+#include "chromeos/settings/cros_settings_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -630,6 +633,31 @@ void ManagementUIHandler::AddDeviceReportingInfo(
     }
   }
 }
+
+bool ManagementUIHandler::IsUpdateRequiredEol() const {
+  const policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::MinimumVersionPolicyHandler* handler =
+      connector->GetMinimumVersionPolicyHandler();
+  return handler && handler->IsUpdateRequiredEol();
+}
+
+void ManagementUIHandler::AddUpdateRequiredEolInfo(
+    base::Value* response) const {
+  if (!device_managed_ || !account_managed_ || !IsUpdateRequiredEol()) {
+    response->SetStringPath("eolMessage", std::string());
+    return;
+  }
+
+  response->SetStringPath(
+      "eolMessage",
+      l10n_util::GetStringFUTF16(IDS_MANAGEMENT_UPDATE_REQUIRED_EOL_MESSAGE,
+                                 base::UTF8ToUTF16(GetDeviceDomain())));
+  std::string eol_admin_message;
+  chromeos::CrosSettings::Get()->GetString(
+      chromeos::kMinimumChromeVersionAueMessage, &eol_admin_message);
+  response->SetStringPath("eolAdminMessage", eol_admin_message);
+}
 #endif
 
 base::Value ManagementUIHandler::GetContextualManagedData(Profile* profile) {
@@ -638,6 +666,7 @@ base::Value ManagementUIHandler::GetContextualManagedData(Profile* profile) {
   std::string management_domain = GetDeviceDomain();
   if (management_domain.empty())
     management_domain = GetAccountDomain(profile);
+  AddUpdateRequiredEolInfo(&response);
 #else
   std::string management_domain = GetAccountDomain(profile);
 

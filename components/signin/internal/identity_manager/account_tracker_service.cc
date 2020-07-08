@@ -94,7 +94,7 @@ bool SaveImage(scoped_refptr<base::RefCountedMemory> png_data,
 
 // Removes the image at path |image_path|.
 void RemoveImage(const base::FilePath& image_path) {
-  if (!base::DeleteFile(image_path, false /* recursive */))
+  if (!base::DeleteFile(image_path))
     LOG(ERROR) << "Failed to delete image.";
 }
 

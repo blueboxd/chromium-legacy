@@ -267,23 +267,15 @@ public class TabbedAppMenuTest {
                 ()
                         -> AppMenuTestSupport.showAppMenu(
                                 mActivityTestRule.getAppMenuCoordinator(), null, false, false));
-        CriteriaHelper.pollInstrumentationThread(new Criteria("AppMenu did not show") {
-            @Override
-            public boolean isSatisfied() {
-                return mAppMenuHandler.isAppMenuShowing();
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(
+                () -> mAppMenuHandler.isAppMenuShowing(), "AppMenu did not show");
     }
 
     private void hitEnterAndAssertAppMenuDismissed() {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         pressKey(KeyEvent.KEYCODE_ENTER);
-        CriteriaHelper.pollInstrumentationThread(new Criteria("AppMenu did not dismiss") {
-            @Override
-            public boolean isSatisfied() {
-                return !mAppMenuHandler.isAppMenuShowing();
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(
+                () -> !mAppMenuHandler.isAppMenuShowing(), "AppMenu did not dismiss");
     }
 
     private void moveToBoundary(boolean towardsTop, boolean movePast) {

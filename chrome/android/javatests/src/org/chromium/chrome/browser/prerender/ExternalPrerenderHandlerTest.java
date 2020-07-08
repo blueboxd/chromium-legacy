@@ -12,6 +12,7 @@ import android.util.Pair;
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -136,16 +137,13 @@ public class ExternalPrerenderHandlerTest {
     }
 
     private void ensureCompletedPrefetchForUrl(final String url) {
-        CriteriaHelper.pollUiThread(new Criteria("No Prefetch Happened") {
-            @Override
-            public boolean isSatisfied() {
-                boolean has_prefetched =
-                        ExternalPrerenderHandler.hasRecentlyPrefetchedUrlForTesting(mProfile, url);
-                if (has_prefetched) {
-                    ExternalPrerenderHandler.clearPrefetchInformationForTesting(mProfile);
-                }
-                return has_prefetched;
+        CriteriaHelper.pollUiThread(() -> {
+            boolean hasPrefetched =
+                    ExternalPrerenderHandler.hasRecentlyPrefetchedUrlForTesting(mProfile, url);
+            if (hasPrefetched) {
+                ExternalPrerenderHandler.clearPrefetchInformationForTesting(mProfile);
             }
+            Criteria.checkThat(hasPrefetched, Matchers.is(true));
         }, ENSURE_COMPLETED_PRERENDER_TIMEOUT_MS, PRERENDER_DELAY_MS);
     }
 }

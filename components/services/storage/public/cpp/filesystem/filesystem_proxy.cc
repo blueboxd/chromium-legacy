@@ -202,7 +202,7 @@ FileErrorOr<base::File> FilesystemProxy::OpenFile(const base::FilePath& path,
 
 bool FilesystemProxy::RemoveFile(const base::FilePath& path) {
   if (!remote_directory_)
-    return base::DeleteFile(MaybeMakeAbsolute(path), /*recursive=*/false);
+    return base::DeleteFile(MaybeMakeAbsolute(path));
 
   bool success = false;
   remote_directory_->RemoveFile(MakeRelative(path), &success);
@@ -226,7 +226,7 @@ bool FilesystemProxy::RemoveDirectory(const base::FilePath& path) {
     const base::FilePath full_path = MaybeMakeAbsolute(path);
     if (!base::DirectoryExists(full_path))
       return false;
-    return base::DeleteFile(full_path, /*recursive=*/false);
+    return base::DeleteFile(full_path);
   }
 
   bool success = false;

@@ -5,6 +5,7 @@
 #include "weblayer/browser/permissions/geolocation_permission_context_delegate.h"
 
 #include "build/build_config.h"
+#include "weblayer/browser/default_search_engine.h"
 
 #if defined(OS_ANDROID)
 #include "weblayer/browser/android/permission_request_utils.h"
@@ -39,8 +40,8 @@ PrefService* GeolocationPermissionContextDelegate::GetPrefs(
 bool GeolocationPermissionContextDelegate::IsRequestingOriginDSE(
     content::BrowserContext* browser_context,
     const GURL& requesting_origin) {
-  // TODO(crbug.com/1063433): This may need to be implemented for phase 3.
-  return false;
+  return IsPermissionControlledByDse(ContentSettingsType::GEOLOCATION,
+                                     url::Origin::Create(requesting_origin));
 }
 
 void GeolocationPermissionContextDelegate::FinishNotifyPermissionSet(

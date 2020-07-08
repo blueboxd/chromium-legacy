@@ -43,9 +43,8 @@ const StorageType kPersistent = StorageType::kPersistent;
 
 class FileSystemQuotaClientTest : public testing::Test {
  public:
-  FileSystemQuotaClientTest()
-      : additional_callback_count_(0),
-        deletion_status_(blink::mojom::QuotaStatusCode::kUnknown) {}
+  FileSystemQuotaClientTest() = default;
+  ~FileSystemQuotaClientTest() override = default;
 
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
@@ -230,13 +229,12 @@ class FileSystemQuotaClientTest : public testing::Test {
   base::ScopedTempDir data_dir_;
   base::test::TaskEnvironment task_environment_;
   scoped_refptr<FileSystemContext> file_system_context_;
-  int64_t usage_;
-  int additional_callback_count_;
+  int64_t usage_ = 0;
+  int additional_callback_count_ = 0;
   std::set<url::Origin> origins_;
-  blink::mojom::QuotaStatusCode deletion_status_;
+  blink::mojom::QuotaStatusCode deletion_status_ =
+      blink::mojom::QuotaStatusCode::kUnknown;
   base::WeakPtrFactory<FileSystemQuotaClientTest> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FileSystemQuotaClientTest);
 };
 
 TEST_F(FileSystemQuotaClientTest, NoFileSystemTest) {

@@ -63,8 +63,8 @@ class BluetoothSocketNet : public BluetoothSocket {
   void ResetTCPSocket();
   void SetTCPSocket(std::unique_ptr<net::TCPSocket> tcp_socket);
 
-  void PostSuccess(const base::Closure& callback);
-  void PostErrorCompletion(const ErrorCompletionCallback& callback,
+  void PostSuccess(base::OnceClosure callback);
+  void PostErrorCompletion(ErrorCompletionOnceCallback callback,
                            const std::string& error);
 
  private:

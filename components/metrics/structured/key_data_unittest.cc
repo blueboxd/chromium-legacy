@@ -104,7 +104,7 @@ class KeyDataTest : public testing::Test {
   void ResetState() {
     key_data_.reset();
     key_store_.reset();
-    base::DeleteFile(GetKeyStorePath(), false);
+    base::DeleteFile(GetKeyStorePath());
     ASSERT_FALSE(base::PathExists(GetKeyStorePath()));
   }
 

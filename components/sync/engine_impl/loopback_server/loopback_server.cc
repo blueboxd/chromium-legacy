@@ -681,7 +681,7 @@ void LoopbackServer::ClearServerData() {
   entities_.clear();
   keystore_keys_.clear();
   store_birthday_ = base::Time::Now().ToJavaTime();
-  base::DeleteFile(persistent_file_, false);
+  base::DeleteFile(persistent_file_);
   Init();
 }
 

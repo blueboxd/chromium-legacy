@@ -27,14 +27,11 @@
 <translation id="1743802530341753419">Сайттардың құрылғыға жалғануына рұқсат бермес бұрын сұрау (ұсынылады)</translation>
 <translation id="1887786770086287077">Бұл құрылғыда орынды анықтау қызметі өшірулі. Оны <ph name="BEGIN_LINK" />Android параметрлері<ph name="END_LINK" /> арқылы қосыңыз.</translation>
 <translation id="1919345977826869612">Жарнамалар</translation>
-<translation id="1922076542920281912">Chrome браузері геодерегіңізді пайдалануы үшін, оны <ph name="BEGIN_LINK" />Android параметрлерінде<ph name="END_LINK" /> де іске қосыңыз.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
-<translation id="194341124344773587"><ph name="BEGIN_LINK" />Android параметрлері<ph name="END_LINK" /> ішінен Chrome үшін рұқсат қосыңыз.</translation>
 <translation id="1984937141057606926">Рұқсат етілген, үшінші тараптан басқа</translation>
 <translation id="1994173015038366702">URL сайты</translation>
 <translation id="2025115093177348061">Толықтырылған шындық</translation>
 <translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> қойындысына оралу үшін түртіңіз.</translation>
-<translation id="2041019821020695769">Chrome-нан хабарландырулар алу үшін оларды <ph name="BEGIN_LINK" />Android параметрлерінде<ph name="END_LINK" /> іске қосыңыз.</translation>
 <translation id="2079545284768500474">Қайтару</translation>
 <translation id="2091887806945687916">Дыбыс</translation>
 <translation id="2107397443965016585">Қорғалған мазмұнды ойнатуға рұқсат сұрау (ұсынылады)</translation>
@@ -71,7 +68,6 @@
 <translation id="301521992641321250">Автоматты түрде бөгелген</translation>
 <translation id="3115898365077584848">Ақпаратты көрсету</translation>
 <translation id="3123473560110926937">Кейбір сайттарда тыйым салынған</translation>
-<translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android параметрлері<ph name="END_LINK" /> ішінен Chrome үшін рұқсаттар қосыңыз.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> сақталған деректері</translation>
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3277252321222022663">Сайттардың датчиктерді пайдалануына рұқсат ету (ұсынылады)</translation>
@@ -83,7 +79,6 @@
 <translation id="358794129225322306">Сайтқа бірнеше файлды автоматты түрде жүктеу рұқсатын беру.</translation>
 <translation id="3596414637720633074">Инкогнито режимінде үшінші тарап cookie файлдарын бөгеу</translation>
 <translation id="3600792891314830896">Сайттардың дыбысы өшірілді</translation>
-<translation id="3730075448226062617">Chrome браузері микрофонды пайдалануы үшін, оны <ph name="BEGIN_LINK" />Android параметрлерінде<ph name="END_LINK" /> де іске қосыңыз.</translation>
 <translation id="3744111561329211289">Фондық синхрондау</translation>
 <translation id="3822502789641063741">Сайт деректерін өшіру керек пе?</translation>
 <translation id="385051799172605136">Артқа</translation>
@@ -112,7 +107,6 @@
 <translation id="4883854917563148705">Басқарылатын параметрлер бастапқы күйге қайтарылмайды.</translation>
 <translation id="4887024562049524730">Cайттарға виртуалды шындық құрылғыңызды немесе деректерді пайдалануға рұқсат беру алдында сұрау (ұсынылады)</translation>
 <translation id="4962975101802056554">Құрылғыға арналған барлық рұқсаттардың күші жойылсын.</translation>
-<translation id="4964199952259983386">Chrome браузеріне AR режимін пайдалануға рұқсат ету үшін <ph name="BEGIN_LINK" />Android параметрлерінен<ph name="END_LINK" /> камераны да қосыңыз.</translation>
 <translation id="497421865427891073">Алға өту</translation>
 <translation id="4996978546172906250">Бөлісу</translation>
 <translation id="5039804452771397117">Рұқсат беру</translation>
@@ -153,7 +147,6 @@
 <translation id="6177111841848151710">Ағымдағы іздеу жүйесі үшін тыйым салынды</translation>
 <translation id="6181444274883918285">Сайтты ерекшеліктер тізіміне қосу</translation>
 <translation id="6192792657125177640">Ерекше жағдайлар</translation>
-<translation id="6194112207524046168">Chrome браузері камераны пайдалануы үшін, оны <ph name="BEGIN_LINK" />Android параметрлерінде<ph name="END_LINK" /> де қосыңыз.</translation>
 <translation id="6196640612572343990">Үшінші тарап cookie файлдарын бөгеу</translation>
 <translation id="6206551242102657620">Байланыс қорғалған. Сайт ақпараты</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> опциялары</translation>

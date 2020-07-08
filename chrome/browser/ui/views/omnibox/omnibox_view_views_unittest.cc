@@ -854,13 +854,7 @@ INSTANTIATE_TEST_SUITE_P(OmniboxViewViewsClipboardTest,
 
 class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
  public:
-  OmniboxViewViewsSteadyStateElisionsTest()
-      : OmniboxViewViewsTest(
-            {
-                omnibox::kHideSteadyStateUrlScheme,
-                omnibox::kHideSteadyStateUrlTrivialSubdomains,
-            },
-            {}) {}
+  OmniboxViewViewsSteadyStateElisionsTest() : OmniboxViewViewsTest({}, {}) {}
 
  protected:
   const int kCharacterWidth = 10;

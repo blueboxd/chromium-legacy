@@ -4,5 +4,14 @@
 
 glslang_spirv_tools_dir = "//third_party/SPIRV-Tools/src"
 
-# Temporary to unblock glslang roll.  Will change to true afterwards.
-glslang_angle = false
+# Chromium uses glslang for two things:
+#
+# - ANGLE's Vulkan backend.
+# - Running WebGPU tests, where glslang is linked to shaderc.
+#
+# Note that the latter is not shipped to end users. For ANGLE, glslang is tailored to support only
+# what ANGLE needs. This significantly reduces the binary size of ANGLE as well as glslang's startup
+# time. This flag makes glslang strip features that are not used by ANGLE.
+#
+# For WebGPU testing, the complete glslang is linked to shaderc regardless of this flag.
+glslang_angle = true

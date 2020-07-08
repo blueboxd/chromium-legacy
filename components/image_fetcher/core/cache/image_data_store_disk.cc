@@ -66,7 +66,7 @@ void SaveImageImpl(FilePath storage_path,
   if (!needs_transcoding) {
     // Attempt to delete the image data there that needs transcoding.
     bool success = base::DeleteFile(
-        BuildFilePath(storage_path, key, /* needs_transcoding */ true), false);
+        BuildFilePath(storage_path, key, /* needs_transcoding */ true));
     if (!success) {
       DVLOG(1) << "Deleting the transcoded file failed.";
     }
@@ -90,14 +90,13 @@ std::string LoadImageImpl(FilePath storage_path,
 void DeleteImageImpl(FilePath storage_path, const std::string& key) {
   FilePath file_path =
       BuildFilePath(storage_path, key, /* needs_transcoding */ false);
-  bool success = base::DeleteFile(file_path, false);
+  bool success = base::DeleteFile(file_path);
   if (success) {
     // We don't know if this image came from network or from an untranscoded
     // file. Instead of checking, we can simply blindly delete the untranscoded
     // file.
     if (!base::DeleteFile(
-            BuildFilePath(storage_path, key, /* needs_transcoding */ true),
-            false)) {
+            BuildFilePath(storage_path, key, /* needs_transcoding */ true))) {
       DVLOG(1) << "Attempting to delete " << kNeedsTranscodingPrefix << ".";
     }
   } else {

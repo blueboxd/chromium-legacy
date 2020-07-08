@@ -16,8 +16,8 @@
 #include "base/process/process.h"
 #include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "sandbox/policy/sandbox_type.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/service_process_launcher_delegate.h"
 
 namespace mojo {
@@ -48,9 +48,10 @@ class ServiceProcessLauncher {
 
   // |Start()|s the child process; calls |DidStart()| (on the thread on which
   // |Start()| was called) when the child has been started (or failed to start).
-  mojo::PendingRemote<mojom::Service> Start(const Identity& target,
-                                            SandboxType sandbox_type,
-                                            ProcessReadyCallback callback);
+  mojo::PendingRemote<mojom::Service> Start(
+      const Identity& target,
+      sandbox::policy::SandboxType sandbox_type,
+      ProcessReadyCallback callback);
 
   // Exposed publicly for use in tests. Creates a new Service pipe, passing the
   // ServiceRequest end through |*invitation| with an identifier stashed in

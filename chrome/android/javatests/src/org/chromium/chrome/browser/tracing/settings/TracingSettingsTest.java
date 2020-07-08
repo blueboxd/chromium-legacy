@@ -21,6 +21,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -99,11 +100,9 @@ public class TracingSettingsTest {
      * called into Android to notify or cancel a notification.
      */
     private void waitForNotificationManagerMutation() {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mMockNotificationManager.getMutationCountAndDecrement() > 0;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mMockNotificationManager.getMutationCountAndDecrement(),
+                    Matchers.greaterThan(0));
         }, 15000L /* maxTimeoutMs */, 50 /* checkIntervalMs */);
     }
 

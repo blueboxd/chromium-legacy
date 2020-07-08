@@ -4,10 +4,6 @@
 
 package org.chromium.components.browser_ui.site_settings;
 
-import androidx.annotation.Nullable;
-
-import org.chromium.components.embedder_support.util.Origin;
-
 import java.util.Set;
 
 /**
@@ -24,18 +20,4 @@ public interface WebappSettingsClient {
      * @return The set of all origins whose notification permissions are delegated to another app.
      */
     Set<String> getAllDelegatedNotificationOrigins();
-
-    /**
-     * @return The user visible name of the app that will handle notification permission delegation
-     *         for the origin.
-     */
-    @Nullable
-    String getNotificationDelegateAppNameForOrigin(Origin origin);
-
-    /**
-     * @return The package name of the app that should handle notification permission delegation
-     *         for the origin.
-     */
-    @Nullable
-    String getNotificationDelegatePackageNameForOrigin(Origin origin);
 }

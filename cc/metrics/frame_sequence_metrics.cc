@@ -194,17 +194,6 @@ void FrameSequenceMetrics::AdvanceTrace(base::TimeTicks timestamp) {
   trace_data_.Advance(timestamp);
 }
 
-void FrameSequenceMetrics::ComputeAggregatedThroughput() {
-  // Whenever we are expecting and producing main frames, we are expecting and
-  // producing impl frames as well. As an example, if we expect one main frame
-  // to be produced, and when that main frame is presented, we are expecting 3
-  // impl frames, then the number of expected frames is 3 for the aggregated
-  // throughput.
-  aggregated_throughput_.frames_expected = impl_throughput_.frames_expected;
-  DCHECK_LE(aggregated_throughput_.frames_produced,
-            aggregated_throughput_.frames_expected);
-}
-
 void FrameSequenceMetrics::ReportMetrics() {
   DCHECK_LE(impl_throughput_.frames_produced, impl_throughput_.frames_expected);
   DCHECK_LE(main_throughput_.frames_produced, main_throughput_.frames_expected);

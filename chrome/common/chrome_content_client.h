@@ -84,7 +84,6 @@ class ChromeContentClient : public content::ContentClient {
   void AddContentDecryptionModules(
       std::vector<content::CdmInfo>* cdms,
       std::vector<media::CdmHostFilePath>* cdm_host_file_paths) override;
-
   void AddAdditionalSchemes(Schemes* schemes) override;
   base::string16 GetLocalizedString(int message_id) override;
   base::string16 GetLocalizedString(int message_id,
@@ -93,18 +92,11 @@ class ChromeContentClient : public content::ContentClient {
                                     ui::ScaleFactor scale_factor) override;
   base::RefCountedMemory* GetDataResourceBytes(int resource_id) override;
   gfx::Image& GetNativeImageNamed(int resource_id) override;
-  base::DictionaryValue GetNetLogConstants() override;
   std::string GetProcessTypeNameInEnglish(int type) override;
-
-  bool AllowScriptExtensionForServiceWorker(
-      const url::Origin& script_origin) override;
-
   blink::OriginTrialPolicy* GetOriginTrialPolicy() override;
-
 #if defined(OS_ANDROID)
   media::MediaDrmBridgeClient* GetMediaDrmBridgeClient() override;
 #endif  // OS_ANDROID
-
   void ExposeInterfacesToBrowser(
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       mojo::BinderMap* binders) override;

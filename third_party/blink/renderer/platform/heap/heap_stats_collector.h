@@ -40,31 +40,37 @@ class PLATFORM_EXPORT ThreadHeapStatsObserver {
   virtual void DecreaseAllocatedObjectSize(size_t) = 0;
 };
 
-#define FOR_ALL_SCOPES(V)             \
-  V(AtomicPauseCompaction)            \
-  V(AtomicPauseMarkEpilogue)          \
-  V(AtomicPauseMarkPrologue)          \
-  V(AtomicPauseMarkRoots)             \
-  V(AtomicPauseMarkTransitiveClosure) \
-  V(AtomicPauseSweepAndCompact)       \
-  V(CompleteSweep)                    \
-  V(IncrementalMarkingFinalize)       \
-  V(IncrementalMarkingStartMarking)   \
-  V(IncrementalMarkingStep)           \
-  V(InvokePreFinalizers)              \
-  V(LazySweepInIdle)                  \
-  V(LazySweepOnAllocation)            \
-  V(MarkBailOutObjects)               \
-  V(MarkInvokeEphemeronCallbacks)     \
-  V(MarkProcessWorklist)              \
-  V(MarkNotFullyConstructedObjects)   \
-  V(MarkWeakProcessing)               \
-  V(UnifiedMarkingStep)               \
-  V(VisitCrossThreadPersistents)      \
-  V(VisitPersistentRoots)             \
-  V(VisitPersistents)                 \
-  V(VisitRoots)                       \
-  V(VisitStackRoots)                  \
+#define FOR_ALL_SCOPES(V)                    \
+  V(AtomicPauseCompaction)                   \
+  V(AtomicPauseMarkEpilogue)                 \
+  V(AtomicPauseMarkPrologue)                 \
+  V(AtomicPauseMarkRoots)                    \
+  V(AtomicPauseMarkTransitiveClosure)        \
+  V(AtomicPauseSweepAndCompact)              \
+  V(CompleteSweep)                           \
+  V(IncrementalMarkingFinalize)              \
+  V(IncrementalMarkingStartMarking)          \
+  V(IncrementalMarkingStep)                  \
+  V(IncrementalMarkingWithDeadline)          \
+  V(InvokePreFinalizers)                     \
+  V(LazySweepInIdle)                         \
+  V(LazySweepOnAllocation)                   \
+  V(MarkBailOutObjects)                      \
+  V(MarkInvokeEphemeronCallbacks)            \
+  V(MarkFlushV8References)                   \
+  V(MarkFlushEphemeronPairs)                 \
+  V(MarkProcessWorklists)                    \
+  V(MarkProcessMarkingWorklist)              \
+  V(MarkProcessWriteBarrierWorklist)         \
+  V(MarkProcessNotFullyconstructeddWorklist) \
+  V(MarkNotFullyConstructedObjects)          \
+  V(MarkWeakProcessing)                      \
+  V(UnifiedMarkingStep)                      \
+  V(VisitCrossThreadPersistents)             \
+  V(VisitPersistentRoots)                    \
+  V(VisitPersistents)                        \
+  V(VisitRoots)                              \
+  V(VisitStackRoots)                         \
   V(VisitRememberedSets)
 
 #define FOR_ALL_CONCURRENT_SCOPES(V)        \

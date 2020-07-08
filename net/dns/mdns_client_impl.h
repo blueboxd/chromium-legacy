@@ -328,7 +328,7 @@ class MDnsTransactionImpl : public base::SupportsWeakPtr<MDnsTransactionImpl>,
   MDnsTransaction::ResultCallback callback_;
 
   std::unique_ptr<MDnsListener> listener_;
-  base::CancelableCallback<void()> timeout_;
+  base::CancelableOnceCallback<void()> timeout_;
 
   MDnsClientImpl* client_;
 

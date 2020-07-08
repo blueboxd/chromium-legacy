@@ -63,7 +63,7 @@ class ExtensionSettingsUIBrowserTest : public WebUIBrowserTest {
   // Used to simulate managed extensions (by being registered as a provider).
   extensions::TestManagementPolicyProvider policy_provider_;
 
-  base::FilePath test_data_dir_;
+  const base::FilePath test_data_dir_;
 
   // Disable extension content verification.
   extensions::ScopedIgnoreContentVerifierForTest ignore_content_verification_;

@@ -121,7 +121,7 @@ if (current_cpu == "x86") {
       "//content/app/sandbox_helper_win.cc",
       "//content/common/sandbox_init_win.cc",
       "//content/public/common/sandboxed_process_launcher_delegate.cc",
-      "//services/service_manager/sandbox/win/sandbox_win.cc",
+      "//sandbox/policy/win/sandbox_win.cc",
     ]
 
     defines = [
@@ -139,7 +139,7 @@ if (current_cpu == "x86") {
       "//content/public/common:static_switches",
       "//content/public/common/zygote:buildflags",
       "//sandbox",
-      "//services/service_manager/sandbox",
+      "//sandbox/policy",
     ]
   }
 

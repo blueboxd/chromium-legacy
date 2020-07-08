@@ -102,7 +102,7 @@ suite('SafetyCheckChromeCleanerUiTests', function() {
     });
   });
 
-  test('chromeCleanerCSafeStatesUiTest', function() {
+  test('chromeCleanerSafeStatesUiTest', function() {
     for (const state of Object.values(SafetyCheckChromeCleanerStatus)) {
       switch (state) {
         case SafetyCheckChromeCleanerStatus.INITIAL:
@@ -126,14 +126,34 @@ suite('SafetyCheckChromeCleanerUiTests', function() {
     }
   });
 
-  test('chromeCleanerInfoWithDefaultButtonStatesUiTest', function() {
+  test('chromeCleanerErrorStates', function() {
     for (const state of Object.values(SafetyCheckChromeCleanerStatus)) {
       switch (state) {
         case SafetyCheckChromeCleanerStatus.REPORTER_FAILED:
         case SafetyCheckChromeCleanerStatus.SCANNING_FAILED:
-        case SafetyCheckChromeCleanerStatus.CONNECTION_LOST:
         case SafetyCheckChromeCleanerStatus.CLEANING_FAILED:
         case SafetyCheckChromeCleanerStatus.CLEANER_DOWNLOAD_FAILED:
+          fireSafetyCheckChromeCleanerEvent(state);
+          flush();
+          assertSafetyCheckChild({
+            page: page,
+            iconStatus: SafetyCheckIconStatus.INFO,
+            label: 'Device software',
+            buttonLabel: 'Details',
+            buttonAriaLabel: 'Review error details',
+          });
+          expectChromeCleanerRouteButtonClickActions();
+          break;
+        default:
+          // Not covered by this test.
+          break;
+      }
+    }
+  });
+
+  test('chromeCleanerInfoWithDefaultButtonStatesUiTest', function() {
+    for (const state of Object.values(SafetyCheckChromeCleanerStatus)) {
+      switch (state) {
         case SafetyCheckChromeCleanerStatus.CLEANING:
           fireSafetyCheckChromeCleanerEvent(state);
           flush();
@@ -158,6 +178,7 @@ suite('SafetyCheckChromeCleanerUiTests', function() {
       switch (state) {
         case SafetyCheckChromeCleanerStatus.USER_DECLINED_CLEANUP:
         case SafetyCheckChromeCleanerStatus.INFECTED:
+        case SafetyCheckChromeCleanerStatus.CONNECTION_LOST:
           fireSafetyCheckChromeCleanerEvent(state);
           flush();
           assertSafetyCheckChild({

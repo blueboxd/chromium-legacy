@@ -420,22 +420,22 @@ void RestrictedCookieManager::SetCanonicalCookieResult(
     const net::CanonicalCookie& cookie,
     const net::CookieOptions& net_options,
     SetCanonicalCookieCallback user_callback,
-    net::CookieInclusionStatus status) {
+    net::CookieAccessResult access_result) {
   std::vector<net::CookieWithStatus> notify;
   // TODO(https://crbug.com/977040): Only report pure INCLUDE once samesite
   // tightening up is rolled out.
-  DCHECK(!status.HasExclusionReason(
+  DCHECK(!access_result.status.HasExclusionReason(
       net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES));
 
-  if (status.IsInclude() || status.ShouldWarn()) {
+  if (access_result.status.IsInclude() || access_result.status.ShouldWarn()) {
     if (cookie_observer_) {
-      notify.push_back({cookie, status});
+      notify.push_back({cookie, access_result.status});
       cookie_observer_->OnCookiesAccessed(mojom::CookieAccessDetails::New(
           mojom::CookieAccessDetails::Type::kChange, url, site_for_cookies,
           notify, base::nullopt));
     }
   }
-  std::move(user_callback).Run(status.IsInclude());
+  std::move(user_callback).Run(access_result.status.IsInclude());
 }
 
 void RestrictedCookieManager::AddChangeListener(

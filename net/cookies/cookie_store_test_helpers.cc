@@ -68,12 +68,13 @@ DelayedCookieMonster::DelayedCookieMonster()
     : cookie_monster_(
           new CookieMonster(nullptr /* store */, nullptr /* netlog */)),
       did_run_(false),
-      result_(CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE) {}
+      result_(CookieAccessResult(CookieInclusionStatus(
+          CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE))) {}
 
 DelayedCookieMonster::~DelayedCookieMonster() = default;
 
 void DelayedCookieMonster::SetCookiesInternalCallback(
-    CookieInclusionStatus result) {
+    CookieAccessResult result) {
   result_ = result;
   did_run_ = true;
 }

@@ -27,6 +27,9 @@ class BASE_EXPORT PathService {
   // |path| will not be changed.
   static bool Get(int key, FilePath* path);
 
+  // Returns the corresponding path; CHECKs that the operation succeeds.
+  static FilePath CheckedGet(int key);
+
   // Overrides the path to a special directory or file.  This cannot be used to
   // change the value of DIR_CURRENT, but that should be obvious.  Also, if the
   // path specifies a directory that does not exist, the directory will be

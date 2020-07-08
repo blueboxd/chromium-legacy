@@ -8348,7 +8348,7 @@ TEST_F(SpdyNetworkTransactionTest, RequestHeadersCallback) {
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
   helper.RunPreTestSetup();
   helper.AddData(&data);
-  helper.trans()->SetRequestHeadersCallback(base::Bind(
+  helper.trans()->SetRequestHeadersCallback(base::BindRepeating(
       &HttpRawRequestHeaders::Assign, base::Unretained(&raw_headers)));
   helper.StartDefaultTest();
   helper.FinishDefaultTestWithoutVerification();

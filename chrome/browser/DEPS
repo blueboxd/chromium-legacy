@@ -447,7 +447,7 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  '.*InstrumentationTest\.java': [
+  '.*Test\.java': [
     # Android instrumentation tests depend on the whole app.
     "+chrome/android",
   ],

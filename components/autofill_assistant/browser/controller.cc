@@ -1121,6 +1121,10 @@ AutofillAssistantState Controller::GetState() {
   return state_;
 }
 
+int64_t Controller::GetErrorCausingNavigationId() const {
+  return error_causing_navigation_id_;
+}
+
 bool Controller::ShouldShowOverlay() const {
   return overlay_behavior_ == ConfigureUiStateProto::DEFAULT;
 }
@@ -1703,6 +1707,7 @@ void Controller::DidStartNavigation(
       web_contents()->GetLastCommittedURL().is_valid() &&
       !navigation_handle->WasServerRedirect() &&
       !navigation_handle->IsRendererInitiated()) {
+    error_causing_navigation_id_ = navigation_handle->GetNavigationId();
     OnScriptError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP),
                   Metrics::DropOutReason::NAVIGATION);
     return;
@@ -1714,6 +1719,7 @@ void Controller::DidStartNavigation(
     // user initiated navigation will cause an error.
     if (state_ == AutofillAssistantState::RUNNING &&
         !navigation_handle->IsRendererInitiated()) {
+      error_causing_navigation_id_ = navigation_handle->GetNavigationId();
       OnScriptError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP),
                     Metrics::DropOutReason::NAVIGATION_WHILE_RUNNING);
       return;

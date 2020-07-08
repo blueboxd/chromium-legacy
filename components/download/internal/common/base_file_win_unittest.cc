@@ -106,7 +106,7 @@ TEST(BaseFileWin, AnnotateWithSourceInformation) {
                    << " Annotation:" << std::endl
                    << zone_identifier;
     }
-    base::DeleteFile(path, false);
+    base::DeleteFile(path);
   }
 }
 

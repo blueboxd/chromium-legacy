@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 
 import androidx.browser.customtabs.TrustedWebUtils;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -156,11 +157,8 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
         WebappActivity webappActivity = getActivity();
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return webappActivity.getActivityTab() != null;
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(webappActivity.getActivityTab(), Matchers.notNullValue());
         }, STARTUP_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
         ChromeTabUtils.waitForTabPageLoaded(webappActivity.getActivityTab(), startUrl);
@@ -215,20 +213,17 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
         intent.putExtra(ShortcutHelper.EXTRA_URL, getTestServer().getURL("/slow?2"));
         launchActivity(intent);
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                // we are waiting for WebappActivity#getActivityTab() to be non-null because we want
-                // to ensure that native has been loaded.
-                // We also wait till the splash screen has finished initializing.
-                if (getActivity().getActivityTab() == null) return false;
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            // we are waiting for WebappActivity#getActivityTab() to be non-null because we want
+            // to ensure that native has been loaded.
+            // We also wait till the splash screen has finished initializing.
+            Criteria.checkThat(getActivity().getActivityTab(), Matchers.notNullValue());
 
-                View splashScreen = getSplashController(getActivity()).getSplashScreenForTests();
-                if (splashScreen == null) return false;
+            View splashScreen = getSplashController(getActivity()).getSplashScreenForTests();
+            Criteria.checkThat(splashScreen, Matchers.notNullValue());
 
-                return (!(splashScreen instanceof ViewGroup)
-                        || ((ViewGroup) splashScreen).getChildCount() > 0);
-            }
+            if (!(splashScreen instanceof ViewGroup)) return;
+            Criteria.checkThat(((ViewGroup) splashScreen).getChildCount(), Matchers.greaterThan(0));
         }, STARTUP_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
@@ -248,11 +243,8 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
     }
 
     public static void waitUntilSplashHides(WebappActivity activity) {
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return getSplashController(activity).wasSplashScreenHiddenForTests();
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            return getSplashController(activity).wasSplashScreenHiddenForTests();
         }, STARTUP_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 

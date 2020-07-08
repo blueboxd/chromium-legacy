@@ -321,7 +321,7 @@ cr.define('cr.ui', function() {
    * attribute screen if it's present.
    */
   Oobe.isEnrollmentSuccessfulForTest = function() {
-    const step = $('enterprise-enrollment').currentStep_;
+    const step = $('enterprise-enrollment').uiStep;
     if (step === ENROLLMENT_STEP.ATTRIBUTE_PROMPT) {
       chrome.send('oauthEnrollAttributes', ['', '']);
       return true;

@@ -39,6 +39,8 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
   void Shutdown() override;
   base::TimeDelta GetHighAnnoyanceLevelDelta() override;
   base::Time GetHighAnnoyanceDeadline() override;
+  void OverrideHighAnnoyanceDeadline(base::Time deadline) override;
+  void ResetOverriddenDeadline() override;
 
   // BuildStateObserver:
   void OnUpdate(const BuildState* build_state) override;
@@ -63,7 +65,10 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
   // zero delta if unset or out of range.
   static base::TimeDelta GetRelaunchHeadsUpPeriod();
 
-  // Calculates |elevated_deadline_| and |high_deadline_|.
+  // Calculates |elevated_deadline_| and |high_deadline_| using either
+  // |high_deadline_override_| if it is not null or the threshold values
+  // computed based on the RelaunchNotificationPeriod and RelaunchHeadsUpPeriod
+  // policy settings.
   void CalculateDeadlines();
 
   // Handles a change to the browser.relaunch_heads_up_period or
@@ -93,6 +98,10 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
 
   // The time when high annoyance deadline is reached.
   base::Time high_deadline_;
+
+  // The overridden high annoyance deadline which takes priority over
+  // |high_deadline_| for showing relaunch notifications.
+  base::Time high_deadline_override_;
 
   // Observes changes to the browser.relaunch_heads_up_period Local State
   // preference.

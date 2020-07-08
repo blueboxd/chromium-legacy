@@ -38,7 +38,7 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   ~WaylandWindow() override;
 
   // A factory method that can create any of the derived types of WaylandWindow
-  // (WaylandToplevelWindow, WaylandPopup and WaylandSubsurface).
+  // (WaylandToplevelWindow, WaylandPopup and WaylandAuxiliaryWindow).
   static std::unique_ptr<WaylandWindow> Create(
       PlatformWindowDelegate* delegate,
       WaylandConnection* connection,

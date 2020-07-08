@@ -52,8 +52,8 @@
 #include "media/base/key_system_names.h"
 #include "media/base/media_switches.h"
 #include "net/http/http_util.h"
+#include "sandbox/policy/fuchsia/sandbox_policy_fuchsia.h"
 #include "services/network/public/cpp/features.h"
-#include "services/service_manager/sandbox/fuchsia/sandbox_policy_fuchsia.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 #include "ui/gfx/switches.h"
@@ -258,8 +258,8 @@ void ContextProviderImpl::Create(
   base::LaunchOptions launch_options;
   launch_options.process_name_suffix = ":context";
 
-  service_manager::SandboxPolicyFuchsia sandbox_policy(
-      service_manager::SandboxType::kWebContext);
+  sandbox::policy::SandboxPolicyFuchsia sandbox_policy(
+      sandbox::policy::SandboxType::kWebContext);
   sandbox_policy.SetServiceDirectory(std::move(service_directory));
   sandbox_policy.UpdateLaunchOptionsForSandbox(&launch_options);
 

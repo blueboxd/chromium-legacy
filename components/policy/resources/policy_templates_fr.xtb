@@ -2770,25 +2770,6 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> ignore toutes les opti
       Si cette règle est associée à la valeur "True", <ph name="PRODUCT_OS_NAME" /> empêche l'appareil de démarrer en mode développeur. Le système refuse de se lancer et un écran d'erreur s'affiche lorsque le mode développeur est activé.
 
       Si cette règle n'est pas définie ou si elle est associée à la valeur "False", le mode développeur peut être sélectionné sur l'appareil.</translation>
-<translation id="5210980743015047124">Permet de configurer la version minimale autorisée requise de <ph name="PRODUCT_NAME" />.
-
-      Lorsque cette règle est définie sur des entrées de la liste :
-      Si aucune des entrées de la liste ne possède une "chrome_version" ultérieure à la version actuelle de l'appareil, aucune restriction n'est alors appliquée, et les restrictions existantes sont révoquées.
-      Si au moins une entrée possède une "chrome_version" ultérieure à la version actuelle, l'entrée choisie est celle qui est la plus performante et dont la version est la plus proche de la version actuelle.
-      En cas de conflit, la préférence est donnée à celle dont la "warning_period" ou la "eol_warning_period" est la plus réduite. En outre, la règle est appliquée avec cette entrée.
-
-      Si la version actuelle devient obsolète pendant la session utilisateur, une notification s'affiche à l'écran pour inviter l'utilisateur à mettre à jour l'appareil dans la "warning_period" qui lui est indiquée.
-      La "warning_period" commence à partir de l'application de la règle.
-      Si l'appareil n'est pas mis à jour avant la fin de la "warning_period", l'utilisateur est déconnecté du système.
-      Si la version actuelle s'avère obsolète au moment de la connexion, et si la "warning_period" est arrivée à expiration, l'utilisateur doit mettre à jour l'appareil avant de se connecter.
-
-      Si la fin de vie de l'appareil est atteinte pendant la session utilisateur, une notification s'affiche à l'écran pour déconnecter l'utilisateur une fois la "eol_warning_period" arrivée à expiration.
-      Si l'appareil atteint la fin de sa durée de vie au moment de la connexion, et si la "eol_warning_period" est arrivée à expiration, aucun utilisateur ne peut se connecter avec l'appareil.
-
-      Si cette règle n'est pas configurée ou si aucune entrée ne figure dans la liste, aucune restriction n'est appliquée, les restrictions existantes sont révoquées, et l'utilisateur peut se connecter quelle que soit la version de <ph name="PRODUCT_NAME" />.
-
-      Dans le cas présent, "chrome_version" peut désigner une version exacte telle que "61.0.3163.120" ou le préfixe d'une version tel que "61.0".
-      Les "warning_period" et "eol_warning_period" sont des valeurs facultatives exprimées en nombre de jours. Elles sont définies par défaut sur 0 jour, ce qui signifie qu'il n'y a pas de délai d'attente. </translation>
 <translation id="5212118847531454979">Permet de définir la période, en millisecondes, pendant laquelle les utilisateurs sont avertis que <ph name="PRODUCT_NAME" /> doit être relancé ou qu'un appareil <ph name="PRODUCT_OS_NAME" /> doit être redémarré pour l'application d'une mise à jour en attente.
 
       Au cours de cette période, l'utilisateur est régulièrement informé de la nécessité d'appliquer la mise à jour. Pour les appareils <ph name="PRODUCT_OS_NAME" />, une notification de redémarrage s'affiche dans la barre d'état système conformément à la règle <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Pour les navigateurs <ph name="PRODUCT_NAME" />, lorsqu'un tiers de la période de notification s'est écoulé, le menu d'application change pour indiquer qu'il est nécessaire de redémarrer le navigateur. La notification change de couleur une première fois lorsque les deux tiers de la période de notification se sont écoulés, et une deuxième fois à l'issue de cette période. Les notifications supplémentaires activées par la règle <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> pour les navigateurs suivent le même calendrier.
@@ -3126,18 +3107,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
           Cette règle ne prend effet que si la règle <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> est désactivée. Elle est ignorée dans le cas contraire, le délai d'assombrissement de l'écran étant alors déterminé par un modèle de machine learning.
 
           Le facteur d'adaptation doit être de 100 % ou plus. Les valeurs qui auraient pour conséquence de rendre le délai d'assombrissement de l'écran en mode Présentation plus court que le délai standard d'assombrissement de l'écran ne sont pas autorisées.</translation>
-<translation id="5590988845778885692">Permet de fournir aux appareils <ph name="PRODUCT_OS_NAME" /> la configuration des serveurs d'impression externes disponibles sous la forme d'un fichier JSON.
-
-      Ce fichier, qui ne doit pas dépasser 1 Mo, doit contenir un tableau d'enregistrements (objets JSON). Chaque enregistrement doit comporter les champs "id", "url" et "display_name" dont les valeurs doivent être des chaînes. La valeur des champs "id" doit être unique.
-
-      Le fichier est téléchargé et mis en cache. Le hachage cryptographique permet de vérifier l'intégrité du fichier téléchargé. Le fichier sera de nouveau téléchargé chaque fois que l'URL ou le hachage seront modifiés.
-
-      Lorsque cette règle est définie avec une valeur correcte, les appareils essaient d'interroger les serveurs d'impression spécifiés pour accéder aux imprimantes disponibles à l'aide du protocole IPP.
-
-      Si cette règle n'est pas définie, ou si sa valeur est incorrecte, aucune imprimante du serveur n'est visible pour les utilisateurs.
-
-      Actuellement, le nombre de serveurs d'impression est limité à 16. Seuls les 16 premiers serveurs d'impression de la liste seront interrogés.
-      </translation>
 <translation id="5592242031005200087">
       Si cette règle est activée, chacune des origines définies et répertoriées dans une
       liste d'éléments séparés par une virgule exécute son propre processus.
@@ -3289,14 +3258,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
       Les URL (comme https://example.com/ce/chemin) ne sont reconnues que comme des identifiants d'application U2F. Les domaines (comme example.com) ne sont reconnus que comme des identifiants RP WebAuthn. Ainsi, pour couvrir à la fois les API U2F et WebAuthn d'un site donné, vous devez préciser l'URL et le domaine de l'identifiant d'application.</translation>
 <translation id="5836064773277134605">Restreindre la plage de ports UDP utilisés par l'hôte d'accès à distance</translation>
 <translation id="585270638818921943">Empêche l'utilisateur de se servir d'applications Android provenant de sources non approuvées</translation>
-<translation id="5854749508571554984">Cette règle n'est appliquée que si l'appareil a atteint sa fin de vie et qu'il ne répond pas aux exigences de version minimale pour <ph name="PRODUCT_NAME" />, définies dans la règle <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" />.
-
-      Lorsque cette règle est définie sur une chaîne non vide :
-      Si le délai d'avertissement mentionné dans la règle <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> est arrivé à expiration, ce message s'affiche sur l'écran de connexion lorsqu'aucun utilisateur ne peut se connecter avec l'appareil.
-      Si le délai d'avertissement mentionné dans la règle <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> n'est pas arrivé à expiration, ce message s'affiche sur la page "Paramètres" une fois l'utilisateur connecté.
-
-      Si cette règle n'est pas configurée ou si elle est vide, l'utilisateur voit le message de fin de vie par défaut dans les deux cas ci-dessus.
-      Le texte du message de fin de vie doit être brut et sans mise en forme. Aucun balisage n'est autorisé. </translation>
 <translation id="5855010364142818361">Cette règle contrôle les paramètres de ligne de commande pour basculer vers Chrome à partir d'Internet Explorer.
 
       Si le module complémentaire Legacy Browser Support pour Internet Explorer n'est pas installé, cette règle n'a aucun effet.
@@ -3943,7 +3904,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
       Si elle est définie sur "<ph name="BR_UNDER_USER_CONTROL" />", les utilisateurs sont invités à utiliser le service de sauvegarde et restauration. S'ils activent ce service, les données des applications Android sont importées sur les serveurs de sauvegarde Android, puis restaurées lors de la réinstallation des applications compatibles.
 
       Les utilisateurs peuvent activer ou désactiver le service de sauvegarde et de restauration, après la configuration initiale.</translation>
-<translation id="6993687707842131236">Configurer le message de fin de vie pour la règle MinimumChromeVersionEnforced</translation>
 <translation id="6994082778848658360">Indique comment le matériel sécurisé intégré peut être utilisé pour l'authentification à deux facteurs, s'il est compatible avec cette fonctionnalité. Le bouton Marche/Arrêt de l'appareil est utilisé pour détecter la présence de l'utilisateur.
 
       Si vous sélectionnez "Désactivé" ou si vous ne définissez pas cette règle, aucun deuxième facteur n'est fourni.

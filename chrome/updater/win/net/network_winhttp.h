@@ -95,7 +95,7 @@ class NetworkFetcherWinHTTP
 
   HRESULT BeginFetch(
       const std::string& data,
-      const base::flat_map<std::string, std::string>& additional_headers);
+      base::flat_map<std::string, std::string> additional_headers);
   scoped_hinternet Connect();
   scoped_hinternet OpenRequest();
   HRESULT SendRequest(const std::string& data);
@@ -131,7 +131,8 @@ class NetworkFetcherWinHTTP
   std::string path_for_request_;
 
   base::StringPiece16 verb_;
-  base::string16 content_type_;
+  // The value of Content-Type header, e.g. "application/json".
+  std::string content_type_;
   WriteDataCallback write_data_callback_;
   HRESULT net_error_ = S_OK;
   std::string header_etag_;

@@ -6,6 +6,10 @@
 
 #include <stdint.h>
 
+#include <string>
+#include <utility>
+
+#include "base/callback.h"
 #include "base/notreached.h"
 #include "pdf/document_layout.h"
 
@@ -68,8 +72,8 @@ void PreviewModeClient::NotifySelectedFindResultChanged(
 }
 
 void PreviewModeClient::GetDocumentPassword(
-    pp::CompletionCallbackWithOutput<pp::Var> callback) {
-  callback.Run(PP_ERROR_FAILED);
+    base::OnceCallback<void(const std::string&)> callback) {
+  std::move(callback).Run("");
 }
 
 void PreviewModeClient::Alert(const std::string& message) {

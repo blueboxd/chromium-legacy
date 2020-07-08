@@ -1165,17 +1165,18 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
                                        SetCookiesCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  CookieInclusionStatus status;
+  CookieAccessResult access_result;
 
   bool secure_source = source_url.SchemeIsCryptographic();
   cc->SetSourceScheme(secure_source ? CookieSourceScheme::kSecure
                                     : CookieSourceScheme::kNonSecure);
   if ((cc->IsSecure() && !secure_source)) {
-    status.AddExclusionReason(CookieInclusionStatus::EXCLUDE_SECURE_ONLY);
+    access_result.status.AddExclusionReason(
+        CookieInclusionStatus::EXCLUDE_SECURE_ONLY);
   }
 
   if (!IsCookieableScheme(source_url.scheme())) {
-    status.AddExclusionReason(
+    access_result.status.AddExclusionReason(
         CookieInclusionStatus::EXCLUDE_NONCOOKIEABLE_SCHEME);
   }
 
@@ -1188,7 +1189,7 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
           cookie_util::IsRecentCreationTimeGrantsLegacyCookieSemanticsEnabled()
               ? EffectiveCreationTimeForMaybePreexistingCookie(key, *cc)
               : base::Time()),
-      &status);
+      &access_result);
 
   base::Time creation_date = cc->CreationDate();
   if (creation_date.is_null()) {
@@ -1201,11 +1202,11 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
 
   MaybeDeleteEquivalentCookieAndUpdateStatus(
       key, *cc, secure_source, options.exclude_httponly(), already_expired,
-      &creation_date_to_inherit, &status);
+      &creation_date_to_inherit, &access_result.status);
 
-  if (status.HasExclusionReason(
+  if (access_result.status.HasExclusionReason(
           CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE) ||
-      status.HasExclusionReason(
+      access_result.status.HasExclusionReason(
           CookieInclusionStatus::EXCLUDE_OVERWRITE_HTTP_ONLY)) {
     DVLOG(net::cookie_util::kVlogSetCookies)
         << "SetCookie() not clobbering httponly cookie or secure cookie for "
@@ -1215,13 +1216,13 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
   // Now that IsSetPermittedInContext() and
   // MaybeDeleteEquivalentCookieAndUpdateStatus() have had a chance to set
   // cookie warnings/exclusions, record the downgrade metric.
-  if (status.ShouldRecordDowngradeMetrics()) {
+  if (access_result.status.ShouldRecordDowngradeMetrics()) {
     UMA_HISTOGRAM_ENUMERATION(
         "Cookie.SameSiteContextDowngradeResponse",
-        status.GetBreakingDowngradeMetricsEnumValue(source_url));
+        access_result.status.GetBreakingDowngradeMetricsEnumValue(source_url));
   }
 
-  if (status.IsInclude()) {
+  if (access_result.status.IsInclude()) {
     DVLOG(net::cookie_util::kVlogSetCookies)
         << "SetCookie() key: " << key << " cc: " << cc->DebugString();
 
@@ -1270,7 +1271,7 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
   }
 
   // TODO(chlily): Log metrics.
-  MaybeRunCookieCallback(std::move(callback), status);
+  MaybeRunCookieCallback(std::move(callback), access_result);
 }
 
 void CookieMonster::SetAllCookies(CookieList list,
@@ -1303,7 +1304,7 @@ void CookieMonster::SetAllCookies(CookieList list,
   // shouldn't have a return value.  But it should also be deleted (see
   // https://codereview.chromium.org/2882063002/#msg64), which would
   // solve the return value problem.
-  MaybeRunCookieCallback(std::move(callback), CookieInclusionStatus());
+  MaybeRunCookieCallback(std::move(callback), CookieAccessResult());
 }
 
 void CookieMonster::InternalUpdateCookieAccessTime(CanonicalCookie* cc,

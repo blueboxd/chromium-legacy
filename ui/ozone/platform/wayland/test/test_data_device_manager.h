@@ -34,8 +34,8 @@ class TestDataDeviceManager : public GlobalObject {
   }
 
  private:
-  TestDataDevice* data_device_;
-  TestDataSource* data_source_;
+  TestDataDevice* data_device_ = nullptr;
+  TestDataSource* data_source_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TestDataDeviceManager);
 };

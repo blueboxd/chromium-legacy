@@ -100,12 +100,10 @@ public class LauncherActivityTest {
 
         // Could crash after the activity is created, wait for the tab to stop loading.
         final ChromeActivity activity = (ChromeActivity) tryLaunchingChrome(intent);
-        CriteriaHelper.pollUiThread(new Criteria("ChromeActivity does not have a tab.") {
-            @Override
-            public boolean isSatisfied() {
-                Tab tab = activity.getActivityTab();
-                return tab != null && !tab.isLoading();
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Tab tab = activity.getActivityTab();
+            Criteria.checkThat(tab, Matchers.notNullValue());
+            Criteria.checkThat(tab.isLoading(), Matchers.is(false));
         }, DEVICE_STARTUP_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
@@ -120,16 +118,12 @@ public class LauncherActivityTest {
 
         // Check that Chrome proper was successfully launched as a follow-up
         final AtomicReference<Activity> launchedActivity = new AtomicReference<>();
-        CriteriaHelper.pollInstrumentationThread(
-                new Criteria("ChromeLauncherActivity did not start Chrome") {
-                    @Override
-                    public boolean isSatisfied() {
-                        final List<Activity> activities = ApplicationStatus.getRunningActivities();
-                        if (activities.size() != 1) return false;
-                        launchedActivity.set(activities.get(0));
-                        return launchedActivity.get() instanceof ChromeActivity;
-                    }
-                }, DEVICE_STARTUP_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            final List<Activity> activities = ApplicationStatus.getRunningActivities();
+            Criteria.checkThat(activities.size(), Matchers.is(1));
+            launchedActivity.set(activities.get(0));
+            Criteria.checkThat(launchedActivity.get(), Matchers.instanceOf(ChromeActivity.class));
+        }, DEVICE_STARTUP_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         return launchedActivity.get();
     }
 

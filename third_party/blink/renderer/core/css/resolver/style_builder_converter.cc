@@ -1491,9 +1491,15 @@ StyleColor StyleBuilderConverter::ConvertStyleColor(StyleResolverState& state,
                                                     const CSSValue& value,
                                                     bool for_visited_link) {
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
-  if (identifier_value &&
-      identifier_value->GetValueID() == CSSValueID::kCurrentcolor)
-    return StyleColor::CurrentColor();
+  if (identifier_value) {
+    CSSValueID value_id = identifier_value->GetValueID();
+    if (value_id == CSSValueID::kCurrentcolor)
+      return StyleColor::CurrentColor();
+    if (StyleColor::IsSystemColor(value_id) &&
+        RuntimeEnabledFeatures::CSSSystemColorComputeToSelfEnabled()) {
+      return StyleColor(value_id);
+    }
+  }
   return StyleColor(state.GetDocument().GetTextLinkColors().ColorFromCSSValue(
       value, Color(), state.Style()->UsedColorScheme(), for_visited_link));
 }
@@ -1510,10 +1516,15 @@ StyleAutoColor StyleBuilderConverter::ConvertStyleAutoColor(
     const CSSValue& value,
     bool for_visited_link) {
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
-    if (identifier_value->GetValueID() == CSSValueID::kCurrentcolor)
+    CSSValueID value_id = identifier_value->GetValueID();
+    if (value_id == CSSValueID::kCurrentcolor)
       return StyleAutoColor::CurrentColor();
-    if (identifier_value->GetValueID() == CSSValueID::kAuto)
+    if (value_id == CSSValueID::kAuto)
       return StyleAutoColor::AutoColor();
+    if (StyleColor::IsSystemColor(value_id) &&
+        RuntimeEnabledFeatures::CSSSystemColorComputeToSelfEnabled()) {
+      return StyleAutoColor(value_id);
+    }
   }
   return StyleAutoColor(
       state.GetDocument().GetTextLinkColors().ColorFromCSSValue(

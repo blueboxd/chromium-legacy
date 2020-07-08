@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/core/paint/inline_text_box_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/selection_painting_utils.h"
 #include "third_party/blink/renderer/core/paint/svg_object_painter.h"
@@ -420,7 +421,8 @@ bool SVGInlineTextBoxPainter::SetupTextPaint(
   if (HasShadow(paint_info, style)) {
     flags.setLooper(style.TextShadow()->CreateDrawLooper(
         DrawLooperBuilder::kShadowRespectsAlpha,
-        style.VisitedDependentColor(GetCSSPropertyColor())));
+        style.VisitedDependentColor(GetCSSPropertyColor()),
+        style.UsedColorScheme()));
   }
 
   if (resource_mode == kApplyToStrokeMode) {
@@ -472,6 +474,9 @@ void SVGInlineTextBoxPainter::PaintText(const PaintInfo& paint_info,
   context.GetPaintController().SetTextPainted();
 
   if (!scaled_font.ShouldSkipDrawing()) {
+    PaintTiming& timing = PaintTiming::From(
+        text_layout_object.GetNode()->GetDocument().TopDocument());
+    timing.MarkFirstContentfulPaint();
     PaintTimingDetector::NotifyTextPaint(
         InlineLayoutObject().FragmentsVisualRectBoundingBox());
   }

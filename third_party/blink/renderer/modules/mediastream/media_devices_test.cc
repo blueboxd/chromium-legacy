@@ -11,9 +11,13 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_tester.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_media_device_info.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_constraints.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -23,6 +27,8 @@
 using blink::mojom::blink::MediaDeviceInfoPtr;
 
 namespace blink {
+
+namespace {
 
 const char kFakeAudioInputDeviceId1[] = "fake_audio_input 1";
 const char kFakeAudioInputDeviceId2[] = "fake_audio_input 2";
@@ -158,11 +164,29 @@ class MockMediaDevicesDispatcherHost
   mojo::Receiver<mojom::blink::MediaDevicesDispatcherHost> receiver_{this};
 };
 
+MediaDeviceInfoVector ToMediaDeviceInfoVector(
+    const v8::Local<v8::Value>& value) {
+  EXPECT_TRUE(value->IsArray());
+  v8::Array& array = *v8::Array::Cast(*value);
+  v8::Local<v8::Context> context =
+      v8::Isolate::GetCurrent()->GetCurrentContext();
+
+  MediaDeviceInfoVector device_infos;
+  for (uint32_t i = 0; i < array.Length(); ++i) {
+    MediaDeviceInfo* device_info = V8MediaDeviceInfo::ToImplWithTypeCheck(
+        context->GetIsolate(), array.Get(context, i).ToLocalChecked());
+    device_infos.push_back(device_info);
+  }
+  return device_infos;
+}
+
+}  // namespace
+
 class MediaDevicesTest : public testing::Test {
  public:
   using MediaDeviceInfos = HeapVector<Member<MediaDeviceInfo>>;
 
-  MediaDevicesTest() : device_infos_(MakeGarbageCollected<MediaDeviceInfos>()) {
+  MediaDevicesTest() {
     dispatcher_host_ = std::make_unique<MockMediaDevicesDispatcherHost>();
   }
 
@@ -183,15 +207,6 @@ class MediaDevicesTest : public testing::Test {
                                  Vector<WebMediaDeviceInfo>());
   }
 
-  void DevicesEnumerated(const MediaDeviceInfoVector& device_infos) {
-    devices_enumerated_ = true;
-    for (wtf_size_t i = 0; i < device_infos.size(); i++) {
-      device_infos_->push_back(MakeGarbageCollected<MediaDeviceInfo>(
-          device_infos[i]->deviceId(), device_infos[i]->label(),
-          device_infos[i]->groupId(), device_infos[i]->DeviceType()));
-    }
-  }
-
   void OnDispatcherHostConnectionError() {
     dispatcher_host_connection_error_ = true;
   }
@@ -209,10 +224,6 @@ class MediaDevicesTest : public testing::Test {
 
   bool listener_connection_error() const { return listener_connection_error_; }
 
-  const MediaDeviceInfos& device_infos() const { return *device_infos_; }
-
-  bool devices_enumerated() const { return devices_enumerated_; }
-
   bool dispatcher_host_connection_error() const {
     return dispatcher_host_connection_error_;
   }
@@ -226,8 +237,6 @@ class MediaDevicesTest : public testing::Test {
  private:
   ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
   std::unique_ptr<MockMediaDevicesDispatcherHost> dispatcher_host_;
-  Persistent<MediaDeviceInfos> device_infos_;
-  bool devices_enumerated_ = false;
   bool dispatcher_host_connection_error_ = false;
   bool device_changed_ = false;
   bool listener_connection_error_ = false;
@@ -251,61 +260,76 @@ TEST_F(MediaDevicesTest, GetUserMediaCanBeCalled) {
 TEST_F(MediaDevicesTest, EnumerateDevices) {
   V8TestingScope scope;
   auto* media_devices = GetMediaDevices(scope.GetExecutionContext());
-  media_devices->SetEnumerateDevicesCallbackForTesting(
-      WTF::Bind(&MediaDevicesTest::DevicesEnumerated, WTF::Unretained(this)));
   ScriptPromise promise = media_devices->enumerateDevices(
       scope.GetScriptState(), scope.GetExceptionState());
-  platform()->RunUntilIdle();
-  ASSERT_FALSE(promise.IsEmpty());
+  ScriptPromiseTester tester(scope.GetScriptState(), promise);
+  tester.WaitUntilSettled();
+  ASSERT_TRUE(tester.IsFulfilled());
+  MediaDeviceInfoVector device_infos =
+      ToMediaDeviceInfoVector(tester.Value().V8Value());
 
-  EXPECT_TRUE(devices_enumerated());
-  EXPECT_EQ(5u, device_infos().size());
+  // One empty device per kind, since enumerateDevices() cannot expose device
+  // info by default.
+  EXPECT_EQ(device_infos.size(), 3u);
+  for (auto device : device_infos) {
+    EXPECT_TRUE(device->deviceId().IsEmpty());
+    EXPECT_TRUE(device->label().IsEmpty());
+  }
+
+  // Authorize enumerateDevices() to expose device info.
+  media_devices->SetEnumerateCanExposeDevices();
+  promise = media_devices->enumerateDevices(scope.GetScriptState(),
+                                            scope.GetExceptionState());
+  ScriptPromiseTester tester2(scope.GetScriptState(), promise);
+  tester2.WaitUntilSettled();
+  ASSERT_TRUE(tester2.IsFulfilled());
+
+  device_infos = ToMediaDeviceInfoVector(tester2.Value().V8Value());
+  EXPECT_EQ(device_infos.size(), 5u);
 
   // Audio input device with matched output ID.
-  Member<MediaDeviceInfo> device = device_infos()[0];
+  MediaDeviceInfo* device = device_infos[0];
   EXPECT_FALSE(device->deviceId().IsEmpty());
   EXPECT_EQ("audioinput", device->kind());
   EXPECT_FALSE(device->label().IsEmpty());
   EXPECT_FALSE(device->groupId().IsEmpty());
 
   // Audio input device without matched output ID.
-  device = device_infos()[1];
+  device = device_infos[1];
   EXPECT_FALSE(device->deviceId().IsEmpty());
   EXPECT_EQ("audioinput", device->kind());
   EXPECT_FALSE(device->label().IsEmpty());
   EXPECT_FALSE(device->groupId().IsEmpty());
 
   // Video input devices.
-  device = device_infos()[2];
+  device = device_infos[2];
   EXPECT_FALSE(device->deviceId().IsEmpty());
   EXPECT_EQ("videoinput", device->kind());
   EXPECT_FALSE(device->label().IsEmpty());
   EXPECT_FALSE(device->groupId().IsEmpty());
 
-  device = device_infos()[3];
+  device = device_infos[3];
   EXPECT_FALSE(device->deviceId().IsEmpty());
   EXPECT_EQ("videoinput", device->kind());
   EXPECT_FALSE(device->label().IsEmpty());
   EXPECT_FALSE(device->groupId().IsEmpty());
 
   // Audio output device.
-  device = device_infos()[4];
+  device = device_infos[4];
   EXPECT_FALSE(device->deviceId().IsEmpty());
   EXPECT_EQ("audiooutput", device->kind());
   EXPECT_FALSE(device->label().IsEmpty());
   EXPECT_FALSE(device->groupId().IsEmpty());
 
   // Verify group IDs.
-  EXPECT_EQ(device_infos()[0]->groupId(), device_infos()[2]->groupId());
-  EXPECT_EQ(device_infos()[0]->groupId(), device_infos()[4]->groupId());
-  EXPECT_NE(device_infos()[1]->groupId(), device_infos()[4]->groupId());
+  EXPECT_EQ(device_infos[0]->groupId(), device_infos[2]->groupId());
+  EXPECT_EQ(device_infos[0]->groupId(), device_infos[4]->groupId());
+  EXPECT_NE(device_infos[1]->groupId(), device_infos[4]->groupId());
 }
 
 TEST_F(MediaDevicesTest, EnumerateDevicesAfterConnectionError) {
   V8TestingScope scope;
   auto* media_devices = GetMediaDevices(scope.GetExecutionContext());
-  media_devices->SetEnumerateDevicesCallbackForTesting(
-      WTF::Bind(&MediaDevicesTest::DevicesEnumerated, WTF::Unretained(this)));
   media_devices->SetConnectionErrorCallbackForTesting(
       WTF::Bind(&MediaDevicesTest::OnDispatcherHostConnectionError,
                 WTF::Unretained(this)));
@@ -317,17 +341,16 @@ TEST_F(MediaDevicesTest, EnumerateDevicesAfterConnectionError) {
 
   ScriptPromise promise = media_devices->enumerateDevices(
       scope.GetScriptState(), scope.GetExceptionState());
-  platform()->RunUntilIdle();
-  ASSERT_FALSE(promise.IsEmpty());
+  ScriptPromiseTester tester(scope.GetScriptState(), promise);
+  tester.WaitUntilSettled();
+  EXPECT_TRUE(tester.IsRejected());
+  EXPECT_FALSE(promise.IsEmpty());
   EXPECT_TRUE(dispatcher_host_connection_error());
-  EXPECT_FALSE(devices_enumerated());
 }
 
 TEST_F(MediaDevicesTest, EnumerateDevicesBeforeConnectionError) {
   V8TestingScope scope;
   auto* media_devices = GetMediaDevices(scope.GetExecutionContext());
-  media_devices->SetEnumerateDevicesCallbackForTesting(
-      WTF::Bind(&MediaDevicesTest::DevicesEnumerated, WTF::Unretained(this)));
   media_devices->SetConnectionErrorCallbackForTesting(
       WTF::Bind(&MediaDevicesTest::OnDispatcherHostConnectionError,
                 WTF::Unretained(this)));
@@ -335,14 +358,15 @@ TEST_F(MediaDevicesTest, EnumerateDevicesBeforeConnectionError) {
 
   ScriptPromise promise = media_devices->enumerateDevices(
       scope.GetScriptState(), scope.GetExceptionState());
-  platform()->RunUntilIdle();
+  ScriptPromiseTester tester(scope.GetScriptState(), promise);
+  tester.WaitUntilSettled();
+  EXPECT_TRUE(tester.IsFulfilled());
   ASSERT_FALSE(promise.IsEmpty());
 
   // Simulate a connection error by closing the binding.
   CloseBinding();
   platform()->RunUntilIdle();
   EXPECT_TRUE(dispatcher_host_connection_error());
-  EXPECT_TRUE(devices_enumerated());
 }
 
 TEST_F(MediaDevicesTest, ObserveDeviceChangeEvent) {

@@ -30,13 +30,12 @@ class BleSynchronizerBase {
   // Advertisement wrappers.
   void RegisterAdvertisement(
       std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement_data,
-      const device::BluetoothAdapter::CreateAdvertisementCallback& callback,
-      const device::BluetoothAdapter::AdvertisementErrorCallback&
-          error_callback);
+      device::BluetoothAdapter::CreateAdvertisementCallback callback,
+      device::BluetoothAdapter::AdvertisementErrorCallback error_callback);
   void UnregisterAdvertisement(
       scoped_refptr<device::BluetoothAdvertisement> advertisement,
-      const device::BluetoothAdvertisement::SuccessCallback& success_callback,
-      const device::BluetoothAdvertisement::ErrorCallback& error_callback);
+      device::BluetoothAdvertisement::SuccessCallback success_callback,
+      device::BluetoothAdvertisement::ErrorCallback error_callback);
 
   // Discovery session wrappers.
   void StartDiscoverySession(
@@ -59,9 +58,8 @@ class BleSynchronizerBase {
     RegisterArgs(
         std::unique_ptr<device::BluetoothAdvertisement::Data>
             advertisement_data,
-        const device::BluetoothAdapter::CreateAdvertisementCallback& callback,
-        const device::BluetoothAdapter::AdvertisementErrorCallback&
-            error_callback);
+        device::BluetoothAdapter::CreateAdvertisementCallback callback,
+        device::BluetoothAdapter::AdvertisementErrorCallback error_callback);
     virtual ~RegisterArgs();
 
     std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement_data;
@@ -72,8 +70,8 @@ class BleSynchronizerBase {
   struct UnregisterArgs {
     UnregisterArgs(
         scoped_refptr<device::BluetoothAdvertisement> advertisement,
-        const device::BluetoothAdvertisement::SuccessCallback& callback,
-        const device::BluetoothAdvertisement::ErrorCallback& error_callback);
+        device::BluetoothAdvertisement::SuccessCallback callback,
+        device::BluetoothAdvertisement::ErrorCallback error_callback);
     virtual ~UnregisterArgs();
 
     scoped_refptr<device::BluetoothAdvertisement> advertisement;

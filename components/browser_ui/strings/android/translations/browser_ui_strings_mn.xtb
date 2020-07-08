@@ -27,14 +27,11 @@
 <translation id="1743802530341753419">Сайтуудыг төхөөрөмжид холбогдохыг зөвшөөрөхөөс өмнө асуух (санал болгосон)</translation>
 <translation id="1887786770086287077">Байршлын хандалт энэ төхөөрөмжид унтраалттай байна. Үүнийг <ph name="BEGIN_LINK" />Андройдын тохиргоо<ph name="END_LINK" /> хэсэгт асаана уу.</translation>
 <translation id="1919345977826869612">Зар</translation>
-<translation id="1922076542920281912">Chrome-д таны байршилд хандахыг зөвшөөрөхийн тулд байршлыг <ph name="BEGIN_LINK" />Android-н тохиргоонд<ph name="END_LINK" /> мөн адил асаана уу.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
-<translation id="194341124344773587">Chrome-ын зөвшөөрлийг <ph name="BEGIN_LINK" />Android-ын Тохиргоо<ph name="END_LINK" />-д асаагаарай.</translation>
 <translation id="1984937141057606926">Гуравдагч этгээдээс бусад этгээдийг зөвшөөрсөн байна</translation>
 <translation id="1994173015038366702">Сайтын URL</translation>
 <translation id="2025115093177348061">Өргөтгөсөн бодит орчин</translation>
 <translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> руу буцах бол товшино уу</translation>
-<translation id="2041019821020695769">Chrome-д танд мэдэгдэл илгээхийг зөвшөөрөхийн тулд мэдэгдлийг <ph name="BEGIN_LINK" />Android-н тохиргоонд<ph name="END_LINK" /> мөн адил асаана уу</translation>
 <translation id="2079545284768500474">Буцаах</translation>
 <translation id="2091887806945687916">Дуу</translation>
 <translation id="2107397443965016585">Сайтад хамгаалагдсан контент тоглуулахыг зөвшөөрөхөөс өмнө асуух (санал болгосон)</translation>
@@ -71,7 +68,6 @@
 <translation id="301521992641321250">Автоматаар блок хийсэн</translation>
 <translation id="3115898365077584848">Мэдээллийг харуулах</translation>
 <translation id="3123473560110926937">Зарим сайт дээр блоклосон</translation>
-<translation id="3190152372525844641">Chrome-ын зөвшөөрлийг <ph name="BEGIN_LINK" />Android-ын Тохиргоо<ph name="END_LINK" />-д асаагаарай.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> хадгалсан өгөгдөл</translation>
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3277252321222022663">Сайтуудад мэдрэгчид хандахыг зөвшөөрөх (санал болгосон)</translation>
@@ -83,7 +79,6 @@
 <translation id="358794129225322306">Сайтад олон файлыг автоматаар татахыг зөвшөөрнө үү.</translation>
 <translation id="3596414637720633074">Нууцлалтай горимд гуравдагч талын күүкиг блоклох</translation>
 <translation id="3600792891314830896">Дуу тоглуулдаг сайтуудын дууг хаах</translation>
-<translation id="3730075448226062617">Chrome-д микрофондоо хандахыг зөвшөөрөхийн тулд микрофоныг <ph name="BEGIN_LINK" />Android-н тохиргоонд<ph name="END_LINK" /> мөн адил асаана уу.</translation>
 <translation id="3744111561329211289">Дэвсгэрт синк хийх</translation>
 <translation id="3822502789641063741">Сайтын санг устгах уу?</translation>
 <translation id="385051799172605136">Буцах</translation>
@@ -112,7 +107,6 @@
 <translation id="4883854917563148705">Хяналттай тохиргоог шинэчлэх боломжгүй</translation>
 <translation id="4887024562049524730">Сайтуудад таны виртуал бодит байдлын төхөөрөмж болон өгөгдлийг ашиглахыг зөвшөөрөхийн өмнө асуух (санал болгосон)</translation>
 <translation id="4962975101802056554">Төхөөрөмжийн бүх зөвшөөрлийг цуцлах</translation>
-<translation id="4964199952259983386">AR ашиглах боломжийг Chrome-д олгохын тулд камерыг <ph name="BEGIN_LINK" />Android тохиргоо<ph name="END_LINK" /> хэсэгт мөн асаана уу.</translation>
 <translation id="497421865427891073">Цаашаа явах</translation>
 <translation id="4996978546172906250">-аар хуваалцах</translation>
 <translation id="5039804452771397117">Зөвшөөрөх</translation>
@@ -153,7 +147,6 @@
 <translation id="6177111841848151710">Одоогийн хайлтын хэрэгсэлд блоклосон</translation>
 <translation id="6181444274883918285">Сайтын онцгой тохиолдол нэмэх</translation>
 <translation id="6192792657125177640">Гажих нөхцлүүд</translation>
-<translation id="6194112207524046168">Chrome-д камертаа хандахыг зөвшөөрөхийн тулд камерыг <ph name="BEGIN_LINK" />Android-н тохиргоонд<ph name="END_LINK" /> мөн адил асаана уу.</translation>
 <translation id="6196640612572343990">Гуравдагч талын күүкиг блоклох</translation>
 <translation id="6206551242102657620">Холболт аюулгүй байна. Сайтын мэдээлэл</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> Сонголт</translation>

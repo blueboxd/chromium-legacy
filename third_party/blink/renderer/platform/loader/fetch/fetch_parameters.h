@@ -39,6 +39,7 @@
 
 namespace blink {
 
+class DOMWrapperWorld;
 class SecurityOrigin;
 
 // A FetchParameters is a "parameter object" for
@@ -72,7 +73,9 @@ class PLATFORM_EXPORT FetchParameters {
     ResourceWidth() : width(0), is_set(false) {}
   };
 
-  explicit FetchParameters(ResourceRequest);
+  static FetchParameters CreateForTest(ResourceRequest);
+
+  FetchParameters(ResourceRequest, scoped_refptr<const DOMWrapperWorld> world);
   FetchParameters(ResourceRequest, const ResourceLoaderOptions&);
   FetchParameters(const FetchParameters&) = delete;
   FetchParameters& operator=(const FetchParameters&) = delete;

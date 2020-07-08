@@ -12,6 +12,7 @@ include_rules = [
   "+components/pref_registry",
   "+components/prefs",
   "+components/quirks",
+  "+components/services/app_service/public",
   "+components/session_manager",
   "+components/strings",
   "+components/sync",

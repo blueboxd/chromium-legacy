@@ -27,7 +27,7 @@ using machine_learning::mojom::TextClassifier;
 // TODO(llin): Finalize on the threshold based on user feedback.
 constexpr int kUnitConversionIntentAndSelectionLengthDiffThreshold = 5;
 constexpr int kTranslationTextLengthThreshold = 50;
-constexpr int kDefinitionIntentAndSelectionLengthDiffThreshold = 0;
+constexpr int kDefinitionIntentAndSelectionLengthDiffThreshold = 2;
 
 const std::map<std::string, IntentType>& GetIntentTypeMap() {
   static base::NoDestructor<std::map<std::string, IntentType>> kIntentTypeMap(
@@ -65,8 +65,8 @@ IntentType RewriteIntent(const std::string& selected_text,
                          const std::string& entity_str,
                          const IntentType intent) {
   int intent_and_selection_length_diff =
-      selected_text.length() - entity_str.length();
-
+      base::UTF8ToUTF16(selected_text).length() -
+      base::UTF8ToUTF16(entity_str).length();
   if ((intent == IntentType::kUnit &&
        intent_and_selection_length_diff >
            kUnitConversionIntentAndSelectionLengthDiffThreshold) ||

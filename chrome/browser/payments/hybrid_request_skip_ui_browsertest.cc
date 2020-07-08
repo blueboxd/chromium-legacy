@@ -77,11 +77,12 @@ class HybridRequestSkipUITest
     if (GetTestMode() == SKIP_TO_GPAY_IF_NO_CARD &&
         GetTestConfig() == TEST_HAS_COMPLETE_AUTOFILL_INSTRUMENT) {
       // Skip-to-GPay is not activated in this combination because user has a
-      // usable autofill instrument. Just verify that the payment sheet is
-      // shown.
-      ResetEventWaiterForSingleEvent(TestEvent::kShowAppsReady);
+      // usable autofill instrument. Just verify that the payment.show() is
+      // called and both credit card and Gpay payment methods are available.
+      ResetEventWaiterForSingleEvent(TestEvent::kAppListReady);
       EXPECT_TRUE(content::ExecJs(GetActiveWebContents(), js_snippet));
       WaitForObservedEvent();
+      EXPECT_EQ(2u, test_controller()->app_descriptions().size());
       return;
     }
 

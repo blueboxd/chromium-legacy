@@ -131,6 +131,20 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieSameSite) {
   }
 }
 
+TEST(CookieManagerTraitsTest, Roundtrips_CookieEffectiveSameSite) {
+  for (net::CookieEffectiveSameSite cookie_state :
+       {net::CookieEffectiveSameSite::NO_RESTRICTION,
+        net::CookieEffectiveSameSite::LAX_MODE,
+        net::CookieEffectiveSameSite::STRICT_MODE,
+        net::CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE,
+        net::CookieEffectiveSameSite::UNDEFINED}) {
+    net::CookieEffectiveSameSite roundtrip;
+    ASSERT_TRUE(SerializeAndDeserializeEnum<mojom::CookieEffectiveSameSite>(
+        cookie_state, &roundtrip));
+    EXPECT_EQ(cookie_state, roundtrip);
+  }
+}
+
 TEST(CookieManagerTraitsTest, Roundtrips_ContextType) {
   using ContextType = net::CookieOptions::SameSiteCookieContext::ContextType;
   for (ContextType context_type :

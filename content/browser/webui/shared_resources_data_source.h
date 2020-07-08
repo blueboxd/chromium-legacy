@@ -49,17 +49,8 @@ class SharedResourcesDataSource : public URLDataSource {
       const std::string& origin) override;
   std::string GetContentSecurityPolicy(
       network::mojom::CSPDirectiveName directive) override;
-#if defined(OS_CHROMEOS)
-  void DisablePolymer2ForHost(const std::string& host) override;
-#endif  // defined (OS_CHROMEOS)
 
  private:
-#if defined(OS_CHROMEOS)
-  std::string disabled_polymer2_host_;
-
-  bool IsPolymer2DisabledForPage(const WebContents::Getter& wc_getter);
-#endif  // defined (OS_CHROMEOS)
-
   // The URL scheme this data source is accessed from, e.g. "chrome" or
   // "chrome-untrusted".
   const std::string scheme_;

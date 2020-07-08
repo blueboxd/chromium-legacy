@@ -8,6 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/test/gmock_callback_support.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -75,27 +76,6 @@ class BluetoothSocketApiTest : public extensions::ShellApiTest {
   scoped_refptr<const Extension> empty_extension_;
 };
 
-// testing::InvokeArgument<N> does not work with base::Callback, fortunately
-// gmock makes it simple to create action templates that do for the various
-// possible numbers of arguments.
-ACTION_TEMPLATE(InvokeCallbackArgument,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_0_VALUE_PARAMS()) {
-  std::move(std::get<k>(args)).Run();
-}
-
-ACTION_TEMPLATE(InvokeCallbackArgument,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_1_VALUE_PARAMS(p0)) {
-  std::move(std::get<k>(args)).Run(p0);
-}
-
-ACTION_TEMPLATE(InvokeCallbackArgument,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_2_VALUE_PARAMS(p0, p1)) {
-  std::move(std::get<k>(args)).Run(p0, p1);
-}
-
 }  // namespace
 
 // TODO(crbug.com/632002): Flaky on many trybot platforms.
@@ -116,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothSocketApiTest, DISABLED_Connect) {
       = new testing::StrictMock<MockBluetoothSocket>();
   EXPECT_CALL(*mock_device1_,
               ConnectToService(service_uuid, testing::_, testing::_))
-      .WillOnce(InvokeCallbackArgument<1>(mock_socket));
+      .WillOnce(base::test::RunOnceCallback<1>(mock_socket));
 
   // Since the socket is unpaused, expect a call to Receive() from the socket
   // dispatcher. Since there is no data, this will not call its callback.
@@ -124,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothSocketApiTest, DISABLED_Connect) {
 
   // The test also cleans up by calling Disconnect and Close.
   EXPECT_CALL(*mock_socket, Disconnect(testing::_))
-      .WillOnce(InvokeCallbackArgument<0>());
+      .WillOnce(base::test::RunOnceCallback<0>());
   EXPECT_CALL(*mock_socket, Close());
 
   // Run the test.
@@ -156,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothSocketApiTest, Listen) {
           testing::Field(&BluetoothAdapter::ServiceOptions::name,
                          testing::Pointee(testing::Eq("MyServiceName"))),
           testing::_, testing::_))
-      .WillOnce(InvokeCallbackArgument<2>(mock_server_socket));
+      .WillOnce(base::test::RunOnceCallback<2>(mock_server_socket));
 
   // Since the socket is unpaused, expect a call to Accept() from the socket
   // dispatcher. We'll immediately send back another mock socket to represent
@@ -166,8 +146,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothSocketApiTest, Listen) {
       = new testing::StrictMock<MockBluetoothSocket>();
   EXPECT_CALL(*mock_server_socket, Accept(testing::_, testing::_))
       .Times(2)
-      .WillOnce(
-          InvokeCallbackArgument<0>(mock_device1_.get(), mock_client_socket))
+      .WillOnce(base::test::RunOnceCallback<0>(mock_device1_.get(),
+                                               mock_client_socket))
       .WillOnce(testing::Return());
 
   // Run the test, it sends a ready signal once it's ready for us to dispatch
@@ -188,11 +168,11 @@ IN_PROC_BROWSER_TEST_F(BluetoothSocketApiTest, Listen) {
   // Second stage of tests checks for error conditions, and will clean up
   // the existing server and client sockets.
   EXPECT_CALL(*mock_server_socket, Disconnect(testing::_))
-      .WillOnce(InvokeCallbackArgument<0>());
+      .WillOnce(base::test::RunOnceCallback<0>());
   EXPECT_CALL(*mock_server_socket, Close());
 
   EXPECT_CALL(*mock_client_socket, Disconnect(testing::_))
-      .WillOnce(InvokeCallbackArgument<0>());
+      .WillOnce(base::test::RunOnceCallback<0>());
   EXPECT_CALL(*mock_client_socket, Close());
 
   EXPECT_TRUE(listener.WaitUntilSatisfied());

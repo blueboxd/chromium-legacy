@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/tab_search/tab_search_ui.h"
 
+#include "build/branding_buildflags.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search_page_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
@@ -11,12 +12,31 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 
+#if BUILDFLAG(ENABLE_TAB_SEARCH)
+#include "chrome/grit/tab_search_resources.h"
+#include "chrome/grit/tab_search_resources_map.h"
+#endif  // BUILDFLAG(ENABLE_TAB_SEARCH)
+
+#if BUILDFLAG(ENABLE_TAB_SEARCH)
+namespace {
+constexpr char kGeneratedPath[] =
+    "@out_folder@/gen/chrome/browser/resources/tab_search/";
+}
+#endif  // BUILDFLAG(ENABLE_TAB_SEARCH)
+
 TabSearchUI::TabSearchUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui) {
+#if BUILDFLAG(ENABLE_TAB_SEARCH)
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUITabSearchHost);
+  source->AddResourcePath("tab_search.mojom-lite.js",
+                          IDR_TAB_SEARCH_MOJO_LITE_JS);
+  webui::SetupWebUIDataSource(
+      source, base::make_span(kTabSearchResources, kTabSearchResourcesSize),
+      kGeneratedPath, IDR_TAB_SEARCH_PAGE_HTML);
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 source);
+#endif  // BUILDFLAG(ENABLE_TAB_SEARCH)
 }
 
 TabSearchUI::~TabSearchUI() = default;

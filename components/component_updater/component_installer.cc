@@ -383,7 +383,7 @@ void ComponentInstaller::UninstallOnTaskRunner() {
 
   // Delete the base directory if it's empty now.
   if (base::IsDirectoryEmpty(base_dir)) {
-    if (!base::DeleteFile(base_dir, false))
+    if (!base::DeleteFile(base_dir))
       DLOG(ERROR) << "Couldn't delete " << base_dir.value();
   }
 

@@ -76,7 +76,7 @@ class SentinelFile {
 
   bool IsPresent() { return base::PathExists(path_); }
   bool Create() { return base::WriteFile(path_, nullptr, 0) == 0; }
-  bool Remove() { return base::DeleteFile(path_, false /* recursive */); }
+  bool Remove() { return base::DeleteFile(path_); }
 
  private:
   base::FilePath path_;

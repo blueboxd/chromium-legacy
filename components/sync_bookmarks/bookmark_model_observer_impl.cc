@@ -237,24 +237,37 @@ void BookmarkModelObserverImpl::BookmarkNodeFaviconChanged(
   const sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(
       node, model, /*force_favicon_load=*/false, entity->has_final_guid());
 
+  // Check that we do not ignore changes when there is actual favicon in
+  // specifics.
+  DCHECK(model->GetFaviconType(node) == favicon_base::IconType::kFavicon ||
+         !specifics.bookmark().has_favicon());
+
   // TODO(crbug.com/1094825): implement |base_specifics_hash| similar to
   // ClientTagBasedModelTypeProcessor.
-  if (entity->MatchesFaviconHash(specifics.bookmark().favicon())) {
-    // The favicon content didn't actually change, which means this event is
-    // almost certainly the result of favicon loading having completed.
-    if (entity->IsUnsynced() &&
-        base::FeatureList::IsEnabled(
-            switches::kSyncDoNotCommitBookmarksWithoutFavicon)) {
-      // When kSyncDoNotCommitBookmarksWithoutFavicon is enabled, nudge for
-      // commit once favicon is loaded. This is needed in case when unsynced
-      // entity was skipped while building commit requests (since favicon wasn't
-      // loaded).
-      nudge_for_commit_closure_.Run();
+  if (!entity->MatchesFaviconHash(specifics.bookmark().favicon())) {
+    // Skip any changes if the node has touch favicon (which is not used for the
+    // specifics). MatchesFaviconHash would return false in this case and the
+    // entity would been committed without any favicon.
+    if (model->GetFaviconType(node) == favicon_base::IconType::kFavicon ||
+        model->GetFaviconType(node) == favicon_base::IconType::kInvalid ||
+        !base::FeatureList::IsEnabled(
+            switches::kSyncIgnoreChangesInTouchIcons)) {
+      ProcessUpdate(entity, specifics);
+      return;
     }
-    return;
   }
 
-  ProcessUpdate(entity, specifics);
+  // The favicon content didn't actually change, which means this event is
+  // almost certainly the result of favicon loading having completed.
+  if (entity->IsUnsynced() &&
+      base::FeatureList::IsEnabled(
+          switches::kSyncDoNotCommitBookmarksWithoutFavicon)) {
+    // When kSyncDoNotCommitBookmarksWithoutFavicon is enabled, nudge for
+    // commit once favicon is loaded. This is needed in case when unsynced
+    // entity was skipped while building commit requests (since favicon wasn't
+    // loaded).
+    nudge_for_commit_closure_.Run();
+  }
 }
 
 void BookmarkModelObserverImpl::BookmarkNodeChildrenReordered(

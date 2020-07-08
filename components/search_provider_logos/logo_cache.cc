@@ -397,20 +397,20 @@ void LogoCache::WriteLogo(
   base::FilePath dark_logo_path = GetDarkLogoPath();
   base::FilePath metadata_path = GetMetadataPath();
 
-  if (!base::DeleteFile(metadata_path, false))
+  if (!base::DeleteFile(metadata_path))
     return;
 
   if (encoded_image &&
       base::WriteFile(logo_path, encoded_image->front_as<char>(),
                       static_cast<int>(encoded_image->size())) == -1) {
-    base::DeleteFile(logo_path, false);
+    base::DeleteFile(logo_path);
     return;
   }
   if (dark_encoded_image &&
       base::WriteFile(dark_logo_path, dark_encoded_image->front_as<char>(),
                       static_cast<int>(dark_encoded_image->size())) == -1) {
-    base::DeleteFile(logo_path, false);
-    base::DeleteFile(dark_logo_path, false);
+    base::DeleteFile(logo_path);
+    base::DeleteFile(dark_logo_path);
     return;
   }
 
@@ -418,9 +418,9 @@ void LogoCache::WriteLogo(
 }
 
 void LogoCache::DeleteLogoAndMetadata() {
-  base::DeleteFile(GetLogoPath(), false);
-  base::DeleteFile(GetDarkLogoPath(), false);
-  base::DeleteFile(GetMetadataPath(), false);
+  base::DeleteFile(GetLogoPath());
+  base::DeleteFile(GetDarkLogoPath());
+  base::DeleteFile(GetMetadataPath());
 }
 
 bool LogoCache::EnsureCacheDirectoryExists() {

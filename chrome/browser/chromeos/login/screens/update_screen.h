@@ -175,6 +175,12 @@ class UpdateScreen : public BaseScreen, public VersionUpdater::Delegate {
   const base::TickClock* tick_clock_;
 
   base::TimeTicks start_update_downloading_;
+  // Support variables for update stages time recording.
+  base::TimeTicks start_update_stage_;
+  base::TimeDelta check_time_;
+  base::TimeDelta download_time_;
+  base::TimeDelta verify_time_;
+  base::TimeDelta finalize_time_;
 
   ErrorScreen::ConnectRequestCallbackSubscription connect_request_subscription_;
 

@@ -32,7 +32,7 @@ class QuarantineServiceTest : public testing::Test {
   void OnFileQuarantined(const base::FilePath& test_file,
                          base::OnceClosure quit_closure,
                          mojom::QuarantineFileResult result) {
-    base::DeleteFile(test_file, false);
+    base::DeleteFile(test_file);
     result_ = result;
     std::move(quit_closure).Run();
   }

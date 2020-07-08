@@ -36,13 +36,11 @@ class CustomTabSessionImplTest : public InProcessBrowserTest,
 
   void SetUpOnMainThread() override {
     wm_helper_ = std::make_unique<exo::WMHelperChromeOS>();
-    exo::WMHelper::SetInstance(wm_helper_.get());
     DCHECK(exo::WMHelper::HasInstance());
   }
 
   void TearDownOnMainThread() override {
     DCHECK(exo::WMHelper::HasInstance());
-    exo::WMHelper::SetInstance(nullptr);
     wm_helper_.reset();
   }
 

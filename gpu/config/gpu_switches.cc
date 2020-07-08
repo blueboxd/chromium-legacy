@@ -14,8 +14,9 @@ const char kDisableGpuRasterization[] = "disable-gpu-rasterization";
 // Skia GPU backend. Only valid with GPU accelerated compositing.
 const char kEnableGpuRasterization[] = "enable-gpu-rasterization";
 
-// Select a different set of GPU blacklist entries with the specified
+// Select a different set of GPU blocklist entries with the specified
 // test_group ID.
+// TODO(crbug.com/1101491): migrate to a more intentional name.
 const char kGpuBlacklistTestGroup[] = "gpu-blacklist-test-group";
 
 // Enable an extra set of GPU driver bug list entries with the specified
@@ -25,7 +26,8 @@ const char kGpuDriverBugListTestGroup[] = "gpu-driver-bug-list-test-group";
 // Passes encoded GpuPreferences to GPU process.
 const char kGpuPreferences[] = "gpu-preferences";
 
-// Ignores GPU blacklist.
+// Ignores GPU blocklist.
+// TODO(crbug.com/1101491): migrate to a more intentional name.
 const char kIgnoreGpuBlacklist[] = "ignore-gpu-blacklist";
 
 // Allows explicitly specifying the shader disk cache size for embedded devices.

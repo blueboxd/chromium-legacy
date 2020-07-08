@@ -148,7 +148,7 @@ GpuInit::~GpuInit() {
 bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
                                         const GpuPreferences& gpu_preferences) {
   gpu_preferences_ = gpu_preferences;
-  // Blacklist decisions based on basic GPUInfo may not be final. It might
+  // Blocklist decisions based on basic GPUInfo may not be final. It might
   // need more context based GPUInfo. In such situations, switching to
   // SwiftShader needs to wait until creating a context.
   bool needs_more_info = true;
@@ -185,7 +185,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     return false;
 #endif
   if (!PopGpuFeatureInfoCache(&gpu_feature_info_)) {
-    // Compute blacklist and driver bug workaround decisions based on basic GPU
+    // Compute blocklist and driver bug workaround decisions based on basic GPU
     // info.
     gpu_feature_info_ = ComputeGpuFeatureInfo(gpu_info_, gpu_preferences_,
                                               command_line, &needs_more_info);
@@ -378,7 +378,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
       gles2::UsePassthroughCommandDecoder(command_line) &&
       gles2::PassthroughCommandDecoderSupported();
 
-  // We need to collect GL strings (VENDOR, RENDERER) for blacklisting purposes.
+  // We need to collect GL strings (VENDOR, RENDERER) for blocklisting purposes.
   if (!gl_disabled) {
     if (!gl_use_swiftshader_) {
       if (!CollectGraphicsInfo(&gpu_info_))
@@ -410,7 +410,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     } else {  // gl_use_swiftshader_ == true
       switch (gpu_preferences_.use_vulkan) {
         case VulkanImplementationName::kNative: {
-          // Collect GPU info, so we can use blacklist to disable vulkan if it
+          // Collect GPU info, so we can use blocklist to disable vulkan if it
           // is needed.
           GPUInfo gpu_info;
           if (!CollectGraphicsInfo(&gpu_info))

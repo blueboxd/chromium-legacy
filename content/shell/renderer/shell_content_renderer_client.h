@@ -39,10 +39,6 @@ class ShellContentRendererClient : public ContentRendererClient {
                                           int http_status,
                                           std::string* error_html) override;
 
-  // TODO(mkwst): These toggle based on the kEnablePepperTesting flag. Do we
-  // need that outside of web tests?
-  bool IsPluginAllowedToUseDevChannelAPIs() override;
-
   void DidInitializeWorkerContextOnWorkerThread(
       v8::Local<v8::Context> context) override;
 

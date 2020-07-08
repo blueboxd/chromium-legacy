@@ -77,10 +77,8 @@ void InstallAttributes::Initialize() {
 
   DCHECK(!g_install_attributes);
   g_install_attributes = new InstallAttributes(CryptohomeClient::Get());
-  base::FilePath install_attrs_file;
-  CHECK(base::PathService::Get(dbus_paths::FILE_INSTALL_ATTRIBUTES,
-                               &install_attrs_file));
-  g_install_attributes->Init(install_attrs_file);
+  g_install_attributes->Init(
+      base::PathService::CheckedGet(dbus_paths::FILE_INSTALL_ATTRIBUTES));
 }
 
 // static

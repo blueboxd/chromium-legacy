@@ -252,12 +252,10 @@ void MediaRouterIntegrationBrowserTest::SetTestData(
 
 base::FilePath MediaRouterIntegrationBrowserTest::GetResourceFile(
     base::FilePath::StringPieceType relative_path) const {
-  base::FilePath base_dir;
-  // ASSERT_TRUE can only be used in void returning functions.
-  // Use CHECK instead in non-void returning functions.
-  CHECK(base::PathService::Get(base::DIR_MODULE, &base_dir));
-  base::FilePath full_path =
-      base_dir.Append(kResourcePath).Append(relative_path);
+  const base::FilePath full_path =
+      base::PathService::CheckedGet(base::DIR_MODULE)
+          .Append(kResourcePath)
+          .Append(relative_path);
   {
     // crbug.com/724573
     base::ScopedAllowBlockingForTesting allow_blocking;

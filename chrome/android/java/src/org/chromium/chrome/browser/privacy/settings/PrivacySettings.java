@@ -18,7 +18,6 @@ import org.chromium.base.BuildInfo;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager.DohEntry;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
@@ -29,6 +28,8 @@ import org.chromium.chrome.browser.usage_stats.UsageStatsConsentDialog;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.net.SecureDnsMode;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
@@ -90,8 +91,8 @@ public class PrivacySettings
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         String key = preference.getKey();
         if (PREF_CAN_MAKE_PAYMENT.equals(key)) {
-            PrefServiceBridge.getInstance().setBoolean(
-                    Pref.CAN_MAKE_PAYMENT_ENABLED, (boolean) newValue);
+            UserPrefs.get(Profile.getLastUsedRegularProfile())
+                    .setBoolean(Pref.CAN_MAKE_PAYMENT_ENABLED, (boolean) newValue);
         } else if (PREF_NETWORK_PREDICTIONS.equals(key)) {
             PrivacyPreferencesManager.getInstance().setNetworkPredictionEnabled((boolean) newValue);
         }
@@ -109,18 +110,17 @@ public class PrivacySettings
      * Updates the summaries for several preferences.
      */
     public void updateSummaries() {
-        PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
+        PrefService prefService = UserPrefs.get(Profile.getLastUsedRegularProfile());
 
         CheckBoxPreference canMakePaymentPref =
                 (CheckBoxPreference) findPreference(PREF_CAN_MAKE_PAYMENT);
         if (canMakePaymentPref != null) {
-            canMakePaymentPref.setChecked(
-                    prefServiceBridge.getBoolean(Pref.CAN_MAKE_PAYMENT_ENABLED));
+            canMakePaymentPref.setChecked(prefService.getBoolean(Pref.CAN_MAKE_PAYMENT_ENABLED));
         }
 
         Preference doNotTrackPref = findPreference(PREF_DO_NOT_TRACK);
         if (doNotTrackPref != null) {
-            doNotTrackPref.setSummary(prefServiceBridge.getBoolean(Pref.ENABLE_DO_NOT_TRACK)
+            doNotTrackPref.setSummary(prefService.getBoolean(Pref.ENABLE_DO_NOT_TRACK)
                             ? R.string.text_on
                             : R.string.text_off);
         }
@@ -152,7 +152,7 @@ public class PrivacySettings
 
         Preference usageStatsPref = findPreference(PREF_USAGE_STATS);
         if (usageStatsPref != null) {
-            if (BuildInfo.isAtLeastQ() && prefServiceBridge.getBoolean(Pref.USAGE_STATS_ENABLED)) {
+            if (BuildInfo.isAtLeastQ() && prefService.getBoolean(Pref.USAGE_STATS_ENABLED)) {
                 usageStatsPref.setOnPreferenceClickListener(preference -> {
                     UsageStatsConsentDialog
                             .create(getActivity(), true,

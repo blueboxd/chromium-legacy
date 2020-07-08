@@ -718,12 +718,12 @@ StoreWriteResult V4Store::WriteToDisk(const Checksum& checksum) {
                                    file_format_string.size());
 
   if (file_format_string.size() != written) {
-    base::DeleteFile(new_filename, /*recursive=*/false);
+    base::DeleteFile(new_filename);
     return UNEXPECTED_BYTES_WRITTEN_FAILURE;
   }
 
   if (!base::Move(new_filename, store_path_)) {
-    base::DeleteFile(new_filename, /*recursive=*/false);
+    base::DeleteFile(new_filename);
     return UNABLE_TO_RENAME_FAILURE;
   }
 

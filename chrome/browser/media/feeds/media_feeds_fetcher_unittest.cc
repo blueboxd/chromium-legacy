@@ -15,7 +15,7 @@
 #include "components/schema_org/common/metadata.mojom.h"
 #include "components/schema_org/schema_org_entity_names.h"
 #include "content/public/browser/storage_partition.h"
-#include "net/cookies/cookie_inclusion_status.h"
+#include "net/cookies/cookie_access_result.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -147,8 +147,8 @@ class MediaFeedsFetcherTest : public ChromeRenderViewHostTestHarness {
         *cc.get(), url, net::CookieOptions::MakeAllInclusive(),
         base::BindOnce(
             [](bool* result, base::RunLoop* run_loop,
-               net::CookieInclusionStatus set_cookie_status) {
-              *result = set_cookie_status.IsInclude();
+               net::CookieAccessResult set_cookie_access_result) {
+              *result = set_cookie_access_result.status.IsInclude();
               run_loop->Quit();
             },
             &result, &run_loop));

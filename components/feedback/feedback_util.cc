@@ -42,7 +42,7 @@ bool ZipString(const base::FilePath& filename,
                  zip::Zip(temp_dir.GetPath(), zip_file, false) &&
                  base::ReadFileToString(zip_file, compressed_logs);
 
-  base::DeleteFile(zip_file, false);
+  base::DeleteFile(zip_file);
 
   return succeed;
 }

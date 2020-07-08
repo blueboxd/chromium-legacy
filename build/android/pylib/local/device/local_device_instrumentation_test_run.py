@@ -1077,8 +1077,9 @@ class LocalDeviceInstrumentationTestRun(
           _AppendToLog(results,
                        'Gold initialization failed with output %s' % error)
         elif status == status_codes.COMPARISON_FAILURE_REMOTE:
-          triage_link = gold_session.GetTriageLink(render_name)
-          if not triage_link:
+          public_triage_link, internal_triage_link =\
+              gold_session.GetTriageLinks(render_name)
+          if not public_triage_link:
             _AppendToLog(
                 results, 'Failed to get triage link for %s, raw output: %s' %
                 (render_name, error))
@@ -1087,12 +1088,19 @@ class LocalDeviceInstrumentationTestRun(
                 gold_session.GetTriageLinkOmissionReason(render_name))
             continue
           if gold_properties.IsTryjobRun():
-            _SetLinkOnResults(results, 'Skia Gold triage link for entire CL',
-                              triage_link)
-          else:
             _SetLinkOnResults(results,
-                              'Skia Gold triage link for %s' % render_name,
-                              triage_link)
+                              'Public Skia Gold triage link for entire CL',
+                              public_triage_link)
+            _SetLinkOnResults(results,
+                              'Internal Skia Gold triage link for entire CL',
+                              internal_triage_link)
+          else:
+            _SetLinkOnResults(
+                results, 'Public Skia Gold triage link for %s' % render_name,
+                public_triage_link)
+            _SetLinkOnResults(
+                results, 'Internal Skia Gold triage link for %s' % render_name,
+                internal_triage_link)
           _AppendToLog(results, failure_log)
 
         elif status == status_codes.COMPARISON_FAILURE_LOCAL:

@@ -464,6 +464,9 @@ extern const base::Feature kUserActivityEventLogging;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kQuickUnlockPin;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kQuickUnlockPinAutosubmit;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kQuickUnlockPinSignin;
 
 COMPONENT_EXPORT(CHROME_FEATURES)

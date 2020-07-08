@@ -740,9 +740,9 @@ bool MixedRealityRenderLoop::UpdateStageParameters() {
       mojom::VRStageParametersPtr stage_parameters =
           mojom::VRStageParameters::New();
 
-      Matrix4x4 origin_to_stage;
-      if (!anchor_origin_->TryGetTransformTo(stage_origin_.get(),
-                                             &origin_to_stage)) {
+      Matrix4x4 stage_to_origin;
+      if (!stage_origin_->TryGetTransformTo(anchor_origin_.get(),
+                                            &stage_to_origin)) {
         // We failed to get a transform between the two, so force a
         // recalculation of the stage origin and leave the stage_parameters
         // null.
@@ -750,8 +750,8 @@ bool MixedRealityRenderLoop::UpdateStageParameters() {
         return changed;
       }
 
-      stage_parameters->standing_transform =
-          ConvertToGfxTransform(origin_to_stage);
+      stage_parameters->mojo_from_floor =
+          ConvertToGfxTransform(stage_to_origin);
 
       current_display_info_->stage_parameters = std::move(stage_parameters);
     }

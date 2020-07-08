@@ -526,7 +526,7 @@ class HarfBuzzLineBreaker {
                 });
       line->size.set_height(std::max(min_height_, max_descent_ + max_ascent_));
       line->baseline = std::max(min_baseline_, SkScalarRoundToInt(max_ascent_));
-      line->preceding_heights = std::ceil(total_size_.height());
+      line->preceding_heights = base::Ceil(total_size_.height());
       // Subtract newline segment's width from |total_size_| because it's not
       // drawn.
       float line_width = line->size.width();
@@ -1399,7 +1399,7 @@ SizeF RenderTextHarfBuzz::GetStringSizeF() {
 
 Size RenderTextHarfBuzz::GetLineSize(const SelectionModel& caret) {
   const auto to_size = [](const internal::Line& line) {
-    return Size(std::ceil(line.size.width()), line.size.height());
+    return Size(base::Ceil(line.size.width()), line.size.height());
   };
 
   const internal::ShapedText* shaped_text = GetShapedText();
@@ -1450,9 +1450,9 @@ std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {
         const internal::TextRunHarfBuzz& run = *run_list->runs()[segment.run];
         RangeF selected_span =
             run.GetGraphemeSpanForCharRange(this, intersection);
-        int start_x = std::ceil(selected_span.start() - line_start_x);
-        int end_x = std::ceil(selected_span.end() - line_start_x);
-        Rect rect(start_x, 0, end_x - start_x, std::ceil(line.size.height()));
+        int start_x = base::Ceil(selected_span.start() - line_start_x);
+        int end_x = base::Ceil(selected_span.end() - line_start_x);
+        Rect rect(start_x, 0, end_x - start_x, base::Ceil(line.size.height()));
         rects.push_back(rect + GetLineOffset(line_index));
       }
     }

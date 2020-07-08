@@ -18,7 +18,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.test.pagecontroller.rules.ChromeUiApplicationTestRule;
 import org.chromium.chrome.test.pagecontroller.utils.IUi2Locator;
 import org.chromium.chrome.test.pagecontroller.utils.Ui2Locators;
@@ -44,7 +43,6 @@ public class ChromeSmokeTest {
     }
 
     @Test
-    @DisabledTest(message = "https://crbug.com/1103107")
     public void testHello() {
         Context context = InstrumentationRegistry.getContext();
         final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(DATA_URL));

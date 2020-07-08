@@ -22,11 +22,11 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "sandbox/mac/seatbelt_exec.h"
+#include "sandbox/policy/mac/sandbox_mac.h"
+#include "sandbox/policy/sandbox.h"
+#include "sandbox/policy/sandbox_type.h"
+#include "sandbox/policy/switches.h"
 #include "services/service_manager/embedder/result_codes.h"
-#include "services/service_manager/sandbox/mac/sandbox_mac.h"
-#include "services/service_manager/sandbox/sandbox.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
-#include "services/service_manager/sandbox/switches.h"
 
 namespace content {
 namespace internal {
@@ -70,19 +70,19 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
   options->disclaim_responsibility = delegate_->DisclaimResponsibility();
 
   auto sandbox_type =
-      service_manager::SandboxTypeFromCommandLine(*command_line_);
+      sandbox::policy::SandboxTypeFromCommandLine(*command_line_);
 
   bool no_sandbox =
-      command_line_->HasSwitch(service_manager::switches::kNoSandbox) ||
-      service_manager::IsUnsandboxedSandboxType(sandbox_type);
+      command_line_->HasSwitch(sandbox::policy::switches::kNoSandbox) ||
+      sandbox::policy::IsUnsandboxedSandboxType(sandbox_type);
 
-  bool use_v2 = (sandbox_type != service_manager::SandboxType::kGpu) ||
+  bool use_v2 = (sandbox_type != sandbox::policy::SandboxType::kGpu) ||
                 base::FeatureList::IsEnabled(features::kMacV2GPUSandbox);
 
   if (use_v2 && !no_sandbox) {
     // Generate the profile string.
     std::string profile =
-        service_manager::SandboxMac::GetSandboxProfile(sandbox_type);
+        sandbox::policy::SandboxMac::GetSandboxProfile(sandbox_type);
 
     // Disable os logging to com.apple.diagnosticd which is a performance
     // problem.

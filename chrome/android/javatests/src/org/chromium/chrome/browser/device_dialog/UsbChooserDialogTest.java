@@ -11,6 +11,7 @@ import android.widget.ListView;
 
 import androidx.test.filters.LargeTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -82,31 +83,19 @@ public class UsbChooserDialogTest {
         final ListView items = (ListView) dialog.findViewById(R.id.items);
         final Button button = (Button) dialog.findViewById(R.id.positive);
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return items.getChildAt(0) != null;
-            }
-        });
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(items.getChildAt(0), Matchers.notNullValue()));
 
         // The actual index for the first item displayed on screen.
         int firstVisiblePosition = items.getFirstVisiblePosition();
         TouchCommon.singleClickView(items.getChildAt(position - firstVisiblePosition));
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return button.isEnabled();
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> button.isEnabled());
 
         TouchCommon.singleClickView(button);
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return !mSelectedDeviceId.equals("");
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mSelectedDeviceId, Matchers.not(Matchers.isEmptyString()));
         });
     }
 
@@ -135,12 +124,8 @@ public class UsbChooserDialogTest {
 
         dialog.cancel();
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mSelectedDeviceId.equals("");
-            }
-        });
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(mSelectedDeviceId, Matchers.isEmptyString()));
     }
 
     @Test

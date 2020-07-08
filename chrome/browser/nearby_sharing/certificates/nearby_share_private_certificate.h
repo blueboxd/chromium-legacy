@@ -11,8 +11,10 @@
 
 #include "base/containers/queue.h"
 #include "base/containers/span.h"
+#include "base/gtest_prod_util.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_encrypted_metadata_key.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_visibility.h"
 #include "chrome/browser/nearby_sharing/proto/encrypted_metadata.pb.h"
@@ -31,6 +33,11 @@ class SymmetricKey;
 // metadata encryption key, which can then be advertised.
 class NearbySharePrivateCertificate {
  public:
+  // Inverse operation of ToDictionary(). Returns base::nullopt if the
+  // conversion is not successful
+  static base::Optional<NearbySharePrivateCertificate> FromDictionary(
+      const base::Value& dict);
+
   // Generates a random EC key pair, secret key, and metadata encryption
   // key. Derives the certificate ID from the secret key. Derives the
   // not-after time from |not_before| and the certificate validity period fixed
@@ -79,6 +86,10 @@ class NearbySharePrivateCertificate {
   // shared with select contacts. Returns base::nullopt if the conversion was
   // unsuccessful.
   base::Optional<nearbyshare::proto::PublicCertificate> ToPublicCertificate();
+
+  // Converts this private certificate to a dictionary value for storage
+  // in Prefs.
+  base::Value ToDictionary() const;
 
   // For testing only.
   base::queue<std::vector<uint8_t>>& next_salts_for_testing() {
@@ -137,6 +148,8 @@ class NearbySharePrivateCertificate {
   // For testing only.
   base::queue<std::vector<uint8_t>> next_salts_for_testing_;
   base::Optional<base::TimeDelta> offset_for_testing_;
+
+  FRIEND_TEST_ALL_PREFIXES(NearbySharePrivateCertificateTest, ToFromDictionary);
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_CERTIFICATES_NEARBY_SHARE_PRIVATE_CERTIFICATE_H_

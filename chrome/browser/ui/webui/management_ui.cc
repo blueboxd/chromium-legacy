@@ -50,6 +50,8 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
     {"managementTrustRootsConfigured", IDS_MANAGEMENT_TRUST_ROOTS_CONFIGURED},
     {"deviceConfiguration", IDS_MANAGEMENT_DEVICE_CONFIGURATION},
     {"deviceReporting", IDS_MANAGEMENT_DEVICE_REPORTING},
+    {"updateRequiredEolAdminMessageTitle",
+     IDS_MANAGEMENT_UPDATE_REQUIRED_EOL_ADMIN_MESSAGE_TITLE},
     {kManagementLogUploadEnabled, IDS_MANAGEMENT_LOG_UPLOAD_ENABLED},
     {kManagementReportActivityTimes,
      IDS_MANAGEMENT_REPORT_DEVICE_ACTIVITY_TIMES},

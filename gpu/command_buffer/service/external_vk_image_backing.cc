@@ -290,11 +290,7 @@ ExternalVkImageBacking::~ExternalVkImageBacking() {
   bool result = backend_texture_.getVkImageInfo(&image_info);
   DCHECK(result);
 
-  auto* fence_helper = context_state()
-                           ->vk_context_provider()
-                           ->GetDeviceQueue()
-                           ->GetFenceHelper();
-  fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(std::move(image_));
+  fence_helper()->EnqueueVulkanObjectCleanupForSubmittedWork(std::move(image_));
   backend_texture_ = GrBackendTexture();
 
   if (texture_) {
@@ -330,7 +326,7 @@ bool ExternalVkImageBacking::BeginAccess(
 
   if (readonly && !reads_in_progress_) {
     UpdateContent(kInVkImage);
-    if (texture_)
+    if (texture_ || texture_passthrough_)
       UpdateContent(kInGLTexture);
   }
 
@@ -340,11 +336,16 @@ bool ExternalVkImageBacking::BeginAccess(
   if (!is_gl)
     return true;
 
-  if (need_synchronization() && semaphore_handles->empty() && IsCleared()) {
-    DLOG(ERROR) << "semaphore_handles is empty.";
+  if (need_synchronization() && semaphore_handles->empty()) {
     // For the first time GL BeginAccess(), semaphore_handles could be empty,
     // since the Vulkan usage will not provide semaphore for EndAccess() call,
-    // if ProduceGL*() is never called.
+    // if ProduceGL*() is never called. In this case, image layout and queue
+    // family will not be ready for GL access as well.
+    auto* gr_context = context_state()->gr_context();
+    gr_context->setBackendTextureState(
+        backend_texture_,
+        GrBackendSurfaceMutableState(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                     VK_QUEUE_FAMILY_EXTERNAL));
     VkSemaphore semaphore =
         vulkan_implementation()->CreateExternalSemaphore(device());
     GrBackendSemaphore backend_semaphore;
@@ -355,21 +356,16 @@ bool ExternalVkImageBacking::BeginAccess(
     };
     gpu::AddVulkanCleanupTaskForSkiaFlush(
         context_state()->vk_context_provider(), &flush_info);
-    auto* gr_context = context_state()->gr_context();
     auto flush_result = gr_context->flush(flush_info);
     DCHECK_EQ(flush_result, GrSemaphoresSubmitted::kYes);
     gr_context->submit();
 
     auto handle =
         vulkan_implementation()->GetSemaphoreHandle(device(), semaphore);
-    semaphore_handles->push_back(std::move(handle));
     DCHECK(handle.is_valid());
+    semaphore_handles->push_back(std::move(handle));
     // We're done with the semaphore, enqueue deferred cleanup.
-    context_state()
-        ->vk_context_provider()
-        ->GetDeviceQueue()
-        ->GetFenceHelper()
-        ->EnqueueSemaphoreCleanupForSubmittedWork(semaphore);
+    fence_helper()->EnqueueSemaphoreCleanupForSubmittedWork(semaphore);
   }
 
   if (readonly) {
@@ -722,13 +718,10 @@ bool ExternalVkImageBacking::WritePixelsWithCallback(
     command_buffer->Submit(0, nullptr, 0, nullptr);
     EndAccessInternal(false /* readonly */, SemaphoreHandle());
 
-    auto* fence_helper = context_state_->vk_context_provider()
-                             ->GetDeviceQueue()
-                             ->GetFenceHelper();
-    fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
+    fence_helper()->EnqueueVulkanObjectCleanupForSubmittedWork(
         std::move(command_buffer));
-    fence_helper->EnqueueBufferCleanupForSubmittedWork(stage_buffer,
-                                                       stage_allocation);
+    fence_helper()->EnqueueBufferCleanupForSubmittedWork(stage_buffer,
+                                                         stage_allocation);
     return true;
   }
 
@@ -752,15 +745,13 @@ bool ExternalVkImageBacking::WritePixelsWithCallback(
   EndAccessInternal(false /* readonly */,
                     std::move(end_access_semaphore_handle));
 
-  auto* fence_helper =
-      context_state_->vk_context_provider()->GetDeviceQueue()->GetFenceHelper();
-  fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
+  fence_helper()->EnqueueVulkanObjectCleanupForSubmittedWork(
       std::move(command_buffer));
   begin_access_semaphores.emplace_back(end_access_semaphore);
-  fence_helper->EnqueueSemaphoresCleanupForSubmittedWork(
+  fence_helper()->EnqueueSemaphoresCleanupForSubmittedWork(
       begin_access_semaphores);
-  fence_helper->EnqueueBufferCleanupForSubmittedWork(stage_buffer,
-                                                     stage_allocation);
+  fence_helper()->EnqueueBufferCleanupForSubmittedWork(stage_buffer,
+                                                       stage_allocation);
   return true;
 }
 

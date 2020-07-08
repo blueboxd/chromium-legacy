@@ -19,6 +19,45 @@
 #include "url/origin.h"
 
 namespace variations {
+namespace {
+
+// Returns a ResourceRequest created from the given values.
+network::ResourceRequest CreateResourceRequest(
+    const std::string& request_initiator_url,
+    bool is_main_frame,
+    bool has_trusted_params,
+    const std::string& isolation_info_top_frame_origin_url,
+    const std::string& isolation_info_frame_origin_url) {
+  network::ResourceRequest request;
+  if (request_initiator_url.empty())
+    return request;
+
+  request.request_initiator = url::Origin::Create(GURL(request_initiator_url));
+  request.is_main_frame = is_main_frame;
+  if (!has_trusted_params)
+    return request;
+
+  request.trusted_params = network::ResourceRequest::TrustedParams();
+  if (isolation_info_top_frame_origin_url.empty())
+    return request;
+
+  request.trusted_params->isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RedirectMode::kUpdateNothing,
+      url::Origin::Create(GURL(isolation_info_top_frame_origin_url)),
+      url::Origin::Create(GURL(isolation_info_frame_origin_url)),
+      net::SiteForCookies());
+  return request;
+}
+
+// Wraps AppendVariationsHeaderWithCustomValue().
+void AppendVariationsHeader(const GURL& destination,
+                            Owner owner,
+                            network::ResourceRequest* request) {
+  AppendVariationsHeaderWithCustomValue(destination, InIncognito::kNo,
+                                        "Header contents.", owner, request);
+}
+
+}  // namespace
 
 TEST(VariationsHttpHeadersTest, ShouldAppendVariationsHeader) {
   struct {
@@ -173,6 +212,7 @@ struct PopulateRequestContextHistogramData {
   bool has_trusted_params;
   const char* isolation_info_top_frame_origin_url;
   const char* isolation_info_frame_origin_url;
+  bool is_top_level_google_owned;
   int bucket;
   const char* name;
 };
@@ -193,24 +233,27 @@ class PopulateRequestContextHistogramTest
 
 const PopulateRequestContextHistogramData
     PopulateRequestContextHistogramTest::kCases[] = {
-        {"", false, false, "", "", 0, "kBrowserInitiated"},
-        {"chrome-search://local-ntp/", false, false, "", "", 1,
+        {"", false, false, "", "", false, 0, "kBrowserInitiated"},
+        {"chrome-search://local-ntp/", false, false, "", "", false, 1,
          "kInternalChromePageInitiated"},
-        {"https://www.youtube.com/", true, false, "", "", 2,
+        {"https://www.youtube.com/", true, false, "", "", false, 2,
          "kGooglePageInitiated"},
         {"https://docs.google.com/", false, true, "https://drive.google.com/",
-         "https://docs.google.com/", 3, "kGoogleSubFrameOnGooglePageInitiated"},
-        {"https://www.un.org/", false, false, "", "", 4,
-         "kNonGooglePageInitiatedFromRequestInitiator"},
-        {"https://foo.client-channel.google.com/", false, false, "", "", 5,
-         "kNoTrustedParams"},
-        {"https://foo.google.com/", false, true, "", "", 6, "kNoIsolationInfo"},
-        {"https://123acb.safeframe.googlesyndication.com/", false, true,
-         "https://www.lexico.com/", "", 7,
-         "kGoogleSubFrameOnNonGooglePageInitiated"},
-        {"https://foo.google.com/", false, true, "https://foo.google.com/",
-         "https://www.reddit.com/", 8,
-         "kNonGooglePageInitiatedFromFrameOrigin"},
+         "https://docs.google.com/", false, 3,
+         "kGoogleSubFrameOnGooglePageInitiated with TrustedParams"},
+        {"https://docs.google.com/", false, false, "", "", true, 3,
+         "kGoogleSubFrameOnGooglePageInitiated without TrustedParams"},
+        {"https://www.un.org/", false, false, "", "", false, 4,
+         "kNonGooglePageInitiated"},
+        // Bucket 5, kNoTrustedParams, is deprecated.
+        {"https://foo.google.com/", false, true, "", "", false, 6,
+         "kNoIsolationInfo"},
+        {"https://foo.gstatic.com/", false, true, "https://www.lexico.com/", "",
+         false, 7,
+         "kGoogleSubFrameOnNonGooglePageInitiated with TrustedParams"},
+        {"https://foo.gstatic.com/", false, false, "", "", false, 7,
+         "kGoogleSubFrameOnNonGooglePageInitiated without TrustedParams"},
+        // Bucket 8, kNonGooglePageInitiatedFromFrameOrigin, is deprecated.
 };
 
 TEST(VariationsHttpHeadersTest, PopulateUrlValidationResultHistograms) {
@@ -250,38 +293,29 @@ TEST(VariationsHttpHeadersTest, PopulateUrlValidationResultHistograms) {
               testing::ElementsAre(base::Bucket(4, 1), base::Bucket(5, 1)));
 }
 
+TEST(VariationsHttpHeadersTest, PopulateDomainOwnerHistogram) {
+  const GURL destination("https://fonts.googleapis.com/foo");
+  network::ResourceRequest request = CreateResourceRequest(
+      /*request_initiator_url=*/"https://docs.google.com/",
+      /*is_main_frame=*/false,
+      /*has_trusted_params=*/false,
+      /*isolation_info_top_frame_origin_url=*/"",
+      /*isolation_info_frame_origin_url=*/"");
+
+  base::HistogramTester tester;
+  AppendVariationsHeader(destination, Owner::kUnknownFromRenderer, &request);
+  AppendVariationsHeader(destination, Owner::kUnknown, &request);
+  AppendVariationsHeader(destination, Owner::kNotGoogle, &request);
+  AppendVariationsHeader(destination, Owner::kGoogle, &request);
+  EXPECT_THAT(tester.GetAllSamples("Variations.Headers.DomainOwner"),
+              testing::ElementsAre(base::Bucket(0, 1), base::Bucket(1, 1),
+                                   base::Bucket(2, 1), base::Bucket(3, 1)));
+}
+
 INSTANTIATE_TEST_SUITE_P(
     VariationsHttpHeadersTest,
     PopulateRequestContextHistogramTest,
     testing::ValuesIn(PopulateRequestContextHistogramTest::kCases));
-
-// Returns a ResourceRequest created from the given values.
-network::ResourceRequest CreateResourceRequest(
-    const std::string& request_initiator_url,
-    bool is_main_frame,
-    bool has_trusted_params,
-    const std::string& isolation_info_top_frame_origin_url,
-    const std::string& isolation_info_frame_origin_url) {
-  network::ResourceRequest request;
-  if (request_initiator_url.empty())
-    return request;
-
-  request.request_initiator = url::Origin::Create(GURL(request_initiator_url));
-  request.is_main_frame = is_main_frame;
-  if (!has_trusted_params)
-    return request;
-
-  request.trusted_params = network::ResourceRequest::TrustedParams();
-  if (isolation_info_top_frame_origin_url.empty())
-    return request;
-
-  request.trusted_params->isolation_info = net::IsolationInfo::Create(
-      net::IsolationInfo::RedirectMode::kUpdateNothing,
-      url::Origin::Create(GURL(isolation_info_top_frame_origin_url)),
-      url::Origin::Create(GURL(isolation_info_frame_origin_url)),
-      net::SiteForCookies());
-  return request;
-}
 
 TEST_P(PopulateRequestContextHistogramTest, PopulateRequestContextHistogram) {
   PopulateRequestContextHistogramData data = GetParam();
@@ -293,8 +327,11 @@ TEST_P(PopulateRequestContextHistogramTest, PopulateRequestContextHistogram) {
       data.isolation_info_frame_origin_url);
 
   base::HistogramTester tester;
-  AppendVariationsHeaderUnknownSignedIn(GURL("https://foo.google.com"),
-                                        variations::InIncognito::kNo, &request);
+  AppendVariationsHeaderWithCustomValue(
+      GURL("https://foo.google.com"), variations::InIncognito::kNo,
+      "Header contents.",
+      data.is_top_level_google_owned ? Owner::kGoogle : Owner::kNotGoogle,
+      &request);
 
   // Verify that the histogram has a single sample corresponding to the request
   // context category.

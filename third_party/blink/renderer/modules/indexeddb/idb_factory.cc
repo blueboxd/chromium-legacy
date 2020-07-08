@@ -80,15 +80,19 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
   }
 
   ~WebIDBGetDBNamesCallbacksImpl() override {
-    if (promise_resolver_) {
-      probe::AsyncTaskCanceled(
-          ExecutionContext::From(promise_resolver_->GetScriptState()),
-          &async_task_id_);
-      promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kUnknownError,
-          "An unexpected shutdown occured before the "
-          "databases() promise could be resolved"));
-    }
+    if (!promise_resolver_)
+      return;
+
+    auto* script_state = promise_resolver_->GetScriptState();
+    if (!script_state->ContextIsValid())
+      return;
+
+    probe::AsyncTaskCanceled(ExecutionContext::From(script_state),
+                             &async_task_id_);
+    promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kUnknownError,
+        "An unexpected shutdown occured before the "
+        "databases() promise could be resolved"));
   }
 
   void SetState(base::WeakPtr<WebIDBCursorImpl> cursor,

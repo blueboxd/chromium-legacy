@@ -110,7 +110,6 @@ void WaylandClientTestHelper::SetUpOnUIThread(base::WaitableEvent* event) {
   ash_test_helper_->SetUp();
 
   wm_helper_ = std::make_unique<WMHelperChromeOS>();
-  WMHelper::SetInstance(wm_helper_.get());
   display_ = std::make_unique<Display>(nullptr, nullptr, nullptr);
   wayland_server_ = exo::wayland::Server::Create(display_.get());
   DCHECK(wayland_server_);
@@ -122,7 +121,6 @@ void WaylandClientTestHelper::TearDownOnUIThread(base::WaitableEvent* event) {
   wayland_watcher_.reset();
   wayland_server_.reset();
   display_.reset();
-  WMHelper::SetInstance(nullptr);
   wm_helper_.reset();
 
   ash::Shell::Get()->session_controller()->NotifyChromeTerminating();

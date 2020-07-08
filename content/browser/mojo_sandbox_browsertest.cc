@@ -25,9 +25,9 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/test_service.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "sandbox/policy/sandbox.h"
+#include "sandbox/policy/switches.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/sandbox/sandbox.h"
-#include "services/service_manager/sandbox/switches.h"
 
 namespace content {
 namespace {
@@ -163,13 +163,13 @@ IN_PROC_BROWSER_TEST_F(MojoSandboxTest, SubprocessUnsafeSharedMemoryRegion) {
   EXPECT_TRUE(got_response);
 }
 
-// Test for service_manager::IsProcessSandboxed().
+// Test for sandbox::policy::IsProcessSandboxed().
 IN_PROC_BROWSER_TEST_F(MojoSandboxTest, IsProcessSandboxed) {
   StartProcess();
   mojo::Remote<mojom::TestService> test_service = BindTestService();
 
   // The browser should not be considered sandboxed.
-  EXPECT_FALSE(service_manager::Sandbox::IsProcessSandboxed());
+  EXPECT_FALSE(sandbox::policy::Sandbox::IsProcessSandboxed());
 
   base::Optional<bool> maybe_is_sandboxed;
   base::RunLoop run_loop;
@@ -186,12 +186,12 @@ IN_PROC_BROWSER_TEST_F(MojoSandboxTest, IsProcessSandboxed) {
 
 IN_PROC_BROWSER_TEST_F(MojoSandboxTest, NotIsProcessSandboxed) {
   StartProcess(base::BindOnce([](UtilityProcessHost* host) {
-    host->SetSandboxType(service_manager::SandboxType::kNoSandbox);
+    host->SetSandboxType(sandbox::policy::SandboxType::kNoSandbox);
   }));
   mojo::Remote<mojom::TestService> test_service = BindTestService();
 
   // The browser should not be considered sandboxed.
-  EXPECT_FALSE(service_manager::Sandbox::IsProcessSandboxed());
+  EXPECT_FALSE(sandbox::policy::Sandbox::IsProcessSandboxed());
 
   base::Optional<bool> maybe_is_sandboxed;
   base::RunLoop run_loop;
@@ -212,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(MojoSandboxTest, NotIsProcessSandboxed) {
   // get passed down to the browser and all child processes. In that case,
   // IsProcessSandboxed() will report true, per the API.
   bool no_sandbox = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      service_manager::switches::kNoSandbox);
+      sandbox::policy::switches::kNoSandbox);
   EXPECT_EQ(no_sandbox, maybe_is_sandboxed.value());
 #endif
 }

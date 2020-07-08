@@ -113,10 +113,10 @@ NOINLINE void FatalGpuProcessLaunchFailureOnBackground() {
 #endif
 
 #if defined(OS_WIN)
-int GetGpuBlacklistHistogramValueWin(gpu::GpuFeatureStatus status) {
+int GetGpuBlocklistHistogramValueWin(gpu::GpuFeatureStatus status) {
   // The enums are defined as:
   //   Enabled VERSION_PRE_XP = 0,
-  //   Blacklisted VERSION_PRE_XP = 1,
+  //   Blocklisted VERSION_PRE_XP = 1,
   //   Disabled VERSION_PRE_XP = 2,
   //   Software VERSION_PRE_XP = 3,
   //   Unknown VERSION_PRE_XP = 4,
@@ -232,19 +232,19 @@ void EnableIntelShaderCache() {
 // Send UMA histograms about the enabled features and GPU properties.
 void UpdateFeatureStats(const gpu::GpuFeatureInfo& gpu_feature_info) {
   // Update applied entry stats.
-  std::unique_ptr<gpu::GpuBlocklist> blacklist(gpu::GpuBlocklist::Create());
-  DCHECK(blacklist.get() && blacklist->max_entry_id() > 0);
-  uint32_t max_entry_id = blacklist->max_entry_id();
+  std::unique_ptr<gpu::GpuBlocklist> blocklist(gpu::GpuBlocklist::Create());
+  DCHECK(blocklist.get() && blocklist->max_entry_id() > 0);
+  uint32_t max_entry_id = blocklist->max_entry_id();
   // Use entry 0 to capture the total number of times that data
   // was recorded in this histogram in order to have a convenient
-  // denominator to compute blacklist percentages for the rest of the
+  // denominator to compute blocklist percentages for the rest of the
   // entries.
   UMA_HISTOGRAM_EXACT_LINEAR("GPU.BlacklistTestResultsPerEntry", 0,
                              max_entry_id + 1);
-  if (!gpu_feature_info.applied_gpu_blacklist_entries.empty()) {
-    std::vector<uint32_t> entry_ids = blacklist->GetEntryIDsFromIndices(
-        gpu_feature_info.applied_gpu_blacklist_entries);
-    DCHECK_EQ(gpu_feature_info.applied_gpu_blacklist_entries.size(),
+  if (!gpu_feature_info.applied_gpu_blocklist_entries.empty()) {
+    std::vector<uint32_t> entry_ids = blocklist->GetEntryIDsFromIndices(
+        gpu_feature_info.applied_gpu_blocklist_entries);
+    DCHECK_EQ(gpu_feature_info.applied_gpu_blocklist_entries.size(),
               entry_ids.size());
     for (auto id : entry_ids) {
       DCHECK_GE(max_entry_id, id);
@@ -263,7 +263,7 @@ void UpdateFeatureStats(const gpu::GpuFeatureInfo& gpu_feature_info) {
       gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION,
       gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL,
       gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL2};
-  const std::string kGpuBlacklistFeatureHistogramNames[] = {
+  const std::string kGpuBlocklistFeatureHistogramNames[] = {
       "GPU.BlacklistFeatureTestResults.Accelerated2dCanvas",
       "GPU.BlacklistFeatureTestResults.GpuCompositing",
       "GPU.BlacklistFeatureTestResults.GpuRasterization",
@@ -279,7 +279,7 @@ void UpdateFeatureStats(const gpu::GpuFeatureInfo& gpu_feature_info) {
       (command_line.HasSwitch(switches::kDisableWebGL) ||
        command_line.HasSwitch(switches::kDisableWebGL2))};
 #if defined(OS_WIN)
-  const std::string kGpuBlacklistFeatureHistogramNamesWin[] = {
+  const std::string kGpuBlocklistFeatureHistogramNamesWin[] = {
       "GPU.BlacklistFeatureTestResultsWindows2.Accelerated2dCanvas",
       "GPU.BlacklistFeatureTestResultsWindows2.GpuCompositing",
       "GPU.BlacklistFeatureTestResultsWindows2.GpuRasterization",
@@ -297,17 +297,17 @@ void UpdateFeatureStats(const gpu::GpuFeatureInfo& gpu_feature_info) {
     if (value == gpu::kGpuFeatureStatusEnabled && kGpuFeatureUserFlags[i])
       value = gpu::kGpuFeatureStatusDisabled;
     base::HistogramBase* histogram_pointer = base::LinearHistogram::FactoryGet(
-        kGpuBlacklistFeatureHistogramNames[i], 1, gpu::kGpuFeatureStatusMax,
+        kGpuBlocklistFeatureHistogramNames[i], 1, gpu::kGpuFeatureStatusMax,
         gpu::kGpuFeatureStatusMax + 1,
         base::HistogramBase::kUmaTargetedHistogramFlag);
     histogram_pointer->Add(value);
 #if defined(OS_WIN)
-    int value_win = GetGpuBlacklistHistogramValueWin(value);
+    int value_win = GetGpuBlocklistHistogramValueWin(value);
     if (value_win >= 0) {
       int32_t max_sample = static_cast<int32_t>(base::win::Version::WIN_LAST) *
                            gpu::kGpuFeatureStatusMax;
       histogram_pointer = base::LinearHistogram::FactoryGet(
-          kGpuBlacklistFeatureHistogramNamesWin[i], 1, max_sample,
+          kGpuBlocklistFeatureHistogramNamesWin[i], 1, max_sample,
           max_sample + 1, base::HistogramBase::kUmaTargetedHistogramFlag);
       histogram_pointer->Add(value_win);
     }
@@ -594,7 +594,7 @@ void GpuDataManagerImplPrivate::BlocklistWebGLForTesting() {
   gpu::GpuFeatureInfo gpu_feature_info;
   for (int ii = 0; ii < gpu::NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
     if (ii == static_cast<int>(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL))
-      gpu_feature_info.status_values[ii] = gpu::kGpuFeatureStatusBlacklisted;
+      gpu_feature_info.status_values[ii] = gpu::kGpuFeatureStatusBlocklisted;
     else
       gpu_feature_info.status_values[ii] = gpu::kGpuFeatureStatusEnabled;
   }
@@ -1525,7 +1525,7 @@ GpuDataManagerImplPrivate::Are3DAPIsBlockedAtTime(const GURL& url,
   }
 
   // Look at the timestamps of the recent GPU resets to see if there are
-  // enough within the threshold which would cause us to blacklist all
+  // enough within the threshold which would cause us to blocklist all
   // domains. This doesn't need to be overly precise -- if time goes
   // backward due to a system clock adjustment, that's fine.
   //

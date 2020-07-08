@@ -26,9 +26,9 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaNotSatisfiedException;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
-import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -95,18 +95,15 @@ public class MultiWindowTestHelper {
      */
     public static ChromeTabbedActivity2 waitForSecondChromeTabbedActivity() {
         AtomicReference<ChromeTabbedActivity2> returnActivity = new AtomicReference<>();
-        CriteriaHelper.pollUiThread(new Criteria(
-                "Couldn't find instance of ChromeTabbedActivity2") {
-            @Override
-            public boolean isSatisfied() {
-                for (Activity runningActivity : ApplicationStatus.getRunningActivities()) {
-                    if (runningActivity.getClass().equals(ChromeTabbedActivity2.class)) {
-                        returnActivity.set((ChromeTabbedActivity2) runningActivity);
-                        return true;
-                    }
+        CriteriaHelper.pollUiThread(() -> {
+            for (Activity runningActivity : ApplicationStatus.getRunningActivities()) {
+                if (runningActivity.getClass().equals(ChromeTabbedActivity2.class)) {
+                    returnActivity.set((ChromeTabbedActivity2) runningActivity);
+                    return;
                 }
-                return false;
             }
+            throw new CriteriaNotSatisfiedException(
+                    "Couldn't find instance of ChromeTabbedActivity2");
         });
         waitUntilActivityResumed(returnActivity.get());
         return returnActivity.get();
@@ -145,34 +142,16 @@ public class MultiWindowTestHelper {
      */
     public static void waitForTabs(final String tag, final ChromeTabbedActivity activity,
             final int expectedTotalTabCount, final int expectedActiveTabId) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                int actualTotalTabCount = activity.getTabModelSelector().getTotalTabCount();
-                if (expectedTotalTabCount != actualTotalTabCount) {
-                    updateFailureReason(String.format((Locale) null,
-                            "%s: total tab count is wrong: %d (expected %d)", tag,
-                            actualTotalTabCount, expectedTotalTabCount));
-                    return false;
-                }
-                return true;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            int actualTotalTabCount = activity.getTabModelSelector().getTotalTabCount();
+            Criteria.checkThat(actualTotalTabCount, Matchers.is(expectedTotalTabCount));
         });
 
         if (expectedActiveTabId == Tab.INVALID_TAB_ID) return;
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                int actualActiveTabId = activity.getActivityTab().getId();
-                if (expectedActiveTabId != actualActiveTabId) {
-                    updateFailureReason(String.format((Locale) null,
-                            "%s: active tab ID is wrong: %d (expected %d)", tag, actualActiveTabId,
-                            expectedActiveTabId));
-                    return false;
-                }
-                return true;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            int actualActiveTabId = activity.getActivityTab().getId();
+            Criteria.checkThat(actualActiveTabId, Matchers.is(expectedActiveTabId));
         });
     }
 }

@@ -16,6 +16,7 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.LargeTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -107,12 +108,10 @@ public class TabModelMergingTest {
         MultiInstanceManager.onMultiInstanceModeStarted();
         mActivity2 = MultiWindowTestHelper.createSecondChromeTabbedActivity(
                 mActivity1, new LoadUrlParams(TEST_URL_7));
-        CriteriaHelper.pollUiThread(new Criteria("CTA2 tab state failed to initialize.") {
-            @Override
-            public boolean isSatisfied() {
-                return mActivity2.areTabModelsInitialized()
-                        && mActivity2.getTabModelSelector().isTabStateInitialized();
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mActivity2.areTabModelsInitialized(), Matchers.is(true));
+            Criteria.checkThat(
+                    mActivity2.getTabModelSelector().isTabStateInitialized(), Matchers.is(true));
         });
 
         // Create a few tabs in each activity.
@@ -207,11 +206,10 @@ public class TabModelMergingTest {
                 () -> activity.getMultiInstanceMangerForTesting().maybeMergeTabs());
 
         // Wait for all tabs to be merged into the activity.
-        CriteriaHelper.pollUiThread(new Criteria("Total tab count incorrect.") {
-            @Override
-            public boolean isSatisfied() {
-                return activity.getTabModelSelector().getTotalTabCount() == expectedNumberOfTabs;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("Total tab count incorrect.",
+                    activity.getTabModelSelector().getTotalTabCount(),
+                    Matchers.is(expectedNumberOfTabs));
         });
 
         assertTabModelMatchesExpectations(activity, expectedSelectedTabUrl, expectedTabUrls);
@@ -242,12 +240,10 @@ public class TabModelMergingTest {
                         .startActivitySync(intent);
 
         // Wait for the tab state to be initialized.
-        CriteriaHelper.pollUiThread(new Criteria("Tab state failed to initialize.") {
-            @Override
-            public boolean isSatisfied() {
-                return newActivity.areTabModelsInitialized()
-                        && newActivity.getTabModelSelector().isTabStateInitialized();
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(newActivity.areTabModelsInitialized(), Matchers.is(true));
+            Criteria.checkThat(
+                    newActivity.getTabModelSelector().isTabStateInitialized(), Matchers.is(true));
         });
 
         assertTabModelMatchesExpectations(newActivity, expectedSelectedTabUrl, expectedTabUrls);
@@ -333,22 +329,16 @@ public class TabModelMergingTest {
 
         // Destroy both activities.
         mActivity2.finishAndRemoveTask();
-        CriteriaHelper.pollUiThread(new Criteria(
-                "CTA2 should be destroyed, current state: " + mActivity2State) {
-            @Override
-            public boolean isSatisfied() {
-                return mActivity2State == ActivityState.DESTROYED;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("CTA2 should be destroyed", mActivity2State,
+                    Matchers.is(ActivityState.DESTROYED));
         });
 
         mActivity1.finishAndRemoveTask();
-        CriteriaHelper.pollUiThread(
-                new Criteria("CTA should be destroyed, current state: " + mActivity1State) {
-                    @Override
-                    public boolean isSatisfied() {
-                        return mActivity1State == ActivityState.DESTROYED;
-                    }
-                });
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("CTA should be destroyed", mActivity1State,
+                    Matchers.is(ActivityState.DESTROYED));
+        });
 
         // Start the new ChromeTabbedActivity.
         final ChromeTabbedActivity newActivity = startNewChromeTabbedActivityAndAssert(
@@ -382,13 +372,11 @@ public class TabModelMergingTest {
         // Destroy ChromeTabbedActivity2. ChromeTabbedActivity should have been destroyed during the
         // merge.
         mActivity2.finishAndRemoveTask();
-        CriteriaHelper.pollUiThread(new Criteria("Both activities should be destroyed."
-                + "CTA state: " + mActivity1State + " - CTA2State: " + mActivity2State) {
-            @Override
-            public boolean isSatisfied() {
-                return mActivity1State == ActivityState.DESTROYED
-                        && mActivity2State == ActivityState.DESTROYED;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("CTA should be destroyed", mActivity1State,
+                    Matchers.is(ActivityState.DESTROYED));
+            Criteria.checkThat("CTA2 should be destroyed", mActivity2State,
+                    Matchers.is(ActivityState.DESTROYED));
         });
 
         // Start the new ChromeTabbedActivity.
@@ -415,13 +403,11 @@ public class TabModelMergingTest {
         mActivity1.finish();
         mActivity2.finish();
 
-        CriteriaHelper.pollUiThread(new Criteria("Both activities should be destroyed."
-                + "CTA state: " + mActivity1State + " - CTA2State: " + mActivity2State) {
-            @Override
-            public boolean isSatisfied() {
-                return mActivity1State == ActivityState.DESTROYED
-                        && mActivity2State == ActivityState.DESTROYED;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("CTA should be destroyed", mActivity1State,
+                    Matchers.is(ActivityState.DESTROYED));
+            Criteria.checkThat("CTA2 should be destroyed", mActivity2State,
+                    Matchers.is(ActivityState.DESTROYED));
         });
 
         // Send a main intent to restart ChromeTabbedActivity2.
@@ -432,12 +418,10 @@ public class TabModelMergingTest {
 
         mNewCTA2CallbackHelper.waitForCallback(0);
 
-        CriteriaHelper.pollUiThread(new Criteria("CTA2 tab state failed to initialize.") {
-            @Override
-            public boolean isSatisfied() {
-                return mNewCTA2.areTabModelsInitialized()
-                        && mNewCTA2.getTabModelSelector().isTabStateInitialized();
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mNewCTA2.areTabModelsInitialized(), Matchers.is(true));
+            Criteria.checkThat(
+                    mNewCTA2.getTabModelSelector().isTabStateInitialized(), Matchers.is(true));
         });
 
         // Check that a merge occurred.
@@ -543,19 +527,15 @@ public class TabModelMergingTest {
             m2.getDisplayListenerForTesting().onDisplayRemoved(1);
         });
 
-        CriteriaHelper.pollUiThread(new Criteria("Total tab count incorrect.") {
-            @Override
-            public boolean isSatisfied() {
-                return mActivity1.getTabModelSelector().getTotalTabCount() == 7;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("Total tab count incorrect.",
+                    mActivity1.getTabModelSelector().getTotalTabCount(), Matchers.is(7));
         });
-        CriteriaHelper.pollUiThread(new Criteria("CTA2 should be destroyed"
-                + "CTA state: " + mActivity1State + " - CTA2State: " + mActivity2State) {
-            @Override
-            public boolean isSatisfied() {
-                return mActivity2State == ActivityState.DESTROYED
-                        && mActivity1State != ActivityState.DESTROYED;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("CTA should not be destroyed", mActivity1State,
+                    Matchers.not(ActivityState.DESTROYED));
+            Criteria.checkThat("CTA2 should be destroyed", mActivity2State,
+                    Matchers.is(ActivityState.DESTROYED));
         });
         mActivity1.finishAndRemoveTask();
         mActivity2.finishAndRemoveTask();
@@ -588,19 +568,15 @@ public class TabModelMergingTest {
             m2.getDisplayListenerForTesting().onDisplayChanged(1);
         });
 
-        CriteriaHelper.pollUiThread(new Criteria("Total tab count incorrect.") {
-            @Override
-            public boolean isSatisfied() {
-                return mActivity1.getTabModelSelector().getTotalTabCount() == 7;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("Total tab count incorrect.",
+                    mActivity1.getTabModelSelector().getTotalTabCount(), Matchers.is(7));
         });
-        CriteriaHelper.pollUiThread(new Criteria("CTA2 should be destroyed"
-                + "CTA state: " + mActivity1State + " - CTA2State: " + mActivity2State) {
-            @Override
-            public boolean isSatisfied() {
-                return mActivity2State == ActivityState.DESTROYED
-                        && mActivity1State != ActivityState.DESTROYED;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("CTA should not be destroyed", mActivity1State,
+                    Matchers.not(ActivityState.DESTROYED));
+            Criteria.checkThat("CTA2 should be destroyed", mActivity2State,
+                    Matchers.is(ActivityState.DESTROYED));
         });
         mActivity1.finishAndRemoveTask();
         mActivity2.finishAndRemoveTask();

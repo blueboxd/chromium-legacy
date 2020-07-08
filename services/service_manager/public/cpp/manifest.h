@@ -93,7 +93,8 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Manifest {
     // binary (for example Chromium, or any Content embedder), and the embedder
     // handles requests for new instances of the service via
     // ServiceProcess::Delegate::RunService(). The service will always run in
-    // a child process sandboxed according to SandboxType (see Options below).
+    // a child process sandboxed according to sandbox::policy::SandboxType (see
+    // Options below).
     kOutOfProcessBuiltin,
 
     // The service is launched out-of-process from a standalone service
@@ -102,7 +103,8 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Manifest {
     // "${service_name}.service.exe" on Windows).
     //
     // Proper sandboxing is currently not supported for standalone service
-    // executables, so SandboxType (see Options below) is ignored. This renders
+    // executables, so sandbox::policy::SandboxType (see Options below) is
+    // ignored. This renders
     // standalone service executables generally unsuitable for production
     // environments.
     kStandaloneExecutable,
@@ -151,7 +153,8 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Manifest {
     // if |execution_mode| is |kOutOfProcessBuiltin| or
     // |kStandaloneExecutable|.
     //
-    // TODO(https://crbug.com/915806): Make this field a SandboxType enum.
+    // TODO(https://crbug.com/915806): Make this field a
+    // sandbox::policy::SandboxType enum.
     std::string sandbox_type{"utility"};
   };
 

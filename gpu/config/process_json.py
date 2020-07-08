@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Generate data struct from GPU blacklist and driver bug workarounds json."""
+"""Generate data struct from GPU blocklist and driver bug workarounds json."""
 
 import json
 import os

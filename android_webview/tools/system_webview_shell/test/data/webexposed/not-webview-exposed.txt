@@ -156,6 +156,8 @@ interface XRRay
 interface XRTransientInputHitTestResult
 interface XRHitTestResult
 interface XRTransientInputHitTestSource
+interface XRAnchor
+interface XRAnchorSet
 
 [GLOBAL OBJECT]
     method openDatabase

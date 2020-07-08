@@ -118,9 +118,8 @@ class BluetoothSocketListenFunction : public BluetoothSocketAsyncApiFunction {
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID& uuid,
       std::unique_ptr<std::string> name,
-      const device::BluetoothAdapter::CreateServiceCallback& callback,
-      const device::BluetoothAdapter::CreateServiceErrorCallback&
-          error_callback) = 0;
+      device::BluetoothAdapter::CreateServiceCallback callback,
+      device::BluetoothAdapter::CreateServiceErrorCallback error_callback) = 0;
   virtual std::unique_ptr<base::ListValue> CreateResults() = 0;
 
   virtual int socket_id() const = 0;
@@ -153,13 +152,12 @@ class BluetoothSocketListenUsingRfcommFunction
   const std::string& uuid() const override;
 
   bool CreateParams() override;
-  void CreateService(
-      scoped_refptr<device::BluetoothAdapter> adapter,
-      const device::BluetoothUUID& uuid,
-      std::unique_ptr<std::string> name,
-      const device::BluetoothAdapter::CreateServiceCallback& callback,
-      const device::BluetoothAdapter::CreateServiceErrorCallback&
-          error_callback) override;
+  void CreateService(scoped_refptr<device::BluetoothAdapter> adapter,
+                     const device::BluetoothUUID& uuid,
+                     std::unique_ptr<std::string> name,
+                     device::BluetoothAdapter::CreateServiceCallback callback,
+                     device::BluetoothAdapter::CreateServiceErrorCallback
+                         error_callback) override;
   std::unique_ptr<base::ListValue> CreateResults() override;
 
  protected:
@@ -182,13 +180,12 @@ class BluetoothSocketListenUsingL2capFunction
   const std::string& uuid() const override;
 
   bool CreateParams() override;
-  void CreateService(
-      scoped_refptr<device::BluetoothAdapter> adapter,
-      const device::BluetoothUUID& uuid,
-      std::unique_ptr<std::string> name,
-      const device::BluetoothAdapter::CreateServiceCallback& callback,
-      const device::BluetoothAdapter::CreateServiceErrorCallback&
-          error_callback) override;
+  void CreateService(scoped_refptr<device::BluetoothAdapter> adapter,
+                     const device::BluetoothUUID& uuid,
+                     std::unique_ptr<std::string> name,
+                     device::BluetoothAdapter::CreateServiceCallback callback,
+                     device::BluetoothAdapter::CreateServiceErrorCallback
+                         error_callback) override;
   std::unique_ptr<base::ListValue> CreateResults() override;
 
  protected:

@@ -57,12 +57,17 @@ enum RequestContextCategory {
   kGooglePageInitiated = 2,
   kGoogleSubFrameOnGooglePageInitiated = 3,
   // Third-party contexts.
-  kNonGooglePageInitiatedFromRequestInitiator = 4,
-  kNoTrustedParams = 5,
+  kNonGooglePageInitiated = 4,
+  // Deprecated because the histogram Variations.Headers.DomainOwner stores
+  // more finely-grained information about this case.
+  // kNoTrustedParams = 5,
   kNoIsolationInfo = 6,
   kGoogleSubFrameOnNonGooglePageInitiated = 7,
-  kNonGooglePageInitiatedFromFrameOrigin = 8,
-  kMaxValue = kNonGooglePageInitiatedFromFrameOrigin,
+  // Deprecated because this category wasn't necessary in the first place. It's
+  // covered by kNonGooglePageInitiated.
+  // kNonGooglePageInitiatedFromFrameOrigin = 8,
+  // The next RequestContextCategory should use 9.
+  kMaxValue = kGoogleSubFrameOnNonGooglePageInitiated,
 };
 
 void LogRequestContextHistogram(RequestContextCategory result) {
@@ -102,10 +107,14 @@ bool ShouldAppendVariationsHeader(const GURL& url, const std::string& suffix) {
   return result == URLValidationResult::kShouldAppend;
 }
 
-// Returns true if the request is sent from a Google-associated property, i.e.
-// from a first-party context. This determination is made using the request
-// context derived from |resource_request|.
-bool IsFirstPartyContext(const network::ResourceRequest& resource_request) {
+// Returns true if the request is sent from a Google web property, i.e. from a
+// first-party context.
+//
+// The context is determined using |resource_request| and |owner|. The latter is
+// used for subframe-initiated subresource requests from the renderer. Note that
+// for these kinds of requests, ResourceRequest::TrustedParams is not populated.
+bool IsFirstPartyContext(const network::ResourceRequest& resource_request,
+                         Owner owner) {
   if (!resource_request.request_initiator) {
     // The absence of |request_initiator| means that the request was initiated
     // by the browser, e.g. a request from the browser to Autofill upon form
@@ -128,53 +137,55 @@ bool IsFirstPartyContext(const network::ResourceRequest& resource_request) {
       URLValidationResult::kShouldAppend) {
     // The request was initiated by a non-Google-associated page, e.g. a request
     // from https://www.bbc.com/.
-    LogRequestContextHistogram(kNonGooglePageInitiatedFromRequestInitiator);
+    LogRequestContextHistogram(kNonGooglePageInitiated);
     return false;
   }
   if (resource_request.is_main_frame) {
-    // The request is from a Google-associated page--not a sub-frame--e.g. a
+    // The request is from a Google-associated page--not a subframe--e.g. a
     // request from https://calendar.google.com/.
     LogRequestContextHistogram(kGooglePageInitiated);
     return true;
   }
-  if (!resource_request.trusted_params) {
-    LogRequestContextHistogram(kNoTrustedParams);
-    // Without TrustedParams, we cannot be certain that the request is from a
-    // first-party context.
-    return false;
-  }
+  // |is_main_frame| is false, so the request was initiated by a subframe, and
+  // we need to determine whether the top-level page in which the frame is
+  // embedded is a Google-owned web property.
+  //
+  // If TrustedParams is populated, then we can use it to determine the request
+  // context. If not, e.g. for subresource requests, we use |owner|.
+  if (resource_request.trusted_params) {
+    const net::IsolationInfo* isolation_info =
+        &resource_request.trusted_params->isolation_info;
 
-  const net::IsolationInfo* isolation_info =
-      &resource_request.trusted_params->isolation_info;
-  if (isolation_info->IsEmpty()) {
-    LogRequestContextHistogram(kNoIsolationInfo);
-    // Without IsolationInfo, we cannot be certain that the request is from a
-    // first-party context.
-    return false;
-  }
-  if (GetUrlValidationResult(isolation_info->top_frame_origin()->GetURL()) !=
-      URLValidationResult::kShouldAppend) {
-    // The request is from a Google-associated sub-frame on a
-    // non-Google-associated page, e.g. a request to DoubleClick from an ad's
-    // sub-frame on https://www.lexico.com/.
+    if (isolation_info->IsEmpty()) {
+      // TODO(crbug/1094303): If TrustedParams are present, it appears that
+      // IsolationInfo is too. Maybe deprecate kNoIsolationInfo if this bucket
+      // is never used.
+      LogRequestContextHistogram(kNoIsolationInfo);
+      // Without IsolationInfo, we cannot be certain that the request is from a
+      // first-party context.
+      return false;
+    }
+    if (GetUrlValidationResult(isolation_info->top_frame_origin()->GetURL()) ==
+        URLValidationResult::kShouldAppend) {
+      // The request is from a Google-associated subframe on a Google-associated
+      // page, e.g. a request from a Docs subframe on https://drive.google.com/.
+      LogRequestContextHistogram(kGoogleSubFrameOnGooglePageInitiated);
+      return true;
+    }
+    // The request is from a Google-associated subframe on a non-Google-
+    // associated page, e.g. a request to DoubleClick from an ad's subframe on
+    // https://www.lexico.com/.
     LogRequestContextHistogram(kGoogleSubFrameOnNonGooglePageInitiated);
     return false;
   }
-  if (GetUrlValidationResult(isolation_info->frame_origin()->GetURL()) !=
-      URLValidationResult::kShouldAppend) {
-    // The request was initiated by a non-Google-associated page, e.g. a request
-    // from https://www.bbc.com/.
-    //
-    // TODO(crbug/1094303): This case should be covered by checking the request
-    // initiator's URL. Maybe deprecate kNonGooglePageInitiatedFromFrameOrigin
-    // if this bucket is never used.
-    LogRequestContextHistogram(kNonGooglePageInitiatedFromFrameOrigin);
-    return false;
+  base::UmaHistogramEnumeration("Variations.Headers.DomainOwner", owner);
+
+  if (owner == Owner::kGoogle) {
+    LogRequestContextHistogram(kGoogleSubFrameOnGooglePageInitiated);
+    return true;
   }
-  // The request is from a Google-associated sub-frame on a Google-associated
-  // page, e.g. a request from a Docs sub-frame on https://drive.google.com/.
-  LogRequestContextHistogram(kGoogleSubFrameOnGooglePageInitiated);
-  return true;
+  LogRequestContextHistogram(kGoogleSubFrameOnNonGooglePageInitiated);
+  return false;
 }
 
 class VariationsHeaderHelper {
@@ -191,7 +202,9 @@ class VariationsHeaderHelper {
     variations_header_ = std::move(variations_header);
   }
 
-  bool AppendHeaderIfNeeded(const GURL& url, InIncognito incognito) {
+  bool AppendHeaderIfNeeded(const GURL& url,
+                            InIncognito incognito,
+                            Owner owner) {
     AppendOmniboxOnDeviceSuggestionsHeaderIfNeeded(url, resource_request_);
 
     // Note the criteria for attaching client experiment headers:
@@ -208,7 +221,7 @@ class VariationsHeaderHelper {
       return false;
 
     // TODO(crbug/1094303): Use the result to determine which IDs to include.
-    IsFirstPartyContext(*resource_request_);
+    IsFirstPartyContext(*resource_request_, owner);
 
     if (variations_header_.empty())
       return false;
@@ -238,22 +251,30 @@ bool AppendVariationsHeader(const GURL& url,
                             InIncognito incognito,
                             SignedIn signed_in,
                             network::ResourceRequest* request) {
+  // TODO(crbug.com/1094303): Consider passing the Owner if we can get it.
+  // However, we really only care about having the owner for requests initiated
+  // on the renderer side.
   return VariationsHeaderHelper(request, signed_in)
-      .AppendHeaderIfNeeded(url, incognito);
+      .AppendHeaderIfNeeded(url, incognito, Owner::kUnknown);
 }
 
 bool AppendVariationsHeaderWithCustomValue(const GURL& url,
                                            InIncognito incognito,
                                            const std::string& variations_header,
+                                           Owner owner,
                                            network::ResourceRequest* request) {
   return VariationsHeaderHelper(request, variations_header)
-      .AppendHeaderIfNeeded(url, incognito);
+      .AppendHeaderIfNeeded(url, incognito, owner);
 }
 
 bool AppendVariationsHeaderUnknownSignedIn(const GURL& url,
                                            InIncognito incognito,
                                            network::ResourceRequest* request) {
-  return VariationsHeaderHelper(request).AppendHeaderIfNeeded(url, incognito);
+  // TODO(crbug.com/1094303): Consider passing the Owner if we can get it.
+  // However, we really only care about having the owner for requests initiated
+  // on the renderer side.
+  return VariationsHeaderHelper(request).AppendHeaderIfNeeded(url, incognito,
+                                                              Owner::kUnknown);
 }
 
 void RemoveVariationsHeaderIfNeeded(

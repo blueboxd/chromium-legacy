@@ -146,6 +146,12 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
                               const policy::StatusCollector* collector,
                               const policy::SystemLogUploader* uploader,
                               Profile* profile) const;
+  // Virtual for testing
+  virtual bool IsUpdateRequiredEol() const;
+  // Adds device return instructions for a managed user as an update is required
+  // as per device policy but the device cannot be updated due to End of Life
+  // (Auto Update Expiration).
+  void AddUpdateRequiredEolInfo(base::Value* response) const;
 #endif  // defined(OS_CHROMEOS)
  private:
   void GetManagementStatus(Profile* profile, base::Value* status) const;

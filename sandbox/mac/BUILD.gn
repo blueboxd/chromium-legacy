@@ -75,6 +75,7 @@ test("sandbox_mac_unittests") {
     "mojom:test_interfaces",
     "//base",
     "//mojo/core/test:run_all_unittests",
+    "//sandbox/policy:tests",
     "//testing/gtest",
   ]
 }

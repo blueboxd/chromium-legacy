@@ -126,12 +126,7 @@ public class PermissionUpdateInfobarTest {
 
             ChromeTabUtils.closeCurrentTab(
                     InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
-            CriteriaHelper.pollUiThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return webContents.isDestroyed();
-                }
-            });
+            CriteriaHelper.pollUiThread(() -> webContents.isDestroyed());
 
             CriteriaHelper.pollUiThread(() -> {
                 Criteria.checkThat(mActivityTestRule.getActivity()

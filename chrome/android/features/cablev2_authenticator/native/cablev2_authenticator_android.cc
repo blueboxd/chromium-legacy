@@ -32,7 +32,7 @@
 
 // These "headers" actually contain several function definitions and thus can
 // only be included once across Chromium.
-#include "chrome/android/features/cablev2_authenticator/jni_headers/BLEHandler_jni.h"
+#include "chrome/android/features/cablev2_authenticator/jni_headers/CableAuthenticator_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
@@ -671,9 +671,9 @@ class CableInterface : public Client::Delegate {
   }
 
   void Start(JNIEnv* env,
-             const JavaParamRef<jobject>& ble_handler,
+             const JavaParamRef<jobject>& cable_authenticator,
              const JavaParamRef<jbyteArray>& state_bytes) {
-    ble_handler_.Reset(ble_handler);
+    cable_authenticator_.Reset(cable_authenticator);
     env_ = env;
 
     if (!ParseState(state_bytes)) {
@@ -692,7 +692,7 @@ class CableInterface : public Client::Delegate {
   }
 
   void Stop() {
-    ble_handler_.Reset();
+    cable_authenticator_.Reset();
     auth_state_.identity_key.reset();
     auth_state_.qr_advert.reset();
     auth_state_.qr_psk_gen_key.reset();
@@ -739,9 +739,10 @@ class CableInterface : public Client::Delegate {
                      &auth_state_.qr_advert.emplace());
   }
 
-  ScopedJavaLocalRef<jobjectArray> Write(uint64_t client_addr,
-                                         uint16_t mtu,
-                                         const JavaParamRef<jbyteArray>& data) {
+  ScopedJavaLocalRef<jobjectArray> OnBLEWrite(
+      uint64_t client_addr,
+      uint16_t mtu,
+      const JavaParamRef<jbyteArray>& data) {
     // First client to write to the fidoControlPoint characteristic becomes the
     // only permissible client for the lifetime of this instance. The Java side
     // filters writes from all other clients.
@@ -783,8 +784,8 @@ class CableInterface : public Client::Delegate {
                       base::span<const int> algorithms,
                       base::span<std::vector<uint8_t>> excluded_credential_ids,
                       bool resident_key_required) override {
-    Java_BLEHandler_makeCredential(
-        env_, ble_handler_, client->addr(),
+    Java_CableAuthenticator_makeCredential(
+        env_, cable_authenticator_, client->addr(),
         ConvertUTF8ToJavaString(env_, origin),
         ConvertUTF8ToJavaString(env_, rp_id), ToJavaByteArray(env_, challenge),
         // TODO: Pass full user entity once resident key support is added.
@@ -799,8 +800,8 @@ class CableInterface : public Client::Delegate {
       const std::string& rp_id,
       base::span<const uint8_t> challenge,
       base::span<std::vector<uint8_t>> allowed_credential_ids) override {
-    Java_BLEHandler_getAssertion(
-        env_, ble_handler_, client->addr(),
+    Java_CableAuthenticator_getAssertion(
+        env_, cable_authenticator_, client->addr(),
         ConvertUTF8ToJavaString(env_, origin),
         ConvertUTF8ToJavaString(env_, rp_id), ToJavaByteArray(env_, challenge),
         ToJavaArrayOfByteArray(env_, allowed_credential_ids));
@@ -859,8 +860,8 @@ class CableInterface : public Client::Delegate {
       return;
     }
 
-    Java_BLEHandler_sendNotification(
-        env_, ble_handler_, client_addr,
+    Java_CableAuthenticator_sendNotification(
+        env_, cable_authenticator_, client_addr,
         ToJavaArrayOfByteArray(env_, *response_fragments));
   }
 
@@ -911,8 +912,8 @@ class CableInterface : public Client::Delegate {
       return;
     }
 
-    Java_BLEHandler_sendNotification(
-        env_, ble_handler_, client_addr,
+    Java_CableAuthenticator_sendNotification(
+        env_, cable_authenticator_, client_addr,
         ToJavaArrayOfByteArray(env_, *response_fragments));
   }
 
@@ -942,8 +943,8 @@ class CableInterface : public Client::Delegate {
     out_nonce_and_eid->first = nonce;
     out_nonce_and_eid->second = eid;
 
-    Java_BLEHandler_sendBLEAdvert(env_, ble_handler_,
-                                  ToJavaByteArray(env_, eid));
+    Java_CableAuthenticator_sendBLEAdvert(env_, cable_authenticator_,
+                                          ToJavaByteArray(env_, eid));
   }
 
   bool ParseState(const JavaParamRef<jbyteArray>& state_bytes) {
@@ -999,7 +1000,8 @@ class CableInterface : public Client::Delegate {
         cbor::Writer::Write(cbor::Value(std::move(map)));
     CHECK(bytes.has_value());
 
-    Java_BLEHandler_setState(env_, ble_handler_, ToJavaByteArray(env_, *bytes));
+    Java_CableAuthenticator_setState(env_, cable_authenticator_,
+                                     ToJavaByteArray(env_, *bytes));
   }
 
   static bssl::UniquePtr<EC_KEY> P256KeyFromSeed(
@@ -1022,7 +1024,7 @@ class CableInterface : public Client::Delegate {
   }
 
   JNIEnv* env_ = nullptr;
-  base::android::ScopedJavaGlobalRef<jobject> ble_handler_;
+  base::android::ScopedJavaGlobalRef<jobject> cable_authenticator_;
   AuthenticatorState auth_state_;
   std::unique_ptr<Client> client_;
 };
@@ -1031,22 +1033,24 @@ class CableInterface : public Client::Delegate {
 
 // These functions are the entry points for BLEHandler.java calling into C++.
 
-static void JNI_BLEHandler_Start(JNIEnv* env,
-                                 const JavaParamRef<jobject>& ble_handler,
-                                 const JavaParamRef<jbyteArray>& state_bytes) {
-  CableInterface::GetInstance()->Start(env, ble_handler, state_bytes);
+static void JNI_CableAuthenticator_Start(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& cable_authenticator,
+    const JavaParamRef<jbyteArray>& state_bytes) {
+  CableInterface::GetInstance()->Start(env, cable_authenticator, state_bytes);
 }
 
-static void JNI_BLEHandler_Stop(JNIEnv* env) {
+static void JNI_CableAuthenticator_Stop(JNIEnv* env) {
   CableInterface::GetInstance()->Stop();
 }
 
-static void JNI_BLEHandler_OnQRScanned(JNIEnv* env,
-                                       const JavaParamRef<jstring>& jvalue) {
+static void JNI_CableAuthenticator_OnQRScanned(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& jvalue) {
   CableInterface::GetInstance()->OnQRScanned(ConvertJavaStringToUTF8(jvalue));
 }
 
-static ScopedJavaLocalRef<jobjectArray> JNI_BLEHandler_Write(
+static ScopedJavaLocalRef<jobjectArray> JNI_CableAuthenticator_OnBLEWrite(
     JNIEnv* env,
     jlong client,
     jint mtu,
@@ -1056,10 +1060,10 @@ static ScopedJavaLocalRef<jobjectArray> JNI_BLEHandler_Write(
   } else if (mtu > 0xffff) {
     mtu = 0xffff;
   }
-  return CableInterface::GetInstance()->Write(client, mtu, data);
+  return CableInterface::GetInstance()->OnBLEWrite(client, mtu, data);
 }
 
-static void JNI_BLEHandler_OnAuthenticatorAttestationResponse(
+static void JNI_CableAuthenticator_OnAuthenticatorAttestationResponse(
     JNIEnv* env,
     jlong client,
     jint ctap_status,
@@ -1077,7 +1081,7 @@ static void JNI_BLEHandler_OnAuthenticatorAttestationResponse(
       client, ctap_status, client_data_json, attestation_object);
 }
 
-static void JNI_BLEHandler_OnAuthenticatorAssertionResponse(
+static void JNI_CableAuthenticator_OnAuthenticatorAssertionResponse(
     JNIEnv* env,
     jlong client,
     jint ctap_status,

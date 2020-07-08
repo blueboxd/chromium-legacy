@@ -46,10 +46,6 @@ base::Optional<TransformationMatrix> XRTargetRaySpace::MojoFromNative() {
   }
 }
 
-base::Optional<TransformationMatrix> XRTargetRaySpace::NativeFromMojo() {
-  return XRSpace::TryInvert(MojoFromNative());
-}
-
 bool XRTargetRaySpace::EmulatedPosition() const {
   return input_source_->emulatedPosition();
 }

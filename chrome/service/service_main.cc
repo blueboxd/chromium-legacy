@@ -18,7 +18,7 @@
 int CloudPrintServiceProcessMain(
     const content::MainFunctionParams& parameters) {
   // This is a hack: the Cloud Print service doesn't actually set up a sandbox,
-  // but service_manager::SandboxTypeFromCommandLine(command_line)) doesn't know
+  // but sandbox::policy::SandboxTypeFromCommandLine(command_line)) doesn't know
   // about it, so it's considered sandboxed, causing shared memory hooks to be
   // installed above. The Cloud Print service *also* doesn't set
   // is_broker_process when initializing Mojo, so that bit also can't be used to

@@ -10,6 +10,7 @@ import android.widget.EditText;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -292,15 +293,11 @@ public class AutofillProfilesFragmentTest {
 
     private void waitForKeyboardStatus(
             final boolean keyboardVisible, final SettingsActivity activity) {
-        CriteriaHelper.pollUiThread(
-                new Criteria("Keyboard was not " + (keyboardVisible ? "shown." : "hidden.")) {
-                    @Override
-                    public boolean isSatisfied() {
-                        return keyboardVisible
-                                == KeyboardVisibilityDelegate.getInstance().isKeyboardShowing(
-                                        activity, activity.findViewById(android.R.id.content));
-                    }
-                });
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(KeyboardVisibilityDelegate.getInstance().isKeyboardShowing(
+                                       activity, activity.findViewById(android.R.id.content)),
+                    Matchers.is(keyboardVisible));
+        });
     }
 
     private void updatePreferencesAndWait(AutofillProfilesFragment profileFragment,

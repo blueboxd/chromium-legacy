@@ -24,6 +24,7 @@ import android.widget.TextView;
 import androidx.test.filters.SmallTest;
 
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -212,12 +213,9 @@ public class QueryTileSectionTest {
     }
 
     private void waitForSearchResultsPage() {
-        CriteriaHelper.pollUiThread(
-                new Criteria("The SRP was never loaded. " + mTab.getUrl().getValidSpecOrEmpty()) {
-                    @Override
-                    public boolean isSatisfied() {
-                        return mTab.getUrl().getValidSpecOrEmpty().contains(SEARCH_URL_PATTERN);
-                    }
-                });
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("The SRP was never loaded.", mTab.getUrl().getValidSpecOrEmpty(),
+                    Matchers.containsString(SEARCH_URL_PATTERN));
+        });
     }
 }

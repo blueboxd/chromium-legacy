@@ -27,8 +27,6 @@ class SharedImageRepresentationSkiaVkAndroid
       SharedImageManager* manager,
       SharedImageBackingAndroid* backing,
       scoped_refptr<SharedContextState> context_state,
-      std::unique_ptr<VulkanImage> vulkan_image,
-      base::ScopedFD init_read_fence,
       MemoryTypeTracker* tracker);
 
   ~SharedImageRepresentationSkiaVkAndroid() override;
@@ -44,6 +42,13 @@ class SharedImageRepresentationSkiaVkAndroid
       std::vector<GrBackendSemaphore>* end_semaphores) override;
   void EndReadAccess() override;
 
+ protected:
+  std::unique_ptr<VulkanImage> vulkan_image_;
+
+  // Initial read fence to wait on before reading |vulkan_image_|.
+  base::ScopedFD init_read_fence_;
+  sk_sp<SkPromiseImageTexture> promise_texture_;
+
  private:
   bool BeginAccess(bool readonly,
                    std::vector<GrBackendSemaphore>* begin_semaphores,
@@ -58,11 +63,6 @@ class SharedImageRepresentationSkiaVkAndroid
     return static_cast<SharedImageBackingAndroid*>(backing());
   }
 
-  std::unique_ptr<VulkanImage> vulkan_image_;
-
-  // Initial read fence to wait on before reading |vulkan_image_|.
-  base::ScopedFD init_read_fence_;
-  sk_sp<SkPromiseImageTexture> promise_texture_;
   RepresentationAccessMode mode_ = RepresentationAccessMode::kNone;
   int surface_msaa_count_ = 0;
   sk_sp<SkSurface> surface_;

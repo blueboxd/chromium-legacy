@@ -71,9 +71,9 @@
 //     strings which are disabled by the workaround.
 // 27. "pixel_shader_version" is a VERSION structure (defined below).
 // 28. "test_group" is an non-negative integer. If not specified, it defaults
-//     to 0, which is Chrome's blacklist. Any entries with a non-zero test_group
+//     to 0, which is Chrome's blocklist. Any entries with a non-zero test_group
 //     ID will be appended on top of the default group entries if Chrome runs
-//     with --gpu-blacklist-test-group=ID.
+//     with --gpu-blocklist-test-group=ID.
 // 29. "intel_gpu_series" is a list of gpu series names. Currently supported
 //     series include: "broadwater", "eaglelake", "ironlake", "sandybridge",
 //     "baytrail", "ivybridge", "haswell", "cherrytrail", "broadwell",

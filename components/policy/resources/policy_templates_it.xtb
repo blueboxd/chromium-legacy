@@ -2697,25 +2697,6 @@ Se questa norma non viene impostata viene utilizzata la riga di comando predefin
       Se questa norma viene impostata su True, <ph name="PRODUCT_OS_NAME" /> impedirà l'avvio del dispositivo in modalità sviluppatore. Il sistema non verrà avviato e verrà visualizzata una schermata di errore quando viene attivata la modalità sviluppatore.
 
       Se questa norma non è impostata o è impostata su False, la modalità sviluppatore continuerà a essere disponibile per il dispositivo.</translation>
-<translation id="5210980743015047124">Consente di configurare il requisito della versione minima consentita di <ph name="PRODUCT_NAME" />.
-
-      Quando questo criterio è impostato su un elenco non vuoto :
-      Se nessuna voce ha una "chrome_version" successiva alla versione corrente nel dispositivo, non saranno applicate limitazioni e le limitazioni esistenti verranno revocate.
-      Se almeno una voce ha una "chrome_version" successiva alla versione corrente, viene scelta la voce più forte la cui versione è la più vicina a quella corrente.
-      In caso di conflitto, la preferenza è assegnata a quella con il valore "warning_period" o "eol_warning_period" inferiore e il criterio viene applicato usando tale voce.
-
-      Se la versione corrente diventa obsoleta durante la sessione utente, sullo schermo appare una notifica che invita l'utente ad aggiornare il dispositivo entro il "warning_period" indicato in tale notifica.
-      Il "warning_period" parte dal momento in cui viene applicato il criterio.
-      Se il dispositivo non viene aggiornato prima che il "warning_period" scada, l'utente viene disconnesso dal sistema.
-      Se la versione corrente risulta obsoleta al momento dell'accesso con un "warning_period" scaduto, all'utente viene richiesto di aggiornare il dispositivo prima di accedere.
-
-      Se durante la sessione utente si raggiunge la fine del ciclo di vita, una notifica sullo schermo richiede all'utente di disconnettersi una volta che "l'eol_warning_period" scade.
-      Se il dispositivo raggiunge la fine del suo ciclo di vita al momento dell'accesso con un "eol_warning_period" scaduto, il dispositivo viene bloccato e nessun utente potrà accedervi.
-
-      Se questo criterio non è impostato o viene lasciato vuoto, non vengono applicate limitazioni, vengono revocate quelle esistenti e l'utente può accedere qualunque sia la versione di <ph name="PRODUCT_NAME" />.
-
-      Per "chrome_version" si intende sia una versione esatta, ad esempio "61.0.3163.120", sia un prefisso di versione, ad esempio "61.0".
-      I valori "warning_period" ed "eol_warning_period" sono facoltativi e specificati in un numero di giorni. Il valore predefinito è 0 giorni, a indicare nessun periodo d'attesa. </translation>
 <translation id="5212118847531454979">Consente di stabilire per quanto tempo, in millisecondi, gli utenti riceveranno notifiche relative alla necessità di riavviare <ph name="PRODUCT_NAME" /> o un dispositivo <ph name="PRODUCT_OS_NAME" /> per applicare un aggiornamento in sospeso.
 
       Durante questo periodo di tempo l'utente verrà informato più volte della necessità di un aggiornamento. Per quanto riguarda i dispositivi <ph name="PRODUCT_OS_NAME" />, nella barra delle applicazioni viene mostrata una notifica relativa al riavvio in base al criterio <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Per quanto riguarda i browser <ph name="PRODUCT_NAME" />, il menu delle app cambia per indicare che è necessario il riavvio una volta trascorso un terzo del periodo di notifica. Questa notifica cambia colore una volta trascorsi due terzi del periodo di notifica e lo cambia di nuovo al termine dell'intero periodo di notifica. Le notifiche aggiuntive attivate in base al criterio <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> seguono questa stessa pianificazione.
@@ -3047,20 +3028,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
           Questa norma viene applicata soltanto se la norma <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> è disattivata. In caso contrario, questa norma viene ignorata perché il ritardo di oscuramento dello schermo viene stabilito da un modello di machine learning.
 
           Il fattore di regolazione minimo deve essere 100%. Non sono consentiti valori che renderebbero il ritardo di oscuramento dello schermo in modalità di presentazione inferiore al ritardo di oscuramento dello schermo normale.</translation>
-<translation id="5590988845778885692">Consente di specificare le configurazioni dei server di stampa disponibili.
-
-      Questo criterio consente di specificare le configurazioni dei server di stampa esterni sui dispositivi <ph name="PRODUCT_OS_NAME" /> come file JSON.
-
-      Le dimensioni del file non devono superare 1 MB e il file deve contenere un array di record (oggetti JSON). Ogni record deve contenere i campi "id", "url" e "display_name" con stringhe come valori. I valori dei campi "id" devono essere univoci.
-
-      Il file viene scaricato e memorizzato nella cache. L'hash di crittografia viene utilizzato per verificare l'integrità del download. Il file viene scaricato nuovamente ogni volta che l'URL o l'hash cambiano.
-
-      Se il criterio è impostato su un valore corretto, i dispositivi provano a inviare query ai server di stampa specificati per le stampanti disponibili che utilizzano il protocollo IPP.
-
-      Se questo criterio non viene impostato o viene impostato un valore sbagliato, agli utenti non sarà visibile nessun server di stampa.
-
-      Attualmente, il numero di server di stampa è limitato a 16. Solo ai primi 16 server di stampa dell'elenco vengono inviate query.
-      </translation>
 <translation id="5592242031005200087">
       Se la norma è attivata, ciascuna delle origini denominate all'interno di un elenco separato da virgole verrà eseguita nel proprio processo. Ciò isolerà anche le origini indicate dai sottodomini, ad esempio specificando https://example.com/ si isolerà anche https://foo.example.com/, perché fa parte del sito https://example.com/.
       Se la norma è disattivata, non avverrà alcun isolamento esplicito dei siti e le prove sul campo di IsolateOriginsAndroid e SitePerProcessAndroid saranno disattivate. Gli utenti potranno ancora attivare IsolateOrigins manualmente, tramite flag da riga di comando.
@@ -3210,14 +3177,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Gli URL (ad esempio https://example.com/some/path) corrisponderanno soltanto ad appID U2F. I domini (come example.com) corrisponderanno soltanto a ID RP webauthn. Di conseguenza, per includere entrambe le API U2F e webauthn per un determinato sito, devono essere elencati sia il dominio sia l'URL appID.</translation>
 <translation id="5836064773277134605">Limita l'intervallo di porte UDP utilizzate dall'host di accesso remoto</translation>
 <translation id="585270638818921943">Impedisci all'utente di usare app Android di fonti non attendibili</translation>
-<translation id="5854749508571554984">Questo criterio viene applicato soltanto se il dispositivo ha raggiunto la fine del ciclo di vita e non rispetta la versione minima consentita di <ph name="PRODUCT_NAME" /> impostata tramite il criterio <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" />.
-
-      Se il criterio viene impostato su una stringa non vuota:
-      Se il tempo di avviso menzionato nel criterio <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> è scaduto, questo messaggio viene mostrato nella schermata di accesso quando il dispositivo è bloccato e nessun utente può eseguire l'accesso.
-      Se il tempo di avviso menzionato nel criterio <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> non è scaduto, questo messaggio viene mostrato nella pagina Impostazioni dopo che gli utenti avranno eseguito l'accesso.
-
-      Se il criterio non viene configurato o se viene lasciato vuoto, il messaggio predefinito di fine del ciclo di vita viene mostrato agli utenti in entrambi i casi citati.
-      Il messaggio di fine del ciclo di vita deve essere composto da un testo normale, senza alcuna formattazione. Non sono consentiti markup. </translation>
 <translation id="5855010364142818361">Questo criterio consente di gestire i parametri della riga di comando per il passaggio a Chrome da Internet Explorer.
 
       Se il componente aggiuntivo "Supporto dei browser precedenti" per Internet Explorer non è installato, questo criterio non viene applicato.
@@ -3862,7 +3821,6 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
       Se il criterio è impostato su <ph name="BR_UNDER_USER_CONTROL" />, agli utenti viene chiesto di utilizzare il backup e ripristino. Se gli utenti attivano il backup e ripristino, i dati delle app Android vengono caricati sui server di backup di Android e ripristinati durante la reinstallazione delle app.
 
       Dopo la configurazione iniziale, gli utenti possono attivare o disattivare il backup e ripristino.</translation>
-<translation id="6993687707842131236">Configura il messaggio di fine del ciclo di vita per il criterio MinimumChromeVersionEnforced</translation>
 <translation id="6994082778848658360">Consente di specificare in che modo è possibile usare l'hardware degli elementi di sicurezza su scheda per fornire l'autenticazione a due fattori, se compatibile con questa funzione. Il tasto di accensione del computer viene usato per rilevare la presenza fisica dell'utente.
 
        Se selezioni l'opzione "Disabilitata", non viene fornita l'autenticazione a due fattori.

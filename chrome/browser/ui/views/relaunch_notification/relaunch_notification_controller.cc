@@ -40,12 +40,14 @@ enum class RelaunchNotificationSetting {
 
 // Returns the policy setting, mapping out-of-range values to kChromeMenuOnly.
 RelaunchNotificationSetting ReadPreference() {
-  switch (g_browser_process->local_state()->GetInteger(
-      prefs::kRelaunchNotification)) {
-    case 1:
-      return RelaunchNotificationSetting::kRecommendedBubble;
-    case 2:
-      return RelaunchNotificationSetting::kRequiredDialog;
+  PrefService* local_state = g_browser_process->local_state();
+  if (local_state) {
+    switch (local_state->GetInteger(prefs::kRelaunchNotification)) {
+      case 1:
+        return RelaunchNotificationSetting::kRecommendedBubble;
+      case 2:
+        return RelaunchNotificationSetting::kRequiredDialog;
+    }
   }
   return RelaunchNotificationSetting::kChromeMenuOnly;
 }
@@ -59,8 +61,7 @@ RelaunchNotificationController::RelaunchNotificationController(
                                      base::DefaultTickClock::GetInstance()) {}
 
 RelaunchNotificationController::~RelaunchNotificationController() {
-  if (last_notification_style_ != NotificationStyle::kNone)
-    StopObservingUpgrades();
+  StopObservingUpgrades();
 }
 
 // static
@@ -86,10 +87,15 @@ RelaunchNotificationController::RelaunchNotificationController(
     // Synchronize the instance with the current state of the preference.
     HandleCurrentStyle();
   }
+  // Need to register with the UpgradeDetector right at the start to observe any
+  // calls to override the preference value controlling the notification style.
+  StartObservingUpgrades();
 }
 
 void RelaunchNotificationController::OnUpgradeRecommended() {
-  DCHECK_NE(last_notification_style_, NotificationStyle::kNone);
+  if (last_notification_style_ == NotificationStyle::kNone)
+    return;
+
   UpgradeDetector::UpgradeNotificationAnnoyanceLevel current_level =
       upgrade_detector_->upgrade_notification_stage();
   const base::Time current_high_deadline =
@@ -129,22 +135,34 @@ void RelaunchNotificationController::OnUpgradeRecommended() {
   last_high_deadline_ = current_high_deadline;
 }
 
+void RelaunchNotificationController::OnRelaunchOverriddenToRequired(
+    bool override) {
+  if (notification_type_required_override_ == override)
+    return;
+  notification_type_required_override_ = override;
+  HandleCurrentStyle();
+}
+
 void RelaunchNotificationController::HandleCurrentStyle() {
   NotificationStyle notification_style = NotificationStyle::kNone;
 
-  switch (ReadPreference()) {
-    case RelaunchNotificationSetting::kChromeMenuOnly:
-      DCHECK_EQ(notification_style, NotificationStyle::kNone);
-      break;
-    case RelaunchNotificationSetting::kRecommendedBubble:
-      notification_style = NotificationStyle::kRecommended;
-      break;
-    case RelaunchNotificationSetting::kRequiredDialog:
-      notification_style = NotificationStyle::kRequired;
-      break;
+  if (notification_type_required_override_) {
+    notification_style = NotificationStyle::kRequired;
+  } else {
+    switch (ReadPreference()) {
+      case RelaunchNotificationSetting::kChromeMenuOnly:
+        DCHECK_EQ(notification_style, NotificationStyle::kNone);
+        break;
+      case RelaunchNotificationSetting::kRecommendedBubble:
+        notification_style = NotificationStyle::kRecommended;
+        break;
+      case RelaunchNotificationSetting::kRequiredDialog:
+        notification_style = NotificationStyle::kRequired;
+        break;
+    }
   }
 
-  // Nothing to do if there has been no change in the preference.
+  // Nothing to do if there has been no change in the notification style.
   if (notification_style == last_notification_style_)
     return;
 
@@ -156,17 +174,10 @@ void RelaunchNotificationController::HandleCurrentStyle() {
   last_level_ = UpgradeDetector::UPGRADE_ANNOYANCE_NONE;
 
   if (notification_style == NotificationStyle::kNone) {
-    // Transition away from monitoring for upgrade events back to being dormant:
-    // there is no need since AppMenuIconController takes care of updating the
-    // Chrome menu as needed.
-    StopObservingUpgrades();
+    // AppMenuIconController takes care of updating the Chrome menu as needed.
     last_notification_style_ = notification_style;
     return;
   }
-
-  // Transitioning away from being dormant: observe the UpgradeDetector.
-  if (last_notification_style_ == NotificationStyle::kNone)
-    StartObservingUpgrades();
 
   last_notification_style_ = notification_style;
 

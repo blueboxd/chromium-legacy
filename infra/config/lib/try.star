@@ -295,6 +295,7 @@ def blink_mac_builder(*, name, **kwargs):
 def chromium_builder(*, name, **kwargs):
   return try_builder(
       name = name,
+      builderless = True,
       goma_backend = builders.goma.backend.RBE_PROD,
       mastername = 'tryserver.chromium',
       **kwargs
@@ -338,6 +339,7 @@ def chromium_codesearch_builder(*, name, os=None, **kwargs):
       executable = 'recipe:chromium_codesearch',
       mastername = 'tryserver.chromium.codesearch',
       goma_backend = builders.goma.backend.RBE_PROD,
+      execution_timeout = 9 * time.hour,
       os = os,
       **kwargs
   )

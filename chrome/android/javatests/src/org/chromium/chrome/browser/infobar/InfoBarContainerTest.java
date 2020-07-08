@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -324,12 +325,7 @@ public class InfoBarContainerTest {
 
         // A layout must occur to recalculate the transparent region.
         CriteriaHelper.pollUiThread(
-                new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return layoutCount.get() > 0;
-                    }
-                });
+                () -> Criteria.checkThat(layoutCount.get(), Matchers.greaterThan(0)));
 
         final Rect fullDisplayFrame = new Rect();
         final Rect fullDisplayFrameMinusContainer = new Rect();
@@ -363,12 +359,7 @@ public class InfoBarContainerTest {
 
         // A layout must occur to recalculate the transparent region.
         CriteriaHelper.pollUiThread(
-                new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return layoutCount.get() > 0;
-                    }
-                });
+                () -> Criteria.checkThat(layoutCount.get(), Matchers.greaterThan(0)));
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override

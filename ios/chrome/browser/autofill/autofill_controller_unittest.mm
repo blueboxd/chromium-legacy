@@ -29,10 +29,12 @@
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/password_manager/ios/unique_id_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/passwords/password_controller.h"
 #import "ios/chrome/browser/ui/autofill/chrome_autofill_client_ios.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_mediator.h"
 #include "ios/chrome/browser/ui/settings/personal_data_manager_finished_profile_tasks_waiter.h"
@@ -239,6 +241,8 @@ class AutofillControllerTest : public ChromeWebTest {
   // Retrieves accessory views according to form events.
   FormInputAccessoryMediator* accessory_mediator_;
 
+  PasswordController* passwordController_;
+
   DISALLOW_COPY_AND_ASSIGN(AutofillControllerTest);
 };
 
@@ -249,6 +253,12 @@ void AutofillControllerTest::SetUp() {
   // WebDataService; this is not initialized on a TestChromeBrowserState by
   // default.
   chrome_browser_state_->CreateWebDataService();
+
+  // Create a PasswordController instance that will handle set up for renderer
+  // ids.
+  UniqueIDTabHelper::CreateForWebState(web_state());
+  passwordController_ =
+      [[PasswordController alloc] initWithWebState:web_state()];
 
   autofill_agent_ = [[AutofillAgent alloc]
       initWithPrefService:chrome_browser_state_->GetPrefs()
@@ -320,18 +330,13 @@ bool AutofillControllerTest::WaitForFormFetched(
 bool AutofillControllerTest::LoadHtmlAndWaitForFormFetched(
     NSString* html,
     size_t expected_number_of_forms) {
-  LoadHtmlAndInitRendererIds(html);
+  ChromeWebTest::LoadHtml(html);
   web::WebFrame* main_frame =
       web_state()->GetWebFramesManager()->GetMainWebFrame();
   AutofillManager* autofill_manager =
       AutofillDriverIOS::FromWebStateAndWebFrame(web_state(), main_frame)
           ->autofill_manager();
   return WaitForFormFetched(autofill_manager, expected_number_of_forms);
-}
-
-void AutofillControllerTest::LoadHtmlAndInitRendererIds(NSString* html) {
-  ChromeWebTest::LoadHtml(html);
-  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
 }
 
 void AutofillControllerTest::ExpectMetric(const std::string& histogram_name,
@@ -452,11 +457,10 @@ TEST_F(AutofillControllerTest, ProfileSuggestions) {
 
 // Tests that the system is able to offer suggestions for an anonymous form when
 // there is another anonymous form on the page.
-// TODO(crbug.com/1101971): Reenable the test.
-TEST_F(AutofillControllerTest, DISABLED_ProfileSuggestionsTwoAnonymousForms) {
+TEST_F(AutofillControllerTest, ProfileSuggestionsTwoAnonymousForms) {
   SetUpForSuggestions(
       [NSString stringWithFormat:@"%@%@", kProfileFormHtml, kProfileFormHtml],
-      1);
+      2);
   ForceViewRendering(web_state()->GetView());
   ExecuteJavaScript(@"document.forms[0].name.focus()");
   WaitForSuggestionRetrieval(/*wait_for_trigger=*/YES);

@@ -19,21 +19,21 @@ namespace internal {
 namespace {
 
 const char* ProcessNameFromSandboxType(
-    service_manager::SandboxType sandbox_type) {
+    sandbox::policy::SandboxType sandbox_type) {
   switch (sandbox_type) {
-    case service_manager::SandboxType::kNoSandbox:
+    case sandbox::policy::SandboxType::kNoSandbox:
       return nullptr;
-    case service_manager::SandboxType::kWebContext:
+    case sandbox::policy::SandboxType::kWebContext:
       return "context";
-    case service_manager::SandboxType::kRenderer:
+    case sandbox::policy::SandboxType::kRenderer:
       return "renderer";
-    case service_manager::SandboxType::kUtility:
+    case sandbox::policy::SandboxType::kUtility:
       return "utility";
-    case service_manager::SandboxType::kGpu:
+    case sandbox::policy::SandboxType::kGpu:
       return "gpu";
-    case service_manager::SandboxType::kNetwork:
+    case sandbox::policy::SandboxType::kNetwork:
       return "network";
-    case service_manager::SandboxType::kVideoCapture:
+    case sandbox::policy::SandboxType::kVideoCapture:
       return "video-capture";
     default:
       NOTREACHED() << "Unknown sandbox_type.";
@@ -68,7 +68,7 @@ bool ChildProcessLauncherHelper::TerminateProcess(const base::Process& process,
 void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
   DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
 
-  sandbox_policy_ = std::make_unique<service_manager::SandboxPolicyFuchsia>(
+  sandbox_policy_ = std::make_unique<sandbox::policy::SandboxPolicyFuchsia>(
       delegate_->GetSandboxType());
 }
 

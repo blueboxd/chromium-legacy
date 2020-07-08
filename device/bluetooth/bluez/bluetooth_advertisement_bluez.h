@@ -33,15 +33,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisementBlueZ
       scoped_refptr<BluetoothAdapterBlueZ> adapter);
 
   // BluetoothAdvertisement overrides:
-  void Unregister(const SuccessCallback& success_callback,
-                  const ErrorCallback& error_callback) override;
+  void Unregister(SuccessCallback success_callback,
+                  ErrorCallback error_callback) override;
 
   // bluez::BluetoothLEAdvertisementServiceProvider::Delegate overrides:
   void Released() override;
 
-  void Register(const base::Closure& success_callback,
-                const device::BluetoothAdapter::AdvertisementErrorCallback&
-                    error_callback);
+  void Register(
+      SuccessCallback success_callback,
+      device::BluetoothAdapter::AdvertisementErrorCallback error_callback);
 
   // Used from tests to be able to trigger events on the fake advertisement
   // provider.

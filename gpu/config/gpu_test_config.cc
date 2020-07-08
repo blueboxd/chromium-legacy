@@ -331,7 +331,7 @@ bool GPUTestBotConfig::CurrentConfigMatches(
 }
 
 // static
-bool GPUTestBotConfig::GpuBlacklistedOnBot() {
+bool GPUTestBotConfig::GpuBlocklistedOnBot() {
   return false;
 }
 

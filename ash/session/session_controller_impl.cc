@@ -403,7 +403,7 @@ void SessionControllerImpl::NotifyChromeTerminating() {
 }
 
 void SessionControllerImpl::SetSessionLengthLimit(base::TimeDelta length_limit,
-                                                  base::TimeTicks start_time) {
+                                                  base::Time start_time) {
   session_length_limit_ = length_limit;
   session_start_time_ = start_time;
   for (auto& observer : observers_)

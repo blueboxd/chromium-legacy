@@ -109,7 +109,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/network_isolation_key.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/cookie_inclusion_status.h"
+#include "net/cookies/cookie_access_result.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_auth_cache.h"
 #include "net/http/http_transaction_factory.h"
@@ -319,8 +319,8 @@ class RemoveCookieTester {
         Origin1(), "A=1", base::Time::Now(), base::nullopt /* server_time */);
     cookie_manager_->SetCanonicalCookie(
         *cookie, Origin1(), net::CookieOptions::MakeAllInclusive(),
-        base::BindLambdaForTesting([&](net::CookieInclusionStatus result) {
-          EXPECT_TRUE(result.IsInclude());
+        base::BindLambdaForTesting([&](net::CookieAccessResult result) {
+          EXPECT_TRUE(result.status.IsInclude());
           run_loop.Quit();
         }));
     run_loop.Run();

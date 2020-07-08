@@ -305,11 +305,8 @@ public class AddToHomescreenTest {
         addShortcutToTab(mTab, "", true);
 
         // Make sure that the splash screen image was downloaded.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return dataStorageFactory.mSplashImage != null;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(dataStorageFactory.mSplashImage, Matchers.notNullValue());
         });
 
         // Test that bitmap sizes match expectations.
@@ -353,11 +350,9 @@ public class AddToHomescreenTest {
 
         // Make sure that the shortcut was added.
         if (expectAdded) {
-            CriteriaHelper.pollUiThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return mShortcutHelperDelegate.mRequestedShortcutIntent != null;
-                }
+            CriteriaHelper.pollUiThread(() -> {
+                Criteria.checkThat(
+                        mShortcutHelperDelegate.mRequestedShortcutIntent, Matchers.notNullValue());
             });
         }
     }

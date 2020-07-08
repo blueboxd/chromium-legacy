@@ -61,10 +61,12 @@
       'linux-official': 'official_optimize_goma',
       'mac-archive-rel': 'release_bot_mac_strip_minimal_symbols',
       'mac-archive-dbg': 'debug_bot',
+      'win32-official': 'x86_official_optimize_goma',
       'win32-archive-rel': 'release_bot_x86_minimal_symbols_enable_archive_compression',
       'win32-archive-dbg': 'debug_bot_x86',
       'win-archive-rel': 'release_bot_minimal_symbols_enable_archive_compression',
       'win-archive-dbg': 'debug_bot',
+      'win-official': 'official_optimize_goma',
     },
 
     'chromium.android': {
@@ -477,7 +479,7 @@
     },
 
     'chromium.mac': {
-      'Mac Builder': 'gpu_tests_release_bot_minimal_symbols',
+      'Mac Builder': 'gpu_tests_release_bot_minimal_symbols_no_nacl',
       'Mac Builder (dbg)': 'gpu_tests_debug_bot',
       'ios-device': 'ios_device_release_rbe_compile_only',
       'ios-simulator': 'ios_simulator_debug_static_rbe_bot',
@@ -692,7 +694,9 @@
     'tryserver.chromium': {
       'android-official': 'android_official_optimize_goma_trybot',
       'fuchsia-official': 'fuchsia_official_optimize_goma_trybot',
-      'linux-official': 'official_optimize_goma_trybot'
+      'linux-official': 'official_optimize_goma_trybot',
+      'win-official': 'official_optimize_goma_trybot',
+      'win32-official': 'x86_official_optimize_goma_trybot',
     },
 
     'tryserver.chromium.android': {
@@ -2330,6 +2334,14 @@
 
     'win32_arm64_release_bot': [
       'arm64', 'disable_nacl', 'minimal_symbols', 'release_bot',
+    ],
+
+    'x86_official_optimize_goma': [
+      'official_optimize_goma', 'x86',
+    ],
+
+    'x86_official_optimize_goma_trybot': [
+      'official_optimize_goma_trybot', 'x86',
     ],
   },
 

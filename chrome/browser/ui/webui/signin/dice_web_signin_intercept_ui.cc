@@ -18,3 +18,10 @@ DiceWebSigninInterceptUI::DiceWebSigninInterceptUI(content::WebUI* web_ui)
 }
 
 DiceWebSigninInterceptUI::~DiceWebSigninInterceptUI() = default;
+
+void DiceWebSigninInterceptUI::Initialize(
+    base::OnceCallback<void(bool)> callback) {
+  // TODO(droger): add a handler and call the callback based on user action.
+}
+
+WEB_UI_CONTROLLER_TYPE_IMPL(DiceWebSigninInterceptUI)

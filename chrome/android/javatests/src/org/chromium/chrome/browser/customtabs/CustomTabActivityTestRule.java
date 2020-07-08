@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 
 import org.chromium.base.ApplicationStatus;
@@ -77,11 +78,8 @@ public class CustomTabActivityTestRule extends ChromeActivityTestRule<CustomTabA
     public void startCustomTabActivityWithIntent(Intent intent) {
         startActivityCompletely(intent);
         waitForActivityNativeInitializationComplete();
-        CriteriaHelper.pollUiThread(new Criteria("Tab never selected/initialized.") {
-            @Override
-            public boolean isSatisfied() {
-                return getActivity().getActivityTab() != null;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(getActivity().getActivityTab(), Matchers.notNullValue());
         });
         final Tab tab = getActivity().getActivityTab();
         final CallbackHelper pageLoadFinishedHelper = new CallbackHelper();

@@ -296,7 +296,7 @@ void RunBasicJsonPrefStoreTest(JsonPrefStore* pref_store,
   std::string output_contents;
   ASSERT_TRUE(base::ReadFileToString(output_file, &output_contents));
   EXPECT_EQ(kWriteGolden, output_contents);
-  ASSERT_TRUE(base::DeleteFile(output_file, false));
+  ASSERT_TRUE(base::DeleteFile(output_file));
 }
 
 TEST_P(JsonPrefStoreTest, Basic) {

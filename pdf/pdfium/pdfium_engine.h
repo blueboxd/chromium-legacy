@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -55,6 +56,8 @@ class PDFiumEngine : public PDFEngine,
                      public IFSDK_PAUSE {
  public:
   PDFiumEngine(PDFEngine::Client* client, bool enable_javascript);
+  PDFiumEngine(const PDFiumEngine&) = delete;
+  PDFiumEngine& operator=(const PDFiumEngine&) = delete;
   ~PDFiumEngine() override;
 
   // Replaces the normal DocumentLoader for testing. Must be called before
@@ -249,7 +252,7 @@ class PDFiumEngine : public PDFEngine,
   void GetPasswordAndLoad();
 
   // Called when the password has been retrieved.
-  void OnGetPasswordComplete(int32_t result, const pp::Var& password);
+  void OnGetPasswordComplete(const std::string& password);
 
   // Continues loading the document when the password has been retrieved, or if
   // there is no password. If there is no password, then |password| is empty.
@@ -644,7 +647,6 @@ class PDFiumEngine : public PDFEngine,
   std::string url_;
   std::string headers_;
   pp::CompletionCallbackFactory<PDFiumEngine> find_factory_;
-  pp::CompletionCallbackFactory<PDFiumEngine> password_factory_;
 
   // Set to true if the user is being prompted for their password. Will be set
   // to false after the user finishes getting their password.
@@ -830,7 +832,7 @@ class PDFiumEngine : public PDFEngine,
 
   PDFiumPrint print_;
 
-  DISALLOW_COPY_AND_ASSIGN(PDFiumEngine);
+  base::WeakPtrFactory<PDFiumEngine> weak_factory_{this};
 };
 
 }  // namespace chrome_pdf

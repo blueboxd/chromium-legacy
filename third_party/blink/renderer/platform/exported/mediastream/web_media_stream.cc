@@ -52,58 +52,6 @@ int WebMediaStream::UniqueId() const {
   return private_->UniqueId();
 }
 
-WebVector<WebMediaStreamTrack> WebMediaStream::AudioTracks() const {
-  size_t number_of_tracks = private_->NumberOfAudioComponents();
-  WebVector<WebMediaStreamTrack> result(number_of_tracks);
-  for (size_t i = 0; i < number_of_tracks; ++i)
-    result[i] = private_->AudioComponent(i);
-  return result;
-}
-
-WebVector<WebMediaStreamTrack> WebMediaStream::VideoTracks() const {
-  size_t number_of_tracks = private_->NumberOfVideoComponents();
-  WebVector<WebMediaStreamTrack> result(number_of_tracks);
-  for (size_t i = 0; i < number_of_tracks; ++i)
-    result[i] = private_->VideoComponent(i);
-  return result;
-}
-
-WebMediaStreamTrack WebMediaStream::GetAudioTrack(
-    const WebString& track_id) const {
-  size_t number_of_tracks = private_->NumberOfAudioComponents();
-  String id = track_id;
-  for (size_t i = 0; i < number_of_tracks; ++i) {
-    MediaStreamComponent* audio_component = private_->AudioComponent(i);
-    DCHECK(audio_component);
-    if (audio_component->Id() == id)
-      return WebMediaStreamTrack(private_->AudioComponent(i));
-  }
-  return WebMediaStreamTrack();
-}
-
-WebMediaStreamTrack WebMediaStream::GetVideoTrack(
-    const WebString& track_id) const {
-  size_t number_of_tracks = private_->NumberOfVideoComponents();
-  String id = track_id;
-  for (size_t i = 0; i < number_of_tracks; ++i) {
-    MediaStreamComponent* video_component = private_->VideoComponent(i);
-    DCHECK(video_component);
-    if (video_component->Id() == id)
-      return WebMediaStreamTrack(private_->VideoComponent(i));
-  }
-  return WebMediaStreamTrack();
-}
-
-void WebMediaStream::AddTrack(const WebMediaStreamTrack& track) {
-  DCHECK(!IsNull());
-  private_->AddRemoteTrack(track);
-}
-
-void WebMediaStream::RemoveTrack(const WebMediaStreamTrack& track) {
-  DCHECK(!IsNull());
-  private_->RemoveRemoteTrack(track);
-}
-
 void WebMediaStream::AddObserver(WebMediaStreamObserver* observer) {
   DCHECK(!IsNull());
   private_->AddObserver(observer);
@@ -122,28 +70,6 @@ WebMediaStream& WebMediaStream::operator=(
 
 WebMediaStream::operator MediaStreamDescriptor*() const {
   return private_.Get();
-}
-
-void WebMediaStream::Initialize(
-    const WebVector<WebMediaStreamTrack>& audio_tracks,
-    const WebVector<WebMediaStreamTrack>& video_tracks) {
-  Initialize(WTF::CreateCanonicalUUIDString(), audio_tracks, video_tracks);
-}
-
-void WebMediaStream::Initialize(
-    const WebString& label,
-    const WebVector<WebMediaStreamTrack>& audio_tracks,
-    const WebVector<WebMediaStreamTrack>& video_tracks) {
-  MediaStreamComponentVector audio, video;
-  for (size_t i = 0; i < audio_tracks.size(); ++i) {
-    MediaStreamComponent* component = audio_tracks[i];
-    audio.push_back(component);
-  }
-  for (size_t i = 0; i < video_tracks.size(); ++i) {
-    MediaStreamComponent* component = video_tracks[i];
-    video.push_back(component);
-  }
-  private_ = MakeGarbageCollected<MediaStreamDescriptor>(label, audio, video);
 }
 
 void WebMediaStream::Assign(const WebMediaStream& other) {

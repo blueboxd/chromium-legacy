@@ -27,14 +27,11 @@
 <translation id="1743802530341753419">سائٹس کو کسی آلے سے منسلک ہونے کی اجازت دینے سے پہلے پوچھیں (تجویز کردہ)</translation>
 <translation id="1887786770086287077">‏مقام کی رسائی اس آلہ کے لیے آف ہے۔ <ph name="BEGIN_LINK" />Android کی ترتیبات<ph name="END_LINK" />.میں اسے آن کریں۔</translation>
 <translation id="1919345977826869612">اشتہارات</translation>
-<translation id="1922076542920281912">‏Chrome کو اپنے مقام تک رسائی دینے کیلئے، <ph name="BEGIN_LINK" />Android کی ترتیبات<ph name="END_LINK" /> میں بھی مقام آن کریں۔</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
-<translation id="194341124344773587">‏<ph name="BEGIN_LINK" />Android ترتیبات<ph name="END_LINK" /> میں Chrome کیلئے اجازت آن کریں۔</translation>
 <translation id="1984937141057606926">اجازت یافتہ، سوائے فریق ثالث</translation>
 <translation id="1994173015038366702">‏سائٹ کا URL</translation>
 <translation id="2025115093177348061">افزودہ حقیقت</translation>
 <translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> پر واپس جانے کے لیے تھپتھپائیں</translation>
-<translation id="2041019821020695769">‏Chrome کو آپ کو اطلاعات بھیجنے کی سہولت دینے کیلئے، <ph name="BEGIN_LINK" />Android کی ترتیبات<ph name="END_LINK" /> میں بھی اطلاعات آن کریں۔</translation>
 <translation id="2079545284768500474">کالعدم کریں</translation>
 <translation id="2091887806945687916">آواز</translation>
 <translation id="2107397443965016585">سائٹس کو محفوظ مواد چلانے کی اجازت دینے سے پہلے پوچھیں (تجویز کردہ)</translation>
@@ -71,7 +68,6 @@
 <translation id="301521992641321250">خود کار طور پر مسدود ہو گيا</translation>
 <translation id="3115898365077584848">معلومات دکھائیں</translation>
 <translation id="3123473560110926937">بعض سائٹس پر مسدود ہے</translation>
-<translation id="3190152372525844641">‏<ph name="BEGIN_LINK" />Android ترتیبات<ph name="END_LINK" /> میں Chrome کیلئے اجازتیں آن کریں۔</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> اسٹور کردہ ڈیٹا</translation>
 <translation id="3227137524299004712">مائیکروفون</translation>
 <translation id="3277252321222022663">سائٹس کو سینسرز تک رسائی حاصل کرنے کی اجازت دیں (تجویز کردہ)</translation>
@@ -83,7 +79,6 @@
 <translation id="358794129225322306">سائٹ کو خودکار طور پر متعدد فائلیں ڈاؤن لوڈ کرنے کی اجازت دیں۔</translation>
 <translation id="3596414637720633074">پوشیدگی میں فریق ثالث کوکیز کو بلاک کریں</translation>
 <translation id="3600792891314830896">آواز چلانے والی سائٹس کی آواز بند کریں</translation>
-<translation id="3730075448226062617">‏Chrome کو اپنے مائیکروفون تک رسائی دینے کیلئے، <ph name="BEGIN_LINK" />Android کی ترتیبات<ph name="END_LINK" /> میں بھی مائیکروفون آن کریں۔</translation>
 <translation id="3744111561329211289">پس منظر کی مطابقت پذیری</translation>
 <translation id="3822502789641063741">سائٹ کا اسٹوریج صاف کریں؟</translation>
 <translation id="385051799172605136">پیچھے</translation>
@@ -112,7 +107,6 @@
 <translation id="4883854917563148705">نظم کردہ ترتیبات کو دوبارہ سیٹ نہیں کیا جا سکتا</translation>
 <translation id="4887024562049524730">سائٹس کو اپنا ورچوئل ریئلٹی آلہ اور ڈیٹا استعمال کرنے کی اجازت دینے سے پہلے پوچھیں (تجویز کردہ)</translation>
 <translation id="4962975101802056554">آلہ کے لیے سبھی اجازتوں کو کالعدم کریں</translation>
-<translation id="4964199952259983386">‏Chrome کو AR کا استعمال کرنے دینے کے لیے، <ph name="BEGIN_LINK" />Android ترتیبات<ph name="END_LINK" /> میں بھی کیمرا آن کریں۔</translation>
 <translation id="497421865427891073">آگے جائیں</translation>
 <translation id="4996978546172906250">اشتراک کریں بذریعہ</translation>
 <translation id="5039804452771397117">اجازت دیں</translation>
@@ -153,7 +147,6 @@
 <translation id="6177111841848151710">موجودہ سرچ انجن کیلئے مسدود</translation>
 <translation id="6181444274883918285">سائٹ کا استثناء شامل کریں</translation>
 <translation id="6192792657125177640">استثناء</translation>
-<translation id="6194112207524046168">‏Chrome کو اپنے کیمرے تک رسائی دینے کیلئے، <ph name="BEGIN_LINK" />Android کی ترتیبات<ph name="END_LINK" /> میں بھی کیمرا آن کریں۔</translation>
 <translation id="6196640612572343990">فریق ثالث کوکیز کو مسدود کریں</translation>
 <translation id="6206551242102657620">کنیکشن محفوظ ہے۔ سائٹ کی معلومات</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> اختیارات</translation>

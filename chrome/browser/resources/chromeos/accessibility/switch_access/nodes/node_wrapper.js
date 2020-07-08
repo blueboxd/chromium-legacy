@@ -148,25 +148,25 @@ class NodeWrapper extends SAChildNode {
       case SwitchAccessMenuAction.SCROLL_DOWN:
         ancestor = this.getScrollableAncestor_();
         if (ancestor.scrollable) {
-          ancestor.scrollDown(() => this.parent_.refresh());
+          ancestor.scrollDown();
         }
         return SAConstants.ActionResponse.RELOAD_MAIN_MENU;
       case SwitchAccessMenuAction.SCROLL_UP:
         ancestor = this.getScrollableAncestor_();
         if (ancestor.scrollable) {
-          ancestor.scrollUp(() => this.parent_.refresh());
+          ancestor.scrollUp();
         }
         return SAConstants.ActionResponse.RELOAD_MAIN_MENU;
       case SwitchAccessMenuAction.SCROLL_RIGHT:
         ancestor = this.getScrollableAncestor_();
         if (ancestor.scrollable) {
-          ancestor.scrollRight(() => this.parent_.refresh());
+          ancestor.scrollRight();
         }
         return SAConstants.ActionResponse.RELOAD_MAIN_MENU;
       case SwitchAccessMenuAction.SCROLL_LEFT:
         ancestor = this.getScrollableAncestor_();
         if (ancestor.scrollable) {
-          ancestor.scrollLeft(() => this.parent_.refresh());
+          ancestor.scrollLeft();
         }
         return SAConstants.ActionResponse.RELOAD_MAIN_MENU;
       default:
@@ -283,7 +283,8 @@ class RootNodeWrapper extends SARootNode {
       // If the underlying automation node has been invalidated, return false.
       return false;
     }
-    return !this.invalidated_ && super.isValidGroup();
+    return !this.invalidated_ &&
+        SwitchAccessPredicate.isVisible(this.baseNode_) && super.isValidGroup();
   }
 
   /** @override */
@@ -325,10 +326,12 @@ class RootNodeWrapper extends SARootNode {
     }
 
     // Set the new instance of that child to be the focused node.
-    for (const child of this.children) {
-      if (child.isEquivalentTo(focusedChild)) {
-        NavigationManager.forceFocusedNode(child);
-        return;
+    if (focusedChild) {
+      for (const child of this.children) {
+        if (child.isEquivalentTo(focusedChild)) {
+          NavigationManager.forceFocusedNode(child);
+          return;
+        }
       }
     }
 
@@ -370,14 +373,15 @@ class RootNodeWrapper extends SARootNode {
    */
   static findAndSetChildren(root, childConstructor) {
     const interestingChildren = RootNodeWrapper.getInterestingChildren(root);
+    const children = interestingChildren.map(childConstructor)
+                         .filter((child) => child.isValidAndVisible());
 
-    if (interestingChildren.length < 1) {
+    if (children.length < 1) {
       setTimeout(NavigationManager.moveToValidNode, 0);
       throw SwitchAccess.error(
           SAConstants.ErrorType.NO_CHILDREN,
           'Root node must have at least 1 interesting child.');
     }
-    const children = interestingChildren.map(childConstructor);
     children.push(new BackButtonNode(root));
     root.children = children;
   }

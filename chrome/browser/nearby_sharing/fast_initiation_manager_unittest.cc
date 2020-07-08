@@ -43,13 +43,12 @@ struct RegisterAdvertisementArgs {
   RegisterAdvertisementArgs(
       const device::BluetoothAdvertisement::UUIDList& service_uuids,
       const device::BluetoothAdvertisement::ServiceData& service_data,
-      const device::BluetoothAdapter::CreateAdvertisementCallback& callback,
-      const device::BluetoothAdapter::AdvertisementErrorCallback&
-          error_callback)
+      device::BluetoothAdapter::CreateAdvertisementCallback callback,
+      device::BluetoothAdapter::AdvertisementErrorCallback error_callback)
       : service_uuids(service_uuids),
         service_data(service_data),
-        callback(callback),
-        error_callback(error_callback) {}
+        callback(std::move(callback)),
+        error_callback(std::move(error_callback)) {}
 
   device::BluetoothAdvertisement::UUIDList service_uuids;
   device::BluetoothAdvertisement::ServiceData service_data;
@@ -68,18 +67,18 @@ class MockBluetoothAdapterWithAdvertisements
   void SetAdvertisingInterval(
       const base::TimeDelta& min,
       const base::TimeDelta& max,
-      const base::Closure& callback,
-      const AdvertisementErrorCallback& error_callback) override {
-    callback.Run();
+      base::OnceClosure callback,
+      AdvertisementErrorCallback error_callback) override {
+    std::move(callback).Run();
     OnSetAdvertisingInterval(min.InMilliseconds(), max.InMilliseconds());
   }
 #endif
 
   void RegisterAdvertisement(
       std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement_data,
-      const device::BluetoothAdapter::CreateAdvertisementCallback& callback,
-      const device::BluetoothAdapter::AdvertisementErrorCallback&
-          error_callback) override {
+      device::BluetoothAdapter::CreateAdvertisementCallback callback,
+      device::BluetoothAdapter::AdvertisementErrorCallback error_callback)
+      override {
     RegisterAdvertisementWithArgsStruct(new RegisterAdvertisementArgs(
         *advertisement_data->service_uuids(),
         *advertisement_data->service_data(), std::move(callback),
@@ -93,9 +92,9 @@ class MockBluetoothAdapterWithAdvertisements
 class FakeBluetoothAdvertisement : public device::BluetoothAdvertisement {
  public:
   // device::BluetoothAdvertisement:
-  void Unregister(const SuccessCallback& success_callback,
-                  const ErrorCallback& error_callback) override {
-    success_callback.Run();
+  void Unregister(SuccessCallback success_callback,
+                  ErrorCallback error_callback) override {
+    std::move(success_callback).Run();
   }
 
   bool HasObserver(Observer* observer) {
@@ -223,7 +222,7 @@ TEST_F(NearbySharingFastInitiationManagerTest,
        TestStartAdvertising_Success_TypeNotify) {
   StartAdvertising(FastInitiationManager::FastInitType::kNotify);
   auto fake_advertisement = base::MakeRefCounted<FakeBluetoothAdvertisement>();
-  register_args_->callback.Run(fake_advertisement);
+  std::move(register_args_->callback).Run(fake_advertisement);
 
   EXPECT_TRUE(called_on_start_advertising());
   EXPECT_FALSE(called_on_start_advertising_error());
@@ -240,7 +239,7 @@ TEST_F(NearbySharingFastInitiationManagerTest,
        TestStartAdvertising_Success_TypeSilent) {
   StartAdvertising(FastInitiationManager::FastInitType::kSilent);
   auto fake_advertisement = base::MakeRefCounted<FakeBluetoothAdvertisement>();
-  register_args_->callback.Run(fake_advertisement);
+  std::move(register_args_->callback).Run(fake_advertisement);
 
   EXPECT_TRUE(called_on_start_advertising());
   EXPECT_FALSE(called_on_start_advertising_error());
@@ -255,8 +254,9 @@ TEST_F(NearbySharingFastInitiationManagerTest,
 
 TEST_F(NearbySharingFastInitiationManagerTest, TestStartAdvertising_Error) {
   StartAdvertising(FastInitiationManager::FastInitType::kNotify);
-  register_args_->error_callback.Run(device::BluetoothAdvertisement::ErrorCode::
-                                         INVALID_ADVERTISEMENT_ERROR_CODE);
+  std::move(register_args_->error_callback)
+      .Run(device::BluetoothAdvertisement::ErrorCode::
+               INVALID_ADVERTISEMENT_ERROR_CODE);
 
   EXPECT_FALSE(called_on_start_advertising());
   EXPECT_TRUE(called_on_start_advertising_error());
@@ -271,7 +271,7 @@ TEST_F(NearbySharingFastInitiationManagerTest, TestStartAdvertising_Error) {
 TEST_F(NearbySharingFastInitiationManagerTest, TestStopAdvertising) {
   StartAdvertising(FastInitiationManager::FastInitType::kNotify);
   auto fake_advertisement = base::MakeRefCounted<FakeBluetoothAdvertisement>();
-  register_args_->callback.Run(fake_advertisement);
+  std::move(register_args_->callback).Run(fake_advertisement);
 
 #if defined(CHROME_OS)
   EXPECT_EQ(1u, set_advertising_interval_call_count());
@@ -294,7 +294,7 @@ TEST_F(NearbySharingFastInitiationManagerTest, TestStopAdvertising) {
 TEST_F(NearbySharingFastInitiationManagerTest, TestAdvertisementReleased) {
   StartAdvertising(FastInitiationManager::FastInitType::kNotify);
   auto fake_advertisement = base::MakeRefCounted<FakeBluetoothAdvertisement>();
-  register_args_->callback.Run(fake_advertisement);
+  std::move(register_args_->callback).Run(fake_advertisement);
 
   EXPECT_TRUE(fake_advertisement->HasObserver(fast_initiation_manager_.get()));
 

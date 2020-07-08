@@ -84,8 +84,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
  public:
   using ErrorCompletionCallback =
       base::Callback<void(const std::string& error_message)>;
+  using ErrorCompletionOnceCallback =
+      base::OnceCallback<void(const std::string& error_message)>;
   using ProfileRegisteredCallback =
-      base::Callback<void(BluetoothAdapterProfileBlueZ* profile)>;
+      base::OnceCallback<void(BluetoothAdapterProfileBlueZ* profile)>;
   using ServiceRecordCallback = base::Callback<void(uint32_t)>;
   using ServiceRecordErrorCallback =
       base::Callback<void(BluetoothServiceRecordBlueZ::ErrorCode)>;
@@ -123,31 +125,28 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
   std::unordered_map<device::BluetoothDevice*, device::BluetoothDevice::UUIDSet>
   RetrieveGattConnectedDevicesWithDiscoveryFilter(
       const device::BluetoothDiscoveryFilter& discovery_filter) override;
-  void CreateRfcommService(
-      const device::BluetoothUUID& uuid,
-      const ServiceOptions& options,
-      const CreateServiceCallback& callback,
-      const CreateServiceErrorCallback& error_callback) override;
-  void CreateL2capService(
-      const device::BluetoothUUID& uuid,
-      const ServiceOptions& options,
-      const CreateServiceCallback& callback,
-      const CreateServiceErrorCallback& error_callback) override;
+  void CreateRfcommService(const device::BluetoothUUID& uuid,
+                           const ServiceOptions& options,
+                           CreateServiceCallback callback,
+                           CreateServiceErrorCallback error_callback) override;
+  void CreateL2capService(const device::BluetoothUUID& uuid,
+                          const ServiceOptions& options,
+                          CreateServiceCallback callback,
+                          CreateServiceErrorCallback error_callback) override;
 
   void RegisterAdvertisement(
       std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement_data,
-      const CreateAdvertisementCallback& callback,
-      const AdvertisementErrorCallback& error_callback) override;
+      CreateAdvertisementCallback callback,
+      AdvertisementErrorCallback error_callback) override;
 
   void SetAdvertisingInterval(
       const base::TimeDelta& min,
       const base::TimeDelta& max,
-      const base::Closure& callback,
-      const AdvertisementErrorCallback& error_callback) override;
+      base::OnceClosure callback,
+      AdvertisementErrorCallback error_callback) override;
 
-  void ResetAdvertising(
-      const base::Closure& callback,
-      const AdvertisementErrorCallback& error_callback) override;
+  void ResetAdvertising(base::OnceClosure callback,
+                        AdvertisementErrorCallback error_callback) override;
 
   device::BluetoothLocalGattService* GetGattService(
       const std::string& identifier) const override;
@@ -213,8 +212,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
                   const dbus::ObjectPath& device_path,
                   const bluez::BluetoothProfileManagerClient::Options& options,
                   bluez::BluetoothProfileServiceProvider::Delegate* delegate,
-                  const ProfileRegisteredCallback& success_callback,
-                  const ErrorCompletionCallback& error_callback);
+                  ProfileRegisteredCallback success_callback,
+                  ErrorCompletionOnceCallback error_callback);
 
   // Release use of a profile by a device.
   void ReleaseProfile(const dbus::ObjectPath& device_path,
@@ -275,7 +274,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
 
   // Callback pair for the profile registration queue.
   using RegisterProfileCompletionPair =
-      std::pair<base::Closure, ErrorCompletionCallback>;
+      std::pair<base::OnceClosure, ErrorCompletionOnceCallback>;
 
   explicit BluetoothAdapterBlueZ();
   ~BluetoothAdapterBlueZ() override;
@@ -422,8 +421,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
       const device::BluetoothUUID& uuid,
       const dbus::ObjectPath& device_path,
       bluez::BluetoothProfileServiceProvider::Delegate* delegate,
-      const ProfileRegisteredCallback& success_callback,
-      const ErrorCompletionCallback& error_callback);
+      ProfileRegisteredCallback success_callback,
+      ErrorCompletionOnceCallback error_callback);
   void OnRegisterProfileError(const device::BluetoothUUID& uuid,
                               const std::string& error_name,
                               const std::string& error_message);

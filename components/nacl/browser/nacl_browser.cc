@@ -103,7 +103,7 @@ void WriteCache(const base::FilePath& filename, const base::Pickle* pickle) {
 }
 
 void RemoveCache(const base::FilePath& filename, base::OnceClosure callback) {
-  base::DeleteFile(filename, false);
+  base::DeleteFile(filename);
   content::GetIOThreadTaskRunner({})->PostTask(FROM_HERE, std::move(callback));
 }
 

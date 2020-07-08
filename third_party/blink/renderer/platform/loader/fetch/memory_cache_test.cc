@@ -138,7 +138,8 @@ TEST_F(MemoryCacheTest, VeryLargeResourceAccounting) {
   // are supported. This fails in tests. The solution is either to use an image
   // type, or disable the tests on Android.
   // crbug.com/850788.
-  FetchParameters params(ResourceRequest("data:image/jpeg,"));
+  FetchParameters params =
+      FetchParameters::CreateForTest(ResourceRequest("data:image/jpeg,"));
   FakeDecodedResource* cached_resource =
       FakeDecodedResource::Fetch(params, fetcher_, client);
   cached_resource->FakeEncodedSize(kResourceSize1);
@@ -198,14 +199,16 @@ static void TestResourcePruningLater(ResourceFetcher* fetcher,
   EXPECT_EQ(0u, GetMemoryCache()->size());
 
   const char kData[6] = "abcde";
-  FetchParameters params1(ResourceRequest("data:image/jpeg,resource1"));
+  FetchParameters params1 = FetchParameters::CreateForTest(
+      ResourceRequest("data:image/jpeg,resource1"));
   Resource* resource1 = FakeDecodedResource::Fetch(params1, fetcher, nullptr);
   GetMemoryCache()->Remove(resource1);
   if (!identifier1.IsEmpty())
     resource1->SetCacheIdentifier(identifier1);
   resource1->AppendData(kData, 3u);
   resource1->FinishForTest();
-  FetchParameters params2(ResourceRequest("data:image/jpeg,resource2"));
+  FetchParameters params2 = FetchParameters::CreateForTest(
+      ResourceRequest("data:image/jpeg,resource2"));
   Persistent<MockResourceClient> client =
       MakeGarbageCollected<MockResourceClient>();
   Resource* resource2 = FakeDecodedResource::Fetch(params2, fetcher, client);
@@ -256,9 +259,11 @@ static void TestClientRemoval(ResourceFetcher* fetcher,
       MakeGarbageCollected<MockResourceClient>();
   Persistent<MockResourceClient> client2 =
       MakeGarbageCollected<MockResourceClient>();
-  FetchParameters params1(ResourceRequest("data:image/jpeg,foo"));
+  FetchParameters params1 =
+      FetchParameters::CreateForTest(ResourceRequest("data:image/jpeg,foo"));
   Resource* resource1 = FakeDecodedResource::Fetch(params1, fetcher, client1);
-  FetchParameters params2(ResourceRequest("data:image/jpeg,bar"));
+  FetchParameters params2 =
+      FetchParameters::CreateForTest(ResourceRequest("data:image/jpeg,bar"));
   Resource* resource2 = FakeDecodedResource::Fetch(params2, fetcher, client2);
   resource1->AppendData(kData, 4u);
   resource2->AppendData(kData, 4u);

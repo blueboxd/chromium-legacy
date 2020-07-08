@@ -67,7 +67,7 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
             right.disable_biplanar_gpu_memory_buffers_for_video_frames);
   EXPECT_EQ(left.texture_target_exception_list,
             right.texture_target_exception_list);
-  EXPECT_EQ(left.ignore_gpu_blacklist, right.ignore_gpu_blacklist);
+  EXPECT_EQ(left.ignore_gpu_blocklist, right.ignore_gpu_blocklist);
   EXPECT_EQ(left.enable_oop_rasterization, right.enable_oop_rasterization);
   EXPECT_EQ(left.disable_oop_rasterization, right.disable_oop_rasterization);
   EXPECT_EQ(left.watchdog_starts_backgrounded,
@@ -166,7 +166,7 @@ TEST(GpuPreferencesTest, EncodeDecode) {
     GPU_PREFERENCES_FIELD(use_passthrough_cmd_decoder, true)
     GPU_PREFERENCES_FIELD(disable_biplanar_gpu_memory_buffers_for_video_frames,
                           true)
-    GPU_PREFERENCES_FIELD(ignore_gpu_blacklist, true)
+    GPU_PREFERENCES_FIELD(ignore_gpu_blocklist, true)
     GPU_PREFERENCES_FIELD(enable_oop_rasterization, true)
     GPU_PREFERENCES_FIELD(disable_oop_rasterization, true)
     GPU_PREFERENCES_FIELD(watchdog_starts_backgrounded, true)
@@ -263,7 +263,7 @@ TEST(GpuPreferencesTest, DISABLED_DecodePreferences) {
     PRINT_INT(texture_target_exception_list[i].usage);
     PRINT_INT(texture_target_exception_list[i].format);
   }
-  PRINT_BOOL(ignore_gpu_blacklist);
+  PRINT_BOOL(ignore_gpu_blocklist);
   PRINT_BOOL(enable_oop_rasterization);
   PRINT_BOOL(disable_oop_rasterization);
   PRINT_BOOL(watchdog_starts_backgrounded);

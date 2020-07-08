@@ -93,6 +93,9 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     // Wayland only: determines if the client must ignore the screen bounds when
     // calculating bounds of menu windows.
     bool ignore_screen_bounds_for_menus = false;
+
+    // If true, the platform shows and updates the drag image.
+    bool platform_shows_drag_image = true;
   };
 
   // Properties available in the host process after initialization.

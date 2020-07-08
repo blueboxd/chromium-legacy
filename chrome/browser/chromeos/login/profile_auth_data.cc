@@ -11,7 +11,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/cookie_inclusion_status.h"
+#include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -63,7 +63,7 @@ bool IsGAIACookie(const net::CanonicalCookie& cookie) {
 }
 
 void OnCookieSet(base::RepeatingClosure completion_callback,
-                 net::CookieInclusionStatus status) {
+                 net::CookieAccessResult result) {
   completion_callback.Run();
 }
 

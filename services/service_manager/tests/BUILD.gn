@@ -31,7 +31,6 @@ test("service_manager_unittests") {
     "//services/service_manager/public/mojom",
     "//services/service_manager/tests/connect",
     "//services/service_manager/tests/lifecycle",
-    "//services/service_manager/tests/sandbox",
     "//services/service_manager/tests/service_manager",
     "//services/service_manager/tests/shutdown",
     "//testing/gtest",
@@ -69,9 +68,9 @@ if (is_linux) {
     deps = [
       ":interfaces",
       "//base",
+      "//sandbox/policy",
       "//services/service_manager/public/cpp",
       "//services/service_manager/public/mojom",
-      "//services/service_manager/sandbox:sandbox",
     ]
   }
 }

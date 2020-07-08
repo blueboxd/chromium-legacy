@@ -4,16 +4,22 @@
 
 #include <stdint.h>
 
-#include <map>
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "content/browser/appcache/appcache_quota_client.h"
 #include "content/browser/appcache/mock_appcache_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "net/base/net_errors.h"
+#include "storage/browser/quota/quota_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -32,12 +38,7 @@ class AppCacheQuotaClientTest : public testing::Test {
   AppCacheQuotaClientTest()
       : kOriginA(url::Origin::Create(GURL("http://host"))),
         kOriginB(url::Origin::Create(GURL("http://host:8000"))),
-        kOriginOther(url::Origin::Create(GURL("http://other"))),
-        usage_(0),
-        delete_status_(blink::mojom::QuotaStatusCode::kUnknown),
-        num_get_origin_usage_completions_(0),
-        num_get_origins_completions_(0),
-        num_delete_origins_completions_(0) {}
+        kOriginOther(url::Origin::Create(GURL("http://other"))) {}
 
   int64_t GetOriginUsage(scoped_refptr<storage::QuotaClient> client,
                          const url::Origin& origin,
@@ -155,12 +156,13 @@ class AppCacheQuotaClientTest : public testing::Test {
   }
 
   BrowserTaskEnvironment task_environment_;
-  int64_t usage_;
+  int64_t usage_ = 0;
   std::set<url::Origin> origins_;
-  blink::mojom::QuotaStatusCode delete_status_;
-  int num_get_origin_usage_completions_;
-  int num_get_origins_completions_;
-  int num_delete_origins_completions_;
+  blink::mojom::QuotaStatusCode delete_status_ =
+      blink::mojom::QuotaStatusCode::kUnknown;
+  int num_get_origin_usage_completions_ = 0;
+  int num_get_origins_completions_ = 0;
+  int num_delete_origins_completions_ = 0;
   MockAppCacheService mock_service_;
   base::WeakPtrFactory<AppCacheQuotaClientTest> weak_factory_{this};
 };

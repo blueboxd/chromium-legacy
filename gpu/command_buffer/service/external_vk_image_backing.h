@@ -79,6 +79,12 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
   VulkanImplementation* vulkan_implementation() const {
     return context_state()->vk_context_provider()->GetVulkanImplementation();
   }
+  VulkanFenceHelper* fence_helper() const {
+    return context_state()
+        ->vk_context_provider()
+        ->GetDeviceQueue()
+        ->GetFenceHelper();
+  }
   VkDevice device() const {
     return context_state()
         ->vk_context_provider()

@@ -34,13 +34,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisementMac
 
   BluetoothAdvertisementMac(
       std::unique_ptr<BluetoothAdvertisement::UUIDList> service_uuids,
-      const BluetoothAdapter::CreateAdvertisementCallback& callback,
-      const BluetoothAdapter::AdvertisementErrorCallback& error_callback,
+      BluetoothAdapter::CreateAdvertisementCallback callback,
+      BluetoothAdapter::AdvertisementErrorCallback error_callback,
       BluetoothLowEnergyAdvertisementManagerMac* advertisement_manager);
 
   // BluetoothAdvertisement overrides:
-  void Unregister(const SuccessCallback& success_callback,
-                  const ErrorCallback& error_callback) override;
+  void Unregister(SuccessCallback success_callback,
+                  ErrorCallback error_callback) override;
 
   Status status() const { return status_; }
 
@@ -66,10 +66,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisementMac
   void OnAdvertisementRestarted();
 
   void InvokeSuccessCallback();
-
-  BluetoothAdapter::CreateAdvertisementCallback success_callback() {
-    return success_callback_;
-  }
 
   std::unique_ptr<BluetoothAdvertisement::UUIDList> service_uuids_;
   BluetoothAdapter::CreateAdvertisementCallback success_callback_;

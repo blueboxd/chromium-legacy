@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabService
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 
 /**
  * Handles initialization of the Paint Preview tab observers.
@@ -62,7 +63,8 @@ public class PaintPreviewHelper {
     public static boolean showPaintPreviewOnRestore(
             Tab tab, Runnable onShown, Runnable onDismissed) {
         if (!CachedFeatureFlags.isEnabled(ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP)
-                || sHasAttemptedToShowOnRestore) {
+                || sHasAttemptedToShowOnRestore
+                || ChromeAccessibilityUtil.get().isAccessibilityEnabled()) {
             return false;
         }
 

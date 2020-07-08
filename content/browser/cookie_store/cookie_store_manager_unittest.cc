@@ -21,8 +21,8 @@
 #include "content/public/test/test_browser_context.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "net/base/features.h"
+#include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_constants.h"
-#include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_util.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -287,11 +287,10 @@ class CookieStoreManagerTest
     cookie_manager_->SetCanonicalCookie(
         cookie, net::cookie_util::SimulatedCookieSource(cookie, "https"),
         net::CookieOptions::MakeAllInclusive(),
-        base::BindLambdaForTesting(
-            [&](net::CookieInclusionStatus service_status) {
-              success = service_status.IsInclude();
-              run_loop.Quit();
-            }));
+        base::BindLambdaForTesting([&](net::CookieAccessResult result) {
+          success = result.status.IsInclude();
+          run_loop.Quit();
+        }));
     run_loop.Run();
     return success;
   }

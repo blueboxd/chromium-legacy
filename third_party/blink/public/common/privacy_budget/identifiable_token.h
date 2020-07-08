@@ -223,6 +223,7 @@ class IdentifiableToken {
  private:
   friend class IdentifiabilityMetricBuilder;
   friend class IdentifiableSurface;
+  friend class IdentifiableTokenBuilder;
 
   // TODO(asanka): This should be const. Switch over once the incremental digest
   // functions land.

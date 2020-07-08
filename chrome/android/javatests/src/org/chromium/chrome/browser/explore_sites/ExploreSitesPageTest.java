@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -249,15 +250,10 @@ public class ExploreSitesPageTest {
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public static void waitForEspLoaded(final Tab tab) {
-        CriteriaHelper.pollUiThread(new Criteria("ESP never fully loaded") {
-            @Override
-            public boolean isSatisfied() {
-                if (tab.getNativePage() instanceof ExploreSitesPage) {
-                    return ((ExploreSitesPage) tab.getNativePage()).isLoadedForTests();
-                } else {
-                    return false;
-                }
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(tab.getNativePage(), Matchers.instanceOf(ExploreSitesPage.class));
+            Criteria.checkThat(
+                    ((ExploreSitesPage) tab.getNativePage()).isLoadedForTests(), Matchers.is(true));
         });
     }
 }

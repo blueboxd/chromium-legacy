@@ -40,7 +40,7 @@ class DisjointRangeLockManager : public ScopesLockManager {
   // Creates a lock manager with the given number of levels, the comparator for
   // leveldb keys, and the current task runner that we are running on. The task
   // runner will be used for the lock acquisition callbacks.
-  DisjointRangeLockManager(int level_count);
+  explicit DisjointRangeLockManager(int level_count);
   ~DisjointRangeLockManager() override;
 
   int64_t LocksHeldForTesting() const override;
@@ -53,7 +53,7 @@ class DisjointRangeLockManager : public ScopesLockManager {
   //   invariant).
   bool AcquireLocks(base::flat_set<ScopeLockRequest> lock_requests,
                     base::WeakPtr<ScopesLocksHolder> locks_holder,
-                    LocksAquiredCallback callback) override;
+                    LocksAcquiredCallback callback) override;
 
   // Remove the given lock range at the given level. The lock range must not be
   // in use. Use this if the lock will never be used again.
@@ -78,10 +78,11 @@ class DisjointRangeLockManager : public ScopesLockManager {
   // there can be multiple acquisitions of this lock, represented in
   // |acquired_count|. Also holds the pending requests for this lock.
   struct Lock {
-   public:
     Lock();
+    Lock(const Lock&) = delete;
     Lock(Lock&&) noexcept;
     ~Lock();
+    Lock& operator=(const Lock&) = delete;
     Lock& operator=(Lock&&) noexcept;
 
     bool CanBeAcquired(LockType lock_type) {
@@ -93,9 +94,6 @@ class DisjointRangeLockManager : public ScopesLockManager {
     int acquired_count = 0;
     LockType lock_mode = LockType::kShared;
     std::list<LockRequest> queue;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Lock);
   };
 
   using LockLevelMap = base::flat_map<ScopeLockRange, Lock>;

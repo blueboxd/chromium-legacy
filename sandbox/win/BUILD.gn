@@ -226,6 +226,7 @@ test("sbox_integration_tests") {
   deps = [
     ":sandbox",
     "//base/test:test_support",
+    "//sandbox/policy:tests",
     "//testing/gtest",
   ]
 

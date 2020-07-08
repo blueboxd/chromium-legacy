@@ -88,8 +88,11 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(vr::IVRSystem* vr_system,
   display_info->stage_parameters = mojom::VRStageParameters::New();
   vr::HmdMatrix34_t mat =
       vr_system->GetSeatedZeroPoseToStandingAbsoluteTrackingPose();
-  display_info->stage_parameters->standing_transform =
-      HmdMatrix34ToTransform(mat);
+  gfx::Transform floor_from_mojo = HmdMatrix34ToTransform(mat);
+  display_info->stage_parameters->mojo_from_floor = gfx::Transform();
+  bool succeeded = floor_from_mojo.GetInverse(
+      &display_info->stage_parameters->mojo_from_floor);
+  DCHECK(succeeded);
 
   vr::IVRChaperone* chaperone = vr::VRChaperone();
   if (chaperone) {

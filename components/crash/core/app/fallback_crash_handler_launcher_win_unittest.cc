@@ -94,7 +94,7 @@ MULTIPROCESS_TEST_MAIN(FallbackCrashHandlerLauncherMain) {
     DWORD error = GetLastError();
 
     dump.Close();
-    CHECK(base::DeleteFile(dump_path, false));
+    CHECK(base::DeleteFile(dump_path));
     CHECK(false) << "Unable to write dump, error " << error;
   }
 

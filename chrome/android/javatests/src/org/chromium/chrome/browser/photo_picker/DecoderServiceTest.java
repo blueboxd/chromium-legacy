@@ -29,7 +29,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.io.File;
@@ -100,12 +99,9 @@ public class DecoderServiceTest {
         intent.setAction(IDecoderService.class.getName());
         mContext.bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mBound;
-            }
-        }, DECODER_STARTUP_TIMEOUT_IN_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollUiThread(()
+                                            -> mBound,
+                DECODER_STARTUP_TIMEOUT_IN_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     private void decode(String filePath, FileDescriptor fd, int width,
@@ -121,12 +117,7 @@ public class DecoderServiceTest {
         bundle.putInt(DecoderService.KEY_WIDTH, width);
 
         mIRemoteService.decodeImage(bundle, callback);
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return callback.resolved();
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> callback.resolved());
     }
 
     @Test

@@ -454,13 +454,9 @@ public class ContextualSearchManagerTest {
      */
     public void waitForSearchTermResolutionToStart(
             final ContextualSearchFakeServer.FakeResolveSearch search) {
-        CriteriaHelper.pollInstrumentationThread(
-                new Criteria("Fake Search Term Resolution never started.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return search.didStartSearchTermResolution();
-                    }
-                }, TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            return search.didStartSearchTermResolution();
+        }, "Fake Search Term Resolution never started.", TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
     }
 
     /**
@@ -469,12 +465,9 @@ public class ContextualSearchManagerTest {
      */
     public void waitForSearchTermResolutionToFinish(
             final ContextualSearchFakeServer.FakeResolveSearch search) {
-        CriteriaHelper.pollInstrumentationThread(new Criteria("Fake Search was never ready.") {
-            @Override
-            public boolean isSatisfied() {
-                return search.didFinishSearchTermResolution();
-            }
-        }, TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            return search.didFinishSearchTermResolution();
+        }, "Fake Search was never ready.", TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
     }
 
     /**
@@ -483,17 +476,11 @@ public class ContextualSearchManagerTest {
      * load (as expected.  See crbug.com/682953 for background.
      */
     private void waitForNormalPriorityUrlLoaded() {
-        CriteriaHelper.pollInstrumentationThread(
-                new Criteria("Normal priority URL was not loaded: "
-                        + String.valueOf(mFakeServer.getLoadedUrl())) {
-                    @Override
-                    public boolean isSatisfied() {
-                        return mFakeServer.getLoadedUrl() != null
-                                && mFakeServer.getLoadedUrl().contains(
-                                           NORMAL_PRIORITY_SEARCH_ENDPOINT);
-                    }
-                },
-                TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(mFakeServer.getLoadedUrl(), Matchers.notNullValue());
+            Criteria.checkThat(mFakeServer.getLoadedUrl(),
+                    Matchers.containsString(NORMAL_PRIORITY_SEARCH_ENDPOINT));
+        }, TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
     }
 
     /**
@@ -913,14 +900,10 @@ public class ContextualSearchManagerTest {
      * @param state The {@link PanelState} to wait for.
      */
     private void waitForPanelToEnterState(final @PanelState int state) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                if (mPanel == null) return false;
-                updateFailureReason("Panel did not enter " + state + " state. "
-                        + "Instead, the current state is " + mPanel.getPanelState() + ".");
-                return mPanel.getPanelState() == state && !mPanel.isHeightAnimationRunning();
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mPanel, Matchers.notNullValue());
+            Criteria.checkThat(mPanel.getPanelState(), Matchers.is(state));
+            Criteria.checkThat(mPanel.isHeightAnimationRunning(), Matchers.is(false));
         });
     }
 
@@ -968,12 +951,8 @@ public class ContextualSearchManagerTest {
      * and a subsequent tap may think there's a current selection until it has been dissolved.
      */
     private void waitForSelectionEmpty() {
-        CriteriaHelper.pollUiThread(new Criteria("Selection never empty.") {
-            @Override
-            public boolean isSatisfied() {
-                return mSelectionController.isSelectionEmpty();
-            }
-        });
+        CriteriaHelper.pollUiThread(
+                () -> mSelectionController.isSelectionEmpty(), "Selection never empty.");
     }
 
     /**
@@ -1757,13 +1736,8 @@ public class ContextualSearchManagerTest {
         });
 
         // Give the panelState time to change
-        CriteriaHelper.pollInstrumentationThread(new Criteria(){
-            @Override
-            public boolean isSatisfied() {
-                @PanelState
-                int panelState = mPanel.getPanelState();
-                return panelState != PanelState.PEEKED;
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(mPanel.getPanelState(), Matchers.not(PanelState.PEEKED));
         });
 
         assertPanelClosedOrUndefined();
@@ -2914,13 +2888,13 @@ public class ContextualSearchManagerTest {
 
         // Wait for the translate caption to be shown in the Bar.
         int waitFactor = 5; // We need to wait an extra long time for the panel content to render.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                ContextualSearchBarControl barControl = mPanel.getSearchBarControl();
-                return barControl != null && barControl.getCaptionVisible()
-                        && !TextUtils.isEmpty(barControl.getCaptionText());
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            ContextualSearchBarControl barControl = mPanel.getSearchBarControl();
+            Criteria.checkThat(barControl, Matchers.notNullValue());
+            Criteria.checkThat(barControl.getCaptionVisible(), Matchers.is(true));
+            Criteria.checkThat(barControl.getCaptionText(), Matchers.notNullValue());
+            Criteria.checkThat(
+                    barControl.getCaptionText().toString(), Matchers.not(Matchers.isEmptyString()));
         }, 3000 * waitFactor, DEFAULT_POLLING_INTERVAL * waitFactor);
     }
 
@@ -3343,14 +3317,12 @@ public class ContextualSearchManagerTest {
         MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), R.id.find_in_page_id);
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                FindToolbar findToolbar =
-                        (FindToolbar) mActivityTestRule.getActivity().findViewById(
-                                R.id.find_toolbar);
-                return findToolbar != null && findToolbar.isShown() && !findToolbar.isAnimating();
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            FindToolbar findToolbar =
+                    (FindToolbar) mActivityTestRule.getActivity().findViewById(R.id.find_toolbar);
+            Criteria.checkThat(findToolbar, Matchers.notNullValue());
+            Criteria.checkThat(findToolbar.isShown(), Matchers.is(true));
+            Criteria.checkThat(findToolbar.isAnimating(), Matchers.is(false));
         });
 
         // Don't type anything to Find because that may cause scrolling which makes clicking in the
@@ -3450,14 +3422,11 @@ public class ContextualSearchManagerTest {
 
         // Trigger on a word and wait for the selection to be established.
         triggerNode(activity2.getActivityTab(), "search");
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                String selection = activity2.getContextualSearchManager()
-                                           .getSelectionController()
-                                           .getSelectedText();
-                return selection != null && selection.equals("Search");
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            String selection = activity2.getContextualSearchManager()
+                                       .getSelectionController()
+                                       .getSelectedText();
+            Criteria.checkThat(selection, Matchers.is("Search"));
         });
     }
 

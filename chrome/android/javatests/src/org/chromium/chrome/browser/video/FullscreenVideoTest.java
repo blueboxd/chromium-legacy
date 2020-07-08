@@ -10,6 +10,7 @@ import android.view.KeyEvent;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -127,31 +128,21 @@ public class FullscreenVideoTest {
         waitForVideoToEnterFullscreen();
 
         // It can take a while for the fullscreen video to register.
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return tab.getWebContents().getFullscreenVideoSize() != null;
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(
+                    tab.getWebContents().getFullscreenVideoSize(), Matchers.notNullValue());
         });
 
         Assert.assertEquals(expectedSize, tab.getWebContents().getFullscreenVideoSize());
     }
 
     void waitForVideoToEnterFullscreen() {
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mIsTabFullscreen;
-            }
-        }, TEST_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollInstrumentationThread(
+                () -> mIsTabFullscreen, TEST_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     void waitForTabToExitFullscreen() {
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return !mIsTabFullscreen;
-            }
-        }, TEST_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollInstrumentationThread(
+                () -> !mIsTabFullscreen, TEST_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 }

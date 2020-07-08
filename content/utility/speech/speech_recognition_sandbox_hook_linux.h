@@ -5,14 +5,14 @@
 #ifndef CONTENT_UTILITY_SPEECH_SPEECH_RECOGNITION_SANDBOX_HOOK_LINUX_H_
 #define CONTENT_UTILITY_SPEECH_SPEECH_RECOGNITION_SANDBOX_HOOK_LINUX_H_
 
-#include "services/service_manager/sandbox/linux/sandbox_linux.h"
+#include "sandbox/policy/linux/sandbox_linux.h"
 
 namespace speech {
 
 // Opens the libsoda.so binary and grants broker file permissions to the
 // necessary files required by the binary.
 bool SpeechRecognitionPreSandboxHook(
-    service_manager::SandboxLinux::Options options);
+    sandbox::policy::SandboxLinux::Options options);
 
 }  // namespace speech
 

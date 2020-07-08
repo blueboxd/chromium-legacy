@@ -103,13 +103,13 @@ NotificationTrampoline* NotificationTrampoline::g_notification_trampoline =
 #pragma mark Utility functions
 
 // Returns an empty closure if |callback| is null callback or binds the
-// callback to |status|.
+// callback to |result|.
 base::OnceClosure BindSetCookiesCallback(
     CookieStoreIOS::SetCookiesCallback* callback,
-    net::CookieInclusionStatus status) {
+    net::CookieAccessResult result) {
   base::OnceClosure set_callback;
   if (!callback->is_null()) {
-    set_callback = base::BindOnce(std::move(*callback), status);
+    set_callback = base::BindOnce(std::move(*callback), result);
   }
   return set_callback;
 }
@@ -248,8 +248,9 @@ void CookieStoreIOS::SetCanonicalCookieAsync(
 
   if (cookie->IsSecure() && !secure_source) {
     if (!callback.is_null())
-      std::move(callback).Run(net::CookieInclusionStatus(
-          net::CookieInclusionStatus::EXCLUDE_SECURE_ONLY));
+      std::move(callback).Run(
+          net::CookieAccessResult(net::CookieInclusionStatus(
+              net::CookieInclusionStatus::EXCLUDE_SECURE_ONLY)));
     return;
   }
 
@@ -258,13 +259,13 @@ void CookieStoreIOS::SetCanonicalCookieAsync(
   if (ns_cookie != nil) {
     system_store_->SetCookieAsync(
         ns_cookie, &cookie->CreationDate(),
-        BindSetCookiesCallback(&callback, net::CookieInclusionStatus()));
+        BindSetCookiesCallback(&callback, net::CookieAccessResult()));
     return;
   }
 
   if (!callback.is_null())
-    std::move(callback).Run(net::CookieInclusionStatus(
-        net::CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE));
+    std::move(callback).Run(net::CookieAccessResult(net::CookieInclusionStatus(
+        net::CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE)));
 }
 
 void CookieStoreIOS::GetCookieListWithOptionsAsync(
@@ -642,12 +643,12 @@ void CookieStoreIOS::UpdateCachesFromCookieMonster() {
 }
 
 void CookieStoreIOS::UpdateCachesAfterSet(SetCookiesCallback callback,
-                                          net::CookieInclusionStatus status) {
+                                          net::CookieAccessResult result) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (status.IsInclude())
+  if (result.status.IsInclude())
     UpdateCachesFromCookieMonster();
   if (!callback.is_null())
-    std::move(callback).Run(status);
+    std::move(callback).Run(result);
 }
 
 void CookieStoreIOS::UpdateCachesAfterDelete(DeleteCallback callback,

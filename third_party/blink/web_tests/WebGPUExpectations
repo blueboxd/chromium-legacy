@@ -58,7 +58,13 @@ wpt_internal/webgpu/cts.html?q=webgpu:api,operation,buffers,map_oom:mapReadAsync
 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,buffers,map_oom:mapWriteAsync: [ Failure Crash ]
 
 # Timeout on Windows/NVIDIA with backend validation
+# Dawn doesn't implement these limits yet
 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroupLayout:max_resources_per_stage,in_pipeline_layout:* [ Failure Timeout ]
+
+# https://github.com/gpuweb/cts/issues/230 these tests need to be updated and Dawn will fail once we implement proper limits
+wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroupLayout:max_resources_per_stage,in_bind_group_layout,* [ Failure ]
+wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroupLayout:number_of_dynamic_buffers_exceeds_the_maximum_value,* [ Failure ]
+wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createPipelineLayout:number_of_dynamic_buffers_exceeds_the_maximum_value:* [ Failure ]
 
 crbug.com/1069953 wpt_internal/webgpu/cts.html?q=webgpu:web-platform,copyImageBitmapToTexture:from_ImageData:* [ Failure ]
 
@@ -81,8 +87,6 @@ crbug.com/1087130 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation
 #
 # Windows (D3D12) specific
 #
-
-crbug.com/dawn/449 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createPipelineLayout:number_of_dynamic_buffers_exceeds_the_maximum_value:* [ Crash ]
 
 # Very flaky on Windows/Linux, especially (but not exclusively!) with backend validation
 crbug.com/1087130 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createView:* [ RetryOnFailure ]

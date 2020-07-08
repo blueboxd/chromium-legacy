@@ -400,6 +400,11 @@ enum class NamedPropertyDeleterResult {
   kDidNotDelete,     // Intercepted but failed to delete.
 };
 
+// Gets the url of the currently executing script. Returns empty string, if no
+// script is executing (e.g. during parsing of a meta tag in markup), or the
+// script context is otherwise unavailable.
+PLATFORM_EXPORT String GetCurrentScriptUrl(int max_stack_depth);
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_BINDING_H_

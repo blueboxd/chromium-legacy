@@ -893,7 +893,7 @@ TEST_P(WaylandBufferManagerTest, TestCommitBufferConditionsAckConfigured) {
     auto widget = temp_window->GetWidget();
 
     // Subsurface doesn't have an interface for sending configure events.
-    // Thus, WaylandSubsurface notifies the manager that the window is
+    // Thus, WaylandAuxiliaryWindow notifies the manager that the window is
     // activated upon creation of the subsurface. Skip calling Show() and call
     // later then.
     if (type != PlatformWindowType::kTooltip)

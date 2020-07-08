@@ -137,8 +137,8 @@ void BluetoothSocketWin::Connect(
 void BluetoothSocketWin::Listen(scoped_refptr<BluetoothAdapter> adapter,
                                 const BluetoothUUID& uuid,
                                 const BluetoothAdapter::ServiceOptions& options,
-                                const base::Closure& success_callback,
-                                const ErrorCompletionCallback& error_callback) {
+                                base::OnceClosure success_callback,
+                                ErrorCompletionOnceCallback error_callback) {
   DCHECK(ui_task_runner()->RunsTasksInCurrentSequence());
 
   adapter_ = adapter;
@@ -148,7 +148,7 @@ void BluetoothSocketWin::Listen(scoped_refptr<BluetoothAdapter> adapter,
   socket_thread()->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&BluetoothSocketWin::DoListen, this, uuid, rfcomm_channel,
-                     success_callback, error_callback));
+                     std::move(success_callback), std::move(error_callback)));
 }
 
 void BluetoothSocketWin::ResetData() {
@@ -227,11 +227,10 @@ void BluetoothSocketWin::DoConnect(
   success_callback.Run();
 }
 
-void BluetoothSocketWin::DoListen(
-    const BluetoothUUID& uuid,
-    int rfcomm_channel,
-    const base::Closure& success_callback,
-    const ErrorCompletionCallback& error_callback) {
+void BluetoothSocketWin::DoListen(const BluetoothUUID& uuid,
+                                  int rfcomm_channel,
+                                  base::OnceClosure success_callback,
+                                  ErrorCompletionOnceCallback error_callback) {
   DCHECK(socket_thread()->task_runner()->RunsTasksInCurrentSequence());
   DCHECK(!tcp_socket() && !service_reg_data_);
 
@@ -241,7 +240,7 @@ void BluetoothSocketWin::DoListen(
     LOG(WARNING) << "Failed to start service: "
                  << "Invalid RFCCOMM port " << rfcomm_channel
                  << ", uuid=" << uuid.value();
-    PostErrorCompletion(error_callback, kInvalidRfcommPort);
+    PostErrorCompletion(std::move(error_callback), kInvalidRfcommPort);
     return;
   }
 
@@ -249,7 +248,7 @@ void BluetoothSocketWin::DoListen(
   if (socket_fd == INVALID_SOCKET) {
     LOG(WARNING) << "Failed to start service: create socket, "
                  << "winsock err=" << WSAGetLastError();
-    PostErrorCompletion(error_callback, kFailedToCreateSocket);
+    PostErrorCompletion(std::move(error_callback), kFailedToCreateSocket);
     return;
   }
 
@@ -269,7 +268,7 @@ void BluetoothSocketWin::DoListen(
   if (bind(socket_fd, sock_addr, sock_addr_len) < 0) {
     LOG(WARNING) << "Failed to start service: create socket, "
                  << "winsock err=" << WSAGetLastError();
-    PostErrorCompletion(error_callback, kFailedToBindSocket);
+    PostErrorCompletion(std::move(error_callback), kFailedToBindSocket);
     return;
   }
 
@@ -277,7 +276,7 @@ void BluetoothSocketWin::DoListen(
   if (scoped_socket->Listen(kListenBacklog) < 0) {
     LOG(WARNING) << "Failed to start service: Listen"
                  << "winsock err=" << WSAGetLastError();
-    PostErrorCompletion(error_callback, kFailedToListenOnSocket);
+    PostErrorCompletion(std::move(error_callback), kFailedToListenOnSocket);
     return;
   }
 
@@ -287,7 +286,8 @@ void BluetoothSocketWin::DoListen(
   if (getsockname(socket_fd, sock_addr, &sock_addr_len)) {
     LOG(WARNING) << "Failed to start service: getsockname, "
                  << "winsock err=" << WSAGetLastError();
-    PostErrorCompletion(error_callback, kFailedToGetSockNameForSocket);
+    PostErrorCompletion(std::move(error_callback),
+                        kFailedToGetSockNameForSocket);
     return;
   }
   reg_data->address = sa;
@@ -305,7 +305,7 @@ void BluetoothSocketWin::DoListen(
           CLSIDFromString(base::as_wcstr(cannonical_uuid), &reg_data->uuid))) {
     LOG(WARNING) << "Failed to start service: "
                  << ", invalid uuid=" << cannonical_uuid;
-    PostErrorCompletion(error_callback, kInvalidUUID);
+    PostErrorCompletion(std::move(error_callback), kInvalidUUID);
     return;
   }
 
@@ -321,14 +321,14 @@ void BluetoothSocketWin::DoListen(
                     RNRSERVICE_REGISTER, 0) == SOCKET_ERROR) {
     LOG(WARNING) << "Failed to register profile: WSASetService"
                  << "winsock err=" << WSAGetLastError();
-    PostErrorCompletion(error_callback, kWsaSetServiceError);
+    PostErrorCompletion(std::move(error_callback), kWsaSetServiceError);
     return;
   }
 
   SetTCPSocket(std::move(scoped_socket));
   service_reg_data_ = std::move(reg_data);
 
-  PostSuccess(success_callback);
+  PostSuccess(std::move(success_callback));
 }
 
 void BluetoothSocketWin::DoAccept(

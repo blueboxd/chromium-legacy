@@ -1274,32 +1274,30 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
                                        cookie_scheme_callback1.MakeCallback());
   cookie_scheme_callback1.WaitUntilDone();
   EXPECT_TRUE(cookie_scheme_callback1.result());
-  ResultSavingCookieCallback<CookieInclusionStatus> set_cookie_callback;
+  ResultSavingCookieCallback<CookieAccessResult> set_cookie_callback;
   GURL ftp_url("ftp://subdomain.ftperiffic.com/page/");
   auto cookie =
       CanonicalCookie::Create(ftp_url, "A=B; max-age=3600", base::Time::Now(),
                               base::nullopt /* server_time */);
-  cookie_monster->SetCanonicalCookieAsync(
-      std::move(cookie), ftp_url, CookieOptions::MakeAllInclusive(),
-      base::BindOnce(&ResultSavingCookieCallback<CookieInclusionStatus>::Run,
-                     base::Unretained(&set_cookie_callback)));
+  cookie_monster->SetCanonicalCookieAsync(std::move(cookie), ftp_url,
+                                          CookieOptions::MakeAllInclusive(),
+                                          set_cookie_callback.MakeCallback());
   set_cookie_callback.WaitUntilDone();
-  EXPECT_TRUE(set_cookie_callback.result().IsInclude());
+  EXPECT_TRUE(set_cookie_callback.result().status.IsInclude());
 
   // Also insert a whole bunch of cookies to slow down the background loading of
   // all the cookies.
   for (int i = 0; i < 50; ++i) {
-    ResultSavingCookieCallback<CookieInclusionStatus> set_cookie_callback2;
+    ResultSavingCookieCallback<CookieAccessResult> set_cookie_callback2;
     GURL url(base::StringPrintf("http://example%d.com/", i));
     auto canonical_cookie =
         CanonicalCookie::Create(url, "A=B; max-age=3600", base::Time::Now(),
                                 base::nullopt /* server_time */);
     cookie_monster->SetCanonicalCookieAsync(
         std::move(canonical_cookie), url, CookieOptions::MakeAllInclusive(),
-        base::BindOnce(&ResultSavingCookieCallback<CookieInclusionStatus>::Run,
-                       base::Unretained(&set_cookie_callback2)));
+        set_cookie_callback2.MakeCallback());
     set_cookie_callback2.WaitUntilDone();
-    EXPECT_TRUE(set_cookie_callback2.result().IsInclude());
+    EXPECT_TRUE(set_cookie_callback2.result().status.IsInclude());
   }
 
   net::TestClosure flush_closure;
@@ -1344,17 +1342,16 @@ TEST_F(SQLitePersistentCookieStoreTest, OpsIfInitFailed) {
   std::unique_ptr<CookieMonster> cookie_monster =
       std::make_unique<CookieMonster>(store_.get(), nullptr);
 
-  ResultSavingCookieCallback<CookieInclusionStatus> set_cookie_callback;
+  ResultSavingCookieCallback<CookieAccessResult> set_cookie_callback;
   GURL url("http://www.example.com/");
   auto cookie =
       CanonicalCookie::Create(url, "A=B; max-age=3600", base::Time::Now(),
                               base::nullopt /* server_time */);
-  cookie_monster->SetCanonicalCookieAsync(
-      std::move(cookie), url, CookieOptions::MakeAllInclusive(),
-      base::BindOnce(&ResultSavingCookieCallback<CookieInclusionStatus>::Run,
-                     base::Unretained(&set_cookie_callback)));
+  cookie_monster->SetCanonicalCookieAsync(std::move(cookie), url,
+                                          CookieOptions::MakeAllInclusive(),
+                                          set_cookie_callback.MakeCallback());
   set_cookie_callback.WaitUntilDone();
-  EXPECT_TRUE(set_cookie_callback.result().IsInclude());
+  EXPECT_TRUE(set_cookie_callback.result().status.IsInclude());
 
   // Things should commit once going out of scope.
 }

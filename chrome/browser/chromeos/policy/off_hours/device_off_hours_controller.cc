@@ -147,7 +147,7 @@ void DeviceOffHoursController::UpdateOffHoursMode() {
     if (interval.Contains(current_time)) {
       base::TimeDelta remaining_off_hours_duration =
           current_time.GetDurationTo(interval.end());
-      SetOffHoursEndTime(base::TimeTicks::Now() + remaining_off_hours_duration);
+      SetOffHoursEndTime(base::Time::Now() + remaining_off_hours_duration);
       StartOffHoursTimer(remaining_off_hours_duration);
       SetOffHoursMode(true);
       return;
@@ -159,7 +159,7 @@ void DeviceOffHoursController::UpdateOffHoursMode() {
 }
 
 void DeviceOffHoursController::SetOffHoursEndTime(
-    base::TimeTicks off_hours_end_time) {
+    base::Time off_hours_end_time) {
   if (off_hours_end_time == off_hours_end_time_)
     return;
   off_hours_end_time_ = off_hours_end_time;
@@ -172,7 +172,7 @@ void DeviceOffHoursController::SetOffHoursMode(bool off_hours_enabled) {
   off_hours_mode_ = off_hours_enabled;
   DVLOG(1) << "OffHours mode: " << off_hours_mode_;
   if (!off_hours_mode_)
-    SetOffHoursEndTime(base::TimeTicks());
+    SetOffHoursEndTime(base::Time());
   OffHoursModeIsChanged();
 }
 

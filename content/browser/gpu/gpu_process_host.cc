@@ -71,8 +71,8 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "sandbox/policy/sandbox_type.h"
+#include "sandbox/policy/switches.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
@@ -82,9 +82,9 @@
 #include "ui/latency/latency_info.h"
 
 #if defined(OS_WIN)
+#include "sandbox/policy/win/sandbox_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/window.h"
-#include "services/service_manager/sandbox/win/sandbox_win.h"
 #include "ui/gfx/win/rendering_window_manager.h"
 #endif
 
@@ -220,11 +220,11 @@ GpuTerminationStatus ConvertToGpuTerminationStatus(
 
 // Command-line switches to propagate to the GPU process.
 static const char* const kSwitchNames[] = {
-    service_manager::switches::kDisableSeccompFilterSandbox,
-    service_manager::switches::kGpuSandboxAllowSysVShm,
-    service_manager::switches::kGpuSandboxFailuresFatal,
-    service_manager::switches::kDisableGpuSandbox,
-    service_manager::switches::kNoSandbox,
+    sandbox::policy::switches::kDisableSeccompFilterSandbox,
+    sandbox::policy::switches::kGpuSandboxAllowSysVShm,
+    sandbox::policy::switches::kGpuSandboxFailuresFatal,
+    sandbox::policy::switches::kDisableGpuSandbox,
+    sandbox::policy::switches::kNoSandbox,
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
     switches::kDisableDevShmUsage,
 #endif
@@ -264,7 +264,7 @@ static const char* const kSwitchNames[] = {
     switches::kVModule,
     switches::kUseAdapterLuid,
 #if defined(OS_MACOSX)
-    service_manager::switches::kEnableSandboxLogging,
+    sandbox::policy::switches::kEnableSandboxLogging,
     switches::kDisableAVFoundationOverlays,
     switches::kDisableMacOverlays,
     switches::kDisableMetalTestShaders,
@@ -379,7 +379,7 @@ class GpuSandboxedProcessLauncherDelegate
       // Open GL path.
       policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
                             sandbox::USER_LIMITED);
-      service_manager::SandboxWin::SetJobLevel(
+      sandbox::policy::SandboxWin::SetJobLevel(
           cmd_line_, sandbox::JOB_UNPROTECTED, 0, policy);
     } else {
       policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
@@ -391,7 +391,7 @@ class GpuSandboxedProcessLauncherDelegate
       // turn blocks on the browser UI thread. So, instead we forgo a window
       // message pump entirely and just add job restrictions to prevent child
       // processes.
-      service_manager::SandboxWin::SetJobLevel(
+      sandbox::policy::SandboxWin::SetJobLevel(
           cmd_line_, sandbox::JOB_LIMITED_USER,
           JOB_OBJECT_UILIMIT_SYSTEMPARAMETERS | JOB_OBJECT_UILIMIT_DESKTOP |
               JOB_OBJECT_UILIMIT_EXITWINDOWS |
@@ -434,7 +434,7 @@ class GpuSandboxedProcessLauncherDelegate
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
   ZygoteHandle GetZygote() override {
-    if (service_manager::IsUnsandboxedSandboxType(GetSandboxType()))
+    if (sandbox::policy::IsUnsandboxedSandboxType(GetSandboxType()))
       return nullptr;
 
     // The GPU process needs a specialized sandbox, so fork from the unsandboxed
@@ -443,12 +443,12 @@ class GpuSandboxedProcessLauncherDelegate
   }
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
 
-  service_manager::SandboxType GetSandboxType() override {
-    if (cmd_line_.HasSwitch(service_manager::switches::kDisableGpuSandbox)) {
+  sandbox::policy::SandboxType GetSandboxType() override {
+    if (cmd_line_.HasSwitch(sandbox::policy::switches::kDisableGpuSandbox)) {
       DVLOG(1) << "GPU sandbox is disabled";
-      return service_manager::SandboxType::kNoSandbox;
+      return sandbox::policy::SandboxType::kNoSandbox;
     }
-    return service_manager::SandboxType::kGpu;
+    return sandbox::policy::SandboxType::kGpu;
   }
 
  private:
@@ -475,8 +475,8 @@ class GpuSandboxedProcessLauncherDelegate
 void RecordAppContainerStatus(int error_code, bool crashed_before) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!crashed_before &&
-      service_manager::SandboxWin::IsAppContainerEnabledForSandbox(
-          *command_line, service_manager::SandboxType::kGpu)) {
+      sandbox::policy::SandboxWin::IsAppContainerEnabledForSandbox(
+          *command_line, sandbox::policy::SandboxType::kGpu)) {
     base::UmaHistogramSparse("GPU.AppContainer.Status", error_code);
   }
 }
@@ -1149,7 +1149,7 @@ bool GpuProcessHost::LaunchGpuProcess() {
 #endif  // defined(OS_WIN)
 
   if (kind_ == GPU_PROCESS_KIND_INFO_COLLECTION) {
-    cmd_line->AppendSwitch(service_manager::switches::kDisableGpuSandbox);
+    cmd_line->AppendSwitch(sandbox::policy::switches::kDisableGpuSandbox);
     cmd_line->AppendSwitchASCII(switches::kUseGL,
                                 gl::kGLImplementationDisabledName);
 

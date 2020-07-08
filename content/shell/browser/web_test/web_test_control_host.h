@@ -173,9 +173,10 @@ class WebTestControlHost : public WebContentsObserver,
   }
 
   // WebTestControlHost implementation.
-  void InitiateLayoutDump() override;
-  void InitiateCaptureDump(bool capture_navigation_history,
-                           bool capture_pixels) override;
+  void InitiateCaptureDump(
+      mojom::WebTestRendererDumpResultPtr renderer_dump_result,
+      bool capture_navigation_history,
+      bool capture_pixels) override;
   void TestFinishedInSecondaryRenderer() override;
   void ResetRendererAfterWebTestDone() override;
   void PrintMessageToStderr(const std::string& message) override;
@@ -256,7 +257,6 @@ class WebTestControlHost : public WebContentsObserver,
                            const LeakDetector::LeakDetectionReport& report);
 
   void OnCleanupFinished();
-  void OnCaptureDumpCompleted(mojom::WebTestDumpPtr dump);
   void OnPixelDumpCaptured(const SkBitmap& snapshot);
   void ReportResults();
   void EnqueueSurfaceCopyRequest();
@@ -330,11 +330,6 @@ class WebTestControlHost : public WebContentsObserver,
 
   std::unique_ptr<WebTestBluetoothChooserFactory> bluetooth_chooser_factory_;
 
-  // Map from frame_tree_node_id into frame-specific dumps.
-  std::map<int, std::string> frame_to_layout_dump_map_;
-  // Number of WebTestRenderFrame.DumpFrameLayout responses we are waiting for.
-  int pending_layout_dumps_;
-
   // Observe windows opened by tests.
   base::flat_map<WebContents*, std::unique_ptr<WebTestWindowObserver>>
       test_opened_window_observers_;
@@ -351,17 +346,22 @@ class WebTestControlHost : public WebContentsObserver,
   // renderer created while test is in progress).
   base::DictionaryValue accumulated_web_test_runtime_flags_changes_;
 
+  mojom::WebTestRendererDumpResultPtr renderer_dump_result_;
   std::string navigation_history_dump_;
   base::Optional<SkBitmap> pixel_dump_;
+  base::Optional<std::string> layout_dump_;
   std::string actual_pixel_hash_;
-  mojom::WebTestDumpPtr main_frame_dump_;
   // By default a test that opens other windows will have them closed at the end
   // of the test before checking for leaks. It may specify that it has closed
   // any windows it opened, and thus look for leaks from them with this flag.
   bool check_for_leaked_windows_ = false;
   bool waiting_for_pixel_results_ = false;
-  bool waiting_for_main_frame_dump_ = false;
+  int waiting_for_layout_dumps_ = 0;
   int waiting_for_reset_done_ = 0;
+
+  // Map from frame_tree_node_id into frame-specific dumps while collecting
+  // text dumps from all frames, before stitching them together.
+  std::map<int, std::string> frame_to_layout_dump_map_;
 
   std::vector<std::unique_ptr<Node>> composite_all_frames_node_storage_;
   std::queue<Node*> composite_all_frames_node_queue_;

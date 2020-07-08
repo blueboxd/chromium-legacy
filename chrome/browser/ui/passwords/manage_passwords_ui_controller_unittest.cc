@@ -1449,7 +1449,7 @@ TEST_F(ManagePasswordsUIControllerTest, DiscardUnsyncedCredentials) {
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   std::vector<autofill::PasswordForm> credentials = {
       BuildFormFromLoginAndURL("user", "password", "http://a.com")};
-  controller()->NotifyUnsyncedCredentialsWillBeDeleted(credentials);
+  controller()->NotifyUnsyncedCredentialsWillBeDeleted(std::move(credentials));
 
   // No save should happen on the profile store.
   MockPasswordStore* profile_store = client().GetProfilePasswordStore();

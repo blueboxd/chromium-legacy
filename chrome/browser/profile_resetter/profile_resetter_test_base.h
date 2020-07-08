@@ -24,7 +24,7 @@ class BrowserContext;
 // ProfileResetterMockObject mock_object;
 // resetter_->Reset(ProfileResetter::ALL,
 //                  pointer,
-//                  base::Bind(&ProfileResetterMockObject::StopLoop,
+//                  base::BindOnce(&ProfileResetterMockObject::StopLoop,
 //                             base::Unretained(&mock_object)));
 // mock_object.RunLoop();
 class ProfileResetterMockObject {

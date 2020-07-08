@@ -432,7 +432,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
       ReusedPasswordAccountType::SAVED_PASSWORD);
 
   service_->ConfigService(false /*incognito*/, false /*SBER*/);
-  EXPECT_FALSE(service_->IsPingingEnabled(
+  EXPECT_TRUE(service_->IsPingingEnabled(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
       reused_password_type));
 
@@ -442,7 +442,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
       reused_password_type));
 
   service_->ConfigService(true /*incognito*/, false /*SBER*/);
-  EXPECT_FALSE(service_->IsPingingEnabled(
+  EXPECT_TRUE(service_->IsPingingEnabled(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
       reused_password_type));
 
@@ -450,16 +450,6 @@ TEST_F(ChromePasswordProtectionServiceTest,
   EXPECT_TRUE(service_->IsPingingEnabled(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
       reused_password_type));
-
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(
-        safe_browsing::kPasswordProtectionForSavedPasswords);
-    service_->ConfigService(false /*incognito*/, false /*SBER*/);
-    EXPECT_TRUE(service_->IsPingingEnabled(
-        LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-        reused_password_type));
-  }
 
   service_->ConfigService(false /*incognito*/, false /*SBER*/);
   reused_password_type.set_account_type(ReusedPasswordAccountType::UNKNOWN);
@@ -996,9 +986,6 @@ TEST_F(ChromePasswordProtectionServiceTest,
   NavigateAndCommit(trigger_url);
   service_->SetIsSyncing(true);
   service_->SetIsAccountSignedIn(true);
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      safe_browsing::kPasswordProtectionForSavedPasswords);
 
   // Simulate a on-going password reuse request that hasn't received
   // verdict yet.
@@ -1059,9 +1046,6 @@ TEST_F(ChromePasswordProtectionServiceTest,
   NavigateAndCommit(trigger_url);
   service_->SetIsSyncing(true);
   service_->SetIsAccountSignedIn(true);
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      safe_browsing::kPasswordProtectionForSavedPasswords);
   // Simulate a on-going password reuse request that hasn't received
   // verdict yet.
   PrepareRequest(LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
@@ -1244,9 +1228,6 @@ TEST_F(ChromePasswordProtectionServiceTest,
 TEST_F(ChromePasswordProtectionServiceTest, VerifyGetWarningDetailTextSaved) {
   base::string16 warning_text =
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED);
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      safe_browsing::kPasswordProtectionForSavedPasswords);
   ReusedPasswordAccountType reused_password_type;
   reused_password_type.set_account_type(
       ReusedPasswordAccountType::SAVED_PASSWORD);
@@ -1259,9 +1240,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
        VerifyGetWarningDetailTextSavedDomains) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeaturesAndParameters(
-      {{safe_browsing::kPasswordProtectionForSavedPasswords, {}},
-       {safe_browsing::kPasswordProtectionShowDomainsForSavedPasswords, {}}},
-      {password_manager::features::kPasswordCheck});
+      {}, {password_manager::features::kPasswordCheck});
   ReusedPasswordAccountType reused_password_type;
   reused_password_type.set_account_type(
       ReusedPasswordAccountType::SAVED_PASSWORD);
@@ -1344,11 +1323,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyGetWarningDetailTextCheckSavedDomains) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeaturesAndParameters(
-      {{password_manager::features::kPasswordCheck, {}},
-       {safe_browsing::kPasswordProtectionForSavedPasswords, {}},
-       {safe_browsing::kPasswordProtectionShowDomainsForSavedPasswords, {}}},
-      {});
+  feature_list.InitAndEnableFeature(password_manager::features::kPasswordCheck);
   ReusedPasswordAccountType reused_password_type;
   reused_password_type.set_account_type(
       ReusedPasswordAccountType::SAVED_PASSWORD);

@@ -85,7 +85,7 @@ TEST_F(FileExistenceCheckerTest, NoFilesMissing) {
 TEST_F(FileExistenceCheckerTest, MissingFileFound) {
   FileIdPairVector files = CreateTestFiles(2);
 
-  base::DeleteFile(files[0].first, false /* recursive */);
+  base::DeleteFile(files[0].first);
 
   FileIdPairSet missing_files = CheckForMissingFiles(task_runner_ref(), files);
 

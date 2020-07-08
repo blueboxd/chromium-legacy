@@ -377,6 +377,7 @@
 <translation id="1468571364034902819">No se puede utilizar este perfil</translation>
 <translation id="1470084204649225129">{NUM_TABS,plural, =1{Añadir pestaña al nuevo grupo}other{Añadir pestañas al nuevo grupo}}</translation>
 <translation id="1472675084647422956">Mostrar más</translation>
+<translation id="1474785664565228650">Es necesario reiniciar Parallels Desktop para que se aplique el cambio de ajuste del micrófono. Reinicia Parallels Desktop para continuar.</translation>
 <translation id="1475502736924165259">Tienes certificados registrados que no corresponden a ninguna otra categoría</translation>
 <translation id="1476088332184200792">Copiar en tu dispositivo</translation>
 <translation id="1476607407192946488">&amp;Configuración de idioma</translation>
@@ -2928,6 +2929,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4648499713050786492">Desbloquea tu perfil antes de añadir a un usuario.</translation>
 <translation id="4650591383426000695">Desvincula tu teléfono del <ph name="DEVICE_TYPE" /></translation>
 <translation id="4651484272688821107">No se ha podido cargar el componente online con los recursos del modo de demostración.</translation>
+<translation id="4652935475563630866">Es necesario reiniciar Parallels Desktop para que se aplique el cambio de ajuste de la cámara. Reinicia Parallels Desktop para continuar.</translation>
 <translation id="4653405415038586100">No se ha podido configurar Linux</translation>
 <translation id="465878909996028221">Las redirecciones de navegador solo son compatibles con los protocolos HTTP, HTTPS y de archivo.</translation>
 <translation id="4659077111144409915">Cuenta principal</translation>

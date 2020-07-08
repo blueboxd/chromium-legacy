@@ -118,7 +118,7 @@ struct PLATFORM_EXPORT ResourceLoaderOptions {
   CacheAwareLoadingEnabled cache_aware_loading_enabled;
 
   // The world in which this request initiated. This will be used for CSP checks
-  // if specified.
+  // if specified. If unspecified, the CSP bound to the FetchContext is used.
   scoped_refptr<const DOMWrapperWorld> world;
 
   // If not null, this URLLoaderFactory should be used to load this resource

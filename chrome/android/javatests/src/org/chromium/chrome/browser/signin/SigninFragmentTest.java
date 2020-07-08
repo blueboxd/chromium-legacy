@@ -48,7 +48,6 @@ import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
@@ -158,14 +157,11 @@ public class SigninFragmentTest {
         onView(withText(account.name)).check(matches(isDisplayed()));
         onView(withId(R.id.signin_details_description)).perform(clickOnClickableSpan());
         // Wait for sign in process to finish.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return IdentityServicesProvider.get()
-                        .getSigninManager()
-                        .getIdentityManager()
-                        .hasPrimaryAccount();
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            return IdentityServicesProvider.get()
+                    .getSigninManager()
+                    .getIdentityManager()
+                    .hasPrimaryAccount();
         }, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         // TODO(https://crbug.com/1041815): Usage of ChromeSigninController should be removed later
         Assert.assertTrue(ChromeSigninController.get().isSignedIn());

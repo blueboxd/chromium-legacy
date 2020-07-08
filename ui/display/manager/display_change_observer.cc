@@ -350,11 +350,11 @@ ManagedDisplayInfo DisplayChangeObserver::CreateManagedDisplayInfo(
   new_info.set_from_native_platform(true);
 
   float device_scale_factor = 1.0f;
-  // Sets dpi only if the screen size is not blacklisted.
-  const float dpi = IsDisplaySizeBlackListed(snapshot->physical_size())
-                        ? 0
-                        : kInchInMm * mode_info->size().width() /
-                              snapshot->physical_size().width();
+  // Sets dpi only if the screen size is valid.
+  const float dpi = IsDisplaySizeValid(snapshot->physical_size())
+                        ? kInchInMm * mode_info->size().width() /
+                              snapshot->physical_size().width()
+                        : 0;
   constexpr gfx::Size k225DisplaySizeHack(3000, 2000);
 
   if (snapshot->type() == DISPLAY_CONNECTION_TYPE_INTERNAL) {

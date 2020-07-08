@@ -18,6 +18,10 @@ namespace ime {
 
 namespace {
 const char kUndoButtonText[] = "Undo";
+// TODO(crbug/1099044): Update and use cros_colors.json5
+constexpr SkColor kButtonHighlightColor =
+    SkColorSetA(SK_ColorBLACK, 0x0F);  // 6% Black.
+
 }  // namespace
 
 UndoWindow::UndoWindow(gfx::NativeView parent, AssistiveDelegate* delegate)
@@ -30,11 +34,16 @@ UndoWindow::UndoWindow(gfx::NativeView parent, AssistiveDelegate* delegate)
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal));
+  AddUndoButton();
+}
+
+void UndoWindow::AddUndoButton() {
   undo_button_ = AddChildView(std::make_unique<views::LabelButton>(
       this, base::UTF8ToUTF16(kUndoButtonText)));
   undo_button_->SetImageLabelSpacing(
       views::LayoutProvider::Get()->GetDistanceMetric(
           views::DistanceMetric::DISTANCE_RELATED_CONTROL_HORIZONTAL));
+  undo_button_->SetBackground(nullptr);
 }
 
 void UndoWindow::OnThemeChanged() {
@@ -72,12 +81,27 @@ void UndoWindow::SetBounds(const gfx::Rect& word_bounds) {
   SetAnchorRect(word_bounds);
 }
 
+void UndoWindow::SetButtonHighlighted(const AssistiveWindowButton& button,
+                                      bool highlighted) {
+  if (button.id != ButtonId::kUndo)
+    return;
+
+  bool currently_hightlighted = undo_button_->background() != nullptr;
+  if (highlighted == currently_hightlighted)
+    return;
+
+  undo_button_->SetBackground(
+      highlighted ? views::CreateSolidBackground(kButtonHighlightColor)
+                  : nullptr);
+}
+
 void UndoWindow::ButtonPressed(views::Button* sender, const ui::Event& event) {
   button_pressed_ = sender;
   if (sender == undo_button_) {
     AssistiveWindowButton button;
     button.id = ButtonId::kUndo;
     button.window_type = AssistiveWindowType::kUndoWindow;
+    SetButtonHighlighted(button, true);
     delegate_->AssistiveWindowButtonClicked(button);
   }
 }

@@ -884,16 +884,6 @@ const base::Feature kForce60HzRefreshRate{"Force60HzRefreshRate",
 const base::Feature kWebNfc{"WebNFC", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_CHROMEOS)
-// If this flag is enabled, Web UI pages can call DisablePolymer2() on the
-// shared resource during setup in order to use Polymer 1. Note: Currently, this
-// only supports one Web UI page disabling Polymer 2.
-// TODO(crbug.com/955194): Remove this once chrome://oobe migrates off of
-// Polymer 1.
-const base::Feature kWebUIPolymer2Exceptions{"WebUIPolymer2Exceptions",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // defined(OS_CHROMEOS)
-
 #if defined(OS_MACOSX)
 // Enables caching of media devices for the purpose of enumerating them.
 const base::Feature kDeviceMonitorMac{"DeviceMonitorMac",

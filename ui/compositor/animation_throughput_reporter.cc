@@ -17,6 +17,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_delegate.h"
+#include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/throughput_tracker.h"
 
@@ -47,7 +48,7 @@ class AnimationThroughputReporter::AnimationTracker
   void OnAnimatorAttachedToTimeline() override { MaybeStartTracking(); }
   void OnAnimatorDetachedFromTimeline() override {
     // Gives up tracking when detached from the timeline.
-    should_start_tracking_ = false;
+    first_animation_group_id_.reset();
     if (throughput_tracker_)
       throughput_tracker_.reset();
 
@@ -59,9 +60,8 @@ class AnimationThroughputReporter::AnimationTracker
   void OnLayerAnimationStarted(LayerAnimationSequence* sequence) override {
     CallbackLayerAnimationObserver::OnLayerAnimationStarted(sequence);
 
-    if (!should_start_tracking_) {
-      should_start_tracking_ = true;
-      aborted_count_on_start_ = aborted_count();
+    if (!first_animation_group_id_.has_value()) {
+      first_animation_group_id_ = sequence->animation_group_id();
       MaybeStartTracking();
     }
 
@@ -70,10 +70,22 @@ class AnimationThroughputReporter::AnimationTracker
     if (!active())
       SetActive();
   }
+  void OnLayerAnimationAborted(LayerAnimationSequence* sequence) override {
+    // Check whether the aborted animation sequence is among the relevant ones
+    // (started while the tracker is alive). This is done by checking the
+    // animation_group_id() and assuming the id is monotonic increasing.
+    if (first_animation_group_id_.has_value() &&
+        first_animation_group_id_.value() <= sequence->animation_group_id()) {
+      started_animations_aborted_ = true;
+    }
+
+    // Note the following call could delete |this|.
+    CallbackLayerAnimationObserver::OnLayerAnimationAborted(sequence);
+  }
 
   void MaybeStartTracking() {
     // No tracking if no layer animation sequence is started.
-    if (!should_start_tracking_)
+    if (!first_animation_group_id_.has_value())
       return;
 
     // No tracking if |animator_| is not attached to a timeline. Layer animation
@@ -91,17 +103,16 @@ class AnimationThroughputReporter::AnimationTracker
 
   // Invoked when all animation sequences finish.
   bool OnAnimationEnded(const CallbackLayerAnimationObserver& self) {
-    // |tracking_started_| could reset when detached from animation timeline.
-    // E.g. underlying Layer is moved from one Compositor to another. No report
-    // for such case.
+    // |throughput_tracker| could reset when detached from animation timeline.
     if (throughput_tracker_) {
-      if (self.aborted_count() != aborted_count_on_start_)
+      if (started_animations_aborted_)
         throughput_tracker_->Cancel();
       else
         throughput_tracker_->Stop();
     }
 
-    should_start_tracking_ = false;
+    first_animation_group_id_.reset();
+    started_animations_aborted_ = false;
     return should_delete_;
   }
 
@@ -112,11 +123,8 @@ class AnimationThroughputReporter::AnimationTracker
 
   base::Optional<ThroughputTracker> throughput_tracker_;
 
-  // Whether |throughput_tracker_| should be started.
-  bool should_start_tracking_ = false;
-
-  // The existing aborted count number when tracking starts.
-  int aborted_count_on_start_ = 0;
+  base::Optional<int> first_animation_group_id_;
+  bool started_animations_aborted_ = false;
 
   AnimationThroughputReporter::ReportCallback report_callback_;
 };

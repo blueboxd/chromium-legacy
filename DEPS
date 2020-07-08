@@ -159,12 +159,8 @@ vars = {
   'cros_boards': Str(''),
   'cros_boards_with_qemu_images': Str(''),
   # Building for CrOS is only supported on linux currently.
-  'checkout_simplechrome': '(checkout_chromeos and host_os == "linux") and ("{cros_boards}" != "")',
-  # Surround the board var in quotes so gclient doesn't try parsing the string
-  # as an expression.
-  # TODO(crbug.com/937821): Replace uses of this var with
-  # 'cros_boards_with_qemu_images' above.
-  'cros_download_vm': '(("{cros_boards}" == "amd64-generic") or ("{cros_boards}" == "betty")) or ("{cros_boards}" == "betty-pi-arc")',
+  'checkout_simplechrome': '"{cros_boards}" != ""',
+  'checkout_simplechrome_with_vms': '"{cros_boards_with_qemu_images}" != ""',
   # Should we build and test for public (ie: full) CrOS images, or private
   # (ie: release) images.
   'use_public_cros_config': 'not checkout_src_internal',
@@ -199,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '473c9f4cd9b21260b3948ae1ffdff0614e934ef0',
+  'skia_revision': 'babba97ae63a2d8de425c7cc3926d5824f647b9c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -211,11 +207,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '3688cb363ccd6ee345f0ee9ae88639a0d118429f',
+  'angle_revision': 'a3f6dc2fadb487a6d53a94e9280d277537b275d6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '28159ee9c8e385100bb541d73d20dbccc7d5d766',
+  'swiftshader_revision': '76cae97fc14cc95fb446335e2f70501f4ecc066c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -250,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '0f35b042e02e23cc6fb29d805d25aa85679274eb',
+  'freetype_revision': '96fb73efd5c69c2c34ebe2a4d7096774c87da145',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling HarfBuzz
   # and whatever else without interference from each other.
@@ -262,7 +258,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '7cbda52a2db80a9f73057da38f30a6657a74b458',
+  'catapult_revision': 'f8597f2828522238543de171a3176c1f0c72478e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -306,7 +302,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': '6a4da9da421560f3f2b073e4e8e4691787c3c732',
+  'spv_tools_revision': '7afbc0c8be3f4dd48a7e521deb18f5c29a6c9892',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -318,15 +314,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'shaderc_revision': '1402ed576596f53eaf3f8d390a9e1defbeffd014',
+  'shaderc_revision': 'fdad1302b17ba4ad40187fe9322c730f919573a1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '7622be0544b05a9bb31b1e2664d8444ac518cc57',
+  'dawn_revision': '83fe1bc34d80040a479978acb76a60c5db769b63',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': 'c41d2fe865c99b1e01fcaecf697247d126cdf8fd',
+  'quiche_revision': '4581908bee97ea8a068fae818209ae3b0783fd64',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -534,7 +530,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '3117c254c4bd8fc6b681b10334ef0882a9461ff2',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '59c44fb3bdcd70d8f332b3443b5cbf2ac48537fd',
       'condition': 'checkout_ios',
   },
 
@@ -881,7 +877,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'e62496bafc47822c8cd9dd9b63a2732af2904e28',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'c49c88ac82fb8dc94ed366527c8bd8b9fa84e3fa',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1225,7 +1221,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'faef2531ecbb961d93df1bc13cf163bac6ba368f',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'af03db693872b4f48f3f1125640765b17edaacea',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1453,7 +1449,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '3444a49d77b094c7fa2aade8873288a55ac0b9e5',
+    Var('webrtc_git') + '/src.git' + '@' + 'a376518817f99f56c28c619f49eea7a679d24104',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1525,7 +1521,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@90b0c9e859abf564cc6cdf4143302e86d8c529bd',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@847ded3ada37e9200944d34e609da69983242183',
     'condition': 'checkout_src_internal',
   },
 
@@ -4095,6 +4091,23 @@ hooks = [
     ],
   },
   {
+    # This clobbers when necessary (based on get_landmines.py). It must be the
+    # first hook so that other things that get/generate into the output
+    # directory will not subsequently be clobbered. This script is only run
+    # for iOS build with src_internal.
+    'name': 'landmines_ios_internal',
+    'pattern': '.',
+    'condition': 'checkout_ios and checkout_src_internal',
+    'action': [
+        'python',
+        'src/build/landmines.py',
+        '--landmine-scripts',
+        'src/ios_internal/build/get_landmines.py',
+        '--landmines-path',
+        'src/ios_internal/.landmines',
+    ],
+  },
+  {
     # Ensure that the DEPS'd "depot_tools" has its self-update capability
     # disabled.
     'name': 'disable_depot_tools_selfupdate',
@@ -4830,7 +4843,7 @@ hooks = [
   {
     'name': 'cros_simplechrome_artifacts_with_vm',
     'pattern': '.',
-    'condition': '(checkout_simplechrome and cros_download_vm) and use_public_cros_config',
+    'condition': 'checkout_simplechrome_with_vms and use_public_cros_config',
     'action': [
       'src/third_party/chromite/bin/cros',
       'chrome-sdk',
@@ -4839,7 +4852,7 @@ hooks = [
       '--fallback-versions=10',
       '--nogn-gen',
       '--download-vm',
-      '--boards={cros_boards}',
+      '--boards={cros_boards_with_qemu_images}',
       '--cache-dir=src/build/cros_cache/',
       '--log-level=error',
       '--no-shell',
@@ -4848,7 +4861,7 @@ hooks = [
   {
     'name': 'cros_simplechrome_artifacts_with_no_vm',
     'pattern': '.',
-    'condition': '(checkout_simplechrome and not cros_download_vm) and use_public_cros_config',
+    'condition': 'checkout_simplechrome and use_public_cros_config',
     'action': [
       'src/third_party/chromite/bin/cros',
       'chrome-sdk',

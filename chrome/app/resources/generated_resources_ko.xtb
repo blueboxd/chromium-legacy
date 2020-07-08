@@ -377,6 +377,7 @@
 <translation id="1468571364034902819">이 프로필을 사용할 수 없음</translation>
 <translation id="1470084204649225129">{NUM_TABS,plural, =1{새 그룹에 탭 추가}other{새 그룹에 탭 추가}}</translation>
 <translation id="1472675084647422956">자세히 보기</translation>
+<translation id="1474785664565228650">마이크 설정을 변경하려면 Parallels Desktop을 다시 실행해야 합니다. 계속하려면 Parallels Desktop을 다시 실행하세요.</translation>
 <translation id="1475502736924165259">모든 기타 카테고리에 맞지 않는 인증서가 등록되어 있습니다.</translation>
 <translation id="1476088332184200792">기기로 복사</translation>
 <translation id="1476607407192946488">언어 설정(&amp;L)</translation>
@@ -2927,6 +2928,7 @@
 <translation id="4648499713050786492">프로필을 잠금 해제한 다음 사용자를 추가하세요.</translation>
 <translation id="4650591383426000695"><ph name="DEVICE_TYPE" />에서 휴대전화 연결 해제</translation>
 <translation id="4651484272688821107">데모 모드 리소스로 온라인 구성요소를 로드하지 못했습니다.</translation>
+<translation id="4652935475563630866">카메라 설정을 변경하려면 Parallels Desktop을 다시 실행해야 합니다. 계속하려면 Parallels Desktop을 다시 실행하세요.</translation>
 <translation id="4653405415038586100">Linux 설정 중 오류 발생</translation>
 <translation id="465878909996028221">http, https 및 파일 프로토콜에만 브라우저 리디렉션이 지원됩니다.</translation>
 <translation id="4659077111144409915">기본 계정</translation>

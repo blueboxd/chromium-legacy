@@ -129,6 +129,7 @@ jumbo_component("ozone_base") {
   visibility += [
     # Everyone should depend on //ui/ozone instead except a handful of
     # things that would otherwise create a cycle.
+    "//chromeos/system:system",
     "//ui/events/ozone/*",
     "//ui/ozone/common/*",
     "//ui/ozone/public/mojom",

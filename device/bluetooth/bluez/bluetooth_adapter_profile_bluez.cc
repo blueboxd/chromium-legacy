@@ -24,8 +24,8 @@ namespace bluez {
 void BluetoothAdapterProfileBlueZ::Register(
     const device::BluetoothUUID& uuid,
     const bluez::BluetoothProfileManagerClient::Options& options,
-    const ProfileRegisteredCallback& success_callback,
-    const bluez::BluetoothProfileManagerClient::ErrorCallback& error_callback) {
+    ProfileRegisteredCallback success_callback,
+    bluez::BluetoothProfileManagerClient::ErrorOnceCallback error_callback) {
   std::unique_ptr<BluetoothAdapterProfileBlueZ> profile(
       new BluetoothAdapterProfileBlueZ(uuid));
 
@@ -33,9 +33,10 @@ void BluetoothAdapterProfileBlueZ::Register(
   const dbus::ObjectPath& object_path = profile->object_path();
   bluez::BluezDBusManager::Get()
       ->GetBluetoothProfileManagerClient()
-      ->RegisterProfile(object_path, uuid.canonical_value(), options,
-                        base::Bind(success_callback, base::Passed(&profile)),
-                        error_callback);
+      ->RegisterProfile(
+          object_path, uuid.canonical_value(), options,
+          base::BindOnce(std::move(success_callback), std::move(profile)),
+          std::move(error_callback));
 }
 
 BluetoothAdapterProfileBlueZ::BluetoothAdapterProfileBlueZ(

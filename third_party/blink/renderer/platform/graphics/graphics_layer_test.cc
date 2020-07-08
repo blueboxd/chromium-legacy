@@ -132,6 +132,7 @@ TEST_P(GraphicsLayerTest, PaintRecursively) {
                                   transform_root));
   layers_.graphics_layer_client().SetNeedsRepaint(true);
   layers_.graphics_layer().PaintRecursively();
+  layers_.graphics_layer().GetPaintController().FinishCycle();
 }
 
 TEST_P(GraphicsLayerTest, SetDrawsContentFalse) {

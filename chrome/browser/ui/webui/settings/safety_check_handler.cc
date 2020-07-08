@@ -613,22 +613,16 @@ base::string16 SafetyCheckHandler::GetStringForChromeCleaner(
       return l10n_util::GetStringUTF16(
           IDS_SETTINGS_RESET_CLEANUP_TITLE_NOTHING_FOUND);
     case ChromeCleanerStatus::kReporterFailed:
-      return l10n_util::GetStringUTF16(
-          IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_SCAN_ERROR);
     case ChromeCleanerStatus::kScanningFailed:
+    case ChromeCleanerStatus::kCleaningFailed:
+    case ChromeCleanerStatus::kCleanerDownloadFailed:
       return l10n_util::GetStringUTF16(
-          IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_SCAN_ERROR);
+          IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_ERROR);
     case ChromeCleanerStatus::kConnectionLost:
     case ChromeCleanerStatus::kUserDeclinedCleanup:
     case ChromeCleanerStatus::kInfected:
       return l10n_util::GetStringUTF16(
           IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_INFECTED);
-    case ChromeCleanerStatus::kCleaningFailed:
-      return l10n_util::GetStringUTF16(
-          IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_CLEANUP_ERROR);
-    case ChromeCleanerStatus::kCleanerDownloadFailed:
-      return l10n_util::GetStringUTF16(
-          IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_CLEANUP_UNAVAILABLE);
     case ChromeCleanerStatus::kCleaning:
       return l10n_util::GetStringUTF16(
           IDS_SETTINGS_RESET_CLEANUP_TITLE_REMOVING);

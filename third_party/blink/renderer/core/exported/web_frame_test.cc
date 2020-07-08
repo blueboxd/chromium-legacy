@@ -223,6 +223,30 @@ const cc::ScrollNode* GetScrollNode(const cc::Layer* layer) {
       ->scroll_tree.FindNodeFromElementId(layer->element_id());
 }
 
+std::string GetHTMLStringForReferrerPolicy(const std::string& meta_policy,
+                                           const std::string& referrer_policy) {
+  std::string meta_tag =
+      meta_policy.empty()
+          ? ""
+          : base::StringPrintf("<meta name='referrer' content='%s'>",
+                               meta_policy.c_str());
+  std::string referrer_policy_attr =
+      referrer_policy.empty()
+          ? ""
+          : base::StringPrintf("referrerpolicy='%s'", referrer_policy.c_str());
+  return base::StringPrintf(
+      "<!DOCTYPE html>"
+      "%s"
+      "<a id='dl' href='download_test' download='foo' %s>Click me</a>"
+      "<script>"
+      "(function () {"
+      "  var evt = document.createEvent('MouseEvent');"
+      "  evt.initMouseEvent('click', true, true);"
+      "  document.getElementById('dl').dispatchEvent(evt);"
+      "})();"
+      "</script>",
+      meta_tag.c_str(), referrer_policy_attr.c_str());
+}
 }  // namespace
 
 const int kTouchPointPadding = 32;
@@ -8535,7 +8559,8 @@ TEST_F(WebFrameTest, HasVisibleContentOnHiddenFrames) {
 }
 
 static Resource* FetchManifest(Document* document, const KURL& url) {
-  FetchParameters fetch_parameters{ResourceRequest(url)};
+  FetchParameters fetch_parameters =
+      FetchParameters::CreateForTest(ResourceRequest(url));
   fetch_parameters.SetRequestContext(mojom::RequestContextType::MANIFEST);
 
   return RawResource::FetchSynchronously(fetch_parameters, document->Fetcher());
@@ -13503,4 +13528,79 @@ TEST_F(WebFrameTest, FormSubmitCancelsNavigation) {
   RunPendingTasks();
 }
 
+class TestLocalFrameHostForAnchorWithDownloadAttr : public FakeLocalFrameHost {
+ public:
+  TestLocalFrameHostForAnchorWithDownloadAttr() = default;
+  ~TestLocalFrameHostForAnchorWithDownloadAttr() override = default;
+
+  // FakeLocalFrameHost:
+  void DownloadURL(mojom::blink::DownloadURLParamsPtr params) override {
+    referrer_ = params->referrer ? params->referrer->url : KURL();
+    referrer_policy_ = params->referrer
+                           ? params->referrer->policy
+                           : ReferrerPolicyResolveDefault(
+                                 network::mojom::ReferrerPolicy::kDefault);
+  }
+
+  KURL referrer_;
+  network::mojom::ReferrerPolicy referrer_policy_;
+};
+
+TEST_F(WebFrameTest, DownloadReferrerPolicy) {
+  TestLocalFrameHostForAnchorWithDownloadAttr frame_host;
+  frame_test_helpers::TestWebFrameClient web_frame_client;
+  frame_host.Init(web_frame_client.GetRemoteNavigationAssociatedInterfaces());
+  frame_test_helpers::WebViewHelper web_view_helper;
+  web_view_helper.Initialize(&web_frame_client);
+
+  WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
+  KURL test_url = ToKURL("http://www.test.com/foo/index.html");
+  // 1.<meta name='referrer' content='no-referrer'>
+  frame_test_helpers::LoadHTMLString(
+      frame, GetHTMLStringForReferrerPolicy("no-referrer", std::string()),
+      test_url);
+  EXPECT_TRUE(frame_host.referrer_.IsEmpty());
+  EXPECT_EQ(frame_host.referrer_policy_,
+            network::mojom::ReferrerPolicy::kNever);
+
+  // 2.<meta name='referrer' content='origin'>
+  frame_test_helpers::LoadHTMLString(
+      frame, GetHTMLStringForReferrerPolicy("origin", std::string()), test_url);
+  EXPECT_EQ(frame_host.referrer_, ToKURL("http://www.test.com/"));
+  EXPECT_EQ(frame_host.referrer_policy_,
+            network::mojom::ReferrerPolicy::kOrigin);
+
+  // 3.Without any declared referrer-policy attribute
+  frame_test_helpers::LoadHTMLString(
+      frame, GetHTMLStringForReferrerPolicy(std::string(), std::string()),
+      test_url);
+  EXPECT_EQ(frame_host.referrer_, test_url);
+  EXPECT_EQ(
+      frame_host.referrer_policy_,
+      ReferrerPolicyResolveDefault(network::mojom::ReferrerPolicy::kDefault));
+
+  // 4.referrerpolicy='origin'
+  frame_test_helpers::LoadHTMLString(
+      frame, GetHTMLStringForReferrerPolicy(std::string(), "origin"), test_url);
+  EXPECT_EQ(frame_host.referrer_, ToKURL("http://www.test.com/"));
+  EXPECT_EQ(frame_host.referrer_policy_,
+            network::mojom::ReferrerPolicy::kOrigin);
+
+  // 5.referrerpolicy='same-origin'
+  frame_test_helpers::LoadHTMLString(
+      frame, GetHTMLStringForReferrerPolicy(std::string(), "same-origin"),
+      test_url);
+  EXPECT_EQ(frame_host.referrer_, test_url);
+  EXPECT_EQ(frame_host.referrer_policy_,
+            network::mojom::ReferrerPolicy::kSameOrigin);
+
+  // 6.referrerpolicy='no-referrer'
+  frame_test_helpers::LoadHTMLString(
+      frame, GetHTMLStringForReferrerPolicy(std::string(), "no-referrer"),
+      test_url);
+  EXPECT_TRUE(frame_host.referrer_.IsEmpty());
+  EXPECT_EQ(frame_host.referrer_policy_,
+            network::mojom::ReferrerPolicy::kNever);
+  web_view_helper.Reset();
+}
 }  // namespace blink

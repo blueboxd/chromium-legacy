@@ -96,8 +96,8 @@ bool NavigatorBeacon::SendBeaconImpl(
           "length, which is 4294967295.");
       return false;
     }
-    allowed =
-        PingLoader::SendBeacon(GetSupplementable()->GetFrame(), url, data_view);
+    allowed = PingLoader::SendBeacon(
+        *script_state, GetSupplementable()->GetFrame(), url, data_view);
   } else if (data.IsBlob()) {
     Blob* blob = data.GetAsBlob();
     if (!RuntimeEnabledFeatures::OutOfBlinkCorsEnabled() &&
@@ -113,21 +113,23 @@ bool NavigatorBeacon::SendBeaconImpl(
         return false;
       }
     }
-    allowed =
-        PingLoader::SendBeacon(GetSupplementable()->GetFrame(), url, blob);
+    allowed = PingLoader::SendBeacon(
+        *script_state, GetSupplementable()->GetFrame(), url, blob);
   } else if (data.IsString()) {
-    allowed = PingLoader::SendBeacon(GetSupplementable()->GetFrame(), url,
-                                     data.GetAsString());
+    allowed =
+        PingLoader::SendBeacon(*script_state, GetSupplementable()->GetFrame(),
+                               url, data.GetAsString());
   } else if (data.IsFormData()) {
-    allowed = PingLoader::SendBeacon(GetSupplementable()->GetFrame(), url,
-                                     data.GetAsFormData());
+    allowed =
+        PingLoader::SendBeacon(*script_state, GetSupplementable()->GetFrame(),
+                               url, data.GetAsFormData());
   } else if (data.IsReadableStream()) {
     exception_state.ThrowTypeError(
         "sendBeacon cannot have a ReadableStream body.");
     return false;
   } else {
-    allowed =
-        PingLoader::SendBeacon(GetSupplementable()->GetFrame(), url, String());
+    allowed = PingLoader::SendBeacon(
+        *script_state, GetSupplementable()->GetFrame(), url, String());
   }
 
   if (!allowed) {

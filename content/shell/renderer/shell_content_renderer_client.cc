@@ -24,7 +24,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "net/base/net_errors.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "services/service_manager/sandbox/sandbox.h"
+#include "sandbox/policy/sandbox.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/web/web_testing_support.h"
 #include "third_party/blink/public/web/web_view.h"
@@ -106,7 +106,7 @@ class TestRendererServiceImpl : public mojom::TestService {
   }
 
   void IsProcessSandboxed(IsProcessSandboxedCallback callback) override {
-    std::move(callback).Run(service_manager::Sandbox::IsProcessSandboxed());
+    std::move(callback).Run(sandbox::policy::Sandbox::IsProcessSandboxed());
   }
 
   mojo::Receiver<mojom::TestService> receiver_;
@@ -181,15 +181,6 @@ void ShellContentRendererClient::PrepareErrorPageForHttpStatusError(
         "<head><title>Error</title></head><body>Server returned HTTP status " +
         base::NumberToString(http_status) + "</body>";
   }
-}
-
-bool ShellContentRendererClient::IsPluginAllowedToUseDevChannelAPIs() {
-#if BUILDFLAG(ENABLE_PLUGINS)
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnablePepperTesting);
-#else
-  return false;
-#endif
 }
 
 void ShellContentRendererClient::DidInitializeWorkerContextOnWorkerThread(

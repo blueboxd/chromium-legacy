@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "base/test/gtest_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -140,6 +141,26 @@ TEST_F(PathServiceTest, Get) {
   }
 #endif
 }
+
+// Tests that CheckedGet returns the same path as Get.
+TEST_F(PathServiceTest, CheckedGet) {
+  constexpr int kKey = DIR_CURRENT;
+  FilePath path;
+  ASSERT_TRUE(PathService::Get(kKey, &path));
+  EXPECT_EQ(path, PathService::CheckedGet(kKey));
+}
+
+#if defined(GTEST_HAS_DEATH_TEST)
+
+// Tests that CheckedGet CHECKs on failure.
+TEST_F(PathServiceTest, CheckedGetFailure) {
+  constexpr int kBadKey = PATH_END;
+  FilePath path;
+  EXPECT_FALSE(PathService::Get(kBadKey, &path));
+  EXPECT_CHECK_DEATH(PathService::CheckedGet(kBadKey));
+}
+
+#endif  // GTEST_HAS_DEATH_TEST
 
 // Test that all versions of the Override function of PathService do what they
 // are supposed to do.

@@ -22,7 +22,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.payments.PaymentManifestParser;
 import org.chromium.components.payments.PaymentManifestParser.ManifestParseCallback;
 import org.chromium.components.payments.WebAppManifestSection;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.url.GURL;
 
@@ -87,12 +86,7 @@ public class PaymentManifestParserTest implements ManifestParseCallback {
                         -> mParser.parsePaymentMethodManifest(
                                 new GURL("https://chromium.org/pmm.json"),
                                 "invalid payment method manifest", PaymentManifestParserTest.this));
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mParseFailure;
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(() -> mParseFailure);
     }
 
     @Test
@@ -113,12 +107,7 @@ public class PaymentManifestParserTest implements ManifestParseCallback {
                                                     + "  ]"
                                                     + "}",
                                             PaymentManifestParserTest.this));
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mParsePaymentMethodManifestSuccess;
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(() -> mParsePaymentMethodManifestSuccess);
         Assert.assertNotNull(mWebAppManifestUris);
         Assert.assertEquals(2, mWebAppManifestUris.length);
         Assert.assertEquals(new GURL("https://bobpay.com/app.json"), mWebAppManifestUris[0]);
@@ -149,12 +138,7 @@ public class PaymentManifestParserTest implements ManifestParseCallback {
     public void testParseInvalidWebAppManifest() throws Throwable {
         mRule.runOnUiThread((Runnable) () -> mParser.parseWebAppManifest(
                 "invalid web app manifest", PaymentManifestParserTest.this));
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mParseFailure;
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(() -> mParseFailure);
     }
 
     @Test
@@ -176,12 +160,7 @@ public class PaymentManifestParserTest implements ManifestParseCallback {
                         + "  }]"
                         + "}",
                 PaymentManifestParserTest.this));
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mParseWebAppManifestSuccess;
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(() -> mParseWebAppManifestSuccess);
         Assert.assertNotNull(mWebAppManifest);
         Assert.assertEquals(1, mWebAppManifest.length);
         Assert.assertNotNull(mWebAppManifest[0]);

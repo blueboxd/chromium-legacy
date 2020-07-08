@@ -1180,7 +1180,6 @@ void ThreadState::IncrementalMarkingStep(BlinkGC::StackState stack_state) {
     skip_incremental_marking_for_testing_ = false;
   } else {
     complete = MarkPhaseAdvanceMarking(
-        base::TimeTicks::Now() +
             marking_scheduling_->GetNextIncrementalStepDurationForTask(
                 Heap().stats_collector()->object_size_in_bytes()),
         EphemeronProcessing::kPartialProcessing);
@@ -1345,7 +1344,8 @@ void ThreadState::AtomicPauseMarkTransitiveClosure() {
       Heap().stats_collector(),
       ThreadHeapStatsCollector::kAtomicPauseMarkTransitiveClosure, "epoch",
       gc_age_, "forced", IsForcedGC(current_gc_data_.reason));
-  CHECK(MarkPhaseAdvanceMarking(base::TimeTicks::Max(),
+  // base::TimeTicks::Now() + base::TimeDelta::Max() == base::TimeTicks::Max()
+  CHECK(MarkPhaseAdvanceMarking(base::TimeDelta::Max(),
                                 EphemeronProcessing::kFullProcessing));
 }
 
@@ -1588,20 +1588,23 @@ bool ThreadState::MarkPhaseAdvanceMarkingBasedOnSchedule(
     base::TimeDelta max_deadline,
     EphemeronProcessing ephemeron_processing) {
   return MarkPhaseAdvanceMarking(
-      base::TimeTicks::Now() +
-          std::min(max_deadline,
-                   marking_scheduling_->GetNextIncrementalStepDurationForTask(
-                       Heap().stats_collector()->object_size_in_bytes())),
+      std::min(max_deadline,
+               marking_scheduling_->GetNextIncrementalStepDurationForTask(
+                   Heap().stats_collector()->object_size_in_bytes())),
       ephemeron_processing);
 }
 
 bool ThreadState::MarkPhaseAdvanceMarking(
-    base::TimeTicks deadline,
+    base::TimeDelta deadline,
     EphemeronProcessing ephemeron_processing) {
   MarkingVisitor* visitor = current_gc_data_.visitor.get();
-  const bool finished =
-      Heap().AdvanceMarking(reinterpret_cast<MarkingVisitor*>(visitor),
-                            deadline, ephemeron_processing);
+  ThreadHeapStatsCollector::Scope deadline_scope(
+      Heap().stats_collector(),
+      ThreadHeapStatsCollector::kIncrementalMarkingWithDeadline, "deadline_ms",
+      deadline.InMillisecondsF());
+  const bool finished = Heap().AdvanceMarking(
+      reinterpret_cast<MarkingVisitor*>(visitor),
+      base::TimeTicks::Now() + deadline, ephemeron_processing);
   // visitor->marked_bytes() can also include bytes marked during roots
   // visitation which is not counted in worklist_processing_time_foreground.
   // Since the size of the roots is usually small relative to the size of

@@ -54,13 +54,13 @@ base::Optional<TransformationMatrix> XRSpace::MojoFromOffsetMatrix() {
   return maybe_mojo_from_native;
 }
 
-base::Optional<TransformationMatrix> XRSpace::TryInvert(
-    const base::Optional<TransformationMatrix>& matrix) {
-  if (!matrix)
+base::Optional<TransformationMatrix> XRSpace::NativeFromMojo() {
+  base::Optional<TransformationMatrix> mojo_from_native = MojoFromNative();
+  if (!mojo_from_native)
     return base::nullopt;
 
-  DCHECK(matrix->IsInvertible());
-  return matrix->Inverse();
+  DCHECK(mojo_from_native->IsInvertible());
+  return mojo_from_native->Inverse();
 }
 
 bool XRSpace::EmulatedPosition() const {

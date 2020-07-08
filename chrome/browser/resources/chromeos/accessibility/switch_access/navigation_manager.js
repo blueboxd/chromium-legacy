@@ -21,12 +21,6 @@ class NavigationManager {
     /** @private {!FocusHistory} */
     this.history_ = new FocusHistory();
 
-    /**
-     * Callback for testing use only.
-     * @private {?function()}
-     */
-    this.onMoveForwardForTesting_ = null;
-
     this.init_();
   }
 
@@ -104,7 +98,10 @@ class NavigationManager {
    */
   static forceFocusedNode(node) {
     const navigator = NavigationManager.instance;
-    if (!navigator.node_.equals(node)) {
+    // Check if they are exactly the same instance. Checking contents
+    // equality is not sufficient in case the node has been repopulated
+    // after a refresh.
+    if (navigator.node_ !== node) {
       navigator.setNode_(node);
     }
   }
@@ -154,11 +151,6 @@ class NavigationManager {
    */
   static moveForward() {
     const navigator = NavigationManager.instance;
-
-    if (navigator.onMoveForwardForTesting_) {
-      navigator.onMoveForwardForTesting_();
-    }
-
     navigator.setNode_(navigator.node_.next);
   }
 
@@ -186,8 +178,9 @@ class NavigationManager {
       }
     }
 
-    if (groupIsValid) {
-      navigator.setNode_(navigator.group_.firstChild);
+    const child = navigator.group_.firstValidChild();
+    if (groupIsValid && child) {
+      navigator.setNode_(child);
       return;
     }
 
@@ -229,6 +222,20 @@ class NavigationManager {
   }
 
   /**
+   * When scroll position changes, ensure that the focus ring is in the
+   * correct place and that the focused node / node group are valid.
+   * @private
+   */
+  onScrollChange_() {
+    if (this.node_.isValidAndVisible()) {
+      // Update focus ring.
+      FocusRingManager.setFocusedNode(this.node_);
+    }
+    this.group_.refresh();
+    MenuManager.refreshMenu();
+  }
+
+  /**
    * When a menu is opened, jump focus to the menu.
    * @param {!chrome.automation.AutomationEvent} event
    * @private
@@ -266,6 +273,10 @@ class NavigationManager {
     new RepeatedEventHandler(
         this.desktop_, chrome.automation.EventType.FOCUS,
         this.onFocusChange_.bind(this));
+
+    new RepeatedEventHandler(
+        this.desktop_, chrome.automation.EventType.SCROLL_POSITION_CHANGED,
+        this.onScrollChange_.bind(this));
 
     // The status tray fires a SHOW event when it opens.
     this.desktop_.addEventListener(
@@ -336,7 +347,13 @@ class NavigationManager {
     this.group_.onUnfocus();
     this.group_ = group;
     this.group_.onFocus();
-    this.setNode_(opt_focus || this.group_.firstChild);
+
+    const node = opt_focus || this.group_.firstValidChild();
+    if (!node) {
+      NavigationManager.moveToValidNode();
+      return;
+    }
+    this.setNode_(node);
   }
 
   /**
@@ -345,6 +362,10 @@ class NavigationManager {
    * @private
    */
   setNode_(node) {
+    if (!node.isValidAndVisible()) {
+      NavigationManager.moveToValidNode();
+      return;
+    }
     this.node_.onUnfocus();
     this.node_ = node;
     this.node_.onFocus();

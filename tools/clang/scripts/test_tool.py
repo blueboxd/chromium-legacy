@@ -13,6 +13,7 @@ import glob
 import json
 import os
 import os.path
+import re
 import shutil
 import subprocess
 import sys
@@ -126,6 +127,28 @@ def _ApplyTool(tools_clang_scripts_directory,
     _RunGit(args)
 
 
+def _NormalizePathInRawOutput(path, test_dir):
+  if not os.path.isabs(path):
+    path = os.path.join(test_dir, path)
+
+  return os.path.relpath(path, test_dir)
+
+
+def _NormalizeSingleRawOutputLine(output_line, test_dir):
+  if not re.match('^[^:]+(:::.*){4,4}$', output_line):
+    return output_line
+
+  edit_type, path, offset, length, replacement = output_line.split(':::', 4)
+  path = _NormalizePathInRawOutput(path, test_dir)
+  return "%s:::%s:::%s:::%s:::%s" % (edit_type, path, offset, length,
+                                     replacement)
+
+
+def _NormalizeRawOutput(output_lines, test_dir):
+  return map(lambda line: _NormalizeSingleRawOutputLine(line, test_dir),
+             output_lines)
+
+
 def main(argv):
   parser = argparse.ArgumentParser()
   parser.add_argument(
@@ -209,6 +232,11 @@ def main(argv):
       expected_output = f.readlines()
     with open(actual, 'r') as f:
       actual_output =  f.readlines()
+    if not args.apply_edits:
+      actual_output = _NormalizeRawOutput(actual_output,
+                                          test_directory_for_tool)
+      expected_output = _NormalizeRawOutput(expected_output,
+                                            test_directory_for_tool)
     if actual_output != expected_output:
       failed += 1
       lines = difflib.unified_diff(expected_output, actual_output,

@@ -10,10 +10,13 @@ import android.view.View;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 
+import org.hamcrest.Matchers;
+
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaNotSatisfiedException;
 import org.chromium.third_party.android.media.R;
 
 import java.util.ArrayList;
@@ -59,22 +62,13 @@ public class RouterTestUtils {
             final ChromeActivity activity,
             int maxTimeoutMs, int intervalMs) {
         try {
-            CriteriaHelper.pollUiThread(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        try {
-                            if (getDialog(activity) != null) {
-                                Log.i(TAG, "Found device selection dialog");
-                                return true;
-                            } else {
-                                Log.w(TAG, "Cannot find device selection dialog");
-                                return false;
-                            }
-                        } catch (Exception e) {
-                            return false;
-                        }
-                    }
-                }, maxTimeoutMs, intervalMs);
+            CriteriaHelper.pollUiThread(() -> {
+                try {
+                    Criteria.checkThat(getDialog(activity), Matchers.notNullValue());
+                } catch (Exception e) {
+                    throw new CriteriaNotSatisfiedException(e);
+                }
+            }, maxTimeoutMs, intervalMs);
             return getDialog(activity);
         } catch (Exception e) {
             return null;
@@ -91,16 +85,13 @@ public class RouterTestUtils {
     public static View waitForView(
             final Callable<View> getViewCallable, int maxTimeoutMs, int intervalMs) {
         try {
-            CriteriaHelper.pollUiThread(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        try {
-                            return getViewCallable.call() != null;
-                        } catch (Exception e) {
-                            return false;
-                        }
-                    }
-                }, maxTimeoutMs, intervalMs);
+            CriteriaHelper.pollUiThread(() -> {
+                try {
+                    Criteria.checkThat(getViewCallable.call(), Matchers.notNullValue());
+                } catch (Exception e) {
+                    throw new CriteriaNotSatisfiedException(e);
+                }
+            }, maxTimeoutMs, intervalMs);
             return getViewCallable.call();
         } catch (Exception e) {
             return null;

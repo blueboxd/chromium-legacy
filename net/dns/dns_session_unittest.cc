@@ -109,7 +109,8 @@ class DnsSessionTest : public TestWithTaskEnvironment {
 class MockDnsSocketPool : public DnsSocketPool {
  public:
   MockDnsSocketPool(ClientSocketFactory* factory, DnsSessionTest* test)
-      : DnsSocketPool(factory, base::Bind(&base::RandInt)), test_(test) {}
+      : DnsSocketPool(factory, base::BindRepeating(&base::RandInt)),
+        test_(test) {}
 
   ~MockDnsSocketPool() override = default;
 
@@ -150,7 +151,7 @@ void DnsSessionTest::Initialize(size_t num_servers) {
 
   session_ =
       new DnsSession(config_, std::unique_ptr<DnsSocketPool>(dns_socket_pool),
-                     base::Bind(&base::RandInt), nullptr /* NetLog */);
+                     base::BindRepeating(&base::RandInt), nullptr /* NetLog */);
 
   events_.clear();
 }

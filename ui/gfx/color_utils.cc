@@ -51,7 +51,7 @@ int calcHue(float temp1, float temp2, float hue) {
   else if (hue * 3.0f < 2.0f)
     result = temp1 + (temp2 - temp1) * (2.0f / 3.0f - hue) * 6.0f;
 
-  return static_cast<int>(std::round(result * 255));
+  return base::Round(result * 255);
 }
 
 // Assumes sRGB.
@@ -87,9 +87,9 @@ float GetRelativeLuminance(SkColor color) {
 }
 
 uint8_t GetLuma(SkColor color) {
-  return static_cast<uint8_t>(std::round((0.299f * SkColorGetR(color)) +
-                                         (0.587f * SkColorGetG(color)) +
-                                         (0.114f * SkColorGetB(color))));
+  return base::Round<uint8_t>(0.299f * SkColorGetR(color) +
+                              0.587f * SkColorGetG(color) +
+                              0.114f * SkColorGetB(color));
 }
 
 void SkColorToHSL(SkColor c, HSL* hsl) {
@@ -230,10 +230,8 @@ SkColor HSLShift(SkColor color, const HSL& shift) {
     g += (255.0f - g) * ((shift.l - 0.5f) * 2.0f);
     b += (255.0f - b) * ((shift.l - 0.5f) * 2.0f);
   }
-  return SkColorSetARGB(alpha,
-                        static_cast<int>(std::round(r)),
-                        static_cast<int>(std::round(g)),
-                        static_cast<int>(std::round(b)));
+  return SkColorSetARGB(alpha, base::Round<U8CPU>(r), base::Round<U8CPU>(g),
+                        base::Round<U8CPU>(b));
 }
 
 void BuildLumaHistogram(const SkBitmap& bitmap, int histogram[256]) {

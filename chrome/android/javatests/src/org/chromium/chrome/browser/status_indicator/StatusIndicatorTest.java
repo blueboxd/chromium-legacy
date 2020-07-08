@@ -163,10 +163,13 @@ public class StatusIndicatorTest {
 
     @Test
     @MediumTest
+    // clang-format off
+    @Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.START_SURFACE_ANDROID + "<Study",
             "force-fieldtrials=Study/Group",
             "force-fieldtrial-params=Study.Group:start_surface_variation/single"})
     public void testShowAndHideOnStartSurface() {
+        // clang-format on
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
 
         onView(withId(org.chromium.chrome.start_surface.R.id.secondary_tasks_surface_view))

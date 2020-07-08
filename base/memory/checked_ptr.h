@@ -79,7 +79,8 @@ struct CheckedPtrNoOpImpl {
   static ALWAYS_INLINE void IncrementSwapCountForTest() {}
 };
 
-#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL) && \
+    ENABLE_TAG_FOR_CHECKED_PTR2
 
 constexpr int kValidAddressBits = 48;
 constexpr uintptr_t kAddressMask = (1ull << kValidAddressBits) - 1;
@@ -300,7 +301,8 @@ struct CheckedPtr2Impl {
   static constexpr uintptr_t kWrappedNullPtr = 0;
 };
 
-#endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
+#endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL) &&
+        // ENABLE_TAG_FOR_CHECKED_PTR2
 
 template <typename T>
 struct DereferencedPointerType {

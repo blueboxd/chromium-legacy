@@ -14,7 +14,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "net/base/features.h"
 #include "net/base/network_isolation_key.h"
-#include "net/cookies/cookie_inclusion_status.h"
+#include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_store_test_callbacks.h"
 #include "net/http/http_status_code.h"
@@ -447,7 +447,7 @@ TEST_F(ReportingUploaderTest, DontSendCookies) {
   server_.RegisterRequestHandler(base::BindRepeating(&ReturnResponse, HTTP_OK));
   ASSERT_TRUE(server_.Start());
 
-  ResultSavingCookieCallback<CookieInclusionStatus> cookie_callback;
+  ResultSavingCookieCallback<CookieAccessResult> cookie_callback;
   GURL url = server_.GetURL("/");
   auto cookie = CanonicalCookie::Create(url, "foo=bar", base::Time::Now(),
                                         base::nullopt /* server_time */);
@@ -455,7 +455,7 @@ TEST_F(ReportingUploaderTest, DontSendCookies) {
       std::move(cookie), url, CookieOptions::MakeAllInclusive(),
       cookie_callback.MakeCallback());
   cookie_callback.WaitUntilDone();
-  ASSERT_TRUE(cookie_callback.result().IsInclude());
+  ASSERT_TRUE(cookie_callback.result().status.IsInclude());
 
   TestUploadCallback upload_callback;
   uploader_->StartUpload(kOrigin, server_.GetURL("/"), NetworkIsolationKey(),

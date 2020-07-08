@@ -8,6 +8,7 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_E
 
 import androidx.test.filters.LargeTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -87,11 +88,9 @@ public class UndoIntegrationTest {
         });
 
         // Give the model a chance to process the undo and close the tab.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return !model.isClosurePending(tab.getId()) && model.getCount() == 0;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(model.isClosurePending(tab.getId()), Matchers.is(false));
+            Criteria.checkThat(model.getCount(), Matchers.is(0));
         });
 
         // Validate that the model doesn't contain the original tab or any newly opened tabs.

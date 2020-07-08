@@ -108,7 +108,7 @@ void DeleteFilesOnFileThread(const std::set<base::FilePath>& paths,
     num_delete_attempted++;
     DCHECK(!base::DirectoryExists(path));
 
-    if (!base::DeleteFile(path, false /* recursive */)) {
+    if (!base::DeleteFile(path)) {
       num_delete_failed++;
     }
   }

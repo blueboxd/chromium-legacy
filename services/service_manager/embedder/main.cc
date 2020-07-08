@@ -33,6 +33,7 @@
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
+#include "sandbox/policy/sandbox_type.h"
 #include "services/service_manager/embedder/main_delegate.h"
 #include "services/service_manager/embedder/process_type.h"
 #include "services/service_manager/embedder/set_process_title.h"
@@ -41,7 +42,6 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_executable/service_executable_environment.h"
 #include "services/service_manager/public/cpp/service_executable/switches.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
@@ -387,8 +387,8 @@ int Main(const MainParams& params) {
     // sandboxed process. The defines below must be in sync with the
     // implementation of mojo::NodeController::CreateSharedBuffer().
 #if !defined(OS_MACOSX) && !defined(OS_NACL_SFI) && !defined(OS_FUCHSIA)
-    if (service_manager::IsUnsandboxedSandboxType(
-            service_manager::SandboxTypeFromCommandLine(command_line))) {
+    if (sandbox::policy::IsUnsandboxedSandboxType(
+            sandbox::policy::SandboxTypeFromCommandLine(command_line))) {
       // Unsandboxed processes don't need shared memory brokering... because
       // they're not sandboxed.
     } else if (mojo_config.force_direct_shared_memory_allocation) {

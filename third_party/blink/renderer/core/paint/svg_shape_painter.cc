@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/paint/scoped_svg_paint_state.h"
 #include "third_party/blink/renderer/core/paint/svg_container_painter.h"
 #include "third_party/blink/renderer/core/paint/svg_model_object_painter.h"
@@ -172,6 +173,9 @@ void SVGShapePainter::FillShape(GraphicsContext& context,
                        DarkModeFilter::ElementRole::kSVG);
     }
   }
+  PaintTiming& timing = PaintTiming::From(
+      layout_svg_shape_.GetElement()->GetDocument().TopDocument());
+  timing.MarkFirstContentfulPaint();
 }
 
 void SVGShapePainter::StrokeShape(GraphicsContext& context,
@@ -195,6 +199,9 @@ void SVGShapePainter::StrokeShape(GraphicsContext& context,
       context.DrawPath(use_path->GetSkPath(), flags,
                        DarkModeFilter::ElementRole::kSVG);
   }
+  PaintTiming& timing = PaintTiming::From(
+      layout_svg_shape_.GetElement()->GetDocument().TopDocument());
+  timing.MarkFirstContentfulPaint();
 }
 
 void SVGShapePainter::PaintMarkers(const PaintInfo& paint_info) {

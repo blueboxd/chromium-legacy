@@ -4,28 +4,33 @@ As part of Chrome Modularization, this directory contains various tools for
 analyzing the dependencies contained within the Chrome Android project.
 
 ## Usage
-Start by generating a JSON dependency file with a snapshot of the dependencies 
-for your JAR using the **JSON dependency generator** command-line tool.
+Start by generating a JSON dependency file with a snapshot of the dependencies
+for your JAR files using the **JSON dependency generator** command-line tool.
 
-This snapshot file can then be used as input for various other 
+This snapshot file can then be used as input for various other
 analysis tools listed below.
 
 ## Command-line tools
-The usage information for any of the following tools is also accessible via 
+The usage information for any of the following tools is also accessible via
 `toolname -h` or `toolname --help`.
 #### JSON Dependency Generator
-Runs [jdeps](https://docs.oracle.com/javase/8/docs/technotes/tools/unix/jdeps.html) 
-on a given JAR and writes the resulting dependency graph into a JSON file.
+Runs [jdeps](https://docs.oracle.com/javase/8/docs/technotes/tools/unix/jdeps.html)
+(dependency analysis tool) on all JARs a root build target depends
+on and writes the resulting dependency graph into a JSON file. The default
+root build target is chrome/android:monochrome_public_bundle.
 ```
-usage: generate_json_dependency_graph.py [-h] -t TARGET -o OUTPUT [-j JDEPS_PATH]
+usage: generate_json_dependency_graph.py [-h] -C BUILD_OUTPUT_DIR -o OUTPUT
+                                         [-t TARGET] [-j JDEPS_PATH]
 
 optional arguments:
+  -t TARGET, --target TARGET
+                        Root build target.
   -j JDEPS_PATH, --jdeps-path JDEPS_PATH
                         Path to the jdeps executable.
 
 required arguments:
-  -t TARGET, --target TARGET
-                        Path to the JAR file to run jdeps on.
+  -C BUILD_OUTPUT_DIR, --build_output_dir BUILD_OUTPUT_DIR
+                        Build output directory.
   -o OUTPUT, --output OUTPUT
                         Path to the file to write JSON output to. Will be
                         created if it does not yet exist and overwrite
@@ -62,14 +67,12 @@ required arguments:
 ```
 
 ## Example Usage
-This Linux example assumes Chromium is contained in a directory `~/cr` 
-and that Chromium has been built as per the instructions 
+This Linux example assumes Chromium is contained in a directory `~/cr`
+and that Chromium has been built as per the instructions
 [here](https://chromium.googlesource.com/chromium/src/+/master/docs/linux/build_instructions.md),
 although the only things these assumptions affect are the file paths.
 ```
-cd ~/cr/src/tools/android/dependency_analysis
-
-./generate_json_dependency_graph.py --target ~/cr/src/out/Default/obj/chrome/android/chrome_java__process_prebuilt.desugar.jar --output ./json_graph.txt
+$ tools/android/dependency_analysis/generate_json_dependency_graph.py -C out/Debug -o ~/json_graph.txt
 >>> Running jdeps and parsing output...
 >>> Parsed class-level dependency graph, got 3239 nodes and 19272 edges.
 >>> Created package-level dependency graph, got 500 nodes and 4954 edges.

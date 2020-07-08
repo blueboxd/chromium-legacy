@@ -158,7 +158,7 @@ GpuPreferences ParseGpuPreferences(const base::CommandLine* command_line) {
       command_line->HasSwitch(switches::kEnableGPUServiceTracing);
   gpu_preferences.use_passthrough_cmd_decoder =
       gpu::gles2::UsePassthroughCommandDecoder(command_line);
-  gpu_preferences.ignore_gpu_blacklist =
+  gpu_preferences.ignore_gpu_blocklist =
       command_line->HasSwitch(switches::kIgnoreGpuBlacklist);
   gpu_preferences.enable_webgpu =
       command_line->HasSwitch(switches::kEnableUnsafeWebGPU);
@@ -206,7 +206,7 @@ VulkanImplementationName ParseVulkanImplementationName(
     return VulkanImplementationName::kNone;
 
   // If the vulkan feature is enabled from command line, we will force to use
-  // vulkan even if it is blacklisted.
+  // vulkan even if it is blocklisted.
   return base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
              features::kVulkan.name, base::FeatureList::OVERRIDE_ENABLE_FEATURE)
              ? VulkanImplementationName::kForcedNative

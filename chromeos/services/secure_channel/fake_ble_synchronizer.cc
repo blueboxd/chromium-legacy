@@ -24,36 +24,36 @@ device::BluetoothAdvertisement::Data& FakeBleSynchronizer::GetAdvertisementData(
   return *command_queue()[index]->register_args->advertisement_data;
 }
 
-const device::BluetoothAdapter::CreateAdvertisementCallback&
+device::BluetoothAdapter::CreateAdvertisementCallback
 FakeBleSynchronizer::GetRegisterCallback(size_t index) {
   DCHECK(command_queue().size() >= index);
   DCHECK(command_queue()[index]->command_type ==
          CommandType::REGISTER_ADVERTISEMENT);
-  return command_queue()[index]->register_args->callback;
+  return std::move(command_queue()[index]->register_args->callback);
 }
 
-const device::BluetoothAdapter::AdvertisementErrorCallback&
+device::BluetoothAdapter::AdvertisementErrorCallback
 FakeBleSynchronizer::GetRegisterErrorCallback(size_t index) {
   DCHECK(command_queue().size() >= index);
   DCHECK(command_queue()[index]->command_type ==
          CommandType::REGISTER_ADVERTISEMENT);
-  return command_queue()[index]->register_args->error_callback;
+  return std::move(command_queue()[index]->register_args->error_callback);
 }
 
-const device::BluetoothAdvertisement::SuccessCallback&
+device::BluetoothAdvertisement::SuccessCallback
 FakeBleSynchronizer::GetUnregisterCallback(size_t index) {
   DCHECK(command_queue().size() >= index);
   DCHECK(command_queue()[index]->command_type ==
          CommandType::UNREGISTER_ADVERTISEMENT);
-  return command_queue()[index]->unregister_args->callback;
+  return std::move(command_queue()[index]->unregister_args->callback);
 }
 
-const device::BluetoothAdvertisement::ErrorCallback&
+device::BluetoothAdvertisement::ErrorCallback
 FakeBleSynchronizer::GetUnregisterErrorCallback(size_t index) {
   DCHECK(command_queue().size() >= index);
   DCHECK(command_queue()[index]->command_type ==
          CommandType::UNREGISTER_ADVERTISEMENT);
-  return command_queue()[index]->unregister_args->error_callback;
+  return std::move(command_queue()[index]->unregister_args->error_callback);
 }
 
 device::BluetoothAdapter::DiscoverySessionCallback

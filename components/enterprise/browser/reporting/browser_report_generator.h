@@ -13,6 +13,8 @@
 
 namespace enterprise_reporting {
 
+class ReportingDelegateFactory;
+
 // A report generator that collects Browser related information.
 class BrowserReportGenerator {
  public:
@@ -21,6 +23,9 @@ class BrowserReportGenerator {
 
   class Delegate {
    public:
+    Delegate() = default;
+    Delegate(const Delegate&) = delete;
+    Delegate& operator=(const Delegate&) = delete;
     virtual ~Delegate() = default;
 
     virtual std::string GetExecutablePath() = 0;
@@ -34,7 +39,9 @@ class BrowserReportGenerator {
         std::unique_ptr<enterprise_management::BrowserReport> report) = 0;
   };
 
-  explicit BrowserReportGenerator(std::unique_ptr<Delegate> delegate);
+  explicit BrowserReportGenerator(ReportingDelegateFactory* delegate_factory);
+  BrowserReportGenerator(const BrowserReportGenerator&) = delete;
+  BrowserReportGenerator& operator=(const BrowserReportGenerator&) = delete;
   ~BrowserReportGenerator();
 
   // Generates a BrowserReport with the following fields:
@@ -49,8 +56,6 @@ class BrowserReportGenerator {
   // Generates browser_version, channel, executable_path info in the given
   // report instance.
   void GenerateBasicInfo(enterprise_management::BrowserReport* report);
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserReportGenerator);
 };
 
 }  // namespace enterprise_reporting

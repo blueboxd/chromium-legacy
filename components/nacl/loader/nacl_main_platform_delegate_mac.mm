@@ -11,7 +11,7 @@
 #include "content/public/common/sandbox_init.h"
 #include "sandbox/mac/seatbelt.h"
 #include "sandbox/mac/seatbelt_exec.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
+#include "sandbox/policy/sandbox_type.h"
 
 void NaClMainPlatformDelegate::EnableSandbox(
     const content::MainFunctionParams& parameters) {

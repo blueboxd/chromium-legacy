@@ -11,8 +11,10 @@
 #include <cmath>      // for log() and pow()
 #include <list>
 #include <memory>
+#include <utility>
 
 #include "base/auto_reset.h"
+#include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -1245,16 +1247,15 @@ void OutOfProcessInstance::NotifyTouchSelectionOccurred() {
 }
 
 void OutOfProcessInstance::GetDocumentPassword(
-    pp::CompletionCallbackWithOutput<pp::Var> callback) {
+    base::OnceCallback<void(const std::string&)> callback) {
   if (password_callback_) {
     NOTREACHED();
     return;
   }
 
-  password_callback_ =
-      std::make_unique<pp::CompletionCallbackWithOutput<pp::Var>>(callback);
+  password_callback_ = std::move(callback);
   pp::VarDictionary message;
-  message.Set(pp::Var(kType), pp::Var(kJSGetPasswordType));
+  message.Set(kType, kJSGetPasswordType);
   PostMessage(message);
 }
 
@@ -1553,15 +1554,12 @@ void OutOfProcessInstance::HandleGetNamedDestinationMessage(
 
 void OutOfProcessInstance::HandleGetPasswordCompleteMessage(
     const pp::VarDictionary& dict) {
-  if (!dict.Get(pp::Var(kJSPassword)).is_string() || !password_callback_) {
+  if (!password_callback_ || !dict.Get(kJSPassword).is_string()) {
     NOTREACHED();
     return;
   }
 
-  pp::CompletionCallbackWithOutput<pp::Var> callback = *password_callback_;
-  password_callback_.reset();
-  *callback.output() = dict.Get(pp::Var(kJSPassword)).pp_var();
-  callback.Run(PP_OK);
+  std::move(password_callback_).Run(dict.Get(kJSPassword).AsString());
 }
 
 void OutOfProcessInstance::HandleGetSelectedTextMessage(

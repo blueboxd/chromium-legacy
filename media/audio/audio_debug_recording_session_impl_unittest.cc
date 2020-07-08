@@ -137,8 +137,8 @@ TEST_F(AudioDebugRecordingSessionImplTest, CreateWavFileCreatesExpectedFiles) {
   EXPECT_CALL(*mock_debug_recording_manager_, DisableDebugRecording());
   DestroyDebugRecordingSession();
   ShutdownAudioManager();
-  EXPECT_TRUE(base::DeleteFile(output_recording_filename, false));
-  EXPECT_TRUE(base::DeleteFile(input_recording_filename, false));
+  EXPECT_TRUE(base::DeleteFile(output_recording_filename));
+  EXPECT_TRUE(base::DeleteFile(input_recording_filename));
 }
 
 }  // namespace media

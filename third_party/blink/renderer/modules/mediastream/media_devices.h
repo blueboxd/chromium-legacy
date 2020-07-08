@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_DEVICES_H_
 
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
@@ -28,6 +29,8 @@ class MediaTrackSupportedConstraints;
 class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
+
+extern const base::Feature kEnumerateRequiresGetUserMedia;
 
 class MODULES_EXPORT MediaDevices final
     : public EventTargetWithInlineData,
@@ -69,6 +72,8 @@ class MODULES_EXPORT MediaDevices final
   // mojom::blink::MediaDevicesListener implementation.
   void OnDevicesChanged(MediaDeviceType,
                         const Vector<WebMediaDeviceInfo>&) override;
+
+  void SetEnumerateCanExposeDevices();
 
   // Callback for testing only.
   using EnumerateDevicesTestCallback =
@@ -127,6 +132,7 @@ class MODULES_EXPORT MediaDevices final
   EnumerateDevicesTestCallback enumerate_devices_test_callback_;
   base::OnceClosure connection_error_test_callback_;
   base::OnceClosure device_change_test_callback_;
+  bool enumerate_can_expose_devices_ = false;
 };
 
 }  // namespace blink

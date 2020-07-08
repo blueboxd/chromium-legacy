@@ -236,12 +236,6 @@ WebString BlinkPlatformImpl::QueryLocalizedString(int resource_id,
       GetContentClient()->GetLocalizedString(resource_id), values, nullptr));
 }
 
-bool BlinkPlatformImpl::AllowScriptExtensionForServiceWorker(
-    const blink::WebSecurityOrigin& script_origin) {
-  return GetContentClient()->AllowScriptExtensionForServiceWorker(
-      script_origin);
-}
-
 blink::WebCrypto* BlinkPlatformImpl::Crypto() {
   return &web_crypto_;
 }

@@ -319,7 +319,7 @@ network::mojom::NetworkService* GetNetworkService() {
             command_line->GetSwitchValuePath(network::switches::kLogNetLog);
 
         base::DictionaryValue client_constants =
-            GetContentClient()->GetNetLogConstants();
+            GetContentClient()->browser()->GetNetLogConstants();
 
         base::File file(
             log_path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);

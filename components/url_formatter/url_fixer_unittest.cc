@@ -556,7 +556,7 @@ TEST(URLFixerTest, FixupFile) {
                   .possibly_invalid_spec());
   }
 
-  EXPECT_TRUE(base::DeleteFile(original, false));
+  EXPECT_TRUE(base::DeleteFile(original));
 }
 
 TEST(URLFixerTest, FixupRelativeFile) {
@@ -585,7 +585,7 @@ TEST(URLFixerTest, FixupRelativeFile) {
       url_formatter::FixupRelativeFile(temp_dir_.GetPath(), file_part)
           .possibly_invalid_spec(),
       full_path));
-  EXPECT_TRUE(base::DeleteFile(full_path, false));
+  EXPECT_TRUE(base::DeleteFile(full_path));
 
   // create a filename we know doesn't exist and make sure it doesn't get
   // fixed up to a file URL
@@ -638,7 +638,7 @@ TEST(URLFixerTest, FixupRelativeFile) {
       full_path));
 
   // done with the subdir
-  EXPECT_TRUE(base::DeleteFile(full_path, false));
+  EXPECT_TRUE(base::DeleteFile(full_path));
   EXPECT_TRUE(base::DeletePathRecursively(new_dir));
 
   // Test that an obvious HTTP URL isn't accidentally treated as an absolute

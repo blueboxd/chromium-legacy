@@ -38,12 +38,12 @@
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
+#include "sandbox/policy/linux/sandbox_debug_handling_linux.h"
+#include "sandbox/policy/linux/sandbox_linux.h"
+#include "sandbox/policy/sandbox.h"
+#include "sandbox/policy/switches.h"
 #include "services/service_manager/embedder/descriptors.h"
 #include "services/service_manager/embedder/switches.h"
-#include "services/service_manager/sandbox/linux/sandbox_debug_handling_linux.h"
-#include "services/service_manager/sandbox/linux/sandbox_linux.h"
-#include "services/service_manager/sandbox/sandbox.h"
-#include "services/service_manager/sandbox/switches.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 
 namespace content {
@@ -130,7 +130,7 @@ static bool EnterSuidSandbox(sandbox::SetuidSandboxClient* setuid_sandbox,
     CHECK(CreateInitProcessReaper(std::move(post_fork_parent_callback)));
   }
 
-  CHECK(service_manager::SandboxDebugHandling::SetDumpableStatusAndHandlers());
+  CHECK(sandbox::policy::SandboxDebugHandling::SetDumpableStatusAndHandlers());
   return true;
 }
 
@@ -138,7 +138,7 @@ static void DropAllCapabilities(int proc_fd) {
   CHECK(sandbox::Credentials::DropAllCapabilities(proc_fd));
 }
 
-static void EnterNamespaceSandbox(service_manager::SandboxLinux* linux_sandbox,
+static void EnterNamespaceSandbox(sandbox::policy::SandboxLinux* linux_sandbox,
                                   base::OnceClosure post_fork_parent_callback) {
   linux_sandbox->EngageNamespaceSandbox(true /* from_zygote */);
   if (getpid() == 1) {
@@ -148,7 +148,7 @@ static void EnterNamespaceSandbox(service_manager::SandboxLinux* linux_sandbox,
   }
 }
 
-static void EnterLayerOneSandbox(service_manager::SandboxLinux* linux_sandbox,
+static void EnterLayerOneSandbox(sandbox::policy::SandboxLinux* linux_sandbox,
                                  const bool using_layer1_sandbox,
                                  base::OnceClosure post_fork_parent_callback) {
   DCHECK(linux_sandbox);
@@ -179,14 +179,14 @@ bool ZygoteMain(
     std::vector<std::unique_ptr<ZygoteForkDelegate>> fork_delegates) {
   sandbox::SetAmZygoteOrRenderer(true, GetSandboxFD());
 
-  auto* linux_sandbox = service_manager::SandboxLinux::GetInstance();
+  auto* linux_sandbox = sandbox::policy::SandboxLinux::GetInstance();
 
   // Skip pre-initializing sandbox when sandbox is disabled for
   // https://crbug.com/444900.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          service_manager::switches::kNoSandbox) &&
+          sandbox::policy::switches::kNoSandbox) &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          service_manager::switches::kNoZygoteSandbox)) {
+          sandbox::policy::switches::kNoZygoteSandbox)) {
     // This will pre-initialize the various sandboxes that need it.
     linux_sandbox->PreinitializeSandbox();
   }
@@ -228,11 +228,11 @@ bool ZygoteMain(
 
   const int sandbox_flags = linux_sandbox->GetStatus();
   const bool setuid_sandbox_engaged =
-      !!(sandbox_flags & service_manager::SandboxLinux::kSUID);
+      !!(sandbox_flags & sandbox::policy::SandboxLinux::kSUID);
   CHECK_EQ(using_setuid_sandbox, setuid_sandbox_engaged);
 
   const bool namespace_sandbox_engaged =
-      !!(sandbox_flags & service_manager::SandboxLinux::kUserNS);
+      !!(sandbox_flags & sandbox::policy::SandboxLinux::kUserNS);
   CHECK_EQ(using_namespace_sandbox, namespace_sandbox_engaged);
 
   Zygote zygote(sandbox_flags, std::move(fork_delegates),

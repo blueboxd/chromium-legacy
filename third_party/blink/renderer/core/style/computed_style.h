@@ -1230,7 +1230,9 @@ class ComputedStyle : public ComputedStyleBase,
     return !HasAutoColumnCount() || !HasAutoColumnWidth();
   }
   bool ColumnRuleIsTransparent() const {
-    return !ColumnRuleColorInternal().Resolve(GetCurrentColor()).Alpha();
+    return !ColumnRuleColorInternal()
+                .Resolve(GetCurrentColor(), UsedColorScheme())
+                .Alpha();
   }
   bool ColumnRuleEquivalent(const ComputedStyle& other_style) const;
   bool HasColumnRule() const {

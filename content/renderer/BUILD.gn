@@ -400,6 +400,7 @@ target(link_target_type, "renderer") {
     "//ui/latency",
     "//ui/native_theme",
     "//ui/surface",
+    "//url",
     "//v8",
   ]
   allow_circular_includes_from = []

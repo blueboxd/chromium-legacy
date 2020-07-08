@@ -106,9 +106,6 @@ class CC_EXPORT FrameSequenceMetrics {
   bool HasDataLeftForReporting() const;
   // Report related metrics: throughput, checkboarding...
   void ReportMetrics();
-  void ComputeAggregatedThroughputForTesting() {
-    ComputeAggregatedThroughput();
-  }
 
   ThroughputData& impl_throughput() { return impl_throughput_; }
   ThroughputData& main_throughput() { return main_throughput_; }
@@ -127,8 +124,6 @@ class CC_EXPORT FrameSequenceMetrics {
   void AdvanceTrace(base::TimeTicks timestamp);
 
  private:
-  void ComputeAggregatedThroughput();
-
   const FrameSequenceTrackerType type_;
 
   // Tracks some data to generate useful trace events.

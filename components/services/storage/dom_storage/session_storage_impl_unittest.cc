@@ -586,7 +586,7 @@ TEST_F(SessionStorageImplTest, CorruptionOnDisk) {
                                  FILE_PATH_LITERAL("MANIFEST*"));
   for (base::FilePath name = file_enum.Next(); !name.empty();
        name = file_enum.Next()) {
-    base::DeleteFile(name, false);
+    base::DeleteFile(name);
   }
   opt_value = DoTestGet(namespace_id, origin, "key");
   EXPECT_FALSE(opt_value);

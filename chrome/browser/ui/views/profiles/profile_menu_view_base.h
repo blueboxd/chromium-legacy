@@ -69,13 +69,14 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
     kNoPrimaryAccount,
   };
 
-  // TODO(crbug.com/1099286): Add the edit icon into this struct.
   struct EditButtonParams {
-    EditButtonParams(const base::string16& edit_tooltip_text,
+    EditButtonParams(const gfx::VectorIcon* edit_icon,
+                     const base::string16& edit_tooltip_text,
                      base::RepeatingClosure edit_action);
     EditButtonParams(const EditButtonParams&);
     ~EditButtonParams();
 
+    const gfx::VectorIcon* edit_icon;
     base::string16 edit_tooltip_text;
     base::RepeatingClosure edit_action;
   };

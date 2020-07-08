@@ -205,7 +205,7 @@ TEST_F(PolicyProviderTest, ResourceIdentifier) {
       profile.GetTestingPrefService();
 
   auto value = std::make_unique<base::ListValue>();
-  value->AppendString("[*.]google.com");
+  value->AppendString("http://mail.google.com:80");
   prefs->SetManagedPref(prefs::kManagedPluginsAllowedForUrls, std::move(value));
 
   PolicyProvider provider(prefs);

@@ -17,7 +17,7 @@
 #include "chrome/utility/services.h"
 #include "content/public/child/child_thread.h"
 #include "content/public/common/content_switches.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "sandbox/policy/switches.h"
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && defined(OS_WIN)
 #include "chrome/utility/printing_handler.h"
@@ -44,7 +44,7 @@ void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
 #if defined(OS_WIN)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   utility_process_running_elevated_ = command_line->HasSwitch(
-      service_manager::switches::kNoSandboxAndElevatedPrivileges);
+      sandbox::policy::switches::kNoSandboxAndElevatedPrivileges);
 #endif
 
   // If our process runs with elevated privileges, only add elevated Mojo

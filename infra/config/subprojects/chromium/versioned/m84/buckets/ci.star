@@ -606,7 +606,7 @@ ci.mac_builder(
         category = 'release',
         short_name = 'bld',
     ),
-    os = os.MAC_10_14,
+    os = os.MAC_10_15,
 )
 
 ci.mac_builder(
@@ -664,6 +664,16 @@ ci.thin_tester(
     console_view_entry = ci.console_view_entry(
         category = 'release',
         short_name = '14',
+    ),
+    triggered_by = [builder_name('Mac Builder')],
+)
+
+ci.thin_tester(
+    name = 'Mac10.15 Tests',
+    mastername = 'chromium.mac',
+    console_view_entry = ci.console_view_entry(
+        category = 'release',
+        short_name = '15',
     ),
     triggered_by = [builder_name('Mac Builder')],
 )

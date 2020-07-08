@@ -31,10 +31,9 @@ class MediaRouterIntegrationOneUABrowserTest
 
     // Set up embedded test server to serve offscreen presentation with relative
     // URL "presentation_receiver.html".
-    base::FilePath base_dir;
-    CHECK(base::PathService::Get(base::DIR_MODULE, &base_dir));
-    base::FilePath resource_dir = base_dir.Append(
-        FILE_PATH_LITERAL("media_router/browser_test_resources/"));
+    base::FilePath resource_dir =
+        base::PathService::CheckedGet(base::DIR_MODULE)
+            .Append(FILE_PATH_LITERAL("media_router/browser_test_resources/"));
     embedded_test_server()->ServeFilesFromDirectory(resource_dir);
     ASSERT_TRUE(embedded_test_server()->Start());
   }

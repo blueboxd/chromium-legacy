@@ -329,13 +329,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   using ConstDeviceList = std::vector<const BluetoothDevice*>;
   using UUIDList = std::vector<BluetoothUUID>;
   using CreateServiceCallback =
-      base::Callback<void(scoped_refptr<BluetoothSocket>)>;
+      base::OnceCallback<void(scoped_refptr<BluetoothSocket>)>;
   using CreateServiceErrorCallback =
-      base::Callback<void(const std::string& message)>;
+      base::OnceCallback<void(const std::string& message)>;
   using CreateAdvertisementCallback =
-      base::Callback<void(scoped_refptr<BluetoothAdvertisement>)>;
-  using AdvertisementErrorCallback =
-      base::Callback<void(BluetoothAdvertisement::ErrorCode)>;
+      base::OnceCallback<void(scoped_refptr<BluetoothAdvertisement>)>;
+  using AdvertisementErrorCallback = BluetoothAdvertisement::ErrorCallback;
   using DiscoverySessionErrorCallback =
       base::OnceCallback<void(UMABluetoothDiscoverySessionOutcome)>;
   // The is_error bool is a flag to indicate if the result is an error(true)
@@ -537,8 +536,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   virtual void CreateRfcommService(
       const BluetoothUUID& uuid,
       const ServiceOptions& options,
-      const CreateServiceCallback& callback,
-      const CreateServiceErrorCallback& error_callback) = 0;
+      CreateServiceCallback callback,
+      CreateServiceErrorCallback error_callback) = 0;
 
   // Creates an L2CAP service on this adapter advertised with UUID |uuid|,
   // listening on PSM |options.psm|, which may be left null to automatically
@@ -550,8 +549,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   virtual void CreateL2capService(
       const BluetoothUUID& uuid,
       const ServiceOptions& options,
-      const CreateServiceCallback& callback,
-      const CreateServiceErrorCallback& error_callback) = 0;
+      CreateServiceCallback callback,
+      CreateServiceErrorCallback error_callback) = 0;
 
   // Creates and registers an advertisement for broadcast over the LE channel.
   // The created advertisement will be returned via the success callback. An
@@ -559,8 +558,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // function.
   virtual void RegisterAdvertisement(
       std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
-      const CreateAdvertisementCallback& callback,
-      const AdvertisementErrorCallback& error_callback) = 0;
+      CreateAdvertisementCallback callback,
+      AdvertisementErrorCallback error_callback) = 0;
 
 #if defined(OS_LINUX)
   // Sets the interval between two consecutive advertisements. Valid ranges
@@ -572,14 +571,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   virtual void SetAdvertisingInterval(
       const base::TimeDelta& min,
       const base::TimeDelta& max,
-      const base::Closure& callback,
-      const AdvertisementErrorCallback& error_callback) = 0;
+      base::OnceClosure callback,
+      AdvertisementErrorCallback error_callback) = 0;
 
   // Resets advertising on this adapter. This will unregister all existing
   // advertisements and will stop advertising them.
-  virtual void ResetAdvertising(
-      const base::Closure& callback,
-      const AdvertisementErrorCallback& error_callback) = 0;
+  virtual void ResetAdvertising(base::OnceClosure callback,
+                                AdvertisementErrorCallback error_callback) = 0;
 #endif
 
   // Returns the list of pending advertisements that are not registered yet.

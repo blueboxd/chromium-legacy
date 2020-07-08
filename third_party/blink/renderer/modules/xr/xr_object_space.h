@@ -33,10 +33,6 @@ class XRObjectSpace : public XRSpace {
     return object_->MojoFromObject();
   }
 
-  base::Optional<TransformationMatrix> NativeFromMojo() final {
-    return XRSpace::TryInvert(MojoFromNative());
-  }
-
   base::Optional<device::mojom::blink::XRNativeOriginInformation> NativeOrigin()
       const override {
     return XRNativeOriginInformation::Create(object_);

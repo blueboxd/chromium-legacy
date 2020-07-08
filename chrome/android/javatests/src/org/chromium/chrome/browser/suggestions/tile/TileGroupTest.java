@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -200,17 +201,13 @@ public class TileGroupTest {
     private static View waitForSnackbar(final ChromeActivity activity) {
         final String expectedSnackbarMessage =
                 activity.getResources().getString(R.string.most_visited_item_removed);
-        CriteriaHelper.pollUiThread(new Criteria("The snackbar was not shown.") {
-            @Override
-            public boolean isSatisfied() {
-                SnackbarManager snackbarManager = activity.getSnackbarManager();
-                if (!snackbarManager.isShowing()) return false;
-
-                TextView snackbarMessage = (TextView) activity.findViewById(R.id.snackbar_message);
-                if (snackbarMessage == null) return false;
-
-                return snackbarMessage.getText().toString().equals(expectedSnackbarMessage);
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            SnackbarManager snackbarManager = activity.getSnackbarManager();
+            Criteria.checkThat(snackbarManager.isShowing(), Matchers.is(true));
+            TextView snackbarMessage = (TextView) activity.findViewById(R.id.snackbar_message);
+            Criteria.checkThat(snackbarMessage, Matchers.notNullValue());
+            Criteria.checkThat(
+                    snackbarMessage.getText().toString(), Matchers.is(expectedSnackbarMessage));
         });
 
         return activity.findViewById(R.id.snackbar_button);

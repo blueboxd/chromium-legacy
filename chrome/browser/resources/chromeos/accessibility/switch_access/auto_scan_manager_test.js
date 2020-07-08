@@ -36,12 +36,13 @@ SwitchAccessAutoScanManagerTest = class extends SwitchAccessE2ETest {
       window.defaultClearInterval(intervalId);
     };
 
-    NavigationManager.moveForward = function() {
+    NavigationManager.moveForward = () => {
       NavigationManager.moveForwardCount++;
+      this.onMoveForward_ && this.onMoveForward_();
       NavigationManager.defaultMoveForward();
     };
 
-    NavigationManager.instance.onMoveForwardForTesting_ = null;
+    this.onMoveForward_ = null;
   }
 };
 
@@ -55,8 +56,7 @@ TEST_F('SwitchAccessAutoScanManagerTest', 'SetEnabled', function() {
         'Incorrect initialization of moveForwardCount');
     assertEquals(0, intervalCount, 'Incorrect initialization of intervalCount');
 
-    NavigationManager.instance
-        .onMoveForwardForTesting_ = this.newCallback(() => {
+    this.onMoveForward_ = this.newCallback(() => {
       assertTrue(
           AutoScanManager.instance.isRunning_(),
           'Auto scan manager has stopped running');

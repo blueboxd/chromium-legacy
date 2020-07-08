@@ -34,7 +34,7 @@
 #include "net/base/url_util.h"
 #include "net/ssl/client_cert_identity.h"
 #include "printing/buildflags/buildflags.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "sandbox/policy/switches.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/switches.h"
 
@@ -244,7 +244,7 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
 #if defined(OS_LINUX)
   // Processes may only query perf_event_open with the BPF sandbox disabled.
   if (old_command_line.HasSwitch(::switches::kEnableThreadInstructionCount) &&
-      old_command_line.HasSwitch(service_manager::switches::kNoSandbox)) {
+      old_command_line.HasSwitch(sandbox::policy::switches::kNoSandbox)) {
     command_line->AppendSwitch(::switches::kEnableThreadInstructionCount);
   }
 #endif

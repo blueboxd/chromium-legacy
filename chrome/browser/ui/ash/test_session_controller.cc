@@ -46,7 +46,7 @@ void TestSessionController::RunUnlockAnimation(
 void TestSessionController::NotifyChromeTerminating() {}
 
 void TestSessionController::SetSessionLengthLimit(base::TimeDelta length_limit,
-                                                  base::TimeTicks start_time) {
+                                                  base::Time start_time) {
   last_session_length_limit_ = length_limit;
   last_session_start_time_ = start_time;
 }

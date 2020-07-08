@@ -261,9 +261,11 @@ bool OpenXrRenderLoop::UpdateStageParameters() {
       changed = true;
     }
 
-    if (current_display_info_->stage_parameters->standing_transform !=
+    // mojo_from_local is identity, as is stage_from_floor, so we can directly
+    // compare and assign local_from_stage and mojo_from_floor.
+    if (current_display_info_->stage_parameters->mojo_from_floor !=
         local_from_stage) {
-      current_display_info_->stage_parameters->standing_transform =
+      current_display_info_->stage_parameters->mojo_from_floor =
           local_from_stage;
       changed = true;
     }

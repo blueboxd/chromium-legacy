@@ -45,7 +45,7 @@ bool UserCanConnectCallback(
 }
 
 UnixDomainServerSocket::AuthCallback CreateAuthCallback(bool allow_user) {
-  return base::Bind(&UserCanConnectCallback, allow_user);
+  return base::BindRepeating(&UserCanConnectCallback, allow_user);
 }
 
 // Connects socket synchronously.

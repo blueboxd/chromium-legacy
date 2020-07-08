@@ -74,6 +74,12 @@ class BLINK_COMMON_EXPORT IdentifiableTokenBuilder {
   // AddAtomic().
   IdentifiableTokenBuilder& AddAtomic(ByteBuffer buffer);
 
+  // Feeds the underlying value of the |token| itself to the digest. Use this
+  // when |token| is computed in parallel in order to preserve the ordering of
+  // values that were seen in a concurrent sequence that cannot be
+  // deterministically interleaved into the primary stream.
+  IdentifiableTokenBuilder& AddToken(IdentifiableToken token);
+
   // Helper for feeding primitive types by value efficiently. Anything more
   // complicated than that should be passed in as a base::span<const uint8_t>.
   //

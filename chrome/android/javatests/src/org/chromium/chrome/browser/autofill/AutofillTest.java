@@ -8,6 +8,7 @@ import android.view.View;
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -87,12 +88,8 @@ public class AutofillTest {
         }
 
         public void waitForCallback() {
-            CriteriaHelper.pollInstrumentationThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return mGotPopupSelection.get();
-                }
-            }, CALLBACK_TIMEOUT_MS, CHECK_INTERVAL_MS);
+            CriteriaHelper.pollInstrumentationThread(
+                    mGotPopupSelection::get, CALLBACK_TIMEOUT_MS, CHECK_INTERVAL_MS);
         }
 
         @Override
@@ -133,11 +130,9 @@ public class AutofillTest {
                 ()
                         -> mAutofillPopup.filterAndShow(
                                 suggestions, /* isRtl= */ false, /* isRefresh= */ false));
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mAutofillPopup.getListView().getChildCount() > 0;
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(
+                    mAutofillPopup.getListView().getChildCount(), Matchers.greaterThan(0));
         });
     }
 

@@ -83,6 +83,7 @@ enum CookieEffectiveSameSite {
   kLaxMode = 1,
   kStrictMode = 2,
   kLaxModeAllowUnsafe = 3,
+  kUndefined = 4,
 };
 
 enum ContextType {
@@ -305,7 +306,7 @@ interface CookieManager {
   // |status| will be set to INCLUDE.
   SetCanonicalCookie(CanonicalCookie cookie, url.mojom.Url source_url,
                      CookieOptions cookie_options)
-      => (CookieInclusionStatus status);
+      => (CookieAccessResult access_result);
 
   // Delete a cookie. Returns true if a cookie was deleted.
   DeleteCanonicalCookie(CanonicalCookie cookie) => (bool success);

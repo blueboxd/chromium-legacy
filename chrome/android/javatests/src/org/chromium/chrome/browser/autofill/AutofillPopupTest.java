@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.support.test.InstrumentationRegistry;
-import android.text.TextUtils;
 import android.view.View;
 
 import androidx.annotation.IntDef;
@@ -48,6 +47,7 @@ import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaNotSatisfiedException;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestInputMethodManagerWrapper;
 import org.chromium.content_public.browser.test.util.TouchCommon;
@@ -407,42 +407,30 @@ public class AutofillPopupTest {
     }
 
     private void waitForAnchorViewAdd(final View view) {
-        CriteriaHelper.pollUiThread(new Criteria(
-                "Autofill Popup anchor view was never added.") {
-            @Override
-            public boolean isSatisfied() {
-                return view.findViewById(R.id.dropdown_popup_window) != null;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("Autofill Popup anchor view was never added.",
+                    view.findViewById(R.id.dropdown_popup_window), Matchers.notNullValue());
         });
     }
 
     private void waitForAutofillPopupShow(final DropdownPopupWindowInterface popup) {
-        CriteriaHelper.pollUiThread(
-                new Criteria("Autofill Popup anchor view was never added.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        // Wait until the popup is showing and onLayout() has happened.
-                        return popup.isShowing() && popup.getListView() != null
-                                && popup.getListView().getHeight() != 0;
-                    }
-                });
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(popup.isShowing(), Matchers.is(true));
+            Criteria.checkThat(popup.getListView(), Matchers.notNullValue());
+            Criteria.checkThat(popup.getListView().getHeight(), Matchers.not(0));
+        });
     }
 
     private void waitForInputFieldFill() {
-        CriteriaHelper.pollInstrumentationThread(
-                new Criteria("First name field was never filled.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        try {
-                            return TextUtils.equals(FIRST_NAME,
-                                    DOMUtils.getNodeValue(
-                                            mActivityTestRule.getActivity().getCurrentWebContents(),
-                                            "fn"));
-                        } catch (TimeoutException e) {
-                            return false;
-                        }
-                    }
-                });
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            try {
+                String actualValue = DOMUtils.getNodeValue(
+                        mActivityTestRule.getActivity().getCurrentWebContents(), "fn");
+                Criteria.checkThat(actualValue, Matchers.is(FIRST_NAME));
+            } catch (TimeoutException e) {
+                throw new CriteriaNotSatisfiedException(e);
+            }
+        });
     }
 
     private void assertLogged(String autofilledValue, String profileFullName) {

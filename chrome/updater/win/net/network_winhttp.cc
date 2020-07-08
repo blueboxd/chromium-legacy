@@ -134,7 +134,7 @@ void NetworkFetcherWinHTTP::PostRequest(
   CrackUrl(url, &is_https_, &host_, &port_, &path_for_request_);
 
   verb_ = L"POST";
-  content_type_ = base::SysUTF8ToWide(content_type);
+  content_type_ = content_type;
   write_data_callback_ =
       base::BindRepeating(&NetworkFetcherWinHTTP::WriteDataToMemory, this);
 
@@ -171,7 +171,7 @@ void NetworkFetcherWinHTTP::DownloadToFile(
 
 HRESULT NetworkFetcherWinHTTP::BeginFetch(
     const std::string& data,
-    const base::flat_map<std::string, std::string>& additional_headers) {
+    base::flat_map<std::string, std::string> additional_headers) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   connect_handle_ = Connect();
   if (!connect_handle_.get())
@@ -200,17 +200,17 @@ HRESULT NetworkFetcherWinHTTP::BeginFetch(
   if (FAILED(hr))
     return hr;
 
-  if (!content_type_.empty()) {
-    ::WinHttpAddRequestHeaders(
-        request_handle_.get(), content_type_.data(), content_type_.size(),
-        WINHTTP_ADDREQ_FLAG_ADD | WINHTTP_ADDREQ_FLAG_REPLACE);
-  }
+  if (!content_type_.empty())
+    additional_headers.insert({"Content-Type", content_type_});
+
   for (const auto& header : additional_headers) {
     const auto raw_header = base::SysUTF8ToWide(
         base::StrCat({header.first, ": ", header.second, "\r\n"}));
-    ::WinHttpAddRequestHeaders(
-        request_handle_.get(), raw_header.c_str(), raw_header.size(),
-        WINHTTP_ADDREQ_FLAG_ADD | WINHTTP_ADDREQ_FLAG_REPLACE);
+    if (!::WinHttpAddRequestHeaders(
+            request_handle_.get(), raw_header.c_str(), raw_header.size(),
+            WINHTTP_ADDREQ_FLAG_ADD | WINHTTP_ADDREQ_FLAG_REPLACE)) {
+      PLOG(ERROR) << "Failed to set the request header: " << raw_header;
+    }
   }
 
   hr = SendRequest(data);

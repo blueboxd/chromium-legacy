@@ -31,13 +31,13 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
+#include "sandbox/policy/sandbox_type.h"
 #include "services/network/cookie_manager.h"
 #include "services/network/host_resolver.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
 
 #if defined(OS_ANDROID)
 #include "base/test/android/url_utils.h"
@@ -294,10 +294,10 @@ void NetworkServiceTestHelper::RegisterNetworkBinders(
       base::Unretained(this)));
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  service_manager::SandboxType sandbox_type =
-      service_manager::SandboxTypeFromCommandLine(*command_line);
+  sandbox::policy::SandboxType sandbox_type =
+      sandbox::policy::SandboxTypeFromCommandLine(*command_line);
   if (IsUnsandboxedSandboxType(sandbox_type) ||
-      sandbox_type == service_manager::SandboxType::kNetwork) {
+      sandbox_type == sandbox::policy::SandboxType::kNetwork) {
     // Register the EmbeddedTestServer's certs, so that any SSL connections to
     // it succeed. Only do this when file I/O is allowed in the current process.
 #if defined(OS_ANDROID)

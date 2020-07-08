@@ -586,7 +586,7 @@ bool DeleteDownloadedFile(const base::FilePath& path) {
   // Make sure we only delete files.
   if (base::DirectoryExists(path))
     return true;
-  return base::DeleteFile(path, false);
+  return base::DeleteFile(path);
 }
 
 DownloadItem::DownloadRenameResult RenameDownloadedFile(

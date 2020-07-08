@@ -150,13 +150,14 @@ MATCHER_P2(IsAdvertisementContent,
 class CableMockBluetoothAdvertisement : public BluetoothAdvertisement {
  public:
   MOCK_METHOD2(Unregister,
-               void(const SuccessCallback& success_callback,
-                    const ErrorCallback& error_callback));
+               void(SuccessCallback success_callback,
+                    ErrorCallback error_callback));
 
   void ExpectUnregisterAndSucceed() {
     EXPECT_CALL(*this, Unregister(_, _))
-        .WillOnce(::testing::WithArg<0>([](const auto& success_cb) {
-          base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, success_cb);
+        .WillOnce(::testing::WithArg<0>([](auto success_cb) {
+          base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                        std::move(success_cb));
         }));
   }
 
@@ -201,8 +202,8 @@ class CableMockAdapter : public MockBluetoothAdapter {
 
   MOCK_METHOD3(RegisterAdvertisement,
                void(std::unique_ptr<BluetoothAdvertisement::Data>,
-                    const CreateAdvertisementCallback&,
-                    const AdvertisementErrorCallback&));
+                    CreateAdvertisementCallback,
+                    AdvertisementErrorCallback));
 
   void AddNewTestBluetoothDevice(
       base::span<const uint8_t, kCableEphemeralIdSize> authenticator_eid) {
@@ -263,12 +264,12 @@ class CableMockAdapter : public MockBluetoothAdapter {
                     _, _))
         .InSequence(sequence)
         .WillOnce(::testing::WithArgs<1, 2>(
-            [simulate_success, advertisement](const auto& success_callback,
-                                              const auto& failure_callback) {
-              simulate_success
-                  ? success_callback.Run(advertisement)
-                  : failure_callback.Run(BluetoothAdvertisement::ErrorCode::
-                                             INVALID_ADVERTISEMENT_ERROR_CODE);
+            [simulate_success, advertisement](auto success_callback,
+                                              auto failure_callback) {
+              simulate_success ? std::move(success_callback).Run(advertisement)
+                               : std::move(failure_callback)
+                                     .Run(BluetoothAdvertisement::ErrorCode::
+                                              INVALID_ADVERTISEMENT_ERROR_CODE);
             }));
   }
 

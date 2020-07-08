@@ -275,16 +275,6 @@ suite('TabList', () => {
   function testPlaceElementAnimationParams(
       element, horizontalScale, verticalScale) {
     const animations = element.getAnimations();
-
-    // TODO(crbug.com/1090645): Remove logging once the test no longer flakes.
-    if (animations.length > 1) {
-      console.log('--- Multiple animations found. ---');
-      animations.forEach(animation => {
-        console.log('playState:', animation.playState);
-        console.log('duration:', animation.effect.getTiming().duration);
-      });
-    }
-
     assertEquals(1, animations.length);
     assertEquals('running', animations[0].playState);
     assertEquals(120, animations[0].effect.getTiming().duration);

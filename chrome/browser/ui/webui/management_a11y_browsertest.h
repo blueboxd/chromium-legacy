@@ -17,7 +17,7 @@ class ManagementA11yUIBrowserTest : public WebUIBrowserTest {
 
  protected:
   void InstallPowerfulPolicyEnforcedExtension();
-  base::FilePath test_data_dir_;
+  const base::FilePath test_data_dir_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_MANAGEMENT_A11Y_BROWSERTEST_H_

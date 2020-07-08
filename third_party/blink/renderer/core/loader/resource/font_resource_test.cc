@@ -71,7 +71,8 @@ TEST_F(FontResourceTest,
 
   // Fetch to cache a resource.
   ResourceRequest request1(url);
-  FetchParameters fetch_params1(std::move(request1));
+  FetchParameters fetch_params1 =
+      FetchParameters::CreateForTest(std::move(request1));
   Resource* resource1 = FontResource::Fetch(fetch_params1, fetcher, nullptr);
   ASSERT_FALSE(resource1->ErrorOccurred());
   fetcher->StartLoad(resource1);
@@ -85,7 +86,8 @@ TEST_F(FontResourceTest,
   // Revalidate the resource.
   ResourceRequest request2(url);
   request2.SetCacheMode(mojom::FetchCacheMode::kValidateCache);
-  FetchParameters fetch_params2(std::move(request2));
+  FetchParameters fetch_params2 =
+      FetchParameters::CreateForTest(std::move(request2));
   Resource* resource2 = FontResource::Fetch(fetch_params2, fetcher, nullptr);
   ASSERT_FALSE(resource2->ErrorOccurred());
   EXPECT_EQ(resource1, resource2);
@@ -95,7 +97,8 @@ TEST_F(FontResourceTest,
   // Fetch the same resource again before actual load operation starts.
   ResourceRequest request3(url);
   request3.SetCacheMode(mojom::FetchCacheMode::kValidateCache);
-  FetchParameters fetch_params3(std::move(request3));
+  FetchParameters fetch_params3 =
+      FetchParameters::CreateForTest(std::move(request3));
   Resource* resource3 = FontResource::Fetch(fetch_params3, fetcher, nullptr);
   ASSERT_FALSE(resource3->ErrorOccurred());
   EXPECT_EQ(resource2, resource3);

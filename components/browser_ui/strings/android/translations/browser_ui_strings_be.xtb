@@ -27,14 +27,11 @@
 <translation id="1743802530341753419">Запытваць дазвол на падключэнне сайтаў да прылады (рэкамендуецца)</translation>
 <translation id="1887786770086287077">Доступ да месцазнаходжання для гэтай прылады выключаны. Уключыце яго ў <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
 <translation id="1919345977826869612">Рэклама</translation>
-<translation id="1922076542920281912">Каб даць браўзеру Chrome доступ да даных пра ваша месцазнаходжанне, уключыце апошнія ў <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
-<translation id="194341124344773587">Уключыце дазвол для Chrome у <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
 <translation id="1984937141057606926">Дазволены, за выключэннем старонніх</translation>
 <translation id="1994173015038366702">URL-адрас сайта</translation>
 <translation id="2025115093177348061">Дапоўненая рэальнасць</translation>
 <translation id="2030769033451695672">Націсніце, каб вярнуцца на ўкладку <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
-<translation id="2041019821020695769">Каб Chrome мог адпраўляць вам апавяшчэнні, таксама ўключыце іх у <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Адрабіць</translation>
 <translation id="2091887806945687916">Гук</translation>
 <translation id="2107397443965016585">Пытаць, перш чым дазволіць прайграванне абароненага змесціва на сайтах (рэкамендуецца)</translation>
@@ -71,7 +68,6 @@
 <translation id="301521992641321250">Заблакіравана аўтаматычна</translation>
 <translation id="3115898365077584848">Паказаць інфармацыю</translation>
 <translation id="3123473560110926937">Заблакіравана на некаторых сайтах</translation>
-<translation id="3190152372525844641">Уключыце дазволы для Chrome у <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">Аб'ём захаваных даных: <ph name="STORAGE_AMOUNT" /></translation>
 <translation id="3227137524299004712">Мікрафон</translation>
 <translation id="3277252321222022663">Дазволіць сайтам доступ да датчыкаў (рэкамендуецца)</translation>
@@ -83,7 +79,6 @@
 <translation id="358794129225322306">Дазволіць сайту аўтаматычна спампоўваць некалькі файлаў.</translation>
 <translation id="3596414637720633074">Блакіраваць староннія файлы cookie у рэжыме інкогніта</translation>
 <translation id="3600792891314830896">Выключыць гук на сайтах, якія прайграюць гукі</translation>
-<translation id="3730075448226062617">Каб даць браўзеру Chrome доступ да мікрафона, уключыце апошні ў <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
 <translation id="3744111561329211289">Фонавая сінхранізацыя</translation>
 <translation id="3822502789641063741">Ачысц. сховішча сайтаў?</translation>
 <translation id="385051799172605136">Назад</translation>
@@ -112,7 +107,6 @@
 <translation id="4883854917563148705">Налады, якія знаходзяцца пад кіраваннем, скінуць нельга</translation>
 <translation id="4887024562049524730">Пытацца, перш чым дазваляць сайтам выкарыстоўваць даныя і прылады віртуальнай рэальнасці (рэкамендуецца)</translation>
 <translation id="4962975101802056554">Адклікаць усе дазволы для прылады</translation>
-<translation id="4964199952259983386">Каб Chrome мог выкарыстоўваць дапоўненую рэальнасць, уключыце таксама камеру ў <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
 <translation id="497421865427891073">Наперад</translation>
 <translation id="4996978546172906250">Абагуліць праз</translation>
 <translation id="5039804452771397117">Дазволіць</translation>
@@ -153,7 +147,6 @@
 <translation id="6177111841848151710">Заблакіравана для бягучай пошукавай сістэмы</translation>
 <translation id="6181444274883918285">Дадаць выключэнне з сайтаў</translation>
 <translation id="6192792657125177640">Выключэнні</translation>
-<translation id="6194112207524046168">Каб Chrome атрымаў доступ да камеры, уключыце камеру таксама ў <ph name="BEGIN_LINK" />наладах Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Блакіраваць староннія файлы cookie</translation>
 <translation id="6206551242102657620">Падключэнне бяспечнае. Звесткі пра сайт</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />: параметры</translation>

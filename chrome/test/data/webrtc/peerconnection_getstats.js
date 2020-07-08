@@ -513,7 +513,7 @@ let kRTCTransportStats = new RTCStats(null, {
   bytesSent: 'number',
   packetsSent: 'number',
   bytesReceived: 'number',
-  packetsRecevied: 'number',
+  packetsReceived: 'number',
   rtcpTransportStatsId: 'string',
   dtlsState: 'string',
   selectedCandidatePairId: 'string',

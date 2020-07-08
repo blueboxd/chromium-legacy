@@ -12,6 +12,7 @@
 #include <limits>
 #include <memory>
 #include <set>
+#include <string>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -452,7 +453,6 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client, bool enable_javascript)
     DCHECK(IsV8Initialized());
 
   find_factory_.Initialize(this);
-  password_factory_.Initialize(this);
 
   IFSDK_PAUSE::version = 1;
   IFSDK_PAUSE::user = nullptr;
@@ -2582,18 +2582,13 @@ void PDFiumEngine::GetPasswordAndLoad() {
   getting_password_ = true;
   DCHECK(!doc());
   DCHECK_EQ(static_cast<unsigned long>(FPDF_ERR_PASSWORD), FPDF_GetLastError());
-  client_->GetDocumentPassword(password_factory_.NewCallbackWithOutput(
-      &PDFiumEngine::OnGetPasswordComplete));
+  client_->GetDocumentPassword(base::BindOnce(
+      &PDFiumEngine::OnGetPasswordComplete, weak_factory_.GetWeakPtr()));
 }
 
-void PDFiumEngine::OnGetPasswordComplete(int32_t result,
-                                         const pp::Var& password) {
+void PDFiumEngine::OnGetPasswordComplete(const std::string& password) {
   getting_password_ = false;
-
-  std::string password_text;
-  if (result == PP_OK && password.is_string())
-    password_text = password.AsString();
-  ContinueLoadingDocument(password_text);
+  ContinueLoadingDocument(password);
 }
 
 void PDFiumEngine::ContinueLoadingDocument(const std::string& password) {

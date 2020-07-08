@@ -20,7 +20,7 @@ class XRBoundedReferenceSpace final : public XRReferenceSpace {
   XRBoundedReferenceSpace(XRSession*, XRRigidTransform*);
   ~XRBoundedReferenceSpace() override;
 
-  base::Optional<TransformationMatrix> NativeFromMojo() override;
+  base::Optional<TransformationMatrix> MojoFromNative() override;
 
   HeapVector<Member<DOMPointReadOnly>> boundsGeometry();
 
@@ -35,7 +35,7 @@ class XRBoundedReferenceSpace final : public XRReferenceSpace {
   void EnsureUpdated();
 
   HeapVector<Member<DOMPointReadOnly>> offset_bounds_geometry_;
-  std::unique_ptr<TransformationMatrix> bounded_native_from_mojo_;
+  std::unique_ptr<TransformationMatrix> mojo_from_bounded_native_;
   unsigned int stage_parameters_id_ = 0;
 };
 

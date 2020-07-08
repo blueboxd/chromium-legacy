@@ -73,6 +73,8 @@ class WebRtcTestBase : public InProcessBrowserTest {
   // prompt will be shown (i.e. the current origin in the tab_contents doesn't
   // have a saved permission).
   bool GetUserMediaAndAccept(content::WebContents* tab_contents) const;
+  bool GetUserMediaAndAcceptIfPrompted(
+      content::WebContents* tab_contents) const;
   bool GetUserMediaWithSpecificConstraintsAndAccept(
       content::WebContents* tab_contents,
       const std::string& constraints) const;

@@ -56,7 +56,8 @@ public class MediaSessionHelper implements MediaImageCallback {
     private Bitmap mCurrentMediaImage;
     private String mOrigin;
     private int mPreviousVolumeControlStream = AudioManager.USE_DEFAULT_STREAM_TYPE;
-    private MediaNotificationInfo.Builder mNotificationInfoBuilder;
+    @VisibleForTesting
+    public MediaNotificationInfo.Builder mNotificationInfoBuilder;
     // The fallback title if |mPageMetadata| is null or its title is empty.
     private String mFallbackTitle;
     // Set to true if favicon update callback was called at least once.
@@ -225,7 +226,7 @@ public class MediaSessionHelper implements MediaImageCallback {
                 // delegate will pass a favicon later, show nothing for now; we expect the favicon
                 // to arrive quickly.
                 if (mWebContents.isIncognito()
-                        || (mCurrentMediaImage == null && fetchLargeFaviconImage())) {
+                        || (mCurrentMediaImage == null && !fetchLargeFaviconImage())) {
                     mNotificationInfoBuilder.setDefaultNotificationLargeIcon(
                             R.drawable.audio_playing_square);
                 }

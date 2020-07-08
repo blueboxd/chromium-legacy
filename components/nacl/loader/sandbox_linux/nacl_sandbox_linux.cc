@@ -34,7 +34,7 @@
 #include "sandbox/linux/services/resource_limits.h"
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "sandbox/policy/switches.h"
 
 namespace nacl {
 
@@ -54,7 +54,7 @@ bool MaybeSetProcessNonDumpable() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(
-          service_manager::switches::kAllowSandboxDebugging)) {
+          sandbox::policy::switches::kAllowSandboxDebugging)) {
     return true;
   }
 

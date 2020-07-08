@@ -44,6 +44,7 @@ class VIZ_SERVICE_EXPORT OutputPresenter {
     SkSurface* sk_surface();
     std::vector<GrBackendSemaphore> TakeEndWriteSkiaSemaphores();
     void EndWriteSkia();
+    void PreGrContextSubmit();
 
     virtual void BeginPresent() = 0;
     virtual void EndPresent() = 0;

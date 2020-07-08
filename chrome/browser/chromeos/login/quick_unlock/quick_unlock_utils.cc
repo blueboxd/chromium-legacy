@@ -162,6 +162,10 @@ void EnabledForTesting(bool state) {
   enable_for_testing_ = state;
 }
 
+bool IsPinAutosubmitFeatureEnabled() {
+  return base::FeatureList::IsEnabled(features::kQuickUnlockPinAutosubmit);
+}
+
 void DisablePinByPolicyForTesting(bool disable) {
   disable_pin_by_policy_for_testing_ = disable;
 }

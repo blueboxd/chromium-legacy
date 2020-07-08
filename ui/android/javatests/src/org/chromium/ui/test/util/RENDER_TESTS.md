@@ -23,7 +23,16 @@ the `chrome_public_test_apk` step to go to the **Suites Summary** page.
 failing.
 3. On the **Test Results of Suite** page, follow the links in the **log** column
 corresponding to the renders mentioned in the failure stack trace. The links
-will be named "Skia Gold triage link for entire CL".
+will be named "[Public|Internal] Skia Gold triage link for entire CL".
+
+In most cases, the public and internal links are equivalent. The difference is:
+1. The internal link will not show any results unless logged in with an
+@google.com account.
+2. The internal link will show internal-only results, e.g. from an internal
+repo.
+
+So, unless you're working on an internal repo or otherwise expect results to
+be marked as internal-only, the public link should be fine.
 
 Once on the triage page, make sure you are logged in at the top-right.
 Currently, only @google.com and @chromium.org accounts work, but other domains
@@ -59,7 +68,8 @@ differences:
 
 1. You must manually find the triage links, as Gold has nowhere to post a
 comment to. Alternatively, you can check for untriaged images directly in the
-[gold instance](https://chrome-gold.skia.org).
+[public gold instance](https://chrome-public-gold.skia.org) or
+[internal gold instance](https://chrome-gold.skia.org).
 2. Triage links are for specific images instead of for an entire CL, and are
 thus named after the render name.
 

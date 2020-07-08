@@ -92,6 +92,9 @@ bool ExternalVkImageGLRepresentationShared::BeginAccess(GLenum mode) {
       GrVkImageInfo info;
       auto result = backing_impl()->backend_texture().getVkImageInfo(&info);
       DCHECK(result);
+      DCHECK_EQ(info.fCurrentQueueFamily, VK_QUEUE_FAMILY_EXTERNAL);
+      DCHECK_NE(info.fImageLayout, VK_IMAGE_LAYOUT_UNDEFINED);
+      DCHECK_NE(info.fImageLayout, VK_IMAGE_LAYOUT_PREINITIALIZED);
       GLenum src_layout = ToGLImageLayout(info.fImageLayout);
       api()->glWaitSemaphoreEXTFn(gl_semaphore, 0, nullptr, 1,
                                   &texture_service_id_, &src_layout);
@@ -160,6 +163,9 @@ void ExternalVkImageGLRepresentationShared::EndAccess() {
     GrVkImageInfo info;
     auto result = backing_impl()->backend_texture().getVkImageInfo(&info);
     DCHECK(result);
+    DCHECK_EQ(info.fCurrentQueueFamily, VK_QUEUE_FAMILY_EXTERNAL);
+    DCHECK_NE(info.fImageLayout, VK_IMAGE_LAYOUT_UNDEFINED);
+    DCHECK_NE(info.fImageLayout, VK_IMAGE_LAYOUT_PREINITIALIZED);
     GLenum dst_layout = ToGLImageLayout(info.fImageLayout);
     api()->glSignalSemaphoreEXTFn(gl_semaphore, 0, nullptr, 1,
                                   &texture_service_id_, &dst_layout);

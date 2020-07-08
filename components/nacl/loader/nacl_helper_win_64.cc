@@ -27,8 +27,8 @@
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
 #include "mojo/core/embedder/embedder.h"
+#include "sandbox/policy/sandbox.h"
 #include "sandbox/win/src/sandbox_types.h"
-#include "services/service_manager/sandbox/sandbox.h"
 
 extern int NaClMain(const content::MainFunctionParams&);
 
@@ -74,8 +74,8 @@ int NaClWin64Main() {
     base::RouteStdioToConsole(true);
 
   // Initialize the sandbox for this process.
-  bool sandbox_initialized_ok = service_manager::Sandbox::Initialize(
-      service_manager::SandboxTypeFromCommandLine(command_line), &sandbox_info);
+  bool sandbox_initialized_ok = sandbox::policy::Sandbox::Initialize(
+      sandbox::policy::SandboxTypeFromCommandLine(command_line), &sandbox_info);
 
   // Die if the sandbox can't be enabled.
   CHECK(sandbox_initialized_ok) << "Error initializing sandbox for "

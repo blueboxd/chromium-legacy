@@ -13,6 +13,7 @@ import android.widget.TextView;
 import androidx.annotation.StringRes;
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -146,13 +147,11 @@ public class RuntimePermissionTest {
     }
 
     private void waitUntilDifferentDialogIsShowing(final PropertyModel currentDialog) {
-        CriteriaHelper.pollUiThread(new Criteria("Dialog not displayed.") {
-            @Override
-            public boolean isSatisfied() {
-                final ModalDialogManager manager =
-                        mPermissionTestRule.getActivity().getModalDialogManager();
-                return manager.isShowing() && currentDialog != manager.getCurrentDialogForTest();
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            final ModalDialogManager manager =
+                    mPermissionTestRule.getActivity().getModalDialogManager();
+            Criteria.checkThat(manager.isShowing(), Matchers.is(true));
+            Criteria.checkThat(manager.getCurrentDialogForTest(), Matchers.not(currentDialog));
         });
     }
 

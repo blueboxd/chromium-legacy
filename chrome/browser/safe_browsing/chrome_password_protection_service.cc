@@ -49,6 +49,7 @@
 #include "components/safe_browsing/content/password_protection/password_protection_request.h"
 #include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/common/utils.h"
 #include "components/safe_browsing/core/db/database_manager.h"
 #include "components/safe_browsing/core/features.h"
@@ -64,6 +65,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
 #include "components/sync_user_events/user_event_service.h"
+#include "components/variations/service/variations_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -786,6 +788,7 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseLookupEvent(
     case RequestOutcome::DISABLED_DUE_TO_USER_POPULATION:
     case RequestOutcome::SAFE_BROWSING_DISABLED:
     case RequestOutcome::USER_NOT_SIGNED_IN:
+    case RequestOutcome::EXCLUDED_COUNTRY:
       MaybeLogPasswordReuseLookupResult(web_contents,
                                         PasswordReuseLookup::REQUEST_FAILURE);
       break;
@@ -1139,9 +1142,7 @@ ChromePasswordProtectionService::GetWarningDetailTextForSavedPasswords(
       GetPlaceholdersForSavedPasswordWarningText();
   // If showing the saved passwords domain experiment is not on or if there is
   // are no saved domains, default to original saved passwords reuse warning.
-  if (!base::FeatureList::IsEnabled(
-          safe_browsing::kPasswordProtectionShowDomainsForSavedPasswords) ||
-      placeholders.size() == 0) {
+  if (placeholders.size() == 0) {
     return l10n_util::GetStringUTF16(
         IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED);
   }
@@ -1449,9 +1450,7 @@ bool ChromePasswordProtectionService::IsPingingEnabled(
   if (trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT) {
     if (password_type.account_type() ==
         ReusedPasswordAccountType::SAVED_PASSWORD) {
-      return extended_reporting_enabled ||
-             base::FeatureList::IsEnabled(
-                 safe_browsing::kPasswordProtectionForSavedPasswords);
+      return true;
     }
 
     // Only override policy if password protection is off for Gmail users.
@@ -1482,6 +1481,9 @@ RequestOutcome ChromePasswordProtectionService::GetPingNotSentReason(
     const GURL& url,
     ReusedPasswordAccountType password_type) {
   DCHECK(!CanSendPing(trigger_type, url, password_type));
+  if (IsInExcludedCountry()) {
+    return RequestOutcome::EXCLUDED_COUNTRY;
+  }
   if (!IsSafeBrowsingEnabled()) {
     return RequestOutcome::SAFE_BROWSING_DISABLED;
   }
@@ -1564,6 +1566,15 @@ AccountInfo ChromePasswordProtectionService::GetSignedInNonSyncAccount(
   return identity_manager
       ->FindExtendedAccountInfoForAccountWithRefreshToken(*account_iterator)
       .value_or(AccountInfo());
+}
+
+bool ChromePasswordProtectionService::IsInExcludedCountry() {
+  variations::VariationsService* variations_service =
+      g_browser_process->variations_service();
+  if (!variations_service)
+    return false;
+  return base::Contains(GetExcludedCountries(),
+                        variations_service->GetStoredPermanentCountry());
 }
 
 PasswordReuseEvent::SyncAccountType

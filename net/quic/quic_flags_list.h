@@ -316,46 +316,16 @@ QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_google_transport_param_omit_old,
           false)
 
-// When true, QUIC+TLS will send and parse the new-format Google-specific
-// transport parameters.
-QUIC_FLAG(bool,
-          FLAGS_quic_restart_flag_quic_google_transport_param_send_new,
-          true)
-
-// If true, return from QuicCryptoStream::WritePendingCryptoRetransmission after
-// partial writes.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_fix_write_pending_crypto_retransmission,
-    true)
-
 // If true, QUIC will free writer-allocated packet buffer if writer->WritePacket
 // is not called.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_avoid_leak_writer_buffer, false)
-
-// If true, QuicConnection::SendAllPendingAcks will Update instead of Set the
-// ack alarm.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_update_ack_alarm_in_send_all_pending_acks,
-    true)
 
 // If true, the B2HI connection option limits reduction of inflight_hi to
 // (1-Beta)*CWND.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr2_limit_inflight_hi, false)
 
-// When true, always check the amplification limit before writing, not just for
-// handshake packets.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_move_amplification_limit, true)
-
 // If true, SendAllPendingAcks always send the earliest ACK.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_always_send_earliest_ack, true)
-
-// If true, check connection level flow control for send control stream and
-// qpack streams in QuicSession::WillingAndAbleToWrite.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_fix_willing_and_able_to_write,
-          true)
 
 // If true, disable QUIC version h3-T050.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_t050, false)
@@ -397,18 +367,6 @@ QUIC_FLAG(bool,
 // If true, remove the head of line blocking caused by an unprocessable packet
 // in the undecryptable packets list.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_undecryptable_packets, true)
-
-// If true, QUIC client only tries to retransmit data when 1-RTT key is
-// available.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_do_not_retransmit_immediately_on_zero_rtt_reject,
-    true)
-
-// If true, try to bundle INITIAL data when trying to send INITIAL ACK.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_bundle_crypto_data_with_initial_ack,
-          true)
 
 // If true, do not use QuicUtil::IsBidirectionalStreamId() to determine gQUIC
 // stream type.
@@ -453,3 +411,7 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_determine_serialized_packet_fate_early,
     false)
+
+// If true, take the largest acked packet into account when computing the sent
+// packet number length.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_packet_number_length, false)

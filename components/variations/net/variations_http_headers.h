@@ -27,6 +27,24 @@ class GURL;
 
 namespace variations {
 
+// Denotes whether the top frame of a request-initiating frame is a Google-
+// owned web property, e.g. YouTube.
+//
+// kUnknownFromRenderer is used only in WebURLLoaderImpl::Context::Start() on
+// the render thread and kUnknown is used elsewhere. This distinction allows us
+// to tell how many non-render-thread-initiated subframe requests, if any, lack
+// TrustedParams.
+//
+// This enum is used to record UMA histogram values, and should not be
+// reordered.
+enum class Owner {
+  kUnknownFromRenderer = 0,
+  kUnknown = 1,
+  kNotGoogle = 2,
+  kGoogle = 3,
+  kMaxValue = kGoogle,
+};
+
 enum class InIncognito { kNo, kYes };
 
 enum class SignedIn { kNo, kYes };
@@ -49,10 +67,14 @@ bool AppendVariationsHeader(const GURL& url,
                             network::ResourceRequest* request);
 
 // Similar to AppendVariationsHeader, but uses specified |variations_header| as
-// the custom header value. You should not generally need to use this.
+// the custom header value. It also uses |owner|, which indicates whether
+// the request-initiating frame's top frame is a Google-owned web property.
+//
+// You should not generally need to use this.
 bool AppendVariationsHeaderWithCustomValue(const GURL& url,
                                            InIncognito incognito,
                                            const std::string& variations_header,
+                                           Owner owner,
                                            network::ResourceRequest* request);
 
 // Adds Chrome experiment and metrics state as a custom header to |request|

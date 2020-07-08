@@ -12,16 +12,16 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
+#include "sandbox/policy/sandbox.h"
+#include "sandbox/policy/win/sandbox_win.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_types.h"
-#include "services/service_manager/sandbox/sandbox.h"
-#include "services/service_manager/sandbox/win/sandbox_win.h"
 
 namespace content {
 
-bool InitializeSandbox(service_manager::SandboxType sandbox_type,
+bool InitializeSandbox(sandbox::policy::SandboxType sandbox_type,
                        sandbox::SandboxInterfaceInfo* sandbox_info) {
-  return service_manager::Sandbox::Initialize(sandbox_type, sandbox_info);
+  return sandbox::policy::Sandbox::Initialize(sandbox_type, sandbox_info);
 }
 
 sandbox::ResultCode StartSandboxedProcess(
@@ -47,7 +47,7 @@ sandbox::ResultCode StartSandboxedProcess(
       child_command_line->AppendSwitch(switches::kWaitForDebugger);
   }
 
-  return service_manager::SandboxWin::StartSandboxedProcess(
+  return sandbox::policy::SandboxWin::StartSandboxedProcess(
       child_command_line, type_str, handles_to_inherit, delegate, process);
 }
 

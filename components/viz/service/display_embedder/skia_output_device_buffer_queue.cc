@@ -120,6 +120,11 @@ void SkiaOutputDeviceBufferQueue::ScheduleOverlays(
   pending_overlays_ = presenter_->ScheduleOverlays(std::move(overlays));
 }
 
+void SkiaOutputDeviceBufferQueue::PreGrContextSubmit() {
+  DCHECK(current_image_);
+  current_image_->PreGrContextSubmit();
+}
+
 void SkiaOutputDeviceBufferQueue::SwapBuffers(
     BufferPresentedCallback feedback,
     std::vector<ui::LatencyInfo> latency_info) {

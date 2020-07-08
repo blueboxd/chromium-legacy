@@ -186,6 +186,7 @@ class VIEWS_EXPORT ScrollBar : public View,
   friend class test::ScrollViewTestApi;
   FRIEND_TEST_ALL_PREFIXES(ScrollBarViewsTest, ScrollBarFitsToBottom);
   FRIEND_TEST_ALL_PREFIXES(ScrollBarViewsTest, ThumbFullLengthOfTrack);
+  FRIEND_TEST_ALL_PREFIXES(ScrollBarViewsTest, DragThumbScrollsContent);
 
   static base::RetainingOneShotTimer* GetHideTimerForTesting(
       ScrollBar* scroll_bar);

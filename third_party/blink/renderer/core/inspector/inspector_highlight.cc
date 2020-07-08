@@ -476,6 +476,8 @@ std::unique_ptr<protocol::DictionaryValue> BuildAreaNamePaths(
 
   const Vector<LayoutUnit>& rows = layout_grid->RowPositions();
   const Vector<LayoutUnit>& columns = layout_grid->ColumnPositions();
+  LayoutUnit row_gap = layout_grid->GridGap(kForRows);
+  LayoutUnit column_gap = layout_grid->GridGap(kForColumns);
 
   NamedGridAreaMap grid_area_map = layout_grid->StyleRef().NamedGridArea();
   for (const auto& item : grid_area_map) {
@@ -487,8 +489,17 @@ std::unique_ptr<protocol::DictionaryValue> BuildAreaNamePaths(
     LayoutUnit start_row = rows.at(area.rows.StartLine());
     LayoutUnit end_row = rows.at(area.rows.EndLine());
 
+    // Only subtract the gap size if the end line isn't the last line in the
+    // container.
+    LayoutUnit row_gap_offset =
+        area.rows.EndLine() == rows.size() - 1 ? LayoutUnit() : row_gap;
+    LayoutUnit column_gap_offset = area.columns.EndLine() == columns.size() - 1
+                                       ? LayoutUnit()
+                                       : column_gap;
+
     PhysicalOffset position(start_column, start_row);
-    PhysicalSize size(end_column - start_column, end_row - start_row);
+    PhysicalSize size(end_column - start_column - column_gap_offset,
+                      end_row - start_row - row_gap_offset);
     PhysicalRect area_rect(position, size);
     FloatQuad area_quad = layout_grid->LocalRectToAbsoluteQuad(area_rect);
 

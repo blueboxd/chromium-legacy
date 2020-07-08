@@ -52,7 +52,7 @@ bool DefaultWriteFunction(const base::FilePath& file, base::StringPiece data) {
 }
 
 bool DefaultDeleteFunction(const base::FilePath& file) {
-  return base::DeleteFile(file, /*recursive=*/false);
+  return base::DeleteFile(file);
 }
 
 }  // namespace

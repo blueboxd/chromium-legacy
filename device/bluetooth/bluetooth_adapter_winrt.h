@@ -50,20 +50,18 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
                        const ErrorCallback& error_callback) override;
   bool IsDiscovering() const override;
   UUIDList GetUUIDs() const override;
-  void CreateRfcommService(
-      const BluetoothUUID& uuid,
-      const ServiceOptions& options,
-      const CreateServiceCallback& callback,
-      const CreateServiceErrorCallback& error_callback) override;
-  void CreateL2capService(
-      const BluetoothUUID& uuid,
-      const ServiceOptions& options,
-      const CreateServiceCallback& callback,
-      const CreateServiceErrorCallback& error_callback) override;
+  void CreateRfcommService(const BluetoothUUID& uuid,
+                           const ServiceOptions& options,
+                           CreateServiceCallback callback,
+                           CreateServiceErrorCallback error_callback) override;
+  void CreateL2capService(const BluetoothUUID& uuid,
+                          const ServiceOptions& options,
+                          CreateServiceCallback callback,
+                          CreateServiceErrorCallback error_callback) override;
   void RegisterAdvertisement(
       std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
-      const CreateAdvertisementCallback& callback,
-      const AdvertisementErrorCallback& error_callback) override;
+      CreateAdvertisementCallback callback,
+      AdvertisementErrorCallback error_callback) override;
   std::vector<BluetoothAdvertisement*> GetPendingAdvertisementsForTesting()
       const override;
   BluetoothLocalGattService* GetGattService(
@@ -207,11 +205,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
           IBluetoothLEAdvertisementWatcherStoppedEventArgs* args);
 
   void OnRegisterAdvertisement(BluetoothAdvertisement* advertisement,
-                               const CreateAdvertisementCallback& callback);
+                               CreateAdvertisementCallback callback);
 
   void OnRegisterAdvertisementError(
       BluetoothAdvertisement* advertisement,
-      const AdvertisementErrorCallback& error_callback,
+      AdvertisementErrorCallback error_callback,
       BluetoothAdvertisement::ErrorCode error_code);
 
   void TryRemoveRadioStateChangedHandler();

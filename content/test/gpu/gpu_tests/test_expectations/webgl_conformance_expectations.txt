@@ -326,7 +326,6 @@ crbug.com/angleproject/3741 [ win vulkan passthrough ] conformance/textures/misc
 crbug.com/angleproject/4334 [ win vulkan passthrough ] conformance/textures/misc/canvas-teximage-after-multiple-drawimages.html [ Skip ]
 
 # Vulkan / Win / NVIDIA / Passthrough command decoder
-crbug.com/angleproject/3935 [ win nvidia vulkan passthrough ] conformance/canvas/viewport-unchanged-upon-resize.html [ Failure ]
 crbug.com/963205 [ win nvidia vulkan passthrough ] conformance/extensions/webgl-compressed-texture-s3tc-srgb.html [ Failure ]
 crbug.com/964321 [ win nvidia vulkan passthrough ] conformance/extensions/webgl-compressed-texture-s3tc.html [ RetryOnFailure ]
 crbug.com/1051576 [ win nvidia vulkan passthrough ] conformance/extensions/webgl-compressed-texture-size-limit.html [ Failure ]
@@ -796,4 +795,3 @@ crbug.com/1099979 [ mac swiftshader passthrough ] conformance/textures/video/tex
 crbug.com/1099979 [ mac swiftshader passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
 crbug.com/1099979 [ mac swiftshader passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
 crbug.com/1099979 [ mac swiftshader passthrough ] conformance/textures/webgl_canvas/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
-

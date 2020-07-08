@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/ui/update_required_notification.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/upgrade_detector/build_state.h"
+#include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -80,6 +81,21 @@ int GetDaysRounded(base::TimeDelta time) {
 
 chromeos::UpdateEngineClient* GetUpdateEngineClient() {
   return chromeos::DBusThreadManager::Get()->GetUpdateEngineClient();
+}
+
+// Overrides the relaunch notification style to required and configures the
+// relaunch deadline according to the deadline.
+void OverrideRelaunchNotification(base::Time deadline) {
+  UpgradeDetector* upgrade_detector = UpgradeDetector::GetInstance();
+  upgrade_detector->OverrideRelaunchNotificationToRequired(true);
+  upgrade_detector->OverrideHighAnnoyanceDeadline(deadline);
+}
+
+// Resets the overridden relaunch notification style and deadline.
+void ResetRelaunchNotification() {
+  UpgradeDetector* upgrade_detector = UpgradeDetector::GetInstance();
+  upgrade_detector->ResetOverriddenDeadline();
+  upgrade_detector->OverrideRelaunchNotificationToRequired(false);
 }
 
 }  // namespace
@@ -170,7 +186,11 @@ void MinimumVersionPolicyHandler::RegisterPrefs(PrefRegistrySimple* registry) {
                                   base::TimeDelta());
 }
 
-bool MinimumVersionPolicyHandler::IsDeadlineTimerRunningForTesting() {
+bool MinimumVersionPolicyHandler::IsUpdateRequiredEol() const {
+  return !RequirementsAreSatisfied() && eol_reached_;
+}
+
+bool MinimumVersionPolicyHandler::IsDeadlineTimerRunningForTesting() const {
   return update_required_deadline_timer_.IsRunning();
 }
 
@@ -250,15 +270,16 @@ void MinimumVersionPolicyHandler::HandleUpdateNotRequired() {
   Reset();
   // Hide update required screen if it is visible and switch back to the login
   // screen.
-  if (delegate_->IsLoginSessionState()) {
+  if (delegate_->IsLoginSessionState())
     delegate_->HideUpdateRequiredScreenIfShown();
-  }
+  ResetRelaunchNotification();
 }
 
 void MinimumVersionPolicyHandler::Reset() {
   deadline_reached = false;
   eol_reached_ = false;
   update_required_deadline_ = base::Time();
+  update_required_time_ = base::Time();
   update_required_deadline_timer_.Stop();
   notification_timer_.Stop();
   GetBuildState()->RemoveObserver(this);
@@ -337,8 +358,9 @@ void MinimumVersionPolicyHandler::HandleUpdateRequired(
 
   // Need to start the timer even if the deadline is same as the previous one to
   // handle the case of Chrome reboot.
-  if (update_required_deadline_ == previous_deadline &&
-      update_required_deadline_timer_.IsRunning()) {
+  if (update_required_deadline_timer_.IsRunning() &&
+      update_required_deadline_timer_.desired_run_time() ==
+          update_required_deadline_) {
     return;
   }
 
@@ -348,9 +370,9 @@ void MinimumVersionPolicyHandler::HandleUpdateRequired(
   // still required.
 
   // Hide update required screen if it is shown on the login screen.
-  if (delegate_->IsLoginSessionState()) {
+  if (delegate_->IsLoginSessionState())
     delegate_->HideUpdateRequiredScreenIfShown();
-  }
+
   // The |deadline| can only be equal to or greater than the
   // |previous_deadline|. No need to update the local state if the deadline has
   // not been extended.
@@ -360,8 +382,7 @@ void MinimumVersionPolicyHandler::HandleUpdateRequired(
   // The device has already downloaded the update in-session and waiting for
   // reboot to apply it.
   if (GetBuildState()->update_type() == BuildState::UpdateType::kNormalUpdate) {
-    // TODO(https://crbug.com/1048607): May be adjust relaunch notification
-    // timer as per new deadline.
+    OverrideRelaunchNotification(update_required_deadline_);
     return;
   }
 
@@ -498,8 +519,10 @@ void MinimumVersionPolicyHandler::OnUpdate(const BuildState* build_state) {
   // If the device has been successfully updated, the relaunch notifications
   // will reboot it for applying the updates.
   GetUpdateEngineClient()->RemoveObserver(this);
-  if (build_state->update_type() == BuildState::UpdateType::kNormalUpdate)
+  if (build_state->update_type() == BuildState::UpdateType::kNormalUpdate) {
     ResetOnUpdateCompleted();
+    OverrideRelaunchNotification(update_required_deadline_);
+  }
 }
 
 void MinimumVersionPolicyHandler::HideNotification() const {

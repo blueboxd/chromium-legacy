@@ -70,8 +70,8 @@ source_set("audio") {
     "//base",
     "//media",
     "//media/webrtc",
+    "//sandbox/policy",
     "//services/audio/public/mojom",
-    "//services/service_manager/sandbox",
   ]
 
   if (is_linux) {

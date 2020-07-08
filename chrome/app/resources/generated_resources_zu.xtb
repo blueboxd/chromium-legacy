@@ -377,6 +377,7 @@ I-<ph name="EXTENSION_NAME" /></translation>
 <translation id="1468571364034902819">Ayikwazi ukusebenzisa le phrofayela</translation>
 <translation id="1470084204649225129">{NUM_TABS,plural, =1{Engeza Ithebhu Eqenjini Elisha}one{Engeza Amathebhu Eqenjini Elisha}other{Engeza Amathebhu Eqenjini Elisha}}</translation>
 <translation id="1472675084647422956">Bonisa okuningi</translation>
+<translation id="1474785664565228650">Ushintsho kusethingi ye-microphone ludinga ukuthi i-Parallels Desktop iqalise kabusha. Qala kabusha i-Parallels Desktop ukuze uqhubeke.</translation>
 <translation id="1475502736924165259">Unezitifiketi kufayela elingalingani nanoma iziphi ezinye izigaba</translation>
 <translation id="1476088332184200792">Kopishela kudivayisi yakho</translation>
 <translation id="1476607407192946488">&amp;Izilungiselelo zolimi</translation>
@@ -2926,6 +2927,7 @@ Ungaphatha izilungiselelo zale akhawunti ngokufaka uhlelo lokusebenza lwe-Family
 <translation id="4648499713050786492">Sicela uvule iphrofayela yakho ngaphambi kokungeze umuntu.</translation>
 <translation id="4650591383426000695">Nqamula ifoni yakho kusuka ku-<ph name="DEVICE_TYPE" /> yakho</translation>
 <translation id="4651484272688821107">Ayikwazanga ukulayisha into ngezisetshenziswa zemodi yedemo.</translation>
+<translation id="4652935475563630866">Ushintsho kusethingi yekhamera kudinga ukuthi i-Paralles Desktop iqalise kabusha. Qala kabusha i-Parallels Desktop ukuze uqhubeke.</translation>
 <translation id="4653405415038586100">Iphutha lokulungiselela i-Linux</translation>
 <translation id="465878909996028221">Kuphela i-http, https namaphrothokholi efayela asekelwayo ekuqondiseni kabusha kwesiphequluli.</translation>
 <translation id="4659077111144409915">I-akhawunti eyinhloko</translation>
@@ -6484,7 +6486,7 @@ Gcina ifayela lakho elingukhiye endaweni evikelekile. Uzolidinga ukuze udale izi
 <translation id="9158715103698450907">Eshu! Inkinga yokuxhumana kwenethiwekhi ivele ngesikhathi sokuqinisekisa. Sicela uhlole ukuxhumeka kwenethiwekhi yakho uphinde uzame futhi.</translation>
 <translation id="9159643062839240276">Zama:
     <ph name="BEGIN_LIST" />
-      <ph name="LIST_ITEM" />Ukuhlola amakhebuli wenethiwekhi, imodemu, nerutha
+      <ph name="LIST_ITEM" />Ukuhlola amakhebuli enethiwekhi, imodemu, nerutha
       <ph name="LIST_ITEM" />Ukuxhumeka kabusha ku-Wi-Fi
       <ph name="LIST_ITEM" />Ukuqalisa Ukuhlola Uxhumo lwe-Chrome
     <ph name="END_LIST" /></translation>

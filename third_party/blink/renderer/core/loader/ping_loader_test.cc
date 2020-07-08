@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
@@ -172,7 +173,8 @@ TEST_F(PingLoaderTest, BeaconPriority) {
   // via |PageTestBase::dummy_page_holder_|.
   url_test_helpers::RegisterMockedURLLoad(
       ping_url, test::CoreTestDataPath("bar.html"), "text/html");
-  PingLoader::SendBeacon(&GetFrame(), ping_url, "hello");
+  PingLoader::SendBeacon(*ToScriptStateForMainWorld(&GetFrame()), &GetFrame(),
+                         ping_url, "hello");
   url_test_helpers::ServeAsynchronousRequests();
   const PartialResourceRequest& request = client_->PingRequest();
   ASSERT_FALSE(request.IsNull());

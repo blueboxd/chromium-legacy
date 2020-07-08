@@ -30,8 +30,11 @@ def _DebugOrRelease(is_debug):
   return 'dbg' if is_debug else 'rel'
 
 
-def _GenerateDefFile(cpu, is_debug):
+def _GenerateDefFile(cpu, is_debug, extra_gn_args=[], suffix=None):
   """Generates a .def file for the absl component build on the specified CPU."""
+  if extra_gn_args:
+    assert suffix != None, 'suffix is needed when extra_gn_args is used'
+
   flavor = _DebugOrRelease(is_debug)
   gn_args = [
       'ffmpeg_branding = "Chrome"',
@@ -42,6 +45,7 @@ def _GenerateDefFile(cpu, is_debug):
       'target_cpu = "{}"'.format(cpu),
       'target_os = "win"',
   ]
+  gn_args.extend(extra_gn_args)
 
   with tempfile.TemporaryDirectory() as out_dir:
     logging.info('[%s - %s] Creating tmp out dir in %s', cpu, flavor, out_dir)
@@ -71,8 +75,13 @@ def _GenerateDefFile(cpu, is_debug):
 
     logging.info('[%s - %s] Found %d absl symbols.', cpu, flavor, len(absl_symbols))
 
-    def_file = os.path.join('third_party', 'abseil-cpp',
-                            'symbols_{}_{}.def'.format(cpu, flavor))
+    if extra_gn_args:
+      def_file = os.path.join('third_party', 'abseil-cpp',
+                              'symbols_{}_{}_{}.def'.format(cpu, flavor, suffix))
+    else:
+      def_file = os.path.join('third_party', 'abseil-cpp',
+                             'symbols_{}_{}.def'.format(cpu, flavor))
+
     with open(def_file, 'w') as f:
       f.write('EXPORTS\n')
       for s in sorted(absl_symbols):
@@ -95,5 +104,6 @@ if __name__ == '__main__':
   _GenerateDefFile('x86', False)
   _GenerateDefFile('x64', True)
   _GenerateDefFile('x64', False)
+  _GenerateDefFile('x64', False, ['is_asan = true'], 'asan')
   _GenerateDefFile('arm64', True)
   _GenerateDefFile('arm64', False)

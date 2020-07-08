@@ -169,7 +169,8 @@ TEST_F(ResourceLoaderDefersLoadingTest, CodeCacheFetchCheckDefers) {
   ResourceRequest request;
   request.SetUrl(test_url_);
   request.SetRequestContext(mojom::RequestContextType::FETCH);
-  FetchParameters fetch_parameters(std::move(request));
+  FetchParameters fetch_parameters =
+      FetchParameters::CreateForTest(std::move(request));
 
   Resource* resource = RawResource::Fetch(fetch_parameters, fetcher, nullptr);
 
@@ -192,7 +193,8 @@ TEST_F(ResourceLoaderDefersLoadingTest, CodeCacheFetchSyncReturn) {
   ResourceRequest request;
   request.SetUrl(test_url_);
   request.SetRequestContext(mojom::RequestContextType::FETCH);
-  FetchParameters fetch_parameters(std::move(request));
+  FetchParameters fetch_parameters =
+      FetchParameters::CreateForTest(std::move(request));
 
   Resource* resource = RawResource::Fetch(fetch_parameters, fetcher, nullptr);
   DCHECK(resource);
@@ -206,7 +208,8 @@ TEST_F(ResourceLoaderDefersLoadingTest, ChangeDefersToFalse) {
   ResourceRequest request;
   request.SetUrl(test_url_);
   request.SetRequestContext(mojom::RequestContextType::FETCH);
-  FetchParameters fetch_parameters(std::move(request));
+  FetchParameters fetch_parameters =
+      FetchParameters::CreateForTest(std::move(request));
 
   Resource* resource = RawResource::Fetch(fetch_parameters, fetcher, nullptr);
   DCHECK(web_url_loader_defers_);
@@ -224,7 +227,8 @@ TEST_F(ResourceLoaderDefersLoadingTest, ChangeDefersToTrue) {
   ResourceRequest request;
   request.SetUrl(test_url_);
   request.SetRequestContext(mojom::RequestContextType::FETCH);
-  FetchParameters fetch_parameters(std::move(request));
+  FetchParameters fetch_parameters =
+      FetchParameters::CreateForTest(std::move(request));
 
   Resource* resource = RawResource::Fetch(fetch_parameters, fetcher, nullptr);
   DCHECK(web_url_loader_defers_);
@@ -246,7 +250,8 @@ TEST_F(ResourceLoaderDefersLoadingTest, ChangeDefersMultipleTimes) {
   request.SetUrl(test_url_);
   request.SetRequestContext(mojom::RequestContextType::FETCH);
 
-  FetchParameters fetch_parameters(std::move(request));
+  FetchParameters fetch_parameters =
+      FetchParameters::CreateForTest(std::move(request));
   Resource* resource = RawResource::Fetch(fetch_parameters, fetcher, nullptr);
   DCHECK(web_url_loader_defers_);
 

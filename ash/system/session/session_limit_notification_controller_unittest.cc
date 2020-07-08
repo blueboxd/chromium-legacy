@@ -23,7 +23,7 @@ class SessionLimitNotificationControllerTest : public AshTestBase {
 
   void UpdateSessionLengthLimitInMin(int mins) {
     Shell::Get()->session_controller()->SetSessionLengthLimit(
-        base::TimeDelta::FromMinutes(mins), base::TimeTicks::Now());
+        base::TimeDelta::FromMinutes(mins), base::Time::Now());
   }
 
   message_center::Notification* GetNotification() {
@@ -39,8 +39,8 @@ class SessionLimitNotificationControllerTest : public AshTestBase {
   }
 
   void ClearSessionLengthLimit() {
-    Shell::Get()->session_controller()->SetSessionLengthLimit(
-        base::TimeDelta(), base::TimeTicks());
+    Shell::Get()->session_controller()->SetSessionLengthLimit(base::TimeDelta(),
+                                                              base::Time());
   }
 
   void RemoveNotification() {

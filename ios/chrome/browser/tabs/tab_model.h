@@ -22,12 +22,6 @@ class Browser;
 // BrowserState associated with this TabModel.
 @property(nonatomic, readonly) ChromeBrowserState* browserState;
 
-// YES if this tab set is off the record.
-@property(nonatomic, readonly, getter=isOffTheRecord) BOOL offTheRecord;
-
-// NO if the model has at least one tab.
-@property(nonatomic, readonly, getter=isEmpty) BOOL empty;
-
 // Determines the number of tabs in the model.
 @property(nonatomic, readonly) NSUInteger count;
 
@@ -40,12 +34,6 @@ class Browser;
 - (instancetype)initWithBrowser:(Browser*)browser;
 
 - (instancetype)init NS_UNAVAILABLE;
-
-// Closes the tab at the given |index|. |index| must be valid.
-- (void)closeTabAtIndex:(NSUInteger)index;
-
-// Closes ALL the tabs.
-- (void)closeAllTabs;
 
 // Tells the receiver to disconnect from the model object it depends on. This
 // should be called before destroying the browser state that the receiver was

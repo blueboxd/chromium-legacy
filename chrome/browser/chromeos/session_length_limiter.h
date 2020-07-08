@@ -10,8 +10,9 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
+#include "base/util/timer/wall_clock_timer.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "ui/base/user_activity/user_activity_observer.h"
 
@@ -27,7 +28,7 @@ class SessionLengthLimiter : public ui::UserActivityObserver {
    public:
     virtual ~Delegate();
 
-    virtual const base::TimeTicks GetCurrentTime() const = 0;
+    virtual const base::Clock* GetClock() const = 0;
     virtual void StopSession() = 0;
   };
 
@@ -67,8 +68,8 @@ class SessionLengthLimiter : public ui::UserActivityObserver {
   std::unique_ptr<Delegate> delegate_;
   PrefChangeRegistrar pref_change_registrar_;
 
-  std::unique_ptr<base::OneShotTimer> timer_;
-  base::TimeTicks session_start_time_;
+  std::unique_ptr<util::WallClockTimer> timer_;
+  base::Time session_start_time_;
   bool user_activity_seen_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionLengthLimiter);

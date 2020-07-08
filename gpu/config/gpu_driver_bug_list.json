@@ -76,7 +76,7 @@
     {
       "id": 19,
       "comment": "Corresponds to software rendering list #140",
-      "description": "Disable depth textures on older Qualcomm GPUs (legacy blacklist entry, original problem unclear)",
+      "description": "Disable depth textures on older Qualcomm GPUs (legacy blocklist entry, original problem unclear)",
       "cr_bugs": [682075],
       "gl_renderer": "Adreno \\(TM\\) [23].*",
       "features": [

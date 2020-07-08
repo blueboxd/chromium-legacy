@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "pdf/pdf_engine.h"
 
 namespace chrome_pdf {
@@ -41,7 +42,7 @@ class PreviewModeClient : public PDFEngine::Client {
   void NotifyNumberOfFindResultsChanged(int total, bool final_result) override;
   void NotifySelectedFindResultChanged(int current_find_index) override;
   void GetDocumentPassword(
-      pp::CompletionCallbackWithOutput<pp::Var> callback) override;
+      base::OnceCallback<void(const std::string&)> callback) override;
   void Alert(const std::string& message) override;
   bool Confirm(const std::string& message) override;
   std::string Prompt(const std::string& question,

@@ -73,15 +73,11 @@ public class BrandColorTest {
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void checkForBrandColor(final int brandColor) {
-        CriteriaHelper.pollUiThread(
-                new Criteria("The toolbar background doesn't contain the right color") {
-                    @Override
-                    public boolean isSatisfied() {
-                        if (mToolbarDataProvider.getPrimaryColor() != brandColor) return false;
-                        return mToolbarDataProvider.getPrimaryColor()
-                                == mToolbar.getBackgroundDrawable().getColor();
-                    }
-                });
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mToolbarDataProvider.getPrimaryColor(), Matchers.is(brandColor));
+            Criteria.checkThat(mToolbarDataProvider.getPrimaryColor(),
+                    Matchers.is(mToolbar.getBackgroundDrawable().getColor()));
+        });
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && !SysUtils.isLowEndDevice()) {
             final int expectedStatusBarColor;
             if (mSupportsDarkStatusIcons) {

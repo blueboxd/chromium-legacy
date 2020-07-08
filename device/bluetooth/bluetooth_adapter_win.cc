@@ -150,31 +150,32 @@ BluetoothAdapter::UUIDList BluetoothAdapterWin::GetUUIDs() const {
 void BluetoothAdapterWin::CreateRfcommService(
     const BluetoothUUID& uuid,
     const ServiceOptions& options,
-    const CreateServiceCallback& callback,
-    const CreateServiceErrorCallback& error_callback) {
+    CreateServiceCallback callback,
+    CreateServiceErrorCallback error_callback) {
   scoped_refptr<BluetoothSocketWin> socket =
       BluetoothSocketWin::CreateBluetoothSocket(
           ui_task_runner_, socket_thread_);
   socket->Listen(this, uuid, options,
-                 base::Bind(callback, socket),
-                 error_callback);
+                 base::BindOnce(std::move(callback), socket),
+                 std::move(error_callback));
 }
 
 void BluetoothAdapterWin::CreateL2capService(
     const BluetoothUUID& uuid,
     const ServiceOptions& options,
-    const CreateServiceCallback& callback,
-    const CreateServiceErrorCallback& error_callback) {
+    CreateServiceCallback callback,
+    CreateServiceErrorCallback error_callback) {
   // TODO(keybuk): implement.
   NOTIMPLEMENTED();
 }
 
 void BluetoothAdapterWin::RegisterAdvertisement(
     std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
-    const CreateAdvertisementCallback& callback,
-    const AdvertisementErrorCallback& error_callback) {
+    CreateAdvertisementCallback callback,
+    AdvertisementErrorCallback error_callback) {
   NOTIMPLEMENTED();
-  error_callback.Run(BluetoothAdvertisement::ERROR_UNSUPPORTED_PLATFORM);
+  std::move(error_callback)
+      .Run(BluetoothAdvertisement::ERROR_UNSUPPORTED_PLATFORM);
 }
 
 BluetoothLocalGattService* BluetoothAdapterWin::GetGattService(

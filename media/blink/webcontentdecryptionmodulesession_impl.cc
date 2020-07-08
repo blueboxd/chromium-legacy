@@ -450,8 +450,8 @@ void WebContentDecryptionModuleSessionImpl::OnSessionMessage(
     const std::vector<uint8_t>& message) {
   DCHECK(client_) << "Client not set before message event";
   DCHECK(thread_checker_.CalledOnValidThread());
-  client_->Message(convertMessageType(message_type), message.data(),
-                   message.size());
+  client_->OnSessionMessage(convertMessageType(message_type), message.data(),
+                            message.size());
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionKeysChange(
@@ -473,7 +473,7 @@ void WebContentDecryptionModuleSessionImpl::OnSessionKeysChange(
   }
 
   // Now send the event to blink.
-  client_->KeysStatusesChange(keys, has_additional_usable_key);
+  client_->OnSessionKeysChange(keys, has_additional_usable_key);
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionExpirationUpdate(
@@ -481,9 +481,9 @@ void WebContentDecryptionModuleSessionImpl::OnSessionExpirationUpdate(
   DCHECK(thread_checker_.CalledOnValidThread());
   // The check works around an issue in base::Time that converts null base::Time
   // to |1601-01-01 00:00:00 UTC| in ToJsTime(). See http://crbug.com/679079
-  client_->ExpirationChanged(new_expiry_time.is_null()
-                                 ? std::numeric_limits<double>::quiet_NaN()
-                                 : new_expiry_time.ToJsTime());
+  client_->OnSessionExpirationUpdate(
+      new_expiry_time.is_null() ? std::numeric_limits<double>::quiet_NaN()
+                                : new_expiry_time.ToJsTime());
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionClosed() {
@@ -494,7 +494,7 @@ void WebContentDecryptionModuleSessionImpl::OnSessionClosed() {
     return;
 
   is_closed_ = true;
-  client_->Close();
+  client_->OnSessionClosed();
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionInitialized(

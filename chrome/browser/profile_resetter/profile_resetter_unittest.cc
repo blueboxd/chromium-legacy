@@ -217,7 +217,7 @@ std::unique_ptr<BrandcodeConfigFetcher> ConfigParserTest::WaitForRequest(
       }));
   std::unique_ptr<BrandcodeConfigFetcher> fetcher(new BrandcodeConfigFetcher(
       &test_url_loader_factory_,
-      base::Bind(&ConfigParserTest::Callback, base::Unretained(this)), url,
+      base::BindOnce(&ConfigParserTest::Callback, base::Unretained(this)), url,
       "ABCD"));
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(fetcher->IsActive());
@@ -833,7 +833,7 @@ TEST_F(ProfileResetterTest, CheckSnapshots) {
       base::ASCIIToUTF16("--profile-directory=Default1"));
 
   ResettableSettingsSnapshot nonorganic_snap(profile());
-  nonorganic_snap.RequestShortcuts(base::Closure());
+  nonorganic_snap.RequestShortcuts(base::OnceClosure());
   // Let it enumerate shortcuts on a blockable task runner.
   content::RunAllTasksUntilIdle();
   int diff_fields = ResettableSettingsSnapshot::ALL_FIELDS;
@@ -861,7 +861,7 @@ TEST_F(ProfileResetterTest, CheckSnapshots) {
                ProfileResetter::SHORTCUTS);
 
   ResettableSettingsSnapshot organic_snap(profile());
-  organic_snap.RequestShortcuts(base::Closure());
+  organic_snap.RequestShortcuts(base::OnceClosure());
   // Let it enumerate shortcuts on a blockable task runner.
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(diff_fields, nonorganic_snap.FindDifferentFields(organic_snap));
@@ -905,7 +905,7 @@ TEST_F(ProfileResetterTest, FeedbackSerializationAsProtoTest) {
       base::ASCIIToUTF16("--profile-directory=Default foo.com"));
 
   ResettableSettingsSnapshot nonorganic_snap(profile());
-  nonorganic_snap.RequestShortcuts(base::Closure());
+  nonorganic_snap.RequestShortcuts(base::OnceClosure());
   // Let it enumerate shortcuts on a blockable task runner.
   content::RunAllTasksUntilIdle();
 
@@ -981,9 +981,9 @@ TEST_F(ProfileResetterTest, GetReadableFeedback) {
   FeedbackCapture capture;
   EXPECT_CALL(capture, OnUpdatedList());
   ResettableSettingsSnapshot snapshot(profile());
-  snapshot.RequestShortcuts(base::Bind(&FeedbackCapture::SetFeedback,
-                                       base::Unretained(&capture), profile(),
-                                       std::cref(snapshot)));
+  snapshot.RequestShortcuts(base::BindOnce(&FeedbackCapture::SetFeedback,
+                                           base::Unretained(&capture),
+                                           profile(), std::cref(snapshot)));
   // Let it enumerate shortcuts on a blockable task runner.
   content::RunAllTasksUntilIdle();
   EXPECT_TRUE(snapshot.shortcuts_determined());
@@ -1020,8 +1020,8 @@ TEST_F(ProfileResetterTest, DestroySnapshotFast) {
   FeedbackCapture capture;
   std::unique_ptr<ResettableSettingsSnapshot> deleted_snapshot(
       new ResettableSettingsSnapshot(profile()));
-  deleted_snapshot->RequestShortcuts(base::Bind(&FeedbackCapture::Fail,
-                                                base::Unretained(&capture)));
+  deleted_snapshot->RequestShortcuts(
+      base::BindOnce(&FeedbackCapture::Fail, base::Unretained(&capture)));
   deleted_snapshot.reset();
   // Running remaining tasks shouldn't trigger the callback to be called as
   // |deleted_snapshot| was deleted before it could run.

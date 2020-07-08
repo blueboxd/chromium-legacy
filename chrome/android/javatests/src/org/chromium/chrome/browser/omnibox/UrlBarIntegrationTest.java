@@ -14,6 +14,7 @@ import android.view.MenuItem;
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -201,12 +202,10 @@ public class UrlBarIntegrationTest {
 
         TouchCommon.longPressView(getUrlBar());
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return callback.actionModeCreated && getUrlBar().getSelectionStart() == 0
-                        && getUrlBar().getSelectionEnd() == longPressUrl.length();
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(callback.actionModeCreated, Matchers.is(true));
+            Criteria.checkThat(getUrlBar().getSelectionStart(), Matchers.is(0));
+            Criteria.checkThat(getUrlBar().getSelectionEnd(), Matchers.is(longPressUrl.length()));
         });
     }
 }

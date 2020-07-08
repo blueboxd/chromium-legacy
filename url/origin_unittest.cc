@@ -846,6 +846,10 @@ TEST_F(OriginTest, GetDebugString) {
       http_opaque_origin.GetDebugString().c_str(),
       ::testing::MatchesRegex(
           "null \\[internally: \\(\\w*\\) derived from http://192.168.9.1\\]"));
+  EXPECT_THAT(
+      http_opaque_origin.GetDebugString(false /* include_nonce */).c_str(),
+      ::testing::MatchesRegex(
+          "null \\[internally: derived from http://192.168.9.1\\]"));
 
   Origin data_origin = Origin::Create(GURL("data:"));
   EXPECT_STREQ(data_origin.GetDebugString().c_str(),
@@ -857,6 +861,9 @@ TEST_F(OriginTest, GetDebugString) {
   EXPECT_THAT(
       data_derived_origin.GetDebugString().c_str(),
       ::testing::MatchesRegex("null \\[internally: \\(\\w*\\) anonymous\\]"));
+  EXPECT_THAT(
+      data_derived_origin.GetDebugString(false /* include_nonce */).c_str(),
+      ::testing::MatchesRegex("null \\[internally: anonymous\\]"));
 
   Origin file_origin = Origin::Create(GURL("file:///etc/passwd"));
   EXPECT_STREQ(file_origin.GetDebugString().c_str(),

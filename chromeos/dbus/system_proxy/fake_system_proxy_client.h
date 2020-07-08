@@ -25,7 +25,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSystemProxyClient
       const system_proxy::SetAuthenticationDetailsRequest& request,
       SetAuthenticationDetailsCallback callback) override;
   void ShutDownDaemon(ShutDownDaemonCallback callback) override;
-  void ConnectToWorkerActiveSignal(WorkerActiveCallback callback) override;
+  void SetWorkerActiveSignalCallback(WorkerActiveCallback callback) override;
+  void SetAuthenticationRequiredSignalCallback(
+      AuthenticationRequiredCallback callback) override;
+  void ConnectToWorkerSignals() override;
 
   SystemProxyClient::TestInterface* GetTestInterface() override;
 
@@ -34,11 +37,17 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSystemProxyClient
   int GetShutDownCallCount() const override;
   system_proxy::SetAuthenticationDetailsRequest
   GetLastAuthenticationDetailsRequest() const override;
+  void SendAuthenticationRequiredSignal(
+      const system_proxy::AuthenticationRequiredDetails& details) override;
 
  private:
   system_proxy::SetAuthenticationDetailsRequest last_set_auth_details_request_;
   int set_credentials_call_count_ = 0;
   int shut_down_call_count_ = 0;
+  bool connect_to_worker_signals_called_ = false;
+  // Signal callbacks.
+  SystemProxyClient::WorkerActiveCallback worker_active_callback_;
+  SystemProxyClient::AuthenticationRequiredCallback auth_required_callback_;
 };
 
 }  // namespace chromeos

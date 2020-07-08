@@ -9,7 +9,7 @@
 #include "chromecast/crash/linux/crash_util.h"
 #include "components/crash/core/app/breakpad_linux.h"
 #include "content/public/common/content_switches.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "sandbox/policy/switches.h"
 
 namespace chromecast {
 

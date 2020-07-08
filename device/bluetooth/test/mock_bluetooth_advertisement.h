@@ -15,8 +15,8 @@ class MockBluetoothAdvertisement : public device::BluetoothAdvertisement {
   MockBluetoothAdvertisement();
 
   // BluetoothAdvertisement overrides:
-  void Unregister(const SuccessCallback& success_callback,
-                  const ErrorCallback& error_callback) override;
+  void Unregister(SuccessCallback success_callback,
+                  ErrorCallback error_callback) override;
 
  private:
   ~MockBluetoothAdvertisement() override;

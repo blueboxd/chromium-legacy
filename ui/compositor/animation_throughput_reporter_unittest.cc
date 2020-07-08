@@ -273,6 +273,7 @@ TEST_F(AnimationThroughputReporterTest, EndDetachedNoReportNoLeak) {
 TEST_F(AnimationThroughputReporterTest, ReportForAnimateToNewTarget) {
   auto layer = std::make_unique<Layer>();
   layer->SetOpacity(0.f);
+  layer->SetBounds(gfx::Rect(0, 0, 1, 2));
   root_layer()->Add(layer.get());
 
   LayerAnimator* animator = layer->GetAnimator();
@@ -288,6 +289,7 @@ TEST_F(AnimationThroughputReporterTest, ReportForAnimateToNewTarget) {
     ScopedLayerAnimationSettings settings(animator);
     settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(50));
     layer->SetOpacity(0.5f);
+    layer->SetBounds(gfx::Rect(0, 0, 3, 4));
   }
 
   // Animate to new target. Report should happen.
@@ -304,6 +306,7 @@ TEST_F(AnimationThroughputReporterTest, ReportForAnimateToNewTarget) {
         LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(50));
     layer->SetOpacity(1.0f);
+    layer->SetBounds(gfx::Rect(0, 0, 5, 6));
   }
   run_loop.Run();
 }

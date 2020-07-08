@@ -8,6 +8,15 @@
 
 namespace blink {
 
+Color StyleColor::Resolve(Color current_color,
+                          WebColorScheme color_scheme) const {
+  if (IsCurrentColor())
+    return current_color;
+  if (color_keyword_ != CSSValueID::kInvalid)
+    return ColorFromKeyword(color_keyword_, color_scheme);
+  return color_;
+}
+
 Color StyleColor::ColorFromKeyword(CSSValueID keyword,
                                    WebColorScheme color_scheme) {
   if (const char* value_name = getValueName(keyword)) {

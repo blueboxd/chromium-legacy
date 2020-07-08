@@ -59,10 +59,9 @@ class ArcPipWindowThrottleObserverTest : public testing::Test {
     pip_container_ = aura::test::CreateTestWindowWithDelegate(
         &dummy_delegate_, ash::kShellWindowId_PipContainer, gfx::Rect(),
         nullptr);
+    wm_helper_ = std::make_unique<FakeWMHelper>();
     wm_helper()->SetPrimaryDisplayContainer(ash::kShellWindowId_PipContainer,
                                             pip_container_);
-    exo::WMHelper::SetInstance(wm_helper());
-
     // Set up PIP windows
     arc_window_ = aura::test::CreateTestWindowWithDelegate(
         &dummy_delegate_, 1, gfx::Rect(), nullptr);
@@ -74,12 +73,12 @@ class ArcPipWindowThrottleObserverTest : public testing::Test {
                                 static_cast<int>(ash::AppType::BROWSER));
   }
 
-  void TearDown() override { exo::WMHelper::SetInstance(nullptr); }
+  void TearDown() override { wm_helper_.reset(); }
 
  protected:
   ArcPipWindowThrottleObserver* observer() { return &pip_observer_; }
 
-  FakeWMHelper* wm_helper() { return &wm_helper_; }
+  FakeWMHelper* wm_helper() { return wm_helper_.get(); }
 
   aura::Window* pip_container() { return pip_container_; }
 
@@ -90,7 +89,7 @@ class ArcPipWindowThrottleObserverTest : public testing::Test {
  public:
   content::BrowserTaskEnvironment task_environment_;
   ArcPipWindowThrottleObserver pip_observer_;
-  FakeWMHelper wm_helper_;
+  std::unique_ptr<FakeWMHelper> wm_helper_;
   aura::test::TestWindowDelegate dummy_delegate_;
   aura::Window* pip_container_;
   aura::Window* arc_window_;

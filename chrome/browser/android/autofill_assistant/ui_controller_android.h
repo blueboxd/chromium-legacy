@@ -26,6 +26,8 @@
 #include "components/autofill_assistant/browser/overlay_state.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/user_action.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents_observer.h"
 
 namespace autofill_assistant {
 struct ClientSettings;
@@ -202,6 +204,21 @@ class UiControllerAndroid : public ControllerObserver {
                   jboolean visible);
 
  private:
+  class SelfDestructObserver : private content::WebContentsObserver {
+   public:
+    SelfDestructObserver(content::WebContents* web_contents,
+                         UiControllerAndroid* ui_controller,
+                         int64_t navigation_id_to_ignore);
+    ~SelfDestructObserver() override;
+
+    void DidStartNavigation(
+        content::NavigationHandle* navigation_handle) override;
+
+   private:
+    UiControllerAndroid* ui_controller_;
+    int64_t navigation_id_to_ignore_;
+  };
+
   // A pointer to the client. nullptr until Attach() is called.
   Client* client_ = nullptr;
 
@@ -281,6 +298,9 @@ class UiControllerAndroid : public ControllerObserver {
 
   OverlayState desired_overlay_state_ = OverlayState::FULL;
   OverlayState overlay_state_ = OverlayState::FULL;
+
+  std::unique_ptr<SelfDestructObserver> self_destruct_observer_;
+
   base::WeakPtrFactory<UiControllerAndroid> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UiControllerAndroid);

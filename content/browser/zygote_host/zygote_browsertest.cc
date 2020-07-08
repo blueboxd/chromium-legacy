@@ -14,9 +14,9 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "sandbox/policy/linux/sandbox_linux.h"
+#include "sandbox/policy/switches.h"
 #include "services/service_manager/embedder/switches.h"
-#include "services/service_manager/sandbox/linux/sandbox_linux.h"
-#include "services/service_manager/sandbox/switches.h"
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
 #include "content/browser/zygote_host/zygote_host_impl_linux.h"
 #include "content/common/zygote/zygote_communication_linux.h"
@@ -55,15 +55,15 @@ IN_PROC_BROWSER_TEST_F(LinuxZygoteBrowserTest, ZygoteSandboxes) {
   // We need zygotes and the standard sandbox config to run this test.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoZygote) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
-          service_manager::switches::kNoSandbox)) {
+          sandbox::policy::switches::kNoSandbox)) {
     return;
   }
 
   // Sanity check the sandbox flags we expect to be everywhere.
   const int flags = GetGenericZygote()->GetSandboxStatus();
-  constexpr int kExpectedFlags = service_manager::SandboxLinux::kPIDNS |
-                                 service_manager::SandboxLinux::kNetNS |
-                                 service_manager::SandboxLinux::kUserNS;
+  constexpr int kExpectedFlags = sandbox::policy::SandboxLinux::kPIDNS |
+                                 sandbox::policy::SandboxLinux::kNetNS |
+                                 sandbox::policy::SandboxLinux::kUserNS;
   EXPECT_EQ(kExpectedFlags, flags & kExpectedFlags);
 
   EXPECT_EQ(GetUnsandboxedZygote()->GetSandboxStatus(), 0);
@@ -79,7 +79,7 @@ class LinuxZygoteDisabledBrowserTest : public ContentBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kNoZygote);
-    command_line->AppendSwitch(service_manager::switches::kNoSandbox);
+    command_line->AppendSwitch(sandbox::policy::switches::kNoSandbox);
   }
 
  private:

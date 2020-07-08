@@ -14,18 +14,6 @@
 
 namespace cc {
 
-TEST(FrameSequenceMetricsTest, AggregatedThroughput) {
-  FrameSequenceMetrics first(FrameSequenceTrackerType::kTouchScroll, nullptr);
-  first.impl_throughput().frames_expected = 200u;
-  first.impl_throughput().frames_produced = 190u;
-  first.main_throughput().frames_expected = 100u;
-  first.main_throughput().frames_produced = 50u;
-
-  // The aggregated throughput is computed at ReportMetrics().
-  first.ComputeAggregatedThroughputForTesting();
-  EXPECT_EQ(first.aggregated_throughput().frames_expected, 200u);
-}
-
 TEST(FrameSequenceMetricsTest, AggregatedThroughputClearedAfterReport) {
   FrameSequenceMetrics first(FrameSequenceTrackerType::kCompositorAnimation,
                              nullptr);

@@ -378,6 +378,7 @@ xizmatlarini sizga moslashtirish maqsadlarida foydalanishi mumkin. Bu ruxsatni m
 <translation id="1468571364034902819">Bu profilni ishlatib bo‘lmaydi</translation>
 <translation id="1470084204649225129">{NUM_TABS,plural, =1{Varaqni yangi guruhga kiritish}other{Varaqlarni yangi guruhga kiritish}}</translation>
 <translation id="1472675084647422956">Yana</translation>
+<translation id="1474785664565228650">Mikrofon sozlamasi oʻzgarishi uchun Parallels Desktopni qaytadan ishga tushiring Davom etish uchun Parallels Desktopni qayta ishga tushiring.</translation>
 <translation id="1475502736924165259">Sizda quyidagi turkumlardan hech qaysiga to‘g‘ri kelmaydigan sertifikatlar mavjud</translation>
 <translation id="1476088332184200792">Qurilmaga nusxalash</translation>
 <translation id="1476607407192946488">Til sozlamalari</translation>
@@ -2927,6 +2928,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="4648499713050786492">Foydalanuvchini qo‘shish uchun o‘z profilingizga kiring.</translation>
 <translation id="4650591383426000695">Telefoningizni <ph name="DEVICE_TYPE" /> qurilmasidan uzing</translation>
 <translation id="4651484272688821107">Demo rejim manbalari bilan onlayn komponent yuklanmadi.</translation>
+<translation id="4652935475563630866">Kamera sozlamasi oʻzgarishi uchun Parallels Desktopni qaytadan ishga tushiring. Davom etish uchun Parallels Desktopni qayta ishga tushiring.</translation>
 <translation id="4653405415038586100">Linux tizimini sozlashda xatolik</translation>
 <translation id="465878909996028221">Brauzer yoʻnaltirishlarda faqat http, https va fayl protokollari ishlaydi.</translation>
 <translation id="4659077111144409915">Asosiy hisob</translation>
@@ -6190,7 +6192,7 @@ Kalit faylini ishonchli joyda saqlang. U kengaytmaning yangi versiyalarini yarat
 <translation id="8798441408945964110">Ta’minotchi nomi</translation>
 <translation id="8800004011501252845">Bu uchun manzillar ko‘rsatilmoqda:</translation>
 <translation id="8800034312320686233">Sayt ishlamayaptimi?</translation>
-<translation id="880069872639153240">Kiritilayotgan matn asosida emoji kulgichlar taklif qilinsin</translation>
+<translation id="880069872639153240">Kiritilayotgan matn asosida emojilar taklif qilinsin</translation>
 <translation id="8803953437405899238">Yangi varaqni bir bosishda ochish</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Varaqni boshqa oynaga olish}other{Varaqlarni boshqa oynaga olish}}</translation>
 <translation id="8805140816472474147">Sinxronizatsiyani boshlash uchun sozlamalarni tasdiqlang.</translation>
@@ -6481,7 +6483,7 @@ Kalit faylini ishonchli joyda saqlang. U kengaytmaning yangi versiyalarini yarat
 <translation id="9158715103698450907">Ana xolos! Haqiqiylik tekshiruvida tarmoq xatoligi yuz berdi. Tarmoqqa ulanishni tekshiring va qayta urinib ko‘ring.</translation>
 <translation id="9159643062839240276">Bularni bajaring:
     <ph name="BEGIN_LIST" />
-      <ph name="LIST_ITEM" />Tarmoq kabellar, modem va routerni tekshiring
+      <ph name="LIST_ITEM" />Tarmoq kabellari, modem va routerni tekshiring
       <ph name="LIST_ITEM" />Wi-Fi tarmoqqa qayta ulaning
       <ph name="LIST_ITEM" />Chrome tarmoqlar diagnostikasini ishga tushiring
     <ph name="END_LIST" /></translation>

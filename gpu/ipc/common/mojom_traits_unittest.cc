@@ -444,7 +444,7 @@ TEST_F(StructTraitsTest, GpuPreferences) {
 TEST_F(StructTraitsTest, GpuFeatureInfo) {
   GpuFeatureInfo input;
   input.status_values[GPU_FEATURE_TYPE_FLASH3D] =
-      gpu::kGpuFeatureStatusBlacklisted;
+      gpu::kGpuFeatureStatusBlocklisted;
   input.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL] =
       gpu::kGpuFeatureStatusUndefined;
   input.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] =

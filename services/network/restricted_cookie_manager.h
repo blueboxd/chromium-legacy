@@ -122,7 +122,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
                                 const net::CanonicalCookie& cookie,
                                 const net::CookieOptions& net_options,
                                 SetCanonicalCookieCallback user_callback,
-                                net::CookieInclusionStatus status);
+                                net::CookieAccessResult access_result);
 
   // Called when the Mojo pipe associated with a listener is closed.
   void RemoveChangeListener(Listener* listener);

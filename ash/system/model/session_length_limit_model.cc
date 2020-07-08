@@ -53,12 +53,12 @@ void SessionLengthLimitModel::Update() {
 
   SessionControllerImpl* session = Shell::Get()->session_controller();
   base::TimeDelta time_limit = session->session_length_limit();
-  base::TimeTicks session_start_time = session->session_start_time();
+  base::Time session_start_time = session->session_start_time();
   if (!time_limit.is_zero() && !session_start_time.is_null()) {
     const base::TimeDelta expiring_soon_threshold(
         base::TimeDelta::FromMinutes(kExpiringSoonThresholdInMinutes));
     remaining_session_time_ =
-        std::max(time_limit - (base::TimeTicks::Now() - session_start_time),
+        std::max(time_limit - (base::Time::Now() - session_start_time),
                  base::TimeDelta());
     limit_state_ = remaining_session_time_ <= expiring_soon_threshold
                        ? LIMIT_EXPIRING_SOON

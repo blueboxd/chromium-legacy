@@ -2735,25 +2735,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika kebijakan ini disetel ke True, <ph name="PRODUCT_OS_NAME" /> akan mencegah perangkat melakukan booting ke mode pengembang. Sistem akan menolak melakukan booting dan menampilkan layar kesalahan saat pengalih pengembang diaktifkan.
 
       Jika kebijakan ini tidak disetel atau disetel ke False, mode pengembang akan tetap tersedia untuk perangkat.</translation>
-<translation id="5210980743015047124">Mengonfigurasi persyaratan versi minimum yang diizinkan untuk <ph name="PRODUCT_NAME" />.
-
-      Jika kebijakan ini ditetapkan ke daftar tidak kosong:
-      Jika tidak ada entri yang memiliki "chrome_version" lebih baru daripada versi di perangkat saat ini, tidak ada batasan yang diterapkan dan batasan yang telah diterapkan akan dicabut.
-      Jika setidaknya salah satu entri memiliki "chrome_version" yang lebih baru daripada versi saat ini, entri terkuat yang memiliki versi paling dekat dengan versi saat ini akan dipilih.
-      Jika terjadi konflik, preferensi diberikan pada entri dengan "warning_period" atau "eol_warning_period" yang lebih sedikit dan kebijakan diterapkan menggunakan entri tersebut.
-
-      Jika versi saat ini menjadi tidak terpakai saat sesi pengguna berlangsung, akan muncul notifikasi pada layar untuk mengupdate perangkat dalam "warning_period" yang ditampilkan di notifikasi.
-      "Warning_period" dimulai pada saat kebijakan diterapkan.
-      Jika kebijakan tidak diupdate hingga "warning_period" berakhir, pengguna akan dipaksa logout dari sistem.
-      Jika diketahui bahwa versi saat ini tidak terpakai saat login ketika "warning_period" berakhir, pengguna diminta mengupdate perangkat sebelum login.
-
-      Jika mencapai akhir masa pakai saat sesi pengguna berlangsung, akan muncul notifikasi pada layar untuk memaksa pengguna logout setelah "eol_warning_period" berakhir.
-      Jika diketahui bahwa perangkat telah mencapai akhir masa pakai pada saat login ketika "eol_warning_period" berakhir, perangkat akan diblokir bagi siapa pun yang ingin login.
-
-      Jika kebijakan ini tidak ditetapkan atau dibiarkan kosong, tidak ada batasan yang diterapkan, batasan yang ada akan dicabut, dan pengguna bisa login, berapa pun versi <ph name="PRODUCT_NAME" />.
-
-      "chrome_version" di sini bisa merupakan versi yang tepat seperti '61.0.3163.120' atau awalan versi, seperti '61.0'.
-      "warning_period" dan "eol_warning_period" adalah nilai opsional yang ditentukan dalam jumlah hari. Nilai defaultnya adalah 0 hari, yang artinya tidak ada periode tunggu. </translation>
 <translation id="5212118847531454979">Memungkinkan Anda menyetel jangka waktu, dalam milidetik, untuk memberi tahu pengguna bahwa <ph name="PRODUCT_NAME" /> harus diluncurkan kembali atau bahwa perangkat <ph name="PRODUCT_OS_NAME" /> harus dimulai ulang untuk menerapkan update yang tertunda.
 
       Selama jangka waktu ini, pengguna akan berulang-ulang diberi tahu tentang perlunya update. Untuk perangkat <ph name="PRODUCT_OS_NAME" />, notifikasi mulai ulang akan muncul di baki sistem sesuai dengan kebijakan <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Untuk browser <ph name="PRODUCT_NAME" />, menu aplikasi akan berubah untuk menunjukkan bahwa peluncuran ulang diperlukan setelah sepertiga periode notifikasi berlalu. Warna notifikasi akan berubah setelah dua pertiga periode notifikasi berlalu, dan berubah lagi setelah seluruh periode notifikasi berlalu. Notifikasi tambahan yang diaktifkan oleh kebijakan <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> mengikuti jadwal yang sama seperti ini.
@@ -3086,20 +3067,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
           Kebijakan ini hanya berpengaruh jika <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> dinonaktifkan. Jika tidak demikian, kebijakan ini akan diabaikan karena penundaan peredupan layar ditentukan oleh model machine learning.
 
           Faktor skalanya harus 100% atau lebih. Nilai yang akan membuat penundaan peredupan layar dalam mode presentasi menjadi lebih singkat daripada penundaan peredupan layar biasa tidak diizinkan.</translation>
-<translation id="5590988845778885692">Menyediakan konfigurasi server cetak yang tersedia.
-
-      Kebijakan ini memungkinkan Anda menyediakan konfigurasi server cetak eksternal untuk perangkat <ph name="PRODUCT_OS_NAME" /> sebagai file JSON.
-
-      Ukuran file tidak boleh lebih dari 1 MB dan harus berisi array data (objek JSON). Setiap data harus berisi kolom "id", "url", dan "display_name" dengan string sebagai nilai. Nilai kolom "id" harus bersifat unik.
-
-      File didownload dan disimpan di cache. Hash kriptografi digunakan untuk memverifikasi integritas download. File akan didownload ulang setiap kali URL atau hash berubah.
-
-      Jika kebijakan ini ditetapkan ke nilai yang benar, perangkat akan mencoba mengirimkan kueri pada server cetak tertentu untuk printer yang tersedia menggunakan protokol IPP.
-
-      Jika kebijakan ini tidak ditetapkan atau ditetapkan ke nilai yang salah, pengguna tidak dapat melihat server printer.
-
-      Saat ini, jumlah maksimum server cetak adalah 16. Hanya 16 server cetak pertama dari daftar tersebut yang akan dikueri.
-      </translation>
 <translation id="5592242031005200087">
       Jika kebijakan ini diaktifkan, setiap asal bernama dalam daftar
       yang dipisahkan koma akan dijalankan dalam prosesnya sendiri. Hal ini juga akan mengisolasi
@@ -3253,14 +3220,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       URL (seperti https://example.com/some/path) hanya akan cocok sebagai U2F appID. Domain (seperti example.com) hanya akan cocok sebagai webauthn RP ID. Oleh karena itu, guna mencakup U2F dan webauthn API untuk situs tertentu, appID URL dan domain perlu dicantumkan.</translation>
 <translation id="5836064773277134605">Batasi jangkauan port UDP yang digunakan oleh hosting akses jarak jauh</translation>
 <translation id="585270638818921943">Cegah pengguna menggunakan aplikasi Android dari sumber yang tidak tepercaya</translation>
-<translation id="5854749508571554984">Kebijakan ini hanya berlaku jika perangkat telah mencapai akhir siklus proses dan tidak memenuhi versi minimum <ph name="PRODUCT_NAME" /> yang diizinkan sebagaimana disetel melalui kebijakan <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" />.
-
-      Jika kebijakan ini disetel ke string yang tidak kosong :
-      Jika waktu peringatan yang disebutkan dalam kebijakan <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> telah berakhir, pesan ini akan ditampilkan di layar login saat perangkat diblokir bagi siapa pun yang ingin login.
-      Jika waktu peringatan yang disebutkan dalam kebijakan <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> belum berakhir, pesan ini akan ditampilkan di halaman Setelan setelah pengguna login.
-
-      Jika kebijakan ini tidak disetel atau disetel ke kosong, pesan akhir siklus proses default akan ditampilkan ke pengguna di kedua kasus di atas.
-      Pesan akhir siklus proses harus berupa teks biasa tanpa format apa pun. Markup tidak diizinkan. </translation>
 <translation id="5855010364142818361">Kebijakan ini mengontrol parameter command line untuk Chrome dari Internet Explorer.
 
       Jika add-in 'Dukungan Browser Lama' untuk Internet Explorer tidak diinstal, kebijakan ini tidak akan berpengaruh.
@@ -3887,7 +3846,6 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
       Jika kebijakan ditetapkan ke <ph name="BR_UNDER_USER_CONTROL" />, pengguna akan melihat perintah untuk menggunakan pencadangan dan pemulihan. Jika pengguna mengaktifkan pencadangan dan pemulihan, data aplikasi Android akan diupload ke server pencadangan Android dan dipulihkan saat penginstalan ulang aplikasi yang kompatibel.
 
       Setelah penyiapan awal, pengguna dapat menonaktifkan atau mengaktifkan pencadangan dan pemulihan.</translation>
-<translation id="6993687707842131236">Mengonfigurasi pesan akhir siklus proses untuk kebijakan MinimumChromeVersionEnforced</translation>
 <translation id="6994082778848658360">Menentukan bagaimana hardware elemen pengaman on-board digunakan untuk memberikan autentikasi faktor kedua jika kompatibel dengan fitur ini. Tombol power mesin digunakan untuk mendeteksi keberadaan pengguna.
 
       Jika 'Dinonaktifkan' dipilih, tidak ada faktor kedua yang diberikan.
@@ -4688,17 +4646,17 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan,
 
           Jika kebijakan ini tidak ditetapkan, sorotan kursor mula-mula akan dinonaktifkan, tetapi dapat diaktifkan oleh pengguna kapan saja.</translation>
 <translation id="8171924760436219650">Mengalihkan tombol mouse utama ke tombol kanan pada layar login</translation>
-<translation id="817455428376641507">Memungkinkan akses ke URL yang tercantum, kecuali untuk URL yang masuk dalam daftar hitam.
+<translation id="817455428376641507">Izinkan akses ke daftar URL, sebagai pengecualian atas daftar URL yang tidak diizinkan.
 
-      Lihat deskripsi kebijakan daftar hitam URL untuk format entri daftar ini.
+      Lihat deskripsi kebijakan URL yang tidak diizinkan untuk format entri daftar ini.
 
-      Kebijakan ini dapat digunakan untuk membuka pengecualian untuk daftar hitam terbatas. Misalnya, '*' dapat dimasukkan dalam daftar hitam untuk memblokir semua permintaan, dan kebijakan ini dapat digunakan untuk mengizinkan akses ke daftar URL yang dibatasi. Kebijakan ini juga dapat digunakan untuk membuka pengecualian untuk skema tertentu, subdomain dari domain lain, port, atau jalur khusus.
+      Kebijakan ini dapat digunakan untuk membuka pengecualian untuk daftar yang tidak diizinkan yang membatasi. Misalnya, '*' dapat dimasukkan dalam daftar yang tidak diizinkan untuk memblokir semua permintaan, dan kebijakan ini dapat digunakan untuk mengizinkan akses ke daftar URL yang dibatasi. Kebijakan ini juga dapat digunakan untuk membuka pengecualian untuk skema tertentu, subdomain dari domain lain, port, atau jalur khusus.
 
-      Filter yang paling spesifik akan menentukan apakah URL diblokir atau diizinkan. Daftar putih akan didahulukan daripada daftar hitam.
+      Filter yang paling spesifik akan menentukan apakah URL diblokir atau diizinkan. Daftar yang diizinkan akan didahulukan daripada daftar yang tidak diizinkan.
 
-      Kebijakan ini terbatas untuk 1000 entri; entri berikutnya akan diabaikan.
+      Kebijakan ini terbatas untuk 1.000 entri; entri berikutnya akan diabaikan.
 
-      Jika kebijakan ini tidak disetel, tidak akan ada pengecualian untuk daftar hitam dari kebijakan 'URLBlacklist'.</translation>
+      Jika kebijakan ini tidak disetel, tidak akan ada pengecualian untuk daftar yang tidak diizinkan dari kebijakan 'URLBlacklist'.</translation>
 <translation id="8176035528522326671">Memungkinkan pengguna perusahaan menjadi pengguna banyak profil primer saja (Perilaku default untuk pengguna yang dikelola perusahaan)</translation>
 <translation id="8183108371184777472">Sembunyikan peluncuran jendela browser</translation>
 <translation id="8186911565834244165">Izinkan masukan pengguna</translation>

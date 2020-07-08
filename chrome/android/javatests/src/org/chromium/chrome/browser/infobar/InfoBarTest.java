@@ -9,6 +9,7 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -109,12 +110,11 @@ public class InfoBarTest {
     }
 
     private void waitUntilDataReductionPromoInfoBarAppears() {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                List<InfoBar> infobars = mActivityTestRule.getInfoBars();
-                return infobars.size() == 1 && infobars.get(0) instanceof DataReductionPromoInfoBar;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            List<InfoBar> infobars = mActivityTestRule.getInfoBars();
+            Criteria.checkThat(infobars.size(), Matchers.is(1));
+            Criteria.checkThat(
+                    infobars.get(0), Matchers.instanceOf(DataReductionPromoInfoBar.class));
         });
     }
 
@@ -511,11 +511,8 @@ public class InfoBarTest {
         // The renderer should have been killed and the InfoBar removed.
         mListener.removeInfoBarAnimationFinished("InfoBar not removed.");
         Assert.assertTrue("Wrong infobar count", mActivityTestRule.getInfoBars().isEmpty());
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return SadTab.isShowing(mActivityTestRule.getActivity().getActivityTab());
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            return SadTab.isShowing(mActivityTestRule.getActivity().getActivityTab());
         }, MAX_TIMEOUT, CHECK_INTERVAL);
     }
 

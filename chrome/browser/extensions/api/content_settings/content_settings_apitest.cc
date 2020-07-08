@@ -96,7 +96,7 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
         map->GetContentSetting(example_url, example_url,
                                ContentSettingsType::JAVASCRIPT, std::string()));
     EXPECT_EQ(
-        CONTENT_SETTING_ALLOW,
+        CONTENT_SETTING_BLOCK,
         map->GetContentSetting(example_url, example_url,
                                ContentSettingsType::PLUGINS, std::string()));
     EXPECT_EQ(
@@ -141,7 +141,7 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
     EXPECT_EQ(CONTENT_SETTING_BLOCK,
               map->GetContentSetting(url, url, ContentSettingsType::JAVASCRIPT,
                                      std::string()));
-    EXPECT_EQ(CONTENT_SETTING_DETECT_IMPORTANT_CONTENT,
+    EXPECT_EQ(CONTENT_SETTING_BLOCK,
               map->GetContentSetting(url, url, ContentSettingsType::PLUGINS,
                                      std::string()));
     EXPECT_EQ(CONTENT_SETTING_ALLOW,

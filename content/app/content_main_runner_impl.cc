@@ -91,10 +91,10 @@
 #include "mojo/public/cpp/system/invitation.h"
 #include "mojo/public/mojom/base/binder.mojom.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "sandbox/policy/sandbox_type.h"
+#include "sandbox/policy/switches.h"
 #include "services/network/public/cpp/features.h"
 #include "services/service_manager/embedder/switches.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
-#include "services/service_manager/sandbox/switches.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "ui/base/ui_base_paths.h"
@@ -279,7 +279,7 @@ void InitializeZygoteSandboxForBrowserProcess(
   SandboxHostLinux::GetInstance()->Init();
 
   if (parsed_command_line.HasSwitch(switches::kNoZygote)) {
-    if (!parsed_command_line.HasSwitch(service_manager::switches::kNoSandbox)) {
+    if (!parsed_command_line.HasSwitch(sandbox::policy::switches::kNoSandbox)) {
       LOG(ERROR) << "--no-sandbox should be used together with --no--zygote";
       exit(EXIT_FAILURE);
     }
@@ -796,7 +796,7 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
 
 #if defined(OS_WIN)
     if (!InitializeSandbox(
-            service_manager::SandboxTypeFromCommandLine(command_line),
+            sandbox::policy::SandboxTypeFromCommandLine(command_line),
             params.sandbox_info))
       return TerminateForFatalInitializationError();
 #elif defined(OS_MACOSX)

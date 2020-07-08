@@ -2687,6 +2687,9 @@ void LocalFrameView::RunPaintLifecyclePhase() {
       if (root) {
         ForAllGraphicsLayers(*root, [](GraphicsLayer& layer) {
           if (layer.PaintsContentOrHitTest() && layer.HasLayerState()) {
+            // Notify the paint controller that the artifact has been pushed and
+            // some lifecycle state can be freed (such as raster invalidations).
+            layer.GetPaintController().FinishCycle();
             layer.GetPaintController().ClearPropertyTreeChangedStateTo(
                 layer.GetPropertyTreeState());
           }
@@ -3794,8 +3797,20 @@ IntPoint LocalFrameView::SoonToBeRemovedUnscaledViewportToContents(
   return ConvertFromRootFrame(point_in_root_frame);
 }
 
-void LocalFrameView::CapturePaintPreview(GraphicsContext& context,
+bool LocalFrameView::CapturePaintPreview(GraphicsContext& context,
                                          const IntSize& paint_offset) const {
+  HTMLFrameOwnerElement* owner =
+      DynamicTo<HTMLFrameOwnerElement>(GetFrame().Owner());
+  DCHECK(owner);
+
+  base::Optional<base::UnguessableToken> maybe_embedding_token =
+      owner->GetEmbeddingToken();
+
+  // Avoid crashing if a local frame doesn't have an embedding token.
+  // e.g. it was unloaded or hasn't finished loading (crbug/1103157).
+  if (!maybe_embedding_token.has_value())
+    return false;
+
   // Ensure a recording canvas is properly created.
   DrawingRecorder recorder(context, *GetFrame().OwnerLayoutObject(),
                            DisplayItem::kDocumentBackground);
@@ -3806,15 +3821,6 @@ void LocalFrameView::CapturePaintPreview(GraphicsContext& context,
   auto* tracker = context.Canvas()->GetPaintPreviewTracker();
   DCHECK(tracker);  // |tracker| must exist or there is a bug upstream.
 
-  HTMLFrameOwnerElement* owner =
-      DynamicTo<HTMLFrameOwnerElement>(GetFrame().Owner());
-  DCHECK(owner);
-
-  // Local frames should always have a valid embedding token.
-  base::Optional<base::UnguessableToken> maybe_embedding_token =
-      owner->GetEmbeddingToken();
-  DCHECK(maybe_embedding_token.has_value());
-
   // Create a placeholder ID that maps to an embedding token.
   context.Canvas()->recordCustomData(tracker->CreateContentForRemoteFrame(
       FrameRect(), maybe_embedding_token.value()));
@@ -3823,6 +3829,7 @@ void LocalFrameView::CapturePaintPreview(GraphicsContext& context,
   // Send a request to the browser to trigger a capture of the frame.
   GetFrame().GetLocalFrameHostRemote().CapturePaintPreviewOfSubframe(
       FrameRect(), tracker->Guid());
+  return true;
 }
 
 void LocalFrameView::Paint(GraphicsContext& context,
@@ -3833,8 +3840,9 @@ void LocalFrameView::Paint(GraphicsContext& context,
   // content separately. Paint should stop here and ask the browser to
   // coordinate painting such frames as a separate task.
   if (context.IsPaintingPreview() && LayoutViewport()->ScrollsOverflow()) {
-    CapturePaintPreview(context, paint_offset);
-    return;
+    // If capture fails we should fallback to capturing inline if possible.
+    if (CapturePaintPreview(context, paint_offset))
+      return;
   }
 
   // |paint_offset| is not used because paint properties of the contents will

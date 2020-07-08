@@ -10,10 +10,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 
-ManagementA11yUIBrowserTest::ManagementA11yUIBrowserTest() {
-  CHECK(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
-  test_data_dir_ = test_data_dir_.AppendASCII("extensions");
-}
+ManagementA11yUIBrowserTest::ManagementA11yUIBrowserTest()
+    : test_data_dir_(base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
+                         .AppendASCII("extensions")) {}
 
 ManagementA11yUIBrowserTest::~ManagementA11yUIBrowserTest() {}
 

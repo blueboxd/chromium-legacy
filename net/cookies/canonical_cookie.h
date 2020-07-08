@@ -242,7 +242,7 @@ class NET_EXPORT CanonicalCookie {
   // WARNING: this does not cover checking whether secure cookies are set in
   // a secure schema, since whether the schema is secure isn't part of
   // |options|.
-  CookieInclusionStatus IsSetPermittedInContext(
+  CookieAccessResult IsSetPermittedInContext(
       const CookieOptions& options,
       CookieAccessSemantics access_semantics =
           CookieAccessSemantics::UNKNOWN) const;
@@ -250,7 +250,7 @@ class NET_EXPORT CanonicalCookie {
   // Overload that updates an existing |status| rather than returning a new one.
   void IsSetPermittedInContext(const CookieOptions& options,
                                CookieAccessSemantics access_semantics,
-                               CookieInclusionStatus* status) const;
+                               CookieAccessResult* access_result) const;
 
   std::string DebugString() const;
 

@@ -32,7 +32,7 @@ const size_t kLowEndMaxProgramCacheMemoryBytes = 128 * 1024;
 enum class VulkanImplementationName : uint32_t {
   kNone = 0,
   kNative = 1,
-  kForcedNative = 2,  // Cannot override by GPU blacklist.
+  kForcedNative = 2,  // Cannot be overridden by GPU blocklist.
   kSwiftshader = 3,
   kLast = kSwiftshader,
 };
@@ -192,8 +192,8 @@ struct GPU_EXPORT GpuPreferences {
   // ===================================
   // Settings from //gpu/config/gpu_switches.h
 
-  // Ignores GPU blacklist.
-  bool ignore_gpu_blacklist = false;
+  // Ignores GPU blocklist.
+  bool ignore_gpu_blocklist = false;
 
   // Oop rasterization preferences in the GPU process.  disable wins over
   // enable, and neither means use defaults from GpuFeatureInfo.

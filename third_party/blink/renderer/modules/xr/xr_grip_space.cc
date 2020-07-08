@@ -24,10 +24,6 @@ base::Optional<TransformationMatrix> XRGripSpace::MojoFromNative() {
   return input_source_->MojoFromInput();
 }
 
-base::Optional<TransformationMatrix> XRGripSpace::NativeFromMojo() {
-  return XRSpace::TryInvert(MojoFromNative());
-}
-
 bool XRGripSpace::EmulatedPosition() const {
   return input_source_->emulatedPosition();
 }

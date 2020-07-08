@@ -15,6 +15,7 @@ class StyleAutoColor : public StyleColor {
 
  public:
   explicit StyleAutoColor(Color color) : StyleColor(color) {}
+  explicit StyleAutoColor(CSSValueID keyword) : StyleColor(keyword) {}
   static StyleAutoColor AutoColor() {
     return StyleAutoColor(CSSValueID::kAuto);
   }
@@ -28,9 +29,6 @@ class StyleAutoColor : public StyleColor {
     DCHECK(!IsAutoColor());
     return *this;
   }
-
- private:
-  explicit StyleAutoColor(CSSValueID keyword) : StyleColor(keyword) {}
 };
 
 inline bool operator==(const StyleAutoColor& a, const StyleAutoColor& b) {

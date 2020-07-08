@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/i18n/rtl.h"
+#include "base/numerics/safe_conversions.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/nine_patch_layer.h"
@@ -432,9 +433,9 @@ void TabLayer::SetProperties(int id,
 
   if (!back_visible) {
     gfx::Rect rounded_descaled_content_area(
-        round(descaled_local_content_area.x()),
-        round(descaled_local_content_area.y()), desired_content_size.width(),
-        desired_content_size.height());
+        base::Round(descaled_local_content_area.x()),
+        base::Round(descaled_local_content_area.y()),
+        desired_content_size.width(), desired_content_size.height());
 
     SetContentProperties(
         id, ids, can_use_live_layer, static_to_view_blend, true, alpha,

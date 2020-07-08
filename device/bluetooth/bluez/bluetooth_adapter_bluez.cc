@@ -150,7 +150,7 @@ void OnRegistrationErrorCallback(
 }
 
 void SetIntervalErrorCallbackConnector(
-    const device::BluetoothAdapter::AdvertisementErrorCallback& error_callback,
+    device::BluetoothAdapter::AdvertisementErrorCallback error_callback,
     const std::string& error_name,
     const std::string& error_message) {
   BLUETOOTH_LOG(ERROR) << "Error while registering advertisement. error_name = "
@@ -162,18 +162,18 @@ void SetIntervalErrorCallbackConnector(
     code = device::BluetoothAdvertisement::ErrorCode::
         ERROR_INVALID_ADVERTISEMENT_INTERVAL;
   }
-  error_callback.Run(code);
+  std::move(error_callback).Run(code);
 }
 
 void ResetAdvertisingErrorCallbackConnector(
-    const device::BluetoothAdapter::AdvertisementErrorCallback& error_callback,
+    device::BluetoothAdapter::AdvertisementErrorCallback error_callback,
     const std::string& error_name,
     const std::string& error_message) {
   BLUETOOTH_LOG(ERROR) << "Error while resetting advertising. error_name = "
                        << error_name << ", error_message = " << error_message;
 
-  error_callback.Run(
-      device::BluetoothAdvertisement::ErrorCode::ERROR_RESET_ADVERTISING);
+  std::move(error_callback)
+      .Run(device::BluetoothAdvertisement::ErrorCode::ERROR_RESET_ADVERTISING);
 }
 
 }  // namespace
@@ -517,8 +517,8 @@ BluetoothAdapterBlueZ::UUIDList BluetoothAdapterBlueZ::GetUUIDs() const {
 void BluetoothAdapterBlueZ::CreateRfcommService(
     const BluetoothUUID& uuid,
     const ServiceOptions& options,
-    const CreateServiceCallback& callback,
-    const CreateServiceErrorCallback& error_callback) {
+    CreateServiceCallback callback,
+    CreateServiceErrorCallback error_callback) {
   DCHECK(!dbus_is_shutdown_);
   BLUETOOTH_LOG(DEBUG) << object_path_.value() << ": Creating RFCOMM service: "
                        << uuid.canonical_value();
@@ -526,14 +526,15 @@ void BluetoothAdapterBlueZ::CreateRfcommService(
       BluetoothSocketBlueZ::CreateBluetoothSocket(ui_task_runner_,
                                                   socket_thread_);
   socket->Listen(this, BluetoothSocketBlueZ::kRfcomm, uuid, options,
-                 base::Bind(callback, socket), error_callback);
+                 base::BindOnce(std::move(callback), socket),
+                 std::move(error_callback));
 }
 
 void BluetoothAdapterBlueZ::CreateL2capService(
     const BluetoothUUID& uuid,
     const ServiceOptions& options,
-    const CreateServiceCallback& callback,
-    const CreateServiceErrorCallback& error_callback) {
+    CreateServiceCallback callback,
+    CreateServiceErrorCallback error_callback) {
   DCHECK(!dbus_is_shutdown_);
   BLUETOOTH_LOG(DEBUG) << object_path_.value() << ": Creating L2CAP service: "
                        << uuid.canonical_value();
@@ -541,24 +542,26 @@ void BluetoothAdapterBlueZ::CreateL2capService(
       BluetoothSocketBlueZ::CreateBluetoothSocket(ui_task_runner_,
                                                   socket_thread_);
   socket->Listen(this, BluetoothSocketBlueZ::kL2cap, uuid, options,
-                 base::Bind(callback, socket), error_callback);
+                 base::BindOnce(std::move(callback), socket),
+                 std::move(error_callback));
 }
 
 void BluetoothAdapterBlueZ::RegisterAdvertisement(
     std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement_data,
-    const CreateAdvertisementCallback& callback,
-    const AdvertisementErrorCallback& error_callback) {
+    CreateAdvertisementCallback callback,
+    AdvertisementErrorCallback error_callback) {
   scoped_refptr<BluetoothAdvertisementBlueZ> advertisement(
       new BluetoothAdvertisementBlueZ(std::move(advertisement_data), this));
-  advertisement->Register(base::Bind(callback, advertisement), error_callback);
+  advertisement->Register(base::BindOnce(std::move(callback), advertisement),
+                          std::move(error_callback));
   advertisements_.emplace_back(advertisement);
 }
 
 void BluetoothAdapterBlueZ::SetAdvertisingInterval(
     const base::TimeDelta& min,
     const base::TimeDelta& max,
-    const base::Closure& callback,
-    const AdvertisementErrorCallback& error_callback) {
+    base::OnceClosure callback,
+    AdvertisementErrorCallback error_callback) {
   DCHECK(bluez::BluezDBusManager::Get());
   uint16_t min_ms = static_cast<uint16_t>(
       std::min(static_cast<int64_t>(std::numeric_limits<uint16_t>::max()),
@@ -569,19 +572,20 @@ void BluetoothAdapterBlueZ::SetAdvertisingInterval(
   bluez::BluezDBusManager::Get()
       ->GetBluetoothLEAdvertisingManagerClient()
       ->SetAdvertisingInterval(
-          object_path_, min_ms, max_ms, callback,
-          base::BindOnce(&SetIntervalErrorCallbackConnector, error_callback));
+          object_path_, min_ms, max_ms, std::move(callback),
+          base::BindOnce(&SetIntervalErrorCallbackConnector,
+                         std::move(error_callback)));
 }
 
 void BluetoothAdapterBlueZ::ResetAdvertising(
-    const base::Closure& callback,
-    const AdvertisementErrorCallback& error_callback) {
+    base::OnceClosure callback,
+    AdvertisementErrorCallback error_callback) {
   DCHECK(bluez::BluezDBusManager::Get());
   bluez::BluezDBusManager::Get()
       ->GetBluetoothLEAdvertisingManagerClient()
-      ->ResetAdvertising(object_path_, callback,
+      ->ResetAdvertising(object_path_, std::move(callback),
                          base::BindOnce(&ResetAdvertisingErrorCallbackConnector,
-                                        error_callback));
+                                        std::move(error_callback)));
 }
 
 device::BluetoothLocalGattService* BluetoothAdapterBlueZ::GetGattService(
@@ -1252,37 +1256,41 @@ void BluetoothAdapterBlueZ::UseProfile(
     const dbus::ObjectPath& device_path,
     const bluez::BluetoothProfileManagerClient::Options& options,
     bluez::BluetoothProfileServiceProvider::Delegate* delegate,
-    const ProfileRegisteredCallback& success_callback,
-    const ErrorCompletionCallback& error_callback) {
+    ProfileRegisteredCallback success_callback,
+    ErrorCompletionOnceCallback error_callback) {
   DCHECK(delegate);
 
   if (!IsPresent()) {
     BLUETOOTH_LOG(DEBUG) << "Adapter not present, erroring out";
-    error_callback.Run("Adapter not present");
+    std::move(error_callback).Run("Adapter not present");
     return;
   }
 
   if (profiles_.find(uuid) != profiles_.end()) {
     // TODO(jamuraa) check that the options are the same and error when they are
     // not.
-    SetProfileDelegate(uuid, device_path, delegate, success_callback,
-                       error_callback);
+    SetProfileDelegate(uuid, device_path, delegate, std::move(success_callback),
+                       std::move(error_callback));
     return;
   }
 
   if (profile_queues_.find(uuid) == profile_queues_.end()) {
     BluetoothAdapterProfileBlueZ::Register(
         uuid, options,
-        base::Bind(&BluetoothAdapterBlueZ::OnRegisterProfile, this, uuid),
-        base::Bind(&BluetoothAdapterBlueZ::OnRegisterProfileError, this, uuid));
+        base::BindOnce(&BluetoothAdapterBlueZ::OnRegisterProfile, this, uuid),
+        base::BindOnce(&BluetoothAdapterBlueZ::OnRegisterProfileError, this,
+                       uuid));
 
     profile_queues_[uuid] = new std::vector<RegisterProfileCompletionPair>();
   }
 
+  auto copyable_error_callback =
+      base::AdaptCallbackForRepeating(std::move(error_callback));
   profile_queues_[uuid]->push_back(std::make_pair(
-      base::Bind(&BluetoothAdapterBlueZ::SetProfileDelegate, this, uuid,
-                 device_path, delegate, success_callback, error_callback),
-      error_callback));
+      base::BindOnce(&BluetoothAdapterBlueZ::SetProfileDelegate, this, uuid,
+                     device_path, delegate, std::move(success_callback),
+                     copyable_error_callback),
+      copyable_error_callback));
 }
 
 void BluetoothAdapterBlueZ::ReleaseProfile(
@@ -1415,7 +1423,7 @@ void BluetoothAdapterBlueZ::OnRegisterProfile(
     return;
 
   for (auto& it : *profile_queues_[uuid])
-    it.first.Run();
+    std::move(it.first).Run();
   delete profile_queues_[uuid];
   profile_queues_.erase(uuid);
 }
@@ -1424,19 +1432,19 @@ void BluetoothAdapterBlueZ::SetProfileDelegate(
     const BluetoothUUID& uuid,
     const dbus::ObjectPath& device_path,
     bluez::BluetoothProfileServiceProvider::Delegate* delegate,
-    const ProfileRegisteredCallback& success_callback,
-    const ErrorCompletionCallback& error_callback) {
+    ProfileRegisteredCallback success_callback,
+    ErrorCompletionOnceCallback error_callback) {
   if (profiles_.find(uuid) == profiles_.end()) {
-    error_callback.Run("Cannot find profile!");
+    std::move(error_callback).Run("Cannot find profile!");
     return;
   }
 
   if (profiles_[uuid]->SetDelegate(device_path, delegate)) {
-    success_callback.Run(profiles_[uuid]);
+    std::move(success_callback).Run(profiles_[uuid]);
     return;
   }
   // Already set
-  error_callback.Run(bluetooth_agent_manager::kErrorAlreadyExists);
+  std::move(error_callback).Run(bluetooth_agent_manager::kErrorAlreadyExists);
 }
 
 void BluetoothAdapterBlueZ::OnRegisterProfileError(
@@ -1450,7 +1458,7 @@ void BluetoothAdapterBlueZ::OnRegisterProfileError(
     return;
 
   for (auto& it : *profile_queues_[uuid])
-    it.second.Run(error_message);
+    std::move(it.second).Run(error_message);
 
   delete profile_queues_[uuid];
   profile_queues_.erase(uuid);

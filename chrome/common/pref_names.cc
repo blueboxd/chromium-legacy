@@ -637,7 +637,7 @@ const char kSessionUserActivitySeen[] = "session.user_activity_seen";
 // observed, the pref is set after the first user activity in a session.
 // Otherwise, it is set immediately after session start. The pref is used to
 // restore the session start time after browser crashes. The time is expressed
-// as the serialization obtained from base::TimeTicks::ToInternalValue().
+// as the serialization obtained from base::Time::ToInternalValue().
 const char kSessionStartTime[] = "session.start_time";
 
 // Holds the maximum session time in milliseconds. If this pref is set, the

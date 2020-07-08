@@ -184,11 +184,11 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "sandbox/policy/sandbox_type.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
@@ -238,7 +238,7 @@
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 #include "media/webrtc/webrtc_switches.h"
-#include "services/service_manager/sandbox/features.h"
+#include "sandbox/policy/features.h"
 #endif
 
 using content::BrowserThread;
@@ -1469,8 +1469,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_SessionLengthLimit) {
   // occurred yet.
   g_browser_process->local_state()->SetInt64(
       prefs::kSessionStartTime,
-      (base::TimeTicks::Now() - base::TimeDelta::FromHours(2))
-          .ToInternalValue());
+      (base::Time::Now() - base::TimeDelta::FromHours(2)).ToInternalValue());
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, SessionLengthLimit) {
@@ -1510,8 +1509,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
   // occurred yet.
   g_browser_process->local_state()->SetInt64(
       prefs::kSessionStartTime,
-      (base::TimeTicks::Now() - base::TimeDelta::FromHours(2))
-          .ToInternalValue());
+      (base::Time::Now() - base::TimeDelta::FromHours(2)).ToInternalValue());
 }
 
 // Disabled, see http://crbug.com/554728.
@@ -1546,8 +1544,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_WaitForInitialUserActivitySatisfied) {
   // Indicate that initial user activity in this session occurred 2 hours ago.
   g_browser_process->local_state()->SetInt64(
       prefs::kSessionStartTime,
-      (base::TimeTicks::Now() - base::TimeDelta::FromHours(2))
-          .ToInternalValue());
+      (base::Time::Now() - base::TimeDelta::FromHours(2)).ToInternalValue());
   g_browser_process->local_state()->SetBoolean(prefs::kSessionUserActivitySeen,
                                                true);
 }
@@ -2607,10 +2604,10 @@ class AudioSandboxEnabledTest
 IN_PROC_BROWSER_TEST_P(AudioSandboxEnabledTest, IsRespected) {
   base::Optional<bool> enable_sandbox_via_policy = GetParam();
   bool is_sandbox_enabled_by_default = base::FeatureList::IsEnabled(
-      service_manager::features::kAudioServiceSandbox);
+      sandbox::policy::features::kAudioServiceSandbox);
 
   ASSERT_EQ(enable_sandbox_via_policy.value_or(is_sandbox_enabled_by_default),
-            service_manager::IsAudioSandboxEnabled());
+            sandbox::policy::IsAudioSandboxEnabled());
 }
 
 INSTANTIATE_TEST_SUITE_P(

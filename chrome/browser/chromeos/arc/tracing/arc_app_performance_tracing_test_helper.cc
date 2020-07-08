@@ -26,7 +26,6 @@ void ArcAppPerformanceTracingTestHelper::SetUp(Profile* profile) {
   DCHECK(IsArcAllowedForProfile(profile));
   profile_ = profile;
   wm_helper_ = std::make_unique<exo::WMHelperChromeOS>();
-  exo::WMHelper::SetInstance(wm_helper_.get());
   // Make sure it is accessible in test.
   if (!GetTracing()) {
     ArcAppPerformanceTracing::GetForBrowserContextForTesting(profile_);
@@ -36,7 +35,6 @@ void ArcAppPerformanceTracingTestHelper::SetUp(Profile* profile) {
 
 void ArcAppPerformanceTracingTestHelper::TearDown() {
   DCHECK(profile_);
-  exo::WMHelper::SetInstance(nullptr);
   wm_helper_.reset();
   profile_ = nullptr;
 }

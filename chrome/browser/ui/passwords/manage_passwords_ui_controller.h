@@ -98,7 +98,7 @@ class ManagePasswordsUIController
       override;
 
   virtual void NotifyUnsyncedCredentialsWillBeDeleted(
-      const std::vector<autofill::PasswordForm>& unsynced_credentials);
+      std::vector<autofill::PasswordForm> unsynced_credentials);
 
   // PasswordStore::Observer:
   void OnLoginsChanged(

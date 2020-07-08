@@ -14,7 +14,7 @@
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
+#include "sandbox/policy/sandbox_type.h"
 
 namespace base {
 class CommandLine;
@@ -41,7 +41,7 @@ class SandboxedProcessLauncherDelegate;
 // occurred.  If process_type isn't one that needs sandboxing true is always
 // returned.
 CONTENT_EXPORT bool InitializeSandbox(
-    service_manager::SandboxType sandbox_type,
+    sandbox::policy::SandboxType sandbox_type,
     sandbox::SandboxInterfaceInfo* sandbox_info);
 
 // Launch a sandboxed process. |delegate| may be NULL. If |delegate| is non-NULL
@@ -64,7 +64,7 @@ CONTENT_EXPORT sandbox::ResultCode StartSandboxedProcess(
 // occurred.  If process_type isn't one that needs sandboxing, no action is
 // taken and true is always returned.
 CONTENT_EXPORT bool InitializeSandbox(
-    service_manager::SandboxType sandbox_type);
+    sandbox::policy::SandboxType sandbox_type);
 
 // Initialize the sandbox for renderer, gpu, utility, worker, and plugin
 // processes, depending on the command line flags. For the browser process which

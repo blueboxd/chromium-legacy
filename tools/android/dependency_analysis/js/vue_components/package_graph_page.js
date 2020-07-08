@@ -12,7 +12,7 @@ import {GraphVisualization} from './graph_visualization.js';
 import {GraphSelectedNodeDetails} from './graph_selected_node_details.js';
 import {PageUrlGenerator} from './page_url_generator.js';
 
-import {parseGraphModelFromJson} from '../process_graph_json.js';
+import {parsePackageGraphModelFromJson} from '../process_graph_json.js';
 import {generateFilterFromUrl} from '../url_processor.js';
 import {PageModel} from '../page_model.js';
 import {Node} from '../graph_model.js';
@@ -42,7 +42,7 @@ const PackageGraphPage = Vue.component('package-graph-page', {
    * @return {PageData} The objects used throughout the page.
   */
   data: function() {
-    const graphModel = parseGraphModelFromJson(this.graphJson);
+    const graphModel = parsePackageGraphModelFromJson(this.graphJson);
     const pageModel = new PageModel(graphModel);
 
     return {

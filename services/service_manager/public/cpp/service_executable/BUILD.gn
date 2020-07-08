@@ -13,8 +13,8 @@ source_set("support") {
     "//mojo/core/embedder",
     "//mojo/public/cpp/platform",
     "//mojo/public/cpp/system",
+    "//sandbox/policy",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/sandbox",
   ]
 
   public_deps = [

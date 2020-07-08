@@ -8,6 +8,7 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -126,12 +127,7 @@ public class PaymentManifestDownloaderTest implements ManifestDownloadCallback {
         mRule.runOnUiThread((Runnable) ()
                                     -> mDownloader.downloadWebAppManifest(
                                             mTestOrigin, url, PaymentManifestDownloaderTest.this));
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mDownloadComplete;
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(() -> mDownloadComplete);
 
         Assert.assertTrue(
                 "Web app manifest should have been downloaded.", mDownloadWebAppManifestSuccess);
@@ -145,12 +141,7 @@ public class PaymentManifestDownloaderTest implements ManifestDownloadCallback {
         mRule.runOnUiThread((Runnable) ()
                                     -> mDownloader.downloadWebAppManifest(
                                             mTestOrigin, url, PaymentManifestDownloaderTest.this));
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mDownloadComplete;
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(() -> mDownloadComplete);
 
         Assert.assertTrue("Web app manifest should not have been downloaded.", mDownloadFailure);
         Assert.assertEquals(
@@ -165,12 +156,7 @@ public class PaymentManifestDownloaderTest implements ManifestDownloadCallback {
         mRule.runOnUiThread((Runnable) ()
                                     -> mDownloader.downloadPaymentMethodManifest(
                                             mTestOrigin, url, PaymentManifestDownloaderTest.this));
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mDownloadComplete;
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(() -> mDownloadComplete);
 
         Assert.assertTrue("Payment method manifest should have been downloaded.",
                 mDownloadPaymentMethodManifestSuccess);
@@ -184,12 +170,7 @@ public class PaymentManifestDownloaderTest implements ManifestDownloadCallback {
         mRule.runOnUiThread((Runnable) ()
                                     -> mDownloader.downloadPaymentMethodManifest(
                                             mTestOrigin, url, PaymentManifestDownloaderTest.this));
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mDownloadComplete;
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(() -> mDownloadComplete);
 
         Assert.assertTrue(
                 "Payment method manifest should have not have been downloaded.", mDownloadFailure);
@@ -216,12 +197,10 @@ public class PaymentManifestDownloaderTest implements ManifestDownloadCallback {
             mDownloader.downloadWebAppManifest(
                     mTestOrigin, webAppUri2, PaymentManifestDownloaderTest.this);
         });
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mDownloadWebAppManifestSuccess && mDownloadPaymentMethodManifestSuccess
-                        && mDownloadFailure;
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(mDownloadWebAppManifestSuccess, Matchers.is(true));
+            Criteria.checkThat(mDownloadPaymentMethodManifestSuccess, Matchers.is(true));
+            Criteria.checkThat(mDownloadFailure, Matchers.is(true));
         });
 
         Assert.assertEquals(EXPECTED_PAYMENT_METHOD_MANIFEST, mPaymentMethodManifest);

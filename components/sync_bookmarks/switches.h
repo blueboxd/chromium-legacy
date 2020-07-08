@@ -19,6 +19,8 @@ extern const base::Feature kSyncReuploadBookmarkFullTitles;
 extern const base::Feature kSyncProcessBookmarkRestoreAfterDeletion;
 // This switch is used to disable removing of bookmark duplicates by GUID.
 extern const base::Feature kSyncDeduplicateAllBookmarksWithSameGUID;
+// TODO(crbug.com/1075709): remove after launch.
+extern const base::Feature kSyncIgnoreChangesInTouchIcons;
 
 }  // namespace switches
 

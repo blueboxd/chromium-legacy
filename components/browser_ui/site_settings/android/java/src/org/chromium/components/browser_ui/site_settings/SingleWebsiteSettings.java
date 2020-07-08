@@ -18,6 +18,7 @@ import android.text.format.Formatter;
 import android.view.View;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AlertDialog;
 import androidx.preference.ListPreference;
@@ -412,9 +413,10 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
         }
     }
 
-    private Intent getNotificationSettingsIntent(String packageName) {
+    private Intent getSettingsIntent(String packageName, @ContentSettingsType int type) {
         Intent intent = new Intent();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                && type == ContentSettingsType.NOTIFICATIONS) {
             intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
             intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName);
         } else {
@@ -447,34 +449,39 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
         return newPreference;
     }
 
-    private void setupNotificationManagedByPreference(
-            ChromeImageViewPreference preference, Intent settingsIntent) {
-        preference.setImageView(
-                R.drawable.permission_popups, R.string.website_notification_settings, null);
-        // By disabling the ImageView, clicks will go through to the preference.
-        preference.setImageViewEnabled(false);
+    private boolean setUpManagedByPreference(Preference preference,
+            @StringRes int contentDescriptionRes, @ContentSettingsType int type) {
+        Origin origin = Origin.create(mSite.getAddress().getOrigin());
+        if (origin == null) {
+            return false;
+        }
 
-        preference.setOnPreferenceClickListener(unused -> {
+        String managedBy = getSiteSettingsClient().getDelegateAppNameForOrigin(origin, type);
+        if (managedBy == null) {
+            return false;
+        }
+
+        final Intent settingsIntent = getSettingsIntent(
+                getSiteSettingsClient().getDelegatePackageNameForOrigin(origin, type), type);
+        String summaryText = getString(R.string.website_setting_managed_by_app, managedBy);
+        ChromeImageViewPreference newPreference =
+                replaceWithReadOnlyCopyOf(preference, summaryText);
+
+        newPreference.setImageView(R.drawable.permission_popups, contentDescriptionRes, null);
+        // By disabling the ImageView, clicks will go through to the preference.
+        newPreference.setImageViewEnabled(false);
+
+        newPreference.setOnPreferenceClickListener(unused -> {
             startActivity(settingsIntent);
             return true;
         });
+        return true;
     }
 
     private void setUpNotificationsPreference(Preference preference, boolean isEmbargoed) {
-        WebappSettingsClient client = getSiteSettingsClient().getWebappSettingsClient();
-        Origin origin = Origin.create(mSite.getAddress().getOrigin());
-        if (origin != null) {
-            String managedBy = client.getNotificationDelegateAppNameForOrigin(origin);
-            if (managedBy != null) {
-                final Intent notificationSettingsIntent = getNotificationSettingsIntent(
-                        client.getNotificationDelegatePackageNameForOrigin(origin));
-                String summaryText =
-                        getString(R.string.website_notification_managed_by_app, managedBy);
-                ChromeImageViewPreference newPreference =
-                        replaceWithReadOnlyCopyOf(preference, summaryText);
-                setupNotificationManagedByPreference(newPreference, notificationSettingsIntent);
-                return;
-            }
+        if (setUpManagedByPreference(preference, R.string.website_notification_settings,
+                    ContentSettingsType.NOTIFICATIONS)) {
+            return;
         }
 
         final @ContentSettingValues @Nullable Integer value =
@@ -804,6 +811,11 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
     }
 
     private void setUpLocationPreference(Preference preference) {
+        if (setUpManagedByPreference(preference, R.string.website_location_settings,
+                    ContentSettingsType.GEOLOCATION)) {
+            return;
+        }
+
         @ContentSettingValues
         @Nullable
         Integer permission = mSite.getPermission(

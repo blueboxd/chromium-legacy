@@ -430,7 +430,10 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     elif status == status_codes.INIT_FAILURE:
       logging.error('Gold initialization failed with output %s', error)
     elif status == status_codes.COMPARISON_FAILURE_REMOTE:
-      triage_link = gold_session.GetTriageLink(image_name)
+      # We currently don't have an internal instance + public mirror like the
+      # general Chrome Gold instance, so just report the "internal" link, which
+      # points to the correct instance.
+      _, triage_link = gold_session.GetTriageLinks(image_name)
       if not triage_link:
         logging.error('Failed to get triage link for %s, raw output: %s',
                       image_name, error)

@@ -501,6 +501,14 @@ void HTMLAnchorElement::HandleClick(Event& event) {
         static_cast<String>(FastGetAttribute(html_names::kDownloadAttr)));
     request.SetRequestContext(mojom::RequestContextType::DOWNLOAD);
     request.SetRequestorOrigin(window->GetSecurityOrigin());
+    network::mojom::ReferrerPolicy referrer_policy =
+        request.GetReferrerPolicy();
+    if (referrer_policy == network::mojom::ReferrerPolicy::kDefault)
+      referrer_policy = window->GetReferrerPolicy();
+    Referrer referrer = SecurityPolicy::GenerateReferrer(
+        referrer_policy, completed_url, window->OutgoingReferrer());
+    request.SetReferrerString(referrer.referrer);
+    request.SetReferrerPolicy(referrer.referrer_policy);
     frame->DownloadURL(request, network::mojom::blink::RedirectMode::kManual);
     return;
   }

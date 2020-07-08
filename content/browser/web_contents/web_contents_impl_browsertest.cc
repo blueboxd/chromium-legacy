@@ -18,6 +18,7 @@
 #include "base/stl_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
@@ -84,6 +85,7 @@
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
+#include "ui/base/clipboard/clipboard_format_type.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -4225,6 +4227,24 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
     // of SetRendererInitiatedUserAgentOverrideOption(UA_OVERRIDE_FALSE).
     EXPECT_FALSE(resulting_entry->GetIsOverridingUserAgent());
   }
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       IgnoreUnresponsiveRendererDuringPaste) {
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  EXPECT_FALSE(web_contents->ShouldIgnoreUnresponsiveRenderer());
+  web_contents->IsClipboardPasteAllowed(
+      GURL("https://google.com"), ui::ClipboardFormatType::GetPlainTextType(),
+      "random pasted text",
+      base::BindLambdaForTesting(
+          [&web_contents](
+              content::ContentBrowserClient::ClipboardPasteAllowed allowed) {
+            EXPECT_TRUE(allowed);
+            EXPECT_TRUE(web_contents->ShouldIgnoreUnresponsiveRenderer());
+          }));
+  EXPECT_FALSE(web_contents->ShouldIgnoreUnresponsiveRenderer());
 }
 
 }  // namespace content

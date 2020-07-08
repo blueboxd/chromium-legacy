@@ -13,6 +13,16 @@ function shortenPackageName(name) {
       .replace('chrome.browser.', 'c.b.');
 }
 
+/**
+ * Shortens a class name to be displayed in the svg.
+ * @param {string} name The full class name to shorten.
+ * @return {string} The shortened class name.
+ */
+function shortenClassName(name) {
+  return name.substring(name.lastIndexOf('.') + 1);
+}
+
 export {
   shortenPackageName,
+  shortenClassName,
 };

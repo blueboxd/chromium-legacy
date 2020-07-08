@@ -32,7 +32,6 @@ import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
 import org.chromium.components.offline_items_collection.PendingState;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.ConnectionType;
@@ -100,13 +99,9 @@ public class DownloadManagerServiceTest {
         }
 
         public void waitTillExpectedCallsComplete() {
-            CriteriaHelper.pollInstrumentationThread(
-                    new Criteria("Failed while waiting for all calls to complete.") {
-                        @Override
-                        public boolean isSatisfied() {
-                            return mExpectedCalls.isEmpty();
-                        }
-                    });
+            CriteriaHelper.pollInstrumentationThread(() -> {
+                return mExpectedCalls.isEmpty();
+            }, "Failed while waiting for all calls to complete.");
         }
 
         public MockDownloadNotifier andThen(@MethodID int method, Object param) {
@@ -444,12 +439,7 @@ public class DownloadManagerServiceTest {
         int resumableIdCount = mService.mAutoResumableDownloadIds.size();
         mService.onConnectionTypeChanged(ConnectionType.CONNECTION_WIFI);
         Assert.assertEquals(resumableIdCount - 1, mService.mAutoResumableDownloadIds.size());
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mService.mResumed;
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> mService.mResumed);
     }
 
     @Test

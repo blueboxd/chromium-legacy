@@ -224,7 +224,7 @@ void TextLogUploadList::ClearUploadList(const base::Time& begin,
 
   std::string new_contents = new_contents_stream.str();
   if (new_contents.size() == 0) {
-    base::DeleteFile(upload_log_path_, /*recursive*/ false);
+    base::DeleteFile(upload_log_path_);
   } else {
     base::WriteFile(upload_log_path_, new_contents.c_str(),
                     new_contents.size());

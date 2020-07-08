@@ -331,6 +331,8 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "ppapi/host/ppapi_host.h"
 #include "printing/buildflags/buildflags.h"
+#include "sandbox/policy/sandbox_type.h"
+#include "sandbox/policy/switches.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/network/public/cpp/features.h"
@@ -338,8 +340,6 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/service_manager/embedder/switches.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
-#include "services/service_manager/sandbox/switches.h"
 #include "services/strings/grit/services_strings.h"
 #include "storage/browser/file_system/external_mount_points.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
@@ -471,7 +471,7 @@
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 #include "chrome/browser/browser_switcher/browser_switcher_navigation_throttle.h"
-#include "services/service_manager/sandbox/features.h"
+#include "sandbox/policy/features.h"
 #endif
 
 #if defined(OS_LINUX)
@@ -2420,7 +2420,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #if defined(OS_LINUX)
   // Processes may only query perf_event_open with the BPF sandbox disabled.
   if (browser_command_line.HasSwitch(switches::kEnableThreadInstructionCount) &&
-      command_line->HasSwitch(service_manager::switches::kNoSandbox)) {
+      command_line->HasSwitch(sandbox::policy::switches::kNoSandbox)) {
     command_line->AppendSwitch(switches::kEnableThreadInstructionCount);
   }
 #endif
@@ -3728,32 +3728,32 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 
 #if defined(OS_WIN)
 base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
-    service_manager::SandboxType sandbox_type) {
+    sandbox::policy::SandboxType sandbox_type) {
   // TODO(wfh): Add support for more process types here. crbug.com/499523
   switch (sandbox_type) {
-    case service_manager::SandboxType::kRenderer:
+    case sandbox::policy::SandboxType::kRenderer:
       return base::string16(install_static::GetSandboxSidPrefix()) +
              L"129201922";
-    case service_manager::SandboxType::kUtility:
+    case sandbox::policy::SandboxType::kUtility:
       return base::string16();
-    case service_manager::SandboxType::kGpu:
+    case sandbox::policy::SandboxType::kGpu:
       return base::string16();
-    case service_manager::SandboxType::kPpapi:
+    case sandbox::policy::SandboxType::kPpapi:
       return base::string16(install_static::GetSandboxSidPrefix()) +
              L"129201925";
-    case service_manager::SandboxType::kNoSandbox:
-    case service_manager::SandboxType::kNoSandboxAndElevatedPrivileges:
-    case service_manager::SandboxType::kXrCompositing:
-    case service_manager::SandboxType::kNetwork:
-    case service_manager::SandboxType::kCdm:
-    case service_manager::SandboxType::kPrintCompositor:
-    case service_manager::SandboxType::kAudio:
-    case service_manager::SandboxType::kSpeechRecognition:
-    case service_manager::SandboxType::kProxyResolver:
-    case service_manager::SandboxType::kPdfConversion:
-    case service_manager::SandboxType::kSharingService:
-    case service_manager::SandboxType::kVideoCapture:
-    case service_manager::SandboxType::kIconReader:
+    case sandbox::policy::SandboxType::kNoSandbox:
+    case sandbox::policy::SandboxType::kNoSandboxAndElevatedPrivileges:
+    case sandbox::policy::SandboxType::kXrCompositing:
+    case sandbox::policy::SandboxType::kNetwork:
+    case sandbox::policy::SandboxType::kCdm:
+    case sandbox::policy::SandboxType::kPrintCompositor:
+    case sandbox::policy::SandboxType::kAudio:
+    case sandbox::policy::SandboxType::kSpeechRecognition:
+    case sandbox::policy::SandboxType::kProxyResolver:
+    case sandbox::policy::SandboxType::kPdfConversion:
+    case sandbox::policy::SandboxType::kSharingService:
+    case sandbox::policy::SandboxType::kVideoCapture:
+    case sandbox::policy::SandboxType::kIconReader:
       // Should never reach here.
       CHECK(0);
       return base::string16();
@@ -3822,7 +3822,7 @@ bool ShouldEnableAudioSandbox(const policy::PolicyMap& policies) {
   }
 
   return base::FeatureList::IsEnabled(
-      service_manager::features::kAudioServiceSandbox);
+      sandbox::policy::features::kAudioServiceSandbox);
 }
 #endif
 
@@ -3839,7 +3839,7 @@ void ChromeContentBrowserClient::WillStartServiceManager() {
             ->GetPolicies(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
                                                   std::string()));
 
-    service_manager::EnableAudioSandbox(ShouldEnableAudioSandbox(policies));
+    sandbox::policy::EnableAudioSandbox(ShouldEnableAudioSandbox(policies));
   }
 #endif
 }
@@ -4868,6 +4868,16 @@ std::vector<base::FilePath>
 ChromeContentBrowserClient::GetNetworkContextsParentDirectory() {
   DCHECK(!network_contexts_parent_directory_.empty());
   return network_contexts_parent_directory_;
+}
+
+base::DictionaryValue ChromeContentBrowserClient::GetNetLogConstants() {
+  auto platform_dict = net_log::GetPlatformConstantsForNetLog(
+      base::CommandLine::ForCurrentProcess()->GetCommandLineString(),
+      chrome::GetChannelName());
+  if (platform_dict)
+    return std::move(*platform_dict);
+  else
+    return base::DictionaryValue();
 }
 
 bool ChromeContentBrowserClient::AllowRenderingMhtmlOverHttp(

@@ -233,6 +233,7 @@ jumbo_component("network_service") {
     "//mojo/public/cpp/system",
     "//net",
     "//net:extras",
+    "//sandbox/policy",
     "//services/network/public/cpp",
     "//services/network/public/cpp/cert_verifier:cert_verifier_creation",
     "//services/network/public/cpp/cert_verifier:mojo_cert_verifier",
@@ -241,7 +242,6 @@ jumbo_component("network_service") {
     "//services/network/trust_tokens",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
-    "//services/service_manager/sandbox:sandbox",
     "//third_party/webrtc_overrides:webrtc_component",
     "//url",
   ]
@@ -257,10 +257,7 @@ jumbo_component("network_service") {
   }
 
   if (is_linux) {
-    deps += [
-      "//sandbox/linux:sandbox_services",
-      "//services/service_manager/sandbox:sandbox",
-    ]
+    deps += [ "//sandbox/linux:sandbox_services" ]
   }
 
   if (is_android) {

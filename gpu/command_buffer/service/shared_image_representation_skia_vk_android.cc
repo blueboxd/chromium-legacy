@@ -35,33 +35,25 @@ SharedImageRepresentationSkiaVkAndroid::SharedImageRepresentationSkiaVkAndroid(
     SharedImageManager* manager,
     SharedImageBackingAndroid* backing,
     scoped_refptr<SharedContextState> context_state,
-    std::unique_ptr<VulkanImage> vulkan_image,
-    base::ScopedFD init_read_fence,
     MemoryTypeTracker* tracker)
     : SharedImageRepresentationSkia(manager, backing, tracker),
-      vulkan_image_(std::move(vulkan_image)),
-      init_read_fence_(std::move(init_read_fence)),
       context_state_(std::move(context_state)) {
-  DCHECK(vulkan_image_);
+  DCHECK(backing);
   DCHECK(context_state_);
   DCHECK(context_state_->vk_context_provider());
-  // TODO(bsalomon): Determine whether it makes sense to attempt to reuse this
-  // if the vk_info stays the same on subsequent calls.
-  promise_texture_ = SkPromiseImageTexture::Make(
-      GrBackendTexture(size().width(), size().height(),
-                       CreateGrVkImageInfo(vulkan_image_.get())));
-  DCHECK(promise_texture_);
 }
 
 SharedImageRepresentationSkiaVkAndroid::
     ~SharedImageRepresentationSkiaVkAndroid() {
   DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
   surface_.reset();
-  DCHECK(vulkan_image_);
-  VulkanFenceHelper* fence_helper =
-      context_state_->vk_context_provider()->GetDeviceQueue()->GetFenceHelper();
-  fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
-      std::move(vulkan_image_));
+  if (vulkan_image_) {
+    VulkanFenceHelper* fence_helper = context_state_->vk_context_provider()
+                                          ->GetDeviceQueue()
+                                          ->GetFenceHelper();
+    fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
+        std::move(vulkan_image_));
+  }
 }
 
 sk_sp<SkSurface> SharedImageRepresentationSkiaVkAndroid::BeginWriteAccess(
@@ -70,6 +62,7 @@ sk_sp<SkSurface> SharedImageRepresentationSkiaVkAndroid::BeginWriteAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores) {
   DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
+  DCHECK(promise_texture_);
 
   if (!BeginAccess(false /* readonly */, begin_semaphores, end_semaphores,
                    base::ScopedFD()))
@@ -120,6 +113,7 @@ SharedImageRepresentationSkiaVkAndroid::BeginReadAccess(
     std::vector<GrBackendSemaphore>* end_semaphores) {
   DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
   DCHECK(!surface_);
+  DCHECK(promise_texture_);
 
   if (!BeginAccess(true /* readonly */, begin_semaphores, end_semaphores,
                    std::move(init_read_fence_)))

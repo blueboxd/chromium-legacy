@@ -156,7 +156,7 @@ void ServiceInstance::StartWithRemote(
 #if !defined(OS_IOS)
 bool ServiceInstance::StartWithProcessHost(
     std::unique_ptr<ServiceProcessHost> host,
-    SandboxType sandbox_type) {
+    sandbox::policy::SandboxType sandbox_type) {
   DCHECK(!service_remote_);
   DCHECK(!process_host_);
 

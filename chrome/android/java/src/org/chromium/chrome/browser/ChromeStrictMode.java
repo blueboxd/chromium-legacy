@@ -165,16 +165,31 @@ public class ChromeStrictMode {
         }
         sIsStrictModeAlreadyConfigured = true;
 
+        // Check is present so that proguard deletes the strict mode detection code for non-local
+        // non-dev-channel release builds. This is needed because ChromeVersionInfo#isLocalBuild()
+        // is not listed with -assumenosideeffects in the proguard configuration
+        if (!ChromeStrictModeSwitch.ALLOW_STRICT_MODE_CHECKING) return;
+
+        CommandLine commandLine = CommandLine.getInstance();
+        boolean shouldApplyPenalties = BuildConfig.DCHECK_IS_ON || ChromeVersionInfo.isLocalBuild()
+                || commandLine.hasSwitch(ChromeSwitches.STRICT_MODE);
+
+        // Enroll 1% of dev sessions into StrictMode watch. This is done client-side rather than
+        // through finch because this decision is as early as possible in the browser initialization
+        // process. We need to detect early start-up StrictMode violations before loading native and
+        // before warming the SharedPreferences (that is a violation in an of itself). We will
+        // closely monitor this on dev channel.
+        boolean enableStrictModeWatch =
+                (ChromeVersionInfo.isLocalBuild() && !BuildConfig.DCHECK_IS_ON)
+                || (ChromeVersionInfo.isDevBuild() && Math.random() < UPLOAD_PROBABILITY);
+        if (!shouldApplyPenalties && !enableStrictModeWatch) return;
+
         StrictMode.ThreadPolicy.Builder threadPolicy =
                 new StrictMode.ThreadPolicy.Builder(StrictMode.getThreadPolicy());
         StrictMode.VmPolicy.Builder vmPolicy =
                 new StrictMode.VmPolicy.Builder(StrictMode.getVmPolicy());
 
-        CommandLine commandLine = CommandLine.getInstance();
-        if ("eng".equals(Build.TYPE)
-                || BuildConfig.DCHECK_IS_ON
-                || ChromeVersionInfo.isLocalBuild()
-                || commandLine.hasSwitch(ChromeSwitches.STRICT_MODE)) {
+        if (shouldApplyPenalties) {
             turnOnDetection(threadPolicy, vmPolicy);
             addDefaultPenalties(threadPolicy, vmPolicy);
             if ("death".equals(commandLine.getSwitchValue(ChromeSwitches.STRICT_MODE))) {
@@ -185,15 +200,8 @@ public class ChromeStrictMode {
                 // Currently VmDeathPolicy kills the process, and is not visible on bot test output.
             }
         }
-        // Enroll 1% of dev sessions into StrictMode watch. This is done client-side rather than
-        // through finch because this decision is as early as possible in the browser initialization
-        // process. We need to detect early start-up StrictMode violations before loading native and
-        // before warming the SharedPreferences (that is a violation in an of itself). We will
-        // closely monitor this on dev channel.
-        boolean enableStrictModeWatch =
-                (ChromeVersionInfo.isDevBuild() && Math.random() < UPLOAD_PROBABILITY);
-        if ((ChromeVersionInfo.isLocalBuild() && !BuildConfig.DCHECK_IS_ON)
-                || enableStrictModeWatch) {
+
+        if (enableStrictModeWatch) {
             turnOnDetection(threadPolicy, vmPolicy);
             initializeStrictModeWatch();
         }

@@ -42,6 +42,7 @@
 #include "content/public/test/test_utils.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
@@ -178,8 +179,8 @@ class RemoveCookieTester {
     await_completion_.Notify();
   }
 
-  void SetCookieCallback(net::CookieInclusionStatus result) {
-    ASSERT_TRUE(result.IsInclude());
+  void SetCookieCallback(net::CookieAccessResult result) {
+    ASSERT_TRUE(result.status.IsInclude());
     await_completion_.Notify();
   }
 

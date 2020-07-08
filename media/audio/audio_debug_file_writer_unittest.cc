@@ -198,7 +198,7 @@ class AudioDebugFileWriterTest
       LOG(ERROR) << "Test failed; keeping recording(s) at ["
                  << file_path.value().c_str() << "].";
     } else {
-      ASSERT_TRUE(base::DeleteFile(file_path, false));
+      ASSERT_TRUE(base::DeleteFile(file_path));
     }
   }
 
@@ -262,7 +262,7 @@ TEST_P(AudioDebugFileWriterSingleThreadTest,
     LOG(ERROR) << "Test failed; keeping recording(s) at ["
                << file_path.value().c_str() << "].";
   } else {
-    ASSERT_TRUE(base::DeleteFile(file_path, false));
+    ASSERT_TRUE(base::DeleteFile(file_path));
   }
 }
 

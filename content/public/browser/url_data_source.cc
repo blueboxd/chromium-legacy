@@ -43,14 +43,6 @@ void URLDataSource::Add(BrowserContext* browser_context,
 }
 
 // static
-URLDataSource* URLDataSource::GetSourceForURL(BrowserContext* browser_context,
-                                              const GURL& url) {
-  return URLDataManagerBackend::GetForBrowserContext(browser_context)
-      ->GetDataSourceFromURL(url)
-      ->source();
-}
-
-// static
 std::string URLDataSource::URLToRequestPath(const GURL& url) {
   const std::string& spec = url.possibly_invalid_spec();
   const url::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
@@ -123,8 +115,6 @@ std::string URLDataSource::GetAccessControlAllowOriginForOrigin(
     const std::string& origin) {
   return std::string();
 }
-
-void URLDataSource::DisablePolymer2ForHost(const std::string& host) {}
 
 const ui::TemplateReplacements* URLDataSource::GetReplacements() {
   return nullptr;

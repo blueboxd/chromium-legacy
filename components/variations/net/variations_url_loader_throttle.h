@@ -6,12 +6,15 @@
 #define COMPONENTS_VARIATIONS_NET_VARIATIONS_URL_LOADER_THROTTLE_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
+#include "url/origin.h"
 
 namespace variations {
 
+enum class Owner;
 class VariationsClient;
 
 // For non-incognito sessions, this class is created per request. If the
@@ -22,7 +25,18 @@ class VariationsURLLoaderThrottle
     : public blink::URLLoaderThrottle,
       public base::SupportsWeakPtr<VariationsURLLoaderThrottle> {
  public:
-  VariationsURLLoaderThrottle(const std::string& variation_ids_header);
+  // Constructor for throttles created outside the render thread. Allows us to
+  // distinguish between Owner::kUnknownFromRenderer and Owner::kUnknown for
+  // ResourceRequests without TrustedParams. See IsFirstPartyContext() in
+  // variations_http_headers.cc for more details.
+  //
+  // TODO(crbug.com/1094303): Consider removing this once we've confirmed that
+  // non-render-thread-initiated requests have TrustedParams when needed.
+  explicit VariationsURLLoaderThrottle(const std::string& variation_ids_header);
+  // Constructor for throttles created in the render thread, i.e. via
+  // VariationsRenderThreadObserver.
+  VariationsURLLoaderThrottle(const std::string& variation_ids_header,
+                              const url::Origin& top_frame_origin);
   ~VariationsURLLoaderThrottle() override;
 
   VariationsURLLoaderThrottle(VariationsURLLoaderThrottle&&) = delete;
@@ -53,6 +67,10 @@ class VariationsURLLoaderThrottle
       net::HttpRequestHeaders* modified_cors_exempt_headers) override;
 
   const std::string variation_ids_header_;
+
+  // Denotes whether the top frame of the request-initiating frame is a Google-
+  // owned web property, e.g. YouTube.
+  Owner owner_;
 };
 
 }  // namespace variations

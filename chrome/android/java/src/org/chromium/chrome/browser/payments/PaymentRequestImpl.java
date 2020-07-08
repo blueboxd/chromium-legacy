@@ -8,6 +8,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.collection.ArrayMap;
@@ -146,12 +147,11 @@ public class PaymentRequestImpl
          * Returns a non-null string if there is an invalid SSL certificate on the currently
          * loaded page.
          */
-        String getInvalidSslCertificateErrorMessage(WebContents webContents);
+        String getInvalidSslCertificateErrorMessage();
         /**
-         * Returns true if the given |webContents| is currently active. The |model| should be the
-         * currently active TabModel from the activity.
+         * Returns true if the web contents that initiated the payment request is active.
          */
-        boolean isWebContentsActive(TabModel model, WebContents webContents);
+        boolean isWebContentsActive(@NonNull ChromeActivity activity);
         /**
          * Returns whether the preferences allow CAN_MAKE_PAYMENT.
          */
@@ -300,7 +300,7 @@ public class PaymentRequestImpl
         void onCanMakePaymentReturned();
         void onHasEnrolledInstrumentCalled();
         void onHasEnrolledInstrumentReturned();
-        void onShowAppsReady(@Nullable List<EditableOption> paymentApps, PaymentItem total);
+        void onAppListReady(@Nullable List<EditableOption> paymentApps, PaymentItem total);
         void onNotSupportedError();
         void onConnectionTerminated();
         void onAbortCalled();
@@ -686,7 +686,7 @@ public class PaymentRequestImpl
                 mRequestShipping, mRequestPayerEmail, mRequestPayerPhone, mRequestPayerName);
 
         assert mRejectShowErrorMessage == null;
-        mRejectShowErrorMessage = mDelegate.getInvalidSslCertificateErrorMessage(mWebContents);
+        mRejectShowErrorMessage = mDelegate.getInvalidSslCertificateErrorMessage();
         if (!TextUtils.isEmpty(mRejectShowErrorMessage)) {
             mIsProhibitedOriginOrInvalidSsl = true;
             Log.d(TAG, mRejectShowErrorMessage);
@@ -894,7 +894,7 @@ public class PaymentRequestImpl
         mObservedTabModel.addObserver(mTabModelObserver);
 
         // Only the currently selected tab is allowed to show the payment UI.
-        if (!mDelegate.isWebContentsActive(mObservedTabModel, mWebContents)) {
+        if (!mDelegate.isWebContentsActive(activity)) {
             mJourneyLogger.setNotShown(NotShownReason.OTHER);
             disconnectFromClientWithDebugMessage(ErrorStrings.CANNOT_SHOW_IN_BACKGROUND_TAB);
             if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
@@ -1059,6 +1059,10 @@ public class PaymentRequestImpl
         }
 
         if (mIsFinishedQueryingPaymentApps) {
+            // Send AppListReady signal when all apps are created and request.show() is called.
+            if (mNativeObserverForTest != null) {
+                mNativeObserverForTest.onAppListReady(mPaymentMethodsSection.getItems(), mRawTotal);
+            }
             // Calculate skip ui and build ui only after all payment apps are ready and
             // request.show() is called.
             calculateWhetherShouldSkipShowingPaymentRequestUi();
@@ -1784,10 +1788,6 @@ public class PaymentRequestImpl
                 new PaymentInformation(mUiShoppingCart, mShippingAddressesSection,
                         mUiShippingOptions, mContactSection, mPaymentMethodsSection));
         mPaymentInformationCallback = null;
-
-        if (mNativeObserverForTest != null) {
-            mNativeObserverForTest.onShowAppsReady(mPaymentMethodsSection.getItems(), mRawTotal);
-        }
 
         if (!mDidRecordShowEvent) {
             mDidRecordShowEvent = true;
@@ -2781,6 +2781,10 @@ public class PaymentRequestImpl
         SettingsAutofillAndPaymentsObserver.getInstance().registerObserver(this);
 
         if (mIsCurrentPaymentRequestShowing) {
+            // Send AppListReady signal when all apps are created and request.show() is called.
+            if (mNativeObserverForTest != null) {
+                mNativeObserverForTest.onAppListReady(mPaymentMethodsSection.getItems(), mRawTotal);
+            }
             // Calculate skip ui and build ui only after all payment apps are ready and
             // request.show() is called.
             calculateWhetherShouldSkipShowingPaymentRequestUi();

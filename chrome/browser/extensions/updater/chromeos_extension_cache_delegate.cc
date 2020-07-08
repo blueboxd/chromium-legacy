@@ -13,10 +13,9 @@
 
 namespace extensions {
 
-ChromeOSExtensionCacheDelegate::ChromeOSExtensionCacheDelegate() {
-  CHECK(base::PathService::Get(chromeos::DIR_DEVICE_EXTENSION_LOCAL_CACHE,
-                               &cache_dir_));
-}
+ChromeOSExtensionCacheDelegate::ChromeOSExtensionCacheDelegate()
+    : cache_dir_(base::PathService::CheckedGet(
+          chromeos::DIR_DEVICE_EXTENSION_LOCAL_CACHE)) {}
 
 ChromeOSExtensionCacheDelegate::ChromeOSExtensionCacheDelegate(
     const base::FilePath& cache_dir)

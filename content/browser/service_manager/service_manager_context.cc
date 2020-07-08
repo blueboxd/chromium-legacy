@@ -49,12 +49,12 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
+#include "sandbox/policy/sandbox_type.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/service_manager.h"
 #include "services/service_manager/service_process_host.h"
 #include "services/service_manager/service_process_launcher.h"
@@ -106,7 +106,7 @@ class ContentChildServiceProcessHost
   // service_manager::ServiceProcessHost:
   mojo::PendingRemote<service_manager::mojom::Service> Launch(
       const service_manager::Identity& identity,
-      service_manager::SandboxType sandbox_type,
+      sandbox::policy::SandboxType sandbox_type,
       const base::string16& display_name,
       LaunchCallback callback) override {
     mojo::PendingRemote<service_manager::mojom::Service> remote;
@@ -147,11 +147,11 @@ class ServiceExecutableProcessHost
   // service_manager::ServiceProcessHost:
   mojo::PendingRemote<service_manager::mojom::Service> Launch(
       const service_manager::Identity& identity,
-      service_manager::SandboxType sandbox_type,
+      sandbox::policy::SandboxType sandbox_type,
       const base::string16& display_name,
       LaunchCallback callback) override {
     // TODO(https://crbug.com/781334): Support sandboxing.
-    return launcher_.Start(identity, service_manager::SandboxType::kNoSandbox,
+    return launcher_.Start(identity, sandbox::policy::SandboxType::kNoSandbox,
                            std::move(callback));
   }
 

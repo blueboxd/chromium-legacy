@@ -32,7 +32,6 @@ import org.chromium.components.browser_ui.site_settings.Website;
 import org.chromium.components.browser_ui.site_settings.WebsiteAddress;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -90,15 +89,12 @@ public class TrustedWebActivityPreferencesUiTest {
                     return preferences;
                 });
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                // The preference group gets recreated in onPreferenceClick, so we need to find it
-                // again.
-                final ExpandablePreferenceGroup group =
-                        (ExpandablePreferenceGroup) websitePreferences.findPreference(groupName);
-                return group.isExpanded();
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            // The preference group gets recreated in onPreferenceClick, so we need to find it
+            // again.
+            final ExpandablePreferenceGroup group =
+                    (ExpandablePreferenceGroup) websitePreferences.findPreference(groupName);
+            return group.isExpanded();
         });
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {

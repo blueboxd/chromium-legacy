@@ -152,6 +152,17 @@ No. Chromium once contained a reflected XSS filter called the [XSSAuditor](https
 that was a best-effort second line of defense against reflected XSS flaws found
 in web sites. The XSS Auditor was [removed in Chrome 78](https://groups.google.com/a/chromium.org/forum/#!msg/blink-dev/TuYw-EZhO9g/blGViehIAwAJ).
 
+<a name="TOC-What-if-a-Chrome-component-breaks-an-OS-security-boundary-"</a>
+## What if a Chrome component breaks an OS security boundary?
+
+If Chrome or any of its components (e.g. updater) can be abused to
+perform a local privilege escalation, then it may be treated as a
+valid security vulnerability.
+
+Running any Chrome component with higher privileges than intended is
+not a security bug and we do not recommend running Chrome as an
+Administrator on Windows, or as root on POSIX.
+
 <a name="TOC-Why-aren-t-physically-local-attacks-in-Chrome-s-threat-model-"></a>
 ## Why aren't physically-local attacks in Chrome's threat model?
 

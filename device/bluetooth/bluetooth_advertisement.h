@@ -131,10 +131,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisement
   // Unregisters this advertisement. Called on destruction of this object
   // automatically but can be called directly to explicitly unregister this
   // object.
-  using SuccessCallback = base::Closure;
-  using ErrorCallback = base::Callback<void(ErrorCode)>;
-  virtual void Unregister(const SuccessCallback& success_callback,
-                          const ErrorCallback& error_callback) = 0;
+  using SuccessCallback = base::OnceClosure;
+  using ErrorCallback = base::OnceCallback<void(ErrorCode)>;
+  virtual void Unregister(SuccessCallback success_callback,
+                          ErrorCallback error_callback) = 0;
 
  protected:
   friend class base::RefCounted<BluetoothAdvertisement>;

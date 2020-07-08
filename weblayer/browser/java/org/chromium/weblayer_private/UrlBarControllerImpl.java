@@ -27,6 +27,8 @@ import androidx.core.widget.ImageViewCompat;
 import org.chromium.base.LifetimeAssert;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.omnibox.SecurityButtonAnimationDelegate;
 import org.chromium.components.omnibox.SecurityStatusIcon;
 import org.chromium.components.page_info.PageInfoController;
@@ -202,7 +204,18 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
                     webContents,
                     /* contentPublisher= */ null, PageInfoController.OpenedFromSource.TOOLBAR,
                     PageInfoControllerDelegateImpl.create(webContents),
-                    new PermissionParamsListBuilderDelegate(mBrowserImpl.getProfile()));
+                    new PermissionParamsListBuilderDelegate(mBrowserImpl.getProfile()) {
+                        @Override
+                        public String getDelegateAppName(
+                                Origin origin, @ContentSettingsType int type) {
+                            if (type == ContentSettingsType.GEOLOCATION
+                                    && WebLayerImpl.isLocationPermissionManaged(origin)) {
+                                return WebLayerImpl.getClientApplicationName();
+                            }
+
+                            return null;
+                        }
+                    });
         }
 
         @DrawableRes

@@ -117,7 +117,7 @@ CSSValue* ComputedStyleUtils::CurrentColorOrValidColor(
   // This function does NOT look at visited information, so that computed style
   // doesn't expose that.
   return cssvalue::CSSColorValue::Create(
-      color.Resolve(style.GetCurrentColor()).Rgb());
+      color.Resolve(style.GetCurrentColor(), style.UsedColorScheme()).Rgb());
 }
 
 const blink::Color ComputedStyleUtils::BorderSideColor(
@@ -125,17 +125,20 @@ const blink::Color ComputedStyleUtils::BorderSideColor(
     const StyleColor& color,
     EBorderStyle border_style,
     bool visited_link) {
-  if (!color.IsCurrentColor())
-    return color.GetColor();
-  // FIXME: Treating styled borders with initial color differently causes
-  // problems, see crbug.com/316559, crbug.com/276231
-  if (!visited_link && (border_style == EBorderStyle::kInset ||
-                        border_style == EBorderStyle::kOutset ||
-                        border_style == EBorderStyle::kRidge ||
-                        border_style == EBorderStyle::kGroove))
-    return blink::Color(238, 238, 238);
-  return visited_link ? style.GetInternalVisitedCurrentColor()
-                      : style.GetCurrentColor();
+  Color current_color;
+  if (visited_link) {
+    current_color = style.GetInternalVisitedCurrentColor();
+  } else if (border_style == EBorderStyle::kInset ||
+             border_style == EBorderStyle::kOutset ||
+             border_style == EBorderStyle::kRidge ||
+             border_style == EBorderStyle::kGroove) {
+    // FIXME: Treating styled borders with initial color differently causes
+    // problems, see crbug.com/316559, crbug.com/276231
+    current_color = blink::Color(238, 238, 238);
+  } else {
+    current_color = style.GetCurrentColor();
+  }
+  return color.Resolve(current_color, style.UsedColorScheme());
 }
 
 const CSSValue* ComputedStyleUtils::BackgroundImageOrWebkitMaskImage(
@@ -2228,9 +2231,8 @@ CSSValue* ComputedStyleUtils::StrokeDashArrayToCSSValueList(
   return list;
 }
 
-CSSValue* ComputedStyleUtils::AdjustSVGPaintForCurrentColor(
-    const SVGPaint& paint,
-    const Color& current_color) {
+CSSValue* ComputedStyleUtils::ValueForSVGPaint(const SVGPaint& paint,
+                                               const ComputedStyle& style) {
   if (paint.type >= SVG_PAINTTYPE_URI_NONE) {
     CSSValueList* values = CSSValueList::CreateSpaceSeparated();
     values->Append(
@@ -2238,16 +2240,14 @@ CSSValue* ComputedStyleUtils::AdjustSVGPaintForCurrentColor(
     if (paint.type == SVG_PAINTTYPE_URI_NONE) {
       values->Append(*CSSIdentifierValue::Create(CSSValueID::kNone));
     } else if (paint.type == SVG_PAINTTYPE_URI_COLOR) {
-      values->Append(*cssvalue::CSSColorValue::Create(
-          paint.GetColor().Resolve(current_color).Rgb()));
+      values->Append(*CurrentColorOrValidColor(style, paint.GetColor()));
     }
     return values;
   }
   if (paint.type == SVG_PAINTTYPE_NONE)
     return CSSIdentifierValue::Create(CSSValueID::kNone);
 
-  return cssvalue::CSSColorValue::Create(
-      paint.GetColor().Resolve(current_color).Rgb());
+  return CurrentColorOrValidColor(style, paint.GetColor());
 }
 
 CSSValue* ComputedStyleUtils::ValueForSVGResource(

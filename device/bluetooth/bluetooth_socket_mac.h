@@ -59,8 +59,8 @@ class BluetoothSocketMac : public BluetoothSocket {
   void ListenUsingRfcomm(scoped_refptr<BluetoothAdapterMac> adapter,
                          const BluetoothUUID& uuid,
                          const BluetoothAdapter::ServiceOptions& options,
-                         const base::Closure& success_callback,
-                         const ErrorCompletionCallback& error_callback);
+                         base::OnceClosure success_callback,
+                         ErrorCompletionOnceCallback error_callback);
 
   // Listens for incoming L2CAP connections using this socket: Publishes an
   // L2CAP service on the |adapter| as UUID |uuid| with PSM |options.psm|, or an
@@ -72,8 +72,8 @@ class BluetoothSocketMac : public BluetoothSocket {
   void ListenUsingL2cap(scoped_refptr<BluetoothAdapterMac> adapter,
                         const BluetoothUUID& uuid,
                         const BluetoothAdapter::ServiceOptions& options,
-                        const base::Closure& success_callback,
-                        const ErrorCompletionCallback& error_callback);
+                        base::OnceClosure success_callback,
+                        ErrorCompletionOnceCallback error_callback);
 
   // BluetoothSocket:
   void Close() override;

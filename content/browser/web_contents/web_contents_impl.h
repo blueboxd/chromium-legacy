@@ -701,6 +701,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       const ui::ClipboardFormatType& data_type,
       const std::string& data,
       IsClipboardPasteAllowedCallback callback) override;
+  void IsClipboardPasteAllowedWrapperCallback(
+      IsClipboardPasteAllowedCallback callback,
+      ClipboardPasteAllowed allowed);
   void OnPageScaleFactorChanged(RenderFrameHostImpl* source,
                                 float page_scale_factor) override;
   void OnTextAutosizerPageInfoChanged(
@@ -2059,6 +2062,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // This time is used to record the last time we saw a screen orientation
   // change.
   base::TimeTicks last_screen_orientation_change_time_;
+
+  // Indicates how many sources are currently suppressing the unresponsive
+  // renderer dialog.
+  int suppress_unresponsive_renderer_count_ = 0;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_{this};
   base::WeakPtrFactory<WebContentsImpl> weak_factory_{this};

@@ -132,6 +132,21 @@ class UpgradeDetector {
   // reached, or a null tick count if an upgrade has not yet been detected.
   virtual base::Time GetHighAnnoyanceDeadline() = 0;
 
+  // Overrides the "high" annoyance deadline, setting it to |deadline|. On
+  // Chrome OS, this also sets the "elevated" annoyance deadline to the time at
+  // which the available update was detected. This has no effect on desktop
+  // Chrome browsers.
+  virtual void OverrideHighAnnoyanceDeadline(base::Time deadine) {}
+
+  // Resets the overridden deadlines and recalculates them according to the
+  // thresholds from the Local State. This has no effect on desktop Chrome
+  // browsers.
+  virtual void ResetOverriddenDeadline() {}
+
+  // Overrides the relaunch notification style to required if |override|; else
+  // resets the override so that the policy settings take effect.
+  void OverrideRelaunchNotificationToRequired(bool override);
+
   void AddObserver(UpgradeObserver* observer);
 
   void RemoveObserver(UpgradeObserver* observer);
@@ -197,6 +212,10 @@ class UpgradeDetector {
   // Notifies that the user's one time permission on update over cellular
   // connection has been granted.
   void NotifyUpdateOverCellularOneTimePermissionGranted();
+
+  // Notifies about a request to override the relaunch notification style to
+  // required or reset the overridden style.
+  void NotifyRelaunchOverriddenToRequired(bool override);
 
   // Triggers a critical update, which starts a timer that checks the machine
   // idle state. Protected and virtual so that it could be overridden by tests.

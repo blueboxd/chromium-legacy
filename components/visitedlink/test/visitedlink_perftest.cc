@@ -140,7 +140,7 @@ class VisitedLink : public testing::Test {
  protected:
   base::FilePath db_path_;
   void SetUp() override { ASSERT_TRUE(base::CreateTemporaryFile(&db_path_)); }
-  void TearDown() override { base::DeleteFile(db_path_, false); }
+  void TearDown() override { base::DeleteFile(db_path_); }
 
  private:
   content::BrowserTaskEnvironment task_environment_;

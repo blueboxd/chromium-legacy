@@ -35,9 +35,8 @@ namespace bluez {
 class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterProfileBlueZ
     : public bluez::BluetoothProfileServiceProvider::Delegate {
  public:
-  typedef base::Callback<void(
-      std::unique_ptr<BluetoothAdapterProfileBlueZ> profile)>
-      ProfileRegisteredCallback;
+  using ProfileRegisteredCallback = base::OnceCallback<void(
+      std::unique_ptr<BluetoothAdapterProfileBlueZ> profile)>;
 
   // Registers a profile with the BlueZ server for |uuid| with the
   // options |options|.  |success_callback| is provided with a newly
@@ -46,9 +45,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterProfileBlueZ
   static void Register(
       const device::BluetoothUUID& uuid,
       const bluez::BluetoothProfileManagerClient::Options& options,
-      const ProfileRegisteredCallback& success_callback,
-      const bluez::BluetoothProfileManagerClient::ErrorCallback&
-          error_callback);
+      ProfileRegisteredCallback success_callback,
+      bluez::BluetoothProfileManagerClient::ErrorOnceCallback error_callback);
 
   ~BluetoothAdapterProfileBlueZ() override;
 

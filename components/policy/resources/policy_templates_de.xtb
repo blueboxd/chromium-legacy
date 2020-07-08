@@ -2710,25 +2710,6 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
       Wenn für diese Richtlinie "True" festgelegt ist, verhindert <ph name="PRODUCT_OS_NAME" />, dass das Gerät im Entwicklermodus gestartet wird. Das System verweigert den Start und es wird ein Fehlerbildschirm angezeigt, wenn der Schalter für Entwickler aktiviert wird.
 
       Wird für diese Richtlinie "False" oder gar nichts festgelegt, bleibt der Entwicklermodus für das Gerät verfügbar.</translation>
-<translation id="5210980743015047124">Mit dieser Richtlinie wird die Anforderung an die zulässige Mindestversion von <ph name="PRODUCT_NAME" /> konfiguriert.
-
-      Wenn diese Richtlinie auf eine nicht leere Liste festgelegt wird, passiert Folgendes:
-      Wenn der Wert für "chrome_version" bei keinem Eintrag höher als die aktuelle Version auf dem Gerät ist, gelten keine Einschränkungen und bestehende Einschränkungen werden aufgehoben.
-      Wenn der Wert für "chrome_version" bei mindestens einem Eintrag höher als die aktuelle Version ist, wird der Eintrag ausgewählt, dessen Version der aktuellen Version am nächsten kommt.
-      Falls ein Konflikt auftritt, wird der Eintrag mit dem niedrigeren Wert für "warning_period" oder "eol_warning_period" bevorzugt und die Richtlinie wird unter Verwendung dieses Eintrags angewendet.
-
-      Wenn die aktuelle Version sich während einer Nutzersitzung als veraltet herausstellt, erscheint auf dem Bildschirm eine Benachrichtigung, dass das Gerät innerhalb der angezeigten "warning_period"-Frist aktualisiert werden muss.
-      Die "warning_period"-Frist beginnt zu dem Zeitpunkt, an dem die Richtlinie angewendet wird.
-      Wenn das Gerät bis zum Ablauf der "warning_period"-Frist nicht aktualisiert wird, wird der Nutzer abgemeldet.
-      Wenn die "warning_period"-Frist abgelaufen ist und sich herausstellt, dass die aktuelle Version veraltet ist, muss der Nutzer das Gerät vor der Anmeldung aktualisieren.
-
-      Wenn während einer Nutzersitzung das End of Life erreicht wird, erscheint auf dem Bildschirm eine Benachrichtigung, die den Nutzer darüber informiert, dass er nach Ablauf der "eol_warning_period"-Frist abgemeldet wird.
-      Wenn die "eol_warning_period"-Frist abgelaufen ist und sich herausstellt, dass das Gerät das End of Life erreicht hat, können sich auf dem Gerät keine Nutzer mehr anmelden.
-
-      Wenn diese Richtlinie nicht konfiguriert oder eine leere Liste festgelegt ist, gelten keine Einschränkungen, bestehende Einschränkungen werden aufgehoben und der Nutzer kann sich unabhängig von der <ph name="PRODUCT_NAME" />-Version anmelden.
-
-      Mit "chrome_version" ist entweder eine exakte Versionsangabe wie "61.0.3163.120" oder ein Versionspräfix wie "61.0" gemeint.
-      Die Werte für "warning_period" und "eol_warning_period" sind optional und werden in Tagen angegeben. Der Standardwert liegt bei 0 Tagen. </translation>
 <translation id="5212118847531454979">Mit dieser Richtlinie kann der Zeitraum in Millisekunden festgelegt werden, in dem Nutzer eine Benachrichtigung erhalten, dass <ph name="PRODUCT_NAME" /> oder ein Gerät mit <ph name="PRODUCT_OS_NAME" /> für ein Update neu gestartet werden muss.
 
       In diesem Zeitraum werden Nutzer wiederholt darüber informiert, dass ein Update erforderlich ist. Auf <ph name="PRODUCT_OS_NAME" />-Geräten erscheint entsprechend der Richtlinie "<ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />" eine Neustartbenachrichtigung in der Taskleiste. In <ph name="PRODUCT_NAME" />-Browsern ändert sich das App-Menü, sobald ein Drittel des Benachrichtigungszeitraums abgelaufen ist, um zu zeigen, dass ein Neustart nötig ist. Die Farbe dieser Benachrichtigung ändert sich, sobald zwei Drittel des Benachrichtigungszeitraums vergangen sind. Wenn der ganze Zeitraum abgelaufen ist, ändert sich die Farbe erneut. Für die zusätzlichen Benachrichtigungen, die über die Richtlinie "<ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />" aktiviert werden, gilt derselbe Zeitplan.
@@ -3061,20 +3042,6 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
           Diese Richtlinie ist nur dann wirksam, wenn <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> deaktiviert ist. Andernfalls wird diese Richtlinie ignoriert, da die Verzögerung für die Bildschirmabdunkelung von einem Modell für maschinelles Lernen festgelegt wird.
 
           Der Skalierungsfaktor muss bei mindestens 100 % liegen. Werte, bei denen die Verzögerung für die Bildschirmabdunkelung im Präsentationsmodus kürzer wäre als normal, sind nicht zulässig.</translation>
-<translation id="5590988845778885692">Mit dieser Richtlinie können Konfigurationen verfügbarer Druckserver bereitgestellt werden.
-
-      So können Sie <ph name="PRODUCT_OS_NAME" />-Geräten Konfigurationen externer Druckserver als JSON-Datei zur Verfügung stellen.
-
-      Die Datei darf nicht größer als 1 MB sein und muss ein Array an Datensätzen enthalten (JSON-Objekte). Jeder Datensatz muss die Felder "id", "url" und "display_name" mit Strings als Werte enthalten. Alle Werte in den "id"-Feldern müssen eindeutig sein.
-
-      Die Datei wird heruntergeladen und im Cache gespeichert. Anhand des kryptografischen Hashs wird die Integrität des Downloads verifiziert. Sobald sich die URL oder der Hash ändert, wird die Datei noch einmal heruntergeladen.
-
-      Wenn diese Richtlinie auf den richtigen Wert gesetzt ist, versuchen Geräte, über das Internet Printing Protocol (IPP) bei den angegebenen Druckservern die verfügbaren Drucker abzufragen.
-
-      Wird sie nicht konfiguriert oder auf einen falschen Wert gesetzt, werden Nutzern keine Serverdrucker angezeigt.
-
-      Momentan ist die Zahl der Druckserver auf 16 begrenzt. Nur die ersten 16 Druckserver in der Liste werden abgefragt.
-      </translation>
 <translation id="5592242031005200087">Wenn die Richtlinie aktiviert ist, wird für jeden der benannten Ursprünge in einer
       durch Kommas getrennten Liste ein eigener Prozess ausgeführt. Dabei werden auch
       durch Subdomains benannte Ursprünge isoliert. Wenn Sie z. B. https://example.com/ angeben,
@@ -3220,14 +3187,6 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
       URLs, wie z. B. https://example.com/some/path, werden nur durch U2F-AppIDs bestimmt. Domains, wie z. B. example.com, werden nur durch Webauthn-RP-IDs bestimmt. Um sowohl U2F- als auch Webauthn-APIs in eine bestimmte Website einzubeziehen, müssen deshalb sowohl die AppID-URL als auch die Domain aufgeführt werden.</translation>
 <translation id="5836064773277134605">Vom Host für den Remotezugriff verwendeten UDP-Portbereich einschränken</translation>
 <translation id="585270638818921943">Nutzer daran hindern, Android-Apps aus nicht vertrauenswürdigen Quellen zu verwenden</translation>
-<translation id="5854749508571554984">Diese Richtlinie wird nur angewendet, wenn das Gerät das Ende seines Produktzyklus erreicht hat und die durch die Richtlinie <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> festgelegte Mindestanforderung im Hinblick auf die <ph name="PRODUCT_NAME" />-Version nicht mehr erfüllt.
-
-      Wenn für diese Richtlinie ein String definiert wird, der nicht leer ist:
-      Wenn die in der Richtlinie <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> angegebene Warnzeit abgelaufen ist, wird diese Meldung auf dem Anmeldebildschirm angezeigt, wenn das Gerät für alle Nutzer gesperrt ist.
-      Wenn die in der Richtlinie <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> angegebene Warnzeit noch nicht abgelaufen ist, wird diese Meldung nach der Anmeldung in den Einstellungen angezeigt.
-
-      Wenn diese Richtlinie auf leer gesetzt oder nicht konfiguriert ist, wird die Standardmeldung zum Ende des Produktzyklus in beiden Fällen ausgegeben.
-      Die Meldung zum Ende des Produktzyklus darf nur als unformatierter Text verfasst sein. Es ist kein Markup möglich. </translation>
 <translation id="5855010364142818361">Mit dieser Richtlinie werden Befehlszeilenparameter für Chrome über Internet Explorer festgelegt.
 
       Wenn das Add-in "Unterstützung älterer Browser" für Internet Explorer nicht installiert ist, hat die Richtlinie keine Auswirkung.
@@ -3864,7 +3823,6 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
       Wenn die Richtlinie auf "<ph name="BR_UNDER_USER_CONTROL" />" festgelegt ist, erhalten Nutzer eine Aufforderung, in der sie wählen können, ob sie die Android-Funktion "Sichern und wiederherstellen" nutzen möchten. Aktivieren sie die Funktion, werden App-Daten von Android auf die Android Backup-Server hochgeladen und bei der Neuinstallation von kompatiblen Apps wiederhergestellt.
 
       Nach der Ersteinrichtung können Nutzer selbst entscheiden, ob sie "Sichern und wiederherstellen" nutzen möchten oder nicht.</translation>
-<translation id="6993687707842131236">Meldung zum Ende des Produktzyklus für die Richtlinie MinimumChromeVersionEnforced konfigurieren</translation>
 <translation id="6994082778848658360">Hiermit wird angegeben, wie die integrierte Secure Element-Hardware zur Zwei-Faktor-Authentifizierung verwendet werden kann, wenn sie mit dieser Funktion kompatibel ist. Mithilfe der Ein-/Aus-Taste des Geräts wird die Anwesenheit des Nutzers ermittelt.
 
       Wenn "Deaktiviert" ausgewählt ist, steht kein zweiter Authentifizierungsfaktor zur Verfügung.

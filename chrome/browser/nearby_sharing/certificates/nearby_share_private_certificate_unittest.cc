@@ -29,6 +29,33 @@ TEST(NearbySharePrivateCertificateTest, Construction) {
             private_certificate.unencrypted_metadata().SerializeAsString());
 }
 
+TEST(NearbySharePrivateCertificateTest, ToFromDictionary) {
+  NearbySharePrivateCertificate before(NearbyShareVisibility::kAllContacts,
+                                       GetNearbyShareTestNotBefore(),
+                                       GetNearbyShareTestMetadata());
+  // Generate a few consumed salts.
+  for (size_t i = 0; i < 5; ++i)
+    ASSERT_TRUE(before.EncryptMetadataKey());
+
+  NearbySharePrivateCertificate after(
+      *NearbySharePrivateCertificate::FromDictionary(before.ToDictionary()));
+
+  EXPECT_EQ(before.id(), after.id());
+  EXPECT_EQ(before.visibility(), after.visibility());
+  EXPECT_EQ(before.not_before(), after.not_before());
+  EXPECT_EQ(before.not_after(), after.not_after());
+  EXPECT_EQ(before.unencrypted_metadata().SerializeAsString(),
+            after.unencrypted_metadata().SerializeAsString());
+  EXPECT_EQ(before.secret_key_->key(), after.secret_key_->key());
+  EXPECT_EQ(before.metadata_encryption_key_, after.metadata_encryption_key_);
+  EXPECT_EQ(before.consumed_salts_, after.consumed_salts_);
+
+  std::vector<uint8_t> before_private_key, after_private_key;
+  before.key_pair_->ExportPrivateKey(&before_private_key);
+  after.key_pair_->ExportPrivateKey(&after_private_key);
+  EXPECT_EQ(before_private_key, after_private_key);
+}
+
 TEST(NearbySharePrivateCertificateTest, EncryptMetadataKey) {
   NearbySharePrivateCertificate private_certificate(
       NearbyShareVisibility::kAllContacts, GetNearbyShareTestNotBefore(),

@@ -779,7 +779,7 @@ void PasswordStore::InvokeAndNotifyAboutCompromisedPasswordsChange(
 }
 
 void PasswordStore::NotifyUnsyncedCredentialsWillBeDeleted(
-    const std::vector<autofill::PasswordForm>& unsynced_credentials) {
+    std::vector<autofill::PasswordForm> unsynced_credentials) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(IsAccountStore());
   // |deletion_notifier_| only gets set for desktop.
@@ -788,7 +788,7 @@ void PasswordStore::NotifyUnsyncedCredentialsWillBeDeleted(
         FROM_HERE,
         base::BindOnce(
             &PasswordStore::UnsyncedCredentialsDeletionNotifier::Notify,
-            deletion_notifier_->GetWeakPtr(), unsynced_credentials));
+            deletion_notifier_->GetWeakPtr(), std::move(unsynced_credentials)));
   }
 }
 

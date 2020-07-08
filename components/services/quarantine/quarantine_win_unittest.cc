@@ -201,7 +201,7 @@ TEST_F(QuarantineWinTest, LocalFile_DependsOnLocalConfig) {
     // No zone identifier for local source.
     EXPECT_TRUE(zone_identifier.empty());
 
-    ASSERT_TRUE(base::DeleteFile(test_file, false));
+    ASSERT_TRUE(base::DeleteFile(test_file));
   }
 }
 
@@ -228,7 +228,7 @@ TEST_F(QuarantineWinTest, DownloadedFile_DependsOnLocalConfig) {
     // is a zone annotation.
     EXPECT_FALSE(zone_identifier.empty());
 
-    ASSERT_TRUE(base::DeleteFile(test_file, false));
+    ASSERT_TRUE(base::DeleteFile(test_file));
   }
 }
 
@@ -259,7 +259,7 @@ TEST_F(QuarantineWinTest, UnsafeReferrer_DependsOnLocalConfig) {
     // is a zone annotation.
     EXPECT_FALSE(zone_identifier.empty());
 
-    ASSERT_TRUE(base::DeleteFile(test_file, false));
+    ASSERT_TRUE(base::DeleteFile(test_file));
   }
 }
 

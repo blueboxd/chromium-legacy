@@ -4,6 +4,8 @@
 
 #include "components/viz/service/display_embedder/output_presenter.h"
 
+#include <utility>
+
 #include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
@@ -97,6 +99,14 @@ void OutputPresenter::Image::EndWriteSkia() {
 
   // SkiaRenderer always draws the full frame.
   skia_representation_->SetCleared();
+}
+
+void OutputPresenter::Image::PreGrContextSubmit() {
+  DCHECK(scoped_skia_write_access_);
+  if (scoped_skia_write_access_->end_state()) {
+    scoped_skia_write_access_->surface()->flush(
+        {}, scoped_skia_write_access_->end_state());
+  }
 }
 
 OutputPresenter::OverlayData::OverlayData(

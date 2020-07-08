@@ -26,8 +26,8 @@
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
+#include "sandbox/policy/sandbox.h"
 #include "services/service_manager/embedder/switches.h"
-#include "services/service_manager/sandbox/sandbox.h"
 
 #if defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
 #include "base/android/apk_assets.h"
@@ -70,8 +70,8 @@ CallStackProfileParams::Process GetProcess() {
     return CallStackProfileParams::GPU_PROCESS;
   if (process_type == switches::kUtilityProcess) {
     auto sandbox_type =
-        service_manager::SandboxTypeFromCommandLine(*command_line);
-    if (sandbox_type == service_manager::SandboxType::kNetwork)
+        sandbox::policy::SandboxTypeFromCommandLine(*command_line);
+    if (sandbox_type == sandbox::policy::SandboxType::kNetwork)
       return CallStackProfileParams::NETWORK_SERVICE_PROCESS;
     return CallStackProfileParams::UTILITY_PROCESS;
   }

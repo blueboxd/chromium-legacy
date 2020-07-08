@@ -75,6 +75,12 @@ Polymer({
     /** @private */
     pluginVmDataCollectionEnabled_: Boolean,
 
+    /** @private */
+    eolAdminMessage_: String,
+
+    /** @private */
+    eolMessage_: String,
+
     // </if>
 
     /** @private */
@@ -221,6 +227,16 @@ Polymer({
   },
 
   /**
+   * @param {string} eolAdminMessage The device return instructions
+   * @return {boolean} Whether there are device return instructions from the
+   *     admin in case an update is required after reaching end of life.
+   * @private
+   */
+  isEmpty_(eolAdminMessage) {
+    return !eolAdminMessage || eolAdminMessage.trim().length === 0;
+  },
+
+  /**
    * @param {DeviceReportingType} reportingType
    * @return {string} The associated icon.
    * @private
@@ -329,6 +345,15 @@ Polymer({
       // <if expr="chromeos">
       this.customerLogo_ = data.customerLogo;
       this.managementOverview_ = data.overview;
+      this.eolMessage_ = data.eolMessage;
+      try {
+        // Sanitizing the message could throw an error if it contains non
+        // supported markup.
+        this.eolAdminMessage_ =
+            loadTimeData.sanitizeInnerHtml(data.eolAdminMessage);
+      } catch (e) {
+        this.eolAdminMessage_ = '';
+      }
       // </if>
       // <if expr="not chromeos">
       this.managementNoticeHtml_ = data.browserManagementNotice;

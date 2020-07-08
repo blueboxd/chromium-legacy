@@ -91,13 +91,14 @@ class MockExtendedBluetoothAdapter : public device::MockBluetoothAdapter {
   void SetAdvertisingInterval(
       const base::TimeDelta& min,
       const base::TimeDelta& max,
-      const base::Closure& callback,
-      const AdvertisementErrorCallback& error_callback) override {
+      base::OnceClosure callback,
+      AdvertisementErrorCallback error_callback) override {
     if (is_ble_advertising_supported_) {
-      callback.Run();
+      std::move(callback).Run();
     } else {
-      error_callback.Run(device::BluetoothAdvertisement::ErrorCode::
-                             ERROR_INVALID_ADVERTISEMENT_INTERVAL);
+      std::move(error_callback)
+          .Run(device::BluetoothAdvertisement::ErrorCode::
+                   ERROR_INVALID_ADVERTISEMENT_INTERVAL);
     }
   }
 

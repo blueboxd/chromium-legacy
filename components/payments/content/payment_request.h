@@ -51,8 +51,8 @@ class PaymentRequest : public mojom::PaymentRequest,
     virtual void OnCanMakePaymentReturned() = 0;
     virtual void OnHasEnrolledInstrumentCalled() = 0;
     virtual void OnHasEnrolledInstrumentReturned() = 0;
-    virtual void OnShowAppsReady(
-        base::WeakPtr<PaymentRequest> payment_request) {}
+    virtual void OnAppListReady(base::WeakPtr<PaymentRequest> payment_request) {
+    }
     virtual void OnNotSupportedError() = 0;
     virtual void OnConnectionTerminated() = 0;
     virtual void OnAbortCalled() = 0;

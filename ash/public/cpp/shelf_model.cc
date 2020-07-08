@@ -118,8 +118,6 @@ int ShelfModel::AddAt(int index, const ShelfItem& item) {
   DCHECK_EQ(ItemIndexByID(item.id), -1) << " The id is not unique: " << item.id;
   index = ValidateInsertionIndex(item.type, index);
   items_.insert(items_.begin() + index, item);
-  items_[index].has_notification =
-      app_id_to_notification_id_.count(item.id.app_id) > 0;
   for (auto& observer : observers_)
     observer.ShelfItemAdded(index);
   return index;
@@ -254,53 +252,6 @@ void ShelfModel::OnItemReturnedFromRipOff(int index) {
     observer.ShelfItemReturnedFromRipOff(index);
 }
 
-void ShelfModel::RemoveNotificationRecord(const std::string& notification_id) {
-  auto notification_id_it = notification_id_to_app_id_.find(notification_id);
-
-  // Two maps are required here because when this notification has been
-  // delivered, the MessageCenter has already deleted the notification, so we
-  // can't fetch the corresponding App Id.
-  // If we have a record of this notification, erase it from both maps.
-  if (notification_id_it == notification_id_to_app_id_.end())
-    return;
-
-  // Save the AppId so the app can be updated.
-  const std::string app_id = notification_id_it->second;
-
-  auto app_id_it = app_id_to_notification_id_.find(app_id);
-
-  // Remove the notification_id.
-  app_id_it->second.erase(notification_id);
-
-  // If the set is empty erase the pair.
-  if (app_id_it->second.empty())
-    app_id_to_notification_id_.erase(app_id_it);
-
-  // Erase the pair in the NotificationId -> AppId map.
-  notification_id_to_app_id_.erase(notification_id_it);
-
-  UpdateItemNotificationsAndNotifyObservers(app_id);
-}
-
-void ShelfModel::AddNotificationRecord(const std::string& app_id,
-                                       const std::string& notification_id) {
-  auto it = app_id_to_notification_id_.find(app_id);
-  if (it != app_id_to_notification_id_.end()) {
-    // The app_id exists in the map, modify the set.
-    it->second.insert(notification_id);
-  } else {
-    // The app_id hasn't been recorded yet, create a set.
-    app_id_to_notification_id_.insert(
-        std::pair<std::string, std::set<std::string>>(app_id,
-                                                      {notification_id}));
-  }
-
-  notification_id_to_app_id_.insert(
-      std::pair<std::string, std::string>(notification_id, app_id));
-
-  UpdateItemNotificationsAndNotifyObservers(app_id);
-}
-
 int ShelfModel::ItemIndexByID(const ShelfID& shelf_id) const {
   ShelfItems::const_iterator i = ItemByID(shelf_id);
   return i == items_.end() ? -1 : static_cast<int>(i - items_.begin());
@@ -399,18 +350,17 @@ int ShelfModel::ValidateInsertionIndex(ShelfItemType type, int index) const {
   return index;
 }
 
-void ShelfModel::UpdateItemNotificationsAndNotifyObservers(
-    const std::string& app_id) {
+void ShelfModel::UpdateItemNotification(const std::string& app_id,
+                                        bool has_badge) {
   int index = ItemIndexByAppID(app_id);
   // If the item is not pinned or active on the shelf.
   if (index == -1)
     return;
 
-  const bool has_notification = app_id_to_notification_id_.count(app_id) > 0;
-  if (items_[index].has_notification == has_notification)
+  if (items_[index].has_notification == has_badge)
     return;
 
-  items_[index].has_notification = has_notification;
+  items_[index].has_notification = has_badge;
 
   for (auto& observer : observers_)
     observer.ShelfItemChanged(index, items_[index]);

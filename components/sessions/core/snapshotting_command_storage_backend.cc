@@ -55,7 +55,7 @@ SnapshottingCommandStorageBackend::ReadLastSessionCommands() {
 
 void SnapshottingCommandStorageBackend::DeleteLastSession() {
   InitIfNecessary();
-  base::DeleteFile(last_file_path_, false);
+  base::DeleteFile(last_file_path_);
 }
 
 void SnapshottingCommandStorageBackend::MoveCurrentSessionToLastSession() {
@@ -63,12 +63,12 @@ void SnapshottingCommandStorageBackend::MoveCurrentSessionToLastSession() {
   CloseFile();
 
   if (base::PathExists(last_file_path_))
-    base::DeleteFile(last_file_path_, false);
+    base::DeleteFile(last_file_path_);
   if (base::PathExists(path()))
     last_session_valid_ = base::Move(path(), last_file_path_);
 
   if (base::PathExists(path()))
-    base::DeleteFile(path(), false);
+    base::DeleteFile(path());
 
   // Create and open the file for the current session.
   TruncateFile();

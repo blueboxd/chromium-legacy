@@ -276,7 +276,7 @@ TEST_F(LogoCacheTest, StoreAndRetrieveMetadata) {
   ExpectMetadata(&metadata);
 
   // Ensure metadata is cached in memory.
-  base::DeleteFile(cache_->GetMetadataPath(), false);
+  base::DeleteFile(cache_->GetMetadataPath());
   ExpectMetadata(&metadata);
 }
 

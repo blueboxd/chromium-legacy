@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/media/webrtc_logging.mojom.h"
 #include "components/version_info/version_info.h"
@@ -36,12 +37,13 @@
 #include "net/base/ip_address.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
+#include "sandbox/policy/features.h"
+#include "sandbox/policy/sandbox_type.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-#include "services/service_manager/sandbox/features.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
 
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
+#include "base/task/thread_pool.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -406,6 +408,21 @@ void WebRtcTextLogHandler::SetWebAppId(int web_app_id) {
 void WebRtcTextLogHandler::OnGetNetworkInterfaceList(
     const GenericDoneCallback& callback,
     const base::Optional<net::NetworkInterfaceList>& networks) {
+#if defined(OS_LINUX)
+  // Hop to a background thread to get the distro string, which can block.
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()}, base::BindOnce(&base::GetLinuxDistro),
+      base::BindOnce(&WebRtcTextLogHandler::OnGetNetworkInterfaceListFinish,
+                     weak_factory_.GetWeakPtr(), callback, networks));
+#else
+  OnGetNetworkInterfaceListFinish(callback, networks, "");
+#endif
+}
+
+void WebRtcTextLogHandler::OnGetNetworkInterfaceListFinish(
+    const GenericDoneCallback& callback,
+    const base::Optional<net::NetworkInterfaceList>& networks,
+    const std::string& linux_distro) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (logging_state_ != STARTING || channel_is_closing_) {
@@ -436,7 +453,7 @@ void WebRtcTextLogHandler::OnGetNetworkInterfaceList(
                       base::SysInfo::OperatingSystemVersion() + " " +
                       base::SysInfo::OperatingSystemArchitecture());
 #if defined(OS_LINUX)
-  LogToCircularBuffer("Linux distribution: " + base::GetLinuxDistro());
+  { LogToCircularBuffer("Linux distribution: " + linux_distro); }
 #endif
 
   // CPU
@@ -487,7 +504,7 @@ void WebRtcTextLogHandler::OnGetNetworkInterfaceList(
            features::kAudioServiceLaunchOnStartup),
        ", Sandbox=",
        enabled_or_disabled_bool_string(
-           service_manager::IsAudioSandboxEnabled())}));
+           sandbox::policy::IsAudioSandboxEnabled())}));
 
   // Audio manager
   // On some platforms, this can vary depending on build flags and failure

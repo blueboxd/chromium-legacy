@@ -281,10 +281,8 @@ if (pdf_enable_v8) {
         "pdfium_xfa_lpm_fuzzer/simple_xfa_pdf.cc",
         "pdfium_xfa_lpm_fuzzer/simple_xfa_pdf.h",
       ]
-      deps = [
-        ":xfa_proto",
-        "//base",
-      ]
+      deps = [ "//base" ]
+      public_deps = [ ":xfa_proto" ]
     }
 
     fuzzer_test("pdfium_xfa_lpm_fuzzer") {
@@ -296,7 +294,11 @@ if (pdf_enable_v8) {
         "//third_party/pdfium",
         "//third_party/pdfium/testing/fuzzers:fuzzer_init_public",
       ]
-      if (!is_component_build) {
+      if (is_component_build) {
+        deps += [
+          "//third_party/pdfium/testing/fuzzers:pdfium_xfa_lpm_fuzzer_impl",
+        ]
+      } else {
         deps +=
             [ "//third_party/pdfium/testing/fuzzers:pdfium_xfa_lpm_fuzzer_src" ]
       }

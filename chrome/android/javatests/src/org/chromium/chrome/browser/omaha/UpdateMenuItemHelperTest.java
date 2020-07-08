@@ -143,15 +143,11 @@ public class UpdateMenuItemHelperTest {
     }
 
     private void versionNumbersQueried() {
-        CriteriaHelper.pollInstrumentationThread(
-                new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return mMockVersionNumberGetter.askedForCurrentVersion()
-                                && mMockVersionNumberGetter.askedForLatestVersion();
-                    }
-                },
-                MS_TIMEOUT, MS_INTERVAL);
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(
+                    mMockVersionNumberGetter.askedForCurrentVersion(), Matchers.is(true));
+            Criteria.checkThat(mMockVersionNumberGetter.askedForLatestVersion(), Matchers.is(true));
+        }, MS_TIMEOUT, MS_INTERVAL);
     }
 
     /**
@@ -328,12 +324,8 @@ public class UpdateMenuItemHelperTest {
     }
 
     private void waitForAppMenuDimissedRunnable() {
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return UpdateMenuItemHelper.getInstance()
-                        .getMenuDismissedRunnableExecutedForTests();
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            return UpdateMenuItemHelper.getInstance().getMenuDismissedRunnableExecutedForTests();
         });
     }
 }

@@ -6,6 +6,7 @@
 
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "weblayer/browser/cookie_settings_factory.h"
+#include "weblayer/browser/default_search_engine.h"
 #include "weblayer/browser/host_content_settings_map_factory.h"
 #include "weblayer/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "weblayer/browser/permissions/permission_manager_factory.h"
@@ -53,6 +54,24 @@ permissions::ChooserContextBase* WebLayerPermissionsClient::GetChooserContext(
 }
 
 #if defined(OS_ANDROID)
+bool WebLayerPermissionsClient::IsPermissionControlledByDse(
+    content::BrowserContext* browser_context,
+    ContentSettingsType type,
+    const url::Origin& origin) {
+  return weblayer::IsPermissionControlledByDse(type, origin);
+}
+
+bool WebLayerPermissionsClient::ResetPermissionIfControlledByDse(
+    content::BrowserContext* browser_context,
+    ContentSettingsType type,
+    const url::Origin& origin) {
+  if (IsPermissionControlledByDse(browser_context, type, origin)) {
+    ResetDsePermissions(browser_context);
+    return true;
+  }
+  return false;
+}
+
 void WebLayerPermissionsClient::RepromptForAndroidPermissions(
     content::WebContents* web_contents,
     const std::vector<ContentSettingsType>& content_settings_types,

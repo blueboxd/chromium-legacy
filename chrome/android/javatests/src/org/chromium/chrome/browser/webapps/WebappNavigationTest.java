@@ -270,11 +270,8 @@ public class WebappNavigationTest {
                 mActivityTestRule.getActivity().getActivityTab(), "myTestAnchorId",
                 R.id.contextmenu_open_in_chrome);
 
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return InstrumentationRegistry.getInstrumentation().checkMonitorHit(monitor, 1);
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            return InstrumentationRegistry.getInstrumentation().checkMonitorHit(monitor, 1);
         });
     }
 
@@ -457,13 +454,10 @@ public class WebappNavigationTest {
     }
 
     private void waitForExternalAppOrIntentPicker() {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return ApplicationStatus.getStateForApplication() == HAS_PAUSED_ACTIVITIES
-                        || ApplicationStatus.getStateForApplication() == HAS_STOPPED_ACTIVITIES
-                        || ApplicationStatus.getStateForApplication() == HAS_DESTROYED_ACTIVITIES;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(ApplicationStatus.getStateForApplication(),
+                    Matchers.isOneOf(HAS_PAUSED_ACTIVITIES, HAS_STOPPED_ACTIVITIES,
+                            HAS_DESTROYED_ACTIVITIES));
         });
     }
 }

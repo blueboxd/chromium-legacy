@@ -239,6 +239,13 @@ SetUserLastInputMethod(const AccountId& account_id,
 bool USER_MANAGER_EXPORT GetUserLastInputMethod(const AccountId& account_id,
                                                 std::string* input_method);
 
+// Exposes the user's PIN length in local state for PIN auto submit.
+void USER_MANAGER_EXPORT SetUserPinLength(const AccountId& account_id,
+                                          int pin_length);
+
+// Returns the user's PIN length if available, otherwise 0.
+int USER_MANAGER_EXPORT GetUserPinLength(const AccountId& account_id);
+
 // Removes all user preferences associated with |account_id|.
 // Not exported as code should not be calling this outside this component
 void RemovePrefs(const AccountId& account_id);

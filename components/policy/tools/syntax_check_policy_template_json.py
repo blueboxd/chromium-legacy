@@ -1269,7 +1269,9 @@ class PolicyTemplateChecker(object):
       self.non_compatibility_error_count += 1
       self._Error(
           "The 'future' flag has been deprecated, please use the 'future_on' "
-          "list instead.", 'policy', policy_name)
+          "list instead. Search the flag documentation at the top of the "
+          "policy_templates.json file for more information.", 'policy',
+          policy_name)
 
   # Checks if the new policy definitions are compatible with the policy
   # definitions coming from the original_file_contents.

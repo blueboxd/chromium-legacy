@@ -46,6 +46,9 @@ class TickClock;
 // On Chrome OS both notifications (recommended and required, described above)
 // are shown in the unified system tray, overwriting the default "update
 // available" notification. It cannot be deferred, so it persists until reboot.
+// In certain conditions, the preference value could be overridden by the
+// UpgradeDetector which then takes priority over the original value and any
+// further changes to the preference have no effect.
 class RelaunchNotificationController : public UpgradeObserver {
  public:
   // |upgrade_detector| is expected to be the process-wide detector, and must
@@ -70,6 +73,7 @@ class RelaunchNotificationController : public UpgradeObserver {
 
   // UpgradeObserver:
   void OnUpgradeRecommended() override;
+  void OnRelaunchOverriddenToRequired(bool override) override;
 
  private:
   enum class NotificationStyle {
@@ -82,7 +86,9 @@ class RelaunchNotificationController : public UpgradeObserver {
   RelaunchNotificationControllerPlatformImpl platform_impl_;
 
   // Adjusts to the current notification style as indicated by the
-  // browser.relaunch_notification Local State preference.
+  // browser.relaunch_notification Local State preference. If the notification
+  // style has been overridden, then that value is given priority over the
+  // preference value.
   void HandleCurrentStyle();
 
   // Bring the instance out of or back to dormant mode.
@@ -189,6 +195,11 @@ class RelaunchNotificationController : public UpgradeObserver {
   // once the high annoyance level has been reached, or to trigger browser
   // relaunch once the relaunch required dialog's deadline is reached.
   util::WallClockTimer timer_;
+
+  // A flag to denote that the relaunch notification type policy value has been
+  // overridden to required. Changes to the policy value will not affect the
+  // notification type.
+  bool notification_type_required_override_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(RelaunchNotificationController);
 };

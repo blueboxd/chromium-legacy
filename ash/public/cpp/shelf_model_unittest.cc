@@ -411,7 +411,6 @@ TEST_F(ShelfModelTest, RunningAppPinning) {
 // Tests that apps are updated properly when notifications are added or removed.
 TEST_F(ShelfModelTest, AddRemoveNotification) {
   const std::string app_id("app_id");
-  const std::string notification_id("notification_id");
 
   // Add an example running app.
   ShelfItem item;
@@ -422,99 +421,12 @@ TEST_F(ShelfModelTest, AddRemoveNotification) {
 
   EXPECT_FALSE(model_->items()[index].has_notification);
 
-  // Add a notification for the app.
-  model_->AddNotificationRecord(app_id, notification_id);
-
+  // Update to add a notification for the app.
+  model_->UpdateItemNotification(app_id, true /* has_badge */);
   EXPECT_TRUE(model_->items()[index].has_notification);
 
-  // Remove the notification.
-  model_->RemoveNotificationRecord(notification_id);
-
-  EXPECT_FALSE(model_->items()[index].has_notification);
-}
-
-// Tests that apps pick up their notifications when they are added.
-TEST_F(ShelfModelTest, AddAppAfterNotification) {
-  const std::string app_id("app_id");
-  const std::string notification_id("notification_id");
-
-  ShelfItem item;
-  item.type = TYPE_APP;
-  item.status = STATUS_RUNNING;
-  item.id = ShelfID(app_id);
-
-  // Add a notification for the app.
-  model_->AddNotificationRecord(app_id, notification_id);
-
-  // Add an app with a matching app id.
-  const int index = model_->Add(item);
-
-  EXPECT_TRUE(model_->items()[index].has_notification);
-
-  // Remove and re-add the app.
-  model_->RemoveItemAt(index);
-  EXPECT_EQ(index, model_->Add(item));
-
-  // Test that the notification persists.
-  EXPECT_TRUE(model_->items()[index].has_notification);
-}
-
-// Tests that pinned apps pick up their notifications if they were recieved
-// before the app existed on the shelf.
-TEST_F(ShelfModelTest, PinAppAfterNotification) {
-  const std::string app_id("app_id");
-  const std::string notification_id("notification_id");
-
-  // Add an example app, but don't pin it.
-  ShelfItem item;
-  item.type = TYPE_APP;
-  item.status = STATUS_RUNNING;
-  item.id = ShelfID(app_id);
-
-  // Add a notification for the app.
-  model_->AddNotificationRecord(app_id, notification_id);
-
-  // Pin the app after the notification posts.
-  model_->PinAppWithID(app_id);
-
-  const int index = model_->ItemIndexByAppID(app_id);
-  EXPECT_TRUE(model_->items()[index].has_notification);
-
-  // Un-pin and re-pin the app.
-  model_->UnpinAppWithID(app_id);
-  model_->PinAppWithID(app_id);
-  EXPECT_EQ(index, model_->ItemIndexByAppID(app_id));
-
-  // Test that the notification persists.
-  EXPECT_TRUE(model_->items()[index].has_notification);
-}
-
-// Tests that the ShelfItem.has_notification is set to false only when there are
-// 0 notifications.
-TEST_F(ShelfModelTest, MultipleNotificationsPerAppBasic) {
-  const std::string app_id("app_id");
-  const std::string notification_id_0("notification_id_0");
-  // Add an example app.
-  ShelfItem item;
-  item.type = TYPE_APP;
-  item.status = STATUS_RUNNING;
-  item.id = ShelfID(app_id);
-  const int index = model_->Add(item);
-  EXPECT_EQ(index, model_->ItemIndexByAppID(app_id));
-
-  // Add the first notification for this app.
-  model_->AddNotificationRecord(app_id, notification_id_0);
-  // Add the second notification on the same app.
-  const std::string notification_id_1("notification_id_1");
-  model_->AddNotificationRecord(app_id, notification_id_1);
-  EXPECT_TRUE(model_->items()[index].has_notification);
-
-  // Remove one notification.
-  model_->RemoveNotificationRecord(notification_id_1);
-  EXPECT_TRUE(model_->items()[index].has_notification);
-
-  // Remove the last notification.
-  model_->RemoveNotificationRecord(notification_id_0);
+  // Update to remove the notification for the app.
+  model_->UpdateItemNotification(app_id, false /* has_badge */);
   EXPECT_FALSE(model_->items()[index].has_notification);
 }
 

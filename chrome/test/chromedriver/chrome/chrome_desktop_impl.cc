@@ -196,7 +196,19 @@ Status ChromeDesktopImpl::QuitImpl() {
   bool kill_gracefully = !user_data_dir_.IsValid();
   // If the Chrome session is being run with --log-net-log, send SIGTERM first
   // to allow Chrome to write out all the net logs to the log path.
-  kill_gracefully |= command_.HasSwitch("log-net-log");
+  kill_gracefully = kill_gracefully || command_.HasSwitch("log-net-log");
+  if (kill_gracefully) {
+    Status status = devtools_websocket_client_->ConnectIfNecessary();
+    if (status.IsOk()) {
+      status = devtools_websocket_client_->SendCommandAndIgnoreResponse(
+          "Browser.close", base::DictionaryValue());
+      // If status is not okay, we will try the old method of KillProcess
+      if (status.IsOk() && process_.WaitForExitWithTimeout(
+                               base::TimeDelta::FromSeconds(10), nullptr))
+        return status;
+    }
+  }
+
   if (!KillProcess(process_, kill_gracefully))
     return Status(kUnknownError,
                   base::StringPrintf("cannot kill %s", kBrowserShortName));

@@ -13,6 +13,7 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/reporting/profile_report_generator.h"
+#include "chrome/browser/enterprise/reporting/reporting_delegate_factory_desktop.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/upgrade_detector/build_state.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -49,7 +50,7 @@ class BrowserReportGeneratorTest : public ::testing::Test {
  public:
   BrowserReportGeneratorTest()
       : profile_manager_(TestingBrowserProcess::GetGlobal()),
-        generator_(std::make_unique<BrowserReportGeneratorDesktop>()) {}
+        generator_(&delegate_factory_) {}
   ~BrowserReportGeneratorTest() override = default;
 
   void SetUp() override {
@@ -145,6 +146,7 @@ class BrowserReportGeneratorTest : public ::testing::Test {
   TestingProfileManager* profile_manager() { return &profile_manager_; }
 
  private:
+  ReportingDelegateFactoryDesktop delegate_factory_;
   content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
   BrowserReportGenerator generator_;

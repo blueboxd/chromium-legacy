@@ -265,38 +265,23 @@ IntRect GraphicsLayer::InterestRect() {
 }
 
 bool GraphicsLayer::PaintRecursively() {
-  Vector<GraphicsLayer*> repainted_layers;
-  PaintRecursivelyInternal(repainted_layers);
-
-  // Notify the controllers that the artifact has been pushed and some
-  // lifecycle state can be freed (such as raster invalidations).
-  for (auto* layer : repainted_layers) {
-#if DCHECK_IS_ON()
-    if (VLOG_IS_ON(2))
-      LOG(ERROR) << "FinishCycle for GraphicsLayer: " << layer->DebugName();
-#endif
-    layer->GetPaintController().FinishCycle();
-  }
-  return !repainted_layers.IsEmpty();
-}
-
-void GraphicsLayer::PaintRecursivelyInternal(
-    Vector<GraphicsLayer*>& repainted_layers) {
   // TODO(crbug.com/1033240): Debugging information for the referenced bug.
   // Remove when it is fixed.
   CHECK(&client_);
   if (client_.PaintBlockedByDisplayLockIncludingAncestors(
           DisplayLockContextLifecycleTarget::kSelf)) {
-    return;
+    return false;
   }
 
+  bool painted = false;
   if (PaintsContentOrHitTest()) {
     if (Paint())
-      repainted_layers.push_back(this);
+      painted = true;
   }
 
   for (auto* child : Children())
-    child->PaintRecursivelyInternal(repainted_layers);
+    painted |= child->PaintRecursively();
+  return painted;
 }
 
 bool GraphicsLayer::Paint() {

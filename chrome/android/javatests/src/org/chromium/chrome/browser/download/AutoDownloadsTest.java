@@ -8,6 +8,7 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -58,13 +59,10 @@ public class AutoDownloadsTest implements CustomMainActivityStart {
     }
 
     private void waitForDownloadDialog(ModalDialogManager manager) {
-        CriteriaHelper.pollUiThread(new Criteria("Dialog not displayed.") {
-            @Override
-            public boolean isSatisfied() {
-                return manager.isShowing()
-                        && manager.getPresenterForTest(ModalDialogType.APP)
-                        == manager.getCurrentPresenterForTest();
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(manager.isShowing(), Matchers.is(true));
+            Criteria.checkThat(manager.getCurrentPresenterForTest(),
+                    Matchers.is(manager.getPresenterForTest(ModalDialogType.APP)));
         });
     }
 

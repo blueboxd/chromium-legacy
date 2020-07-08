@@ -15,6 +15,7 @@ static_library("enterprise") {
     "browser/reporting/report_request_definition.h",
     "browser/reporting/report_uploader.cc",
     "browser/reporting/report_uploader.h",
+    "browser/reporting/reporting_delegate_factory.h",
   ]
 
   deps = [

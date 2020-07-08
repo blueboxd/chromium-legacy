@@ -31,7 +31,9 @@ class DiceWebSigninInterceptorDelegate
 
  private:
   // Implemented in dice_web_signin_interception_bubble_view.cc
-  void ShowSigninInterceptionBubbleInternal(Browser* browser);
+  void ShowSigninInterceptionBubbleInternal(
+      Browser* browser,
+      base::OnceCallback<void(bool)> callback);
 };
 
 #endif  // CHROME_BROWSER_UI_SIGNIN_DICE_WEB_SIGNIN_INTERCEPTOR_DELEGATE_H_

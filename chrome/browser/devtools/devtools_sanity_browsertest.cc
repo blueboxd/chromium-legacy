@@ -434,11 +434,11 @@ void TimeoutCallback(const std::string& timeout_message) {
 class DevToolsExtensionTest : public DevToolsSanityTest,
                               public content::NotificationObserver {
  public:
-  DevToolsExtensionTest() : DevToolsSanityTest() {
-    base::PathService::Get(chrome::DIR_TEST_DATA, &test_extensions_dir_);
-    test_extensions_dir_ = test_extensions_dir_.AppendASCII("devtools");
-    test_extensions_dir_ = test_extensions_dir_.AppendASCII("extensions");
-  }
+  DevToolsExtensionTest()
+      : test_extensions_dir_(
+            base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
+                .AppendASCII("devtools")
+                .AppendASCII("extensions")) {}
 
  protected:
   // Load an extension from test\data\devtools\extensions\<extension_name>
@@ -606,7 +606,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
 
   std::vector<std::unique_ptr<extensions::TestExtensionDir>>
       test_extension_dirs_;
-  base::FilePath test_extensions_dir_;
+  const base::FilePath test_extensions_dir_;
 };
 
 class DevToolsExperimentalExtensionTest : public DevToolsExtensionTest {
@@ -2344,13 +2344,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestOpenInNewTabFilter) {
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, LoadNetworkResourceForFrontend) {
-  base::FilePath root_dir;
-  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &root_dir));
   std::string file_url =
-      "file://" +
-      root_dir.AppendASCII("content/test/data/devtools/navigation.html")
-          .NormalizePathSeparatorsTo('/')
-          .AsUTF8Unsafe();
+      "file://" + base::PathService::CheckedGet(base::DIR_SOURCE_ROOT)
+                      .AppendASCII("content/test/data/devtools/navigation.html")
+                      .NormalizePathSeparatorsTo('/')
+                      .AsUTF8Unsafe();
 
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());

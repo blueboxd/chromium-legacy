@@ -47,20 +47,23 @@ namespace content {
 
 // static
 RenderWidgetHostViewChildFrame* RenderWidgetHostViewChildFrame::Create(
-    RenderWidgetHost* widget) {
+    RenderWidgetHost* widget,
+    const ScreenInfo& screen_info) {
   RenderWidgetHostViewChildFrame* view =
-      new RenderWidgetHostViewChildFrame(widget);
+      new RenderWidgetHostViewChildFrame(widget, screen_info);
   view->Init();
   return view;
 }
 
 RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
-    RenderWidgetHost* widget_host)
+    RenderWidgetHost* widget_host,
+    const ScreenInfo& screen_info)
     : RenderWidgetHostViewBase(widget_host),
       frame_sink_id_(
           base::checked_cast<uint32_t>(widget_host->GetProcess()->GetID()),
           base::checked_cast<uint32_t>(widget_host->GetRoutingID())),
-      frame_connector_(nullptr) {
+      frame_connector_(nullptr),
+      screen_info_(screen_info) {
   GetHostFrameSinkManager()->RegisterFrameSinkId(
       frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kNo);
   GetHostFrameSinkManager()->SetFrameSinkDebugLabel(
@@ -891,9 +894,8 @@ RenderWidgetHostViewChildFrame::CreateBrowserAccessibilityManager(
 
 void RenderWidgetHostViewChildFrame::GetScreenInfo(ScreenInfo* screen_info) {
   if (frame_connector_)
-    *screen_info = frame_connector_->screen_info();
-  else
-    DisplayUtil::GetDefaultScreenInfo(screen_info);
+    screen_info_ = frame_connector_->screen_info();
+  *screen_info = screen_info_;
 }
 
 void RenderWidgetHostViewChildFrame::EnableAutoResize(

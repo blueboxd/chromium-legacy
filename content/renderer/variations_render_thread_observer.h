@@ -5,6 +5,9 @@
 #ifndef CONTENT_RENDERER_VARIATIONS_RENDER_THREAD_OBSERVER_H_
 #define CONTENT_RENDERER_VARIATIONS_RENDER_THREAD_OBSERVER_H_
 
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "content/common/renderer_variations_configuration.mojom.h"
 #include "content/public/renderer/render_thread_observer.h"
@@ -13,6 +16,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -25,8 +29,11 @@ class VariationsRenderThreadObserver
   VariationsRenderThreadObserver();
   ~VariationsRenderThreadObserver() override;
 
-  // Appends a throttle if the browser has sent us a variations header.
+  // Appends throttles if the browser has sent a variations header to the
+  // renderer. |top_frame_origin| is for the top frame of a request-initiating
+  // frame.
   static void AppendThrottleIfNeeded(
+      const url::Origin& top_frame_origin,
       std::vector<std::unique_ptr<blink::URLLoaderThrottle>>* throttles);
 
   // content::RenderThreadObserver:

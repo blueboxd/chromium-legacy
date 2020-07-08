@@ -10,9 +10,11 @@ import androidx.preference.PreferenceFragmentCompat;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.user_prefs.UserPrefs;
 
 /**
  * Fragment to manage 'Do Not Track' preference and to explain to the user what it does.
@@ -29,13 +31,12 @@ public class DoNotTrackSettings extends PreferenceFragmentCompat {
         ChromeSwitchPreference doNotTrackSwitch =
                 (ChromeSwitchPreference) findPreference(PREF_DO_NOT_TRACK_SWITCH);
 
-        boolean isDoNotTrackEnabled =
-                PrefServiceBridge.getInstance().getBoolean(Pref.ENABLE_DO_NOT_TRACK);
+        PrefService prefService = UserPrefs.get(Profile.getLastUsedRegularProfile());
+        boolean isDoNotTrackEnabled = prefService.getBoolean(Pref.ENABLE_DO_NOT_TRACK);
         doNotTrackSwitch.setChecked(isDoNotTrackEnabled);
 
         doNotTrackSwitch.setOnPreferenceChangeListener((preference, newValue) -> {
-            PrefServiceBridge.getInstance().setBoolean(
-                    Pref.ENABLE_DO_NOT_TRACK, (boolean) newValue);
+            prefService.setBoolean(Pref.ENABLE_DO_NOT_TRACK, (boolean) newValue);
             return true;
         });
     }

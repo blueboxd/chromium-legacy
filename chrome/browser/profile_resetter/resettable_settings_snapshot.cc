@@ -130,8 +130,7 @@ int ResettableSettingsSnapshot::FindDifferentFields(
   return bit_mask;
 }
 
-void ResettableSettingsSnapshot::RequestShortcuts(
-    const base::Closure& callback) {
+void ResettableSettingsSnapshot::RequestShortcuts(base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!cancellation_flag_.get() && !shortcuts_determined());
 
@@ -143,20 +142,20 @@ void ResettableSettingsSnapshot::RequestShortcuts(
           .get(),
       FROM_HERE, base::BindOnce(&GetChromeLaunchShortcuts, cancellation_flag_),
       base::BindOnce(&ResettableSettingsSnapshot::SetShortcutsAndReport,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 #else   // defined(OS_WIN)
   // Shortcuts are only supported on Windows.
   std::vector<ShortcutCommand> no_shortcuts;
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&ResettableSettingsSnapshot::SetShortcutsAndReport,
-                     weak_ptr_factory_.GetWeakPtr(), callback,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                      std::move(no_shortcuts)));
 #endif  // defined(OS_WIN)
 }
 
 void ResettableSettingsSnapshot::SetShortcutsAndReport(
-    const base::Closure& callback,
+    base::OnceClosure callback,
     const std::vector<ShortcutCommand>& shortcuts) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   shortcuts_ = shortcuts;
@@ -164,7 +163,7 @@ void ResettableSettingsSnapshot::SetShortcutsAndReport(
   cancellation_flag_.reset();
 
   if (!callback.is_null())
-    callback.Run();
+    std::move(callback).Run();
 }
 
 std::unique_ptr<reset_report::ChromeResetReport> SerializeSettingsReportToProto(

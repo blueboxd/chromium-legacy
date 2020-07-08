@@ -128,7 +128,7 @@ class ScriptStreamingTest : public testing::Test {
     request.SetRequestContext(mojom::RequestContextType::SCRIPT);
 
     resource_client_ = MakeGarbageCollected<TestResourceClient>();
-    FetchParameters params(std::move(request));
+    FetchParameters params = FetchParameters::CreateForTest(std::move(request));
     resource_ = ScriptResource::Fetch(params, fetcher, resource_client_,
                                       ScriptResource::kAllowStreaming);
     resource_->AddClient(resource_client_, loading_task_runner_.get());

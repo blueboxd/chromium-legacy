@@ -9,10 +9,12 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/paint/image_element_timing.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/scoped_svg_paint_state.h"
 #include "third_party/blink/renderer/core/paint/svg_model_object_painter.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_image_element.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
@@ -104,6 +106,9 @@ void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
   PaintTimingDetector::NotifyImagePaint(
       layout_svg_image_, image->Size(), image_resource->CachedImage(),
       paint_info.context.GetPaintController().CurrentPaintChunkProperties());
+  PaintTiming& timing = PaintTiming::From(
+      layout_svg_image_.GetElement()->GetDocument().TopDocument());
+  timing.MarkFirstContentfulPaint();
 }
 
 FloatSize SVGImagePainter::ComputeImageViewportSize() const {

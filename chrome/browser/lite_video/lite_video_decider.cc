@@ -11,6 +11,7 @@
 #include "chrome/browser/lite_video/lite_video_features.h"
 #include "chrome/browser/lite_video/lite_video_hint.h"
 #include "chrome/browser/lite_video/lite_video_hint_cache.h"
+#include "chrome/browser/lite_video/lite_video_switches.h"
 #include "chrome/browser/lite_video/lite_video_user_blocklist.h"
 #include "chrome/browser/lite_video/lite_video_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,6 +19,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "net/nqe/effective_connection_type.h"
 #include "ui/base/page_transition_types.h"
 
 namespace {
@@ -56,6 +58,22 @@ class ScopedLiteVideoDecisionRecorder {
   bool is_mainframe_;
   bool has_hint_for_host_;
 };
+
+bool CanApplyOnCurrentNetworkConditions(
+    bool is_cellular_network,
+    net::EffectiveConnectionType effective_connection_type) {
+  if (lite_video::switches::ShouldIgnoreLiteVideoNetworkConditions())
+    return true;
+
+  if (!is_cellular_network)
+    return false;
+
+  return effective_connection_type >= lite_video::features::MinLiteVideoECT();
+}
+
+// The default downlink bandwidth estimate used for throttling media requests.
+// Only used when forcing LiteVideos to be allowed.
+constexpr double kLiteVideoDefaultDownlinkBandwidthKbps = 250.0;
 
 }  // namespace
 
@@ -104,11 +122,17 @@ base::Optional<LiteVideoHint> LiteVideoDecider::CanApplyLiteVideo(
     return base::nullopt;
   }
 
-  if (!is_cellular_network_)
-    return base::nullopt;
+  if (switches::ShouldOverrideLiteVideoDecision()) {
+    // Return a default configured hint.
+    return LiteVideoHint(kLiteVideoDefaultDownlinkBandwidthKbps,
+                         features::LiteVideoTargetDownlinkRTTLatencyMs(),
+                         features::LiteVideoKilobytesToBufferBeforeThrottle());
+  }
 
-  if (current_effective_connection_type_ < features::MinLiteVideoECT())
+  if (!CanApplyOnCurrentNetworkConditions(is_cellular_network_,
+                                          current_effective_connection_type_)) {
     return base::nullopt;
+  }
 
   GURL url = navigation_handle->GetURL();
 

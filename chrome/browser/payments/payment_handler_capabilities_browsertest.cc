@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_P(PaymentHandlerCapabilitiesTest, TwoApps) {
                       "installWithCapabilities('bobpay.com/app1/app.js', "
                       "'basic-card', {supportedNetworks: ['mastercard']})"));
 
-  ResetEventWaiterForSingleEvent(TestEvent::kShowAppsReady);
+  ResetEventWaiterForSingleEvent(TestEvent::kAppListReady);
   NavigateTo("test.com",
              "/payment_request_bobpay_and_basic_card_with_modifiers_test.html");
   EXPECT_TRUE(
@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_P(PaymentHandlerCapabilitiesTest,
                             "installWithCapabilities('bobpay.com/app1/app.js', "
                             "'basic-card', {})"));
 
-  ResetEventWaiterForSingleEvent(TestEvent::kShowAppsReady);
+  ResetEventWaiterForSingleEvent(TestEvent::kAppListReady);
   NavigateTo("test.com",
              "/payment_request_bobpay_and_basic_card_with_modifier_optional_"
              "data_test.html");
@@ -142,7 +142,7 @@ IN_PROC_BROWSER_TEST_P(PaymentHandlerCapabilitiesTest,
                             "installWithCapabilities('bobpay.com/app1/app.js', "
                             "'basic-card', {supportedNetworks: ['visa']})"));
 
-  ResetEventWaiterForSingleEvent(TestEvent::kShowAppsReady);
+  ResetEventWaiterForSingleEvent(TestEvent::kAppListReady);
   NavigateTo("test.com",
              "/payment_request_bobpay_and_basic_card_with_modifier_optional_"
              "data_test.html");
@@ -164,7 +164,7 @@ IN_PROC_BROWSER_TEST_P(PaymentHandlerCapabilitiesTest,
                             "installWithCapabilities('bobpay.com/app1/app.js', "
                             "'basic-card', {})"));
 
-  ResetEventWaiterForSingleEvent(TestEvent::kShowAppsReady);
+  ResetEventWaiterForSingleEvent(TestEvent::kAppListReady);
   NavigateTo("test.com",
              "/payment_request_bobpay_and_basic_card_with_modifier_optional_"
              "data_test.html");
@@ -185,7 +185,7 @@ IN_PROC_BROWSER_TEST_P(PaymentHandlerCapabilitiesTest,
                             "installWithCapabilities('bobpay.com/app1/app.js', "
                             "'basic-card', {supportedNetworks: ['visa']})"));
 
-  ResetEventWaiterForSingleEvent(TestEvent::kShowAppsReady);
+  ResetEventWaiterForSingleEvent(TestEvent::kAppListReady);
   NavigateTo("test.com",
              "/payment_request_bobpay_and_basic_card_with_modifier_optional_"
              "data_test.html");
@@ -207,7 +207,7 @@ IN_PROC_BROWSER_TEST_P(PaymentHandlerCapabilitiesTest,
                       "installWithCapabilities('bobpay.com/app1/app.js', "
                       "'basic-card', {supportedNetworks: ['mastercard']})"));
 
-  ResetEventWaiterForSingleEvent(TestEvent::kShowAppsReady);
+  ResetEventWaiterForSingleEvent(TestEvent::kAppListReady);
   NavigateTo("test.com",
              "/payment_request_bobpay_and_basic_card_with_modifier_optional_"
              "data_test.html");
@@ -230,7 +230,7 @@ IN_PROC_BROWSER_TEST_P(PaymentHandlerCapabilitiesTest,
                       "installWithCapabilities('bobpay.com/app1/app.js', "
                       "'basic-card', {supportedNetworks: ['mastercard']})"));
 
-  ResetEventWaiterForSingleEvent(TestEvent::kShowAppsReady);
+  ResetEventWaiterForSingleEvent(TestEvent::kAppListReady);
   NavigateTo("test.com",
              "/payment_request_bobpay_and_basic_card_with_modifier_optional_"
              "data_test.html");

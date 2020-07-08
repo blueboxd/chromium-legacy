@@ -24,15 +24,15 @@ class FakeBleSynchronizer : public BleSynchronizerBase {
   size_t GetNumCommands();
 
   device::BluetoothAdvertisement::Data& GetAdvertisementData(size_t index);
-  const device::BluetoothAdapter::CreateAdvertisementCallback&
-  GetRegisterCallback(size_t index);
-  const device::BluetoothAdapter::AdvertisementErrorCallback&
-  GetRegisterErrorCallback(size_t index);
-
-  const device::BluetoothAdvertisement::SuccessCallback& GetUnregisterCallback(
+  device::BluetoothAdapter::CreateAdvertisementCallback GetRegisterCallback(
       size_t index);
-  const device::BluetoothAdvertisement::ErrorCallback&
-  GetUnregisterErrorCallback(size_t index);
+  device::BluetoothAdapter::AdvertisementErrorCallback GetRegisterErrorCallback(
+      size_t index);
+
+  device::BluetoothAdvertisement::SuccessCallback GetUnregisterCallback(
+      size_t index);
+  device::BluetoothAdvertisement::ErrorCallback GetUnregisterErrorCallback(
+      size_t index);
 
   device::BluetoothAdapter::DiscoverySessionCallback TakeStartDiscoveryCallback(
       size_t index);

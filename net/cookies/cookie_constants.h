@@ -47,6 +47,9 @@ enum class CookieEffectiveSameSite {
   LAX_MODE = 1,
   STRICT_MODE = 2,
   LAX_MODE_ALLOW_UNSAFE = 3,
+  // Undefined is used when no value applies for the object as there is no
+  // valid cookie object to evaluate on.
+  UNDEFINED = 4,
 
   // Keep last, used for histograms.
   COUNT

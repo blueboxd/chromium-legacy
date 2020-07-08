@@ -905,7 +905,7 @@ VisualCursorDirection RenderText::GetVisualDirectionOfLogicalBeginning() {
 
 Size RenderText::GetStringSize() {
   const SizeF size_f = GetStringSizeF();
-  return Size(std::ceil(size_f.width()), size_f.height());
+  return Size(base::Ceil(size_f.width()), size_f.height());
 }
 
 float RenderText::TotalLineWidth() {
@@ -1101,7 +1101,7 @@ Rect RenderText::GetCursorBounds(const SelectionModel& caret,
       // Ceil the start and end of the |xspan| because the cursor x-coordinates
       // are always ceiled.
       width =
-          std::ceil(Clamp(xspan.GetMax())) - std::ceil(Clamp(xspan.GetMin()));
+          base::Ceil(Clamp(xspan.GetMax())) - base::Ceil(Clamp(xspan.GetMin()));
     }
   }
   return Rect(ToViewPoint(PointF(x, 0), caret_affinity),
@@ -1690,7 +1690,7 @@ Point RenderText::ToViewPoint(const PointF& point,
 
   const size_t num_lines = GetNumLines();
   if (num_lines == 1) {
-    return Point(std::ceil(Clamp(point.x())), std::round(point.y())) +
+    return Point(base::Ceil(Clamp(point.x())), base::Round(point.y())) +
            GetLineOffset(0);
   }
 
@@ -1747,7 +1747,7 @@ Point RenderText::ToViewPoint(const PointF& point,
     }
   }
 
-  return Point(std::ceil(Clamp(x)), std::round(point.y())) +
+  return Point(base::Ceil(Clamp(x)), base::Round(point.y())) +
          GetLineOffset(line);
 }
 

@@ -706,13 +706,13 @@ void OpenXrTestHelper::LocateSpace(XrSpace space, XrPosef* pose) {
   base::Optional<gfx::Transform> transform = base::nullopt;
 
   if (reference_spaces_.count(space) == 1) {
-    if (reference_spaces_.at(space).compare(kLocalReferenceSpacePath) == 0) {
-      // this locate space call try to get tranform from stage to local which we
+    if (reference_spaces_.at(space).compare(kStageReferenceSpacePath) == 0) {
+      // This locate space call wants the transform from local to stage which we
       // only need to give it identity matrix.
       transform = gfx::Transform();
     } else if (reference_spaces_.at(space).compare(kViewReferenceSpacePath) ==
                0) {
-      // this locate space try to locate transform of head pose
+      // This locate space call wants the transform of the head pose.
       transform = GetPose();
     } else {
       NOTREACHED()

@@ -6,8 +6,8 @@
 #define SERVICES_NETWORK_NETWORK_SANDBOX_WIN_H_
 
 #include "base/component_export.h"
+#include "sandbox/policy/win/sandbox_win.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
-#include "services/service_manager/sandbox/win/sandbox_win.h"
 
 // These sandbox-config extension functions should be called from
 // UtilitySandboxedProcessLauncherDelegate on Windows (or the appropriate

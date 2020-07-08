@@ -228,29 +228,29 @@ bool CollectBasicGraphicsInfo(const base::CommandLine* command_line,
   if (use_gl == software_gl_impl_name ||
       command_line->HasSwitch(switches::kOverrideUseSoftwareGLForTests)) {
     // If using the software GL implementation, use fake vendor and
-    // device ids to make sure it never gets blacklisted. It allows us
-    // to proceed with loading the blacklist which may have non-device
+    // device ids to make sure it never gets blocklisted. It allows us
+    // to proceed with loading the blocklist which may have non-device
     // specific entries we want to apply anyways (e.g., OS version
-    // blacklisting).
+    // blocklisting).
     gpu_info->gpu.vendor_id = 0xffff;
     gpu_info->gpu.device_id = 0xffff;
 
     // Also declare the driver_vendor to be <software GL> to be able to
     // specify exceptions based on driver_vendor==<software GL> for some
-    // blacklist rules.
+    // blocklist rules.
     gpu_info->gpu.driver_vendor = software_gl_impl_name.as_string();
 
     return true;
   } else if (use_gl == gl::kGLImplementationANGLEName &&
              use_angle == gl::kANGLEImplementationSwiftShaderName) {
     // Similarly to the above, use fake vendor and device ids
-    // to make sure they never gets blacklisted for SwANGLE as well.
+    // to make sure they never gets blocklisted for SwANGLE as well.
     gpu_info->gpu.vendor_id = 0xffff;
     gpu_info->gpu.device_id = 0xffff;
 
     // Also declare the driver_vendor to be <SwANGLE> to be able to
     // specify exceptions based on driver_vendor==<SwANGLE> for some
-    // blacklist rules.
+    // blocklist rules.
     gpu_info->gpu.driver_vendor = "SwANGLE";
 
     return true;

@@ -203,7 +203,38 @@ TEST_F(IntentGeneratorTest, TextAnnotationDefinitionIntent) {
   EXPECT_EQ("unfathomable", intent_text_);
 }
 
-TEST_F(IntentGeneratorTest, TextAnnotationDefinitionIntentExtraChars) {
+TEST_F(IntentGeneratorTest,
+       TextAnnotationDefinitionIntentExtraCharsBelowThreshold) {
+  std::unique_ptr<QuickAnswersRequest> quick_answers_request =
+      std::make_unique<QuickAnswersRequest>();
+  quick_answers_request->selected_text = "“unfathomable”";
+
+  // Create the test annotations.
+  std::vector<TextEntityPtr> entities;
+  entities.emplace_back(
+      TextEntity::New("dictionary",             // Entity name.
+                      1.0,                      // Confidence score.
+                      TextEntityData::New()));  // Data extracted.
+
+  auto dictionary_annotation = TextAnnotation::New(1,   // Start offset.
+                                                   13,  // End offset.
+                                                   std::move(entities));
+
+  std::vector<TextAnnotationPtr> annotations;
+  annotations.push_back(dictionary_annotation->Clone());
+
+  UseFakeServiceConnection(annotations);
+
+  intent_generator_->GenerateIntent(*quick_answers_request);
+
+  task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(IntentType::kDictionary, intent_type_);
+  EXPECT_EQ("unfathomable", intent_text_);
+}
+
+TEST_F(IntentGeneratorTest,
+       TextAnnotationDefinitionIntentExtraCharsAboveThreshold) {
   std::unique_ptr<QuickAnswersRequest> quick_answers_request =
       std::make_unique<QuickAnswersRequest>();
   quick_answers_request->selected_text = "the unfathomable";

@@ -463,6 +463,7 @@ if (is_android) {
       "//chrome/browser/metrics:test_support",
       "//chrome/browser/payments:browsertests",
       "//chrome/browser/profiling_host:profiling_browsertests",
+      "//components/browser_ui/widget/android:java",
       "//components/crash/android:crashpad_main",
       "//components/games/core/test:test_support",
       "//components/metrics:demographics_test_support",
@@ -7052,7 +7053,7 @@ if (!is_android) {
       "//base",
       "//chrome/test:browser_tests_runner",
       "//device/base",
-      "//services/service_manager/sandbox",
+      "//sandbox/policy",
     ]
 
     public_deps = [

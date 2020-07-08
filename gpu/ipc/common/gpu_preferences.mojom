@@ -70,7 +70,7 @@ struct GpuPreferences {
   bool disable_biplanar_gpu_memory_buffers_for_video_frames;
   array<gfx.mojom.BufferUsageAndFormat> texture_target_exception_list;
 
-  bool ignore_gpu_blacklist;
+  bool ignore_gpu_blocklist;
   bool enable_oop_rasterization;
   bool disable_oop_rasterization;
   bool enable_oop_rasterization_ddl;

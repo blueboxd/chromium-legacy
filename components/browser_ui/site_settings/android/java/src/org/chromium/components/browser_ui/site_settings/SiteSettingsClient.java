@@ -6,9 +6,13 @@ package org.chromium.components.browser_ui.site_settings;
 
 import android.graphics.Bitmap;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Callback;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
+import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
+import org.chromium.components.embedder_support.util.Origin;
 
 /**
  * An interface implemented by the embedder that allows the Site Settings UI to access
@@ -76,4 +80,18 @@ public interface SiteSettingsClient {
      * @return The name of the app the settings are associated with.
      */
     String getAppName();
+
+    /**
+     * @return The user visible name of the app that will handle permission delegation for the
+     *     origin and content setting type.
+     */
+    @Nullable
+    String getDelegateAppNameForOrigin(Origin origin, @ContentSettingsType int type);
+
+    /**
+     * @return The package name of the app that should handle permission delegation for the origin
+     *     and content setting type.
+     */
+    @Nullable
+    String getDelegatePackageNameForOrigin(Origin origin, @ContentSettingsType int type);
 }

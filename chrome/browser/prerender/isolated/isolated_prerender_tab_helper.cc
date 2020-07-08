@@ -143,7 +143,7 @@ void OnGotCookieList(
 }
 
 void CookieSetHelper(base::RepeatingClosure run_me,
-                     net::CookieInclusionStatus status) {
+                     net::CookieAccessResult access_result) {
   run_me.Run();
 }
 

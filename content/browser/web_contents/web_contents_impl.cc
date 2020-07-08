@@ -3435,6 +3435,9 @@ bool WebContentsImpl::IsJavaScriptDialogShowing() const {
 }
 
 bool WebContentsImpl::ShouldIgnoreUnresponsiveRenderer() {
+  if (suppress_unresponsive_renderer_count_ > 0)
+    return true;
+
   // Ignore unresponsive renderers if the debugger is attached to them since the
   // unresponsiveness might be a result of the renderer sitting on a breakpoint.
   //
@@ -7341,8 +7344,18 @@ void WebContentsImpl::IsClipboardPasteAllowed(
     const ui::ClipboardFormatType& data_type,
     const std::string& data,
     IsClipboardPasteAllowedCallback callback) {
+  ++suppress_unresponsive_renderer_count_;
   GetContentClient()->browser()->IsClipboardPasteAllowed(
-      this, url, data_type, data, std::move(callback));
+      this, url, data_type, data,
+      base::BindOnce(&WebContentsImpl::IsClipboardPasteAllowedWrapperCallback,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebContentsImpl::IsClipboardPasteAllowedWrapperCallback(
+    IsClipboardPasteAllowedCallback callback,
+    ClipboardPasteAllowed allowed) {
+  std::move(callback).Run(allowed);
+  --suppress_unresponsive_renderer_count_;
 }
 
 bool WebContentsImpl::HasSeenRecentScreenOrientationChange() {

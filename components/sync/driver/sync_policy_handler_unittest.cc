@@ -34,7 +34,7 @@ TEST(SyncPolicyHandlerTest, Enabled) {
   policy::PolicyMap policy;
   policy.Set(policy::key::kSyncDisabled, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(false), nullptr);
+             base::Value(false), nullptr);
   SyncPolicyHandler handler;
   PrefValueMap prefs;
   handler.ApplyPolicySettings(policy, &prefs);
@@ -47,7 +47,7 @@ TEST(SyncPolicyHandlerTest, Disabled) {
   policy::PolicyMap policy;
   policy.Set(policy::key::kSyncDisabled, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(true), nullptr);
+             base::Value(true), nullptr);
   SyncPolicyHandler handler;
   PrefValueMap prefs;
   handler.ApplyPolicySettings(policy, &prefs);
@@ -77,8 +77,7 @@ TEST(SyncPolicyHandlerTest, SyncTypesListDisabled) {
   disabled_types.AppendString("preferences");
   policy.Set(policy::key::kSyncTypesListDisabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD, disabled_types.CreateDeepCopy(),
-             nullptr);
+             policy::POLICY_SOURCE_CLOUD, disabled_types.Clone(), nullptr);
   SyncPolicyHandler handler;
   handler.ApplyPolicySettings(policy, &prefs);
 
@@ -121,8 +120,7 @@ TEST_F(SyncPolicyHandlerOsTest, SyncTypesListDisabled_OsTypes) {
   disabled_types.AppendString("osWifiConfigurations");
   policy.Set(policy::key::kSyncTypesListDisabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD, disabled_types.CreateDeepCopy(),
-             nullptr);
+             policy::POLICY_SOURCE_CLOUD, disabled_types.Clone(), nullptr);
   SyncPolicyHandler handler;
   handler.ApplyPolicySettings(policy, &prefs);
 
@@ -151,8 +149,7 @@ TEST_F(SyncPolicyHandlerOsTest, SyncTypesListDisabled_MigratedTypes) {
   disabled_types.AppendString("preferences");
   policy.Set(policy::key::kSyncTypesListDisabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD, disabled_types.CreateDeepCopy(),
-             nullptr);
+             policy::POLICY_SOURCE_CLOUD, disabled_types.Clone(), nullptr);
   SyncPolicyHandler handler;
   handler.ApplyPolicySettings(policy, &prefs);
 

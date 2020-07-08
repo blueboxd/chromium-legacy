@@ -34,7 +34,6 @@ import org.chromium.components.minidump_uploader.CrashTestRule.MockCrashReportin
 import org.chromium.components.minidump_uploader.MinidumpUploadCallable;
 import org.chromium.components.minidump_uploader.MinidumpUploadCallable.MinidumpUploadStatus;
 import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.net.NetworkChangeNotifier;
 
@@ -311,19 +310,14 @@ public class MinidumpUploadServiceTest {
         MinidumpUploadService.tryUploadCrashDump(minidumpFile);
 
         // Verify asynchronously.
-        CriteriaHelper.pollInstrumentationThread(
-                new Criteria("All callables should have a call-count of 1") {
-                    @Override
-                    public boolean isSatisfied() {
-                        for (CountedMinidumpUploadCallable callable : callables) {
-                            if (callable.mCalledCount != 1) {
-                                return false;
-                            }
-                        }
-                        return true;
-                    }
-                },
-                MAX_TIMEOUT_MS, CHECK_INTERVAL_MS);
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            for (CountedMinidumpUploadCallable callable : callables) {
+                if (callable.mCalledCount != 1) {
+                    return false;
+                }
+            }
+            return true;
+        }, "All callables should have a call-count of 1", MAX_TIMEOUT_MS, CHECK_INTERVAL_MS);
     }
 
     @Test

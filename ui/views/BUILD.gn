@@ -1038,6 +1038,7 @@ test("views_unittests") {
     "animation/ink_drop_highlight_unittest.cc",
     "animation/ink_drop_host_view_unittest.cc",
     "animation/ink_drop_impl_unittest.cc",
+    "animation/ink_drop_mask_unittest.cc",
     "animation/ink_drop_ripple_unittest.cc",
     "animation/ink_drop_unittest.cc",
     "animation/installable_ink_drop_animator_unittest.cc",

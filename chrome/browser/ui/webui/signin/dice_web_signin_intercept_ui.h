@@ -7,6 +7,8 @@
 
 #include "content/public/browser/web_ui_controller.h"
 
+#include "base/callback.h"
+
 namespace content {
 class WebUI;
 }
@@ -18,6 +20,12 @@ class DiceWebSigninInterceptUI : public content::WebUIController {
 
   DiceWebSigninInterceptUI(const DiceWebSigninInterceptUI&) = delete;
   DiceWebSigninInterceptUI& operator=(const DiceWebSigninInterceptUI&) = delete;
+
+  // Initializes the DiceWebSigninInterceptUI.
+  void Initialize(base::OnceCallback<void(bool)> callback);
+
+ private:
+  WEB_UI_CONTROLLER_TYPE_DECL();
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SIGNIN_DICE_WEB_SIGNIN_INTERCEPT_UI_H_

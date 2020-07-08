@@ -137,15 +137,18 @@ void AccessibilityPanelLayoutManager::UpdateWindowBounds() {
     bounds.set_height(available_height);
 
   panel_window_->SetBounds(bounds);
+
+  UpdateWorkAreaForPanelHeight();
 }
 
 void AccessibilityPanelLayoutManager::UpdateWorkAreaForPanelHeight() {
   bool has_height = panel_window_ && panel_window_->bounds().y() == 0 &&
                     panel_state_ == AccessibilityPanelState::FULL_WIDTH;
-  Shell::GetPrimaryRootWindowController()
-      ->work_area_insets()
-      ->SetAccessibilityPanelHeight(
-          has_height ? panel_window_->bounds().height() : 0);
+  const int height = has_height ? panel_window_->bounds().height() : 0;
+  WorkAreaInsets* const work_area_insets =
+      Shell::GetPrimaryRootWindowController()->work_area_insets();
+  if (work_area_insets->accessibility_panel_height() != height)
+    work_area_insets->SetAccessibilityPanelHeight(height);
 }
 
 }  // namespace ash

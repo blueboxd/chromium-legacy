@@ -32,9 +32,9 @@ class MockProfileResetter : public ProfileResetter {
 
   void Reset(ResettableFlags resettable_flags,
              std::unique_ptr<BrandcodedDefaultSettings> initial_settings,
-             const base::Closure& callback) override {
+             base::OnceClosure callback) override {
     resets_++;
-    callback.Run();
+    std::move(callback).Run();
   }
 
   size_t resets() const {

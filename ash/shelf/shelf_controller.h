@@ -12,10 +12,11 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/shelf_model.h"
+#include "ash/public/cpp/shelf_model_observer.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/scoped_observer.h"
-#include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_observer.h"
+#include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/app_update.h"
 
 class PrefChangeRegistrar;
 class PrefRegistrySimple;
@@ -24,10 +25,11 @@ namespace ash {
 
 // ShelfController owns the ShelfModel and manages shelf preferences.
 // ChromeLauncherController and related classes largely manage the ShelfModel.
-class ASH_EXPORT ShelfController : public message_center::MessageCenterObserver,
-                                   public SessionObserver,
+class ASH_EXPORT ShelfController : public SessionObserver,
                                    public TabletModeObserver,
-                                   public WindowTreeHostManager::Observer {
+                                   public WindowTreeHostManager::Observer,
+                                   public apps::AppRegistryCache::Observer,
+                                   public ShelfModelObserver {
  public:
   ShelfController();
   ~ShelfController() override;
@@ -40,11 +42,6 @@ class ASH_EXPORT ShelfController : public message_center::MessageCenterObserver,
   ShelfModel* model() { return &model_; }
 
  private:
-  // message_center::MessageCenterObserver:
-  void OnNotificationAdded(const std::string& notification_id) override;
-  void OnNotificationRemoved(const std::string& notification_id,
-                             bool by_user) override;
-
   // SessionObserver:
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
 
@@ -55,18 +52,26 @@ class ASH_EXPORT ShelfController : public message_center::MessageCenterObserver,
   // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
 
+  // apps::AppRegistryCache::Observer:
+  void OnAppUpdate(const apps::AppUpdate& update) override;
+  void OnAppRegistryCacheWillBeDestroyed(
+      apps::AppRegistryCache* cache) override;
+
+  // ShelfModelObserver:
+  void ShelfItemAdded(int index) override;
+
   // The shelf model shared by all shelf instances.
   ShelfModel model_;
 
   // Whether notification indicators are enabled for app icons in the shelf.
   const bool is_notification_indicator_enabled_;
 
-  ScopedObserver<message_center::MessageCenter,
-                 message_center::MessageCenterObserver>
-      message_center_observer_{this};
-
   // Observes user profile prefs for the shelf.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+
+  // Observed to update notification badging on shelf items. Also used to get
+  // initial notification badge information when shelf items are added.
+  apps::AppRegistryCache* cache_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfController);
 };

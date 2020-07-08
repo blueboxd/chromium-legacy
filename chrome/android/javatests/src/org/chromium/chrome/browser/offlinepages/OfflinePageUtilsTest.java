@@ -41,7 +41,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.ConnectionType;
@@ -162,14 +161,10 @@ public class OfflinePageUtilsTest {
         }
 
         public void waitForSnackbarControllerToFinish() {
-            CriteriaHelper.pollUiThread(
-                    new Criteria("Failed while waiting for snackbar calls to complete.") {
-                        @Override
-                        public boolean isSatisfied() {
-                            return mDismissed;
-                        }
-                    },
-                    SNACKBAR_TIMEOUT, POLLING_INTERVAL);
+            CriteriaHelper.pollUiThread(()
+                                                -> mDismissed,
+                    "Failed while waiting for snackbar calls to complete.", SNACKBAR_TIMEOUT,
+                    POLLING_INTERVAL);
         }
 
         @Override

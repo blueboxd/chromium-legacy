@@ -107,14 +107,6 @@ class TestJavaClassDependencyGraph(unittest.TestCase):
         self.assertEqual(created_node.class_name, 'class')
         self.assertEqual(created_node.name, 'package.class')
 
-    def test_add_nested_class_to_key(self):
-        """Tests adding a nested class to an existing node."""
-        added = self.test_graph.add_node_if_new('package.class')
-        added.add_nested_class = unittest.mock.Mock()
-
-        self.test_graph.add_nested_class_to_key('package.class', 'nested')
-        added.add_nested_class.assert_called_once_with('nested')
-
 
 if __name__ == '__main__':
     unittest.main()

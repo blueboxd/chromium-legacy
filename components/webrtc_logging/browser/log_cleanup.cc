@@ -200,7 +200,7 @@ void DeleteOldAndRecentWebRtcLogFiles(const base::FilePath& log_dir,
     if (file_age > kTimeToKeepLogs ||
         (!delete_begin_time.is_max() &&
          file_info.GetLastModifiedTime() > delete_begin_time)) {
-      if (!base::DeleteFile(name, false)) {
+      if (!base::DeleteFile(name)) {
         LOG(WARNING) << "Could not delete WebRTC text log file ("
                      << file_info.GetName() << ").";
       }

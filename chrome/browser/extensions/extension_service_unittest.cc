@@ -141,7 +141,7 @@
 #include "extensions/test/test_extension_dir.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/cookie_inclusion_status.h"
+#include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
@@ -4971,8 +4971,8 @@ class ExtensionCookieCallback {
  public:
   ExtensionCookieCallback() : result_(false) {}
 
-  void SetCookieCallback(net::CookieInclusionStatus result) {
-    result_ = result.IsInclude();
+  void SetCookieCallback(net::CookieAccessResult result) {
+    result_ = result.status.IsInclude();
   }
 
   void GetAllCookiesCallback(const net::CookieAccessResultList& list,
@@ -5115,8 +5115,8 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
 
 void SetCookieSaveData(bool* result_out,
                        base::OnceClosure callback,
-                       net::CookieInclusionStatus result) {
-  *result_out = result.IsInclude();
+                       net::CookieAccessResult result) {
+  *result_out = result.status.IsInclude();
   std::move(callback).Run();
 }
 

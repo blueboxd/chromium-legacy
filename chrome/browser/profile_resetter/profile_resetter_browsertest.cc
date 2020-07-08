@@ -16,7 +16,7 @@
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/cookie_inclusion_status.h"
+#include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
@@ -44,7 +44,7 @@ class RemoveCookieTester {
   void GetCookieListCallback(
       const net::CookieAccessResultList& cookies,
       const net::CookieAccessResultList& excluded_cookies);
-  void SetCanonicalCookieCallback(net::CookieInclusionStatus result);
+  void SetCanonicalCookieCallback(net::CookieAccessResult result);
 
   void BlockUntilNotified();
   void Notify();
@@ -116,8 +116,8 @@ void RemoveCookieTester::GetCookieListCallback(
 }
 
 void RemoveCookieTester::SetCanonicalCookieCallback(
-    net::CookieInclusionStatus result) {
-  ASSERT_TRUE(result.IsInclude());
+    net::CookieAccessResult result) {
+  ASSERT_TRUE(result.status.IsInclude());
   Notify();
 }
 

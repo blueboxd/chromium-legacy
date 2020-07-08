@@ -55,6 +55,7 @@ class MockUpgradeObserver : public UpgradeObserver {
   MOCK_METHOD0(OnCriticalUpgradeInstalled, void());
   MOCK_METHOD0(OnOutdatedInstall, void());
   MOCK_METHOD0(OnOutdatedInstallNoAutoUpdate, void());
+  MOCK_METHOD1(OnRelaunchOverriddenToRequired, void(bool override));
 
  private:
   UpgradeDetector* const upgrade_detector_;
@@ -448,6 +449,68 @@ TEST_F(UpgradeDetectorChromeosTest, TimezoneAdjustment) {
   deadline = upgrade_detector.AdjustDeadline(detect_time + delta);
   EXPECT_GE(deadline, deadline_lower_border);
   EXPECT_LE(deadline, deadline_upper_border);
+
+  upgrade_detector.Shutdown();
+  RunUntilIdle();
+}
+
+TEST_F(UpgradeDetectorChromeosTest, TestOverrideThresholds) {
+  TestUpgradeDetectorChromeos upgrade_detector(GetMockClock(),
+                                               GetMockTickClock());
+  upgrade_detector.Init();
+  ::testing::StrictMock<MockUpgradeObserver> mock_observer(&upgrade_detector);
+
+  const auto notification_period = base::TimeDelta::FromDays(7);
+  const auto heads_up_period = base::TimeDelta::FromDays(2);
+  SetNotificationPeriodPref(notification_period);
+  SetHeadsUpPeriodPref(heads_up_period);
+  // Simulate update installed.
+  NotifyUpdateReadyToInstall();
+  EXPECT_EQ(upgrade_detector.upgrade_notification_stage(),
+            UpgradeDetector::UPGRADE_ANNOYANCE_NONE);
+
+  // Overriding the thresholds should change the high annoyance deadline and the
+  // notification stage accordingly and notify the observers.
+  base::TimeDelta delta = base::TimeDelta::FromHours(2);
+  base::Time deadline = upgrade_detector.upgrade_detected_time() + delta;
+  EXPECT_CALL(mock_observer, OnUpgradeRecommended());
+  upgrade_detector.OverrideHighAnnoyanceDeadline(deadline);
+  EXPECT_EQ(upgrade_detector.GetHighAnnoyanceDeadline(), deadline);
+  EXPECT_EQ(upgrade_detector.upgrade_notification_stage(),
+            UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED);
+  ::testing::Mock::VerifyAndClear(&mock_observer);
+
+  EXPECT_CALL(mock_observer, OnUpgradeRecommended());
+  upgrade_detector.ResetOverriddenDeadline();
+  EXPECT_EQ(upgrade_detector.upgrade_notification_stage(),
+            UpgradeDetector::UPGRADE_ANNOYANCE_NONE);
+  ::testing::Mock::VerifyAndClear(&mock_observer);
+
+  upgrade_detector.Shutdown();
+  RunUntilIdle();
+}
+
+TEST_F(UpgradeDetectorChromeosTest, TestOverrideNotificationType) {
+  TestUpgradeDetectorChromeos upgrade_detector(GetMockClock(),
+                                               GetMockTickClock());
+  upgrade_detector.Init();
+  ::testing::StrictMock<MockUpgradeObserver> mock_observer(&upgrade_detector);
+
+  NotifyUpdateReadyToInstall();
+  EXPECT_EQ(upgrade_detector.upgrade_notification_stage(),
+            UpgradeDetector::UPGRADE_ANNOYANCE_NONE);
+
+  // Observer should get some notification about the overridden relaunch
+  // notification style.
+  EXPECT_CALL(mock_observer, OnRelaunchOverriddenToRequired(true));
+  upgrade_detector.OverrideRelaunchNotificationToRequired(true);
+  ::testing::Mock::VerifyAndClear(&mock_observer);
+
+  // Observer should get some notification about the resetting the overridden
+  // relaunch notification style.
+  EXPECT_CALL(mock_observer, OnRelaunchOverriddenToRequired(false));
+  upgrade_detector.OverrideRelaunchNotificationToRequired(false);
+  ::testing::Mock::VerifyAndClear(&mock_observer);
 
   upgrade_detector.Shutdown();
   RunUntilIdle();

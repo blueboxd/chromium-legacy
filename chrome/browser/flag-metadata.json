@@ -1827,6 +1827,12 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-lite-video",
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
+    // This flag is used for frequent manual testing and should not be removed.
+    "expiry_milestone": -1
+  },
+  {
     "name": "enable-lock-screen-notification",
     "owners": [ "tengs" ],
     "expiry_milestone": 80
@@ -3008,6 +3014,13 @@
     "expiry_milestone": -1
   },
   {
+    "name": "lite-video-force-override-decision",
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
+    // This flag is used for debugging and development purposes, allowing users
+    // and developers to test LiteVideos reliably on any origin.'
+    "expiry_milestone": -1
+  },
+  {
     "name": "load-media-router-component-extension",
     "owners": [ "mfoltz", "media-dev" ],
     // This flag has two purposes: in-team development/Q&A, and allowing
@@ -3511,16 +3524,6 @@
     "name": "omnibox-ui-hide-steady-state-url-path-query-and-ref-on-interaction",
     "owners": [ "estark", "carlosil", "chrome-security-enamel@google.com" ],
     "expiry_milestone": 89
-  },
-  {
-    "name": "omnibox-ui-hide-steady-state-url-scheme",
-    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "omnibox-ui-hide-steady-state-url-trivial-subdomains",
-    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
   },
   {
     "name": "omnibox-ui-max-autocomplete-matches",

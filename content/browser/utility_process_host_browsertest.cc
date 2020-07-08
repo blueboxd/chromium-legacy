@@ -69,7 +69,7 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
 #if defined(OS_WIN)
     if (elevated)
       host->SetSandboxType(
-          service_manager::SandboxType::kNoSandboxAndElevatedPrivileges);
+          sandbox::policy::SandboxType::kNoSandboxAndElevatedPrivileges);
 #endif
     EXPECT_TRUE(host->Start());
 

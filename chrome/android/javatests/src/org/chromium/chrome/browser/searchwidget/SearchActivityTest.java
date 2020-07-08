@@ -17,7 +17,6 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
-import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.ViewGroup;
 
@@ -79,6 +78,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaNotSatisfiedException;
 import org.chromium.content_public.browser.test.util.KeyUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
@@ -516,23 +516,13 @@ public class SearchActivityTest {
         mTestDelegate.shownPromoDialog.dismiss();
 
         // SearchActivity should realize the failure case and prevent the user from using it.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                List<Activity> activities = ApplicationStatus.getRunningActivities();
-                if (activities.isEmpty()) return true;
+        CriteriaHelper.pollUiThread(() -> {
+            List<Activity> activities = ApplicationStatus.getRunningActivities();
+            if (activities.isEmpty()) return;
 
-                if (activities.size() != 1) {
-                    updateFailureReason("Multiple non-destroyed activities: " + activities);
-                    return false;
-                }
-                if (activities.get(0) != activity) {
-                    updateFailureReason("Remaining activity is not the search activity under test: "
-                            + activities.get(0));
-                }
-                updateFailureReason("Search activity has not called finish()");
-                return activity.isFinishing();
-            }
+            Criteria.checkThat(activities, Matchers.hasSize(1));
+            Criteria.checkThat(activities.get(0), Matchers.is(activity));
+            Criteria.checkThat(activity.isFinishing(), Matchers.is(true));
         });
         Assert.assertEquals(
                 1, mTestDelegate.shouldDelayNativeInitializationCallback.getCallCount());
@@ -555,12 +545,10 @@ public class SearchActivityTest {
         Assert.assertEquals(searchActivity, restartedActivity);
 
         // The query should be wiped.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                UrlBar urlBar = (UrlBar) searchActivity.findViewById(R.id.url_bar);
-                return TextUtils.isEmpty(urlBar.getText());
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            UrlBar urlBar = (UrlBar) searchActivity.findViewById(R.id.url_bar);
+            Criteria.checkThat(
+                    urlBar.getText(), Matchers.hasToString(Matchers.isEmptyOrNullString()));
         });
     }
 
@@ -633,19 +621,16 @@ public class SearchActivityTest {
                     }
                 });
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Tab tab = cta.getActivityTab();
-                if (tab == null) return false;
-                // Make sure tab is in either upload page or result page. cannot only verify one of
-                // them since on fast device tab jump to result page really quick but on slow device
-                // may stay on upload page for a really long time.
-                return tab.getUrlString().equals(imageSuggestion.getUrl().getSpec())
-                        || TemplateUrlServiceFactory.get()
-                                   .isSearchResultsPageFromDefaultSearchProvider(
-                                           tab.getUrlString());
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Tab tab = cta.getActivityTab();
+            Criteria.checkThat(tab, Matchers.notNullValue());
+            // Make sure tab is in either upload page or result page. cannot only verify one of
+            // them since on fast device tab jump to result page really quick but on slow device
+            // may stay on upload page for a really long time.
+            boolean isValid = tab.getUrlString().equals(imageSuggestion.getUrl().getSpec())
+                    || TemplateUrlServiceFactory.get().isSearchResultsPageFromDefaultSearchProvider(
+                            tab.getUrlString());
+            Criteria.checkThat("Invalid URL: " + tab.getUrlString(), isValid, Matchers.is(true));
         });
     }
 
@@ -707,13 +692,12 @@ public class SearchActivityTest {
                         });
 
         // Because no POST data, Google wont go to the result page.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Tab tab = cta.getActivityTab();
-                return !TemplateUrlServiceFactory.get()
-                                .isSearchResultsPageFromDefaultSearchProvider(tab.getUrlString());
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Tab tab = cta.getActivityTab();
+            Criteria.checkThat("Unexpected URL: " + tab.getUrlString(),
+                    TemplateUrlServiceFactory.get().isSearchResultsPageFromDefaultSearchProvider(
+                            tab.getUrlString()),
+                    Matchers.is(false));
         });
     }
 
@@ -728,11 +712,8 @@ public class SearchActivityTest {
         Clipboard.getInstance().setImageFileProvider(new ClipboardImageFileProvider());
         Clipboard.getInstance().setImage(mTestImageData, TEST_PNG_IMAGE_FILE_EXTENSION);
 
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return Clipboard.getInstance().getImage() != null;
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(Clipboard.getInstance().getImage(), Matchers.notNullValue());
         });
     }
 
@@ -788,36 +769,32 @@ public class SearchActivityTest {
 
     private void waitForSuggestionType(final SearchActivityLocationBarLayout locationBar,
             final @OmniboxSuggestionType int type) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                OmniboxSuggestionsDropdown suggestionsDropdown =
-                        AutocompleteCoordinatorTestUtils.getSuggestionsDropdown(
-                                locationBar.getAutocompleteCoordinator());
-                if (suggestionsDropdown == null) return false;
-
-                for (int i = 0; i < suggestionsDropdown.getItemCount(); i++) {
-                    OmniboxSuggestion suggestion =
-                            AutocompleteCoordinatorTestUtils.getOmniboxSuggestionAt(
-                                    locationBar.getAutocompleteCoordinator(), i);
-                    if (suggestion != null && suggestion.getType() == type) {
-                        return true;
-                    }
-                }
-                return false;
+        CriteriaHelper.pollUiThread(() -> {
+            OmniboxSuggestionsDropdown suggestionsDropdown =
+                    AutocompleteCoordinatorTestUtils.getSuggestionsDropdown(
+                            locationBar.getAutocompleteCoordinator());
+            Criteria.checkThat(suggestionsDropdown, Matchers.notNullValue());
+            for (int i = 0; i < suggestionsDropdown.getItemCount(); i++) {
+                OmniboxSuggestion suggestion =
+                        AutocompleteCoordinatorTestUtils.getOmniboxSuggestionAt(
+                                locationBar.getAutocompleteCoordinator(), i);
+                if (suggestion != null && suggestion.getType() == type) return;
             }
+            throw new CriteriaNotSatisfiedException("No suggestions of type: " + type);
         });
     }
 
     @SuppressLint("SetTextI18n")
     private void setUrlBarText(final Activity activity, final String url) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                UrlBar urlBar = (UrlBar) activity.findViewById(R.id.url_bar);
-                if (urlBar.isFocusable() && urlBar.hasFocus()) return true;
+        CriteriaHelper.pollUiThread(() -> {
+            UrlBar urlBar = (UrlBar) activity.findViewById(R.id.url_bar);
+            try {
+                Criteria.checkThat("UrlBar not focusable", urlBar.isFocusable(), Matchers.is(true));
+                Criteria.checkThat(
+                        "UrlBar does not have focus", urlBar.hasFocus(), Matchers.is(true));
+            } catch (CriteriaNotSatisfiedException ex) {
                 urlBar.requestFocus();
-                return false;
+                throw ex;
             }
         });
         TestThreadUtils.runOnUiThreadBlocking(() -> {

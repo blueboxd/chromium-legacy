@@ -33,7 +33,8 @@ class DummyRandIntCallback {
   DummyRandIntCallback() = default;
 
   RandIntCallback MakeCallback() {
-    return base::Bind(&DummyRandIntCallback::GetRandInt, dummy_.GetWeakPtr());
+    return base::BindRepeating(&DummyRandIntCallback::GetRandInt,
+                               dummy_.GetWeakPtr());
   }
 
   bool HasRefs() const { return dummy_.HasWeakPtrs(); }

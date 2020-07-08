@@ -42,7 +42,7 @@ bool UserCanConnectCallback(bool allow_user,
 }
 
 UnixDomainServerSocket::AuthCallback CreateAuthCallback(bool allow_user) {
-  return base::Bind(&UserCanConnectCallback, allow_user);
+  return base::BindRepeating(&UserCanConnectCallback, allow_user);
 }
 
 class UnixDomainServerSocketTest : public testing::Test {

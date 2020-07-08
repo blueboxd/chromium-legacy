@@ -248,6 +248,14 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode) {
         sizeof(experimental_flush_embedded_blob_icache) - 1);
   }
 
+  if (base::FeatureList::IsEnabled(features::kV8ReduceConcurrentMarkingTasks)) {
+    static const char gc_experiment_reduce_concurrent_marking_tasks[] =
+        "--gc-experiment-reduce-concurrent-marking-tasks";
+    v8::V8::SetFlagsFromString(
+        gc_experiment_reduce_concurrent_marking_tasks,
+        sizeof(gc_experiment_reduce_concurrent_marking_tasks) - 1);
+  }
+
   if (IsolateHolder::kStrictMode == mode) {
     static const char use_strict[] = "--use_strict";
     v8::V8::SetFlagsFromString(use_strict, sizeof(use_strict) - 1);

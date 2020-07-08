@@ -33,7 +33,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.components.infobars.InfoBar;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -65,12 +64,7 @@ public final class SubresourceFilterTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 (Runnable) ()
                         -> publisher.createAndPublishRulesetDisallowingSuffixForTesting(suffix));
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return publisher.isPublished();
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> publisher.isPublished());
     }
 
     @Before

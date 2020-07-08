@@ -28,6 +28,7 @@ import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUi
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilKeyboardMatchesCondition;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewAssertionTrue;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
+import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
 
 import android.support.test.InstrumentationRegistry;
 
@@ -143,7 +144,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
                 .check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
 
         onView(withId(org.chromium.chrome.R.id.tab_switcher_button)).perform(click());
-        waitUntilViewAssertionTrue(withText("Prompt"), doesNotExist(), 3000L);
+        waitUntilViewAssertionTrue(withText("Prompt"), doesNotExist(), DEFAULT_MAX_TIME_TO_POLL);
         onView(withClassName(is(ScrimView.class.getName()))).check(doesNotExist());
 
         Espresso.pressBack();
@@ -179,7 +180,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
 
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
                 mTestRule.getActivity(), getURL(TEST_PAGE_B), false);
-        waitUntilViewAssertionTrue(withText("Prompt"), doesNotExist(), 3000L);
+        waitUntilViewAssertionTrue(withText("Prompt"), doesNotExist(), DEFAULT_MAX_TIME_TO_POLL);
 
         ChromeTabUtils.switchTabInCurrentTabModel(mTestRule.getActivity(),
                 TabModelUtils.getTabIndexById(
@@ -210,7 +211,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
 
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
                 mTestRule.getActivity(), getURL(TEST_PAGE_B), false);
-        waitUntilViewAssertionTrue(withText("Prompt"), doesNotExist(), 3000L);
+        waitUntilViewAssertionTrue(withText("Prompt"), doesNotExist(), DEFAULT_MAX_TIME_TO_POLL);
 
         ChromeTabUtils.closeCurrentTab(
                 InstrumentationRegistry.getInstrumentation(), mTestRule.getActivity());
@@ -260,7 +261,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
 
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
                 mTestRule.getActivity(), getURL(TEST_PAGE_B), false);
-        waitUntilViewAssertionTrue(withText("Prompt A"), doesNotExist(), 3000L);
+        waitUntilViewAssertionTrue(withText("Prompt A"), doesNotExist(), DEFAULT_MAX_TIME_TO_POLL);
 
         startAutofillAssistantOnTab(TEST_PAGE_B);
         waitUntilViewMatchesCondition(withText("Prompt B"), isCompletelyDisplayed());
@@ -268,7 +269,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
         ChromeTabUtils.switchTabInCurrentTabModel(mTestRule.getActivity(),
                 TabModelUtils.getTabIndexById(
                         mTestRule.getActivity().getCurrentTabModel(), initialTabId));
-        waitUntilViewAssertionTrue(withText("Prompt B"), doesNotExist(), 3000L);
+        waitUntilViewAssertionTrue(withText("Prompt B"), doesNotExist(), DEFAULT_MAX_TIME_TO_POLL);
         waitUntilViewMatchesCondition(withText("Prompt A"), isCompletelyDisplayed());
     }
 
@@ -311,14 +312,14 @@ public class AutofillAssistantChromeTabIntegrationTest {
 
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
                 mTestRule.getActivity(), getURL(TEST_PAGE_B), false);
-        waitUntilViewAssertionTrue(withText("Prompt A"), doesNotExist(), 3000L);
+        waitUntilViewAssertionTrue(withText("Prompt A"), doesNotExist(), DEFAULT_MAX_TIME_TO_POLL);
 
         startAutofillAssistantOnTab(TEST_PAGE_B);
         waitUntilViewMatchesCondition(withText("Prompt B"), isCompletelyDisplayed());
 
         ChromeTabUtils.closeCurrentTab(
                 InstrumentationRegistry.getInstrumentation(), mTestRule.getActivity());
-        waitUntilViewAssertionTrue(withText("Prompt B"), doesNotExist(), 3000L);
+        waitUntilViewAssertionTrue(withText("Prompt B"), doesNotExist(), DEFAULT_MAX_TIME_TO_POLL);
         waitUntilViewMatchesCondition(withText("Prompt A"), isCompletelyDisplayed());
     }
 
@@ -410,7 +411,8 @@ public class AutofillAssistantChromeTabIntegrationTest {
 
         // First press on back button fully destroys Autofill Assistant UI, without Undo.
         Espresso.pressBack();
-        waitUntilViewAssertionTrue(withId(R.id.autofill_assistant), doesNotExist(), 3000L);
+        waitUntilViewAssertionTrue(
+                withId(R.id.autofill_assistant), doesNotExist(), DEFAULT_MAX_TIME_TO_POLL);
         onView(withText("Shutdown")).check(doesNotExist());
         onView(withText(R.string.undo)).check(doesNotExist());
         assertThat(mTestRule.getActivity().getActivityTab().getUrl().getSpec(),
@@ -489,7 +491,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
 
         // Clicking location bar hides UI and shows the keyboard.
         onView(withId(org.chromium.chrome.R.id.url_bar)).perform(click());
-        waitUntilViewAssertionTrue(withText("Prompt"), doesNotExist(), 3000L);
+        waitUntilViewAssertionTrue(withText("Prompt"), doesNotExist(), DEFAULT_MAX_TIME_TO_POLL);
 
         ChromeTabbedActivity activity = mTestRule.getActivity();
         assertThat(activity.getWindowAndroid().getKeyboardDelegate().isKeyboardShowing(
@@ -576,5 +578,33 @@ public class AutofillAssistantChromeTabIntegrationTest {
         waitUntil(()
                           -> mTestRule.getActivity().getActivityTab().getUrl().getSpec().equals(
                                   getURL("form_target_website.html")));
+    }
+
+    @Test
+    @MediumTest
+    public void navigatingInStoppedAutofillAssistantState() {
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setTell(TellProto.newBuilder().setMessage("Shutdown"))
+                         .build());
+        list.add((ActionProto) ActionProto.newBuilder().setStop(StopProto.newBuilder()).build());
+
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath(TEST_PAGE_A)
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Done")))
+                        .build(),
+                list);
+        setupScripts(script);
+        startAutofillAssistantOnTab(TEST_PAGE_A);
+
+        waitUntilViewMatchesCondition(withText("Shutdown"), isCompletelyDisplayed());
+
+        onView(withId(org.chromium.chrome.R.id.url_bar))
+                .perform(click(), typeText(getURL(TEST_PAGE_B)));
+        onView(withId(org.chromium.chrome.R.id.url_bar)).perform(pressImeActionButton());
+        waitUntilViewAssertionTrue(
+                withId(R.id.autofill_assistant), doesNotExist(), DEFAULT_MAX_TIME_TO_POLL);
     }
 }

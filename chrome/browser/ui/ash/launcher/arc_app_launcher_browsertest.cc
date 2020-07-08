@@ -207,11 +207,9 @@ class ArcAppLauncherBrowserTest : public extensions::ExtensionBrowserTest {
 
     // Allows creation of windows.
     wm_helper_ = std::make_unique<exo::WMHelperChromeOS>();
-    exo::WMHelper::SetInstance(wm_helper_.get());
   }
 
   void TearDownOnMainThread() override {
-    exo::WMHelper::SetInstance(nullptr);
     wm_helper_.reset();
   }
 

@@ -248,29 +248,32 @@ BluetoothAdapter::UUIDList BluetoothAdapterMac::GetUUIDs() const {
 void BluetoothAdapterMac::CreateRfcommService(
     const BluetoothUUID& uuid,
     const ServiceOptions& options,
-    const CreateServiceCallback& callback,
-    const CreateServiceErrorCallback& error_callback) {
+    CreateServiceCallback callback,
+    CreateServiceErrorCallback error_callback) {
   scoped_refptr<BluetoothSocketMac> socket = BluetoothSocketMac::CreateSocket();
-  socket->ListenUsingRfcomm(
-      this, uuid, options, base::Bind(callback, socket), error_callback);
+  socket->ListenUsingRfcomm(this, uuid, options,
+                            base::BindOnce(std::move(callback), socket),
+                            std::move(error_callback));
 }
 
 void BluetoothAdapterMac::CreateL2capService(
     const BluetoothUUID& uuid,
     const ServiceOptions& options,
-    const CreateServiceCallback& callback,
-    const CreateServiceErrorCallback& error_callback) {
+    CreateServiceCallback callback,
+    CreateServiceErrorCallback error_callback) {
   scoped_refptr<BluetoothSocketMac> socket = BluetoothSocketMac::CreateSocket();
-  socket->ListenUsingL2cap(
-      this, uuid, options, base::Bind(callback, socket), error_callback);
+  socket->ListenUsingL2cap(this, uuid, options,
+                           base::BindOnce(std::move(callback), socket),
+                           std::move(error_callback));
 }
 
 void BluetoothAdapterMac::RegisterAdvertisement(
     std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
-    const CreateAdvertisementCallback& callback,
-    const AdvertisementErrorCallback& error_callback) {
+    CreateAdvertisementCallback callback,
+    AdvertisementErrorCallback error_callback) {
   low_energy_advertisement_manager_->RegisterAdvertisement(
-      std::move(advertisement_data), callback, error_callback);
+      std::move(advertisement_data), std::move(callback),
+      std::move(error_callback));
 }
 
 BluetoothLocalGattService* BluetoothAdapterMac::GetGattService(

@@ -38,7 +38,7 @@
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_host.h"
 #include "sandbox/linux/suid/common/sandbox.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "sandbox/policy/switches.h"
 
 namespace {
 
@@ -220,9 +220,9 @@ void NaClForkDelegate::Init(const int sandboxdesc,
 
       // Append any switches that need to be forwarded to the NaCl helper.
       static constexpr const char* kForwardSwitches[] = {
-          service_manager::switches::kAllowSandboxDebugging,
-          service_manager::switches::kDisableSeccompFilterSandbox,
-          service_manager::switches::kNoSandbox,
+          sandbox::policy::switches::kAllowSandboxDebugging,
+          sandbox::policy::switches::kDisableSeccompFilterSandbox,
+          sandbox::policy::switches::kNoSandbox,
           switches::kEnableNaClDebug,
           switches::kNaClDangerousNoSandboxNonSfi,
       };

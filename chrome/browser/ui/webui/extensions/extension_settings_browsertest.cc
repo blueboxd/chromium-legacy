@@ -39,10 +39,9 @@ using extensions::TestManagementPolicyProvider;
 ExtensionSettingsUIBrowserTest::ExtensionSettingsUIBrowserTest()
     : policy_provider_(TestManagementPolicyProvider::PROHIBIT_MODIFY_STATUS |
                        TestManagementPolicyProvider::MUST_REMAIN_ENABLED |
-                       TestManagementPolicyProvider::MUST_REMAIN_INSTALLED) {
-  CHECK(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
-  test_data_dir_ = test_data_dir_.AppendASCII("extensions");
-}
+                       TestManagementPolicyProvider::MUST_REMAIN_INSTALLED),
+      test_data_dir_(base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
+                         .AppendASCII("extensions")) {}
 
 ExtensionSettingsUIBrowserTest::~ExtensionSettingsUIBrowserTest() {}
 

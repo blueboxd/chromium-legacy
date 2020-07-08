@@ -29,7 +29,7 @@ if (enable_nacl) {
       ":minimal_content_dummy",
       ":switches",
       "//ipc",
-      "//services/service_manager/sandbox",
+      "//sandbox/policy",
     ]
 
     deps = [

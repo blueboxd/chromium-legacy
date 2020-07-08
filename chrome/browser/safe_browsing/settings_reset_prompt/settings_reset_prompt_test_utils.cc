@@ -33,9 +33,9 @@ MockProfileResetter::~MockProfileResetter() {}
 void MockProfileResetter::Reset(
     ProfileResetter::ResettableFlags resettable_flags,
     std::unique_ptr<BrandcodedDefaultSettings> master_settings,
-    const base::Closure& callback) {
-  MockReset(resettable_flags, master_settings.get(), callback);
-  callback.Run();
+    base::OnceClosure callback) {
+  MockReset(resettable_flags, master_settings.get(), base::OnceClosure());
+  std::move(callback).Run();
 }
 
 std::unique_ptr<SettingsResetPromptModel> CreateModelForTesting(

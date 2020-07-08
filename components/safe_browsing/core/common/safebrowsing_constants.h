@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SAFE_BROWSING_CORE_COMMON_SAFEBROWSING_CONSTANTS_H_
 #define COMPONENTS_SAFE_BROWSING_CORE_COMMON_SAFEBROWSING_CONSTANTS_H_
 
+#include <string>
+
 #include "base/files/file_path.h"
 
 namespace safe_browsing {
@@ -25,6 +27,9 @@ extern const char kCustomCancelReasonForURLLoader[];
 
 // error_code to use when Safe Browsing blocks a request.
 extern const int kNetErrorCodeForSafeBrowsing;
+
+// Countries that has no endpoint for Safe Browsing.
+const std::vector<std::string> GetExcludedCountries();
 
 // This enum must be kept in-sync with content::ResourceType. This is enforced
 // by static_asserts in safebrowsing_constants_content.cc. content::ResourceType

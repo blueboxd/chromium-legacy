@@ -92,7 +92,8 @@ TEST_F(RawResourceTest, DontIgnoreAcceptForCacheReuse) {
   ResourceRequest png_request;
   png_request.SetHTTPAccept("image/png");
   png_request.SetRequestorOrigin(source_origin);
-  EXPECT_NE(jpeg_resource->CanReuse(FetchParameters(std::move(png_request))),
+  EXPECT_NE(jpeg_resource->CanReuse(
+                FetchParameters::CreateForTest(std::move(png_request))),
             Resource::MatchStatus::kOk);
 }
 
@@ -255,7 +256,7 @@ TEST_F(RawResourceTest, PreloadWithAsynchronousAddClient) {
   // Set the response first to make ResourceClient addition asynchronous.
   raw->SetResponse(ResourceResponse(KURL("http://600.613/")));
 
-  FetchParameters params(std::move(request));
+  FetchParameters params = FetchParameters::CreateForTest(std::move(request));
   params.MutableResourceRequest().SetUseStreamOnResponse(false);
   raw->MatchPreload(params);
   EXPECT_FALSE(raw->IsUnusedPreload());

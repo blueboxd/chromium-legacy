@@ -389,6 +389,11 @@ mojom("cookies_mojom") {
           cpp = "::net::CookieWithStatus"
         },
         {
+          mojom = "network.mojom.CookieAccessResult"
+          cpp = "::net::CookieAccessResult"
+          move_only = true
+        },
+        {
           mojom = "network.mojom.CookieWithAccessResult"
           cpp = "::net::CookieWithAccessResult"
         },

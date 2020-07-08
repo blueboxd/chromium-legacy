@@ -9,6 +9,7 @@
 
 #include "base/version.h"
 #include "build/build_config.h"
+#include "components/enterprise/browser/reporting/reporting_delegate_factory.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "components/version_info/version_info.h"
 
@@ -17,8 +18,8 @@ namespace em = ::enterprise_management;
 namespace enterprise_reporting {
 
 BrowserReportGenerator::BrowserReportGenerator(
-    std::unique_ptr<BrowserReportGenerator::Delegate> delegate)
-    : delegate_(std::move(delegate)) {}
+    ReportingDelegateFactory* delegate_factory)
+    : delegate_(delegate_factory->GetBrowserReportGeneratorDelegate()) {}
 
 BrowserReportGenerator::~BrowserReportGenerator() = default;
 

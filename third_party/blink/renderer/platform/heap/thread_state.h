@@ -516,7 +516,7 @@ class PLATFORM_EXPORT ThreadState final {
   void MarkPhaseVisitNotFullyConstructedObjects();
   bool MarkPhaseAdvanceMarkingBasedOnSchedule(base::TimeDelta,
                                               EphemeronProcessing);
-  bool MarkPhaseAdvanceMarking(base::TimeTicks, EphemeronProcessing);
+  bool MarkPhaseAdvanceMarking(base::TimeDelta, EphemeronProcessing);
   void VerifyMarking(BlinkGC::MarkingType);
 
   // Visit the stack after pushing registers onto the stack.

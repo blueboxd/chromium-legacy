@@ -10,6 +10,7 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.LargeTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -129,11 +130,9 @@ public class StartupLoadingMetricsTest {
         mWebApkActivityTestRule.setActivity(webApkActivity);
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mWebApkActivityTestRule.getActivity().getActivityTab() != null;
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(mWebApkActivityTestRule.getActivity().getActivityTab(),
+                    Matchers.notNullValue());
         }, 10000L, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         ChromeTabUtils.waitForTabPageLoaded(
                 mWebApkActivityTestRule.getActivity().getActivityTab(), startUrl);

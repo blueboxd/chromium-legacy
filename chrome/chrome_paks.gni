@@ -240,6 +240,10 @@ template("chrome_extra_paks") {
         "//chrome/browser/resources:print_preview_resources",
       ]
     }
+    if (enable_tab_search) {
+      sources += [ "$root_gen_dir/chrome/tab_search_resources.pak" ]
+      deps += [ "//chrome/browser/resources:tab_search_resources" ]
+    }
     if (enable_webui_tab_strip) {
       sources += [ "$root_gen_dir/chrome/tab_strip_resources.pak" ]
       deps += [ "//chrome/browser/resources:tab_strip_resources" ]

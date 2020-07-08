@@ -440,11 +440,9 @@ public class NewTabPageTest {
 
             ntpLayout.getTileGroup().onSwitchToForeground(false); // Force tile refresh.
         });
-        CriteriaHelper.pollUiThread(new Criteria("The tile grid was not updated.") {
-            @Override
-            public boolean isSatisfied() {
-                return mTileGridLayout.getChildCount() == 0;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    "The tile grid was not updated.", mTileGridLayout.getChildCount(), is(0));
         });
         Assert.assertNotNull(ntpLayout.getPlaceholder());
         Assert.assertEquals(View.VISIBLE, ntpLayout.getPlaceholder().getVisibility());
@@ -524,12 +522,7 @@ public class NewTabPageTest {
     }
 
     private void waitForTabLoading() {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mTab.isLoading();
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> mTab.isLoading());
     }
 
     private void waitForFakeboxFocusAnimationComplete(NewTabPage ntp) {

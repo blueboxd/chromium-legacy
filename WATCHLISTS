@@ -1158,6 +1158,12 @@
     'ios_clean': {
       'filepath': 'ios/clean/',
     },
+    'ios_credential_provider': {
+      'filepath': 'ios/chrome/browser/credential_provider|'\
+                  'ios/chrome/common/credential_provider|'\
+                  'ios/chrome/common/ui|'\
+                  'ios/chrome/credential_provider_extension',
+    },
     'ios_flags': {
       'filepath': 'ios/chrome/browser/about_flags\.(h|mm)|'\
                   'ios/chrome/browser/experimental_flags\.(h|mm)|'\
@@ -1194,7 +1200,7 @@
     },
     'linux_sandboxing': {
       'filepath': 'sandbox/linux/'\
-                  '|services/service_manager/sandbox/linux/',
+                  '|sandbox/policy/linux/',
     },
     'linux_seccomp_bpf': {
       'filepath': 'content/common/sandbox.*linux.cc',
@@ -2527,6 +2533,7 @@
                    'marq+watch@chromium.org'],
     'ios_clean': ['ios-reviews+clean@chromium.org',
                   'marq+scrutinize@chromium.org'],
+    'ios_credential_provider': ['javierrobles+watch@chromium.org'],
     'ios_flags': ['noyau+watch@chromium.org'],
     'ios_showcase': ['ios-reviews+showcase@chromium.org',
                      'marq+watch@chromium.org'],

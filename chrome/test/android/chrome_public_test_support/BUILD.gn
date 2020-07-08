@@ -20,5 +20,4 @@ android_apk("chrome_public_test_support_apk") {
 
   apk_name = "ChromePublicTestSupport"
   android_manifest = "AndroidManifest.xml"
-  target_sdk_version = 22
 }

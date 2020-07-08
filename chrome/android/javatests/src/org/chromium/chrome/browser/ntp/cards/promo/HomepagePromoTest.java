@@ -12,6 +12,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.times;
 
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
@@ -387,11 +388,9 @@ public class HomepagePromoTest {
         onView(instanceOf(RecyclerView.class))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(
                         NTP_HEADER_POSITION + 1, swipeLeft));
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mActivityTestRule.getActivity().findViewById(R.id.homepage_promo) == null;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    mActivityTestRule.getActivity().findViewById(R.id.homepage_promo), nullValue());
         });
 
         // Verification for metrics

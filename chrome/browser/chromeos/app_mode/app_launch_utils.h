@@ -12,11 +12,13 @@ class Profile;
 
 namespace chromeos {
 
-// Attempts to launch the app given by |app_id| in app mode
+class KioskAppId;
+
+// Attempts to launch the app given by |kiosk_app_id| in app mode
 // or exit on failure. This function will not show any launch UI
 // during the launch. Use StartupAppLauncher for finer control
 // over the app launch processes.
-void LaunchAppOrDie(Profile* profile, const std::string& app_id);
+void LaunchAppOrDie(Profile* profile, const KioskAppId& kiosk_app_id);
 
 // Removes obsolete preferences left out by previous user session;
 void ResetEphemeralKioskPreferences(PrefService* prefs);

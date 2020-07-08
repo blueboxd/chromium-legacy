@@ -494,23 +494,20 @@ void CookieManager::SetCookieHelper(const GURL& host,
                           cc->IsSecure());
   }
 
-  // Note: CookieStore and network::CookieManager have different signatures: one
-  // accepts a boolean callback while the other (recently) changed to accept a
-  // CookieInclusionStatus callback. WebView only cares about boolean success,
-  // which is why we use |AdaptCookieInclusionStatusToBool|. This is temporary
+  // Note: CookieStore and network::CookieManager both accept a
+  // CookieAccessResult callback. WebView only cares about boolean success,
+  // which is why we use |AdaptCookieAccessResultToBool|. This is temporary
   // technical debt until we fully launch the Network Service code path.
   if (GetMojoCookieManager()) {
     // *cc.get() is safe, because network::CookieManager::SetCanonicalCookie
     // will make a copy before our smart pointer goes out of scope.
     GetMojoCookieManager()->SetCanonicalCookie(
         *cc.get(), new_host, net::CookieOptions::MakeAllInclusive(),
-        net::cookie_util::AdaptCookieInclusionStatusToBool(
-            std::move(callback)));
+        net::cookie_util::AdaptCookieAccessResultToBool(std::move(callback)));
   } else {
     GetCookieStore()->SetCanonicalCookieAsync(
         std::move(cc), new_host, net::CookieOptions::MakeAllInclusive(),
-        net::cookie_util::AdaptCookieInclusionStatusToBool(
-            std::move(callback)));
+        net::cookie_util::AdaptCookieAccessResultToBool(std::move(callback)));
   }
 }
 

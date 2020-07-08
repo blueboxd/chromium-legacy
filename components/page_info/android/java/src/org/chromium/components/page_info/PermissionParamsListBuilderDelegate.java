@@ -6,6 +6,7 @@ package org.chromium.components.page_info;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.embedder_support.util.Origin;
 
@@ -24,7 +25,7 @@ public class PermissionParamsListBuilderDelegate {
      * origin.
      */
     @Nullable
-    public String getDelegateAppName(Origin origin) {
+    public String getDelegateAppName(Origin origin, @ContentSettingsType int type) {
         return null;
     }
 

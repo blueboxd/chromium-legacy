@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/sync/password_sync_bridge.h"
 
 #include <unordered_set>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/callback.h"
@@ -833,7 +834,7 @@ void PasswordSyncBridge::ApplyStopSyncChanges(
 
   if (!unsynced_logins_being_deleted.empty()) {
     password_store_sync_->NotifyUnsyncedCredentialsWillBeDeleted(
-        unsynced_logins_being_deleted);
+        std::move(unsynced_logins_being_deleted));
   }
 
   sync_enabled_or_disabled_cb_.Run();

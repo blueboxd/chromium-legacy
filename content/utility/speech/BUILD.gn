@@ -15,5 +15,5 @@ source_set("speech_recognition_sandbox_hook") {
     "//sandbox/linux:sandbox_services",
   ]
 
-  public_deps = [ "//services/service_manager/sandbox" ]
+  public_deps = [ "//sandbox/policy" ]
 }

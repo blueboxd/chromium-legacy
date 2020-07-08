@@ -137,6 +137,38 @@ class WaylandDataDragControllerTest : public WaylandTest {
     return text;
   }
 
+  void ReadDataWhenSourceIsReady() {
+    Sync();
+
+    if (!data_device_manager_->data_source()) {
+      // The data source is created asynchronously via the window's data drag
+      // controller.  If it is null now, it means that the task for that has not
+      // yet executed, and we have to come later.
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              &WaylandDataDragControllerTest::ReadDataWhenSourceIsReady,
+              base::Unretained(this)));
+      return;
+    }
+
+    // Now the server can read the data and give it to our callback.
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+    auto callback = base::BindOnce(
+        [](base::RunLoop* loop, PlatformClipboard::Data&& data) {
+          std::string result(data.begin(), data.end());
+          EXPECT_EQ(wl::kSampleTextForDragAndDrop, result);
+          loop->Quit();
+        },
+        &run_loop);
+    data_device_manager_->data_source()->ReadData(wl::kTextMimeTypeUtf8,
+                                                  std::move(callback));
+    run_loop.Run();
+
+    data_device_manager_->data_source()->OnCancelled();
+    Sync();
+  }
+
  protected:
   wl::TestDataDeviceManager* data_device_manager_;
   std::unique_ptr<MockDropHandler> drop_handler_;
@@ -144,34 +176,25 @@ class WaylandDataDragControllerTest : public WaylandTest {
 };
 
 TEST_P(WaylandDataDragControllerTest, StartDrag) {
-  bool restored_focus = window_->has_pointer_focus();
+  const bool restored_focus = window_->has_pointer_focus();
   window_->SetPointerFocus(true);
 
   // The client starts dragging.
   ASSERT_EQ(PlatformWindowType::kWindow, window_->type());
-  auto* toplevel = static_cast<WaylandToplevelWindow*>(window_.get());
   OSExchangeData os_exchange_data;
   os_exchange_data.SetString(sample_text_for_dnd());
-  int operation = DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_MOVE;
-  toplevel->StartDrag(os_exchange_data, operation, {},
-                      drag_handler_delegate_.get());
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&WaylandDataDragControllerTest::ReadDataWhenSourceIsReady,
+                     base::Unretained(this)));
+
+  static_cast<WaylandToplevelWindow*>(window_.get())
+      ->StartDrag(os_exchange_data,
+                  DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_MOVE, {}, true,
+                  drag_handler_delegate_.get());
   Sync();
 
-  // The server reads the data and the callback gets it.
-  base::RunLoop run_loop;
-  auto callback = base::BindOnce(
-      [](base::RunLoop* loop, PlatformClipboard::Data&& data) {
-        std::string result(data.begin(), data.end());
-        EXPECT_EQ(wl::kSampleTextForDragAndDrop, result);
-        loop->Quit();
-      },
-      &run_loop);
-  data_device_manager_->data_source()->ReadData(wl::kTextMimeTypeUtf8,
-                                                std::move(callback));
-  run_loop.Run();
-
-  data_device_manager_->data_source()->OnCancelled();
-  Sync();
   EXPECT_FALSE(data_device()->drag_delegate_);
 
   window_->SetPointerFocus(restored_focus);

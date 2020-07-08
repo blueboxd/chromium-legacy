@@ -11,9 +11,9 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "sandbox/policy/sandbox_type.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
 
 namespace service_manager {
 
@@ -37,7 +37,7 @@ class ServiceProcessHost {
   using LaunchCallback = base::OnceCallback<void(base::ProcessId)>;
   virtual mojo::PendingRemote<mojom::Service> Launch(
       const Identity& identity,
-      SandboxType sandbox_type,
+      sandbox::policy::SandboxType sandbox_type,
       const base::string16& display_name,
       LaunchCallback callback) = 0;
 };

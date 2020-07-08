@@ -179,7 +179,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   void OnSetCookieResult(const CookieOptions& options,
                          base::Optional<CanonicalCookie> cookie,
                          std::string cookie_string,
-                         CookieInclusionStatus status);
+                         CookieAccessResult access_result);
   int num_cookie_lines_left_;
   CookieAndLineStatusList set_cookie_status_list_;
 

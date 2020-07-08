@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/app_mode/fake_cws.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/login/test/kiosk_test_helpers.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
@@ -32,12 +33,18 @@
 #include "net/dns/mock_host_resolver.h"
 
 namespace em = enterprise_management;
+constexpr em::DeviceLocalAccountInfoProto_AccountType kWebKioskAccountType =
+    em::DeviceLocalAccountInfoProto_AccountType_ACCOUNT_TYPE_WEB_KIOSK_APP;
+constexpr em::DeviceLocalAccountInfoProto_AccountType kKioskAccountType =
+    em::DeviceLocalAccountInfoProto_AccountType_ACCOUNT_TYPE_KIOSK_APP;
 
 namespace chromeos {
 
 namespace {
 
 const char kTestKioskApp[] = "ggaeimfdpnmlhdhpcikgoblffmkckdmn";
+const char kTestWebAppId[] = "id";
+const char kTestWebAppUrl[] = "https://example.com/";
 
 }  // namespace
 
@@ -83,7 +90,8 @@ class KioskCrashRestoreTest : public InProcessBrowserTest {
         CryptohomeClient::GetStubSanitizedUsername(cryptohome_id));
 
     fake_cws_->Init(embedded_test_server());
-    fake_cws_->SetUpdateCrx(test_app_id_, test_app_id_ + ".crx", "1.0.0");
+    fake_cws_->SetUpdateCrx(kTestKioskApp, std::string(kTestKioskApp) + ".crx",
+                            "1.0.0");
   }
 
   void SetUpOnMainThread() override {
@@ -93,12 +101,7 @@ class KioskCrashRestoreTest : public InProcessBrowserTest {
     embedded_test_server()->StartAcceptingConnections();
   }
 
-  const std::string GetTestAppUserId() const {
-    return policy::GenerateDeviceLocalAccountUserId(
-        test_app_id_, policy::DeviceLocalAccount::TYPE_KIOSK_APP);
-  }
-
-  const std::string& test_app_id() const { return test_app_id_; }
+  virtual const std::string GetTestAppUserId() const = 0;
 
  private:
   void SetUpExistingKioskApp() {
@@ -106,12 +109,20 @@ class KioskCrashRestoreTest : public InProcessBrowserTest {
     em::DeviceLocalAccountsProto* const device_local_accounts =
         device_policy_.payload().mutable_device_local_accounts();
 
-    em::DeviceLocalAccountInfoProto* const account =
-        device_local_accounts->add_account();
-    account->set_account_id(test_app_id_);
-    account->set_type(
-        em::DeviceLocalAccountInfoProto_AccountType_ACCOUNT_TYPE_KIOSK_APP);
-    account->mutable_kiosk_app()->set_app_id(test_app_id_);
+    {
+      em::DeviceLocalAccountInfoProto* const account =
+          device_local_accounts->add_account();
+      account->set_account_id(kTestKioskApp);
+      account->set_type(kKioskAccountType);
+      account->mutable_kiosk_app()->set_app_id(kTestKioskApp);
+    }
+    {
+      em::DeviceLocalAccountInfoProto* const account =
+          device_local_accounts->add_account();
+      account->set_account_id(kTestWebAppId);
+      account->set_type(kWebKioskAccountType);
+      account->mutable_web_kiosk_app()->set_url(kTestWebAppUrl);
+    }
     device_policy_.Build();
 
     // Prepare the policy data to store in device policy cache.
@@ -136,8 +147,6 @@ class KioskCrashRestoreTest : public InProcessBrowserTest {
     base::WriteFile(local_state_file, local_state_json);
   }
 
-  std::string test_app_id_ = kTestKioskApp;
-
   policy::DevicePolicyBuilder device_policy_;
   scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;
   std::unique_ptr<FakeCWS> fake_cws_;
@@ -145,11 +154,33 @@ class KioskCrashRestoreTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(KioskCrashRestoreTest);
 };
 
-IN_PROC_BROWSER_TEST_F(KioskCrashRestoreTest, AppNotInstalled) {
+class ChromeKioskCrashRestoreTest : public KioskCrashRestoreTest {
+  const std::string GetTestAppUserId() const override {
+    return policy::GenerateDeviceLocalAccountUserId(
+        kTestKioskApp, policy::DeviceLocalAccount::TYPE_KIOSK_APP);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(ChromeKioskCrashRestoreTest, ChromeAppNotInstalled) {
   // If app is not installed when restoring from crash, the kiosk launch is
   // expected to fail, as in that case the crash occured during the app
   // initialization - before the app was actually launched.
   EXPECT_EQ(KioskAppLaunchError::UNABLE_TO_LAUNCH, KioskAppLaunchError::Get());
+}
+
+class WebKioskCrashRestoreTest : public KioskCrashRestoreTest {
+  const std::string GetTestAppUserId() const override {
+    return policy::GenerateDeviceLocalAccountUserId(
+        kTestWebAppId, policy::DeviceLocalAccount::TYPE_WEB_KIOSK_APP);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(WebKioskCrashRestoreTest, WebKioskLaunches) {
+  // If app is not installed when restoring from crash, the kiosk launch is
+  // expected to fail, as in that case the crash occured during the app
+  // initialization - before the app was actually launched.
+  EXPECT_EQ(KioskAppLaunchError::NONE, KioskAppLaunchError::Get());
+  KioskSessionInitializedWaiter().Wait();
 }
 
 }  // namespace chromeos

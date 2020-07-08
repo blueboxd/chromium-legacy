@@ -12,7 +12,7 @@
 #include "base/test/bind_test_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
-#include "net/cookies/cookie_inclusion_status.h"
+#include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,8 +45,8 @@ void CreateCookieForTest(
       ->SetCanonicalCookie(
           cookie, net::cookie_util::SimulatedCookieSource(cookie, "https"),
           options,
-          base::BindLambdaForTesting([&](net::CookieInclusionStatus result) {
-            result_out = result.IsInclude();
+          base::BindLambdaForTesting([&](net::CookieAccessResult result) {
+            result_out = result.status.IsInclude();
             run_loop.Quit();
           }));
   run_loop.Run();

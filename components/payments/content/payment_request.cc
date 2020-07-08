@@ -560,7 +560,7 @@ void PaymentRequest::AreRequestedMethodsSupportedCallback(
     bool methods_supported,
     const std::string& error_message) {
   if (is_show_called_ && observer_for_testing_)
-    observer_for_testing_->OnShowAppsReady(weak_ptr_factory_.GetWeakPtr());
+    observer_for_testing_->OnAppListReady(weak_ptr_factory_.GetWeakPtr());
 
   if (methods_supported) {
     if (SatisfiesSkipUIConstraints())

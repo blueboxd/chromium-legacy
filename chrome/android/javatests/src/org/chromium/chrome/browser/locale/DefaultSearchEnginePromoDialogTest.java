@@ -9,6 +9,7 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.LargeTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -89,11 +90,9 @@ public class DefaultSearchEnginePromoDialogTest {
         CriteriaHelper.pollUiThread(() -> searchActivity.isFinishing());
 
         TestThreadUtils.runOnUiThreadBlocking(() -> tabbedDialog.dismiss());
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return DefaultSearchEnginePromoDialog.getCurrentDialog() == null;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    DefaultSearchEnginePromoDialog.getCurrentDialog(), Matchers.nullValue());
         });
     }
 

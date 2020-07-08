@@ -296,8 +296,9 @@ void ManagePasswordsUIController::OnShowMoveToAccountBubble(
 }
 
 void ManagePasswordsUIController::NotifyUnsyncedCredentialsWillBeDeleted(
-    const std::vector<autofill::PasswordForm>& unsynced_credentials) {
-  passwords_data_.ProcessUnsyncedCredentialsWillBeDeleted(unsynced_credentials);
+    std::vector<autofill::PasswordForm> unsynced_credentials) {
+  passwords_data_.ProcessUnsyncedCredentialsWillBeDeleted(
+      std::move(unsynced_credentials));
   DCHECK(GetState() ==
          password_manager::ui::WILL_DELETE_UNSYNCED_ACCOUNT_PASSWORDS_STATE);
   bubble_status_ = BubbleStatus::SHOULD_POP_UP;

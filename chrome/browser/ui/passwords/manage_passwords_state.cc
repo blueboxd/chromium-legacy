@@ -226,8 +226,8 @@ void ManagePasswordsState::ProcessLoginsChanged(
 }
 
 void ManagePasswordsState::ProcessUnsyncedCredentialsWillBeDeleted(
-    const std::vector<autofill::PasswordForm>& unsynced_credentials) {
-  unsynced_credentials_ = unsynced_credentials;
+    std::vector<autofill::PasswordForm> unsynced_credentials) {
+  unsynced_credentials_ = std::move(unsynced_credentials);
   SetState(password_manager::ui::WILL_DELETE_UNSYNCED_ACCOUNT_PASSWORDS_STATE);
 }
 

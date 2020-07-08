@@ -103,6 +103,7 @@
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/cpp/cross_origin_resource_policy.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/ip_address_space_util.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
@@ -574,16 +575,7 @@ network::mojom::IPAddressSpace CalculateIPAddressSpace(
     return network::mojom::IPAddressSpace::kPublic;
 
   // Otherwise, calculate the address space via the provided IP address.
-  if (!ip.IsValid())
-    return network::mojom::IPAddressSpace::kUnknown;
-
-  if (ip.IsLoopback())
-    return network::mojom::IPAddressSpace::kLocal;
-
-  if (!ip.IsPubliclyRoutable())
-    return network::mojom::IPAddressSpace::kPrivate;
-
-  return network::mojom::IPAddressSpace::kPublic;
+  return network::IPAddressToIPAddressSpace(ip);
 }
 
 // Convert the navigation type to the appropriate cross-document one.

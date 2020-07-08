@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_toplevel_window.h"
 
+#include "base/run_loop.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/hit_test.h"
@@ -36,6 +37,7 @@ WaylandToplevelWindow::~WaylandToplevelWindow() {
     drag_handler_delegate_->OnDragFinished(
         DragDropTypes::DragOperation::DRAG_NONE);
   }
+  CancelDrag();
 }
 
 bool WaylandToplevelWindow::CreateShellSurface() {
@@ -78,13 +80,29 @@ void WaylandToplevelWindow::DispatchHostWindowDragMovement(
   connection()->ScheduleFlush();
 }
 
-void WaylandToplevelWindow::StartDrag(const ui::OSExchangeData& data,
+bool WaylandToplevelWindow::StartDrag(const ui::OSExchangeData& data,
                                       int operation,
                                       gfx::NativeCursor cursor,
+                                      bool can_grab_pointer,
                                       WmDragHandler::Delegate* delegate) {
   DCHECK(!drag_handler_delegate_);
   drag_handler_delegate_ = delegate;
   connection()->data_drag_controller()->StartSession(data, operation);
+
+  base::RunLoop drag_loop(base::RunLoop::Type::kNestableTasksAllowed);
+  drag_loop_quit_closure_ = drag_loop.QuitClosure();
+
+  auto alive = weak_ptr_factory_.GetWeakPtr();
+  drag_loop.Run();
+  if (!alive)
+    return false;
+  return true;
+}
+
+void WaylandToplevelWindow::CancelDrag() {
+  if (drag_loop_quit_closure_.is_null())
+    return;
+  std::move(drag_loop_quit_closure_).Run();
 }
 
 void WaylandToplevelWindow::Show(bool inactive) {
@@ -295,6 +313,7 @@ void WaylandToplevelWindow::OnDragSessionClose(uint32_t dnd_action) {
   drag_handler_delegate_->OnDragFinished(dnd_action);
   drag_handler_delegate_ = nullptr;
   connection()->event_source()->ResetPointerFlags();
+  std::move(drag_loop_quit_closure_).Run();
 }
 
 bool WaylandToplevelWindow::OnInitialize(

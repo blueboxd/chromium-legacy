@@ -31,9 +31,9 @@
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/invitation.h"
+#include "sandbox/policy/switches.h"
 #include "services/service_manager/public/cpp/service_executable/switches.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
-#include "services/service_manager/sandbox/switches.h"
 #include "services/service_manager/switches.h"
 
 #if defined(OS_LINUX)
@@ -56,7 +56,7 @@ class ServiceProcessLauncher::ProcessState
 
   base::ProcessId LaunchInBackground(
       const Identity& target,
-      SandboxType sandbox_type,
+      sandbox::policy::SandboxType sandbox_type,
       std::unique_ptr<base::CommandLine> child_command_line,
       mojo::PlatformChannel::HandlePassingInfo handle_passing_info,
       mojo::PlatformChannel channel,
@@ -95,7 +95,7 @@ ServiceProcessLauncher::~ServiceProcessLauncher() {
 
 mojo::PendingRemote<mojom::Service> ServiceProcessLauncher::Start(
     const Identity& target,
-    SandboxType sandbox_type,
+    sandbox::policy::SandboxType sandbox_type,
     ProcessReadyCallback callback) {
   DCHECK(!state_);
 
@@ -131,7 +131,7 @@ mojo::PendingRemote<mojom::Service> ServiceProcessLauncher::Start(
 
   if (!IsUnsandboxedSandboxType(sandbox_type)) {
     child_command_line->AppendSwitchASCII(
-        switches::kServiceSandboxType,
+        sandbox::policy::switches::kServiceSandboxType,
         StringFromUtilitySandboxType(sandbox_type));
   }
 
@@ -174,7 +174,7 @@ ServiceProcessLauncher::PassServiceRequestOnCommandLine(
 
 base::ProcessId ServiceProcessLauncher::ProcessState::LaunchInBackground(
     const Identity& target,
-    SandboxType sandbox_type,
+    sandbox::policy::SandboxType sandbox_type,
     std::unique_ptr<base::CommandLine> child_command_line,
     mojo::PlatformChannel::HandlePassingInfo handle_passing_info,
     mojo::PlatformChannel channel,

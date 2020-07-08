@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.notifications;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -90,11 +91,9 @@ public class NotificationTestRule extends ChromeTabbedActivityTestRule {
      * called into Android to notify or cancel a notification.
      */
     public void waitForNotificationManagerMutation() {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mMockNotificationManager.getMutationCountAndDecrement() > 0;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mMockNotificationManager.getMutationCountAndDecrement(),
+                    Matchers.greaterThan(0));
         }, MAX_TIME_TO_POLL_MS, POLLING_INTERVAL_MS);
     }
 

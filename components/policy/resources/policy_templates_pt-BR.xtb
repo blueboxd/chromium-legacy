@@ -2704,24 +2704,6 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
       Se esta política é definida como "True", o <ph name="PRODUCT_OS_NAME" /> evita que o dispositivo seja iniciado no modo de desenvolvedor. O sistema se recusa a ser iniciado e mostra uma tela de erro quando o modo de desenvolvedor é ativado.
 
       Se esta não política não é definida ou é definida como "False", o modo de desenvolvedor permanece disponível para o dispositivo.</translation>
-<translation id="5210980743015047124">Configura o requisito da versão mínima permitida do <ph name="PRODUCT_NAME" />.
-
-      Quando esta política estiver definida com uma lista não vazia: se nenhuma das entradas tiver uma "chrome_version" mais recente do que a versão atual no dispositivo, nenhuma restrição será aplicada e as restrições já existentes serão revogadas.
-      Se pelo menos uma das entradas tiver uma "chrome_version" mais recente do que a versão atual, a entrada escolhida será a com versão mais próxima da atual.
-      Em caso de conflito, será dada preferência à versão com menor "warning_period" ou "eol_warning_period", e a política será aplicada usando essa entrada.
-
-      Se a versão atual se tornar obsoleta durante a sessão, uma notificação será exibida na tela para atualizar o dispositivo dentro do "warning_period" mostrado na notificação.
-      O "warning_period" começará a partir do momento em que a política for aplicada.
-      Se o dispositivo não for atualizado até a expiração do "warning_period", o usuário será desconectado do sistema.
-      Se a versão atual estiver obsoleta durante o login com o "warning_period" expirado, o usuário precisará atualizar o dispositivo antes do login.
-
-      Se o fim de vida útil for atingido durante a sessão, uma notificação será exibida na tela para desconectar o usuário depois que o "eol_warning_period" expirar.
-      Se o dispositivo atingir o fim da vida útil no momento do login com a expiração de "eol_warning_period", ele será bloqueado para login.
-
-      Se esta política não for definida ou for configurada como vazia, nenhuma restrição será aplicada, restrições existentes serão revogadas e o usuário poderá fazer login independentemente da versão do <ph name="PRODUCT_NAME" />.
-
-      Aqui, "chrome_version" pode ser uma versão exata, como "61.0.3163.120", ou um prefixo de versão, como "61.0".
-      O "warning_period" e o "eol_warning_period" são valores opcionais especificados em número de dias. O valor padrão para eles é 0 dia, o que significa que não há um período de espera. </translation>
 <translation id="5212118847531454979">Permite definir o período, em milissegundos, em que os usuários são notificados de que o <ph name="PRODUCT_NAME" /> ou um dispositivo <ph name="PRODUCT_OS_NAME" /> precisa ser reiniciado para aplicar uma atualização pendente.
 
       Nesse período, o usuário será informado várias vezes sobre a necessidade de atualização. Para dispositivos <ph name="PRODUCT_OS_NAME" />, uma notificação de reinicialização é exibida na bandeja do sistema de acordo com a política <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Para navegadores <ph name="PRODUCT_NAME" />, o menu do app muda para indicar que uma reinicialização é necessária após o decorrer de um terço do período de notificação. Essa notificação muda de cor após dois terços do período de notificação e muda mais uma vez quando todo o período de notificação é concluído. As outras notificações ativadas pela política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> seguem essa mesma programação.
@@ -3049,20 +3031,6 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
           A política só terá efeito se <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> estiver desativada. Do contrário, ela será ignorada, uma vez que o intervalo de escurecimento da tela é determinado por um modelo de aprendizado de máquina.
 
           O fator de cálculo precisa ser de 100% ou mais. Valores que tornariam o intervalo de escurecimento da tela no modo de apresentação menor do que o intervalo de escurecimento da tela comum não são permitidos.</translation>
-<translation id="5590988845778885692">Oferece as configurações dos servidores de impressão disponíveis.
-
-      Esta política permite fornecer a configuração de servidores de impressão externos no formato de arquivo JSON para dispositivos <ph name="PRODUCT_OS_NAME" />.
-
-      O arquivo não pode ser maior que 1 MB e precisa conter uma matriz de registros (objetos JSON). Cada registro precisa conter os campos "id", "url" e "display_name" com strings como valores. Os valores dos campos "id" precisam ser exclusivos.
-
-      O arquivo é transferido por download e armazenado em cache. A hash criptográfica é usada para verificar a integridade do download. O download do arquivo será feito novamente sempre que o URL ou a hash mudar.
-
-      Se esta política estiver definida no valor correto, será realizada uma consulta nos servidores de impressão especificados quanto à disponibilidade de impressoras. Isso é feito no dispositivo com o uso do protocolo IPP.
-
-      Se esta política não for definida ou tiver o valor incorreto, nenhuma impressora de servidor ficará visível aos usuários.
-
-      Atualmente, o limite de número de servidores de impressão é 16. Apenas os 16 primeiros servidores de impressão da lista serão consultados.
-      </translation>
 <translation id="5592242031005200087">
       Se a política estiver ativada, cada uma das origens indicadas em uma
       lista separada por vírgulas será executada no próprio processo. Isso também isolará
@@ -3210,14 +3178,6 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
       Os URLs (como https://example.com/algum/caminho) só terão correspondência como U2F appIDs. Os domínios (como example.com) só terão correspondência como webauthn RP IDs. Sendo assim, para abranger as APIs U2F e webauthn de um determinado site, tanto o domínio quanto o URL do appID precisarão ser listados.</translation>
 <translation id="5836064773277134605">Restringir o intervalo de portas UDP usado pelo host de acesso remoto</translation>
 <translation id="585270638818921943">Impede o uso de apps para Android de fontes não confiáveis</translation>
-<translation id="5854749508571554984">Esta política só será eficaz quando o dispositivo tiver atingido o fim da vida útil e não atender mais aos requisitos mínimos permitidos pela versão do <ph name="PRODUCT_NAME" /> definidos pela <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" />.
-
-      Quando esta política for definida como uma string não vazia:
-      Se o tempo de aviso mencionado na política <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> tiver expirado, essa mensagem será exibida na tela de login quando o dispositivo for bloqueado para login.
-      Se o tempo de aviso mencionado na política <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> não tiver expirado, a mensagem será exibida na página "Configurações" depois que o usuário fizer login.
-
-      Se esta política não for definida ou for definida como vazia, a mensagem padrão de fim da vida útil será exibida ao usuário nos dois casos mencionados acima.
-      A mensagem de fim da vida útil precisa ser um texto simples, sem nenhuma formatação. Nenhuma marcação é permitida. </translation>
 <translation id="5855010364142818361">Esta política controla os parâmetros de linha de comando para o Chrome no Internet Explorer.
 
       Se o suplemento "Suporte a navegadores legados" do Internet Explorer não estiver instalado, esta política não terá efeito.
@@ -3862,7 +3822,6 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
       Se for definida como <ph name="BR_UNDER_USER_CONTROL" />, os usuários verão solicitações para usar o recurso de backup e restauração. Se eles ativarem esse recurso, os dados de app do Android serão enviados para os servidores do Backup do Android e restaurados durante reinstalações de apps compatíveis.
 
       Após a configuração inicial, será possível ativar ou desativar o recurso de backup e restauração.</translation>
-<translation id="6993687707842131236">Configurar a mensagem de fim da vida útil para a política MinimumChromeVersionEnforced</translation>
 <translation id="6994082778848658360">Especifica como o hardware de elemento seguro integrado pode ser usado para fornecer uma autenticação de segundo fator, se ele for compatível com esse recurso. O botão liga/desliga da máquina é usado para detectar a presença física do usuário.
 
       Se a opção Desativado for selecionada, nenhum segundo fator será fornecido.

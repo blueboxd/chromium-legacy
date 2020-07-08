@@ -120,9 +120,9 @@ device::mojom::VRDisplayInfoPtr ValidateVRDisplayInfo(
 
   // Maximum 1000km translation.
   if (info->stage_parameters &&
-      IsValidTransform(info->stage_parameters->standing_transform, 1000000)) {
+      IsValidTransform(info->stage_parameters->mojo_from_floor, 1000000)) {
     ret->stage_parameters = device::mojom::VRStageParameters::New(
-        info->stage_parameters->standing_transform,
+        info->stage_parameters->mojo_from_floor,
         info->stage_parameters->bounds);
   }
 

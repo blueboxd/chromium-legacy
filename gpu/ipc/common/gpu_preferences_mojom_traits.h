@@ -153,7 +153,7 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
       out->texture_target_exception_list.push_back(usage_format);
     }
 
-    out->ignore_gpu_blacklist = prefs.ignore_gpu_blacklist();
+    out->ignore_gpu_blocklist = prefs.ignore_gpu_blocklist();
     out->enable_oop_rasterization = prefs.enable_oop_rasterization();
     out->disable_oop_rasterization = prefs.disable_oop_rasterization();
     out->enable_oop_rasterization_ddl = prefs.enable_oop_rasterization_ddl();
@@ -307,8 +307,8 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   texture_target_exception_list(const gpu::GpuPreferences& prefs) {
     return prefs.texture_target_exception_list;
   }
-  static bool ignore_gpu_blacklist(const gpu::GpuPreferences& prefs) {
-    return prefs.ignore_gpu_blacklist;
+  static bool ignore_gpu_blocklist(const gpu::GpuPreferences& prefs) {
+    return prefs.ignore_gpu_blocklist;
   }
   static bool enable_oop_rasterization(const gpu::GpuPreferences& prefs) {
     return prefs.enable_oop_rasterization;

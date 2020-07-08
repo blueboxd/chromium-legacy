@@ -16,6 +16,8 @@ struct NET_EXPORT CookieAccessResult {
   CookieAccessResult(CookieEffectiveSameSite effective_same_site,
                      CookieInclusionStatus status);
 
+  explicit CookieAccessResult(CookieInclusionStatus status);
+
   CookieAccessResult(const CookieAccessResult& cookie_access_result);
 
   CookieAccessResult& operator=(const CookieAccessResult& cookie_access_result);
@@ -25,7 +27,7 @@ struct NET_EXPORT CookieAccessResult {
   ~CookieAccessResult();
 
   CookieEffectiveSameSite effective_same_site =
-      CookieEffectiveSameSite::LAX_MODE;
+      CookieEffectiveSameSite::UNDEFINED;
   CookieInclusionStatus status;
 };
 

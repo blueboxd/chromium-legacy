@@ -38,10 +38,12 @@ class WaylandToplevelWindow : public WaylandWindow,
       const gfx::Point& pointer_location_in_px) override;
 
   // WmDragHandler
-  void StartDrag(const ui::OSExchangeData& data,
+  bool StartDrag(const ui::OSExchangeData& data,
                  int operation,
                  gfx::NativeCursor cursor,
+                 bool can_grab_pointer,
                  WmDragHandler::Delegate* delegate) override;
+  void CancelDrag() override;
 
   // PlatformWindow
   void Show(bool inactive) override;
@@ -124,6 +126,10 @@ class WaylandToplevelWindow : public WaylandWindow,
   // Max and min sizes of the WaylandToplevelWindow window.
   base::Optional<gfx::Size> min_size_;
   base::Optional<gfx::Size> max_size_;
+
+  base::OnceClosure drag_loop_quit_closure_;
+
+  base::WeakPtrFactory<WaylandToplevelWindow> weak_ptr_factory_{this};
 };
 
 }  // namespace ui

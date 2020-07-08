@@ -19,6 +19,7 @@ import android.view.ViewTreeObserver;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -352,12 +353,7 @@ public class FullscreenManagerTest {
         // transparent region for the app to be updated.
         FullscreenManagerTestUtils.scrollBrowserControls(mActivityTestRule, false);
         CriteriaHelper.pollUiThread(
-                new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return layoutCount.get() > 0;
-                    }
-                });
+                () -> Criteria.checkThat(layoutCount.get(), Matchers.greaterThan(0)));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Check that when the browser controls are gone, the entire decorView is contained
@@ -565,13 +561,10 @@ public class FullscreenManagerTest {
     }
 
     private void waitForEditableNodeToLoseFocus(final Tab tab) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                SelectionPopupController controller =
-                        SelectionPopupController.fromWebContents(tab.getWebContents());
-                return !controller.isFocusedNodeEditable();
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            SelectionPopupController controller =
+                    SelectionPopupController.fromWebContents(tab.getWebContents());
+            return !controller.isFocusedNodeEditable();
         });
     }
 

@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 #include "weblayer/browser/weblayer_impl_android.h"
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/page_info/android/page_info_client.h"
 #include "weblayer/browser/android/metrics/weblayer_metrics_service_client.h"
+#include "weblayer/browser/default_search_engine.h"
 #include "weblayer/browser/devtools_server_android.h"
 #include "weblayer/browser/java/jni/WebLayerImpl_jni.h"
 #include "weblayer/browser/url_bar/page_info_client_impl.h"
@@ -62,6 +64,14 @@ base::string16 GetClientApplicationName() {
 
   return base::android::ConvertJavaStringToUTF16(
       env, Java_WebLayerImpl_getEmbedderName(env));
+}
+
+static jboolean JNI_WebLayerImpl_IsLocationPermissionManaged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& origin) {
+  return IsPermissionControlledByDse(
+      ContentSettingsType::GEOLOCATION,
+      url::Origin::Create(GURL(ConvertJavaStringToUTF8(origin))));
 }
 
 }  // namespace weblayer

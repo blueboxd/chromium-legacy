@@ -26,7 +26,7 @@ class ChromeOSExtensionCacheDelegate {
   base::TimeDelta GetMaximumCacheAge() const;
 
  private:
-  base::FilePath cache_dir_;
+  const base::FilePath cache_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeOSExtensionCacheDelegate);
 };

@@ -26,7 +26,6 @@
 namespace {
 
 const char kURL1[] = "https://www.some.url.com";
-const char kURL2[] = "https://www.some.url2.com";
 
 class TabModelTest : public PlatformTest {
  public:
@@ -114,136 +113,8 @@ class TabModelTest : public PlatformTest {
   TabModel* tab_model_;
 };
 
-TEST_F(TabModelTest, IsEmpty) {
-  EXPECT_EQ(web_state_list_->count(), 0);
-  EXPECT_TRUE([tab_model_ isEmpty]);
-  agent_->InsertWebState(Params(GURL(kURL1)),
-                         /*parent=*/nil,
-                         /*opened_by_dom=*/false,
-                         /*index=*/0,
-                         /*in_background=*/false);
-  ASSERT_EQ(1, web_state_list_->count());
-  EXPECT_FALSE([tab_model_ isEmpty]);
-}
-
-TEST_F(TabModelTest, CloseTabAtIndexBeginning) {
-  agent_->InsertWebState(Params(GURL(kURL1)),
-                         /*parent=*/nil,
-                         /*opened_by_dom=*/false,
-                         /*index=*/web_state_list_->count(),
-                         /*in_background=*/false);
-  web::WebState* web_state1 =
-      agent_->InsertWebState(Params(GURL(kURL1)),
-                             /*parent=*/nil,
-                             /*opened_by_dom=*/false,
-                             /*index=*/web_state_list_->count(),
-                             /*in_background=*/false);
-  web::WebState* web_state2 =
-      agent_->InsertWebState(Params(GURL(kURL1)),
-                             /*parent=*/nil,
-                             /*opened_by_dom=*/false,
-                             /*index=*/web_state_list_->count(),
-                             /*in_background=*/false);
-  [tab_model_ closeTabAtIndex:0];
-
-  ASSERT_EQ(2, web_state_list_->count());
-  EXPECT_EQ(web_state1, web_state_list_->GetWebStateAt(0));
-  EXPECT_EQ(web_state2, web_state_list_->GetWebStateAt(1));
-}
-
-TEST_F(TabModelTest, CloseTabAtIndexMiddle) {
-  web::WebState* web_state0 =
-      agent_->InsertWebState(Params(GURL(kURL1)),
-                             /*parent=*/nil,
-                             /*opened_by_dom=*/false,
-                             /*index=*/web_state_list_->count(),
-                             /*in_background=*/false);
-  agent_->InsertWebState(Params(GURL(kURL1)),
-                         /*parent=*/nil,
-                         /*opened_by_dom=*/false,
-                         /*index=*/web_state_list_->count(),
-                         /*in_background=*/false);
-  web::WebState* web_state2 =
-      agent_->InsertWebState(Params(GURL(kURL1)),
-                             /*parent=*/nil,
-                             /*opened_by_dom=*/false,
-                             /*index=*/web_state_list_->count(),
-                             /*in_background=*/false);
-
-  [tab_model_ closeTabAtIndex:1];
-
-  ASSERT_EQ(2, web_state_list_->count());
-  EXPECT_EQ(web_state0, web_state_list_->GetWebStateAt(0));
-  EXPECT_EQ(web_state2, web_state_list_->GetWebStateAt(1));
-}
-
-TEST_F(TabModelTest, CloseTabAtIndexLast) {
-  web::WebState* web_state0 =
-      agent_->InsertWebState(Params(GURL(kURL1)),
-                             /*parent=*/nil,
-                             /*opened_by_dom=*/false,
-                             /*index=*/web_state_list_->count(),
-                             /*in_background=*/false);
-  web::WebState* web_state1 =
-      agent_->InsertWebState(Params(GURL(kURL1)),
-                             /*parent=*/nil,
-                             /*opened_by_dom=*/false,
-                             /*index=*/web_state_list_->count(),
-                             /*in_background=*/false);
-  agent_->InsertWebState(Params(GURL(kURL1)),
-                         /*parent=*/nil,
-                         /*opened_by_dom=*/false,
-                         /*index=*/web_state_list_->count(),
-                         /*in_background=*/false);
-
-  [tab_model_ closeTabAtIndex:2];
-
-  ASSERT_EQ(2, web_state_list_->count());
-  EXPECT_EQ(web_state0, web_state_list_->GetWebStateAt(0));
-  EXPECT_EQ(web_state1, web_state_list_->GetWebStateAt(1));
-}
-
-TEST_F(TabModelTest, CloseTabAtIndexOnlyOne) {
-  agent_->InsertWebState(Params(GURL(kURL1)),
-                         /*parent=*/nil,
-                         /*opened_by_dom=*/false,
-                         /*index=*/web_state_list_->count(),
-                         /*in_background=*/false);
-
-  [tab_model_ closeTabAtIndex:0];
-  EXPECT_EQ(0, web_state_list_->count());
-}
-
-TEST_F(TabModelTest, CloseAllTabs) {
-  agent_->InsertWebState(Params(GURL(kURL1)),
-                         /*parent=*/nil,
-                         /*opened_by_dom=*/false,
-                         /*index=*/web_state_list_->count(),
-                         /*in_background=*/false);
-  agent_->InsertWebState(Params(GURL(kURL2)),
-                         /*parent=*/nil,
-                         /*opened_by_dom=*/false,
-                         /*index=*/web_state_list_->count(),
-                         /*in_background=*/false);
-  agent_->InsertWebState(Params(GURL(kURL1)),
-                         /*parent=*/nil,
-                         /*opened_by_dom=*/false,
-                         /*index=*/web_state_list_->count(),
-                         /*in_background=*/false);
-  [tab_model_ closeAllTabs];
-
-  EXPECT_EQ(0, web_state_list_->count());
-}
-
-TEST_F(TabModelTest, CloseAllTabsWithNoTabs) {
-  [tab_model_ closeAllTabs];
-
-  EXPECT_EQ(0, web_state_list_->count());
-}
-
 TEST_F(TabModelTest, InsertWithSessionController) {
   EXPECT_EQ(web_state_list_->count(), 0);
-  EXPECT_TRUE([tab_model_ isEmpty]);
 
   web::WebState* new_web_state =
       agent_->InsertWebState(Params(GURL(kURL1)),

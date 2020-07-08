@@ -31,8 +31,7 @@ namespace em = enterprise_management;
 namespace enterprise_reporting {
 
 ReportGenerator::ReportGenerator()
-    : browser_report_generator_(
-          std::make_unique<BrowserReportGeneratorDesktop>()) {}
+    : browser_report_generator_(&delegate_factory_) {}
 
 ReportGenerator::~ReportGenerator() = default;
 

@@ -9,6 +9,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.page_info.PermissionParamsListBuilderDelegate;
 
@@ -25,7 +26,11 @@ public class ChromePermissionParamsListBuilderDelegate extends PermissionParamsL
 
     @Override
     @Nullable
-    public String getDelegateAppName(Origin origin) {
+    public String getDelegateAppName(Origin origin, @ContentSettingsType int type) {
+        if (type != ContentSettingsType.NOTIFICATIONS) {
+            return null;
+        }
+
         assert origin != null;
         TrustedWebActivityPermissionManager manager = TrustedWebActivityPermissionManager.get();
         return manager.getDelegateAppName(origin);

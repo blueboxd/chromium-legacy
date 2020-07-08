@@ -776,7 +776,7 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
     }
     if (!returned_status.IsInclude()) {
       OnSetCookieResult(options, cookie_to_return, std::move(cookie_string),
-                        returned_status);
+                        CookieAccessResult(returned_status));
       continue;
     }
 
@@ -804,19 +804,20 @@ void URLRequestHttpJob::OnSetCookieResult(
     const CookieOptions& options,
     base::Optional<CanonicalCookie> cookie,
     std::string cookie_string,
-    CookieInclusionStatus status) {
+    CookieAccessResult access_result) {
   if (request_->net_log().IsCapturing()) {
-    request_->net_log().AddEvent(
-        NetLogEventType::COOKIE_INCLUSION_STATUS,
-        [&](NetLogCaptureMode capture_mode) {
-          return CookieInclusionStatusNetLogParams(
-              "store", cookie ? cookie.value().Name() : "",
-              cookie ? cookie.value().Domain() : "",
-              cookie ? cookie.value().Path() : "", status, capture_mode);
-        });
+    request_->net_log().AddEvent(NetLogEventType::COOKIE_INCLUSION_STATUS,
+                                 [&](NetLogCaptureMode capture_mode) {
+                                   return CookieInclusionStatusNetLogParams(
+                                       "store",
+                                       cookie ? cookie.value().Name() : "",
+                                       cookie ? cookie.value().Domain() : "",
+                                       cookie ? cookie.value().Path() : "",
+                                       access_result.status, capture_mode);
+                                 });
   }
-  set_cookie_status_list_.emplace_back(std::move(cookie),
-                                       std::move(cookie_string), status);
+  set_cookie_status_list_.emplace_back(
+      std::move(cookie), std::move(cookie_string), access_result.status);
 
   num_cookie_lines_left_--;
 

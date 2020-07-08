@@ -23,9 +23,9 @@ include_rules = [
   "+ui/gfx/geometry",
   "+ui/gl",
   "+ui/ozone/public",
+  "+sandbox/policy",
   "+sandbox/win/src",
   "+services/network/public",
   "+services/service_manager/embedder",
   "+services/service_manager/public",
-  "+services/service_manager/sandbox",
 ]

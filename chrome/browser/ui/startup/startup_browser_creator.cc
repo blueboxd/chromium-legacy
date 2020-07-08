@@ -33,6 +33,8 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/apps/platform_apps/app_load_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_types.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/startup_helper.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -116,9 +118,7 @@ namespace {
 class ProfileLaunchObserver : public ProfileObserver,
                               public BrowserListObserver {
  public:
-  ProfileLaunchObserver() {
-    BrowserList::AddObserver(this);
-  }
+  ProfileLaunchObserver() { BrowserList::AddObserver(this); }
 
   ~ProfileLaunchObserver() override { BrowserList::RemoveObserver(this); }
 
@@ -656,23 +656,28 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   if (command_line.HasSwitch(chromeos::switches::kLoginManager))
     silent_launch = true;
 
-  if (chrome::IsRunningInAppMode() &&
-      command_line.HasSwitch(switches::kAppId)) {
-    chromeos::LaunchAppOrDie(
-        last_used_profile,
-        command_line.GetSwitchValueASCII(switches::kAppId));
+  if (chrome::IsRunningInForcedAppMode()) {
+    user_manager::User* user =
+        chromeos::ProfileHelper::Get()->GetUserByProfile(last_used_profile);
+    if (user && user->GetType() == user_manager::USER_TYPE_KIOSK_APP) {
+      chromeos::LaunchAppOrDie(
+          last_used_profile,
+          chromeos::KioskAppId::ForChromeApp(
+              command_line.GetSwitchValueASCII(switches::kAppId)));
+    } else if (user &&
+               user->GetType() == user_manager::USER_TYPE_WEB_KIOSK_APP) {
+      chromeos::LaunchAppOrDie(
+          last_used_profile,
+          chromeos::KioskAppId::ForWebApp(user->GetAccountId()));
+    } else {
+      // If we are here, we are either in ARC kiosk session or the user is
+      // invalid. We should terminate the session in such cases.
+      chrome::AttemptUserExit();
+      return false;
+    }
 
     // Skip browser launch since app mode launches its app window.
     silent_launch = true;
-  }
-
-  // If we are in the recoverable ARC/PWA app mode state (we do not have kAppId
-  // set), we should terminate the session instead of just showing black screen.
-  // TODO(crbug.com/1054382): Add a way of restarting PWA and Arc kiosks.
-  if (chrome::IsRunningInForcedAppMode() &&
-      !command_line.HasSwitch(switches::kAppId)) {
-    chrome::AttemptUserExit();
-    return false;
   }
 
   // If we are a demo app session and we crashed, there is no safe recovery
@@ -770,8 +775,8 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     base::CommandLine::StringType path =
         command_line.GetSwitchValueNative(apps::kLoadAndLaunchApp);
 
-    if (!apps::AppLoadService::Get(last_used_profile)->LoadAndLaunch(
-            base::FilePath(path), command_line, cur_dir)) {
+    if (!apps::AppLoadService::Get(last_used_profile)
+             ->LoadAndLaunch(base::FilePath(path), command_line, cur_dir)) {
       return false;
     }
 
@@ -814,11 +819,12 @@ bool StartupBrowserCreator::LaunchBrowserForLastProfiles(
   }
 #endif  // !defined(OS_CHROMEOS)
 
-  chrome::startup::IsProcessStartup is_process_startup = process_startup ?
-      chrome::startup::IS_PROCESS_STARTUP :
-      chrome::startup::IS_NOT_PROCESS_STARTUP;
-  chrome::startup::IsFirstRun is_first_run = first_run::IsChromeFirstRun() ?
-      chrome::startup::IS_FIRST_RUN : chrome::startup::IS_NOT_FIRST_RUN;
+  chrome::startup::IsProcessStartup is_process_startup =
+      process_startup ? chrome::startup::IS_PROCESS_STARTUP
+                      : chrome::startup::IS_NOT_PROCESS_STARTUP;
+  chrome::startup::IsFirstRun is_first_run =
+      first_run::IsChromeFirstRun() ? chrome::startup::IS_FIRST_RUN
+                                    : chrome::startup::IS_NOT_FIRST_RUN;
 
   // On Windows, when chrome is launched by notification activation where the
   // kNotificationLaunchId switch is used, always use |last_used_profile| which
@@ -1022,7 +1028,7 @@ bool StartupBrowserCreator::ActivatedProfile() {
 
 bool HasPendingUncleanExit(Profile* profile) {
   return profile->GetLastSessionExitType() == Profile::EXIT_CRASHED &&
-      !profile_launch_observer.Get().HasBeenLaunched(profile);
+         !profile_launch_observer.Get().HasBeenLaunched(profile);
 }
 
 base::FilePath GetStartupProfilePath(const base::FilePath& user_data_dir,
@@ -1076,9 +1082,10 @@ Profile* GetStartupProfile(const base::FilePath& user_data_dir,
   // We want to show the user manager. To indicate this, return the guest
   // profile. However, we can only do this if the system profile (where the user
   // manager lives) also exists (or is creatable).
-  return profile_manager->GetProfile(ProfileManager::GetSystemProfilePath()) ?
-         profile_manager->GetProfile(ProfileManager::GetGuestProfilePath()) :
-         nullptr;
+  return profile_manager->GetProfile(ProfileManager::GetSystemProfilePath())
+             ? profile_manager->GetProfile(
+                   ProfileManager::GetGuestProfilePath())
+             : nullptr;
 }
 
 Profile* GetFallbackStartupProfile() {
@@ -1095,8 +1102,8 @@ Profile* GetFallbackStartupProfile() {
   for (Profile* profile : ProfileManager::GetLastOpenedProfiles()) {
     // Return any profile that is not locked.
     ProfileAttributesEntry* entry;
-    bool has_entry = storage->GetProfileAttributesWithPath(profile->GetPath(),
-                                                           &entry);
+    bool has_entry =
+        storage->GetProfileAttributesWithPath(profile->GetPath(), &entry);
     if (!has_entry || !entry->IsSigninRequired())
       return profile;
   }

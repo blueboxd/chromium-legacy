@@ -49,6 +49,7 @@ class EncodedFormData;
 class FormData;
 class LocalFrame;
 class KURL;
+class ScriptState;
 
 // Issue an asynchronous, one-directional request at some resources, ignoring
 // any response. The request is made independent of any LocalFrame staying
@@ -75,10 +76,19 @@ class CORE_EXPORT PingLoader {
   // Note: To ensure the correct Javascript world is used for CSP checks, these
   // should be called synchronously from the point navigator.sendBeacon is
   // called.
-  static bool SendBeacon(LocalFrame*, const KURL&, const String&);
-  static bool SendBeacon(LocalFrame*, const KURL&, DOMArrayBufferView*);
-  static bool SendBeacon(LocalFrame*, const KURL&, Blob*);
-  static bool SendBeacon(LocalFrame*, const KURL&, FormData*);
+  static bool SendBeacon(const ScriptState&,
+                         LocalFrame*,
+                         const KURL&,
+                         const String&);
+  static bool SendBeacon(const ScriptState&,
+                         LocalFrame*,
+                         const KURL&,
+                         DOMArrayBufferView*);
+  static bool SendBeacon(const ScriptState&, LocalFrame*, const KURL&, Blob*);
+  static bool SendBeacon(const ScriptState&,
+                         LocalFrame*,
+                         const KURL&,
+                         FormData*);
 };
 
 }  // namespace blink

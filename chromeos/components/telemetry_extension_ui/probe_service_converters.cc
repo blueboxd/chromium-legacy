@@ -24,6 +24,20 @@ cros_healthd::mojom::ProbeCategoryEnum Convert(
       return cros_healthd::mojom::ProbeCategoryEnum::kNonRemovableBlockDevices;
     case health::mojom::ProbeCategoryEnum::kCachedVpdData:
       return cros_healthd::mojom::ProbeCategoryEnum::kCachedVpdData;
+    case health::mojom::ProbeCategoryEnum::kCpu:
+      return cros_healthd::mojom::ProbeCategoryEnum::kCpu;
+    case health::mojom::ProbeCategoryEnum::kTimezone:
+      return cros_healthd::mojom::ProbeCategoryEnum::kTimezone;
+    case health::mojom::ProbeCategoryEnum::kMemory:
+      return cros_healthd::mojom::ProbeCategoryEnum::kMemory;
+    case health::mojom::ProbeCategoryEnum::kBacklight:
+      return cros_healthd::mojom::ProbeCategoryEnum::kBacklight;
+    case health::mojom::ProbeCategoryEnum::kFan:
+      return cros_healthd::mojom::ProbeCategoryEnum::kFan;
+    case health::mojom::ProbeCategoryEnum::kStatefulPartition:
+      return cros_healthd::mojom::ProbeCategoryEnum::kStatefulPartition;
+    case health::mojom::ProbeCategoryEnum::kBluetooth:
+      return cros_healthd::mojom::ProbeCategoryEnum::kBluetooth;
   }
   NOTREACHED();
 }
@@ -116,12 +130,186 @@ health::mojom::CachedVpdResultPtr UncheckedConvertPtr(
   NOTREACHED();
 }
 
+health::mojom::CpuCStateInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::CpuCStateInfoPtr input) {
+  return health::mojom::CpuCStateInfo::New(
+      std::move(input->name), Convert(input->time_in_state_since_last_boot_us));
+}
+
+health::mojom::LogicalCpuInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::LogicalCpuInfoPtr input) {
+  return health::mojom::LogicalCpuInfo::New(
+      Convert(input->max_clock_speed_khz),
+      Convert(input->scaling_max_frequency_khz),
+      Convert(input->scaling_current_frequency_khz),
+      Convert(static_cast<uint64_t>(input->idle_time_user_hz)),
+      ConvertPtrVector<health::mojom::CpuCStateInfoPtr>(
+          std::move(input->c_states)));
+}
+
+health::mojom::PhysicalCpuInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::PhysicalCpuInfoPtr input) {
+  return health::mojom::PhysicalCpuInfo::New(
+      std::move(input->model_name),
+      ConvertPtrVector<health::mojom::LogicalCpuInfoPtr>(
+          std::move(input->logical_cpus)));
+}
+
+health::mojom::CpuInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::CpuInfoPtr input) {
+  return health::mojom::CpuInfo::New(
+      Convert(input->num_total_threads), Convert(input->architecture),
+      ConvertPtrVector<health::mojom::PhysicalCpuInfoPtr>(
+          std::move(input->physical_cpus)));
+}
+
+health::mojom::CpuResultPtr UncheckedConvertPtr(
+    cros_healthd::mojom::CpuResultPtr input) {
+  switch (input->which()) {
+    case cros_healthd::mojom::CpuResult::Tag::CPU_INFO:
+      return health::mojom::CpuResult::NewCpuInfo(
+          ConvertPtr(std::move(input->get_cpu_info())));
+    case cros_healthd::mojom::CpuResult::Tag::ERROR:
+      return health::mojom::CpuResult::NewError(
+          ConvertPtr(std::move(input->get_error())));
+  }
+  NOTREACHED();
+}
+
+health::mojom::TimezoneInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::TimezoneInfoPtr input) {
+  return health::mojom::TimezoneInfo::New(input->posix, input->region);
+}
+
+health::mojom::TimezoneResultPtr UncheckedConvertPtr(
+    cros_healthd::mojom::TimezoneResultPtr input) {
+  switch (input->which()) {
+    case cros_healthd::mojom::TimezoneResult::Tag::TIMEZONE_INFO:
+      return health::mojom::TimezoneResult::NewTimezoneInfo(
+          ConvertPtr(std::move(input->get_timezone_info())));
+    case cros_healthd::mojom::TimezoneResult::Tag::ERROR:
+      return health::mojom::TimezoneResult::NewError(
+          ConvertPtr(std::move(input->get_error())));
+  }
+  NOTREACHED();
+}
+
+health::mojom::MemoryInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::MemoryInfoPtr input) {
+  return health::mojom::MemoryInfo::New(
+      Convert(input->total_memory_kib), Convert(input->free_memory_kib),
+      Convert(input->available_memory_kib),
+      Convert(static_cast<uint64_t>(input->page_faults_since_last_boot)));
+}
+
+health::mojom::MemoryResultPtr UncheckedConvertPtr(
+    cros_healthd::mojom::MemoryResultPtr input) {
+  switch (input->which()) {
+    case cros_healthd::mojom::MemoryResult::Tag::MEMORY_INFO:
+      return health::mojom::MemoryResult::NewMemoryInfo(
+          ConvertPtr(std::move(input->get_memory_info())));
+    case cros_healthd::mojom::MemoryResult::Tag::ERROR:
+      return health::mojom::MemoryResult::NewError(
+          ConvertPtr(std::move(input->get_error())));
+  }
+  NOTREACHED();
+}
+
+health::mojom::BacklightInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::BacklightInfoPtr input) {
+  return health::mojom::BacklightInfo::New(std::move(input->path),
+                                           Convert(input->max_brightness),
+                                           Convert(input->brightness));
+}
+
+health::mojom::BacklightResultPtr UncheckedConvertPtr(
+    cros_healthd::mojom::BacklightResultPtr input) {
+  switch (input->which()) {
+    case cros_healthd::mojom::BacklightResult::Tag::BACKLIGHT_INFO:
+      return health::mojom::BacklightResult::NewBacklightInfo(
+          ConvertPtrVector<health::mojom::BacklightInfoPtr>(
+              std::move(input->get_backlight_info())));
+    case cros_healthd::mojom::BacklightResult::Tag::ERROR:
+      return health::mojom::BacklightResult::NewError(
+          ConvertPtr(std::move(input->get_error())));
+  }
+  NOTREACHED();
+}
+
+health::mojom::FanInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::FanInfoPtr input) {
+  return health::mojom::FanInfo::New(Convert(input->speed_rpm));
+}
+
+health::mojom::FanResultPtr UncheckedConvertPtr(
+    cros_healthd::mojom::FanResultPtr input) {
+  switch (input->which()) {
+    case cros_healthd::mojom::FanResult::Tag::FAN_INFO:
+      return health::mojom::FanResult::NewFanInfo(
+          ConvertPtrVector<health::mojom::FanInfoPtr>(
+              std::move(input->get_fan_info())));
+    case cros_healthd::mojom::FanResult::Tag::ERROR:
+      return health::mojom::FanResult::NewError(
+          ConvertPtr(std::move(input->get_error())));
+  }
+  NOTREACHED();
+}
+
+health::mojom::StatefulPartitionInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::StatefulPartitionInfoPtr input) {
+  constexpr uint64_t k100MiB = 100 * 1024 * 1024;
+  return health::mojom::StatefulPartitionInfo::New(
+      Convert(input->available_space / k100MiB * k100MiB),
+      Convert(input->total_space));
+}
+
+health::mojom::StatefulPartitionResultPtr UncheckedConvertPtr(
+    cros_healthd::mojom::StatefulPartitionResultPtr input) {
+  switch (input->which()) {
+    case cros_healthd::mojom::StatefulPartitionResult::Tag::PARTITION_INFO:
+      return health::mojom::StatefulPartitionResult::NewPartitionInfo(
+          ConvertPtr(std::move(input->get_partition_info())));
+    case cros_healthd::mojom::StatefulPartitionResult::Tag::ERROR:
+      return health::mojom::StatefulPartitionResult::NewError(
+          ConvertPtr(std::move(input->get_error())));
+  }
+  NOTREACHED();
+}
+
+health::mojom::BluetoothAdapterInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::BluetoothAdapterInfoPtr input) {
+  return health::mojom::BluetoothAdapterInfo::New(
+      std::move(input->name), std::move(input->address),
+      Convert(input->powered), Convert(input->num_connected_devices));
+}
+
+health::mojom::BluetoothResultPtr UncheckedConvertPtr(
+    cros_healthd::mojom::BluetoothResultPtr input) {
+  switch (input->which()) {
+    case cros_healthd::mojom::BluetoothResult::Tag::BLUETOOTH_ADAPTER_INFO:
+      return health::mojom::BluetoothResult::NewBluetoothAdapterInfo(
+          ConvertPtrVector<health::mojom::BluetoothAdapterInfoPtr>(
+              std::move(input->get_bluetooth_adapter_info())));
+    case cros_healthd::mojom::BluetoothResult::Tag::ERROR:
+      return health::mojom::BluetoothResult::NewError(
+          ConvertPtr(std::move(input->get_error())));
+  }
+  NOTREACHED();
+}
+
 health::mojom::TelemetryInfoPtr UncheckedConvertPtr(
     cros_healthd::mojom::TelemetryInfoPtr input) {
   return health::mojom::TelemetryInfo::New(
       ConvertPtr(std::move(input->battery_result)),
       ConvertPtr(std::move(input->block_device_result)),
-      ConvertPtr(std::move(input->vpd_result)));
+      ConvertPtr(std::move(input->vpd_result)),
+      ConvertPtr(std::move(input->cpu_result)),
+      ConvertPtr(std::move(input->timezone_result)),
+      ConvertPtr(std::move(input->memory_result)),
+      ConvertPtr(std::move(input->backlight_result)),
+      ConvertPtr(std::move(input->fan_result)),
+      ConvertPtr(std::move(input->stateful_partition_result)),
+      ConvertPtr(std::move(input->bluetooth_result)));
 }
 
 }  // namespace unchecked
@@ -136,6 +324,25 @@ health::mojom::ErrorType Convert(cros_healthd::mojom::ErrorType input) {
       return health::mojom::ErrorType::kSystemUtilityError;
   }
   NOTREACHED();
+}
+
+health::mojom::CpuArchitectureEnum Convert(
+    cros_healthd::mojom::CpuArchitectureEnum input) {
+  switch (input) {
+    case cros_healthd::mojom::CpuArchitectureEnum::kUnknown:
+      return health::mojom::CpuArchitectureEnum::kUnknown;
+    case cros_healthd::mojom::CpuArchitectureEnum::kX86_64:
+      return health::mojom::CpuArchitectureEnum::kX86_64;
+    case cros_healthd::mojom::CpuArchitectureEnum::kAArch64:
+      return health::mojom::CpuArchitectureEnum::kAArch64;
+    case cros_healthd::mojom::CpuArchitectureEnum::kArmv7l:
+      return health::mojom::CpuArchitectureEnum::kArmv7l;
+  }
+  NOTREACHED();
+}
+
+health::mojom::BoolValuePtr Convert(bool input) {
+  return health::mojom::BoolValue::New(input);
 }
 
 health::mojom::DoubleValuePtr Convert(double input) {

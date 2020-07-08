@@ -11,8 +11,8 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/zygote/zygote_buildflags.h"
-#include "services/service_manager/sandbox/sandbox_delegate.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
+#include "sandbox/policy/sandbox_delegate.h"
+#include "sandbox/policy/sandbox_type.h"
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
 #include "content/public/common/zygote/zygote_handle.h"  // nogncheck
@@ -25,7 +25,7 @@ namespace content {
 // i.e. to loosen it if needed.
 // The methods below will be called on the PROCESS_LAUNCHER thread.
 class CONTENT_EXPORT SandboxedProcessLauncherDelegate
-    : public service_manager::SandboxDelegate {
+    : public sandbox::policy::SandboxDelegate {
  public:
   ~SandboxedProcessLauncherDelegate() override {}
 

@@ -244,7 +244,7 @@ class AppListEventTargeter : public aura::WindowTargeter {
 float ComputeSubpixelOffset(const display::Display& display, float value) {
   float pixel_position = std::round(display.device_scale_factor() * value);
   float dp_position = pixel_position / display.device_scale_factor();
-  return dp_position - static_cast<int>(value);
+  return dp_position - std::floor(value);
 }
 
 }  // namespace

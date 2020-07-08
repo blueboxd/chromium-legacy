@@ -13,6 +13,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.isFocusable;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
 import android.content.pm.ActivityInfo;
@@ -315,12 +316,9 @@ public class JavascriptTabModalDialogTest {
      * Check whether dialog is showing as expected.
      */
     private void checkDialogShowing(final String errorMessage, final boolean shouldBeShown) {
-        CriteriaHelper.pollUiThread(new Criteria(errorMessage) {
-            @Override
-            public boolean isSatisfied() {
-                final boolean isShown = mActivity.getModalDialogManager().isShowing();
-                return shouldBeShown == isShown;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            final boolean isShown = mActivity.getModalDialogManager().isShowing();
+            Criteria.checkThat(errorMessage, isShown, is(shouldBeShown));
         });
     }
 }

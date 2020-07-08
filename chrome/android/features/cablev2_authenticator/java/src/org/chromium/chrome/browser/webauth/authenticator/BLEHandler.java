@@ -20,17 +20,11 @@ import android.bluetooth.le.AdvertiseData;
 import android.bluetooth.le.AdvertiseSettings;
 import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.ParcelUuid;
-import android.util.Base64;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.task.PostTask;
 import org.chromium.base.task.SingleThreadTaskRunner;
-import org.chromium.base.task.TaskTraits;
 
 import java.io.Closeable;
 import java.nio.ByteBuffer;
@@ -68,11 +62,6 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
     // need to dump debugging information from this code.
     private static final char[] HEX_CHARS = "0123456789ABCDEF".toCharArray();
 
-    // The filename and key name of the SharedPreferences value that contains
-    // the base64-encoded state from the native code.
-    private static final String STATE_FILE_NAME = "cablev2_authenticator";
-    private static final String STATE_VALUE_NAME = "keys";
-
     // The (G)ATT op-code and attribute handle take three bytes.
     private static final int GATT_MTU_OVERHEAD = 3;
     // If no MTU is negotiated, the GATT default is just 23 bytes. Subtract three bytes of GATT
@@ -94,7 +83,7 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
      * avoid dealing with concurrency here, and in the C++ code, BLE callbacks
      * are bounced to a specified thread which is accessed via this task runner.
      */
-    private SingleThreadTaskRunner mTaskRunner;
+    private final SingleThreadTaskRunner mTaskRunner;
 
     private AdvertiseCallback mCallback;
     private BluetoothGattServer mServer;
@@ -102,12 +91,18 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
     private BluetoothGattCharacteristic mStatusChar;
     private BluetoothDevice mConnectedDevice;
 
-    BLEHandler(CableAuthenticator authenticator) {
+    BLEHandler(CableAuthenticator authenticator, SingleThreadTaskRunner taskRunner) {
         mPendingFragments = new HashMap<Long, byte[][]>();
         mKnownMtus = new HashMap<Long, Integer>();
         mContext = ContextUtils.getApplicationContext();
         mManager = (BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
         mAuthenticator = authenticator;
+
+        // Android does not document on which thread BLE callbacks will occur
+        // but, in practice they seem to happen on a Binder thread. In order
+        // to serialise callbacks, all processing (including native processing)
+        // happens on this dedicated thread.
+        mTaskRunner = taskRunner;
     }
 
     /**
@@ -117,18 +112,6 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
      * @return true if successful and false on error.
      */
     public boolean start() {
-        SharedPreferences prefs =
-                mContext.getSharedPreferences(STATE_FILE_NAME, Context.MODE_PRIVATE);
-        byte[] stateBytes = null;
-        try {
-            stateBytes = Base64.decode(prefs.getString(STATE_VALUE_NAME, ""), Base64.DEFAULT);
-            if (stateBytes.length == 0) {
-                stateBytes = null;
-            }
-        } catch (IllegalArgumentException e) {
-            Log.w(TAG, "Ignoring corrupt state");
-        }
-
         BluetoothGattService cableService = new BluetoothGattService(
                 UUID.fromString(CABLE_UUID), BluetoothGattService.SERVICE_TYPE_PRIMARY);
         cableService.addCharacteristic(new BluetoothGattCharacteristic(
@@ -158,21 +141,6 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
             Log.i(TAG, "addService failed");
             return false;
         }
-
-        // Android does not document on which thread BLE callbacks will occur
-        // but, in practice they seem to happen on the Binder thread. In order
-        // to serialise callbacks, all processing (including native processing)
-        // happens on a dedicated thread. This is a SingleThreadTaskRunner so
-        // that all native callback happen in the same thread. That avoids
-        // worrying about JNIEnv objects and references being incorrectly used
-        // across threads.
-        assert mTaskRunner == null;
-        // TODO: in practice, this sadly appears to return the UI thread,
-        // despite requesting |BEST_EFFORT|.
-        mTaskRunner = PostTask.createSingleThreadTaskRunner(TaskTraits.BEST_EFFORT);
-        // Local variables passed into a lambda must be final.
-        final byte[] state = stateBytes;
-        mTaskRunner.postTask(() -> BLEHandlerJni.get().start(this, state));
 
         return true;
     }
@@ -270,7 +238,7 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
                 mtu = DEFAULT_MTU;
             }
             byte[][] responseFragments =
-                    BLEHandlerJni.get().write(client.longValue(), mtu, valueCopy);
+                    mAuthenticator.onBLEWrite(client.longValue(), mtu, valueCopy);
             if (responseNeeded) {
                 int status = responseFragments == null ? BluetoothGatt.GATT_FAILURE
                                                        : BluetoothGatt.GATT_SUCCESS;
@@ -301,7 +269,6 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
      * Like sendNotification(BluetoothDevice, byte[][]), but for a client ID passed from native
      * code.
      */
-    @CalledByNative
     public void sendNotification(long client, byte[][] fragments) {
         String addr = longToAddress(client);
         Log.i(TAG, "sendNotification to " + addr);
@@ -429,16 +396,6 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
         });
     }
 
-    /**
-     * Called to indicate that a QR code was scanned by the user.
-     *
-     * @param value contents of the QR code, which will be a valid caBLE
-     *              URL, i.e. "fido://c1/"...
-     */
-    public void onQRCode(String value) {
-        mTaskRunner.postTask(() -> { BLEHandlerJni.get().onQRScanned(value); });
-    }
-
     private void maybeStopAdvertising() {
         if (mCallback == null) {
             return;
@@ -455,15 +412,13 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
     public void close() {
         mTaskRunner.postTask(() -> {
             maybeStopAdvertising();
-            BLEHandlerJni.get().stop();
         });
     }
 
     /**
-     * Called by C++ code to start advertising a given UUID, which is passed
-     * as 16 bytes.
+     * Called by C++ code (via CableAuthenticator) to start advertising a given UUID,
+     * which is passed as 16 bytes.
      */
-    @CalledByNative
     public void sendBLEAdvert(byte[] dataUuidBytes) {
         assert mTaskRunner.belongsToCurrentThread();
         Log.i(TAG, "sendBLEAdvert " + hex(dataUuidBytes));
@@ -505,93 +460,5 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
                                      .build();
 
         advertiser.startAdvertising(settings, data, mCallback);
-    }
-
-    /**
-     * Called by native code to store a new state blob.
-     */
-    @CalledByNative
-    public void setState(byte[] newState) {
-        assert mTaskRunner.belongsToCurrentThread();
-
-        SharedPreferences prefs =
-                mContext.getSharedPreferences(STATE_FILE_NAME, Context.MODE_PRIVATE);
-        Log.i(TAG, "Writing updated state");
-        prefs.edit()
-                .putString(STATE_VALUE_NAME,
-                        Base64.encodeToString(newState, Base64.NO_WRAP | Base64.NO_PADDING))
-                .apply();
-    }
-
-    /**
-     * Called by native code to process a makeCredential request.
-     */
-    @CalledByNative
-    void makeCredential(long client, String origin, String rpId, byte[] challenge, byte[] userId,
-            int[] algorithms, byte[][] excludedCredentialIds, boolean residentKeyRequired) {
-        mAuthenticator.makeCredential(client, origin, rpId, challenge, userId, algorithms,
-                excludedCredentialIds, residentKeyRequired);
-    }
-
-    /**
-     * Called by native code to process a getAssertion request.
-     */
-    @CalledByNative
-    void getAssertion(long client, String origin, String rpId, byte[] challenge,
-            byte[][] allowedCredentialIds) {
-        mAuthenticator.getAssertion(client, origin, rpId, challenge, allowedCredentialIds);
-    }
-
-    /**
-     * Called by CableAuthenticator to notify native code of a response to a makeCredential request.
-     */
-    public void onAuthenticatorAttestationResponse(
-            long client, int ctapStatus, byte[] clientDataJSON, byte[] attestationObject) {
-        mTaskRunner.postTask(
-                ()
-                        -> BLEHandlerJni.get().onAuthenticatorAttestationResponse(
-                                client, ctapStatus, clientDataJSON, attestationObject));
-    }
-
-    /**
-     * Called by CableAuthenticator to notify native code of a response to a getAssertion request.
-     */
-    public void onAuthenticatorAssertionResponse(long client, int ctapStatus, byte[] clientDataJSON,
-            byte[] credentialID, byte[] authenticatorData, byte[] signature) {
-        mTaskRunner.postTask(
-                ()
-                        -> BLEHandlerJni.get().onAuthenticatorAssertionResponse(client, ctapStatus,
-                                clientDataJSON, credentialID, authenticatorData, signature));
-    }
-
-    @NativeMethods
-    interface Natives {
-        /**
-         * Called to alert the C++ code to a new instance. The C++ code calls back into this object
-         * to send data.
-         */
-        void start(BLEHandler bleHandler, byte[] stateBytes);
-        void stop();
-        /**
-         * Called when a QR code has been scanned.
-         *
-         * @param value contents of the QR code, which will be a valid caBLE
-         *              URL, i.e. "fido://c1/"...
-         */
-        void onQRScanned(String value);
-        /**
-         * Called to alert the C++ code that a GATT client wrote data.
-         */
-        byte[][] write(long client, int mtu, byte[] data);
-        /**
-         * Called to alert native code of a response to a makeCredential request.
-         */
-        void onAuthenticatorAttestationResponse(
-                long client, int ctapStatus, byte[] clientDataJSON, byte[] attestationObject);
-        /**
-         * Called to alert native code of a response to a getAssertion request.
-         */
-        void onAuthenticatorAssertionResponse(long client, int ctapStatus, byte[] clientDataJSON,
-                byte[] credentialID, byte[] authenticatorData, byte[] signature);
     }
 }

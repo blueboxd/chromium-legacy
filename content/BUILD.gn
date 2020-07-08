@@ -95,7 +95,7 @@ if (is_component_build) {
   source_set("content") {
     set_sources_assignment_filter([])
     sources = [
-      "//services/service_manager/sandbox/linux/sandbox_seccomp_bpf_linux.cc",
+      "//sandbox/policy/linux/sandbox_seccomp_bpf_linux.cc",
       "common/sandbox_init_linux.cc",
       "common/zygote/send_zygote_child_ping_linux.cc",
       "public/common/content_switches.cc",
@@ -107,7 +107,7 @@ if (is_component_build) {
       "//media:media_buildflags",
       "//sandbox:sandbox_buildflags",
       "//sandbox/linux:sandbox",
-      "//services/service_manager/sandbox",
+      "//sandbox/policy",
     ]
   }
 } else {

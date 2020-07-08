@@ -168,18 +168,6 @@
   self.navigationController.toolbarHidden = NO;
 }
 
-- (void)viewWillDisappear:(BOOL)animated {
-  [super viewWillDisappear:animated];
-  // Write data type cell selection states back to the browser state.
-  NSArray* dataTypeItems = [self.tableViewModel
-      itemsInSectionWithIdentifier:SectionIdentifierDataTypes];
-  for (TableViewClearBrowsingDataItem* dataTypeItem in dataTypeItems) {
-    DCHECK([dataTypeItem isKindOfClass:[TableViewClearBrowsingDataItem class]]);
-    self.browserState->GetPrefs()->SetBoolean(dataTypeItem.prefName,
-                                              dataTypeItem.checked);
-  }
-}
-
 - (void)loadModel {
   [super loadModel];
   [self.dataManager loadModel:self.tableViewModel];
@@ -276,9 +264,10 @@
       DCHECK([item isKindOfClass:[TableViewClearBrowsingDataItem class]]);
       TableViewClearBrowsingDataItem* clearBrowsingDataItem =
           base::mac::ObjCCastStrict<TableViewClearBrowsingDataItem>(item);
-      clearBrowsingDataItem.checked = !clearBrowsingDataItem.checked;
-      [self reconfigureCellsForItems:@[ clearBrowsingDataItem ]];
-      [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
+
+      self.browserState->GetPrefs()->SetBoolean(clearBrowsingDataItem.prefName,
+                                                !clearBrowsingDataItem.checked);
+      // UI update will be trigerred by data manager.
       break;
     }
     default:
@@ -297,15 +286,22 @@
 
 #pragma mark - ClearBrowsingDataConsumer
 
-- (void)updateCellsForItem:(ListItem*)item {
+- (void)updateCellsForItem:(TableViewItem*)item reload:(BOOL)reload {
   if (self.suppressTableViewUpdates)
     return;
 
-  // Reload the item instead of reconfiguring it. This might update
-  // TableViewTextLinkItems which which can have different number of lines,
-  // thus the cell height needs to adapt accordingly.
-  [self reloadCellsForItems:@[ item ]
-           withRowAnimation:UITableViewRowAnimationAutomatic];
+  if (!reload) {
+    [self reconfigureCellsForItems:@[ item ]];
+    NSIndexPath* indexPath = [self.tableViewModel
+        indexPathForItem:static_cast<TableViewItem*>(item)];
+    [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
+  } else {
+    // Reload the item instead of reconfiguring it. This might update
+    // TableViewTextLinkItems which which can have different number of lines,
+    // thus the cell height needs to adapt accordingly.
+    [self reloadCellsForItems:@[ item ]
+             withRowAnimation:UITableViewRowAnimationAutomatic];
+  }
 }
 
 - (void)removeBrowsingDataForBrowserState:(ChromeBrowserState*)browserState

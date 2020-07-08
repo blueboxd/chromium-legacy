@@ -2670,25 +2670,6 @@
       如果將這項政策設為 True，<ph name="PRODUCT_OS_NAME" /> 會防止裝置在開發人員模式下啟動。嘗試切換至開發人員模式時，系統會拒絕啟動指令並顯示錯誤畫面。
 
       如未設定這項政策，或將政策設定為 False，則裝置仍可使用開發人員模式。</translation>
-<translation id="5210980743015047124">設定 <ph name="PRODUCT_NAME" /> 的最低版本限制。
-
-      將這項政策設為非空白的清單時：
-      如果沒有任何項目的「chrome_version」高於裝置的目前版本，則系統不會套用任何限制，並會撤銷現有限制。
-      如果至少有一個項目的「chrome_version」高於目前版本，系統會選擇其版本最接近目前版本的項目。
-      如果發生衝突，系統會優先選擇「warning_period」或「eol_warning_period」值較小的項目，並使用該項目套用政策。
-
-      如果目前版本在使用者工作階段期間成為過時版本，系統會在畫面上顯示通知，要求使用者在通知中顯示的「warning_period」期限內更新裝置。
-      「warning_period」自系統套用政策時起算。
-      如果使用者未在「warning_period」到期前更新裝置，系統會將使用者登出。
-      如果使用者登入時「warning_period」已過期，且目前版本已過時，則使用者必須先更新裝置才能登入。
-
-      如果生命週期在使用者工作階段期間結束，系統會在畫面上顯示通知，並在「eol_warning_period」到期後將使用者登出。
-      如果使用者登入時「eol_warning_period」已過期，且裝置的生命週期已結束，則系統會禁止所有使用者登入裝置。
-
-      如果不設定這項政策或設為空白，系統不會套用任何限制，並會撤銷現有限制；不論使用哪種 <ph name="PRODUCT_NAME" /> 版本，使用者皆可登入。
-
-      此處的「chrome_version」可以指確切版本 (例如「61.0.3163.120」)，也可以指版本前置字元 (例如「61.0」)。
-      「warning_period」和「eol_warning_period」是選用值，以天數為單位。這兩個期間的預設值是 0 天，表示沒有任何等待期間。 </translation>
 <translation id="5212118847531454979">你可以設定時間範圍 (以毫秒為單位)，系統會在這段時間內通知使用者必須重新啟動 <ph name="PRODUCT_NAME" /> 或 <ph name="PRODUCT_OS_NAME" />裝置，才能套用未安裝的更新。
 
       在你設定的時間範圍內，使用者會持續收到更新通知。在 <ph name="PRODUCT_OS_NAME" />裝置上，系統會根據 <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> 政策，在系統匣中顯示重新啟動通知。在 <ph name="PRODUCT_NAME" /> 瀏覽器中，當通知時間過了三分之一後，應用程式選單會有所變更，表示瀏覽器需要重新啟動。這項通知會在時間過了三分之二後變更顏色，並於時間結束後再次變色。由 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策啟用的其他通知也會遵循相同的時間表。
@@ -3021,20 +3002,6 @@
           這項政策只有在 <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> 停用時才會生效。否則，螢幕調暗延遲時間會由機器學習模型決定，系統會因此忽略這項政策。
 
           比例因數必須為 100% 以上的值。系統不接受任何低於 100% 的值，以免簡報模式中的螢幕調暗延遲時間比一般螢幕調暗延遲時間還短。</translation>
-<translation id="5590988845778885692">為可用的列印伺服器提供設定。
-
-      這項政策可讓你使用 JSON 檔案為 <ph name="PRODUCT_OS_NAME" />裝置提供外部列印伺服器的設定。
-
-      檔案大小不得超過 1 MB，且必須包含記錄陣列 (JSON 物件)。每項記錄都必須包含「id」、「url」和「display_name」欄位，並以字串做為欄位值。「id」欄位的值不得重複。
-
-      系統會下載並快取這個檔案，並使用加密編譯雜湊碼來驗證下載內容的完整性。只要網址或雜湊碼有任何變更，系統就會重新下載檔案。
-
-      如果正確設定這項政策的值，裝置會嘗試使用 IPP 通訊協定查詢指定的列印伺服器，確認是否有可用的印表機。
-
-      如果未設定這項政策或設定的值不正確，使用者就不會看到任何伺服器印表機。
-
-      目前列印伺服器的數量上限是 16 個，系統只會查詢清單中的前 16 個列印伺服器。
-      </translation>
 <translation id="5592242031005200087">
       如果啟用這項政策，逗號分隔清單中指明的每個來源將各自以獨立程序執行。
       這也會將指明的來源依子網域隔離；比方說，如果指定 https://example.com/，https://foo.example.com/ 也會因為隸屬 https://example.com/ 網站而遭到隔離。
@@ -3179,14 +3146,6 @@
       網址 (例如 https://example.com/some/path) 只會比對為 U2F appID，網域 (例如 example.com) 則只會比對為 WebAuthn RP ID。因此，如要同時涵蓋指定網站的 U2F API 和 WebAuthn API，必須一併列出 appID 網址和網域。</translation>
 <translation id="5836064773277134605">限制遠端存取主機所使用的 UDP 通訊埠範圍</translation>
 <translation id="585270638818921943">禁止使用者使用來源不受信任的 Android 應用程式</translation>
-<translation id="5854749508571554984">只有在裝置已終止服務，且不符合透過 <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> 政策設定的 <ph name="PRODUCT_NAME" /> 最低版本限制時，這項政策才會生效。
-
-      將這項政策設為非空白的字串時：
-      如果 <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> 政策中提及的警告時間已過，且系統已禁止任何使用者登入裝置，登入畫面上即會顯示這則訊息。
-      如果 <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> 政策中提及的警告時間還沒到，系統會在使用者登入後，於「設定」頁面中顯示這則訊息。
-
-      如果不設定這項政策或設為空白，系統會在以上兩種情況中，向使用者顯示預設的服務終止訊息。
-      服務終止訊息必須是不包含任何格式設定的純文字，而且不可做任何標記。 </translation>
 <translation id="5855010364142818361">這項政策可控管從 Internet Explorer 切換至 Chrome 時使用的指令列參數。
 
       如果 Internet Explorer 未安裝「舊版瀏覽器支援」增益集，這項政策將不會生效。
@@ -3818,7 +3777,6 @@
       如果將這項政策設為 <ph name="BR_UNDER_USER_CONTROL" />，系統會提示使用者使用備份與還原功能。如果使用者啟用這項功能，系統會將 Android 應用程式資料上傳至 Android 備份伺服器，並在使用者重新安裝相容的應用程式時還原資料。
 
       完成初始設定後，使用者可以啟用或停用備份與還原功能。</translation>
-<translation id="6993687707842131236">設定 MinimumChromeVersionEnforced 政策的服務終止訊息</translation>
 <translation id="6994082778848658360">如果你安裝的安全元素硬體和雙重驗證功能相容，就可以使用這項政策來指定如何使用該硬體提供雙重驗證功能。裝置的電源鍵會用來偵測使用者是否真實存在。
 
       如果選取 [已停用]，系統就不會提供雙重驗證功能。

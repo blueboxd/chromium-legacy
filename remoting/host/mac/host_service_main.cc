@@ -249,12 +249,12 @@ int HostService::RunHost() {
 }
 
 bool HostService::Disable() {
-  return base::DeleteFile(enabled_file_, false);
+  return base::DeleteFile(enabled_file_);
 }
 
 bool HostService::Enable() {
   // Ensure the config file is private whilst being written.
-  base::DeleteFile(config_file_, false);
+  base::DeleteFile(config_file_);
   if (!WriteStdinToConfig()) {
     return false;
   }

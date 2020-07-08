@@ -32,24 +32,19 @@ WaylandServerController::CreateIfNecessary(
 }
 
 WaylandServerController::~WaylandServerController() {
-  // Delete the instance in the reversed order they are created.
-  wayland_watcher_.reset();
-  wayland_server_.reset();
-  display_.reset();
-  WMHelper::SetInstance(nullptr);
-  wm_helper_.reset();
 }
 
 WaylandServerController::WaylandServerController(
     std::unique_ptr<FileHelper> file_helper,
     std::unique_ptr<NotificationSurfaceManager> notification_surface_manager,
     std::unique_ptr<InputMethodSurfaceManager> input_method_surface_manager)
-    : wm_helper_(std::make_unique<WMHelperChromeOS>()) {
-  WMHelper::SetInstance(wm_helper_.get());
-  display_ = std::make_unique<Display>(std::move(notification_surface_manager),
-                                       std::move(input_method_surface_manager),
-                                       std::move(file_helper));
-  wayland_server_ = wayland::Server::Create(display_.get());
+    : wm_helper_(std::make_unique<WMHelperChromeOS>()),
+      display_(
+          std::make_unique<Display>(std::move(notification_surface_manager),
+                                    std::move(input_method_surface_manager),
+                                    std::move(file_helper))),
+
+      wayland_server_(wayland::Server::Create(display_.get())) {
   // Wayland server creation can fail if XDG_RUNTIME_DIR is not set correctly.
   if (wayland_server_) {
     wayland_watcher_ =

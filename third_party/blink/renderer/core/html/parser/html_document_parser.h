@@ -191,13 +191,24 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   bool PumpTokenizer();
   void PumpTokenizerIfPossible();
   void DeferredPumpTokenizerIfPossible();
+  void SchedulePumpTokenizer();
   void ConstructTreeFromHTMLToken();
   void ConstructTreeFromCompactHTMLToken(const CompactHTMLToken&);
+
+  // ScheduleEndIfDelayed creates a series of asynchronous, budgeted
+  // DeferredPumpTokenizerIfPossible calls, followed by EndIfDelayed when
+  // everything's parsed.
+  void ScheduleEndIfDelayed();
 
   void RunScriptsForPausedTreeBuilder();
   void ResumeParsingAfterPause();
 
+  // AttemptToEnd stops document parsing if nothing's currently delaying the end
+  // of parsing.
   void AttemptToEnd();
+  // EndIfDelayed stops document parsing if AttemptToEnd was previously delayed,
+  // or if there are no scripts/resources/nested pumps delaying the end of
+  // parsing.
   void EndIfDelayed();
   void AttemptToRunDeferredScriptsAndEnd();
   void end();
@@ -207,6 +218,8 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   bool IsParsingFragment() const;
   bool IsScheduledForUnpause() const;
   bool InPumpSession() const { return pump_session_nesting_level_ > 0; }
+  // ShouldDelayEnd assesses whether any resources, scripts or nested pumps are
+  // delaying the end of parsing.
   bool ShouldDelayEnd() const;
 
   std::unique_ptr<HTMLPreloadScanner> CreatePreloadScanner(

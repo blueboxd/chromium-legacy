@@ -31,7 +31,6 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.weblayer.CookieManager;
-import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.WebLayer;
 import org.chromium.weblayer.shell.InstrumentationActivity;
@@ -257,23 +256,7 @@ public class InstrumentationActivityTestRule
 
     // Returns the URL that is currently being displayed to the user.
     public String getCurrentDisplayUrl() {
-        InstrumentationActivity activity = getActivity();
-        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
-            NavigationController navigationController =
-                    activity.getBrowser().getActiveTab().getNavigationController();
-
-            if (navigationController.getNavigationListSize() == 0) {
-                return null;
-            }
-
-            // TODO(crbug.com/1066382): This will not be correct in the case where the initial
-            // navigation in |tab| was a failed navigation and there have been no more navigations
-            // since then.
-            return navigationController
-                    .getNavigationEntryDisplayUri(
-                            navigationController.getNavigationListCurrentIndex())
-                    .toString();
-        });
+        return getActivity().getCurrentDisplayUrl();
     }
 
     public void setRetainInstance(boolean retain) {

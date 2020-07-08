@@ -6,10 +6,14 @@
 #define CHROME_BROWSER_CHROMEOS_POLICY_SYSTEM_PROXY_MANAGER_H_
 
 #include <memory>
+#include <string>
 
+#include "base/callback_forward.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/dbus/system_proxy/system_proxy_service.pb.h"
+#include "net/base/auth.h"
 
 namespace system_proxy {
 class SetAuthenticationDetailsResponse;
@@ -65,6 +69,18 @@ class SystemProxyManager {
 
   // This function is called when the |WorkerActive| dbus signal is received.
   void OnWorkerActive(const system_proxy::WorkerActiveSignalDetails& details);
+
+  // This function is called when the |AuthenticationRequired| dbus signal is
+  // received.
+  void OnAuthenticationRequired(
+      const system_proxy::AuthenticationRequiredDetails& details);
+
+  // Forwards the user credentials to System-proxy. |credentials| may be empty
+  // indicating the credentials for the specified |protection_space| are not
+  // available.
+  void LookupProxyAuthCredentialsCallback(
+      const system_proxy::ProtectionSpace& protection_space,
+      const base::Optional<net::AuthCredentials>& credentials);
 
   chromeos::CrosSettings* cros_settings_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>

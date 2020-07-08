@@ -36,7 +36,7 @@ OfflinePageItem ModelTaskTestBase::AddPage() {
 
 OfflinePageItem ModelTaskTestBase::AddPageWithoutFile() {
   OfflinePageItem page = generator_.CreateItemWithTempFile();
-  EXPECT_TRUE(base::DeleteFile(page.file_path, false));
+  EXPECT_TRUE(base::DeleteFile(page.file_path));
   store_test_util_.InsertItem(page);
   return page;
 }

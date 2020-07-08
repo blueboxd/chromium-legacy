@@ -5,9 +5,9 @@
 #include <memory>
 
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/platform/wayland/host/wayland_auxiliary_window.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_popup.h"
-#include "ui/ozone/platform/wayland/host/wayland_subsurface.h"
 #include "ui/ozone/platform/wayland/host/wayland_toplevel_window.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 
@@ -30,13 +30,13 @@ std::unique_ptr<WaylandWindow> WaylandWindow::Create(
       } else if (connection->IsDragInProgress()) {
         // We are in the process of drag and requested a popup. Most probably,
         // it is an arrow window.
-        window.reset(new WaylandSubsurface(delegate, connection));
+        window.reset(new WaylandAuxiliaryWindow(delegate, connection));
       } else {
         window.reset(new WaylandPopup(delegate, connection));
       }
       break;
     case PlatformWindowType::kTooltip:
-      window.reset(new WaylandSubsurface(delegate, connection));
+      window.reset(new WaylandAuxiliaryWindow(delegate, connection));
       break;
     case PlatformWindowType::kWindow:
     case PlatformWindowType::kBubble:

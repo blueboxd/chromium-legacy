@@ -27,6 +27,8 @@ class COMPONENT_EXPORT(SYSTEM_PROXY) SystemProxyClient {
       base::OnceCallback<void(const system_proxy::ShutDownResponse& response)>;
   using WorkerActiveCallback = base::RepeatingCallback<void(
       const system_proxy::WorkerActiveSignalDetails& details)>;
+  using AuthenticationRequiredCallback = base::RepeatingCallback<void(
+      const system_proxy::AuthenticationRequiredDetails& details)>;
 
   // Interface with testing functionality. Accessed through GetTestInterface(),
   // only implemented in the fake implementation.
@@ -40,6 +42,12 @@ class COMPONENT_EXPORT(SYSTEM_PROXY) SystemProxyClient {
     // to set authentication details.
     virtual system_proxy::SetAuthenticationDetailsRequest
     GetLastAuthenticationDetailsRequest() const = 0;
+    // Simulates the |AuthenticationRequired| signal by calling the callback set
+    // by |SetAuthenticationRequiredSignalCallback|. The callback is called only
+    // if |FakeSystemProxyClient| was set up to listen for signals by calling
+    // |ConnectToWorkerSignals|.
+    virtual void SendAuthenticationRequiredSignal(
+        const system_proxy::AuthenticationRequiredDetails& details) = 0;
 
    protected:
     virtual ~TestInterface() {}
@@ -74,9 +82,20 @@ class COMPONENT_EXPORT(SYSTEM_PROXY) SystemProxyClient {
   // Returns an interface for testing (fake only), or returns nullptr.
   virtual TestInterface* GetTestInterface() = 0;
 
+  // Sets the callback to be called when System-proxy emits the
+  // |WorkerActiveSignal| signal.
+  virtual void SetWorkerActiveSignalCallback(WorkerActiveCallback callback) = 0;
+
+  // Sets the callback to be called when System-proxy emits the
+  // |AuthenticationRequired| signal.
+  virtual void SetAuthenticationRequiredSignalCallback(
+      AuthenticationRequiredCallback callback) = 0;
+
   // Waits for the System-proxy d-bus service to be available and then connects
-  // to the WorkerActvie signal.
-  virtual void ConnectToWorkerActiveSignal(WorkerActiveCallback callback) = 0;
+  // to the signals for which a callback has been set with
+  // |SetWorkerActiveSignalCallback| and
+  // |SetAuthenticationRequiredSignalCallback|.
+  virtual void ConnectToWorkerSignals() = 0;
 
  protected:
   // Initialize/Shutdown should be used instead.

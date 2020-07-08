@@ -174,9 +174,9 @@ void LoadAudioLibraries() {
 
 }  // namespace
 
-bool AudioPreSandboxHook(service_manager::SandboxLinux::Options options) {
+bool AudioPreSandboxHook(sandbox::policy::SandboxLinux::Options options) {
   LoadAudioLibraries();
-  auto* instance = service_manager::SandboxLinux::GetInstance();
+  auto* instance = sandbox::policy::SandboxLinux::GetInstance();
   instance->StartBrokerProcess(MakeBrokerCommandSet({
                                  sandbox::syscall_broker::COMMAND_ACCESS,
 #if defined(USE_PULSEAUDIO)
@@ -188,7 +188,7 @@ bool AudioPreSandboxHook(service_manager::SandboxLinux::Options options) {
                                      sandbox::syscall_broker::COMMAND_UNLINK,
                                }),
                                GetAudioFilePermissions(),
-                               service_manager::SandboxLinux::PreSandboxHook(),
+                               sandbox::policy::SandboxLinux::PreSandboxHook(),
                                options);
 
   // TODO(https://crbug.com/850878) enable namespace sandbox. Currently, if

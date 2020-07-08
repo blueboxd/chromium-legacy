@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.download;
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -138,12 +139,9 @@ public class DownloadInfoBarControllerTest {
     }
 
     private void waitForMessage(String message) {
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mTestController.mInfo != null
-                        && mTestController.mInfo.message.equals(message);
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(mTestController.mInfo, Matchers.notNullValue());
+            Criteria.checkThat(mTestController.mInfo.message, Matchers.is(message));
         });
     }
 

@@ -27,14 +27,11 @@
 <translation id="1743802530341753419">Питај пре него што дозволиш сајтовима да се повезују са уређајем (препоручено)</translation>
 <translation id="1887786770086287077">Приступ локацији је искључен за овај уређај. Укључите га у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="1919345977826869612">Огласи</translation>
-<translation id="1922076542920281912">Да бисте дозволили да Chrome приступа локацији, укључите локацију и у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
-<translation id="194341124344773587">Укључите дозволу за Chrome у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="1984937141057606926">Дозвољени, осим треће стране</translation>
 <translation id="1994173015038366702">URL сајта</translation>
 <translation id="2025115093177348061">Проширена реалност</translation>
 <translation id="2030769033451695672">Додирните да бисте се вратили на <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
-<translation id="2041019821020695769">Да бисте дозволили да вам Chrome шаље обавештења, укључите обавештења и у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Опозови</translation>
 <translation id="2091887806945687916">Звук</translation>
 <translation id="2107397443965016585">Упит се приказује пре него што дозволите сајтовима да пуштају заштићени садржај (препоручено)</translation>
@@ -71,7 +68,6 @@
 <translation id="301521992641321250">Аутоматски је блокирано</translation>
 <translation id="3115898365077584848">Прикажи информације</translation>
 <translation id="3123473560110926937">Блокирано на неким сајтовима</translation>
-<translation id="3190152372525844641">Укључите дозволе за Chrome у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> сачуваних података</translation>
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3277252321222022663">Дозволи сајтовима да приступају сензорима (препоручено)</translation>
@@ -83,7 +79,6 @@
 <translation id="358794129225322306">Дозволите сајту да аутоматски преузима више датотека.</translation>
 <translation id="3596414637720633074">Блокира колачиће трећих страна у режиму без архивирања</translation>
 <translation id="3600792891314830896">Искључи звук сајтова који пуштају звук</translation>
-<translation id="3730075448226062617">Да бисте дозволили да Chrome приступа микрофону, укључите микрофон и у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="3744111561329211289">Синхронизација у позадини</translation>
 <translation id="3822502789641063741">Бришете меморију сајта?</translation>
 <translation id="385051799172605136">Назад</translation>
@@ -112,7 +107,6 @@
 <translation id="4883854917563148705">Подешавања којима се управља не могу да се ресетују</translation>
 <translation id="4887024562049524730">Пре него што дозволите сајтовима да користе уређај и податке виртуелне реалности приказује се упит (препоручено)</translation>
 <translation id="4962975101802056554">Опозовите све дозволе за уређај</translation>
-<translation id="4964199952259983386">Да бисте дозволили да Chrome користи ПР, укључите и камеру у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="497421865427891073">Кретање унапред</translation>
 <translation id="4996978546172906250">Дељење преко</translation>
 <translation id="5039804452771397117">Дозволи</translation>
@@ -153,7 +147,6 @@
 <translation id="6177111841848151710">Блокирано је за актуелни претраживач</translation>
 <translation id="6181444274883918285">Додај изузетак за сајтове</translation>
 <translation id="6192792657125177640">Изузеци</translation>
-<translation id="6194112207524046168">Да бисте дозволили да Chrome приступа камери, укључите камеру и у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Блокирај колачиће треће стране</translation>
 <translation id="6206551242102657620">Веза је безбедна. Информације о сајту</translation>
 <translation id="6216432067784365534">Опције ставке <ph name="NAME_OF_LIST_ITEM" /></translation>

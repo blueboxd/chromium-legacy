@@ -27,9 +27,9 @@
 #include "content/public/common/content_switches.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "sandbox/mac/seatbelt_exec.h"
-#include "services/service_manager/sandbox/mac/sandbox_mac.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "sandbox/policy/mac/sandbox_mac.h"
+#include "sandbox/policy/sandbox_type.h"
+#include "sandbox/policy/switches.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/public/common/pepper_plugin_info.h"
@@ -65,21 +65,21 @@ void AddDarwinDirs(sandbox::SeatbeltExecClient* client) {
   PCHECK(rv != 0);
   CHECK(client->SetParameter(
       "DARWIN_USER_CACHE_DIR",
-      service_manager::SandboxMac::GetCanonicalPath(base::FilePath(dir_path))
+      sandbox::policy::SandboxMac::GetCanonicalPath(base::FilePath(dir_path))
           .value()));
 
   rv = confstr(_CS_DARWIN_USER_DIR, dir_path, sizeof(dir_path));
   PCHECK(rv != 0);
   CHECK(client->SetParameter(
       "DARWIN_USER_DIR",
-      service_manager::SandboxMac::GetCanonicalPath(base::FilePath(dir_path))
+      sandbox::policy::SandboxMac::GetCanonicalPath(base::FilePath(dir_path))
           .value()));
 
   rv = confstr(_CS_DARWIN_USER_TEMP_DIR, dir_path, sizeof(dir_path));
   PCHECK(rv != 0);
   CHECK(client->SetParameter(
       "DARWIN_USER_TEMP_DIR",
-      service_manager::SandboxMac::GetCanonicalPath(base::FilePath(dir_path))
+      sandbox::policy::SandboxMac::GetCanonicalPath(base::FilePath(dir_path))
           .value()));
 }
 
@@ -90,50 +90,50 @@ void SetupCommonSandboxParameters(sandbox::SeatbeltExecClient* client) {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   bool enable_logging =
-      command_line->HasSwitch(service_manager::switches::kEnableSandboxLogging);
+      command_line->HasSwitch(sandbox::policy::switches::kEnableSandboxLogging);
 
   CHECK(client->SetBooleanParameter(
-      service_manager::SandboxMac::kSandboxEnableLogging, enable_logging));
+      sandbox::policy::SandboxMac::kSandboxEnableLogging, enable_logging));
   CHECK(client->SetBooleanParameter(
-      service_manager::SandboxMac::kSandboxDisableDenialLogging,
+      sandbox::policy::SandboxMac::kSandboxDisableDenialLogging,
       !enable_logging));
 
   std::string bundle_path =
-      service_manager::SandboxMac::GetCanonicalPath(base::mac::MainBundlePath())
+      sandbox::policy::SandboxMac::GetCanonicalPath(base::mac::MainBundlePath())
           .value();
-  CHECK(client->SetParameter(service_manager::SandboxMac::kSandboxBundlePath,
+  CHECK(client->SetParameter(sandbox::policy::SandboxMac::kSandboxBundlePath,
                              bundle_path));
 
   std::string bundle_id = base::mac::BaseBundleID();
   DCHECK(!bundle_id.empty()) << "base::mac::OuterBundle is unset";
   CHECK(client->SetParameter(
-      service_manager::SandboxMac::kSandboxChromeBundleId, bundle_id));
+      sandbox::policy::SandboxMac::kSandboxChromeBundleId, bundle_id));
 
-  CHECK(client->SetParameter(service_manager::SandboxMac::kSandboxBrowserPID,
+  CHECK(client->SetParameter(sandbox::policy::SandboxMac::kSandboxBrowserPID,
                              std::to_string(getpid())));
 
   std::string logging_path =
       GetContentClient()->browser()->GetLoggingFileName(*command_line).value();
   CHECK(client->SetParameter(
-      service_manager::SandboxMac::kSandboxLoggingPathAsLiteral, logging_path));
+      sandbox::policy::SandboxMac::kSandboxLoggingPathAsLiteral, logging_path));
 
 #if defined(COMPONENT_BUILD)
   // For component builds, allow access to one directory level higher, where
   // the dylibs live.
   base::FilePath component_path = base::mac::MainBundlePath().Append("..");
   std::string component_path_canonical =
-      service_manager::SandboxMac::GetCanonicalPath(component_path).value();
-  CHECK(client->SetParameter(service_manager::SandboxMac::kSandboxComponentPath,
+      sandbox::policy::SandboxMac::GetCanonicalPath(component_path).value();
+  CHECK(client->SetParameter(sandbox::policy::SandboxMac::kSandboxComponentPath,
                              component_path_canonical));
 #endif
 
-  CHECK(client->SetParameter(service_manager::SandboxMac::kSandboxOSVersion,
+  CHECK(client->SetParameter(sandbox::policy::SandboxMac::kSandboxOSVersion,
                              GetOSVersion()));
 
   std::string homedir =
-      service_manager::SandboxMac::GetCanonicalPath(base::GetHomeDir()).value();
+      sandbox::policy::SandboxMac::GetCanonicalPath(base::GetHomeDir()).value();
   CHECK(client->SetParameter(
-      service_manager::SandboxMac::kSandboxHomedirAsLiteral, homedir));
+      sandbox::policy::SandboxMac::kSandboxHomedirAsLiteral, homedir));
 
   CHECK(client->SetBooleanParameter(
       "FILTER_SYSCALLS",
@@ -154,7 +154,7 @@ void SetupNetworkSandboxParameters(sandbox::SeatbeltExecClient* client) {
                              base::NumberToString(storage_paths.size())));
   for (size_t i = 0; i < storage_paths.size(); ++i) {
     base::FilePath path =
-        service_manager::SandboxMac::GetCanonicalPath(storage_paths[i]);
+        sandbox::policy::SandboxMac::GetCanonicalPath(storage_paths[i]);
     std::string param_name =
         base::StringPrintf("NETWORK_SERVICE_STORAGE_PATH_%zu", i);
     CHECK(client->SetParameter(param_name, path.value())) << param_name;
@@ -162,7 +162,7 @@ void SetupNetworkSandboxParameters(sandbox::SeatbeltExecClient* client) {
 
   if (g_network_test_certs_dir->has_value()) {
     CHECK(client->SetParameter("NETWORK_SERVICE_TEST_CERTS_DIR",
-                               service_manager::SandboxMac::GetCanonicalPath(
+                               sandbox::policy::SandboxMac::GetCanonicalPath(
                                    **g_network_test_certs_dir)
                                    .value()));
   }
@@ -175,7 +175,7 @@ void SetupPPAPISandboxParameters(sandbox::SeatbeltExecClient* client) {
   std::vector<content::WebPluginInfo> plugins;
   PluginService::GetInstance()->GetInternalPlugins(&plugins);
 
-  base::FilePath bundle_path = service_manager::SandboxMac::GetCanonicalPath(
+  base::FilePath bundle_path = sandbox::policy::SandboxMac::GetCanonicalPath(
       base::mac::MainBundlePath());
 
   const std::string param_base_name = "PPAPI_PATH_";
@@ -198,12 +198,12 @@ void SetupPPAPISandboxParameters(sandbox::SeatbeltExecClient* client) {
 void SetupCDMSandboxParameters(sandbox::SeatbeltExecClient* client) {
   SetupCommonSandboxParameters(client);
 
-  base::FilePath bundle_path = service_manager::SandboxMac::GetCanonicalPath(
+  base::FilePath bundle_path = sandbox::policy::SandboxMac::GetCanonicalPath(
       base::mac::FrameworkBundlePath().DirName());
   CHECK(!bundle_path.empty());
 
   CHECK(client->SetParameter(
-      service_manager::SandboxMac::kSandboxBundleVersionPath,
+      sandbox::policy::SandboxMac::kSandboxBundleVersionPath,
       bundle_path.value()));
 }
 
@@ -214,37 +214,37 @@ void SetupUtilitySandboxParameters(sandbox::SeatbeltExecClient* client,
 
 }  // namespace
 
-void SetupSandboxParameters(service_manager::SandboxType sandbox_type,
+void SetupSandboxParameters(sandbox::policy::SandboxType sandbox_type,
                             const base::CommandLine& command_line,
                             sandbox::SeatbeltExecClient* client) {
   switch (sandbox_type) {
-    case service_manager::SandboxType::kAudio:
-    case service_manager::SandboxType::kSpeechRecognition:
-    case service_manager::SandboxType::kNaClLoader:
-    case service_manager::SandboxType::kPrintCompositor:
-    case service_manager::SandboxType::kRenderer:
+    case sandbox::policy::SandboxType::kAudio:
+    case sandbox::policy::SandboxType::kSpeechRecognition:
+    case sandbox::policy::SandboxType::kNaClLoader:
+    case sandbox::policy::SandboxType::kPrintCompositor:
+    case sandbox::policy::SandboxType::kRenderer:
       SetupCommonSandboxParameters(client);
       break;
-    case service_manager::SandboxType::kGpu:
+    case sandbox::policy::SandboxType::kGpu:
       SetupCommonSandboxParameters(client);
       AddDarwinDirs(client);
       break;
-    case service_manager::SandboxType::kCdm:
+    case sandbox::policy::SandboxType::kCdm:
       SetupCDMSandboxParameters(client);
       break;
-    case service_manager::SandboxType::kNetwork:
+    case sandbox::policy::SandboxType::kNetwork:
       SetupNetworkSandboxParameters(client);
       break;
-    case service_manager::SandboxType::kPpapi:
+    case sandbox::policy::SandboxType::kPpapi:
 #if BUILDFLAG(ENABLE_PLUGINS)
       SetupPPAPISandboxParameters(client);
 #endif
       break;
-    case service_manager::SandboxType::kUtility:
+    case sandbox::policy::SandboxType::kUtility:
       SetupUtilitySandboxParameters(client, command_line);
       break;
-    case service_manager::SandboxType::kNoSandbox:
-    case service_manager::SandboxType::kVideoCapture:
+    case sandbox::policy::SandboxType::kNoSandbox:
+    case sandbox::policy::SandboxType::kVideoCapture:
       CHECK(false) << "Unhandled parameters for sandbox_type "
                    << static_cast<int>(sandbox_type);
   }

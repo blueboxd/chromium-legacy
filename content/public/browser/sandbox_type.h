@@ -5,12 +5,13 @@
 #ifndef CONTENT_PUBLIC_BROWSER_SANDBOX_TYPE_H_
 #define CONTENT_PUBLIC_BROWSER_SANDBOX_TYPE_H_
 
-#include "services/service_manager/sandbox/sandbox_type.h"
+#include "sandbox/policy/sandbox_type.h"
 
 namespace content {
 
-// TODO(crbug.com/977637): Move the definition into this header.
-using SandboxType = service_manager::SandboxType;
+// TODO(crbug.com/1097376): Remove this header and replace users with
+// sandbox/policy/sandbox_type.h.
+using SandboxType = sandbox::policy::SandboxType;
 
 }  // namespace content
 

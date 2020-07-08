@@ -35,6 +35,8 @@ class LayoutListItem;
 // Used to layout a list item's marker with 'content: normal'.
 // The LayoutListMarker always has to be a child of a LayoutListItem.
 class CORE_EXPORT LayoutListMarker final : public LayoutBox {
+  friend class LayoutListItem;
+
  public:
   explicit LayoutListMarker(Element*);
   ~LayoutListMarker() override;
@@ -49,8 +51,6 @@ class CORE_EXPORT LayoutListMarker final : public LayoutBox {
 
   bool IsInside() const;
 
-  void UpdateMarginsAndContent();
-
   LayoutRect GetRelativeMarkerRect() const;
 
   bool IsImage() const override;
@@ -60,7 +60,9 @@ class CORE_EXPORT LayoutListMarker final : public LayoutBox {
 
   const char* GetName() const override { return "LayoutListMarker"; }
 
-  LayoutUnit LineOffset() const { return line_offset_; }
+  LayoutUnit ListItemInlineStartOffset() const {
+    return list_item_inline_start_offset_;
+  }
 
  protected:
   void WillBeDestroyed() override;
@@ -95,15 +97,15 @@ class CORE_EXPORT LayoutListMarker final : public LayoutBox {
 
   LayoutUnit GetWidthOfText(ListMarker::ListStyleCategory) const;
   void UpdateMargins(LayoutUnit marker_inline_size);
+  void UpdateMargins();
   void UpdateContent();
 
-  void StyleWillChange(StyleDifference,
-                       const ComputedStyle& new_style) override;
-  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
+  void UpdateMarkerImageIfNeeded(StyleImage* image);
+  void ListStyleTypeChanged();
 
   String text_;
   Persistent<StyleImage> image_;
-  LayoutUnit line_offset_;
+  LayoutUnit list_item_inline_start_offset_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutListMarker,

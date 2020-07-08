@@ -36,12 +36,6 @@ class CONTENT_EXPORT URLDataSource {
   static void Add(BrowserContext* browser_context,
                   std::unique_ptr<URLDataSource> source);
 
-  // Gets a reference to the URL data source for |url|.
-  // TODO (rbpotter): Remove this function when the OOBE page Polymer 2
-  // migration is complete.
-  static URLDataSource* GetSourceForURL(BrowserContext* browser_context,
-                                        const GURL& url);
-
   // Parse |url| to get the path which will be used to resolve the request. The
   // path is the remaining portion after the scheme and hostname, without the
   // leading slash.
@@ -133,13 +127,6 @@ class CONTENT_EXPORT URLDataSource {
   // Default implementation returns an empty string.
   virtual std::string GetAccessControlAllowOriginForOrigin(
       const std::string& origin);
-
-  // Called on the UI thread. For the shared resource, disables using Polymer 2
-  // for requests from |host|, even if WebUIPolymer2 is enabled. Assumes this
-  // method is only called from one host.
-  // TODO (rbpotter): Remove this function when the OOBE page Polymer 2
-  // migration is complete.
-  virtual void DisablePolymer2ForHost(const std::string& host);
 
   // Replacements for i18n or null if no replacements are desired.
   virtual const ui::TemplateReplacements* GetReplacements();

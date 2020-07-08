@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_ANIMATION_INK_DROP_MASK_H_
 #define UI_VIEWS_ANIMATION_INK_DROP_MASK_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_delegate.h"
@@ -48,6 +49,8 @@ class VIEWS_EXPORT RoundRectInkDropMask : public InkDropMask {
                        float corner_radius);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(InkDropMaskTest, RoundRectInkDropMaskPaintsRect);
+
   // InkDropMask:
   void OnPaintLayer(const ui::PaintContext& context) override;
 
@@ -65,6 +68,8 @@ class VIEWS_EXPORT CircleInkDropMask : public InkDropMask {
                     int mask_radius);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(InkDropMaskTest, CircleInkDropMaskPaintsCircle);
+
   // InkDropMask:
   void OnPaintLayer(const ui::PaintContext& context) override;
 
@@ -80,6 +85,8 @@ class VIEWS_EXPORT PathInkDropMask : public InkDropMask {
   PathInkDropMask(const gfx::Size& layer_size, const SkPath& path);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(InkDropMaskTest, PathInkDropMaskPaintsTriangle);
+
   // InkDropMask:
   void OnPaintLayer(const ui::PaintContext& context) override;
 

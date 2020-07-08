@@ -62,7 +62,7 @@ class JourneyLoggerTest : public PaymentRequestPlatformBrowserTestBase {
 IN_PROC_BROWSER_TEST_F(JourneyLoggerTest, NoPaymentMethodSupported) {
   base::HistogramTester histogram_tester;
 
-  ResetEventWaiterForSingleEvent(TestEvent::kShowAppsReady);
+  ResetEventWaiterForSingleEvent(TestEvent::kAppListReady);
   EXPECT_TRUE(content::ExecJs(GetActiveWebContents(), "testBasicCard()"));
   WaitForObservedEvent();
 
@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(JourneyLoggerTest, BasicCardOnly) {
   CreateAndAddCreditCardForProfile(CreateAndAddAutofillProfile());
   base::HistogramTester histogram_tester;
 
-  ResetEventWaiterForSingleEvent(TestEvent::kShowAppsReady);
+  ResetEventWaiterForSingleEvent(TestEvent::kAppListReady);
   EXPECT_TRUE(content::ExecJs(GetActiveWebContents(), "testBasicCard()"));
   WaitForObservedEvent();
 
@@ -191,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(
     UKMCheckoutEventsNotRecordedForAppOriginWhenNoAppInvoked) {
   CreateAndAddCreditCardForProfile(CreateAndAddAutofillProfile());
 
-  ResetEventWaiterForSingleEvent(TestEvent::kShowAppsReady);
+  ResetEventWaiterForSingleEvent(TestEvent::kAppListReady);
   EXPECT_TRUE(content::ExecJs(GetActiveWebContents(), "testBasicCard()"));
   WaitForObservedEvent();
 

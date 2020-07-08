@@ -425,14 +425,16 @@ void ProfileMenuView::BuildIdentity() {
       GetProfileAttributesEntry(profile);
 
   base::string16 profile_name;
-  base::Optional<EditButtonParams> edit_button;
+  base::Optional<EditButtonParams> edit_button_params;
 // Profile names are not supported on ChromeOS.
 #if !defined(OS_CHROMEOS)
   size_t num_of_profiles =
       g_browser_process->profile_manager()->GetNumberOfProfiles();
-  if (num_of_profiles > 1 || !profile_attributes->IsUsingDefaultName()) {
+  if (num_of_profiles > 1 || !profile_attributes->IsUsingDefaultName() ||
+      base::FeatureList::IsEnabled(features::kNewProfilePicker)) {
     profile_name = profile_attributes->GetLocalProfileName();
-    edit_button = EditButtonParams(
+    edit_button_params = EditButtonParams(
+        &vector_icons::kEditIcon,
         l10n_util::GetStringUTF16(IDS_SETTINGS_EDIT_PERSON),
         base::BindRepeating(&ProfileMenuView::OnEditProfileButtonClicked,
                             base::Unretained(this)));
@@ -441,7 +443,7 @@ void ProfileMenuView::BuildIdentity() {
 
   if (account_info.has_value()) {
     SetProfileIdentityInfo(
-        profile_name, edit_button,
+        profile_name, edit_button_params,
         account_info.value().account_image.AsImageSkia(),
         base::UTF8ToUTF16(account_info.value().full_name),
         IsSyncPaused(profile)
@@ -449,7 +451,7 @@ void ProfileMenuView::BuildIdentity() {
             : base::UTF8ToUTF16(account_info.value().email));
   } else {
     SetProfileIdentityInfo(
-        profile_name, edit_button,
+        profile_name, edit_button_params,
         profile_attributes->GetAvatarIcon().AsImageSkia(),
         /*title=*/base::string16(),
         l10n_util::GetStringUTF16(IDS_PROFILES_LOCAL_PROFILE_STATE));

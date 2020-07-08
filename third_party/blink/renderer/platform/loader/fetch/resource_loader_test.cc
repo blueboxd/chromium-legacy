@@ -195,7 +195,8 @@ TEST_F(ResourceLoaderTest, ResponseType) {
     request.SetMode(test.request_mode);
     request.SetRequestContext(mojom::RequestContextType::FETCH);
 
-    FetchParameters fetch_parameters(std::move(request));
+    FetchParameters fetch_parameters =
+        FetchParameters::CreateForTest(std::move(request));
     if (test.request_mode == network::mojom::RequestMode::kCors) {
       fetch_parameters.SetCrossOriginAccessControl(
           origin.get(), network::mojom::CredentialsMode::kOmit);
@@ -229,7 +230,7 @@ TEST_F(ResourceLoaderTest, LoadResponseBody) {
   ResourceRequest request(url);
   request.SetRequestContext(mojom::RequestContextType::FETCH);
 
-  FetchParameters params(std::move(request));
+  FetchParameters params = FetchParameters::CreateForTest(std::move(request));
   Resource* resource = RawResource::Fetch(params, fetcher, nullptr);
   ResourceLoader* loader = resource->Loader();
 
@@ -293,7 +294,7 @@ TEST_F(ResourceLoaderTest, LoadDataURL_AsyncAndNonStream) {
   KURL url("data:text/plain,Hello%20World!");
   ResourceRequest request(url);
   request.SetRequestContext(mojom::RequestContextType::FETCH);
-  FetchParameters params(std::move(request));
+  FetchParameters params = FetchParameters::CreateForTest(std::move(request));
   Resource* resource = RawResource::Fetch(params, fetcher, nullptr);
   EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
   static_cast<scheduler::FakeTaskRunner*>(fetcher->GetTaskRunner().get())
@@ -351,7 +352,7 @@ TEST_F(ResourceLoaderTest, LoadDataURL_AsyncAndStream) {
   ResourceRequest request(url);
   request.SetRequestContext(mojom::RequestContextType::FETCH);
   request.SetUseStreamOnResponse(true);
-  FetchParameters params(std::move(request));
+  FetchParameters params = FetchParameters::CreateForTest(std::move(request));
   auto* raw_resource_client = MakeGarbageCollected<TestRawResourceClient>();
   Resource* resource = RawResource::Fetch(params, fetcher, raw_resource_client);
   EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
@@ -387,7 +388,7 @@ TEST_F(ResourceLoaderTest, LoadDataURL_AsyncEmptyData) {
   KURL url("data:text/html,");
   ResourceRequest request(url);
   request.SetRequestContext(mojom::RequestContextType::FETCH);
-  FetchParameters params(std::move(request));
+  FetchParameters params = FetchParameters::CreateForTest(std::move(request));
   Resource* resource = RawResource::Fetch(params, fetcher, nullptr);
   EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
   static_cast<scheduler::FakeTaskRunner*>(fetcher->GetTaskRunner().get())
@@ -410,7 +411,7 @@ TEST_F(ResourceLoaderTest, LoadDataURL_Sync) {
   KURL url("data:text/plain,Hello%20World!");
   ResourceRequest request(url);
   request.SetRequestContext(mojom::RequestContextType::FETCH);
-  FetchParameters params(std::move(request));
+  FetchParameters params = FetchParameters::CreateForTest(std::move(request));
   Resource* resource =
       RawResource::FetchSynchronously(params, fetcher, nullptr);
 
@@ -435,7 +436,7 @@ TEST_F(ResourceLoaderTest, LoadDataURL_SyncEmptyData) {
   KURL url("data:text/html,");
   ResourceRequest request(url);
   request.SetRequestContext(mojom::RequestContextType::FETCH);
-  FetchParameters params(std::move(request));
+  FetchParameters params = FetchParameters::CreateForTest(std::move(request));
   Resource* resource =
       RawResource::FetchSynchronously(params, fetcher, nullptr);
 
@@ -458,7 +459,7 @@ TEST_F(ResourceLoaderTest, LoadDataURL_DefersAsyncAndNonStream) {
   KURL url("data:text/plain,Hello%20World!");
   ResourceRequest request(url);
   request.SetRequestContext(mojom::RequestContextType::FETCH);
-  FetchParameters params(std::move(request));
+  FetchParameters params = FetchParameters::CreateForTest(std::move(request));
   Resource* resource = RawResource::Fetch(params, fetcher, nullptr);
   EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
 
@@ -505,7 +506,7 @@ TEST_F(ResourceLoaderTest, LoadDataURL_DefersAsyncAndStream) {
   ResourceRequest request(url);
   request.SetRequestContext(mojom::RequestContextType::FETCH);
   request.SetUseStreamOnResponse(true);
-  FetchParameters params(std::move(request));
+  FetchParameters params = FetchParameters::CreateForTest(std::move(request));
   auto* raw_resource_client = MakeGarbageCollected<TestRawResourceClient>();
   Resource* resource = RawResource::Fetch(params, fetcher, raw_resource_client);
   EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
@@ -574,7 +575,8 @@ class ResourceLoaderIsolatedCodeCacheTest : public ResourceLoaderTest {
     request.SetUrl(foo_url_);
     request.SetRequestContext(mojom::RequestContextType::FETCH);
 
-    FetchParameters fetch_parameters(std::move(request));
+    FetchParameters fetch_parameters =
+        FetchParameters::CreateForTest(std::move(request));
     Resource* resource = RawResource::Fetch(fetch_parameters, fetcher, nullptr);
     ResourceLoader* loader = resource->Loader();
 

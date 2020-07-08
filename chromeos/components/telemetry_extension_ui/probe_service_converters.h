@@ -52,12 +52,68 @@ health::mojom::CachedVpdInfoPtr UncheckedConvertPtr(
 health::mojom::CachedVpdResultPtr UncheckedConvertPtr(
     cros_healthd::mojom::CachedVpdResultPtr input);
 
+health::mojom::CpuCStateInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::CpuCStateInfoPtr input);
+
+health::mojom::LogicalCpuInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::LogicalCpuInfoPtr input);
+
+health::mojom::PhysicalCpuInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::PhysicalCpuInfoPtr input);
+
+health::mojom::CpuInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::CpuInfoPtr input);
+
+health::mojom::CpuResultPtr UncheckedConvertPtr(
+    cros_healthd::mojom::CpuResultPtr input);
+
+health::mojom::TimezoneInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::TimezoneInfoPtr input);
+
+health::mojom::TimezoneResultPtr UncheckedConvertPtr(
+    cros_healthd::mojom::TimezoneResultPtr input);
+
+health::mojom::MemoryInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::MemoryInfoPtr input);
+
+health::mojom::MemoryResultPtr UncheckedConvertPtr(
+    cros_healthd::mojom::MemoryResultPtr input);
+
+health::mojom::BacklightInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::BacklightInfoPtr input);
+
+health::mojom::BacklightResultPtr UncheckedConvertPtr(
+    cros_healthd::mojom::BacklightResultPtr input);
+
+health::mojom::FanInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::FanInfoPtr input);
+
+health::mojom::FanResultPtr UncheckedConvertPtr(
+    cros_healthd::mojom::FanResultPtr input);
+
+health::mojom::StatefulPartitionInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::StatefulPartitionInfoPtr input);
+
+health::mojom::StatefulPartitionResultPtr UncheckedConvertPtr(
+    cros_healthd::mojom::StatefulPartitionResultPtr input);
+
+health::mojom::BluetoothAdapterInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::BluetoothAdapterInfoPtr input);
+
+health::mojom::BluetoothResultPtr UncheckedConvertPtr(
+    cros_healthd::mojom::BluetoothResultPtr input);
+
 health::mojom::TelemetryInfoPtr UncheckedConvertPtr(
     cros_healthd::mojom::TelemetryInfoPtr input);
 
 }  // namespace unchecked
 
 health::mojom::ErrorType Convert(cros_healthd::mojom::ErrorType type);
+
+health::mojom::CpuArchitectureEnum Convert(
+    cros_healthd::mojom::CpuArchitectureEnum input);
+
+health::mojom::BoolValuePtr Convert(bool input);
 
 health::mojom::DoubleValuePtr Convert(double input);
 

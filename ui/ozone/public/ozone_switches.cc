@@ -18,4 +18,8 @@ const char kEnableWaylandIme[] = "enable-wayland-ime";
 // Disable explicit DMA-fences
 const char kDisableExplicitDmaFences[] = "disable-explicit-dma-fences";
 
+// Disable running as system compositor.
+const char kDisableRunningAsSystemCompositor[] =
+    "disable-running-as-system-compositor";
+
 }  // namespace switches

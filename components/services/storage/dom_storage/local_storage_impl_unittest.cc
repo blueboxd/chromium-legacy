@@ -1000,7 +1000,7 @@ TEST_F(LocalStorageImplTest, CorruptionOnDisk) {
                                  FILE_PATH_LITERAL("MANIFEST*"));
   for (base::FilePath name = file_enum.Next(); !name.empty();
        name = file_enum.Next()) {
-    base::DeleteFile(name, false);
+    base::DeleteFile(name);
   }
 
   // Make sure data is gone.

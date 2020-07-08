@@ -123,7 +123,7 @@ if (is_linux) {
       "//ipc",
       "//mojo/core/embedder",
       "//sandbox/linux:sandbox_services",
-      "//services/service_manager/sandbox",
+      "//sandbox/policy",
       "//url/ipc:url_ipc",
     ]
 
@@ -195,7 +195,7 @@ if (is_win && target_cpu == "x86" && current_cpu == "x64") {
       "//content/public/common:static_switches",
       "//mojo/core/embedder",
       "//sandbox",
-      "//services/service_manager/sandbox:sandbox",
+      "//sandbox/policy",
     ]
   }
 }
@@ -234,8 +234,8 @@ if (is_nacl_nonsfi) {
       "//native_client/src/untrusted/nacl",
       "//ppapi/proxy",
       "//sandbox/linux:sandbox",
+      "//sandbox/policy",
       "//services/service_manager/public/cpp",
-      "//services/service_manager/sandbox",
     ]
   }
 

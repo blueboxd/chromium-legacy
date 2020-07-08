@@ -17,6 +17,7 @@
 #include <string>
 
 #include "base/check.h"
+#include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
@@ -311,15 +312,17 @@ inline Rect ScaleToEnclosingRect(const Rect& rect, float scale) {
 
 // ScaleToEnclosingRect but clamping instead of asserting if the resulting rect
 // would overflow.
+// TODO(pkasting): Attempt to switch ScaleTo...Rect() to this construction and
+// check performance.
 inline Rect ScaleToEnclosingRectSafe(const Rect& rect,
                                      float x_scale,
                                      float y_scale) {
   if (x_scale == 1.f && y_scale == 1.f)
     return rect;
-  int x = base::saturated_cast<int>(std::floor(rect.x() * x_scale));
-  int y = base::saturated_cast<int>(std::floor(rect.y() * y_scale));
-  int w = base::saturated_cast<int>(std::ceil(rect.width() * x_scale));
-  int h = base::saturated_cast<int>(std::ceil(rect.height() * y_scale));
+  int x = base::Floor(rect.x() * x_scale);
+  int y = base::Floor(rect.y() * y_scale);
+  int w = base::Ceil(rect.width() * x_scale);
+  int h = base::Ceil(rect.height() * y_scale);
   return Rect(x, y, w, h);
 }
 

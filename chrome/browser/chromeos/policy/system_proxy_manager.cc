@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/policy/system_proxy_manager.h"
 
 #include "base/bind.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -18,10 +20,11 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "net/http/http_auth_scheme.h"
 
 namespace {
 const char kSystemProxyService[] = "system-proxy-service";
-}
+}  // namespace
 
 namespace policy {
 
@@ -33,10 +36,14 @@ SystemProxyManager::SystemProxyManager(chromeos::CrosSettings* cros_settings,
           base::BindRepeating(
               &SystemProxyManager::OnSystemProxySettingsPolicyChanged,
               base::Unretained(this)))) {
-  // Connect to a signal that indicates when a worker process is active.
-  chromeos::SystemProxyClient::Get()->ConnectToWorkerActiveSignal(
+  // Connect to System-proxy signals.
+  chromeos::SystemProxyClient::Get()->SetWorkerActiveSignalCallback(
       base::BindRepeating(&SystemProxyManager::OnWorkerActive,
                           weak_factory_.GetWeakPtr()));
+  chromeos::SystemProxyClient::Get()->SetAuthenticationRequiredSignalCallback(
+      base::BindRepeating(&SystemProxyManager::OnAuthenticationRequired,
+                          weak_factory_.GetWeakPtr()));
+  chromeos::SystemProxyClient::Get()->ConnectToWorkerSignals();
   local_state_ = local_state;
 
   // Listen to pref changes.
@@ -61,6 +68,7 @@ std::string SystemProxyManager::SystemServicesProxyPacString() const {
 
 void SystemProxyManager::StartObservingPrimaryProfilePrefs(Profile* profile) {
   primary_profile_ = profile;
+
   // Listen to pref changes.
   profile_pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   profile_pref_change_registrar_->Init(primary_profile_->GetPrefs());
@@ -108,6 +116,8 @@ void SystemProxyManager::OnSystemProxySettingsPolicyChanged() {
     return;
   }
 
+  system_proxy::SetAuthenticationDetailsRequest request;
+  system_proxy::Credentials credentials;
   const std::string* username = proxy_settings->FindStringKey(
       chromeos::kSystemProxySettingsKeySystemServicesUsername);
 
@@ -115,18 +125,15 @@ void SystemProxyManager::OnSystemProxySettingsPolicyChanged() {
       chromeos::kSystemProxySettingsKeySystemServicesPassword);
 
   if (!username || username->empty() || !password || password->empty()) {
-    NET_LOG(ERROR) << "Proxy credentials for system traffic not set: "
+    NET_LOG(DEBUG) << "Proxy credentials for system traffic not set: "
                    << kSystemProxyService;
-    return;
+  } else {
+    credentials.set_username(*username);
+    credentials.set_password(*password);
+    *request.mutable_credentials() = credentials;
   }
 
-  system_proxy::Credentials credentials;
-  credentials.set_username(*username);
-  credentials.set_password(*password);
-
-  system_proxy::SetAuthenticationDetailsRequest request;
   request.set_traffic_type(system_proxy::TrafficOrigin::SYSTEM);
-  *request.mutable_credentials() = credentials;
 
   chromeos::SystemProxyClient::Get()->SetAuthenticationDetails(
       request, base::BindOnce(&SystemProxyManager::OnSetAuthenticationDetails,
@@ -192,6 +199,47 @@ void SystemProxyManager::OnWorkerActive(
   if (details.traffic_origin() == system_proxy::TrafficOrigin::SYSTEM) {
     system_services_address_ = details.local_proxy_url();
   }
+}
+
+void SystemProxyManager::OnAuthenticationRequired(
+    const system_proxy::AuthenticationRequiredDetails& details) {
+  system_proxy::ProtectionSpace protection_space =
+      details.proxy_protection_space();
+
+  // TODO(acostinas, crbug.com/1098216): Get credentials from the network
+  // service.
+  LookupProxyAuthCredentialsCallback(protection_space,
+                                     /* credentials = */ base::nullopt);
+}
+
+void SystemProxyManager::LookupProxyAuthCredentialsCallback(
+    const system_proxy::ProtectionSpace& protection_space,
+    const base::Optional<net::AuthCredentials>& credentials) {
+  // System-proxy is started via d-bus activation, meaning the first d-bus call
+  // will start the daemon. Check that System-proxy was not disabled by policy
+  // while looking for credentials so we don't accidentally restart it.
+  if (!system_proxy_enabled_) {
+    return;
+  }
+  std::string username;
+  std::string password;
+  if (credentials) {
+    username = base::UTF16ToUTF8(credentials->username());
+    password = base::UTF16ToUTF8(credentials->password());
+  }
+
+  system_proxy::Credentials user_credentials;
+  user_credentials.set_username(username);
+  user_credentials.set_password(password);
+
+  system_proxy::SetAuthenticationDetailsRequest request;
+  request.set_traffic_type(system_proxy::TrafficOrigin::SYSTEM);
+  *request.mutable_credentials() = user_credentials;
+  *request.mutable_protection_space() = protection_space;
+
+  chromeos::SystemProxyClient::Get()->SetAuthenticationDetails(
+      request, base::BindOnce(&SystemProxyManager::OnSetAuthenticationDetails,
+                              weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace policy

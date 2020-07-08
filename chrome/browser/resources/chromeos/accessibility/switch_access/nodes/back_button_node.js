@@ -76,6 +76,11 @@ class BackButtonNode extends SAChildNode {
   }
 
   /** @override */
+  isValidAndVisible() {
+    return true;
+  }
+
+  /** @override */
   onFocus() {
     super.onFocus();
     chrome.accessibilityPrivate.updateSwitchAccessBubble(

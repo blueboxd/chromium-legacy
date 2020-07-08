@@ -37,7 +37,7 @@ class PaymentRequestTestObserver {
   virtual void OnCanMakePaymentReturned() {}
   virtual void OnHasEnrolledInstrumentCalled() {}
   virtual void OnHasEnrolledInstrumentReturned() {}
-  virtual void OnShowAppsReady() {}
+  virtual void OnAppListReady() {}
   virtual void OnNotSupportedError() {}
   virtual void OnConnectionTerminated() {}
   virtual void OnAbortCalled() {}
@@ -107,7 +107,7 @@ class PaymentRequestTestController {
   void OnCanMakePaymentReturned();
   void OnHasEnrolledInstrumentCalled();
   void OnHasEnrolledInstrumentReturned();
-  void OnShowAppsReady();
+  void OnAppListReady();
   void OnNotSupportedError();
   void OnConnectionTerminated();
   void OnAbortCalled();

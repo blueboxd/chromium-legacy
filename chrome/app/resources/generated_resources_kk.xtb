@@ -377,6 +377,7 @@
 <translation id="1468571364034902819">Бұл профильді пайдалану мүмкін емес</translation>
 <translation id="1470084204649225129">{NUM_TABS,plural, =1{Жаңа топқа қойынды қосу}other{Жаңа топқа қойындылар қосу}}</translation>
 <translation id="1472675084647422956">Толығырақ көрсету</translation>
+<translation id="1474785664565228650">Микрофонның параметріне өзгеріс енгізілгендіктен, Parallels Desktop қайта іске қосылуы қажет. Жалғастыру үшін Parallels Desktop қолданбасын қайта іске қосыңыз.</translation>
 <translation id="1475502736924165259">Файлда басқа ешбір санатқа сәйкес келмейтін сертификаттар бар</translation>
 <translation id="1476088332184200792">Құрылғыға көшіру</translation>
 <translation id="1476607407192946488">&amp;Тіл параметрлері</translation>
@@ -2926,6 +2927,7 @@
 <translation id="4648499713050786492">Адам суретін қосу үшін профиліңіздің құлпын ашыңыз.</translation>
 <translation id="4650591383426000695">Телефонды <ph name="DEVICE_TYPE" /> құрылғысынан ажыратыңыз.</translation>
 <translation id="4651484272688821107">Демо режиміндегі ресурстары бар онлайн компонент жүктелмеді.</translation>
+<translation id="4652935475563630866">Камераның параметріне өзгеріс енгізілгендіктен, Parallels Desktop қайта іске қосылуы қажет. Жалғастыру үшін Parallels Desktop қолданбасын қайта іске қосыңыз.</translation>
 <translation id="4653405415038586100">Linux-ті конфигурациялау қатесі шықты</translation>
 <translation id="465878909996028221">Тек http, https және файл протоколдары браузер бағытын ауыстырады.</translation>
 <translation id="4659077111144409915">Негізгі есептік жазба</translation>
@@ -6481,9 +6483,9 @@
 <translation id="9158715103698450907">Аутентификация барысында желі байланысы қатесі орын алды.  Желі байланысын тексеріп, әрекетті қайталаңыз.</translation>
 <translation id="9159643062839240276">Мына әрекеттерді орындап көріңіз:
     <ph name="BEGIN_LIST" />
-      <ph name="LIST_ITEM" />Желі кабельдерін, модемді және маршрутизаторды тексеру
-      <ph name="LIST_ITEM" />Wi-Fi желісін қайта жалғау
-      <ph name="LIST_ITEM" />Chrome Connectivity Diagnostics құралын іске қосу
+      <ph name="LIST_ITEM" />желі кабельдерін, модемді және маршрутизаторды тексеру;
+      <ph name="LIST_ITEM" />Wi-Fi желісіне қайта қосылу;
+      <ph name="LIST_ITEM" />Chrome Connectivity Diagnostics құралын іске қосу.
     <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Суреттегі сурет</translation>
 <translation id="9168436347345867845">Кейінірек</translation>

@@ -22,12 +22,16 @@ namespace enterprise_reporting {
 
 // Desktop implementation of platform-specific info fetching for Enterprise
 // browser report generation.
+// TODO(crbug.com/1102047): Move Chrome OS code to its own delegate
 class BrowserReportGeneratorDesktop : public BrowserReportGenerator::Delegate {
  public:
   using ReportCallback = base::OnceCallback<void(
       std::unique_ptr<enterprise_management::BrowserReport>)>;
 
   BrowserReportGeneratorDesktop();
+  BrowserReportGeneratorDesktop(const BrowserReportGeneratorDesktop&) = delete;
+  BrowserReportGeneratorDesktop& operator=(
+      const BrowserReportGeneratorDesktop&) = delete;
   ~BrowserReportGeneratorDesktop() override;
 
   std::string GetExecutablePath() override;

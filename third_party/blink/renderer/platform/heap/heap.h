@@ -459,7 +459,7 @@ class PLATFORM_EXPORT ThreadHeap {
 
   static ThreadHeap* main_thread_heap_;
 
-  static constexpr size_t kStepsBeforeEphemeronPairsFlush = 8u;
+  static constexpr size_t kStepsBeforeEphemeronPairsFlush = 4u;
   size_t steps_since_last_ephemeron_pairs_flush_ = 0;
   static constexpr size_t kStepsBeforeEphemeronProcessing = 16u;
   size_t steps_since_last_ephemeron_processing_ = 0;

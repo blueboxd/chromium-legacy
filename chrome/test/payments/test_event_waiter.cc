@@ -31,8 +31,8 @@ std::ostream& operator<<(std::ostream& out, TestEvent event) {
     case TestEvent::kAbortCalled:
       out << "AbortCalled";
       break;
-    case TestEvent::kShowAppsReady:
-      out << "ShowAppsReady";
+    case TestEvent::kAppListReady:
+      out << "AppListReady";
       break;
     case TestEvent::kPaymentCompleted:
       out << "PaymentCompleted";

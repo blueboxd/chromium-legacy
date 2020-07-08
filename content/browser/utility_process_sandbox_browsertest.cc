@@ -16,12 +16,12 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/test_service.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/sandbox/linux/sandbox_linux.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "sandbox/policy/linux/sandbox_linux.h"
+#include "sandbox/policy/switches.h"
 #include "services/service_manager/tests/sandbox_status.test-mojom.h"
 
-using service_manager::SandboxLinux;
-using service_manager::SandboxType;
+using sandbox::policy::SandboxLinux;
+using sandbox::policy::SandboxType;
 
 namespace {
 
@@ -29,7 +29,7 @@ std::vector<SandboxType> GetSandboxTypesToTest() {
   std::vector<SandboxType> types;
   // We need the standard sandbox config to run this test.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          service_manager::switches::kNoSandbox)) {
+          sandbox::policy::switches::kNoSandbox)) {
     return types;
   }
 
@@ -164,7 +164,7 @@ INSTANTIATE_TEST_SUITE_P(
     testing::ValuesIn(GetSandboxTypesToTest()),
     [](const testing::TestParamInfo<
         UtilityProcessSandboxBrowserTest::ParamType>& info) {
-      auto name = service_manager::StringFromUtilitySandboxType(info.param);
+      auto name = sandbox::policy::StringFromUtilitySandboxType(info.param);
       name[0] = base::ToUpperASCII(name[0]);
       return name;
     });

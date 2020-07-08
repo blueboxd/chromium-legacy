@@ -1525,7 +1525,7 @@ TEST_P(WaylandWindowTest, OnCloseRequest) {
   Sync();
 }
 
-TEST_P(WaylandWindowTest, SubsurfaceSimpleParent) {
+TEST_P(WaylandWindowTest, AuxiliaryWindowSimpleParent) {
   VerifyAndClearExpectations();
 
   std::unique_ptr<WaylandWindow> second_window = CreateWaylandWindowWithParams(
@@ -1536,21 +1536,21 @@ TEST_P(WaylandWindowTest, SubsurfaceSimpleParent) {
   // Test case 1: if the subsurface is provided with a parent widget, it must
   // always use that as a parent.
   gfx::Rect subsurface_bounds(gfx::Point(15, 15), gfx::Size(10, 10));
-  std::unique_ptr<WaylandWindow> subsuface_window =
+  std::unique_ptr<WaylandWindow> auxiliary_window =
       CreateWaylandWindowWithParams(PlatformWindowType::kTooltip,
                                     window_->GetWidget(), subsurface_bounds,
                                     &delegate_);
-  EXPECT_TRUE(subsuface_window);
+  EXPECT_TRUE(auxiliary_window);
 
   // The subsurface mustn't take the focused window as a parent, but use the
   // provided one.
   second_window->SetPointerFocus(true);
-  subsuface_window->Show(false);
+  auxiliary_window->Show(false);
 
   Sync();
 
   auto* mock_surface_subsurface =
-      server_.GetObject<wl::MockSurface>(subsuface_window->GetWidget());
+      server_.GetObject<wl::MockSurface>(auxiliary_window->GetWidget());
   auto* test_subsurface = mock_surface_subsurface->sub_surface();
 
   EXPECT_EQ(test_subsurface->position(), subsurface_bounds.origin());
@@ -1561,20 +1561,20 @@ TEST_P(WaylandWindowTest, SubsurfaceSimpleParent) {
   EXPECT_EQ(parent_resource, test_subsurface->parent_resource());
 
   // Test case 2: the subsurface must use the focused window as its parent.
-  subsuface_window = CreateWaylandWindowWithParams(
+  auxiliary_window = CreateWaylandWindowWithParams(
       PlatformWindowType::kTooltip, gfx::kNullAcceleratedWidget,
       subsurface_bounds, &delegate_);
-  EXPECT_TRUE(subsuface_window);
+  EXPECT_TRUE(auxiliary_window);
 
   // The tooltip must take the focused window.
   second_window->SetPointerFocus(true);
-  subsuface_window->Show(false);
+  auxiliary_window->Show(false);
 
   Sync();
 
-  // Get new surface after recreating the WaylandSubsurface.
+  // Get new surface after recreating the WaylandAuxiliaryWindow.
   mock_surface_subsurface =
-      server_.GetObject<wl::MockSurface>(subsuface_window->GetWidget());
+      server_.GetObject<wl::MockSurface>(auxiliary_window->GetWidget());
   test_subsurface = mock_surface_subsurface->sub_surface();
 
   auto* second_parent_resource =
@@ -1582,14 +1582,14 @@ TEST_P(WaylandWindowTest, SubsurfaceSimpleParent) {
           ->resource();
   EXPECT_EQ(second_parent_resource, test_subsurface->parent_resource());
 
-  subsuface_window->Hide();
+  auxiliary_window->Hide();
 
   Sync();
 
   // The subsurface must take the focused window.
   second_window->SetPointerFocus(false);
   window_->SetPointerFocus(true);
-  subsuface_window->Show(false);
+  auxiliary_window->Show(false);
 
   Sync();
 
@@ -1751,7 +1751,7 @@ TEST_P(WaylandWindowTest, NestedPopupMenu3) {
   nestedPopup_window->SetPointerFocus(false);
 }
 
-TEST_P(WaylandWindowTest, SubsurfaceNestedParent) {
+TEST_P(WaylandWindowTest, AuxiliaryWindowNestedParent) {
   VerifyAndClearExpectations();
 
   gfx::Rect menu_window_bounds(gfx::Point(10, 10), gfx::Size(100, 100));
@@ -1763,22 +1763,22 @@ TEST_P(WaylandWindowTest, SubsurfaceNestedParent) {
   VerifyAndClearExpectations();
 
   gfx::Rect subsurface_bounds(gfx::Point(15, 15), gfx::Size(10, 10));
-  std::unique_ptr<WaylandWindow> subsuface_window =
+  std::unique_ptr<WaylandWindow> auxiliary_window =
       CreateWaylandWindowWithParams(PlatformWindowType::kTooltip,
                                     menu_window->GetWidget(), subsurface_bounds,
                                     &delegate_);
-  EXPECT_TRUE(subsuface_window);
+  EXPECT_TRUE(auxiliary_window);
 
   VerifyAndClearExpectations();
 
   menu_window->SetPointerFocus(true);
 
-  subsuface_window->Show(false);
+  auxiliary_window->Show(false);
 
   Sync();
 
   auto* mock_surface_subsurface =
-      server_.GetObject<wl::MockSurface>(subsuface_window->GetWidget());
+      server_.GetObject<wl::MockSurface>(auxiliary_window->GetWidget());
   auto* test_subsurface = mock_surface_subsurface->sub_surface();
 
   auto new_origin = subsurface_bounds.origin() -

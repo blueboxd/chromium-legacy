@@ -524,8 +524,8 @@ TEST_F(NetworkConfigurationUpdaterTest, PolicyIsValidatedAndRepaired) {
       chromeos::onc::test_utils::ReadTestData("toplevel_partially_invalid.onc");
   PolicyMap policy;
   policy.Set(key::kOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(onc_policy), nullptr);
+             POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(onc_policy),
+             nullptr);
   UpdateProviderPolicy(policy);
 
   EXPECT_CALL(network_config_handler_,
@@ -564,8 +564,8 @@ TEST_F(NetworkConfigurationUpdaterTest,
 
   PolicyMap policy;
   policy.Set(key::kOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(kFakeONC), nullptr);
+             POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(kFakeONC),
+             nullptr);
   UpdateProviderPolicy(policy);
   MarkPolicyProviderInitialized();
   base::RunLoop().RunUntilIdle();
@@ -616,8 +616,8 @@ TEST_F(NetworkConfigurationUpdaterTest,
   // Change to ONC policy with web trust certs.
   PolicyMap policy;
   policy.Set(key::kOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(kFakeONC), nullptr);
+             POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(kFakeONC),
+             nullptr);
   UpdateProviderPolicy(policy);
   base::RunLoop().RunUntilIdle();
 
@@ -651,8 +651,7 @@ TEST_F(NetworkConfigurationUpdaterTest, ExtensionScopedWebTrustedCertificate) {
   PolicyMap policy;
   policy.Set(key::kDeviceOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(kFakeONCWithExtensionScopedCert),
-             nullptr);
+             base::Value(kFakeONCWithExtensionScopedCert), nullptr);
   UpdateProviderPolicy(policy);
   MarkPolicyProviderInitialized();
   base::RunLoop().RunUntilIdle();
@@ -681,8 +680,8 @@ TEST_F(NetworkConfigurationUpdaterTest,
        DontImportCertificateBeforeCertificateImporterSet) {
   PolicyMap policy;
   policy.Set(key::kOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(kFakeONC), nullptr);
+             POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(kFakeONC),
+             nullptr);
   UpdateProviderPolicy(policy);
 
   ::onc::ONCSource source = onc::ONC_SOURCE_USER_POLICY;
@@ -711,8 +710,8 @@ TEST_F(NetworkConfigurationUpdaterTest,
 TEST_F(NetworkConfigurationUpdaterTest, ReplaceDeviceOncPlaceholders) {
   PolicyMap policy;
   policy.Set(key::kDeviceOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(kFakeONC), nullptr);
+             POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD, base::Value(kFakeONC),
+             nullptr);
   UpdateProviderPolicy(policy);
 
   ::onc::ONCSource source = onc::ONC_SOURCE_DEVICE_POLICY;
@@ -754,7 +753,7 @@ TEST(UserNetworkConfigurationStaticsTest, TestHasWebTrustedCertsNo) {
   PolicyMap policy;
   policy.Set(key::kOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(kONCWithoutWebTrustedCert), nullptr);
+             base::Value(kONCWithoutWebTrustedCert), nullptr);
   EXPECT_FALSE(
       UserNetworkConfigurationUpdater::PolicyHasWebTrustedAuthorityCertificate(
           policy));
@@ -792,7 +791,7 @@ TEST(UserNetworkConfigurationStaticsTest, TestHasWebTrustedCertsYes) {
   PolicyMap policy;
   policy.Set(key::kOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(kONCWithWebTrustedCert), nullptr);
+             base::Value(kONCWithWebTrustedCert), nullptr);
   EXPECT_TRUE(
       UserNetworkConfigurationUpdater::PolicyHasWebTrustedAuthorityCertificate(
           policy));
@@ -809,8 +808,8 @@ TEST(UserNetworkConfigurationStaticsTest, TestHasWebTrustedCertsInvalidPolicy) {
   const char kInvalidONC[] = "not even valid json";
   PolicyMap policy;
   policy.Set(key::kOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(kInvalidONC), nullptr);
+             POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(kInvalidONC),
+             nullptr);
   EXPECT_FALSE(
       UserNetworkConfigurationUpdater::PolicyHasWebTrustedAuthorityCertificate(
           policy));
@@ -855,8 +854,7 @@ class NetworkConfigurationUpdaterTestWithParam
 TEST_P(NetworkConfigurationUpdaterTestWithParam, InitialUpdates) {
   PolicyMap policy;
   policy.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(kFakeONC),
-             nullptr);
+             POLICY_SOURCE_CLOUD, base::Value(kFakeONC), nullptr);
   UpdateProviderPolicy(policy);
 
   EXPECT_CALL(
@@ -877,8 +875,7 @@ TEST_P(NetworkConfigurationUpdaterTestWithParam,
        PolicyNotSetBeforePolicyProviderInitialized) {
   PolicyMap policy;
   policy.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(kFakeONC),
-             nullptr);
+             POLICY_SOURCE_CLOUD, base::Value(kFakeONC), nullptr);
   UpdateProviderPolicy(policy);
 
   CreateNetworkConfigurationUpdater();
@@ -905,8 +902,7 @@ TEST_P(NetworkConfigurationUpdaterTestWithParam,
 
   PolicyMap policy;
   policy.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(kFakeONC),
-             nullptr);
+             POLICY_SOURCE_CLOUD, base::Value(kFakeONC), nullptr);
   UpdateProviderPolicy(policy);
 
   EXPECT_CALL(
@@ -946,8 +942,7 @@ TEST_P(NetworkConfigurationUpdaterTestWithParam, PolicyChange) {
 
   PolicyMap policy;
   policy.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(kFakeONC),
-             nullptr);
+             POLICY_SOURCE_CLOUD, base::Value(kFakeONC), nullptr);
   UpdateProviderPolicy(policy);
   Mock::VerifyAndClearExpectations(&network_config_handler_);
   EXPECT_EQ(ExpectedImportCertificatesCallCount(),

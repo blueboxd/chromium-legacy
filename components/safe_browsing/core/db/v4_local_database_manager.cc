@@ -54,48 +54,51 @@ ListInfos GetListInfos() {
 //   hash checks. For instance: GetChromeUrlApiId()
 
 #if defined(OS_IOS)
-  const bool kSyncOnlyOnChromeBuilds = false;
-  const bool kSyncOnlyOnDesktopBuilds = false;
-#elif BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  const bool kSyncOnlyOnChromeBuilds = true;
-  const bool kSyncOnlyOnDesktopBuilds = true;
+  const bool kSyncOnIos = true;
 #else
-  const bool kSyncOnlyOnChromeBuilds = false;
-  const bool kSyncOnlyOnDesktopBuilds = true;
+  const bool kSyncOnIos = false;
 #endif
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  const bool kIsChromeBranded = true;
+#else
+  const bool kIsChromeBranded = false;
+#endif
+
+  const bool kSyncOnDesktopBuilds = !kSyncOnIos;
+  const bool kSyncOnChromeDesktopBuilds = kIsChromeBranded && kSyncOnDesktopBuilds;
   const bool kSyncAlways = true;
   const bool kSyncNever = false;
   return ListInfos({
-      ListInfo(kSyncOnlyOnDesktopBuilds, "IpMalware.store", GetIpMalwareId(),
+      ListInfo(kSyncOnDesktopBuilds, "IpMalware.store", GetIpMalwareId(),
                SB_THREAT_TYPE_UNUSED),
       ListInfo(kSyncAlways, "UrlSoceng.store", GetUrlSocEngId(),
                SB_THREAT_TYPE_URL_PHISHING),
       ListInfo(kSyncAlways, "UrlMalware.store", GetUrlMalwareId(),
                SB_THREAT_TYPE_URL_MALWARE),
-      ListInfo(kSyncOnlyOnDesktopBuilds, "UrlUws.store", GetUrlUwsId(),
+      ListInfo(kSyncOnDesktopBuilds, "UrlUws.store", GetUrlUwsId(),
                SB_THREAT_TYPE_URL_UNWANTED),
-      ListInfo(kSyncOnlyOnDesktopBuilds, "UrlMalBin.store", GetUrlMalBinId(),
+      ListInfo(kSyncOnDesktopBuilds, "UrlMalBin.store", GetUrlMalBinId(),
                SB_THREAT_TYPE_URL_BINARY_MALWARE),
-      ListInfo(kSyncOnlyOnDesktopBuilds, "ChromeExtMalware.store",
+      ListInfo(kSyncOnDesktopBuilds, "ChromeExtMalware.store",
                GetChromeExtMalwareId(), SB_THREAT_TYPE_EXTENSION),
-      ListInfo(kSyncOnlyOnChromeBuilds, "CertCsdDownloadWhitelist.store",
+      ListInfo(kSyncOnChromeDesktopBuilds, "CertCsdDownloadWhitelist.store",
                GetCertCsdDownloadWhitelistId(), SB_THREAT_TYPE_UNUSED),
-      ListInfo(kSyncOnlyOnChromeBuilds, "ChromeUrlClientIncident.store",
+      ListInfo(kSyncOnChromeDesktopBuilds, "ChromeUrlClientIncident.store",
                GetChromeUrlClientIncidentId(),
                SB_THREAT_TYPE_BLACKLISTED_RESOURCE),
       ListInfo(kSyncAlways, "UrlBilling.store", GetUrlBillingId(),
                SB_THREAT_TYPE_BILLING),
-      ListInfo(kSyncOnlyOnChromeBuilds, "UrlCsdDownloadWhitelist.store",
+      ListInfo(kSyncOnChromeDesktopBuilds, "UrlCsdDownloadWhitelist.store",
                GetUrlCsdDownloadWhitelistId(), SB_THREAT_TYPE_UNUSED),
-      ListInfo(kSyncOnlyOnChromeBuilds, "UrlCsdWhitelist.store",
+      ListInfo(kSyncOnChromeDesktopBuilds, "UrlCsdWhitelist.store",
                GetUrlCsdWhitelistId(), SB_THREAT_TYPE_CSD_WHITELIST),
-      ListInfo(kSyncOnlyOnChromeBuilds, "UrlSubresourceFilter.store",
+      ListInfo(kSyncOnChromeDesktopBuilds, "UrlSubresourceFilter.store",
                GetUrlSubresourceFilterId(), SB_THREAT_TYPE_SUBRESOURCE_FILTER),
-      ListInfo(kSyncOnlyOnChromeBuilds, "UrlSuspiciousSite.store",
+      ListInfo(kSyncOnChromeDesktopBuilds, "UrlSuspiciousSite.store",
                GetUrlSuspiciousSiteId(), SB_THREAT_TYPE_SUSPICIOUS_SITE),
       ListInfo(kSyncNever, "", GetChromeUrlApiId(), SB_THREAT_TYPE_API_ABUSE),
-      ListInfo(kSyncOnlyOnChromeBuilds, "UrlHighConfidenceAllowlist.store",
+      ListInfo(kSyncOnChromeDesktopBuilds || kSyncOnIos, "UrlHighConfidenceAllowlist.store",
                GetUrlHighConfidenceAllowlistId(),
                SB_THREAT_TYPE_HIGH_CONFIDENCE_ALLOWLIST),
   });

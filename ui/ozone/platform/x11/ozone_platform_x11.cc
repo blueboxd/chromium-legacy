@@ -63,15 +63,15 @@ namespace ui {
 namespace {
 
 constexpr OzonePlatform::PlatformProperties kX11PlatformProperties{
-    /*needs_view_token=*/false,
-    /*custom_frame_pref_default=*/false,
-    /*use_system_title_bar=*/true,
+    .needs_view_token = false,
+    .custom_frame_pref_default = false,
+    .use_system_title_bar = true,
 
     // When the Ozone X11 backend is running, use a UI loop to grab Expose
     // events. See GLSurfaceGLX and https://crbug.com/326995.
-    /*message_pump_type_for_gpu=*/base::MessagePumpType::UI,
-    /*supports_vulkan_swap_chain=*/true,
-};
+    .message_pump_type_for_gpu = base::MessagePumpType::UI,
+    .supports_vulkan_swap_chain = true,
+    .platform_shows_drag_image = false};
 
 // Singleton OzonePlatform implementation for X11 platform.
 class OzonePlatformX11 : public OzonePlatform,

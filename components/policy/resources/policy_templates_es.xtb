@@ -1399,11 +1399,11 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
       Ten en cuenta que la autenticación pasiva siempre está permitida en los perfiles normales.
 
       En la versión 81 y versiones posteriores de <ph name="PRODUCT_NAME" />, si no se establece la política, la autenticación pasiva se habilitará únicamente en las sesiones normales.</translation>
-<translation id="3021288356473993647">Esta política controla la comprobación de URL en tiempo real para identificar URL no seguras.
+<translation id="3021288356473993647">Esta política controla la comprobación de URLs en tiempo real para identificar URL no seguras.
 
       Si se inhabilita o no se le asigna ningún valor, se aplicarán las comprobaciones predeterminadas de Navegación Segura para usuarios particulares. Las comprobaciones de Navegación Segura para usuarios particulares podrán seguir incluyendo consultas en tiempo real en función del valor del ajuste "Mejorar las búsquedas y la navegación" y del valor de la política UrlKeyedAnonymizedDataCollectionEnabled.
 
-      Si se habilita esta política, las URL se enviarán para que se analicen en tiempo real de acuerdo con los Términos del Servicio de la empresa. Chrome enviará las URL a Google Cloud o a terceros de tu elección para que se analicen en tiempo real. Se desactivará la versión para usuarios particulares de la búsqueda en tiempo real de Navegación Segura.
+      Si se habilita esta política, las URL se enviarán para que se analicen en tiempo real de acuerdo con los Términos del Servicio de Chrome Enterprise. Chrome enviará las URL a Google Cloud o a terceros de tu elección para que se analicen en tiempo real. Se desactivará la versión para usuarios particulares de la búsqueda en tiempo real de Navegación Segura.
 
       Esta política solo se puede establecer desde la consola de administración de Google.</translation>
 <translation id="3021562480854470924">Se permite restaurar el número de eventos clave</translation>
@@ -2026,7 +2026,7 @@ Si se le asigna el valor "False", <ph name="PRODUCT_NAME" /> no usará notificac
 <translation id="3950239119790560549">Actualizar restricciones de tiempo</translation>
 <translation id="3956686688560604829">Usar la política SiteList de Internet Explorer para gestionar la compatibilidad con navegadores antiguos.</translation>
 <translation id="3958586912393694012">Permitir el uso de Smart Lock</translation>
-<translation id="3962445567482559878">Usar el modo EDU de la experiencia de incorporación del Asistente</translation>
+<translation id="3962445567482559878">Usa el modo EDU de la experiencia de incorporación del Asistente</translation>
 <translation id="3963602271515417124">Si se asigna el valor True, se habilitará la confirmación remota para el dispositivo y se generará automáticamente un certificado que se subirá al servidor de administración de dispositivos.
 
           Si esta política no se establece o se le asigna el valor False, no se generará ningún certificado y se producirán errores en las llamadas a la API de extensión enterprise.platformKeys.</translation>
@@ -2780,25 +2780,6 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
       Si esta política está establecida en True, <ph name="PRODUCT_OS_NAME" /> evitará que el dispositivo se inicie en modo de desarrollador. El sistema no se iniciará y mostrará una pantalla de error cuando se active la opción de desarrollador.
 
       Si no se establece esta política o se establece en False, el modo de desarrollador seguirá disponible para el dispositivo.</translation>
-<translation id="5210980743015047124">Configura el requisito de la versión mínima permitida de <ph name="PRODUCT_NAME" />.
-
-      Cuando a esta política se le asigna una lista que no esté vacía:
-      Si ninguna de las entradas tiene un valor de "chrome_version" superior a la versión actual en el dispositivo, no se aplicará ninguna restricción y se revocarán las restricciones existentes.
-      Si alguna de las entradas tiene un valor de "chrome_version" superior a la versión actual, se elegirá la entrada estable cuya versión sea más próxima a la actual.
-      En caso de que se produzca un conflicto, se le dará preferencia a la que tenga un valor de "warning_period" o "eol_warning_period" menor y se aplicará la política usando esa entrada.
-
-      Si la versión actual queda obsoleta durante una sesión, se mostrará una notificación en la pantalla para pedir que se actualice el dispositivo durante el periodo de "warning_period" que se muestra en la notificación.
-      El periodo de "warning_period" empieza en el momento en que se aplica la política.
-      Si no se actualiza el dispositivo antes de que termine el periodo de "warning_period", se desconectará al usuario del sistema.
-      Si la versión actual está obsoleta en el momento de inicio de sesión y el periodo de "warning_period" ha terminado, el usuario deberá actualizar el dispositivo antes de iniciar sesión.
-
-      Si termina el ciclo de vida durante una sesión, se mostrará una notificación en la pantalla para pedir que el usuario cierre sesión después de que el periodo de "eol_warning_period" haya terminado.
-      Si el dispositivo ha terminado su ciclo de vida en el momento de inicio de sesión y el periodo de "eol_warning_period" ha terminado, ningún usuario podrá iniciar sesión en el dispositivo.
-
-      Si no se define esta política o se deja vacía, no se aplicará ninguna restricción, se revocarán las restricciones existentes y el usuario podrá iniciar sesión independientemente de la versión de <ph name="PRODUCT_NAME" />.
-
-      "chrome_version" puede hacer referencia a una versión exacta, como "61.0.3163.120", o al prefijo de una versión, como "61.0".
-      "warning_period" y "eol_warning_period" son valores opcionales especificados en número de días. El valor predeterminado es 0 días, lo que significa que no hay periodo de espera. </translation>
 <translation id="5212118847531454979">Permite establecer el periodo (en milisegundos) durante el cual los usuarios reciben una notificación informándoles de que deben reiniciar <ph name="PRODUCT_NAME" /> o un dispositivo <ph name="PRODUCT_OS_NAME" /> para aplicar una actualización pendiente.
 
       Durante este periodo, se informa de forma reiterada al usuario de que la actualización es necesaria. En el caso de los dispositivos <ph name="PRODUCT_OS_NAME" />, se muestra una notificación de reinicio en la bandeja del sistema de acuerdo con la política <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. En el caso de los navegadores <ph name="PRODUCT_NAME" />, el menú de aplicaciones cambia para indicar que es necesario reiniciar cuando ha transcurrido un tercio del periodo de notificación. Esta notificación cambia de color cuando han transcurrido dos tercios del periodo de notificación y, de nuevo, cuando este periodo finaliza. Las notificaciones adicionales habilitadas por la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> siguen esta misma programación.
@@ -3135,20 +3116,6 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
           Esta política se aplicará si <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> está inhabilitado. De lo contrario, esta política se ignorará porque el retraso de atenuación de pantalla se determina con un modelo de aprendizaje automático.
 
           El factor de escala debe ser igual o superior a 100 %. No se permiten valores que puedan reducir el retraso de atenuación de pantalla en el modo de presentación más allá de su valor habitual.</translation>
-<translation id="5590988845778885692">Proporciona la configuración de los servidores de impresión disponibles.
-
-      Esta política permite enviar archivos JSON de configuración de servidores de impresión externos a dispositivos con <ph name="PRODUCT_OS_NAME" />.
-
-      El tamaño del archivo no debe ser superior a 1 MB y debe contener una matriz de registros (objetos JSON). Todos los registros deben tener los campos id, url y display_name con cadenas como valores. Los valores de los campos id deben ser únicos.
-
-      El archivo se descargará y se almacenará en caché. Se usa un hash criptográfico para verificar la integridad de la descarga. Se volverá a descargar el archivo cada vez que se cambie la URL o el hash.
-
-      Si se asigna un valor correcto a esta política, los dispositivos intentarán solicitar información a los servidores de impresión especificados con el protocolo IPP para buscar impresoras disponibles.
-
-      Si no se define esta política o se le asigna un valor incorrecto, los usuarios no verán ningún servidor de impresión.
-
-      Actualmente, el número máximo de servidores de impresión es 16. Solo se solicitará información a los primeros 16 servidores de la lista.
-      </translation>
 <translation id="5592242031005200087">
       Si se habilita la política, cada uno de los orígenes especificados en una lista de elementos separados por comas se ejecutará en un proceso propio. También se aislarán los orígenes de los subdominios correspondientes (por ejemplo, especificar https://example.com/ aislará https://foo.example.com/ como parte del sitio web https://example.com/).
 
@@ -3298,14 +3265,6 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
       Las URL (como https://example.com/una/ruta) solo se identifican como appIDs U2F, mientras que los dominios (como example.com) se identifican únicamente como IDs RP de WebAuthn. Por ello, para incluir tanto las API WebAuthn como U2F de un determinado sitio web, se deben indican la URL appID y el dominio.</translation>
 <translation id="5836064773277134605">Restringe el intervalo de puertos UDP utilizado por el host de acceso remoto</translation>
 <translation id="585270638818921943">Evitar que el usuario utilice aplicaciones Android de fuentes que no son de confianza</translation>
-<translation id="5854749508571554984">Esta política solo es efectiva cuando el dispositivo haya llegado al fin del ciclo de vida y no tenga la versión mínima permitida de <ph name="PRODUCT_NAME" /> establecida en la política <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" />.
-
-      Si a esta política se le asigna una cadena que no está vacía:
-      Si el tiempo de advertencia descrito en la política <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> ha caducado, se muestra este mensaje en la pantalla de inicio de sesión cuando ningún usuario pueda iniciar sesión en el dispositivo.
-      Si el tiempo de advertencia descrito en la política <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> no ha caducado, se muestra este mensaje en la página de ajustes después de que el usuario haya iniciado sesión.
-
-      Si no se establece esta política o se deja vacía, el mensaje predeterminado de fin del ciclo de vida se le muestra al usuario en los dos casos mencionados anteriormente.
-      El mensaje de fin del ciclo de vida debe ser texto sin ningún tipo de formato. No se permiten etiquetas. </translation>
 <translation id="5855010364142818361">Esta política controla parámetros de línea de comandos para Chrome en Internet Explorer.
 
       La política no tendrá ningún efecto si no está instalada la extensión "Compatibilidad con navegadores antiguos" para Internet Explorer.
@@ -3957,7 +3916,6 @@ Si la política está establecida en False, no se informará sobre los usuarios.
       Si se le asigna el valor <ph name="BR_UNDER_USER_CONTROL" />, se muestran mensajes a los usuarios para preguntarles si quieren utilizar el servicio de copia de seguridad y restauración. Si los usuarios activan el servicio de copia de seguridad y restauración, los datos de la aplicación Android se subirán a los servidores de copia de seguridad de Android y se restaurarán cuando se vuelvan a instalar las aplicaciones compatibles.
 
       Los usuarios podrán activar o desactivar el servicio de copia de seguridad y restauración después de la configuración inicial.</translation>
-<translation id="6993687707842131236">Configurar el mensaje de fin del ciclo de vida de la política MinimumChromeVersionEnforced</translation>
 <translation id="6994082778848658360">Especifica cómo se puede utilizar el hardware del elemento seguro integrado para proporcionar una autenticación de dos factores si es compatible con esta función. El botón de encendido del ordenador se utiliza para detectar la presencia física del usuario.
 
       Si se inhabilita esta opción, no se proporciona ninguna autenticación de dos factores.

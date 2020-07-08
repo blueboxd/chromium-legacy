@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "v8/include/v8-inspector.h"
 
 namespace blink {
@@ -94,29 +95,6 @@ std::unique_ptr<protocol::DOMSnapshot::RareBooleanData> BooleanData() {
       .build();
 }
 
-String GetOriginUrlFast(int max_stack_depth) {
-  static const v8::StackTrace::StackTraceOptions stackTraceOptions =
-      static_cast<v8::StackTrace::StackTraceOptions>(v8::StackTrace::kDetailed);
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  DCHECK(isolate);
-
-  v8::Local<v8::StackTrace> v8StackTrace = v8::StackTrace::CurrentStackTrace(
-      isolate, max_stack_depth, stackTraceOptions);
-  if (v8StackTrace.IsEmpty())
-    return String();
-  for (int i = 0, frame_count = v8StackTrace->GetFrameCount(); i < frame_count;
-       ++i) {
-    v8::Local<v8::StackFrame> frame = v8StackTrace->GetFrame(isolate, i);
-    if (frame.IsEmpty())
-      continue;
-    v8::Local<v8::String> script_name = frame->GetScriptNameOrSourceURL();
-    if (script_name.IsEmpty() || !script_name->Length())
-      continue;
-    return ToCoreString(script_name);
-  }
-  return String();
-}
-
 String GetOriginUrl(const Node* node) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   ThreadDebugger* debugger = ThreadDebugger::From(isolate);
@@ -124,10 +102,10 @@ String GetOriginUrl(const Node* node) {
     return String();
   v8::HandleScope handleScope(isolate);
   // Try not getting the entire stack first.
-  String url = GetOriginUrlFast(/* maxStackSize=*/5);
+  String url = GetCurrentScriptUrl(/* maxStackSize=*/5);
   if (!url.IsEmpty())
     return url;
-  url = GetOriginUrlFast(/* maxStackSize=*/200);
+  url = GetCurrentScriptUrl(/* maxStackSize=*/200);
   if (!url.IsEmpty())
     return url;
   // If we did not get anything from the sync stack, let's try the slow

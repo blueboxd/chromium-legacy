@@ -14,8 +14,8 @@
 #include "base/win/windows_version.h"
 #include "content/public/child/child_thread.h"
 #include "content/public/common/content_switches.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "sandbox/policy/sandbox_type.h"
+#include "sandbox/policy/switches.h"
 #endif
 
 namespace {
@@ -58,12 +58,12 @@ void MaybeInitializeGDI() {
 
   // Patch utility processes which explicitly need GDI. Anything else, just
   // return.
-  service_manager::SandboxType service_sandbox_type =
-      service_manager::SandboxTypeFromCommandLine(command_line);
-  if (!(service_sandbox_type == service_manager::SandboxType::kPpapi ||
+  sandbox::policy::SandboxType service_sandbox_type =
+      sandbox::policy::SandboxTypeFromCommandLine(command_line);
+  if (!(service_sandbox_type == sandbox::policy::SandboxType::kPpapi ||
         service_sandbox_type ==
-            service_manager::SandboxType::kPrintCompositor ||
-        service_sandbox_type == service_manager::SandboxType::kPdfConversion)) {
+            sandbox::policy::SandboxType::kPrintCompositor ||
+        service_sandbox_type == sandbox::policy::SandboxType::kPdfConversion)) {
     return;
   }
 

@@ -284,7 +284,7 @@ struct VREyeParameters {
 };
 
 struct VRStageParameters {
-  gfx.mojom.Transform standing_transform;
+  gfx.mojom.Transform mojo_from_floor;
 
   // If present, indicates that the device supports a bounded reference space
   // (https://immersive-web.github.io/webxr/#xrboundedreferencespace-interface).

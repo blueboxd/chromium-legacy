@@ -4,19 +4,21 @@
 
 package org.chromium.chrome.browser.payments;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.components.payments.ComponentPaymentRequestImpl;
 import org.chromium.components.payments.ErrorStrings;
 import org.chromium.components.payments.OriginSecurityChecker;
 import org.chromium.components.payments.PaymentFeatureList;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsStatics;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojo.system.MojoResult;
 import org.chromium.payments.mojom.CanMakePaymentQueryResult;
@@ -104,7 +106,7 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
      * Production implementation of the PaymentRequestImpl's Delegate. Gives true answers
      * about the system.
      */
-    public static class PaymentRequestDelegateImpl implements PaymentRequestImpl.Delegate {
+    public class PaymentRequestDelegateImpl implements PaymentRequestImpl.Delegate {
         private final TwaPackageManagerDelegate mPackageManager = new TwaPackageManagerDelegate();
 
         @Override
@@ -113,7 +115,8 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
         }
 
         @Override
-        public String getInvalidSslCertificateErrorMessage(WebContents webContents) {
+        public String getInvalidSslCertificateErrorMessage() {
+            WebContents webContents = getWebContents();
             if (!OriginSecurityChecker.isSchemeCryptographic(webContents.getLastCommittedUrl())) {
                 return null;
             }
@@ -121,13 +124,15 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
         }
 
         @Override
-        public boolean isWebContentsActive(TabModel model, WebContents webContents) {
-            return TabModelUtils.getCurrentWebContents(model) == webContents;
+        public boolean isWebContentsActive(@NonNull ChromeActivity activity) {
+            return TabModelUtils.getCurrentWebContents(activity.getCurrentTabModel())
+                    == getWebContents();
         }
 
         @Override
         public boolean prefsCanMakePayment() {
-            return PrefServiceBridge.getInstance().getBoolean(Pref.CAN_MAKE_PAYMENT_ENABLED);
+            return UserPrefs.get(Profile.fromWebContents(getWebContents()))
+                    .getBoolean(Pref.CAN_MAKE_PAYMENT_ENABLED);
         }
 
         @Override
@@ -174,5 +179,9 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
 
         return new ComponentPaymentRequestImpl(
                 new PaymentRequestImpl(mRenderFrameHost, delegate, sNativeObserverForTest));
+    }
+
+    WebContents getWebContents() {
+        return WebContentsStatics.fromRenderFrameHost(mRenderFrameHost);
     }
 }

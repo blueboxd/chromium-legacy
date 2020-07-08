@@ -574,8 +574,8 @@ void MDnsListenerImpl::ScheduleNextRefresh() {
     return;
   }
 
-  next_refresh_.Reset(base::Bind(&MDnsListenerImpl::DoRefresh,
-                                 AsWeakPtr()));
+  next_refresh_.Reset(
+      base::BindRepeating(&MDnsListenerImpl::DoRefresh, AsWeakPtr()));
 
   // Schedule refreshes at both 85% and 95% of the original TTL. These will both
   // be canceled and rescheduled if the record's TTL is updated due to a
@@ -731,8 +731,8 @@ bool MDnsTransactionImpl::QueryAndListen() {
   if (!client_->core()->SendQuery(rrtype_, name_))
     return false;
 
-  timeout_.Reset(base::Bind(&MDnsTransactionImpl::SignalTransactionOver,
-                            AsWeakPtr()));
+  timeout_.Reset(
+      base::BindOnce(&MDnsTransactionImpl::SignalTransactionOver, AsWeakPtr()));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, timeout_.callback(), kTransactionTimeout);
 

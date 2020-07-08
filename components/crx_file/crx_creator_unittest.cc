@@ -40,22 +40,22 @@ TEST_F(CrxCreatorTest, Create) {
                      &expected_public_key);
 
   // Create a CRX File.
-  base::FilePath tempFile;
-  EXPECT_TRUE(base::CreateTemporaryFile(&tempFile));
+  base::FilePath temp_file;
+  EXPECT_TRUE(base::CreateTemporaryFile(&temp_file));
   EXPECT_EQ(CreatorResult::OK,
-            Create(tempFile, TestFile("sample.zip"), signing_key.get()));
+            Create(temp_file, TestFile("sample.zip"), signing_key.get()));
 
   // Test that the created file can be verified.
   const std::vector<std::vector<uint8_t>> keys;
   const std::vector<uint8_t> hash;
   std::string public_key_in_crx;
   EXPECT_EQ(VerifierResult::OK_FULL,
-            Verify(tempFile, VerifierFormat::CRX3, keys, hash,
+            Verify(temp_file, VerifierFormat::CRX3, keys, hash,
                    &public_key_in_crx, nullptr));
   EXPECT_EQ(expected_public_key, public_key_in_crx);
 
   // Delete the file.
-  EXPECT_TRUE(base::DeleteFile(tempFile, false));
+  EXPECT_TRUE(base::DeleteFile(temp_file));
 }
 
 }  // namespace crx_file

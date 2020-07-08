@@ -713,11 +713,10 @@ public class NotificationPlatformBridgeTest {
         mNotificationTestRule.waitForNotificationManagerMutation();
         Assert.assertTrue(mNotificationTestRule.getNotificationEntries().isEmpty());
 
-        CriteriaHelper.pollInstrumentationThread(new Criteria("Expected a new tab to be created") {
-            @Override
-            public boolean isSatisfied() {
-                return 2 == mNotificationTestRule.getActivity().getCurrentTabModel().getCount();
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat("Expected a new tab to be created",
+                    mNotificationTestRule.getActivity().getCurrentTabModel().getCount(),
+                    Matchers.is(2));
         });
         // This metric only applies on N+, where we schedule a job to handle the click.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {

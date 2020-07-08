@@ -137,7 +137,7 @@ class AudioDebugRecordingHelperTest : public ::testing::Test {
     std::move(reply_callback).Run(std::move(debug_file));
     // File can be removed right away because MockAudioDebugFileWriter::Start is
     // called synchronously.
-    ASSERT_TRUE(base::DeleteFile(path, false));
+    ASSERT_TRUE(base::DeleteFile(path));
   }
 
  protected:

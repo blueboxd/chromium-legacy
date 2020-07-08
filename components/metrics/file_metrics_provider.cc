@@ -303,7 +303,7 @@ bool FileMetricsProvider::LocateNextFileInDirectory(SourceInfo* source) {
         // have been created by a privileged process like setup.exe. Even if it
         // is not removed, it will continue to be ignored bacuse of the older
         // modification time.
-        base::DeleteFile(found_file.path, /*recursive=*/false);
+        base::DeleteFile(found_file.path);
       }
     }
   }
@@ -323,7 +323,7 @@ bool FileMetricsProvider::LocateNextFileInDirectory(SourceInfo* source) {
         source->max_age != base::TimeDelta() &&
         now_time - found.info.GetLastModifiedTime() > source->max_age;
     if (too_many || too_big || too_old) {
-      base::DeleteFile(found.path, /*recursive=*/false);
+      base::DeleteFile(found.path);
       --file_count;
       total_size_kib -= found.info.GetSize() >> 10;
       RecordAccessResult(too_many ? ACCESS_RESULT_TOO_MANY_FILES

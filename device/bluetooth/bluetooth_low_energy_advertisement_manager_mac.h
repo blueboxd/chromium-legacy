@@ -27,14 +27,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyAdvertisementManagerMac {
   // Registers a new BLE advertisement.
   void RegisterAdvertisement(
       std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
-      const BluetoothAdapter::CreateAdvertisementCallback& callback,
-      const BluetoothAdapter::AdvertisementErrorCallback& error_callback);
+      BluetoothAdapter::CreateAdvertisementCallback callback,
+      BluetoothAdapter::AdvertisementErrorCallback error_callback);
 
   // Unregisters an existing BLE advertisement.
   void UnregisterAdvertisement(
       BluetoothAdvertisementMac* advertisement,
-      const BluetoothAdvertisementMac::SuccessCallback& success_callback,
-      const BluetoothAdvertisementMac::ErrorCallback& error_callback);
+      BluetoothAdvertisement::SuccessCallback success_callback,
+      BluetoothAdvertisement::ErrorCallback error_callback);
 
   // Called when the peripheral manager state changes.
   void OnPeripheralManagerStateChanged();

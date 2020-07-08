@@ -48,6 +48,7 @@ VariationsRenderThreadObserver::~VariationsRenderThreadObserver() = default;
 
 // static
 void VariationsRenderThreadObserver::AppendThrottleIfNeeded(
+    const url::Origin& top_frame_origin,
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>>* throttles) {
   variations::OmniboxURLLoaderThrottle::AppendThrottleIfNeeded(throttles);
 
@@ -55,7 +56,7 @@ void VariationsRenderThreadObserver::AppendThrottleIfNeeded(
   if (!variations_header.empty()) {
     throttles->push_back(
         std::make_unique<variations::VariationsURLLoaderThrottle>(
-            std::move(variations_header)));
+            std::move(variations_header), top_frame_origin));
   }
 }
 

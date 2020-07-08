@@ -46,6 +46,32 @@ void RecordDownloadingTime(base::TimeDelta duration) {
                               duration);
 }
 
+void RecordCheckTime(const base::TimeDelta duration) {
+  base::UmaHistogramLongTimes("OOBE.UpdateScreen.StageTime.Check", duration);
+}
+
+void RecordDownloadTime(const base::TimeDelta duration) {
+  base::UmaHistogramLongTimes("OOBE.UpdateScreen.StageTime.Download", duration);
+}
+
+void RecordVerifyTime(const base::TimeDelta duration) {
+  base::UmaHistogramLongTimes("OOBE.UpdateScreen.StageTime.Verify", duration);
+}
+
+void RecordFinalizeTime(const base::TimeDelta duration) {
+  base::UmaHistogramLongTimes("OOBE.UpdateScreen.StageTime.Finalize", duration);
+}
+
+void RecordUpdateStages(const base::TimeDelta check_time,
+                        const base::TimeDelta download_time,
+                        const base::TimeDelta verify_time,
+                        const base::TimeDelta finalize_time) {
+  RecordCheckTime(check_time);
+  RecordDownloadTime(download_time);
+  RecordVerifyTime(verify_time);
+  RecordFinalizeTime(finalize_time);
+}
+
 }  // anonymous namespace
 
 // static
@@ -211,6 +237,10 @@ void UpdateScreen::UpdateInfoChanged(
   bool need_refresh_view = true;
   switch (status.current_operation()) {
     case update_engine::Operation::CHECKING_FOR_UPDATE:
+      if (start_update_stage_.is_null())
+        start_update_stage_ = tick_clock_->NowTicks();
+      need_refresh_view = false;
+      break;
       // Do nothing in these cases, we don't want to notify the user of the
       // check unless there is an update.
     case update_engine::Operation::ATTEMPTING_ROLLBACK:
@@ -219,6 +249,15 @@ void UpdateScreen::UpdateInfoChanged(
       need_refresh_view = false;
       break;
     case update_engine::Operation::UPDATE_AVAILABLE:
+      if (start_update_stage_.is_null())
+        start_update_stage_ = tick_clock_->NowTicks();
+      MakeSureScreenIsShown();
+      if (!HasCriticalUpdate()) {
+        VLOG(1) << "Non-critical update available: " << status.new_version();
+        hide_progress_on_exit_ = true;
+        ExitUpdate(Result::UPDATE_NOT_REQUIRED);
+      }
+      break;
     case update_engine::Operation::DOWNLOADING:
       MakeSureScreenIsShown();
       if (!is_critical_checked_) {
@@ -231,19 +270,38 @@ void UpdateScreen::UpdateInfoChanged(
           hide_progress_on_exit_ = true;
           ExitUpdate(Result::UPDATE_NOT_REQUIRED);
         } else {
-          start_update_downloading_ = tick_clock_->NowTicks();
+          check_time_ = tick_clock_->NowTicks() - start_update_stage_;
+          start_update_stage_ = start_update_downloading_ =
+              tick_clock_->NowTicks();
           VLOG(1) << "Critical update available: " << status.new_version();
         }
       }
       break;
     case update_engine::Operation::VERIFYING:
+      // Make sure that VERIFYING and DOWNLOADING stages are recorded correctly.
+      if (download_time_.is_zero()) {
+        download_time_ = tick_clock_->NowTicks() - start_update_stage_;
+        start_update_stage_ = tick_clock_->NowTicks();
+      }
+      MakeSureScreenIsShown();
+      break;
     case update_engine::Operation::FINALIZING:
+      // Make sure that VERIFYING and FINALIZING stages are recorded correctly.
+      if (verify_time_.is_zero()) {
+        verify_time_ = tick_clock_->NowTicks() - start_update_stage_;
+        start_update_stage_ = tick_clock_->NowTicks();
+      }
+      MakeSureScreenIsShown();
+      break;
     case update_engine::Operation::NEED_PERMISSION_TO_UPDATE:
       MakeSureScreenIsShown();
       break;
     case update_engine::Operation::UPDATED_NEED_REBOOT:
       MakeSureScreenIsShown();
       if (HasCriticalUpdate()) {
+        finalize_time_ = tick_clock_->NowTicks() - start_update_stage_;
+        RecordUpdateStages(check_time_, download_time_, verify_time_,
+                           finalize_time_);
         RecordDownloadingTime(tick_clock_->NowTicks() -
                               start_update_downloading_);
         version_updater_->RebootAfterUpdate();
@@ -272,6 +330,12 @@ void UpdateScreen::UpdateInfoChanged(
 }
 
 void UpdateScreen::FinishExitUpdate(Result result) {
+  if (!start_update_stage_.is_null()) {
+    check_time_ = (check_time_.is_zero())
+                      ? tick_clock_->NowTicks() - start_update_stage_
+                      : check_time_;
+    RecordCheckTime(check_time_);
+  }
   show_timer_.Stop();
   exit_callback_.Run(result);
 }

@@ -54,6 +54,7 @@
 #include "components/version_info/channel.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/google_api_keys.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -313,6 +314,9 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
   DCHECK(ui_delegate);
 
   client_ = client;
+
+  // Remove the self destruction.
+  self_destruct_observer_.reset();
 
   // Detach from the current ui_delegate, if one was set previously.
   if (ui_delegate_)
@@ -653,6 +657,7 @@ std::string UiControllerAndroid::GetDebugContext() {
 }
 
 void UiControllerAndroid::DestroySelf() {
+  self_destruct_observer_.reset();
   client_->DestroyUI();
 }
 
@@ -960,9 +965,35 @@ void UiControllerAndroid::CloseCustomTab() {
       AttachCurrentThread(), java_object_);
 }
 
+UiControllerAndroid::SelfDestructObserver::SelfDestructObserver(
+    content::WebContents* web_contents,
+    UiControllerAndroid* ui_controller,
+    int64_t navigation_id_to_ignore)
+    : content::WebContentsObserver(web_contents),
+      ui_controller_(ui_controller),
+      navigation_id_to_ignore_(navigation_id_to_ignore) {}
+
+UiControllerAndroid::SelfDestructObserver::~SelfDestructObserver() {}
+
+void UiControllerAndroid::SelfDestructObserver::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsRendererInitiated() ||
+      navigation_handle->GetNavigationId() == navigation_id_to_ignore_) {
+    return;
+  }
+  ui_controller_->DestroySelf();
+}
+
 void UiControllerAndroid::Detach() {
   if (!ui_delegate_)
     return;
+
+  auto* web_contents = client_->GetWebContents();
+  if (web_contents != nullptr) {
+    self_destruct_observer_ = std::make_unique<SelfDestructObserver>(
+        web_contents, this, ui_delegate_->GetErrorCausingNavigationId());
+  }
 
   ResetGenericUiControllers();
 

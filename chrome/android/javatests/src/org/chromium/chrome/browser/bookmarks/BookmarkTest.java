@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.hamcrest.core.IsInstanceOf;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -334,17 +335,11 @@ public class BookmarkTest {
         final View title = getViewWithText(mItemsContainer, TEST_PAGE_TITLE_GOOGLE);
         TestThreadUtils.runOnUiThreadBlocking(() -> TouchCommon.singleClickView(title));
         ChromeTabbedActivity activity = waitForTabbedActivity();
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Tab activityTab = activity.getActivityTab();
-                String tabUrl = activityTab == null || activityTab.getUrl() == null
-                        ? ""
-                        : activityTab.getUrl().getSpec();
-                updateFailureReason(activityTab == null ? "Activity tab is null."
-                                                        : "Tab URL incorrect: " + tabUrl);
-                return mTestPage.equals(tabUrl);
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Tab activityTab = activity.getActivityTab();
+            Criteria.checkThat(activityTab, Matchers.notNullValue());
+            Criteria.checkThat(activityTab.getUrl(), Matchers.notNullValue());
+            Criteria.checkThat(activityTab.getUrl().getSpec(), Matchers.is(mTestPage));
         });
     }
 

@@ -42,6 +42,9 @@ class UiDelegate {
   // Returns the current state of the controller.
   virtual AutofillAssistantState GetState() = 0;
 
+  // Returns the last navigation id that caused an error.
+  virtual int64_t GetErrorCausingNavigationId() const = 0;
+
   // Called when user interaction within the allowed touchable area was
   // detected. This should cause rerun of preconditions check.
   virtual void OnUserInteractionInsideTouchableArea() = 0;

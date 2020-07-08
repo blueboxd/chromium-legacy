@@ -47,22 +47,22 @@ bool NearlyEqual(const skcms_Matrix3x3& lhs,
 
 }  // namespace
 
-bool IsDisplaySizeBlackListed(const gfx::Size& physical_size) {
+bool IsDisplaySizeValid(const gfx::Size& physical_size) {
   // Ignore if the reported display is smaller than minimum size.
   if (physical_size.width() <= kInvalidDisplaySizeList[0][0] ||
       physical_size.height() <= kInvalidDisplaySizeList[0][1]) {
     VLOG(1) << "Smaller than minimum display size";
-    return true;
+    return false;
   }
   for (size_t i = 1; i < base::size(kInvalidDisplaySizeList); ++i) {
     const gfx::Size size(kInvalidDisplaySizeList[i][0],
                          kInvalidDisplaySizeList[i][1]);
     if (physical_size == size) {
       VLOG(1) << "Black listed display size detected:" << size.ToString();
-      return true;
+      return false;
     }
   }
-  return false;
+  return true;
 }
 
 int64_t GenerateDisplayID(uint16_t manufacturer_id,

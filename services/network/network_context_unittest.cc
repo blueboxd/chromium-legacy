@@ -67,7 +67,7 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/cookie_inclusion_status.h"
+#include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
@@ -2264,8 +2264,8 @@ TEST_F(NetworkContextTest, ClearEmptyNetworkErrorLoggingWithNoService) {
 
 void SetCookieCallback(base::RunLoop* run_loop,
                        bool* result_out,
-                       net::CookieInclusionStatus result) {
-  *result_out = result.IsInclude();
+                       net::CookieAccessResult result) {
+  *result_out = result.status.IsInclude();
   run_loop->Quit();
 }
 

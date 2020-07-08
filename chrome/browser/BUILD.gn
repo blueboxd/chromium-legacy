@@ -619,6 +619,8 @@ static_library("browser") {
     "lite_video/lite_video_keyed_service_factory.h",
     "lite_video/lite_video_observer.cc",
     "lite_video/lite_video_observer.h",
+    "lite_video/lite_video_switches.cc",
+    "lite_video/lite_video_switches.h",
     "lite_video/lite_video_user_blocklist.cc",
     "lite_video/lite_video_user_blocklist.h",
     "lite_video/lite_video_util.cc",
@@ -2949,6 +2951,7 @@ static_library("browser") {
       "//url:origin_android",
     ]
 
+    deps += [ "//chrome/browser/engagement/android:jni_headers" ]
     deps -= [ "//components/storage_monitor" ]
 
     if (enable_supervised_users) {
@@ -3133,6 +3136,8 @@ static_library("browser") {
       "enterprise/reporting/report_request_queue_generator.h",
       "enterprise/reporting/report_scheduler.cc",
       "enterprise/reporting/report_scheduler.h",
+      "enterprise/reporting/reporting_delegate_factory_desktop.cc",
+      "enterprise/reporting/reporting_delegate_factory_desktop.h",
       "feedback/feedback_dialog_utils.cc",
       "feedback/feedback_dialog_utils.h",
       "feedback/feedback_uploader_chrome.cc",

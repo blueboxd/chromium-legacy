@@ -101,12 +101,7 @@ public class IncognitoNotificationServiceTest {
                     mActivityTestRule.getActivity().getTabModelSelector().getModel(true).getCount(),
                     Matchers.is(0));
         });
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return !incognitoProfile.isNativeInitialized();
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> !incognitoProfile.isNativeInitialized());
     }
 
     @Test

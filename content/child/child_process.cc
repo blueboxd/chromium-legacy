@@ -19,7 +19,7 @@
 #include "content/common/android/cpu_time_metrics.h"
 #include "content/common/mojo_core_library_support.h"
 #include "mojo/public/cpp/system/dynamic_library_support.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
+#include "sandbox/policy/sandbox_type.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 #include "third_party/blink/public/common/features.h"
 
@@ -50,8 +50,8 @@ ChildProcess::ChildProcess(base::ThreadPriority io_thread_priority,
     // have already loaded the library via |mojo::LoadCoreLibrary()|, rendering
     // this call safe even from within a strict sandbox.
     MojoInitializeFlags flags = MOJO_INITIALIZE_FLAG_NONE;
-    if (service_manager::IsUnsandboxedSandboxType(
-            service_manager::SandboxTypeFromCommandLine(command_line))) {
+    if (sandbox::policy::IsUnsandboxedSandboxType(
+            sandbox::policy::SandboxTypeFromCommandLine(command_line))) {
       flags |= MOJO_INITIALIZE_FLAG_FORCE_DIRECT_SHARED_MEMORY_ALLOCATION;
     }
     CHECK_EQ(MOJO_RESULT_OK, mojo::InitializeCoreLibrary(flags));

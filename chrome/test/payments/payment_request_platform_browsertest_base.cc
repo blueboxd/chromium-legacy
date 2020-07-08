@@ -134,9 +134,9 @@ void PaymentRequestPlatformBrowserTestBase::OnAbortCalled() {
   if (event_waiter_)
     event_waiter_->OnEvent(TestEvent::kAbortCalled);
 }
-void PaymentRequestPlatformBrowserTestBase::OnShowAppsReady() {
+void PaymentRequestPlatformBrowserTestBase::OnAppListReady() {
   if (event_waiter_)
-    event_waiter_->OnEvent(TestEvent::kShowAppsReady);
+    event_waiter_->OnEvent(TestEvent::kAppListReady);
 }
 void PaymentRequestPlatformBrowserTestBase::OnCompleteCalled() {
   if (event_waiter_)

@@ -70,7 +70,6 @@
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/base/sync_base_switches.h"
-#include "components/sync/driver/file_based_trusted_vault_client.h"
 #include "components/sync/driver/model_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -80,6 +79,7 @@
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/model_type_store_service.h"
 #include "components/sync/model_impl/forwarding_model_type_controller_delegate.h"
+#include "components/sync/trusted_vault/standalone_trusted_vault_client.h"
 #include "components/sync_bookmarks/bookmark_sync_service.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_sessions/session_sync_service.h"
@@ -220,12 +220,13 @@ ChromeSyncClient::ChromeSyncClient(Profile* profile) : profile_(profile) {
 #if defined(OS_ANDROID)
   trusted_vault_client_ = std::make_unique<TrustedVaultClientAndroid>();
 #else
-  trusted_vault_client_ = std::make_unique<syncer::FileBasedTrustedVaultClient>(
-      profile_->GetPath().Append(kTrustedVaultFilename));
+  trusted_vault_client_ =
+      std::make_unique<syncer::StandaloneTrustedVaultClient>(
+          profile_->GetPath().Append(kTrustedVaultFilename));
 #endif  // defined(OS_ANDROID)
 }
 
-ChromeSyncClient::~ChromeSyncClient() {}
+ChromeSyncClient::~ChromeSyncClient() = default;
 
 PrefService* ChromeSyncClient::GetPrefService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

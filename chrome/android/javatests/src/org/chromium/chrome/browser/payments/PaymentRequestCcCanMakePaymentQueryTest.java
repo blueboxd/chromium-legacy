@@ -19,8 +19,10 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.TimeoutException;
@@ -92,8 +94,10 @@ public class PaymentRequestCcCanMakePaymentQueryTest implements MainActivityStar
     @MediumTest
     @Feature({"Payments"})
     public void testCanMakePaymentDisabled() throws TimeoutException {
-        TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> {
-            PrefServiceBridge.getInstance().setBoolean(Pref.CAN_MAKE_PAYMENT_ENABLED, false);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PrefService prefs = UserPrefs.get(Profile.fromWebContents(
+                    mPaymentRequestTestRule.getActivity().getCurrentWebContents()));
+            prefs.setBoolean(Pref.CAN_MAKE_PAYMENT_ENABLED, false);
         });
 
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(

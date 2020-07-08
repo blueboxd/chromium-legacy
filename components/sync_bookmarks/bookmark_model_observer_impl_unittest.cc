@@ -88,6 +88,28 @@ class TestBookmarkClientWithFavicon : public bookmarks::TestBookmarkClient {
     return true;
   }
 
+  // Mimics the completion of a previously-triggered GetFaviconImageForPageURL()
+  // call for |page_url|, usually invoked by BookmarkModel. Returns false if no
+  // such a call is pending completion. The completion returns an empty image
+  // for the favicon.
+  bool SimulateEmptyFaviconLoaded(const GURL& page_url) {
+    if (requests_per_page_url_[page_url].empty()) {
+      return false;
+    }
+
+    favicon_base::FaviconImageCallback callback =
+        std::move(requests_per_page_url_[page_url].front());
+    requests_per_page_url_[page_url].pop_front();
+
+    std::move(callback).Run(favicon_base::FaviconImageResult());
+    return true;
+  }
+
+  // This may be used to mimic iOS device behaviour.
+  void SetPreferTouchIcon(bool prefer_touch_icon) {
+    prefer_touch_icon_ = prefer_touch_icon;
+  }
+
   // bookmarks::TestBookmarkClient implementation.
   base::CancelableTaskTracker::TaskId GetFaviconImageForPageURL(
       const GURL& page_url,
@@ -98,10 +120,14 @@ class TestBookmarkClientWithFavicon : public bookmarks::TestBookmarkClient {
     return next_task_id_++;
   }
 
+  // BookmarkClient overrides.
+  bool PreferTouchIcon() override { return prefer_touch_icon_; }
+
  private:
   base::CancelableTaskTracker::TaskId next_task_id_ = 1;
   std::map<GURL, std::list<favicon_base::FaviconImageCallback>>
       requests_per_page_url_;
+  bool prefer_touch_icon_ = false;
 };
 
 class BookmarkModelObserverImplTest : public testing::Test {
@@ -875,6 +901,167 @@ TEST_F(BookmarkModelObserverImplTest,
   EXPECT_THAT(bookmark_tracker()->GetTombstoneEntityForGuid(folder->guid()),
               IsNull());
   EXPECT_EQ(folder_entity->bookmark_node(), folder);
+}
+
+// Tests that on iOS devices there is no reupload of bookmarks after remote
+// update. This might happen in case when the remote bookmark contains favicon
+// and the local model has touch icon (which is not used in specifics).
+TEST_F(BookmarkModelObserverImplTest,
+       ShouldNotUpdateBookmarkOnTouchIconLoaded) {
+  bookmark_client()->SetPreferTouchIcon(true);
+
+  const GURL kBookmarkUrl("http://www.url.com");
+  const GURL kIconUrl("http://www.url.com/favicon.ico");
+  const SkColor kColor = SK_ColorRED;
+
+  // Simulate remote incremental update (without merge of favicon).
+  bookmark_model()->RemoveObserver(observer());
+
+  // Add a new node with specifics.
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model()->bookmark_bar_node();
+  const bookmarks::BookmarkNode* bookmark_node = bookmark_model()->AddURL(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16("title"),
+      kBookmarkUrl);
+
+  sync_pb::EntitySpecifics specifics =
+      CreateSpecificsFromBookmarkNode(bookmark_node, bookmark_model(),
+                                      /*force_favicon_load=*/false,
+                                      /*include_guid=*/true);
+
+  // Add favicon to the specifics to be sure that MatchesFaviconHash returns
+  // false.
+  const gfx::Image favicon_image = CreateTestImage(kColor);
+  scoped_refptr<base::RefCountedMemory> favicon_bytes =
+      favicon_image.As1xPNGBytes();
+  specifics.mutable_bookmark()->set_favicon(favicon_bytes->front(),
+                                            favicon_bytes->size());
+  specifics.mutable_bookmark()->set_icon_url(kIconUrl.spec());
+
+  const SyncedBookmarkTracker::Entity* entity = bookmark_tracker()->Add(
+      bookmark_node, "id", /*server_version=*/1, base::Time::Now(),
+      syncer::UniquePosition::InitialPosition(
+          syncer::UniquePosition::RandomSuffix())
+          .ToProto(),
+      specifics);
+
+  // Restore state.
+  bookmark_model()->AddObserver(observer());
+
+  ASSERT_FALSE(entity->IsUnsynced());
+
+  // Simulate BookmarkNodeFaviconChanged event (in normal case it would be
+  // called after storing remote favicon in the history backend).
+  //
+  // Invalidate bookmark favicon and load it again.
+  bookmark_model()->OnFaviconsChanged({kBookmarkUrl}, /*icon_url=*/GURL());
+  ASSERT_TRUE(bookmark_node->is_favicon_loading());
+  ASSERT_TRUE(bookmark_client()->SimulateFaviconLoaded(kBookmarkUrl, kIconUrl,
+                                                       SK_ColorRED));
+  ASSERT_EQ(bookmark_model()->GetFaviconType(bookmark_node),
+            favicon_base::IconType::kTouchIcon);
+
+  EXPECT_FALSE(entity->IsUnsynced());
+}
+
+// Tests that there is still nudge for commit on touch icon loaded for the iOS
+// platform.
+TEST_F(BookmarkModelObserverImplTest, ShouldNudgeCommitOnTouchIconLoaded) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      switches::kSyncDoNotCommitBookmarksWithoutFavicon);
+  bookmark_client()->SetPreferTouchIcon(true);
+
+  const GURL kBookmarkUrl("http://www.url.com");
+  const GURL kIconUrl("http://www.url.com/favicon.ico");
+  const SkColor kColor = SK_ColorRED;
+
+  // Simulate remote incremental update (without merge of favicon).
+  bookmark_model()->RemoveObserver(observer());
+
+  // Add a new node with specifics and mark it unsynced.
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model()->bookmark_bar_node();
+  const bookmarks::BookmarkNode* bookmark_node = bookmark_model()->AddURL(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16("title"),
+      kBookmarkUrl);
+
+  sync_pb::EntitySpecifics specifics =
+      CreateSpecificsFromBookmarkNode(bookmark_node, bookmark_model(),
+                                      /*force_favicon_load=*/false,
+                                      /*include_guid=*/true);
+
+  // Add favicon to the specifics to be sure that MatchesFaviconHash returns
+  // false.
+  const gfx::Image favicon_image = CreateTestImage(kColor);
+  scoped_refptr<base::RefCountedMemory> favicon_bytes =
+      favicon_image.As1xPNGBytes();
+  specifics.mutable_bookmark()->set_favicon(favicon_bytes->front(),
+                                            favicon_bytes->size());
+  specifics.mutable_bookmark()->set_icon_url(kIconUrl.spec());
+
+  const SyncedBookmarkTracker::Entity* entity = bookmark_tracker()->Add(
+      bookmark_node, "id", /*server_version=*/1, base::Time::Now(),
+      syncer::UniquePosition::InitialPosition(
+          syncer::UniquePosition::RandomSuffix())
+          .ToProto(),
+      specifics);
+  bookmark_tracker()->IncrementSequenceNumber(entity);
+
+  // Restore state.
+  bookmark_model()->AddObserver(observer());
+
+  ASSERT_TRUE(entity->IsUnsynced());
+  ASSERT_TRUE(entity->MatchesSpecificsHash(specifics));
+
+  EXPECT_CALL(*nudge_for_commit_closure(), Run());
+
+  // Simulate BookmarkNodeFaviconChanged event (in normal case it would be
+  // called after storing remote favicon in the history backend).
+  //
+  // Invalidate bookmark favicon and load it again.
+  bookmark_model()->OnFaviconsChanged({kBookmarkUrl}, /*icon_url=*/GURL());
+  ASSERT_TRUE(bookmark_node->is_favicon_loading());
+  ASSERT_TRUE(bookmark_client()->SimulateFaviconLoaded(kBookmarkUrl, kIconUrl,
+                                                       SK_ColorRED));
+  ASSERT_EQ(bookmark_model()->GetFaviconType(bookmark_node),
+            favicon_base::IconType::kTouchIcon);
+
+  // Check that specifics haven't been changed.
+  EXPECT_TRUE(entity->MatchesSpecificsHash(specifics));
+}
+
+// Tests that the bookmark entity will be committed if its favicon is deleted.
+TEST_F(BookmarkModelObserverImplTest, ShouldCommitOnDeleteFavicon) {
+  const GURL kBookmarkUrl("http://www.url.com");
+  const GURL kIconUrl("http://www.url.com/favicon.ico");
+
+  // Add a new node with specifics.
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model()->bookmark_bar_node();
+  const bookmarks::BookmarkNode* bookmark_node = bookmark_model()->AddURL(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16("title"),
+      kBookmarkUrl);
+
+  ASSERT_TRUE(bookmark_node->is_favicon_loading());
+  ASSERT_TRUE(bookmark_client()->SimulateFaviconLoaded(kBookmarkUrl, kIconUrl,
+                                                       SK_ColorRED));
+
+  const SyncedBookmarkTracker::Entity* entity =
+      bookmark_tracker()->GetEntityForBookmarkNode(bookmark_node);
+  ASSERT_THAT(entity, NotNull());
+  ASSERT_TRUE(entity->IsUnsynced());
+
+  SimulateCommitResponseForAllLocalChanges();
+
+  ASSERT_FALSE(bookmark_tracker()->HasLocalChanges());
+
+  // Delete favicon and check that its deletion is committed.
+  bookmark_model()->OnFaviconsChanged({kBookmarkUrl}, GURL());
+  ASSERT_TRUE(bookmark_node->is_favicon_loading());
+  ASSERT_TRUE(bookmark_client()->SimulateEmptyFaviconLoaded(kBookmarkUrl));
+
+  EXPECT_TRUE(entity->IsUnsynced());
 }
 
 }  // namespace

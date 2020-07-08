@@ -162,7 +162,7 @@ void BrowserProcessSubThread::IOThreadCleanUp() {
     UtilityProcessHost* utility_process =
         static_cast<UtilityProcessHost*>(it.GetDelegate());
     if (utility_process->sandbox_type() ==
-        service_manager::SandboxType::kNetwork) {
+        sandbox::policy::SandboxType::kNetwork) {
       // This ensures that cookies and cache are flushed to disk on shutdown.
       // https://crbug.com/841001
 #if BUILDFLAG(CLANG_PROFILING)

@@ -5,7 +5,7 @@
 #include "services/service_manager/tests/sandbox_status_service.h"
 
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "services/service_manager/sandbox/linux/sandbox_linux.h"
+#include "sandbox/policy/linux/sandbox_linux.h"
 
 namespace service_manager {
 
@@ -22,7 +22,7 @@ SandboxStatusService::~SandboxStatusService() = default;
 
 void SandboxStatusService::GetSandboxStatus(GetSandboxStatusCallback callback) {
   std::move(callback).Run(
-      service_manager::SandboxLinux::GetInstance()->GetStatus());
+      sandbox::policy::SandboxLinux::GetInstance()->GetStatus());
 }
 
 }  // namespace service_manager

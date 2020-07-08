@@ -77,14 +77,14 @@ class FakeCookieManager : public network::TestCookieManager {
               !std::get<2>(params).exclude_httponly());
     EXPECT_EQ(expect_same_site_context,
               std::get<2>(params).same_site_cookie_context());
-    net::CookieInclusionStatus status;
+    net::CookieAccessResult access_result;
 
     if (!success) {
-      status.AddExclusionReason(
+      access_result.status.AddExclusionReason(
           net::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR);
     }
 
-    std::move(std::get<3>(params)).Run(status);
+    std::move(std::get<3>(params)).Run(access_result);
   }
 
   void InvokePendingDeleteCookiesCallback(

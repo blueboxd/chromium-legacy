@@ -351,7 +351,7 @@ bool ExpandPropertyFiles(const base::FilePath& source_path,
                          bool add_native_bridge_64bit_support) {
   CrosConfig config;
   if (single_file)
-    base::DeleteFile(dest_path, /*recursive=*/false);
+    base::DeleteFile(dest_path);
 
   // default.prop may not exist. Silently skip it if not found.
   for (const auto& tuple :

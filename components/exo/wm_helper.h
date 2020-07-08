@@ -85,7 +85,6 @@ class WMHelper : public aura::client::DragDropDelegate {
   WMHelper();
   ~WMHelper() override;
 
-  static void SetInstance(WMHelper* helper);
   static WMHelper* GetInstance();
   static bool HasInstance();
 

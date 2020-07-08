@@ -18,6 +18,7 @@ source_set("scheduling") {
 
   deps = [
     "//base",
+    "//base/util/values:values_util",
     "//components/prefs",
     "//content/public/browser",
     "//services/network/public/cpp",
@@ -38,6 +39,9 @@ source_set("unit_tests") {
     ":scheduling",
     "//base",
     "//base/test:test_support",
+    "//components/prefs",
+    "//components/prefs:test_support",
+    "//content/public/browser",
     "//services/network:test_support",
     "//testing/gtest",
   ]

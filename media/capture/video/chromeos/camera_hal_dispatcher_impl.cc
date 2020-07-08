@@ -416,8 +416,7 @@ void CameraHalDispatcherImpl::StopOnProxyThread() {
                  << " last_modified: " << info.last_modified;
   }
 
-  if (!base::DeleteFile(base::FilePath(kArcCamera3SocketPath),
-                        /* recursive */ false)) {
+  if (!base::DeleteFile(base::FilePath(kArcCamera3SocketPath))) {
     LOG(ERROR) << "Failed to delete " << kArcCamera3SocketPath;
   }
   // Close |cancel_pipe_| to quit the loop in WaitForIncomingConnection.

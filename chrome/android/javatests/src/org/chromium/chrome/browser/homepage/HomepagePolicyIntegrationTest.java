@@ -11,6 +11,7 @@ import android.view.View;
 import androidx.preference.Preference;
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -217,12 +218,9 @@ public class HomepagePolicyIntegrationTest {
                 () -> { activity.getTabModelSelector().closeAllTabs(); });
 
         activity.finish();
-        CriteriaHelper.pollUiThread(new Criteria("Activity should be destroyed, current state: "
-                + ApplicationStatus.getStateForActivity(activity)) {
-            @Override
-            public boolean isSatisfied() {
-                return ApplicationStatus.getStateForActivity(activity) == ActivityState.DESTROYED;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(ApplicationStatus.getStateForActivity(activity),
+                    Matchers.is(ActivityState.DESTROYED));
         });
 
         // Start a new ChromeActivity.

@@ -29,6 +29,8 @@
 
 #if defined(OS_WIN)
 #include "base/debug/dump_without_crashing.h"
+#include "base/files/file_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/win/win_util.h"
 #include "chrome/chrome_elf/chrome_elf_main.h"
 #include "chrome/common/chrome_constants.h"
@@ -41,7 +43,8 @@
 extern "C" {
 DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
                                  sandbox::SandboxInterfaceInfo* sandbox_info,
-                                 int64_t exe_entry_point_ticks);
+                                 int64_t exe_entry_point_ticks,
+                                 base::PrefetchResultCode prefetch_result_code);
 }
 #elif defined(OS_POSIX)
 extern "C" {
@@ -51,15 +54,19 @@ int ChromeMain(int argc, const char** argv);
 #endif
 
 #if defined(OS_WIN)
-DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
-                                 sandbox::SandboxInterfaceInfo* sandbox_info,
-                                 int64_t exe_entry_point_ticks) {
+DLLEXPORT int __cdecl ChromeMain(
+    HINSTANCE instance,
+    sandbox::SandboxInterfaceInfo* sandbox_info,
+    int64_t exe_entry_point_ticks,
+    base::PrefetchResultCode prefetch_result_code) {
 #elif defined(OS_POSIX)
 int ChromeMain(int argc, const char** argv) {
   int64_t exe_entry_point_ticks = 0;
 #endif
 
 #if defined(OS_WIN)
+  base::UmaHistogramEnumeration("Windows.ChromeDllPrefetchResult",
+                                prefetch_result_code);
   install_static::InitializeFromPrimaryModule();
 #endif
 

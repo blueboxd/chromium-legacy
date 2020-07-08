@@ -83,6 +83,7 @@ struct ContextualManagementSourceUpdate {
   base::string16 subtitle;
 #if defined(OS_CHROMEOS)
   base::string16 management_overview;
+  base::string16 update_required_eol;
 #else
   base::string16 browser_management_notice;
 #endif  // defined(OS_CHROMEOS)
@@ -166,6 +167,10 @@ class TestManagementUIHandler : public ManagementUIHandler {
     cloud_reporting_extension_exists_ = enable;
   }
 
+  void EnableUpdateRequiredEolInfo(bool enable) {
+    update_required_eol_ = enable;
+  }
+
   base::Value GetContextualManagedDataForTesting(Profile* profile) {
     return GetContextualManagedData(profile);
   }
@@ -196,6 +201,7 @@ class TestManagementUIHandler : public ManagementUIHandler {
               GetDeviceCloudPolicyManager,
               (),
               (const, override));
+  bool IsUpdateRequiredEol() const override { return update_required_eol_; }
 
   base::Value GetDeviceReportingInfo(
       const TestDeviceCloudPolicyManagerChromeOS* manager,
@@ -214,6 +220,7 @@ class TestManagementUIHandler : public ManagementUIHandler {
  private:
   bool cloud_reporting_extension_exists_ = false;
   policy::PolicyService* policy_service_ = nullptr;
+  bool update_required_eol_ = false;
   std::string device_domain = "devicedomain.com";
 };
 
@@ -291,6 +298,7 @@ class ManagementUIHandlerTests : public TestingBaseClass {
     extracted_.subtitle = ExtractPathFromDict(data, "pageSubtitle");
 #if defined(OS_CHROMEOS)
     extracted_.management_overview = ExtractPathFromDict(data, "overview");
+    extracted_.update_required_eol = ExtractPathFromDict(data, "eolMessage");
 #else
     extracted_.browser_management_notice =
         ExtractPathFromDict(data, "browserManagementNotice");
@@ -446,6 +454,10 @@ class ManagementUIHandlerTests : public TestingBaseClass {
 
   crostini::FakeCrostiniFeatures* crostini_features() {
     return crostini_features_.get();
+  }
+
+  base::string16 GetUpdateRequiredEolMessage() const {
+    return extracted_.update_required_eol;
   }
 #else
 
@@ -701,6 +713,7 @@ TEST_F(ManagementUIHandlerTests,
   EXPECT_EQ(GetManagementOverview(),
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_BY,
                                        base::UTF8ToUTF16(domain)));
+  EXPECT_EQ(GetUpdateRequiredEolMessage(), base::string16());
   EXPECT_TRUE(GetManaged());
 }
 
@@ -717,6 +730,7 @@ TEST_F(ManagementUIHandlerTests,
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED,
                                        l10n_util::GetStringUTF16(device_type)));
   EXPECT_EQ(GetManagementOverview(), base::string16());
+  EXPECT_EQ(GetUpdateRequiredEolMessage(), base::string16());
   EXPECT_TRUE(GetManaged());
 }
 
@@ -736,6 +750,7 @@ TEST_F(ManagementUIHandlerTests,
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
                                        device_domain()));
   EXPECT_EQ(GetManagementOverview(), base::string16());
+  EXPECT_EQ(GetUpdateRequiredEolMessage(), base::string16());
   EXPECT_TRUE(GetManaged());
 }
 
@@ -757,6 +772,7 @@ TEST_F(ManagementUIHandlerTests,
   EXPECT_EQ(GetManagementOverview(),
             l10n_util::GetStringFUTF16(
                 IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_BY, device_domain()));
+  EXPECT_EQ(GetUpdateRequiredEolMessage(), base::string16());
   EXPECT_TRUE(GetManaged());
 }
 
@@ -781,6 +797,7 @@ TEST_F(ManagementUIHandlerTests,
             l10n_util::GetStringFUTF16(
                 IDS_MANAGEMENT_DEVICE_MANAGED_BY_ACCOUNT_MANAGED_BY,
                 device_domain(), base::UTF8ToUTF16(domain)));
+  EXPECT_EQ(GetUpdateRequiredEolMessage(), base::string16());
   EXPECT_TRUE(GetManaged());
 }
 
@@ -799,7 +816,30 @@ TEST_F(ManagementUIHandlerTests, ManagementContextualSourceUpdateUnmanaged) {
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
   EXPECT_EQ(GetManagementOverview(),
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_DEVICE_NOT_MANAGED));
+  EXPECT_EQ(GetUpdateRequiredEolMessage(), base::string16());
   EXPECT_FALSE(GetManaged());
+}
+
+TEST_F(ManagementUIHandlerTests,
+       ManagementContextualSourceUpdateManagedDeviceAndAccountEol) {
+  const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
+  ResetTestConfig();
+  GetTestConfig().managed_account = true;
+  GetTestConfig().managed_device = true;
+  handler_.EnableUpdateRequiredEolInfo(true);
+  SetUpProfileAndHandler();
+
+  EXPECT_EQ(GetUpdateRequiredEolMessage(),
+            l10n_util::GetStringFUTF16(
+                IDS_MANAGEMENT_UPDATE_REQUIRED_EOL_MESSAGE, device_domain()));
+  EXPECT_EQ(GetPageSubtitle(),
+            l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
+                                       l10n_util::GetStringUTF16(device_type),
+                                       device_domain()));
+  EXPECT_EQ(GetExtensionReportingTitle(),
+            l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
+                                       device_domain()));
+  EXPECT_TRUE(GetManaged());
 }
 
 TEST_F(ManagementUIHandlerTests, NoDeviceReportingInfo) {

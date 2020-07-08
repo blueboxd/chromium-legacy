@@ -52,18 +52,6 @@ namespace {
 
 using ResourcesMap = std::unordered_map<std::string, int>;
 
-#if defined(OS_CHROMEOS)
-const char kPolymerHtml[] = "polymer/v1_0/polymer/polymer.html";
-const char kPolymerJs[] = "polymer/v1_0/polymer/polymer-extracted.js";
-const char kPolymer2Html[] = "polymer/v1_0/polymer2/polymer.html";
-const char kPolymer2Js[] = "polymer/v1_0/polymer2/polymer-extracted.js";
-
-// Utility for determining if both Polymer 1 and Polymer 2 are needed.
-bool UsingMultiplePolymerVersions() {
-  return base::FeatureList::IsEnabled(features::kWebUIPolymer2Exceptions);
-}
-#endif  // defined(OS_CHROMEOS)
-
 const std::map<std::string, std::string> CreatePathPrefixAliasesMap() {
   // TODO(rkc): Once we have a separate source for apps, remove '*/apps/'
   // aliases.
@@ -83,11 +71,6 @@ const std::map<std::string, std::string> CreatePathPrefixAliasesMap() {
     {"@out_folder@/android_clang_arm/gen/ui/webui/resources/", ""},
 #endif  // defined(OS_ANDROID)
   };
-
-#if defined(OS_CHROMEOS)
-  if (UsingMultiplePolymerVersions())
-    return aliases;
-#endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID)
   aliases["../../../third_party/lottie/"] = "lottie/";
@@ -213,11 +196,6 @@ const std::map<int, std::string> CreateChromeosMojoResourceIdToAliasMap() {
 
 #if !defined(OS_ANDROID)
 bool ShouldIgnore(std::string resource) {
-#if defined(OS_CHROMEOS)
-  if (UsingMultiplePolymerVersions())
-    return false;
-#endif  // defined(OS_CHROMEOS)
-
   if (base::StartsWith(
           resource,
           "../../../third_party/polymer/v1_0/components-chromium/polymer/",
@@ -354,19 +332,8 @@ void SharedResourcesDataSource::StartDataRequest(
     const WebContents::Getter& wc_getter,
     URLDataSource::GotDataCallback callback) {
   const std::string path = URLDataSource::URLToRequestPath(url);
-  std::string updated_path = path;
-#if defined(OS_CHROMEOS)
-  // If this is a Polymer request and multiple Polymer versions are enabled,
-  // return the Polymer 2 path unless the request is from the
-  // |disabled_polymer2_host_|.
-  if ((path == kPolymerHtml || path == kPolymerJs) &&
-      UsingMultiplePolymerVersions() && !IsPolymer2DisabledForPage(wc_getter)) {
-    updated_path = path == kPolymerHtml ? kPolymer2Html : kPolymer2Js;
-  }
-#endif  // defined(OS_CHROMEOS)
-
-  int idr = GetIdrForPath(updated_path);
-  DCHECK_NE(-1, idr) << " path: " << updated_path;
+  int idr = GetIdrForPath(path);
+  DCHECK_NE(-1, idr) << " path: " << path;
   scoped_refptr<base::RefCountedMemory> bytes;
 
   if (idr == IDR_WEBUI_CSS_TEXT_DEFAULTS) {
@@ -456,26 +423,4 @@ std::string SharedResourcesDataSource::GetContentSecurityPolicy(
   return content::URLDataSource::GetContentSecurityPolicy(directive);
 }
 
-#if defined(OS_CHROMEOS)
-void SharedResourcesDataSource::DisablePolymer2ForHost(
-    const std::string& host) {
-  DCHECK(disabled_polymer2_host_.empty() || host == disabled_polymer2_host_);
-  disabled_polymer2_host_ = host;
-}
-
-// Returns true if the WebContents making the request has disabled Polymer 2.
-bool SharedResourcesDataSource::IsPolymer2DisabledForPage(
-    const WebContents::Getter& wc_getter) {
-  // Return false in these cases, which sometimes occur in tests.
-  if (!wc_getter)
-    return false;
-
-  content::WebContents* web_contents = wc_getter.Run();
-  if (!web_contents)
-    return false;
-
-  return web_contents->GetLastCommittedURL().host_piece() ==
-         disabled_polymer2_host_;
-}
-#endif  // defined(OS_CHROMEOS)
 }  // namespace content

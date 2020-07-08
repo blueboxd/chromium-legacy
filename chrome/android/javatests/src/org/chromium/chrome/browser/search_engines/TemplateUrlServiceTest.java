@@ -21,7 +21,6 @@ import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.search_engines.TemplateUrlService.LoadListener;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
@@ -144,13 +143,9 @@ public class TemplateUrlServiceTest {
                 }
             });
         });
-        CriteriaHelper.pollInstrumentationThread(
-                new Criteria("Observer wasn't notified of TemplateUrlService load.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return observerNotified.get();
-                    }
-                });
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            return observerNotified.get();
+        }, "Observer wasn't notified of TemplateUrlService load.");
     }
 
     @Test
@@ -321,13 +316,9 @@ public class TemplateUrlServiceTest {
                             }
                         });
 
-        CriteriaHelper.pollInstrumentationThread(new Criteria(
-                "Observer wasn't notified of TemplateUrlService load.") {
-            @Override
-            public boolean isSatisfied() {
-                return observerNotified.get();
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            return observerNotified.get();
+        }, "Observer wasn't notified of TemplateUrlService load.");
         return templateUrlService;
     }
 }

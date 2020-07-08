@@ -16,9 +16,9 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
+#include "sandbox/policy/win/sandbox_win.h"
 #include "sandbox/win/src/sandbox_types.h"
 #include "services/service_manager/embedder/result_codes.h"
-#include "services/service_manager/sandbox/win/sandbox_win.h"
 
 namespace content {
 namespace internal {

@@ -31,6 +31,7 @@ if (enable_pdf) {
     deps = [
       ":features",
       "//base",
+      "//base:i18n",
       "//net",
       "//ppapi/cpp:objects",
       "//ppapi/cpp/private:internal_module",
@@ -43,6 +44,11 @@ if (enable_pdf) {
     public = [
       "pdf.h",
       "pdf_ppapi.h",
+    ]
+
+    friend = [
+      ":pdf_unittests",
+      ":pdf_test_utils",
     ]
 
     sources = [
@@ -160,7 +166,9 @@ if (enable_pdf) {
     deps = [
       ":pdf",
       "//base",
+      "//ppapi/cpp:objects",
       "//testing/gtest",
+      "//ui/gfx/range",
     ]
   }
 
@@ -179,14 +187,18 @@ if (enable_pdf) {
     ]
 
     deps = [
+      ":features",
       ":pdf",
       ":pdf_test_utils",
       "//base",
       "//base/test:run_all_unittests",
       "//base/test:test_support",
       "//ppapi/c",
+      "//ppapi/cpp:objects",
+      "//printing",
       "//testing/gmock",
       "//testing/gtest",
+      "//ui/gfx/geometry",
       "//ui/gfx/range",
     ]
 

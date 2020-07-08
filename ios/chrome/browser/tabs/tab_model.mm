@@ -160,14 +160,6 @@ void RecordInterfaceOrientationMetric() {
 
 #pragma mark - Public methods
 
-- (BOOL)isOffTheRecord {
-  return _browserState && _browserState->IsOffTheRecord();
-}
-
-- (BOOL)isEmpty {
-  return _webStateList->empty();
-}
-
 - (NSUInteger)count {
   DCHECK_GE(_webStateList->count(), 0);
   return static_cast<NSUInteger>(_webStateList->count());
@@ -225,16 +217,6 @@ void RecordInterfaceOrientationMetric() {
              object:nil];
   }
   return self;
-}
-
-- (void)closeTabAtIndex:(NSUInteger)index {
-  DCHECK_LE(index, static_cast<NSUInteger>(INT_MAX));
-  _webStateList->CloseWebStateAt(static_cast<int>(index),
-                                 WebStateList::CLOSE_USER_ACTION);
-}
-
-- (void)closeAllTabs {
-  _webStateList->CloseAllWebStates(WebStateList::CLOSE_USER_ACTION);
 }
 
 // NOTE: This can be called multiple times, so must be robust against that.
@@ -316,7 +298,7 @@ void RecordInterfaceOrientationMetric() {
   if (!navigation->HasCommitted())
     return;
 
-  if (!navigation->IsSameDocument() && !self.offTheRecord) {
+  if (!navigation->IsSameDocument() && !self.browserState->IsOffTheRecord()) {
     int tabCount = static_cast<int>(self.count);
     UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountPerLoad", tabCount, 1, 200, 50);
   }
@@ -325,7 +307,7 @@ void RecordInterfaceOrientationMetric() {
       webState->GetNavigationManager()->GetLastCommittedItem();
   navigation_metrics::RecordMainFrameNavigation(
       item ? item->GetVirtualURL() : GURL::EmptyGURL(),
-      navigation->IsSameDocument(), self.offTheRecord,
+      navigation->IsSameDocument(), self.browserState->IsOffTheRecord(),
       GetBrowserStateType(webState->GetBrowserState()));
 }
 

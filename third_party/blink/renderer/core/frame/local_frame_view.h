@@ -740,8 +740,9 @@ class CORE_EXPORT LocalFrameView final
   // a set of SkPictures. This sends an IPC to the browser to trigger a
   // recording of this frame as a separate SkPicture. An ID is added to the
   // canvas of |context| at |paint_offset| to track the correct position of
-  // this frame relative to its parent.
-  void CapturePaintPreview(GraphicsContext& context,
+  // this frame relative to its parent. Returns true on successfully creating
+  // a placeholder and sending an IPC to the browser.
+  bool CapturePaintPreview(GraphicsContext& context,
                            const IntSize& paint_offset) const;
 
   // EmbeddedContentView implementation

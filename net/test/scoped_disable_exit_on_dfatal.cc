@@ -12,7 +12,7 @@ namespace net {
 namespace test {
 
 ScopedDisableExitOnDFatal::ScopedDisableExitOnDFatal()
-    : assert_handler_(base::Bind(LogAssertHandler)) {}
+    : assert_handler_(base::BindRepeating(LogAssertHandler)) {}
 
 ScopedDisableExitOnDFatal::~ScopedDisableExitOnDFatal() = default;
 

@@ -16,6 +16,7 @@ import android.widget.ListView;
 
 import androidx.test.filters.LargeTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -143,21 +144,11 @@ public class BluetoothChooserDialogTest {
 
         clickItemAtPosition(items, position - 1);
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return button.isEnabled();
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> button.isEnabled());
 
         TouchCommon.singleClickView(button);
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mFinishedEventType != -1;
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> Criteria.checkThat(mFinishedEventType, Matchers.not(-1)));
     }
 
     private static void clickItemAtPosition(ListView listView, int position) {
@@ -210,12 +201,7 @@ public class BluetoothChooserDialogTest {
 
         dialog.cancel();
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mFinishedEventType != -1;
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> Criteria.checkThat(mFinishedEventType, Matchers.not(-1)));
 
         Assert.assertEquals(BluetoothChooserDialog.DialogFinished.CANCELLED, mFinishedEventType);
         Assert.assertEquals("", mFinishedDeviceId);

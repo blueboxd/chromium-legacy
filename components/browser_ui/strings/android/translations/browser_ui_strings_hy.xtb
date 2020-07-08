@@ -27,14 +27,11 @@
 <translation id="1743802530341753419">Հարցնել՝ նախքան կայքերին որևէ սարքի միանալ թույլատրելը (խորհուրդ է տրվում)</translation>
 <translation id="1887786770086287077">Սարքի տեղորոշումն անջատած է: Միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />:</translation>
 <translation id="1919345977826869612">Գովազդ</translation>
-<translation id="1922076542920281912">Որպեսզի ձեր տեղադրությունը հասանելի դառնա Chrome-ին, միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
-<translation id="194341124344773587">Միացնել Chrome-ի թույլտվությունը <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />:</translation>
 <translation id="1984937141057606926">Թույլատրված է, բացի երրորդ կողմի cookie ֆայլերից</translation>
 <translation id="1994173015038366702">Կայքի URL</translation>
 <translation id="2025115093177348061">Լրացված իրականություն</translation>
 <translation id="2030769033451695672">Հպեք՝ <ph name="URL_OF_THE_CURRENT_TAB" /> վերադառնալու համար</translation>
-<translation id="2041019821020695769">Որպեսզի թույլատրեք Chrome-ին ձեզ ծանուցումներ ուղարկել, միացրեք նաև ծանուցումները <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
 <translation id="2079545284768500474">Հետարկել</translation>
 <translation id="2091887806945687916">Ձայն</translation>
 <translation id="2107397443965016585">Հարցնել՝ նախքան թույլատրելը կայքերին նվագարկել պաշտպանված բովանդակություն (խորհուրդ է տրվում)</translation>
@@ -71,7 +68,6 @@
 <translation id="301521992641321250">Ավտոմատ արգելափակված է</translation>
 <translation id="3115898365077584848">Ցուցադրել տեղեկությունները</translation>
 <translation id="3123473560110926937">Արգելափակված է որոշ կայքերում</translation>
-<translation id="3190152372525844641">Միացնել Chrome-ի թույլտվությունները <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />:</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> պահված տվյալներ</translation>
 <translation id="3227137524299004712">Խոսափող</translation>
 <translation id="3277252321222022663">Թույլ տալ կայքերին օգտագործել տվիչները (խորհուրդ է տրվում)</translation>
@@ -83,7 +79,6 @@
 <translation id="358794129225322306">Թույլ տալ կայքին ավտոմատ ներբեռնել մեկից ավել ֆայլեր։</translation>
 <translation id="3596414637720633074">Արգելափակել կողմնակի կայքերի քուքիները ինկոգնիտո ռեժիմում</translation>
 <translation id="3600792891314830896">Անջատել կայքերի ձայնը</translation>
-<translation id="3730075448226062617">Որպեսզի խոսափողը հասանելի դառնա Chrome-ին, միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
 <translation id="3744111561329211289">Ֆոնային համաժամացում</translation>
 <translation id="3822502789641063741">Ջնջե՞լ կայքերի տվյալները:</translation>
 <translation id="385051799172605136">Հետ</translation>
@@ -112,7 +107,6 @@
 <translation id="4883854917563148705">Կառավարվող կարգավորումները հնարավոր չէ վերակայել</translation>
 <translation id="4887024562049524730">Կայքերի համար թույլտվություն խնդրել՝ օգտագործելու վիրտուալ իրականության ձեր սարքերն ու տվյալները (խորհուրդ է տրվում)</translation>
 <translation id="4962975101802056554">Չեղարկել սարքի բոլոր թույլտվությունները</translation>
-<translation id="4964199952259983386">Chrome-ին AR ռեժիմն օգտագործելու թույլտվություն տալու համար միացրեք նաև տեսախցիկը <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
 <translation id="497421865427891073">Առաջ գնալ</translation>
 <translation id="4996978546172906250">Համօգտագործման միջոցը`</translation>
 <translation id="5039804452771397117">Թույլ տալ</translation>
@@ -153,7 +147,6 @@
 <translation id="6177111841848151710">Արգելված է ընթացիկ որոնիչին</translation>
 <translation id="6181444274883918285">Ավելացնել բացառություն</translation>
 <translation id="6192792657125177640">Բացառություններ</translation>
-<translation id="6194112207524046168">Որպեսզի տեսախցիկը հասանելի դառնա Chrome-ին, միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
 <translation id="6196640612572343990">Արգելափակել երրորդ կողմի քուքիները</translation>
 <translation id="6206551242102657620">Կապակցումը պաշտպանված չէ: Տեղեկություններ կայքի մասին:</translation>
 <translation id="6216432067784365534">Ընտրանքներ՝ <ph name="NAME_OF_LIST_ITEM" /></translation>

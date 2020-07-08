@@ -832,8 +832,12 @@ void ComputedStyle::AdjustDiffForBackgroundVisuallyEqual(
     StyleDifference& diff) const {
   if (BackgroundColorInternal() != other.BackgroundColorInternal()) {
     diff.SetNeedsPaintInvalidation();
-    if (BackgroundColorInternal().HasAlpha() !=
-        other.BackgroundColorInternal().HasAlpha()) {
+    if (BackgroundColorInternal()
+            .Resolve(GetCurrentColor(), UsedColorScheme())
+            .HasAlpha() !=
+        other.BackgroundColorInternal()
+            .Resolve(other.GetCurrentColor(), other.UsedColorScheme())
+            .HasAlpha()) {
       diff.SetHasAlphaChanged();
       return;
     }
@@ -2274,7 +2278,7 @@ Color ComputedStyle::ResolvedColor(const StyleColor& color) const {
   bool visited_link = (InsideLink() == EInsideLink::kInsideVisitedLink);
   Color current_color =
       visited_link ? GetInternalVisitedCurrentColor() : GetCurrentColor();
-  return color.Resolve(current_color);
+  return color.Resolve(current_color, UsedColorScheme());
 }
 
 void ComputedStyle::SetMarginStart(const Length& margin) {
@@ -2457,12 +2461,12 @@ void ComputedStyle::CopyChildDependentFlagsFrom(const ComputedStyle& other) {
 
 Color ComputedStyle::GetCurrentColor() const {
   DCHECK(!GetColor().IsCurrentColor());
-  return GetColor().Resolve(Color());
+  return GetColor().Resolve(Color(), UsedColorScheme());
 }
 
 Color ComputedStyle::GetInternalVisitedCurrentColor() const {
   DCHECK(!InternalVisitedColor().IsCurrentColor());
-  return InternalVisitedColor().Resolve(Color());
+  return InternalVisitedColor().Resolve(Color(), UsedColorScheme());
 }
 
 bool ComputedStyle::ShadowListHasCurrentColor(const ShadowList* shadow_list) {

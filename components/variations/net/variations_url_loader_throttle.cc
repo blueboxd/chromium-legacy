@@ -4,16 +4,39 @@
 
 #include "components/variations/net/variations_url_loader_throttle.h"
 
+#include "components/google/core/common/google_util.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_client.h"
 #include "components/variations/variations_http_header_provider.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "url/gurl.h"
 
 namespace variations {
+namespace {
+
+// Returns the Owner corresponding to |top_frame_origin|.
+Owner GetOwner(const url::Origin& top_frame_origin) {
+  // Use GetTupleOrPrecursorTupleIfOpaque().GetURL() rather than just GetURL()
+  // to handle sandboxed top frames in addition to non-sandboxed ones.
+  // top_frame_origin.GetURL() handles only the latter.
+  const GURL url(top_frame_origin.GetTupleOrPrecursorTupleIfOpaque().GetURL());
+  if (!url.is_valid())
+    return Owner::kUnknownFromRenderer;
+  return google_util::IsGoogleAssociatedDomainUrl(url) ? Owner::kGoogle
+                                                       : Owner::kNotGoogle;
+}
+
+}  // namespace
 
 VariationsURLLoaderThrottle::VariationsURLLoaderThrottle(
     const std::string& variation_ids_header)
-    : variation_ids_header_(variation_ids_header) {}
+    : variation_ids_header_(variation_ids_header), owner_(Owner::kUnknown) {}
+
+VariationsURLLoaderThrottle::VariationsURLLoaderThrottle(
+    const std::string& variation_ids_header,
+    const url::Origin& top_frame_origin)
+    : variation_ids_header_(variation_ids_header),
+      owner_(GetOwner(top_frame_origin)) {}
 
 VariationsURLLoaderThrottle::~VariationsURLLoaderThrottle() = default;
 
@@ -36,7 +59,7 @@ void VariationsURLLoaderThrottle::WillStartRequest(
   // This throttle is never created when incognito so we pass in
   // variations::InIncognito::kNo.
   variations::AppendVariationsHeaderWithCustomValue(
-      request->url, variations::InIncognito::kNo, variation_ids_header_,
+      request->url, variations::InIncognito::kNo, variation_ids_header_, owner_,
       request);
 }
 

@@ -46,11 +46,8 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
-#include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
 #include "third_party/blink/renderer/core/paint/filter_effect_builder.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
-#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/animation/animation_translation_util.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
 #include "third_party/blink/renderer/platform/animation/compositor_color_animation_curve.h"
@@ -61,7 +58,6 @@
 #include "third_party/blink/renderer/platform/animation/compositor_keyframe_model.h"
 #include "third_party/blink/renderer/platform/animation/compositor_transform_animation_curve.h"
 #include "third_party/blink/renderer/platform/animation/compositor_transform_keyframe.h"
-#include "third_party/blink/renderer/platform/geometry/float_box.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 
 namespace blink {
@@ -508,25 +504,6 @@ void CompositorAnimations::AttachCompositedLayers(
     CompositorAnimation* compositor_animation) {
   if (!compositor_animation)
     return;
-
-  if (!element.GetLayoutObject() ||
-      !element.GetLayoutObject()->IsBoxModelObject() ||
-      !element.GetLayoutObject()->HasLayer())
-    return;
-
-  PaintLayer* layer =
-      ToLayoutBoxModelObject(element.GetLayoutObject())->Layer();
-
-  // Composited animations do not depend on a composited layer mapping for CAP.
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    if (!layer->IsAllowedToQueryCompositingState() ||
-        !layer->GetCompositedLayerMapping() ||
-        !layer->GetCompositedLayerMapping()->MainGraphicsLayer())
-      return;
-
-    if (!layer->GetCompositedLayerMapping()->MainGraphicsLayer()->CcLayer())
-      return;
-  }
 
   CompositorElementIdNamespace element_id_namespace =
       CompositorElementIdNamespace::kPrimary;

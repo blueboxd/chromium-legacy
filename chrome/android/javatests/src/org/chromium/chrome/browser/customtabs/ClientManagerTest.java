@@ -14,6 +14,7 @@ import androidx.browser.customtabs.CustomTabsSessionToken;
 import androidx.browser.customtabs.PostMessageServiceConnection;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -191,11 +192,9 @@ public class ClientManagerTest {
                     mSession, Origin.create(URL), CustomTabsService.RELATION_USE_AS_ORIGIN);
         });
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return cm.getPostMessageOriginForSessionForTesting(mSession) != null;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    cm.getPostMessageOriginForSessionForTesting(mSession), Matchers.notNullValue());
         });
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {

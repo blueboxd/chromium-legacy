@@ -186,7 +186,7 @@ void TextPainterBase::UpdateGraphicsContext(
     state_saver.SaveIfNeeded();
     context.SetDrawLooper(text_style.shadow->CreateDrawLooper(
         DrawLooperBuilder::kShadowIgnoresAlpha, text_style.current_color,
-        horizontal));
+        text_style.color_scheme, horizontal));
   }
 }
 
@@ -201,6 +201,8 @@ TextPaintStyle TextPainterBase::TextPaintingStyle(const Document& document,
                                                   const ComputedStyle& style,
                                                   const PaintInfo& paint_info) {
   TextPaintStyle text_style;
+  text_style.stroke_width = style.TextStrokeWidth();
+  text_style.color_scheme = style.UsedColorScheme();
   bool is_printing = paint_info.IsPrinting();
 
   if (paint_info.phase == PaintPhase::kTextClip) {
@@ -210,7 +212,6 @@ TextPaintStyle TextPainterBase::TextPaintingStyle(const Document& document,
     text_style.fill_color = Color::kBlack;
     text_style.stroke_color = Color::kBlack;
     text_style.emphasis_mark_color = Color::kBlack;
-    text_style.stroke_width = style.TextStrokeWidth();
     text_style.shadow = nullptr;
   } else {
     text_style.current_color =
@@ -221,7 +222,6 @@ TextPaintStyle TextPainterBase::TextPaintingStyle(const Document& document,
         style.VisitedDependentColor(GetCSSPropertyWebkitTextStrokeColor());
     text_style.emphasis_mark_color =
         style.VisitedDependentColor(GetCSSPropertyWebkitTextEmphasisColor());
-    text_style.stroke_width = style.TextStrokeWidth();
     text_style.shadow = style.TextShadow();
 
     // Adjust text color when printing with a white background.

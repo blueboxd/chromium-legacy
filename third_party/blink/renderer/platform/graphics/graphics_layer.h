@@ -184,6 +184,7 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
                                PaintInvalidationReason);
 
   IntRect InterestRect();
+  // Returns true if this or any descendant is repainted.
   bool PaintRecursively();
   // Returns true if this layer is repainted.
   bool Paint();
@@ -246,7 +247,6 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   bool FillsBoundsCompletely() const override { return false; }
   size_t GetApproximateUnsharedMemoryUsage() const final;
 
-  void PaintRecursivelyInternal(Vector<GraphicsLayer*>& repainted_layers);
   void UpdateSafeOpaqueBackgroundColor();
 
   // Returns true if PaintController::PaintArtifact() changed and needs commit.

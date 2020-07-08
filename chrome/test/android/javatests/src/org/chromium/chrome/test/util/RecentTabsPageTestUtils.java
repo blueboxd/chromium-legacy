@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.test.util;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 
 import org.chromium.chrome.browser.ntp.RecentTabsPage;
@@ -16,11 +17,9 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
  */
 public class RecentTabsPageTestUtils {
     public static void waitForRecentTabsPageLoaded(final Tab tab) {
-        CriteriaHelper.pollUiThread(new Criteria("RecentTabsPage never fully loaded") {
-            @Override
-            public boolean isSatisfied() {
-                return tab.getNativePage() instanceof RecentTabsPage;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("RecentTabsPage never fully loaded", tab.getNativePage(),
+                    Matchers.instanceOf(RecentTabsPage.class));
         });
         Assert.assertTrue(tab.getNativePage() instanceof RecentTabsPage);
     }

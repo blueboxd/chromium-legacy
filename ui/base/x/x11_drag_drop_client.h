@@ -25,10 +25,14 @@ class XOSExchangeDataProvider;
 // Converts the current set of X masks into the set of ui::EventFlags.
 COMPONENT_EXPORT(UI_BASE_X) int XGetMaskAsEventFlags();
 
-// Handles XDND (X11 drag and drop protocol) for the given window.
+// Works for both incoming and outgoing drags.  For the incoming drags, receives
+// XDND events via HandleXdndEvent() and routes them to OnXdnd...() handlers;
+// outgoing drags are handled via Handle...() methods.  Both ways end up in
+// SendXdnd...() calls that target the window that is currently at the drag
+// location.  If the target is another Chrome window, the event is delivered
+// directly to its XdndHandler, bypassing the X server.
 //
-// Doesn't fetch XDND events from the event source; those should be taken by
-// the client and fed to |OnXdnd...| and |OnSelectionNotify| methods.
+// The owner is notified about the ongoing drag through the Delegate interface.
 class COMPONENT_EXPORT(UI_BASE_X) XDragDropClient {
  public:
   // Handlers and callbacks that should be implemented at the consumer side.
@@ -49,10 +53,11 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragDropClient {
     virtual void UpdateCursor(
         DragDropTypes::DragOperation negotiated_operation) = 0;
 
-    // Called when data from another application enters the window.
+    // Called when data from another application (not Chrome) enters the window.
     virtual void OnBeginForeignDrag(x11::Window window) = 0;
 
-    // Called when data from another application is about to leave the window.
+    // Called when data from another application (not Chrome) is about to leave
+    // the window.
     virtual void OnEndForeignDrag() = 0;
 
     // Called just before the drag leaves the window.
@@ -83,8 +88,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragDropClient {
   int current_modifier_state() const { return current_modifier_state_; }
 
   // Handling XdndPosition can be paused while waiting for more data; this is
-  // called either synchronously from OnXdndPosition, or asynchronously after
-  // we've received data requested from the other window.
+  // called by XDragContext either synchronously or asynchronously, depending on
+  // whether the context has data requested from the other window.
   void CompleteXdndPosition(x11::Window source_window,
                             const gfx::Point& screen_point);
 

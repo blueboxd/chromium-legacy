@@ -93,7 +93,8 @@ void BoxPainterBase::PaintNormalBoxShadow(const PaintInfo& info,
       continue;
 
     const Color& shadow_color = shadow.GetColor().Resolve(
-        style.VisitedDependentColor(GetCSSPropertyColor()));
+        style.VisitedDependentColor(GetCSSPropertyColor()),
+        style.UsedColorScheme());
 
     FloatRect fill_rect = border.Rect();
     fill_rect.Inflate(shadow_spread);
@@ -207,7 +208,8 @@ void BoxPainterBase::PaintInsetBoxShadow(const PaintInfo& info,
       continue;
 
     const Color& shadow_color = shadow.GetColor().Resolve(
-        style.VisitedDependentColor(GetCSSPropertyColor()));
+        style.VisitedDependentColor(GetCSSPropertyColor()),
+        style.UsedColorScheme());
 
     // The inset shadow case.
     GraphicsContext::Edges clipped_edges = GraphicsContext::kNoEdge;

@@ -153,6 +153,9 @@ public class QrCodeScanMediator implements Camera.PreviewCallback {
                                 camera.getParameters().getPreviewSize().height, ImageFormat.NV21)
                         .build();
         SparseArray<Barcode> barcodes = mDetector.detect(frame);
+        if (!mPropertyModel.get(QrCodeScanViewProperties.IS_ON_FOREGROUND)) {
+            return;
+        }
         if (barcodes.size() == 0) {
             camera.setOneShotPreviewCallback(this);
             return;

@@ -84,6 +84,9 @@ const char kIsEnterpriseManaged[] = "is_enterprise_managed";
 // screen.
 const char kLastInputMethod[] = "last_input_method";
 
+// Key of the PIN auto submit length.
+const char kPinAutosubmitLength[] = "pin_autosubmit_length";
+
 // List containing all the known user preferences keys.
 const char* kReservedKeys[] = {kCanonicalEmail,
                                kGAIAIdKey,
@@ -102,7 +105,8 @@ const char* kReservedKeys[] = {kCanonicalEmail,
                                kLastOnlineSignin,
                                kOfflineSigninLimit,
                                kIsEnterpriseManaged,
-                               kLastInputMethod};
+                               kLastInputMethod,
+                               kPinAutosubmitLength};
 
 PrefService* GetLocalState() {
   if (!UserManager::IsInitialized())
@@ -673,6 +677,17 @@ void SetUserLastInputMethod(const AccountId& account_id,
 bool GetUserLastInputMethod(const AccountId& account_id,
                             std::string* input_method) {
   return GetStringPref(account_id, kLastInputMethod, input_method);
+}
+
+void SetUserPinLength(const AccountId& account_id, int pin_length) {
+  SetIntegerPref(account_id, kPinAutosubmitLength, pin_length);
+}
+
+int GetUserPinLength(const AccountId& account_id) {
+  int pin_length = 0;
+  if (GetIntegerPref(account_id, kPinAutosubmitLength, &pin_length))
+    return pin_length;
+  return 0;
 }
 
 void RemovePrefs(const AccountId& account_id) {

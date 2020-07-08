@@ -27,41 +27,6 @@
 
 namespace blink {
 
-namespace {
-
-bool IsValidSkColorSpace(sk_sp<SkColorSpace> sk_color_space) {
-  // Refer to CanvasColorSpaceToGfxColorSpace in CanvasColorParams.
-  sk_sp<SkColorSpace> valid_sk_color_spaces[] = {
-      gfx::ColorSpace::CreateSRGB().ToSkColorSpace(),
-      gfx::ColorSpace::CreateDisplayP3D65().ToSkColorSpace(),
-      gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT2020,
-                      gfx::ColorSpace::TransferID::GAMMA24)
-          .ToSkColorSpace()};
-  for (auto& valid_sk_color_space : valid_sk_color_spaces) {
-    if (SkColorSpace::Equals(sk_color_space.get(),
-                             valid_sk_color_space.get())) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool IsValidSkColorType(SkColorType sk_color_type) {
-  SkColorType valid_sk_color_types[] = {
-      kBGRA_8888_SkColorType, kRGBA_8888_SkColorType,
-      // TODO(jie.a.chen@intel.com): Add F16 support.
-      // kRGBA_F16_SkColorType
-  };
-  for (auto& valid_sk_color_type : valid_sk_color_types) {
-    if (sk_color_type == valid_sk_color_type) {
-      return true;
-    }
-  }
-  return false;
-}
-
-}  // namespace
-
 VideoFrame::VideoFrame(scoped_refptr<media::VideoFrame> frame)
     : frame_(std::move(frame)) {
   DCHECK(frame_);
@@ -136,25 +101,6 @@ VideoFrame* VideoFrame::Create(VideoFrameInit* init,
     return nullptr;
   }
 
-  auto sk_image =
-      source->BitmapImage()->PaintImageForCurrentFrame().GetSkImage();
-  auto sk_color_space = sk_image->refColorSpace();
-  if (!sk_color_space) {
-    sk_color_space = SkColorSpace::MakeSRGB();
-  }
-  if (!IsValidSkColorSpace(sk_color_space)) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Invalid color space");
-    return nullptr;
-  }
-  auto sk_color_type = sk_image->colorType();
-  if (!IsValidSkColorType(sk_color_type)) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Invalid pixel format");
-    return nullptr;
-  }
-
-  // TODO(jie.a.chen@intel.com): Handle data of float type.
   // Full copy #1
   WTF::Vector<uint8_t> pixel_data = source->CopyBitmapData();
   if (pixel_data.size() <
@@ -172,41 +118,25 @@ VideoFrame* VideoFrame::Create(VideoFrameInit* init,
     return nullptr;
   }
 
-#if SK_PMCOLOR_BYTE_ORDER(B, G, R, A)
-  auto libyuv_convert_to_i420 = libyuv::ARGBToI420;
-#else
-  auto libyuv_convert_to_i420 = libyuv::ABGRToI420;
-#endif
-  if (sk_color_type != kN32_SkColorType) {
-    // Swap ARGB and ABGR if not using the native pixel format.
-    libyuv_convert_to_i420 =
-        (libyuv_convert_to_i420 == libyuv::ARGBToI420 ? libyuv::ABGRToI420
-                                                      : libyuv::ARGBToI420);
-  }
-
-  // TODO(jie.a.chen@intel.com): Use GPU to do the conversion.
   // Full copy #2
   int error =
-      libyuv_convert_to_i420(pixel_data.data(), source->width() * 4,
-                             frame->visible_data(media::VideoFrame::kYPlane),
-                             frame->stride(media::VideoFrame::kYPlane),
-                             frame->visible_data(media::VideoFrame::kUPlane),
-                             frame->stride(media::VideoFrame::kUPlane),
-                             frame->visible_data(media::VideoFrame::kVPlane),
-                             frame->stride(media::VideoFrame::kVPlane),
-                             source->width(), source->height());
+      libyuv::ABGRToI420(pixel_data.data(), source->width() * 4,
+                         frame->visible_data(media::VideoFrame::kYPlane),
+                         frame->stride(media::VideoFrame::kYPlane),
+                         frame->visible_data(media::VideoFrame::kUPlane),
+                         frame->stride(media::VideoFrame::kUPlane),
+                         frame->visible_data(media::VideoFrame::kVPlane),
+                         frame->stride(media::VideoFrame::kVPlane),
+                         source->width(), source->height());
   if (error) {
     exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
                                       "ARGB to YUV420 conversion error");
     return nullptr;
   }
-  gfx::ColorSpace gfx_color_space(*sk_color_space);
-  // 'libyuv_convert_to_i420' assumes SMPTE170M.
-  // Refer to the func below to check the actual conversion:
-  // third_party/libyuv/source/row_common.cc -- RGBToY(...)
-  gfx_color_space = gfx_color_space.GetWithMatrixAndRange(
-      gfx::ColorSpace::MatrixID::SMPTE170M, gfx::ColorSpace::RangeID::LIMITED);
-  frame->set_color_space(gfx_color_space);
+  // TODO(jie.a.chen@intel.com): Figure out the right colorspace and conversion
+  // according to source ImageBitmap.
+  // libyuv::ABGRToI420 seems to assume Bt.601.
+  frame->set_color_space(gfx::ColorSpace::CreateREC601());
   auto* result = MakeGarbageCollected<VideoFrame>(std::move(frame));
   return result;
 }
@@ -236,14 +166,6 @@ ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
        (frame_->format() == media::PIXEL_FORMAT_NV12 &&
         frame_->HasTextures()))) {
     scoped_refptr<StaticBitmapImage> image;
-    gfx::ColorSpace gfx_color_space = frame_->ColorSpace();
-    gfx_color_space = gfx_color_space.GetWithMatrixAndRange(
-        gfx::ColorSpace::MatrixID::RGB, gfx::ColorSpace::RangeID::FULL);
-    auto sk_color_space = gfx_color_space.ToSkColorSpace();
-    if (!sk_color_space) {
-      sk_color_space = SkColorSpace::MakeSRGB();
-    }
-
     if (!preferAcceleratedImageBitmap()) {
       size_t bytes_per_row = sizeof(SkColor) * visibleWidth();
       size_t image_pixels_size = bytes_per_row * visibleHeight();
@@ -257,9 +179,11 @@ ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
       media::PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
           frame_.get(), image_pixels->writable_data(), bytes_per_row);
 
+      // TODO(jie.a.chen@intel.com): Figure out the correct SkColorSpace.
+      sk_sp<SkColorSpace> skColorSpace = SkColorSpace::MakeSRGB();
       SkImageInfo info =
           SkImageInfo::Make(visibleWidth(), visibleHeight(), kN32_SkColorType,
-                            kUnpremul_SkAlphaType, std::move(sk_color_space));
+                            kUnpremul_SkAlphaType, std::move(skColorSpace));
       sk_sp<SkImage> skImage =
           SkImage::MakeRasterData(info, image_pixels, bytes_per_row);
       image = UnacceleratedStaticBitmapImage::Create(std::move(skImage));
@@ -300,8 +224,7 @@ ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
           base::Unretained(shared_image_interface), dest_holder.mailbox));
 
       const SkImageInfo sk_image_info =
-          SkImageInfo::Make(codedWidth(), codedHeight(), kN32_SkColorType,
-                            kUnpremul_SkAlphaType, std::move(sk_color_space));
+          SkImageInfo::MakeN32Premul(codedWidth(), codedHeight());
 
       image = AcceleratedStaticBitmapImage::CreateFromCanvasMailbox(
           dest_holder.mailbox, sync_token, 0u, sk_image_info,

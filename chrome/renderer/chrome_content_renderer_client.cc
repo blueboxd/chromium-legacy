@@ -1462,24 +1462,6 @@ ChromeContentRendererClient::CreateSpeechRecognitionClient(
 }
 #endif
 
-bool ChromeContentRendererClient::IsPluginAllowedToUseDevChannelAPIs() {
-#if BUILDFLAG(ENABLE_PLUGINS)
-  // Allow access for tests.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePepperTesting)) {
-    return true;
-  }
-
-  version_info::Channel channel = chrome::GetChannel();
-  // Allow dev channel APIs to be used on "Canary", "Dev", and "Unknown"
-  // releases of Chrome. Permitting "Unknown" allows these APIs to be used on
-  // Chromium builds as well.
-  return channel <= version_info::Channel::DEV;
-#else
-  return false;
-#endif
-}
-
 bool ChromeContentRendererClient::IsPluginAllowedToUseCameraDeviceAPI(
     const GURL& url) {
 #if BUILDFLAG(ENABLE_PLUGINS) && BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1551,6 +1533,15 @@ void ChromeContentRendererClient::
 
   if (base::FeatureList::IsEnabled(subresource_filter::kAdTagging))
     blink::WebRuntimeFeatures::EnableAdTagging(true);
+}
+
+bool ChromeContentRendererClient::AllowScriptExtensionForServiceWorker(
+    const url::Origin& script_origin) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  return script_origin.scheme() == extensions::kExtensionScheme;
+#else
+  return false;
+#endif
 }
 
 void ChromeContentRendererClient::

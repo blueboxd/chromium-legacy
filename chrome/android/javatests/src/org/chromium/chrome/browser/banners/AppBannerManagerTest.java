@@ -21,6 +21,7 @@ import android.view.View;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -222,12 +223,7 @@ public class AppBannerManagerTest {
     }
 
     private void waitForBannerManager(Tab tab) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return !getAppBannerManager(tab).isRunningForTesting();
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> !getAppBannerManager(tab).isRunningForTesting());
     }
 
     private void navigateToUrlAndWaitForBannerManager(
@@ -239,26 +235,21 @@ public class AppBannerManagerTest {
 
     private void waitUntilAppDetailsRetrieved(
             ChromeActivityTestRule<? extends ChromeActivity> rule, final int numExpected) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                AppBannerManager manager = getAppBannerManager(rule.getActivity().getActivityTab());
-                return mDetailsDelegate.mNumRetrieved == numExpected
-                        && !manager.isRunningForTesting();
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            AppBannerManager manager = getAppBannerManager(rule.getActivity().getActivityTab());
+            Criteria.checkThat(mDetailsDelegate.mNumRetrieved, Matchers.is(numExpected));
+            Criteria.checkThat(manager.isRunningForTesting(), Matchers.is(false));
         });
     }
 
     private void waitUntilAmbientBadgeInfoBarAppears(
             ChromeActivityTestRule<? extends ChromeActivity> rule) {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.INSTALLABLE_AMBIENT_BADGE_INFOBAR)) {
-            CriteriaHelper.pollUiThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    List<InfoBar> infobars = rule.getInfoBars();
-                    if (infobars.size() != 1) return false;
-                    return infobars.get(0) instanceof InstallableAmbientBadgeInfoBar;
-                }
+            CriteriaHelper.pollUiThread(() -> {
+                List<InfoBar> infobars = rule.getInfoBars();
+                Criteria.checkThat(infobars.size(), Matchers.is(1));
+                Criteria.checkThat(
+                        infobars.get(0), Matchers.instanceOf(InstallableAmbientBadgeInfoBar.class));
             });
         }
     }
@@ -386,11 +377,8 @@ public class AppBannerManagerTest {
         });
 
         // Make sure that the splash screen icon was downloaded.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return dataStorageFactory.mSplashImage != null;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(dataStorageFactory.mSplashImage, Matchers.notNullValue());
         });
 
         // Test that bitmap sizes match expectations.
@@ -430,11 +418,8 @@ public class AppBannerManagerTest {
         });
 
         // Make sure that the splash screen icon was downloaded.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return dataStorageFactory.mSplashImage != null;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(dataStorageFactory.mSplashImage, Matchers.notNullValue());
         });
 
         // Test that bitmap sizes match expectations.

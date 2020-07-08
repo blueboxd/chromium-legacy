@@ -9,6 +9,7 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.LargeTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -1208,15 +1209,11 @@ public class TabStripTest {
      * @param expectsShown Whether shown status is expected.
      */
     private void assertWaitForKeyboardStatus(final boolean expectsShown) {
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                updateFailureReason("expectsShown: " + expectsShown);
-                return expectsShown
-                        == mActivityTestRule.getKeyboardDelegate().isKeyboardShowing(
-                                   mActivityTestRule.getActivity(),
-                                   mActivityTestRule.getActivity().getActivityTab().getView());
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(mActivityTestRule.getKeyboardDelegate().isKeyboardShowing(
+                                       mActivityTestRule.getActivity(),
+                                       mActivityTestRule.getActivity().getActivityTab().getView()),
+                    Matchers.is(expectsShown));
         });
     }
 }

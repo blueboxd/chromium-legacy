@@ -32,7 +32,7 @@ android_library("java") {
 }
 
 generate_jni("jni_headers") {
-  sources = [ "java/src/org/chromium/chrome/browser/webauth/authenticator/BLEHandler.java" ]
+  sources = [ "java/src/org/chromium/chrome/browser/webauth/authenticator/CableAuthenticator.java" ]
 }
 
 source_set("native") {

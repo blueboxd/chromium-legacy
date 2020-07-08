@@ -41,14 +41,14 @@ bool IsHttpServerError(int status_code) {
 }
 
 bool DeleteFileAndEmptyParentDirectory(const base::FilePath& filepath) {
-  if (!base::DeleteFile(filepath, false))
+  if (!base::DeleteFile(filepath))
     return false;
 
   const base::FilePath dirname(filepath.DirName());
   if (!base::IsDirectoryEmpty(dirname))
     return true;
 
-  return base::DeleteFile(dirname, false);
+  return base::DeleteFile(dirname);
 }
 
 std::string GetCrxComponentID(const CrxComponent& component) {

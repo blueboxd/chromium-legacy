@@ -152,15 +152,13 @@ public class PermissionParamsListBuilder {
         String status_text = "";
 
         String managedBy = null;
-        if (permission.type == ContentSettingsType.NOTIFICATIONS) {
-            Origin origin = Origin.create(mFullUrl);
-            if (origin != null) {
-                managedBy = mDelegate.getDelegateAppName(origin);
-            }
+        Origin origin = Origin.create(mFullUrl);
+        if (origin != null) {
+            managedBy = mDelegate.getDelegateAppName(origin, permission.type);
         }
         if (managedBy != null) {
             status_text = String.format(
-                    mContext.getString(R.string.website_notification_managed_by_app), managedBy);
+                    mContext.getString(R.string.website_setting_managed_by_app), managedBy);
         } else {
             switch (permission.setting) {
                 case ContentSettingValues.ALLOW:

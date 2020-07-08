@@ -547,10 +547,10 @@ void TetherService::SetBleAdvertisingInterval() {
   adapter_->SetAdvertisingInterval(
       base::TimeDelta::FromMilliseconds(kMinAdvertisingIntervalMilliseconds),
       base::TimeDelta::FromMilliseconds(kMaxAdvertisingIntervalMilliseconds),
-      base::Bind(&TetherService::OnBluetoothAdapterAdvertisingIntervalSet,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&TetherService::OnBluetoothAdapterAdvertisingIntervalError,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&TetherService::OnBluetoothAdapterAdvertisingIntervalSet,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&TetherService::OnBluetoothAdapterAdvertisingIntervalError,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool TetherService::GetIsBleAdvertisingSupportedPref() {

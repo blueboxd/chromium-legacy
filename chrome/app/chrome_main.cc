@@ -17,7 +17,7 @@
 #include "content/public/common/content_switches.h"
 #include "headless/public/headless_shell.h"
 #include "ui/gfx/switches.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "sandbox/policy/switches.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/tracing_allocation_failure_tracker.h"
@@ -103,7 +103,7 @@ int ChromeMain(int argc, const char** argv) {
 
 #if defined(OS_MACOSX)
   if(!__builtin_available(macOS 10.10,*)) {
-    command_line->AppendSwitch(service_manager::switches::kNoSandbox);
+    command_line->AppendSwitch(sandbox::policy::switches::kNoSandbox);
   }
 #endif
   ALLOW_UNUSED_LOCAL(command_line);

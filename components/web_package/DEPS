@@ -2,6 +2,7 @@ include_rules = [
   "+components/cbor",
   "+mojo/public/cpp",
   "+net",
+  "+services/network/public/mojom"
 ]
 
 specific_include_rules = {

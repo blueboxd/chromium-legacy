@@ -812,7 +812,8 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifest_Success) {
   base::RunLoop run_loop;
 
   install_task_->InstallWebAppFromManifest(
-      web_contents(), WebappInstallSource::MENU_BROWSER_TAB,
+      web_contents(), /*bypass_service_worker_check=*/false,
+      WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
@@ -1305,7 +1306,8 @@ class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
     SetInstallFinalizerForTesting();
 
     install_task_->InstallWebAppFromManifest(
-        web_contents(), WebappInstallSource::MENU_BROWSER_TAB,
+        web_contents(), /*bypass_service_worker_check=*/false,
+        WebappInstallSource::MENU_BROWSER_TAB,
         base::BindOnce(TestAcceptDialogCallback),
         base::BindLambdaForTesting([&](const AppId& installed_app_id,
                                        InstallResultCode code) {

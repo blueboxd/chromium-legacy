@@ -13,14 +13,16 @@
 #include "chrome/browser/chromeos/launcher_search_provider/launcher_search_provider_service_factory.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_provider.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_result.h"
-#include "chrome/common/string_matching/tokenized_string.h"
-#include "chrome/common/string_matching/tokenized_string_match.h"
+#include "chromeos/components/string_matching/tokenized_string.h"
+#include "chromeos/components/string_matching/tokenized_string_match.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 
 namespace api_launcher_search_provider =
     extensions::api::launcher_search_provider;
+using chromeos::string_matching::TokenizedString;
+using chromeos::string_matching::TokenizedStringMatch;
 using extensions::ExtensionId;
 using extensions::ExtensionSet;
 

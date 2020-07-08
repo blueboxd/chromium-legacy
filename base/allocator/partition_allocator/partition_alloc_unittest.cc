@@ -150,7 +150,8 @@ class PartitionAllocTest : public testing::Test {
   void SetUp() override {
     scoped_feature_list.InitWithFeatures({kPartitionAllocGigaCage}, {});
     PartitionAllocGlobalInit(HandleOOM);
-    allocator.init();
+    allocator.init(PartitionAllocatorAlignment::kRegular);
+    aligned_allocator.init(PartitionAllocatorAlignment::kAlignedAlloc);
     test_bucket_index_ = SizeToIndex(kRealAllocSize);
   }
 
@@ -290,6 +291,7 @@ class PartitionAllocTest : public testing::Test {
 
   base::test::ScopedFeatureList scoped_feature_list;
   PartitionAllocator<base::internal::ThreadSafe> allocator;
+  PartitionAllocator<base::internal::ThreadSafe> aligned_allocator;
   size_t test_bucket_index_;
 };
 
@@ -2448,7 +2450,7 @@ TEST_F(PartitionAllocTest, AlignedAllocations) {
 
   for (size_t alloc_size : alloc_sizes) {
     for (size_t alignment : alignemnts) {
-      void* ptr = allocator.root()->AlignedAlloc(alignment, alloc_size);
+      void* ptr = aligned_allocator.root()->AlignedAlloc(alignment, alloc_size);
       ASSERT_TRUE(ptr);
       EXPECT_EQ(reinterpret_cast<uintptr_t>(ptr) % alignment, 0ull);
       allocator.root()->Free(ptr);

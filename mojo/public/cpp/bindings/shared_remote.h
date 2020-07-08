@@ -16,8 +16,6 @@
 #include "base/task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
@@ -66,6 +64,11 @@ class SharedRemoteBase
         : RemoteWrapper(base::SequencedTaskRunnerHandle::Get()) {
       remote_ = std::move(remote);
       associated_group_ = *remote_.internal_state()->associated_group();
+
+      // By default we force all messages to behave as if async within the
+      // Remote, as SharedRemote implements its own waiting mechanism to block
+      // only the calling thread when making sync calls.
+      remote_.internal_state()->force_outgoing_messages_async(true);
     }
 
     explicit RemoteWrapper(scoped_refptr<base::SequencedTaskRunner> task_runner)
@@ -88,6 +91,7 @@ class SharedRemoteBase
       return std::make_unique<ThreadSafeForwarder<InterfaceType>>(
           task_runner_, base::BindRepeating(&RemoteWrapper::Accept, this),
           base::BindRepeating(&RemoteWrapper::AcceptWithResponder, this),
+          base::BindRepeating(&RemoteWrapper::ForceAsyncSend, this),
           associated_group_);
     }
 
@@ -127,9 +131,9 @@ class SharedRemoteBase
       DCHECK(task_runner_->RunsTasksInCurrentSequence());
       remote_.Bind(std::move(remote));
 
-      // The ThreadSafeForwarder will always block the calling thread on a
-      // reply, so there's no need for the endpoint to employ its own sync
-      // waiting logic.
+      // By default we force all messages to behave as if async within the
+      // Remote, as SharedRemote implements its own waiting mechanism to block
+      // only the calling thread when making sync calls.
       remote_.internal_state()->force_outgoing_messages_async(true);
     }
 
@@ -141,6 +145,10 @@ class SharedRemoteBase
                              std::unique_ptr<MessageReceiver> responder) {
       remote_.internal_state()->ForwardMessageWithResponder(
           std::move(message), std::move(responder));
+    }
+
+    void ForceAsyncSend(bool force) {
+      remote_.internal_state()->force_outgoing_messages_async(force);
     }
 
     void DeleteOnCorrectThread() const {
@@ -220,19 +228,30 @@ class SharedRemoteBase
 template <typename Interface>
 class SharedRemote {
  public:
+  // Constructs an unbound SharedRemote. This object cannot issue Interface
+  // method calls and does not schedule any tasks. A default-constructed
+  // SharedRemote may be replaced with a bound one via copy- or move-assignment.
   SharedRemote() = default;
-  explicit SharedRemote(PendingRemote<Interface> pending_remote)
-      : remote_(pending_remote.is_valid()
-                    ? SharedRemoteBase<Remote<Interface>>::Create(
-                          std::move(pending_remote))
-                    : nullptr) {}
+
+  // Constructs a SharedRemote bound to `pending_remote` on the calling
+  // sequence. See `Bind()` below for more details.
+  explicit SharedRemote(PendingRemote<Interface> pending_remote) {
+    Bind(std::move(pending_remote), nullptr);
+  }
+
+  // Constructs a SharedRemote bound to `pending_remote` on the sequence given
+  // by `bind_task_runner`. See `Bind()` below for more details.
   SharedRemote(PendingRemote<Interface> pending_remote,
-               scoped_refptr<base::SequencedTaskRunner> bind_task_runner)
-      : remote_(pending_remote.is_valid()
-                    ? SharedRemoteBase<Remote<Interface>>::Create(
-                          std::move(pending_remote),
-                          std::move(bind_task_runner))
-                    : nullptr) {}
+               scoped_refptr<base::SequencedTaskRunner> bind_task_runner) {
+    Bind(std::move(pending_remote), std::move(bind_task_runner));
+  }
+
+  // SharedRemote supports both copy and move construction and assignment. These
+  // are explicitly defaulted here for clarity.
+  SharedRemote(const SharedRemote&) = default;
+  SharedRemote(SharedRemote&&) = default;
+  SharedRemote& operator=(const SharedRemote&) = default;
+  SharedRemote& operator=(SharedRemote&&) = default;
 
   bool is_bound() const { return remote_ != nullptr; }
   explicit operator bool() const { return is_bound(); }
@@ -252,6 +271,34 @@ class SharedRemote {
   // remote's endpoint as other SharedRemote instances may reference the same
   // underlying endpoint.
   void reset() { remote_.reset(); }
+
+  // Binds this SharedRemote to `pending_remote` on the sequence given by
+  // `bind_task_runner`, or the calling sequence if `bind_task_runner` is null.
+  // Once bound, the SharedRemote may be used to send messages on the underlying
+  // Remote. Messages always bounce through `bind_task_runner` before sending,
+  // unless the caller is issuing a [Sync] call from `bind_task_runner` already;
+  // in which case this behaves exactly like a regular Remote for that call.
+  //
+  // Any reply received by the SharedRemote is dispatched to whatever
+  // SequencedTaskRunner was current when the corresponding request was made.
+  //
+  // A bound SharedRemote may be copied any number of times, to any number of
+  // threads. Each copy sends messages through the same underlying Remote, after
+  // bouncing through the same `bind_task_runner`.
+  //
+  // If this SharedRemote was already bound, it will be effectively unbound by
+  // this call and re-bound to `pending_remote`. Any prior copies made are NOT
+  // affected and will retain their reference to the original Remote.
+  void Bind(PendingRemote<Interface> pending_remote,
+            scoped_refptr<base::SequencedTaskRunner> bind_task_runner) {
+    if (bind_task_runner && pending_remote) {
+      remote_ = SharedRemoteBase<Remote<Interface>>::Create(
+          std::move(pending_remote), std::move(bind_task_runner));
+    } else if (pending_remote) {
+      remote_ = SharedRemoteBase<Remote<Interface>>::Create(
+          std::move(pending_remote));
+    }
+  }
 
  private:
   scoped_refptr<SharedRemoteBase<Remote<Interface>>> remote_;

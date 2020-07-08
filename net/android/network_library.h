@@ -99,6 +99,12 @@ NET_EXPORT_PRIVATE internal::ConfigParsePosixResult GetDnsServers(
     bool* dns_over_tls_active,
     std::string* dns_over_tls_hostname);
 
+// Reports to the framework that the current default network appears to have
+// connectivity issues. This may serve as a signal for the OS to consider
+// switching to a different default network. Returns |true| if successfully
+// reported to the OS, or |false| if not supported.
+NET_EXPORT_PRIVATE bool ReportBadDefaultNetwork();
+
 // Apply TrafficStats tag |tag| and UID |uid| to |socket|. Future network
 // traffic used by |socket| will be attributed to |uid| and |tag|.
 NET_EXPORT_PRIVATE void TagSocket(SocketDescriptor socket,

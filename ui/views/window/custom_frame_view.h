@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/window/frame_buttons.h"
 #include "ui/views/window/non_client_view.h"
 
@@ -48,7 +49,6 @@ class VIEWS_EXPORT CustomFrameView : public NonClientFrameView,
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
   void SizeConstraintsChanged() override;
-  void PaintAsActiveChanged() override;
 
   // Overridden from View:
   void OnPaint(gfx::Canvas* canvas) override;
@@ -158,6 +158,12 @@ class VIEWS_EXPORT CustomFrameView : public NonClientFrameView,
   // by the space used by the leading and trailing buttons.
   int minimum_title_bar_x_ = 0;
   int maximum_title_bar_x_ = -1;
+
+  std::unique_ptr<Widget::PaintAsActiveCallbackList::Subscription>
+      paint_as_active_subscription_ =
+          frame_->RegisterPaintAsActiveChangedCallback(
+              base::BindRepeating(&CustomFrameView::SchedulePaint,
+                                  base::Unretained(this)));
 
   DISALLOW_COPY_AND_ASSIGN(CustomFrameView);
 };

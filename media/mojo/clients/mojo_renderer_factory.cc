@@ -12,7 +12,6 @@
 #include "media/mojo/mojom/renderer_extensions.mojom.h"
 #include "media/renderers/decrypting_renderer.h"
 #include "media/renderers/video_overlay_factory.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace media {

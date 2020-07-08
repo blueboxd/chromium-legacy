@@ -6,11 +6,9 @@
 
 #include "ash/assistant/model/assistant_response.h"
 #include "ash/assistant/model/ui/assistant_card_element.h"
-#include "ash/assistant/model/ui/assistant_error_element.h"
 #include "ash/assistant/model/ui/assistant_text_element.h"
 #include "ash/assistant/model/ui/assistant_ui_element.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
-#include "ash/assistant/ui/main_stage/assistant_error_element_view.h"
 #include "ash/assistant/ui/main_stage/assistant_text_element_view.h"
 #include "ash/assistant/ui/main_stage/element_animator.h"
 #include "ui/views/layout/box_layout.h"
@@ -61,10 +59,6 @@ AssistantResponseContainerView::HandleUiElement(
       AddTextElementView(new AssistantTextElement(
           static_cast<const AssistantCardElement*>(ui_element)->fallback()));
       break;
-    case AssistantUiElementType::kError:
-      AddErrorElementView(
-          static_cast<const AssistantErrorElement*>(ui_element));
-      break;
     case AssistantUiElementType::kText:
       AddTextElementView(static_cast<const AssistantTextElement*>(ui_element));
       break;
@@ -78,12 +72,6 @@ void AssistantResponseContainerView::AddTextElementView(
     const AssistantTextElement* text_element) {
   content_view()->AddChildView(
       std::make_unique<AssistantTextElementView>(text_element));
-}
-
-void AssistantResponseContainerView::AddErrorElementView(
-    const AssistantErrorElement* error_element) {
-  content_view()->AddChildView(
-      std::make_unique<AssistantErrorElementView>(error_element));
 }
 
 }  //  namespace ash

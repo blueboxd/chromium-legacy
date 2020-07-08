@@ -182,8 +182,6 @@ class OpenXrTestHelper : public device::ServiceTestHook {
       device_test::mojom::InteractionProfileType type);
   bool IsSessionRunning() const;
 
-  bool create_fake_instance_;
-
   // Properties of the mock OpenXR runtime that doesn't change throughout the
   // lifetime of the instance. However, these aren't static because they are
   // initialized to an invalid value and set to their actual value in their

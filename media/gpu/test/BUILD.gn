@@ -75,6 +75,8 @@ source_set("test_helpers") {
   ]
   deps = [
     "//media/gpu",
+    "//media/mojo/common:mojo_shared_buffer_video_frame",
+    "//mojo/public/cpp/system",
     "//testing/gtest",
     "//third_party/libyuv",
   ]

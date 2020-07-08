@@ -120,6 +120,7 @@ void CreateWebAppFromCurrentWebContents(Browser* browser,
 }
 
 bool CreateWebAppFromManifest(content::WebContents* web_contents,
+                              bool bypass_service_worker_check,
                               WebappInstallSource install_source,
                               WebAppInstalledCallback installed_callback) {
   auto* provider = WebAppProvider::GetForWebContents(web_contents);
@@ -127,7 +128,7 @@ bool CreateWebAppFromManifest(content::WebContents* web_contents,
     return false;
 
   provider->install_manager().InstallWebAppFromManifest(
-      web_contents, install_source,
+      web_contents, bypass_service_worker_check, install_source,
       base::BindOnce(WebAppInstallDialogCallback, install_source),
       base::BindOnce(OnWebAppInstalled, std::move(installed_callback)));
   return true;

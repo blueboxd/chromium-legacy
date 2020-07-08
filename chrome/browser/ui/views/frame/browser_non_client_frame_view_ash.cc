@@ -322,15 +322,6 @@ void BrowserNonClientFrameViewAsh::UpdateWindowTitle() {
 
 void BrowserNonClientFrameViewAsh::SizeConstraintsChanged() {}
 
-void BrowserNonClientFrameViewAsh::PaintAsActiveChanged() {
-  BrowserNonClientFrameView::PaintAsActiveChanged();
-
-  UpdateProfileIcons();
-
-  if (frame_header_)
-    frame_header_->SetPaintAsActive(ShouldPaintAsActive());
-}
-
 void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
   if (!ShouldPaint())
     return;
@@ -581,6 +572,15 @@ void BrowserNonClientFrameViewAsh::OnImmersiveRevealEnded() {
 
 void BrowserNonClientFrameViewAsh::OnImmersiveFullscreenExited() {
   OnImmersiveRevealEnded();
+}
+
+void BrowserNonClientFrameViewAsh::PaintAsActiveChanged() {
+  BrowserNonClientFrameView::PaintAsActiveChanged();
+
+  UpdateProfileIcons();
+
+  if (frame_header_)
+    frame_header_->SetPaintAsActive(ShouldPaintAsActive());
 }
 
 void BrowserNonClientFrameViewAsh::OnProfileAvatarChanged(

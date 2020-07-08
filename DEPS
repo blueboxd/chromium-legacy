@@ -322,7 +322,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'a0b4571546bb8921b6a4f720e24f97d28b7e99c1',
+  'dawn_revision': '7622be0544b05a9bb31b1e2664d8444ac518cc57',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1208,7 +1208,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + 'a5473711f3e20c6bd1c33d81b6c7b9a0618aa18f',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + 'c9336155e045ed13f13b75b4bf8d3684f3f89573',
+    Var('chromium_git') + '/openscreen' + '@' + '09cdba8cd4a66eb6bf8f9b7123f2b4be8b327cd8',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '9e97b73e7dd2bfc07745489d728f6a36665c648f',
@@ -1303,7 +1303,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'Cht8VcqmH1adKCbBa1TuNhvNv-lMJJ0W5LvFyKpchi8C'
+              'version': 'Y1_xyAnxWY49mUT2otmospCKTrX01gsjJxt9x-qV0RsC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1525,7 +1525,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@5e2efe33ef0ec4c7e3edb962b125b062ee246ab6',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@90b0c9e859abf564cc6cdf4143302e86d8c529bd',
     'condition': 'checkout_src_internal',
   },
 

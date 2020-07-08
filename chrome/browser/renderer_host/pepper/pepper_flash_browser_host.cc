@@ -17,7 +17,6 @@
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "ipc/ipc_message_macros.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash.h"

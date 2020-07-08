@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "ui/ozone/platform/scenic/scenic_window.h"
 #include "ui/ozone/platform/scenic/scenic_window_manager.h"

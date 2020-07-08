@@ -30,7 +30,6 @@
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/painter.h"
 #include "ui/views/style/platform_style.h"
-#include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/client/capture_client.h"
@@ -44,28 +43,6 @@ namespace {
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kIsButtonProperty, false)
 
 }  // namespace
-
-Button::WidgetObserverButtonBridge::WidgetObserverButtonBridge(Button* owner)
-    : owner_(owner) {
-  DCHECK(owner_->GetWidget());
-  owner_->GetWidget()->AddObserver(this);
-}
-
-Button::WidgetObserverButtonBridge::~WidgetObserverButtonBridge() {
-  if (owner_)
-    owner_->GetWidget()->RemoveObserver(this);
-  CHECK(!IsInObserverList());
-}
-
-void Button::WidgetObserverButtonBridge::OnWidgetPaintAsActiveChanged(
-    Widget* widget) {
-  owner_->WidgetPaintAsActiveChanged();
-}
-
-void Button::WidgetObserverButtonBridge::OnWidgetDestroying(Widget* widget) {
-  widget->RemoveObserver(this);
-  owner_ = nullptr;
-}
 
 Button::DefaultButtonControllerDelegate::DefaultButtonControllerDelegate(
     Button* button)
@@ -206,14 +183,6 @@ void Button::SetState(ButtonState state) {
   state_ = state;
   StateChanged(old_state);
   OnPropertyChanged(&state_, kPropertyEffectsPaint);
-}
-
-Button::ButtonState Button::GetVisualState() const {
-  if (PlatformStyle::kInactiveWidgetControlsAppearDisabled && GetWidget() &&
-      !GetWidget()->ShouldPaintAsActive()) {
-    return STATE_DISABLED;
-  }
-  return state();
 }
 
 void Button::StartThrobbing(int cycles_til_stop) {
@@ -503,15 +472,6 @@ void Button::OnBlur() {
     SchedulePaint();
 }
 
-void Button::AddedToWidget() {
-  if (PlatformStyle::kInactiveWidgetControlsAppearDisabled)
-    widget_observer_ = std::make_unique<WidgetObserverButtonBridge>(this);
-}
-
-void Button::RemovedFromWidget() {
-  widget_observer_.reset();
-}
-
 std::unique_ptr<InkDrop> Button::CreateInkDrop() {
   std::unique_ptr<InkDrop> ink_drop = InkDropHostView::CreateInkDrop();
   ink_drop->SetShowHighlightOnFocus(!focus_ring_);
@@ -624,10 +584,6 @@ void Button::OnEnabledChanged() {
     SetState(STATE_DISABLED);
     GetInkDrop()->SetHovered(false);
   }
-}
-
-void Button::WidgetPaintAsActiveChanged() {
-  StateChanged(state());
 }
 
 DEFINE_ENUM_CONVERTERS(

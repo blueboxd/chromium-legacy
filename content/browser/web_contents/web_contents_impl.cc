@@ -1681,6 +1681,10 @@ bool WebContentsImpl::IsConnectedToBluetoothDevice() {
   return bluetooth_connected_device_count_ > 0;
 }
 
+bool WebContentsImpl::IsScanningForBluetoothDevices() {
+  return bluetooth_scanning_sessions_count_ > 0;
+}
+
 bool WebContentsImpl::IsConnectedToSerialPort() {
   return serial_active_frame_count_ > 0;
 }
@@ -7025,6 +7029,30 @@ void WebContentsImpl::OnIsConnectedToBluetoothDeviceChanged(
     observer.OnIsConnectedToBluetoothDeviceChanged(
         is_connected_to_bluetooth_device);
   }
+}
+
+void WebContentsImpl::IncrementBluetoothScanningSessionsCount() {
+  // Trying to invalidate the tab state while being destroyed could result in a
+  // use after free.
+  if (IsBeingDestroyed())
+    return;
+
+  // Notify for UI updates if the state changes.
+  bluetooth_scanning_sessions_count_++;
+  if (bluetooth_scanning_sessions_count_ == 1)
+    NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
+}
+
+void WebContentsImpl::DecrementBluetoothScanningSessionsCount() {
+  // Trying to invalidate the tab state while being destroyed could result in a
+  // use after free.
+  if (IsBeingDestroyed())
+    return;
+
+  DCHECK_NE(0u, bluetooth_scanning_sessions_count_);
+  bluetooth_scanning_sessions_count_--;
+  if (bluetooth_scanning_sessions_count_ == 0)
+    NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
 }
 
 void WebContentsImpl::IncrementSerialActiveFrameCount() {

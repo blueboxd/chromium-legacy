@@ -369,7 +369,8 @@ void OnWebAppInstallabilityChecked(
           displayer.browser(), nullptr, std::move(web_contents), url,
           WindowOpenDisposition::NEW_FOREGROUND_TAB, gfx::Rect());
       web_app::CreateWebAppFromManifest(
-          containing_contents, WebappInstallSource::MANAGEMENT_API,
+          containing_contents, /*bypass_service_worker_check=*/true,
+          WebappInstallSource::MANAGEMENT_API,
           base::BindOnce(&OnWebAppInstallCompleted, std::move(callback)));
       return;
   }
@@ -521,7 +522,7 @@ void ChromeManagementAPIDelegate::InstallOrLaunchReplacementWebApp(
     return;
   }
 
-  provider->install_manager().LoadWebAppAndCheckInstallability(
+  provider->install_manager().LoadWebAppAndCheckManifest(
       web_app_url, WebappInstallSource::MANAGEMENT_API,
       base::BindOnce(&OnWebAppInstallabilityChecked, profile,
                      std::move(callback)));

@@ -256,7 +256,7 @@ void SetTimezoneIDFromString(const std::string& id) {
   }
 
   // Delete old symlink2 if it exists.
-  base::DeleteFile(timezone_symlink2, false);
+  base::DeleteFile(timezone_symlink2);
 
   // Create new symlink2.
   if (symlink(timezone_file.value().c_str(),

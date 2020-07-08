@@ -18,7 +18,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/device_service.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {

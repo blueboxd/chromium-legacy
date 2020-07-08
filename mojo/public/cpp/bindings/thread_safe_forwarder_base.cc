@@ -17,10 +17,12 @@ ThreadSafeForwarderBase::ThreadSafeForwarderBase(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     ForwardMessageCallback forward,
     ForwardMessageWithResponderCallback forward_with_responder,
+    ForceAsyncSendCallback force_async_send,
     const AssociatedGroup& associated_group)
     : task_runner_(std::move(task_runner)),
       forward_(std::move(forward)),
       forward_with_responder_(std::move(forward_with_responder)),
+      force_async_send_(std::move(force_async_send)),
       associated_group_(associated_group),
       sync_calls_(new InProgressSyncCalls()) {}
 
@@ -79,9 +81,21 @@ bool ThreadSafeForwarderBase::AcceptWithResponder(
 
   SyncCallRestrictions::AssertSyncCallAllowed();
 
-  // If the InterfacePtr is bound to this sequence, dispatch it directly.
+  // If the Remote is bound to this sequence, send the message immediately and
+  // let Remote use its own internal sync waiting mechanism.
   if (task_runner_->RunsTasksInCurrentSequence()) {
+    const base::WeakPtr<ThreadSafeForwarderBase> weak_self =
+        weak_ptr_factory_.GetWeakPtr();
+    ++sync_call_nesting_level_;
+    if (sync_call_nesting_level_ == 1)
+      force_async_send_.Run(false);
     forward_with_responder_.Run(std::move(*message), std::move(responder));
+    if (weak_self) {
+      // NOTE: |this| may be deleted within the callback run above.
+      --sync_call_nesting_level_;
+      if (!sync_call_nesting_level_)
+        force_async_send_.Run(true);
+    }
     return true;
   }
 

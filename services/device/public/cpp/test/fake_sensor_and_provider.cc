@@ -9,7 +9,6 @@
 
 #include "base/notreached.h"
 #include "base/time/time.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"

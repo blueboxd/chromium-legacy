@@ -79,7 +79,8 @@ OmniboxResultView::OmniboxResultView(
       views::FocusRing::Install(remove_suggestion_button_);
   remove_suggestion_focus_ring_->SetHasFocusPredicate([&](View* view) {
     return view->GetVisible() && IsMatchSelected() &&
-           popup_contents_view_->IsButtonSelected();
+           (popup_contents_view_->model()->selected_line_state() ==
+            OmniboxPopupModel::FOCUSED_BUTTON_REMOVE_SUGGESTION);
   });
 
   if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled()) {
@@ -254,7 +255,7 @@ bool OmniboxResultView::IsMatchSelected() const {
   // The header button being focused means the match itself is NOT focused.
   return popup_contents_view_->IsSelectedIndex(model_index_) &&
          popup_contents_view_->model()->selected_line_state() !=
-             OmniboxPopupModel::HEADER_BUTTON_FOCUSED;
+             OmniboxPopupModel::FOCUSED_BUTTON_HEADER;
 }
 
 views::Button* OmniboxResultView::GetSecondaryButton() {
@@ -265,15 +266,6 @@ views::Button* OmniboxResultView::GetSecondaryButton() {
     return remove_suggestion_button_;
 
   return nullptr;
-}
-
-bool OmniboxResultView::MaybeTriggerSecondaryButton(const ui::Event& event) {
-  views::Button* button = GetSecondaryButton();
-  if (!button)
-    return false;
-
-  ButtonPressed(button, event);
-  return true;
 }
 
 OmniboxPartState OmniboxResultView::GetThemeState() const {

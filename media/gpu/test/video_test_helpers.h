@@ -210,28 +210,32 @@ class AlignedDataHelper {
   bool AtEndOfStream() const;
 
  private:
-  // Align the video stream to platform requirements.
-  void CreateAlignedInputStream(const std::vector<uint8_t>& stream);
+  struct VideoFrameData;
 
-  // Current position in the video stream.
-  size_t data_pos_ = 0;
+  static VideoFrameLayout GetAlignedVideoFrameLayout(
+      VideoPixelFormat pixel_format,
+      const gfx::Size& dimension,
+      const uint32_t alignment,
+      std::vector<size_t>* plane_rows,
+      size_t* video_frame_size);
+
+  // Create MojoSharedMemory VideoFrames whose memory are aligned by
+  // kPlatformBufferAlignment.
+  void InitializeAlignedMemoryFrames(const std::vector<uint8_t>& stream,
+                                     const VideoPixelFormat pixel_format,
+                                     const gfx::Size& coded_size);
+
+  // The index of VideoFrame to be read next.
+  uint32_t frame_index_ = 0;
   // The number of frames in the video stream.
-  uint32_t num_frames_ = 0;
-  // The video stream's pixel format.
-  VideoPixelFormat pixel_format_ = VideoPixelFormat::PIXEL_FORMAT_UNKNOWN;
-  // The video stream's visible area.
-  gfx::Rect visible_area_;
-  // The video's coded size, as requested by the encoder.
-  gfx::Size coded_size_;
+  const uint32_t num_frames_;
 
-  // Aligned data, each plane is aligned to the specified platform alignment
-  // requirements.
-  std::vector<char, AlignedAllocator<char, kPlatformBufferAlignment>>
-      aligned_data_;
-  // Byte size of each frame in |aligned_data_|.
-  size_t aligned_frame_size_ = 0;
-  // Byte size for each aligned plane in a frame.
-  std::vector<size_t> aligned_plane_size_;
+  // The layout of VideoFrames returned by GetNextFrame().
+  base::Optional<VideoFrameLayout> layout_;
+  const gfx::Rect visible_area_;
+
+  // The frame data returned by GetNextFrame().
+  std::vector<VideoFrameData> video_frame_data_;
 };
 
 // Small helper class to extract video frames from raw data streams.

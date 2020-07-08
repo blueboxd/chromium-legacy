@@ -42,9 +42,9 @@
 #include "chrome/browser/ui/app_list/search/app_service_app_result.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
-#include "chrome/common/string_matching/fuzzy_tokenized_string_match.h"
-#include "chrome/common/string_matching/tokenized_string.h"
-#include "chrome/common/string_matching/tokenized_string_match.h"
+#include "chromeos/components/string_matching/fuzzy_tokenized_string_match.h"
+#include "chromeos/components/string_matching/tokenized_string.h"
+#include "chromeos/components/string_matching/tokenized_string_match.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync_sessions/session_sync_service.h"
 
@@ -64,6 +64,10 @@ constexpr bool kUseWeightedRatio = false;
 constexpr bool kUseEditDistance = false;
 constexpr double kRelevanceThreshold = 0.32;
 constexpr double kPartialMatchPenaltyRate = 0.9;
+
+using chromeos::string_matching::FuzzyTokenizedStringMatch;
+using chromeos::string_matching::TokenizedString;
+using chromeos::string_matching::TokenizedStringMatch;
 
 // Adds |app_result| to |results| only in case no duplicate apps were already
 // added. Duplicate means the same app but for different domain, Chrome and

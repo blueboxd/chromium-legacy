@@ -19,7 +19,6 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/media_content_type.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/cpp/test/audio_focus_test_util.h"
 #include "services/media_session/public/cpp/test/mock_media_session.h"

@@ -79,8 +79,8 @@ class CookieControlsController : content_settings::CookieSettings::Observer {
   // Updates the blocked cookie count of |icon_|.
   void PresentBlockedCookieCounter();
 
-  // Returns the number of used cookies.
-  int GetUsedCookieCount();
+  // Returns the number of allowed cookies.
+  int GetAllowedCookieCount();
 
   // Returns the number of blocked cookies.
   int GetBlockedCookieCount();

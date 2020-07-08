@@ -34,7 +34,6 @@
 #include "media/remoting/receiver_controller.h"
 #include "media/remoting/remoting_constants.h"
 #include "media/remoting/stream_provider.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"

@@ -130,10 +130,24 @@ TEST_F(CookieControlsTest, SomeWebSite) {
       GURL("https://example.com"), /*blocked=*/false);
   testing::Mock::VerifyAndClearExpectations(mock());
 
+  // Manually trigger a full update to check that the cookie count changed.
+  EXPECT_CALL(*mock(),
+              OnStatusChanged(CookieControlsStatus::kEnabled,
+                              CookieControlsEnforcement::kNoEnforcement, 1, 0));
+  cookie_controls()->Update(web_contents());
+  testing::Mock::VerifyAndClearExpectations(mock());
+
   // Blocking cookies should update the blocked cookie count.
   EXPECT_CALL(*mock(), OnCookiesCountChanged(1, 1));
   tab_specific_content_settings()->OnWebDatabaseAccessed(
       GURL("https://thirdparty.com"), /*blocked=*/true);
+  testing::Mock::VerifyAndClearExpectations(mock());
+
+  // Manually trigger a full update to check that the cookie count changed.
+  EXPECT_CALL(*mock(),
+              OnStatusChanged(CookieControlsStatus::kEnabled,
+                              CookieControlsEnforcement::kNoEnforcement, 1, 1));
+  cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
   // Navigating somewhere else should reset the cookie count.

@@ -16,8 +16,8 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/local_search_service/shared_structs.h"
-#include "chrome/common/string_matching/sequence_matcher.h"
-#include "chrome/common/string_matching/tokenized_string.h"
+#include "chromeos/components/string_matching/sequence_matcher.h"
+#include "chromeos/components/string_matching/tokenized_string.h"
 #include "third_party/icu/source/i18n/unicode/translit.h"
 
 namespace local_search_service {
@@ -39,8 +39,9 @@ float ExactPrefixMatchScore(const base::string16& query,
 }
 
 float BlockMatchScore(const base::string16& query, const base::string16& text) {
-  return SequenceMatcher(query, text, false /* use_edit_distance */,
-                         0.1 /*num_matching_blocks_penalty*/)
+  return chromeos::string_matching::SequenceMatcher(
+             query, text, false /* use_edit_distance */,
+             0.1 /*num_matching_blocks_penalty*/)
       .Ratio();
 }
 

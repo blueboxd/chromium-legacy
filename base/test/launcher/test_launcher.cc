@@ -606,7 +606,7 @@ ChildProcessResults DoLaunchChildTestProcess(
     // On Windows, the reset() above is enough to delete the file since it was
     // painted for such after being opened. Lesser platforms require an explicit
     // delete now.
-    if (!DeleteFile(output_filename, /*recursive=*/false))
+    if (!DeleteFile(output_filename))
       LOG(WARNING) << "Failed to delete " << output_filename.AsUTF8Unsafe();
 #endif
   }

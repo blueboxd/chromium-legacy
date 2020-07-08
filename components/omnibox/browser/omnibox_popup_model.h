@@ -61,7 +61,7 @@ class OmniboxPopupModel {
   enum LineState {
     // This means the Header above this row is highlighted, and the
     // header collapse/expand button is focused.
-    HEADER_BUTTON_FOCUSED = 0,
+    FOCUSED_BUTTON_HEADER = 0,
 
     // NORMAL means the row is focused, and Enter key navigates to the match.
     NORMAL = 1,
@@ -70,23 +70,22 @@ class OmniboxPopupModel {
     // FOCUSED_BUTTON_KEYWORD state, which is only for button focus.
     KEYWORD = 2,
 
-    // The single (ambiguous) button focus state is not used when button row
-    // is enabled. Instead, the specific FOCUSED_* states below apply.
-    //
-    // TODO(tommycli): The BUTTON_FOCUSED state is a holdover from when we only
-    // had one button type. At this point, it's too ambiguous, and we should
-    // gradually deprecate this state in favor of the FOCUSED_* states below.
-    // Also see Selection::IsButtonFocused().
-    BUTTON_FOCUSED = 3,
-
     // FOCUSED_BUTTON_REMOVE_SUGGESTION state means the Remove Suggestion (X)
     // button is focused. Pressing enter will attempt to remove this suggestion.
-    FOCUSED_BUTTON_REMOVE_SUGGESTION = 4,
+    FOCUSED_BUTTON_REMOVE_SUGGESTION = 3,
 
-    // Button row focus states:
-    FOCUSED_BUTTON_KEYWORD = 5,
-    FOCUSED_BUTTON_TAB_SWITCH = 6,
-    FOCUSED_BUTTON_PEDAL = 7,
+    // FOCUSED_BUTTON_KEYWORD is used when the keyword button is in focus, not
+    // actually in Keyword Mode. This is currently only used if deciated button
+    // row is enabled
+    FOCUSED_BUTTON_KEYWORD = 4,
+
+    // FOCUSED_BUTTON_TAB_SWITCH state means the Switch Tab button is focused.
+    // Pressing enter will switch to the tab match.
+    FOCUSED_BUTTON_TAB_SWITCH = 5,
+
+    // FOCUSED_BUTTON_PEDAL state means a Pedal button is in focus. This is
+    // currently only used when dedicated button row and pedals are enabled.
+    FOCUSED_BUTTON_PEDAL = 6,
 
   };
 
@@ -98,8 +97,8 @@ class OmniboxPopupModel {
     // If the selected line has both a normal match and a keyword match, this
     // determines whether the normal match (if NORMAL) or the keyword match
     // (if KEYWORD) is selected. Likewise, if the selected line has a normal
-    // match and a tab switch match, this determines whether the tab switch
-    // match (if BUTTON_FOCUSED) is selected.
+    // match and a secondary button match, this determines whether the button
+    // match (if FOCUSED_BUTTON_*) is selected.
     LineState state;
 
     explicit Selection(size_t line, LineState state = NORMAL)

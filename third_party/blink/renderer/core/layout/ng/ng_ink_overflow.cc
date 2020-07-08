@@ -66,6 +66,36 @@ NGInkOverflow::NGInkOverflow(Type source_type, const NGInkOverflow& source) {
   SetType(source_type);
 }
 
+NGInkOverflow::NGInkOverflow(Type source_type, NGInkOverflow&& source) {
+  source.CheckType(source_type);
+  new (this) NGInkOverflow();
+  switch (source_type) {
+    case kNotSet:
+    case kNone:
+      break;
+    case kSmallSelf:
+    case kSmallContents:
+      static_assert(sizeof(outsets_) == sizeof(single_),
+                    "outsets should be the size of a pointer");
+      single_ = source.single_;
+#if DCHECK_IS_ON()
+      for (wtf_size_t i = 0; i < base::size(outsets_); ++i)
+        DCHECK_EQ(outsets_[i], source.outsets_[i]);
+#endif
+      break;
+    case kSelf:
+    case kContents:
+      single_ = source.single_;
+      source.single_ = nullptr;
+      break;
+    case kSelfAndContents:
+      container_ = source.container_;
+      source.container_ = nullptr;
+      break;
+  }
+  SetType(source_type);
+}
+
 NGInkOverflow::Type NGInkOverflow::Reset(Type type) {
   CheckType(type);
   switch (type) {

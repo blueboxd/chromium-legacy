@@ -19,7 +19,6 @@
 #include "components/performance_manager/test_support/graph_impl.h"
 #include "components/performance_manager/test_support/mock_graphs.h"
 #include "content/public/test/browser_task_environment.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"

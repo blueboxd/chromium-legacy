@@ -66,6 +66,11 @@ class BASE_EXPORT UnguessableToken {
   // Assign to it with Create() before using it.
   constexpr UnguessableToken() = default;
 
+  constexpr UnguessableToken(const UnguessableToken&) = default;
+  constexpr UnguessableToken& operator=(const UnguessableToken&) = default;
+  constexpr UnguessableToken(UnguessableToken&&) noexcept = default;
+  constexpr UnguessableToken& operator=(UnguessableToken&&) = default;
+
   // NOTE: Serializing an empty UnguessableToken is an illegal operation.
   uint64_t GetHighForSerialization() const {
     DCHECK(!is_empty());
@@ -78,22 +83,22 @@ class BASE_EXPORT UnguessableToken {
     return token_.low();
   }
 
-  bool is_empty() const { return token_.is_zero(); }
+  constexpr bool is_empty() const { return token_.is_zero(); }
 
   // Hex representation of the unguessable token.
   std::string ToString() const { return token_.ToString(); }
 
-  explicit operator bool() const { return !is_empty(); }
+  explicit constexpr operator bool() const { return !is_empty(); }
 
-  bool operator<(const UnguessableToken& other) const {
+  constexpr bool operator<(const UnguessableToken& other) const {
     return token_ < other.token_;
   }
 
-  bool operator==(const UnguessableToken& other) const {
+  constexpr bool operator==(const UnguessableToken& other) const {
     return token_ == other.token_;
   }
 
-  bool operator!=(const UnguessableToken& other) const {
+  constexpr bool operator!=(const UnguessableToken& other) const {
     return !(*this == other);
   }
 

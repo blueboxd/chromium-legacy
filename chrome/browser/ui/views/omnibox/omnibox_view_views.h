@@ -312,10 +312,6 @@ class OmniboxViewViews : public OmniboxView,
   // Like SelectionAtEnd(), but accounts for RTL.
   bool DirectionAwareSelectionAtEnd() const;
 
-  // If the Secondary button for the current suggestion is focused, clicks it
-  // and returns true.
-  bool MaybeTriggerSecondaryButton(const ui::KeyEvent& event);
-
 #if defined(OS_MACOSX)
   void AnnounceFriendlySuggestionText();
 #endif

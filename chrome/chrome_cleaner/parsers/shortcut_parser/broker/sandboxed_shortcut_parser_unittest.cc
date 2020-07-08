@@ -19,7 +19,6 @@
 #include "chrome/chrome_cleaner/parsers/shortcut_parser/sandboxed_lnk_parser_test_util.h"
 #include "chrome/chrome_cleaner/parsers/target/sandbox_setup.h"
 #include "chrome/chrome_cleaner/test/child_process_logger.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "sandbox/win/src/sandbox_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"

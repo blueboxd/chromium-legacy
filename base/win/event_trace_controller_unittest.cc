@@ -165,7 +165,7 @@ TEST_F(EtwTraceControllerTest, StartFileSession) {
       controller.StartFileSession(session_name_.c_str(), temp.value().c_str());
   if (hr == E_ACCESSDENIED) {
     VLOG(1) << "You must be an administrator to run this test on Vista";
-    DeleteFile(temp, false);
+    DeleteFile(temp);
     return;
   }
 
@@ -175,7 +175,7 @@ TEST_F(EtwTraceControllerTest, StartFileSession) {
   EXPECT_HRESULT_SUCCEEDED(controller.Stop(nullptr));
   EXPECT_EQ(0u, controller.session());
   EXPECT_STREQ(L"", controller.session_name());
-  DeleteFile(temp, false);
+  DeleteFile(temp);
 }
 
 // This test is flaky for unclear reasons. See bugs 525297 and 534184

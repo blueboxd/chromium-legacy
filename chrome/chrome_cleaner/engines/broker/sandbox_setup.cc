@@ -27,7 +27,6 @@
 #include "chrome/chrome_cleaner/engines/target/engine_delegate.h"  // nogncheck
 #include "chrome/chrome_cleaner/engines/target/engine_delegate_factory.h"  // nogncheck
 #include "chrome/chrome_cleaner/engines/target/libraries.h"  // nogncheck
-#include "mojo/public/cpp/bindings/interface_request.h"
 #endif
 
 namespace chrome_cleaner {

@@ -15,7 +15,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_session_service.h"
 #include "content/public/browser/web_ui.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace content {
 

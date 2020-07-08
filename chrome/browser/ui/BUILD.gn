@@ -343,7 +343,6 @@ static_library("ui") {
   # have the same dependencies. Once browser_ui is untangled from
   # browser, then we can clean up these dependencies.
   public_deps = [
-    "//chrome/common/string_matching",
     "//components/dom_distiller/core",
     "//components/safe_browsing:buildflags",
     "//components/sync",
@@ -2469,6 +2468,7 @@ static_library("ui") {
       "//chromeos/components/print_management",
       "//chromeos/components/proximity_auth",
       "//chromeos/components/quick_answers",
+      "//chromeos/components/string_matching",
       "//chromeos/components/tether",
       "//chromeos/components/web_applications",
       "//chromeos/constants",

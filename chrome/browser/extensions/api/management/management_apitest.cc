@@ -300,9 +300,10 @@ IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, NotWebstore) {
     chrome.test.notifyPass();
   });)";
 
-  RunTest(kManifest,
-          "/management/install_replacement_web_app/good_web_app/index.html",
-          kBackground, false /* from_webstore */);
+  RunTest(
+      kManifest,
+      "/management/install_replacement_web_app/acceptable_web_app/index.html",
+      kBackground, false /* from_webstore */);
 }
 
 IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, NoGesture) {
@@ -313,9 +314,10 @@ IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, NoGesture) {
     chrome.test.notifyPass();
   });)";
 
-  RunTest(kManifest,
-          "/management/install_replacement_web_app/good_web_app/index.html",
-          kBackground, true /* from_webstore */);
+  RunTest(
+      kManifest,
+      "/management/install_replacement_web_app/acceptable_web_app/index.html",
+      kBackground, true /* from_webstore */);
 }
 
 IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, NotInstallableWebApp) {
@@ -335,7 +337,7 @@ IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, NotInstallableWebApp) {
 
 IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, InstallableWebApp) {
   static constexpr char kGoodWebAppURL[] =
-      "/management/install_replacement_web_app/good_web_app/index.html";
+      "/management/install_replacement_web_app/acceptable_web_app/index.html";
 
   RunInstallableWebAppTest(kManifest, kGoodWebAppURL, kGoodWebAppURL);
 }
@@ -345,10 +347,12 @@ IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, InstallableWebApp) {
 IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest,
                        InstallableWebAppWithStartUrl) {
   static constexpr char kGoodWebAppUrl[] =
-      "/management/install_replacement_web_app/good_web_app_with_start_url/"
+      "/management/install_replacement_web_app/"
+      "acceptable_web_app_with_start_url/"
       "index.html";
   static constexpr char kGoodWebAppStartUrl[] =
-      "/management/install_replacement_web_app/good_web_app_with_start_url/"
+      "/management/install_replacement_web_app/"
+      "acceptable_web_app_with_start_url/"
       "pwa_start_url.html";
 
   RunInstallableWebAppTest(kManifest, kGoodWebAppUrl, kGoodWebAppStartUrl);
@@ -357,7 +361,7 @@ IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest,
 IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest,
                        InstallableWebAppInPlatformApp) {
   static constexpr char kGoodWebAppURL[] =
-      "/management/install_replacement_web_app/good_web_app/index.html";
+      "/management/install_replacement_web_app/acceptable_web_app/index.html";
 
   RunInstallableWebAppTest(kAppManifest, kGoodWebAppURL, kGoodWebAppURL);
 }

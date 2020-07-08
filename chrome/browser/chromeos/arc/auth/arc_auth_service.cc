@@ -73,14 +73,14 @@ class ArcAuthServiceFactory
 
 // Convers mojom::ArcSignInStatus into ProvisiningResult.
 ProvisioningResult ConvertArcSignInStatusToProvisioningResult(
-    mojom::ArcSignInStatus reason) {
+    mojom::ArcSignInStatus result) {
   using ArcSignInStatus = mojom::ArcSignInStatus;
 
 #define MAP_PROVISIONING_RESULT(name) \
   case ArcSignInStatus::name:         \
     return ProvisioningResult::name
 
-  switch (reason) {
+  switch (result) {
     MAP_PROVISIONING_RESULT(UNKNOWN_ERROR);
     MAP_PROVISIONING_RESULT(MOJO_VERSION_MISMATCH);
     MAP_PROVISIONING_RESULT(MOJO_CALL_TIMEOUT);
@@ -103,10 +103,11 @@ ProvisioningResult ConvertArcSignInStatusToProvisioningResult(
     MAP_PROVISIONING_RESULT(SUCCESS_ALREADY_PROVISIONED);
     MAP_PROVISIONING_RESULT(UNSUPPORTED_ACCOUNT_TYPE);
     MAP_PROVISIONING_RESULT(CHROME_ACCOUNT_NOT_FOUND);
+    MAP_PROVISIONING_RESULT(CLOUD_PROVISION_FLOW_ERROR);
   }
 #undef MAP_PROVISIONING_RESULT
 
-  NOTREACHED() << "unknown reason: " << static_cast<int>(reason);
+  NOTREACHED() << "unknown result: " << static_cast<int>(result);
   return ProvisioningResult::UNKNOWN_ERROR;
 }
 
@@ -351,12 +352,13 @@ void ArcAuthService::OnConnectionClosed() {
 void ArcAuthService::OnAuthorizationComplete(
     mojom::ArcSignInStatus status,
     bool initial_signin,
-    const base::Optional<std::string>& account_name) {
+    const base::Optional<std::string>& account_name,
+    mojom::ArcSignInErrorPtr error) {
   if (initial_signin) {
     DCHECK(!account_name.has_value());
     // UMA for initial signin is updated from ArcSessionManager.
     ArcSessionManager::Get()->OnProvisioningFinished(
-        ConvertArcSignInStatusToProvisioningResult(status));
+        ConvertArcSignInStatusToProvisioningResult(status), std::move(error));
     return;
   }
 
@@ -382,15 +384,16 @@ void ArcAuthService::OnAuthorizationComplete(
 }
 
 void ArcAuthService::OnSignInCompleteDeprecated() {
-  OnAuthorizationComplete(mojom::ArcSignInStatus::SUCCESS /* status */,
-                          true /* initial_signin */,
-                          base::nullopt /* account_name */);
+  OnAuthorizationComplete(
+      mojom::ArcSignInStatus::SUCCESS /* status */, true /* initial_signin */,
+      base::nullopt /* account_name */, nullptr /* error */);
 }
 
-void ArcAuthService::OnSignInFailedDeprecated(mojom::ArcSignInStatus reason) {
-  DCHECK_NE(mojom::ArcSignInStatus::SUCCESS, reason);
-  OnAuthorizationComplete(reason /* status */, true /* initial_signin */,
-                          base::nullopt /* account_name */);
+void ArcAuthService::OnSignInFailedDeprecated(mojom::ArcSignInStatus status) {
+  DCHECK_NE(mojom::ArcSignInStatus::SUCCESS, status);
+  OnAuthorizationComplete(status /* status */, true /* initial_signin */,
+                          base::nullopt /* account_name */,
+                          nullptr /* error */);
 }
 
 void ArcAuthService::ReportMetrics(mojom::MetricsType metrics_type,

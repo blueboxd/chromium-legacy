@@ -295,7 +295,8 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
     // <a>ABC<b>DEF</b>GHI</a>.
     // See gesture-tapHighlight-simple-nested.html
     if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled() &&
-        use_rounded_rects && object->IsLayoutInline()) {
+        use_rounded_rects && object->IsLayoutInline() &&
+        object->IsInLayoutNGInlineFormattingContext()) {
       NGInlineCursor cursor;
       cursor.MoveTo(*object);
       // When |LayoutInline| has more than one children, we render square

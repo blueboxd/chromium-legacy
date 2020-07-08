@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 //
 // Unit tests for event trace consumer base class.
+
 #include "base/win/event_trace_consumer.h"
 
-#include <list>
-
 #include <objbase.h>
+
+#include <list>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -276,7 +277,7 @@ class EtwTraceConsumerDataTest : public EtwTraceConsumerBaseTest {
   }
 
   void TearDown() override {
-    EXPECT_TRUE(DeleteFile(temp_file_, false));
+    EXPECT_TRUE(DeleteFile(temp_file_));
 
     EtwTraceConsumerBaseTest::TearDown();
   }
@@ -320,7 +321,7 @@ class EtwTraceConsumerDataTest : public EtwTraceConsumerBaseTest {
   }
 
   HRESULT RoundTripEvent(PEVENT_TRACE_HEADER header, PEVENT_TRACE* trace) {
-    DeleteFile(temp_file_, false);
+    DeleteFile(temp_file_);
 
     HRESULT hr = LogEventToTempSession(header);
     if (SUCCEEDED(hr))

@@ -612,8 +612,23 @@ TEST_F(UseCreditCardActionTest, FallbackFails) {
                       "09/2050", _))
       .WillOnce(RunOnceCallback<2>(ClientStatus(OTHER_ACTION_STATUS)));
 
-  EXPECT_EQ(ProcessedActionStatusProto::AUTOFILL_INCOMPLETE,
-            ProcessAction(action_proto));
+  ProcessedActionProto processed_action;
+  EXPECT_CALL(callback_, Run(_)).WillOnce(SaveArgPointee<0>(&processed_action));
+
+  UseCreditCardAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+
+  EXPECT_EQ(processed_action.status(),
+            ProcessedActionStatusProto::AUTOFILL_INCOMPLETE);
+  EXPECT_TRUE(processed_action.has_status_details());
+  EXPECT_EQ(processed_action.status_details()
+                .autofill_error_info()
+                .autofill_field_error_size(),
+            1);
+  EXPECT_EQ(OTHER_ACTION_STATUS, processed_action.status_details()
+                                     .autofill_error_info()
+                                     .autofill_field_error(0)
+                                     .status());
 }
 
 }  // namespace

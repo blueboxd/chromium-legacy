@@ -31,7 +31,6 @@ extern "C" {
 #include <X11/extensions/XShm.h>
 #include <X11/extensions/XTest.h>
 #include <X11/extensions/Xfixes.h>
-#include <X11/extensions/Xrandr.h>
 #include <X11/extensions/Xrender.h>
 #include <X11/extensions/record.h>
 #include <X11/extensions/sync.h>

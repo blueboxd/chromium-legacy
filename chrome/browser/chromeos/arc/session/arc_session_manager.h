@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/policy/android_management_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "components/arc/mojom/auth.mojom.h"
 #include "components/arc/session/arc_session_runner.h"
 #include "components/arc/session/arc_stop_reason.h"
 
@@ -235,6 +236,9 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // not), this is called with its status. On success, called with
   // ProvisioningResult::SUCCESS, otherwise |result| is the error reason.
   void OnProvisioningFinished(ProvisioningResult result);
+
+  void OnProvisioningFinished(ProvisioningResult result,
+                              mojom::ArcSignInErrorPtr error);
 
   // Returns the time when the sign in process started, or a null time if
   // signing in didn't happen during this session.

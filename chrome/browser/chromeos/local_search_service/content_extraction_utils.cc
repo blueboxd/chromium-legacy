@@ -15,10 +15,14 @@
 #include "base/no_destructor.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/string_matching/tokenized_string.h"
+#include "chromeos/components/string_matching/tokenized_string.h"
 #include "third_party/icu/source/i18n/unicode/translit.h"
 
 namespace local_search_service {
+
+namespace {
+using chromeos::string_matching::TokenizedString;
+}  // namespace
 
 std::vector<Token> ConsolidateToken(const std::vector<Token>& tokens) {
   std::unordered_map<base::string16, std::vector<WeightedPosition>> dictionary;

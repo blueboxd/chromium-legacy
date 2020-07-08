@@ -954,9 +954,9 @@
     "privacywall": {
       "name": "PrivacyWall",
       "keyword": "privacywall.org",
-      "favicon_url": "https://www.privacywall.org/images/favicon32.ico",
+      "favicon_url": "https://www.privacywall.org/images/favicon_32x32.ico",
       "search_url": "https://www.privacywall.org/search/secure/?q={searchTerms}",
-      "suggest_url": "https://www.privacywall.org/search/suggest.php?q={searchTerms}",
+      "suggest_url": "https://search.privacywall.org/suggest.php?q={searchTerms}",
       "type": "SEARCH_ENGINE_PRIVACYWALL",
       "id": 100
     },

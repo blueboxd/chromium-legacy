@@ -70,7 +70,6 @@ class BrowserNonClientFrameViewAsh
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
   void SizeConstraintsChanged() override;
-  void PaintAsActiveChanged() override;
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
@@ -114,6 +113,7 @@ class BrowserNonClientFrameViewAsh
 
  protected:
   // BrowserNonClientFrameView:
+  void PaintAsActiveChanged() override;
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
 
  private:

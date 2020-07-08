@@ -98,11 +98,11 @@ void WebAppInstallTask::SetInstallParams(
   install_params_ = install_params;
 }
 
-void WebAppInstallTask::LoadWebAppAndCheckInstallability(
+void WebAppInstallTask::LoadWebAppAndCheckManifest(
     const GURL& url,
     WebappInstallSource install_source,
     WebAppUrlLoader* url_loader,
-    LoadWebAppAndCheckInstallabilityCallback callback) {
+    LoadWebAppAndCheckManifestCallback callback) {
   DCHECK(url_loader);
   // Create a WebContents instead of reusing a shared one because we will pass
   // it back to be used for opening the web app.
@@ -125,13 +125,13 @@ void WebAppInstallTask::LoadWebAppAndCheckInstallability(
       url, web_contents_ptr,
       WebAppUrlLoader::UrlComparison::kIgnoreQueryParamsAndRef,
       base::BindOnce(
-          &WebAppInstallTask::
-              OnWebAppUrlLoadedCheckInstallabilityAndRetrieveManifest,
+          &WebAppInstallTask::OnWebAppUrlLoadedCheckAndRetrieveManifest,
           base::Unretained(this), web_contents_ptr));
 }
 
 void WebAppInstallTask::InstallWebAppFromManifest(
     content::WebContents* contents,
+    bool bypass_service_worker_check,
     WebappInstallSource install_source,
     InstallManager::WebAppInstallDialogCallback dialog_callback,
     InstallManager::OnceInstallCallback install_callback) {
@@ -146,7 +146,7 @@ void WebAppInstallTask::InstallWebAppFromManifest(
   auto web_app_info = std::make_unique<WebApplicationInfo>();
 
   data_retriever_->CheckInstallabilityAndRetrieveManifest(
-      web_contents(), /*bypass_service_worker_check=*/false,
+      web_contents(), bypass_service_worker_check,
       base::BindOnce(&WebAppInstallTask::OnDidPerformInstallableCheck,
                      base::Unretained(this), std::move(web_app_info),
                      /*force_shortcut_app=*/false));
@@ -367,7 +367,7 @@ void WebAppInstallTask::OnWebAppUrlLoadedGetWebApplicationInfo(
                      base::Unretained(this), /*force_shortcut_app*/ false));
 }
 
-void WebAppInstallTask::OnWebAppUrlLoadedCheckInstallabilityAndRetrieveManifest(
+void WebAppInstallTask::OnWebAppUrlLoadedCheckAndRetrieveManifest(
     content::WebContents* web_contents,
     WebAppUrlLoader::Result result) {
   if (ShouldStopInstall())
@@ -390,7 +390,7 @@ void WebAppInstallTask::OnWebAppUrlLoadedCheckInstallabilityAndRetrieveManifest(
 
   data_retriever_->CheckInstallabilityAndRetrieveManifest(
       web_contents,
-      /*bypass_service_worker_check=*/false,
+      /*bypass_service_worker_check=*/true,
       base::BindOnce(&WebAppInstallTask::OnWebAppInstallabilityChecked,
                      base::Unretained(this)));
 }

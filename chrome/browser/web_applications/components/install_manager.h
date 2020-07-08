@@ -63,18 +63,19 @@ class InstallManager {
     kInstallable,
     kAlreadyInstalled,
   };
-  // Callback with the result of an installability check.
-  // |web_contents| owns the WebContents that was used to check installability.
+  // Callback with the result of manifest check.
+  // |web_contents| owns the WebContents that was used to check for a manifest.
   // |app_id| will be present iff already installed.
-  using WebAppInstallabilityCheckCallback = base::OnceCallback<void(
+  using WebAppManifestCheckCallback = base::OnceCallback<void(
       std::unique_ptr<content::WebContents> web_contents,
       InstallableCheckResult result,
       base::Optional<AppId> app_id)>;
 
-  // Checks a WebApp installability, retrieves manifest and icons and
-  // than performs the actual installation.
+  // Checks a WebApp installability (service worker check optional), retrieves
+  // manifest and icons and then performs the actual installation.
   virtual void InstallWebAppFromManifest(
       content::WebContents* web_contents,
+      bool bypass_service_worker_check,
       WebappInstallSource install_source,
       WebAppInstallDialogCallback dialog_callback,
       OnceInstallCallback callback) = 0;
@@ -164,12 +165,12 @@ class InstallManager {
                      FileHandlerManager* file_handler_manager,
                      InstallFinalizer* finalizer);
 
-  // Loads |web_app_url| in a new WebContents and determines whether it is
-  // installable. Calls |callback| with results.
-  virtual void LoadWebAppAndCheckInstallability(
+  // Loads |web_app_url| in a new WebContents and determines whether it has a
+  // valid manifest. Calls |callback| with results.
+  virtual void LoadWebAppAndCheckManifest(
       const GURL& web_app_url,
       WebappInstallSource install_source,
-      WebAppInstallabilityCheckCallback callback) = 0;
+      WebAppManifestCheckCallback callback) = 0;
 
   void DisableBookmarkAppSyncInstallForTesting() {
     disable_bookmark_app_sync_install_for_testing_ = true;

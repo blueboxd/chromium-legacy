@@ -2874,6 +2874,24 @@ void Element::AttachLayoutTree(AttachContext& context) {
 
 void Element::DetachLayoutTree(bool performing_reattach) {
   HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
+  if (HasRareData()) {
+    ElementRareData* data = GetElementRareData();
+    if (!performing_reattach)
+      data->ClearPseudoElements();
+
+    if (ElementAnimations* element_animations = data->GetElementAnimations()) {
+      if (performing_reattach) {
+        // FIXME: restart compositor animations rather than pull back to the
+        // main thread
+        element_animations->RestartAnimationOnCompositor();
+      } else {
+        DocumentLifecycle::DetachScope will_detach(GetDocument().Lifecycle());
+        element_animations->CssAnimations().Cancel();
+        element_animations->SetAnimationStyleChange(false);
+      }
+      element_animations->ClearBaseComputedStyle();
+    }
+  }
 
   DetachPseudoElement(kPseudoIdMarker, performing_reattach);
   DetachPseudoElement(kPseudoIdBefore, performing_reattach);
@@ -2888,10 +2906,6 @@ void Element::DetachLayoutTree(bool performing_reattach) {
   // https://crbug.com/939769
   if (ChildNeedsReattachLayoutTree() || GetComputedStyle() ||
       (!performing_reattach && IsUserActionElement())) {
-    if (!performing_reattach) {
-      UpdateCallbackSelectors(GetComputedStyle(), nullptr);
-      SetComputedStyle(nullptr);
-    }
     if (ShadowRoot* shadow_root = GetShadowRoot()) {
       shadow_root->DetachLayoutTree(performing_reattach);
       Node::DetachLayoutTree(performing_reattach);
@@ -2906,22 +2920,9 @@ void Element::DetachLayoutTree(bool performing_reattach) {
   DetachPseudoElement(kPseudoIdBackdrop, performing_reattach);
   DetachPseudoElement(kPseudoIdFirstLetter, performing_reattach);
 
-  if (HasRareData()) {
-    ElementRareData* data = GetElementRareData();
-    if (!performing_reattach)
-      data->ClearPseudoElements();
-
-    if (ElementAnimations* element_animations = data->GetElementAnimations()) {
-      if (performing_reattach) {
-        // FIXME: restart compositor animations rather than pull back to the
-        // main thread
-        element_animations->RestartAnimationOnCompositor();
-      } else {
-        element_animations->CssAnimations().Cancel();
-        element_animations->SetAnimationStyleChange(false);
-      }
-      element_animations->ClearBaseComputedStyle();
-    }
+  if (!performing_reattach) {
+    UpdateCallbackSelectors(GetComputedStyle(), nullptr);
+    SetComputedStyle(nullptr);
   }
 
   if (!performing_reattach && IsUserActionElement()) {

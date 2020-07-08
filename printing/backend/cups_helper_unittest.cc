@@ -375,13 +375,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingHpPrinters) {
   VerifyCapabilityColorModels(caps);
 }
 
-// TODO(crbug.com/1081705): Epson "Ink" attribute bloats prints on Linux.
-#if defined(OS_LINUX)
-#define MAYBE_TestPpdParsingEpsonPrinters DISABLED_TestPpdParsingEpsonPrinters
-#else
-#define MAYBE_TestPpdParsingEpsonPrinters TestPpdParsingEpsonPrinters
-#endif
-TEST(PrintBackendCupsHelperTest, MAYBE_TestPpdParsingEpsonPrinters) {
+TEST(PrintBackendCupsHelperTest, TestPpdParsingEpsonPrinters) {
   constexpr char kTestPpdData[] =
       R"(*PPD-Adobe: "4.3"
 *ColorDevice: True

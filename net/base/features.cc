@@ -164,5 +164,8 @@ const base::Feature kTLSLegacyCryptoFallbackForMetrics{
 const base::Feature kUseLookalikesForNavigationSuggestions{
     "UseLookalikesForNavigationSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kReportPoorConnectivity{"ReportPoorConnectivity",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace net

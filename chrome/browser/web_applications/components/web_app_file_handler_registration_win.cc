@@ -227,17 +227,15 @@ void ReRegisterFileHandlersWithOs(
     const std::set<base::string16>& file_extensions,
     const base::string16& prog_id,
     const base::string16& app_name_extension) {
-  auto deleteFile = [](const base::FilePath& path, bool recursive) {
-    bool result = base::DeleteFile(path, recursive);
-    if (!result)
+  auto delete_file_callback = [](const base::FilePath& path) {
+    if (!base::DeleteFile(path))
       RecordRegistration(RegistrationResult::kFailToDeleteExistingRegistration);
   };
   base::ThreadPool::PostTask(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(deleteFile,
-                     ShellUtil::GetApplicationPathForProgId(prog_id),
-                     /*recursively=*/false));
+      base::BindOnce(delete_file_callback,
+                     ShellUtil::GetApplicationPathForProgId(prog_id)));
   bool result = ShellUtil::DeleteFileAssociations(prog_id);
   if (!result) {
     RecordRegistration(

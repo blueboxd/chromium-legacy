@@ -12,11 +12,13 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/local_search_service/content_extraction_utils.h"
 #include "chrome/browser/chromeos/local_search_service/inverted_index.h"
-#include "chrome/common/string_matching/tokenized_string.h"
+#include "chromeos/components/string_matching/tokenized_string.h"
 
 namespace local_search_service {
 
 namespace {
+
+using chromeos::string_matching::TokenizedString;
 
 std::vector<Token> ExtractDocumentTokens(const Data& data,
                                          const std::string& locale) {

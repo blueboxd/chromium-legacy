@@ -75,8 +75,9 @@ class CORE_EXPORT NGInkOverflow {
   NGInkOverflow(const NGInkOverflow&) = delete;
   NGInkOverflow& operator=(const NGInkOverflow&) = delete;
 
-  // To copy, |Type| is required.
+  // To copy/move, |Type| is required.
   NGInkOverflow(Type source_type, const NGInkOverflow& source);
+  NGInkOverflow(Type source_type, NGInkOverflow&& source);
 
   // Get ink overflow of various types.
   PhysicalRect Self(Type type, const PhysicalSize& size) const;

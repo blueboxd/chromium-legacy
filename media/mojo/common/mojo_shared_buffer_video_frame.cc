@@ -163,6 +163,7 @@ scoped_refptr<MojoSharedBufferVideoFrame> MojoSharedBufferVideoFrame::Create(
   // range of an int) due to the IsValidConfig() check above.
   //
   // TODO(sandersd): Allow non-sequential formats.
+  std::vector<ColorPlaneLayout> planes(num_planes);
   for (size_t i = 0; i < num_planes; ++i) {
     if (strides[i] < 0) {
       DLOG(ERROR) << __func__ << " Invalid stride";
@@ -190,10 +191,15 @@ scoped_refptr<MojoSharedBufferVideoFrame> MojoSharedBufferVideoFrame::Create(
       DLOG(ERROR) << __func__ << " Invalid offset";
       return nullptr;
     }
+
+    planes[i].stride = strides[i];
+    planes[i].offset = offsets[i];
+    planes[i].size = i + 1 < num_planes ? offsets[i + 1] - offsets[i]
+                                        : data_size - offsets.back();
   }
 
-  auto layout = VideoFrameLayout::CreateWithStrides(format, coded_size,
-                                                    std::move(strides));
+  auto layout =
+      VideoFrameLayout::CreateWithPlanes(format, coded_size, std::move(planes));
   if (!layout) {
     return nullptr;
   }

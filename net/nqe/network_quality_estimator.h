@@ -47,6 +47,7 @@ class TickClock;
 
 namespace net {
 
+class ConnectivityMonitor;
 class NetLog;
 
 namespace nqe {
@@ -682,6 +683,11 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Whether the network id should be obtained on a worker thread.
   bool get_network_id_asynchronously_ = false;
 #endif
+
+  // Watches network activity and attempts to infer when the current network is
+  // effectively disconnected due to either substantial degradation or actual
+  // disconnection.
+  std::unique_ptr<ConnectivityMonitor> connectivity_monitor_;
 
   base::WeakPtrFactory<NetworkQualityEstimator> weak_ptr_factory_{this};
 

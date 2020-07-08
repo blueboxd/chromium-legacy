@@ -2402,6 +2402,7 @@ test("base_perftests") {
 
     # "test/run_all_unittests.cc",
     "json/json_perftest.cc",
+    "synchronization/lock_perftest.cc",
     "synchronization/waitable_event_perftest.cc",
     "threading/thread_perftest.cc",
   ]

@@ -23,7 +23,6 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_native_pixmap.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "ui/aura/env.h"

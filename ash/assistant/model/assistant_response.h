@@ -88,15 +88,9 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse
   // all UI elements in the response.
   void Process(ProcessingCallback callback);
 
-  // Return true if this response contains an identical ui element.
-  bool ContainsUiElement(const AssistantUiElement* element) const;
-
  private:
   void NotifyUiElementAdded(const AssistantUiElement* ui_element);
   void NotifySuggestionsAdded(const std::vector<const AssistantSuggestion*>&);
-
-  // Return true if the pending ui elements contain an identical ui element.
-  bool ContainsPendingUiElement(const AssistantUiElement* other) const;
 
   struct PendingUiElement;
   class Processor;

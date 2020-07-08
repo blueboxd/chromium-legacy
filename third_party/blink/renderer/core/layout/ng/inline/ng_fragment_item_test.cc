@@ -83,6 +83,67 @@ class NGFragmentItemTest : public NGLayoutTest,
   }
 };
 
+TEST_F(NGFragmentItemTest, CopyMove) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    div {
+      font-size: 20px;
+      line-height: 10px;
+    }
+    </style>
+    <div id="container">
+      1234567
+    </div>
+  )HTML");
+  LayoutBlockFlow* container =
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
+  NGInlineCursor cursor(*container);
+
+  // Test copying a line item.
+  cursor.MoveToFirstLine();
+  const NGFragmentItem* line_item = cursor.Current().Item();
+  EXPECT_EQ(line_item->Type(), NGFragmentItem::kLine);
+  EXPECT_NE(line_item->LineBoxFragment(), nullptr);
+  NGFragmentItem copy_of_line(*line_item);
+  EXPECT_EQ(copy_of_line.LineBoxFragment(), line_item->LineBoxFragment());
+  // Ink overflow is not copied for line items. See |NGFragmentItem| copy ctor.
+  EXPECT_FALSE(copy_of_line.IsInkOverflowComputed());
+
+  // Test moving a line item.
+  NGFragmentItem move_of_line(std::move(copy_of_line));
+  EXPECT_EQ(move_of_line.LineBoxFragment(), line_item->LineBoxFragment());
+  // After the move, the source fragment should be released.
+  EXPECT_EQ(copy_of_line.LineBoxFragment(), nullptr);
+  EXPECT_FALSE(move_of_line.IsInkOverflowComputed());
+
+  // To test moving ink overflow, add an ink overflow to |move_of_line|.
+  PhysicalRect not_small_ink_overflow_rect(0, 0, 5000, 100);
+  move_of_line.ink_overflow_type_ = move_of_line.ink_overflow_.SetContents(
+      move_of_line.InkOverflowType(), not_small_ink_overflow_rect,
+      line_item->Size());
+  EXPECT_EQ(move_of_line.InkOverflowType(), NGInkOverflow::kContents);
+  NGFragmentItem move_of_line2(std::move(move_of_line));
+  EXPECT_EQ(move_of_line2.InkOverflowType(), NGInkOverflow::kContents);
+  EXPECT_EQ(move_of_line2.InkOverflow(), not_small_ink_overflow_rect);
+
+  // Test copying a text item.
+  cursor.MoveToFirstChild();
+  const NGFragmentItem* text_item = cursor.Current().Item();
+  EXPECT_EQ(text_item->Type(), NGFragmentItem::kText);
+  EXPECT_NE(text_item->TextShapeResult(), nullptr);
+  NGFragmentItem copy_of_text(*text_item);
+  EXPECT_EQ(copy_of_text.TextShapeResult(), text_item->TextShapeResult());
+  // Ink overflow is copied for text items. See |NGFragmentItem| copy ctor.
+  EXPECT_TRUE(copy_of_text.IsInkOverflowComputed());
+
+  // Test moving a text item.
+  NGFragmentItem move_of_text(std::move(copy_of_text));
+  EXPECT_EQ(move_of_text.TextShapeResult(), text_item->TextShapeResult());
+  // After the move, the source ShapeResult should be released.
+  EXPECT_EQ(copy_of_text.TextShapeResult(), nullptr);
+  EXPECT_TRUE(move_of_text.IsInkOverflowComputed());
+}
+
 TEST_F(NGFragmentItemTest, BasicText) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(

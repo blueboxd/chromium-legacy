@@ -9500,6 +9500,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_TOOLTIP_TAB_ALERT_STATE_BLUETOOTH_CONNECTED" desc="Extra tool tip text, when tab is connected to a Bluetooth device.">
         This tab is connected to a Bluetooth Device.
       </message>
+      <message name="IDS_TOOLTIP_TAB_ALERT_STATE_BLUETOOTH_SCAN_ACTIVE" desc="Extra tool tip text, when tab is actively scanning for Bluetooth devices.">
+        This tab is actively scanning for Bluetooth devices.
+      </message>
       <message name="IDS_TOOLTIP_TAB_ALERT_STATE_USB_CONNECTED" desc="Extra tool tip text, when tab is connected to a USB device.">
         This tab is connected to a USB device.
       </message>
@@ -9537,6 +9540,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_TAB_AX_LABEL_BLUETOOTH_CONNECTED_FORMAT" desc="Accessibility label text, when a tab is connected to and has access to a Bluetooth device. Example: 'Google Photos - Bluetooth device connected'">
         <ph name="WINDOW_TITLE">$1<ex>Google Photos</ex></ph> - Bluetooth device connected
+      </message>
+      <message name="IDS_TAB_AX_LABEL_BLUETOOTH_SCAN_ACTIVE_FORMAT" desc="Accessibility label text, when a tab is actively scanning for Bluetooth devices. Example: 'Google Photos - Bluetooth scan active'">
+        <ph name="WINDOW_TITLE">$1<ex>Google Photos</ex></ph> - Bluetooth scan active
       </message>
       <message name="IDS_TAB_AX_LABEL_USB_CONNECTED_FORMAT" desc="Accessibility label text, when a tab is connected to a USB device. Example: 'Google Photos - USB device connected'">
         <ph name="WINDOW_TITLE">$1<ex>Google Photos</ex></ph> - USB device connected

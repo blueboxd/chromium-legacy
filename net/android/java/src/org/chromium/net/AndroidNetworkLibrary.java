@@ -406,6 +406,22 @@ class AndroidNetworkLibrary {
     }
 
     /**
+     * Reports a connectivity issue with the device's current default network.
+     */
+    @TargetApi(Build.VERSION_CODES.M)
+    @CalledByNative
+    private static boolean reportBadDefaultNetwork() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return false;
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager == null) return false;
+
+        connectivityManager.reportNetworkConnectivity(null, false);
+        return true;
+    }
+
+    /**
      * Class to wrap FileDescriptor.setInt$() which is hidden and so must be accessed via
      * reflection.
      */

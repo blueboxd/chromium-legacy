@@ -30,6 +30,12 @@ TEST(ProbeServiceConvertors, ConvertCategoryVector) {
           cros_healthd::mojom::ProbeCategoryEnum::kCachedVpdData));
 }
 
+// Tests that |ConvertPtr| function returns nullptr if input is nullptr.
+// ConvertPtr is a template, so we can test this function with any valid type.
+TEST(ProbeServiceConvertors, ConvertPtrTakesNullPtr) {
+  EXPECT_TRUE(ConvertPtr(cros_healthd::mojom::ProbeErrorPtr()).is_null());
+}
+
 TEST(ProbeServiceConvertors, ErrorType) {
   EXPECT_EQ(Convert(cros_healthd::mojom::ErrorType::kFileReadError),
             health::mojom::ErrorType::kFileReadError);
@@ -41,13 +47,9 @@ TEST(ProbeServiceConvertors, ErrorType) {
             health::mojom::ErrorType::kSystemUtilityError);
 }
 
-TEST(ProbeServiceConvertors, ProbeErrorPtrNull) {
-  EXPECT_TRUE(Convert(cros_healthd::mojom::ProbeErrorPtr()).is_null());
-}
-
 TEST(ProbeServiceConvertors, ProbeErrorPtr) {
   constexpr char kMsg[] = "file not found";
-  EXPECT_EQ(Convert(cros_healthd::mojom::ProbeError::New(
+  EXPECT_EQ(ConvertPtr(cros_healthd::mojom::ProbeError::New(
                 cros_healthd::mojom::ErrorType::kFileReadError, kMsg)),
             health::mojom::ProbeError::New(
                 health::mojom::ErrorType::kFileReadError, kMsg));
@@ -68,18 +70,10 @@ TEST(ProbeServiceConvertors, UInt64Value) {
   EXPECT_EQ(Convert(kValue), health::mojom::UInt64Value::New(kValue));
 }
 
-TEST(ProbeServiceConvertors, UInt64ValuePtrNull) {
-  EXPECT_TRUE(Convert(cros_healthd::mojom::UInt64ValuePtr()).is_null());
-}
-
 TEST(ProbeServiceConvertors, UInt64ValuePtr) {
   constexpr uint64_t kValue = 100500;
-  EXPECT_EQ(Convert(cros_healthd::mojom::UInt64Value::New(kValue)),
+  EXPECT_EQ(ConvertPtr(cros_healthd::mojom::UInt64Value::New(kValue)),
             health::mojom::UInt64Value::New(kValue));
-}
-
-TEST(ProbeServiceConvertors, BatteryInfoPtrNull) {
-  EXPECT_TRUE(Convert(cros_healthd::mojom::BatteryInfoPtr()).is_null());
 }
 
 TEST(ProbeServiceConvertors, BatteryInfoPtr) {
@@ -120,7 +114,7 @@ TEST(ProbeServiceConvertors, BatteryInfoPtr) {
   // Here we intentionaly use health::mojom::BatteryInfo::New not to
   // forget to test new fields.
   EXPECT_EQ(
-      Convert(battery_info.Clone()),
+      ConvertPtr(battery_info.Clone()),
       health::mojom::BatteryInfo::New(
           health::mojom::Int64Value::New(kCycleCount),
           health::mojom::DoubleValue::New(kVoltageNow), kVendor, kSerialNumber,
@@ -132,20 +126,16 @@ TEST(ProbeServiceConvertors, BatteryInfoPtr) {
           kManufactureDate, health::mojom::UInt64Value::New(kTemperature)));
 }
 
-TEST(ProbeServiceConvertors, BatteryResultPtrNull) {
-  EXPECT_TRUE(Convert(cros_healthd::mojom::BatteryResultPtr()).is_null());
-}
-
 TEST(ProbeServiceConvertors, BatteryResultPtrInfo) {
   const health::mojom::BatteryResultPtr ptr =
-      Convert(cros_healthd::mojom::BatteryResult::NewBatteryInfo(nullptr));
+      ConvertPtr(cros_healthd::mojom::BatteryResult::NewBatteryInfo(nullptr));
   ASSERT_TRUE(ptr);
   EXPECT_TRUE(ptr->is_battery_info());
 }
 
 TEST(ProbeServiceConvertors, BatteryResultPtrError) {
   const health::mojom::BatteryResultPtr ptr =
-      Convert(cros_healthd::mojom::BatteryResult::NewError(nullptr));
+      ConvertPtr(cros_healthd::mojom::BatteryResult::NewError(nullptr));
   ASSERT_TRUE(ptr);
   EXPECT_TRUE(ptr->is_error());
 }
@@ -186,7 +176,7 @@ TEST(ProbeServiceConvertors, NonRemovableBlockDeviceInfoPtr) {
   // Here we intentionaly use health::mojom::NonRemovableBlockDeviceInfo::New
   // not to forget to test new fields.
   EXPECT_EQ(
-      Convert(info.Clone()),
+      ConvertPtr(info.Clone()),
       health::mojom::NonRemovableBlockDeviceInfo::New(
           kPath, health::mojom::UInt64Value::New(kSize), kType,
           health::mojom::UInt32Value::New(kManufacturerId), kName,
@@ -197,11 +187,6 @@ TEST(ProbeServiceConvertors, NonRemovableBlockDeviceInfoPtr) {
           health::mojom::UInt64Value::New(kWriteTimeSecondsSinceLastBoot),
           health::mojom::UInt64Value::New(kIoTimeSecondsSinceLastBoot),
           health::mojom::UInt64Value::New(kDiscardTimeSecondsSinceLastBoot)));
-}
-
-TEST(ProbeServiceConvertors, NonRemovableBlockDeviceResultPtrNull) {
-  EXPECT_TRUE(Convert(cros_healthd::mojom::NonRemovableBlockDeviceResultPtr())
-                  .is_null());
 }
 
 TEST(ProbeServiceConvertors, NonRemovableBlockDeviceResultPtrInfo) {
@@ -218,7 +203,7 @@ TEST(ProbeServiceConvertors, NonRemovableBlockDeviceResultPtrInfo) {
   infos.push_back(std::move(info1));
   infos.push_back(std::move(info2));
 
-  const health::mojom::NonRemovableBlockDeviceResultPtr ptr = Convert(
+  const health::mojom::NonRemovableBlockDeviceResultPtr ptr = ConvertPtr(
       cros_healthd::mojom::NonRemovableBlockDeviceResult::NewBlockDeviceInfo(
           std::move(infos)));
   ASSERT_TRUE(ptr);
@@ -229,14 +214,10 @@ TEST(ProbeServiceConvertors, NonRemovableBlockDeviceResultPtrInfo) {
 }
 
 TEST(ProbeServiceConvertors, NonRemovableBlockDeviceResultPtrError) {
-  const health::mojom::NonRemovableBlockDeviceResultPtr ptr = Convert(
+  const health::mojom::NonRemovableBlockDeviceResultPtr ptr = ConvertPtr(
       cros_healthd::mojom::NonRemovableBlockDeviceResult::NewError(nullptr));
   ASSERT_TRUE(ptr);
   EXPECT_TRUE(ptr->is_error());
-}
-
-TEST(ProbeServiceConvertors, CachedVpdInfoPtrNull) {
-  EXPECT_TRUE(Convert(cros_healthd::mojom::CachedVpdInfoPtr()).is_null());
 }
 
 TEST(ProbeServiceConvertors, CachedVpdInfoPtr) {
@@ -251,24 +232,20 @@ TEST(ProbeServiceConvertors, CachedVpdInfoPtr) {
 
   // Here we intentionaly use health::mojom::CachedVpdInfo::New
   // not to forget to test new fields.
-  EXPECT_EQ(Convert(info.Clone()),
+  EXPECT_EQ(ConvertPtr(info.Clone()),
             health::mojom::CachedVpdInfo::New(kSkuNumber));
-}
-
-TEST(ProbeServiceConvertors, CachedVpdResultPtrNull) {
-  EXPECT_TRUE(Convert(cros_healthd::mojom::CachedVpdResultPtr()).is_null());
 }
 
 TEST(ProbeServiceConvertors, CachedVpdResultPtrInfo) {
   const health::mojom::CachedVpdResultPtr ptr =
-      Convert(cros_healthd::mojom::CachedVpdResult::NewVpdInfo(nullptr));
+      ConvertPtr(cros_healthd::mojom::CachedVpdResult::NewVpdInfo(nullptr));
   ASSERT_TRUE(ptr);
   EXPECT_TRUE(ptr->is_vpd_info());
 }
 
 TEST(ProbeServiceConvertors, CachedVpdResultPtrError) {
   const health::mojom::CachedVpdResultPtr ptr =
-      Convert(cros_healthd::mojom::CachedVpdResult::NewError(nullptr));
+      ConvertPtr(cros_healthd::mojom::CachedVpdResult::NewError(nullptr));
   ASSERT_TRUE(ptr);
   EXPECT_TRUE(ptr->is_error());
 }
@@ -286,7 +263,7 @@ TEST(ProbeServiceConvertors, TelemetryInfoPtrHasBatteryResult) {
           std::move(battery_info_input));
 
   const health::mojom::TelemetryInfoPtr telemetry_info_output =
-      Convert(std::move(telemetry_info_input));
+      ConvertPtr(std::move(telemetry_info_input));
   ASSERT_TRUE(telemetry_info_output);
   ASSERT_TRUE(telemetry_info_output->battery_result);
   ASSERT_TRUE(telemetry_info_output->battery_result->is_battery_info());
@@ -312,7 +289,7 @@ TEST(ProbeServiceConvertors, TelemetryInfoPtrHasBlockDeviceResult) {
       cros_healthd::mojom::NonRemovableBlockDeviceResult::NewBlockDeviceInfo(
           std::move(device_infos));
 
-  const health::mojom::TelemetryInfoPtr output = Convert(std::move(input));
+  const health::mojom::TelemetryInfoPtr output = ConvertPtr(std::move(input));
   ASSERT_TRUE(output);
   ASSERT_TRUE(output->block_device_result);
   ASSERT_TRUE(output->block_device_result->is_block_device_info());
@@ -338,7 +315,7 @@ TEST(ProbeServiceConvertors, TelemetryInfoPtrHasCachedVpdResult) {
           std::move(vpd_info_input));
 
   const health::mojom::TelemetryInfoPtr telemetry_info_output =
-      Convert(std::move(telemetry_info_input));
+      ConvertPtr(std::move(telemetry_info_input));
   ASSERT_TRUE(telemetry_info_output);
   ASSERT_TRUE(telemetry_info_output->vpd_result);
   ASSERT_TRUE(telemetry_info_output->vpd_result->is_vpd_info());
@@ -352,15 +329,11 @@ TEST(ProbeServiceConvertors, TelemetryInfoPtrHasCachedVpdResult) {
 
 TEST(ProbeServiceConvertors, TelemetryInfoPtrWithNullFields) {
   const health::mojom::TelemetryInfoPtr telemetry_info_output =
-      Convert(cros_healthd::mojom::TelemetryInfo::New());
+      ConvertPtr(cros_healthd::mojom::TelemetryInfo::New());
   ASSERT_TRUE(telemetry_info_output);
   EXPECT_FALSE(telemetry_info_output->battery_result);
   EXPECT_FALSE(telemetry_info_output->block_device_result);
   EXPECT_FALSE(telemetry_info_output->vpd_result);
-}
-
-TEST(ProbeServiceConvertors, TelemetryInfoPtrNull) {
-  EXPECT_TRUE(Convert(cros_healthd::mojom::TelemetryInfoPtr()).is_null());
 }
 
 }  // namespace probe_service_converters

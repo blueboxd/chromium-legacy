@@ -77,6 +77,8 @@ class PLATFORM_EXPORT V8PerContextData final {
                                   : CreateWrapperFromCacheSlowCase(type);
   }
 
+  // Returns the interface object that is appropriately initialized (e.g.
+  // context-dependent properties are installed).
   v8::Local<v8::Function> ConstructorForType(const WrapperTypeInfo* type) {
     v8::Local<v8::Function> interface_object = constructor_map_.Get(type);
     return (!interface_object.IsEmpty()) ? interface_object

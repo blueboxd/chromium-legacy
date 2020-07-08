@@ -22,9 +22,42 @@ namespace probe_service_converters {
 // This file contains helper functions used by ProbeService to convert its
 // types to/from cros_healthd ProbeService types.
 
-health::mojom::ErrorType Convert(cros_healthd::mojom::ErrorType type);
+namespace unchecked {
 
-health::mojom::ProbeErrorPtr Convert(cros_healthd::mojom::ProbeErrorPtr input);
+// Functions in unchecked namespace do not verify whether input pointer is
+// nullptr, they should be called only via ConvertPtr wrapper that checks
+// whether input pointer is nullptr.
+
+health::mojom::ProbeErrorPtr UncheckedConvertPtr(
+    cros_healthd::mojom::ProbeErrorPtr input);
+
+health::mojom::UInt64ValuePtr UncheckedConvertPtr(
+    cros_healthd::mojom::UInt64ValuePtr input);
+
+health::mojom::BatteryInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::BatteryInfoPtr input);
+
+health::mojom::BatteryResultPtr UncheckedConvertPtr(
+    cros_healthd::mojom::BatteryResultPtr input);
+
+health::mojom::NonRemovableBlockDeviceInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::NonRemovableBlockDeviceInfoPtr input);
+
+health::mojom::NonRemovableBlockDeviceResultPtr UncheckedConvertPtr(
+    cros_healthd::mojom::NonRemovableBlockDeviceResultPtr input);
+
+health::mojom::CachedVpdInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::CachedVpdInfoPtr input);
+
+health::mojom::CachedVpdResultPtr UncheckedConvertPtr(
+    cros_healthd::mojom::CachedVpdResultPtr input);
+
+health::mojom::TelemetryInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::TelemetryInfoPtr input);
+
+}  // namespace unchecked
+
+health::mojom::ErrorType Convert(cros_healthd::mojom::ErrorType type);
 
 health::mojom::DoubleValuePtr Convert(double input);
 
@@ -34,36 +67,18 @@ health::mojom::UInt32ValuePtr Convert(uint32_t input);
 
 health::mojom::UInt64ValuePtr Convert(uint64_t input);
 
-health::mojom::UInt64ValuePtr Convert(
-    cros_healthd::mojom::UInt64ValuePtr input);
-
-health::mojom::BatteryInfoPtr Convert(
-    cros_healthd::mojom::BatteryInfoPtr input);
-
-health::mojom::BatteryResultPtr Convert(
-    cros_healthd::mojom::BatteryResultPtr input);
-
-health::mojom::NonRemovableBlockDeviceInfoPtr Convert(
-    cros_healthd::mojom::NonRemovableBlockDeviceInfoPtr input);
-
-health::mojom::NonRemovableBlockDeviceResultPtr Convert(
-    cros_healthd::mojom::NonRemovableBlockDeviceResultPtr input);
-
-health::mojom::CachedVpdInfoPtr Convert(
-    cros_healthd::mojom::CachedVpdInfoPtr input);
-
-health::mojom::CachedVpdResultPtr Convert(
-    cros_healthd::mojom::CachedVpdResultPtr input);
-
-health::mojom::TelemetryInfoPtr Convert(
-    cros_healthd::mojom::TelemetryInfoPtr input);
+template <class InputT>
+auto ConvertPtr(InputT input) {
+  return (!input.is_null()) ? unchecked::UncheckedConvertPtr(std::move(input))
+                            : nullptr;
+}
 
 template <class OutputT, class InputT>
 std::vector<OutputT> ConvertPtrVector(std::vector<InputT> input) {
   std::vector<OutputT> output;
   for (auto&& element : input) {
     DCHECK(!element.is_null());
-    output.push_back(Convert(std::move(element)));
+    output.push_back(unchecked::UncheckedConvertPtr(std::move(element)));
   }
   return output;
 }

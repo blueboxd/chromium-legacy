@@ -26,20 +26,19 @@ namespace base {
 
 class FileHelper {
  public:
-   FileHelper(FileProxy* proxy, File file)
+  FileHelper(FileProxy* proxy, File file)
       : file_(std::move(file)),
         error_(File::FILE_ERROR_FAILED),
         task_runner_(proxy->task_runner()),
-        proxy_(AsWeakPtr(proxy)) {
-   }
+        proxy_(AsWeakPtr(proxy)) {}
 
-   void PassFile() {
-     if (proxy_)
-       proxy_->SetFile(std::move(file_));
-     else if (file_.IsValid())
-       task_runner_->PostTask(FROM_HERE,
-                              BindOnce(&FileDeleter, std::move(file_)));
-   }
+  void PassFile() {
+    if (proxy_)
+      proxy_->SetFile(std::move(file_));
+    else if (file_.IsValid())
+      task_runner_->PostTask(FROM_HERE,
+                             BindOnce(&FileDeleter, std::move(file_)));
+  }
 
  protected:
   File file_;
@@ -134,7 +133,7 @@ class CreateTemporaryHelper : public FileHelper {
       error_ = File::FILE_OK;
     } else {
       error_ = file_.error_details();
-      DeleteFile(file_path_, false);
+      DeleteFile(file_path_);
       file_path_.clear();
     }
   }

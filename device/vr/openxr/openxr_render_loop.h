@@ -23,7 +23,8 @@ class OpenXRInputHelper;
 class OpenXrRenderLoop : public XRCompositorCommon {
  public:
   OpenXrRenderLoop(base::RepeatingCallback<void(mojom::VRDisplayInfoPtr)>
-                       on_display_info_changed);
+                       on_display_info_changed,
+                   XrInstance instance);
   ~OpenXrRenderLoop() override;
 
  private:
@@ -45,6 +46,9 @@ class OpenXrRenderLoop : public XRCompositorCommon {
                  const gfx::Size& view_size,
                  mojom::VREyeParametersPtr* eye) const;
   bool UpdateStageParameters();
+
+  // Owned by OpenXrStatics
+  XrInstance instance_;
 
   std::unique_ptr<OpenXrApiWrapper> openxr_;
   std::unique_ptr<OpenXRInputHelper> input_helper_;

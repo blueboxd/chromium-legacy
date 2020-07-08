@@ -48,10 +48,6 @@ constexpr char kCupsMaxCopies[] = "cupsMaxCopies";
 constexpr char kColorDevice[] = "ColorDevice";
 constexpr char kColorModel[] = "ColorModel";
 constexpr char kColorMode[] = "ColorMode";
-// TODO(crbug.com/1081705): Epson "Ink" attribute bloats prints on Linux.
-#if !defined(OS_LINUX)
-constexpr char kInk[] = "Ink";
-#endif
 constexpr char kProcessColorModel[] = "ProcessColorModel";
 constexpr char kPrintoutMode[] = "PrintoutMode";
 constexpr char kDraftGray[] = "Draft.Gray";
@@ -67,6 +63,11 @@ constexpr char kPageSize[] = "PageSize";
 constexpr char kBrotherDuplex[] = "BRDuplex";
 constexpr char kBrotherMonoColor[] = "BRMonoColor";
 constexpr char kBrotherPrintQuality[] = "BRPrintQuality";
+
+// Epson printer specific options.
+constexpr char kEpsonInk[] = "Ink";
+constexpr char kEpsonColor[] = "COLOR";
+constexpr char kEpsonMono[] = "MONO";
 
 // HP printer specific options.
 constexpr char kHpColorMode[] = "HPColorMode";
@@ -333,23 +334,21 @@ bool GetHPColorModeSettings(ppd_file_t* ppd,
   return true;
 }
 
-// TODO(crbug.com/1081705): Epson "Ink" attribute bloats prints on Linux.
-#if !defined(OS_LINUX)
 bool GetEpsonInkSettings(ppd_file_t* ppd,
                          ColorModel* color_model_for_black,
                          ColorModel* color_model_for_color,
                          bool* color_is_default) {
   // Epson printers use "Ink" attribute in their PPDs.
-  ppd_option_t* color_mode_option = ppdFindOption(ppd, kInk);
+  ppd_option_t* color_mode_option = ppdFindOption(ppd, kEpsonInk);
   if (!color_mode_option)
     return false;
 
-  if (ppdFindChoice(color_mode_option, kColor))
+  if (ppdFindChoice(color_mode_option, kEpsonColor))
     *color_model_for_color = EPSON_INK_COLOR;
-  if (ppdFindChoice(color_mode_option, kMono))
+  if (ppdFindChoice(color_mode_option, kEpsonMono))
     *color_model_for_black = EPSON_INK_MONO;
 
-  ppd_choice_t* mode_choice = ppdFindMarkedChoice(ppd, kInk);
+  ppd_choice_t* mode_choice = ppdFindMarkedChoice(ppd, kEpsonInk);
   if (!mode_choice) {
     mode_choice =
         ppdFindChoice(color_mode_option, color_mode_option->defchoice);
@@ -360,7 +359,6 @@ bool GetEpsonInkSettings(ppd_file_t* ppd,
   }
   return true;
 }
-#endif  // !defined(OS_LINUX)
 
 bool GetSharpARCModeSettings(ppd_file_t* ppd,
                              ColorModel* color_model_for_black,
@@ -465,10 +463,7 @@ bool GetColorModelSettings(ppd_file_t* ppd,
          GetHPColorSettings(ppd, cm_black, cm_color, is_color) ||
          GetHPColorModeSettings(ppd, cm_black, cm_color, is_color) ||
          GetBrotherColorSettings(ppd, cm_black, cm_color, is_color) ||
-// TODO(crbug.com/1081705): Epson "Ink" attribute bloats prints on Linux.
-#if !defined(OS_LINUX)
          GetEpsonInkSettings(ppd, cm_black, cm_color, is_color) ||
-#endif
          GetSharpARCModeSettings(ppd, cm_black, cm_color, is_color) ||
          GetXeroxColorSettings(ppd, cm_black, cm_color, is_color) ||
          GetProcessColorModelSettings(ppd, cm_black, cm_color, is_color);

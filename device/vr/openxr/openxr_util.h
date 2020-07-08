@@ -5,12 +5,21 @@
 #ifndef DEVICE_VR_OPENXR_OPENXR_UTIL_H_
 #define DEVICE_VR_OPENXR_OPENXR_UTIL_H_
 
+#include <vector>
+
 #include "base/logging.h"
 #include "third_party/openxr/src/include/openxr/openxr.h"
 
 namespace device {
-struct OpenXRInstanceMetadata {
-  bool unboundedReferenceSpaceSupported;
+class OpenXrExtensionHelper {
+ public:
+  OpenXrExtensionHelper();
+  ~OpenXrExtensionHelper();
+
+  bool ExtensionSupported(const char* extension_name);
+
+ private:
+  std::vector<XrExtensionProperties> extension_properties_;
 };
 
 // These macros aren't common in Chromium and generally discouraged, so define
@@ -49,8 +58,7 @@ XrPosef PoseIdentity();
 
 XrResult GetSystem(XrInstance instance, XrSystemId* system);
 
-XrResult CreateInstance(XrInstance* instance,
-                        OpenXRInstanceMetadata* metadata = nullptr);
+XrResult CreateInstance(XrInstance* instance);
 
 }  // namespace device
 

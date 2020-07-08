@@ -17,8 +17,6 @@
 #include "base/threading/thread_checker.h"
 #include "components/arc/session/connection_notifier.h"
 #include "components/arc/session/connection_observer.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
 // A macro to call

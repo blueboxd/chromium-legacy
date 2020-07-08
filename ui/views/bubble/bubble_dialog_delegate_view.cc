@@ -250,10 +250,6 @@ class BubbleDialogDelegate::BubbleWidgetObserver : public WidgetObserver {
     owner_->OnWidgetActivationChanged(widget, active);
   }
 
-  void OnWidgetPaintAsActiveChanged(Widget* widget) override {
-    owner_->OnBubbleWidgetPaintAsActiveChanged();
-  }
-
  private:
   BubbleDialogDelegate* owner_;
   ScopedObserver<views::Widget, views::WidgetObserver> observer_{this};
@@ -292,6 +288,10 @@ Widget* BubbleDialogDelegate::CreateBubble(
   bubble_delegate->SizeToContents();
   bubble_delegate->bubble_widget_observer_ =
       std::make_unique<BubbleWidgetObserver>(bubble_delegate, bubble_widget);
+  bubble_delegate->paint_as_active_subscription_ =
+      bubble_widget->RegisterPaintAsActiveChangedCallback(base::BindRepeating(
+          &BubbleDialogDelegate::OnBubbleWidgetPaintAsActiveChanged,
+          base::Unretained(bubble_delegate)));
   return bubble_widget;
 }
 
@@ -438,7 +438,14 @@ void BubbleDialogDelegate::OnAnchorWidgetBoundsChanged() {
 }
 
 void BubbleDialogDelegate::OnBubbleWidgetPaintAsActiveChanged() {
-  if (!GetWidget()->ShouldPaintAsActive()) {
+  // It's possible for GetWidget() to return null here when the Widget's
+  // ownership model is WIDGET_OWNS_NATIVE_WIDGET.  In that case, the View
+  // hierarchy is torn down, which detaches rather than destroys |this| due to
+  // set_owned_by_client().  Then the native widget is destroyed, which calls
+  // back here.  Since GetWidget() is implemented in terms of View::GetWidget(),
+  // which no longer has a RootView, it returns null.  While there are other
+  // ways to address this, they all seem more fragile than null-checking.
+  if (!GetWidget() || !GetWidget()->ShouldPaintAsActive()) {
     paint_as_active_lock_.reset();
     return;
   }

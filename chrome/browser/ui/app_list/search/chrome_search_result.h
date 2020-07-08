@@ -15,8 +15,12 @@
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "ui/base/models/simple_menu_model.h"
 
+namespace chromeos {
+namespace string_matching {
 class TokenizedString;
 class TokenizedStringMatch;
+}  // namespace string_matching
+}  // namespace chromeos
 
 namespace app_list {
 class AppContextMenu;
@@ -131,8 +135,9 @@ class ChromeSearchResult {
 
   // Updates the result's relevance score, and sets its title and title tags,
   // based on a string match result.
-  void UpdateFromMatch(const TokenizedString& title,
-                       const TokenizedStringMatch& match);
+  void UpdateFromMatch(
+      const chromeos::string_matching::TokenizedString& title,
+      const chromeos::string_matching::TokenizedStringMatch& match);
 
   // Returns the context menu model for this item, or NULL if there is currently
   // no menu for the item (e.g. during install). |callback| takes the ownership

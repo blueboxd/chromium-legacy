@@ -47,10 +47,6 @@ namespace {
 
 const char* const kNotificationId =
     NetworkPortalNotificationController::kNotificationId;
-const char* const kNotificationMetric =
-    NetworkPortalNotificationController::kNotificationMetric;
-const char* const kUserActionMetric =
-    NetworkPortalNotificationController::kUserActionMetric;
 
 constexpr char kTestUser[] = "test-user@gmail.com";
 constexpr char kTestUserGaiaId[] = "1234567890";
@@ -163,13 +159,6 @@ IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
                        InSessionDetection) {
-  typedef NetworkPortalNotificationController Controller;
-
-  EnumHistogramChecker ui_checker(
-      kNotificationMetric, Controller::NOTIFICATION_METRIC_COUNT, nullptr);
-  EnumHistogramChecker action_checker(
-      kUserActionMetric, Controller::USER_ACTION_METRIC_COUNT, nullptr);
-
   LoginUser(test_account_id_);
   content::RunAllPendingInMessageLoop();
 
@@ -192,17 +181,9 @@ IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
                 ->GetCaptivePortalState(kWifiGuid)
                 .status);
 
-  ASSERT_TRUE(
-      ui_checker.Expect(Controller::NOTIFICATION_METRIC_DISPLAYED, 1)->Check());
-  ASSERT_TRUE(action_checker.Check());
-
   // User explicitly closes the notification.
   display_service_->RemoveNotification(NotificationHandler::Type::TRANSIENT,
                                        kNotificationId, true);
-
-  ASSERT_TRUE(ui_checker.Check());
-  ASSERT_TRUE(
-      action_checker.Expect(Controller::USER_ACTION_METRIC_CLOSED, 1)->Check());
 }
 
 class NetworkPortalDetectorImplBrowserTestIgnoreProxy
@@ -220,13 +201,6 @@ class NetworkPortalDetectorImplBrowserTestIgnoreProxy
 
 void NetworkPortalDetectorImplBrowserTestIgnoreProxy::TestImpl(
     const bool preference_value) {
-  using Controller = NetworkPortalNotificationController;
-
-  EnumHistogramChecker ui_checker(
-      kNotificationMetric, Controller::NOTIFICATION_METRIC_COUNT, nullptr);
-  EnumHistogramChecker action_checker(
-      kUserActionMetric, Controller::USER_ACTION_METRIC_COUNT, nullptr);
-
   LoginUser(test_account_id_);
   content::RunAllPendingInMessageLoop();
 
@@ -252,10 +226,6 @@ void NetworkPortalDetectorImplBrowserTestIgnoreProxy::TestImpl(
             network_portal_detector::GetInstance()
                 ->GetCaptivePortalState(kWifiGuid)
                 .status);
-
-  EXPECT_TRUE(
-      ui_checker.Expect(Controller::NOTIFICATION_METRIC_DISPLAYED, 1)->Check());
-  EXPECT_TRUE(action_checker.Check());
 
   display_service_->GetNotification(kNotificationId)
       ->delegate()

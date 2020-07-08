@@ -25,7 +25,6 @@
 #import "ios/web/web_state/ui/wk_content_rule_list_provider.h"
 #include "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #include "ios/web/webui/url_data_manager_ios_backend.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_context_getter_observer.h"

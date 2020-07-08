@@ -40,7 +40,7 @@ class OpenXrApiWrapper {
   ~OpenXrApiWrapper();
   bool IsInitialized() const;
 
-  static std::unique_ptr<OpenXrApiWrapper> Create();
+  static std::unique_ptr<OpenXrApiWrapper> Create(XrInstance instance);
 
   static VRTestHook* GetTestHook();
 
@@ -74,7 +74,7 @@ class OpenXrApiWrapper {
 
  private:
   void Reset();
-  bool Initialize();
+  bool Initialize(XrInstance instance);
   void Uninitialize();
 
   XrResult InitializeSystem();
@@ -124,7 +124,6 @@ class OpenXrApiWrapper {
 
   // These objects are valid on successful initialization.
   XrInstance instance_;
-  OpenXRInstanceMetadata instance_metadata_;
   XrSystemId system_;
   std::vector<XrViewConfigurationView> view_configs_;
   XrEnvironmentBlendMode blend_mode_;

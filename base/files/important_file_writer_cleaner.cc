@@ -160,7 +160,7 @@ bool ImportantFileWriterCleaner::CleanInBackground(
       const FileEnumerator::FileInfo info = file_enum.GetInfo();
       if (info.GetLastModifiedTime() >= upper_bound_time)
         continue;
-      if (DeleteFile(path, /*recursive=*/false))
+      if (DeleteFile(path))
         ++successes;
       else
         ++fails;

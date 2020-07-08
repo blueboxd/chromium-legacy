@@ -299,6 +299,11 @@ void WorkerOrWorkletScriptController::PrepareForEvaluation() {
 
   v8::HandleScope handle_scope(isolate_);
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
+  V8PerContextData* per_context_data = script_state_->PerContextData();
+  ignore_result(per_context_data->ConstructorForType(
+      global_scope_->GetWrapperTypeInfo()));
+#else   // USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE
   ScriptState::Scope scope(script_state_);
   v8::Local<v8::Context> context = script_state_->GetContext();
 
@@ -323,6 +328,7 @@ void WorkerOrWorkletScriptController::PrepareForEvaluation() {
   wrapper_type_info->InstallConditionalFeatures(
       context, *world_, global_object, v8::Local<v8::Object>(),
       v8::Local<v8::Function>(), global_interface_template);
+#endif  // USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE
 }
 
 void WorkerOrWorkletScriptController::DisableEvalInternal(

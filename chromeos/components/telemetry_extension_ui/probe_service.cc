@@ -28,7 +28,7 @@ void ProbeService::ProbeTelemetryInfo(
           [](health::mojom::ProbeService::ProbeTelemetryInfoCallback callback,
              cros_healthd::mojom::TelemetryInfoPtr ptr) {
             std::move(callback).Run(
-                probe_service_converters::Convert(std::move(ptr)));
+                probe_service_converters::ConvertPtr(std::move(ptr)));
           },
           std::move(callback)));
 }

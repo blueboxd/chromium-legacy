@@ -106,8 +106,6 @@ gfx::Point NonClientFrameView::GetSystemMenuScreenPixelLocation() const {
 }
 #endif
 
-void NonClientFrameView::PaintAsActiveChanged() {}
-
 void NonClientFrameView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kClient;
 }

@@ -34,16 +34,6 @@ class NetworkPortalNotificationController
  public:
   // The values of these metrics are being used for UMA gathering, so it is
   // important that they don't change between releases.
-  enum NotificationMetric {
-    NOTIFICATION_METRIC_DISPLAYED = 0,
-
-    // This value is no longer used by is still kept here just for
-    // unify with histograms.xml.
-    NOTIFICATION_METRIC_ERROR = 1,
-
-    NOTIFICATION_METRIC_COUNT = 2
-  };
-
   enum UserActionMetric {
     USER_ACTION_METRIC_CLICKED,
     USER_ACTION_METRIC_CLOSED,
@@ -57,7 +47,6 @@ class NetworkPortalNotificationController
   static const char kNotificationId[];
 
   static const char kNotificationMetric[];
-  static const char kUserActionMetric[];
 
   explicit NetworkPortalNotificationController(
       NetworkPortalDetector* network_portal_dectector);

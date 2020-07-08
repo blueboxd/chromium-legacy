@@ -65,21 +65,21 @@ class WebAppInstallTask : content::WebContentsObserver {
 
   void SetInstallParams(const InstallManager::InstallParams& install_params);
 
-  using LoadWebAppAndCheckInstallabilityCallback = base::OnceCallback<void(
+  using LoadWebAppAndCheckManifestCallback = base::OnceCallback<void(
       std::unique_ptr<content::WebContents> web_contents,
       const AppId& app_id,
       InstallResultCode code)>;
-  // Load a web app from the given URL and check installability.
-  void LoadWebAppAndCheckInstallability(
-      const GURL& url,
-      WebappInstallSource install_source,
-      WebAppUrlLoader* url_loader,
-      LoadWebAppAndCheckInstallabilityCallback callback);
+  // Load a web app from the given URL and check for valid manifest.
+  void LoadWebAppAndCheckManifest(const GURL& url,
+                                  WebappInstallSource install_source,
+                                  WebAppUrlLoader* url_loader,
+                                  LoadWebAppAndCheckManifestCallback callback);
 
   // Checks a WebApp installability, retrieves manifest and icons and
   // then performs the actual installation.
   void InstallWebAppFromManifest(
       content::WebContents* web_contents,
+      bool bypass_service_worker_check,
       WebappInstallSource install_source,
       InstallManager::WebAppInstallDialogCallback dialog_callback,
       InstallManager::OnceInstallCallback callback);
@@ -171,7 +171,7 @@ class WebAppInstallTask : content::WebContentsObserver {
 
   void OnWebAppUrlLoadedGetWebApplicationInfo(WebAppUrlLoader::Result result);
 
-  void OnWebAppUrlLoadedCheckInstallabilityAndRetrieveManifest(
+  void OnWebAppUrlLoadedCheckAndRetrieveManifest(
       content::WebContents* web_contents,
       WebAppUrlLoader::Result result);
   void OnWebAppInstallabilityChecked(

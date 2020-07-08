@@ -159,6 +159,11 @@ internal::ConfigParsePosixResult GetDnsServers(
                              : internal::CONFIG_PARSE_POSIX_NO_NAMESERVERS;
 }
 
+bool ReportBadDefaultNetwork() {
+  return Java_AndroidNetworkLibrary_reportBadDefaultNetwork(
+      AttachCurrentThread());
+}
+
 void TagSocket(SocketDescriptor socket, uid_t uid, int32_t tag) {
   Java_AndroidNetworkLibrary_tagSocket(AttachCurrentThread(), socket, uid, tag);
 }

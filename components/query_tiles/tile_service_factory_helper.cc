@@ -27,7 +27,7 @@
 #include "components/query_tiles/internal/tile_fetcher.h"
 #include "components/query_tiles/internal/tile_manager.h"
 #include "components/query_tiles/internal/tile_service_impl.h"
-#include "components/query_tiles/internal/tile_service_scheduler.h"
+#include "components/query_tiles/internal/tile_service_scheduler_impl.h"
 #include "components/query_tiles/switches.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 

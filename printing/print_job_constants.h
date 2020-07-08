@@ -88,6 +88,8 @@ PRINTING_EXPORT extern const char kKCMY[];
 PRINTING_EXPORT extern const char kCMY_K[];
 PRINTING_EXPORT extern const char kCMY[];
 PRINTING_EXPORT extern const char kColor[];
+PRINTING_EXPORT extern const char kEpsonColor[];
+PRINTING_EXPORT extern const char kEpsonMono[];
 PRINTING_EXPORT extern const char kFullColor[];
 PRINTING_EXPORT extern const char kGray[];
 PRINTING_EXPORT extern const char kGrayscale[];

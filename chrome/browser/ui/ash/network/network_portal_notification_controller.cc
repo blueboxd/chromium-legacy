@@ -107,7 +107,6 @@ class NetworkPortalNotificationControllerDelegate
         controller_(controller) {}
 
   // Overridden from message_center::NotificationDelegate:
-  void Close(bool by_user) override;
   void Click(const base::Optional<int>& button_index,
              const base::Optional<base::string16>& reply) override;
 
@@ -127,17 +126,6 @@ class NetworkPortalNotificationControllerDelegate
 
   DISALLOW_COPY_AND_ASSIGN(NetworkPortalNotificationControllerDelegate);
 };
-
-void NetworkPortalNotificationControllerDelegate::Close(bool by_user) {
-  if (clicked_)
-    return;
-  NetworkPortalNotificationController::UserActionMetric metric =
-      by_user ? NetworkPortalNotificationController::USER_ACTION_METRIC_CLOSED
-              : NetworkPortalNotificationController::USER_ACTION_METRIC_IGNORED;
-  UMA_HISTOGRAM_ENUMERATION(
-      NetworkPortalNotificationController::kUserActionMetric, metric,
-      NetworkPortalNotificationController::USER_ACTION_METRIC_COUNT);
-}
 
 void NetworkPortalNotificationControllerDelegate::Click(
     const base::Optional<int>& button_index,
@@ -164,10 +152,6 @@ void NetworkPortalNotificationControllerDelegate::Click(
              NetworkPortalNotificationController::kOpenPortalButtonIndex);
 
   clicked_ = true;
-  UMA_HISTOGRAM_ENUMERATION(
-      NetworkPortalNotificationController::kUserActionMetric,
-      NetworkPortalNotificationController::USER_ACTION_METRIC_CLICKED,
-      NetworkPortalNotificationController::USER_ACTION_METRIC_COUNT);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
 
@@ -203,10 +187,6 @@ const char NetworkPortalNotificationController::kNotificationId[] =
 // static
 const char NetworkPortalNotificationController::kNotificationMetric[] =
     "CaptivePortal.Notification.Status";
-
-// static
-const char NetworkPortalNotificationController::kUserActionMetric[] =
-    "CaptivePortal.Notification.UserAction";
 
 NetworkPortalNotificationController::NetworkPortalNotificationController(
     NetworkPortalDetector* network_portal_detector)
@@ -278,10 +258,6 @@ void NetworkPortalNotificationController::OnPortalDetectionCompleted(
 
   SystemNotificationHelper::GetInstance()->Display(
       *GetNotification(network, state));
-  UMA_HISTOGRAM_ENUMERATION(
-      NetworkPortalNotificationController::kNotificationMetric,
-      NetworkPortalNotificationController::NOTIFICATION_METRIC_DISPLAYED,
-      NetworkPortalNotificationController::NOTIFICATION_METRIC_COUNT);
 }
 
 void NetworkPortalNotificationController::OnShutdown() {

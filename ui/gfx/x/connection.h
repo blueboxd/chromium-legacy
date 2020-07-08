@@ -96,6 +96,10 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
 
   bool HasNextResponse() const;
 
+  void PreDispatchEvent(const Event& event);
+
+  int ScreenIndexFromRootWindow(x11::Window root) const;
+
   XDisplay* const display_;
 
   uint32_t extended_max_request_length_ = 0;

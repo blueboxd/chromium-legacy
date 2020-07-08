@@ -25,7 +25,6 @@
 #include "content/public/common/process_type.h"
 #include "content/public/common/socket_permission_request.h"
 #include "ipc/ipc_message_macros.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source.h"

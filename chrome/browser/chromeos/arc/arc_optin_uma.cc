@@ -81,6 +81,13 @@ void UpdateProvisioningResultUMA(ProvisioningResult result,
       GetHistogramNameByUserType("Arc.Provisioning.Result", profile), result);
 }
 
+void UpdateCloudProvisionFlowErrorUMA(mojom::CloudProvisionFlowError error,
+                                      const Profile* profile) {
+  UMA_HISTOGRAM_ENUMERATION(
+      GetHistogramNameByUserType("Arc.Provisioning.CloudFlowError", profile),
+      error);
+}
+
 void UpdateSecondarySigninResultUMA(ProvisioningResult result) {
   base::UmaHistogramEnumeration("Arc.Secondary.Signin.Result", result);
 }
@@ -223,6 +230,7 @@ std::ostream& operator<<(std::ostream& os, const ProvisioningResult& result) {
     MAP_PROVISIONING_RESULT(SUCCESS_ALREADY_PROVISIONED);
     MAP_PROVISIONING_RESULT(UNSUPPORTED_ACCOUNT_TYPE);
     MAP_PROVISIONING_RESULT(CHROME_ACCOUNT_NOT_FOUND);
+    MAP_PROVISIONING_RESULT(CLOUD_PROVISION_FLOW_ERROR);
   }
 
 #undef MAP_PROVISIONING_RESULT

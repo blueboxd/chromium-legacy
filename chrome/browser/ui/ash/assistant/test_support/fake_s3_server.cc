@@ -183,12 +183,6 @@ void FakeS3Server::UnsetFakeS3ServerURI() {
 }
 
 void FakeS3Server::StartS3ServerProcess(FakeS3Mode mode) {
-  if (process_running_) {
-    LOG(WARNING)
-        << "Called FakeS3Server::StartS3ServerProcess when already running.";
-    return;
-  }
-
   base::FilePath fake_s3_server_main =
       GetExecutableDir().Append(FILE_PATH_LITERAL(kFakeS3ServerBinary));
 
@@ -199,17 +193,10 @@ void FakeS3Server::StartS3ServerProcess(FakeS3Mode mode) {
   AppendArgument(&command_line, "--test_data_file", GetTestDataFileName());
 
   fake_s3_server_ = base::LaunchProcess(command_line, base::LaunchOptions{});
-  process_running_ = true;
 }
 
 void FakeS3Server::StopS3ServerProcess() {
-  if (!process_running_) {
-    LOG(WARNING)
-        << "Called FakeS3Server::StopS3ServerProcess when already stopped.";
-    return;
-  }
   fake_s3_server_.Terminate(/*exit_code=*/0, /*wait=*/true);
-  process_running_ = false;
 }
 
 std::string FakeS3Server::GetTestDataFileName() {

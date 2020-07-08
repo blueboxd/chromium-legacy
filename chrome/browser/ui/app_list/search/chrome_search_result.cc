@@ -8,8 +8,15 @@
 
 #include "base/containers/adapters.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
-#include "chrome/common/string_matching/tokenized_string.h"
-#include "chrome/common/string_matching/tokenized_string_match.h"
+#include "chromeos/components/string_matching/tokenized_string.h"
+#include "chromeos/components/string_matching/tokenized_string_match.h"
+
+namespace {
+
+using chromeos::string_matching::TokenizedString;
+using chromeos::string_matching::TokenizedStringMatch;
+
+}  // namespace
 
 ChromeSearchResult::ChromeSearchResult()
     : metadata_(std::make_unique<ash::SearchResultMetadata>()) {}

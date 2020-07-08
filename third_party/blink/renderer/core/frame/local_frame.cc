@@ -35,6 +35,7 @@
 #include <utility>
 
 #include "base/metrics/histogram_functions.h"
+#include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/data_decoder/public/mojom/resource_snapshot_for_web_bundle.mojom-blink.h"
@@ -1915,7 +1916,10 @@ void LocalFrame::UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) {
 }
 
 const base::UnguessableToken& LocalFrame::GetAgentClusterId() const {
-  return DomWindow()->GetAgentClusterID();
+  if (LocalDOMWindow* window = DomWindow()) {
+    return window->GetAgentClusterID();
+  }
+  return base::UnguessableToken::Null();
 }
 
 mojom::blink::ReportingServiceProxy* LocalFrame::GetReportingService() {

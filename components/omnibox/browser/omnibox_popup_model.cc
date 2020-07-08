@@ -171,14 +171,14 @@ void OmniboxPopupModel::SetSelection(Selection new_selection,
   TemplateURLService* service = edit_model_->client()->GetTemplateURLService();
   match.GetKeywordUIState(service, &keyword, &is_keyword_hint);
 
-  if (selection_.state == HEADER_BUTTON_FOCUSED) {
+  if (selection_.state == FOCUSED_BUTTON_HEADER) {
     // If the new selection is a Header, the temporary text is an empty string.
     edit_model_->OnPopupDataChanged(base::string16(),
                                     /*is_temporary_text=*/true,
                                     base::string16(), keyword, is_keyword_hint,
                                     base::string16());
   } else if (old_selection.line != selection_.line ||
-             old_selection.state == HEADER_BUTTON_FOCUSED) {
+             old_selection.state == FOCUSED_BUTTON_HEADER) {
     // Otherwise, only update the edit model for line number changes, or
     // when the old selection was a Header. Updating the edit model for every
     // state change breaks keyword mode.
@@ -254,10 +254,10 @@ void OmniboxPopupModel::OnResultChanged() {
   if (result.default_match()) {
     Selection selection(0, selected_line_state());
 
-    // If selected line state was |BUTTON_FOCUSED| and nothing has changed,
-    // leave it.
+    // If selected line state was |BUTTON_FOCUSED_TAB_SWITCH| and nothing has
+    // changed leave it.
     const bool has_focused_match =
-        selection.state == BUTTON_FOCUSED &&
+        selection.state == FOCUSED_BUTTON_TAB_SWITCH &&
         result.match_at(selection.line).has_tab_match;
     const bool has_changed =
         selection.line != old_selected_line ||
@@ -347,7 +347,7 @@ OmniboxPopupModel::GetAllAvailableSelectionsSorted(Direction direction,
   } else {
     // Arrow keys should never reach the header controls.
     if (step == kStateOrLine)
-      all_states.push_back(HEADER_BUTTON_FOCUSED);
+      all_states.push_back(FOCUSED_BUTTON_HEADER);
 
     all_states.push_back(NORMAL);
 
@@ -368,7 +368,8 @@ OmniboxPopupModel::GetAllAvailableSelectionsSorted(Direction direction,
           all_states.push_back(KEYWORD);
         }
       }
-      all_states.push_back(BUTTON_FOCUSED);
+      all_states.push_back(FOCUSED_BUTTON_REMOVE_SUGGESTION);
+      all_states.push_back(FOCUSED_BUTTON_TAB_SWITCH);
     }
   }
   DCHECK(std::is_sorted(all_states.begin(), all_states.end()))
@@ -490,7 +491,7 @@ bool OmniboxPopupModel::IsControlPresentOnMatch(Selection selection) const {
   const auto& match = result().match_at(selection.line);
   // Skip rows that are hidden because their header is collapsed, unless the
   // user is trying to focus the header itself (which is still shown).
-  if (selection.state != HEADER_BUTTON_FOCUSED &&
+  if (selection.state != FOCUSED_BUTTON_HEADER &&
       match.suggestion_group_id.has_value() && pref_service_ &&
       omnibox::IsSuggestionGroupIdHidden(pref_service_,
                                          match.suggestion_group_id.value())) {
@@ -498,7 +499,7 @@ bool OmniboxPopupModel::IsControlPresentOnMatch(Selection selection) const {
   }
 
   switch (selection.state) {
-    case HEADER_BUTTON_FOCUSED: {
+    case FOCUSED_BUTTON_HEADER: {
       // For the first match, if it a suggestion_group_id, then it has a header.
       if (selection.line == 0)
         return match.suggestion_group_id.has_value();
@@ -513,33 +514,29 @@ bool OmniboxPopupModel::IsControlPresentOnMatch(Selection selection) const {
       return true;
     case KEYWORD:
       return match.associated_keyword != nullptr;
-    case BUTTON_FOCUSED: {
-      // TODO(orinj): Here is an opportunity to clean up the presentational
-      //  logic that pkasting wanted to take out of AutocompleteMatch. The view
-      //  should be driven by the model, so this is really the place to decide.
-      //  In other words, this duplicates logic within OmniboxResultView.
-      //  This is the proper place. OmniboxResultView should refer to here.
 
-      // Buttons are suppressed for matches with an associated keyword.
-      if (match.associated_keyword != nullptr)
-        return false;
-      if (match.ShouldShowTabMatchButton())
-        return true;
-      if (match.SupportsDeletion())
-        return true;
-
-      return false;
-    }
+    // TODO(orinj): Here is an opportunity to clean up the presentational
+    //  logic that pkasting wanted to take out of AutocompleteMatch. The view
+    //  should be driven by the model, so this is really the place to decide.
+    //  In other words, this duplicates logic within OmniboxResultView.
+    //  This is the proper place. OmniboxResultView should refer to here.
     case FOCUSED_BUTTON_REMOVE_SUGGESTION:
-      // Buttons are suppressed for matches with an associated keyword.
-      if (match.associated_keyword != nullptr)
-        return false;
-
-      return match.SupportsDeletion();
+      // Remove suggestion buttons are suppressed for matches with an associated
+      // keyword or tab match, unless dedicated button row is enabled.
+      if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled())
+        return match.SupportsDeletion();
+      else
+        return !match.associated_keyword && !match.has_tab_match &&
+               match.SupportsDeletion();
     case FOCUSED_BUTTON_KEYWORD:
       return match.associated_keyword != nullptr;
     case FOCUSED_BUTTON_TAB_SWITCH:
-      return match.has_tab_match;
+      // Buttons are suppressed for matches with an associated keyword, unless
+      // dedicated button row is enabled.
+      if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled())
+        return match.has_tab_match;
+      else
+        return match.ShouldShowTabMatchButton();
     case FOCUSED_BUTTON_PEDAL:
       return match.pedal != nullptr;
     default:
@@ -558,7 +555,7 @@ bool OmniboxPopupModel::TriggerSelectionAction(Selection selection,
 
   auto& match = result().match_at(selection.line);
   switch (selection.state) {
-    case HEADER_BUTTON_FOCUSED:
+    case FOCUSED_BUTTON_HEADER:
       DCHECK(match.suggestion_group_id.has_value());
       omnibox::ToggleSuggestionGroupIdVisibility(
           pref_service_, match.suggestion_group_id.value());
@@ -615,7 +612,7 @@ base::string16 OmniboxPopupModel::GetAccessibilityLabelForCurrentSelection(
 
   int additional_message_id = 0;
   switch (selection_.state) {
-    case HEADER_BUTTON_FOCUSED: {
+    case FOCUSED_BUTTON_HEADER: {
       bool group_hidden = omnibox::IsSuggestionGroupIdHidden(
           pref_service_, match.suggestion_group_id.value());
       int message_id = group_hidden ? IDS_ACC_HEADER_SHOW_SUGGESTIONS_BUTTON
@@ -634,13 +631,6 @@ base::string16 OmniboxPopupModel::GetAccessibilityLabelForCurrentSelection(
     case KEYWORD:
       // TODO(tommycli): Investigate whether the accessibility messaging for
       // Keyword mode belongs here.
-      break;
-    case BUTTON_FOCUSED:
-      if (IsControlPresentOnMatch(Selection(line, FOCUSED_BUTTON_TAB_SWITCH))) {
-        additional_message_id = IDS_ACC_TAB_SWITCH_BUTTON_FOCUSED_PREFIX;
-      } else if (match.SupportsDeletion()) {
-        additional_message_id = IDS_ACC_REMOVE_SUGGESTION_FOCUSED_PREFIX;
-      }
       break;
     case FOCUSED_BUTTON_REMOVE_SUGGESTION:
       additional_message_id = IDS_ACC_REMOVE_SUGGESTION_FOCUSED_PREFIX;

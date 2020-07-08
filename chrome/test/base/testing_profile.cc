@@ -117,7 +117,6 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"

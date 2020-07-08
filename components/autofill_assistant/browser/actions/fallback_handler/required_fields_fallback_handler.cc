@@ -24,6 +24,8 @@ const char kSelectElementTag[] = "SELECT";
 AutofillErrorInfoProto::AutofillFieldError* AddAutofillError(
     const RequiredField& required_field,
     ClientStatus* client_status) {
+  client_status->set_proto_status(
+      ProcessedActionStatusProto::AUTOFILL_INCOMPLETE);
   auto* field_error = client_status->mutable_details()
                           ->mutable_autofill_error_info()
                           ->add_autofill_field_error();

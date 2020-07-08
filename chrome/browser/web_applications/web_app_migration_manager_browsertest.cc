@@ -153,6 +153,7 @@ class WebAppMigrationManagerBrowserTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
     bool started = CreateWebAppFromManifest(
         browser()->tab_strip_model()->GetActiveWebContents(),
+        /*bypass_service_worker_check=*/false,
         WebappInstallSource::OMNIBOX_INSTALL_ICON,
         base::BindLambdaForTesting(
             [&](const AppId& installed_app_id, InstallResultCode code) {

@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
 class BrowserFrame;
@@ -140,6 +141,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   }
 
  protected:
+  // Called when |frame_|'s "paint as active" state has changed.
+  virtual void PaintAsActiveChanged();
+
   // Converts an ActiveState to a bool representing whether the frame should be
   // treated as active.
   bool ShouldPaintAsActive(BrowserFrameActiveState active_state) const;
@@ -153,7 +157,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // views::NonClientFrameView:
   void ChildPreferredSizeChanged(views::View* child) override;
-  void PaintAsActiveChanged() override;
   bool DoesIntersectRect(const views::View* target,
                          const gfx::Rect& rect) const override;
 
@@ -194,6 +197,12 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // Menu button and page status icons. Only used by web-app windows.
   WebAppFrameToolbarView* web_app_frame_toolbar_ = nullptr;
+
+  std::unique_ptr<views::Widget::PaintAsActiveCallbackList::Subscription>
+      paint_as_active_subscription_ =
+          frame_->RegisterPaintAsActiveChangedCallback(base::BindRepeating(
+              &BrowserNonClientFrameView::PaintAsActiveChanged,
+              base::Unretained(this)));
 
   ScopedObserver<TabStrip, TabStripObserver> tab_strip_observer_{this};
 

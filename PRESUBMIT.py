@@ -453,6 +453,14 @@ _BANNED_CPP_FUNCTIONS = (
         ),
     ),
     (
+      r'/\WX?(((Width|Height)(MM)?OfScreen)|(Display(Width|Height)))\(',
+      (
+       'Use the corresponding fields in x11::Screen instead.',
+      ),
+      True,
+      (),
+    ),
+    (
       r'/XInternAtom|xcb_intern_atom',
       (
        'Use gfx::GetAtom() instead of interning atoms directly.',

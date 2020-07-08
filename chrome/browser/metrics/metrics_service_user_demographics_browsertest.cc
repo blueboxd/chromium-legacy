@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
@@ -91,12 +92,20 @@ class MetricsServiceUserDemographicsBrowserTest
   DISALLOW_COPY_AND_ASSIGN(MetricsServiceUserDemographicsBrowserTest);
 };
 
+// https://crbug.com/1102747
+#if defined(OS_ANDROID)
+#define MAYBE_AddSyncedUserBirthYearAndGenderToProtoData \
+  DISABLED_AddSyncedUserBirthYearAndGenderToProtoData
+#else
+#define MAYBE_AddSyncedUserBirthYearAndGenderToProtoData \
+  AddSyncedUserBirthYearAndGenderToProtoData
+#endif
 // TODO(crbug/1016118): Add the remaining test cases.
 // Keep this test in sync with testUMADemographicsReportingWithFeatureEnabled
 // and testUMADemographicsReportingWithFeatureDisabled in
 // ios/chrome/browser/metrics/demographics_egtest.mm.
 IN_PROC_BROWSER_TEST_P(MetricsServiceUserDemographicsBrowserTest,
-                       AddSyncedUserBirthYearAndGenderToProtoData) {
+                       MAYBE_AddSyncedUserBirthYearAndGenderToProtoData) {
   test::DemographicsTestParams param = GetParam();
 
   base::HistogramTester histogram;

@@ -156,6 +156,7 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
 
         RequiredField fallbackTextField =
                 (RequiredField) RequiredField.newBuilder()
+                        .setForced(true) // Make sure we do actual work.
                         .setValueExpression("${57}")
                         .setElement(SelectorProto.newBuilder().addFilters(
                                 SelectorProto.Filter.newBuilder().setCssSelector(
@@ -217,6 +218,84 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
         assertThat(getElementValue(getWebContents(), "exp_year"), is("2050"));
         assertThat(getElementValue(getWebContents(), "fallback_entry"), is("12/2050"));
         assertThat(getElementValue(getWebContents(), "js_dropdown_value"), is("2050"));
+    }
+
+    @Test
+    @MediumTest
+    public void testFailingAutofillSendsProperError() throws Exception {
+        String profileId = mHelper.addDummyProfile("John Doe", "johndoe@gmail.com");
+        mHelper.addDummyCreditCard(profileId);
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setCollectUserData(CollectUserDataProto.newBuilder()
+                                                    .setRequestPaymentMethod(true)
+                                                    .setBillingAddressName("billing_address")
+                                                    .addSupportedBasicCardNetworks("visa")
+                                                    .setPrivacyNoticeText("3rd party privacy text")
+                                                    .setShowTermsAsCheckbox(true)
+                                                    .setRequestTermsAndConditions(true)
+                                                    .setAcceptTermsAndConditionsText("accept terms")
+                                                    .setTermsAndConditionsState(
+                                                            TermsAndConditionsState.ACCEPTED))
+                        .build());
+
+        RequiredField fallbackTextField =
+                (RequiredField) RequiredField.newBuilder()
+                        .setForced(true) // Make sure we fail here while trying to fill the field.
+                        .setValueExpression("${-99}") // Use non-existent key to force an error.
+                        .setElement(SelectorProto.newBuilder().addFilters(
+                                SelectorProto.Filter.newBuilder().setCssSelector(
+                                        "#fallback_entry")))
+                        .setFillStrategy(KeyboardValueFillStrategy.SIMULATE_KEY_PRESSES)
+                        .build();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setUseCard(
+                                 UseCreditCardProto.newBuilder()
+                                         .setFormFieldElement(SelectorProto.newBuilder().addFilters(
+                                                 SelectorProto.Filter.newBuilder().setCssSelector(
+                                                         "#card_number")))
+                                         .addRequiredFields(fallbackTextField))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Payment")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("Continue"), isCompletelyDisplayed());
+        testService.setNextActions(new ArrayList<>());
+        onView(withText("Continue")).perform(click());
+        waitUntilViewMatchesCondition(withId(R.id.card_unmask_input), isCompletelyDisplayed());
+        onView(withId(R.id.card_unmask_input)).perform(typeText("123"));
+        onView(withId(R.id.positive_button)).perform(click());
+        testService.waitUntilGetNextActions(1);
+
+        List<ProcessedActionProto> processedActions = testService.getProcessedActions();
+        assertThat(processedActions, iterableWithSize(2));
+        assertThat(
+                processedActions.get(0).getStatus(), is(ProcessedActionStatusProto.ACTION_APPLIED));
+        ProcessedActionProto processedUseCard = processedActions.get(1);
+        assertThat(
+                processedUseCard.getStatus(), is(ProcessedActionStatusProto.AUTOFILL_INCOMPLETE));
+        assertThat(processedUseCard.hasStatusDetails(), is(true));
+        assertThat(processedUseCard.getStatusDetails().hasAutofillErrorInfo(), is(true));
+        assertThat(processedUseCard.getStatusDetails()
+                           .getAutofillErrorInfo()
+                           .getAutofillFieldErrorList(),
+                iterableWithSize(1));
+        assertThat(processedUseCard.getStatusDetails()
+                           .getAutofillErrorInfo()
+                           .getAutofillFieldError(0)
+                           .getNoFallbackValue(),
+                is(true));
     }
 
     /**

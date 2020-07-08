@@ -527,7 +527,8 @@ void KeyframeEffect::ClearEffects() {
   sampled_effect_ = nullptr;
   if (GetAnimation())
     GetAnimation()->RestartAnimationOnCompositor();
-  effect_target_->SetNeedsAnimationStyleRecalc();
+  if (!effect_target_->GetDocument().Lifecycle().InDetach())
+    effect_target_->SetNeedsAnimationStyleRecalc();
   auto* svg_element = DynamicTo<SVGElement>(effect_target_.Get());
   if (RuntimeEnabledFeatures::WebAnimationsSVGEnabled() && svg_element)
     svg_element->ClearWebAnimatedAttributes();

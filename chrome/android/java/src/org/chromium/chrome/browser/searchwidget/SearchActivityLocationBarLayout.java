@@ -160,7 +160,8 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
     //                is finalized after native has been initialized.
     private void focusTextBox() {
         if (!mUrlBar.hasFocus()) mUrlBar.requestFocus();
-        getAutocompleteCoordinator().setShowCachedZeroSuggestResults(true);
+        // Use cached suggestions only if native is not yet ready.
+        getAutocompleteCoordinator().setShowCachedZeroSuggestResults(!mNativeLibraryReady);
 
         new Handler().post(new Runnable() {
             @Override
@@ -168,5 +169,11 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
                 getWindowAndroid().getKeyboardDelegate().showKeyboard(mUrlBar);
             }
         });
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (!hasFocus) mUrlBar.clearFocus();
     }
 }

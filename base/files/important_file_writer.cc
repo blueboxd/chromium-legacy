@@ -118,7 +118,7 @@ void DeleteTmpFileWithRetry(File tmp_file,
   static constexpr TimeDelta kDeleteFileRetryDelay =
       TimeDelta::FromMilliseconds(250);
 
-  if (!DeleteFile(tmp_file_path, /*recursive=*/false)) {
+  if (!DeleteFile(tmp_file_path)) {
     const auto last_file_error = File::GetLastFileError();
     if (++attempt >= kMaxDeleteAttempts) {
       // All retries have been exhausted; record the final error.

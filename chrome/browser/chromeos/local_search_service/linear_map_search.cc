@@ -10,12 +10,15 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/local_search_service/search_utils.h"
-#include "chrome/common/string_matching/fuzzy_tokenized_string_match.h"
-#include "chrome/common/string_matching/tokenized_string.h"
+#include "chromeos/components/string_matching/fuzzy_tokenized_string_match.h"
+#include "chromeos/components/string_matching/tokenized_string.h"
 
 namespace local_search_service {
 
 namespace {
+
+using chromeos::string_matching::FuzzyTokenizedStringMatch;
+using chromeos::string_matching::TokenizedString;
 
 using Positions = std::vector<local_search_service::Position>;
 using TokenizedStringWithId =

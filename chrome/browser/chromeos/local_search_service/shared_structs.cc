@@ -10,8 +10,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/local_search_service/linear_map_search.h"
-#include "chrome/common/string_matching/fuzzy_tokenized_string_match.h"
-#include "chrome/common/string_matching/tokenized_string.h"
+#include "chromeos/components/string_matching/fuzzy_tokenized_string_match.h"
+#include "chromeos/components/string_matching/tokenized_string.h"
 
 namespace local_search_service {
 

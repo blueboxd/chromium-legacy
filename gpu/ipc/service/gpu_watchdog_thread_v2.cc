@@ -9,6 +9,7 @@
 #include "base/bind_helpers.h"
 #include "base/bit_cast.h"
 #include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
@@ -17,6 +18,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/native_library.h"
 #include "base/power_monitor/power_monitor.h"
+#include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/threading/platform_thread.h"
@@ -25,6 +27,7 @@
 #include "build/build_config.h"
 #include "gpu/config/gpu_crash_keys.h"
 #include "gpu/config/gpu_finch_features.h"
+#include "gpu/ipc/common/result_codes.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -680,8 +683,12 @@ void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
   auto last_arm_disarm_counter = ReadArmDisarmCounter();
   base::debug::Alias(&last_arm_disarm_counter);
 
-  // Deliberately crash the process to create a crash dump.
-  *static_cast<volatile int*>(nullptr) = 0x1337;
+  // Use RESULT_CODE_HUNG so this crash is separated from other
+  // EXCEPTION_ACCESS_VIOLATION buckets for UMA analysis.
+  // Create a crash dump first. TerminateCurrentProcessImmediately will not
+  // create a dump.
+  base::debug::DumpWithoutCrashing();
+  base::Process::TerminateCurrentProcessImmediately(RESULT_CODE_HUNG);
 }
 
 void GpuWatchdogThreadImplV2::GpuWatchdogHistogram(

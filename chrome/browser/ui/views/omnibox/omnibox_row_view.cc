@@ -60,7 +60,7 @@ class OmniboxRowView::HeaderView : public views::View,
              row_view_->popup_model_->selection() ==
                  OmniboxPopupModel::Selection(
                      row_view_->line_,
-                     OmniboxPopupModel::HEADER_BUTTON_FOCUSED);
+                     OmniboxPopupModel::FOCUSED_BUTTON_HEADER);
     });
 
     if (row_view_->pref_service_) {
@@ -129,7 +129,7 @@ class OmniboxRowView::HeaderView : public views::View,
     DCHECK_EQ(sender, header_toggle_button_);
     row_view_->popup_model_->TriggerSelectionAction(
         OmniboxPopupModel::Selection(row_view_->line_,
-                                     OmniboxPopupModel::HEADER_BUTTON_FOCUSED));
+                                     OmniboxPopupModel::FOCUSED_BUTTON_HEADER));
     // The PrefChangeRegistrar will update the actual button toggle state.
   }
 
@@ -138,7 +138,7 @@ class OmniboxRowView::HeaderView : public views::View,
     OmniboxPartState part_state = OmniboxPartState::NORMAL;
     if (row_view_->popup_model_->selection() ==
         OmniboxPopupModel::Selection(
-            row_view_->line_, OmniboxPopupModel::HEADER_BUTTON_FOCUSED)) {
+            row_view_->line_, OmniboxPopupModel::FOCUSED_BUTTON_HEADER)) {
       part_state = OmniboxPartState::SELECTED;
     } else if (IsMouseHovered()) {
       part_state = OmniboxPartState::HOVERED;
@@ -255,7 +255,7 @@ void OmniboxRowView::OnSelectionStateChanged() {
 views::View* OmniboxRowView::GetActiveAuxiliaryButtonForAccessibility() const {
   DCHECK(popup_model_->selection().IsButtonFocused());
   if (popup_model_->selected_line_state() ==
-      OmniboxPopupModel::HEADER_BUTTON_FOCUSED) {
+      OmniboxPopupModel::FOCUSED_BUTTON_HEADER) {
     return header_view_->header_toggle_button();
   }
 

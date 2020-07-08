@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace views {
@@ -77,7 +78,6 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView {
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
   void SizeConstraintsChanged() override;
-  void PaintAsActiveChanged() override;
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
@@ -120,6 +120,9 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView {
   // held by the HeaderView. Used in testing.
   FrameCaptionButtonContainerView* GetFrameCaptionButtonContainerViewForTest();
 
+  // Called when |frame_|'s "paint as active" state has changed.
+  void PaintAsActiveChanged();
+
   // Not owned.
   views::Widget* const frame_;
 
@@ -129,6 +132,12 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView {
   OverlayView* overlay_view_ = nullptr;
 
   std::unique_ptr<NonClientFrameViewAshImmersiveHelper> immersive_helper_;
+
+  std::unique_ptr<views::Widget::PaintAsActiveCallbackList::Subscription>
+      paint_as_active_subscription_ =
+          frame_->RegisterPaintAsActiveChangedCallback(
+              base::BindRepeating(&NonClientFrameViewAsh::PaintAsActiveChanged,
+                                  base::Unretained(this)));
 
   base::WeakPtrFactory<NonClientFrameViewAsh> weak_factory_{this};
 

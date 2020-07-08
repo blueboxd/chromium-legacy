@@ -2193,6 +2193,9 @@ base::string16 BrowserView::GetAccessibleTabLabel(bool include_app_name,
     case TabAlertState::BLUETOOTH_CONNECTED:
       return l10n_util::GetStringFUTF16(
           IDS_TAB_AX_LABEL_BLUETOOTH_CONNECTED_FORMAT, title);
+    case TabAlertState::BLUETOOTH_SCAN_ACTIVE:
+      return l10n_util::GetStringFUTF16(
+          IDS_TAB_AX_LABEL_BLUETOOTH_SCAN_ACTIVE_FORMAT, title);
     case TabAlertState::HID_CONNECTED:
       return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_HID_CONNECTED_FORMAT,
                                         title);

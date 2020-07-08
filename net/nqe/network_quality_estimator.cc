@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/check_op.h"
 #include "base/location.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_functions.h"
@@ -29,6 +30,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "net/base/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
@@ -37,6 +39,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_status_code.h"
+#include "net/nqe/connectivity_monitor.h"
 #include "net/nqe/network_quality_estimator_util.h"
 #include "net/nqe/throughput_analyzer.h"
 #include "net/nqe/weighted_observation.h"
@@ -179,7 +182,8 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       net_log_(NetLogWithSource::Make(
           net_log,
           net::NetLogSourceType::NETWORK_QUALITY_ESTIMATOR)),
-      event_creator_(net_log_) {
+      event_creator_(net_log_),
+      connectivity_monitor_(std::make_unique<ConnectivityMonitor>()) {
   DCHECK_EQ(nqe::internal::OBSERVATION_CATEGORY_COUNT,
             base::size(rtt_ms_observations_));
 
@@ -286,6 +290,7 @@ void NetworkQualityEstimator::NotifyStartTransaction(
   }
   throughput_analyzer_->NotifyStartTransaction(request);
   network_congestion_analyzer_.NotifyStartTransaction(request);
+  connectivity_monitor_->TrackNewRequest(request);
 }
 
 bool NetworkQualityEstimator::IsHangingRequest(
@@ -385,6 +390,7 @@ void NetworkQualityEstimator::NotifyHeadersReceived(
   throughput_analyzer_->NotifyBytesRead(request);
   throughput_analyzer_->NotifyExpectedResponseContentSize(
       request, request.GetExpectedContentSize());
+  connectivity_monitor_->NotifyRequestProgress(request);
 }
 
 void NetworkQualityEstimator::NotifyBytesRead(
@@ -392,6 +398,7 @@ void NetworkQualityEstimator::NotifyBytesRead(
     int64_t prefilter_total_bytes_read) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   throughput_analyzer_->NotifyBytesRead(request);
+  connectivity_monitor_->NotifyRequestProgress(request);
 }
 
 void NetworkQualityEstimator::NotifyRequestCompleted(
@@ -405,6 +412,7 @@ void NetworkQualityEstimator::NotifyRequestCompleted(
 
   throughput_analyzer_->NotifyRequestCompleted(request);
   network_congestion_analyzer_.NotifyRequestCompleted(request);
+  connectivity_monitor_->NotifyRequestCompleted(request);
 }
 
 void NetworkQualityEstimator::NotifyURLRequestDestroyed(
@@ -415,6 +423,7 @@ void NetworkQualityEstimator::NotifyURLRequestDestroyed(
     return;
 
   throughput_analyzer_->NotifyRequestCompleted(request);
+  connectivity_monitor_->NotifyRequestCompleted(request);
 }
 
 void NetworkQualityEstimator::AddRTTObserver(RTTObserver* rtt_observer) {
@@ -573,6 +582,7 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
 
   GatherEstimatesForNextConnectionType();
   throughput_analyzer_->OnConnectionTypeChanged();
+  connectivity_monitor_->NotifyConnectionTypeChanged(type);
 }
 
 void NetworkQualityEstimator::GatherEstimatesForNextConnectionType() {

@@ -64,12 +64,6 @@ void XDisplayManager::RemoveObserver(display::DisplayObserver* observer) {
 
 bool XDisplayManager::ProcessEvent(x11::Event* xev) {
   DCHECK(xev);
-  if (xev->As<x11::RandR::ScreenChangeNotifyEvent>()) {
-    // TODO(https://crbug.com/1102059): Remove this since the Xlib even is
-    // nullptr since we don't initialize the extension, which causes a crash.
-    XRRUpdateConfiguration(&xev->xlib_event());
-    return true;
-  }
   auto* prop = xev->As<x11::PropertyNotifyEvent>();
   if (xev->As<x11::RandR::NotifyEvent>() ||
       (prop && prop->atom == gfx::GetAtom("_NET_WORKAREA"))) {

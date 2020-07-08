@@ -48,6 +48,9 @@ std::vector<TabAlertState> GetTabAlertStatesForContents(
   if (contents->IsConnectedToBluetoothDevice())
     states.push_back(TabAlertState::BLUETOOTH_CONNECTED);
 
+  if (contents->IsScanningForBluetoothDevices())
+    states.push_back(TabAlertState::BLUETOOTH_SCAN_ACTIVE);
+
   UsbTabHelper* usb_tab_helper = UsbTabHelper::FromWebContents(contents);
   if (usb_tab_helper && usb_tab_helper->IsDeviceConnected())
     states.push_back(TabAlertState::USB_CONNECTED);
@@ -101,6 +104,9 @@ base::string16 GetTabAlertStateText(const TabAlertState alert_state) {
     case TabAlertState::BLUETOOTH_CONNECTED:
       return l10n_util::GetStringUTF16(
           IDS_TOOLTIP_TAB_ALERT_STATE_BLUETOOTH_CONNECTED);
+    case TabAlertState::BLUETOOTH_SCAN_ACTIVE:
+      return l10n_util::GetStringUTF16(
+          IDS_TOOLTIP_TAB_ALERT_STATE_BLUETOOTH_SCAN_ACTIVE);
     case TabAlertState::USB_CONNECTED:
       return l10n_util::GetStringUTF16(
           IDS_TOOLTIP_TAB_ALERT_STATE_USB_CONNECTED);

@@ -28,7 +28,6 @@
 #include "components/cast_channel/enum_table.h"
 #include "components/mirroring/mojom/session_parameters.mojom-forward.h"
 #include "components/mirroring/mojom/session_parameters.mojom.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/ip_address.h"

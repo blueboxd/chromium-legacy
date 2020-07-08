@@ -3234,6 +3234,46 @@ Unknown properties are collapsed to zero. -->
   <int value="9" label="Timeout"/>
 </enum>
 
+<!-- These values must be in sync with ProvisionConstants in CloudDPC code -->
+
+<enum name="ArcProvisioningCloudFlowError">
+  <summary>Defines Arc Cloud DPC Provisioning failure reasons</summary>
+  <int value="0" label="Unknown or uncommon error"/>
+  <int value="1" label="Enrollment token provided was invalid"/>
+  <int value="2" label="Enterprise hit device quota"/>
+  <int value="3"
+      label="CloudDPS could not fulfill request because of a transient error"/>
+  <int value="4" label="Account could not be added"/>
+  <int value="5" label="Could not get Android ID"/>
+  <int value="6" label="Device got stuck in quarantine mode"/>
+  <int value="7" label="Setup step timed out"/>
+  <int value="8"
+      label="There was no network, so device couldn't fulfill a request"/>
+  <int value="9" label="Enterprise is not registered with CloudDPx"/>
+  <int value="10" label="User cancelled the step"/>
+  <int value="11"
+      label="Either account migration failed or account was deleted by user
+             during provisioning"/>
+  <int value="12" label="Policy got stuck in invalid state"/>
+  <int value="13" label="Issues with DpcSupport"/>
+  <int value="14" label="Account wad not ready"/>
+  <int value="15" label="Checkin failed"/>
+  <int value="16" label="Issues with whitelisting work account"/>
+  <int value="17" label="Error parsing JSON, most likely policy JSON"/>
+  <int value="18" label="ManagedProvisioning failed"/>
+  <int value="19" label="Setup intent could not be parsed"/>
+  <int value="20" label="CloudDPS exception with an uncommon server code"/>
+  <int value="21"
+      label="Removing a previously existing unmanaged account failed"/>
+  <int value="22" label="Error with getting OAuth token"/>
+  <int value="23" label="AccountException with no exception details"/>
+  <int value="24"
+      label="Error with getting OAuth token due to AuthenticatorException"/>
+  <int value="25" label="Error with getting OAuth token due to IOException"/>
+  <int value="26"
+      label="Error with getting OAuth token due to OperationCanceledException"/>
+</enum>
+
 <enum name="ArcProvisioningResult">
   <summary>Defines Arc Provisioning success and failure reasons</summary>
   <int value="0" label="Success"/>
@@ -3260,6 +3300,7 @@ Unknown properties are collapsed to zero. -->
   <int value="21" label="Already provisioned"/>
   <int value="22" label="Unsupported account type"/>
   <int value="23" label="Account is not present in Chrome"/>
+  <int value="24" label="Cloud provision flow failed"/>
 </enum>
 
 <enum name="ArcSdkVersionUpgradeType">

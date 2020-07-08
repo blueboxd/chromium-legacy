@@ -1032,11 +1032,17 @@ std::string Widget::GetName() const {
   return native_widget_->GetName();
 }
 
+std::unique_ptr<Widget::PaintAsActiveCallbackList::Subscription>
+Widget::RegisterPaintAsActiveChangedCallback(
+    PaintAsActiveCallbackList::CallbackType callback) {
+  return paint_as_active_callbacks_.Add(std::move(callback));
+}
+
 std::unique_ptr<Widget::PaintAsActiveLock> Widget::LockPaintAsActive() {
   const bool was_paint_as_active = ShouldPaintAsActive();
   ++paint_as_active_refcount_;
   if (ShouldPaintAsActive() != was_paint_as_active)
-    UpdatePaintAsActiveState();
+    paint_as_active_callbacks_.Notify();
   return std::make_unique<PaintAsActiveLockImpl>(
       weak_ptr_factory_.GetWeakPtr());
 }
@@ -1086,7 +1092,7 @@ bool Widget::OnNativeWidgetActivationChanged(bool active) {
   const bool was_paint_as_active = ShouldPaintAsActive();
   native_widget_active_ = active;
   if (ShouldPaintAsActive() != was_paint_as_active)
-    UpdatePaintAsActiveState();
+    paint_as_active_callbacks_.Notify();
 
   return true;
 }
@@ -1624,15 +1630,7 @@ void Widget::UnlockPaintAsActive() {
   DCHECK_GT(paint_as_active_refcount_, 0U);
   --paint_as_active_refcount_;
   if (ShouldPaintAsActive() != was_paint_as_active)
-    UpdatePaintAsActiveState();
-}
-
-void Widget::UpdatePaintAsActiveState() {
-  if (non_client_view_)
-    non_client_view_->frame_view()->PaintAsActiveChanged();
-
-  for (WidgetObserver& observer : observers_)
-    observer.OnWidgetPaintAsActiveChanged(this);
+    paint_as_active_callbacks_.Notify();
 }
 
 void Widget::ClearFocusFromWidget() {

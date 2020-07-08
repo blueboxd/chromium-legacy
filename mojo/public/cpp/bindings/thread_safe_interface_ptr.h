@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
@@ -56,10 +57,12 @@ class ThreadSafeForwarder : public ThreadSafeForwarderBase {
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       ForwardMessageCallback forward,
       ForwardMessageWithResponderCallback forward_with_responder,
+      ForceAsyncSendCallback force_async_send,
       const AssociatedGroup& associated_group)
       : ThreadSafeForwarderBase(std::move(task_runner),
                                 std::move(forward),
                                 std::move(forward_with_responder),
+                                std::move(force_async_send),
                                 associated_group),
         proxy_(this) {}
 
@@ -156,7 +159,7 @@ class ThreadSafeInterfacePtrBase
       return std::make_unique<ThreadSafeForwarder<InterfaceType>>(
           task_runner_, base::BindRepeating(&PtrWrapper::Accept, this),
           base::BindRepeating(&PtrWrapper::AcceptWithResponder, this),
-          associated_group_);
+          base::DoNothing(), associated_group_);
     }
 
    private:

@@ -529,7 +529,7 @@ crbug.com/478572 [ android qualcomm-adreno-(tm)-330 ] deqp/data/gles2/shaders/li
 crbug.com/678850 [ android qualcomm-adreno-(tm)-330 ] conformance/more/functions/vertexAttribPointerBadArgs.html [ Failure ]
 crbug.com/678850 [ android qualcomm-adreno-(tm)-330 ] conformance/attribs/gl-vertexattribpointer.html [ Failure ]
 crbug.com/709704 [ android qualcomm-adreno-(tm)-330 ] conformance/glsl/bugs/varying-arrays-should-not-be-reversed.html [ Failure ]
-crbug.com/1098311 [ android qualcomm-adreno-(tm)-330 ] conformance/glsl/misc/shader-with-non-reserved-words.html [ RetryOnFailure ]
+crbug.com/1098311 [ android qualcomm-adreno-(tm)-330 ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Failure ]
 
 # Nexus 5X
 # Was timing out randomly on android_optional_gpu_tests_rel, but became so

@@ -41,9 +41,9 @@ void GetColorModelForMode(int color_mode,
   constexpr char kCUPSColorModel[] = "ColorModel";
   constexpr char kCUPSPrintoutMode[] = "PrintoutMode";
   constexpr char kCUPSProcessColorModel[] = "ProcessColorModel";
-  constexpr char kCUPSInk[] = "Ink";
   constexpr char kCUPSBrotherMonoColor[] = "BRMonoColor";
   constexpr char kCUPSBrotherPrintQuality[] = "BRPrintQuality";
+  constexpr char kCUPSEpsonInk[] = "Ink";
   constexpr char kCUPSSharpARCMode[] = "ARCMode";
   constexpr char kCUPSXeroxXRXColor[] = "XRXColor";
 #else
@@ -51,9 +51,9 @@ void GetColorModelForMode(int color_mode,
   constexpr char kCUPSColorModel[] = "cups-ColorModel";
   constexpr char kCUPSPrintoutMode[] = "cups-PrintoutMode";
   constexpr char kCUPSProcessColorModel[] = "cups-ProcessColorModel";
-  constexpr char kCUPSInk[] = "cups-Ink";
   constexpr char kCUPSBrotherMonoColor[] = "cups-BRMonoColor";
   constexpr char kCUPSBrotherPrintQuality[] = "cups-BRPrintQuality";
+  constexpr char kCUPSEpsonInk[] = "cups-Ink";
   constexpr char kCUPSSharpARCMode[] = "cups-ARCMode";
   constexpr char kCUPSXeroxXRXColor[] = "cups-XRXColor";
 #endif  // defined(OS_MACOSX)
@@ -156,12 +156,12 @@ void GetColorModelForMode(int color_mode,
       *color_value = kBlack;
       break;
     case EPSON_INK_COLOR:
-      *color_setting_name = kCUPSInk;
-      *color_value = kColor;
+      *color_setting_name = kCUPSEpsonInk;
+      *color_value = kEpsonColor;
       break;
     case EPSON_INK_MONO:
-      *color_setting_name = kCUPSInk;
-      *color_value = kMono;
+      *color_setting_name = kCUPSEpsonInk;
+      *color_value = kEpsonMono;
       break;
     case SHARP_ARCMODE_CMCOLOR:
       *color_setting_name = kCUPSSharpARCMode;

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "device/vr/openxr/openxr_statics.h"
-
 #include "device/vr/openxr/openxr_util.h"
 
 namespace device {
@@ -17,8 +16,15 @@ OpenXrStatics::~OpenXrStatics() {
   }
 }
 
-bool OpenXrStatics::IsHardwareAvailable() {
+XrInstance OpenXrStatics::GetXrInstance() {
   if (instance_ == XR_NULL_HANDLE && XR_FAILED(CreateInstance(&instance_))) {
+    return XR_NULL_HANDLE;
+  }
+  return instance_;
+}
+
+bool OpenXrStatics::IsHardwareAvailable() {
+  if (GetXrInstance() == XR_NULL_HANDLE) {
     return false;
   }
 
@@ -27,15 +33,14 @@ bool OpenXrStatics::IsHardwareAvailable() {
 }
 
 bool OpenXrStatics::IsApiAvailable() {
-  return instance_ != XR_NULL_HANDLE ||
-         XR_SUCCEEDED(CreateInstance(&instance_));
+  return GetXrInstance() != XR_NULL_HANDLE;
 }
 
 #if defined(OS_WIN)
 // Returns the LUID of the adapter the OpenXR runtime is on. Returns {0, 0} if
 // the LUID could not be determined.
 LUID OpenXrStatics::GetLuid() {
-  if (!IsApiAvailable())
+  if (GetXrInstance() == XR_NULL_HANDLE)
     return {0, 0};
 
   XrSystemId system;

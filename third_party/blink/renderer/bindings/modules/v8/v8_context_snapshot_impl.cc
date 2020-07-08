@@ -278,6 +278,8 @@ v8::Local<v8::Context> V8ContextSnapshotImpl::CreateContext(
     v8::ExtensionConfiguration* extension_config,
     v8::Local<v8::Object> global_proxy,
     Document* document) {
+  DCHECK(document);
+
   V8PerIsolateData* per_isolate_data = V8PerIsolateData::From(isolate);
   if (per_isolate_data->GetV8ContextSnapshotMode() !=
       V8PerIsolateData::V8ContextSnapshotMode::kUseSnapshot) {
@@ -301,7 +303,7 @@ v8::Local<v8::Context> V8ContextSnapshotImpl::CreateContext(
   return v8::Context::FromSnapshot(
              isolate, WorldToIndex(world), internal_field_desrializer,
              extension_config, global_proxy,
-             html_document->GetExecutionContext()->GetMicrotaskQueue())
+             document->GetExecutionContext()->GetMicrotaskQueue())
       .ToLocalChecked();
 }
 

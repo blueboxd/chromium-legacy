@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_run_loop_timeout.h"
-#include "base/time/time.h"
 #include "chrome/browser/ui/ash/assistant/assistant_test_mixin.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
-#include "chromeos/services/assistant/service.h"
 #include "content/public/test/browser_test.h"
 
 namespace chromeos {
@@ -50,17 +49,12 @@ class AssistantBrowserTest : public MixinBasedInProcessBrowserTest,
 
   ~AssistantBrowserTest() override = default;
 
-  AssistantTestMixin* tester() { return &tester_; }
-
   void ShowAssistantUi() {
     if (!tester()->IsVisible())
       tester()->PressAssistantKey();
   }
 
-  void CloseAssistantUi() {
-    if (tester()->IsVisible())
-      tester()->PressAssistantKey();
-  }
+  AssistantTestMixin* tester() { return &tester_; }
 
   void InitializeBrightness() {
     auto* power_manager = chromeos::PowerManagerClient::Get();
@@ -228,30 +222,6 @@ IN_PROC_BROWSER_TEST_P(AssistantBrowserTest, ShouldTurnDownBrightness) {
   tester()->SendTextQuery("turn down brightness");
 
   ExpectBrightnessDown();
-}
-
-IN_PROC_BROWSER_TEST_P(AssistantBrowserTest,
-                       ShouldShowSingleErrorOnNetworkDown) {
-  tester()->StartAssistantAndWaitForReady();
-
-  ShowAssistantUi();
-
-  EXPECT_TRUE(tester()->IsVisible());
-
-  tester()->DisableFakeS3Server();
-
-  base::RunLoop().RunUntilIdle();
-
-  tester()->SendTextQuery("Is this thing on?");
-
-  tester()->ExpectErrorResponse(
-      "Something went wrong. Try again in a few seconds");
-
-  tester()->ExpectNoChange(base::TimeDelta::FromSeconds(1));
-
-  // This is necessary to prevent a UserInitiatedVoicelessActivity from blocking
-  // test harness teardown while we wait on assistant to finish the interaction.
-  CloseAssistantUi();
 }
 
 // We parameterize all AssistantBrowserTests to verify that they work for both

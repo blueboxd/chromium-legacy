@@ -57,11 +57,6 @@ class OmniboxPopupContentsView : public views::View,
   // Returns true if the line specified by |index| is selected.
   virtual bool IsSelectedIndex(size_t index) const;
 
-  // If the selected index has a tab switch button, whether it's "focused" via
-  // the tab key. Invalid if the selected index does not have a tab switch
-  // button.
-  bool IsButtonSelected() const;
-
   // Called by the active result view to inform model (due to mouse event).
   void UnselectButton();
 

@@ -60,10 +60,6 @@ config("xext") {
   libs = [ "Xext" ]
 }
 
-config("xrandr") {
-  libs = [ "Xrandr" ]
-}
-
 config("xfixes") {
   libs = [ "Xfixes" ]
 }

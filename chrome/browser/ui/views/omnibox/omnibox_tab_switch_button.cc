@@ -72,7 +72,8 @@ OmniboxTabSwitchButton::~OmniboxTabSwitchButton() = default;
 void OmniboxTabSwitchButton::StateChanged(ButtonState old_state) {
   if (state() == STATE_NORMAL && old_state == STATE_PRESSED) {
     SetMouseHandler(parent());
-    if (popup_contents_view_->IsButtonSelected())
+    if (popup_contents_view_->model()->selected_line_state() ==
+        OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH)
       popup_contents_view_->UnselectButton();
   }
   MdTextButton::StateChanged(old_state);
@@ -108,7 +109,8 @@ void OmniboxTabSwitchButton::ProvideWidthHint(int parent_width) {
 bool OmniboxTabSwitchButton::IsSelected() const {
   // Is this result selected and is button selected?
   return result_view_->IsMatchSelected() &&
-         popup_contents_view_->IsButtonSelected();
+         popup_contents_view_->model()->selected_line_state() ==
+             OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH;
 }
 
 int OmniboxTabSwitchButton::CalculateGoalWidth(int parent_width,

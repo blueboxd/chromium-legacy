@@ -15,10 +15,14 @@
 
 namespace device {
 
+// OpenXrStatics must outlive all other OpenXR objects. It owns the XrInstance
+// and will destroy it in the destructor.
 class DEVICE_VR_EXPORT OpenXrStatics {
  public:
   OpenXrStatics();
   ~OpenXrStatics();
+
+  XrInstance GetXrInstance();
 
   bool IsHardwareAvailable();
   bool IsApiAvailable();
@@ -33,4 +37,4 @@ class DEVICE_VR_EXPORT OpenXrStatics {
 
 }  // namespace device
 
-#endif  // DEVICE_VR_WINDOWS_MIXED_REALITY_MIXED_REALITY_STATICS_H_
+#endif  // DEVICE_VR_OPENXR_OPENXR_STATICS_H_

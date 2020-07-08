@@ -14,6 +14,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "ui/gfx/x/bigreq.h"
 #include "ui/gfx/x/event.h"
+#include "ui/gfx/x/randr.h"
 #include "ui/gfx/x/x11_switches.h"
 #include "ui/gfx/x/xproto_internal.h"
 #include "ui/gfx/x/xproto_types.h"
@@ -171,6 +172,7 @@ void Connection::Dispatch(Delegate* delegate) {
 
     Event event = std::move(events_.front());
     events_.pop_front();
+    PreDispatchEvent(event);
     delegate->DispatchXEvent(&event);
   };
 
@@ -211,6 +213,42 @@ void Connection::AddRequest(unsigned int sequence,
          CompareSequenceIds(requests_.back().sequence, sequence) < 0);
 
   requests_.emplace(sequence, std::move(callback));
+}
+
+void Connection::PreDispatchEvent(const Event& event) {
+  // This is adapted from XRRUpdateConfiguration.
+  if (auto* configure = event.As<x11::ConfigureNotifyEvent>()) {
+    int index = ScreenIndexFromRootWindow(configure->window);
+    if (index != -1) {
+      setup_.roots[index].width_in_pixels = configure->width;
+      setup_.roots[index].height_in_pixels = configure->height;
+    }
+  } else if (auto* screen = event.As<x11::RandR::ScreenChangeNotifyEvent>()) {
+    int index = ScreenIndexFromRootWindow(configure->window);
+    DCHECK_GE(index, 0);
+    bool portrait = static_cast<bool>(
+        screen->rotation &
+        (x11::RandR::Rotation::Rotate_90 | x11::RandR::Rotation::Rotate_270));
+    if (portrait) {
+      setup_.roots[index].width_in_pixels = screen->height;
+      setup_.roots[index].height_in_pixels = screen->width;
+      setup_.roots[index].width_in_millimeters = screen->mheight;
+      setup_.roots[index].height_in_millimeters = screen->mwidth;
+    } else {
+      setup_.roots[index].width_in_pixels = screen->width;
+      setup_.roots[index].height_in_pixels = screen->height;
+      setup_.roots[index].width_in_millimeters = screen->mwidth;
+      setup_.roots[index].height_in_millimeters = screen->mheight;
+    }
+  }
+}
+
+int Connection::ScreenIndexFromRootWindow(x11::Window root) const {
+  for (size_t i = 0; i < setup_.roots.size(); i++) {
+    if (setup_.roots[i].root == root)
+      return i;
+  }
+  return -1;
 }
 
 }  // namespace x11

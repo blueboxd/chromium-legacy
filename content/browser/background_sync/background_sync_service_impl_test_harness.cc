@@ -20,7 +20,6 @@
 #include "content/public/test/mock_permission_manager.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/test_background_sync_context.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/system/functions.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 

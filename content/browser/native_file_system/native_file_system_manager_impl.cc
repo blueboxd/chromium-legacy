@@ -28,6 +28,7 @@
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "net/base/escape.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "storage/browser/file_system/external_mount_points.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/file_system/file_system_url.h"
@@ -49,11 +50,30 @@ using HandleType = NativeFileSystemPermissionContext::HandleType;
 namespace {
 
 #if defined(OS_CHROMEOS)
-// Path prefix for Chrome OS File System Provider (FSP) file systems. Copied
-// here to avoid complex dependencies. See |kProvidedMountPointRoot| in
-// chrome/browser/chromeos/file_system_provider/mount_path_util.cc.
-// Files and directories provided by FSP API resides in this directory.
-static constexpr char kProvidedMountPointRoot[] = "/provided";
+storage::FileSystemType GetFileSystemTypeForCrackedPath(
+    const base::FilePath& cracked_path,
+    std::string* filesystem_id) {
+  // There is also an instance of ExternalMountPoints sitting in
+  // NativeFileSystemManagerImpl::context(), but ChromeOS registers its volumes
+  // in the system instance.
+  auto* external_mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
+  base::FilePath virtual_path;
+  if (!external_mount_points->GetVirtualPath(cracked_path, &virtual_path)) {
+    return storage::kFileSystemTypeUnknown;
+  }
+
+  storage::FileSystemType type;
+  storage::FileSystemMountOption mount_option;
+  std::string cracked_id;
+  base::FilePath path;
+  if (external_mount_points->CrackVirtualPath(virtual_path, filesystem_id,
+                                              &type, &cracked_id, &path,
+                                              &mount_option)) {
+    return type;
+  }
+  return storage::kFileSystemTypeUnknown;
+}
 #endif  // OS_CHROMEOS
 
 void ShowFilePickerOnUIThread(const url::Origin& requesting_origin,
@@ -354,16 +374,13 @@ void NativeFileSystemManagerImpl::DidResolveForSerializeHandle(
       break;
     }
 
+    default:
 #if defined(OS_CHROMEOS)
-    // For now, we don't support serializing handles for Chrome OS specific
-    // types, run |callback| with an empty vector to indicate an error.
-    case storage::kFileSystemTypeProvided:
-    case storage::kFileSystemTypeNativeForPlatformApp:
+      // For now, we don't support serializing handles for Chrome OS specific
+      // types, run |callback| with an empty vector to indicate an error.
       std::move(callback).Run({});
       return;
 #endif
-
-    default:
       NOTREACHED();
   }
 
@@ -851,22 +868,22 @@ NativeFileSystemManagerImpl::CreateFileSystemURLFromPath(
   DCHECK(isolated_context);
 
   FileSystemURLAndFSHandle result;
+  std::string filesystem_id;
   storage::FileSystemType fs_type = storage::kFileSystemTypeNativeLocal;
 
 #if defined(OS_CHROMEOS)
   // TODO(crbug.com/1093653): Support Chrome OS File System Provider in all Web
-  // Apps. For now, we only support FSP for WebUIs.
-  bool is_web_ui = HasWebUIScheme(origin.GetURL());
-  // Check the path prefix to determine if a file is provided by FSP API.
-  bool is_provided_path =
-      base::StartsWith(path.AsUTF8Unsafe(), kProvidedMountPointRoot,
-                       base::CompareCase::SENSITIVE);
-  if (is_web_ui && is_provided_path)
-    fs_type = storage::kFileSystemTypeNativeForPlatformApp;
+  // Apps. For now, we only support external filesystem types for WebUIs.
+  if (HasWebUIScheme(origin.GetURL())) {
+    storage::FileSystemType cracked_fs_type =
+        GetFileSystemTypeForCrackedPath(path, &filesystem_id);
+    if (cracked_fs_type != storage::kFileSystemTypeUnknown)
+      fs_type = cracked_fs_type;
+  }
 #endif
 
   result.file_system = isolated_context->RegisterFileSystemForPath(
-      fs_type, std::string(), path, &result.base_name);
+      fs_type, filesystem_id, path, &result.base_name);
 
   base::FilePath root_path =
       isolated_context->CreateVirtualRootPath(result.file_system.id());

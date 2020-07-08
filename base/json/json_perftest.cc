@@ -85,15 +85,13 @@ class JSONPerfTest : public testing::Test {
   }
 };
 
-// Times out on Android (crbug.com/906686).
-#if defined(OS_ANDROID)
-#define MAYBE_StressTest DISABLED_StressTest
-#else
-#define MAYBE_StressTest StressTest
-#endif
-TEST_F(JSONPerfTest, MAYBE_StressTest) {
+TEST_F(JSONPerfTest, StressTest) {
+  // These loop ranges are chosen such that this test will complete in a
+  // reasonable amount of time and will work on a 32-bit build without hitting
+  // an out-of-memory failure. Having j go to 10 uses over 2 GiB of memory and
+  // might hit Android timeouts so be wary of going that high.
   for (int i = 0; i < 4; ++i) {
-    for (int j = 0; j < 12; ++j) {
+    for (int j = 0; j < 10; ++j) {
       TestWriteAndRead(i + 1, j + 1);
     }
   }

@@ -815,34 +815,6 @@ void OmniboxViewViews::AnnounceFriendlySuggestionText() {
 }
 #endif
 
-bool OmniboxViewViews::MaybeTriggerSecondaryButton(const ui::KeyEvent& event) {
-  // TODO(tommycli): If we have a WebUI omnibox popup, we should move the
-  // secondary button logic out of the View and into the OmniboxPopupModel.
-  if (base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup))
-    return false;
-
-  if (model()->popup_model()->selected_line_state() !=
-      OmniboxPopupModel::BUTTON_FOCUSED)
-    return false;
-
-  OmniboxPopupModel* popup_model = model()->popup_model();
-  if (!popup_model)
-    return false;
-
-  size_t selected_line = popup_model->selected_line();
-  if (selected_line == OmniboxPopupModel::kNoMatch)
-    return false;
-
-  // TODO(tommycli): https://crbug.com/1063071
-  // Diving into |popup_view_| was a mistake. Here's a hotfix to stop the crash,
-  // but the ultimate fix should be to move this logic into OmniboxPopupModel.
-  if (!popup_view_ || popup_view_->result_view_at(selected_line) == nullptr)
-    return false;
-
-  return popup_view_->result_view_at(selected_line)
-      ->MaybeTriggerSecondaryButton(event);
-}
-
 void OmniboxViewViews::SetWindowTextAndCaretPos(const base::string16& text,
                                                 size_t caret_pos,
                                                 bool update_popup,
@@ -1898,8 +1870,6 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       if (popup_model && popup_model->TriggerSelectionAction(
                              popup_model->selection(), event.time_stamp())) {
         return true;
-      } else if (MaybeTriggerSecondaryButton(event)) {
-        return true;
       } else if ((alt && !shift) || (shift && command)) {
         model()->AcceptInput(WindowOpenDisposition::NEW_FOREGROUND_TAB,
                              event.time_stamp());
@@ -2055,9 +2025,6 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
                                popup_model->selection(), event.time_stamp())) {
           return true;
         }
-
-        if (MaybeTriggerSecondaryButton(event))
-          return true;
       }
       break;
     }

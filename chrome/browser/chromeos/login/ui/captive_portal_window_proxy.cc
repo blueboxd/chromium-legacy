@@ -120,11 +120,6 @@ void CaptivePortalWindowProxy::Close() {
 
 void CaptivePortalWindowProxy::OnRedirected() {
   if (GetState() == STATE_WAITING_FOR_REDIRECTION) {
-    if (!started_loading_at_.is_null()) {
-      UMA_HISTOGRAM_TIMES("CaptivePortal.RedirectTime",
-                          base::Time::Now() - started_loading_at_);
-      started_loading_at_ = base::Time();
-    }
     Show();
   }
   delegate_->OnPortalDetected();
@@ -162,7 +157,6 @@ void CaptivePortalWindowProxy::InitCaptivePortalView() {
     captive_portal_view_for_testing_ = captive_portal_view_.get();
   }
 
-  started_loading_at_ = base::Time::Now();
   captive_portal_view_->StartLoad();
 }
 

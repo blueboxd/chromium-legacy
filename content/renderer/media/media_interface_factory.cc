@@ -10,7 +10,6 @@
 #include "media/mojo/mojom/content_decryption_module.mojom.h"
 #include "media/mojo/mojom/renderer.mojom.h"
 #include "media/mojo/mojom/renderer_extensions.mojom.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 
 namespace content {

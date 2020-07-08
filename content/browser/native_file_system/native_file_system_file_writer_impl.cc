@@ -442,8 +442,8 @@ void NativeFileSystemFileWriterImpl::ComputeHashForSwapFile(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
 #if defined(OS_CHROMEOS)
+  // TOOD(crbug.com/1103076): Extend this check to non-native paths.
   DCHECK(swap_url().type() == storage::kFileSystemTypeNativeLocal ||
-         swap_url().type() == storage::kFileSystemTypeProvided ||
          swap_url().type() == storage::kFileSystemTypeNativeForPlatformApp)
       << swap_url().type();
 #else

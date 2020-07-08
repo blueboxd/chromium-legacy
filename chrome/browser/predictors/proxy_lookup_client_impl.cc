@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"

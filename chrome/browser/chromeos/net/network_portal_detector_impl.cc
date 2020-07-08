@@ -58,103 +58,11 @@ constexpr int kLongInitialDelayBetweenAttemptsMs = 30 * 1000;
 // ONLINE transition.
 constexpr int kLongMaximumDelayBetweenAttemptsMs = 5 * 60 * 1000;
 
-constexpr char kOobeDetectionResultHistogram[] =
-    "CaptivePortal.OOBE.DetectionResult";
-constexpr char kOobeDetectionDurationHistogram[] =
-    "CaptivePortal.OOBE.DetectionDuration";
-constexpr char kOobeShillOnlineHistogram[] =
-    "CaptivePortal.OOBE.DiscrepancyWithShill_Online";
-constexpr char kOobeShillPortalHistogram[] =
-    "CaptivePortal.OOBE.DiscrepancyWithShill_RestrictedPool";
-constexpr char kOobeShillOfflineHistogram[] =
-    "CaptivePortal.OOBE.DiscrepancyWithShill_Offline";
-constexpr char kOobePortalToOnlineHistogram[] =
-    "CaptivePortal.OOBE.PortalToOnlineTransition";
-
-constexpr char kSessionDetectionResultHistogram[] =
-    "CaptivePortal.Session.DetectionResult";
-constexpr char kSessionDetectionDurationHistogram[] =
-    "CaptivePortal.Session.DetectionDuration";
-constexpr char kSessionShillOnlineHistogram[] =
-    "CaptivePortal.Session.DiscrepancyWithShill_Online";
-constexpr char kSessionShillPortalHistogram[] =
-    "CaptivePortal.Session.DiscrepancyWithShill_RestrictedPool";
-constexpr char kSessionShillOfflineHistogram[] =
-    "CaptivePortal.Session.DiscrepancyWithShill_Offline";
-constexpr char kSessionPortalToOnlineHistogram[] =
-    "CaptivePortal.Session.PortalToOnlineTransition";
-
 constexpr char kDetectionResultSinceShillPortalHistogram[] =
     "CaptivePortal.DetectionResultSincePortal";
 
 const NetworkState* DefaultNetwork() {
   return NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
-}
-
-bool InSession() {
-  return LoginState::IsInitialized() && LoginState::Get()->IsUserLoggedIn();
-}
-
-void RecordDetectionResult(NetworkPortalDetector::CaptivePortalStatus status) {
-  if (InSession()) {
-    UMA_HISTOGRAM_ENUMERATION(
-        kSessionDetectionResultHistogram, status,
-        NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION(
-        kOobeDetectionResultHistogram, status,
-        NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
-  }
-}
-
-void RecordDetectionDuration(const base::TimeDelta& duration) {
-  if (InSession()) {
-    UMA_HISTOGRAM_MEDIUM_TIMES(kSessionDetectionDurationHistogram, duration);
-  } else {
-    UMA_HISTOGRAM_MEDIUM_TIMES(kOobeDetectionDurationHistogram, duration);
-  }
-}
-
-void RecordDiscrepancyWithShill(
-    const NetworkState* network,
-    const NetworkPortalDetector::CaptivePortalStatus status) {
-  if (InSession()) {
-    if (network->connection_state() == shill::kStateOnline) {
-      UMA_HISTOGRAM_ENUMERATION(
-          kSessionShillOnlineHistogram, status,
-          NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
-    } else if (network->is_captive_portal()) {
-      UMA_HISTOGRAM_ENUMERATION(
-          kSessionShillPortalHistogram, status,
-          NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
-    } else if (network->connection_state() == shill::kStateOffline) {
-      UMA_HISTOGRAM_ENUMERATION(
-          kSessionShillOfflineHistogram, status,
-          NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
-    }
-  } else {
-    if (network->connection_state() == shill::kStateOnline) {
-      UMA_HISTOGRAM_ENUMERATION(
-          kOobeShillOnlineHistogram, status,
-          NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
-    } else if (network->is_captive_portal()) {
-      UMA_HISTOGRAM_ENUMERATION(
-          kOobeShillPortalHistogram, status,
-          NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
-    } else if (network->connection_state() == shill::kStateOffline) {
-      UMA_HISTOGRAM_ENUMERATION(
-          kOobeShillOfflineHistogram, status,
-          NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
-    }
-  }
-}
-
-void RecordPortalToOnlineTransition(const base::TimeDelta& duration) {
-  if (InSession()) {
-    UMA_HISTOGRAM_LONG_TIMES(kSessionPortalToOnlineHistogram, duration);
-  } else {
-    UMA_HISTOGRAM_LONG_TIMES(kOobePortalToOnlineHistogram, duration);
-  }
 }
 
 void SetNetworkPortalDetected(const NetworkState* network,
@@ -603,13 +511,6 @@ void NetworkPortalDetectorImpl::DetectionCompleted(
     // Record detection duration iff detection result differs from the
     // previous one for this network. The reason is to record all stats
     // only when network changes it's state.
-    RecordDetectionStats(network, state.status);
-    if (it != portal_state_map_.end() &&
-        it->second.status == CAPTIVE_PORTAL_STATUS_PORTAL &&
-        state.status == CAPTIVE_PORTAL_STATUS_ONLINE) {
-      RecordPortalToOnlineTransition(state.time - it->second.time);
-    }
-
     SetNetworkPortalDetected(
         network,
         state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL);
@@ -627,43 +528,6 @@ void NetworkPortalDetectorImpl::NotifyDetectionCompleted(
 
 bool NetworkPortalDetectorImpl::AttemptTimeoutIsCancelledForTesting() const {
   return attempt_timeout_.IsCancelled();
-}
-
-void NetworkPortalDetectorImpl::RecordDetectionStats(
-    const NetworkState* network,
-    CaptivePortalStatus status) {
-  // Don't record stats for offline state.
-  if (!network)
-    return;
-
-  if (!detection_start_time_.is_null())
-    RecordDetectionDuration(NowTicks() - detection_start_time_);
-  RecordDetectionResult(status);
-
-  switch (status) {
-    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN:
-      NOTREACHED();
-      break;
-    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE:
-      if (network->IsConnectedState())
-        RecordDiscrepancyWithShill(network, status);
-      break;
-    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE:
-      if (network->connection_state() != shill::kStateOnline)
-        RecordDiscrepancyWithShill(network, status);
-      break;
-    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL:
-      if (!network->is_captive_portal())
-        RecordDiscrepancyWithShill(network, status);
-      break;
-    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED:
-      if (network->connection_state() != shill::kStateOnline)
-        RecordDiscrepancyWithShill(network, status);
-      break;
-    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT:
-      NOTREACHED();
-      break;
-  }
 }
 
 void NetworkPortalDetectorImpl::ResetStrategyAndCounters() {

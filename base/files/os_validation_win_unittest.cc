@@ -207,8 +207,8 @@ class OpenFileTest : public OsValidationTest,
     file_handle_.Close();
 
     // Manually delete the temp files since the temp dir is reused across tests.
-    ASSERT_TRUE(DeleteFile(temp_file_path_, false));
-    ASSERT_TRUE(DeleteFile(temp_file_dest_path_, false));
+    ASSERT_TRUE(DeleteFile(temp_file_path_));
+    ASSERT_TRUE(DeleteFile(temp_file_dest_path_));
   }
 
   DWORD access() const { return access_; }

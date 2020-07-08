@@ -623,12 +623,20 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogProtoData) {
 }
 #endif  // !defined(OS_ANDROID)
 
+// https://crbug.com/1102747
+#if defined(OS_ANDROID)
+#define MAYBE_AddSyncedUserBirthYearAndGenderToProtoData \
+  DISABLED_AddSyncedUserBirthYearAndGenderToProtoData
+#else
+#define MAYBE_AddSyncedUserBirthYearAndGenderToProtoData \
+  AddSyncedUserBirthYearAndGenderToProtoData
+#endif
 // TODO(crbug/1016118): Add the remaining test cases.
 // Keep this test in sync with testUKMDemographicsReportingWithFeatureEnabled
 // and testUKMDemographicsReportingWithFeatureDisabled in
 // ios/chrome/browser/metrics/demographics_egtest.mm.
 IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithDemographics,
-                       AddSyncedUserBirthYearAndGenderToProtoData) {
+                       MAYBE_AddSyncedUserBirthYearAndGenderToProtoData) {
   ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   test::DemographicsTestParams param = GetParam();
   MetricsConsentOverride metrics_consent(true);

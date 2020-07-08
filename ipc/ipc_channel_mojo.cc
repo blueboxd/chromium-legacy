@@ -261,7 +261,7 @@ ChannelMojo::CreateThreadSafeChannel() {
       base::BindRepeating(
           &ChannelMojo::ForwardMessageWithResponderFromThreadSafePtr,
           weak_ptr_),
-      *bootstrap_->GetAssociatedGroup());
+      base::DoNothing(), *bootstrap_->GetAssociatedGroup());
 }
 
 void ChannelMojo::OnPeerPidReceived(int32_t peer_pid) {

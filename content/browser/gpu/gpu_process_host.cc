@@ -63,6 +63,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/common/gpu_client_ids.h"
+#include "gpu/ipc/common/result_codes.h"
 #include "gpu/ipc/host/shader_disk_cache.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "media/base/media_switches.h"
@@ -116,6 +117,10 @@ base::subtle::Atomic32 GpuProcessHost::gpu_crash_count_ = 0;
 bool GpuProcessHost::crashed_before_ = false;
 int GpuProcessHost::recent_crash_count_ = 0;
 gpu::GpuMode GpuProcessHost::last_crash_mode_ = gpu::GpuMode::UNKNOWN;
+// RESULT_CODE_HUNG is expected to be the same in both
+// content/public/common/result_codes.h and gpu/ipc/common/result_codes.h
+static_assert(RESULT_CODE_HUNG == static_cast<int>(gpu::RESULT_CODE_HUNG),
+              "Please use the same enum value in both header files.");
 
 namespace {
 

@@ -59,6 +59,7 @@ mojom::VRDisplayInfoPtr CreateFakeVRDisplayInfo(device::mojom::XRDeviceId id) {
 // The OpenXrStatics object is owned by IsolatedXRRuntimeProvider.
 OpenXrDevice::OpenXrDevice(OpenXrStatics* openxr_statics)
     : VRDeviceBase(device::mojom::XRDeviceId::OPENXR_DEVICE_ID),
+      instance_(openxr_statics->GetXrInstance()),
       weak_ptr_factory_(this) {
   mojom::VRDisplayInfoPtr display_info = CreateFakeVRDisplayInfo(GetId());
   SetVRDisplayInfo(std::move(display_info));
@@ -86,8 +87,8 @@ void OpenXrDevice::EnsureRenderLoop() {
   if (!render_loop_) {
     auto on_info_changed = base::BindRepeating(&OpenXrDevice::SetVRDisplayInfo,
                                                weak_ptr_factory_.GetWeakPtr());
-    render_loop_ =
-        std::make_unique<OpenXrRenderLoop>(std::move(on_info_changed));
+    render_loop_ = std::make_unique<OpenXrRenderLoop>(
+        std::move(on_info_changed), instance_);
   }
 }
 

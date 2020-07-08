@@ -32,7 +32,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
-#include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 #include "net/base/ip_address.h"
 #include "net/base/network_interfaces.h"
 #include "services/network/public/cpp/p2p_socket_type.h"

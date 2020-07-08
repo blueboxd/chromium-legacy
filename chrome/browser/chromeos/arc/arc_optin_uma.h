@@ -166,7 +166,10 @@ enum class ProvisioningResult : int {
   // Account is not present in Chrome OS Account Manager.
   CHROME_ACCOUNT_NOT_FOUND = 23,
 
-  kMaxValue = CHROME_ACCOUNT_NOT_FOUND,
+  // Top level error for cloud DPC failure.
+  CLOUD_PROVISION_FLOW_ERROR = 24,
+
+  kMaxValue = CLOUD_PROVISION_FLOW_ERROR,
 };
 
 enum class OptInFlowResult : int {
@@ -228,6 +231,8 @@ void UpdateOptInCancelUMA(OptInCancelReason reason);
 void UpdateOptInFlowResultUMA(OptInFlowResult result);
 void UpdateProvisioningResultUMA(ProvisioningResult result,
                                  const Profile* profile);
+void UpdateCloudProvisionFlowErrorUMA(mojom::CloudProvisionFlowError error,
+                                      const Profile* profile);
 void UpdateSecondarySigninResultUMA(ProvisioningResult result);
 void UpdateProvisioningTiming(const base::TimeDelta& elapsed_time,
                               bool success,

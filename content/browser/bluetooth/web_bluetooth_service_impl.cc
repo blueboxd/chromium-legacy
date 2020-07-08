@@ -28,6 +28,7 @@
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/bluetooth_delegate.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -183,16 +184,20 @@ class WebBluetoothServiceImpl::AdvertisementClient {
       WebBluetoothServiceImpl* service,
       mojo::PendingAssociatedRemote<
           blink::mojom::WebBluetoothAdvertisementClient> client_info)
-      : client_(std::move(client_info)) {
+      : client_(std::move(client_info)),
+        web_contents_(static_cast<WebContentsImpl*>(
+            WebContents::FromRenderFrameHost(service->render_frame_host_))) {
     // Using base::Unretained() is safe here because all instances of this class
     // will be owned by |service|.
     client_.set_disconnect_handler(
         base::BindOnce(&WebBluetoothServiceImpl::RemoveDisconnectedClients,
                        base::Unretained(service)));
+    web_contents_->IncrementBluetoothScanningSessionsCount();
   }
   virtual ~AdvertisementClient() = default;
 
   mojo::AssociatedRemote<blink::mojom::WebBluetoothAdvertisementClient> client_;
+  WebContentsImpl* web_contents_;
 };
 
 class WebBluetoothServiceImpl::WatchAdvertisementsClient
@@ -207,7 +212,10 @@ class WebBluetoothServiceImpl::WatchAdvertisementsClient
         device_id_(device_id) {
     DCHECK(device_id_.IsValid());
   }
-  ~WatchAdvertisementsClient() override = default;
+
+  ~WatchAdvertisementsClient() override {
+    web_contents_->DecrementBluetoothScanningSessionsCount();
+  }
 
   // AdvertisementClient implementation:
   void SendEvent(blink::mojom::WebBluetoothAdvertisingEvent& event) override {
@@ -236,7 +244,9 @@ class WebBluetoothServiceImpl::ScanningClient
            options_->accept_all_advertisements);
   }
 
-  ~ScanningClient() override = default;
+  ~ScanningClient() override {
+    web_contents_->DecrementBluetoothScanningSessionsCount();
+  }
 
   void SetPromptController(
       BluetoothDeviceScanningPromptController* prompt_controller) {

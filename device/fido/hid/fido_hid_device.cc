@@ -16,7 +16,6 @@
 #include "components/device_event_log/device_event_log.h"
 #include "crypto/random.h"
 #include "device/fido/hid/fido_hid_message.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace device {
 

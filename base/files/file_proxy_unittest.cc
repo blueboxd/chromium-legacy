@@ -233,7 +233,7 @@ TEST_F(FileProxyTest, CreateTemporary) {
   // Try a few times because files may be locked by anti-virus or other.
   bool deleted_temp_file = false;
   for (int i = 0; !deleted_temp_file && i < 3; ++i) {
-    if (base::DeleteFile(path_, false))
+    if (base::DeleteFile(path_))
       deleted_temp_file = true;
     else
       // Wait one second and then try again

@@ -129,7 +129,6 @@ class CaptivePortalWindowProxy : public views::WidgetObserver {
   std::unique_ptr<CaptivePortalView> captive_portal_view_;
   CaptivePortalView* captive_portal_view_for_testing_ = nullptr;
 
-  base::Time started_loading_at_;
   base::ObserverList<Observer> observers_;
 };
 

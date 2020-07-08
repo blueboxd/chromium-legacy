@@ -11,6 +11,7 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.components.payments.ComponentPaymentRequestImpl;
 import org.chromium.components.payments.ErrorStrings;
 import org.chromium.components.payments.OriginSecurityChecker;
 import org.chromium.components.payments.PaymentFeatureList;
@@ -144,7 +145,7 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
     /**
      * Builds a factory for PaymentRequest.
      *
-     * @param webContents The web contents that may invoke the PaymentRequest API.
+     * @param renderFrameHost The host of the frame that has invoked the PaymentRequest API.
      */
     public PaymentRequestFactory(RenderFrameHost renderFrameHost) {
         mRenderFrameHost = renderFrameHost;
@@ -170,6 +171,8 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
         } else {
             delegate = new PaymentRequestDelegateImpl();
         }
-        return new PaymentRequestImpl(mRenderFrameHost, delegate, sNativeObserverForTest);
+
+        return new ComponentPaymentRequestImpl(
+                new PaymentRequestImpl(mRenderFrameHost, delegate, sNativeObserverForTest));
     }
 }

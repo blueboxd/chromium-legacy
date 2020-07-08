@@ -343,20 +343,32 @@ scoped_refptr<const VideoFrame> CreateVideoFrameFromImage(const Image& image) {
   return video_frame;
 }
 
-base::Optional<VideoFrameLayout> CreateVideoFrameLayout(VideoPixelFormat format,
-                                                        const gfx::Size& size) {
-  const size_t num_planes = VideoFrame::NumPlanes(format);
+base::Optional<VideoFrameLayout> CreateVideoFrameLayout(
+    VideoPixelFormat pixel_format,
+    const gfx::Size& dimension,
+    const uint32_t alignment,
+    std::vector<size_t>* plane_rows) {
+  const size_t num_planes = VideoFrame::NumPlanes(pixel_format);
 
   std::vector<ColorPlaneLayout> planes(num_planes);
-  const auto strides = VideoFrame::ComputeStrides(format, size);
   size_t offset = 0;
+  if (plane_rows)
+    plane_rows->resize(num_planes);
   for (size_t i = 0; i < num_planes; ++i) {
-    planes[i].stride = strides[i];
+    const int32_t stride =
+        VideoFrame::RowBytes(i, pixel_format, dimension.width());
+    const size_t rows = VideoFrame::Rows(i, pixel_format, dimension.height());
+    const size_t plane_size = stride * rows;
+    const size_t aligned_size = base::bits::Align(plane_size, alignment);
+    planes[i].stride = stride;
     planes[i].offset = offset;
-    planes[i].size = VideoFrame::PlaneSize(format, i, size).GetArea();
+    planes[i].size = aligned_size;
     offset += planes[i].size;
+    if (plane_rows)
+      (*plane_rows)[i] = rows;
   }
-  return VideoFrameLayout::CreateWithPlanes(format, size, std::move(planes));
+  return VideoFrameLayout::CreateWithPlanes(pixel_format, dimension,
+                                            std::move(planes));
 }
 
 }  // namespace test

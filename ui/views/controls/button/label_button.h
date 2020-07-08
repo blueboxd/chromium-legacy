@@ -21,6 +21,7 @@
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/native_theme_delegate.h"
 #include "ui/views/style/typography.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 
@@ -160,6 +161,8 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
 
   // Button:
   void ChildPreferredSizeChanged(View* child) override;
+  void AddedToWidget() override;
+  void RemovedFromWidget() override;
   void OnFocus() override;
   void OnBlur() override;
   void OnThemeChanged() override;
@@ -178,6 +181,14 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // Both methods will then use the max of inset height + label height and this
   // height as total height, and clamp to min/max sizes as appropriate.
   gfx::Size GetUnclampedSizeWithoutLabel() const;
+
+  // Returns the current visual appearance of the button. This takes into
+  // account both the button's underlying state and the state of the containing
+  // widget.
+  ButtonState GetVisualState() const;
+
+  // Called when the widget's "paint as active" state has changed.
+  void PaintAsActiveChanged();
 
   // Resets colors from the NativeTheme, explicitly set colors are unchanged.
   void ResetColorsFromNativeTheme();
@@ -239,6 +250,9 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // text direction) while |this| is laid out as ALIGN_LEFT (alignment matches
   // UI direction).
   gfx::HorizontalAlignment horizontal_alignment_ = gfx::ALIGN_LEFT;
+
+  std::unique_ptr<Widget::PaintAsActiveCallbackList::Subscription>
+      paint_as_active_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(LabelButton);
 };

@@ -717,7 +717,7 @@ bool GlobalHistogramAllocator::CreateWithActiveFile(const FilePath& base_path,
                                                     StringPiece name) {
   // Old "active" becomes "base".
   if (!base::ReplaceFile(active_path, base_path, nullptr))
-    base::DeleteFile(base_path, /*recursive=*/false);
+    base::DeleteFile(base_path);
   if (base::PathExists(active_path))
     return false;
 
@@ -854,7 +854,7 @@ bool GlobalHistogramAllocator::CreateSpareFile(const FilePath& spare_path,
     success = ReplaceFile(temp_spare_path, spare_path, nullptr);
 
   if (!success)
-    DeleteFile(temp_spare_path, /*recursive=*/false);
+    DeleteFile(temp_spare_path);
 
   return success;
 }

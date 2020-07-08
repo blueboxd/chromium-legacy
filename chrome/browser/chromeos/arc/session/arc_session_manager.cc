@@ -367,6 +367,13 @@ void ArcSessionManager::OnSessionRestarting() {
 }
 
 void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
+  // TODO(mhasank) update all callers to use the second overload
+  OnProvisioningFinished(result, nullptr);
+}
+
+void ArcSessionManager::OnProvisioningFinished(
+    ProvisioningResult result,
+    mojom::ArcSignInErrorPtr provisioning_error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // If the Mojo message to notify finishing the provisioning is already sent
@@ -426,6 +433,12 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
     UpdateProvisioningTiming(base::TimeTicks::Now() - sign_in_start_time_,
                              provisioning_successful, profile_);
     UpdateProvisioningResultUMA(result, profile_);
+    if (provisioning_error &&
+        provisioning_error->is_cloud_provision_flow_error()) {
+      mojom::CloudProvisionFlowError cloud_provision_flow_error =
+          provisioning_error->get_cloud_provision_flow_error();
+      UpdateCloudProvisionFlowErrorUMA(cloud_provision_flow_error, profile_);
+    }
     if (!provisioning_successful)
       UpdateOptInCancelUMA(OptInCancelReason::CLOUD_PROVISION_FLOW_FAIL);
   }
@@ -486,6 +499,7 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
       break;
     case ProvisioningResult::CLOUD_PROVISION_FLOW_FAILED:
     case ProvisioningResult::CLOUD_PROVISION_FLOW_TIMEOUT:
+    case ProvisioningResult::CLOUD_PROVISION_FLOW_ERROR:
     case ProvisioningResult::CLOUD_PROVISION_FLOW_INTERNAL_ERROR:
       error = ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_FAIL_ERROR;
       break;
@@ -519,6 +533,7 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
   if (result == ProvisioningResult::CLOUD_PROVISION_FLOW_FAILED ||
       result == ProvisioningResult::CLOUD_PROVISION_FLOW_TIMEOUT ||
       result == ProvisioningResult::CLOUD_PROVISION_FLOW_INTERNAL_ERROR ||
+      result == ProvisioningResult::CLOUD_PROVISION_FLOW_ERROR ||
       // OVERALL_SIGN_IN_TIMEOUT might be an indication that ARC believes it is
       // fully setup, but Chrome does not.
       result == ProvisioningResult::OVERALL_SIGN_IN_TIMEOUT ||

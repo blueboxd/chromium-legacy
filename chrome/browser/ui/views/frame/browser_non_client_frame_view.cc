@@ -246,6 +246,18 @@ void BrowserNonClientFrameView::ResetWindowControls() {
     web_app_frame_toolbar_->UpdateStatusIconsVisibility();
 }
 
+void BrowserNonClientFrameView::PaintAsActiveChanged() {
+  // The toolbar top separator color (used as the stroke around the tabs and
+  // the new tab button) needs to be recalculated.
+  browser_view_->tabstrip()->FrameColorsChanged();
+
+  if (web_app_frame_toolbar_)
+    web_app_frame_toolbar_->SetPaintAsActive(ShouldPaintAsActive());
+
+  // Changing the activation state may change the visible frame color.
+  SchedulePaint();
+}
+
 bool BrowserNonClientFrameView::ShouldPaintAsActive(
     BrowserFrameActiveState active_state) const {
   return (active_state == BrowserFrameActiveState::kUseCurrent)
@@ -282,18 +294,6 @@ gfx::ImageSkia BrowserNonClientFrameView::GetFrameOverlayImage(
 void BrowserNonClientFrameView::ChildPreferredSizeChanged(views::View* child) {
   if (browser_view()->initialized() && child == web_app_frame_toolbar_)
     Layout();
-}
-
-void BrowserNonClientFrameView::PaintAsActiveChanged() {
-  // The toolbar top separator color (used as the stroke around the tabs and
-  // the new tab button) needs to be recalculated.
-  browser_view_->tabstrip()->FrameColorsChanged();
-
-  if (web_app_frame_toolbar_)
-    web_app_frame_toolbar_->SetPaintAsActive(ShouldPaintAsActive());
-
-  // Changing the activation state may change the visible frame color.
-  SchedulePaint();
 }
 
 bool BrowserNonClientFrameView::DoesIntersectRect(const views::View* target,

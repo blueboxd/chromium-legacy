@@ -14,7 +14,6 @@
 #include "base/process/kill.h"
 #include "headless/public/headless_devtools_channel.h"
 #include "headless/public/headless_export.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 

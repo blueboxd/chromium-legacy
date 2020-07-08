@@ -25,9 +25,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantTextElementView
     : public AssistantUiElementView {
  public:
   explicit AssistantTextElementView(const AssistantTextElement* text_element);
-
-  explicit AssistantTextElementView(const std::string& text);
-
   ~AssistantTextElementView() override;
 
   // AssistantUiElementView:
@@ -37,7 +34,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantTextElementView
   void ChildPreferredSizeChanged(views::View* child) override;
 
  private:
-  void InitLayout(const std::string& text);
+  void InitLayout(const AssistantTextElement* text_element);
 
   views::Label* label_;  // Owned by view hierarchy.
 

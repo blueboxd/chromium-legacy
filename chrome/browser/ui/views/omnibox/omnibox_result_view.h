@@ -79,9 +79,6 @@ class OmniboxResultView : public views::View,
   // if none exists for this suggestion.
   views::Button* GetSecondaryButton();
 
-  // If this view has a secondary button, triggers the action and returns true.
-  bool MaybeTriggerSecondaryButton(const ui::Event& event);
-
   OmniboxPartState GetThemeState() const;
 
   // Notification that the match icon has changed and schedules a repaint.

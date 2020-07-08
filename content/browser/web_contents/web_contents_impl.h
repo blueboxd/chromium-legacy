@@ -377,6 +377,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void SetAudioMuted(bool mute) override;
   bool IsCurrentlyAudible() override;
   bool IsConnectedToBluetoothDevice() override;
+  bool IsScanningForBluetoothDevices() override;
   bool IsConnectedToSerialPort() override;
   bool IsConnectedToHidDevice() override;
   bool HasNativeFileSystemHandles() override;
@@ -1064,6 +1065,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // state changes.
   void OnIsConnectedToBluetoothDeviceChanged(
       bool is_connected_to_bluetooth_device);
+
+  void IncrementBluetoothScanningSessionsCount();
+  void DecrementBluetoothScanningSessionsCount();
 
   // Modify the counter of frames in this WebContents actively using serial
   // ports.
@@ -1922,6 +1926,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   std::unique_ptr<WebContentsAudioMuter> audio_muter_;
 
   size_t bluetooth_connected_device_count_ = 0;
+  size_t bluetooth_scanning_sessions_count_ = 0;
   size_t serial_active_frame_count_ = 0;
   size_t hid_active_frame_count_ = 0;
 

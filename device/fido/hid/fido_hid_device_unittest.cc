@@ -21,7 +21,6 @@
 #include "device/fido/hid/fake_hid_impl_for_testing.h"
 #include "device/fido/hid/fido_hid_message.h"
 #include "device/fido/test_callback_receiver.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/cpp/hid/hid_device_filter.h"
 #include "services/device/public/mojom/hid.mojom.h"

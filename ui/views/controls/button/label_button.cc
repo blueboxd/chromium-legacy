@@ -466,6 +466,18 @@ void LabelButton::ChildPreferredSizeChanged(View* child) {
   PreferredSizeChanged();
 }
 
+void LabelButton::AddedToWidget() {
+  if (PlatformStyle::kInactiveWidgetControlsAppearDisabled) {
+    paint_as_active_subscription_ =
+        GetWidget()->RegisterPaintAsActiveChangedCallback(base::BindRepeating(
+            &LabelButton::PaintAsActiveChanged, base::Unretained(this)));
+  }
+}
+
+void LabelButton::RemovedFromWidget() {
+  paint_as_active_subscription_.reset();
+}
+
 void LabelButton::OnFocus() {
   Button::OnFocus();
   // Typically the border renders differently when focused.
@@ -542,6 +554,17 @@ gfx::Size LabelButton::GetUnclampedSizeWithoutLabel() const {
     size.SetToMax(border()->GetMinimumSize());
 
   return size;
+}
+
+Button::ButtonState LabelButton::GetVisualState() const {
+  const bool force_disabled =
+      PlatformStyle::kInactiveWidgetControlsAppearDisabled && GetWidget() &&
+      !GetWidget()->ShouldPaintAsActive();
+  return force_disabled ? STATE_DISABLED : state();
+}
+
+void LabelButton::PaintAsActiveChanged() {
+  StateChanged(state());
 }
 
 void LabelButton::ResetColorsFromNativeTheme() {

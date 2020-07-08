@@ -26,7 +26,6 @@
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "media/mojo/services/mojo_renderer_service.h"
 #include "media/renderers/video_overlay_factory.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"

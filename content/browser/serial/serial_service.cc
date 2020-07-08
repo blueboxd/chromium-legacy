@@ -16,7 +16,6 @@
 #include "content/public/browser/serial_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 

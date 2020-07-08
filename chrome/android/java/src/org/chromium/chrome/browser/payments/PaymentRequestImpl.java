@@ -53,6 +53,8 @@ import org.chromium.components.autofill.EditableOption;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.page_info.CertificateChainHelper;
 import org.chromium.components.payments.AbortReason;
+import org.chromium.components.payments.ComponentPaymentRequestImpl;
+import org.chromium.components.payments.ComponentPaymentRequestImpl.ComponentPaymentRequestDelegate;
 import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.components.payments.ErrorMessageUtil;
 import org.chromium.components.payments.ErrorStrings;
@@ -103,6 +105,7 @@ import org.chromium.payments.mojom.PaymentValidationErrors;
 import org.chromium.url.GURL;
 import org.chromium.url.Origin;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -117,13 +120,14 @@ import java.util.Queue;
 import java.util.Set;
 
 /**
- * Android implementation of the PaymentRequest service defined in
- * third_party/blink/public/mojom/payments/payment_request.mojom.
+ * This is the Clank specific parts of {@link PaymentRequest}, with the parts shared with WebLayer
+ * living in {@link ComponentPaymentRequestImpl}.
  */
 public class PaymentRequestImpl
-        implements PaymentRequest, PaymentRequestUI.Client, PaymentAppFactoryDelegate,
-                   PaymentAppFactoryParams, PaymentRequestUpdateEventListener,
-                   PaymentApp.AbortCallback, PaymentApp.InstrumentDetailsCallback,
+        implements ComponentPaymentRequestDelegate, PaymentRequestUI.Client,
+                   PaymentAppFactoryDelegate, PaymentAppFactoryParams,
+                   PaymentRequestUpdateEventListener, PaymentApp.AbortCallback,
+                   PaymentApp.InstrumentDetailsCallback,
                    PaymentResponseHelper.PaymentResponseRequesterDelegate, FocusChangedObserver,
                    NormalizedAddressRequestDelegate, SettingsAutofillAndPaymentsObserver.Observer,
                    PaymentDetailsConverter.MethodChecker, PaymentHandlerUiObserver {
@@ -311,6 +315,8 @@ public class PaymentRequestImpl
     // Reverse order of the comparator to sort in descending order of completeness scores.
     private static final Comparator<Completable> COMPLETENESS_COMPARATOR =
             (a, b) -> (compareCompletablesByCompleteness(b, a));
+
+    private WeakReference<ComponentPaymentRequestImpl> mComponentPaymentRequestImpl;
 
     private PaymentOptions mPaymentOptions;
     private boolean mRequestShipping;
@@ -619,6 +625,13 @@ public class PaymentRequestImpl
         if (sObserverForTest != null) sObserverForTest.onPaymentRequestCreated(this);
 
         mPaymentUisShowStateReconciler = new PaymentUisShowStateReconciler();
+    }
+
+    @Override
+    public void setComponentPaymentRequestImpl(
+            WeakReference<ComponentPaymentRequestImpl> componentPaymentRequestImpl) {
+        assert mComponentPaymentRequestImpl == null;
+        mComponentPaymentRequestImpl = componentPaymentRequestImpl;
     }
 
     /**

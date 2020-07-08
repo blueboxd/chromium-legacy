@@ -15,9 +15,8 @@ namespace ash {
 
 // Defines possible types of Assistant UI elements.
 enum class AssistantUiElementType {
-  kCard,   // See AssistantCardElement.
-  kError,  // See AssistantErrorElement.
-  kText,   // See AssistantTextElement.
+  kCard,    // See AssistantCardElement.
+  kText,    // See AssistantTextElement.
 };
 
 // AssistantUiElement ----------------------------------------------------------
@@ -26,10 +25,6 @@ enum class AssistantUiElementType {
 class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantUiElement {
  public:
   virtual ~AssistantUiElement();
-
-  bool operator==(const AssistantUiElement& other) const {
-    return this->Compare(other);
-  }
 
   AssistantUiElementType type() const { return type_; }
 
@@ -46,8 +41,6 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantUiElement {
 
  private:
   const AssistantUiElementType type_;
-
-  virtual bool Compare(const AssistantUiElement& other) const = 0;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantUiElement);
 };

@@ -513,7 +513,7 @@ void ManagementSetEnabledFunction::OnInstallPromptDone(bool did_accept) {
         ->Get(browser_context())
         ->GetDelegate()
         ->EnableExtension(browser_context(), extension_id_);
-    Respond(OneArgument(std::make_unique<base::Value>(true)));
+    Respond(NoArguments());
   } else {
     Respond(Error(keys::kUserDidNotReEnableError));
   }
@@ -552,7 +552,7 @@ void ManagementSetEnabledFunction::OnParentPermissionDialogDone(
               ->Get(browser_context())
               ->GetDelegate();
       delegate->EnableExtension(browser_context(), extension_id_);
-      Respond(OneArgument(std::make_unique<base::Value>(true)));
+      Respond(NoArguments());
       break;
     }
 

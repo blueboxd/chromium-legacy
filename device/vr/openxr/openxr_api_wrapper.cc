@@ -39,11 +39,12 @@ constexpr base::TimeDelta kTimeBetweenPollingEvents =
 
 }  // namespace
 
-std::unique_ptr<OpenXrApiWrapper> OpenXrApiWrapper::Create() {
+std::unique_ptr<OpenXrApiWrapper> OpenXrApiWrapper::Create(
+    XrInstance instance) {
   std::unique_ptr<OpenXrApiWrapper> openxr =
       std::make_unique<OpenXrApiWrapper>();
 
-  if (!openxr->Initialize()) {
+  if (!openxr->Initialize(instance)) {
     return nullptr;
   }
 
@@ -76,7 +77,7 @@ void OpenXrApiWrapper::Reset() {
   layer_projection_views_.clear();
 }
 
-bool OpenXrApiWrapper::Initialize() {
+bool OpenXrApiWrapper::Initialize(XrInstance instance) {
   Reset();
   session_running_ = false;
   pending_frame_ = false;
@@ -84,9 +85,9 @@ bool OpenXrApiWrapper::Initialize() {
   // call ProcessEvents, which will update this variable from there on.
   last_process_events_time_ = base::TimeTicks::Min();
 
-  if (XR_FAILED(CreateInstance(&instance_, &instance_metadata_))) {
-    return false;
-  }
+  DCHECK(instance != XR_NULL_HANDLE);
+  instance_ = instance;
+
   DCHECK(HasInstance());
 
   if (XR_FAILED(InitializeSystem())) {
@@ -117,11 +118,13 @@ bool OpenXrApiWrapper::IsInitialized() const {
 }
 
 void OpenXrApiWrapper::Uninitialize() {
-  // Destroying an instance in OpenXr also destroys all child objects of that
-  // instance (including the session, swapchain, and spaces objects),
+  // The instance is owned by the OpenXRDevice, so don't destroy it here.
+
+  // Destroying an session in OpenXr also destroys all child objects of that
+  // instance (including the swapchain, and spaces objects),
   // so they don't need to be manually destroyed.
-  if (HasInstance()) {
-    xrDestroyInstance(instance_);
+  if (HasSession()) {
+    xrDestroySession(session_);
   }
 
   if (test_hook_)
@@ -270,7 +273,9 @@ XrResult OpenXrApiWrapper::InitSession(
   CreateSpace(XR_REFERENCE_SPACE_TYPE_STAGE, &stage_space_);
   UpdateStageBounds();
 
-  if (instance_metadata_.unboundedReferenceSpaceSupported) {
+  OpenXrExtensionHelper extension_helper;
+  if (extension_helper.ExtensionSupported(
+          XR_MSFT_UNBOUNDED_REFERENCE_SPACE_EXTENSION_NAME)) {
     RETURN_IF_XR_FAILED(
         CreateSpace(XR_REFERENCE_SPACE_TYPE_UNBOUNDED_MSFT, &unbounded_space_));
   }

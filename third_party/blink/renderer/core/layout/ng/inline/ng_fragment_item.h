@@ -76,8 +76,9 @@ class CORE_EXPORT NGFragmentItem {
   // Create a line item.
   explicit NGFragmentItem(const NGPhysicalLineBoxFragment& line);
 
-  // The copy constructor.
+  // The copy/move constructors.
   NGFragmentItem(const NGFragmentItem&);
+  NGFragmentItem(NGFragmentItem&&);
 
   ~NGFragmentItem();
 
@@ -372,6 +373,8 @@ class CORE_EXPORT NGFragmentItem {
   String ToString() const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(NGFragmentItemTest, CopyMove);
+
   // Create a text item.
   NGFragmentItem(const NGInlineItem& inline_item,
                  scoped_refptr<const ShapeResultView> shape_result,

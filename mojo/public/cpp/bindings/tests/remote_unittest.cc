@@ -1003,14 +1003,13 @@ TEST_P(RemoteTest, SharedRemoteSyncOnlyBlocksCallingSequence) {
   SharedRemote<mojom::SharedRemoteSyncTest> remote(std::move(pending_remote),
                                                    bound_task_runner);
   bound_task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](mojo::PendingReceiver<mojom::SharedRemoteSyncTest> receiver) {
-            mojo::MakeSelfOwnedReceiver(
-                std::make_unique<SharedRemoteSyncTestImpl>(),
-                std::move(receiver));
-          },
-          std::move(receiver)));
+      FROM_HERE, base::BindOnce(
+                     [](PendingReceiver<mojom::SharedRemoteSyncTest> receiver) {
+                       MakeSelfOwnedReceiver(
+                           std::make_unique<SharedRemoteSyncTestImpl>(),
+                           std::move(receiver));
+                     },
+                     std::move(receiver)));
 
   int32_t value = 0;
   remote->Fetch(&value);
@@ -1022,6 +1021,70 @@ TEST_P(RemoteTest, SharedRemoteSyncOnlyBlocksCallingSequence) {
   // to signal a connection error and trigger the self-owned Receiver's
   // destruction. This ensures that the task will run, avoiding leaks.
   task_environment()->RunUntilIdle();
+}
+
+TEST_P(RemoteTest, SharedRemoteSyncCallsFromOffBoundConstructionSequence) {
+  // Regression test for https://crbug.com/1102921. Verifies that when
+  // bound to its construction sequence, a SharedRemote doesn't try blocking
+  // that sequence when a sync call is made from another sequence.
+
+  const scoped_refptr<base::SequencedTaskRunner> background_task_runner =
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::WithBaseSyncPrimitives()});
+
+  // Ensure waiting on the main thread is not allowed so that blocking attempts
+  // will break the test.
+  base::DisallowBaseSyncPrimitives();
+
+  PendingRemote<mojom::SharedRemoteSyncTest> pending_remote;
+  SharedRemoteSyncTestImpl impl;
+  Receiver<mojom::SharedRemoteSyncTest> receiver(
+      &impl, pending_remote.InitWithNewPipeAndPassReceiver());
+
+  int32_t value = 0;
+  base::RunLoop loop;
+  base::OnceClosure quit = loop.QuitClosure();
+  SharedRemote<mojom::SharedRemoteSyncTest> remote(std::move(pending_remote));
+  background_task_runner->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([remote, &value, &quit] {
+        EXPECT_TRUE(remote->Fetch(&value));
+        EXPECT_EQ(kMagicNumber, value);
+        std::move(quit).Run();
+      }));
+
+  loop.Run();
+
+  // TaskEnvironment teardown wants to block the main thread.
+  base::internal::ResetThreadRestrictionsForTesting();
+}
+
+TEST_P(RemoteTest, SharedRemoteSyncCallsFromBoundNonConstructionSequence) {
+  // Regression test for https://crbug.com/1102921. Verifies that when
+  // bound to some sequence other than that which constructed it, a SharedRemote
+  // properly blocks when making sync calls from the bound sequence.
+
+  const scoped_refptr<base::SequencedTaskRunner> background_task_runner =
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::WithBaseSyncPrimitives()});
+
+  PendingRemote<mojom::SharedRemoteSyncTest> pending_remote;
+  SharedRemoteSyncTestImpl impl;
+  Receiver<mojom::SharedRemoteSyncTest> receiver(
+      &impl, pending_remote.InitWithNewPipeAndPassReceiver());
+
+  int32_t value = 0;
+  base::RunLoop loop;
+  base::OnceClosure quit = loop.QuitClosure();
+  SharedRemote<mojom::SharedRemoteSyncTest> remote(
+      std::move(pending_remote), std::move(background_task_runner));
+  background_task_runner->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([remote, &value, &quit] {
+        EXPECT_TRUE(remote->Fetch(&value));
+        EXPECT_EQ(kMagicNumber, value);
+        std::move(quit).Run();
+      }));
+
+  loop.Run();
 }
 
 TEST_P(RemoteTest, RemoteSet) {

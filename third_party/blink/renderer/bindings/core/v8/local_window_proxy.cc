@@ -227,6 +227,7 @@ void LocalWindowProxy::CreateContext() {
     v8::Local<v8::Object> global_proxy = global_proxy_.NewLocal(isolate);
     context = V8ContextSnapshot::CreateContextFromSnapshot(
         isolate, World(), &extension_configuration, global_proxy, document);
+    context_was_created_from_snapshot_ = !context.IsEmpty();
 
     // Even if we enable V8 context snapshot feature, we may hit this branch
     // in some cases, e.g. loading XML files.
@@ -257,6 +258,15 @@ void LocalWindowProxy::InstallConditionalFeatures() {
   TRACE_EVENT1("v8", "InstallConditionalFeatures", "IsMainFrame",
                GetFrame()->IsMainFrame());
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
+  if (context_was_created_from_snapshot_) {
+    V8ContextSnapshot::InstallContextIndependentProps(script_state_);
+  }
+
+  V8PerContextData* per_context_data = script_state_->PerContextData();
+  ignore_result(
+      per_context_data->ConstructorForType(V8Window::GetWrapperTypeInfo()));
+#else   // USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE
   v8::Local<v8::Context> context = script_state_->GetContext();
 
   // If the context was created from snapshot, all conditionally
@@ -287,6 +297,7 @@ void LocalWindowProxy::InstallConditionalFeatures() {
                                v8::Local<v8::Object>(),
                                v8::Local<v8::Function>());
   }
+#endif  // USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE
 }
 
 void LocalWindowProxy::SetupWindowPrototypeChain() {
@@ -318,8 +329,10 @@ void LocalWindowProxy::SetupWindowPrototypeChain() {
   v8::Local<v8::Object> window_prototype =
       window_wrapper->GetPrototype().As<v8::Object>();
   CHECK(!window_prototype.IsEmpty());
+#if !defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
   V8DOMWrapper::SetNativeInfo(GetIsolate(), window_prototype, wrapper_type_info,
                               window);
+#endif
 
   // The named properties object of Window interface.
   v8::Local<v8::Object> window_properties =
@@ -327,6 +340,13 @@ void LocalWindowProxy::SetupWindowPrototypeChain() {
   CHECK(!window_properties.IsEmpty());
   V8DOMWrapper::SetNativeInfo(GetIsolate(), window_properties,
                               wrapper_type_info, window);
+
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
+  // [CachedAccessor=kWindowProxy]
+  V8PrivateProperty::GetCachedAccessor(
+      GetIsolate(), V8PrivateProperty::CachedAccessor::kWindowProxy)
+      .Set(window_wrapper, global_proxy);
+#endif
 
   // TODO(keishi): Remove installPagePopupController and implement
   // PagePopupController in another way.

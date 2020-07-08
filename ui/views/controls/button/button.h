@@ -19,7 +19,6 @@
 #include "ui/views/controls/button/button_controller_delegate.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/painter.h"
-#include "ui/views/widget/widget_observer.h"
 
 namespace views {
 namespace test {
@@ -120,9 +119,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   // like event dispatching, focus traversals, etc. Calling SetEnabled(false)
   // will also set the state of |this| to STATE_DISABLED.
   void SetState(ButtonState state);
-  // Returns the visual appearance state of the button. This takes into account
-  // both the button's display state and the state of the containing widget.
-  ButtonState GetVisualState() const;
 
   // Starts throbbing. See HoverAnimation for a description of cycles_til_stop.
   // This method does nothing if |animate_on_state_change_| is false.
@@ -214,8 +210,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
       const ViewHierarchyChangedDetails& details) override;
   void OnFocus() override;
   void OnBlur() override;
-  void AddedToWidget() override;
-  void RemovedFromWidget() override;
 
   // Overridden from InkDropHostView:
   std::unique_ptr<InkDrop> CreateInkDrop() override;
@@ -307,30 +301,7 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   friend class test::ButtonTestApi;
   FRIEND_TEST_ALL_PREFIXES(BlueButtonTest, Border);
 
-  // Bridge class to allow Button to observe a Widget without being a
-  // WidgetObserver. This is desirable because many Button subclasses are
-  // themselves WidgetObservers, and if Button is a WidgetObserver, any change
-  // to its WidgetObserver overrides requires updating all the subclasses as
-  // well.
-  class WidgetObserverButtonBridge : public WidgetObserver {
-   public:
-    explicit WidgetObserverButtonBridge(Button* owner);
-    ~WidgetObserverButtonBridge() override;
-
-    // WidgetObserver:
-    void OnWidgetPaintAsActiveChanged(Widget* widget) override;
-    void OnWidgetDestroying(Widget* widget) override;
-
-   private:
-    Button* owner_;
-
-    DISALLOW_COPY_AND_ASSIGN(WidgetObserverButtonBridge);
-  };
-
   void OnEnabledChanged();
-
-  // Called when the widget's "paint as active" state has changed.
-  void WidgetPaintAsActiveChanged();
 
   // The text shown in a tooltip.
   base::string16 tooltip_text_;
@@ -377,8 +348,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   FocusRing* focus_ring_ = nullptr;
 
   std::unique_ptr<Painter> focus_painter_;
-
-  std::unique_ptr<WidgetObserverButtonBridge> widget_observer_;
 
   // ButtonController is responsible for handling events sent to the Button and
   // related state changes from the events.

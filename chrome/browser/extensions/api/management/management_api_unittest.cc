@@ -46,6 +46,8 @@
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_test_util.h"
 #include "content/public/browser/gpu_data_manager.h"
+#include "extensions/browser/api/management/management_api_constants.h"
+#include "extensions/common/error_utils.h"
 #endif
 
 namespace extensions {
@@ -129,7 +131,8 @@ bool ManagementApiUnitTest::RunSetEnabledFunction(
   scoped_refptr<ManagementSetEnabledFunction> function =
       base::MakeRefCounted<ManagementSetEnabledFunction>();
   function->set_browser_context(profile());
-  function->SetRenderFrameHost(web_contents->GetMainFrame());
+  if (web_contents)
+    function->SetRenderFrameHost(web_contents->GetMainFrame());
   base::ListValue args;
   args.AppendString(extension_id);
   args.AppendBoolean(enabled);
@@ -1517,6 +1520,143 @@ TEST_F(ManagementApiSupervisedUserTestWithSetup, SetEnabled_PreviouslyAllowed) {
 
   // Parent permission dialog was not opened.
   EXPECT_EQ(0, supervised_user_delegate_->show_dialog_count());
+}
+
+// Tests launching the Parent Permission Dialog from a background page, where
+// there isn't active web contents. The parent approves the request.
+TEST_F(ManagementApiSupervisedUserTestWithSetup,
+       SetEnabled_ParentPermissionApprovedFromBackgroundPage) {
+  // Preconditions.
+  ASSERT_TRUE(profile()->IsChild());
+
+  // Start with a disabled extension that needs parent permission.
+  service()->DisableExtension(
+      extension_->id(), disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED);
+
+  // The parent will approve.
+  supervised_user_delegate_->set_next_parent_permission_dialog_result(
+      SupervisedUserExtensionsDelegate::ParentPermissionDialogResult::
+          kParentPermissionReceived);
+
+  // Simulate a call to chrome.management.setEnabled(). It should succeed
+  // despite a lack of web contents.
+  std::string error;
+  bool success = RunSetEnabledFunction(
+      /*web_contents=*/nullptr, extension_->id(), /*use_user_gesture=*/true,
+      /*accept_dialog=*/true, &error);
+  EXPECT_TRUE(success);
+  EXPECT_TRUE(error.empty());
+
+  // Parent Permission Dialog still opened despite the lack of web contents.
+  EXPECT_EQ(1, supervised_user_delegate_->show_dialog_count());
+  EXPECT_EQ(0, supervised_user_delegate_->show_block_dialog_count());
+
+  // Extension is now enabled.
+  EXPECT_EQ(1, delegate_->enable_count_);
+}
+
+// Tests launching the Parent Permission Dialog from a background page, where
+// there isn't active web contents. The parent cancels the request.
+TEST_F(ManagementApiSupervisedUserTestWithSetup,
+       SetEnabled_ParentPermissionCanceledFromBackgroundPage) {
+  // Preconditions.
+  ASSERT_TRUE(profile()->IsChild());
+
+  // Start with a disabled extension that needs parent permission.
+  service()->DisableExtension(
+      extension_->id(), disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED);
+
+  // The parent will cancel.
+  supervised_user_delegate_->set_next_parent_permission_dialog_result(
+      SupervisedUserExtensionsDelegate::ParentPermissionDialogResult::
+          kParentPermissionCanceled);
+
+  // Simulate a call to chrome.management.setEnabled() with no web contents.
+  std::string error;
+  bool success = RunSetEnabledFunction(
+      /*web_contents=*/nullptr, extension_->id(), /*use_user_gesture=*/true,
+      /*accept_dialog=*/true, &error);
+  EXPECT_FALSE(success);
+  EXPECT_EQ(extension_management_api_constants::kUserDidNotReEnableError,
+            error);
+
+  // Parent Permission Dialog still opened despite the lack of web contents.
+  EXPECT_EQ(1, supervised_user_delegate_->show_dialog_count());
+  EXPECT_EQ(0, supervised_user_delegate_->show_block_dialog_count());
+
+  // Extension was not enabled.
+  EXPECT_EQ(0, delegate_->enable_count_);
+}
+
+// Tests launching the Parent Permission Dialog from a background page, where
+// there isn't active web contents. The request will fail due to some sort of
+// error, such as a network error.
+TEST_F(ManagementApiSupervisedUserTestWithSetup,
+       SetEnabled_ParentPermissionFailedFromBackgroundPage) {
+  // Preconditions.
+  ASSERT_TRUE(profile()->IsChild());
+
+  // Start with a disabled extension that needs parent permission.
+  service()->DisableExtension(
+      extension_->id(), disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED);
+
+  // The request will fail.
+  supervised_user_delegate_->set_next_parent_permission_dialog_result(
+      SupervisedUserExtensionsDelegate::ParentPermissionDialogResult::
+          kParentPermissionFailed);
+
+  // Simulate a call to chrome.management.setEnabled() with no web contents.
+  std::string error;
+  bool success = RunSetEnabledFunction(
+      /*web_contents=*/nullptr, extension_->id(), /*use_user_gesture=*/true,
+      /*accept_dialog=*/true, &error);
+  EXPECT_FALSE(success);
+  EXPECT_EQ(extension_management_api_constants::kParentPermissionFailedError,
+            error);
+
+  // Parent Permission Dialog still opened despite the lack of web contents.
+  EXPECT_EQ(1, supervised_user_delegate_->show_dialog_count());
+  EXPECT_EQ(0, supervised_user_delegate_->show_block_dialog_count());
+
+  // Extension was not enabled.
+  EXPECT_EQ(0, delegate_->enable_count_);
+}
+
+// Tests launching the Extension Install Blocked By Parent Dialog from a
+// background page, where there isn't active web contents.
+TEST_F(ManagementApiSupervisedUserTestWithSetup,
+       SetEnabled_ExtensionInstallBlockedByParentFromBackgroundPage) {
+  // Preconditions.
+  ASSERT_TRUE(profile()->IsChild());
+
+  // Start with a disabled extension that needs parent permission.
+  service()->DisableExtension(
+      extension_->id(), disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED);
+
+  // Simulate the parent disabling the "Permissions for sites, apps and
+  // extensions" toggle.
+  GetSupervisedUserService()
+      ->SetSupervisedUserExtensionsMayRequestPermissionsPrefForTesting(false);
+
+  // Simulate a call to chrome.management.setEnabled(). The enable attempt
+  // should be blocked.
+  std::string error;
+  bool success = RunSetEnabledFunction(
+      /*web_contents=*/nullptr, extension_->id(), /*use_user_gesture=*/true,
+      /*accept_dialog=*/true, &error);
+  EXPECT_FALSE(success);
+  const std::string expected_error = ErrorUtils::FormatErrorMessage(
+      extension_management_api_constants::kUserCantModifyError,
+      extension_->id());
+  EXPECT_EQ(expected_error, error);
+
+  // The Extension Install Blocked By Parent Dialog should have opened despite
+  // the lack of web contents.
+  EXPECT_EQ(1, supervised_user_delegate_->show_block_dialog_count());
+  EXPECT_EQ(0, supervised_user_delegate_->show_dialog_count());
+
+  // Extension was not enabled.
+  EXPECT_EQ(0, delegate_->enable_count_);
 }
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 

@@ -56,8 +56,29 @@ bool IsRunningInWin32AppContainer() {
 }
 #endif
 
-XrResult CreateInstance(XrInstance* instance,
-                        OpenXRInstanceMetadata* metadata) {
+OpenXrExtensionHelper::OpenXrExtensionHelper() {
+  uint32_t extension_count;
+  if (XR_SUCCEEDED(xrEnumerateInstanceExtensionProperties(
+          nullptr, 0, &extension_count, nullptr))) {
+    extension_properties_.resize(extension_count,
+                                 {XR_TYPE_EXTENSION_PROPERTIES});
+    xrEnumerateInstanceExtensionProperties(nullptr, extension_count,
+                                           &extension_count,
+                                           extension_properties_.data());
+  }
+}
+
+OpenXrExtensionHelper::~OpenXrExtensionHelper() = default;
+
+bool OpenXrExtensionHelper::ExtensionSupported(const char* extension_name) {
+  return std::find_if(
+             extension_properties_.begin(), extension_properties_.end(),
+             [&extension_name](const XrExtensionProperties& properties) {
+               return strcmp(properties.extensionName, extension_name) == 0;
+             }) != extension_properties_.end();
+}
+
+XrResult CreateInstance(XrInstance* instance) {
   XrInstanceCreateInfo instance_create_info = {XR_TYPE_INSTANCE_CREATE_INFO};
 
   std::string application_name = version_info::GetProductName() + " " +
@@ -85,14 +106,6 @@ XrResult CreateInstance(XrInstance* instance,
 
   instance_create_info.applicationInfo.apiVersion = XR_CURRENT_API_VERSION;
 
-  uint32_t extensionCount;
-  RETURN_IF_XR_FAILED(xrEnumerateInstanceExtensionProperties(
-      nullptr, 0, &extensionCount, nullptr));
-  std::vector<XrExtensionProperties> extensionProperties(
-      extensionCount, {XR_TYPE_EXTENSION_PROPERTIES});
-  RETURN_IF_XR_FAILED(xrEnumerateInstanceExtensionProperties(
-      nullptr, extensionCount, &extensionCount, extensionProperties.data()));
-
   // xrCreateInstance validates the list of extensions and returns
   // XR_ERROR_EXTENSION_NOT_PRESENT if an extension is not supported,
   // so we don't need to call xrEnumerateInstanceExtensionProperties
@@ -113,23 +126,12 @@ XrResult CreateInstance(XrInstance* instance,
   // XR_MSFT_UNBOUNDED_REFERENCE_SPACE_EXTENSION_NAME, is required for optional
   // functionality (unbounded reference spaces) and thus only requested if it is
   // available.
-  auto extensionSupported = [&extensionProperties](const char* extensionName) {
-    return std::find_if(
-               extensionProperties.begin(), extensionProperties.end(),
-               [&extensionName](const XrExtensionProperties& properties) {
-                 return strcmp(properties.extensionName, extensionName) == 0;
-               }) != extensionProperties.end();
-  };
-
+  OpenXrExtensionHelper extension_helper;
   const bool unboundedSpaceExtensionSupported =
-      extensionSupported(XR_MSFT_UNBOUNDED_REFERENCE_SPACE_EXTENSION_NAME);
+      extension_helper.ExtensionSupported(
+          XR_MSFT_UNBOUNDED_REFERENCE_SPACE_EXTENSION_NAME);
   if (unboundedSpaceExtensionSupported) {
     extensions.push_back(XR_MSFT_UNBOUNDED_REFERENCE_SPACE_EXTENSION_NAME);
-  }
-
-  if (metadata != nullptr) {
-    metadata->unboundedReferenceSpaceSupported =
-        unboundedSpaceExtensionSupported;
   }
 
   instance_create_info.enabledExtensionCount =

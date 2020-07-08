@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "third_party/openxr/src/include/openxr/openxr.h"
 
 namespace device {
 
@@ -50,6 +51,7 @@ class DEVICE_VR_EXPORT OpenXrDevice
                               mojom::XRSessionPtr session);
   void OnPresentingControllerMojoConnectionError();
 
+  XrInstance instance_;
   std::unique_ptr<OpenXrRenderLoop> render_loop_;
 
   mojo::Receiver<mojom::XRSessionController> exclusive_controller_receiver_{

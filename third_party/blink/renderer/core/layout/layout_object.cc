@@ -3493,9 +3493,26 @@ void LayoutObject::DestroyAndCleanupAnonymousWrappers() {
     if (destroy_root_parent->IsLayoutFlowThread())
       break;
 
-    if (destroy_root->PreviousSibling() || destroy_root->NextSibling())
-      break;  // Need to keep the anonymous parent, since it won't become empty
-              // by the removal of this LayoutObject.
+    // We need to keep the anonymous parent, if it won't become empty by the
+    // removal of this LayoutObject.
+    if (destroy_root->PreviousSibling())
+      break;
+    if (const LayoutObject* sibling = destroy_root->NextSibling()) {
+      if (destroy_root->GetNode()) {
+        // When there are inline continuations, there may be multiple layout
+        // objects generated from the same node, and those are special. They
+        // will be removed as part of destroying |this|, in
+        // LayoutInline::WillBeDestroyed(). So if that's all we have left, we
+        // need to realize now that the anonymous containing block will become
+        // empty. So we have to destroy it.
+        while (sibling && sibling->GetNode() == destroy_root->GetNode())
+          sibling = sibling->NextSibling();
+      }
+      if (sibling)
+        break;
+      DCHECK(destroy_root->IsLayoutInline());
+      DCHECK(ToLayoutInline(destroy_root)->Continuation());
+    }
   }
 
   destroy_root->Destroy();

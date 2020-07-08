@@ -14,7 +14,6 @@
 #include "media/base/android/stream_texture_wrapper.h"
 #include "media/base/renderer_factory.h"
 #include "media/mojo/clients/mojo_renderer_factory.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace media {
 class MojoRendererFactory;

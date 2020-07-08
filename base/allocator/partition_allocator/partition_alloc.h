@@ -900,6 +900,19 @@ ALWAYS_INLINE size_t PartitionRoot<thread_safe>::ActualSize(size_t size) {
 #endif
 }
 
+enum class PartitionAllocatorAlignment {
+  // By default all allocations will be aligned to 8B (16B if
+  // BUILDFLAG_INTERNAL_USE_PARTITION_ALLOC_AS_MALLOC is true).
+  kRegular,
+
+  // In addition to the above alignment enforcement, this option allows using
+  // AlignedAlloc() which can align at a larger boundary.
+  // This option comes at a cost of disallowing cookies on Debug builds and tags
+  // for CheckedPtr. It also causes all allocations to go outside of GigaCage,
+  // so that CheckedPtr can easily tell if a pointer comes with a tag or not.
+  kAlignedAlloc,
+};
+
 namespace internal {
 template <bool thread_safe>
 struct BASE_EXPORT PartitionAllocator {
@@ -909,8 +922,9 @@ struct BASE_EXPORT PartitionAllocator {
         &partition_root_);
   }
 
-  void init() {
-    partition_root_.Init(true);
+  void init(PartitionAllocatorAlignment alignment =
+                PartitionAllocatorAlignment::kRegular) {
+    partition_root_.Init(alignment == PartitionAllocatorAlignment::kRegular);
     PartitionAllocMemoryReclaimer::Instance()->RegisterPartition(
         &partition_root_);
   }

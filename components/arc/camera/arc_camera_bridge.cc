@@ -11,7 +11,7 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
-#include "chromeos/dbus/arc_camera_client.h"
+#include "chromeos/dbus/arc/arc_camera_client.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "crypto/random.h"

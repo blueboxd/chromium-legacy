@@ -103,6 +103,9 @@ gfx::Image GetTabAlertIndicatorImage(TabAlertState alert_state,
     case TabAlertState::BLUETOOTH_CONNECTED:
       icon = &kTabBluetoothConnectedIcon;
       break;
+    case TabAlertState::BLUETOOTH_SCAN_ACTIVE:
+      icon = &kTabBluetoothScanActiveIcon;
+      break;
     case TabAlertState::USB_CONNECTED:
       icon = &kTabUsbConnectedIcon;
       break;

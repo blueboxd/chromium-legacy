@@ -201,8 +201,8 @@ enum PaymentComplete {
 
 
 // Implemented in the browser process. Not sandboxed. Deals with trusted data.
-// Android implementation:
-//   chrome/android/java/src/org/chromium/chrome/browser/payments/PaymentRequestImpl.java
+// Android implementation (Clank, WebLayer):
+//   components/payments/content/android/java/src/org/chromium/components/payments/ComponentPaymentRequestImpl.java
 // Desktop (Windows, ChromeOS, Linux, MacOS) implementation:
 //   components/payments/content/payment_request.h
 interface PaymentRequest {

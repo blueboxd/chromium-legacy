@@ -99,20 +99,20 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
   void DidAnnotateFile(CloseCallback callback,
                        quarantine::mojom::QuarantineFileResult result);
 
-  // After write checks apply to native local paths, file system provider paths,
-  // and platform app native paths.
+  // After write checks should apply to paths on all filesystems except
+  // temporary file systems.
+  // TOOD(crbug.com/1103076): Extend this check to non-native paths.
   bool RequireAfterWriteCheck() const {
     return url().type() == storage::kFileSystemTypeNativeLocal ||
-           url().type() == storage::kFileSystemTypeProvided ||
            url().type() == storage::kFileSystemTypeNativeForPlatformApp;
   }
 
-  // Quarantine checks apply to native local paths, file system provider paths,
-  // and platform app native paths.
+  // Quarantine checks should apply to paths on all filesystems except
+  // temporary file systems.
+  // TOOD(crbug.com/1103076): Extend this check to non-native paths.
   bool CanSkipQuarantineCheck() const {
     bool need_quarantine_check =
         url().type() == storage::kFileSystemTypeNativeLocal ||
-        url().type() == storage::kFileSystemTypeProvided ||
         url().type() == storage::kFileSystemTypeNativeForPlatformApp;
 
     return skip_quarantine_check_for_testing_ || !need_quarantine_check;

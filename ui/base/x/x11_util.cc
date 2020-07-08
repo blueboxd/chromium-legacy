@@ -1266,15 +1266,12 @@ bool IsX11WindowFullScreen(x11::Window window) {
   if (!ui::GetOuterWindowBounds(window, &window_rect))
     return false;
 
-  // We can't use display::Screen here because we don't have an aura::Window. So
-  // instead just look at the size of the default display.
-  //
-  // TODO(erg): Actually doing this correctly would require pulling out xrandr,
-  // which we don't even do in the desktop screen yet.
-  ::XDisplay* display = gfx::GetXDisplay();
-  ::Screen* screen = DefaultScreenOfDisplay(display);
-  int width = WidthOfScreen(screen);
-  int height = HeightOfScreen(screen);
+  // TODO(thomasanderson): We should use
+  // display::Screen::GetDisplayNearestWindow() instead of using the
+  // connection screen size, which encompasses all displays.
+  auto* connection = x11::Connection::Get();
+  int width = connection->default_screen().width_in_pixels;
+  int height = connection->default_screen().height_in_pixels;
   return window_rect.size() == gfx::Size(width, height);
 }
 

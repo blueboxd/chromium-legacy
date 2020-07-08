@@ -54,6 +54,8 @@ std::string ConvertAlertStateToString(TabAlertState alert_state) {
       return "audio-muting";
     case TabAlertState::BLUETOOTH_CONNECTED:
       return "bluetooth-connected";
+    case TabAlertState::BLUETOOTH_SCAN_ACTIVE:
+      return "bluetooth-connected";
     case TabAlertState::USB_CONNECTED:
       return "usb-connected";
     case TabAlertState::HID_CONNECTED:

@@ -520,6 +520,10 @@ class WebContents : public PageNavigator,
   // Device.
   virtual bool IsConnectedToBluetoothDevice() = 0;
 
+  // Indicates whether any frame in the WebContents is scanning for Bluetooth
+  // devices.
+  virtual bool IsScanningForBluetoothDevices() = 0;
+
   // Indicates whether any frame in the WebContents is connected to a serial
   // port.
   virtual bool IsConnectedToSerialPort() = 0;

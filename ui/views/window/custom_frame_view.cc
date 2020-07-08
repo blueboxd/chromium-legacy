@@ -177,10 +177,6 @@ void CustomFrameView::SizeConstraintsChanged() {
   LayoutWindowControls();
 }
 
-void CustomFrameView::PaintAsActiveChanged() {
-  SchedulePaint();
-}
-
 void CustomFrameView::OnPaint(gfx::Canvas* canvas) {
   if (!ShouldShowTitleBarAndBorder())
     return;

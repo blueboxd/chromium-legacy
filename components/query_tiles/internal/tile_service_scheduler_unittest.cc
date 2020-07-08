@@ -1,7 +1,8 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "components/query_tiles/internal/tile_service_scheduler.h"
+
+#include "components/query_tiles/internal/tile_service_scheduler_impl.h"
 
 #include <utility>
 #include <vector>
@@ -13,12 +14,15 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/query_tiles/internal/black_hole_log_sink.h"
 #include "components/query_tiles/internal/tile_config.h"
 #include "components/query_tiles/internal/tile_store.h"
 #include "components/query_tiles/switches.h"
 #include "components/query_tiles/test/test_utils.h"
+#include "components/query_tiles/tile_service_prefs.h"
+#include "net/base/backoff_entry_serializer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

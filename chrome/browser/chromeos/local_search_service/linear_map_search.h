@@ -15,7 +15,11 @@
 #include "chrome/browser/chromeos/local_search_service/index.h"
 #include "chrome/browser/chromeos/local_search_service/shared_structs.h"
 
+namespace chromeos {
+namespace string_matching {
 class TokenizedString;
+}  // namespace string_matching
+}  // namespace chromeos
 
 namespace local_search_service {
 
@@ -48,9 +52,10 @@ class LinearMapSearch : public Index {
                                        uint32_t max_results) const;
 
   // A map from key to a vector of (tag-id, tokenized tag).
-  std::map<
-      std::string,
-      std::vector<std::pair<std::string, std::unique_ptr<TokenizedString>>>>
+  std::map<std::string,
+           std::vector<std::pair<
+               std::string,
+               std::unique_ptr<chromeos::string_matching::TokenizedString>>>>
       data_;
 };
 

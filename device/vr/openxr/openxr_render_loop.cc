@@ -16,9 +16,13 @@ namespace device {
 
 OpenXrRenderLoop::OpenXrRenderLoop(
     base::RepeatingCallback<void(mojom::VRDisplayInfoPtr)>
-        on_display_info_changed)
+        on_display_info_changed,
+    XrInstance instance)
     : XRCompositorCommon(),
-      on_display_info_changed_(std::move(on_display_info_changed)) {}
+      instance_(instance),
+      on_display_info_changed_(std::move(on_display_info_changed)) {
+  DCHECK(instance_ != XR_NULL_HANDLE);
+}
 
 OpenXrRenderLoop::~OpenXrRenderLoop() {
   Stop();
@@ -78,6 +82,7 @@ mojom::XRFrameDataPtr OpenXrRenderLoop::GetNextFrameData() {
 }
 
 bool OpenXrRenderLoop::StartRuntime() {
+  DCHECK(instance_ != XR_NULL_HANDLE);
   DCHECK(!openxr_);
   DCHECK(!input_helper_);
   DCHECK(!current_display_info_);
@@ -86,7 +91,8 @@ bool OpenXrRenderLoop::StartRuntime() {
   // openxr_ so that the local unique_ptr cleans up the object if starting
   // a session fails. openxr_ is set later in this method once we know
   // starting the session succeeds.
-  std::unique_ptr<OpenXrApiWrapper> openxr = OpenXrApiWrapper::Create();
+  std::unique_ptr<OpenXrApiWrapper> openxr =
+      OpenXrApiWrapper::Create(instance_);
   if (!openxr)
     return false;
 

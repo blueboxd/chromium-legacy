@@ -14,7 +14,10 @@
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame_layout.h"
 #include "media/gpu/test/video.h"
+#include "media/gpu/test/video_frame_helpers.h"
+#include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 #include "media/video/h264_parser.h"
+#include "mojo/public/cpp/system/buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libyuv/include/libyuv/planar_functions.h"
 
@@ -315,134 +318,131 @@ bool EncodedDataHelper::HasConfigInfo(const uint8_t* data,
   return false;
 }
 
+struct AlignedDataHelper::VideoFrameData {
+  VideoFrameData() = default;
+  VideoFrameData(mojo::ScopedSharedBufferHandle mojo_handle)
+      : mojo_handle(std::move(mojo_handle)) {}
+  VideoFrameData(VideoFrameData&&) = default;
+  VideoFrameData& operator=(VideoFrameData&&) = default;
+  VideoFrameData(const VideoFrameData&) = delete;
+  VideoFrameData& operator=(const VideoFrameData&) = delete;
+
+  mojo::ScopedSharedBufferHandle mojo_handle;
+};
+
 AlignedDataHelper::AlignedDataHelper(const std::vector<uint8_t>& stream,
                                      uint32_t num_frames,
                                      VideoPixelFormat pixel_format,
                                      const gfx::Rect& visible_area,
                                      const gfx::Size& coded_size)
-    : num_frames_(num_frames),
-      pixel_format_(pixel_format),
-      visible_area_(visible_area),
-      coded_size_(coded_size) {
-  // TODO(b/150257482): Rather than aligning the video stream data here, we
-  // could directly create a vector of aligned video frames.
-  CreateAlignedInputStream(stream);
+    : num_frames_(num_frames), visible_area_(visible_area) {
+  InitializeAlignedMemoryFrames(stream, pixel_format, coded_size);
 }
 
 AlignedDataHelper::~AlignedDataHelper() {}
 
-scoped_refptr<VideoFrame> AlignedDataHelper::GetNextFrame() {
-  size_t num_planes = VideoFrame::NumPlanes(pixel_format_);
-  CHECK_LE(num_planes, 3u);
-
-  uint8_t* frame_data[3] = {};
-  std::vector<ColorPlaneLayout> planes(num_planes);
-  size_t offset = data_pos_;
-
-  for (size_t i = 0; i < num_planes; i++) {
-    frame_data[i] = reinterpret_cast<uint8_t*>(&aligned_data_[0]) + offset;
-    planes[i].stride =
-        VideoFrame::RowBytes(i, pixel_format_, coded_size_.width());
-    planes[i].offset = offset;
-    planes[i].size = aligned_plane_size_[i];
-    offset += aligned_plane_size_[i];
-  }
-
-  auto layout = VideoFrameLayout::CreateWithPlanes(pixel_format_, coded_size_,
-                                                   std::move(planes));
-  if (!layout) {
-    LOG(ERROR) << "Failed to create VideoFrameLayout";
-    return nullptr;
-  }
-
-  // TODO(crbug.com/1045825): Investigate use of MOJO_SHARED_BUFFER, similar to
-  // changes made in crrev.com/c/2050895.
-  scoped_refptr<VideoFrame> video_frame =
-      VideoFrame::WrapExternalYuvDataWithLayout(
-          *layout, visible_area_, visible_area_.size(), frame_data[0],
-          frame_data[1], frame_data[2], base::TimeTicks::Now().since_origin());
-
-  data_pos_ += static_cast<off_t>(aligned_frame_size_);
-  DCHECK_LE(data_pos_, aligned_data_.size());
-
-  EXPECT_NE(nullptr, video_frame.get());
-  return video_frame;
-}
-
 void AlignedDataHelper::Rewind() {
-  data_pos_ = 0;
+  frame_index_ = 0;
 }
 
 bool AlignedDataHelper::AtHeadOfStream() const {
-  return data_pos_ == 0;
+  return frame_index_ == 0;
 }
 
 bool AlignedDataHelper::AtEndOfStream() const {
-  return data_pos_ == aligned_data_.size();
+  return frame_index_ == num_frames_;
 }
 
-void AlignedDataHelper::CreateAlignedInputStream(
-    const std::vector<uint8_t>& stream) {
-  ASSERT_NE(pixel_format_, PIXEL_FORMAT_UNKNOWN);
-  size_t num_planes = VideoFrame::NumPlanes(pixel_format_);
-  std::vector<size_t> coded_bpl(num_planes);
-  std::vector<size_t> visible_bpl(num_planes);
-  std::vector<size_t> visible_plane_rows(num_planes);
+scoped_refptr<VideoFrame> AlignedDataHelper::GetNextFrame() {
+  LOG_ASSERT(!AtEndOfStream());
+  const auto& mojo_handle = video_frame_data_[frame_index_++].mojo_handle;
+  auto dup_handle =
+      mojo_handle->Clone(mojo::SharedBufferHandle::AccessMode::READ_WRITE);
+  if (!dup_handle.is_valid()) {
+    LOG(ERROR) << "Failed duplicating mojo handle";
+    return nullptr;
+  }
+
+  std::vector<uint32_t> offsets(layout_->planes().size());
+  std::vector<int32_t> strides(layout_->planes().size());
+  for (size_t i = 0; i < layout_->planes().size(); i++) {
+    offsets[i] = layout_->planes()[i].offset;
+    strides[i] = layout_->planes()[i].stride;
+  }
+  const size_t video_frame_size =
+      layout_->planes().back().offset + layout_->planes().back().size;
+  return MojoSharedBufferVideoFrame::Create(
+      layout_->format(), layout_->coded_size(), visible_area_,
+      visible_area_.size(), std::move(dup_handle), video_frame_size, offsets,
+      strides, base::TimeTicks::Now().since_origin());
+}
+
+void AlignedDataHelper::InitializeAlignedMemoryFrames(
+    const std::vector<uint8_t>& stream,
+    const VideoPixelFormat pixel_format,
+    const gfx::Size& coded_size) {
+  ASSERT_NE(pixel_format, PIXEL_FORMAT_UNKNOWN);
 
   // Calculate padding in bytes to be added after each plane required to keep
   // starting addresses of all planes at a byte boundary required by the
   // platform. This padding will be added after each plane when copying to the
   // temporary file.
   // At the same time we also need to take into account coded_size requested by
-  // the VEA; each row of visible_bpl bytes in the original file needs to be
-  // copied into a row of coded_bpl bytes in the aligned file.
-  for (size_t i = 0; i < num_planes; i++) {
-    coded_bpl[i] = VideoFrame::RowBytes(i, pixel_format_, coded_size_.width());
-    visible_bpl[i] =
-        VideoFrame::RowBytes(i, pixel_format_, visible_area_.width());
-    visible_plane_rows[i] =
-        VideoFrame::Rows(i, pixel_format_, visible_area_.height());
-    size_t coded_area_size =
-        coded_bpl[i] * VideoFrame::Rows(i, pixel_format_, coded_size_.height());
-    const size_t aligned_size = AlignToPlatformRequirements(coded_area_size);
-    aligned_plane_size_.push_back(aligned_size);
-    aligned_frame_size_ += aligned_size;
-  }
+  // the VEA; each row of |src_strides| bytes in the original file needs to be
+  // copied into a row of |strides_| bytes in the aligned file.
+  size_t video_frame_size;
+  layout_ = GetAlignedVideoFrameLayout(pixel_format, coded_size,
+                                       kPlatformBufferAlignment, nullptr,
+                                       &video_frame_size);
+  LOG_ASSERT(video_frame_size > 0UL);
 
-  // NOTE: VideoFrame::AllocationSize() cannot used here because the width and
-  // height on each plane is aligned by 2 for YUV format.
-  size_t frame_buffer_size = 0;
-  for (size_t i = 0; i < num_planes; ++i) {
-    size_t row_bytes =
-        VideoFrame::RowBytes(i, pixel_format_, visible_area_.width());
-    size_t rows = VideoFrame::Rows(i, pixel_format_, visible_area_.height());
-    frame_buffer_size += rows * row_bytes;
-  }
-
-  LOG_ASSERT(stream.size() % frame_buffer_size == 0U)
+  std::vector<size_t> src_plane_rows;
+  size_t src_video_frame_size = 0;
+  auto src_layout = GetAlignedVideoFrameLayout(
+      pixel_format, visible_area_.size(), 1u /* alignment */, &src_plane_rows,
+      &src_video_frame_size);
+  LOG_ASSERT(stream.size() % src_video_frame_size == 0U)
       << "Stream byte size is not a product of calculated frame byte size";
 
-  LOG_ASSERT(aligned_frame_size_ > 0UL);
-  aligned_data_.resize(aligned_frame_size_ * num_frames_);
-
-  off_t src_offset = 0;
-  off_t dest_offset = 0;
-  for (size_t frame = 0; frame < num_frames_; frame++) {
+  LOG_ASSERT(video_frame_size > 0UL);
+  video_frame_data_.resize(num_frames_);
+  const size_t num_planes = VideoFrame::NumPlanes(pixel_format);
+  const uint8_t* src_frame_ptr = &stream[0];
+  for (size_t i = 0; i < num_frames_; i++) {
+    auto handle = mojo::SharedBufferHandle::Create(video_frame_size);
+    ASSERT_TRUE(handle.is_valid()) << "Failed allocating a handle";
+    auto mapping = handle->Map(video_frame_size);
+    ASSERT_TRUE(!!mapping);
+    uint8_t* buffer = reinterpret_cast<uint8_t*>(mapping.get());
     for (size_t i = 0; i < num_planes; i++) {
-      // Assert that each plane of frame starts at required byte boundary.
-      ASSERT_TRUE(base::IsAligned(dest_offset, kPlatformBufferAlignment))
-          << "Planes of frame should be mapped per platform requirements";
-      const uint8_t* src_ptr = &stream[src_offset];
-      uint8_t* dst_ptr =
-          reinterpret_cast<uint8_t*>(&aligned_data_[dest_offset]);
-      libyuv::CopyPlane(src_ptr, visible_bpl[i], dst_ptr, coded_bpl[i],
-                        visible_bpl[i], visible_plane_rows[i]);
-      dest_offset += aligned_plane_size_[i];
-      src_offset +=
-          VideoFrame::PlaneSize(pixel_format_, i, visible_area_.size())
-              .GetArea();
+      auto src_plane_layout = src_layout.planes()[i];
+      auto dst_plane_layout = layout_->planes()[i];
+      const uint8_t* src_ptr = src_frame_ptr + src_plane_layout.offset;
+      uint8_t* dst_ptr = &buffer[dst_plane_layout.offset];
+      libyuv::CopyPlane(src_ptr, src_plane_layout.stride, dst_ptr,
+                        dst_plane_layout.stride, src_plane_layout.stride,
+                        src_plane_rows[i]);
     }
+    src_frame_ptr += src_video_frame_size;
+    video_frame_data_[i] = VideoFrameData(std::move(handle));
   }
+}
+
+// static
+VideoFrameLayout AlignedDataHelper::GetAlignedVideoFrameLayout(
+    VideoPixelFormat pixel_format,
+    const gfx::Size& dimension,
+    const uint32_t alignment,
+    std::vector<size_t>* plane_rows,
+    size_t* video_frame_size) {
+  auto layout =
+      CreateVideoFrameLayout(pixel_format, dimension, alignment, plane_rows);
+  LOG_ASSERT(layout) << "Failed creating VideoFrameLayout";
+  if (video_frame_size) {
+    const auto& plane = layout->planes().back();
+    *video_frame_size = plane.offset + plane.size;
+  }
+  return *layout;
 }
 
 // static
@@ -513,6 +513,7 @@ scoped_refptr<const VideoFrame> RawDataHelper::GetFrame(size_t index) {
     frame_data[i] = reinterpret_cast<uint8_t*>(video_->Data().data()) + offset;
     offset += layout_->planes()[i].size;
   }
+
   // TODO(crbug.com/1045825): Investigate use of MOJO_SHARED_BUFFER, similar to
   // changes made in crrev.com/c/2050895.
   scoped_refptr<const VideoFrame> video_frame =

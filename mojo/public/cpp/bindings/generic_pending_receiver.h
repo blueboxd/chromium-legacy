@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 

@@ -187,11 +187,6 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
   // cancelled.
   bool AttemptTimeoutIsCancelledForTesting() const;
 
-  // Record detection stats such as detection duration and detection
-  // result in UMA.
-  void RecordDetectionStats(const NetworkState* network,
-                            CaptivePortalStatus status);
-
   // Resets strategy and all counters used in computations of
   // timeouts.
   void ResetStrategyAndCounters();

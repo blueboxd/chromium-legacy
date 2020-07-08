@@ -111,7 +111,8 @@ class ScreenResources {
   std::unique_ptr<x11::RandR::GetScreenResourcesCurrentReply> resources_;
 };
 
-class DesktopResizerX11 : public DesktopResizer {
+class DesktopResizerX11 : public DesktopResizer,
+                          public x11::Connection::Delegate {
  public:
   DesktopResizerX11();
   ~DesktopResizerX11() override;
@@ -124,6 +125,10 @@ class DesktopResizerX11 : public DesktopResizer {
   void RestoreResolution(const ScreenResolution& original) override;
 
  private:
+  // x11::Connection::Delegate:
+  bool ShouldContinueStream() const override;
+  void DispatchXEvent(x11::Event* event) override;
+
   // Add a mode matching the specified resolution and switch to it.
   void SetResolutionNewMode(const ScreenResolution& resolution);
 
@@ -174,28 +179,14 @@ DesktopResizerX11::DesktopResizerX11()
 DesktopResizerX11::~DesktopResizerX11() = default;
 
 ScreenResolution DesktopResizerX11::GetCurrentResolution() {
-  // Xrandr requires that we process RRScreenChangeNotify events, otherwise
-  // DisplayWidth and DisplayHeight do not return the current values. Normally,
-  // this would be done via a central X event loop, but we don't have one, hence
-  // this horrible hack.
-  //
-  // Note that the WatchFileDescriptor approach taken in XServerClipboard
-  // doesn't work here because resize events have already been read from the
-  // X server socket by the time the resize function returns, hence the
-  // file descriptor is never seen as readable.
-  if (has_randr_) {
-    while (XEventsQueued(connection_.display(), QueuedAlready)) {
-      XEvent event;
-      XNextEvent(connection_.display(), &event);
-      XRRUpdateConfiguration(&event);
-    }
-  }
+  // Process pending events so that the connection setup data is updated
+  // with the correct display metrics.
+  if (has_randr_)
+    connection_.Dispatch(this);
 
   ScreenResolution result(
-      webrtc::DesktopSize(DisplayWidth(connection_.display(),
-                                       DefaultScreen(connection_.display())),
-                          DisplayHeight(connection_.display(),
-                                        DefaultScreen(connection_.display()))),
+      webrtc::DesktopSize(connection_.default_screen().width_in_pixels,
+                          connection_.default_screen().height_in_pixels),
       webrtc::DesktopVector(kDefaultDPI, kDefaultDPI));
   return result;
 }
@@ -256,6 +247,12 @@ void DesktopResizerX11::SetResolution(const ScreenResolution& resolution) {
 void DesktopResizerX11::RestoreResolution(const ScreenResolution& original) {
   SetResolution(original);
 }
+
+bool DesktopResizerX11::ShouldContinueStream() const {
+  return true;
+}
+
+void DesktopResizerX11::DispatchXEvent(x11::Event* event) {}
 
 void DesktopResizerX11::SetResolutionNewMode(
     const ScreenResolution& resolution) {

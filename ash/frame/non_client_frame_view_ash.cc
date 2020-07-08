@@ -307,12 +307,6 @@ void NonClientFrameViewAsh::SizeConstraintsChanged() {
   header_view_->UpdateCaptionButtons();
 }
 
-void NonClientFrameViewAsh::PaintAsActiveChanged() {
-  // The icons differ between active and inactive.
-  header_view_->SchedulePaint();
-  frame_->non_client_view()->Layout();
-}
-
 gfx::Size NonClientFrameViewAsh::CalculatePreferredSize() const {
   gfx::Size pref = frame_->client_view()->GetPreferredSize();
   gfx::Rect bounds(0, 0, pref.width(), pref.height());
@@ -413,6 +407,12 @@ bool NonClientFrameViewAsh::DoesIntersectRect(const views::View* target,
 FrameCaptionButtonContainerView*
 NonClientFrameViewAsh::GetFrameCaptionButtonContainerViewForTest() {
   return header_view_->caption_button_container();
+}
+
+void NonClientFrameViewAsh::PaintAsActiveChanged() {
+  // The icons differ between active and inactive.
+  header_view_->SchedulePaint();
+  frame_->non_client_view()->Layout();
 }
 
 }  // namespace ash

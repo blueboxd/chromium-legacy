@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "ui/ozone/platform/drm/host/host_drm_device.h"

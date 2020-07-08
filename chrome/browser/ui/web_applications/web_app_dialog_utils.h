@@ -44,6 +44,7 @@ void CreateWebAppFromCurrentWebContents(Browser* browser,
 // a promotional banner or omnibox install icon.
 // Returns false if WebApps are disabled for the profile behind |web_contents|.
 bool CreateWebAppFromManifest(content::WebContents* web_contents,
+                              bool bypass_service_worker_check,
                               WebappInstallSource install_source,
                               WebAppInstalledCallback installed_callback);
 

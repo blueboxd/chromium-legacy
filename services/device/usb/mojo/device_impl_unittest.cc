@@ -23,7 +23,6 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/usb/mock_usb_device.h"

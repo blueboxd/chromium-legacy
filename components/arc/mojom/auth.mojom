@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 25
+// Next MinVersion: 26
 
 module arc.mojom;
 
@@ -12,7 +12,7 @@ enum ArcSignInStatus {
   // Negative values are reserved for internal use.
   // The values are shuffled to keep the backward compatibility and don't match
   // ProvisioningResult in arc_optin_uma.h
-  // Next value: 22.
+  // Next value: 23.
   UNKNOWN_ERROR = 0,
 
   // Mojo errors:
@@ -58,9 +58,16 @@ enum ArcSignInStatus {
   GMS_SIGN_IN_INTERNAL_ERROR = 12,
 
   // Cloud provisioning errors.
+  // TODO(mhasank) replace usage with CLOUD_PROVISION_FLOW_ERROR
+  // and prepend DEPRECATED
+  // [Deprecated in version 25]
   CLOUD_PROVISION_FLOW_FAILED = 5,
   CLOUD_PROVISION_FLOW_TIMEOUT = 13,
   CLOUD_PROVISION_FLOW_INTERNAL_ERROR = 14,
+
+  // Top level error for all CloudDPC errors
+  // additional details are provided by CloudProvisionFlowError
+  [MinVersion=25] CLOUD_PROVISION_FLOW_ERROR = 22,
 
   // Network connection is unavailable.
   [MinVersion=8] NO_NETWORK_CONNECTION = 15,
@@ -81,6 +88,72 @@ enum ArcSignInStatus {
 
   // Account is not present in Chrome OS Account Manager.
   [MinVersion=21] CHROME_ACCOUNT_NOT_FOUND = 21,
+};
+
+// Represents different kinds of errors that can happen during
+// sign-in. Error codes from ArcSignInStatus should be grouped
+// and moved here.
+union ArcSignInError {
+  CloudProvisionFlowError cloud_provision_flow_error;
+};
+
+[Extensible]
+// These values must be in sync with ProvisionConstants in CloudDPC code
+enum CloudProvisionFlowError {
+    // Unknown or uncommon error.
+    ERROR_OTHER = 0,
+    // Enrollment token provided was invalid.
+    ERROR_ENROLLMENT_TOKEN_INVALID = 1,
+    // Enterprise hit device quota.
+    ERROR_DEVICE_QUOTA_EXCEEDED = 2,
+    // CloudDPS could not fulfill request because of a transient error.
+    ERROR_SERVER_TRANSIENT_ERROR = 3,
+    // Account could not be added.
+    ERROR_ADD_ACCOUNT_FAILED = 4,
+    // Could not get Android ID
+    ERROR_REQUEST_ANDROID_ID_FAILED = 5,
+    // Device got stuck in quarantine mode.
+    ERROR_QUARANTINE = 6,
+    // Setup step timed out.
+    ERROR_TIMEOUT = 7,
+    // There was no network, so device couldn't fulfill a request.
+    ERROR_NETWORK_UNAVAILABLE = 8,
+    // Enterprise is not registered with CloudDPx.
+    ERROR_ENTERPRISE_INVALID = 9,
+    // User cancelled the step.
+    ERROR_USER_CANCEL = 10,
+    // Either account migration failed or account was deleted by user during provisioning.
+    ERROR_NO_ACCOUNT_IN_WORK_PROFILE = 11,
+    // Policy got stuck in invalid state.
+    ERROR_INVALID_POLICY_STATE = 12,
+    // Issues with DpcSupport.
+    ERROR_DPC_SUPPORT = 13,
+    // Account wad not ready.
+    ERROR_ACCOUNT_NOT_READY = 14,
+    // Checkin failed.
+    ERROR_CHECKIN_FAILED = 15,
+    // Issues with whitelisting work account.
+    ERROR_ACCOUNT_NOT_WHITELISTED = 16,
+    // Error parsing JSON, most likely policy JSON
+    ERROR_JSON = 17,
+    // ManagedProvisioning failed.
+    ERROR_MANAGED_PROVISIONING_FAILED = 18,
+    // Setup intent could not be parsed.
+    ERROR_INVALID_SETUP_ACTION = 19,
+    // CloudDPS exception with an uncommon server code.
+    ERROR_SERVER = 20,
+    // Removing a previously existing unmanaged account failed.
+    ERROR_REMOVE_ACCOUNT_FAILED = 21,
+    // Error with getting OAuth token.
+    ERROR_OAUTH_TOKEN = 22,
+    // AccountException with no exception details.
+    ERROR_ACCOUNT_OTHER = 23,
+    // Error with getting OAuth token due to AuthenticatorException.
+    ERROR_OAUTH_TOKEN_AUTHENTICATOR_EXCEPTION = 24,
+    // Error with getting OAuth token due to IOException.
+    ERROR_OAUTH_TOKEN_IO_EXCEPTION = 25,
+    // Error with getting OAuth token due to OperationCanceledException.
+    ERROR_OAUTH_TOKEN_OPERATION_CANCELED_EXCEPTION = 26,
 };
 
 // These values describe account check status.
@@ -263,10 +336,15 @@ interface AuthHost {
   // authorization happened for initial device provisioning.
   // If |account_name| is not present, it is assumed to be the Primary/Device
   // account. It cannot/must not be supplied when |initial_signin| is true.
+  // |error| has the sub error codes for parent error reported in status.
+  // Currently |error| is only populated for some cases of CloudDPC errors.
+  // TODO(b/146435695) Move out all errors from ArcSignInStatus to ArcSignInError and
+  // create a union that either has success code or error code
   [MinVersion=11] OnAuthorizationComplete@10(
       ArcSignInStatus status,
       bool initial_signin,
-      [MinVersion=18] string? account_name);
+      [MinVersion=18] string? account_name,
+      [MinVersion=25] ArcSignInError? error);
 
   // Notifies Chrome that the sign-in is completed successfully.
   [MinVersion=2] OnSignInCompleteDeprecated@2();

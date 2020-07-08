@@ -40,7 +40,6 @@
 #include "content/public/common/screen_info.h"
 #include "content/public/common/webplugininfo.h"
 #include "gpu/config/gpu_info.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"

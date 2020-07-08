@@ -112,7 +112,7 @@ void StoreImpl(const base::FilePath& cache_dir,
             static_cast<int>(checksum.size())) {
       LOG(ERROR) << "Failed to create ppd cache file";
       file.Close();
-      if (!base::DeleteFile(path, false)) {
+      if (!base::DeleteFile(path)) {
         LOG(ERROR) << "Failed to cleanup failed creation.";
       }
     } else {

@@ -198,7 +198,7 @@ class DialogFooter {
           evt.stopPropagation();
           evt.preventDefault();
         }
-        // Drop through.
+        // fall through
       case 'Tab':
         this.selectHideDropDown(options);
         break;
@@ -213,24 +213,45 @@ class DialogFooter {
         }
         break;
       case 'ArrowDown':
+      case 'ArrowLeft':
+      case 'ArrowRight':
       case 'ArrowUp':
-        if (options.getAttribute('expanded') === 'expanded') {
-          const selectedItem = options.querySelector('.selected');
-          if (selectedItem) {
-            if (evt.key === 'ArrowDown') {
+        const selectedItem = options.querySelector('.selected');
+        const isCollapsed = options.getAttribute('expanded') !== 'expanded';
+        let selectionChanged = false;
+        if (selectedItem) {
+          switch (evt.key) {
+            case 'ArrowRight':
+              if (!isCollapsed) {
+                break;
+              }
+              // fall through
+            case 'ArrowDown':
               if (selectedItem.nextSibling) {
                 this.setOptionSelected(
                     /** @type {HTMLOptionElement} */ (
                         selectedItem.nextSibling));
+                selectionChanged = true;
               }
-            } else {  // ArrowUp.
+              break;
+            case 'ArrowLeft':
+              if (!isCollapsed) {
+                break;
+              }
+              // fall through
+            case 'ArrowUp':
               if (selectedItem.previousSibling) {
                 this.setOptionSelected(
                     /** @type {HTMLOptionElement} */ (
                         selectedItem.previousSibling));
+                selectionChanged = true;
               }
-            }
+              break;
           }
+        }
+        if (selectionChanged && isCollapsed) {
+          const changeEvent = new Event('change');
+          this.fileTypeSelector.dispatchEvent(changeEvent);
         }
         break;
     }

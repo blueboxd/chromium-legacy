@@ -72,7 +72,6 @@ class RTCRtpSenderImplTest : public ::testing::Test {
     auto audio_source = std::make_unique<MediaStreamAudioSource>(
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(), true);
     auto* audio_source_ptr = audio_source.get();
-    audio_source->SetOwner(source);
     source->SetPlatformSource(std::move(audio_source));
 
     auto* component =

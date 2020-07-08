@@ -175,8 +175,7 @@ bool SandboxOriginDatabase::RepairDatabase(const std::string& db_path) {
 
   // Delete any directories not listed in the origins database.
   for (const base::FilePath& dir : directories) {
-    if (!base::DeleteFile(file_system_directory_.Append(dir),
-                          true /* recursive */)) {
+    if (!base::DeletePathRecursively(file_system_directory_.Append(dir))) {
       DropDatabase();
       return false;
     }

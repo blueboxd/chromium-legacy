@@ -6,11 +6,12 @@
 
 namespace blink {
 
-MailboxTextureBacking::MailboxTextureBacking(sk_sp<SkImage> sk_image)
-    : sk_image_(std::move(sk_image)) {}
+MailboxTextureBacking::MailboxTextureBacking(sk_sp<SkImage> sk_image,
+                                             const SkImageInfo& info)
+    : sk_image_(std::move(sk_image)), sk_image_info_(info) {}
 
 const SkImageInfo& MailboxTextureBacking::GetSkImageInfo() {
-  return sk_image_->imageInfo();
+  return sk_image_info_;
 }
 
 gpu::Mailbox MailboxTextureBacking::GetMailbox() const {

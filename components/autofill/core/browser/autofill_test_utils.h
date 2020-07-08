@@ -31,6 +31,26 @@ class AutofillProfile;
 class AutofillTable;
 struct FormData;
 struct FormFieldData;
+struct FormDataPredictions;
+struct FormFieldDataPredictions;
+
+// Defined by pair-wise equality of all members.
+bool operator==(const FormFieldDataPredictions& a,
+                const FormFieldDataPredictions& b);
+
+inline bool operator!=(const FormFieldDataPredictions& a,
+                       const FormFieldDataPredictions& b) {
+  return !(a == b);
+}
+
+// Holds iff the underlying FormDatas sans field values are equal and the
+// remaining members are pairwise equal.
+bool operator==(const FormDataPredictions& a, const FormDataPredictions& b);
+
+inline bool operator!=(const FormDataPredictions& a,
+                       const FormDataPredictions& b) {
+  return !(a == b);
+}
 
 // Common utilities shared amongst Autofill tests.
 namespace test {

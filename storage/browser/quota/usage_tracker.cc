@@ -40,7 +40,7 @@ struct UsageTracker::AccumulateInfo {
 UsageTracker::UsageTracker(
     const base::flat_map<QuotaClient*, QuotaClientType>& client_types,
     blink::mojom::StorageType type,
-    SpecialStoragePolicy* special_storage_policy)
+    scoped_refptr<SpecialStoragePolicy> special_storage_policy)
     : type_(type) {
   size_t client_count = 0;
 

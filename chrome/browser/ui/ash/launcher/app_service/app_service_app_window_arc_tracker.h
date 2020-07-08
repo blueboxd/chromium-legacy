@@ -70,10 +70,10 @@ class AppServiceAppWindowArcTracker : public ArcAppListPrefs::Observer,
                      const std::string& package_name,
                      const std::string& activity,
                      const std::string& intent) override;
-  void OnTaskDescriptionUpdated(
+  void OnTaskDescriptionChanged(
       int32_t task_id,
       const std::string& label,
-      const std::vector<uint8_t>& icon_png_data) override;
+      const arc::mojom::RawIconPngData& icon) override;
   void OnTaskDestroyed(int task_id) override;
   void OnTaskSetActive(int32_t task_id) override;
 
@@ -121,7 +121,15 @@ class AppServiceAppWindowArcTracker : public ArcAppListPrefs::Observer,
 
   std::vector<int> GetTaskIdsForApp(const std::string& arc_app_id) const;
 
+  // Invoked when the compressed data is converted to an ImageSkia.
+  void OnIconLoaded(int32_t task_id,
+                    const std::string& title,
+                    const gfx::ImageSkia& icon);
+
   // Sets the window title and icon.
+  // TODO(crbug.com/1083331): This function can be deleted when the flag
+  // kAppServiceAdaptiveIcon is deleted, and use OnIconLoaded to replace this
+  // function.
   void SetDescription(int32_t task_id,
                       const std::string& title,
                       gfx::ImageSkia icon);

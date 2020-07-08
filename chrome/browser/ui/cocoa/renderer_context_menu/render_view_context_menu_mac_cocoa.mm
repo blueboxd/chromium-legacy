@@ -192,7 +192,10 @@ RenderViewContextMenuMacCocoa::RenderViewContextMenuMacCocoa(
   set_toolkit_delegate(std::move(delegate));
 }
 
-RenderViewContextMenuMacCocoa::~RenderViewContextMenuMacCocoa() {}
+RenderViewContextMenuMacCocoa::~RenderViewContextMenuMacCocoa() {
+  if (menu_controller_)
+    [menu_controller_ cancel];
+}
 
 void RenderViewContextMenuMacCocoa::Show() {
   menu_controller_.reset([[MenuControllerCocoa alloc] initWithModel:&menu_model_

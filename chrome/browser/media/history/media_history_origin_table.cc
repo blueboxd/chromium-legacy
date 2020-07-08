@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "sql/statement.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 namespace media_history {
@@ -157,6 +158,32 @@ bool MediaHistoryOriginTable::Delete(const url::Origin& origin) {
           .c_str()));
   statement.BindString(0, GetOriginForStorage(origin));
   return statement.Run();
+}
+
+std::vector<url::Origin> MediaHistoryOriginTable::GetHighWatchTimeOrigins(
+    const base::TimeDelta& audio_video_watchtime_min) {
+  std::vector<url::Origin> origins;
+  if (!CanAccessDatabase())
+    return origins;
+
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE,
+      "SELECT origin, "
+      "aggregate_watchtime_audio_video_s "
+      "FROM origin "
+      "ORDER BY aggregate_watchtime_audio_video_s DESC"));
+
+  while (statement.Step()) {
+    url::Origin origin = url::Origin::Create(GURL(statement.ColumnString(0)));
+    base::TimeDelta cached_audio_video_watchtime =
+        base::TimeDelta::FromSeconds(statement.ColumnInt64(1));
+
+    if (audio_video_watchtime_min <= cached_audio_video_watchtime)
+      origins.push_back(std::move(origin));
+  }
+
+  DCHECK(statement.Succeeded());
+  return origins;
 }
 
 }  // namespace media_history

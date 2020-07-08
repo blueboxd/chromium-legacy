@@ -22,9 +22,9 @@ class Profile;
 
 namespace chromeos {
 
-const char kPersonalInfoSuggesterTabAcceptanceCount[] =
-    "personal_info_suggester_tab_acceptance_count";
-const int kMaxTabAcceptanceCount = 10;
+const char kPersonalInfoSuggesterAcceptanceCount[] =
+    "personal_info_suggester_acceptance_count";
+const int kMaxAcceptanceCount = 10;
 const char kPersonalInfoSuggesterShowSettingCount[] =
     "personal_info_suggester_show_setting_count";
 const int kMaxShowSettingCount = 10;
@@ -96,6 +96,9 @@ class PersonalInfoSuggester : public Suggester {
   // max_value.
   void IncrementPrefValueTilCapped(const std::string& pref_name, int max_value);
 
+  void SetButtonHighlighted(const ui::ime::AssistiveWindowButton& button,
+                            bool highlighted);
+
   SuggestionHandlerInterface* const suggestion_handler_;
 
   // ID of the focused text field, 0 if none is focused.
@@ -121,6 +124,11 @@ class PersonalInfoSuggester : public Suggester {
 
   // The current suggestion text shown.
   base::string16 suggestion_;
+
+  std::vector<ui::ime::AssistiveWindowButton> buttons_;
+  int highlighted_index_;
+  ui::ime::AssistiveWindowButton suggestion_button_;
+  ui::ime::AssistiveWindowButton link_button_;
 };
 
 }  // namespace chromeos

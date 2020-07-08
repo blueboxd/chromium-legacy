@@ -76,10 +76,14 @@ void TrayContainer::SetMargin(int main_axis_margin, int cross_axis_margin) {
 }
 
 void TrayContainer::ChildPreferredSizeChanged(views::View* child) {
+  if (layout_manager_)
+    UpdateLayout();
   PreferredSizeChanged();
 }
 
 void TrayContainer::ChildVisibilityChanged(View* child) {
+  if (layout_manager_)
+    UpdateLayout();
   PreferredSizeChanged();
 }
 

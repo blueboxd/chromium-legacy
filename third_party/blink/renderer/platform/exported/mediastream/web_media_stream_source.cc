@@ -120,10 +120,6 @@ WebPlatformMediaStreamSource* WebMediaStreamSource::GetPlatformSource() const {
 void WebMediaStreamSource::SetPlatformSource(
     std::unique_ptr<WebPlatformMediaStreamSource> platform_source) {
   DCHECK(!private_.IsNull());
-
-  if (platform_source)
-    platform_source->SetOwner(private_.Get());
-
   private_->SetPlatformSource(std::move(platform_source));
 }
 

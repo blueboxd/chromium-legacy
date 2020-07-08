@@ -54,6 +54,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
+import java.util.Collections;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -540,6 +541,51 @@ public class TabModelMergingTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             m1.getDisplayListenerForTesting().onDisplayRemoved(1);
             m2.getDisplayListenerForTesting().onDisplayRemoved(1);
+        });
+
+        CriteriaHelper.pollUiThread(new Criteria("Total tab count incorrect.") {
+            @Override
+            public boolean isSatisfied() {
+                return mActivity1.getTabModelSelector().getTotalTabCount() == 7;
+            }
+        });
+        CriteriaHelper.pollUiThread(new Criteria("CTA2 should be destroyed"
+                + "CTA state: " + mActivity1State + " - CTA2State: " + mActivity2State) {
+            @Override
+            public boolean isSatisfied() {
+                return mActivity2State == ActivityState.DESTROYED
+                        && mActivity1State != ActivityState.DESTROYED;
+            }
+        });
+        mActivity1.finishAndRemoveTask();
+        mActivity2.finishAndRemoveTask();
+    }
+
+    @Test
+    @LargeTest
+    @EnableFeatures(ChromeFeatureList.ANDROID_MULTIPLE_DISPLAY)
+    public void testMergeOnMultiDisplay_OnDisplayChanged() throws TimeoutException {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivity1.saveState();
+            mActivity2.saveState();
+        });
+        MultiInstanceManager m1 = mActivity1.getMultiInstanceMangerForTesting();
+        MultiInstanceManager m2 = mActivity2.getMultiInstanceMangerForTesting();
+
+        // Ensure Activity 1 is resumed on the front.
+        Intent intent = new Intent(mActivity1, mActivity1.getClass());
+        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        mActivity1.startActivity(intent);
+        waitForActivityStateChange(ActivityState.RESUMED, mActivity2, false);
+        waitForActivityStateChange(ActivityState.RESUMED, mActivity1, true);
+
+        MultiInstanceManager.setTestDisplayIds(Collections.singletonList(0));
+        m1.setCurrentDisplayIdForTesting(0);
+        m2.setCurrentDisplayIdForTesting(1);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            m1.getDisplayListenerForTesting().onDisplayChanged(1);
+            m2.getDisplayListenerForTesting().onDisplayChanged(1);
         });
 
         CriteriaHelper.pollUiThread(new Criteria("Total tab count incorrect.") {

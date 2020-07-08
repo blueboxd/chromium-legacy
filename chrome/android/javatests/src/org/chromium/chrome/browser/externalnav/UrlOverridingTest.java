@@ -19,6 +19,7 @@ import android.util.Base64;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -51,7 +52,6 @@ import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -283,13 +283,10 @@ public class UrlOverridingTest {
                     }
                 });
 
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(shouldLaunchExternalIntent ? 1 : 0, new Callable<Integer>() {
-                    @Override
-                    public Integer call() {
-                        return mActivityMonitor.getHits();
-                    }
-                }));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    mActivityMonitor.getHits(), Matchers.is(shouldLaunchExternalIntent ? 1 : 0));
+        });
         Assert.assertEquals(1 + (hasFallbackUrl ? 1 : 0), finishCallback.getCallCount());
 
         Assert.assertEquals(failCallback.getCallCount(), shouldFailNavigation ? 1 : 0);
@@ -442,23 +439,15 @@ public class UrlOverridingTest {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
 
-        CriteriaHelper.pollUiThread(Criteria.equals(1, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return mActivityMonitor.getHits();
-            }
-        }));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(mActivityMonitor.getHits(), Matchers.is(1)));
 
         // Test warm start.
         mActivityTestRule.startMainActivityOnBlankPage();
         targetContext.startActivity(intent);
 
-        CriteriaHelper.pollUiThread(Criteria.equals(2, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return mActivityMonitor.getHits();
-            }
-        }));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(mActivityMonitor.getHits(), Matchers.is(2)));
     }
 
     @Test

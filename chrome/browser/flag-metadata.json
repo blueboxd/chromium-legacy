@@ -184,6 +184,13 @@
     "expiry_milestone": 76
   },
   {
+    "name": "arc-native-bridge-64bit-support-experiment",
+    "owners": [ "jhorwich" ],
+    // Used on ChromeOS to experimentally enable 64-bit ARC native-bridge
+    // support before promoting it to enabled on a specific device class.
+    "expiry_milestone": 93
+  },
+  {
     "name": "arc-native-bridge-toggle",
     "owners": [ "levarum@google.com" ],
     // Used on ChromeOS to compare and debug different ARC native-bridge
@@ -3506,6 +3513,16 @@
     "expiry_milestone": 89
   },
   {
+    "name": "omnibox-ui-hide-steady-state-url-scheme",
+    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "omnibox-ui-hide-steady-state-url-trivial-subdomains",
+    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "omnibox-ui-max-autocomplete-matches",
     "owners": [ "jdonnelly", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 85
@@ -4578,11 +4595,6 @@
   {
     "name": "webui-tab-strip",
     "owners": [ "collinbaker", "johntlee" ],
-    "expiry_milestone": 85
-  },
-  {
-    "name": "webui-tab-strip-demo-options",
-    "owners": [ "johntlee", "dpapad" ],
     "expiry_milestone": 85
   },
   {

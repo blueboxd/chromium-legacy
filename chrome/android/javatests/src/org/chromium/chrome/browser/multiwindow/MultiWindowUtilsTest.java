@@ -13,6 +13,7 @@ import android.os.Build;
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,7 +38,6 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -98,12 +98,10 @@ public class MultiWindowUtilsTest {
         // Open settings and wait for ChromeTabbedActivity2 to pause.
         activity2.onMenuOrKeyboardAction(R.id.preferences_id, true);
         int expected = ActivityState.PAUSED;
-        CriteriaHelper.pollUiThread(Criteria.equals(expected, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return ApplicationStatus.getStateForActivity(activity2);
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    ApplicationStatus.getStateForActivity(activity2), Matchers.is(expected));
+        });
 
         Assert.assertEquals(
                 "The most recently resumed ChromeTabbedActivity should be used for intents.",

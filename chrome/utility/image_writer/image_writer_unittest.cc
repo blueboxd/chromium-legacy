@@ -118,7 +118,7 @@ TEST_F(ImageWriterUtilityTest, WriteInvalidImageFile) {
   EXPECT_CALL(mock_handler, SendSucceeded()).Times(0);
   EXPECT_CALL(mock_handler, SendFailed(error::kOpenImage)).Times(1);
 
-  ASSERT_TRUE(base::DeleteFile(image_path_, false));
+  ASSERT_TRUE(base::DeleteFile(image_path_));
   image_writer.Write();
   base::RunLoop().RunUntilIdle();
 }
@@ -131,7 +131,7 @@ TEST_F(ImageWriterUtilityTest, WriteInvalidDeviceFile) {
   EXPECT_CALL(mock_handler, SendSucceeded()).Times(0);
   EXPECT_CALL(mock_handler, SendFailed(error::kOpenDevice)).Times(1);
 
-  ASSERT_TRUE(base::DeleteFile(device_path_, false));
+  ASSERT_TRUE(base::DeleteFile(device_path_));
   image_writer.Write();
   base::RunLoop().RunUntilIdle();
 }
@@ -162,7 +162,7 @@ TEST_F(ImageWriterUtilityTest, VerifyInvalidImageFile) {
   EXPECT_CALL(mock_handler, SendSucceeded()).Times(0);
   EXPECT_CALL(mock_handler, SendFailed(error::kOpenImage)).Times(1);
 
-  ASSERT_TRUE(base::DeleteFile(image_path_, false));
+  ASSERT_TRUE(base::DeleteFile(image_path_));
 
   image_writer.Verify();
 
@@ -177,7 +177,7 @@ TEST_F(ImageWriterUtilityTest, VerifyInvalidDeviceFile) {
   EXPECT_CALL(mock_handler, SendSucceeded()).Times(0);
   EXPECT_CALL(mock_handler, SendFailed(error::kOpenDevice)).Times(1);
 
-  ASSERT_TRUE(base::DeleteFile(device_path_, false));
+  ASSERT_TRUE(base::DeleteFile(device_path_));
 
   image_writer.Verify();
 

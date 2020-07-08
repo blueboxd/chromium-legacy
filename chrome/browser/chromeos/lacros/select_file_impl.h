@@ -9,8 +9,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
-namespace chromeos {
-
 // Implements the SelectFile mojo interface for open/save dialogs. Wraps the
 // underlying Chrome OS SelectFileExtension implementation, which uses the WebUI
 // file manager to provide the dialogs. Lives on the UI thread.
@@ -29,7 +27,5 @@ class SelectFileImpl : public lacros::mojom::SelectFile {
  private:
   mojo::Receiver<lacros::mojom::SelectFile> receiver_;
 };
-
-}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LACROS_SELECT_FILE_IMPL_H_

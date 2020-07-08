@@ -45,6 +45,7 @@ ARC_EXPORT extern const char kEcryptfsMigrationStrategy[];
 ARC_EXPORT extern const char kEngagementPrefsPrefix[];
 
 // Local state prefs in lexicographical order.
+ARC_EXPORT extern const char kNativeBridge64BitSupportExperimentEnabled[];
 ARC_EXPORT extern const char kStabilityMetrics[];
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry);

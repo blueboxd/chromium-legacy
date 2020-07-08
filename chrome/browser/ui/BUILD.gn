@@ -2895,7 +2895,7 @@ static_library("ui") {
       "//ui/accelerated_widget_mac:accelerated_widget_mac",
     ]
     include_dirs = [ "$target_gen_dir" ]
-    libs += [
+    frameworks = [
       "Carbon.framework",
       "Quartz.framework",
     ]
@@ -3372,6 +3372,7 @@ static_library("ui") {
       "views/frame/browser_view_layout.h",
       "views/frame/browser_view_layout_delegate.h",
       "views/frame/browser_window_factory.cc",
+      "views/frame/caption_button_container.cc",
       "views/frame/caption_button_container.h",
       "views/frame/contents_layout_manager.cc",
       "views/frame/contents_layout_manager.h",

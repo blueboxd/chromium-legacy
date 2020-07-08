@@ -25,6 +25,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 class TestLiteVideoUserBlocklist : public lite_video::LiteVideoUserBlocklist {
@@ -142,6 +143,7 @@ TEST_F(LiteVideoDeciderTest, CanApplyOnNonHTTPOrHTTPSURL) {
 
   content::MockNavigationHandle navigation_handle(web_contents());
   navigation_handle.set_url(GURL("chrome:://about"));
+  navigation_handle.set_page_transition(ui::PAGE_TRANSITION_TYPED);
   base::Optional<lite_video::LiteVideoHint> hint =
       lite_video_decider()->CanApplyLiteVideo(&navigation_handle);
   EXPECT_FALSE(hint);
@@ -159,6 +161,7 @@ TEST_F(LiteVideoDeciderTest, CanApplyNoHintAndHostBlocklisted) {
       lite_video::LiteVideoBlocklistReason::kNavigationBlocklisted);
   content::MockNavigationHandle navigation_handle(web_contents());
   navigation_handle.set_url(GURL("https://NoVideo.com"));
+  navigation_handle.set_page_transition(ui::PAGE_TRANSITION_TYPED);
   base::Optional<lite_video::LiteVideoHint> hint =
       lite_video_decider()->CanApplyLiteVideo(&navigation_handle);
   EXPECT_FALSE(hint);
@@ -175,6 +178,7 @@ TEST_F(LiteVideoDeciderTest, CanApplyAllowedButNoHint) {
 
   content::MockNavigationHandle navigation_handle(web_contents());
   navigation_handle.set_url(GURL("https://NoVideo.com"));
+  navigation_handle.set_page_transition(ui::PAGE_TRANSITION_TYPED);
   base::Optional<lite_video::LiteVideoHint> hint =
       lite_video_decider()->CanApplyLiteVideo(&navigation_handle);
 
@@ -193,6 +197,7 @@ TEST_F(LiteVideoDeciderTest, CanApplyLiteVideo) {
   GURL url("https://LiteVideo.com");
   content::MockNavigationHandle navigation_handle(web_contents());
   navigation_handle.set_url(url);
+  navigation_handle.set_page_transition(ui::PAGE_TRANSITION_TYPED);
   lite_video::LiteVideoHint seeded_hint(
       /*target_downlink_bandwidth_kbps=*/123,
       /*target_downlink_rtt_latency_ms=*/2500,
@@ -225,6 +230,7 @@ TEST_F(LiteVideoDeciderTest, LiteVideoDisabled) {
   GURL url("https://LiteVideo.com");
   content::MockNavigationHandle navigation_handle(web_contents());
   navigation_handle.set_url(url);
+  navigation_handle.set_page_transition(ui::PAGE_TRANSITION_TYPED);
   lite_video::LiteVideoHint seeded_hint(
       /*target_downlink_bandwidth_kbps=*/123,
       /*target_downlink_rtt_latency_ms=*/2500,
@@ -249,6 +255,7 @@ TEST_F(LiteVideoDeciderTest, LiteVideoCanApplyOnSubframeNavigation) {
   GURL url("https://LiteVideo.com");
   content::MockNavigationHandle navigation_handle(web_contents());
   navigation_handle.set_url(url);
+  navigation_handle.set_page_transition(ui::PAGE_TRANSITION_TYPED);
   lite_video::LiteVideoHint seeded_hint(
       /*target_downlink_bandwidth_kbps=*/123,
       /*target_downlink_rtt_latency_ms=*/2500,
@@ -272,4 +279,58 @@ TEST_F(LiteVideoDeciderTest, LiteVideoCanApplyOnSubframeNavigation) {
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame", 0);
   histogram_tester.ExpectUniqueSample(
       "LiteVideo.CanApplyLiteVideo.HintCache.HasHint", true, 1);
+}
+
+TEST_F(LiteVideoDeciderTest, CanApplyOnReload) {
+  base::HistogramTester histogram_tester;
+
+  SetBlocklistReason(lite_video::LiteVideoBlocklistReason::kAllowed);
+  GURL url("https://LiteVideo.com");
+  content::MockNavigationHandle navigation_handle(web_contents());
+  navigation_handle.set_url(url);
+  navigation_handle.set_page_transition(ui::PAGE_TRANSITION_RELOAD);
+
+  lite_video::LiteVideoHint seeded_hint(
+      /*target_downlink_bandwidth_kbps=*/123,
+      /*target_downlink_rtt_latency_ms=*/2500,
+      /*kilobytes_to_buffer_before_throttle=*/500);
+  SeedLiteVideoHintCache(url, seeded_hint);
+
+  base::Optional<lite_video::LiteVideoHint> hint =
+      lite_video_decider()->CanApplyLiteVideo(&navigation_handle);
+  EXPECT_FALSE(hint);
+  histogram_tester.ExpectUniqueSample(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
+      lite_video::LiteVideoBlocklistReason::kNavigationReload, 1);
+  histogram_tester.ExpectTotalCount(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame", 0);
+  histogram_tester.ExpectUniqueSample(
+      "LiteVideo.CanApplyLiteVideo.HintCache.HasHint", false, 1);
+}
+
+TEST_F(LiteVideoDeciderTest, CanApplyOnBackForwardNavigation) {
+  base::HistogramTester histogram_tester;
+
+  SetBlocklistReason(lite_video::LiteVideoBlocklistReason::kAllowed);
+  GURL url("https://LiteVideo.com");
+  content::MockNavigationHandle navigation_handle(web_contents());
+  navigation_handle.set_url(url);
+  navigation_handle.set_page_transition(ui::PAGE_TRANSITION_FORWARD_BACK);
+
+  lite_video::LiteVideoHint seeded_hint(
+      /*target_downlink_bandwidth_kbps=*/123,
+      /*target_downlink_rtt_latency_ms=*/2500,
+      /*kilobytes_to_buffer_before_throttle=*/500);
+  SeedLiteVideoHintCache(url, seeded_hint);
+
+  base::Optional<lite_video::LiteVideoHint> hint =
+      lite_video_decider()->CanApplyLiteVideo(&navigation_handle);
+  EXPECT_FALSE(hint);
+  histogram_tester.ExpectUniqueSample(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
+      lite_video::LiteVideoBlocklistReason::kNavigationForwardBack, 1);
+  histogram_tester.ExpectTotalCount(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame", 0);
+  histogram_tester.ExpectUniqueSample(
+      "LiteVideo.CanApplyLiteVideo.HintCache.HasHint", false, 1);
 }

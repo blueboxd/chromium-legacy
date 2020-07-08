@@ -1958,7 +1958,7 @@ TEST_F(DriveApiRequestsTest, DownloadFileRequest) {
 
   std::string contents;
   base::ReadFileToString(temp_file, &contents);
-  base::DeleteFile(temp_file, false);
+  base::DeleteFile(temp_file);
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
@@ -1992,7 +1992,7 @@ TEST_F(DriveApiRequestsTest, DownloadFileRequest_GetContentCallback) {
     run_loop.Run();
   }
 
-  base::DeleteFile(temp_file, false);
+  base::DeleteFile(temp_file);
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);

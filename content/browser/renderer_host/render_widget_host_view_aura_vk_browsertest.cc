@@ -4,6 +4,8 @@
 
 #include "base/observer_list.h"
 #include "base/win/windows_version.h"
+#include "content/browser/accessibility/browser_accessibility.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
@@ -13,6 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/accessibility_notification_waiter.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -21,6 +24,7 @@
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method_keyboard_controller.h"
 #include "ui/base/ime/input_method_keyboard_controller_observer.h"
+#include "ui/base/ime/input_method_observer.h"
 #include "ui/base/ime/mock_input_method.h"
 #include "ui/base/ime/text_input_type.h"
 
@@ -28,7 +32,10 @@ namespace content {
 
 class MockKeyboardController : public ui::InputMethodKeyboardController {
  public:
-  bool DisplayVirtualKeyboard() override { return true; }
+  bool DisplayVirtualKeyboard() override {
+    is_keyboard_visible_ = true;
+    return true;
+  }
   void DismissVirtualKeyboard() override {}
   void AddObserver(
       ui::InputMethodKeyboardControllerObserver* observer) override {
@@ -59,6 +66,23 @@ class MockKeyboardController : public ui::InputMethodKeyboardController {
   bool is_keyboard_visible_ = false;
 };
 
+class InputMethodKeyboardObserver : public ui::InputMethodObserver {
+ public:
+  // ui::InputMethodObserver:
+  void OnFocus() override {}
+  void OnBlur() override {}
+  void OnInputMethodDestroyed(const ui::InputMethod* input_method) override {}
+  void OnShowVirtualKeyboardIfEnabled() override {
+    is_keyboard_display_called_ = true;
+  }
+  void OnTextInputStateChanged(const ui::TextInputClient* client) override {}
+  void OnCaretBoundsChanged(const ui::TextInputClient* client) override {}
+  bool IsKeyboardDisplayCalled() { return is_keyboard_display_called_; }
+
+ private:
+  bool is_keyboard_display_called_ = false;
+};
+
 class KeyboardControllerMockInputMethod : public ui::MockInputMethod {
  public:
   KeyboardControllerMockInputMethod() : ui::MockInputMethod(nullptr) {}
@@ -70,6 +94,8 @@ class KeyboardControllerMockInputMethod : public ui::MockInputMethod {
   MockKeyboardController* GetMockKeyboardController() {
     return &mock_keyboard_controller_;
   }
+
+ private:
   MockKeyboardController mock_keyboard_controller_;
 };
 
@@ -77,6 +103,8 @@ class RenderWidgetHostViewAuraBrowserMockIMETest : public ContentBrowserTest {
  public:
   void SetUp() override {
     input_method_ = new KeyboardControllerMockInputMethod;
+    mock_keyboard_observer_ = new InputMethodKeyboardObserver;
+    input_method_->AddObserver(mock_keyboard_observer_);
     // transfers ownership.
     ui::SetUpInputMethodForTesting(input_method_);
     ContentBrowserTest::SetUp();
@@ -99,8 +127,52 @@ class RenderWidgetHostViewAuraBrowserMockIMETest : public ContentBrowserTest {
         GetRenderViewHost()->GetWidget()->GetView());
   }
 
+  BrowserAccessibility* FindNode(ax::mojom::Role role,
+                                 const std::string& name_or_value) {
+    BrowserAccessibility* root = GetManager()->GetRoot();
+    CHECK(root);
+    return FindNodeInSubtree(*root, role, name_or_value);
+  }
+
+  BrowserAccessibilityManager* GetManager() {
+    WebContentsImpl* web_contents =
+        static_cast<WebContentsImpl*>(shell()->web_contents());
+    return web_contents->GetRootBrowserAccessibilityManager();
+  }
+
+  void LoadInitialAccessibilityTreeFromHtml(const std::string& html) {
+    AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                           ui::kAXModeComplete,
+                                           ax::mojom::Event::kLoadComplete);
+    GURL html_data_url("data:text/html," + html);
+    EXPECT_TRUE(NavigateToURL(shell(), html_data_url));
+    waiter.WaitForNotification();
+  }
+
  protected:
   KeyboardControllerMockInputMethod* input_method_ = nullptr;
+  InputMethodKeyboardObserver* mock_keyboard_observer_ = nullptr;
+
+ private:
+  BrowserAccessibility* FindNodeInSubtree(BrowserAccessibility& node,
+                                          ax::mojom::Role role,
+                                          const std::string& name_or_value) {
+    const std::string& name =
+        node.GetStringAttribute(ax::mojom::StringAttribute::kName);
+    const std::string& value = base::UTF16ToUTF8(node.GetValue());
+    if (node.GetRole() == role &&
+        (name == name_or_value || value == name_or_value)) {
+      return &node;
+    }
+
+    for (unsigned int i = 0; i < node.PlatformChildCount(); ++i) {
+      BrowserAccessibility* result =
+          FindNodeInSubtree(*node.PlatformGetChild(i), role, name_or_value);
+      if (result)
+        return result;
+    }
+    return nullptr;
+  }
 };
 
 #ifdef OS_WIN
@@ -303,6 +375,37 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
                        .ExtractString());
   EXPECT_EQ("0px", EvalJs(shell(), "style.getPropertyValue('margin-bottom')")
                        .ExtractString());
+}
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
+                       VirtualKeyboardAccessibilityFocusTest) {
+  // The keyboard input pane events are not supported on Win7.
+  if (base::win::GetVersion() <= base::win::Version::WIN7) {
+    return;
+  }
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <div><button>Before</button></div>
+      <div contenteditable>Editable text</div>
+      <div><button>After</button></div>
+      )HTML");
+
+  BrowserAccessibility* target =
+      FindNode(ax::mojom::Role::kGenericContainer, "Editable text");
+  ASSERT_NE(nullptr, target);
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  auto* root = web_contents->GetFrameTree()->root();
+  web_contents->GetFrameTree()->SetFocusedFrame(
+      root, root->current_frame_host()->GetSiteInstance());
+
+  AccessibilityNotificationWaiter waiter2(
+      shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kFocus);
+  GetManager()->DoDefaultAction(*target);
+  waiter2.WaitForNotification();
+
+  BrowserAccessibility* focus = GetManager()->GetFocus();
+  EXPECT_EQ(focus->GetId(), target->GetId());
+
+  EXPECT_EQ(true, mock_keyboard_observer_->IsKeyboardDisplayCalled());
 }
 #endif  // #ifdef OS_WIN
 

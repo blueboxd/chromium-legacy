@@ -325,6 +325,12 @@ const void* GraphImpl::GetImpl() const {
   return this;
 }
 
+#if DCHECK_IS_ON()
+bool GraphImpl::IsOnGraphSequence() const {
+  return sequence_checker_.CalledOnValidSequence();
+}
+#endif
+
 GraphRegistered* GraphImpl::GetRegisteredObject(uintptr_t type_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return registered_objects_.GetRegisteredObject(type_id);

@@ -29,11 +29,19 @@ class CORE_EXPORT NGGridLayoutAlgorithm
   const NGGridBlockTrackCollection& RowTrackCollection() const;
 
  private:
+  struct GridItemData {
+    LayoutUnit inline_size;
+    MinMaxSizes min_max_sizes;
+    NGBoxStrut margins;
+  };
+
+ private:
   friend class NGGridLayoutAlgorithmTest;
 
   void ConstructAndAppendGridItems();
   void ConstructAndAppendGridItem(const NGBlockNode& node);
-  NGConstraintSpace BuildSpaceForMeasure(const NGBlockNode& grid_item);
+  GridItemData MeasureGridItem(const NGBlockNode& node);
+  NGConstraintSpace BuildSpaceForGridItem(const NGBlockNode& node) const;
 
   // Sets the specified tracks for row and column track lists.
   void BuildTrackLists();
@@ -64,10 +72,7 @@ class CORE_EXPORT NGGridLayoutAlgorithm
   };
   GridLayoutAlgorithmState state_;
 
-  struct GridItem {
-    NGConstraintSpace constraint_space;
-  };
-
+  Vector<GridItemData> items_;
   NGGridTrackList column_track_list_;
   NGGridTrackList row_track_list_;
   NGGridBlockTrackCollection column_track_collection_;
@@ -76,8 +81,6 @@ class CORE_EXPORT NGGridLayoutAlgorithm
       NGGridBlockTrackCollection::kInvalidRangeIndex;
   wtf_size_t automatic_row_repetitions_for_testing =
       NGGridBlockTrackCollection::kInvalidRangeIndex;
-
-  Vector<GridItem> items_;
 
   LogicalSize child_percentage_size_;
 };

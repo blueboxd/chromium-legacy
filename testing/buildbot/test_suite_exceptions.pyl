@@ -809,6 +809,8 @@
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
       'android-code-coverage-native', # crbug/1018434
+      # TODO(crbug.com/1102974) Re-enable on L once it is not overloaded.
+      'android-lollipop-arm-rel',
       # http://crbug.com/1060245#c30: due to low utility and capacity.
       'android-marshmallow-arm64-rel',
       'android-marshmallow-x86-rel', # crbug.com/1098111
@@ -1650,12 +1652,6 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.net_unittests.filter',
         ],
       },
-      'chromeos-betty-chrome': {
-        # TODO(crbug.com/986904): Remove this filter.
-        'args': [
-          '--gtest_filter=-NetworkQualityEstimatorTest.TestTCPSocketRTT',
-        ],
-      },
       'linux-blink-heap-concurrent-marking-tsan-rel': {
         'swarming': {
           'shards': 4,
@@ -1981,11 +1977,6 @@
   },
   'ozone_unittests': {
     'modifications': {
-      'chromeos-betty-chrome': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.ozone_unittests.filter',
-        ],
-      },
       'chromeos-betty-pi-arc-chrome': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.ozone_unittests.filter',

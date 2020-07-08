@@ -1,3 +1,4 @@
+#!/usr/bin/env vpython
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -9,8 +10,6 @@ import generate_schema_org_code
 from generate_schema_org_code import schema_org_id
 import os
 
-SRC = os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir)
-sys.path.append(os.path.join(SRC, 'third_party', 'pymock'))
 import mock
 
 _current_dir = os.path.dirname(os.path.realpath(__file__))

@@ -22,6 +22,7 @@ import androidx.test.filters.MediumTest;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.After;
 import org.junit.Assert;
@@ -122,8 +123,10 @@ public class StatusIndicatorTest {
         // 0 for testing.
 
         // Wait until the status indicator finishes animating, or becomes fully visible.
-        CriteriaHelper.pollUiThread(Criteria.equals(mStatusIndicatorContainer.getHeight(),
-                browserControlsStateProvider::getTopControlsMinHeightOffset));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(browserControlsStateProvider.getTopControlsMinHeightOffset(),
+                    Matchers.is(mStatusIndicatorContainer.getHeight()));
+        });
 
         // Now, the Android view should be visible.
         Assert.assertEquals("Wrong Android view visibility.", View.VISIBLE,
@@ -145,8 +148,10 @@ public class StatusIndicatorTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         // Wait until the status indicator finishes animating, or becomes fully hidden.
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(0, browserControlsStateProvider::getTopControlsMinHeightOffset));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    browserControlsStateProvider.getTopControlsMinHeightOffset(), Matchers.is(0));
+        });
 
         // The Android view visibility should be {@link View.GONE} after #hide().
         Assert.assertEquals("Wrong Android view visibility.", View.GONE,

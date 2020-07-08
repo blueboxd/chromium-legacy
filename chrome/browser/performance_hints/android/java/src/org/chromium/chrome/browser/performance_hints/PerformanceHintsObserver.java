@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.performance_hints;
 
 import androidx.annotation.IntDef;
 
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.WebContents;
 
@@ -15,6 +16,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Provide access to PerformanceClass.
  */
+@JNINamespace("performance_hints")
 public class PerformanceHintsObserver {
     // From components/optimization_guide/proto/performance_hints_metadata.proto:PerformanceClass.
     @IntDef({PerformanceClass.PERFORMANCE_UNKNOWN, PerformanceClass.PERFORMANCE_SLOW,

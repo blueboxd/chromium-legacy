@@ -9,6 +9,7 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -132,15 +133,13 @@ public class PermissionUpdateInfobarTest {
                 }
             });
 
-            CriteriaHelper.pollUiThread(Criteria.equals(1, new Callable<Integer>() {
-                @Override
-                public Integer call() {
-                    return mActivityTestRule.getActivity()
-                            .getTabModelSelector()
-                            .getModel(false)
-                            .getCount();
-                }
-            }));
+            CriteriaHelper.pollUiThread(() -> {
+                Criteria.checkThat(mActivityTestRule.getActivity()
+                                           .getTabModelSelector()
+                                           .getModel(false)
+                                           .getCount(),
+                        Matchers.is(1));
+            });
         } finally {
             TestThreadUtils.runOnUiThreadBlocking(
                     ()

@@ -48,7 +48,7 @@ bool IsAccessibilityTreeForViewsEnabled() {
 }
 
 const base::Feature kAccessibilityFocusHighlight{
-    "AccessibilityFocusHighlight", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AccessibilityFocusHighlight", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsAccessibilityFocusHighlightEnabled() {
   return base::FeatureList::IsEnabled(::features::kAccessibilityFocusHighlight);

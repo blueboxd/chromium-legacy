@@ -96,12 +96,14 @@ void VirtualKeyboardControllerWin::UpdateTextInputState(
   // Conditions to show the VK:
   // 1. User has to interact with the editable element.
   // 2. Pointer type has to be either touch or pen.
-  // 3. If virtualkeyboardpolicy is manual, leave the SIP in its current state -
+  // 3. Accessibility has set focus on an editable element.
+  // 4. If virtualkeyboardpolicy is manual, leave the SIP in its current state -
   //    script authors need to call show() or hide() explicitly to trigger SIP
   //    actions.
-  // 4. If virtualkeyboardpolicy is auto, show the SIP.
+  // 5. If virtualkeyboardpolicy is auto, show the SIP.
   // If there are no keyboard controllers or the pointer type is neither pen or
-  // touch, then don't change the state of the keyboard.
+  // touch or accessibility has not set focus into an editable element, then
+  // don't change the state of the keyboard.
   auto* controller = input_method_->GetInputMethodKeyboardController();
   is_manual_policy_ =
       state->vk_policy == ui::mojom::VirtualKeyboardPolicy::MANUAL;

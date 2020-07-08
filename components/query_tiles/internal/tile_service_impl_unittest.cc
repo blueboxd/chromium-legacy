@@ -16,6 +16,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/query_tiles/internal/image_prefetcher.h"
+#include "components/query_tiles/test/empty_logger.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
@@ -93,9 +94,11 @@ class TileServiceImplTest : public testing::Test {
           EXPECT_TRUE(request.url.is_valid() && !request.url.is_empty());
           last_resource_request_ = request;
         }));
+    auto logger = std::make_unique<test::EmptyLogger>();
     tile_service_impl_ = std::make_unique<TileServiceImpl>(
         std::move(image_prefetcher), std::move(tile_manager),
-        std::move(scheduler), std::move(tile_fetcher), &clock_);
+        std::move(scheduler), std::move(tile_fetcher), &clock_,
+        std::move(logger));
   }
 
   void Initialize(bool expected_result) {

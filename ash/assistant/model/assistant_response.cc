@@ -170,11 +170,13 @@ AssistantResponse::GetUiElements() const {
 }
 
 void AssistantResponse::AddSuggestions(
-    std::vector<AssistantSuggestion> suggestions) {
-  for (AssistantSuggestion& suggestion : suggestions)
-    suggestions_.push_back(std::move(suggestion));
-
-  NotifySuggestionsAdded(suggestions);
+    const std::vector<AssistantSuggestion>& suggestions) {
+  std::vector<const AssistantSuggestion*> ptrs;
+  for (const auto& suggestion : suggestions) {
+    suggestions_.push_back(suggestion);
+    ptrs.push_back(&suggestions_.back());
+  }
+  NotifySuggestionsAdded(ptrs);
 }
 
 const chromeos::assistant::AssistantSuggestion*
@@ -203,7 +205,7 @@ void AssistantResponse::NotifyUiElementAdded(
 }
 
 void AssistantResponse::NotifySuggestionsAdded(
-    const std::vector<AssistantSuggestion>& suggestions) {
+    const std::vector<const AssistantSuggestion*>& suggestions) {
   for (auto& observer : observers_)
     observer.OnSuggestionsAdded(suggestions);
 }

@@ -21,7 +21,7 @@ import java.util.Set;
 
 /**
  * The implementation of ContentCaptureController to verify ContentCaptureService
- * is Aiai and signed by right certificate, this class also read whitelist from
+ * is Aiai and signed by right certificate, this class also read allowlist from
  * framework and set to native side.
  */
 // TODO(crbug.com/965566): Write junit tests for this when junit supports q.
@@ -78,22 +78,22 @@ public class ContentCaptureControllerImpl extends ContentCaptureController {
     }
 
     @Override
-    protected void pullWhitelist() {
+    protected void pullAllowlist() {
         Set<ContentCaptureCondition> conditions =
                 mContentCaptureManager.getContentCaptureConditions();
-        String[] whiteList = null;
+        String[] allowlist = null;
         boolean[] isRegEx = null;
         if (conditions != null) {
-            whiteList = new String[conditions.size()];
+            allowlist = new String[conditions.size()];
             isRegEx = new boolean[conditions.size()];
             int index = 0;
             for (ContentCaptureCondition c : conditions) {
-                whiteList[index] = c.getLocusId().getId();
+                allowlist[index] = c.getLocusId().getId();
                 isRegEx[index] = (c.getFlags() & ContentCaptureCondition.FLAG_IS_REGEX) != 0;
                 index++;
             }
         }
-        setWhitelist(whiteList, isRegEx);
+        setAllowlist(allowlist, isRegEx);
     }
 
     private void log(String msg) {

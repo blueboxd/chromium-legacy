@@ -137,7 +137,7 @@ PluginVmInstallerView::PluginVmInstallerView(Profile* profile)
   logo_image->SetImageSize(kLogoImageSize);
   logo_image->SetImage(
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_LOGO_PLUGIN_VM_DEFAULT_32));
+          IDR_LOGO_PLUGIN_VM_DEFAULT_192));
   logo_image->SetHorizontalAlignment(views::ImageView::Alignment::kLeading);
   upper_container_view->AddChildView(logo_image);
 

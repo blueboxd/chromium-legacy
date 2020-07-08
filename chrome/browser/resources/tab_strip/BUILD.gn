@@ -16,7 +16,6 @@ js_type_check("closure_compile") {
     ":tab_group",
     ":tab_list",
     ":tab_strip_embedder_proxy",
-    ":tab_strip_options",
     ":tab_swiper",
     ":tabs_api_proxy",
   ]
@@ -64,7 +63,6 @@ js_library("tab") {
     ":alert_indicators",
     ":custom_element",
     ":tab_strip_embedder_proxy",
-    ":tab_strip_options",
     ":tab_swiper",
     ":tabs_api_proxy",
     "//ui/webui/resources/js:icon.m",
@@ -90,7 +88,6 @@ js_library("tab_list") {
     ":tab",
     ":tab_group",
     ":tab_strip_embedder_proxy",
-    ":tab_strip_options",
     ":tabs_api_proxy",
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js:load_time_data.m",
@@ -101,9 +98,6 @@ js_library("tab_list") {
 
 js_library("tab_strip_embedder_proxy") {
   deps = [ "//ui/webui/resources/js:cr.m" ]
-}
-
-js_library("tab_strip_options") {
 }
 
 js_library("tab_swiper") {

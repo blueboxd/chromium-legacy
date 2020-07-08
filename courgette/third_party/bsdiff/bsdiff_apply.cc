@@ -242,7 +242,7 @@ BSDiffStatus ApplyBinaryPatch(const base::FilePath& old_file_path,
               base::File::FLAG_WRITE |
               base::File::FLAG_EXCLUSIVE_WRITE));
   if (result != OK)
-    base::DeleteFile(new_file_path, false);
+    base::DeleteFile(new_file_path);
   return result;
 }
 

@@ -368,6 +368,7 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridHighlightConfigInfo(
                                grid_config.show_positive_line_numbers);
   grid_config_info->setBoolean("showNegativeLineNumbers",
                                grid_config.show_negative_line_numbers);
+  grid_config_info->setBoolean("showAreaNames", grid_config.show_area_names);
 
   if (grid_config.grid_color != Color::kTransparent) {
     grid_config_info->setString("gridBorderColor",
@@ -392,6 +393,10 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridHighlightConfigInfo(
   if (grid_config.column_hatch_color != Color::kTransparent) {
     grid_config_info->setString("columnHatchColor",
                                 grid_config.column_hatch_color.Serialized());
+  }
+  if (grid_config.area_border_color != Color::kTransparent) {
+    grid_config_info->setString("areaBorderColor",
+                                grid_config.area_border_color.Serialized());
   }
   return grid_config_info;
 }
@@ -461,6 +466,39 @@ std::unique_ptr<protocol::ListValue> BuildGridNegativeLineNumberOffsets(
   }
 
   return number_offsets;
+}
+
+std::unique_ptr<protocol::DictionaryValue> BuildAreaNamePaths(
+    LayoutGrid* layout_grid,
+    float scale) {
+  std::unique_ptr<protocol::DictionaryValue> area_paths =
+      protocol::DictionaryValue::create();
+
+  const Vector<LayoutUnit>& rows = layout_grid->RowPositions();
+  const Vector<LayoutUnit>& columns = layout_grid->ColumnPositions();
+
+  NamedGridAreaMap grid_area_map = layout_grid->StyleRef().NamedGridArea();
+  for (const auto& item : grid_area_map) {
+    const GridArea& area = item.value;
+    const String& name = item.key;
+
+    LayoutUnit start_column = columns.at(area.columns.StartLine());
+    LayoutUnit end_column = columns.at(area.columns.EndLine());
+    LayoutUnit start_row = rows.at(area.rows.StartLine());
+    LayoutUnit end_row = rows.at(area.rows.EndLine());
+
+    PhysicalOffset position(start_column, start_row);
+    PhysicalSize size(end_column - start_column, end_row - start_row);
+    PhysicalRect area_rect(position, size);
+    FloatQuad area_quad = layout_grid->LocalRectToAbsoluteQuad(area_rect);
+
+    PathBuilder area_builder;
+    area_builder.AppendPath(QuadToPath(area_quad), scale);
+
+    area_paths->setValue(name, area_builder.Release());
+  }
+
+  return area_paths;
 }
 
 std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
@@ -559,6 +597,12 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
         "negativeColumnLineNumberOffsets",
         BuildGridNegativeLineNumberOffsets(layout_grid, columns, column_gap,
                                            kForColumns, scale));
+  }
+
+  // Area names
+  if (highlight_config.grid_highlight_config &&
+      highlight_config.grid_highlight_config->show_area_names) {
+    grid_info->setValue("areaNames", BuildAreaNamePaths(layout_grid, scale));
   }
 
   // Grid border
@@ -671,7 +715,8 @@ InspectorGridHighlightConfig::InspectorGridHighlightConfig()
       grid_border_dash(false),
       cell_border_dash(false),
       show_positive_line_numbers(false),
-      show_negative_line_numbers(false) {}
+      show_negative_line_numbers(false),
+      show_area_names(false) {}
 
 InspectorHighlight::InspectorHighlight(
     Node* node,
@@ -1191,9 +1236,11 @@ InspectorGridHighlightConfig InspectorHighlight::DefaultGridConfig() {
   config.column_gap_color = Color(0, 0, 255, 0);
   config.row_hatch_color = Color(255, 255, 255, 0);
   config.column_hatch_color = Color(128, 128, 128, 0);
+  config.area_border_color = Color(255, 0, 0, 0);
   config.show_grid_extension_lines = true;
   config.show_positive_line_numbers = true;
   config.show_negative_line_numbers = true;
+  config.show_area_names = true;
   config.grid_border_dash = false;
   config.cell_border_dash = true;
   return config;

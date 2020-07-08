@@ -262,8 +262,8 @@ TEST_F(MinidumpUploaderTest, SavesRemainingDumpInfoWithMidwayUploadFailure) {
   ASSERT_TRUE(base::GetFileSize(lockfile_, &size));
   ASSERT_EQ(size, 0);
 
-  ASSERT_TRUE(base::DeleteFile(lockfile_, false));
-  ASSERT_TRUE(base::DeleteFile(metadata_, false));
+  ASSERT_TRUE(base::DeleteFile(lockfile_));
+  ASSERT_TRUE(base::DeleteFile(metadata_));
   ASSERT_TRUE(base::IsDirectoryEmpty(minidump_dir_));
 }
 
@@ -277,7 +277,7 @@ TEST_F(MinidumpUploaderTest, FailsUploadWithMissingMinidumpFile) {
                             base::BindRepeating(&CreateFakePrefService, true));
 
   // No CastCrashdumpUploader methods should be called.
-  ASSERT_TRUE(base::DeleteFile(minidump_path, false));
+  ASSERT_TRUE(base::DeleteFile(minidump_path));
   ASSERT_TRUE(uploader.UploadAllMinidumps());
 
   // Ensure dump files were deleted, lockfile was emptied.
@@ -299,7 +299,7 @@ TEST_F(MinidumpUploaderTest, UploadsWithoutMissingLogFile) {
                             base::BindRepeating(&CreateFakePrefService, true));
 
   // Delete logfile, crash uploader should still work as intended.
-  ASSERT_TRUE(base::DeleteFile(logfile_path, false));
+  ASSERT_TRUE(base::DeleteFile(logfile_path));
   EXPECT_CALL(mock_crash_uploader(), SetParameter(_, _)).Times(AtLeast(0));
   EXPECT_CALL(mock_crash_uploader(), Upload(_)).WillOnce(Return(true));
   ASSERT_TRUE(uploader.UploadAllMinidumps());

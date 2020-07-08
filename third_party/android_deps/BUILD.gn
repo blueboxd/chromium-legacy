@@ -274,6 +274,13 @@ android_aar_prebuilt("androidx_drawerlayout_drawerlayout_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("androidx_exifinterface_exifinterface_java") {
+  aar_path = "libs/androidx_exifinterface_exifinterface/exifinterface-1.0.0.aar"
+  info_path = "libs/androidx_exifinterface_exifinterface/androidx_exifinterface_exifinterface.info"
+  deps = [ ":androidx_annotation_annotation_java" ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("androidx_fragment_fragment_java") {
   aar_path = "libs/androidx_fragment_fragment/fragment-1.2.5.aar"
   info_path = "libs/androidx_fragment_fragment/androidx_fragment_fragment.info"

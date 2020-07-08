@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.vr.VrModeProviderImpl;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 
 /** A helper class to build and return an {@link DownloadManagerCoordinator}. */
@@ -38,10 +39,10 @@ public class DownloadManagerCoordinatorFactoryHelper {
                 config.useNewDownloadPath ? null : new LegacyDownloadProviderImpl();
         return new DownloadManagerCoordinatorImpl(activity, config, new PrefetchEnabledSupplier(),
                 DownloadManagerCoordinatorFactoryHelper::settingsLaunchHelper, snackbarManager,
-                modalDialogManager, TrackerFactory.getTrackerForProfile(profile),
-                new FaviconProviderImpl(profile), OfflineContentAggregatorFactory.get(),
-                legacyProvider, GlobalDiscardableReferencePool.getReferencePool(),
-                new VrModeProviderImpl());
+                modalDialogManager, UserPrefs.get(profile),
+                TrackerFactory.getTrackerForProfile(profile), new FaviconProviderImpl(profile),
+                OfflineContentAggregatorFactory.get(), legacyProvider,
+                GlobalDiscardableReferencePool.getReferencePool(), new VrModeProviderImpl());
     }
 
     private static void settingsLaunchHelper(Context context) {

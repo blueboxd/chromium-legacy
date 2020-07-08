@@ -18,6 +18,10 @@
 
 class GURL;
 
+namespace base {
+class Time;
+}
+
 namespace sql {
 class Database;
 }
@@ -26,6 +30,8 @@ namespace history {
 
 struct KeywordSearchTermRow;
 struct KeywordSearchTermVisit;
+struct NormalizedKeywordSearchTermVisit;
+
 class VisitDatabase;  // For friend statement.
 
 // Encapsulates an SQL database that holds URL info.  This is a subset of the
@@ -225,10 +231,12 @@ class URLDatabase {
       int max_count,
       std::vector<KeywordSearchTermVisit>* matches);
 
-  // Returns up to max_count of the most recent search terms.
-  std::vector<KeywordSearchTermVisit> GetMostRecentKeywordSearchTerms(
-      KeywordID keyword_id,
-      int max_count);
+  // Returns the most recent (i.e., no older than |age_threshold|) normalized
+  // search terms (i.e., search terms in lower case with whitespaces collapsed)
+  // for the specified keyword.
+  std::vector<NormalizedKeywordSearchTermVisit>
+  GetMostRecentNormalizedKeywordSearchTerms(KeywordID keyword_id,
+                                            base::Time age_threshold);
 
   // Deletes all searches matching |term|.
   bool DeleteKeywordSearchTerm(const base::string16& term);

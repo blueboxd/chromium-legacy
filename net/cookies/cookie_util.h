@@ -81,6 +81,19 @@ NET_EXPORT std::string CookieDomainAsHost(const std::string& cookie_domain);
 // Time::Max(), respectively.
 NET_EXPORT base::Time ParseCookieExpirationTime(const std::string& time_string);
 
+// Get a cookie's URL from it's domain, path, and source scheme.
+// The first field can be the combined domain-and-host-only-flag (e.g. the
+// string returned by CanonicalCookie::Domain()) as opposed to the domain
+// attribute per RFC6265bis. The GURL is constructed after stripping off any
+// leading dot.
+// Note: the GURL returned by this method is not guaranteed to be valid.
+NET_EXPORT GURL CookieDomainAndPathToURL(const std::string& domain,
+                                         const std::string& path,
+                                         const std::string& source_scheme);
+NET_EXPORT GURL CookieDomainAndPathToURL(const std::string& domain,
+                                         const std::string& path,
+                                         bool is_https);
+
 // Convenience for converting a cookie origin (domain and https pair) to a URL.
 NET_EXPORT GURL CookieOriginToURL(const std::string& domain, bool is_https);
 

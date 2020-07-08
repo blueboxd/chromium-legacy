@@ -20,7 +20,7 @@ namespace extensions {
 template <typename T>
 RequestQueue<T>::RequestQueue(
     const net::BackoffEntry::Policy* const backoff_policy,
-    const base::Closure& start_request_callback)
+    const base::RepeatingClosure& start_request_callback)
     : backoff_policy_(backoff_policy),
       start_request_callback_(start_request_callback) {}
 

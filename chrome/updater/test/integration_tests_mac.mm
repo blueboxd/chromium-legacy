@@ -51,7 +51,7 @@ bool Run(base::CommandLine command_line, int* exit_code) {
 }  // namespace
 
 void Clean() {
-  EXPECT_TRUE(base::DeleteFile(GetProductPath(), true));
+  EXPECT_TRUE(base::DeletePathRecursively(GetProductPath()));
   EXPECT_TRUE(Launchd::GetInstance()->DeletePlist(
       Launchd::User, Launchd::Agent, updater::CopyAdministrationLaunchDName()));
   EXPECT_TRUE(Launchd::GetInstance()->DeletePlist(

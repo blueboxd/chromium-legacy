@@ -599,4 +599,29 @@ suite('DragManager', () => {
     assertEquals(draggedTab, delegate.children[draggedIndex]);
     assertEquals(dragOverTab, delegate.children[dragOverIndex]);
   });
+
+  test('DragLeaveUpdatesElementsAsDraggedOut', () => {
+    let isDraggedOut = false;
+
+    // Mock a tab's setDraggedOut method to ensure it is called.
+    const draggedTab = delegate.children[0];
+    draggedTab.setDraggedOut = (isDraggedOutParam) => {
+      isDraggedOut = isDraggedOutParam;
+    };
+
+    const dataTransfer = new MockDataTransfer();
+    draggedTab.dispatchEvent(new DragEvent('dragstart', {
+      bubbles: true,
+      composed: true,
+      clientX: 100,
+      clientY: 150,
+      dataTransfer,
+    }));
+
+    delegate.dispatchEvent(new DragEvent('dragleave', {dataTransfer}));
+    assertTrue(isDraggedOut);
+
+    delegate.dispatchEvent(new DragEvent('dragenter', {dataTransfer}));
+    assertFalse(isDraggedOut);
+  });
 });

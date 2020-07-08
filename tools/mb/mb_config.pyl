@@ -15,8 +15,6 @@
   'masters': {
     'chrome': {
       'chromeos-arm-generic-cfi-thin-lto-chrome': 'chromeos_arm-generic_cfi_thin_lto_official',
-      'chromeos-betty-cfi-thin-lto-chrome': 'chromeos_betty_cfi_thin_lto_official',
-      'chromeos-betty-chrome': 'chromeos_betty_include_unwind_tables_official',
       'chromeos-betty-pi-arc-cfi-thin-lto-chrome': 'chromeos_betty-pi-arc_cfi_thin_lto_official',
       'chromeos-betty-pi-arc-chrome': 'chromeos_betty-pi-arc_include_unwind_tables_official',
       'chromeos-eve-chrome': 'chromeos_eve_include_unwind_tables_official',
@@ -781,8 +779,6 @@
 
     'tryserver.chrome': {
       'chromeos-arm-generic-cfi-thin-lto-chrome': 'chromeos_arm-generic_cfi_thin_lto_official',
-      'chromeos-betty-cfi-thin-lto-chrome': 'chromeos_betty_cfi_thin_lto_official',
-      'chromeos-betty-chrome': 'chromeos_betty_include_unwind_tables_official',
       'chromeos-betty-pi-arc-cfi-thin-lto-chrome': 'chromeos_betty-pi-arc_cfi_thin_lto_official',
       'chromeos-betty-pi-arc-chrome': 'chromeos_betty-pi-arc_include_unwind_tables_official',
       'chromeos-eve-arc-r-chrome': 'chromeos_eve-arc-r_include_unwind_tables_official',
@@ -1506,14 +1502,6 @@
 
     'chromeos_asan_lsan_fuzzer_v8_heap_release_bot': [
       'chromeos', 'asan', 'lsan', 'fuzzer', 'v8_heap', 'release_bot',
-    ],
-
-    'chromeos_betty_cfi_thin_lto_official': [
-      'chromeos_device', 'betty', 'cfi_full', 'thin_lto', 'official',
-    ],
-
-    'chromeos_betty_include_unwind_tables_official': [
-      'chromeos_device', 'betty', 'include_unwind_tables', 'official',
     ],
 
     'chromeos_betty-pi-arc_cfi_thin_lto_official': [
@@ -2425,10 +2413,6 @@
 
     'autofill_assistant_api': {
       'gn_args': 'enable_autofill_assistant_api=true',
-    },
-
-    'betty': {
-      'args_file': '//build/args/chromeos/betty.gni',
     },
 
     'betty-pi-arc': {

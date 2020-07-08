@@ -364,10 +364,6 @@ GL_APICALL void         GL_APIENTRY glBindFragDataLocationIndexedEXT (GLidProgra
 GL_APICALL void         GL_APIENTRY glBindFragDataLocationEXT (GLidProgram program, GLuint colorNumber, const char* name);
 GL_APICALL GLint        GL_APIENTRY glGetFragDataIndexEXT (GLidProgram program, const char* name);
 
-// Extension CHROMIUM_stream_texture_matrix
-GL_APICALL void         GL_APIENTRY glUniformMatrix4fvStreamTextureMatrixCHROMIUM (GLintUniformLocation location, GLbooleanFalseOnly transpose, const GLfloat* transform);
-GL_APICALL void         GL_APIENTRY glOverlayPromotionHintCHROMIUM (GLidBindTexture texture, GLboolean promotion_hint, GLint display_x, GLint display_y, GLint display_width, GLint display_height);
-
 GL_APICALL void         GL_APIENTRY glSwapBuffersWithBoundsCHROMIUM (GLuint64 swap_id, GLsizei count, const GLint* rects, GLbitfieldSwapBuffersFlags flags = 0);
 
 // Extension CHROMIUM_set_draw_rectangle

@@ -24,7 +24,9 @@
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/form_field_data_predictions.h"
 #include "components/autofill/core/common/renderer_id.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -37,6 +39,21 @@
 using base::ASCIIToUTF16;
 
 namespace autofill {
+
+bool operator==(const FormFieldDataPredictions& a,
+                const FormFieldDataPredictions& b) {
+  auto members = [](const FormFieldDataPredictions& p) {
+    return std::tie(p.signature, p.heuristic_type, p.server_type,
+                    p.overall_type, p.parseable_name, p.section);
+  };
+  return members(a) == members(b);
+}
+
+bool operator==(const FormDataPredictions& a, const FormDataPredictions& b) {
+  return a.data.SameFormAs(b.data) && a.signature == b.signature &&
+         a.fields == b.fields;
+}
+
 namespace test {
 
 namespace {

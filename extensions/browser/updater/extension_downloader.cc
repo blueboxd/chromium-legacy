@@ -318,8 +318,9 @@ bool ExtensionDownloader::AddPendingExtensionWithVersion(
 void ExtensionDownloader::StartAllPending(ExtensionCache* cache) {
   if (cache) {
     extension_cache_ = cache;
-    extension_cache_->Start(base::Bind(&ExtensionDownloader::DoStartAllPending,
-                                       weak_ptr_factory_.GetWeakPtr()));
+    extension_cache_->Start(
+        base::BindOnce(&ExtensionDownloader::DoStartAllPending,
+                       weak_ptr_factory_.GetWeakPtr()));
   } else {
     DoStartAllPending();
   }

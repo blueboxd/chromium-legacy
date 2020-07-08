@@ -651,6 +651,7 @@ if (enable_feed_in_chrome) {
     "junit/src/org/chromium/chrome/browser/feed/v2/FeedListContentManagerTest.java",
     "junit/src/org/chromium/chrome/browser/feed/v2/FeedSliceViewTrackerTest.java",
     "junit/src/org/chromium/chrome/browser/feed/v2/FeedStreamSurfaceTest.java",
+    "junit/src/org/chromium/chrome/browser/feed/v2/FeedStreamTest.java",
     "junit/src/org/chromium/chrome/browser/feed/v2/NativeViewListRendererTest.java",
   ]
 

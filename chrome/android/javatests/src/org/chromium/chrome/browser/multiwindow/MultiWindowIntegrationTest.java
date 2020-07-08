@@ -14,6 +14,7 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -38,8 +39,6 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
-
-import java.util.concurrent.Callable;
 
 /**
  * Integration testing for Android's N+ MultiWindow.
@@ -83,12 +82,10 @@ public class MultiWindowIntegrationTest {
 
             final ChromeTabbedActivity2 cta2 = waitForSecondChromeTabbedActivity();
 
-            CriteriaHelper.pollUiThread(Criteria.equals(1, new Callable<Integer>() {
-                @Override
-                public Integer call() {
-                    return cta2.getTabModelSelector().getModel(true).getCount();
-                }
-            }));
+            CriteriaHelper.pollUiThread(() -> {
+                Criteria.checkThat(
+                        cta2.getTabModelSelector().getModel(true).getCount(), Matchers.is(1));
+            });
 
             TestThreadUtils.runOnUiThreadBlocking(() -> {
                 Assert.assertEquals(1, TabWindowManager.getInstance().getIncognitoTabCount());

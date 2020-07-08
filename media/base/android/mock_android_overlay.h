@@ -33,16 +33,15 @@ class MockAndroidOverlay : public testing::NiceMock<AndroidOverlay>,
   AndroidOverlayConfig* config() const { return config_.get(); }
 
   // Set of callbacks that we provide to control the overlay once you've handed
-  // off ownership of it.  Will return false if the overlay has been destroyed.
-  using ControlCallback = base::RepeatingCallback<void()>;
+  // off ownership of it.
   struct Callbacks {
     Callbacks();
     Callbacks(const Callbacks&);
     ~Callbacks();
 
-    ControlCallback OverlayReady;
-    ControlCallback OverlayFailed;
-    ControlCallback SurfaceDestroyed;
+    base::RepeatingClosure OverlayReady;
+    base::RepeatingClosure OverlayFailed;
+    base::RepeatingClosure SurfaceDestroyed;
     base::RepeatingCallback<void(bool)> PowerEfficientState;
   };
 

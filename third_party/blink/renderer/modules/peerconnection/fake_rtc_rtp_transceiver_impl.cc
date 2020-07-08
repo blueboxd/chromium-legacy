@@ -19,7 +19,6 @@ MediaStreamComponent* CreateMediaStreamComponent(
   auto audio_source = std::make_unique<blink::MediaStreamAudioSource>(
       std::move(task_runner), true /* is_local_source */);
   auto* audio_source_ptr = audio_source.get();
-  audio_source->SetOwner(source);
   source->SetPlatformSource(std::move(audio_source));
 
   auto* component =

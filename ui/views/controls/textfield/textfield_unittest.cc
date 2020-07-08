@@ -3410,6 +3410,22 @@ TEST_F(TextfieldTest, CursorVisibility) {
   EXPECT_TRUE(test_api_->IsCursorVisible());
 }
 
+// Tests that Textfield::FitToLocalBounds() sets the RenderText's display rect
+// to the view's bounds, taking the border into account.
+TEST_F(TextfieldTest, FitToLocalBounds) {
+  const int kDisplayRectWidth = 100;
+  const int kBorderWidth = 5;
+  InitTextfield();
+  textfield_->SetBounds(0, 0, kDisplayRectWidth, 100);
+  textfield_->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(kBorderWidth, kBorderWidth, kBorderWidth, kBorderWidth)));
+  test_api_->GetRenderText()->SetDisplayRect(gfx::Rect(0, 0, 20, 20));
+  ASSERT_EQ(20, test_api_->GetRenderText()->display_rect().width());
+  textfield_->FitToLocalBounds();
+  EXPECT_EQ(kDisplayRectWidth - 2 * kBorderWidth,
+            test_api_->GetRenderText()->display_rect().width());
+}
+
 // Verify that cursor view height does not exceed the textfield height.
 TEST_F(TextfieldTest, CursorViewHeight) {
   InitTextfield();

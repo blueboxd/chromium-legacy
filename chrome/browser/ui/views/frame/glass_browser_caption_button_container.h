@@ -17,8 +17,7 @@ class Windows10CaptionButton;
 
 // Provides a container for Windows 10 caption buttons that can be moved between
 // frame and browser window as needed. When extended horizontally, becomes a
-// grab bar for moving the window (including greying out when the window is not
-// the active window).
+// grab bar for moving the window.
 class GlassBrowserCaptionButtonContainer : public CaptionButtonContainer,
                                            public views::WidgetObserver {
  public:
@@ -34,7 +33,6 @@ class GlassBrowserCaptionButtonContainer : public CaptionButtonContainer,
 
   // views::View:
   void AddedToWidget() override;
-  void OnPaintBackground(gfx::Canvas* canvas) override;
 
   // views::WidgetObserver:
   void OnWidgetBoundsChanged(views::Widget* widget,

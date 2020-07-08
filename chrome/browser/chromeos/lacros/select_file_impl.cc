@@ -16,7 +16,6 @@
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
-namespace chromeos {
 namespace {
 
 ui::SelectFileDialog::Type GetUiType(lacros::mojom::SelectFileDialogType type) {
@@ -120,5 +119,3 @@ void SelectFileImpl::Select(lacros::mojom::SelectFileOptionsPtr options,
   // Deletes itself when the dialog closes.
   new SelectFileDialogHolder(std::move(options), std::move(callback));
 }
-
-}  // namespace chromeos

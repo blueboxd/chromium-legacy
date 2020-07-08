@@ -24,7 +24,7 @@ namespace {
 void DeleteTempDownloadsDirectorySync() {
   base::FilePath downloads_directory;
   if (GetTempDownloadsDirectory(&downloads_directory)) {
-    DeleteFile(downloads_directory, /*recursive=*/true);
+    DeletePathRecursively(downloads_directory);
   }
 }
 }  // namespace

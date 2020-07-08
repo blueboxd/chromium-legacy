@@ -94,8 +94,7 @@ bool DoDeleteFile(const base::FilePath& root_path, const std::string& name) {
   if (!base::PathExists(root_path))
     return true;
 
-  return base::DeleteFile(GetNativeIOFilePath(root_path, name),
-                          /*recursive=*/false);
+  return base::DeleteFile(GetNativeIOFilePath(root_path, name));
 }
 
 using GetAllFileNamesResult =

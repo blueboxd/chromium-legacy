@@ -119,7 +119,6 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
     stream_source_ = MakeGarbageCollected<MediaStreamSource>(
         "dummy_source_id", MediaStreamSource::kTypeVideo, "dummy_source_name",
         false /* remote */);
-    video_capturer_source_->SetOwner(stream_source_);
     stream_source_->SetPlatformSource(base::WrapUnique(video_capturer_source_));
     stream_source_id_ = stream_source_->Id();
 

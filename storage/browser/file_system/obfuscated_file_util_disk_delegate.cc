@@ -26,7 +26,9 @@ size_t ObfuscatedFileUtilDiskDelegate::ComputeDirectorySize(
 bool ObfuscatedFileUtilDiskDelegate::DeleteFileOrDirectory(
     const base::FilePath& path,
     bool recursive) {
-  return base::DeleteFile(path, recursive);
+  if (!recursive)
+    return base::DeleteFile(path);
+  return base::DeletePathRecursively(path);
 }
 
 bool ObfuscatedFileUtilDiskDelegate::IsLink(const base::FilePath& file_path) {

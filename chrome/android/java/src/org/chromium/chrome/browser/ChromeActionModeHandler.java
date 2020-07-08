@@ -19,7 +19,6 @@ import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.share.ChromeShareExtras;
 import org.chromium.chrome.browser.share.ShareDelegate;
@@ -165,7 +164,7 @@ public class ChromeActionModeHandler {
                 LocaleManager.getInstance().showSearchEnginePromoIfNeeded(
                         TabUtils.getActivity(mTab), callback);
                 mHelper.finishActionMode();
-            } else if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB_V15)
+            } else if (mShareDelegateSupplier.get().isSharingHubV15Enabled()
                     && item.getItemId() == R.id.select_action_menu_share) {
                 mShareDelegateSupplier.get().share(
                         new ShareParams.Builder(mTab.getWindowAndroid(), /*url=*/"", /*title=*/"")

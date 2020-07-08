@@ -22,7 +22,7 @@ std::tuple<std::string, bool, bool> ReadAndDeleteTextFile(
     const base::FilePath& path) {
   std::string contents;
   bool read_success = base::ReadFileToString(path, &contents);
-  bool delete_success = base::DeleteFile(path, /*recursive=*/false);
+  bool delete_success = base::DeleteFile(path);
   return std::make_tuple(contents, read_success, delete_success);
 }
 

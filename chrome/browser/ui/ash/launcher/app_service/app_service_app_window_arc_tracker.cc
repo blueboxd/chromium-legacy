@@ -29,10 +29,15 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_window_info.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
+#include "chrome/common/chrome_features.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/widget/widget.h"
+
+namespace {
+constexpr int kArcAppWindowIconSize = extension_misc::EXTENSION_ICON_MEDIUM;
+}  // namespace
 
 AppServiceAppWindowArcTracker::AppServiceAppWindowArcTracker(
     AppServiceAppWindowLauncherController* app_service_controller)
@@ -151,18 +156,27 @@ void AppServiceAppWindowArcTracker::OnTaskCreated(
   arc_window_candidates_.erase(window);
 }
 
-void AppServiceAppWindowArcTracker::OnTaskDescriptionUpdated(
+void AppServiceAppWindowArcTracker::OnTaskDescriptionChanged(
     int32_t task_id,
     const std::string& label,
-    const std::vector<uint8_t>& icon_png_data) {
+    const arc::mojom::RawIconPngData& icon) {
   auto it = task_id_to_arc_app_window_info_.find(task_id);
   if (it == task_id_to_arc_app_window_info_.end())
     return;
 
-  apps::CompressedDataToImageSkiaCallback(
-      base::BindOnce(&AppServiceAppWindowArcTracker::SetDescription,
-                     weak_ptr_factory_.GetWeakPtr(), task_id, label))
-      .Run(std::move(icon_png_data));
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+    apps::ArcRawIconPngDataToImageSkia(
+        icon.Clone(), kArcAppWindowIconSize,
+        base::BindOnce(&AppServiceAppWindowArcTracker::OnIconLoaded,
+                       weak_ptr_factory_.GetWeakPtr(), task_id, label));
+  } else {
+    if (icon.icon_png_data.has_value()) {
+      apps::CompressedDataToImageSkiaCallback(
+          base::BindOnce(&AppServiceAppWindowArcTracker::SetDescription,
+                         weak_ptr_factory_.GetWeakPtr(), task_id, label))
+          .Run(icon.icon_png_data.value());
+    }
+  }
 }
 
 void AppServiceAppWindowArcTracker::OnTaskDestroyed(int task_id) {
@@ -468,4 +482,11 @@ void AppServiceAppWindowArcTracker::SetDescription(int32_t task_id,
       app_service_controller_->GetAppWindow(it->second->window());
   if (app_window)
     app_window->SetDescription(title, icon);
+}
+
+void AppServiceAppWindowArcTracker::OnIconLoaded(int32_t task_id,
+                                                 const std::string& title,
+                                                 const gfx::ImageSkia& icon) {
+  gfx::ImageSkia image = icon;
+  SetDescription(task_id, title, image);
 }

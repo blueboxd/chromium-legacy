@@ -57,6 +57,10 @@ void OverrideWithFinch(Config* config) {
       base::TimeDelta::FromSecondsD(base::GetFieldTrialParamByFeatureAsDouble(
           kInterestFeedV2, "model_unload_timeout_seconds",
           config->model_unload_timeout.InSecondsF()));
+
+  config->load_more_trigger_lookahead = base::GetFieldTrialParamByFeatureAsInt(
+      kInterestFeedV2, "load_more_trigger_lookahead",
+      config->load_more_trigger_lookahead);
 }
 
 }  // namespace

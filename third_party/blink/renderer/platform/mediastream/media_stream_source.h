@@ -96,9 +96,7 @@ class PLATFORM_EXPORT MediaStreamSource final
     return platform_source_.get();
   }
   void SetPlatformSource(
-      std::unique_ptr<WebPlatformMediaStreamSource> platform_source) {
-    platform_source_ = std::move(platform_source);
-  }
+      std::unique_ptr<WebPlatformMediaStreamSource> platform_source);
 
   void SetAudioProcessingProperties(EchoCancellationMode echo_cancellation_mode,
                                     bool auto_gain_control,

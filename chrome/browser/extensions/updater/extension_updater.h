@@ -159,8 +159,9 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
     FetchedCRXFile(const CRXFileInfo& file,
                    bool file_ownership_passed,
                    const std::set<int>& request_ids,
-                   const InstallCallback& callback);
-    FetchedCRXFile(const FetchedCRXFile& other);
+                   InstallCallback callback);
+    FetchedCRXFile(FetchedCRXFile&& other);
+    FetchedCRXFile& operator=(FetchedCRXFile&& other);
     ~FetchedCRXFile();
 
     CRXFileInfo info;
@@ -223,7 +224,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
                                    const GURL& download_url,
                                    const PingResult& ping,
                                    const std::set<int>& request_id,
-                                   const InstallCallback& callback) override;
+                                   InstallCallback callback) override;
   bool GetPingDataForExtension(const ExtensionId& id,
                                ManifestFetchData::PingData* ping_data) override;
   std::string GetUpdateUrlData(const ExtensionId& id) override;

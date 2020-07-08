@@ -70,7 +70,8 @@
             android:layout_marginBottom="11dp"
             android:layout_marginStart="-5dp"
             android:text="@string/download_location_dialog_checkbox"
-            style="@style/TextAppearance.TextMedium.Tertiary" />
+            style="@style/TextAppearance.TextMedium.Tertiary"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/edit_location"

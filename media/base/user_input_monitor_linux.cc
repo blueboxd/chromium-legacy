@@ -187,7 +187,8 @@ void UserInputMonitorLinuxCore::StartMonitor() {
   // from |x_record_display_|.
   watch_controller_ = base::FileDescriptorWatcher::WatchReadable(
       ConnectionNumber(x_record_display_),
-      base::Bind(&UserInputMonitorLinuxCore::OnXEvent, base::Unretained(this)));
+      base::BindRepeating(&UserInputMonitorLinuxCore::OnXEvent,
+                          base::Unretained(this)));
 
   // Start observing message loop destruction if we start monitoring the first
   // event.

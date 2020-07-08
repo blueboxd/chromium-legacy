@@ -31,7 +31,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -43,6 +43,7 @@ import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.chrome.test.util.browser.suggestions.mostvisited.FakeMostVisitedSites;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.net.test.EmbeddedTestServerRule;
 
 import java.util.List;
@@ -59,7 +60,7 @@ import java.util.List;
     ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO})
 @Features.DisableFeatures({ChromeFeatureList.REPORT_FEED_USER_ACTIONS, ChromeFeatureList.QUERY_TILES})
 public class FeedNewTabPageCardRenderTest {
-    //clang-format on
+    // clang-format on
     private static final String TEST_FEED_DATA_BASE_PATH = "/chrome/test/data/android/feed/";
 
     @Rule
@@ -155,6 +156,8 @@ public class FeedNewTabPageCardRenderTest {
 
     private boolean getPreferenceForArticleSectionHeader() throws Exception {
         return ThreadUtils.runOnUiThreadBlocking(
-                () -> PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE));
+                ()
+                        -> UserPrefs.get(Profile.getLastUsedRegularProfile())
+                                   .getBoolean(Pref.ARTICLES_LIST_VISIBLE));
     }
 }

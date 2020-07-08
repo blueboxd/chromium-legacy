@@ -7,11 +7,14 @@
 #include <memory>
 #include <vector>
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/nearby_sharing/share_target.h"
 #include "chrome/browser/nearby_sharing/transfer_metadata.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -76,6 +79,17 @@ class TransferMetadataBuilder {
   double progress_ = 0;
 };
 
+TextAttachment CreateTextAttachment(TextAttachment::Type type) {
+  return TextAttachment("text body", type, /*size=*/9);
+}
+
+FileAttachment CreateFileAttachment(FileAttachment::Type type) {
+  return FileAttachment(/*file_name=*/"file.jpg", type,
+                        /*size=*/10,
+                        /*file_path=*/base::nullopt,
+                        /*mime_type=*/"example");
+}
+
 class NearbyNotificationManagerTest : public testing::Test {
  public:
   NearbyNotificationManagerTest() {
@@ -100,6 +114,54 @@ class NearbyNotificationManagerTest : public testing::Test {
   NearbyNotificationManager manager_{&profile_};
 };
 
+struct ProgressNotificationTestParam {
+  std::vector<TextAttachment::Type> text_attachments;
+  std::vector<FileAttachment::Type> file_attachments;
+  int expected_resource_id;
+};
+
+ProgressNotificationTestParam kProgressNotificationTestParams[] = {
+    // No attachments.
+    {{}, {}, IDS_NEARBY_UNKNOWN_ATTACHMENTS},
+
+    // Mixed attachments.
+    {{TextAttachment::Type::kText},
+     {FileAttachment::Type::kUnknown},
+     IDS_NEARBY_UNKNOWN_ATTACHMENTS},
+
+    // Text attachments.
+    {{TextAttachment::Type::kUrl}, {}, IDS_NEARBY_TEXT_ATTACHMENTS_LINKS},
+    {{TextAttachment::Type::kText}, {}, IDS_NEARBY_TEXT_ATTACHMENTS_UNKNOWN},
+    {{TextAttachment::Type::kAddress},
+     {},
+     IDS_NEARBY_TEXT_ATTACHMENTS_ADDRESSES},
+    {{TextAttachment::Type::kPhoneNumber},
+     {},
+     IDS_NEARBY_TEXT_ATTACHMENTS_PHONE_NUMBERS},
+    {{TextAttachment::Type::kAddress, TextAttachment::Type::kAddress},
+     {},
+     IDS_NEARBY_TEXT_ATTACHMENTS_ADDRESSES},
+    {{TextAttachment::Type::kAddress, TextAttachment::Type::kUrl},
+     {},
+     IDS_NEARBY_TEXT_ATTACHMENTS_UNKNOWN},
+
+    // File attachments.
+    {{}, {FileAttachment::Type::kApp}, IDS_NEARBY_FILE_ATTACHMENTS_APPS},
+    {{}, {FileAttachment::Type::kImage}, IDS_NEARBY_FILE_ATTACHMENTS_IMAGES},
+    {{}, {FileAttachment::Type::kUnknown}, IDS_NEARBY_FILE_ATTACHMENTS_UNKNOWN},
+    {{}, {FileAttachment::Type::kVideo}, IDS_NEARBY_FILE_ATTACHMENTS_VIDEOS},
+    {{},
+     {FileAttachment::Type::kApp, FileAttachment::Type::kApp},
+     IDS_NEARBY_FILE_ATTACHMENTS_APPS},
+    {{},
+     {FileAttachment::Type::kApp, FileAttachment::Type::kImage},
+     IDS_NEARBY_FILE_ATTACHMENTS_UNKNOWN},
+};
+
+class NearbyNotificationManagerProgressNotificationTest
+    : public NearbyNotificationManagerTest,
+      public testing::WithParamInterface<ProgressNotificationTestParam> {};
+
 }  // namespace
 
 TEST_F(NearbyNotificationManagerTest, ShowProgress_ShowsNotification) {
@@ -119,6 +181,9 @@ TEST_F(NearbyNotificationManagerTest, ShowProgress_ShowsNotification) {
   EXPECT_EQ(GURL(), notification.origin_url());
   EXPECT_TRUE(notification.never_timeout());
   EXPECT_FALSE(notification.renotify());
+  EXPECT_EQ(&kNearbyShareIcon, &notification.vector_small_image());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_SOURCE),
+            notification.display_source());
 
   const std::vector<message_center::ButtonInfo>& buttons =
       notification.buttons();
@@ -137,7 +202,11 @@ TEST_F(NearbyNotificationManagerTest, ShowProgress_ShowsProgress) {
 
   manager()->ShowProgress(share_target, transfer_metadata);
 
-  message_center::Notification notification = GetDisplayedNotifications()[0];
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications();
+  ASSERT_EQ(1u, notifications.size());
+
+  const message_center::Notification& notification = notifications[0];
   EXPECT_EQ(100.0 * progress, notification.progress());
 }
 
@@ -159,3 +228,37 @@ TEST_F(NearbyNotificationManagerTest, ShowProgress_UpdatesProgress) {
   const message_center::Notification& notification = notifications[0];
   EXPECT_EQ(100.0 * progress, notification.progress());
 }
+
+TEST_P(NearbyNotificationManagerProgressNotificationTest, Test) {
+  const ProgressNotificationTestParam& param = GetParam();
+  std::string device_name = "device";
+  ShareTargetBuilder share_target_builder;
+  share_target_builder.set_device_name(device_name);
+
+  for (TextAttachment::Type type : param.text_attachments)
+    share_target_builder.add_attachment(CreateTextAttachment(type));
+
+  for (FileAttachment::Type type : param.file_attachments)
+    share_target_builder.add_attachment(CreateFileAttachment(type));
+
+  ShareTarget share_target = share_target_builder.build();
+  TransferMetadata transfer_metadata = TransferMetadataBuilder().build();
+  manager()->ShowProgress(share_target, transfer_metadata);
+
+  size_t total = param.text_attachments.size() + param.file_attachments.size();
+  base::string16 expected = l10n_util::GetStringFUTF16(
+      IDS_NEARBY_NOTIFICATION_SEND_PROGRESS_TITLE,
+      l10n_util::GetPluralStringFUTF16(param.expected_resource_id, total),
+      base::ASCIIToUTF16(device_name));
+
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications();
+  ASSERT_EQ(1u, notifications.size());
+
+  const message_center::Notification& notification = notifications[0];
+  EXPECT_EQ(expected, notification.title());
+}
+
+INSTANTIATE_TEST_SUITE_P(NearbyNotificationManagerProgressNotificationTest,
+                         NearbyNotificationManagerProgressNotificationTest,
+                         testing::ValuesIn(kProgressNotificationTestParams));

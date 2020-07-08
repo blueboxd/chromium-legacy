@@ -68,10 +68,10 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
                      const std::string& package_name,
                      const std::string& activity,
                      const std::string& intent) override;
-  void OnTaskDescriptionUpdated(
+  void OnTaskDescriptionChanged(
       int32_t task_id,
       const std::string& label,
-      const std::vector<uint8_t>& icon_png_data) override;
+      const arc::mojom::RawIconPngData& icon) override;
   void OnTaskDestroyed(int task_id) override;
   void OnTaskSetActive(int32_t task_id) override;
 
@@ -118,6 +118,10 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   // arc::ArcSessionManager::Observer:
   void OnArcOptInManagementCheckStarted() override;
   void OnArcSessionStopped(arc::ArcStopReason stop_reason) override;
+
+  void OnIconLoaded(int32_t task_id,
+                    const std::string& title,
+                    const gfx::ImageSkia& icon);
 
   // Sets the window title and icon.
   void SetDescription(int32_t task_id,

@@ -43,12 +43,12 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -83,6 +83,7 @@ public class FeedAppLifecycleTest {
     private FeedLifecycleBridge mLifecycleBridge;
     private final String mHistogramAppLifecycleEvents =
             "ContentSuggestions.Feed.AppLifecycle.Events";
+    private Profile mProfile;
 
     private static class TestDeferredStartupHandler extends DeferredStartupHandler {
         private List<Runnable> mDeferredTaskQueue = new ArrayList<>();
@@ -107,13 +108,13 @@ public class FeedAppLifecycleTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
-            Profile profile = Profile.getLastUsedRegularProfile();
-            mLifecycleBridge = new FeedLifecycleBridge(profile);
+            mProfile = Profile.getLastUsedRegularProfile();
+            mLifecycleBridge = new FeedLifecycleBridge(mProfile);
             mAppLifecycle =
                     new FeedAppLifecycle(mAppLifecycleListener, mLifecycleBridge, mFeedScheduler);
             FeedProcessScopeFactory.createFeedProcessScopeForTesting(mFeedScheduler, mNetworkClient,
                     mOfflineIndicator, mAppLifecycle,
-                    new FeedLoggingBridge(profile, new FakeClock()), new InMemoryContentStorage(),
+                    new FeedLoggingBridge(mProfile, new FakeClock()), new InMemoryContentStorage(),
                     new InMemoryJournalStorage());
         });
 
@@ -308,7 +309,7 @@ public class FeedAppLifecycleTest {
     public void testClearDataAfterDisablingDoesNotCrash() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             FeedProcessScopeFactory.clearFeedProcessScopeForTesting();
-            PrefServiceBridge.getInstance().setBoolean(Pref.ENABLE_SNIPPETS, false);
+            UserPrefs.get(mProfile).setBoolean(Pref.ENABLE_SNIPPETS, false);
             FeedLifecycleBridge.onCachedDataCleared();
             FeedLifecycleBridge.onHistoryDeleted();
         });

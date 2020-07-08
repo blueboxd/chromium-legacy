@@ -14,6 +14,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertTrue;
 
@@ -568,6 +569,6 @@ public class ChromeTabModalPresenterTest {
     private void ensureDialogContainerVisible() {
         final View dialogContainer = mTabModalPresenter.getDialogContainerForTest();
         CriteriaHelper.pollUiThread(
-                Criteria.equals(View.VISIBLE, () -> dialogContainer.getVisibility()));
+                () -> Criteria.checkThat(dialogContainer.getVisibility(), is(View.VISIBLE)));
     }
 }

@@ -12,12 +12,12 @@ NullExtensionCache::NullExtensionCache() = default;
 
 NullExtensionCache::~NullExtensionCache() = default;
 
-void NullExtensionCache::Start(const base::Closure& callback) {
-  callback.Run();
+void NullExtensionCache::Start(base::OnceClosure callback) {
+  std::move(callback).Run();
 }
 
-void NullExtensionCache::Shutdown(const base::Closure& callback) {
-  callback.Run();
+void NullExtensionCache::Shutdown(base::OnceClosure callback) {
+  std::move(callback).Run();
 }
 
 void NullExtensionCache::AllowCaching(const std::string& id) {}
@@ -33,8 +33,8 @@ void NullExtensionCache::PutExtension(const std::string& id,
                                       const std::string& expected_hash,
                                       const base::FilePath& file_path,
                                       const std::string& version,
-                                      const PutExtensionCallback& callback) {
-  callback.Run(file_path, true);
+                                      PutExtensionCallback callback) {
+  std::move(callback).Run(file_path, true);
 }
 
 }  // namespace extensions

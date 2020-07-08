@@ -1898,13 +1898,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   virtual CursorDirective GetCursor(const PhysicalOffset&, ui::Cursor&) const;
 
-  // Return the LayoutBoxModelObject in the container chain which is responsible
-  // for painting this object. The function crosses frames boundaries so the
-  // returned value can be in a different document.
-  //
-  // This is the container that should be passed to the '*forPaintInvalidation'
-  // methods.
-  const LayoutBoxModelObject& ContainerForPaintInvalidation() const;
   const LayoutBoxModelObject& DirectlyCompositableContainer() const;
 
   bool IsPaintInvalidationContainer() const;
@@ -2889,7 +2882,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   inline void InvalidateContainerIntrinsicLogicalWidths();
 
-  const LayoutBoxModelObject* EnclosingCompositedContainer() const;
   const LayoutBoxModelObject* EnclosingDirectlyCompositableContainer() const;
 
   LayoutFlowThread* LocateFlowThreadContainingBlock() const;

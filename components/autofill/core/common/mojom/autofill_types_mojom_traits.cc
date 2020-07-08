@@ -168,8 +168,6 @@ bool StructTraits<autofill::mojom::FormFieldDataPredictionsDataView,
                   autofill::FormFieldDataPredictions>::
     Read(autofill::mojom::FormFieldDataPredictionsDataView data,
          autofill::FormFieldDataPredictions* out) {
-  if (!data.ReadField(&out->field))
-    return false;
   if (!data.ReadSignature(&out->signature))
     return false;
   if (!data.ReadHeuristicType(&out->heuristic_type))

@@ -557,9 +557,6 @@ virtual/forced-high-contrast-colors/fast/css/forced-colors-mode/backplate/forced
 
 # 10/27/2019 updates.
 external/wpt/css/css-writing-modes/wm-propagation-body-044.html [ Failure ]
-external/wpt/native-file-system/sandboxed_FileSystemBaseHandle-postMessage-MessagePort.tentative.https.window.html [ Crash ]
-external/wpt/native-file-system/sandboxed_FileSystemBaseHandle-postMessage.tentative.https.window.html [ Crash ]
-external/wpt/native-file-system/sandboxed_FileSystemDirectoryHandle-getFile.tentative.https.any.html [ Crash ]
 
 crbug.com/591099 paint/invalidation/compositing/composited-float-under-composited-inline-individual.html [ Failure ]
 crbug.com/591099 paint/invalidation/compositing/composited-float-under-composited-inline.html [ Failure ]

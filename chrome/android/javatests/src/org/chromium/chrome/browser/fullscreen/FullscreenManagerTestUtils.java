@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.fullscreen;
 
 import android.os.SystemClock;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 
 import org.chromium.base.task.PostTask;
@@ -25,7 +26,6 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -74,12 +74,10 @@ public class FullscreenManagerTestUtils {
             ChromeActivityTestRule testRule, int position) {
         final BrowserControlsStateProvider browserControlsStateProvider =
                 testRule.getActivity().getFullscreenManager();
-        CriteriaHelper.pollUiThread(Criteria.equals(position, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return browserControlsStateProvider.getTopControlOffset();
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    browserControlsStateProvider.getTopControlOffset(), Matchers.is(position));
+        });
     }
 
     /**

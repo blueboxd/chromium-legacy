@@ -27,6 +27,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogChoice.java",
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogController.java",
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogCoordinator.java",
+    "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogHelper.java",
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogProperties.java",
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogView.java",
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLocationCustomView.java",
@@ -126,7 +127,10 @@ android_library("junit_tests") {
   bypass_platform_checks = true
   testonly = true
 
-  sources = [ "java/src/org/chromium/chrome/browser/download/DownloadDialogBridgeUnitTest.java" ]
+  sources = [
+    "java/src/org/chromium/chrome/browser/download/DownloadDialogBridgeUnitTest.java",
+    "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogHelperUnitTest.java",
+  ]
 
   deps = [
     ":java",
@@ -136,6 +140,7 @@ android_library("junit_tests") {
     "//chrome/browser/flags:java",
     "//chrome/browser/preferences:java",
     "//chrome/test/android:chrome_java_test_support",
+    "//components/offline_items_collection/core:core_java",
     "//components/prefs/android:java",
     "//third_party/android_deps:robolectric_all_java",
     "//third_party/junit",

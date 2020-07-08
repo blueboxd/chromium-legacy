@@ -226,6 +226,7 @@ class DragSession {
     }
 
     this.element_.setDragging(false);
+    this.element_.setDraggedOut(false);
   }
 
   /** @return {boolean} */
@@ -277,6 +278,7 @@ class DragSession {
     }
 
     this.element_.setDragging(false);
+    this.element_.setDraggedOut(false);
   }
 
   /**
@@ -336,7 +338,13 @@ class DragSession {
 
   /** @param {!DragEvent} event */
   update(event) {
+    if (event.type === 'dragleave') {
+      this.element_.setDraggedOut(true);
+      return;
+    }
+
     event.dataTransfer.dropEffect = 'move';
+    this.element_.setDraggedOut(false);
     if (isTabGroupElement(this.element_)) {
       this.updateForTabGroupElement_(event);
     } else if (isTabElement(this.element_)) {
@@ -439,14 +447,18 @@ export class DragManager {
     this.tabsProxy_ = TabsApiProxyImpl.getInstance();
   }
 
-  /** @private */
-  onDragLeave_() {
-    if (this.dragSession_ && !this.dragSession_.isDraggingPlaceholder()) {
+  /**
+   * @param {!DragEvent} event
+   * @private
+   */
+  onDragLeave_(event) {
+    if (this.dragSession_ && this.dragSession_.isDraggingPlaceholder()) {
+      this.dragSession_.cancel();
+      this.dragSession_ = null;
       return;
     }
 
-    this.dragSession_.cancel();
-    this.dragSession_ = null;
+    this.dragSession_.update(event);
   }
 
   /** @param {!DragEvent} event */
@@ -488,6 +500,7 @@ export class DragManager {
   /** @param {!DragEvent} event */
   onDragEnter_(event) {
     if (this.dragSession_) {
+      this.dragSession_.update(event);
       return;
     }
 
@@ -512,8 +525,9 @@ export class DragManager {
     this.delegate_.addEventListener(
         'dragend', e => this.onDragEnd_(/** @type {!DragEvent} */ (e)));
     this.delegate_.addEventListener(
-        'dragenter', (e) => this.onDragEnter_(/** @type {!DragEvent} */ (e)));
-    this.delegate_.addEventListener('dragleave', () => this.onDragLeave_());
+        'dragenter', e => this.onDragEnter_(/** @type {!DragEvent} */ (e)));
+    this.delegate_.addEventListener(
+        'dragleave', e => this.onDragLeave_(/** @type {!DragEvent} */ (e)));
     this.delegate_.addEventListener(
         'dragover', e => this.onDragOver_(/** @type {!DragEvent} */ (e)));
     this.delegate_.addEventListener(

@@ -49,6 +49,10 @@ class MediaHistoryOriginTable : public MediaHistoryTableBase {
   // was successful.
   bool Delete(const url::Origin& origin);
 
+  // Gets the origins which have watchtime above the given threshold.
+  std::vector<url::Origin> GetHighWatchTimeOrigins(
+      const base::TimeDelta& audio_video_watchtime_min);
+
   DISALLOW_COPY_AND_ASSIGN(MediaHistoryOriginTable);
 };
 

@@ -33,6 +33,7 @@ class InitAwareTileService : public TileService {
                           BackgroundTaskFinishedCallback callback) override;
   void CancelTask() override;
   void PurgeDb() override;
+  Logger* GetLogger() override;
 
   void OnTileServiceInitialized(bool success);
   void MaybeCacheApiCall(base::OnceClosure api_call);

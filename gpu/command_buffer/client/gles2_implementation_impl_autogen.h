@@ -3570,41 +3570,6 @@ void GLES2Implementation::BlendBarrierKHR() {
   CheckGLError();
 }
 
-void GLES2Implementation::UniformMatrix4fvStreamTextureMatrixCHROMIUM(
-    GLint location,
-    GLboolean transpose,
-    const GLfloat* transform) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix()
-                     << "] glUniformMatrix4fvStreamTextureMatrixCHROMIUM("
-                     << location << ", " << GLES2Util::GetStringBool(transpose)
-                     << ", " << static_cast<const void*>(transform) << ")");
-  uint32_t count = 16;
-  for (uint32_t ii = 0; ii < count; ++ii)
-    GPU_CLIENT_LOG("value[" << ii << "]: " << transform[ii]);
-  helper_->UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate(
-      location, transpose, transform);
-  CheckGLError();
-}
-
-void GLES2Implementation::OverlayPromotionHintCHROMIUM(GLuint texture,
-                                                       GLboolean promotion_hint,
-                                                       GLint display_x,
-                                                       GLint display_y,
-                                                       GLint display_width,
-                                                       GLint display_height) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glOverlayPromotionHintCHROMIUM("
-                     << texture << ", "
-                     << GLES2Util::GetStringBool(promotion_hint) << ", "
-                     << display_x << ", " << display_y << ", " << display_width
-                     << ", " << display_height << ")");
-  helper_->OverlayPromotionHintCHROMIUM(texture, promotion_hint, display_x,
-                                        display_y, display_width,
-                                        display_height);
-  CheckGLError();
-}
-
 void GLES2Implementation::SetDrawRectangleCHROMIUM(GLint x,
                                                    GLint y,
                                                    GLint width,

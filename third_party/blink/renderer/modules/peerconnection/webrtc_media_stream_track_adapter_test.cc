@@ -50,7 +50,6 @@ class WebRtcMediaStreamTrackAdapterTest : public ::testing::Test {
     auto audio_source = std::make_unique<MediaStreamAudioSource>(
         scheduler::GetSingleThreadTaskRunnerForTesting(), true);
     auto* audio_source_ptr = audio_source.get();
-    audio_source->SetOwner(source);
     source->SetPlatformSource(std::move(audio_source));
 
     auto* component =
@@ -65,7 +64,6 @@ class WebRtcMediaStreamTrackAdapterTest : public ::testing::Test {
         String::FromUTF8("local_video_track"), false);
     auto video_source = std::make_unique<MockMediaStreamVideoSource>();
     auto* video_source_ptr = video_source.get();
-    video_source->SetOwner(source);
     source->SetPlatformSource(std::move(video_source));
 
     return MediaStreamVideoTrack::CreateVideoTrack(

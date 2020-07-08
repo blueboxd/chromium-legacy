@@ -79,7 +79,7 @@ public class TasksSurfaceMediatorUnitTest {
         MockitoAnnotations.initMocks(this);
 
         mMediator = new TasksSurfaceMediator(
-                mPropertyModel, mLearnMoreOnClickListener, mCookieControlsManager, true);
+                mPropertyModel, mLearnMoreOnClickListener, mCookieControlsManager, true, null);
         mMediator.initWithNative(mFakeboxDelegate);
     }
 

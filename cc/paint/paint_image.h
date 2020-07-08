@@ -235,6 +235,8 @@ class CC_PAINT_EXPORT PaintImage {
   // GetSkImageInfo() for metadata about the SkImage.
   const sk_sp<SkImage>& GetRasterSkImage() const;
 
+  SkImageInfo GetSkImageInfo() const;
+
   Id stable_id() const { return id_; }
   const sk_sp<SkImage>& GetSkImage() const;
   gpu::Mailbox GetMailbox() const;
@@ -264,7 +266,7 @@ class CC_PAINT_EXPORT PaintImage {
   int width() const;
   int height() const;
   SkColorSpace* color_space() const {
-    return paint_worklet_input_ ? nullptr : GetSkImage()->colorSpace();
+    return paint_worklet_input_ ? nullptr : GetSkImageInfo().colorSpace();
   }
   bool isSRGB() const;
 
@@ -304,7 +306,7 @@ class CC_PAINT_EXPORT PaintImage {
     return paint_worklet_input_;
   }
 
-  bool IsOpaque() const { return GetSkImage() && GetSkImage()->isOpaque(); }
+  bool IsOpaque() const { return GetSkImageInfo().isOpaque(); }
 
   std::string ToString() const;
 

@@ -155,7 +155,7 @@ void DeleteVersionDirectory(const base::FilePath& version_path) {
     }
 
     // Mark the file for deletion.
-    HRESULT hr = base::DeleteFile(path, false);
+    HRESULT hr = base::DeleteFile(path);
     if (FAILED(hr)) {
       LOGFN(ERROR) << "Could not delete " << path;
       all_deletes_succeeded = false;
@@ -809,7 +809,7 @@ void DeleteStartupSentinel() {
 void DeleteStartupSentinelForVersion(const base::string16& version) {
   base::FilePath startup_sentinel_path = GetStartupSentinelLocation(version);
   if (base::PathExists(startup_sentinel_path) &&
-      !base::DeleteFile(startup_sentinel_path, false)) {
+      !base::DeleteFile(startup_sentinel_path)) {
     LOGFN(ERROR) << "Failed to delete sentinel file: " << startup_sentinel_path;
   }
 }

@@ -1,0 +1,72 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_EXECUTION_CONTEXT_EXECUTION_CONTEXT_REGISTRY_H_
+#define COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_EXECUTION_CONTEXT_EXECUTION_CONTEXT_REGISTRY_H_
+
+#include "components/performance_manager/public/execution_context/execution_context_token.h"
+#include "components/performance_manager/public/graph/frame_node.h"
+
+namespace base {
+class UnguessableToken;
+}  // namespace base
+
+namespace performance_manager {
+
+class Graph;
+class WorkerNode;
+
+namespace execution_context {
+
+class ExecutionContext;
+class ExecutionContextObserver;
+
+// The ExecutionContextRegistry is a per-graph class that allows for observers
+// to be registered, and for ExecutionContexts to be looked up by their tokens.
+// An instance of the registry must be passed to the Graph prior to any nodes
+// being created.
+class ExecutionContextRegistry {
+ public:
+  ExecutionContextRegistry();
+  ExecutionContextRegistry(const ExecutionContextRegistry&) = delete;
+  ExecutionContextRegistry& operator=(const ExecutionContextRegistry&) = delete;
+  virtual ~ExecutionContextRegistry();
+
+  // Returns the instance of the ExecutionContextRegistry for the given
+  // Graph.
+  static ExecutionContextRegistry* GetFromGraph(Graph* graph);
+
+  // Adds an observer to the registry. The observer needs to be removed before
+  // the registry is torn down.
+  virtual void AddObserver(ExecutionContextObserver* observer) = 0;
+
+  // Removes an observer from the registry.
+  virtual void RemoveObserver(ExecutionContextObserver* observer) = 0;
+
+  // Looks up an ExecutionContext by token. Returns nullptr if no such context
+  // exists.
+  virtual const ExecutionContext* GetExecutionContextByToken(
+      const ExecutionContextToken& token) = 0;
+
+  // Does a typed lookup of a FrameNode ExecutionContext by FrameToken, returns
+  // nullptr if no such FrameNode exists.
+  virtual const FrameNode* GetFrameNodeByFrameToken(
+      const FrameToken& token) = 0;
+
+  // Does a typed lookup of a WorkerNode ExecutionContext by its DevToolsToken,
+  // returns nullptr if no such WorkerNode exists.
+  virtual const WorkerNode* GetWorkerNodeByDevToolsToken(
+      const base::UnguessableToken& token) = 0;
+
+  // Returns the ExecutionContext associated with a node.
+  virtual const ExecutionContext* GetExecutionContextForFrameNode(
+      const FrameNode* frame_node) = 0;
+  virtual const ExecutionContext* GetExecutionContextForWorkerNode(
+      const WorkerNode* worker_node) = 0;
+};
+
+}  // namespace execution_context
+}  // namespace performance_manager
+
+#endif  // COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_EXECUTION_CONTEXT_EXECUTION_CONTEXT_REGISTRY_H_

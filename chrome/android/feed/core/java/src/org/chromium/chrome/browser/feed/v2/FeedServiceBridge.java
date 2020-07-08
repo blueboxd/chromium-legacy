@@ -39,9 +39,15 @@ public final class FeedServiceBridge {
         FeedServiceBridgeJni.get().startup();
     }
 
+    /** Retrieves the config value for load_more_trigger_lookahead. */
+    public static int getLoadMoreTriggerLookahead() {
+        return FeedServiceBridgeJni.get().getLoadMoreTriggerLookahead();
+    }
+
     @NativeMethods
     interface Natives {
         boolean isEnabled();
         void startup();
+        int getLoadMoreTriggerLookahead();
     }
 }

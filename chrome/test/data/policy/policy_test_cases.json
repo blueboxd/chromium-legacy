@@ -5624,7 +5624,7 @@
       {
         "policies": {
           "MinimumChromeVersionEnforced": [
-            {"chrome_version" : "82","warning_period" : 0, "eol_warning_period" : 14}
+            {"chrome_version" : "82","warning_period" : 0, "aue_warning_period" : 14}
           ]
         },
         "prefs": { "cros.min_version_enforced.chrome": {} }
@@ -5632,14 +5632,14 @@
     ]
   },
 
-  "MinimumChromeVersionEolMessage": {
+  "MinimumChromeVersionAueMessage": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": {
-          "MinimumChromeVersionEolMessage": "Please return your device."
+          "MinimumChromeVersionAueMessage": "Please return your device."
         },
-        "prefs": { "cros.min_version_eol_message.chrome": {} }
+        "prefs": { "cros.min_version_aue_message.chrome": {} }
       }
     ]
   },

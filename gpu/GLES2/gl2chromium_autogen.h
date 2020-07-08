@@ -367,10 +367,6 @@
   GLES2_GET_FUN(BindFragDataLocationIndexedEXT)
 #define glBindFragDataLocationEXT GLES2_GET_FUN(BindFragDataLocationEXT)
 #define glGetFragDataIndexEXT GLES2_GET_FUN(GetFragDataIndexEXT)
-#define glUniformMatrix4fvStreamTextureMatrixCHROMIUM \
-  GLES2_GET_FUN(UniformMatrix4fvStreamTextureMatrixCHROMIUM)
-#define glOverlayPromotionHintCHROMIUM \
-  GLES2_GET_FUN(OverlayPromotionHintCHROMIUM)
 #define glSwapBuffersWithBoundsCHROMIUM \
   GLES2_GET_FUN(SwapBuffersWithBoundsCHROMIUM)
 #define glSetDrawRectangleCHROMIUM GLES2_GET_FUN(SetDrawRectangleCHROMIUM)

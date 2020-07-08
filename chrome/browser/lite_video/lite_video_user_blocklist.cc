@@ -10,6 +10,18 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 
+namespace {
+
+// Determine whether the provided navigation is valid and can be queried or
+// added to the blocklist.
+bool IsNavigationValidForBlocklist(
+    content::NavigationHandle* navigation_handle) {
+  GURL navigation_url = navigation_handle->GetURL();
+  return navigation_url.SchemeIsHTTPOrHTTPS() && navigation_url.has_host();
+}
+
+}  // namespace
+
 namespace lite_video {
 
 // Separator between hosts for the rebuffer blocklist type.
@@ -18,10 +30,10 @@ constexpr char kLiteVideoBlocklistKeySeparator[] = "_";
 // static
 base::Optional<std::string> LiteVideoUserBlocklist::GetRebufferBlocklistKey(
     content::NavigationHandle* navigation_handle) {
-  const GURL url = navigation_handle->GetURL();
-  if (!url.SchemeIsHTTPOrHTTPS() || !url.has_host())
+  if (!IsNavigationValidForBlocklist(navigation_handle))
     return base::nullopt;
 
+  const GURL url = navigation_handle->GetURL();
   if (navigation_handle->IsInMainFrame())
     return url.host() + kLiteVideoBlocklistKeySeparator;
 
@@ -45,8 +57,7 @@ LiteVideoUserBlocklist::~LiteVideoUserBlocklist() = default;
 LiteVideoBlocklistReason LiteVideoUserBlocklist::IsLiteVideoAllowedOnNavigation(
     content::NavigationHandle* navigation_handle) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  GURL navigation_url = navigation_handle->GetURL();
-  if (!navigation_url.SchemeIsHTTPOrHTTPS() || !navigation_url.has_host())
+  if (!IsNavigationValidForBlocklist(navigation_handle))
     return LiteVideoBlocklistReason::kNavigationNotEligibile;
 
   std::vector<blocklist::BlocklistReason> passed_reasons;
@@ -111,6 +122,16 @@ LiteVideoUserBlocklist::GetAllowedTypes() const {
            features::LiteVideoBlocklistVersion()},
           {static_cast<int>(LiteVideoBlocklistType::kRebufferBlocklist),
            features::LiteVideoBlocklistVersion()}};
+}
+
+void LiteVideoUserBlocklist::AddNavigationToBlocklist(
+    content::NavigationHandle* navigation_handle,
+    bool opt_out) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!IsNavigationValidForBlocklist(navigation_handle))
+    return;
+  AddEntry(navigation_handle->GetURL().host(), opt_out,
+           static_cast<int>(LiteVideoBlocklistType::kNavigationBlocklist));
 }
 
 }  // namespace lite_video

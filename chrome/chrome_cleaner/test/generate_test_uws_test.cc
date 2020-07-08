@@ -26,11 +26,11 @@ TEST(GenerateTestUwsTest, WriteTestUwS) {
 
   base::FilePath uws_file_a =
       startup_dir.Append(chrome_cleaner::kTestUwsAFilename);
-  ASSERT_TRUE(base::DeleteFile(uws_file_a, /*recursive=*/false));
+  ASSERT_TRUE(base::DeleteFile(uws_file_a));
 
   base::FilePath uws_file_b =
       startup_dir.Append(chrome_cleaner::kTestUwsBFilename);
-  ASSERT_TRUE(base::DeleteFile(uws_file_b, /*recursive=*/false));
+  ASSERT_TRUE(base::DeleteFile(uws_file_b));
 
   // Delete the output files on exit, including on early exit.
   base::ScopedClosureRunner delete_uws_file_a(

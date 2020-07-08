@@ -225,6 +225,36 @@ TEST(CookieUtilTest, TestRequestCookieParsing) {
   }
 }
 
+TEST(CookieUtilTest, CookieDomainAndPathToURL) {
+  struct {
+    std::string domain;
+    std::string path;
+    bool is_https;
+    std::string expected_url;
+  } kTests[]{
+      {"a.com", "/", true, "https://a.com/"},
+      {"a.com", "/", false, "http://a.com/"},
+      {".a.com", "/", true, "https://a.com/"},
+      {".a.com", "/", false, "http://a.com/"},
+      {"b.a.com", "/", true, "https://b.a.com/"},
+      {"b.a.com", "/", false, "http://b.a.com/"},
+      {"a.com", "/example/path", true, "https://a.com/example/path"},
+      {".a.com", "/example/path", false, "http://a.com/example/path"},
+      {"b.a.com", "/example/path", true, "https://b.a.com/example/path"},
+      {".b.a.com", "/example/path", false, "http://b.a.com/example/path"},
+  };
+
+  for (auto& test : kTests) {
+    GURL url1 = cookie_util::CookieDomainAndPathToURL(test.domain, test.path,
+                                                      test.is_https);
+    GURL url2 = cookie_util::CookieDomainAndPathToURL(
+        test.domain, test.path, std::string(test.is_https ? "https" : "http"));
+    // Test both overloads for equality.
+    EXPECT_EQ(url1, url2);
+    EXPECT_EQ(url1, GURL(test.expected_url));
+  }
+}
+
 TEST(CookieUtilTest, SimulatedCookieSource) {
   GURL secure_url("https://b.a.com");
   GURL insecure_url("http://b.a.com");

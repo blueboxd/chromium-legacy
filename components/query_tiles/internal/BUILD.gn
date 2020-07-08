@@ -92,6 +92,7 @@ source_set("unit_tests") {
     "//components/query_tiles:public",
     "//components/query_tiles/proto",
     "//components/query_tiles/test:test_lib",
+    "//components/query_tiles/test:test_support",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",

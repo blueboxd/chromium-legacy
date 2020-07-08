@@ -567,6 +567,7 @@ inline bool PaintFastBottomLayer(Node* node,
     // clipping.
     clipper.emplace(context, rect, color_border);
     color_border.SetRadii(FloatRoundedRect::Radii());
+    image_border.SetRadii(FloatRoundedRect::Radii());
   }
 
   // Paint the color if needed.

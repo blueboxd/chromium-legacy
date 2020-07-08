@@ -1219,18 +1219,6 @@ void BindFragDataLocationEXT(GLuint program,
 
 GLint GetFragDataIndexEXT(GLuint program, const char* name) override;
 
-void UniformMatrix4fvStreamTextureMatrixCHROMIUM(
-    GLint location,
-    GLboolean transpose,
-    const GLfloat* transform) override;
-
-void OverlayPromotionHintCHROMIUM(GLuint texture,
-                                  GLboolean promotion_hint,
-                                  GLint display_x,
-                                  GLint display_y,
-                                  GLint display_width,
-                                  GLint display_height) override;
-
 void SwapBuffersWithBoundsCHROMIUM(GLuint64 swap_id,
                                    GLsizei count,
                                    const GLint* rects,

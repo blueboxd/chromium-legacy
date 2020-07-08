@@ -50,7 +50,6 @@ class MediaStreamVideoSourceTest : public testing::Test {
     stream_source_ = MakeGarbageCollected<MediaStreamSource>(
         String::FromUTF8("dummy_source_id"), MediaStreamSource::kTypeVideo,
         String::FromUTF8("dummy_source_name"), false /* remote */);
-    mock_stream_video_source_->SetOwner(stream_source_);
     stream_source_->SetPlatformSource(
         base::WrapUnique(mock_stream_video_source_));
     ON_CALL(*mock_stream_video_source_, SupportsEncodedOutput)

@@ -176,7 +176,7 @@ base::FilePath SetUpSymlinkIfNeeded(const base::FilePath& symlink_path,
       // directories may not be accessed for a long time, so this code needs to
       // stay in forever :/
       if (extensionless_symlink_exists &&
-          !base::DeleteFile(extensionless_path, false)) {
+          !base::DeleteFile(extensionless_path)) {
         DPLOG(WARNING) << "Cannot delete " << extensionless_path.value();
       }
       // After cleaning up, create the symlink.

@@ -335,8 +335,9 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   if (OomInterventionTabHelper::IsEnabled()) {
     OomInterventionTabHelper::CreateForWebContents(web_contents);
   }
-  if (IsPerformanceHintsObserverEnabled()) {
-    PerformanceHintsObserver::CreateForWebContents(web_contents);
+  if (performance_hints::features::IsPerformanceHintsObserverEnabled()) {
+    performance_hints::PerformanceHintsObserver::CreateForWebContents(
+        web_contents);
   }
   SearchGeolocationDisclosureTabHelper::CreateForWebContents(web_contents);
 #else

@@ -11,6 +11,7 @@ import android.view.View;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -191,9 +192,10 @@ import java.util.List;
         Assert.assertTrue(mDownloadTestRule.waitForChromeDownloadToFinish(callCount));
         Assert.assertTrue(mDownloadTestRule.hasDownload(FILENAME_GZIP, null));
 
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(initialTabCount,
-                        () -> mDownloadTestRule.getActivity().getCurrentTabModel().getCount()));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mDownloadTestRule.getActivity().getCurrentTabModel().getCount(),
+                    Matchers.is(initialTabCount));
+        });
     }
 
     @Test

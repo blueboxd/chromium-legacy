@@ -97,6 +97,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/tasks/TasksSurfaceMediator.java",
     "java/src/org/chromium/chrome/browser/tasks/TasksView.java",
     "java/src/org/chromium/chrome/browser/tasks/TasksViewBinder.java",
+    "java/src/org/chromium/chrome/browser/tasks/TrendyTermsCache.java",
     "java/src/org/chromium/chrome/browser/tasks/TrendyTermsCoordinator.java",
     "java/src/org/chromium/chrome/browser/tasks/TrendyTermsProperties.java",
     "java/src/org/chromium/chrome/browser/tasks/TrendyTermsViewBinder.java",

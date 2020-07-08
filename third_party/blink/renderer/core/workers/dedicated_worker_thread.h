@@ -64,6 +64,7 @@ class CORE_EXPORT DedicatedWorkerThread : public WorkerThread {
 
   std::unique_ptr<WorkerBackingThread> worker_backing_thread_;
   DedicatedWorkerObjectProxy& worker_object_proxy_;
+  ukm::SourceId ukm_source_id_;
 };
 
 }  // namespace blink

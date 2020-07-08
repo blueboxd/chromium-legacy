@@ -10,6 +10,7 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -39,7 +40,6 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -1599,12 +1599,10 @@ public class UndoTabModelTest {
         // Closed the second window. Must wait until it's totally closed.
         int numExpectedActivities = ApplicationStatus.getRunningActivities().size() - 1;
         secondActivity.finishAndRemoveTask();
-        CriteriaHelper.pollUiThread(Criteria.equals(numExpectedActivities, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return ApplicationStatus.getRunningActivities().size();
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(ApplicationStatus.getRunningActivities().size(),
+                    Matchers.is(numExpectedActivities));
+        });
         Assert.assertEquals("Window 1 should have 1 tab.", 1, firstModel.getCount());
 
         // Restore closed tab from second window. It should be created in first window.

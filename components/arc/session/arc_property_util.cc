@@ -5,6 +5,7 @@
 #include "components/arc/session/arc_property_util.h"
 
 #include <algorithm>
+#include <tuple>
 #include <vector>
 
 #include "base/command_line.h"
@@ -37,6 +38,16 @@ constexpr char kOEMKey1PropertyPrefix[] = "ro.oem.key1=";
 // Configuration property name of an optional string that contains a comma-
 // separated list of regions to include in the OEM key property.
 constexpr char kPAIRegionsPropertyName[] = "pai-regions";
+
+// Properties related to dynamically adding native bridge 64 bit support.
+constexpr char kAbilistPropertyPrefix[] = "ro.product.cpu.abilist=";
+constexpr char kAbilistPropertyExpected[] = "x86_64,x86,armeabi-v7a,armeabi";
+constexpr char kAbilistPropertyReplacement[] =
+    "x86_64,x86,arm64-v8a,armeabi-v7a,armeabi";
+constexpr char kAbilist64PropertyPrefix[] = "ro.product.cpu.abilist64=";
+constexpr char kAbilist64PropertyExpected[] = "x86_64";
+constexpr char kAbilist64PropertyReplacement[] = "x86_64,arm64-v8a";
+constexpr char kDalvikVmIsaArm64[] = "ro.dalvik.vm.isa.arm64=x86_64";
 
 // Maximum length of an Android property value.
 constexpr int kAndroidMaxPropertyLength = 91;
@@ -146,7 +157,8 @@ std::string ComputeOEMKey(brillo::CrosConfigInterface* config,
 
 bool ExpandPropertyContents(const std::string& content,
                             brillo::CrosConfigInterface* config,
-                            std::string* expanded_content) {
+                            std::string* expanded_content,
+                            bool add_native_bridge_64bit_support) {
   const std::vector<std::string> lines = base::SplitString(
       content, "\n", base::WhitespaceHandling::KEEP_WHITESPACE,
       base::SplitResult::SPLIT_WANT_ALL);
@@ -192,12 +204,38 @@ bool ExpandPropertyContents(const std::string& content,
         expanded += line.substr(prev_match);
       line = expanded;
     } while (inserted);
+    if (add_native_bridge_64bit_support) {
+      // Special-case ro.product.cpu.abilist / ro.product.cpu.abilist64 to add
+      // ARM64.
+      std::string value;
+      if (FindProperty(kAbilistPropertyPrefix, &value, line)) {
+        if (value == kAbilistPropertyExpected) {
+          line = std::string(kAbilistPropertyPrefix) +
+                 std::string(kAbilistPropertyReplacement);
+        } else {
+          LOG(ERROR) << "Found unexpected value for " << kAbilistPropertyPrefix
+                     << ", value " << value;
+          return false;
+        }
+      }
+      if (FindProperty(kAbilist64PropertyPrefix, &value, line)) {
+        if (value == kAbilist64PropertyExpected) {
+          line = std::string(kAbilist64PropertyPrefix) +
+                 std::string(kAbilist64PropertyReplacement);
+        } else {
+          LOG(ERROR) << "Found unexpected value for "
+                     << kAbilist64PropertyPrefix << ", value " << value;
+          return false;
+        }
+      }
+    }
 
     std::string truncated;
     if (!TruncateAndroidProperty(line, &truncated)) {
       LOG(ERROR) << "Unable to truncate property: " << line;
       return false;
     }
+
     new_properties += truncated + "\n";
 
     // Special-case ro.product.board to compute ro.oem.key1 at runtime, as it
@@ -210,6 +248,11 @@ bool ExpandPropertyContents(const std::string& content,
     }
   }
 
+  if (add_native_bridge_64bit_support) {
+    // Special-case to add ro.dalvik.vm.isa.arm64.
+    new_properties += std::string(kDalvikVmIsaArm64) + "\n";
+  }
+
   *expanded_content = new_properties;
   return true;
 }
@@ -217,14 +260,16 @@ bool ExpandPropertyContents(const std::string& content,
 bool ExpandPropertyFile(const base::FilePath& input,
                         const base::FilePath& output,
                         CrosConfig* config,
-                        bool append) {
+                        bool append,
+                        bool add_native_bridge_64bit_support) {
   std::string content;
   std::string expanded;
   if (!base::ReadFileToString(input, &content)) {
     PLOG(ERROR) << "Failed to read " << input;
     return false;
   }
-  if (!ExpandPropertyContents(content, config, &expanded))
+  if (!ExpandPropertyContents(content, config, &expanded,
+                              add_native_bridge_64bit_support))
     return false;
   if (append && base::PathExists(output)) {
     if (!base::AppendToFile(output, expanded.data(), expanded.size())) {
@@ -284,7 +329,8 @@ bool CrosConfig::GetString(const std::string& path,
 bool ExpandPropertyContentsForTesting(const std::string& content,
                                       brillo::CrosConfigInterface* config,
                                       std::string* expanded_content) {
-  return ExpandPropertyContents(content, config, expanded_content);
+  return ExpandPropertyContents(content, config, expanded_content,
+                                /*add_native_bridge_64bit_support=*/false);
 }
 
 bool TruncateAndroidPropertyForTesting(const std::string& line,
@@ -295,30 +341,35 @@ bool TruncateAndroidPropertyForTesting(const std::string& line,
 bool ExpandPropertyFileForTesting(const base::FilePath& input,
                                   const base::FilePath& output,
                                   CrosConfig* config) {
-  return ExpandPropertyFile(input, output, config, /*append=*/false);
+  return ExpandPropertyFile(input, output, config, /*append=*/false,
+                            /*add_native_bridge_64bit_support=*/false);
 }
 
 bool ExpandPropertyFiles(const base::FilePath& source_path,
                          const base::FilePath& dest_path,
-                         bool single_file) {
+                         bool single_file,
+                         bool add_native_bridge_64bit_support) {
   CrosConfig config;
   if (single_file)
     base::DeleteFile(dest_path, /*recursive=*/false);
 
   // default.prop may not exist. Silently skip it if not found.
-  for (const auto& pair : {std::pair<const char*, bool>{"default.prop", true},
-                           {"build.prop", false},
-                           {"vendor_build.prop", false}}) {
-    const char* file = pair.first;
-    const bool is_optional = pair.second;
+  for (const auto& tuple :
+       {std::tuple<const char*, bool, bool>{"default.prop", true, false},
+        {"build.prop", false, true},
+        {"vendor_build.prop", false, false}}) {
+    const char* file = std::get<0>(tuple);
+    const bool is_optional = std::get<1>(tuple);
+    const bool add_native_bridge_properties =
+        std::get<2>(tuple) && add_native_bridge_64bit_support;
 
     if (is_optional && !base::PathExists(source_path.Append(file)))
       continue;
 
-    if (!ExpandPropertyFile(source_path.Append(file),
-                            single_file ? dest_path : dest_path.Append(file),
-                            &config,
-                            /*append=*/single_file)) {
+    if (!ExpandPropertyFile(
+            source_path.Append(file),
+            single_file ? dest_path : dest_path.Append(file), &config,
+            /*append=*/single_file, add_native_bridge_properties)) {
       LOG(ERROR) << "Failed to expand " << source_path.Append(file);
       return false;
     }

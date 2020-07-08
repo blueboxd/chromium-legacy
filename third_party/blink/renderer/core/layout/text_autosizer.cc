@@ -45,7 +45,6 @@
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
-#include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_ruby_run.h"
 #include "third_party/blink/renderer/core/layout/layout_table.h"
@@ -444,6 +443,9 @@ float TextAutosizer::Inflate(LayoutObject* parent,
       child = ToLayoutRubyRun(run)->FirstChild();
       behavior = kDescendToInnerBlocks;
     }
+  } else if (parent->IsListMarker()) {
+    // The list item already applied the multiplier to the marker, keep it.
+    return multiplier;
   } else if (parent->IsLayoutBlock() &&
              (parent->ChildrenInline() || behavior == kDescendToInnerBlocks)) {
     child = To<LayoutBlock>(parent)->FirstChild();

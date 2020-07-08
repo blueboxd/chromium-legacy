@@ -11,6 +11,7 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,8 +54,9 @@ public class TabModelImplTest {
             if (url != null) mActivityTestRule.loadUrl(url);
         }
 
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(tabsCount, () -> tabModel.getCount() - oldTabsCount));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(tabModel.getCount() - oldTabsCount, Matchers.is(tabsCount));
+        });
     }
 
     @Test

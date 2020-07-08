@@ -82,6 +82,9 @@ class GraphImpl : public Graph {
   NodeDataDescriberRegistry* GetNodeDataDescriberRegistry() const override;
   uintptr_t GetImplType() const override;
   const void* GetImpl() const override;
+#if DCHECK_IS_ON()
+  bool IsOnGraphSequence() const override;
+#endif
   GraphRegistered* GetRegisteredObject(uintptr_t type_id) override;
 
   // Helper function for safely downcasting to the implementation. This also

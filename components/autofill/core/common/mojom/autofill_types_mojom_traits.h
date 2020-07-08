@@ -280,11 +280,6 @@ struct StructTraits<autofill::mojom::FormDataDataView, autofill::FormData> {
 template <>
 struct StructTraits<autofill::mojom::FormFieldDataPredictionsDataView,
                     autofill::FormFieldDataPredictions> {
-  static const autofill::FormFieldData& field(
-      const autofill::FormFieldDataPredictions& r) {
-    return r.field;
-  }
-
   static const std::string& signature(
       const autofill::FormFieldDataPredictions& r) {
     return r.signature;

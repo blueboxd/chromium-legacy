@@ -11,6 +11,7 @@ import android.widget.ListView;
 
 import androidx.test.filters.LargeTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -122,6 +123,7 @@ public class BluetoothScanningPermissionDialogTest {
 
         dialog.cancel();
 
-        CriteriaHelper.pollUiThread(Criteria.equals(Event.CANCELED, () -> mFinishedEventType));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(mFinishedEventType, Matchers.is(Event.CANCELED)));
     }
 }

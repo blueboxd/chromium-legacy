@@ -60,7 +60,7 @@ UpdateRequiredScreen::UpdateRequiredScreen(UpdateRequiredView* view,
   error_message_delay_ = kDelayErrorMessage;
 
   eol_message_subscription_ = CrosSettings::Get()->AddSettingsObserver(
-      chromeos::kMinimumChromeVersionEolMessage,
+      chromeos::kMinimumChromeVersionAueMessage,
       base::Bind(&UpdateRequiredScreen::OnEolMessageChanged,
                  weak_factory_.GetWeakPtr()));
   if (view_)
@@ -129,7 +129,7 @@ void UpdateRequiredScreen::OnEolMessageChanged() {
 
   std::string eol_message;
   if (view_ && CrosSettings::Get()->GetString(
-                   chromeos::kMinimumChromeVersionEolMessage, &eol_message)) {
+                   chromeos::kMinimumChromeVersionAueMessage, &eol_message)) {
     view_->SetEolMessage(eol_message);
   }
 }

@@ -167,7 +167,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
   // service not being discoverable in any further scans of the adapter. Any
   // sockets listening on this service will need to be closed separately.
   void RemoveServiceRecord(uint32_t handle,
-                           const base::Closure& callback,
+                           base::OnceClosure callback,
                            const ServiceRecordErrorCallback& error_callback);
 
   // Locates the device object by object path (the devices map and
@@ -231,13 +231,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
   // Register a GATT service. The service must belong to this adapter.
   void RegisterGattService(
       BluetoothLocalGattServiceBlueZ* service,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       device::BluetoothGattService::ErrorCallback error_callback);
 
   // Unregister a GATT service. The service must already be registered.
   void UnregisterGattService(
       BluetoothLocalGattServiceBlueZ* service,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       device::BluetoothGattService::ErrorCallback error_callback);
 
   // Returns if a given service is currently registered.
@@ -363,12 +363,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
   void PresentChanged(bool present);
 
   // Called by dbus:: on completion of the discoverable property change.
-  void OnSetDiscoverable(const base::Closure& callback,
+  void OnSetDiscoverable(base::OnceClosure callback,
                          const ErrorCallback& error_callback,
                          bool success);
 
   // Called by dbus:: on completion of an adapter property change.
-  void OnPropertyChangeCompleted(const base::Closure& callback,
+  void OnPropertyChangeCompleted(base::OnceClosure callback,
                                  const ErrorCallback& error_callback,
                                  bool success);
 
@@ -384,32 +384,32 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
   void StopScan(DiscoverySessionResultCallback callback) override;
   void SetDiscoveryFilter(
       std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       DiscoverySessionErrorCallback error_callback);
 
   // Called by dbus:: on completion of the D-Bus method call to start discovery.
-  void OnStartDiscovery(const base::Closure& callback,
+  void OnStartDiscovery(base::OnceClosure callback,
                         DiscoverySessionErrorCallback error_callback);
-  void OnStartDiscoveryError(const base::Closure& callback,
+  void OnStartDiscoveryError(base::OnceClosure callback,
                              DiscoverySessionErrorCallback error_callback,
                              const std::string& error_name,
                              const std::string& error_message);
 
   // Called by dbus:: on completion of the D-Bus method call to stop discovery.
-  void OnStopDiscovery(const base::Closure& callback);
+  void OnStopDiscovery(base::OnceClosure callback);
   void OnStopDiscoveryError(DiscoverySessionErrorCallback error_callback,
                             const std::string& error_name,
                             const std::string& error_message);
 
-  void OnPreSetDiscoveryFilter(const base::Closure& callback,
+  void OnPreSetDiscoveryFilter(base::OnceClosure callback,
                                DiscoverySessionErrorCallback error_callback);
   void OnPreSetDiscoveryFilterError(
-      const base::Closure& callback,
+      base::OnceClosure callback,
       DiscoverySessionErrorCallback error_callback,
       device::UMABluetoothDiscoverySessionOutcome outcome);
-  void OnSetDiscoveryFilter(const base::Closure& callback,
+  void OnSetDiscoveryFilter(base::OnceClosure callback,
                             DiscoverySessionErrorCallback error_callback);
-  void OnSetDiscoveryFilterError(const base::Closure& callback,
+  void OnSetDiscoveryFilterError(base::OnceClosure callback,
                                  DiscoverySessionErrorCallback error_callback,
                                  const std::string& error_name,
                                  const std::string& error_message);
@@ -437,19 +437,19 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
   // register even if the initial unregister call fails.
   void UpdateRegisteredApplication(
       bool ignore_unregister_failure,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       device::BluetoothGattService::ErrorCallback error_callback);
 
   // Make the call to GattManager1 to register the services currently
   // registered.
   void RegisterApplication(
-      const base::Closure& callback,
+      base::OnceClosure callback,
       device::BluetoothGattService::ErrorCallback error_callback);
 
   // Register application, ignoring the given errors. Used to register a GATT
   // application even if a previous unregister application call fails.
   void RegisterApplicationOnError(
-      const base::Closure& callback,
+      base::OnceClosure callback,
       device::BluetoothGattService::ErrorCallback error_callback,
       const std::string& error_name,
       const std::string& error_message);

@@ -115,6 +115,13 @@ const char kEngagementPrefsPrefix[] = "arc.metrics";
 
 // ======== LOCAL STATE PREFS ========
 
+// A boolean preference that indicates whether this device has run with the
+// native bridge 64 bit support experiment enabled. Persisting value in local
+// state, rather than in a user profile, is required as it needs to be read
+// whenever ARC mini-container is started.
+const char kNativeBridge64BitSupportExperimentEnabled[] =
+    "arc.native_bridge_64bit_support_experiment";
+
 // A dictionary preference that keeps track of stability metric values, which is
 // maintained by StabilityMetricsManager. Persisting values in local state is
 // required to include these metrics in the initial stability log in case of a
@@ -122,6 +129,8 @@ const char kEngagementPrefsPrefix[] = "arc.metrics";
 const char kStabilityMetrics[] = "arc.metrics.stability";
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(kNativeBridge64BitSupportExperimentEnabled,
+                                false);
   registry->RegisterDictionaryPref(kStabilityMetrics);
 }
 

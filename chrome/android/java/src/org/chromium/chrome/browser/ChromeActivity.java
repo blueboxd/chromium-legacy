@@ -450,9 +450,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             getLifecycleDispatcher().register(bottomContainer);
 
             // Should be called after TabModels are initialized.
-            ShareDelegate shareDelegate =
-                    new ShareDelegateImpl(mRootUiCoordinator.getBottomSheetController(),
-                            getActivityTabProvider(), new ShareDelegateImpl.ShareSheetDelegate());
+            ShareDelegate shareDelegate = new ShareDelegateImpl(
+                    mRootUiCoordinator.getBottomSheetController(), getActivityTabProvider(),
+                    new ShareDelegateImpl.ShareSheetDelegate(), isCustomTab());
             mShareDelegateSupplier.set(shareDelegate);
 
             // If onStart was called before postLayoutInflation (because inflation was done in a

@@ -90,7 +90,7 @@ class ExternalCacheImpl : public ExternalCache,
                                    const GURL& download_url,
                                    const PingResult& ping_result,
                                    const std::set<int>& request_ids,
-                                   const InstallCallback& callback) override;
+                                   InstallCallback callback) override;
   bool IsExtensionPending(const std::string& id) override;
   bool GetExtensionExistingVersion(const std::string& id,
                                    std::string* version) override;

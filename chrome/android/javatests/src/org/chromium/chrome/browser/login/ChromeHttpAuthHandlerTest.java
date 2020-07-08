@@ -8,6 +8,7 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -141,6 +142,6 @@ public class ChromeHttpAuthHandlerTest {
 
     private void verifyAuthDialogVisibility(ChromeHttpAuthHandler handler, boolean isVisible) {
         CriteriaHelper.pollUiThread(
-                Criteria.equals(isVisible, () -> handler.isShowingAuthDialog()));
+                () -> Criteria.checkThat(handler.isShowingAuthDialog(), Matchers.is(isVisible)));
     }
 }

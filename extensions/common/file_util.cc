@@ -442,10 +442,6 @@ base::FilePath GetInstallTempDir(const base::FilePath& extensions_dir) {
   return temp_path;
 }
 
-void DeleteFile(const base::FilePath& path, bool recursive) {
-  base::DeleteFile(path, recursive);
-}
-
 base::FilePath ExtensionURLToRelativeFilePath(const GURL& url) {
   base::StringPiece url_path = url.path_piece();
   if (url_path.empty() || url_path[0] != '/')

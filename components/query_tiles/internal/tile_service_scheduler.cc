@@ -35,7 +35,8 @@ TileServiceSchedulerImpl::TileServiceSchedulerImpl(
     PrefService* prefs,
     base::Clock* clock,
     const base::TickClock* tick_clock,
-    std::unique_ptr<net::BackoffEntry::Policy> backoff_policy)
+    std::unique_ptr<net::BackoffEntry::Policy> backoff_policy,
+    LogSink* log_sink)
     : scheduler_(scheduler),
       prefs_(prefs),
       clock_(clock),
@@ -44,7 +45,8 @@ TileServiceSchedulerImpl::TileServiceSchedulerImpl(
       is_suspend_(false),
       delegate_(nullptr),
       fetcher_status_(TileInfoRequestStatus::kInit),
-      group_status_(TileGroupStatus::kUninitialized) {}
+      group_status_(TileGroupStatus::kUninitialized),
+      log_sink_(log_sink) {}
 
 TileServiceSchedulerImpl::~TileServiceSchedulerImpl() = default;
 
@@ -93,15 +95,18 @@ void TileServiceSchedulerImpl::OnFetchCompleted(TileInfoRequestStatus status) {
     ScheduleTask(true);
   }
   stats::RecordTileRequestStatus(status);
+  PingLogSink();
 }
 
 void TileServiceSchedulerImpl::OnDbPurged(TileGroupStatus status) {
   CancelTask();
   group_status_ = status;
+  PingLogSink();
 }
 
 void TileServiceSchedulerImpl::OnGroupDataSaved(TileGroupStatus status) {
   group_status_ = status;
+  PingLogSink();
 }
 
 void TileServiceSchedulerImpl::OnTileManagerInitialized(
@@ -125,6 +130,7 @@ void TileServiceSchedulerImpl::OnTileManagerInitialized(
     is_suspend_ = true;
   }
   stats::RecordTileGroupStatus(status);
+  PingLogSink();
 }
 
 TileInfoRequestStatus TileServiceSchedulerImpl::GetFetcherStatus() {
@@ -244,6 +250,11 @@ bool TileServiceSchedulerImpl::IsDuringFirstFlow() {
 
 void TileServiceSchedulerImpl::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
+}
+
+void TileServiceSchedulerImpl::PingLogSink() {
+  log_sink_->OnServiceStatusChanged();
+  log_sink_->OnTileDataAvailable();
 }
 
 }  // namespace query_tiles

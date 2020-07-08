@@ -17,6 +17,7 @@ class AssistantClientImpl;
 class AssistantStateClient;
 class ChromeKeyboardControllerClient;
 class ImageDownloaderImpl;
+class LacrosManager;
 class SpokenFeedbackEventRewriterDelegate;
 
 namespace lock_screen_apps {
@@ -48,7 +49,6 @@ class EventRewriterDelegateImpl;
 class FastTransitionObserver;
 class GnubbyNotification;
 class IdleActionWarningObserver;
-class LacrosManager;
 class LoginScreenExtensionsLifetimeManager;
 class LoginScreenExtensionsStorageCleaner;
 class LowDiskNotification;

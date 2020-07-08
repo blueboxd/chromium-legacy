@@ -65,7 +65,8 @@ bool IsUserPermittedToFetchFromRemoteOptimizationGuide(Profile* profile) {
   if (!optimization_guide::features::IsRemoteFetchingEnabled())
     return false;
 
-  if (IsRemoteFetchingExplicitlyAllowedForPerformanceInfo())
+  if (performance_hints::features::
+          IsRemoteFetchingExplicitlyAllowedForPerformanceInfo())
     return true;
 
   if (IsUserDataSaverEnabledAndAllowedToFetchFromRemoteService(profile))

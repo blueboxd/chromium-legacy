@@ -1780,10 +1780,6 @@
     "label": "//chrome/browser/vr:vr_pixeltests",
     "type": "console_test_launcher",
   },
-  "vr_testapp": {
-    "label": "//chrome/browser/vr/testapp:vr_testapp",
-    "type": "additional_compile_target",
-  },
   "vrcore_fps_test": {
     "args": [
       "-v",

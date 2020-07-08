@@ -11,6 +11,7 @@ import android.util.DisplayMetrics;
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -92,7 +93,8 @@ public class NavigationHandlerTest {
 
     private void assertNavigateOnSwipeFrom(boolean edge, String toUrl) {
         ChromeTabUtils.waitForTabPageLoaded(currentTab(), toUrl, () -> swipeFromEdge(edge), 10);
-        CriteriaHelper.pollUiThread(Criteria.equals(toUrl, () -> currentTab().getUrlString()));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(currentTab().getUrlString(), Matchers.is(toUrl)));
         Assert.assertEquals("Didn't navigate back", toUrl, currentTab().getUrlString());
     }
 
@@ -199,7 +201,7 @@ public class NavigationHandlerTest {
         swipeFromEdge(LEFT_EDGE);
 
         // Assert that the new tab was closed and the old tab is the current tab again.
-        CriteriaHelper.pollUiThread(Criteria.equals(false, newTab::isInitialized));
+        CriteriaHelper.pollUiThread(() -> !newTab.isInitialized());
         Assert.assertEquals(oldTab, currentTab());
         Assert.assertEquals("Chrome should remain in foreground", ActivityState.RESUMED,
                 ApplicationStatus.getStateForActivity(mActivityTestRule.getActivity()));

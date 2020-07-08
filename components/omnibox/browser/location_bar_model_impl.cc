@@ -62,8 +62,11 @@ base::string16 LocationBarModelImpl::GetURLForDisplay() const {
   format_types |= url_formatter::kFormatUrlTrimAfterHost;
 #endif
 
-  format_types |= url_formatter::kFormatUrlOmitHTTPS;
-  format_types |= url_formatter::kFormatUrlOmitTrivialSubdomains;
+  if (OmniboxFieldTrial::IsHideSteadyStateUrlSchemeEnabled())
+    format_types |= url_formatter::kFormatUrlOmitHTTPS;
+
+  if (OmniboxFieldTrial::IsHideSteadyStateUrlTrivialSubdomainsEnabled())
+    format_types |= url_formatter::kFormatUrlOmitTrivialSubdomains;
 
   if (base::FeatureList::IsEnabled(omnibox::kHideFileUrlScheme))
     format_types |= url_formatter::kFormatUrlOmitFileScheme;

@@ -31,6 +31,9 @@ struct Config {
   // If no surfaces are attached, the stream model is unloaded after this
   // timeout.
   base::TimeDelta model_unload_timeout = base::TimeDelta::FromSeconds(1);
+  // How far ahead in number of items from last visible item to final item
+  // before attempting to load more content.
+  int load_more_trigger_lookahead = 5;
 };
 
 // Gets the current configuration.

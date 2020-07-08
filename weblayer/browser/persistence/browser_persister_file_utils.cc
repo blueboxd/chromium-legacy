@@ -28,7 +28,7 @@ bool RemoveBrowserPersistenceStorageOnBackgroundThread(
   for (const std::string& id : ids) {
     DCHECK(!id.empty());
     base::FilePath persistence_path = BuildPathForBrowserPersister(path, id);
-    if (!base::DeleteFile(persistence_path, /* recurse */ false))
+    if (!base::DeleteFile(persistence_path))
       all_succeeded = false;
   }
   return all_succeeded;

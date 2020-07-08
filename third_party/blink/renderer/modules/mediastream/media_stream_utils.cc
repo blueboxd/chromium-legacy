@@ -49,7 +49,6 @@ void MediaStreamUtils::CreateNativeAudioMediaStreamTrack(
     DVLOG(1) << "Creating WebAudio media stream source.";
     audio_source = new WebAudioMediaStreamSource(source, task_runner);
     // |source| takes ownership of |audio_source|.
-    audio_source->SetOwner(source);
     source->SetPlatformSource(
         base::WrapUnique(audio_source));  // Takes ownership.
 

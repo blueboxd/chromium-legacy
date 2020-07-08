@@ -172,7 +172,7 @@ TEST_F(PendingLogsServiceTest, SuccessfulRegistration) {
 
   // Cleanup.
   EXPECT_FALSE(registry_logger_->RemoveLogFilePath(log_file));
-  EXPECT_TRUE(base::DeleteFile(log_file, false));
+  EXPECT_TRUE(base::DeleteFile(log_file));
 }
 
 TEST_F(PendingLogsServiceTest, FailToRegisterScheduledTask) {

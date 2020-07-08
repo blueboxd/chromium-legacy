@@ -13,6 +13,7 @@ import android.widget.ListView;
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -83,7 +84,8 @@ public class TabbedAppMenuTest {
         showAppMenuAndAssertMenuShown();
 
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> getListView().setSelection(0));
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, () -> getCurrentFocusedRow()));
+        CriteriaHelper.pollInstrumentationThread(
+                () -> Criteria.checkThat(getCurrentFocusedRow(), Matchers.is(0)));
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
@@ -291,15 +293,16 @@ public class TabbedAppMenuTest {
         for (int index = getCurrentFocusedRow(); index != end; index += increment) {
             pressKey(towardsTop ? KeyEvent.KEYCODE_DPAD_UP : KeyEvent.KEYCODE_DPAD_DOWN);
             final int expectedPosition = index + increment;
-            CriteriaHelper.pollInstrumentationThread(
-                    Criteria.equals(expectedPosition, () -> getCurrentFocusedRow()));
+            CriteriaHelper.pollInstrumentationThread(() -> {
+                Criteria.checkThat(getCurrentFocusedRow(), Matchers.is(expectedPosition));
+            });
         }
 
         // Try moving past it by one.
         if (movePast) {
             pressKey(towardsTop ? KeyEvent.KEYCODE_DPAD_UP : KeyEvent.KEYCODE_DPAD_DOWN);
             CriteriaHelper.pollInstrumentationThread(
-                    Criteria.equals(end, () -> getCurrentFocusedRow()));
+                    () -> Criteria.checkThat(getCurrentFocusedRow(), Matchers.is(end)));
         }
 
         // The menu should stay open.

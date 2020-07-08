@@ -14,6 +14,7 @@ import android.os.Build;
 
 import androidx.annotation.Nullable;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 
 import org.chromium.base.ActivityState;
@@ -28,7 +29,6 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Locale;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -82,12 +82,10 @@ public class MultiWindowTestHelper {
         activity.startActivity(intent);
 
         // Wait for ChromeTabbedActivity2 to be created.
-        CriteriaHelper.pollUiThread(Criteria.equals(numExpectedActivities, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return ApplicationStatus.getRunningActivities().size();
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(ApplicationStatus.getRunningActivities().size(),
+                    Matchers.is(numExpectedActivities));
+        });
 
         return waitForSecondChromeTabbedActivity();
     }
@@ -115,12 +113,10 @@ public class MultiWindowTestHelper {
     }
 
     private static void waitUntilActivityResumed(final Activity activity) {
-        CriteriaHelper.pollUiThread(Criteria.equals(ActivityState.RESUMED, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return ApplicationStatus.getStateForActivity(activity);
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(ApplicationStatus.getStateForActivity(activity),
+                    Matchers.is(ActivityState.RESUMED));
+        });
     }
 
     /**

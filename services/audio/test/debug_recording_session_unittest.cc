@@ -134,7 +134,7 @@ TEST_F(DebugRecordingFileProviderTest, CreateFileForInputStream) {
 
   base::FilePath file_name(GetFileName(kInput, id));
   EXPECT_TRUE(base::PathExists(file_name));
-  ASSERT_TRUE(base::DeleteFile(file_name, false));
+  ASSERT_TRUE(base::DeleteFile(file_name));
 }
 
 TEST_F(DebugRecordingFileProviderTest, CreateFileForOutputStream) {
@@ -148,7 +148,7 @@ TEST_F(DebugRecordingFileProviderTest, CreateFileForOutputStream) {
 
   base::FilePath file_name(GetFileName(kOutput, id));
   EXPECT_TRUE(base::PathExists(file_name));
-  ASSERT_TRUE(base::DeleteFile(file_name, false));
+  ASSERT_TRUE(base::DeleteFile(file_name));
 }
 
 TEST_F(DebugRecordingFileProviderTest, CreateFilesForVariousIds) {
@@ -166,7 +166,7 @@ TEST_F(DebugRecordingFileProviderTest, CreateFilesForVariousIds) {
   for (uint32_t id : ids) {
     base::FilePath file_name(GetFileName(kOutput, id));
     EXPECT_TRUE(base::PathExists(file_name));
-    EXPECT_TRUE(base::DeleteFile(file_name, false));
+    EXPECT_TRUE(base::DeleteFile(file_name));
   }
 }
 

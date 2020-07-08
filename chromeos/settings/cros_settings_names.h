@@ -219,7 +219,7 @@ COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kMinimumChromeVersionEnforced[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
-extern const char kMinimumChromeVersionEolMessage[];
+extern const char kMinimumChromeVersionAueMessage[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kCastReceiverName[];
 

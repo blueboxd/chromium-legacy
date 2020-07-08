@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_MEDIA_HISTORY_MEDIA_HISTORY_KEYED_SERVICE_H_
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
 #include "chrome/browser/media/history/media_history_store.mojom.h"
 #include "components/history/core/browser/history_service_observer.h"
@@ -87,6 +88,12 @@ class MediaHistoryKeyedService : public KeyedService,
       const media_session::MediaMetadata& metadata,
       const base::Optional<media_session::MediaPosition>& position,
       const std::vector<media_session::MediaImage>& artwork);
+
+  // Get origins from the origins table that have watchtime above the given
+  // threshold value.
+  void GetHighWatchTimeOrigins(
+      const base::TimeDelta& audio_video_watchtime_min,
+      base::OnceCallback<void(const std::vector<url::Origin>&)> callback);
 
   // Returns Media Feeds items.
   struct GetMediaFeedItemsRequest {

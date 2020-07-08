@@ -412,7 +412,7 @@ static_library("common") {
   }
 
   if (is_mac) {
-    libs += [
+    frameworks = [
       "Accelerate.framework",
       "Carbon.framework",
     ]

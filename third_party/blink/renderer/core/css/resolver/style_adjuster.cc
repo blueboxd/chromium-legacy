@@ -99,8 +99,8 @@ void AdjustBackgroundForForcedColorsMode(StyleResolverState& state,
           .Alpha();
   Color bg_color_rbg = StyleColor::ColorFromKeyword(
       style.InternalForcedBackgroundColorRgb(), WebColorScheme::kLight);
-  Color bg_color = Color(bg_color_rbg.Red(), bg_color_rbg.Green(),
-                         bg_color_rbg.Blue(), bg_color_alpha);
+  StyleColor bg_color(Color(bg_color_rbg.Red(), bg_color_rbg.Green(),
+                            bg_color_rbg.Blue(), bg_color_alpha));
   style.SetBackgroundColor(bg_color);
 }
 

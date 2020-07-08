@@ -101,4 +101,8 @@ void FakeTileService::CancelTask() {}
 
 void FakeTileService::PurgeDb() {}
 
+Logger* FakeTileService::GetLogger() {
+  return nullptr;
+}
+
 }  // namespace query_tiles

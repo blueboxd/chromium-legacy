@@ -433,15 +433,20 @@ void HomeScreenController::UpdateVisibility() {
 }
 
 bool HomeScreenController::ShouldShowHomeScreen() const {
-  const bool in_tablet_mode =
-      Shell::Get()->tablet_mode_controller()->InTabletMode();
-  const bool in_overview =
-      Shell::Get()->overview_controller()->InOverviewSession();
-  const bool in_split_view =
-      SplitViewController::Get(delegate_->GetHomeScreenWindow())
-          ->InSplitViewMode();
-  return in_tablet_mode && !in_overview && !in_wallpaper_preview_ &&
-         !in_window_dragging_ && !in_split_view;
+  if (in_window_dragging_ || in_wallpaper_preview_)
+    return false;
+
+  auto* window = delegate_->GetHomeScreenWindow();
+  if (!window)
+    return false;
+
+  auto* shell = Shell::Get();
+  if (!shell->tablet_mode_controller()->InTabletMode())
+    return false;
+  if (shell->overview_controller()->InOverviewSession())
+    return false;
+
+  return !SplitViewController::Get(window)->InSplitViewMode();
 }
 
 }  // namespace ash

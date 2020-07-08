@@ -80,7 +80,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AnimatedContainerView
   // AssistantResponseObserver:
   void OnUiElementAdded(const AssistantUiElement* ui_element) override;
   void OnSuggestionsAdded(
-      const std::vector<AssistantSuggestion>& suggestions) override;
+      const std::vector<const AssistantSuggestion*>& suggestions) override;
 
   // Remove all current responses/views.
   // This will abort all in progress animations, and remove all the child views

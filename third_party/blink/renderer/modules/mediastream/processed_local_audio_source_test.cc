@@ -108,7 +108,6 @@ class ProcessedLocalAudioSourceTest : public testing::Test {
             false /* disable_local_echo */, properties, base::DoNothing(),
             scheduler::GetSingleThreadTaskRunnerForTesting());
     source->SetAllowInvalidRenderFrameIdForTesting(true);
-    source->SetOwner(audio_source_.Get());
     audio_source_->SetPlatformSource(std::move(source));
   }
 

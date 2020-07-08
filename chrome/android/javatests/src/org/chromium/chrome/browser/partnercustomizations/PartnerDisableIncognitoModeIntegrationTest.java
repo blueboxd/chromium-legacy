@@ -14,6 +14,7 @@ import android.widget.PopupMenu;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -151,8 +152,10 @@ public class PartnerDisableIncognitoModeIntegrationTest {
             toggleActivityForegroundState();
             waitForParentalControlsEnabledState(true);
 
-            CriteriaHelper.pollInstrumentationThread(
-                    Criteria.equals(0, () -> mActivityTestRule.tabsCount(true /* incognito */)));
+            CriteriaHelper.pollInstrumentationThread(() -> {
+                Criteria.checkThat(
+                        mActivityTestRule.tabsCount(true /* incognito */), Matchers.is(0));
+            });
         } finally {
             testServer.stopAndDestroyServer();
         }

@@ -47,7 +47,8 @@
 
 // STACK_SAMPLING_PROFILER_SUPPORTED is used to conditionally enable the tests
 // below for supported platforms (currently Win x64 and Mac x64).
-#if defined(_WIN64) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
+#if (defined(OS_WIN) && defined(ARCH_CPU_X86_64)) ||                        \
+    (defined(OS_MACOSX) && defined(ARCH_CPU_X86_64) && !defined(OS_IOS)) || \
     (defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE))
 #define STACK_SAMPLING_PROFILER_SUPPORTED 1
 #endif

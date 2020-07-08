@@ -14,6 +14,21 @@ interface AbortSignal : EventTarget
     getter onabort
     method constructor
     setter onabort
+interface AudioDecoder
+    attribute @@toStringTag
+    getter decodeQueueSize
+    method close
+    method configure
+    method constructor
+    method decode
+    method flush
+    method reset
+interface AudioFrame
+    attribute @@toStringTag
+    getter buffer
+    getter timestamp
+    method close
+    method constructor
 interface BackgroundFetchEvent : ExtendableEvent
     attribute @@toStringTag
     getter registration
@@ -408,6 +423,12 @@ interface DecompressionStream
     attribute @@toStringTag
     getter readable
     getter writable
+    method constructor
+interface EncodedAudioChunk
+    attribute @@toStringTag
+    getter data
+    getter timestamp
+    getter type
     method constructor
 interface ErrorEvent : Event
     attribute @@toStringTag

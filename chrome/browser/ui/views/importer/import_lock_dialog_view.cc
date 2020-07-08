@@ -29,30 +29,31 @@ using base::UserMetricsAction;
 namespace importer {
 
 void ShowImportLockDialog(gfx::NativeWindow parent,
-                          const base::Callback<void(bool)>& callback) {
-  ImportLockDialogView::Show(parent, callback);
+                          base::OnceCallback<void(bool)> callback) {
+  ImportLockDialogView::Show(parent, std::move(callback));
 }
 
 }  // namespace importer
 
 // static
 void ImportLockDialogView::Show(gfx::NativeWindow parent,
-                                const base::Callback<void(bool)>& callback) {
+                                base::OnceCallback<void(bool)> callback) {
   views::DialogDelegate::CreateDialogWidget(
-      new ImportLockDialogView(callback), NULL, NULL)->Show();
+      new ImportLockDialogView(std::move(callback)), nullptr, nullptr)
+      ->Show();
   base::RecordAction(UserMetricsAction("ImportLockDialogView_Shown"));
 }
 
 ImportLockDialogView::ImportLockDialogView(
-    const base::Callback<void(bool)>& callback)
-    : callback_(callback) {
+    base::OnceCallback<void(bool)> callback)
+    : callback_(std::move(callback)) {
   SetButtonLabel(ui::DIALOG_BUTTON_OK,
                  l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_OK));
 
   auto done_callback = [](ImportLockDialogView* dialog, bool accepted) {
     if (dialog->callback_) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(dialog->callback_, accepted));
+          FROM_HERE, base::BindOnce(std::move(dialog->callback_), accepted));
     }
   };
   SetAcceptCallback(

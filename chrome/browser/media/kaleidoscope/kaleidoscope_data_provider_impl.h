@@ -11,6 +11,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "url/origin.h"
 
 namespace media_history {
 class MediaHistoryKeyedService;
@@ -40,6 +41,7 @@ class KaleidoscopeDataProviderImpl
   void GetMediaFeedContents(int64_t feed_id,
                             GetMediaFeedContentsCallback callback) override;
   void GetCredentials(GetCredentialsCallback cb) override;
+  void GetHighWatchTimeOrigins(GetHighWatchTimeOriginsCallback cb) override;
 
  private:
   media_history::MediaHistoryKeyedService* GetMediaHistoryService();

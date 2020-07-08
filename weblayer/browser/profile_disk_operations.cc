@@ -161,7 +161,7 @@ void NukeProfilesMarkedForDeletion() {
           base::DeletePathRecursively(GetDataPathFromDirName(dir_name));
       // Only delete the marker if deletion is successful.
       if (delete_success) {
-        base::DeleteFile(marker_path, /*recursive=*/false);
+        base::DeleteFile(marker_path);
       }
     }
   }

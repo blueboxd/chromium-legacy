@@ -24,7 +24,6 @@ MediaStream* CreateMediaStream(V8TestingScope* scope) {
       false /* remote */);
   auto native_source = std::make_unique<MockMediaStreamVideoSource>();
   MockMediaStreamVideoSource* native_source_ptr = native_source.get();
-  native_source->SetOwner(source);
   source->SetPlatformSource(std::move(native_source));
   auto* component = MakeGarbageCollected<MediaStreamComponent>(source);
   component->SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(

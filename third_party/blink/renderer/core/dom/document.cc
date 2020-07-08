@@ -2201,7 +2201,7 @@ void Document::PropagateStyleToViewport() {
         viewport_style.BackgroundLayers() != background_layers ||
         viewport_style.ImageRendering() != image_rendering) {
       changed = true;
-      new_viewport_style->SetBackgroundColor(background_color);
+      new_viewport_style->SetBackgroundColor(StyleColor(background_color));
       new_viewport_style->AccessBackgroundLayers() = background_layers;
       new_viewport_style->SetImageRendering(image_rendering);
     }

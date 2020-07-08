@@ -407,12 +407,11 @@ void SnapshotManager::DeleteSnapshotDataForProfile(
     // regardless of |delete_begin|, otherwise deletes the required files from
     // the snapshot if it was created after |delete_begin|.
     if (delete_all) {
-      base::DeleteFile(profile_absolute_path, /*recursive=*/true);
+      base::DeletePathRecursively(profile_absolute_path);
     } else if (delete_begin <= file_info.creation_time &&
                base::PathExists(profile_absolute_path)) {
       for (const auto& filename : files_to_delete) {
-        base::DeleteFile(profile_absolute_path.Append(filename),
-                         /*recursive=*/true);
+        base::DeletePathRecursively(profile_absolute_path.Append(filename));
       }
       // Non recursive deletion will fail if the directory is not empty. In this
       // case we only want to delete the directory if it is empty.

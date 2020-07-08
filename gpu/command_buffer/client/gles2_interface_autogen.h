@@ -914,16 +914,6 @@ virtual void BindFragDataLocationEXT(GLuint program,
                                      GLuint colorNumber,
                                      const char* name) = 0;
 virtual GLint GetFragDataIndexEXT(GLuint program, const char* name) = 0;
-virtual void UniformMatrix4fvStreamTextureMatrixCHROMIUM(
-    GLint location,
-    GLboolean transpose,
-    const GLfloat* transform) = 0;
-virtual void OverlayPromotionHintCHROMIUM(GLuint texture,
-                                          GLboolean promotion_hint,
-                                          GLint display_x,
-                                          GLint display_y,
-                                          GLint display_width,
-                                          GLint display_height) = 0;
 virtual void SwapBuffersWithBoundsCHROMIUM(GLuint64 swap_id,
                                            GLsizei count,
                                            const GLint* rects,

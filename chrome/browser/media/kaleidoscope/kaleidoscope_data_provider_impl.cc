@@ -42,6 +42,11 @@ constexpr int kMediaFeedsItemsMaxCount = 20;
 constexpr char kChromeMediaRecommendationsOAuth2Scope[] =
     "https://www.googleapis.com/auth/chrome-media-recommendations";
 
+// The minimum watch time needed in media history for a provider to be
+// considered high watch time.
+constexpr base::TimeDelta kProviderHighWatchTimeMin =
+    base::TimeDelta::FromMinutes(30);
+
 }  // namespace
 
 KaleidoscopeDataProviderImpl::KaleidoscopeDataProviderImpl(
@@ -88,6 +93,12 @@ void KaleidoscopeDataProviderImpl::GetCredentials(GetCredentialsCallback cb) {
                      base::Unretained(this)),
       signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate,
       signin::ConsentLevel::kNotRequired);
+}
+
+void KaleidoscopeDataProviderImpl::GetHighWatchTimeOrigins(
+    GetHighWatchTimeOriginsCallback cb) {
+  GetMediaHistoryService()->GetHighWatchTimeOrigins(kProviderHighWatchTimeMin,
+                                                    std::move(cb));
 }
 
 void KaleidoscopeDataProviderImpl::GetTopMediaFeeds(

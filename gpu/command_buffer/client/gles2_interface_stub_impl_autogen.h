@@ -1178,17 +1178,6 @@ GLint GLES2InterfaceStub::GetFragDataIndexEXT(GLuint /* program */,
                                               const char* /* name */) {
   return 0;
 }
-void GLES2InterfaceStub::UniformMatrix4fvStreamTextureMatrixCHROMIUM(
-    GLint /* location */,
-    GLboolean /* transpose */,
-    const GLfloat* /* transform */) {}
-void GLES2InterfaceStub::OverlayPromotionHintCHROMIUM(
-    GLuint /* texture */,
-    GLboolean /* promotion_hint */,
-    GLint /* display_x */,
-    GLint /* display_y */,
-    GLint /* display_width */,
-    GLint /* display_height */) {}
 void GLES2InterfaceStub::SwapBuffersWithBoundsCHROMIUM(GLuint64 /* swap_id */,
                                                        GLsizei /* count */,
                                                        const GLint* /* rects */,

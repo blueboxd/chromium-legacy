@@ -47,6 +47,10 @@ class TileService : public KeyedService, public base::SupportsUserData {
   // Used for debugging and testing only. Clear everything in db.
   virtual void PurgeDb() = 0;
 
+  // Returns a Logger instance that is meant to be used by logging and debug UI
+  // components in the larger system.
+  virtual Logger* GetLogger() = 0;
+
   TileService() = default;
   ~TileService() override = default;
 

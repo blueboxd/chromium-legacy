@@ -275,7 +275,6 @@ TEST_F(MediaStreamAudioTest, BasicUsage) {
   // Create the source, but it should not be started yet.
   ASSERT_FALSE(source());
   auto platform_audio_source = std::make_unique<FakeMediaStreamAudioSource>();
-  platform_audio_source->SetOwner(audio_source_.Get());
   audio_source_->SetPlatformSource(std::move(platform_audio_source));
   ASSERT_TRUE(source());
   EXPECT_FALSE(source()->was_started());
@@ -321,7 +320,6 @@ TEST_F(MediaStreamAudioTest, ConnectTrackAfterSourceStopped) {
   // Create the source, connect one track, and stop it. This should
   // automatically stop the source.
   auto platform_audio_source = std::make_unique<FakeMediaStreamAudioSource>();
-  platform_audio_source->SetOwner(audio_source_.Get());
   audio_source_->SetPlatformSource(std::move(platform_audio_source));
   ASSERT_TRUE(source());
   EXPECT_TRUE(source()->ConnectToTrack(audio_component_));
@@ -359,7 +357,6 @@ TEST_F(MediaStreamAudioTest, FormatChangesPropagate) {
   // Create a source, connect it to track, and connect the track to a
   // sink.
   auto platform_audio_source = std::make_unique<FakeMediaStreamAudioSource>();
-  platform_audio_source->SetOwner(audio_source_.Get());
   audio_source_->SetPlatformSource(std::move(platform_audio_source));
   ASSERT_TRUE(source());
   EXPECT_TRUE(source()->ConnectToTrack(audio_component_));
@@ -396,7 +393,6 @@ TEST_F(MediaStreamAudioTest, FormatChangesPropagate) {
 TEST_F(MediaStreamAudioTest, EnableAndDisableTracks) {
   // Create a source and connect it to track.
   auto platform_audio_source = std::make_unique<FakeMediaStreamAudioSource>();
-  platform_audio_source->SetOwner(audio_source_.Get());
   audio_source_->SetPlatformSource(std::move(platform_audio_source));
   ASSERT_TRUE(source());
   EXPECT_TRUE(source()->ConnectToTrack(audio_component_));

@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -44,7 +45,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/extension_updater_uma.h"
-#include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 
@@ -112,17 +112,20 @@ ExtensionUpdater::FetchedCRXFile::FetchedCRXFile(
     const CRXFileInfo& file,
     bool file_ownership_passed,
     const std::set<int>& request_ids,
-    const InstallCallback& callback)
+    InstallCallback callback)
     : info(file),
       file_ownership_passed(file_ownership_passed),
       request_ids(request_ids),
-      callback(callback) {}
+      callback(std::move(callback)) {}
 
 ExtensionUpdater::FetchedCRXFile::FetchedCRXFile()
     : file_ownership_passed(true) {}
 
-ExtensionUpdater::FetchedCRXFile::FetchedCRXFile(const FetchedCRXFile& other) =
+ExtensionUpdater::FetchedCRXFile::FetchedCRXFile(FetchedCRXFile&& other) =
     default;
+
+ExtensionUpdater::FetchedCRXFile& ExtensionUpdater::FetchedCRXFile::operator=(
+    FetchedCRXFile&& other) = default;
 
 ExtensionUpdater::FetchedCRXFile::~FetchedCRXFile() = default;
 
@@ -510,7 +513,7 @@ void ExtensionUpdater::OnExtensionDownloadFinished(
     const GURL& download_url,
     const PingResult& ping,
     const std::set<int>& request_ids,
-    const InstallCallback& callback) {
+    InstallCallback callback) {
   DCHECK(alive_);
   InstallStageTracker::Get(profile_)->ReportInstallationStage(
       file.extension_id, InstallStageTracker::Stage::INSTALLING);
@@ -518,8 +521,9 @@ void ExtensionUpdater::OnExtensionDownloadFinished(
 
   VLOG(2) << download_url << " written to " << file.path.value();
 
-  FetchedCRXFile fetched(file, file_ownership_passed, request_ids, callback);
-  fetched_crx_files_.push(fetched);
+  FetchedCRXFile fetched(file, file_ownership_passed, request_ids,
+                         std::move(callback));
+  fetched_crx_files_.push(std::move(fetched));
 
   // MaybeInstallCRXFile() removes extensions from |in_progress_ids_| after
   // starting the crx installer.
@@ -597,7 +601,7 @@ void ExtensionUpdater::CleanUpCrxFileIfNeeded(const base::FilePath& crx_path,
                                               bool file_ownership_passed) {
   if (file_ownership_passed &&
       !GetExtensionFileTaskRunner()->PostTask(
-          FROM_HERE, base::BindOnce(&file_util::DeleteFile, crx_path, false))) {
+          FROM_HERE, base::BindOnce(base::GetDeleteFileCallback(), crx_path))) {
     NOTREACHED();
   }
 }
@@ -609,7 +613,7 @@ void ExtensionUpdater::MaybeInstallCRXFile() {
   std::set<int> request_ids;
 
   while (!fetched_crx_files_.empty() && !crx_install_is_running_) {
-    const FetchedCRXFile& crx_file = fetched_crx_files_.front();
+    FetchedCRXFile& crx_file = fetched_crx_files_.front();
 
     VLOG(2) << "updating " << crx_file.info.extension_id
             << " with " << crx_file.info.path.value();
@@ -621,15 +625,15 @@ void ExtensionUpdater::MaybeInstallCRXFile() {
                                   crx_file.file_ownership_passed,
                                   &installer)) {
       crx_install_is_running_ = true;
-      current_crx_file_ = crx_file;
+      current_crx_file_ = std::move(crx_file);
       // If the crx file passes the expectations from the update manifest, this
       // callback inserts an entry in the extension cache and deletes it, if
       // required.
-      installer->set_expectations_verified_callback(
-          base::BindOnce(&ExtensionUpdater::PutExtensionInCache,
-                         weak_ptr_factory_.GetWeakPtr(), crx_file.info));
+      installer->set_expectations_verified_callback(base::BindOnce(
+          &ExtensionUpdater::PutExtensionInCache,
+          weak_ptr_factory_.GetWeakPtr(), current_crx_file_.info));
 
-      for (const int request_id : crx_file.request_ids) {
+      for (const int request_id : current_crx_file_.request_ids) {
         InProgressCheck& request = requests_in_progress_[request_id];
         if (request.install_immediately) {
           installer->set_install_immediately(true);
@@ -668,7 +672,7 @@ void ExtensionUpdater::Observe(int type,
   const Extension* extension = content::Details<const Extension>(details).ptr();
 
   CrxInstaller* installer = content::Source<CrxInstaller>(source).ptr();
-  const FetchedCRXFile& crx_file = current_crx_file_;
+  FetchedCRXFile& crx_file = current_crx_file_;
   if (!extension && installer->verification_check_failed() &&
       !crx_file.callback.is_null()) {
     // If extension downloader asked us to notify it about failed installations,
@@ -676,7 +680,7 @@ void ExtensionUpdater::Observe(int type,
     // fetched and call us again with the same request_id's (with either
     // OnExtensionDownloadFailed or OnExtensionDownloadFinished). For that
     // reason we don't notify finished requests yet.
-    crx_file.callback.Run(true);
+    std::move(crx_file.callback).Run(true);
   } else {
     for (const int request_id : crx_file.request_ids) {
       InProgressCheck& request = requests_in_progress_[request_id];
@@ -684,7 +688,7 @@ void ExtensionUpdater::Observe(int type,
       NotifyIfFinished(request_id);
     }
     if (!crx_file.callback.is_null()) {
-      crx_file.callback.Run(false);
+      std::move(crx_file.callback).Run(false);
     }
   }
 

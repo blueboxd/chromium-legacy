@@ -8,10 +8,11 @@ import android.content.Context;
 import android.graphics.Bitmap;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.share.BitmapDownloadRequest;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.modelutil.PropertyModel;
+
+import java.text.DateFormat;
+import java.util.Date;
 
 /**
  * ScreenshotShareSheetSaveDelegate is in charge of download the current bitmap.
@@ -36,13 +37,10 @@ class ScreenshotShareSheetSaveDelegate {
     protected void save() {
         Bitmap bitmap = mModel.get(ScreenshotShareSheetViewProperties.SCREENSHOT_BITMAP);
         if (bitmap != null) {
-            String url;
+            DateFormat dateFormat =
+                    DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.LONG);
             String fileName = mContext.getString(R.string.screenshot_filename_prefix,
-                    String.valueOf(System.currentTimeMillis()));
-            Tab tab = ((ChromeActivity) mContext).getActivityTabProvider().get();
-            if (tab != null) {
-                url = tab.getUrl().getSpec();
-            }
+                    dateFormat.format(new Date(System.currentTimeMillis())));
             BitmapDownloadRequest.downloadBitmap(fileName, bitmap);
         }
     }

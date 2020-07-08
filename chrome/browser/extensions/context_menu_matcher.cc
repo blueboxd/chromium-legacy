@@ -205,17 +205,18 @@ bool ContextMenuMatcher::IsCommandIdVisible(int command_id) const {
   // extension's name, that is a container of an extension's menu items. This
   // top-level menu item is not added to the context menu, so checking its
   // visibility is a special case handled below. This top-level menu item should
-  // always be displayed.
+  // be displayed only if it has an invisible submenu item.
   if (!item && ContextMenuMatcher::IsExtensionsCustomCommandId(command_id)) {
     ui::MenuModel* model = menu_model_;
     int index = 0;
     if (ui::MenuModel::GetModelAndIndexForCommandId(command_id, &model,
                                                     &index)) {
       ui::MenuModel* submenu_model = model->GetSubmenuModelAt(index);
-      // The only way for this to be an extensions command ID without an
-      // associated menu item is for it to be the generated menu.
-      DCHECK(submenu_model);
-      return HasVisibleItems(submenu_model);
+      // TODO(ghazale): Find out why submenu_model might be null. In other
+      // words, in which circumstance it can be an extensions custom command ID
+      // which does not have an associated item, but it's submenu_model is null.
+      if (submenu_model)
+        return HasVisibleItems(submenu_model);
     }
     return false;
   } else if (item) {

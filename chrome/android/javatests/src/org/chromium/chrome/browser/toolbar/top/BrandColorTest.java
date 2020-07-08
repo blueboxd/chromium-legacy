@@ -11,6 +11,7 @@ import android.text.TextUtils;
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -39,8 +40,6 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 import org.chromium.ui.util.ColorUtils;
-
-import java.util.concurrent.Callable;
 
 /**
  * Contains tests for the brand color feature.
@@ -92,13 +91,10 @@ public class BrandColorTest {
                         ? Color.BLACK
                         : ColorUtils.getDarkenedColorForStatusBar(brandColor);
             }
-            CriteriaHelper.pollUiThread(
-                    Criteria.equals(expectedStatusBarColor, new Callable<Integer>() {
-                        @Override
-                        public Integer call() {
-                            return mActivityTestRule.getActivity().getWindow().getStatusBarColor();
-                        }
-                    }));
+            CriteriaHelper.pollUiThread(() -> {
+                Criteria.checkThat(mActivityTestRule.getActivity().getWindow().getStatusBarColor(),
+                        Matchers.is(expectedStatusBarColor));
+            });
         }
     }
 

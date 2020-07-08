@@ -443,8 +443,11 @@ void ApkWebAppService::OnDidGetWebAppIcon(
     const std::string& package_name,
     arc::mojom::WebAppInfoPtr web_app_info,
     const std::vector<uint8_t>& icon_png_data) {
+  arc::mojom::RawIconPngDataPtr icon = arc::mojom::RawIconPngData::New();
+  icon->is_adaptive_icon = false;
+  icon->icon_png_data = std::vector<uint8_t>(icon_png_data);
   ApkWebAppInstaller::Install(
-      profile_, std::move(web_app_info), icon_png_data,
+      profile_, std::move(web_app_info), std::move(icon),
       base::BindOnce(&ApkWebAppService::OnDidFinishInstall,
                      weak_ptr_factory_.GetWeakPtr(), package_name),
       weak_ptr_factory_.GetWeakPtr());

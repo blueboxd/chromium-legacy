@@ -40,26 +40,26 @@ ExtensionCacheImpl::ExtensionCacheImpl(
   notification_registrar_.Add(
       this, extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
       content::NotificationService::AllBrowserContextsAndSources());
-  cache_->Init(true, base::Bind(&ExtensionCacheImpl::OnCacheInitialized,
-                                weak_ptr_factory_.GetWeakPtr()));
+  cache_->Init(true, base::BindOnce(&ExtensionCacheImpl::OnCacheInitialized,
+                                    weak_ptr_factory_.GetWeakPtr()));
 }
 
 ExtensionCacheImpl::~ExtensionCacheImpl() = default;
 
-void ExtensionCacheImpl::Start(const base::Closure& callback) {
+void ExtensionCacheImpl::Start(base::OnceClosure callback) {
   if (!cache_ || cache_->is_ready()) {
     DCHECK(init_callbacks_.empty());
-    callback.Run();
+    std::move(callback).Run();
   } else {
-    init_callbacks_.push_back(callback);
+    init_callbacks_.push_back(std::move(callback));
   }
 }
 
-void ExtensionCacheImpl::Shutdown(const base::Closure& callback) {
+void ExtensionCacheImpl::Shutdown(base::OnceClosure callback) {
   if (cache_)
-    cache_->Shutdown(callback);
+    cache_->Shutdown(std::move(callback));
   else
-    callback.Run();
+    std::move(callback).Run();
 }
 
 void ExtensionCacheImpl::AllowCaching(const std::string& id) {
@@ -80,11 +80,13 @@ void ExtensionCacheImpl::PutExtension(const std::string& id,
                                       const std::string& expected_hash,
                                       const base::FilePath& file_path,
                                       const std::string& version,
-                                      const PutExtensionCallback& callback) {
-  if (cache_ && CachingAllowed(id))
-    cache_->PutExtension(id, expected_hash, file_path, version, callback);
-  else
-    callback.Run(file_path, true);
+                                      PutExtensionCallback callback) {
+  if (cache_ && CachingAllowed(id)) {
+    cache_->PutExtension(id, expected_hash, file_path, version,
+                         std::move(callback));
+  } else {
+    std::move(callback).Run(file_path, true);
+  }
 }
 
 bool ExtensionCacheImpl::CachingAllowed(const std::string& id) {
@@ -92,10 +94,8 @@ bool ExtensionCacheImpl::CachingAllowed(const std::string& id) {
 }
 
 void ExtensionCacheImpl::OnCacheInitialized() {
-  for (std::vector<base::Closure>::iterator it = init_callbacks_.begin();
-       it != init_callbacks_.end(); ++it) {
-    it->Run();
-  }
+  for (auto& callback : init_callbacks_)
+    std::move(callback).Run();
   init_callbacks_.clear();
 
   uint64_t cache_size = 0;

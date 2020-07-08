@@ -2,8 +2,8 @@
 #define VERSION_MAJOR 1
 #define VERSION_MINOR 8
 #define VERSION_PATCH 2
-#define VERSION_EXTRA "209-gde4aedaec"
+#define VERSION_EXTRA "214-ga1cee8dc9"
 #define VERSION_PACKED \
   ((VERSION_MAJOR << 16) | (VERSION_MINOR << 8) | (VERSION_PATCH))
-#define VERSION_STRING_NOSP "v1.8.2-209-gde4aedaec"
-#define VERSION_STRING " v1.8.2-209-gde4aedaec"
+#define VERSION_STRING_NOSP "v1.8.2-214-ga1cee8dc9"
+#define VERSION_STRING " v1.8.2-214-ga1cee8dc9"

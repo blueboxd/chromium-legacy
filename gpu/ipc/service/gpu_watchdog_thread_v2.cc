@@ -26,7 +26,25 @@
 #include "gpu/config/gpu_crash_keys.h"
 #include "gpu/config/gpu_finch_features.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 namespace gpu {
+#if defined(OS_WIN)
+base::TimeDelta GetGpuWatchdogTimeoutBasedOnCpuCores() {
+  if (base::win::GetVersion() >= base::win::Version::WIN10) {
+    int num_of_processors = base::SysInfo::NumberOfProcessors();
+
+    if (num_of_processors > 8)
+      return (kGpuWatchdogTimeout - base::TimeDelta::FromSeconds(10));
+    else if (num_of_processors <= 4)
+      return kGpuWatchdogTimeout + base::TimeDelta::FromSeconds(5);
+  }
+
+  return kGpuWatchdogTimeout;
+}
+#endif
 
 GpuWatchdogThreadImplV2::GpuWatchdogThreadImplV2(
     base::TimeDelta timeout,
@@ -111,7 +129,14 @@ std::unique_ptr<GpuWatchdogThreadImplV2> GpuWatchdogThreadImplV2::Create(
     const char kNewTimeOutParam[] = "new_time_out";
     const char kMaxExtraCyclesBeforeKillParam[] =
         "max_extra_cycles_before_kill";
-#if defined(OS_WIN) || defined(OS_MACOSX)
+
+#if defined(OS_WIN)
+    // The purpose of finch on Windows is to know the impact of the number of
+    // CPU cores while the rest of platforms are to try a different watchdog
+    // timeout length.
+    gpu_watchdog_timeout = GetGpuWatchdogTimeoutBasedOnCpuCores();
+    constexpr int kFinchMaxExtraCyclesBeforeKill = 0;
+#elif defined(OS_MACOSX)
     constexpr int kFinchMaxExtraCyclesBeforeKill = 1;
 #else
     constexpr int kFinchMaxExtraCyclesBeforeKill = 2;
@@ -119,7 +144,7 @@ std::unique_ptr<GpuWatchdogThreadImplV2> GpuWatchdogThreadImplV2::Create(
 
     int timeout = base::GetFieldTrialParamByFeatureAsInt(
         features::kGpuWatchdogV2NewTimeout, kNewTimeOutParam,
-        kGpuWatchdogTimeout.InSeconds());
+        gpu_watchdog_timeout.InSeconds());
     gpu_watchdog_timeout = base::TimeDelta::FromSeconds(timeout);
 
     max_extra_cycles_before_kill = base::GetFieldTrialParamByFeatureAsInt(

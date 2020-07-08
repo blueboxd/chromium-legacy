@@ -82,7 +82,8 @@ class TileServiceSchedulerImpl : public TileServiceScheduler, public LogSource {
       PrefService* prefs,
       base::Clock* clock,
       const base::TickClock* tick_clock,
-      std::unique_ptr<net::BackoffEntry::Policy> backoff_policy);
+      std::unique_ptr<net::BackoffEntry::Policy> backoff_policy,
+      LogSink* log_sink);
 
   ~TileServiceSchedulerImpl() override;
 
@@ -122,6 +123,10 @@ class TileServiceSchedulerImpl : public TileServiceScheduler, public LogSource {
   // window. Returns false either the first task is not scheduled yet or it is
   // already finished.
   bool IsDuringFirstFlow();
+
+  // Ping the log sink to update.
+  void PingLogSink();
+
   // Native Background Scheduler instance.
   background_task::BackgroundTaskScheduler* scheduler_;
 
@@ -149,6 +154,9 @@ class TileServiceSchedulerImpl : public TileServiceScheduler, public LogSource {
 
   // Internal group status.
   TileGroupStatus group_status_;
+
+  // Log Sink object.
+  LogSink* log_sink_;
 };
 
 }  // namespace query_tiles

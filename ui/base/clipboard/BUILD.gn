@@ -50,12 +50,12 @@ jumbo_component("clipboard_types") {
 
   deps = [ "//base" ]
 
-  libs = []
+  frameworks = []
   if (is_mac || is_ios) {
-    libs += [ "Foundation.framework" ]
+    frameworks += [ "Foundation.framework" ]
   }
   if (is_mac) {
-    libs += [ "AppKit.framework" ]
+    frameworks += [ "AppKit.framework" ]
   }
 }
 

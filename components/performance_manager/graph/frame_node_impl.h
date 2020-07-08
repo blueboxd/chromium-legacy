@@ -14,6 +14,7 @@
 #include "base/util/type_safety/pass_key.h"
 #include "components/performance_manager/graph/node_base.h"
 #include "components/performance_manager/public/graph/frame_node.h"
+#include "components/performance_manager/public/graph/node_attached_data.h"
 #include "components/performance_manager/public/render_frame_host_proxy.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -25,6 +26,10 @@ class FrameNodeImplDescriber;
 class PageNodeImpl;
 class ProcessNodeImpl;
 class WorkerNodeImpl;
+
+namespace execution_context {
+class ExecutionContextAccess;
+}  // namespace execution_context
 
 // Frame nodes form a tree structure, each FrameNode at most has one parent that
 // is a FrameNode. Conceptually, a frame corresponds to a
@@ -139,14 +144,19 @@ class FrameNodeImpl
     SeverOpenedPagesAndMaybeReparent();
   }
 
- protected:
-  friend class PageNodeImpl;
+  // Implementation details below this point.
 
   // Invoked by opened pages when this frame is set/cleared as their opener.
   // See PageNodeImpl::(Set|Clear)OpenerFrameNodeAndOpenedType.
   void AddOpenedPage(util::PassKey<PageNodeImpl> key, PageNodeImpl* page_node);
   void RemoveOpenedPage(util::PassKey<PageNodeImpl> key,
                         PageNodeImpl* page_node);
+
+  // Used by the ExecutionContextRegistry mechanism.
+  std::unique_ptr<NodeAttachedData>* GetExecutionContextStorage(
+      util::PassKey<execution_context::ExecutionContextAccess> key) {
+    return &execution_context_;
+  }
 
  private:
   friend class FrameNodeImplDescriber;
@@ -327,6 +337,9 @@ class FrameNodeImpl
 
   // Inline storage for FramePriorityDecorator data.
   frame_priority::AcceptedVote accepted_vote_;
+
+  // Inline storage for ExecutionContext.
+  std::unique_ptr<NodeAttachedData> execution_context_;
 
   base::WeakPtrFactory<FrameNodeImpl> weak_factory_;
 

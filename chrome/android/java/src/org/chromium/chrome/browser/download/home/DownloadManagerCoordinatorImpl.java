@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
+import org.chromium.components.prefs.PrefService;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.vr.VrModeProvider;
@@ -60,8 +61,9 @@ class DownloadManagerCoordinatorImpl
     public DownloadManagerCoordinatorImpl(Activity activity, DownloadManagerUiConfig config,
             ObservableSupplier<Boolean> isPrefetchEnabledSupplier,
             Callback<Context> settingsLauncher, SnackbarManager snackbarManager,
-            ModalDialogManager modalDialogManager, Tracker tracker, FaviconProvider faviconProvider,
-            OfflineContentProvider provider, LegacyDownloadProvider legacyProvider,
+            ModalDialogManager modalDialogManager, PrefService prefService, Tracker tracker,
+            FaviconProvider faviconProvider, OfflineContentProvider provider,
+            LegacyDownloadProvider legacyProvider,
             DiscardableReferencePool discardableReferencePool, VrModeProvider vrModeProvider) {
         mActivity = activity;
         mSettingsLauncher = settingsLauncher;
@@ -70,7 +72,7 @@ class DownloadManagerCoordinatorImpl
         mListCoordinator = new DateOrderedListCoordinator(mActivity, config,
                 isPrefetchEnabledSupplier, provider, legacyProvider,
                 mDeleteCoordinator::showSnackbar, mSelectionDelegate, this::notifyFilterChanged,
-                createDateOrderedListObserver(), modalDialogManager, faviconProvider,
+                createDateOrderedListObserver(), modalDialogManager, prefService, faviconProvider,
                 discardableReferencePool);
         mToolbarCoordinator = new ToolbarCoordinator(mActivity, this, mListCoordinator,
                 mSelectionDelegate, config.isSeparateActivity, tracker, vrModeProvider);

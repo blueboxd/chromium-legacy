@@ -51,6 +51,15 @@ class AmbientAshTestBase : public AshTestBase {
   void LockScreen();
   void UnlockScreen();
 
+  // Simulates the system starting to suspend with Reason |reason|.
+  // Wait until the event has been processed.
+  void SimulateSystemSuspendAndWait(
+      power_manager::SuspendImminent::Reason reason);
+
+  // Simulates the system starting to resume.
+  // Wait until the event has been processed.
+  void SimulateSystemResumeAndWait();
+
   const gfx::ImageSkia& GetImageInPhotoView();
 
   // Returns the number of active wake locks of type |type|.

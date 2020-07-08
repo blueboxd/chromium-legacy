@@ -138,7 +138,6 @@ MediaStreamTrack* CreateVideoTrackFromSource(
       MakeGarbageCollected<MediaStreamSource>(
           track_id, MediaStreamSource::kTypeVideo, track_id /* name */,
           false /* remote */);
-  video_source->SetOwner(video_source_owner);
   video_source_owner->SetPlatformSource(std::move(video_source));
 
   return MakeGarbageCollected<MediaStreamTrack>(

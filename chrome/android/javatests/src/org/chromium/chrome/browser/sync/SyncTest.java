@@ -8,6 +8,7 @@ import android.accounts.Account;
 
 import androidx.test.filters.LargeTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -111,8 +112,9 @@ public class SyncTest {
             SigninHelper.get().validateAccountSettings(true);
         });
 
-        CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(newAccount, mSyncTestRule::getCurrentSignedInAccount));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(mSyncTestRule.getCurrentSignedInAccount(), Matchers.is(newAccount));
+        });
         SyncTestUtil.waitForSyncActive();
     }
 

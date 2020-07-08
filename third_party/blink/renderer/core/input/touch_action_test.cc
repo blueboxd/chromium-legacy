@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_tree_as_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -238,11 +239,19 @@ WebViewImpl* TouchActionTest::SetupTest(
   return web_view;
 }
 
+static const LayoutBoxModelObject& EnclosingCompositedContainer(
+    const LayoutObject& layout_object) {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+  return layout_object.PaintingLayer()
+      ->EnclosingLayerForPaintInvalidationCrossingFrameBoundaries()
+      ->GetLayoutObject();
+}
+
 IntRect WindowClipRect(const LocalFrameView& frame_view) {
   PhysicalRect clip_rect(PhysicalOffset(), PhysicalSize(frame_view.Size()));
   frame_view.GetLayoutView()->MapToVisualRectInAncestorSpace(
-      &frame_view.GetLayoutView()->ContainerForPaintInvalidation(), clip_rect,
-      0, kDefaultVisualRectFlags);
+      &EnclosingCompositedContainer(*frame_view.GetLayoutView()), clip_rect, 0,
+      kDefaultVisualRectFlags);
   return EnclosingIntRect(clip_rect);
 }
 

@@ -12,6 +12,7 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/unguessable_token.h"
+#include "base/util/type_safety/pass_key.h"
 #include "components/performance_manager/graph/node_base.h"
 #include "components/performance_manager/public/graph/worker_node.h"
 #include "url/gurl.h"
@@ -20,6 +21,10 @@ namespace performance_manager {
 
 class FrameNodeImpl;
 class ProcessNodeImpl;
+
+namespace execution_context {
+class ExecutionContextAccess;
+}  // namespace execution_context
 
 class WorkerNodeImpl
     : public PublicNodeImpl<WorkerNodeImpl, WorkerNode>,
@@ -56,6 +61,14 @@ class WorkerNodeImpl
   const base::flat_set<FrameNodeImpl*>& client_frames() const;
   const base::flat_set<WorkerNodeImpl*>& client_workers() const;
   const base::flat_set<WorkerNodeImpl*>& child_workers() const;
+
+  // Implementation details below this point.
+
+  // Used by the ExecutionContextRegistry mechanism.
+  std::unique_ptr<NodeAttachedData>* GetExecutionContextStorage(
+      util::PassKey<execution_context::ExecutionContextAccess> key) {
+    return &execution_context_;
+  }
 
  private:
   void OnJoiningGraph() override;
@@ -105,6 +118,9 @@ class WorkerNodeImpl
   // The child workers of this worker. See the declaration of WorkerNode for a
   // distinction between client workers and child workers.
   base::flat_set<WorkerNodeImpl*> child_workers_;
+
+  // Used by ExecutionContextRegistry mechanism.
+  std::unique_ptr<NodeAttachedData> execution_context_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerNodeImpl);
 };

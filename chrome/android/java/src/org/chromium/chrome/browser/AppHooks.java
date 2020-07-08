@@ -13,7 +13,6 @@ import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
-import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.banners.AppDetailsDelegate;
@@ -28,7 +27,6 @@ import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.metrics.VariationsSession;
-import org.chromium.chrome.browser.offlinepages.CCTRequestStatus;
 import org.chromium.chrome.browser.omaha.RequestGenerator;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmark;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksProviderIterator;
@@ -233,15 +231,6 @@ public abstract class AppHooks {
     public void registerPolicyProviders(CombinedPolicyProvider combinedProvider) {
         combinedProvider.registerProvider(
                 new AppRestrictionsProvider(ContextUtils.getApplicationContext()));
-    }
-
-    /**
-     * @return A callback that will be run each time an offline page is saved in the custom tabs
-     * namespace.
-     */
-    @CalledByNative
-    public Callback<CCTRequestStatus> getOfflinePagesCCTRequestDoneCallback() {
-        return null;
     }
 
     /**

@@ -21,6 +21,7 @@ import android.text.TextUtils;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -385,11 +386,12 @@ public class ReturnToChromeTest {
         testTabSwitcherModeTriggeredBeyondThreshold();
 
         assertThat(mActivityTestRule.getActivity().isTablet()).isFalse();
-        CriteriaHelper.pollUiThread(Criteria.equals(1,
-                ()
-                        -> RecordHistogram.getHistogramTotalCountForTesting(
-                                ReturnToChromeExperimentsUtil
-                                        .UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT)));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    RecordHistogram.getHistogramTotalCountForTesting(
+                            ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT),
+                    Matchers.is(1));
+        });
         assertEquals(1,
                 RecordHistogram.getHistogramTotalCountForTesting(
                         ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
@@ -426,11 +428,10 @@ public class ReturnToChromeTest {
             Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
         }
 
-        CriteriaHelper.pollUiThread(Criteria.equals(true,
-                mActivityTestRule.getActivity()
-                        .getTabModelSelector()
-                        .getTabModelFilterProvider()
-                        .getCurrentTabModelFilter()::isTabModelRestored));
+        CriteriaHelper.pollUiThread(mActivityTestRule.getActivity()
+                                            .getTabModelSelector()
+                                            .getTabModelFilterProvider()
+                                            .getCurrentTabModelFilter()::isTabModelRestored);
 
         assertEquals(2, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
     }
@@ -452,11 +453,12 @@ public class ReturnToChromeTest {
         testTabSwitcherModeTriggeredBeyondThreshold_WarmStart();
 
         assertThat(mActivityTestRule.getActivity().isTablet()).isFalse();
-        CriteriaHelper.pollUiThread(Criteria.equals(2,
-                ()
-                        -> RecordHistogram.getHistogramTotalCountForTesting(
-                                ReturnToChromeExperimentsUtil
-                                        .UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT)));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    RecordHistogram.getHistogramTotalCountForTesting(
+                            ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT),
+                    Matchers.is(2));
+        });
         assertEquals(1,
                 RecordHistogram.getHistogramTotalCountForTesting(
                         ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
@@ -515,11 +517,12 @@ public class ReturnToChromeTest {
         testTabSwitcherModeTriggeredBeyondThreshold_NoTabs();
 
         assertThat(mActivityTestRule.getActivity().isTablet()).isFalse();
-        CriteriaHelper.pollUiThread(Criteria.equals(1,
-                ()
-                        -> RecordHistogram.getHistogramTotalCountForTesting(
-                                ReturnToChromeExperimentsUtil
-                                        .UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT)));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    RecordHistogram.getHistogramTotalCountForTesting(
+                            ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT),
+                    Matchers.is(1));
+        });
         assertEquals(1,
                 RecordHistogram.getHistogramTotalCountForTesting(
                         ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
@@ -573,11 +576,10 @@ public class ReturnToChromeTest {
 
         Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
 
-        CriteriaHelper.pollUiThread(Criteria.equals(true,
-                mActivityTestRule.getActivity()
-                        .getTabModelSelector()
-                        .getTabModelFilterProvider()
-                        .getCurrentTabModelFilter()::isTabModelRestored));
+        CriteriaHelper.pollUiThread(mActivityTestRule.getActivity()
+                                            .getTabModelSelector()
+                                            .getTabModelFilterProvider()
+                                            .getCurrentTabModelFilter()::isTabModelRestored);
 
         assertEquals(10, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
         assertEquals(9, mActivityTestRule.getActivity().getCurrentTabModel().index());

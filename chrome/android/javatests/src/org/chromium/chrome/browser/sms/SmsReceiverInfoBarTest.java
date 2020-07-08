@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarUtil;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.KeyboardVisibilityDelegate;
@@ -116,14 +115,14 @@ public class SmsReceiverInfoBarTest {
         });
 
         // Wait until the keyboard is showing.
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                true, () -> keyboardVisibilityDelegate.isKeyboardShowing(mActivity, editText)));
+        CriteriaHelper.pollUiThread(
+                () -> keyboardVisibilityDelegate.isKeyboardShowing(mActivity, editText));
 
         SmsReceiverInfoBar infoBar = createInfoBar();
 
         // Keyboard is hidden after info bar is created and shown.
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                false, () -> keyboardVisibilityDelegate.isKeyboardShowing(mActivity, editText)));
+        CriteriaHelper.pollUiThread(
+                () -> !keyboardVisibilityDelegate.isKeyboardShowing(mActivity, editText));
 
         assertHistogramRecordedCount(INFOBAR_HISTOGRAM, SmsReceiverUma.InfobarAction.SHOWN, 1);
         assertHistogramRecordedCount(
@@ -146,14 +145,14 @@ public class SmsReceiverInfoBarTest {
         });
 
         // Wait until the keyboard is showing.
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                true, () -> keyboardVisibilityDelegate.isKeyboardShowing(mActivity, editText)));
+        CriteriaHelper.pollUiThread(
+                () -> keyboardVisibilityDelegate.isKeyboardShowing(mActivity, editText));
 
         SmsReceiverInfoBar infoBar = createInfoBar();
 
         // Keyboard is hidden after info bar is created and shown.
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                false, () -> keyboardVisibilityDelegate.isKeyboardShowing(mActivity, editText)));
+        CriteriaHelper.pollUiThread(
+                () -> !keyboardVisibilityDelegate.isKeyboardShowing(mActivity, editText));
 
         // Close info bar.
         InfoBarUtil.clickCloseButton(infoBar);

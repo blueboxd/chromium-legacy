@@ -200,7 +200,7 @@ std::string CompressAndSaveBitmap(const std::string& dir,
 
   // If there were errors, don't leave a partial file around.
   if (bytes_written != data.size()) {
-    base::DeleteFile(screenshot_path, false);
+    base::DeleteFile(screenshot_path);
     LOG(ERROR) << "Error writing screenshot file to disk";
     return std::string();
   }

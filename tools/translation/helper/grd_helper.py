@@ -48,7 +48,7 @@ def GetGrdMessages(grd_path_or_string, dir_path):
   return {
       msg.attrs['name']: msg
       for msg in doc.GetChildrenOfType(grit.node.message.MessageNode)
-      if msg.IsTranslateable() and not msg.IsAccessibility()
+      if msg.IsTranslateable() and not msg.IsAccessibilityWithNoUI()
   }
 
 

@@ -36,11 +36,11 @@ base::FilePath MetricKitReportDirectory() {
 class MetricKitSubscriberTest : public PlatformTest {
  public:
   MetricKitSubscriberTest() {
-    base::DeleteFile(MetricKitReportDirectory(), true);
+    base::DeletePathRecursively(MetricKitReportDirectory());
   }
 
   ~MetricKitSubscriberTest() override {
-    base::DeleteFile(MetricKitReportDirectory(), true);
+    base::DeletePathRecursively(MetricKitReportDirectory());
   }
 
  private:

@@ -198,6 +198,7 @@ paddedGrid{
         62.5,
         275
       ],
+      "areaNames": {},
       "gridBorder": [
         "M",
         173,
@@ -219,12 +220,14 @@ paddedGrid{
         "showGridExtensionLines": true,
         "showPositiveLineNumbers": true,
         "showNegativeLineNumbers": true,
+        "showAreaNames": true,
         "gridBorderColor": "rgba(255, 0, 0, 0)",
         "cellBorderColor": "rgba(128, 0, 0, 0)",
         "rowGapColor": "rgba(0, 255, 0, 0)",
         "columnGapColor": "rgba(0, 0, 255, 0)",
         "rowHatchColor": "rgba(255, 255, 255, 0)",
-        "columnHatchColor": "rgba(128, 128, 128, 0)"
+        "columnHatchColor": "rgba(128, 128, 128, 0)",
+        "areaBorderColor": "rgba(255, 0, 0, 0)"
       },
       "isPrimaryGrid": true
     }
@@ -416,6 +419,7 @@ nestedGrid{
         50,
         250
       ],
+      "areaNames": {},
       "gridBorder": [
         "M",
         228,
@@ -437,12 +441,14 @@ nestedGrid{
         "showGridExtensionLines": true,
         "showPositiveLineNumbers": true,
         "showNegativeLineNumbers": true,
+        "showAreaNames": true,
         "gridBorderColor": "rgba(255, 0, 0, 0)",
         "cellBorderColor": "rgba(128, 0, 0, 0)",
         "rowGapColor": "rgba(0, 255, 0, 0)",
         "columnGapColor": "rgba(0, 0, 255, 0)",
         "rowHatchColor": "rgba(255, 255, 255, 0)",
-        "columnHatchColor": "rgba(128, 128, 128, 0)"
+        "columnHatchColor": "rgba(128, 128, 128, 0)",
+        "areaBorderColor": "rgba(255, 0, 0, 0)"
       },
       "isPrimaryGrid": true
     }

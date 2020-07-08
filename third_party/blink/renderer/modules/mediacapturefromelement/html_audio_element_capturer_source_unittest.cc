@@ -106,7 +106,6 @@ class HTMLAudioElementCapturerSourceTest : public testing::Test {
     // HtmlAudioElementCapturerSource.
     auto capture_source = std::make_unique<HtmlAudioElementCapturerSource>(
         audio_source_, blink::scheduler::GetSingleThreadTaskRunnerForTesting());
-    capture_source->SetOwner(media_stream_source_.Get());
     media_stream_source_->SetPlatformSource(std::move(capture_source));
     ASSERT_TRUE(source()->ConnectToTrack(media_stream_component_.Get()));
   }

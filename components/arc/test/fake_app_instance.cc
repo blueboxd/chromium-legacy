@@ -93,6 +93,13 @@ void FakeAppInstance::RequestAppIcon(const std::string& package_name,
   }
 }
 
+void FakeAppInstance::GetAppIcon(const std::string& package_name,
+                                 const std::string& activity,
+                                 int dimension,
+                                 GetAppIconCallback callback) {
+  // TODO(crbug.com/1083331): Implement for the new fake icon interface.
+}
+
 void FakeAppInstance::SendRefreshAppList(
     const std::vector<mojom::AppInfo>& apps) {
   std::vector<mojom::AppInfoPtr> v;
@@ -520,6 +527,12 @@ void FakeAppInstance::RequestShortcutIcon(
   }
 }
 
+void FakeAppInstance::GetAppShortcutIcon(const std::string& icon_resource_id,
+                                         int dimension,
+                                         GetAppShortcutIconCallback callback) {
+  // TODO(crbug.com/1083331): Implement for the new fake icon interface.
+}
+
 void FakeAppInstance::RequestPackageIcon(const std::string& package_name,
                                          int dimension,
                                          bool normalize,
@@ -529,6 +542,13 @@ void FakeAppInstance::RequestPackageIcon(const std::string& package_name,
   GetFakeIcon(mojom::ScaleFactor::SCALE_FACTOR_100P, &png_data_as_string);
   std::move(callback).Run(std::vector<uint8_t>(png_data_as_string.begin(),
                                                png_data_as_string.end()));
+}
+
+void FakeAppInstance::GetPackageIcon(const std::string& package_name,
+                                     int dimension,
+                                     bool normalize,
+                                     GetPackageIconCallback callback) {
+  // TODO(crbug.com/1083331): Implement for the new fake icon interface.
 }
 
 void FakeAppInstance::RemoveCachedIcon(const std::string& icon_resource_id) {}

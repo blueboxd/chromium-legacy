@@ -13,13 +13,15 @@ namespace blink {
 
 class MailboxTextureBacking : public TextureBacking {
  public:
-  explicit MailboxTextureBacking(sk_sp<SkImage> sk_image);
+  explicit MailboxTextureBacking(sk_sp<SkImage> sk_image,
+                                 const SkImageInfo& info);
   const SkImageInfo& GetSkImageInfo() override;
   gpu::Mailbox GetMailbox() const override;
   sk_sp<SkImage> GetAcceleratedSkImage() override;
 
  private:
   const sk_sp<SkImage> sk_image_;
+  const SkImageInfo sk_image_info_;
   const gpu::Mailbox mailbox_;
 };
 

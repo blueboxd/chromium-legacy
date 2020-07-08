@@ -20,8 +20,6 @@ namespace component_updater {
 class CrOSComponentManager;
 }  // namespace component_updater
 
-namespace chromeos {
-
 class AshChromeServiceImpl;
 class LacrosLoader;
 
@@ -149,7 +147,5 @@ class LacrosManager : public session_manager::SessionManagerObserver {
 
   base::WeakPtrFactory<LacrosManager> weak_factory_{this};
 };
-
-}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LACROS_LACROS_MANAGER_H_

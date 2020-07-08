@@ -33,6 +33,7 @@ import androidx.test.filters.SmallTest;
 
 import com.google.common.collect.ImmutableMap;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -114,7 +115,6 @@ import org.chromium.ui.touch_selection.SelectionEventType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 // TODO(donnd): Create class with limited API to encapsulate the internals of simulations.
@@ -443,12 +443,9 @@ public class ContextualSearchManagerTest {
      * @param text The string to wait for the selection to become.
      */
     public void waitForSelectionToBe(final String text) {
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(text, new Callable<String>() {
-            @Override
-            public String call() {
-                return getSelectedText();
-            }
-        }), TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(getSelectedText(), Matchers.is(text));
+        }, TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
     }
 
     /**
@@ -2023,15 +2020,12 @@ public class ContextualSearchManagerTest {
      * Asserts whether the App Menu is visible.
      */
     private void assertAppMenuVisibility(final boolean isVisible) {
-        CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(isVisible, new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() {
-                        return mActivityTestRule.getAppMenuCoordinator()
-                                .getAppMenuHandler()
-                                .isAppMenuShowing();
-                    }
-                }));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(mActivityTestRule.getAppMenuCoordinator()
+                                       .getAppMenuHandler()
+                                       .isAppMenuShowing(),
+                    Matchers.is(isVisible));
+        });
     }
 
     /**
@@ -2307,12 +2301,10 @@ public class ContextualSearchManagerTest {
      * @param visible Whether the Action Bar must become visible or not.
      */
     private void assertWaitForSelectActionBarVisible(final boolean visible) {
-        CriteriaHelper.pollUiThread(Criteria.equals(visible, new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return getSelectionPopupController().isSelectActionBarShowing();
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    getSelectionPopupController().isSelectActionBarShowing(), Matchers.is(visible));
+        });
     }
 
     private SelectionPopupController getSelectionPopupController() {

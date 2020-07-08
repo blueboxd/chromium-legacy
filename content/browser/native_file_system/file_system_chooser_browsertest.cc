@@ -184,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, SaveFile_NonExistingFile) {
     // Delete file, since SaveFile should be able to deal with non-existing
     // files.
     base::ScopedAllowBlockingForTesting allow_blocking;
-    ASSERT_TRUE(base::DeleteFile(test_file, false));
+    ASSERT_TRUE(base::DeleteFile(test_file));
   }
   SelectFileDialogParams dialog_params;
   ui::SelectFileDialog::SetFactory(
@@ -439,7 +439,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
     // Delete file, since SaveFile should be able to deal with non-existing
     // files.
     base::ScopedAllowBlockingForTesting allow_blocking;
-    ASSERT_TRUE(base::DeleteFile(test_file, false));
+    ASSERT_TRUE(base::DeleteFile(test_file));
   }
 
   SelectFileDialogParams dialog_params;

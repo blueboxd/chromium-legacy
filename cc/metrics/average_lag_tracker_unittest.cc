@@ -27,7 +27,10 @@ class AverageLagTrackerTest : public testing::Test {
   const base::HistogramTester& histogram_tester() { return *histogram_tester_; }
 
   void SetUp() override {
-    average_lag_tracker_ = std::make_unique<AverageLagTracker>();
+    average_lag_tracker_gpu_swap_ = std::make_unique<AverageLagTracker>(
+        AverageLagTracker::FinishTimeType::GpuSwapBegin);
+    average_lag_tracker_presentation_ = std::make_unique<AverageLagTracker>(
+        AverageLagTracker::FinishTimeType::PresentationFeedback);
   }
 
   void SyntheticTouchScrollBegin(base::TimeTicks event_time,
@@ -38,7 +41,11 @@ class AverageLagTrackerTest : public testing::Test {
         0, delta, predicted_delta != 0 ? predicted_delta : delta, event_time,
         AverageLagTracker::EventType::ScrollBegin);
     event_info.finish_timestamp = frame_time;
-    average_lag_tracker_->AddScrollEventInFrame(event_info);
+
+    // Always add the events to both and test if they have the same behavior
+    // regardless of the metrics names.
+    average_lag_tracker_gpu_swap_->AddScrollEventInFrame(event_info);
+    average_lag_tracker_presentation_->AddScrollEventInFrame(event_info);
   }
 
   void SyntheticTouchScrollUpdate(base::TimeTicks event_time,
@@ -49,11 +56,84 @@ class AverageLagTrackerTest : public testing::Test {
         0, delta, predicted_delta != 0 ? predicted_delta : delta, event_time,
         AverageLagTracker::EventType::ScrollUpdate);
     event_info.finish_timestamp = frame_time;
-    average_lag_tracker_->AddScrollEventInFrame(event_info);
+
+    average_lag_tracker_gpu_swap_->AddScrollEventInFrame(event_info);
+    average_lag_tracker_presentation_->AddScrollEventInFrame(event_info);
+  }
+
+  void CheckScrollBeginHistograms(int bucket_value, int count) {
+    EXPECT_THAT(histogram_tester().GetAllSamples(
+                    "Event.Latency.ScrollBegin.Touch.AverageLag"),
+                ElementsAre(Bucket(bucket_value, count)));
+    EXPECT_THAT(histogram_tester().GetAllSamples(
+                    "Event.Latency.ScrollBegin.Touch.AverageLagPresentation"),
+                ElementsAre(Bucket(bucket_value, count)));
+  }
+
+  void CheckScrollUpdateHistograms(int bucket_value, int count) {
+    EXPECT_THAT(histogram_tester().GetAllSamples(
+                    "Event.Latency.ScrollUpdate.Touch.AverageLag"),
+                ElementsAre(Bucket(bucket_value, count)));
+
+    EXPECT_THAT(histogram_tester().GetAllSamples(
+                    "Event.Latency.ScrollUpdate.Touch.AverageLagPresentation"),
+                ElementsAre(Bucket(bucket_value, count)));
+  }
+
+  void CheckPredictionPositiveHistograms(int bucket_value, int count) {
+    EXPECT_THAT(
+        histogram_tester().GetAllSamples(
+            "Event.Latency.ScrollUpdate.Touch.AverageLag.PredictionPositive"),
+        ElementsAre(Bucket(bucket_value, count)));
+
+    EXPECT_THAT(histogram_tester().GetAllSamples(
+                    "Event.Latency.ScrollUpdate.Touch.AverageLagPresentation."
+                    "PredictionPositive"),
+                ElementsAre(Bucket(bucket_value, count)));
+  }
+
+  void CheckPredictionNegativeHistograms(int bucket_value, int count) {
+    EXPECT_THAT(
+        histogram_tester().GetAllSamples(
+            "Event.Latency.ScrollUpdate.Touch.AverageLag.PredictionNegative"),
+        ElementsAre(Bucket(bucket_value, count)));
+
+    EXPECT_THAT(histogram_tester().GetAllSamples(
+                    "Event.Latency.ScrollUpdate.Touch.AverageLagPresentation."
+                    "PredictionNegative"),
+                ElementsAre(Bucket(bucket_value, count)));
+  }
+
+  void CheckScrollUpdateHistogramsTotalCount(int count) {
+    histogram_tester().ExpectTotalCount(
+        "Event.Latency.ScrollUpdate.Touch.AverageLag", count);
+    histogram_tester().ExpectTotalCount(
+        "Event.Latency.ScrollUpdate.Touch.AverageLagPresentation", count);
+  }
+
+  void CheckPredictionPositiveHistogramsTotalCount(int count) {
+    histogram_tester().ExpectTotalCount(
+        "Event.Latency.ScrollUpdate.Touch.AverageLag.PredictionPositive",
+        count);
+    histogram_tester().ExpectTotalCount(
+        "Event.Latency.ScrollUpdate.Touch.AverageLagPresentation."
+        "PredictionPositive",
+        count);
+  }
+
+  void CheckPredictionNegativeHistogramsTotalCount(int count) {
+    histogram_tester().ExpectTotalCount(
+        "Event.Latency.ScrollUpdate.Touch.AverageLag.PredictionNegative",
+        count);
+    histogram_tester().ExpectTotalCount(
+        "Event.Latency.ScrollUpdate.Touch.AverageLagPresentation."
+        "PredictionNegative",
+        count);
   }
 
  protected:
-  std::unique_ptr<AverageLagTracker> average_lag_tracker_;
+  std::unique_ptr<AverageLagTracker> average_lag_tracker_gpu_swap_;
+  std::unique_ptr<AverageLagTracker> average_lag_tracker_presentation_;
 
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 };
@@ -100,23 +180,17 @@ TEST_F(AverageLagTrackerTest, OneSecondInterval) {
   // (time=15ms, delta=10px) to the frame swap time (time=20ms, expect finger
   // position at delta=15px). The AverageLag scaled to 1 second is
   // (0.5*(10px+15px)*5ms)/5ms = 12.5px.
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Event.Latency.ScrollBegin.Touch.AverageLag"),
-              ElementsAre(Bucket(12, 1)));
+  CheckScrollBeginHistograms(12, 1);
+
   // This ScrollUpdate AverageLag are calculated as the finger uniformly scroll
   // 10px each frame. For scroll up/down frame, the Lag at the last frame swap
   // is 5px, and Lag at this frame swap is 15px. For the one changing direction,
   // the Lag is from 5 to 10 and down to 5 again. So total LagArea is 99 * 100,
   // plus 75. the AverageLag in 1 second is 9.975px.
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Event.Latency.ScrollUpdate.Touch.AverageLag"),
-              ElementsAre(Bucket(9, 1)));
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples(
-          "Event.Latency.ScrollUpdate.Touch.AverageLag.PredictionPositive"),
-      ElementsAre(Bucket(0, 1)));
-  histogram_tester().ExpectTotalCount(
-      "Event.Latency.ScrollUpdate.Touch.AverageLag.PredictionNegative", 0);
+  CheckScrollUpdateHistograms(9, 1);
+  CheckPredictionPositiveHistograms(0, 1);
+  CheckPredictionNegativeHistogramsTotalCount(0);
+
   ResetHistograms();
 
   // Send another ScrollBegin to end the unfinished ScrollUpdate report.
@@ -125,15 +199,9 @@ TEST_F(AverageLagTrackerTest, OneSecondInterval) {
   SyntheticTouchScrollBegin(event_time, frame_time, scroll_delta);
 
   // The last ScrollUpdate's lag is 8.75px and truncated to 8.
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Event.Latency.ScrollUpdate.Touch.AverageLag"),
-              ElementsAre(Bucket(8, 1)));
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples(
-          "Event.Latency.ScrollUpdate.Touch.AverageLag.PredictionPositive"),
-      ElementsAre(Bucket(0, 1)));
-  histogram_tester().ExpectTotalCount(
-      "Event.Latency.ScrollUpdate.Touch.AverageLag.PredictionNegative", 0);
+  CheckScrollUpdateHistograms(8, 1);
+  CheckPredictionPositiveHistograms(0, 1);
+  CheckPredictionNegativeHistogramsTotalCount(0);
 }
 
 // Test the case that event's frame swap time is later than next event's
@@ -158,9 +226,7 @@ TEST_F(AverageLagTrackerTest, LargerLatency) {
   // ScrollBegin AveragLag are from t=10ms to t=30ms, with absolute scroll
   // position from 10 to 30. The AverageLag should be:
   // (0.5*(10px + 30px)*20ms/20ms) = 20px.
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Event.Latency.ScrollBegin.Touch.AverageLag"),
-              ElementsAre(Bucket(20, 1)));
+  CheckScrollBeginHistograms(20, 1);
 
   // Another ScrollBegin to flush unfinished frames.
   // event_time doesn't matter here because the previous frames' lag are
@@ -170,9 +236,7 @@ TEST_F(AverageLagTrackerTest, LargerLatency) {
   SyntheticTouchScrollBegin(event_time, frame_time, scroll_delta);
   // The to unfinished frames' lag are (finger_positon-rendered_position)*time,
   // AverageLag is ((30px-10px)*10ms+(30px-20px)*10ms)/20ms = 15px.
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Event.Latency.ScrollUpdate.Touch.AverageLag"),
-              ElementsAre(Bucket(14, 1)));
+  CheckScrollUpdateHistograms(14, 1);
 }
 
 // Test that multiple latency being flush in the same frame swap.
@@ -190,9 +254,7 @@ TEST_F(AverageLagTrackerTest, TwoLatencyInfoInSameFrame) {
 
   // Absolute position from -10 to -20. The AverageLag should be:
   // (0.5*(10px + 20px)*10ms/10ms) = 15px.
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Event.Latency.ScrollBegin.Touch.AverageLag"),
-              ElementsAre(Bucket(14, 1)));
+  CheckScrollBeginHistograms(14, 1);
 
   event_time = MillisecondsToTimeTicks(25);
   frame_time = MillisecondsToTimeTicks(30);
@@ -207,9 +269,7 @@ TEST_F(AverageLagTrackerTest, TwoLatencyInfoInSameFrame) {
   // at t=25ms, finger_pos=-15px, rendered_pos=-10px;
   // To t=30ms both events get flush.
   // AverageLag is (0.5*(10px+5px)*5ms + 5px*5ms)/10ms = 6.25px
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Event.Latency.ScrollUpdate.Touch.AverageLag"),
-              ElementsAre(Bucket(6, 1)));
+  CheckScrollUpdateHistograms(6, 1);
 }
 
 // Test the case that switching direction causes lag at current frame
@@ -238,9 +298,7 @@ TEST_F(AverageLagTrackerTest, ChangeDirectionInFrame) {
   // From t=20 to t=30, lag_area=2*(0.5*10px*5ms)=50px*ms.
   // From t=30 to t=40, lag_area=20px*10ms=200px*ms
   // AverageLag = (50+200)/20 = 12.5px.
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Event.Latency.ScrollUpdate.Touch.AverageLag"),
-              ElementsAre(Bucket(12, 1)));
+  CheckScrollUpdateHistograms(12, 1);
 }
 
 // A simple case without scroll prediction to compare with the two with
@@ -267,17 +325,13 @@ TEST_F(AverageLagTrackerTest, NoScrollPrediction) {
   SyntheticTouchScrollBegin(event_time, frame_time, 0);
 
   // Prediction hasn't take affect on ScrollBegin so it'll stay the same.
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Event.Latency.ScrollBegin.Touch.AverageLag"),
-              ElementsAre(Bucket(7, 1)));
+  CheckScrollBeginHistograms(7, 1);
   // At t=10, finger_pos = 10px, rendered_pos = 5px.
   // At t=20, finger_pos = 20px, rendered_pos = 15px.
   // At t=30, finger_pos = 25px, rendered_pos = 25px.
   // AverageLag = ((5px+15px)*10ms/2 + (5px+10px)*5ms/2 + 10px*5ms)/20ms
   //            = 9.375
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Event.Latency.ScrollUpdate.Touch.AverageLag"),
-              ElementsAre(Bucket(9, 1)));
+  CheckScrollUpdateHistograms(9, 1);
 }
 
 // Test AverageLag with perfect scroll prediction.
@@ -309,9 +363,7 @@ TEST_F(AverageLagTrackerTest, ScrollPrediction) {
   SyntheticTouchScrollBegin(event_time, frame_time, 0);
 
   // Prediction hasn't take affect on ScrollBegin so it'll stay the same.
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Event.Latency.ScrollBegin.Touch.AverageLag"),
-              ElementsAre(Bucket(7, 1)));
+  CheckScrollBeginHistograms(7, 1);
   // At t=10, finger_pos = 10px, rendered_pos = 10px.
   // At t=20, finger_pos = 20px, rendered_pos = 20px.
   // At t=30, finger_pos = 25px, rendered_pos = 30px.
@@ -321,15 +373,9 @@ TEST_F(AverageLagTrackerTest, ScrollPrediction) {
   //              ((5px+15px)*10ms/2 + (5px+10px)*5ms/2 + 10px*5ms)/20ms
   //            = 9.375px
   // Positive effect of prediction = 5px
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Event.Latency.ScrollUpdate.Touch.AverageLag"),
-              ElementsAre(Bucket(4, 1)));
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples(
-          "Event.Latency.ScrollUpdate.Touch.AverageLag.PredictionPositive"),
-      ElementsAre(Bucket(5, 1)));
-  histogram_tester().ExpectTotalCount(
-      "Event.Latency.ScrollUpdate.Touch.AverageLag.PredictionNegative", 0);
+  CheckScrollUpdateHistograms(4, 1);
+  CheckPredictionPositiveHistograms(5, 1);
+  CheckPredictionNegativeHistogramsTotalCount(0);
 }
 
 // Test AverageLag with imperfect scroll prediction.
@@ -360,24 +406,16 @@ TEST_F(AverageLagTrackerTest, ImperfectScrollPrediction) {
   frame_time = MillisecondsToTimeTicks(1000);
   SyntheticTouchScrollBegin(event_time, frame_time, 0);
 
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Event.Latency.ScrollBegin.Touch.AverageLag"),
-              ElementsAre(Bucket(7, 1)));
+  CheckScrollBeginHistograms(7, 1);
   // AverageLag = ((2px*2ms/2+8px*8ms/2)+ ((3px+8px)*5ms/2+8px*5ms))/20ms
   //            = 5.075px
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Event.Latency.ScrollUpdate.Touch.AverageLag"),
-              ElementsAre(Bucket(5, 1)));
+  CheckScrollUpdateHistograms(5, 1);
   // AverageLag (w/o prediction =
   //              ((5px+15px)*10ms/2 + (5px+10px)*5ms/2 + 10px*5ms)/20ms
   //            = 9.375px
   // Positive effect of prediction = 4.3px
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples(
-          "Event.Latency.ScrollUpdate.Touch.AverageLag.PredictionPositive"),
-      ElementsAre(Bucket(4, 1)));
-  histogram_tester().ExpectTotalCount(
-      "Event.Latency.ScrollUpdate.Touch.AverageLag.PredictionNegative", 0);
+  CheckPredictionPositiveHistograms(4, 1);
+  CheckPredictionNegativeHistogramsTotalCount(0);
 }
 
 TEST_F(AverageLagTrackerTest, NegativePredictionEffect) {
@@ -407,24 +445,16 @@ TEST_F(AverageLagTrackerTest, NegativePredictionEffect) {
   frame_time = MillisecondsToTimeTicks(1000);
   SyntheticTouchScrollBegin(event_time, frame_time, 0);
 
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Event.Latency.ScrollBegin.Touch.AverageLag"),
-              ElementsAre(Bucket(7, 1)));
+  CheckScrollBeginHistograms(7, 1);
   // AverageLag = ((10px+0px)*10ms/2)+ ((40px+35px)*5ms/2+35px*5ms))/20ms
   //            = 20.625px
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Event.Latency.ScrollUpdate.Touch.AverageLag"),
-              ElementsAre(Bucket(20, 1)));
+  CheckScrollUpdateHistograms(20, 1);
   // AverageLag (w/o prediction =
   //              ((5px+15px)*10ms/2 + (5px+10px)*5ms/2 + 10px*5ms)/20ms
   //            = 9.375px
   // Negative effect of prediction = 11.25
-  histogram_tester().ExpectTotalCount(
-      "Event.Latency.ScrollUpdate.Touch.AverageLag.PredictionPositive", 0);
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples(
-          "Event.Latency.ScrollUpdate.Touch.AverageLag.PredictionNegative"),
-      ElementsAre(Bucket(11, 1)));
+  CheckPredictionPositiveHistogramsTotalCount(0);
+  CheckPredictionNegativeHistograms(11, 1);
 }
 
 TEST_F(AverageLagTrackerTest, NoPredictionEffect) {
@@ -454,25 +484,17 @@ TEST_F(AverageLagTrackerTest, NoPredictionEffect) {
   frame_time = MillisecondsToTimeTicks(1000);
   SyntheticTouchScrollBegin(event_time, frame_time, 0);
 
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Event.Latency.ScrollBegin.Touch.AverageLag"),
-              ElementsAre(Bucket(7, 1)));
+  CheckScrollBeginHistograms(7, 1);
   // AverageLag = ((15px+5px)*10ms/2 + (12px+7px)*5ms/2 + 7px*5ms)/20ms
   //            = 9.125px
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Event.Latency.ScrollUpdate.Touch.AverageLag"),
-              ElementsAre(Bucket(9, 1)));
+  CheckScrollUpdateHistograms(9, 1);
   // AverageLag (w/o prediction) =
   //              ((5px+15px)*10ms/2 + (5px+10px)*5ms/2 + 10px*5ms)/20ms
   //            = 9.375px
   // Prediction slightly positive, we should see a 0 bucket in
   // PredictionPositive UMA
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples(
-          "Event.Latency.ScrollUpdate.Touch.AverageLag.PredictionPositive"),
-      ElementsAre(Bucket(0, 1)));
-  histogram_tester().ExpectTotalCount(
-      "Event.Latency.ScrollUpdate.Touch.AverageLag.PredictionNegative", 0);
+  CheckPredictionPositiveHistograms(0, 1);
+  CheckPredictionNegativeHistogramsTotalCount(0);
 }
 
 // Tests that when an event arrives out-of-order, the average lag tracker
@@ -496,8 +518,7 @@ TEST_F(AverageLagTrackerTest, EventOutOfOrder) {
   frame_time = MillisecondsToTimeTicks(1000);
   SyntheticTouchScrollBegin(event_time, frame_time, 0);
 
-  histogram_tester().ExpectTotalCount(
-      "Event.Latency.ScrollUpdate.Touch.AverageLag", 1);
+  CheckScrollUpdateHistogramsTotalCount(1);
 
   // Send an event whose timestamp is earlier than the most recent event,
   // representing an event that gets process out of order.
@@ -511,8 +532,7 @@ TEST_F(AverageLagTrackerTest, EventOutOfOrder) {
   SyntheticTouchScrollBegin(event_time, frame_time, 0);
 
   // Ensure that the event was ignored.
-  histogram_tester().ExpectTotalCount(
-      "Event.Latency.ScrollUpdate.Touch.AverageLag", 1);
+  CheckScrollUpdateHistogramsTotalCount(1);
 }
 
 }  // namespace

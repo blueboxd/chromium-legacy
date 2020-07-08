@@ -4,6 +4,7 @@
 
 #include "components/omnibox/browser/local_history_zero_suggest_provider.h"
 
+#include <algorithm>
 #include <set>
 #include <string>
 
@@ -217,34 +218,19 @@ void LocalHistoryZeroSuggestProvider::QueryURLDatabase(
     return;
   }
 
-  // Request 5x more search terms than the number of matches the provider
-  // intends to return hoping to have enough left once ineligible ones are
-  // filtered out.
-  const auto& results = url_db->GetMostRecentKeywordSearchTerms(
-      template_url_service->GetDefaultSearchProvider()->id(), max_matches_ * 5);
+  auto results = url_db->GetMostRecentNormalizedKeywordSearchTerms(
+      template_url_service->GetDefaultSearchProvider()->id(),
+      history::AutocompleteAgeThreshold());
 
-  // Used to filter out duplicate query suggestions.
-  std::set<base::string16> seen_suggestions_set;
+  std::sort(results.begin(), results.end(), [](const auto& a, const auto& b) {
+    return a.most_recent_visit_time > b.most_recent_visit_time;
+  });
 
   int relevance = kLocalHistoryZeroSuggestRelevance;
-  size_t search_terms_seen_count = 0;
   for (const auto& result : results) {
-    search_terms_seen_count++;
-    // Discard the result if it is not fresh enough.
-    if (result.time < history::AutocompleteAgeThreshold())
-      continue;
-
-    base::string16 search_terms = result.normalized_term;
-    if (search_terms.empty())
-      continue;
-
-    // Filter out duplicate query suggestions.
-    if (seen_suggestions_set.count(search_terms))
-      continue;
-    seen_suggestions_set.insert(search_terms);
-
     SearchSuggestionParser::SuggestResult suggestion(
-        /*suggestion=*/search_terms, AutocompleteMatchType::SEARCH_HISTORY,
+        /*suggestion=*/result.normalized_term,
+        AutocompleteMatchType::SEARCH_HISTORY,
         /*subtype_identifier=*/0, /*from_keyword=*/false, relevance--,
         /*relevance_from_server=*/0,
         /*input_text=*/base::ASCIIToUTF16(std::string()));
@@ -263,8 +249,7 @@ void LocalHistoryZeroSuggestProvider::QueryURLDatabase(
   }
 
   UMA_HISTOGRAM_COUNTS_1000(
-      "Omnibox.LocalHistoryZeroSuggest.SearchTermsSeenCount",
-      search_terms_seen_count);
+      "Omnibox.LocalHistoryZeroSuggest.SearchTermsSeenCount", results.size());
   UMA_HISTOGRAM_COUNTS_1000("Omnibox.LocalHistoryZeroSuggest.MaxMatchesCount",
                             max_matches_);
 

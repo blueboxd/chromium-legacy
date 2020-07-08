@@ -8,10 +8,7 @@ import android.text.TextUtils;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 import org.hamcrest.StringDescription;
-
-import java.util.concurrent.Callable;
 
 /**
  * Provides a means for validating whether some condition/criteria has been met.
@@ -58,14 +55,6 @@ public abstract class Criteria {
      */
     public void updateFailureReason(String reason) {
         mFailureReason = reason;
-    }
-
-    /**
-     * Do not use. Use checkThat(...) instead. This will be removed as soon as all clients
-     * are migrated.
-     */
-    public static <T> Criteria equals(T expectedValue, Callable<T> actualValueCallable) {
-        return new MatcherCriteria<>(actualValueCallable, Matchers.equalTo(expectedValue));
     }
 
     /**

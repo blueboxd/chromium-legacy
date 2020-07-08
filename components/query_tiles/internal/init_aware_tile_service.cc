@@ -104,6 +104,10 @@ void InitAwareTileService::PurgeDb() {
   }
 }
 
+Logger* InitAwareTileService::GetLogger() {
+  return tile_service_->GetLogger();
+}
+
 void InitAwareTileService::MaybeCacheApiCall(base::OnceClosure api_call) {
   DCHECK(!init_success_.has_value())
       << "Only cache API calls before initialization.";

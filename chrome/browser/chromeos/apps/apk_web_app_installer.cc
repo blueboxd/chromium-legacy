@@ -16,6 +16,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
@@ -33,7 +34,7 @@ namespace chromeos {
 // static
 void ApkWebAppInstaller::Install(Profile* profile,
                                  arc::mojom::WebAppInfoPtr web_app_info,
-                                 const std::vector<uint8_t>& icon_png_data,
+                                 arc::mojom::RawIconPngDataPtr icon,
                                  InstallFinishCallback callback,
                                  base::WeakPtr<Owner> weak_owner) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -44,7 +45,7 @@ void ApkWebAppInstaller::Install(Profile* profile,
   // CompleteInstallation().
   auto* installer =
       new ApkWebAppInstaller(profile, std::move(callback), weak_owner);
-  installer->Start(std::move(web_app_info), icon_png_data);
+  installer->Start(std::move(web_app_info), std::move(icon));
 }
 
 ApkWebAppInstaller::ApkWebAppInstaller(Profile* profile,
@@ -59,7 +60,7 @@ ApkWebAppInstaller::ApkWebAppInstaller(Profile* profile,
 ApkWebAppInstaller::~ApkWebAppInstaller() = default;
 
 void ApkWebAppInstaller::Start(arc::mojom::WebAppInfoPtr web_app_info,
-                               const std::vector<uint8_t>& icon_png_data) {
+                               arc::mojom::RawIconPngDataPtr icon) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!weak_owner_.get()) {
     CompleteInstallation(web_app::AppId(),
@@ -69,7 +70,8 @@ void ApkWebAppInstaller::Start(arc::mojom::WebAppInfoPtr web_app_info,
 
   // We can't install without |web_app_info| or |icon_png_data|. They may be
   // null if there was an error generating the data.
-  if (web_app_info.is_null() || icon_png_data.empty()) {
+  if (web_app_info.is_null() || !icon || !icon->icon_png_data ||
+      !icon->icon_png_data.has_value() || icon->icon_png_data->empty()) {
     LOG(ERROR) << "Insufficient data to install a web app";
     CompleteInstallation(web_app::AppId(),
                          web_app::InstallResultCode::kApkWebAppInstallFailed);
@@ -100,7 +102,8 @@ void ApkWebAppInstaller::Start(arc::mojom::WebAppInfoPtr web_app_info,
   // Decode the image in a sandboxed process off the main thread.
   // base::Unretained is safe because this object owns itself.
   data_decoder::DecodeImageIsolated(
-      icon_png_data, data_decoder::mojom::ImageCodec::DEFAULT,
+      std::move(icon->icon_png_data.value()),
+      data_decoder::mojom::ImageCodec::DEFAULT,
       /*shrink_to_fit=*/false, data_decoder::kDefaultMaxSizeInBytes,
       /*desired_image_frame_size=*/gfx::Size(),
       base::BindOnce(&ApkWebAppInstaller::OnImageDecoded,

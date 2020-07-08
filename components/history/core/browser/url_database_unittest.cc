@@ -196,9 +196,10 @@ TEST_F(URLDatabaseTest, KeywordSearchTermVisit) {
   ASSERT_EQ(1U, matches.size());
   ASSERT_EQ(keyword, matches[0].term);
 
-  auto zero_prefix_matches = GetMostRecentKeywordSearchTerms(keyword_id, 10);
+  std::vector<NormalizedKeywordSearchTermVisit> zero_prefix_matches =
+      GetMostRecentNormalizedKeywordSearchTerms(
+          keyword_id, history::AutocompleteAgeThreshold());
   ASSERT_EQ(1U, zero_prefix_matches.size());
-  ASSERT_EQ(keyword, zero_prefix_matches[0].term);
   ASSERT_EQ(normalized_keyword, zero_prefix_matches[0].normalized_term);
 
   KeywordSearchTermRow keyword_search_term_row;
@@ -214,6 +215,10 @@ TEST_F(URLDatabaseTest, KeywordSearchTermVisit) {
   matches.clear();
   GetMostRecentKeywordSearchTerms(keyword_id, keyword, 10, &matches);
   ASSERT_EQ(0U, matches.size());
+
+  zero_prefix_matches = GetMostRecentNormalizedKeywordSearchTerms(
+      keyword_id, history::AutocompleteAgeThreshold());
+  ASSERT_EQ(0U, zero_prefix_matches.size());
 
   ASSERT_FALSE(GetKeywordSearchTermRow(url_id, &keyword_search_term_row));
 }

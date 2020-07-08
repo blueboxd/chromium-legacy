@@ -34,13 +34,24 @@ class MockExtensionDownloaderDelegate : public ExtensionDownloaderDelegate {
                void(const ExtensionId&, Stage));
   MOCK_METHOD2(OnExtensionDownloadCacheStatusRetrieved,
                void(const ExtensionId&, CacheStatus));
-  MOCK_METHOD6(OnExtensionDownloadFinished,
+  // Gmock doesn't have good support for move-only types like
+  // base::OnceCallback, so we have to do this hack.
+  void OnExtensionDownloadFinished(const CRXFileInfo& file,
+                                   bool file_ownership_passed,
+                                   const GURL& download_url,
+                                   const PingResult& ping_result,
+                                   const std::set<int>& request_ids,
+                                   InstallCallback callback) override {
+    OnExtensionDownloadFinished_(file, file_ownership_passed, download_url,
+                                 ping_result, request_ids, callback);
+  }
+  MOCK_METHOD6(OnExtensionDownloadFinished_,
                void(const extensions::CRXFileInfo&,
                     bool,
                     const GURL&,
                     const PingResult&,
                     const std::set<int>&,
-                    const InstallCallback&));
+                    InstallCallback&));
   MOCK_METHOD0(OnExtensionDownloadRetryForTests, void());
   MOCK_METHOD2(GetPingDataForExtension,
                bool(const ExtensionId&, ManifestFetchData::PingData*));

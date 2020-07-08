@@ -125,7 +125,7 @@ bool CastMainDelegate::BasicStartupComplete(int* exit_code) {
                           crash_files.end(), newest_first);
         for (auto file = crash_files.begin() + kMaxCrashFiles;
              file != crash_files.end(); ++file) {
-          base::DeleteFile(*file, false);
+          base::DeleteFile(*file);
         }
       }
     }

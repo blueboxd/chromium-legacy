@@ -142,8 +142,8 @@ void ExternalProcessImporterHost::ShowWarningDialog() {
   DCHECK(!headless_);
   importer::ShowImportLockDialog(
       parent_window_,
-      base::Bind(&ExternalProcessImporterHost::OnImportLockDialogEnd,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ExternalProcessImporterHost::OnImportLockDialogEnd,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ExternalProcessImporterHost::OnImportLockDialogEnd(bool is_continue) {
@@ -203,9 +203,10 @@ void ExternalProcessImporterHost::CheckForLoadedModels(uint16_t items) {
     if (!writer_->TemplateURLServiceIsLoaded()) {
       TemplateURLService* model =
           TemplateURLServiceFactory::GetForProfile(profile_);
-      template_service_subscription_ = model->RegisterOnLoadedCallback(
-          base::Bind(&ExternalProcessImporterHost::OnTemplateURLServiceLoaded,
-                     weak_ptr_factory_.GetWeakPtr()));
+      template_service_subscription_ =
+          model->RegisterOnLoadedCallback(base::BindRepeating(
+              &ExternalProcessImporterHost::OnTemplateURLServiceLoaded,
+              weak_ptr_factory_.GetWeakPtr()));
       model->Load();
     }
   }

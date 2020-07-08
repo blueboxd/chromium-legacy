@@ -8,6 +8,7 @@ import android.util.Pair;
 
 import androidx.test.filters.LargeTest;
 
+import org.hamcrest.Matchers;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -26,10 +27,10 @@ import org.chromium.components.sync.protocol.AutofillProfileSpecifics;
 import org.chromium.components.sync.protocol.EntitySpecifics;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaNotSatisfiedException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 /**
  * Test suite for the autofill profile sync data type.
@@ -209,12 +210,15 @@ public class AutofillTest {
     }
 
     private void waitForClientAutofillProfileCount(int count) {
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(count, new Callable<Integer>() {
-            @Override
-            public Integer call() throws Exception {
-                return SyncTestUtil.getLocalData(mSyncTestRule.getTargetContext(), AUTOFILL_TYPE)
-                        .size();
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            try {
+                Criteria.checkThat(
+                        SyncTestUtil.getLocalData(mSyncTestRule.getTargetContext(), AUTOFILL_TYPE)
+                                .size(),
+                        Matchers.is(count));
+            } catch (JSONException ex) {
+                throw new CriteriaNotSatisfiedException(ex);
             }
-        }), SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
+        }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
     }
 }

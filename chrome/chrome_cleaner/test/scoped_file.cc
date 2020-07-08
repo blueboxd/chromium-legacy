@@ -27,7 +27,7 @@ ScopedFile::ScopedFile(const base::FilePath& file_path)
 
 ScopedFile::~ScopedFile() {
   if (base::PathExists(file_path_))
-    PCHECK(base::DeleteFile(file_path_, false /*recursive*/));
+    PCHECK(base::DeleteFile(file_path_));
 }
 
 const base::FilePath& ScopedFile::file_path() {

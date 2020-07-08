@@ -40,7 +40,7 @@ class ExtensionUpdateManifestTest : public testing::Test {
 
  private:
   void OnUpdateManifestParsed(
-      base::Closure quit_loop,
+      base::OnceClosure quit_loop,
       std::unique_ptr<UpdateManifestResults> results,
       const base::Optional<ManifestParseFailure>& failure) {
     results_ = std::move(results);

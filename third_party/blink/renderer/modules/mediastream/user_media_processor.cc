@@ -1211,7 +1211,6 @@ MediaStreamSource* UserMediaProcessor::InitializeVideoSourceObject(
     auto video_source = CreateVideoSource(
         device, WTF::Bind(&UserMediaProcessor::OnLocalSourceStopped,
                           WrapWeakPersistent(this)));
-    video_source->SetOwner(source);
     source->SetPlatformSource(std::move(video_source));
 
     String device_id(device.id.data());
@@ -1318,7 +1317,6 @@ MediaStreamSource* UserMediaProcessor::InitializeAudioSourceObject(
   if (device.group_id)
     capabilities.group_id = blink::WebString::FromUTF8(*device.group_id);
 
-  audio_source->SetOwner(source);
   source->SetPlatformSource(std::move(audio_source));
   source->SetCapabilities(capabilities);
   return source;

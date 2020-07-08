@@ -916,7 +916,6 @@ std::vector<FormDataPredictions> FormStructure::GetFieldTypePredictions(
 
     for (const auto& field : form_structure->fields_) {
       FormFieldDataPredictions annotated_field;
-      annotated_field.field = *field;
       annotated_field.signature = field->FieldSignatureAsStr();
       annotated_field.heuristic_type =
           AutofillType(field->heuristic_type()).ToString();

@@ -1527,6 +1527,9 @@ While in incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_RECENT_TABS_RECENTLY_CLOSED" desc="The heading of the recently closed section in the recent tab panel. [Length: 35em] [iOS only]">
         Recently Closed
       </message>
+      <message name="IDS_IOS_RECENT_TABS_RECENTLY_CLOSED_EMPTY" desc="The content of the Recently Closed section in the Recent Tabs panel when there are no recently closed tabs.">
+        You can come back here to reopen tabs that you've recently closed
+      </message>
       <message name="IDS_IOS_RESET_ZOOM" desc="Label for a button to reset the text zoom level to the default state." meaning="Reset text zoom level to the default state">
         Reset
       </message>

@@ -12,6 +12,7 @@ import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
 import android.view.View;
@@ -602,14 +603,20 @@ public class LocationBarLayoutTest {
             return mActivityTestRule.getActivity().getWindow().getAttributes().softInputMode;
         };
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
-        CriteriaHelper.pollUiThread(Criteria.equals(true, urlBar::hasFocus));
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN, softInputModeCallable));
+        CriteriaHelper.pollUiThread(urlBar::hasFocus);
+        CriteriaHelper.pollUiThread(() -> {
+            int inputMode =
+                    mActivityTestRule.getActivity().getWindow().getAttributes().softInputMode;
+            Criteria.checkThat(inputMode, is(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN));
+        });
 
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, false);
-        CriteriaHelper.pollUiThread(Criteria.equals(false, urlBar::hasFocus));
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE, softInputModeCallable));
+        CriteriaHelper.pollUiThread(() -> !urlBar.hasFocus());
+        CriteriaHelper.pollUiThread(() -> {
+            int inputMode =
+                    mActivityTestRule.getActivity().getWindow().getAttributes().softInputMode;
+            Criteria.checkThat(inputMode, is(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE));
+        });
     }
 
     /** Test NPE when focus callback triggers after LocationBarLayout is destroyed. */

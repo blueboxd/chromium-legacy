@@ -34,8 +34,6 @@ class VisualRectMappingTest : public PaintTestConfigurations,
       const LayoutObject& object,
       const LayoutBoxModelObject& ancestor,
       const PhysicalRect& expected_visual_rect_in_ancestor) {
-    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-      EXPECT_EQ(&ancestor, &object.ContainerForPaintInvalidation());
     CheckVisualRect(object, ancestor, object.LocalVisualRect(),
                     expected_visual_rect_in_ancestor);
   }
@@ -691,6 +689,14 @@ TEST_P(VisualRectMappingTest, ContainerAndTargetDifferentFlippedWritingMode) {
   EXPECT_EQ(PhysicalRect(-2, 3, 140, 110), rect);
 }
 
+static const LayoutBoxModelObject& EnclosingCompositedContainer(
+    const LayoutObject& layout_object) {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+  return layout_object.PaintingLayer()
+      ->EnclosingLayerForPaintInvalidationCrossingFrameBoundaries()
+      ->GetLayoutObject();
+}
+
 TEST_P(VisualRectMappingTest,
        DifferentPaintInvalidaitionContainerForAbsolutePosition) {
   GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
@@ -719,7 +725,7 @@ TEST_P(VisualRectMappingTest,
   auto* normal_flow =
       To<LayoutBlock>(GetLayoutObjectByElementId("normal-flow"));
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    EXPECT_EQ(scroller, &normal_flow->ContainerForPaintInvalidation());
+    EXPECT_EQ(scroller, &EnclosingCompositedContainer(*normal_flow));
 
   PhysicalRect normal_flow_visual_rect = normal_flow->LocalVisualRect();
   EXPECT_EQ(PhysicalRect(0, 0, 2000, 2000), normal_flow_visual_rect);
@@ -762,7 +768,7 @@ TEST_P(VisualRectMappingTest,
   auto* absolute = To<LayoutBlock>(GetLayoutObjectByElementId("absolute"));
   auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    EXPECT_EQ(absolute->View(), &absolute->ContainerForPaintInvalidation());
+    EXPECT_EQ(absolute->View(), &EnclosingCompositedContainer(*absolute));
   EXPECT_EQ(container, absolute->Container());
 
   PhysicalRect absolute_visual_rect = absolute->LocalVisualRect();

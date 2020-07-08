@@ -503,7 +503,6 @@ check_targets = [
   "//third_party/pyelftools/*",
   "//third_party/pyjson5/*",
   "//third_party/pylint/*",
-  "//third_party/pymock/*",
   "//third_party/pystache/*",
   "//third_party/py_trace_event/*",
   "//third_party/pywebsocket3/*",

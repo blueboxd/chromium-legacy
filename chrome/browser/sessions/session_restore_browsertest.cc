@@ -376,7 +376,13 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoredTabsShouldHaveWindow) {
 
 // Verify that restoring a minimized window does not create a blank window.
 // Regression test for https://crbug.com/1018885.
-IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreMinimizedWindow) {
+// TODO(1080602): Flaky on Windows and Linux.
+#if defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_RestoreMinimizedWindow DISABLED_RestoreMinimizedWindow
+#else
+#define MAYBE_RestoreMinimizedWindow RestoreMinimizedWindow
+#endif
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, MAYBE_RestoreMinimizedWindow) {
   // Minimize the window.
   browser()->window()->Minimize();
 

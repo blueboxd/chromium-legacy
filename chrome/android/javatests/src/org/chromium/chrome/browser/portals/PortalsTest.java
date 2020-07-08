@@ -19,6 +19,7 @@ import android.view.View;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -459,9 +460,11 @@ public class PortalsTest {
         final ChromeHttpAuthHandler authHandler = helper.getAuthHandler();
         Assert.assertNotNull(authHandler);
 
-        CriteriaHelper.pollUiThread(Criteria.equals(true, authHandler::isShowingAuthDialog));
+        CriteriaHelper.pollUiThread(authHandler::isShowingAuthDialog);
         ThreadUtils.runOnUiThread(() -> authHandler.proceed("basicuser", "secret"));
-        CriteriaHelper.pollUiThread(Criteria.equals("basicuser/secret", portalContents::getTitle));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(portalContents.getTitle(), Matchers.is("basicuser/secret"));
+        });
     }
 
     /**
@@ -625,7 +628,9 @@ public class PortalsTest {
                         + "portal.onload = () => portal.activate();\n"
                         + "document.body.appendChild(portal);");
 
-        CriteriaHelper.pollUiThread(Criteria.equals("Web app banner test page", tab::getTitle));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(tab.getTitle(), Matchers.is("Web app banner test page"));
+        });
         CriteriaHelper.pollUiThread(() -> !AppBannerManager.forTab(tab).isRunningForTesting());
         TouchCommon.singleClickView(tab.getView());
         String expectedDialogTitle = mActivityTestRule.getActivity().getString(

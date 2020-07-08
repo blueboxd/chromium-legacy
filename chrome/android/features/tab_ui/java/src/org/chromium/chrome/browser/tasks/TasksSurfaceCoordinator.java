@@ -38,6 +38,7 @@ public class TasksSurfaceCoordinator implements TasksSurface {
     private MostVisitedListCoordinator mMostVisitedList;
     private TrendyTermsCoordinator mTrendyTermsCoordinator;
     private final PropertyModel mPropertyModel;
+    private final boolean mHasTrendyTerm;
 
     public TasksSurfaceCoordinator(ChromeActivity activity, ScrimCoordinator scrimCoordinator,
             PropertyModel propertyModel, @TabSwitcherType int tabSwitcherType, boolean hasMVTiles,
@@ -47,6 +48,7 @@ public class TasksSurfaceCoordinator implements TasksSurface {
         mPropertyModelChangeProcessor =
                 PropertyModelChangeProcessor.create(propertyModel, mView, TasksViewBinder::bind);
         mPropertyModel = propertyModel;
+        mHasTrendyTerm = hasTrendyTerms;
         if (tabSwitcherType == TabSwitcherType.CAROUSEL) {
             mTabSwitcher = TabManagementModuleProvider.getDelegate().createCarouselTabSwitcher(
                     activity, mView.getCarouselTabSwitcherContainer(), scrimCoordinator);
@@ -70,18 +72,24 @@ public class TasksSurfaceCoordinator implements TasksSurface {
         };
         IncognitoCookieControlsManager incognitoCookieControlsManager =
                 new IncognitoCookieControlsManager();
+        Runnable trendyTermsUpdater = null;
+        if (hasTrendyTerms) {
+            mTrendyTermsCoordinator = new TrendyTermsCoordinator(
+                    activity, getView().findViewById(R.id.trendy_terms_recycler_view));
+
+            trendyTermsUpdater = () -> {
+                TrendyTermsCache.maybeFetch(Profile.getLastUsedRegularProfile());
+                mTrendyTermsCoordinator.populateTrendyTerms();
+            };
+        }
         mMediator = new TasksSurfaceMediator(propertyModel, incognitoLearnMoreClickListener,
-                incognitoCookieControlsManager, tabSwitcherType == TabSwitcherType.CAROUSEL);
+                incognitoCookieControlsManager, tabSwitcherType == TabSwitcherType.CAROUSEL,
+                trendyTermsUpdater);
 
         if (hasMVTiles) {
             LinearLayout mvTilesLayout = mView.findViewById(R.id.mv_tiles_layout);
             mMostVisitedList =
                     new MostVisitedListCoordinator(activity, mvTilesLayout, mPropertyModel);
-        }
-
-        if (hasTrendyTerms) {
-            mTrendyTermsCoordinator = new TrendyTermsCoordinator(
-                    activity, getView().findViewById(R.id.trendy_terms_recycler_view));
         }
     }
 
@@ -131,5 +139,10 @@ public class TasksSurfaceCoordinator implements TasksSurface {
         }
 
         mMediator.initWithNative(fakeboxDelegate);
+
+        if (mHasTrendyTerm && mTabSwitcher != null) {
+            mTabSwitcher.getController().addOverviewModeObserver(mMediator);
+            TrendyTermsCache.maybeFetch(Profile.getLastUsedRegularProfile());
+        }
     }
 }

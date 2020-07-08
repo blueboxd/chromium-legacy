@@ -4,13 +4,11 @@
 
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
 
-#include "base/feature_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_embedder.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_handler.h"
@@ -63,10 +61,6 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
   html_source->AddString("frameColor",
                          color_utils::SkColorToRgbaString(
                              tp.GetColor(ThemeProperties::COLOR_FRAME_ACTIVE)));
-
-  html_source->AddBoolean(
-      "showDemoOptions",
-      base::FeatureList::IsEnabled(features::kWebUITabStripDemoOptions));
 
   static constexpr webui::LocalizedString kStrings[] = {
       {"newTab", IDS_TOOLTIP_NEW_TAB},

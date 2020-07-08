@@ -41,9 +41,7 @@ AssistantSuggestionsModel::GetSuggestionById(
 
 void AssistantSuggestionsModel::SetConversationStarters(
     std::vector<AssistantSuggestion>&& conversation_starters) {
-  conversation_starters_.clear();
-  conversation_starters_.swap(conversation_starters);
-
+  conversation_starters_ = std::move(conversation_starters);
   NotifyConversationStartersChanged();
 }
 
@@ -53,10 +51,8 @@ AssistantSuggestionsModel::GetConversationStarters() const {
 }
 
 void AssistantSuggestionsModel::SetOnboardingSuggestions(
-    std::vector<AssistantSuggestion> onboarding_suggestions) {
-  onboarding_suggestions_.clear();
-  onboarding_suggestions_.swap(onboarding_suggestions);
-
+    std::vector<AssistantSuggestion>&& onboarding_suggestions) {
+  onboarding_suggestions_ = std::move(onboarding_suggestions);
   NotifyOnboardingSuggestionsChanged();
 }
 

@@ -36,7 +36,6 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -87,8 +86,8 @@ public class DownloadLocationChangeTest implements CustomMainActivityStart {
         startDownload(/*hasSDCard=*/true);
 
         // Ensure the dialog is being shown.
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                true, () -> mDownloadTestRule.getActivity().getModalDialogManager().isShowing()));
+        CriteriaHelper.pollUiThread(
+                () -> mDownloadTestRule.getActivity().getModalDialogManager().isShowing());
 
         int currentCallCount = mDownloadTestRule.getChromeDownloadCallCount();
 
@@ -135,8 +134,8 @@ public class DownloadLocationChangeTest implements CustomMainActivityStart {
         startDownload(/*hasSDCard=*/true);
 
         // Ensure the dialog is being shown.
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                true, () -> mDownloadTestRule.getActivity().getModalDialogManager().isShowing()));
+        CriteriaHelper.pollUiThread(
+                () -> mDownloadTestRule.getActivity().getModalDialogManager().isShowing());
 
         // Open the spinner inside the dialog to show download location options.
         Espresso.onView(withId(R.id.file_location)).perform(click());

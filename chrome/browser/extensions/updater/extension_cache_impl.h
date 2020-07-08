@@ -39,8 +39,8 @@ class ExtensionCacheImpl : public ExtensionCache,
   ~ExtensionCacheImpl() override;
 
   // Implementation of ExtensionCache.
-  void Start(const base::Closure& callback) override;
-  void Shutdown(const base::Closure& callback) override;
+  void Start(base::OnceClosure callback) override;
+  void Shutdown(base::OnceClosure callback) override;
   void AllowCaching(const std::string& id) override;
   bool GetExtension(const std::string& id,
                     const std::string& expected_hash,
@@ -50,7 +50,7 @@ class ExtensionCacheImpl : public ExtensionCache,
                     const std::string& expected_hash,
                     const base::FilePath& file_path,
                     const std::string& version,
-                    const PutExtensionCallback& callback) override;
+                    PutExtensionCallback callback) override;
 
   // Implementation of content::NotificationObserver:
   void Observe(int type,
@@ -71,7 +71,7 @@ class ExtensionCacheImpl : public ExtensionCache,
   std::set<std::string> allowed_extensions_;
 
   // List of callbacks that should be called when the cache is ready.
-  std::vector<base::Closure> init_callbacks_;
+  std::vector<base::OnceClosure> init_callbacks_;
 
   // Observes failures to install CRX files.
   content::NotificationRegistrar notification_registrar_;

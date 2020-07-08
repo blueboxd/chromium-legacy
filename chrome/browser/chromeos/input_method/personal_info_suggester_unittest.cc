@@ -217,11 +217,13 @@ TEST_F(PersonalInfoSuggesterTest, SuggestNames) {
 
   suggester_->Suggest(base::UTF8ToUTF16("my first name is "));
   suggestion_handler_->VerifySuggestion(first_name_, 0);
-  SendKeyboardEvent("Tab");
+  SendKeyboardEvent("Down");
+  SendKeyboardEvent("Enter");
 
   suggester_->Suggest(base::UTF8ToUTF16("my last name is "));
   suggestion_handler_->VerifySuggestion(last_name_, 0);
-  SendKeyboardEvent("Tab");
+  SendKeyboardEvent("Down");
+  SendKeyboardEvent("Enter");
 
   suggester_->Suggest(base::UTF8ToUTF16("my name is "));
   suggestion_handler_->VerifySuggestion(full_name_, 0);
@@ -256,7 +258,8 @@ TEST_F(PersonalInfoSuggesterTest, SuggestPhoneNumber) {
 
   suggester_->Suggest(base::UTF8ToUTF16("my phone number is "));
   suggestion_handler_->VerifySuggestion(phone_number_, 0);
-  SendKeyboardEvent("Tab");
+  SendKeyboardEvent("Down");
+  SendKeyboardEvent("Enter");
 
   suggester_->Suggest(base::UTF8ToUTF16("my number is "));
   suggestion_handler_->VerifySuggestion(phone_number_, 0);
@@ -266,7 +269,8 @@ TEST_F(PersonalInfoSuggesterTest, AcceptSuggestion) {
   profile_->set_profile_name(base::UTF16ToUTF8(email_));
 
   suggester_->Suggest(base::UTF8ToUTF16("my email is "));
-  SendKeyboardEvent("Tab");
+  SendKeyboardEvent("Down");
+  SendKeyboardEvent("Enter");
 
   suggestion_handler_->VerifySuggestion(base::EmptyString16(), 0);
   EXPECT_TRUE(suggestion_handler_->IsSuggestionAccepted());
@@ -306,7 +310,8 @@ TEST_F(PersonalInfoSuggesterTest,
   task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(5000));
   tts_handler_->VerifyAnnouncement("");
 
-  SendKeyboardEvent("Tab");
+  SendKeyboardEvent("Down");
+  SendKeyboardEvent("Enter");
   task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(5000));
   tts_handler_->VerifyAnnouncement("");
 }
@@ -321,50 +326,22 @@ TEST_F(PersonalInfoSuggesterTest, AnnounceSpokenFeedbackWhenChromeVoxIsOn) {
   tts_handler_->VerifyAnnouncement("");
 
   task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1000));
-  tts_handler_->VerifyAnnouncement(
-      base::StringPrintf("Suggested text %s. Press tab to insert.",
-                         base::UTF16ToUTF8(email_).c_str()));
+  tts_handler_->VerifyAnnouncement(base::StringPrintf(
+      "Suggestion %s. Press down to navigate and enter to insert.",
+      base::UTF16ToUTF8(email_).c_str()));
 
-  SendKeyboardEvent("Tab");
+  SendKeyboardEvent("Down");
+  SendKeyboardEvent("Enter");
   task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(200));
   tts_handler_->VerifyAnnouncement(base::StringPrintf(
       "Inserted suggestion %s.", base::UTF16ToUTF8(email_).c_str()));
-}
-
-TEST_F(PersonalInfoSuggesterTest, DoNotShowTabAfterMaxTabAcceptanceCount) {
-  for (int i = 0; i < kMaxTabAcceptanceCount; i++) {
-    suggester_->Suggest(base::UTF8ToUTF16("my email is "));
-    SendKeyboardEvent("Tab");
-    suggestion_handler_->VerifyShowTab(true);
-  }
-  suggester_->Suggest(base::UTF8ToUTF16("my email is "));
-  suggestion_handler_->VerifyShowTab(false);
-}
-
-TEST_F(PersonalInfoSuggesterTest, DoNotAnnouncePressTabWhenTabNotShown) {
-  profile_->set_profile_name(base::UTF16ToUTF8(email_));
-  profile_->GetPrefs()->SetBoolean(
-      ash::prefs::kAccessibilitySpokenFeedbackEnabled, true);
-  DictionaryPrefUpdate update(profile_->GetPrefs(),
-                              prefs::kAssistiveInputFeatureSettings);
-  update->SetIntKey(kPersonalInfoSuggesterTabAcceptanceCount,
-                    kMaxTabAcceptanceCount);
-
-  suggester_->Suggest(base::UTF8ToUTF16("my email is "));
-  suggestion_handler_->VerifyShowTab(false);
-  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(500));
-  tts_handler_->VerifyAnnouncement("");
-
-  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1000));
-  tts_handler_->VerifyAnnouncement(base::StringPrintf(
-      "Suggested text %s. ", base::UTF16ToUTF8(email_).c_str()));
 }
 
 TEST_F(PersonalInfoSuggesterTest, ShowSettingLink) {
   DictionaryPrefUpdate update(profile_->GetPrefs(),
                               prefs::kAssistiveInputFeatureSettings);
   update->RemoveKey(kPersonalInfoSuggesterShowSettingCount);
-  update->RemoveKey(kPersonalInfoSuggesterTabAcceptanceCount);
+  update->RemoveKey(kPersonalInfoSuggesterAcceptanceCount);
   for (int i = 0; i < kMaxShowSettingCount; i++) {
     suggester_->Suggest(base::UTF8ToUTF16("my email is "));
     // Dismiss suggestion.
@@ -382,7 +359,8 @@ TEST_F(PersonalInfoSuggesterTest, DoNotShowSettingLinkAfterAcceptance) {
   suggester_->Suggest(base::UTF8ToUTF16("my email is "));
   suggestion_handler_->VerifyShowSettingLink(true);
   // Accept suggestion.
-  SendKeyboardEvent("Tab");
+  SendKeyboardEvent("Down");
+  SendKeyboardEvent("Enter");
   suggester_->Suggest(base::UTF8ToUTF16("my email is "));
   suggestion_handler_->VerifyShowSettingLink(false);
 }

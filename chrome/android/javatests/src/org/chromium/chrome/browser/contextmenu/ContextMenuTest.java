@@ -60,7 +60,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -308,12 +307,8 @@ public class ContextMenuTest implements CustomMainActivityStart {
 
         // Only check for the URL matching as the tab will not be fully created in svelte mode.
         final String expectedUrl = mTestServer.getURL(expectedPath);
-        CriteriaHelper.pollUiThread(Criteria.equals(expectedUrl, new Callable<String>() {
-            @Override
-            public String call() {
-                return newTab.get().getUrlString();
-            }
-        }));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(newTab.get().getUrlString(), Matchers.is(expectedUrl)));
     }
 
     @Test

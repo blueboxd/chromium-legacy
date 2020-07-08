@@ -43,7 +43,7 @@ class StyleColor {
 
  public:
   StyleColor() : color_keyword_(CSSValueID::kCurrentcolor) {}
-  StyleColor(Color color)
+  explicit StyleColor(Color color)
       : color_(color), color_keyword_(CSSValueID::kInvalid) {}
   explicit StyleColor(RGBA32 color)
       : color_(color), color_keyword_(CSSValueID::kInvalid) {}

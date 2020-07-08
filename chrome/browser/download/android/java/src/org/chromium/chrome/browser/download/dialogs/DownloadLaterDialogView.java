@@ -12,6 +12,7 @@ import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
@@ -119,11 +120,13 @@ public class DownloadLaterDialogView extends LinearLayout implements OnCheckedCh
     void setCheckbox(@DownloadLaterPromptStatus int promptStatus) {
         boolean checked = (promptStatus == DownloadLaterPromptStatus.SHOW_INITIAL)
                 || (promptStatus == DownloadLaterPromptStatus.DONT_SHOW);
+        mCheckBox.setVisibility(VISIBLE);
         mCheckBox.setChecked(checked);
     }
 
-    @DownloadLaterPromptStatus
-    int getPromptStatus() {
+    Integer getPromptStatus() {
+        if (mCheckBox.getVisibility() == View.GONE) return null;
+
         return mCheckBox.isChecked() ? DownloadLaterPromptStatus.DONT_SHOW
                                      : DownloadLaterPromptStatus.SHOW_PREFERENCE;
     }

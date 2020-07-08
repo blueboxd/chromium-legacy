@@ -85,7 +85,7 @@ TEST(SQLiteTrustTokenPersister, PutReinitializeAndGet) {
   // database asynchronously, so as not to leak after the test concludes.
   env.RunUntilIdle();
 
-  base::DeleteFile(temp_path, false);
+  base::DeleteFile(temp_path);
 }
 
 // Ensure that it's possible to create a Trust Tokens persister on top of a

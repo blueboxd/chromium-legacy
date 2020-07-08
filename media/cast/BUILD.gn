@@ -168,8 +168,6 @@ jumbo_source_set("sender") {
     "//ui/gfx/geometry",
   ]
 
-  libs = []
-
   # iOS and OS X encoders
   if (is_ios || is_mac) {
     sources += [
@@ -177,7 +175,7 @@ jumbo_source_set("sender") {
       "sender/h264_vt_encoder.h",
     ]
 
-    libs += [
+    frameworks = [
       "AudioToolbox.framework",
       "CoreFoundation.framework",
       "CoreMedia.framework",

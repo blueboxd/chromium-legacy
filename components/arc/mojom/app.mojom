@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 46
+// Next MinVersion: 47
 
 module arc.mojom;
 
@@ -112,6 +112,7 @@ struct AppDiscoveryResult {
   float review_score;
   array<uint8> icon_png_data;
   [MinVersion=22] string? package_name;
+  [MinVersion=46] RawIconPngData? icon;
 };
 
 // Describes the status of an app discovery request, including completed
@@ -172,10 +173,13 @@ struct AppDataResult {
   // Text information for the result.
   string text@3;
   // Icon information in png format. It could be null if not provided. Decoded
-  // in the utility process.
+  // in the utility process. This will be replaced by |icon|.
   array<uint8>? icon_png_data@2;
   // Type of this app data search result.
   [MinVersion=28] AppDataResultType type@4;
+  // Icon information in png format. It could be null if not provided. Decoded
+  // in the utility process.
+  [MinVersion=46] RawIconPngData? icon@5;
 };
 
 // Describes the status of an app data search request, including completed
@@ -261,7 +265,8 @@ struct AppShortcutItem {
   // The short description of this shortcut.
   string short_label;
 
-  // The icon for this shortcut, decoded in the utility process.
+  // The icon for this shortcut, decoded in the utility process. This will be
+  // replaced by |icon|.
   array<uint8> icon_png;
 
   // The package name of the publisher app.
@@ -272,6 +277,9 @@ struct AppShortcutItem {
 
   // "Rank" of a shortcut, which is a non-negative, sequential value.
   [MinVersion=32] int32 rank;
+
+  // The icon for this shortcut, decoded in the utility process.
+  [MinVersion=46] RawIconPngData? icon;
 };
 
 [Extensible]
@@ -298,7 +306,7 @@ enum PaiFlowState {
     TIMEOUT = 9,
 };
 
-// Next method ID: 18
+// Next method ID: 19
 // Deprecated method IDs: 1
 interface AppHost {
   // Sends newly added ARC app to Chrome. This message is sent when ARC receives
@@ -338,10 +346,15 @@ interface AppHost {
                                  [MinVersion=13] string? name@3,
                                  [MinVersion=15] string? intent@4);
 
-  // Sends task label and icon.
+  // Sends task label and icon. This is deprecated and will soon be replaced by
+  // OnTaskDescriptionChanged().
   [MinVersion=19] OnTaskDescriptionUpdated@17(int32 task_id,
                                               string label,
                                               array<uint8> icon_png_data);
+
+  // Sends task label and icon.
+  [MinVersion=46] OnTaskDescriptionChanged@18(
+      int32 task_id, string label, RawIconPngData icon);
 
   // Notifies that task has been destroyed.
   [MinVersion=4] OnTaskDestroyed@5(int32 task_id);
@@ -373,7 +386,7 @@ interface AppHost {
 };
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
-// Next method ID: 35
+// Next method ID: 38
 // Deprecated method IDs: 2, 3, 13
 interface AppInstance {
   // DEPRECATED: Please use Init@21 instead.
@@ -416,27 +429,50 @@ interface AppInstance {
   // string. See Intent.toUri().
   [MinVersion=23] LaunchIntent@19(string intent_uri, int64 display_id);
 
-  // Sends a request for the ARC shortcut icon of a given resource id and
-  // |pixel_size|.
+  // Sends a request for the ARC icon of a given resource id and
+  // |pixel_size|. This is deprecated and will soon be replaced by GetAppIcon().
   [MinVersion=36] RequestAppIcon@27(string package_name,
                                     string activity,
                                     int32 pixel_size) =>
                                         (array<uint8> icon_png_data);
 
-  // Sends a request for the ARC shortcut icon of a given resource id and
+  // Sends a request for the ARC icon of a given resource id and
   // |pixel_size|.
+  [MinVersion=46] GetAppIcon@35(string package_name,
+                                string activity, int32 pixel_size) =>
+                                    (RawIconPngData icon);
+
+  // Sends a request for the ARC shortcut icon of a given resource id and
+  // |pixel_size|. This is deprecated and will soon be replaced by
+  // GetAppShortcutIcon().
   [MinVersion=36] RequestShortcutIcon@28(string icon_resource_id,
                                          int32 pixel_size) =>
                                              (array<uint8> icon_png_data);
+
+  // Sends a request for the ARC shortcut icon of a given resource id and
+  // |pixel_size|.
+  [MinVersion=46] GetAppShortcutIcon@36(string icon_resource_id,
+                                        int32 pixel_size) =>
+                                            (RawIconPngData icon);
+
+  // Sends a request for the ARC icon for a given |package_name| and
+  // |pixel_size|. If |normalize| is true, the icon will be normalized per
+  // Android's icon guidelines, otherwise, the raw unnormalized icon is
+  // returned. Returns an empty array if an error occurred. This is deprecated
+  // and will soon be replaced by GetPackageIcon().
+  [MinVersion=38] RequestPackageIcon@30(string package_name,
+                                        int32 pixel_size,
+                                        bool normalize) =>
+                                            (array<uint8> icon_png_data);
 
   // Sends a request for the ARC icon for a given |package_name| and
   // |pixel_size|. If |normalize| is true, the icon will be normalized per
   // Android's icon guidelines, otherwise, the raw unnormalized icon is
   // returned. Returns an empty array if an error occurred.
-  [MinVersion=38] RequestPackageIcon@30(string package_name,
-                                        int32 pixel_size,
-                                        bool normalize) =>
-                                            (array<uint8> icon_png_data);
+  [MinVersion=46] GetPackageIcon@37(string package_name,
+                                    int32 pixel_size,
+                                    bool normalize) =>
+                                        (RawIconPngData icon);
 
   // Removes cached shortcut icon with the given resource id.
   [MinVersion=9] RemoveCachedIcon@14(string icon_resource_id);

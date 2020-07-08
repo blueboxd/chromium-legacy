@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
+#include "chrome/common/chrome_features.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
@@ -34,6 +35,10 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/widget/widget.h"
+
+namespace {
+constexpr int kArcAppWindowIconSize = extension_misc::EXTENSION_ICON_MEDIUM;
+}  // namespace
 
 // The information about the arc application window which has to be kept
 // even when its AppWindow is not present.
@@ -305,18 +310,27 @@ void ArcAppWindowLauncherController::OnTaskCreated(
   AttachControllerToTask(task_id, *task_id_to_app_window_info_[task_id]);
 }
 
-void ArcAppWindowLauncherController::OnTaskDescriptionUpdated(
+void ArcAppWindowLauncherController::OnTaskDescriptionChanged(
     int32_t task_id,
     const std::string& label,
-    const std::vector<uint8_t>& icon_png_data) {
+    const arc::mojom::RawIconPngData& icon) {
   AppWindowInfo* info = GetAppWindowInfoForTask(task_id);
   if (!info)
     return;
 
-  apps::CompressedDataToImageSkiaCallback(
-      base::BindOnce(&ArcAppWindowLauncherController::SetDescription,
-                     weak_ptr_factory_.GetWeakPtr(), task_id, label))
-      .Run(std::move(icon_png_data));
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+    apps::ArcRawIconPngDataToImageSkia(
+        icon.Clone(), kArcAppWindowIconSize,
+        base::BindOnce(&ArcAppWindowLauncherController::OnIconLoaded,
+                       weak_ptr_factory_.GetWeakPtr(), task_id, label));
+  } else {
+    if (icon.icon_png_data && icon.icon_png_data.has_value()) {
+      apps::CompressedDataToImageSkiaCallback(
+          base::BindOnce(&ArcAppWindowLauncherController::SetDescription,
+                         weak_ptr_factory_.GetWeakPtr(), task_id, label))
+          .Run(icon.icon_png_data.value());
+    }
+  }
 }
 
 void ArcAppWindowLauncherController::OnTaskDestroyed(int task_id) {
@@ -557,4 +571,11 @@ void ArcAppWindowLauncherController::SetDescription(int32_t task_id,
     if (info->app_window())
       info->app_window()->SetDescription(title, icon);
   }
+}
+
+void ArcAppWindowLauncherController::OnIconLoaded(int32_t task_id,
+                                                  const std::string& title,
+                                                  const gfx::ImageSkia& icon) {
+  gfx::ImageSkia image = icon;
+  SetDescription(task_id, title, image);
 }

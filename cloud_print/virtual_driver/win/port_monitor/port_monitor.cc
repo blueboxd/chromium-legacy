@@ -126,7 +126,7 @@ void DeleteLeakedFiles(const base::FilePath& dir) {
   for (base::FilePath file_path = enumerator.Next(); !file_path.empty();
        file_path = enumerator.Next()) {
     if (enumerator.GetInfo().GetLastModifiedTime() < delete_before)
-      base::DeleteFile(file_path, false);
+      base::DeleteFile(file_path);
   }
 }
 
@@ -556,7 +556,7 @@ BOOL WINAPI Monitor2EndDocPort(HANDLE port_handle) {
       }
     }
     if (delete_file)
-      base::DeleteFile(port_data->file_path, false);
+      base::DeleteFile(port_data->file_path);
   }
   if (port_data->printer_handle != NULL) {
     // Tell the spooler that the job is complete.

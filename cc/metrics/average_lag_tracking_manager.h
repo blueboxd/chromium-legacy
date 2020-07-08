@@ -44,11 +44,17 @@ class CC_EXPORT AverageLagTrackingManager {
                                  const viz::FrameTimingDetails& frame_details);
 
  private:
-  // Adds an eligible event |info| to the |frame_token| wait list.
-  void CollectScrollEventFromFrame(uint32_t frame_token,
-                                   const ui::LatencyInfo& info);
+  // TODO(https://crbug.com/1101005): Remove GpuSwap implementation after M86.
+  // Tracker for the AverageLag metrics that uses the gpu swap begin timing as
+  // an approximation for the time the users sees the frame on the screen.
+  AverageLagTracker lag_tracker_gpu_swap_{
+      AverageLagTracker::FinishTimeType::GpuSwapBegin};
 
-  AverageLagTracker lag_tracker_;
+  // Tracker for the AverageLagPresentation metrics that uses the presentation
+  // feedback time as an approximation for the time the users sees the frame on
+  // the screen.
+  AverageLagTracker lag_tracker_presentation_{
+      AverageLagTracker::FinishTimeType::PresentationFeedback};
 
   // List of events (vector) per frame (uint32_t |frame_token|) to submit to the
   // lag trackers when DidPresentCompositorFrame is called for a |frame_token|.

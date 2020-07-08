@@ -915,7 +915,7 @@
         'DeviceRollbackAllowedMilestones',
         'DeviceQuickFixBuildToken',
         'MinimumChromeVersionEnforced',
-        'MinimumChromeVersionEolMessage',
+        'MinimumChromeVersionAueMessage',
       ],
     },
     {
@@ -14660,7 +14660,7 @@
     {
       'name': 'MinimumChromeVersionEnforced',
       'owners': ['snijhara@google.com'],
-      'supported_on': ['chrome_os:85-'],
+      'supported_on': ['chrome_os:86-'],
       'future': True,
       'device_only': True,
       'type': 'dict',
@@ -14670,16 +14670,16 @@
           'type': 'object',
           'properties': {
             'chrome_version': {
-              'description': '''Minimum allowed chrome OS version''',
+              'description': '''Minimum allowed Chrome version''',
               'type': 'string',
             },
             'warning_period': {
-              'description': '''Time in days after which the user will be logged off if chrome OS version is less than the "version"''',
+              'description': '''Time in days after which the user will be logged off if Chrome version is less than the "chrome_version"''',
               'type': 'integer',
               'minimum': 0,
             },
-            'eol_warning_period': {
-              'description': '''Time in days after end of life post which the user will be logged off''',
+            'aue_warning_period': {
+              'description': '''Time in days after auto update expiration post which the user will be logged off''',
               'type': 'integer',
               'minimum': 0,
             },
@@ -14695,11 +14695,11 @@
         {
           "chrome_version" : "78",
           "warning_period" : 0,
-          "eol_warning_period" : 14
+          "aue_warning_period" : 14
         }, {
           "chrome_version" : "83",
           "warning_period" : 10,
-          "eol_warning_period" : 21
+          "aue_warning_period" : 21
         }
       ],
       'id': 670,
@@ -14710,26 +14710,26 @@
       When this policy is set to a non-empty list :
       If none of the entries has a "chrome_version" greater than the current version in the device, then no restrictions are applied and the already existing restrictions are revoked.
       If at least one of the entries has a "chrome_version" greater than the current version, the strongest entry is chosen whose version is closest to the current version.
-      In case of conflict, preference is given to the one with lesser "warning_period" or "eol_warning_period" and the policy is applied using that entry.
+      In case of conflict, preference is given to the one with lesser "warning_period" or "aue_warning_period" and the policy is applied using that entry.
 
-      If current version becomes obsolete during user session, an on-screen notification is shown to update the device within the "warning_period" shown in the notification.
+      If current version becomes obsolete during user session and the current network limits auto updates, an on-screen notification is shown to update the device within the "warning_period" shown in the notification.
+      No notifications are shown if the current network allows auto updates and the device must be updated within the "warning_period".
       The "warning_period" starts from the time the policy is applied.
-      If the device is not updated till the expiry of the "warning_period", the user is logged out of the system.
+      If the device is not updated till the expiry of the "warning_period", the user is logged out of the session.
       If the current version is found to be obsolete at the time of login with expired "warning_period", the user is required to update the device before signing in.
 
-      If the end-of-life is reached during user session, an on-screen notification is shown to log out the user after the "eol_warning_period" has expired.
-      If the device is found to have reached the end-of-life at the time of login with expired "eol_warning_period", the device is blocked for any user to sign in.
+      If current version becomes obsolete during user session and the device has reached auto update expiration, an on-screen notification is shown to return the device within "eol_warning_period".
+      If the device is found to have reached auto update expiration at the time of login with expired "eol_warning_period", the device is blocked for any user to sign in.
 
       If this policy is not set or set to empty, no restrictions are applied, already existing restrictions are revoked and user can sign in regardless of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version.
 
       Here "chrome_version" can be either an exact version like '61.0.3163.120' or a version prefix, like '61.0'.
-      The "warning_period" and "eol_warning_period" are optional values specified in number of days. Default value for them is 0 days, which means that there is no waiting period. ''',
+      The "warning_period" and "aue_warning_period" are optional values specified in number of days. Default value for them is 0 days, which means that there is no warning period. ''',
     },
     {
-      'name': 'MinimumChromeVersionEolMessage',
+      'name': 'MinimumChromeVersionAueMessage',
       'owners': ['snijhara@google.com', 'marcgrimme@chromium.org'],
-      'supported_on': ['chrome_os:85-'],
-      'future': True,
+      'future_on': ['chrome_os'],
       'device_only': True,
       'type': 'string',
       'schema': { 'type': 'string' },
@@ -14737,11 +14737,11 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
-      'example_value': 'This device has reached end-of-life. Kindly return it.',
+      'example_value': 'This device has reached auto update expiration. Kindly return it.',
       'id': 714,
-      'caption': '''Configure end of life message for MinimumChromeVersionEnforced policy''',
+      'caption': '''Configure auto update expiration message for MinimumChromeVersionEnforced policy''',
       'tags': [],
-      'desc': '''This policy is only effective when the device has reached end-of-life and does not meet the minimum allowed version of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> set through <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME">MinimumChromeVersionEnforced</ph> policy.
+      'desc': '''This policy is only effective when the device has reached auto update expiration and does not meet the minimum allowed version of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> set through <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME">MinimumChromeVersionEnforced</ph> policy.
 
       When this policy is set to a non-empty string :
       If the warning time mentioned in <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME">MinimumChromeVersionEnforced</ph> policy has expired, this message is shown at the login screen when the device is blocked for any user to sign in.
@@ -22193,7 +22193,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceLoginScreenPrivacyScreenEnabled': 'device_login_screen_privacy_screen_enabled.enabled',
     'RequiredClientCertificateForDevice': 'required_client_certificate_for_device.required_client_certificate_for_device',
     'DeviceCrostiniArcAdbSideloadingAllowed': 'device_crostini_arc_adb_sideloading_allowed.mode',
-    'MinimumChromeVersionEolMessage' : 'minimum_chrome_version_eol_message.value',
+    'MinimumChromeVersionAueMessage' : 'minimum_chrome_version_aue_message.value',
     'ManagedGuestSessionPrivacyWarningsEnabled' : 'managed_guest_session_privacy_warnings.enabled',
   },
   'policy_atomic_group_definitions': [

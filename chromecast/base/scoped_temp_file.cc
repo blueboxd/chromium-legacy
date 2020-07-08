@@ -14,8 +14,7 @@ ScopedTempFile::ScopedTempFile() {
 
 ScopedTempFile::~ScopedTempFile() {
   if (FileExists()) {
-    // Since this is a file, set the -rf flag to false.
-    CHECK(base::DeleteFile(path_, false));
+    CHECK(base::DeleteFile(path_));
   }
 }
 

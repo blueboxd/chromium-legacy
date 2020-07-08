@@ -41,7 +41,6 @@ public class ConditionalTabStripUtils {
             "conditional_tab_strip_infobar_limit";
     private static final String CONDITIONAL_TAB_STRIP_INFOBAR_PERIOD_PARAM =
             "conditional_tab_strip_infobar_period";
-    @VisibleForTesting
     public static final IntCachedFieldTrialParameter CONDITIONAL_TAB_STRIP_SESSION_TIME_MS =
             new IntCachedFieldTrialParameter(ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID,
                     CONDITIONAL_TAB_STRIP_SESSION_TIME_MS_PARAM, 3600000);

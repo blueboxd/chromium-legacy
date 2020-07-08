@@ -14,6 +14,7 @@ import android.view.Menu;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -142,9 +143,10 @@ public class CustomTabFromChromeExternalNavigationTest {
             return true;
         }, "Navigation delegate never initialized.");
 
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
-                        navigationDelegate.get()::getLastOverrideUrlLoadingResultForTests));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(navigationDelegate.get().getLastOverrideUrlLoadingResultForTests(),
+                    Matchers.is(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT));
+        });
 
         CriteriaHelper.pollUiThread(() -> {
             int state = ApplicationStatus.getStateForActivity(mActivityRule.getActivity());

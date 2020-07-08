@@ -129,7 +129,7 @@ TEST_F(LocalExtensionCacheTest, Basic) {
   cache.SetCacheStatusPollingDelayForTests(base::TimeDelta());
 
   bool initialized = false;
-  cache.Init(true, base::Bind(&SimpleCallback, &initialized));
+  cache.Init(true, base::BindOnce(&SimpleCallback, &initialized));
 
   base::FilePath file10, file01, file20, file30;
   CreateExtensionFile(cache_dir, kTestExtensionId1, "1.0", 100,
@@ -159,7 +159,7 @@ TEST_F(LocalExtensionCacheTest, Basic) {
   EXPECT_TRUE(cache.GetExtension(kTestExtensionId3, "", NULL, NULL));
 
   bool did_shutdown = false;
-  cache.Shutdown(base::Bind(&SimpleCallback, &did_shutdown));
+  cache.Shutdown(base::BindOnce(&SimpleCallback, &did_shutdown));
   content::RunAllTasksUntilIdle();
   ASSERT_TRUE(did_shutdown);
 
@@ -177,7 +177,7 @@ TEST_F(LocalExtensionCacheTest, KeepHashed) {
   cache.SetCacheStatusPollingDelayForTests(base::TimeDelta());
 
   bool initialized = false;
-  cache.Init(true, base::Bind(&SimpleCallback, &initialized));
+  cache.Init(true, base::BindOnce(&SimpleCallback, &initialized));
 
   // Add three identical extensions with different hash sums.
   const base::Time time = base::Time::Now() - base::TimeDelta::FromDays(1);
@@ -214,7 +214,7 @@ TEST_F(LocalExtensionCacheTest, KeepLatest) {
   cache.SetCacheStatusPollingDelayForTests(base::TimeDelta());
 
   bool initialized = false;
-  cache.Init(true, base::Bind(&SimpleCallback, &initialized));
+  cache.Init(true, base::BindOnce(&SimpleCallback, &initialized));
 
   // All extension files are hashed, but have different versions.
   const base::Time time = base::Time::Now() - base::TimeDelta::FromDays(1);
@@ -250,7 +250,7 @@ TEST_F(LocalExtensionCacheTest, Complex) {
   cache.SetCacheStatusPollingDelayForTests(base::TimeDelta());
 
   bool initialized = false;
-  cache.Init(true, base::Bind(&SimpleCallback, &initialized));
+  cache.Init(true, base::BindOnce(&SimpleCallback, &initialized));
 
   // Like in KeepHashed test, but with two different versions.
   const base::Time time = base::Time::Now() - base::TimeDelta::FromDays(1);
@@ -312,7 +312,7 @@ TEST_F(LocalExtensionCacheTest, PutExtensionCases) {
   cache.SetCacheStatusPollingDelayForTests(base::TimeDelta());
 
   bool initialized = false;
-  cache.Init(true, base::Bind(&SimpleCallback, &initialized));
+  cache.Init(true, base::BindOnce(&SimpleCallback, &initialized));
 
   // Initialize cache with several different files
   const base::Time time = base::Time::Now() - base::TimeDelta::FromDays(1);

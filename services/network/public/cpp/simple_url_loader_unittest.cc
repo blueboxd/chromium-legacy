@@ -375,7 +375,7 @@ class SimpleLoaderTestHelper : public SimpleURLLoaderStreamConsumer {
     // Clean up file, so tests don't leave around files in the temp directory.
     // Only matters in the TO_TEMP_FILE case.
     if (!file_path.empty())
-      base::DeleteFile(file_path, false);
+      base::DeleteFile(file_path);
 
     done_ = true;
     run_loop_.Quit();

@@ -12,6 +12,20 @@
 
 namespace history {
 
+// NormalizedKeywordSearchTermVisit is returned by
+// GetMostRecentNormalizedKeywordSearchTerms. It contains the time of the most
+// recent visit and the visit count for the normalized search term aggregated
+// from the keyword visits.
+struct NormalizedKeywordSearchTermVisit {
+  NormalizedKeywordSearchTermVisit() = default;
+  ~NormalizedKeywordSearchTermVisit();
+
+  base::string16 normalized_term;     // The search term, in lower case and with
+                                      // extra whitespaces collapsed.
+  int visits{0};                      // The visit count.
+  base::Time most_recent_visit_time;  // The time of the most recent visit.
+};
+
 // KeywordSearchTermVisit is returned from GetMostRecentKeywordSearchTerms. It
 // gives the time and search term of the keyword visit.
 struct KeywordSearchTermVisit {

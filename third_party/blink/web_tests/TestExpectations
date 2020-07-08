@@ -80,6 +80,7 @@ external/wpt/css/compositing/root-element-background-transparency.html [ Failure
 
 ### virtual/synchronous_html_parser/http/tests/preload/
 crbug.com/901056 virtual/synchronous_html_parser/http/tests/preload/meta-csp.html [ Failure ]
+crbug.com/901056 virtual/synchronous_html_parser/http/tests/preload/meta-viewport-device-width-link-headers.html [ Failure ]
 crbug.com/901056 virtual/synchronous_html_parser/http/tests/preload/meta-viewport-link-headers-imagesrcset.html [ Timeout Failure ]
 
 # ====== Site Isolation failures from here ======
@@ -5645,7 +5646,6 @@ crbug.com/943969 [ Mac10.11 ] inspector-protocol/css/css-get-media-queries.js [ 
 crbug.com/945085 [ Mac10.13 ] printing/composited-thead-tfoot-repeat.html [ Failure Pass ]
 
 # Sheriff 2019-03-25
-crbug.com/944025 http/tests/preload/meta-viewport-device-width-link-headers.html [ Pass Failure ]
 crbug.com/945665 http/tests/devtools/elements/styles-3/styles-add-new-rule-tab.js [ Pass Failure ]
 crbug.com/945665 http/tests/devtools/elements/styles-3/styles-add-new-rule.js [ Pass Failure Timeout ]
 crbug.com/945665 http/tests/devtools/elements/styles-3/styles-disable-inherited.js [ Pass Failure ]
@@ -5939,7 +5939,6 @@ crbug.com/994692 [ Win ] compositing/reflections/nested-reflection-anchor-point.
 # Video flakily not being being rendered on Mac
 crbug.com/988248 media/controls/captions-menu-always-visible.html [ Pass Failure ]
 crbug.com/988248 [ Mac ] media/controls/overflow-menu-always-visible.html [ Pass Failure ]
-crbug.com/988248 [ Mac ] media/controls/volumechange-muted-attribute.html [ Pass Failure ]
 crbug.com/988248 [ Mac ] media/video-persistence.html [ Pass Failure ]
 crbug.com/988248 [ Linux ] media/video-persistence.html [ Pass Failure ]
 crbug.com/988248 [ Mac ] media/video-zoom.html [ Pass Failure ]
@@ -6794,3 +6793,7 @@ crbug.com/1100786 [ Mac10.10 ] storage/indexeddb/transaction-active-flag.html [ 
 crbug.com/1101699 external/wpt/webrtc/RTCPeerConnection-setLocalDescription-answer.html [ Pass Failure ]
 crbug.com/1101699 external/wpt/webrtc/RTCPeerConnection-setLocalDescription-pranswer.html [ Pass Failure ]
 crbug.com/1101699 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-rollback.html [ Pass Failure ]
+
+# Sheriff 2020-07-07
+# Additionally disabled on mac due to crbug.com/988248
+crbug.com/1083302 media/controls/volumechange-muted-attribute.html [ Pass Failure ]

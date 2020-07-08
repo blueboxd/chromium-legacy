@@ -110,7 +110,6 @@ class MediaStreamRemoteVideoSourceTest : public ::testing::Test {
     source_ = MakeGarbageCollected<MediaStreamSource>(
         "dummy_source_id", MediaStreamSource::kTypeVideo, "dummy_source_name",
         true /* remote */);
-    remote_source_->SetOwner(source_);
     source_->SetPlatformSource(base::WrapUnique(remote_source_));
   }
 

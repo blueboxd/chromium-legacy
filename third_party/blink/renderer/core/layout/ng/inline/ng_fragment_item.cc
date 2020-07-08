@@ -561,6 +561,8 @@ PositionWithAffinity NGFragmentItem::PositionForPointInText(
     const NGInlineCursor& cursor) const {
   DCHECK_EQ(Type(), kText);
   DCHECK_EQ(cursor.CurrentItem(), this);
+  if (IsGeneratedText())
+    return PositionWithAffinity();
   const unsigned text_offset = TextOffsetForPoint(point, cursor.Items());
   const NGCaretPosition unadjusted_position{
       cursor, NGCaretPositionType::kAtTextOffset, text_offset};

@@ -61,8 +61,6 @@ bool AddVideoTrackToMediaStream(
   const String track_id(WTF::CreateCanonicalUUIDString());
   auto* media_stream_source = MakeGarbageCollected<MediaStreamSource>(
       track_id, MediaStreamSource::kTypeVideo, track_id, is_remote);
-  // Takes ownership of |media_stream_video_source|.
-  media_stream_video_source->SetOwner(media_stream_source);
   media_stream_source->SetPlatformSource(std::move(media_stream_video_source));
   media_stream_source->SetCapabilities(ComputeCapabilitiesForVideoSource(
       track_id, preferred_formats,
@@ -115,7 +113,6 @@ void CreateHTMLAudioElementCapturer(
           web_media_player, std::move(task_runner));
 
   // |media_stream_source| takes ownership of |media_stream_audio_source|.
-  media_stream_audio_source->SetOwner(media_stream_source);
   media_stream_source->SetPlatformSource(
       base::WrapUnique(media_stream_audio_source));
 

@@ -105,7 +105,9 @@ class OpenXrApiWrapper {
   uint32_t GetRecommendedSwapchainSampleCount() const;
   XrResult UpdateStageBounds();
 
-  bool session_ended_;
+  // The session is running only after xrBeginSession and before xrEndSession.
+  // It is not considered running after creation but before xrBeginSession.
+  bool session_running_;
   bool pending_frame_;
   base::TimeTicks last_process_events_time_;
 

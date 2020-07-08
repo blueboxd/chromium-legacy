@@ -35,28 +35,28 @@ ContentCaptureController* ContentCaptureController::Get() {
 ContentCaptureController::ContentCaptureController() = default;
 ContentCaptureController::~ContentCaptureController() = default;
 
-void ContentCaptureController::SetWhitelist(
+void ContentCaptureController::SetAllowlist(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,
-    const JavaParamRef<jobjectArray>& jwhitelist,
+    const JavaParamRef<jobjectArray>& jallowlist,
     const JavaParamRef<jbooleanArray>& jisRegEx) {
-  DCHECK(jwhitelist && jisRegEx || !(jwhitelist || jisRegEx));
-  has_whitelist_ = false;
-  if (!jwhitelist)
+  DCHECK(jallowlist && jisRegEx || !(jallowlist || jisRegEx));
+  has_allowlist_ = false;
+  if (!jallowlist)
     return;
-  std::vector<std::string> whitelist;
+  std::vector<std::string> allowlist;
   std::vector<bool> is_regex;
-  AppendJavaStringArrayToStringVector(env, jwhitelist, &whitelist);
+  AppendJavaStringArrayToStringVector(env, jallowlist, &allowlist);
   JavaBooleanArrayToBoolVector(env, jisRegEx, &is_regex);
-  if (whitelist.size() != is_regex.size())
+  if (allowlist.size() != is_regex.size())
     return;
-  has_whitelist_ = true;
+  has_allowlist_ = true;
   size_t index = 0;
-  for (auto w : whitelist) {
+  for (auto w : allowlist) {
     if (is_regex[index++])
-      whitelist_regex_.push_back(std::make_unique<re2::RE2>(w));
+      allowlist_regex_.push_back(std::make_unique<re2::RE2>(w));
     else
-      whitelist_.push_back(w);
+      allowlist_.push_back(w);
   }
 }
 
@@ -67,26 +67,26 @@ void ContentCaptureController::SetJavaPeer(
 }
 
 bool ContentCaptureController::ShouldCapture(const GURL& url) {
-  if (!has_whitelist_.has_value()) {
+  if (!has_allowlist_.has_value()) {
     JNIEnv* env = AttachCurrentThread();
     ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
     if (obj.is_null())
       return false;
-    Java_ContentCaptureController_pullWhitelist(env, obj);
+    Java_ContentCaptureController_pullAllowlist(env, obj);
   }
-  DCHECK(has_whitelist_.has_value());
+  DCHECK(has_allowlist_.has_value());
 
-  // Everything is whitelisted.
-  if (!has_whitelist_.value() || !url.has_host())
+  // Everything is allowed.
+  if (!has_allowlist_.value() || !url.has_host())
     return true;
 
   std::string host = url.host();
-  for (auto& w : whitelist_) {
+  for (auto& w : allowlist_) {
     if (w == host)
       return true;
   }
 
-  for (auto& w : whitelist_regex_) {
+  for (auto& w : allowlist_regex_) {
     if (re2::RE2::FullMatch(host, *w))
       return true;
   }

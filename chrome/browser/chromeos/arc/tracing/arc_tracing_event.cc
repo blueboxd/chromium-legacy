@@ -19,6 +19,8 @@ constexpr char kKeyArguments[] = "args";
 constexpr char kKeyDuration[] = "dur";
 constexpr char kKeyCategory[] = "cat";
 constexpr char kKeyId[] = "id";
+constexpr char kKeyId2[] = "id2";
+constexpr char kKeyLocal[] = "local";
 constexpr char kKeyName[] = "name";
 constexpr char kKeyPid[] = "pid";
 constexpr char kKeyPhase[] = "ph";
@@ -90,8 +92,21 @@ void ArcTracingEvent::SetTid(int tid) {
 }
 
 std::string ArcTracingEvent::GetId() const {
-  return GetStringFromDictionary(GetDictionary(), kKeyId,
-                                 std::string() /* default_value */);
+  const base::DictionaryValue* dictionary = GetDictionary();
+  const base::Value* id_value =
+      dictionary->FindKeyOfType(kKeyId, base::Value::Type::STRING);
+  if (id_value)
+    return id_value->GetString();
+
+  const base::Value* id2_value =
+      dictionary->FindKeyOfType(kKeyId2, base::Value::Type::DICTIONARY);
+  if (id2_value) {
+    const base::DictionaryValue* id2_dictionary;
+    id2_value->GetAsDictionary(&id2_dictionary);
+    return GetStringFromDictionary(id2_dictionary, kKeyLocal,
+                                   std::string() /* default_value */);
+  }
+  return std::string();
 }
 
 void ArcTracingEvent::SetId(const std::string& id) {

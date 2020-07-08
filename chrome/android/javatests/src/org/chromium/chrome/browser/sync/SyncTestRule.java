@@ -42,7 +42,6 @@ import org.chromium.components.sync.protocol.EntitySpecifics;
 import org.chromium.components.sync.protocol.SyncEntity;
 import org.chromium.components.sync.protocol.WalletMaskedCreditCard;
 import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -245,9 +244,9 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
     public void clearServerData() {
         mFakeServerHelper.clearServerData();
         SyncTestUtil.triggerSync();
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(false, () -> ProfileSyncService.get().isSyncRequested()),
-                SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
+        CriteriaHelper.pollUiThread(() -> {
+            return !ProfileSyncService.get().isSyncRequested();
+        }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
     }
 
     /*
@@ -286,12 +285,6 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
             chosenTypes.remove(modelType);
             mProfileSyncService.setChosenDataTypes(false, chosenTypes);
         });
-    }
-
-    @Deprecated // TODO(tedchoc): Remove this method once Criteria.equals returns a Runnable.
-    public void pollInstrumentationThread(Criteria criteria) {
-        CriteriaHelper.pollInstrumentationThread(
-                criteria, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
     }
 
     public void pollInstrumentationThread(Runnable criteria) {

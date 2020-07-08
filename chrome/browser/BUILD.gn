@@ -1043,8 +1043,8 @@ static_library("browser") {
     "performance_hints/performance_hints_features.h",
     "performance_hints/performance_hints_observer.cc",
     "performance_hints/performance_hints_observer.h",
-    "performance_hints/performance_hints_rewrite_handler.cc",
-    "performance_hints/performance_hints_rewrite_handler.h",
+    "performance_hints/rewrite_handler.cc",
+    "performance_hints/rewrite_handler.h",
     "performance_manager/browser_child_process_watcher.cc",
     "performance_manager/browser_child_process_watcher.h",
     "performance_manager/chrome_browser_main_extra_parts_performance_manager.cc",
@@ -2162,8 +2162,6 @@ static_library("browser") {
       "android/accessibility/font_size_prefs_android.cc",
       "android/accessibility/font_size_prefs_android.h",
       "android/android_theme_resources.h",
-      "android/app_hooks.cc",
-      "android/app_hooks.h",
       "android/autofill_assistant/assistant_collect_user_data_delegate.cc",
       "android/autofill_assistant/assistant_collect_user_data_delegate.h",
       "android/autofill_assistant/assistant_form_delegate.cc",
@@ -4335,7 +4333,7 @@ static_library("browser") {
       "//third_party/google_toolbox_for_mac",
       "//third_party/mozilla",
     ]
-    libs += [
+    frameworks = [
       "Accelerate.framework",
       "AudioUnit.framework",
       "AVFoundation.framework",
@@ -5250,8 +5248,6 @@ static_library("browser") {
         "offline_pages/android/background_scheduler_bridge.h",
         "offline_pages/android/cct_origin_observer.cc",
         "offline_pages/android/cct_origin_observer.h",
-        "offline_pages/android/cct_request_observer.cc",
-        "offline_pages/android/cct_request_observer.h",
         "offline_pages/android/downloads/offline_page_download_bridge.cc",
         "offline_pages/android/downloads/offline_page_download_bridge.h",
         "offline_pages/android/downloads/offline_page_infobar_delegate.cc",

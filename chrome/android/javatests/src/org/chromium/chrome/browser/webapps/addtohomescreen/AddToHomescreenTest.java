@@ -13,6 +13,7 @@ import android.text.TextUtils;
 import androidx.annotation.StringRes;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -43,8 +44,6 @@ import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogManager;
-
-import java.util.concurrent.Callable;
 
 /**
  * Tests org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenManager and its C++
@@ -374,15 +373,13 @@ public class AddToHomescreenTest {
                     null);
         });
 
-        CriteriaHelper.pollUiThread(Criteria.equals(2, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return mActivityTestRule.getActivity()
-                        .getTabModelSelector()
-                        .getModel(false)
-                        .getCount();
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mActivityTestRule.getActivity()
+                                       .getTabModelSelector()
+                                       .getModel(false)
+                                       .getCount(),
+                    Matchers.is(2));
+        });
 
         TabModel tabModel = mActivityTestRule.getActivity().getTabModelSelector().getModel(false);
         Assert.assertEquals(0, tabModel.indexOf(mTab));

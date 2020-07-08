@@ -11,8 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/component_updater/cros_component_manager.h"
 
-namespace chromeos {
-
 // Manages download of the lacros-chrome binary.
 class LacrosLoader {
  public:
@@ -50,7 +48,5 @@ class LacrosLoader {
 
   base::WeakPtrFactory<LacrosLoader> weak_factory_{this};
 };
-
-}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LACROS_LACROS_LOADER_H_

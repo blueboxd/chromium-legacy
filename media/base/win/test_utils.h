@@ -5,10 +5,13 @@
 #ifndef MEDIA_BASE_WIN_TEST_UTILS_H_
 #define MEDIA_BASE_WIN_TEST_UTILS_H_
 
+#include <type_traits>
+
 #include <wrl/client.h>
 #include <wrl/implements.h>
 
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 #define MOCK_STDCALL_METHOD0(Name, Types) \
   MOCK_METHOD0_WITH_CALLTYPE(STDMETHODCALLTYPE, Name, Types)
@@ -86,12 +89,11 @@ ACTION_TEMPLATE(SetComPointeeAndReturnOk,
 ACTION_TEMPLATE(SaveComPtr,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(p)) {
-  // ComPtr::operator& is overloaded. This to make sure we don't get const
-  // Details::ComPtrRef.
-  auto com_ptr_ref = p;
-  auto** ptr = com_ptr_ref.ReleaseAndGetAddressOf();
-  *ptr = std::get<k>(args);
-  (*ptr)->AddRef();
+  auto* value = std::get<k>(args);
+  using InterfaceType = typename std::remove_pointer<decltype(value)>::type;
+  Microsoft::WRL::ComPtr<InterfaceType> result(value);
+  if (FAILED(result.As(p)))
+    ADD_FAILURE() << "InterfaceType Value Type Mismatched.";
 }
 
 // Use this function to create a mock so that they are ref-counted correctly.

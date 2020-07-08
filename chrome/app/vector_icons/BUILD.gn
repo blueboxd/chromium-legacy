@@ -190,6 +190,10 @@ aggregate_vector_icons("chrome_vector_icons") {
     ]
   }
 
+  if (!is_android) {
+    icons += [ "nearby_share.icon" ]
+  }
+
   if (enable_vr && !is_android) {
     # Used on desktop VR headsets and Linux unit tests.
     icons += [ "open_in_browser.icon" ]

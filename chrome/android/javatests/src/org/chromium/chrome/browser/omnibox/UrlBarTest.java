@@ -23,6 +23,7 @@ import android.widget.LinearLayout;
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,7 +54,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -537,12 +537,8 @@ public class UrlBarTest extends DummyUiActivityTestCase {
             }
         });
 
-        CriteriaHelper.pollUiThread(Criteria.equals("test", new Callable<String>() {
-            @Override
-            public String call() {
-                return mUrlBar.getText().toString();
-            }
-        }));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(mUrlBar.getText().toString(), Matchers.is("test")));
 
         autocompleteHelper.waitForCallback(0);
         Assert.assertTrue("Inline autocomplete incorrectly allowed after delete.",
@@ -601,12 +597,8 @@ public class UrlBarTest extends DummyUiActivityTestCase {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mUrlBar.getInputConnection().endBatchEdit(); });
 
-        CriteriaHelper.pollUiThread(Criteria.equals("testy", new Callable<String>() {
-            @Override
-            public String call() {
-                return requestedAutocompleteText.get();
-            }
-        }));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(requestedAutocompleteText.get(), Matchers.is("testy")));
 
         mUrlBar.setUrlTextChangeListener(null);
     }
@@ -699,12 +691,8 @@ public class UrlBarTest extends DummyUiActivityTestCase {
             mUrlBar.getInputConnection().endBatchEdit();
         });
 
-        CriteriaHelper.pollUiThread(Criteria.equals("al", new Callable<String>() {
-            @Override
-            public String call() {
-                return mUrlBar.getText().toString();
-            }
-        }));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(mUrlBar.getText().toString(), Matchers.is("al")));
     }
 
     @Test

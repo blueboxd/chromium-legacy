@@ -150,14 +150,9 @@ void NetLogExporter::StartWithScratchDirOrCleanup(
     base::ThreadPool::PostTask(
         FROM_HERE,
         {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-        base::BindOnce(
-            [](const base::FilePath& dir) {
-              // The delete is non-recursive (2nd argument
-              // false) since the only time this is invoked
-              // the directory is expected to be empty.
-              base::DeleteFile(dir, false);
-            },
-            scratch_dir_path));
+        // The delete is non-recursive since the only time this is invoked is
+        // when the directory is expected to be empty.
+        base::BindOnce(base::GetDeleteFileCallback(), scratch_dir_path));
   }
 }
 

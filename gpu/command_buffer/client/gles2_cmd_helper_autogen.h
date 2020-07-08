@@ -3204,35 +3204,6 @@ void GetFragDataIndexEXT(GLuint program,
   }
 }
 
-void UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate(
-    GLint location,
-    GLboolean transpose,
-    const GLfloat* transform) {
-  const uint32_t size = gles2::cmds::
-      UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate::ComputeSize();
-  gles2::cmds::UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate* c =
-      GetImmediateCmdSpaceTotalSize<
-          gles2::cmds::UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate>(
-          size);
-  if (c) {
-    c->Init(location, transpose, transform);
-  }
-}
-
-void OverlayPromotionHintCHROMIUM(GLuint texture,
-                                  GLboolean promotion_hint,
-                                  GLint display_x,
-                                  GLint display_y,
-                                  GLint display_width,
-                                  GLint display_height) {
-  gles2::cmds::OverlayPromotionHintCHROMIUM* c =
-      GetCmdSpace<gles2::cmds::OverlayPromotionHintCHROMIUM>();
-  if (c) {
-    c->Init(texture, promotion_hint, display_x, display_y, display_width,
-            display_height);
-  }
-}
-
 void SwapBuffersWithBoundsCHROMIUMImmediate(GLuint64 swap_id,
                                             GLsizei count,
                                             const GLint* rects,

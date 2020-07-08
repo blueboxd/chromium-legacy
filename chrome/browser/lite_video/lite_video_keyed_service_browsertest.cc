@@ -24,6 +24,7 @@
 #include "net/nqe/effective_connection_type.h"
 #include "services/network/public/mojom/network_change_manager.mojom-shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 namespace {
@@ -105,7 +106,8 @@ class LiteVideoKeyedServiceBrowserTest
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         {::features::kLiteVideo},
-        {{"lite_video_origin_hints", "{\"litevideo.com\": 123}"}});
+        {{"lite_video_origin_hints", "{\"litevideo.com\": 123}"},
+         {"user_blocklist_opt_out_history_threshold", "1"}});
     InProcessBrowserTest::SetUp();
   }
 
@@ -271,6 +273,124 @@ IN_PROC_BROWSER_TEST_F(
                                          1);
   histogram_tester()->ExpectTotalCount(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame", 0);
+  histogram_tester()->ExpectTotalCount(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame", 0);
+}
+
+IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
+                       LiteVideoCanApplyLiteVideo_Reload) {
+  WaitForBlocklistToBeLoaded();
+  EXPECT_TRUE(
+      LiteVideoKeyedServiceFactory::GetForProfile(browser()->profile()));
+
+  // Navigate metrics get recorded.
+  GURL url("https://testserver.com");
+  NavigateParams params(browser(), url, ui::PAGE_TRANSITION_RELOAD);
+  ui_test_utils::NavigateToURL(&params);
+
+  EXPECT_GT(RetryForHistogramUntilCountReached(
+                *histogram_tester(), "LiteVideo.Navigation.HasHint", 1),
+            0);
+  histogram_tester()->ExpectUniqueSample("LiteVideo.Navigation.HasHint", false,
+                                         1);
+  histogram_tester()->ExpectUniqueSample(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
+      lite_video::LiteVideoBlocklistReason::kNavigationReload, 1);
+  histogram_tester()->ExpectTotalCount(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame", 0);
+
+  // Navigate to confirm that the host is blocklisted due to a reload. This
+  // happens after one such navigation due to overriding the blocklist
+  // parameters for testing.
+  NavigateParams params_blocklisted(browser(), url, ui::PAGE_TRANSITION_TYPED);
+  ui_test_utils::NavigateToURL(&params_blocklisted);
+
+  EXPECT_GT(RetryForHistogramUntilCountReached(
+                *histogram_tester(), "LiteVideo.Navigation.HasHint", 2),
+            0);
+  histogram_tester()->ExpectUniqueSample("LiteVideo.Navigation.HasHint", false,
+                                         2);
+  histogram_tester()->ExpectBucketCount(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
+      lite_video::LiteVideoBlocklistReason::kNavigationBlocklisted, 1);
+  histogram_tester()->ExpectTotalCount(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame", 0);
+}
+
+IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
+                       LiteVideoCanApplyLiteVideo_ForwardBack) {
+  WaitForBlocklistToBeLoaded();
+  EXPECT_TRUE(
+      LiteVideoKeyedServiceFactory::GetForProfile(browser()->profile()));
+
+  // Navigate metrics get recorded.
+  GURL url("https://testserver.com");
+  NavigateParams params(browser(), url, ui::PAGE_TRANSITION_FORWARD_BACK);
+  ui_test_utils::NavigateToURL(&params);
+
+  EXPECT_GT(RetryForHistogramUntilCountReached(
+                *histogram_tester(), "LiteVideo.Navigation.HasHint", 1),
+            0);
+  histogram_tester()->ExpectUniqueSample("LiteVideo.Navigation.HasHint", false,
+                                         1);
+  histogram_tester()->ExpectUniqueSample(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
+      lite_video::LiteVideoBlocklistReason::kNavigationForwardBack, 1);
+  histogram_tester()->ExpectTotalCount(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame", 0);
+
+  // Navigate to confirm that the host is blocklisted due to the Forward-Back
+  // navigation. This happens after one such navigation due to overriding the
+  // blocklist parameters for testing.
+  NavigateParams params_blocklisted(browser(), url, ui::PAGE_TRANSITION_TYPED);
+  ui_test_utils::NavigateToURL(&params_blocklisted);
+
+  EXPECT_GT(RetryForHistogramUntilCountReached(
+                *histogram_tester(), "LiteVideo.Navigation.HasHint", 2),
+            0);
+  histogram_tester()->ExpectUniqueSample("LiteVideo.Navigation.HasHint", false,
+                                         2);
+  histogram_tester()->ExpectBucketCount(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
+      lite_video::LiteVideoBlocklistReason::kNavigationBlocklisted, 1);
+  histogram_tester()->ExpectTotalCount(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame", 0);
+}
+
+IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
+                       MultipleNavigationsNotBlocklisted) {
+  WaitForBlocklistToBeLoaded();
+  EXPECT_TRUE(
+      LiteVideoKeyedServiceFactory::GetForProfile(browser()->profile()));
+
+  GURL url("https://litevideo.com");
+
+  // Navigate metrics get recorded.
+  NavigateParams params(browser(), url, ui::PAGE_TRANSITION_TYPED);
+  ui_test_utils::NavigateToURL(&params);
+
+  EXPECT_GT(RetryForHistogramUntilCountReached(
+                *histogram_tester(), "LiteVideo.Navigation.HasHint", 1),
+            0);
+  histogram_tester()->ExpectUniqueSample("LiteVideo.Navigation.HasHint", true,
+                                         1);
+  histogram_tester()->ExpectUniqueSample(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
+      lite_video::LiteVideoBlocklistReason::kAllowed, 1);
+  histogram_tester()->ExpectTotalCount(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame", 0);
+
+  // Navigate  again to ensure that it was not blocklisted.
+  ui_test_utils::NavigateToURL(&params);
+
+  EXPECT_GT(RetryForHistogramUntilCountReached(
+                *histogram_tester(), "LiteVideo.Navigation.HasHint", 2),
+            0);
+  histogram_tester()->ExpectBucketCount("LiteVideo.Navigation.HasHint", true,
+                                        2);
+  histogram_tester()->ExpectBucketCount(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
+      lite_video::LiteVideoBlocklistReason::kAllowed, 2);
   histogram_tester()->ExpectTotalCount(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame", 0);
 }

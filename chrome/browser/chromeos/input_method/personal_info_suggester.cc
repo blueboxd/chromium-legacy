@@ -34,7 +34,8 @@ const char kAssistPhoneNumberPrefix[] = "my phone number is ";
 const char kAssistNumberPrefix[] = "my number is ";
 const char kAssistFirstNamePrefix[] = "my first name is ";
 const char kAssistLastNamePrefix[] = "my last name is ";
-const char kAnnounceShowTab[] = "Press tab to insert.";
+const char kAnnounceShortcut[] = "Press down to navigate and enter to insert.";
+const int kNoneHighlighted = -1;
 
 constexpr base::TimeDelta kTtsShowDelay =
     base::TimeDelta::FromMilliseconds(1200);
@@ -135,7 +136,16 @@ PersonalInfoSuggester::PersonalInfoSuggester(
               ? personal_data_manager
               : autofill::PersonalDataManagerFactory::GetForProfile(profile)),
       tts_handler_(tts_handler ? std::move(tts_handler)
-                               : std::make_unique<TtsHandler>(profile)) {}
+                               : std::make_unique<TtsHandler>(profile)) {
+  suggestion_button_.id = ui::ime::ButtonId::kSuggestion;
+  suggestion_button_.window_type =
+      ui::ime::AssistiveWindowType::kPersonalInfoSuggestion;
+  suggestion_button_.index = 0;
+  link_button_.id = ui::ime::ButtonId::kSmartInputsSettingLink;
+  link_button_.window_type =
+      ui::ime::AssistiveWindowType::kPersonalInfoSuggestion;
+  highlighted_index_ = kNoneHighlighted;
+}
 
 PersonalInfoSuggester::~PersonalInfoSuggester() {}
 
@@ -149,18 +159,44 @@ void PersonalInfoSuggester::OnBlur() {
 
 SuggestionStatus PersonalInfoSuggester::HandleKeyEvent(
     const InputMethodEngineBase::KeyboardEvent& event) {
-  if (suggestion_shown_) {
-    if (event.key == "Tab" || event.key == "Right") {
-      if (AcceptSuggestion()) {
-        IncrementPrefValueTilCapped(kPersonalInfoSuggesterTabAcceptanceCount,
-                                    kMaxTabAcceptanceCount);
-        return SuggestionStatus::kAccept;
+  if (!suggestion_shown_)
+    return SuggestionStatus::kNotHandled;
+
+  if (event.key == "Esc") {
+    DismissSuggestion();
+    return SuggestionStatus::kDismiss;
+  }
+  if (highlighted_index_ == kNoneHighlighted && buttons_.size() > 0) {
+    if (event.key == "Down") {
+      highlighted_index_ = 0;
+      SetButtonHighlighted(buttons_[highlighted_index_], true);
+      return SuggestionStatus::kBrowsing;
+    }
+  } else {
+    if (event.key == "Enter") {
+      switch (buttons_[highlighted_index_].id) {
+        case ui::ime::ButtonId::kSuggestion:
+          AcceptSuggestion();
+          return SuggestionStatus::kAccept;
+        case ui::ime::ButtonId::kSmartInputsSettingLink:
+          suggestion_handler_->ClickButton(buttons_[highlighted_index_]);
+          return SuggestionStatus::kOpenSettings;
+        default:
+          break;
       }
-    } else if (event.key == "Esc") {
-      DismissSuggestion();
-      return SuggestionStatus::kDismiss;
+    } else if (event.key == "Up" || event.key == "Down") {
+      SetButtonHighlighted(buttons_[highlighted_index_], false);
+      if (event.key == "Up") {
+        highlighted_index_ =
+            (highlighted_index_ + buttons_.size() - 1) % buttons_.size();
+      } else {
+        highlighted_index_ = (highlighted_index_ + 1) % buttons_.size();
+      }
+      SetButtonHighlighted(buttons_[highlighted_index_], true);
+      return SuggestionStatus::kBrowsing;
     }
   }
+
   return SuggestionStatus::kNotHandled;
 }
 
@@ -250,21 +286,30 @@ void PersonalInfoSuggester::ShowSuggestion(const base::string16& text,
     return;
   }
 
+  if (highlighted_index_ != kNoneHighlighted) {
+    SetButtonHighlighted(buttons_[highlighted_index_], false);
+    highlighted_index_ = kNoneHighlighted;
+  }
+
   std::string error;
-  bool show_tab = GetPrefValue(kPersonalInfoSuggesterTabAcceptanceCount) <
-                  kMaxTabAcceptanceCount;
   ui::ime::SuggestionDetails details;
   details.text = text;
   details.confirmed_length = confirmed_length;
-  details.show_tab = show_tab;
+  details.show_tab = false;
   details.show_setting_link =
-      GetPrefValue(kPersonalInfoSuggesterTabAcceptanceCount) == 0 &&
+      GetPrefValue(kPersonalInfoSuggesterAcceptanceCount) == 0 &&
       GetPrefValue(kPersonalInfoSuggesterShowSettingCount) <
           kMaxShowSettingCount;
   suggestion_handler_->SetSuggestion(context_id_, details, &error);
   if (!error.empty()) {
     LOG(ERROR) << "Fail to show suggestion. " << error;
   }
+
+  suggestion_button_.announce_string = base::UTF16ToUTF8(text);
+  buttons_.clear();
+  buttons_.push_back(suggestion_button_);
+  if (details.show_setting_link)
+    buttons_.push_back(link_button_);
 
   if (suggestion_shown_) {
     first_shown_ = false;
@@ -275,9 +320,8 @@ void PersonalInfoSuggester::ShowSuggestion(const base::string16& text,
     tts_handler_->Announce(
         // TODO(jiwan): Add translation to other languages when we support more
         // than English.
-        base::StringPrintf(
-            "Suggested text %s. %s", base::UTF16ToUTF8(text).c_str(),
-            show_tab ? kAnnounceShowTab : base::EmptyString().c_str()),
+        base::StringPrintf("Suggestion %s. %s", base::UTF16ToUTF8(text).c_str(),
+                           kAnnounceShortcut),
         kTtsShowDelay);
   }
 
@@ -319,6 +363,8 @@ bool PersonalInfoSuggester::AcceptSuggestion(size_t index) {
     return false;
   }
 
+  IncrementPrefValueTilCapped(kPersonalInfoSuggesterAcceptanceCount,
+                              kMaxAcceptanceCount);
   suggestion_shown_ = false;
   tts_handler_->Announce(base::StringPrintf(
       "Inserted suggestion %s.", base::UTF16ToUTF8(suggestion_).c_str()));
@@ -332,6 +378,17 @@ void PersonalInfoSuggester::DismissSuggestion() {
   suggestion_handler_->DismissSuggestion(context_id_, &error);
   if (!error.empty()) {
     LOG(ERROR) << "Failed to dismiss suggestion. " << error;
+  }
+}
+
+void PersonalInfoSuggester::SetButtonHighlighted(
+    const ui::ime::AssistiveWindowButton& button,
+    bool highlighted) {
+  std::string error;
+  suggestion_handler_->SetButtonHighlighted(context_id_, button, highlighted,
+                                            &error);
+  if (!error.empty()) {
+    LOG(ERROR) << "Failed to set button highlighted. " << error;
   }
 }
 

@@ -119,7 +119,7 @@ void PendingLogsService::ClearPendingLogFile(
       LOG(ERROR) << "Failed to delete logs upload retry task.";
   }
 
-  if (!base::DeleteFile(log_file, false))
+  if (!base::DeleteFile(log_file))
     LOG(ERROR) << "Failed to delete '" << SanitizePath(log_file) << "'.";
 }
 

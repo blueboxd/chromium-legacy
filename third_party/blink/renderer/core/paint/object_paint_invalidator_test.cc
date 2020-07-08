@@ -111,6 +111,14 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseNonCompositingDescendants) {
           ->SelfNeedsRepaint());
 }
 
+static const LayoutBoxModelObject& EnclosingCompositedContainer(
+    const LayoutObject& layout_object) {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+  return layout_object.PaintingLayer()
+      ->EnclosingLayerForPaintInvalidationCrossingFrameBoundaries()
+      ->GetLayoutObject();
+}
+
 TEST_F(ObjectPaintInvalidatorTest, TraverseFloatUnderCompositedInline) {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
@@ -142,10 +150,10 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseFloatUnderCompositedInline) {
   EXPECT_TRUE(span->IsPaintInvalidationContainer());
   EXPECT_TRUE(span->IsStackingContext());
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    EXPECT_EQ(span, &target->ContainerForPaintInvalidation());
+    EXPECT_EQ(span, &EnclosingCompositedContainer(*target));
     EXPECT_EQ(span_layer, target->PaintingLayer());
   } else {
-    EXPECT_EQ(composited_container, &target->ContainerForPaintInvalidation());
+    EXPECT_EQ(composited_container, &EnclosingCompositedContainer(*target));
     EXPECT_EQ(containing_block_layer, target->PaintingLayer());
   }
 
@@ -216,7 +224,7 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseStackedFloatUnderCompositedInline) {
 
   EXPECT_TRUE(span->IsPaintInvalidationContainer());
   EXPECT_TRUE(span->IsStackingContext());
-  EXPECT_EQ(span, &target->ContainerForPaintInvalidation());
+  EXPECT_EQ(span, &EnclosingCompositedContainer(*target));
   EXPECT_EQ(target_layer, target->PaintingLayer());
 
   ValidateDisplayItemClient(target);

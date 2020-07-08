@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.test.util.DummyUiActivity;
@@ -60,6 +61,9 @@ public final class ShareSheetCoordinatorTest {
     @Mock
     private ShareParams mParams;
 
+    @Mock
+    private BottomSheetController mController;
+
     private ShareSheetCoordinator mShareSheetCoordinator;
 
     @Before
@@ -85,7 +89,7 @@ public final class ShareSheetCoordinatorTest {
                 .thenReturn(thirdPartyPropertyModels);
 
         mShareSheetCoordinator =
-                new ShareSheetCoordinator(null, null, mPropertyModelBuilder, null, null);
+                new ShareSheetCoordinator(mController, null, mPropertyModelBuilder, null, null);
     }
 
     @Test

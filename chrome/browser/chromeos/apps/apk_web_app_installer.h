@@ -46,7 +46,7 @@ class ApkWebAppInstaller {
   // or an empty id if not.
   static void Install(Profile* profile,
                       arc::mojom::WebAppInfoPtr web_app_info,
-                      const std::vector<uint8_t>& icon_png_data,
+                      arc::mojom::RawIconPngDataPtr icon,
                       InstallFinishCallback callback,
                       base::WeakPtr<Owner> weak_owner);
 
@@ -59,7 +59,7 @@ class ApkWebAppInstaller {
 
   // Starts the installation flow by decoding icon data.
   void Start(arc::mojom::WebAppInfoPtr web_app_info,
-             const std::vector<uint8_t>& icon_png_data);
+             arc::mojom::RawIconPngDataPtr icon);
 
   // Calls |callback_| with |id|, and deletes this object. Virtual for testing.
   virtual void CompleteInstallation(const web_app::AppId& id,

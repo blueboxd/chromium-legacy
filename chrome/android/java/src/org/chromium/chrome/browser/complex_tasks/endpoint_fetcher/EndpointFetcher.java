@@ -70,8 +70,11 @@ public final class EndpointFetcher {
     public interface Natives {
         void nativeFetchOAuth(Profile profile, String oathConsumerName, String url,
                 String httpsMethod, String contentType, String[] scopes, String postData,
-                long timeout, Callback callback);
+                long timeout, Callback<EndpointResponse> callback);
         void nativeFetchChromeAPIKey(Profile profile, String url, String httpsMethod,
-                String contentType, String postData, long timeout, Callback callback);
+                String contentType, String postData, long timeout,
+                Callback<EndpointResponse> callback);
+        void nativeFetchWithNoAuth(
+                Profile profile, String url, Callback<EndpointResponse> callback);
     }
 }

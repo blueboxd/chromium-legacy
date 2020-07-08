@@ -600,7 +600,7 @@ void AssistantInteractionControllerImpl::OnSuggestionsResponse(
   }
 
   AssistantResponse* response = GetResponseForActiveInteraction();
-  response->AddSuggestions(std::move(suggestions));
+  response->AddSuggestions(suggestions);
 
   if (IsResponseProcessingV2Enabled()) {
     // If |response| is pending, commit it to cause the response for the

@@ -14,6 +14,7 @@ import androidx.core.util.Pair;
 import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.DiscardableReferencePool;
+import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogHelper;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.FaviconProvider;
 import org.chromium.chrome.browser.download.home.JustNowProvider;
@@ -108,6 +109,7 @@ class DateOrderedListMediator {
     private final MediatorSelectionObserver mSelectionObserver;
     private final SelectionDelegate<ListItem> mSelectionDelegate;
     private final DownloadManagerUiConfig mUiConfig;
+    private final DownloadLaterDialogHelper mDownloadLaterDialogHelper;
 
     private final OffTheRecordOfflineItemFilter mOffTheRecordFilter;
     private final InvalidStateOfflineItemFilter mInvalidStateFilter;
@@ -163,8 +165,9 @@ class DateOrderedListMediator {
             LegacyDownloadProvider legacyProvider, FaviconProvider faviconProvider,
             ShareController shareController, DeleteController deleteController,
             RenameController renameController, SelectionDelegate<ListItem> selectionDelegate,
-            DownloadManagerUiConfig config, DateOrderedListObserver dateOrderedListObserver,
-            ListItemModel model, DiscardableReferencePool discardableReferencePool) {
+            DownloadLaterDialogHelper downloadLaterDialogHelper, DownloadManagerUiConfig config,
+            DateOrderedListObserver dateOrderedListObserver, ListItemModel model,
+            DiscardableReferencePool discardableReferencePool) {
         // Build a chain from the data source to the model.  The chain will look like:
         // [OfflineContentProvider] ->
         //     [OfflineItemSource] ->
@@ -185,6 +188,7 @@ class DateOrderedListMediator {
         mDeleteController = deleteController;
         mRenameController = renameController;
         mSelectionDelegate = selectionDelegate;
+        mDownloadLaterDialogHelper = downloadLaterDialogHelper;
         mUiConfig = config;
 
         mSource = new OfflineItemSource(mProvider);
@@ -230,6 +234,7 @@ class DateOrderedListMediator {
         mSource.destroy();
         mProvider.destroy();
         mThumbnailProvider.destroy();
+        mDownloadLaterDialogHelper.destroy();
     }
 
     /**
@@ -343,8 +348,8 @@ class DateOrderedListMediator {
 
     private void onChangeItem(OfflineItem item) {
         UmaUtils.recordItemAction(ViewAction.MENU_CHANGE);
-        // TODO(xingliu): Hook to download later dialog to generate the schedule.
-        mProvider.changeSchedule(item, null);
+        mDownloadLaterDialogHelper.showChangeScheduleDialog(
+                item.schedule, (newSchedule) -> { mProvider.changeSchedule(item, newSchedule); });
     }
 
     /**

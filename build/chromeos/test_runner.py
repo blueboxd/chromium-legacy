@@ -718,6 +718,8 @@ def host_cmd(args, cmd_args):
     ]
   if args.verbose:
     cros_run_test_cmd.append('--debug')
+  if args.flash:
+    cros_run_test_cmd.append('--flash')
 
   if args.logs_dir:
     for log in SYSTEM_LOG_LOCATIONS:

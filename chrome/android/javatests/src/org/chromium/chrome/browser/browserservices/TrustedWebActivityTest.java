@@ -23,6 +23,7 @@ import androidx.browser.customtabs.TrustedWebUtils;
 import androidx.browser.trusted.TrustedWebActivityIntentBuilder;
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -243,9 +244,10 @@ public class TrustedWebActivityTest {
         spoofVerification(PACKAGE_NAME, pageWithCertError);
         ChromeTabUtils.loadUrlOnUiThread(tab, pageWithCertError);
 
-        CriteriaHelper.pollUiThread(Criteria.equals(BrowserControlsState.SHOWN,
-                                            () -> getBrowserControlConstraints(tab)),
-                10000, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    getBrowserControlConstraints(tab), Matchers.is(BrowserControlsState.SHOWN));
+        }, 10000, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     public void addTrustedOriginToIntent(Intent intent, String trustedOrigin) {

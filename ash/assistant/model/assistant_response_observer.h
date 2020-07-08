@@ -26,7 +26,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponseObserver
 
   // Invoked when the specified |suggestions| are added to the response.
   virtual void OnSuggestionsAdded(
-      const std::vector<AssistantSuggestion>& suggestions) {}
+      const std::vector<const AssistantSuggestion*>& suggestions) {}
 
  protected:
   AssistantResponseObserver() = default;

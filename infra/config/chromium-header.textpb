@@ -254,6 +254,7 @@ console_groups {
   console_ids: "chromium/chromium.android"
   console_ids: "chrome/chrome.perf"
   console_ids: "chromium/chromium.gpu.fyi"
+  console_ids: "chromium/chromium.swangle"
   console_ids: "chromium/chromium.fuzz"
 }
 tree_status_host: "chromium-status.appspot.com"

@@ -180,7 +180,7 @@ class ExtensionDownloaderDelegate {
 
   // A callback that is called to indicate if ExtensionDownloader should ignore
   // the cached entry and download a new .crx file.
-  typedef base::Callback<void(bool should_download)> InstallCallback;
+  using InstallCallback = base::OnceCallback<void(bool should_download)>;
 
   // One of the following 3 methods is always invoked for a given extension
   // id, if AddExtension() or AddPendingExtension() returned true when that
@@ -241,7 +241,7 @@ class ExtensionDownloaderDelegate {
                                            const GURL& download_url,
                                            const PingResult& ping_result,
                                            const std::set<int>& request_ids,
-                                           const InstallCallback& callback) = 0;
+                                           InstallCallback callback) = 0;
 
   // Invoked when an extension fails to load, but a retry is triggered.
   // It allows unittests to easily set up and verify resourse request and

@@ -1327,6 +1327,7 @@ InspectorOverlayAgent::ToGridHighlightConfig(
       config->getShowPositiveLineNumbers(false);
   highlight_config->show_negative_line_numbers =
       config->getShowNegativeLineNumbers(false);
+  highlight_config->show_area_names = config->getShowAreaNames(false);
   highlight_config->show_grid_extension_lines =
       config->getShowGridExtensionLines(false);
   highlight_config->grid_border_dash = config->getGridBorderDash(false);
@@ -1343,6 +1344,8 @@ InspectorOverlayAgent::ToGridHighlightConfig(
       InspectorDOMAgent::ParseColor(config->getRowHatchColor(nullptr));
   highlight_config->column_hatch_color =
       InspectorDOMAgent::ParseColor(config->getColumnHatchColor(nullptr));
+  highlight_config->area_border_color =
+      InspectorDOMAgent::ParseColor(config->getAreaBorderColor(nullptr));
   return highlight_config;
 }
 

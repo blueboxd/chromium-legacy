@@ -85,6 +85,11 @@ export class TabGroupElement extends CustomElement {
     });
   }
 
+  /** @param {boolean} isDraggedOut */
+  setDraggedOut(isDraggedOut) {
+    this.toggleAttribute('dragged-out_', isDraggedOut);
+  }
+
   /**
    * @param {!TabGroupVisualData} visualData
    */

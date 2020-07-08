@@ -22,6 +22,7 @@
 #include "components/query_tiles/internal/cached_image_loader.h"
 #include "components/query_tiles/internal/image_prefetcher.h"
 #include "components/query_tiles/internal/init_aware_tile_service.h"
+#include "components/query_tiles/internal/logger_impl.h"
 #include "components/query_tiles/internal/tile_config.h"
 #include "components/query_tiles/internal/tile_fetcher.h"
 #include "components/query_tiles/internal/tile_manager.h"
@@ -71,6 +72,8 @@ std::unique_ptr<TileService> CreateTileService(
       TileConfig::GetImagePrefetchMode(), std::move(image_loader));
 
   auto* clock = base::DefaultClock::GetInstance();
+  auto logger = std::make_unique<LoggerImpl>();
+
   // Create tile store and manager.
   auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
@@ -94,12 +97,13 @@ std::unique_ptr<TileService> CreateTileService(
   auto tile_background_task_scheduler =
       std::make_unique<TileServiceSchedulerImpl>(
           scheduler, pref_service, clock, base::DefaultTickClock::GetInstance(),
-          std::move(policy));
+          std::move(policy), logger.get());
+  logger->SetLogSource(tile_background_task_scheduler.get());
 
   auto tile_service_impl = std::make_unique<TileServiceImpl>(
       std::move(image_prefetcher), std::move(tile_manager),
-      std::move(tile_background_task_scheduler), std::move(tile_fetcher),
-      clock);
+      std::move(tile_background_task_scheduler), std::move(tile_fetcher), clock,
+      std::move(logger));
   return std::make_unique<InitAwareTileService>(std::move(tile_service_impl));
 }
 

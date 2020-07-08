@@ -34,16 +34,13 @@ void Dactyloscoper::Record(ExecutionContext* context, WebFeature feature) {
 void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
                                         WebFeature feature,
                                         unsigned value) {
-  if (!context)
-    return;
   auto* window = DynamicTo<LocalDOMWindow>(context);
   if (!window)
     return;
-  if (Document* document = window->document()) {
-    IdentifiabilityMetricBuilder(document->UkmSourceID())
-        .SetWebfeature(feature, value)
-        .Record(document->UkmRecorder());
-  }
+  Document* document = window->document();
+  IdentifiabilityMetricBuilder(document->UkmSourceID())
+      .SetWebfeature(feature, value)
+      .Record(document->UkmRecorder());
 }
 
 void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,

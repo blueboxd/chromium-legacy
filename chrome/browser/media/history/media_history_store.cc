@@ -511,6 +511,12 @@ MediaHistoryStore::GetOriginRowsForDebug() {
   return origins;
 }
 
+std::vector<url::Origin> MediaHistoryStore::GetHighWatchTimeOrigins(
+    const base::TimeDelta& audio_video_watchtime_min) {
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+  return origin_table_->GetHighWatchTimeOrigins(audio_video_watchtime_min);
+}
+
 std::vector<mojom::MediaHistoryPlaybackRowPtr>
 MediaHistoryStore::GetMediaHistoryPlaybackRowsForDebug() {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());

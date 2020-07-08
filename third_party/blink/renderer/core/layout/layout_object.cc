@@ -1480,25 +1480,6 @@ IntRect LayoutObject::AbsoluteBoundingBoxRectIncludingDescendants() const {
 
 void LayoutObject::Paint(const PaintInfo&) const {}
 
-const LayoutBoxModelObject& LayoutObject::ContainerForPaintInvalidation()
-    const {
-  CHECK(IsRooted());
-
-  if (const LayoutBoxModelObject* paint_invalidation_container =
-          EnclosingCompositedContainer())
-    return *paint_invalidation_container;
-
-  // If the current frame is not composited, we send just return the main
-  // frame's LayoutView so that we generate invalidations on the window.
-  const LayoutView* layout_view = View();
-  while (const LayoutObject* owner_object =
-             layout_view->GetFrame()->OwnerLayoutObject())
-    layout_view = owner_object->View();
-
-  DCHECK(layout_view);
-  return *layout_view;
-}
-
 const LayoutBoxModelObject& LayoutObject::DirectlyCompositableContainer()
     const {
   CHECK(IsRooted());
@@ -1563,22 +1544,6 @@ void LayoutObject::RecalcNormalFlowChildVisualOverflowIfNeeded() {
       (HasLayer() && ToLayoutBoxModelObject(this)->HasSelfPaintingLayer()))
     return;
   RecalcVisualOverflow();
-}
-
-const LayoutBoxModelObject* LayoutObject::EnclosingCompositedContainer() const {
-  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  LayoutBoxModelObject* container = nullptr;
-  // FIXME: CompositingState is not necessarily up to date for many callers of
-  // this function.
-  DisableCompositingQueryAsserts disabler;
-
-  if (PaintLayer* painting_layer = PaintingLayer()) {
-    if (PaintLayer* compositing_layer =
-            painting_layer
-                ->EnclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-      container = &compositing_layer->GetLayoutObject();
-  }
-  return container;
 }
 
 bool LayoutObject::HasDistortingVisualEffects() const {

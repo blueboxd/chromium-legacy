@@ -36,8 +36,10 @@ class LiteVideoDecider
 
   // Determine if the navigation can have the LiteVideo optimization
   // applied and returns the LiteVideoHint to use for throttling if one exists.
+  // This also updates the blocklist based on the navigation provided and should
+  // be limited to one call per navigation.
   base::Optional<LiteVideoHint> CanApplyLiteVideo(
-      content::NavigationHandle* navigation_handle) const;
+      content::NavigationHandle* navigation_handle);
 
   // Override the blocklist used by |this| for testing.
   void SetUserBlocklistForTesting(

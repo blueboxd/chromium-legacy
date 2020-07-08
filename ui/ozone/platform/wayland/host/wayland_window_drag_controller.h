@@ -113,7 +113,6 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
 
   std::unique_ptr<WaylandDataSource> data_source_;
   std::unique_ptr<WaylandDataOffer> data_offer_;
-  wl::Object<wl_surface> icon_surface_;
 
   // The current toplevel window being dragged, when in detached mode.
   WaylandToplevelWindow* dragged_window_ = nullptr;

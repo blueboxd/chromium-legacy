@@ -431,7 +431,7 @@ Status ApplyEnsemblePatch(const base::FilePath::CharType* old_file_name,
               base::File::FLAG_WRITE |
               base::File::FLAG_EXCLUSIVE_WRITE));
   if (result != C_OK)
-    base::DeleteFile(base::FilePath(new_file_name), false);
+    base::DeleteFile(base::FilePath(new_file_name));
   return result;
 }
 

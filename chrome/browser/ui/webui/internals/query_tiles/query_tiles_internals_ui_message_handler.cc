@@ -23,8 +23,9 @@ QueryTilesInternalsUIMessageHandler::QueryTilesInternalsUIMessageHandler(
   DCHECK(tile_service_);
 }
 
-QueryTilesInternalsUIMessageHandler::~QueryTilesInternalsUIMessageHandler() =
-    default;
+QueryTilesInternalsUIMessageHandler::~QueryTilesInternalsUIMessageHandler() {
+  tile_service_->GetLogger()->RemoveObserver(this);
+}
 
 void QueryTilesInternalsUIMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -45,16 +46,28 @@ void QueryTilesInternalsUIMessageHandler::RegisterMessages() {
       "getTileData",
       base::Bind(&QueryTilesInternalsUIMessageHandler::HandleGetTileData,
                  weak_ptr_factory_.GetWeakPtr()));
+
+  tile_service_->GetLogger()->AddObserver(this);
 }
 
 void QueryTilesInternalsUIMessageHandler::HandleGetTileData(
     const base::ListValue* args) {
-  NOTIMPLEMENTED();
+  AllowJavascript();
+  const base::Value* callback_id;
+  auto result = args->Get(0, &callback_id);
+  DCHECK(result);
+  ResolveJavascriptCallback(*callback_id,
+                            tile_service_->GetLogger()->GetTileData());
 }
 
 void QueryTilesInternalsUIMessageHandler::HandleGetServiceStatus(
     const base::ListValue* args) {
-  NOTIMPLEMENTED();
+  AllowJavascript();
+  const base::Value* callback_id;
+  auto result = args->Get(0, &callback_id);
+  DCHECK(result);
+  ResolveJavascriptCallback(*callback_id,
+                            tile_service_->GetLogger()->GetServiceStatus());
 }
 
 void QueryTilesInternalsUIMessageHandler::HandleStartFetch(
@@ -67,4 +80,19 @@ void QueryTilesInternalsUIMessageHandler::HandleStartFetch(
 void QueryTilesInternalsUIMessageHandler::HandlePurgeDb(
     const base::ListValue* args) {
   tile_service_->PurgeDb();
+}
+
+void QueryTilesInternalsUIMessageHandler::OnServiceStatusChanged(
+    const base::Value& status) {
+  if (!IsJavascriptAllowed())
+    return;
+
+  FireWebUIListener("service-status-changed", status);
+}
+
+void QueryTilesInternalsUIMessageHandler::OnTileDataAvailable(
+    const base::Value& data) {
+  if (!IsJavascriptAllowed())
+    return;
+  FireWebUIListener("tile-data-available", data);
 }

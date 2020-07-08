@@ -16,5 +16,5 @@ dictionary EncodedAudioConfig {
 
   // Optional byte data required to initialize audio decoders such as Vorbis
   // codebooks.
-  BufferSource extraData;
+  BufferSource description;
 };

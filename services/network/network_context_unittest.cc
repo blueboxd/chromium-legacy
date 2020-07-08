@@ -122,11 +122,11 @@
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
 #include "services/network/test/fake_test_cert_verifier_params_factory.h"
 #include "services/network/test/test_url_loader_client.h"
+#include "services/network/test_mojo_proxy_resolver_factory.h"
 #include "services/network/trust_tokens/pending_trust_token_store.h"
 #include "services/network/trust_tokens/trust_token_parameterization.h"
 #include "services/network/trust_tokens/trust_token_store.h"
 #include "services/network/udp_socket_test_util.h"
-#include "test_mojo_proxy_resolver_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -2889,7 +2889,7 @@ TEST_F(NetworkContextTest, CreateNetLogExporterUnbounded) {
   // net:: methods.
   EXPECT_NE(std::string::npos, contents.find("ERR_IO_PENDING")) << contents;
 
-  base::DeleteFile(temp_path, false);
+  base::DeleteFile(temp_path);
 }
 
 TEST_F(NetworkContextTest, CreateNetLogExporterErrors) {
@@ -2931,8 +2931,8 @@ TEST_F(NetworkContextTest, CreateNetLogExporterErrors) {
       net::NetLogCaptureMode::kDefault, 100 * 1024, start_callback2.callback());
   EXPECT_EQ(net::ERR_UNEXPECTED, start_callback2.WaitForResult());
 
-  base::DeleteFile(temp_path, false);
-  base::DeleteFile(temp_path2, false);
+  base::DeleteFile(temp_path);
+  base::DeleteFile(temp_path2);
 
   // Forgetting to stop is recovered from.
 }
@@ -2979,7 +2979,7 @@ TEST_F(NetworkContextTest, DestroyNetLogExporterWhileCreatingScratchDir) {
   task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(base::PathExists(path));
-  base::DeleteFile(temp_path, false);
+  base::DeleteFile(temp_path);
 }
 
 net::IPEndPoint CreateExpectedEndPoint(const std::string& address,
@@ -4682,7 +4682,7 @@ TEST_F(NetworkContextTest, ForceReloadProxyConfig) {
 
   EXPECT_NE(std::string::npos, log_contents.find("\"new_config\""))
       << log_contents;
-  base::DeleteFile(net_log_path, false);
+  base::DeleteFile(net_log_path);
 }
 
 TEST_F(NetworkContextTest, ClearBadProxiesCache) {

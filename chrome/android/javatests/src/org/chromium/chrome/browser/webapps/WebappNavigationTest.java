@@ -19,6 +19,7 @@ import android.util.Base64;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -198,8 +199,10 @@ public class WebappNavigationTest {
         runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());
         addAnchorAndClick(offOriginUrl(), "_blank");
         ChromeActivity activity = mActivityTestRule.getActivity();
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                2, () -> activity.getTabModelSelector().getModel(false).getCount()));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    activity.getTabModelSelector().getModel(false).getCount(), Matchers.is(2));
+        });
         ChromeTabUtils.waitForTabPageLoaded(activity.getActivityTab(), offOriginUrl());
 
         WebappActivityTestRule.assertToolbarShowState(activity, true);
@@ -219,8 +222,10 @@ public class WebappNavigationTest {
         runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());
         addAnchorAndClick(inScopeUrl, "_blank");
         ChromeActivity activity = mActivityTestRule.getActivity();
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                2, () -> activity.getTabModelSelector().getModel(false).getCount()));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    activity.getTabModelSelector().getModel(false).getCount(), Matchers.is(2));
+        });
         ChromeTabUtils.waitForTabPageLoaded(activity.getActivityTab(), inScopeUrl);
 
         WebappActivityTestRule.assertToolbarShowState(activity, true);

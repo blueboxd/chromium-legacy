@@ -23,6 +23,7 @@ import android.view.ViewGroup;
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -778,15 +779,11 @@ public class SearchActivityTest {
         final ChromeTabbedActivity cta = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), ChromeTabbedActivity.class, trigger);
 
-        CriteriaHelper.pollUiThread(Criteria.equals(expectedUrl, new Callable<String>() {
-            @Override
-            public String call() {
-                Tab tab = cta.getActivityTab();
-                if (tab == null) return null;
-
-                return tab.getUrlString();
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Tab tab = cta.getActivityTab();
+            Criteria.checkThat(tab, Matchers.notNullValue());
+            Criteria.checkThat(tab.getUrlString(), Matchers.is(expectedUrl));
+        });
     }
 
     private void waitForSuggestionType(final SearchActivityLocationBarLayout locationBar,

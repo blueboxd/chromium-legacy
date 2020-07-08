@@ -383,7 +383,7 @@ class LegacyCacheStorage::SimpleCacheLoader
       const url::Origin& origin) {
     int bytes_written = base::WriteFile(tmp_path, data.c_str(), data.size());
     if (bytes_written != base::checked_cast<int>(data.size())) {
-      base::DeleteFile(tmp_path, /* recursive */ false);
+      base::DeleteFile(tmp_path);
       quota_manager_proxy->NotifyWriteFailed(origin);
       return false;
     }

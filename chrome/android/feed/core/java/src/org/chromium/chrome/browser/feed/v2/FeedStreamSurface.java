@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
@@ -309,6 +310,14 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         return mRootView;
     }
 
+    /**
+     * Loads more content. The callback will be called upon completion.
+     */
+    public void loadMoreContent(Callback<Boolean> callback) {
+        FeedStreamSurfaceJni.get().loadMore(
+                mNativeFeedStreamSurface, FeedStreamSurface.this, callback);
+    }
+
     @VisibleForTesting
     FeedListContentManager getFeedListContentManagerForTesting() {
         return mContentManager;
@@ -461,7 +470,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
 
     @Override
     public void loadMore() {
-        FeedStreamSurfaceJni.get().loadMore(mNativeFeedStreamSurface, FeedStreamSurface.this);
+        // TODO(jianli): Remove this from FeedActionsHandler interface.
     }
 
     @Override
@@ -600,7 +609,8 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
                 long nativeFeedStreamSurface, FeedStreamSurface caller, int distanceDp);
         // TODO(jianli): Call this function at the appropriate time.
         void reportStreamScrollStart(long nativeFeedStreamSurface, FeedStreamSurface caller);
-        void loadMore(long nativeFeedStreamSurface, FeedStreamSurface caller);
+        void loadMore(
+                long nativeFeedStreamSurface, FeedStreamSurface caller, Callback<Boolean> callback);
         void processThereAndBackAgain(
                 long nativeFeedStreamSurface, FeedStreamSurface caller, byte[] data);
         int executeEphemeralChange(

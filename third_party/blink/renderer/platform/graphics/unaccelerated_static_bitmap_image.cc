@@ -70,12 +70,11 @@ IntSize UnacceleratedStaticBitmapImage::Size() const {
 }
 
 bool UnacceleratedStaticBitmapImage::IsPremultiplied() const {
-  return paint_image_.GetSkImage()->alphaType() ==
-         SkAlphaType::kPremul_SkAlphaType;
+  return paint_image_.GetAlphaType() == SkAlphaType::kPremul_SkAlphaType;
 }
 
 bool UnacceleratedStaticBitmapImage::CurrentFrameKnownToBeOpaque() {
-  return paint_image_.GetSkImage()->isOpaque();
+  return paint_image_.IsOpaque();
 }
 
 void UnacceleratedStaticBitmapImage::Draw(

@@ -110,7 +110,7 @@ class BluetoothLowEnergyEventRouter
   };
 
   // Error callback is used by asynchronous methods to report failures.
-  using ErrorCallback = base::Callback<void(Status)>;
+  using ErrorCallback = base::OnceCallback<void(Status)>;
 
   // Returns true if Bluetooth is supported on the current platform or if the
   // internal |adapter_| instance has been initialized for testing.
@@ -135,8 +135,8 @@ class BluetoothLowEnergyEventRouter
   void Connect(bool persistent,
                const Extension* extension,
                const std::string& device_address,
-               const base::Closure& callback,
-               const ErrorCallback& error_callback);
+               base::OnceClosure callback,
+               ErrorCallback error_callback);
 
   // Disconnects the currently open GATT connection of extension |extension| to
   // device with address |device_address|. |error_callback| is called with an
@@ -145,8 +145,8 @@ class BluetoothLowEnergyEventRouter
   // extension does not have an open connection to the device.
   void Disconnect(const Extension* extension,
                   const std::string& device_address,
-                  const base::Closure& callback,
-                  const ErrorCallback& error_callback);
+                  base::OnceClosure callback,
+                  ErrorCallback error_callback);
 
   // Returns the list of api::bluetooth_low_energy::Service objects
   // associated with the Bluetooth device with address |device_address| in
@@ -219,8 +219,8 @@ class BluetoothLowEnergyEventRouter
   // failure. |extension| is the extension that made the call.
   void ReadCharacteristicValue(const Extension* extension,
                                const std::string& instance_id,
-                               const base::Closure& callback,
-                               const ErrorCallback& error_callback);
+                               base::OnceClosure callback,
+                               ErrorCallback error_callback);
 
   // Sends a request to write the value of the characteristic with instance ID
   // |instance_id|. Invokes |callback| on success and |error_callback| on
@@ -228,8 +228,8 @@ class BluetoothLowEnergyEventRouter
   void WriteCharacteristicValue(const Extension* extension,
                                 const std::string& instance_id,
                                 const std::vector<uint8_t>& value,
-                                const base::Closure& callback,
-                                const ErrorCallback& error_callback);
+                                base::OnceClosure callback,
+                                ErrorCallback error_callback);
 
   // Sends a request to start characteristic notifications from characteristic
   // with instance ID |instance_id|, for extension |extension|. Invokes
@@ -238,24 +238,24 @@ class BluetoothLowEnergyEventRouter
   void StartCharacteristicNotifications(bool persistent,
                                         const Extension* extension,
                                         const std::string& instance_id,
-                                        const base::Closure& callback,
-                                        const ErrorCallback& error_callback);
+                                        base::OnceClosure callback,
+                                        ErrorCallback error_callback);
 
   // Sends a request to stop characteristic notifications from characteristic
   // with instance ID |instance_id|, for extension |extension|. Invokes
   // |callback| on success and |error_callback| on failure.
   void StopCharacteristicNotifications(const Extension* extension,
                                        const std::string& instance_id,
-                                       const base::Closure& callback,
-                                       const ErrorCallback& error_callback);
+                                       base::OnceClosure callback,
+                                       ErrorCallback error_callback);
 
   // Sends a request to read the value of the descriptor with instance ID
   // |instance_id|. Invokes |callback| on success and |error_callback| on
   // failure. |extension| is the extension that made the call.
   void ReadDescriptorValue(const Extension* extension,
                            const std::string& instance_id,
-                           const base::Closure& callback,
-                           const ErrorCallback& error_callback);
+                           base::OnceClosure callback,
+                           ErrorCallback error_callback);
 
   // Sends a request to write the value of the descriptor with instance ID
   // |instance_id|. Invokes |callback| on success and |error_callback| on
@@ -263,8 +263,8 @@ class BluetoothLowEnergyEventRouter
   void WriteDescriptorValue(const Extension* extension,
                             const std::string& instance_id,
                             const std::vector<uint8_t>& value,
-                            const base::Closure& callback,
-                            const ErrorCallback& error_callback);
+                            base::OnceClosure callback,
+                            ErrorCallback error_callback);
 
   // Initializes the adapter for testing. Used by unit tests only.
   void SetAdapterForTesting(device::BluetoothAdapter* adapter);
@@ -372,14 +372,14 @@ class BluetoothLowEnergyEventRouter
   // Register a local GATT service.
   void RegisterGattService(const Extension* extension,
                            const std::string& service_id,
-                           const base::Closure& callback,
-                           const ErrorCallback& error_callback);
+                           base::OnceClosure callback,
+                           ErrorCallback error_callback);
 
   // Unregister a local GATT service.
   void UnregisterGattService(const Extension* extension,
                              const std::string& service_id,
-                             const base::Closure& callback,
-                             const ErrorCallback& error_callback);
+                             base::OnceClosure callback,
+                             ErrorCallback error_callback);
 
   // Handle a response from the app for the given request id.
   void HandleRequestResponse(const Extension* extension,
@@ -437,11 +437,11 @@ class BluetoothLowEnergyEventRouter
   // |callback|.
   void OnReadRemoteCharacteristicSuccess(
       const std::string& characteristic_instance_id,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       const std::vector<uint8_t>& value);
 
   // Runs |callback|.
-  void OnReadRemoteDescriptorSuccess(const base::Closure& callback,
+  void OnReadRemoteDescriptorSuccess(base::OnceClosure callback,
                                      const std::vector<uint8_t>& value);
 
   // Called by BluetoothDevice in response to a call to CreateGattConnection.
@@ -449,29 +449,29 @@ class BluetoothLowEnergyEventRouter
       bool persistent,
       const std::string& extension_id,
       const std::string& device_address,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       std::unique_ptr<device::BluetoothGattConnection> connection);
 
   // Called by BluetoothGattService in response to Register().
   void OnRegisterGattServiceSuccess(const std::string& service_id,
                                     const std::string& extension_id,
-                                    const base::Closure& callback);
+                                    base::OnceClosure callback);
 
   // Called by BluetoothGattService in response to Unregister().
   void OnUnregisterGattServiceSuccess(const std::string& service_id,
                                       const std::string& extension_id,
-                                      const base::Closure& callback);
+                                      base::OnceClosure callback);
 
   // Called by BluetoothRemoteGattCharacteristic and
   // BluetoothRemoteGattDescriptor in
   // case of an error during the read/write operations.
-  void OnError(const ErrorCallback& error_callback,
+  void OnError(ErrorCallback error_callback,
                device::BluetoothRemoteGattService::GattErrorCode error_code);
 
   // Called by BluetoothDevice in response to a call to CreateGattConnection.
   void OnConnectError(const std::string& extension_id,
                       const std::string& device_address,
-                      const ErrorCallback& error_callback,
+                      ErrorCallback error_callback,
                       device::BluetoothDevice::ConnectErrorCode error_code);
 
   // Called by BluetoothRemoteGattCharacteristic in response to a call to
@@ -480,7 +480,7 @@ class BluetoothLowEnergyEventRouter
       bool persistent,
       const std::string& extension_id,
       const std::string& characteristic_id,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       std::unique_ptr<device::BluetoothGattNotifySession> session);
 
   // Called by BluetoothRemoteGattCharacteristic in response to a call to
@@ -488,13 +488,13 @@ class BluetoothLowEnergyEventRouter
   void OnStartNotifySessionError(
       const std::string& extension_id,
       const std::string& characteristic_id,
-      const ErrorCallback& error_callback,
+      ErrorCallback error_callback,
       device::BluetoothRemoteGattService::GattErrorCode error_code);
 
   // Called by BluetoothGattNotifySession in response to a call to Stop.
   void OnStopNotifySession(const std::string& extension_id,
                            const std::string& characteristic_id,
-                           const base::Closure& callback);
+                           base::OnceClosure callback);
 
   // Finds and returns a BluetoothLowEnergyConnection to device with address
   // |device_address| from the managed API resources for extension with ID

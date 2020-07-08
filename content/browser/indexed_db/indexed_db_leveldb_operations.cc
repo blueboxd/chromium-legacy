@@ -114,7 +114,7 @@ std::string ReadCorruptionInfo(const base::FilePath& path_base,
   if (!base::GetFileSize(info_path, &file_size))
     return message;
   if (!file_size || file_size > kMaxJsonLength) {
-    base::DeleteFile(info_path, false);
+    base::DeleteFile(info_path);
     return message;
   }
 
@@ -132,7 +132,7 @@ std::string ReadCorruptionInfo(const base::FilePath& path_base,
     file.Close();
   }
 
-  base::DeleteFile(info_path, false);
+  base::DeleteFile(info_path);
 
   return message;
 }

@@ -476,7 +476,7 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form,
       std::string form_id =
           base::NumberToString(form.data.unique_renderer_id.value());
       std::string field_id =
-          base::NumberToString(field.field.unique_renderer_id.value());
+          base::NumberToString(field_data.unique_renderer_id.value());
 
       std::string title =
           base::StrCat({"overall type: ", field.overall_type,             //

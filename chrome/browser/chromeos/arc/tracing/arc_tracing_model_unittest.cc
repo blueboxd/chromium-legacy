@@ -41,6 +41,10 @@ constexpr char kTestEvent[] =
         "name":"Surface::Attach",
         "args":{"buffer_id":"0x7f9f5110690","app_id":"org.chromium.arc.6"},
         "dur":10,"tdur":9,"tts":1216670360})";
+constexpr char kTestEvent2[] =
+    R"({"args":{},"cat":"exo","id2":{"local":"0x2df1a3130a10"},
+        "name":"BufferInUse","ph":"F","pid":17518,"tid":17518,
+        "ts":7654346859.0,"tts":93686437})";
 
 constexpr char kAppId[] = "app_id";
 constexpr char kAppIdValue[] = "org.chromium.arc.6";
@@ -48,11 +52,13 @@ constexpr char kBufferId[] = "buffer_id";
 constexpr char kBufferIdBad[] = "_buffer_id";
 constexpr char kBufferIdValue[] = "0x7f9f5110690";
 constexpr char kBufferIdValueBad[] = "_0x7f9f5110690";
+constexpr char kBufferInUse[] = "BufferInUse";
 constexpr char kDefault[] = "default";
 constexpr char kExo[] = "exo";
 constexpr char kExoBad[] = "_exo";
-constexpr char kPhaseX = 'X';
+constexpr char kPhaseF = 'F';
 constexpr char kPhaseP = 'P';
+constexpr char kPhaseX = 'X';
 constexpr char kSurfaceAttach[] = "Surface::Attach";
 constexpr char kSurfaceAttachBad[] = "_Surface::Attach";
 
@@ -365,6 +371,21 @@ TEST_F(ArcTracingModelTest, Event) {
   EXPECT_NE(nullptr, event.GetDictionary());
   EXPECT_EQ(kBufferIdValue, event.GetArgAsString(kBufferId, std::string()));
   EXPECT_EQ(kDefault, event.GetArgAsString(kBufferIdBad, kDefault));
+}
+
+TEST_F(ArcTracingModelTest, EventId2) {
+  const ArcTracingEvent event(base::JSONReader::Read(kTestEvent2).value());
+
+  EXPECT_EQ(17518, event.GetPid());
+  EXPECT_EQ(17518, event.GetTid());
+  EXPECT_EQ("0x2df1a3130a10", event.GetId());
+  EXPECT_EQ(kExo, event.GetCategory());
+  EXPECT_EQ(kBufferInUse, event.GetName());
+  EXPECT_EQ(kPhaseF, event.GetPhase());
+  EXPECT_EQ(7654346859UL, event.GetTimestamp());
+  EXPECT_EQ(0U, event.GetDuration());
+  EXPECT_EQ(7654346859UL, event.GetEndTimestamp());
+  EXPECT_NE(nullptr, event.GetDictionary());
 }
 
 TEST_F(ArcTracingModelTest, EventClassification) {

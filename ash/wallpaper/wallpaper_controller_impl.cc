@@ -224,7 +224,7 @@ bool ResizeAndSaveWallpaper(const gfx::ImageSkia& image,
                             int preferred_height) {
   if (layout == WALLPAPER_LAYOUT_CENTER) {
     if (base::PathExists(path))
-      base::DeleteFile(path, false);
+      base::DeleteFile(path);
     return false;
   }
   scoped_refptr<base::RefCountedBytes> data;
@@ -333,18 +333,18 @@ void SaveCustomWallpaper(const std::string& wallpaper_files_id,
                          const base::FilePath& original_path,
                          WallpaperLayout layout,
                          gfx::ImageSkia image) {
-  base::DeleteFile(WallpaperControllerImpl::GetCustomWallpaperDir(
-                       WallpaperControllerImpl::kOriginalWallpaperSubDir)
-                       .Append(wallpaper_files_id),
-                   true /* recursive */);
-  base::DeleteFile(WallpaperControllerImpl::GetCustomWallpaperDir(
-                       WallpaperControllerImpl::kSmallWallpaperSubDir)
-                       .Append(wallpaper_files_id),
-                   true /* recursive */);
-  base::DeleteFile(WallpaperControllerImpl::GetCustomWallpaperDir(
-                       WallpaperControllerImpl::kLargeWallpaperSubDir)
-                       .Append(wallpaper_files_id),
-                   true /* recursive */);
+  base::DeletePathRecursively(
+      WallpaperControllerImpl::GetCustomWallpaperDir(
+          WallpaperControllerImpl::kOriginalWallpaperSubDir)
+          .Append(wallpaper_files_id));
+  base::DeletePathRecursively(
+      WallpaperControllerImpl::GetCustomWallpaperDir(
+          WallpaperControllerImpl::kSmallWallpaperSubDir)
+          .Append(wallpaper_files_id));
+  base::DeletePathRecursively(
+      WallpaperControllerImpl::GetCustomWallpaperDir(
+          WallpaperControllerImpl::kLargeWallpaperSubDir)
+          .Append(wallpaper_files_id));
   EnsureCustomWallpaperDirectories(wallpaper_files_id);
   const std::string file_name = original_path.BaseName().value();
   const base::FilePath small_wallpaper_path =

@@ -282,8 +282,8 @@ class CleanerTest
     if (locked_file_.IsValid())
       locked_file_.Close();
     // Remove any leftover UwS.
-    base::DeleteFile(scan_only_test_uws_, /*recursive=*/false);
-    base::DeleteFile(removable_test_uws_, /*recursive=*/false);
+    base::DeleteFile(scan_only_test_uws_);
+    base::DeleteFile(removable_test_uws_);
   }
 
   void InitializeRemovableUwSArchivePath() {
@@ -486,7 +486,7 @@ TEST_P(CleanerTest, NoPotentialFalsePositivesOnCleanMachine) {
                                      chrome_cleaner::ExecutionMode::kCleanup)));
 
   // Delete the scan only uws to make the machine clean.
-  base::DeleteFile(scan_only_test_uws_, /*recursive=*/false);
+  base::DeleteFile(scan_only_test_uws_);
 
   ExpectExitCode(command_line, chrome_cleaner::RESULT_CODE_NO_PUPS_FOUND);
 }

@@ -85,19 +85,8 @@ public class DefaultSearchEnginePromoDialogTest {
         final DefaultSearchEnginePromoDialog tabbedDialog = showDialog(tabbedActivity);
         Assert.assertEquals(tabbedDialog, DefaultSearchEnginePromoDialog.getCurrentDialog());
 
-        CriteriaHelper.pollUiThread(Criteria.equals(false, new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return searchDialog.isShowing();
-            }
-        }));
-
-        CriteriaHelper.pollUiThread(Criteria.equals(true, new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return searchActivity.isFinishing();
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> !searchDialog.isShowing());
+        CriteriaHelper.pollUiThread(() -> searchActivity.isFinishing());
 
         TestThreadUtils.runOnUiThreadBlocking(() -> tabbedDialog.dismiss());
         CriteriaHelper.pollUiThread(new Criteria() {

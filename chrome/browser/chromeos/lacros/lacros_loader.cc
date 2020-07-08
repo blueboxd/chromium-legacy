@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/lacros/lacros_util.h"
 #include "chromeos/constants/chromeos_switches.h"
 
-namespace chromeos {
 namespace {
 
 constexpr char kLacrosComponentName[] = "lacros-fishfood";
@@ -104,5 +103,3 @@ void LacrosLoader::UnloadAfterCleanUp(bool was_installed) {
   if (was_installed)
     component_manager_->Unload(kLacrosComponentName);
 }
-
-}  // namespace chromeos

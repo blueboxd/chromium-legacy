@@ -301,10 +301,6 @@ void NGLayoutResult::CheckSameForSimplifiedLayout(
             other.bitfields_.initial_break_before);
   DCHECK_EQ(bitfields_.final_break_after, other.bitfields_.final_break_after);
 
-  if (check_same_block_size) {
-    DCHECK_EQ(bitfields_.is_initial_block_size_indefinite,
-              other.bitfields_.is_initial_block_size_indefinite);
-  }
   DCHECK_EQ(
       bitfields_.has_descendant_that_depends_on_percentage_block_size,
       other.bitfields_.has_descendant_that_depends_on_percentage_block_size);

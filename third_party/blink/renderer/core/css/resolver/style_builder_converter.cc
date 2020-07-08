@@ -1386,7 +1386,7 @@ ShadowData StyleBuilderConverter::ConvertShadow(
       color = StyleColor(Color::kBlack);
       if (auto* color_value =
               DynamicTo<cssvalue::CSSColorValue>(shadow.color.Get())) {
-        color = color_value->Value();
+        color = StyleColor(color_value->Value());
       } else {
         CSSValueID value_id =
             To<CSSIdentifierValue>(*shadow.color).GetValueID();
@@ -1401,8 +1401,8 @@ ShadowData StyleBuilderConverter::ConvertShadow(
           case CSSValueID::kCurrentcolor:
             break;
           default:
-            color = StyleColor::ColorFromKeyword(
-                value_id, ComputedStyle::InitialStyle().UsedColorScheme());
+            color = StyleColor(StyleColor::ColorFromKeyword(
+                value_id, ComputedStyle::InitialStyle().UsedColorScheme()));
         }
       }
     }
@@ -1494,8 +1494,8 @@ StyleColor StyleBuilderConverter::ConvertStyleColor(StyleResolverState& state,
   if (identifier_value &&
       identifier_value->GetValueID() == CSSValueID::kCurrentcolor)
     return StyleColor::CurrentColor();
-  return state.GetDocument().GetTextLinkColors().ColorFromCSSValue(
-      value, Color(), state.Style()->UsedColorScheme(), for_visited_link);
+  return StyleColor(state.GetDocument().GetTextLinkColors().ColorFromCSSValue(
+      value, Color(), state.Style()->UsedColorScheme(), for_visited_link));
 }
 
 CSSValueID StyleBuilderConverter::ConvertCSSValueID(StyleResolverState& state,

@@ -298,7 +298,7 @@ class UpdateServiceTest : public ExtensionsTest {
     ExtensionsTest::SetUp();
     extensions_browser_client()->set_extension_system_factory(
         &fake_extension_system_factory_);
-    extensions_browser_client()->SetUpdateClientFactory(base::Bind(
+    extensions_browser_client()->SetUpdateClientFactory(base::BindRepeating(
         &UpdateServiceTest::CreateUpdateClient, base::Unretained(this)));
 
     update_service_ = UpdateService::Get(browser_context());
@@ -441,7 +441,7 @@ TEST_F(UpdateServiceTest, BasicUpdateOperations_NotInstallImmediately) {
 
 TEST_F(UpdateServiceTest, UninstallPings) {
   UninstallPingSender sender(ExtensionRegistry::Get(browser_context()),
-                             base::Bind(&ShouldPing));
+                             base::BindRepeating(&ShouldPing));
 
   // Build 3 extensions.
   scoped_refptr<const Extension> extension1 =

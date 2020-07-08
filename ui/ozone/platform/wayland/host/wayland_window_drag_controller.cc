@@ -194,7 +194,6 @@ void WaylandWindowDragController::OnDataSourceFinish(bool completed) {
   // Release DND objects.
   data_offer_.reset();
   data_source_.reset();
-  icon_surface_.reset();
   origin_surface_.reset();
   origin_window_ = nullptr;
   dragged_window_ = nullptr;
@@ -255,9 +254,6 @@ bool WaylandWindowDragController::OfferWindow() {
     data_source_ = data_device_manager_->CreateSource(this);
 
   if (state_ == State::kIdle) {
-    DCHECK(!icon_surface_);
-    icon_surface_ = connection_->CreateSurface();
-
     // Observe window so we can take ownership of the origin surface in case it
     // is destroyed during the DND session.
     window_manager_->AddObserver(this);
@@ -266,8 +262,11 @@ bool WaylandWindowDragController::OfferWindow() {
     state_ = State::kAttached;
     data_source_->Offer({kMimeTypeChromiumWindow});
     data_source_->SetAction(DragDropTypes::DRAG_MOVE);
-    data_device_->StartDrag(*data_source_, *origin_window_, icon_surface_.get(),
-                            this);
+
+    // TODO(crbug.com/1099418): Use dragged window's surface as icon surface
+    // once "immediate drag" protocol extensions are available.
+    data_device_->StartDrag(*data_source_, *origin_window_,
+                            /*icon_surface=*/nullptr, this);
   }
 
   pointer_grab_owner_ = origin_window_;

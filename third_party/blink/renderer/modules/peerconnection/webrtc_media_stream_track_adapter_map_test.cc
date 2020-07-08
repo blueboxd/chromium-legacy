@@ -45,7 +45,6 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
     MediaStreamAudioSource* audio_source = new MediaStreamAudioSource(
         scheduler::GetSingleThreadTaskRunnerForTesting(), true);
     // Takes ownership of |audio_source|.
-    audio_source->SetOwner(source);
     source->SetPlatformSource(base::WrapUnique(audio_source));
 
     auto* component =

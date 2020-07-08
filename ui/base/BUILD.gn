@@ -551,7 +551,7 @@ jumbo_component("base") {
   if (is_mac) {
     deps += [ "//third_party/mozilla" ]
 
-    libs += [
+    frameworks = [
       "Accelerate.framework",
       "AppKit.framework",
       "QuartzCore.framework",

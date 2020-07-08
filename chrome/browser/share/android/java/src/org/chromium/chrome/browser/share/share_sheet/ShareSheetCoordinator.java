@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.share.share_sheet;
 
 import android.app.Activity;
+import android.view.View;
 
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
@@ -18,7 +19,10 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.share.ChromeShareExtras;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
+import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.ActivityStateObserver;
@@ -32,7 +36,8 @@ import java.util.Set;
  * Coordinator for displaying the share sheet.
  */
 // TODO(crbug/1022172): Should be package-protected once modularization is complete.
-public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptionShareCallback {
+public class ShareSheetCoordinator
+        implements ActivityStateObserver, ChromeOptionShareCallback, View.OnLayoutChangeListener {
     private final BottomSheetController mBottomSheetController;
     private final Supplier<Tab> mTabProvider;
     private final ShareSheetPropertyModelBuilder mPropertyModelBuilder;
@@ -42,6 +47,7 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
     private boolean mExcludeFirstParty;
     private ShareSheetBottomSheetContent mBottomSheet;
     private WindowAndroid mWindowAndroid;
+    private final BottomSheetObserver mBottomSheetObserver;
 
     /**
      * Constructs a new ShareSheetCoordinator.
@@ -61,6 +67,20 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
         mPropertyModelBuilder = modelBuilder;
         mPrefServiceBridge = prefServiceBridge;
         mPrintTabCallback = printTab;
+        mBottomSheetObserver = new EmptyBottomSheetObserver() {
+            @Override
+            public void onSheetContentChanged(BottomSheetContent bottomSheet) {
+                super.onSheetContentChanged(bottomSheet);
+                if (bottomSheet == mBottomSheet) {
+                    mBottomSheet.getContentView().addOnLayoutChangeListener(
+                            ShareSheetCoordinator.this::onLayoutChange);
+                } else {
+                    mBottomSheet.getContentView().removeOnLayoutChangeListener(
+                            ShareSheetCoordinator.this::onLayoutChange);
+                }
+            }
+        };
+        mBottomSheetController.addObserver(mBottomSheetObserver);
     }
 
     protected void destroy() {
@@ -159,5 +179,18 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
         if (mBottomSheet != null) {
             mBottomSheetController.hideContent(mBottomSheet, true);
         }
+    }
+
+    // View.OnLayoutChangeListener
+    @Override
+    public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft,
+            int oldTop, int oldRight, int oldBottom) {
+        if ((oldRight - oldLeft) == (right - left)) {
+            return;
+        }
+        mBottomSheet.getTopRowView().invalidate();
+        mBottomSheet.getTopRowView().requestLayout();
+        mBottomSheet.getBottomRowView().invalidate();
+        mBottomSheet.getBottomRowView().requestLayout();
     }
 }

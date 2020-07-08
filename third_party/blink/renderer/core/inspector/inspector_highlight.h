@@ -30,12 +30,14 @@ struct CORE_EXPORT InspectorGridHighlightConfig {
   Color column_gap_color;
   Color row_hatch_color;
   Color column_hatch_color;
+  Color area_border_color;
 
   bool show_grid_extension_lines;
   bool grid_border_dash;
   bool cell_border_dash;
   bool show_positive_line_numbers;
   bool show_negative_line_numbers;
+  bool show_area_names;
 };
 
 struct CORE_EXPORT InspectorHighlightConfig {

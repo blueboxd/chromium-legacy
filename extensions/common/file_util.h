@@ -119,11 +119,6 @@ bool CheckForWindowsReservedFilenames(const base::FilePath& extension_dir,
 // an empty file path on failure.
 base::FilePath GetInstallTempDir(const base::FilePath& extensions_dir);
 
-// Helper function to delete files. This is used to avoid ugly casts which
-// would be necessary with PostMessage since base::Delete is overloaded.
-// TODO(skerner): Make a version of Delete that is not overloaded in file_util.
-void DeleteFile(const base::FilePath& path, bool recursive);
-
 // Get a relative file path from a chrome-extension:// URL.
 base::FilePath ExtensionURLToRelativeFilePath(const GURL& url);
 

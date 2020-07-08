@@ -107,12 +107,12 @@ void AnimatedContainerView::OnUiElementAdded(
 }
 
 void AnimatedContainerView::OnSuggestionsAdded(
-    const std::vector<AssistantSuggestion>& suggestions) {
+    const std::vector<const AssistantSuggestion*>& suggestions) {
   // We can prevent over-propagation of the PreferredSizeChanged event by
   // stopping propagation during batched view hierarchy add/remove operations.
   ScopedDisablePreferredSizeChanged disable_preferred_size_changed(this);
-  for (const auto& suggestion : suggestions) {
-    auto animator = HandleSuggestion(suggestion);
+  for (const auto* suggestion : suggestions) {
+    auto animator = HandleSuggestion(*suggestion);
     if (animator)
       AddElementAnimatorAndAnimateInView(std::move(animator));
   }
@@ -234,9 +234,13 @@ void AnimatedContainerView::AddResponse(
   // stopping propagation during batched view hierarchy add/remove operations.
   ScopedDisablePreferredSizeChanged disable_preferred_size_changed(this);
 
+  std::vector<const AssistantSuggestion*> suggestion_ptrs;
+  for (const auto& suggestion : response_->GetSuggestions())
+    suggestion_ptrs.push_back(&suggestion);
+
   // Create views/animators for the suggestions and UI elements belonging to the
   // |response_|. Note that this will also cause them to begin animating in.
-  OnSuggestionsAdded(response_->GetSuggestions());
+  OnSuggestionsAdded(suggestion_ptrs);
   for (const auto& ui_element : response_->GetUiElements())
     OnUiElementAdded(ui_element.get());
 }

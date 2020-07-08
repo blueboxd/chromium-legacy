@@ -76,7 +76,7 @@ bool VerifyJunctionFreeLocation(base::FilePath* temp_dir) {
   // If you change the exit points of this function please make sure all
   // exit points delete this temp file!
   if (base::WriteFile(temp_file, ".", 1) != 1) {
-    base::DeleteFile(temp_file, false);
+    base::DeleteFile(temp_file);
     return false;
   }
 
@@ -91,7 +91,7 @@ bool VerifyJunctionFreeLocation(base::FilePath* temp_dir) {
   }
 
   // Clean up the temp file.
-  base::DeleteFile(temp_file, false);
+  base::DeleteFile(temp_file);
 
   return normalized;
 }

@@ -13,6 +13,7 @@ import android.view.KeyEvent;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -146,7 +147,7 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
         final String expectedUrl =
                 mTestServer.getURL("/chrome/test/data/android/contextmenu/test_image.png");
         CriteriaHelper.pollUiThread(
-                Criteria.equals(expectedUrl, () -> newTab.get().getUrlString()));
+                () -> Criteria.checkThat(newTab.get().getUrlString(), Matchers.is(expectedUrl)));
     }
 
     @Test

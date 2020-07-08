@@ -177,7 +177,11 @@ public class DownloadLaterDialogCoordinator
     private void updatePromptStatus() {
         assert mCustomView != null;
         assert mPrefService != null;
-        mPrefService.setInteger(Pref.DOWNLOAD_LATER_PROMPT_STATUS, mCustomView.getPromptStatus());
+        Integer promptStatus = mCustomView.getPromptStatus();
+        if (promptStatus != null) {
+            mPrefService.setInteger(
+                    Pref.DOWNLOAD_LATER_PROMPT_STATUS, mCustomView.getPromptStatus());
+        }
     }
 
     // ModalDialogProperties.Controller implementation.

@@ -393,7 +393,7 @@ bool NetworkFetcherWinHTTP::WriteDataToFileBlocking() {
       -1) {
     net_error_ = HRESULTFromUpdaterError(base::File::GetLastFileError());
     file_.Close();
-    base::DeleteFile(file_path_, false);
+    base::DeleteFile(file_path_);
     return false;
   }
 

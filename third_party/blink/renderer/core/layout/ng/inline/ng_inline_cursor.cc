@@ -869,8 +869,15 @@ PositionWithAffinity NGInlineCursor::PositionForPointInInlineBox(
     if (const PositionWithAffinity child_position =
             descendants.PositionForPointInChild(point))
       return child_position;
-    // TODO(yosin): we should do like "closest_child_before" once we have a
-    // case.
+    if (closest_child_after->BoxFragment()) {
+      // Hit test at left of "12"[1] and after "cd"[2] reache here.
+      // "<span dir="rtl">12<b>&#x05E7;&#x05D0;43</b></span>ab"
+      // [1] "editing/selection/caret-at-bidi-boundary.html"
+      // [2] HitTestingTest.PseudoElementAfter
+      if (const PositionWithAffinity child_position =
+              descendants.PositionForPointInInlineBox(point))
+        return child_position;
+    }
   }
 
   if (closest_child_before) {
@@ -881,7 +888,9 @@ PositionWithAffinity NGInlineCursor::PositionForPointInInlineBox(
     if (closest_child_before->BoxFragment()) {
       // LayoutViewHitTest.HitTestHorizontal "Top-right corner (outside) of div"
       // reach here.
-      return descendants.PositionForPointInInlineBox(point);
+      if (const PositionWithAffinity child_position =
+              descendants.PositionForPointInInlineBox(point))
+        return child_position;
     }
   }
 

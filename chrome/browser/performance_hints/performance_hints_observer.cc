@@ -31,6 +31,7 @@ using optimization_guide::URLPatternWithWildcards;
 using optimization_guide::proto::PerformanceClass;
 using optimization_guide::proto::PerformanceHint;
 
+namespace performance_hints {
 namespace {
 
 // These values are logged to UMA. Entries should not be renumbered and numeric
@@ -94,7 +95,7 @@ static jint JNI_PerformanceHintsObserver_GetPerformanceClassForURL(
 
 static jboolean
 JNI_PerformanceHintsObserver_IsContextMenuPerformanceInfoEnabled(JNIEnv* env) {
-  return IsContextMenuPerformanceInfoEnabled();
+  return features::IsContextMenuPerformanceInfoEnabled();
 }
 #endif  // OS_ANDROID
 
@@ -106,15 +107,15 @@ PerformanceHintsObserver::PerformanceHintsObserver(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   std::vector<optimization_guide::proto::OptimizationType> opts;
   opts.push_back(optimization_guide::proto::PERFORMANCE_HINTS);
-  if (AreFastHostHintsEnabled()) {
+  if (features::AreFastHostHintsEnabled()) {
     opts.push_back(optimization_guide::proto::FAST_HOST_HINTS);
   }
   if (optimization_guide_decider_) {
     optimization_guide_decider_->RegisterOptimizationTypes(opts);
   }
 
-  rewrite_handler_ = PerformanceHintsRewriteHandler::FromConfigString(
-      GetRewriteConfigString());
+  rewrite_handler_ =
+      RewriteHandler::FromConfigString(features::GetRewriteConfigString());
 }
 
 PerformanceHintsObserver::~PerformanceHintsObserver() {
@@ -179,7 +180,7 @@ PerformanceClass PerformanceHintsObserver::PerformanceClassForURL(
   }
 
   if (performance_class == PerformanceClass::PERFORMANCE_UNKNOWN &&
-      ShouldTreatUnknownAsFast()) {
+      features::ShouldTreatUnknownAsFast()) {
     // If we couldn't get the hint or we didn't expect it on this page, give it
     // the benefit of the doubt.
     return PerformanceClass::PERFORMANCE_FAST;
@@ -213,7 +214,7 @@ PerformanceHintsObserver::HintForURLResult PerformanceHintsObserver::HintForURL(
   }
 
   base::Optional<GURL> maybe_rewritten;
-  if (ShouldHandleRewrites()) {
+  if (features::ShouldHandleRewrites()) {
     maybe_rewritten = rewrite_handler_.HandleRewriteIfNecessary(url);
     result.rewritten = maybe_rewritten.has_value();
     if (maybe_rewritten && (!maybe_rewritten->is_valid() ||
@@ -240,7 +241,7 @@ PerformanceHintsObserver::HintForURLResult PerformanceHintsObserver::HintForURL(
   sources.emplace_back(HintLookupSource::kPageHint,
                        base::BindOnce(&PerformanceHintsObserver::PageHintForURL,
                                       base::Unretained(this)));
-  if (AreFastHostHintsEnabled()) {
+  if (features::AreFastHostHintsEnabled()) {
     sources.emplace_back(
         HintLookupSource::kFastHostHint,
         base::BindOnce(&PerformanceHintsObserver::FastHostHintForURL,
@@ -414,3 +415,5 @@ void PerformanceHintsObserver::ProcessPerformanceHint(
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PerformanceHintsObserver)
+
+}  // namespace performance_hints

@@ -119,14 +119,15 @@ public class ShareDelegateImplIntegrationTest {
                 @Override
                 void share(ShareParams params, ChromeShareExtras chromeShareParams,
                         BottomSheetController controller, Supplier<Tab> tabProvider,
-                        Callback<Tab> printCallback, long shareStartTime) {
+                        Callback<Tab> printCallback, long shareStartTime,
+                        boolean sharingHubEnabled) {
                     paramsRef.set(params);
                     helper.notifyCalled();
                 }
             };
 
             new ShareDelegateImpl(mActivityTestRule.getActivity().getBottomSheetController(),
-                    mActivityTestRule.getActivity().getActivityTabProvider(), delegate)
+                    mActivityTestRule.getActivity().getActivityTabProvider(), delegate, false)
                     .share(mActivityTestRule.getActivity().getActivityTab(), false);
         });
         helper.waitForCallback(0);

@@ -304,6 +304,11 @@ are declared in tools/grit/grit_rule.gni.
         <part file="extensions_strings.grdp" />
       </if>
 
+      <!-- Nearby Share specific strings -->
+      <if expr="not is_android">
+        <part file="nearby_share_strings.grdp" />
+      </if>
+
       <!-- Welcome strings -->
       <if expr="not chromeos and not is_android">
         <part file="welcome_strings.grdp" />

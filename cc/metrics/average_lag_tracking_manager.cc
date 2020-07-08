@@ -55,8 +55,7 @@ void AverageLagTrackingManager::CollectScrollEventsFromFrame(
     event_infos.push_back(event_info);
   }
 
-  frame_token_to_info_.push_back(
-      std::make_pair(frame_token, std::move(event_infos)));
+  frame_token_to_info_.push_back(std::make_pair(frame_token, event_infos));
 }
 
 void AverageLagTrackingManager::DidPresentCompositorFrame(
@@ -68,7 +67,7 @@ void AverageLagTrackingManager::DidPresentCompositorFrame(
   while (!frame_token_to_info_.empty() &&
          !viz::FrameTokenGT(frame_token_to_info_.front().first, frame_token)) {
     if (frame_token_to_info_.front().first == frame_token)
-      infos = std::move(frame_token_to_info_.front().second);
+      infos = frame_token_to_info_.front().second;
 
     frame_token_to_info_.pop_front();
   }
@@ -79,7 +78,7 @@ void AverageLagTrackingManager::DidPresentCompositorFrame(
   if (!frame_details.presentation_feedback.failed()) {
     DCHECK(!frame_details.swap_timings.is_null());
 
-    // Sorts data by trace_id because |infos| can be in non-ascending order
+    // Sorts data by trace_id because |infos| can be in non-asceding order
     // (ascending order of trace_id/time is required by AverageLagTracker).
     std::sort(infos.begin(), infos.end(),
               [](const AverageLagTracker::EventInfo& a,
@@ -89,7 +88,10 @@ void AverageLagTrackingManager::DidPresentCompositorFrame(
 
     for (AverageLagTracker::EventInfo info : infos) {
       info.finish_timestamp = frame_details.swap_timings.swap_start;
-      lag_tracker_.AddScrollEventInFrame(info);
+      lag_tracker_gpu_swap_.AddScrollEventInFrame(info);
+
+      info.finish_timestamp = frame_details.presentation_feedback.timestamp;
+      lag_tracker_presentation_.AddScrollEventInFrame(info);
     }
   }
 }

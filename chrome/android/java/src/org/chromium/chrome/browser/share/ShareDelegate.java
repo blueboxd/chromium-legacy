@@ -26,4 +26,14 @@ public interface ShareDelegate {
      * @param shareDirectly If this share should be sent directly to the last used share target.
      */
     void share(Tab currentTab, boolean shareDirectly);
+
+    /**
+     * Check if the custom share sheet is enabled.
+     */
+    boolean isSharingHubV1Enabled();
+
+    /**
+     * Check if v1.5 of the custom share sheet is enabled.
+     */
+    boolean isSharingHubV15Enabled();
 }

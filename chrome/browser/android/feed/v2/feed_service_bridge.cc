@@ -14,6 +14,7 @@
 #include "chrome/browser/android/feed/v2/feed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "components/feed/core/v2/config.h"
 #include "components/feed/core/v2/public/feed_service.h"
 
 namespace feed {
@@ -30,6 +31,10 @@ static void JNI_FeedServiceBridge_Startup(JNIEnv* env) {
     return;
 
   FeedServiceFactory::GetForBrowserContext(profile);
+}
+
+static int JNI_FeedServiceBridge_GetLoadMoreTriggerLookahead(JNIEnv* env) {
+  return GetFeedConfig().load_more_trigger_lookahead;
 }
 
 std::string FeedServiceBridge::GetLanguageTag() {

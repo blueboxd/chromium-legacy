@@ -7,26 +7,29 @@ ContentSettingBubbleDialogTest.*
 ExtensionInstallDialogViewInteractiveBrowserTest.*
 ExtensionUninstallDialogViewInteractiveBrowserTest.*
 *EyeDropperBrowserTest.*
-FeaturePromoDialogTest.*
-GlobalErrorBubbleTest.*
-HatsBubbleTest.*
-HungRendererDialogViewBrowserTest.*
-ImportLockDialogViewBrowserTest.*
-NativeFileSystemUsageBubbleViewTest.*
-OutdatedUpgradeBubbleTest.*
-PageInfoBubbleViewBrowserTest.*
-*PasswordBubbleBrowserTest.*
-PasswordReuseModalWarningTest.*
-ProfileSigninConfirmationDialogTest.*
-RelaunchRecommendedBubbleViewDialogTest.*
-RelaunchRequiredDialogViewDialogTest.*
-ReopenTabPromoControllerDialogBrowserTest.*
-ScreenCaptureNotificationUiBrowserTest.*
-SessionCrashedBubbleViewTest.*
-TabGroupEditorBubbleViewDialogBrowserTest.*
-TabHoverCardBubbleViewBrowserTest.*
-UpdateRecommendedDialogTest.*
-ZoomBubbleDialogTest.*
+
+# TODO(crbug.com/1102894): Re-enable the following tests.
+# FeaturePromoDialogTest.*
+# GlobalErrorBubbleTest.*
+# HatsBubbleTest.*
+# HungRendererDialogViewBrowserTest.*
+# ImportLockDialogViewBrowserTest.*
+# NativeFileSystemUsageBubbleViewTest.*
+# OutdatedUpgradeBubbleTest.*
+# PageInfoBubbleViewBrowserTest.*
+# *PasswordBubbleBrowserTest.*
+# PasswordReuseModalWarningTest.*
+# ProfileSigninConfirmationDialogTest.*
+# RelaunchRecommendedBubbleViewDialogTest.*
+# RelaunchRequiredDialogViewDialogTest.*
+# ReopenTabPromoControllerDialogBrowserTest.*
+# ScreenCaptureNotificationUiBrowserTest.*
+# SessionCrashedBubbleViewTest.*
+# TabGroupEditorBubbleViewDialogBrowserTest.*
+# TabHoverCardBubbleViewBrowserTest.*
+# UpdateRecommendedDialogTest.*
+# ZoomBubbleDialogTest.*
 
 # This test uses random network port and shows it on ui.
 -ContentSettingBubbleDialogTest.InvokeUi_popups
+-OutdatedUpgradeBubbleTest.InvokeUi_Critical__windows

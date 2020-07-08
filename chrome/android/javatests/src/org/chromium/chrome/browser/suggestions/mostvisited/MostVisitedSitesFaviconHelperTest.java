@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import androidx.core.util.AtomicFile;
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -83,8 +84,10 @@ public class MostVisitedSitesFaviconHelperTest {
                                 mExpectedSiteSuggestions, urlsToUpdate, null));
 
         // Wait util the file number equals to expected one.
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(
-                urlsToUpdate.size(), () -> getStateDirectorySize() - originalFilesNum));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(
+                    getStateDirectorySize() - originalFilesNum, Matchers.is(urlsToUpdate.size()));
+        });
 
         // The Favicon File lists in the disk.
         File topSitesDirectory = MostVisitedSitesMetadataUtils.getStateDirectory();

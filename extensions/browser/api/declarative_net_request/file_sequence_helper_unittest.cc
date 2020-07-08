@@ -218,8 +218,8 @@ TEST_F(FileSequenceHelperTest, IndexedRulesetDeleted) {
 
   // Now delete the first and third indexed rulesets. This would cause a
   // re-index.
-  base::DeleteFile(test_cases[0].source.indexed_path(), false /* recursive */);
-  base::DeleteFile(test_cases[2].source.indexed_path(), false /* recursive */);
+  base::DeleteFile(test_cases[0].source.indexed_path());
+  base::DeleteFile(test_cases[2].source.indexed_path());
   test_cases[0].expected_result.reindexing_successful = true;
   test_cases[2].expected_result.reindexing_successful = true;
 
@@ -276,10 +276,10 @@ TEST_F(FileSequenceHelperTest, JSONAndIndexedRulesetDeleted) {
 
   TestLoadRulesets(test_cases);
 
-  base::DeleteFile(test_cases[0].source.json_path(), false /* recursive */);
-  base::DeleteFile(test_cases[1].source.json_path(), false /* recursive */);
-  base::DeleteFile(test_cases[0].source.indexed_path(), false /* recursive */);
-  base::DeleteFile(test_cases[1].source.indexed_path(), false /* recursive */);
+  base::DeleteFile(test_cases[0].source.json_path());
+  base::DeleteFile(test_cases[1].source.json_path());
+  base::DeleteFile(test_cases[0].source.indexed_path());
+  base::DeleteFile(test_cases[1].source.indexed_path());
 
   // Reindexing will fail since the JSON ruleset is now deleted.
   test_cases[0].expected_result.reindexing_successful = false;
@@ -299,8 +299,8 @@ TEST_F(FileSequenceHelperTest, UpdateDynamicRules) {
   // Simulate adding rules for the first time i.e. with no JSON and indexed
   // ruleset files.
   RulesetSource source = CreateTemporarySource();
-  base::DeleteFile(source.json_path(), false /* recursive */);
-  base::DeleteFile(source.indexed_path(), false /* recursive */);
+  base::DeleteFile(source.json_path());
+  base::DeleteFile(source.indexed_path());
 
   // Test success.
   std::vector<api::declarative_net_request::Rule> api_rules;

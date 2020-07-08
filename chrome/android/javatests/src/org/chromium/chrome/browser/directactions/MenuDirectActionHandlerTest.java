@@ -93,7 +93,8 @@ public class MenuDirectActionHandlerTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> { mTabModelSelector.closeAllTabs(); });
         // Wait for any pending animations for tab closures to complete.
-        CriteriaHelper.pollUiThread(Criteria.equals(0, () -> mTabModelSelector.getTotalTabCount()));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(mTabModelSelector.getTotalTabCount(), Matchers.is(0)));
         assertThat(getDirectActions(),
                 Matchers.containsInAnyOrder("downloads", "help", "new_tab", "preferences"));
     }

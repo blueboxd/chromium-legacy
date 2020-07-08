@@ -34,7 +34,7 @@ std::tuple<std::vector<uint8_t>, bool, bool> ReadAndDeleteBinaryFile(
         base::ReadFile(path, reinterpret_cast<char*>(contents.data()),
                        file_size) == file_size;
   }
-  bool delete_success = base::DeleteFile(path, /*recursive=*/false);
+  bool delete_success = base::DeleteFile(path);
   return std::make_tuple(std::move(contents), read_success, delete_success);
 }
 

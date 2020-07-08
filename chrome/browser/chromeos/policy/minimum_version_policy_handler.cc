@@ -87,7 +87,7 @@ chromeos::UpdateEngineClient* GetUpdateEngineClient() {
 const char MinimumVersionPolicyHandler::kChromeVersion[] = "chrome_version";
 const char MinimumVersionPolicyHandler::kWarningPeriod[] = "warning_period";
 const char MinimumVersionPolicyHandler::KEolWarningPeriod[] =
-    "eol_warning_period";
+    "aue_warning_period";
 
 MinimumVersionRequirement::MinimumVersionRequirement(
     const base::Version version,

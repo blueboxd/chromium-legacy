@@ -40,6 +40,7 @@ jumbo_source_set("browser") {
   ]
   defines = []
   libs = []
+  frameworks = []
   ldflags = []
 
   deps = [
@@ -2113,7 +2114,7 @@ jumbo_source_set("browser") {
   }
 
   if (is_mac) {
-    libs += [ "AppKit.framework" ]
+    frameworks += [ "AppKit.framework" ]
     sources += [
       "../app_shim_remote_cocoa/web_contents_ns_view_bridge.h",
       "../app_shim_remote_cocoa/web_contents_ns_view_bridge.mm",
@@ -2592,7 +2593,7 @@ jumbo_source_set("browser") {
       "//third_party/mozilla",
       "//ui/accelerated_widget_mac",
     ]
-    libs += [
+    frameworks += [
       "Carbon.framework",
       "QuartzCore.framework",
       "IOSurface.framework",

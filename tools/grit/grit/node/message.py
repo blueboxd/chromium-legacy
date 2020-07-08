@@ -93,7 +93,8 @@ class MessageNode(base.ContentNode):
     if name not in [
         'name', 'offset', 'translateable', 'desc', 'meaning',
         'internal_comment', 'shortcut_groups', 'custom_type', 'validation_expr',
-        'use_name_for_id', 'sub_variable', 'formatter_data', 'is_accessibility'
+        'use_name_for_id', 'sub_variable', 'formatter_data',
+        'is_accessibility_with_no_ui'
     ]:
       return False
     if (name in ('translateable', 'sub_variable') and
@@ -115,7 +116,7 @@ class MessageNode(base.ContentNode):
         'desc': '',
         'formatter_data': '',
         'internal_comment': '',
-        'is_accessibility': 'false',
+        'is_accessibility_with_no_ui': 'false',
         'meaning': '',
         'shortcut_groups': '',
         'sub_variable': 'false',

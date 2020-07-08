@@ -71,6 +71,11 @@ class EndpointFetcher {
                   const std::string& post_data,
                   const net::NetworkTrafficAnnotationTag& annotation_tag);
 
+  // Constructor if no authentication is needed.
+  EndpointFetcher(Profile* const profile,
+                  const GURL& url,
+                  const net::NetworkTrafficAnnotationTag& annotation_tag);
+
   // Used for tests. Can be used if caller constructs their own
   // url_loader_factory and identity_manager.
   EndpointFetcher(
@@ -105,7 +110,7 @@ class EndpointFetcher {
   void OnSanitizationResult(EndpointFetcherCallback endpoint_fetcher_callback,
                             data_decoder::JsonSanitizer::Result result);
 
-  enum AuthType { CHROME_API_KEY, OAUTH };
+  enum AuthType { CHROME_API_KEY, OAUTH, NO_AUTH };
   AuthType auth_type_;
 
   // Members set in constructor to be passed to network::ResourceRequest or
@@ -122,6 +127,7 @@ class EndpointFetcher {
   // Members set in constructor
   const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   signin::IdentityManager* const identity_manager_;
+  bool sanitize_response_;
 
   // Members set in Fetch
   std::unique_ptr<const signin::PrimaryAccountAccessTokenFetcher>

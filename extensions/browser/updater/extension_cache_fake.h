@@ -21,8 +21,8 @@ class ExtensionCacheFake : public ExtensionCache {
   ~ExtensionCacheFake() override;
 
   // Implementation of ExtensionCache.
-  void Start(const base::Closure& callback) override;
-  void Shutdown(const base::Closure& callback) override;
+  void Start(base::OnceClosure callback) override;
+  void Shutdown(base::OnceClosure callback) override;
   void AllowCaching(const std::string& id) override;
   bool GetExtension(const std::string& id,
                     const std::string& expected_hash,
@@ -32,7 +32,7 @@ class ExtensionCacheFake : public ExtensionCache {
                     const std::string& expected_hash,
                     const base::FilePath& file_path,
                     const std::string& version,
-                    const PutExtensionCallback& callback) override;
+                    PutExtensionCallback callback) override;
 
  private:
   typedef std::map<std::string, std::pair<std::string, base::FilePath>> Map;

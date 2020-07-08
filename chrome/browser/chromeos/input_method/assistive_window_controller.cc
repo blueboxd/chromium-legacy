@@ -170,6 +170,7 @@ void AssistiveWindowController::SetButtonHighlighted(
     bool highlighted) {
   switch (button.window_type) {
     case ui::ime::AssistiveWindowType::kEmojiSuggestion:
+    case ui::ime::AssistiveWindowType::kPersonalInfoSuggestion:
       if (!suggestion_window_view_)
         return;
 
@@ -200,6 +201,7 @@ void AssistiveWindowController::SetAssistiveWindowProperties(
       window.visible ? undo_window_->Show() : undo_window_->Hide();
       break;
     case ui::ime::AssistiveWindowType::kEmojiSuggestion:
+    case ui::ime::AssistiveWindowType::kPersonalInfoSuggestion:
       if (!suggestion_window_view_)
         InitSuggestionWindow();
       if (window_.visible) {

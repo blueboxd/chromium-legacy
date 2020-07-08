@@ -22,6 +22,7 @@
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_migration_guide_notification.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
@@ -214,8 +215,10 @@ std::string GetOrCreateSerialNumber(PrefService* prefs) {
 
 bool ExpandPropertyFilesInternal(const base::FilePath& source_path,
                                  const base::FilePath& dest_path,
-                                 bool single_file) {
-  if (!arc::ExpandPropertyFiles(source_path, dest_path, single_file))
+                                 bool single_file,
+                                 bool add_native_bridge_64bit_support) {
+  if (!arc::ExpandPropertyFiles(source_path, dest_path, single_file,
+                                add_native_bridge_64bit_support))
     return false;
   if (!arc::IsArcVmEnabled())
     return true;
@@ -1333,12 +1336,29 @@ void ArcSessionManager::ExpandPropertyFiles() {
   // For ARCVM, generate <dest_path>/{combined.prop,fstab}. For ARC, generate
   // <dest_path>/{default,build,vendor_build}.prop.
   const bool is_arcvm = arc::IsArcVmEnabled();
+  bool add_native_bridge_64bit_support = false;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kArcEnableNativeBridge64BitSupportExperiment)) {
+    PrefService* local_pref_service = g_browser_process->local_state();
+    if (base::FeatureList::IsEnabled(
+            arc::kNativeBridge64BitSupportExperimentFeature)) {
+      // Note that we treat this experiment as a one-way off->on switch, across
+      // all users of the device, as the lifetime of ARC mini-container and user
+      // sessions are different in different scenarios, and removing the
+      // experiment after it has been in effect for a user's ARC instance can
+      // lead to unexpected, and unsupported, results.
+      local_pref_service->SetBoolean(
+          prefs::kNativeBridge64BitSupportExperimentEnabled, true);
+    }
+    add_native_bridge_64bit_support = local_pref_service->GetBoolean(
+        prefs::kNativeBridge64BitSupportExperimentEnabled);
+  }
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&ExpandPropertyFilesInternal, property_files_source_dir_,
                      is_arcvm ? property_files_dest_dir_.Append("combined.prop")
                               : property_files_dest_dir_,
-                     /*single_file=*/is_arcvm),
+                     /*single_file=*/is_arcvm, add_native_bridge_64bit_support),
       base::BindOnce(&ArcSessionManager::OnExpandPropertyFiles,
                      weak_ptr_factory_.GetWeakPtr()));
 }

@@ -15,10 +15,12 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/session/session_observer.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/system/power/power_status.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "ui/views/widget/widget.h"
@@ -34,9 +36,11 @@ class AmbientPhotoController;
 class AmbientViewDelegateObserver;
 
 // Class to handle all ambient mode functionalities.
-class ASH_EXPORT AmbientController : public AmbientUiModelObserver,
-                                     public SessionObserver,
-                                     public PowerStatus::Observer {
+class ASH_EXPORT AmbientController
+    : public AmbientUiModelObserver,
+      public SessionObserver,
+      public PowerStatus::Observer,
+      public chromeos::PowerManagerClient::Observer {
  public:
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
@@ -52,21 +56,26 @@ class ASH_EXPORT AmbientController : public AmbientUiModelObserver,
   // PowerStatus::Observer:
   void OnPowerStatusChanged() override;
 
+  // chromeos::PowerManagerClient::Observer:
+  void LidEventReceived(chromeos::PowerManagerClient::LidState state,
+                        const base::TimeTicks& timestamp) override;
+  void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
+  void SuspendDone(const base::TimeDelta& sleep_duration) override;
+
   void AddAmbientViewDelegateObserver(AmbientViewDelegateObserver* observer);
   void RemoveAmbientViewDelegateObserver(AmbientViewDelegateObserver* observer);
 
-  // Initializes the |container_view_|. Called in |CreateWidget()| as the
+  // Initializes the |container_view_|. Called in |CreateWidget()| to create the
   // contents view.
   std::unique_ptr<AmbientContainerView> CreateContainerView();
 
-  // Hides the |container_view_|. Called in |OnBackgroundPhotoEvents()| when
-  // user interacts with the lock-screen UI.
-  void HideContainerView();
+  // Invoked to show/close ambient UI in |mode|.
+  void ShowUi(AmbientUiMode mode);
+  void CloseUi();
 
-  // Handles the in-session ambient UI, which is displayed in its own widget.
-  void ShowInSessionUI();
-  void CloseInSessionUI();
-  void ToggleInSessionUI();
+  void HideLockScreenUi();
+
+  void ToggleInSessionUi();
 
   // Returns true if the |container_view_| is currently visible.
   bool IsShown() const;
@@ -115,6 +124,16 @@ class ASH_EXPORT AmbientController : public AmbientUiModelObserver,
   // Release |wake_lock_|. Unbalanced release call will have no effect.
   void ReleaseWakeLock();
 
+  // Updates |autoshow_enabled_| flag based on the lid state.
+  void OnReceiveSwitchStates(
+      base::Optional<chromeos::PowerManagerClient::SwitchStates> switch_states);
+
+  // Invoked to dismiss ambient when the device is suspending.
+  void HandleOnSuspend();
+
+  // Invoked to restart the auto-show timer when the device is resuming.
+  void HandleOnResume();
+
   AmbientPhotoController* get_ambient_photo_controller_for_testing() {
     return &ambient_photo_controller_;
   }
@@ -139,8 +158,19 @@ class ASH_EXPORT AmbientController : public AmbientUiModelObserver,
   // Lazily initialized on the first call of |AcquireWakeLock|.
   mojo::Remote<device::mojom::WakeLock> wake_lock_;
 
+  ScopedObserver<AmbientUiModel, AmbientUiModelObserver>
+      ambient_ui_model_observer_{this};
+  ScopedObserver<SessionControllerImpl, SessionObserver> session_observer_{
+      this};
   ScopedObserver<PowerStatus, PowerStatus::Observer> power_status_observer_{
       this};
+  ScopedObserver<chromeos::PowerManagerClient,
+                 chromeos::PowerManagerClient::Observer>
+      power_manager_client_observer_{this};
+
+  // Whether ambient screen will be brought up from hidden after long device
+  // inactivity.
+  bool autoshow_enabled_ = false;
 
   base::WeakPtrFactory<AmbientController> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AmbientController);

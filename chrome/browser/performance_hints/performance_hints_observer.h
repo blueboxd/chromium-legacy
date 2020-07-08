@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
-#include "chrome/browser/performance_hints/performance_hints_rewrite_handler.h"
+#include "chrome/browser/performance_hints/rewrite_handler.h"
 #include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto/performance_hints_metadata.pb.h"
@@ -34,6 +34,8 @@ class PerformanceHint;
 }  // namespace optimization_guide
 
 class GURL;
+
+namespace performance_hints {
 
 // Provides an interface to access PerformanceHints for the associated
 // WebContents and links within it.
@@ -164,7 +166,7 @@ class PerformanceHintsObserver
   //
   // Configuration is controlled by kRewriteConfig in
   // performance_hints_observer.cc.
-  PerformanceHintsRewriteHandler rewrite_handler_;
+  RewriteHandler rewrite_handler_;
 
   // Initialized in constructor. It may be null if !IsOptimizationHintsEnabled.
   optimization_guide::OptimizationGuideDecider* optimization_guide_decider_ =
@@ -184,5 +186,7 @@ class PerformanceHintsObserver
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
+
+}  // namespace performance_hints
 
 #endif  // CHROME_BROWSER_PERFORMANCE_HINTS_PERFORMANCE_HINTS_OBSERVER_H_

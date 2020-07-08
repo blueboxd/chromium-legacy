@@ -41,6 +41,7 @@
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/display/display.h"
+#include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/range/range.h"
@@ -394,6 +395,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // pointer state by dispatching touch down events.
   virtual void TransferTouches(
       const std::vector<std::unique_ptr<ui::TouchEvent>>& touches) {}
+
+  virtual void SetLastPointerType(ui::EventPointerType last_pointer_type) {}
 
   //----------------------------------------------------------------------------
   // The following methods are related to IME.

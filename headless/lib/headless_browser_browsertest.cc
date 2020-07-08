@@ -399,9 +399,9 @@ class HeadlessBrowserRendererCommandPrefixTest : public HeadlessBrowserTest {
 
   void TearDown() override {
     if (!launcher_script_.empty())
-      base::DeleteFile(launcher_script_, false);
+      base::DeleteFile(launcher_script_);
     if (!launcher_stamp_.empty())
-      base::DeleteFile(launcher_stamp_, false);
+      base::DeleteFile(launcher_stamp_);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -454,7 +454,7 @@ class CrashReporterTest : public HeadlessBrowserTest,
 
   void TearDown() override {
     base::ThreadRestrictions::SetIOAllowed(true);
-    base::DeleteFile(crash_dumps_dir_, /* recursive */ false);
+    base::DeleteFile(crash_dumps_dir_);
   }
 
   // HeadlessWebContents::Observer implementation:

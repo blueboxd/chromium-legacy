@@ -15,6 +15,8 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 
@@ -257,6 +259,44 @@ TEST_F(AmbientControllerTest, ShouldDismissContainerViewWhenKeyPressed) {
 
   // Clean up.
   CloseAmbientScreen();
+}
+
+TEST_F(AmbientControllerTest, UpdateUiAndWakeLockWhenSystemSuspendOrResume) {
+  // Flush the loop first to ensure the |PowerStatus| has picked up the initial
+  // status.
+  base::RunLoop().RunUntilIdle();
+
+  // Simulate a device being connected with a charger initially to acquire a
+  // wake lock upon shown.
+  power_manager::PowerSupplyProperties proto;
+  proto.set_battery_state(
+      power_manager::PowerSupplyProperties_BatteryState_CHARGING);
+  PowerStatus::Get()->SetProtoForTesting(proto);
+
+  // Starts ambient screen.
+  ShowAmbientScreen();
+  EXPECT_TRUE(ambient_controller()->IsShown());
+  EXPECT_EQ(1, GetNumOfActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventDisplaySleep));
+
+  // Simulates the system starting to suspend by lid closed.
+  SimulateSystemSuspendAndWait(
+      power_manager::SuspendImminent_Reason_LID_CLOSED);
+
+  // System suspension should hide Ui and release the wake lock acquired
+  // previously.
+  EXPECT_FALSE(container_view()->GetWidget()->IsVisible());
+  EXPECT_EQ(0, GetNumOfActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventDisplaySleep));
+
+  // Simulates the system starting to resume.
+  SimulateSystemResumeAndWait();
+
+  // System resume should not invoke Ui to show up, thus no wake lock needed
+  // to acquire.
+  EXPECT_FALSE(container_view()->GetWidget()->IsVisible());
+  EXPECT_EQ(0, GetNumOfActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventDisplaySleep));
 }
 
 }  // namespace ash

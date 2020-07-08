@@ -6,6 +6,9 @@
 
 namespace history {
 
+NormalizedKeywordSearchTermVisit::~NormalizedKeywordSearchTermVisit() = default;
+
+
 KeywordSearchTermVisit::KeywordSearchTermVisit() : visits(0) {}
 
 KeywordSearchTermVisit::~KeywordSearchTermVisit() {}

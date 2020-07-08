@@ -206,7 +206,7 @@ TEST_F(SynchronizedMinidumpManagerTest, FilePathsAreCorrect) {
 
 TEST_F(SynchronizedMinidumpManagerTest, AcquireLockOnNonExistentDirectory) {
   // The directory was created in SetUp(). Delete it and its contents.
-  ASSERT_TRUE(base::DeleteFile(minidump_dir_, true));
+  ASSERT_TRUE(base::DeletePathRecursively(minidump_dir_));
   ASSERT_FALSE(base::PathExists(minidump_dir_));
 
   SynchronizedMinidumpManagerSimple manager;
@@ -220,7 +220,7 @@ TEST_F(SynchronizedMinidumpManagerTest, AcquireLockOnNonExistentDirectory) {
 
 TEST_F(SynchronizedMinidumpManagerTest, AcquireLockOnExistingEmptyDirectory) {
   // The lockfile was created in SetUp(). Delete it.
-  ASSERT_TRUE(base::DeleteFile(lockfile_, false));
+  ASSERT_TRUE(base::DeleteFile(lockfile_));
   ASSERT_FALSE(base::PathExists(lockfile_));
 
   SynchronizedMinidumpManagerSimple manager;
@@ -500,8 +500,8 @@ TEST_F(SynchronizedMinidumpManagerTest, HasDumpsNotInLockFile) {
 
 TEST_F(SynchronizedMinidumpManagerTest, InitializeFileState) {
   SynchronizedMinidumpManagerSimple manager;
-  ASSERT_TRUE(base::DeleteFile(lockfile_, false));
-  ASSERT_TRUE(base::DeleteFile(metadata_, false));
+  ASSERT_TRUE(base::DeleteFile(lockfile_));
+  ASSERT_TRUE(base::DeleteFile(metadata_));
   ASSERT_FALSE(base::PathExists(lockfile_));
   ASSERT_FALSE(base::PathExists(metadata_));
   EXPECT_TRUE(manager.InitializeFileState());

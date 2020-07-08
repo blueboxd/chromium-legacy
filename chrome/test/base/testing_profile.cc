@@ -618,7 +618,7 @@ bool TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
   if (delete_file) {
     base::FilePath path = GetPath();
     path = path.Append(history::kHistoryFilename);
-    if (!base::DeleteFile(path, false) || base::PathExists(path))
+    if (!base::DeleteFile(path) || base::PathExists(path))
       return false;
   }
   // This will create and init the history service.
@@ -645,7 +645,7 @@ bool TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
 void TestingProfile::CreateBookmarkModel(bool delete_file) {
   if (delete_file) {
     base::FilePath path = GetPath().Append(bookmarks::kBookmarksFileName);
-    base::DeleteFile(path, false);
+    base::DeleteFile(path);
   }
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   offline_pages::OfflinePageModelFactory::GetInstance()->SetTestingFactory(

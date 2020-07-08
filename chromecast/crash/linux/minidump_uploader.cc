@@ -165,8 +165,8 @@ bool MinidumpUploader::DoWork() {
     }
 
     if (ignore_and_erase_dump) {
-      base::DeleteFile(dump_path, false);
-      base::DeleteFile(log_path, false);
+      base::DeleteFile(dump_path);
+      base::DeleteFile(log_path);
       dumps.erase(dumps.begin());
       continue;
     }
@@ -269,12 +269,12 @@ bool MinidumpUploader::DoWork() {
     // delete the dump if it exists in /data/minidumps.
     // (We may use a fake dump file which should not be deleted.)
     if (!dump_path.empty() && dump_path.DirName() == dump_path_ &&
-        !base::DeleteFile(dump_path, false)) {
+        !base::DeleteFile(dump_path)) {
       LOG(WARNING) << "remove dump " << dump_path.value() << " failed"
                    << strerror(errno);
     }
     // delete the log if exists
-    if (!log_path.empty() && !base::DeleteFile(log_path, false)) {
+    if (!log_path.empty() && !base::DeleteFile(log_path)) {
       LOG(WARNING) << "remove log " << log_path.value() << " failed"
                    << strerror(errno);
     }

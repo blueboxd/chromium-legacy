@@ -61,7 +61,8 @@ namespace blink {
 DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::Create(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     DedicatedWorkerThread* thread,
-    base::TimeTicks time_origin) {
+    base::TimeTicks time_origin,
+    ukm::SourceId ukm_source_id) {
   std::unique_ptr<Vector<String>> outside_origin_trial_tokens =
       std::move(creation_params->origin_trial_tokens);
   BeginFrameProviderParams begin_frame_provider_params =
@@ -75,7 +76,8 @@ DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::Create(
 
   auto* global_scope = MakeGarbageCollected<DedicatedWorkerGlobalScope>(
       std::move(creation_params), thread, time_origin,
-      std::move(outside_origin_trial_tokens), begin_frame_provider_params);
+      std::move(outside_origin_trial_tokens), begin_frame_provider_params,
+      ukm_source_id);
 
   if (global_scope->IsOffMainThreadScriptFetchDisabled()) {
     // Legacy on-the-main-thread worker script fetch (to be removed):
@@ -102,13 +104,14 @@ DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
     DedicatedWorkerThread* thread,
     base::TimeTicks time_origin,
     std::unique_ptr<Vector<String>> outside_origin_trial_tokens,
-    const BeginFrameProviderParams& begin_frame_provider_params)
+    const BeginFrameProviderParams& begin_frame_provider_params,
+    ukm::SourceId ukm_source_id)
     : WorkerGlobalScope(std::move(creation_params), thread, time_origin),
       animation_frame_provider_(
           MakeGarbageCollected<WorkerAnimationFrameProvider>(
               this,
-              begin_frame_provider_params)) {
-
+              begin_frame_provider_params)),
+      ukm_source_id_(ukm_source_id) {
   // Dedicated workers don't need to pause after script fetch.
   ReadyToRunWorkerScript();
   // Inherit the outside's origin trial tokens.

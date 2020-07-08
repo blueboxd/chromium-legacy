@@ -117,6 +117,18 @@ const sk_sp<SkImage>& PaintImage::GetRasterSkImage() const {
   return cached_sk_image_;
 }
 
+SkImageInfo PaintImage::GetSkImageInfo() const {
+  if (paint_image_generator_) {
+    return paint_image_generator_->GetSkImageInfo();
+  } else if (texture_backing_) {
+    return texture_backing_->GetSkImageInfo();
+  } else if (cached_sk_image_) {
+    return cached_sk_image_->imageInfo();
+  } else {
+    return SkImageInfo::MakeUnknown();
+  }
+}
+
 gpu::Mailbox PaintImage::GetMailbox() const {
   DCHECK(texture_backing_);
   return texture_backing_->GetMailbox();
@@ -238,19 +250,11 @@ PaintImage::ContentId PaintImage::GetContentIdForFrame(
 }
 
 SkColorType PaintImage::GetColorType() const {
-  if (paint_image_generator_)
-    return paint_image_generator_->GetSkImageInfo().colorType();
-  if (GetSkImage())
-    return GetSkImage()->colorType();
-  return kUnknown_SkColorType;
+  return GetSkImageInfo().colorType();
 }
 
 SkAlphaType PaintImage::GetAlphaType() const {
-  if (paint_image_generator_)
-    return paint_image_generator_->GetSkImageInfo().alphaType();
-  if (GetSkImage())
-    return GetSkImage()->alphaType();
-  return kUnknown_SkAlphaType;
+  return GetSkImageInfo().alphaType();
 }
 
 bool PaintImage::IsTextureBacked() const {
@@ -264,13 +268,13 @@ bool PaintImage::IsTextureBacked() const {
 int PaintImage::width() const {
   return paint_worklet_input_
              ? static_cast<int>(paint_worklet_input_->GetSize().width())
-             : GetSkImage()->width();
+             : GetSkImageInfo().width();
 }
 
 int PaintImage::height() const {
   return paint_worklet_input_
              ? static_cast<int>(paint_worklet_input_->GetSize().height())
-             : GetSkImage()->height();
+             : GetSkImageInfo().height();
 }
 
 bool PaintImage::isSRGB() const {
@@ -278,7 +282,7 @@ bool PaintImage::isSRGB() const {
   if (paint_worklet_input_)
     return true;
 
-  auto* color_space = GetSkImage()->colorSpace();
+  auto* color_space = GetSkImageInfo().colorSpace();
   if (!color_space) {
     // Assume the image will be sRGB if we don't know yet.
     return true;

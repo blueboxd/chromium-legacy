@@ -27,6 +27,7 @@ const char kPDFStructureTypeDocument[] = "Document";
 const char kPDFStructureTypeParagraph[] = "P";
 const char kPDFStructureTypeDiv[] = "Div";
 const char kPDFStructureTypeHeading[] = "H";
+const char kPDFStructureTypeLink[] = "Link";
 const char kPDFStructureTypeList[] = "L";
 const char kPDFStructureTypeListItemLabel[] = "Lbl";
 const char kPDFStructureTypeListItemBody[] = "LI";
@@ -108,6 +109,9 @@ bool RecursiveBuildStructureTree(const ui::AXNode* ax_node,
     case ax::mojom::Role::kHeading:
       tag->fTypeString = GetHeadingStructureType(ax_node->GetIntAttribute(
           ax::mojom::IntAttribute::kHierarchicalLevel));
+      break;
+    case ax::mojom::Role::kLink:
+      tag->fTypeString = kPDFStructureTypeLink;
       break;
     case ax::mojom::Role::kList:
       tag->fTypeString = kPDFStructureTypeList;

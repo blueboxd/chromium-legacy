@@ -1426,7 +1426,7 @@ TEST_F(AcceleratorControllerTest, SideVolumeButtonLocation) {
             test_api_->side_volume_button_location().region);
   EXPECT_EQ(AcceleratorControllerImpl::kVolumeButtonSideLeft,
             test_api_->side_volume_button_location().side);
-  base::DeleteFile(file_path, false);
+  base::DeleteFile(file_path);
 }
 
 // Tests the histogram of volume adjustment in tablet mode.

@@ -182,9 +182,7 @@ bool DstBufferSizeHasOverflow(const ImageBitmap::ParsedOptions& options) {
 }
 
 SkImageInfo GetSkImageInfo(const scoped_refptr<Image>& input) {
-  auto image = input->PaintImageForCurrentFrame().GetSkImage();
-  return SkImageInfo::Make(image->width(), image->height(), image->colorType(),
-                           image->alphaType(), image->refColorSpace());
+  return input->PaintImageForCurrentFrame().GetSkImageInfo();
 }
 
 // This function results in a readback due to using SkImage::readPixels().
@@ -489,8 +487,8 @@ static scoped_refptr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
   scoped_refptr<StaticBitmapImage> result = image;
   if (src_rect != img_rect) {
     auto paint_image = result->PaintImageForCurrentFrame();
-    auto image_info = paint_image.GetSkImage()->imageInfo().makeWH(
-        src_rect.Width(), src_rect.Height());
+    auto image_info = paint_image.GetSkImageInfo().makeWH(src_rect.Width(),
+                                                          src_rect.Height());
     auto resource_provider =
         CreateProvider(image->ContextProviderWrapper(), image_info, result,
                        true /* fallback_to_software*/);
@@ -578,7 +576,7 @@ ImageBitmap::ImageBitmap(ImageElementBase* image,
   ParsedOptions parsed_options =
       ParseOptions(options, crop_rect, image->BitmapSourceSize());
   parsed_options.source_is_unpremul =
-      (input->PaintImageForCurrentFrame().GetSkImage()->alphaType() ==
+      (input->PaintImageForCurrentFrame().GetAlphaType() ==
        kUnpremul_SkAlphaType);
   if (DstBufferSizeHasOverflow(parsed_options))
     return;
@@ -834,7 +832,7 @@ ImageBitmap::ImageBitmap(ImageBitmap* bitmap,
   ParsedOptions parsed_options =
       ParseOptions(options, crop_rect, input->Size());
   parsed_options.source_is_unpremul =
-      (input->PaintImageForCurrentFrame().GetSkImage()->alphaType() ==
+      (input->PaintImageForCurrentFrame().GetAlphaType() ==
        kUnpremul_SkAlphaType);
   if (DstBufferSizeHasOverflow(parsed_options))
     return;
@@ -855,7 +853,7 @@ ImageBitmap::ImageBitmap(scoped_refptr<StaticBitmapImage> image,
   ParsedOptions parsed_options =
       ParseOptions(options, crop_rect, image->Size());
   parsed_options.source_is_unpremul =
-      (image->PaintImageForCurrentFrame().GetSkImage()->alphaType() ==
+      (image->PaintImageForCurrentFrame().GetAlphaType() ==
        kUnpremul_SkAlphaType);
   if (DstBufferSizeHasOverflow(parsed_options))
     return;

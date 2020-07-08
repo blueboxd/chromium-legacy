@@ -53,21 +53,21 @@ public class AwContentCaptureTest {
         }
 
         @Override
-        protected void pullWhitelist() {
-            String[] whitelist = null;
+        protected void pullAllowlist() {
+            String[] allowlist = null;
             boolean[] isRegEx = null;
-            if (mWhiteList != null && mIsRegEx != null) {
-                mWhiteList.toArray(whitelist);
-                isRegEx = new boolean[mWhiteList.size()];
+            if (mAllowlist != null && mIsRegEx != null) {
+                mAllowlist.toArray(allowlist);
+                isRegEx = new boolean[mAllowlist.size()];
                 int i = 0;
                 for (boolean r : mIsRegEx) {
                     isRegEx[i++] = r;
                 }
             }
-            setWhitelist(whitelist, isRegEx);
+            setAllowlist(allowlist, isRegEx);
         }
 
-        private ArrayList<String> mWhiteList;
+        private ArrayList<String> mAllowlist;
         private ArrayList<Boolean> mIsRegEx;
     }
 

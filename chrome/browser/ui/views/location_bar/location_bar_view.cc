@@ -118,6 +118,7 @@
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -194,8 +195,18 @@ void LocationBarView::Init() {
 
   // Initiate the Omnibox additional-text label.
   if (OmniboxFieldTrial::IsRichAutocompletionEnabled()) {
+    // TODO (manukh) When the titles UI is disabled,
+    // |omnibox_additional_text_view| will only contain URLs and never page
+    // titles. It can safely be styled with STYLE_LINK. When the titles UI is
+    // enabled, it can contain either URLs or page titles. Ideally, its style
+    // would be updated appropriately, but given early consensus suggests titles
+    // UI is unlikely to launch, we don't have to worry about this case for now.
+    auto style = OmniboxFieldTrial::RichAutocompletionShowTitles()
+                     ? views::style::STYLE_PRIMARY
+                     : views::style::STYLE_LINK;
     auto omnibox_additional_text_view = std::make_unique<views::Label>(
-        base::string16(), ChromeTextContext::CONTEXT_OMNIBOX_DEEMPHASIZED);
+        base::string16(), ChromeTextContext::CONTEXT_OMNIBOX_DEEMPHASIZED,
+        style);
     omnibox_additional_text_view->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     omnibox_additional_text_view_ =
         AddChildView(std::move(omnibox_additional_text_view));

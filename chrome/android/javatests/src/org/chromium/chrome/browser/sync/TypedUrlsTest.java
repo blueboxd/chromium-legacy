@@ -8,6 +8,7 @@ import android.util.Pair;
 
 import androidx.test.filters.LargeTest;
 
+import org.hamcrest.Matchers;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -28,12 +29,12 @@ import org.chromium.components.sync.protocol.TypedUrlSpecifics;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaNotSatisfiedException;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.PageTransition;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 /**
  * Test suite for the typed URLs sync data type.
@@ -171,13 +172,16 @@ public class TypedUrlsTest {
     }
 
     private void waitForClientTypedUrlCount(int count) {
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(count, new Callable<Integer>() {
-            @Override
-            public Integer call() throws Exception {
-                return SyncTestUtil.getLocalData(mSyncTestRule.getTargetContext(), TYPED_URLS_TYPE)
-                        .size();
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            try {
+                Criteria.checkThat(
+                        SyncTestUtil.getLocalData(mSyncTestRule.getTargetContext(), TYPED_URLS_TYPE)
+                                .size(),
+                        Matchers.is(count));
+            } catch (JSONException ex) {
+                throw new CriteriaNotSatisfiedException(ex);
             }
-        }), SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
+        }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
     }
 
     private void waitForServerTypedUrlCountWithName(final int count, final String name) {

@@ -5345,50 +5345,6 @@ error::Error GLES2DecoderImpl::HandleBlendBarrierKHR(
   return error::kNoError;
 }
 
-error::Error
-GLES2DecoderImpl::HandleUniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  const volatile gles2::cmds::
-      UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate& c = *static_cast<
-          const volatile gles2::cmds::
-              UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate*>(cmd_data);
-  GLint location = static_cast<GLint>(c.location);
-  GLboolean transpose = static_cast<GLboolean>(c.transpose);
-  uint32_t transform_size;
-  if (!GLES2Util::ComputeDataSize<GLfloat, 16>(1, &transform_size)) {
-    return error::kOutOfBounds;
-  }
-  if (transform_size > immediate_data_size) {
-    return error::kOutOfBounds;
-  }
-  volatile const GLfloat* transform =
-      GetImmediateDataAs<volatile const GLfloat*>(c, transform_size,
-                                                  immediate_data_size);
-  if (transform == nullptr) {
-    return error::kOutOfBounds;
-  }
-  DoUniformMatrix4fvStreamTextureMatrixCHROMIUM(location, transpose, transform);
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderImpl::HandleOverlayPromotionHintCHROMIUM(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  const volatile gles2::cmds::OverlayPromotionHintCHROMIUM& c =
-      *static_cast<const volatile gles2::cmds::OverlayPromotionHintCHROMIUM*>(
-          cmd_data);
-  GLuint texture = c.texture;
-  GLboolean promotion_hint = static_cast<GLboolean>(c.promotion_hint);
-  GLint display_x = static_cast<GLint>(c.display_x);
-  GLint display_y = static_cast<GLint>(c.display_y);
-  GLint display_width = static_cast<GLint>(c.display_width);
-  GLint display_height = static_cast<GLint>(c.display_height);
-  DoOverlayPromotionHintCHROMIUM(texture, promotion_hint, display_x, display_y,
-                                 display_width, display_height);
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderImpl::HandleSwapBuffersWithBoundsCHROMIUMImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {

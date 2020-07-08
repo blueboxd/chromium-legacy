@@ -1248,6 +1248,7 @@ jumbo_component("base") {
   data = []
   data_deps = []
   libs = []
+  frameworks = []
 
   configs += [
     ":base_flags",
@@ -1864,9 +1865,13 @@ jumbo_component("base") {
     ]
 
     libs += [
+      "bsm",
+      "pmenergy",
+      "pmsample",
+    ]
+    frameworks += [
       "ApplicationServices.framework",
       "AppKit.framework",
-      "bsm",
       "CoreFoundation.framework",
       "IOKit.framework",
       "OpenDirectory.framework",
@@ -2012,7 +2017,7 @@ jumbo_component("base") {
       sources += [ "time/time_exploded_ios.cc" ]
     }
 
-    libs += [ "UIKit.framework" ]
+    frameworks += [ "UIKit.framework" ]
   }
 
   if (dep_libevent) {

@@ -25,6 +25,8 @@ per-file global_media_controls_strings.grdp=file://chrome/browser/ui/global_medi
 
 per-file media_router_strings.grdp=file://chrome/browser/media/router/OWNERS
 
+per-file nearby_share_strings.grdp=file://chrome/browser/nearby_sharing/OWNERS
+
 per-file welcome_strings.grdp=file://chrome/browser/ui/webui/welcome/OWNERS
 
 per-file printing_strings.grdp=file://printing/OWNERS

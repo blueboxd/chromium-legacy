@@ -90,7 +90,7 @@ class ScopedChildProcessWithTempDir {
 
 void DeleteSampleDll(const base::string16& sample_dll,
                      const base::FilePath& directory) {
-  CHECK(base::DeleteFile(directory.Append(sample_dll), /*recursive=*/false));
+  CHECK(base::DeleteFile(directory.Append(sample_dll)));
 }
 
 void ReplaceSampleDll(const base::string16& sample_dll,

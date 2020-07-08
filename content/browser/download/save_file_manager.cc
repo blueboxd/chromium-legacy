@@ -483,7 +483,7 @@ void SaveFileManager::CancelSave(SaveItemId save_item_id) {
       // We've won a race with the UI thread--we finished the file before
       // the UI thread cancelled it on us.  Unfortunately, in this situation
       // the cancel wins, so we need to delete the now detached file.
-      base::DeleteFile(save_file->FullPath(), false);
+      base::DeleteFile(save_file->FullPath());
     } else if (save_file->save_source() ==
                SaveFileCreateInfo::SAVE_FILE_FROM_NET) {
       GetUIThreadTaskRunner({})->PostTask(
@@ -562,7 +562,7 @@ void SaveFileManager::RemoveSavedFileFromFileMap(
     if (it != save_file_map_.end()) {
       SaveFile* save_file = it->second.get();
       DCHECK(!save_file->InProgress());
-      base::DeleteFile(save_file->FullPath(), false);
+      base::DeleteFile(save_file->FullPath());
       save_file_map_.erase(it);
     }
   }

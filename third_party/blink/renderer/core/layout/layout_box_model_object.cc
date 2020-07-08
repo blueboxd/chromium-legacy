@@ -1074,10 +1074,8 @@ bool LayoutBoxModelObject::IsSlowRepaintConstrainedObject() const {
     return false;
 
   // We're only smart enough to scroll viewport-constrainted objects
-  // in the compositor if they have their own backing or they paint
-  // into a grouped back (which necessarily all have the same viewport
-  // constraints).
-  return (layer->GetCompositingState() == kNotComposited);
+  // in the compositor if they are directly composited.
+  return !layer->CanBeCompositedForDirectReasons();
 }
 
 PhysicalRect LayoutBoxModelObject::ComputeStickyConstrainingRect() const {

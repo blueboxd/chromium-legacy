@@ -68,9 +68,9 @@ apps::mojom::IconKeyPtr LacrosApps::NewIconKey(State state) {
 void LacrosApps::Connect(
     mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
     apps::mojom::ConnectOptionsPtr opts) {
-  bool is_ready = chromeos::LacrosManager::Get()->IsReady();
+  bool is_ready = LacrosManager::Get()->IsReady();
   if (!is_ready) {
-    chromeos::LacrosManager::Get()->SetLoadCompleteCallback(base::BindOnce(
+    LacrosManager::Get()->SetLoadCompleteCallback(base::BindOnce(
         &LacrosApps::OnLoadComplete, weak_factory_.GetWeakPtr()));
   }
   std::vector<apps::mojom::AppPtr> apps;
@@ -105,7 +105,7 @@ void LacrosApps::Launch(const std::string& app_id,
                         apps::mojom::LaunchSource launch_source,
                         int64_t display_id) {
   DCHECK_EQ(extension_misc::kLacrosAppId, app_id);
-  chromeos::LacrosManager::Get()->Start();
+  LacrosManager::Get()->Start();
 }
 
 void LacrosApps::GetMenuModel(const std::string& app_id,

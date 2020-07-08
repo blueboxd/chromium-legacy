@@ -103,6 +103,8 @@ fdio_spawn_action_t FdioSpawnActionSetName(const char* name) {
 uint32_t LaunchOptions::AddHandleToTransfer(
     HandlesToTransferVector* handles_to_transfer,
     zx_handle_t handle) {
+  CHECK_LE(handles_to_transfer->size(), std::numeric_limits<uint16_t>::max())
+      << "Number of handles to transfer exceeds total allowed";
   uint32_t handle_id = PA_HND(PA_USER1, handles_to_transfer->size());
   handles_to_transfer->push_back({handle_id, handle});
   return handle_id;

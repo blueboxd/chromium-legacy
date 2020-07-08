@@ -762,7 +762,7 @@ class PDFViewerElement extends PDFViewerBaseElement {
     // responding to an incorrect password so deny it.
     const passwordScreen = this.$$('#password-screen');
     assert(passwordScreen);
-    if (passwordScreen.active) {
+    if (!passwordScreen.active) {
       this.hadPassword_ = true;
       passwordScreen.show();
     } else {

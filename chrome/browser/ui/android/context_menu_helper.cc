@@ -59,8 +59,8 @@ void ContextMenuHelper::ShowContextMenu(
   context_menu_params_ = params;
   gfx::NativeView view = web_contents_->GetNativeView();
   if (!params.link_url.is_empty()) {
-    PerformanceHintsObserver::RecordPerformanceUMAForURL(web_contents_,
-                                                         params.link_url);
+    performance_hints::PerformanceHintsObserver::RecordPerformanceUMAForURL(
+        web_contents_, params.link_url);
   }
   Java_ContextMenuHelper_showContextMenu(
       env, java_obj_,

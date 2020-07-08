@@ -1724,23 +1724,6 @@ void GL_APIENTRY GLES2BindFragDataLocationEXT(GLuint program,
 GLint GL_APIENTRY GLES2GetFragDataIndexEXT(GLuint program, const char* name) {
   return gles2::GetGLContext()->GetFragDataIndexEXT(program, name);
 }
-void GL_APIENTRY
-GLES2UniformMatrix4fvStreamTextureMatrixCHROMIUM(GLint location,
-                                                 GLboolean transpose,
-                                                 const GLfloat* transform) {
-  gles2::GetGLContext()->UniformMatrix4fvStreamTextureMatrixCHROMIUM(
-      location, transpose, transform);
-}
-void GL_APIENTRY GLES2OverlayPromotionHintCHROMIUM(GLuint texture,
-                                                   GLboolean promotion_hint,
-                                                   GLint display_x,
-                                                   GLint display_y,
-                                                   GLint display_width,
-                                                   GLint display_height) {
-  gles2::GetGLContext()->OverlayPromotionHintCHROMIUM(
-      texture, promotion_hint, display_x, display_y, display_width,
-      display_height);
-}
 void GL_APIENTRY GLES2SwapBuffersWithBoundsCHROMIUM(GLuint64 swap_id,
                                                     GLsizei count,
                                                     const GLint* rects,
@@ -3211,15 +3194,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glGetFragDataIndexEXT",
         reinterpret_cast<GLES2FunctionPointer>(glGetFragDataIndexEXT),
-    },
-    {
-        "glUniformMatrix4fvStreamTextureMatrixCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(
-            glUniformMatrix4fvStreamTextureMatrixCHROMIUM),
-    },
-    {
-        "glOverlayPromotionHintCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glOverlayPromotionHintCHROMIUM),
     },
     {
         "glSwapBuffersWithBoundsCHROMIUM",

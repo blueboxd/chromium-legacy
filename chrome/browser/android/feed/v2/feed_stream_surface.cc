@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -22,6 +23,7 @@
 
 using base::android::JavaParamRef;
 using base::android::JavaRef;
+using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaByteArray;
 
@@ -75,8 +77,12 @@ void FeedStreamSurface::StreamUpdate(
 }
 
 void FeedStreamSurface::LoadMore(JNIEnv* env,
-                                 const JavaParamRef<jobject>& obj) {
-  feed_stream_api_->LoadMore(GetSurfaceId(), base::DoNothing());
+                                 const JavaParamRef<jobject>& obj,
+                                 const JavaParamRef<jobject>& callback_obj) {
+  feed_stream_api_->LoadMore(
+      GetSurfaceId(),
+      base::BindOnce(&base::android::RunBooleanCallbackAndroid,
+                     ScopedJavaGlobalRef<jobject>(callback_obj)));
 }
 
 void FeedStreamSurface::ProcessThereAndBackAgain(

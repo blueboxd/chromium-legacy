@@ -15,6 +15,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -402,7 +403,7 @@ public class AutofillPopupTest {
     private void waitForKeyboardShowRequest(final TestInputMethodManagerWrapper immw,
             final int count) {
         CriteriaHelper.pollUiThread(
-                Criteria.equals(count, () -> immw.getShowSoftInputCounter()));
+                () -> Criteria.checkThat(immw.getShowSoftInputCounter(), Matchers.is(count)));
     }
 
     private void waitForAnchorViewAdd(final View view) {

@@ -49,7 +49,7 @@ void DeleteEmptyDirectories(base::FilePath directory) {
     // folders list for the corresponding UwS, because they are not necessarily
     // matched by any rule by the scanner.
     LOG(INFO) << "Deleting empty directory " << SanitizePath(directory);
-    if (!base::DeleteFile(directory, /*recursive=*/false))
+    if (!base::DeleteFile(directory))
       break;
     directory = directory.DirName();
   }
@@ -194,7 +194,7 @@ void FileRemover::RemoveFile(const base::FilePath& path,
     return;
   }
 
-  if (!base::DeleteFile(path, /*recursive=*/false)) {
+  if (!base::DeleteFile(path)) {
     // If the attempt to delete the file fails, propagate the failure as
     // normal so that the engine knows about it and can try a backup action,
     // but also register the file for post-reboot removal in case the engine

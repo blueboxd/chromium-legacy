@@ -114,7 +114,7 @@ std::pair<int64_t, int64_t> WriteReadData(int size,
     read_us = (tock - tick).InMicroseconds();
   }
 
-  CHECK(base::DeleteFile(path, false));
+  CHECK(base::DeleteFile(path));
   return {write_us, read_us};
 }
 
@@ -169,7 +169,7 @@ void RandomlyReadWrite(std::atomic<bool>* should_stop,
   }
 
   LOG(INFO) << "Noisy neighbor " << i << ": Finishing";
-  base::DeleteFile(path, false);
+  base::DeleteFile(path);
 }
 
 }  // namespace

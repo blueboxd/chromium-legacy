@@ -261,7 +261,7 @@ bool TrafficAnnotationAuditor::RunExtractor(
   }
 
   base::SetCurrentDirectory(original_path);
-  base::DeleteFile(options_filepath, false);
+  base::DeleteFile(options_filepath);
 
   return result;
 }

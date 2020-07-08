@@ -50,23 +50,23 @@ LocalExtensionCache::~LocalExtensionCache() {
 }
 
 void LocalExtensionCache::Init(bool wait_for_cache_initialization,
-                               const base::Closure& callback) {
+                               base::OnceClosure callback) {
   DCHECK_EQ(state_, kUninitialized);
 
   state_ = kWaitInitialization;
   if (wait_for_cache_initialization)
-    CheckCacheStatus(callback);
+    CheckCacheStatus(std::move(callback));
   else
-    CheckCacheContents(callback);
+    CheckCacheContents(std::move(callback));
 }
 
-void LocalExtensionCache::Shutdown(const base::Closure& callback) {
+void LocalExtensionCache::Shutdown(base::OnceClosure callback) {
   DCHECK_NE(state_, kShutdown);
   if (state_ == kReady)
     CleanUp();
   state_ = kShutdown;
   backend_task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),
-                                         callback);
+                                         std::move(callback));
 }
 
 // static
@@ -155,16 +155,16 @@ void LocalExtensionCache::PutExtension(const std::string& id,
                                        const std::string& expected_hash,
                                        const base::FilePath& file_path,
                                        const std::string& version,
-                                       const PutExtensionCallback& callback) {
+                                       PutExtensionCallback callback) {
   if (state_ != kReady) {
-    callback.Run(file_path, true);
+    std::move(callback).Run(file_path, true);
     return;
   }
 
   base::Version version_validator(version);
   if (!version_validator.IsValid()) {
     LOG(ERROR) << "Extension " << id << " has bad version " << version;
-    callback.Run(file_path, true);
+    std::move(callback).Run(file_path, true);
     return;
   }
 
@@ -174,14 +174,15 @@ void LocalExtensionCache::PutExtension(const std::string& id,
     LOG(WARNING) << "Cache contains newer or the same version "
                  << it->second.version << " for extension " << id << " version "
                  << version;
-    callback.Run(file_path, true);
+    std::move(callback).Run(file_path, true);
     return;
   }
 
   backend_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&LocalExtensionCache::BackendInstallCacheEntry,
-                                weak_ptr_factory_.GetWeakPtr(), cache_dir_, id,
-                                expected_hash, file_path, version, callback));
+      FROM_HERE,
+      base::BindOnce(&LocalExtensionCache::BackendInstallCacheEntry,
+                     weak_ptr_factory_.GetWeakPtr(), cache_dir_, id,
+                     expected_hash, file_path, version, std::move(callback)));
 }
 
 bool LocalExtensionCache::RemoveExtensionAt(const CacheMap::iterator& it,
@@ -237,23 +238,23 @@ void LocalExtensionCache::SetCacheStatusPollingDelayForTests(
   cache_status_polling_delay_ = delay;
 }
 
-void LocalExtensionCache::CheckCacheStatus(const base::Closure& callback) {
+void LocalExtensionCache::CheckCacheStatus(base::OnceClosure callback) {
   if (state_ == kShutdown) {
-    callback.Run();
+    std::move(callback).Run();
     return;
   }
 
   backend_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&LocalExtensionCache::BackendCheckCacheStatus,
-                     weak_ptr_factory_.GetWeakPtr(), cache_dir_, callback));
+      FROM_HERE, base::BindOnce(&LocalExtensionCache::BackendCheckCacheStatus,
+                                weak_ptr_factory_.GetWeakPtr(), cache_dir_,
+                                std::move(callback)));
 }
 
 // static
 void LocalExtensionCache::BackendCheckCacheStatus(
     base::WeakPtr<LocalExtensionCache> local_cache,
     const base::FilePath& cache_dir,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   base::FilePath ready_flag_file =
       cache_dir.AppendASCII(kCacheReadyFlagFileName);
   bool exists = base::PathExists(ready_flag_file);
@@ -280,46 +281,46 @@ void LocalExtensionCache::BackendCheckCacheStatus(
 
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(&LocalExtensionCache::OnCacheStatusChecked,
-                                local_cache, exists, callback));
+                                local_cache, exists, std::move(callback)));
 }
 
 void LocalExtensionCache::OnCacheStatusChecked(bool ready,
-                                               const base::Closure& callback) {
+                                               base::OnceClosure callback) {
   if (state_ == kShutdown) {
-    callback.Run();
+    std::move(callback).Run();
     return;
   }
 
   if (ready) {
-    CheckCacheContents(callback);
+    CheckCacheContents(std::move(callback));
   } else {
     content::GetUIThreadTaskRunner({})->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&LocalExtensionCache::CheckCacheStatus,
-                       weak_ptr_factory_.GetWeakPtr(), callback),
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
         cache_status_polling_delay_);
   }
 }
 
-void LocalExtensionCache::CheckCacheContents(const base::Closure& callback) {
+void LocalExtensionCache::CheckCacheContents(base::OnceClosure callback) {
   DCHECK_EQ(state_, kWaitInitialization);
   backend_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&LocalExtensionCache::BackendCheckCacheContents,
-                     weak_ptr_factory_.GetWeakPtr(), cache_dir_, callback));
+      FROM_HERE, base::BindOnce(&LocalExtensionCache::BackendCheckCacheContents,
+                                weak_ptr_factory_.GetWeakPtr(), cache_dir_,
+                                std::move(callback)));
 }
 
 // static
 void LocalExtensionCache::BackendCheckCacheContents(
     base::WeakPtr<LocalExtensionCache> local_cache,
     const base::FilePath& cache_dir,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   std::unique_ptr<CacheMap> cache_content(new CacheMap);
   BackendCheckCacheContentsInternal(cache_dir, cache_content.get());
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
       base::BindOnce(&LocalExtensionCache::OnCacheContentsChecked, local_cache,
-                     std::move(cache_content), callback));
+                     std::move(cache_content), std::move(callback)));
 }
 
 // static
@@ -471,10 +472,10 @@ void LocalExtensionCache::BackendCheckCacheContentsInternal(
 
 void LocalExtensionCache::OnCacheContentsChecked(
     std::unique_ptr<CacheMap> cache_content,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   cache_content->swap(cached_extensions_);
   state_ = kReady;
-  callback.Run();
+  std::move(callback).Run();
 }
 
 // static
@@ -503,7 +504,7 @@ void LocalExtensionCache::BackendInstallCacheEntry(
     const std::string& expected_hash,
     const base::FilePath& file_path,
     const std::string& version,
-    const PutExtensionCallback& callback) {
+    PutExtensionCallback callback) {
   std::string basename = ExtensionFileName(id, version, expected_hash);
   base::FilePath cached_crx_path = cache_dir.AppendASCII(basename);
 
@@ -534,19 +535,18 @@ void LocalExtensionCache::BackendInstallCacheEntry(
                      id,
                      CacheItemInfo(version, expected_hash, info.last_modified,
                                    info.size, cached_crx_path),
-                     was_error, callback));
+                     was_error, std::move(callback)));
 }
 
-void LocalExtensionCache::OnCacheEntryInstalled(
-    const std::string& id,
-    const CacheItemInfo& info,
-    bool was_error,
-    const PutExtensionCallback& callback) {
+void LocalExtensionCache::OnCacheEntryInstalled(const std::string& id,
+                                                const CacheItemInfo& info,
+                                                bool was_error,
+                                                PutExtensionCallback callback) {
   if (state_ == kShutdown || was_error) {
     // If |was_error| is true, it means that the |info.file_path| refers to the
     // original downloaded file, otherwise it refers to a file in cache, which
     // should not be deleted by CrxInstaller.
-    callback.Run(info.file_path, was_error);
+    std::move(callback).Run(info.file_path, was_error);
     return;
   }
 
@@ -554,14 +554,14 @@ void LocalExtensionCache::OnCacheEntryInstalled(
   if (it == cached_extensions_.end()) {
     LOG(WARNING) << "Cache contains newer or the same version for extension "
                  << id << " version " << info.version;
-    callback.Run(info.file_path, true);
+    std::move(callback).Run(info.file_path, true);
     return;
   }
 
   // Time from file system can have lower precision so use precise "now".
   it->second.last_used = base::Time::Now();
 
-  callback.Run(info.file_path, false);
+  std::move(callback).Run(info.file_path, false);
 }
 
 // static

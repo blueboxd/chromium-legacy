@@ -191,12 +191,10 @@ public class InfoBarTest {
         // Turn on accessibility, which should disable the infobar container from scrolling. This
         // polls as setAccessibilityEnabled() is async.
         setAccessibilityEnabled(true);
-        CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(false, () -> canInfoBarContainerScroll()));
+        CriteriaHelper.pollInstrumentationThread(() -> !canInfoBarContainerScroll());
 
         // Turn accessibility off and verify that the infobar container can scroll.
         setAccessibilityEnabled(false);
-        CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(true, () -> canInfoBarContainerScroll()));
+        CriteriaHelper.pollInstrumentationThread(() -> canInfoBarContainerScroll());
     }
 }

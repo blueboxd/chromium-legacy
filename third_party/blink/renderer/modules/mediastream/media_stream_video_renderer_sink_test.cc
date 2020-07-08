@@ -40,7 +40,6 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
     media_stream_source_ = MakeGarbageCollected<MediaStreamSource>(
         String::FromUTF8("dummy_source_id"), MediaStreamSource::kTypeVideo,
         String::FromUTF8("dummy_source_name"), false /* remote */);
-    mock_source_->SetOwner(media_stream_source_.Get());
     media_stream_source_->SetPlatformSource(base::WrapUnique(mock_source_));
     WebMediaStreamTrack web_track = MediaStreamVideoTrack::CreateVideoTrack(
         mock_source_, WebPlatformMediaStreamSource::ConstraintsOnceCallback(),

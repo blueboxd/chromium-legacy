@@ -2878,6 +2878,7 @@ void BrowserView::MaybeInitializeWebUITabStrip() {
       auto* const caption_button_container =
           frame_view->GetCaptionButtonContainer();
       if (caption_button_container) {
+        caption_button_container->set_paint_frame_background(true);
         webui_tab_strip_->AddChildViewAt(
             frame_view->RemoveChildViewT(caption_button_container), 0);
       }
@@ -2892,6 +2893,7 @@ void BrowserView::MaybeInitializeWebUITabStrip() {
     auto* const caption_button_container =
         frame_view->GetCaptionButtonContainer();
     if (caption_button_container) {
+      caption_button_container->set_paint_frame_background(false);
       frame_view->AddChildView(
           webui_tab_strip_->RemoveChildViewT(caption_button_container));
     }

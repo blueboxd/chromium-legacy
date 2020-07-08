@@ -1418,6 +1418,10 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_OmniboxOnly_Pinned[] = {
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_TrendyTerms[] = {
     {"start_surface_variation", "trendyterms"},
+    {"trendy_enabled", "true"},
+    {"trendy_success_min_period_ms", "30000"},
+    {"trendy_failure_min_period_ms", "10000"},
+    {"omnibox_scroll_mode", "quick"},
     {"hide_switch_when_no_incognito_tabs", "true"}};
 
 const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
@@ -1447,7 +1451,7 @@ const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
      base::size(kStartSurfaceAndroid_OmniboxOnly_Quick), nullptr},
     {"Omnibox Only, Pinned", kStartSurfaceAndroid_OmniboxOnly_Pinned,
      base::size(kStartSurfaceAndroid_OmniboxOnly_Pinned), nullptr},
-    {"Trendy Terms", kStartSurfaceAndroid_TrendyTerms,
+    {"Trendy Terms, Quick", kStartSurfaceAndroid_TrendyTerms,
      base::size(kStartSurfaceAndroid_TrendyTerms), nullptr}};
 
 const FeatureEntry::FeatureParam kConditionalTabStripAndroid_Immediate[] = {
@@ -2229,10 +2233,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"webui-tab-strip", flag_descriptions::kWebUITabStripName,
      flag_descriptions::kWebUITabStripDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kWebUITabStrip)},
-    {"webui-tab-strip-demo-options",
-     flag_descriptions::kWebUITabStripDemoOptionsName,
-     flag_descriptions::kWebUITabStripDemoOptionsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kWebUITabStripDemoOptions)},
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
     {"focus-mode", flag_descriptions::kFocusMode,
      flag_descriptions::kFocusModeDescription, kOsDesktop,
@@ -3226,6 +3226,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"arc-native-bridge-toggle", flag_descriptions::kArcNativeBridgeToggleName,
      flag_descriptions::kArcNativeBridgeToggleDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kNativeBridgeToggleFeature)},
+    {"arc-native-bridge-64bit-support-experiment",
+     flag_descriptions::kArcNativeBridge64BitSupportExperimentName,
+     flag_descriptions::kArcNativeBridge64BitSupportExperimentDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kNativeBridge64BitSupportExperimentFeature)},
     {"arc-usb-host", flag_descriptions::kArcUsbHostName,
      flag_descriptions::kArcUsbHostDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kUsbHostFeature)},
@@ -3558,6 +3563,17 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxUIElideToRegistrableDomainName,
      flag_descriptions::kOmniboxUIElideToRegistrableDomainDescription,
      kOsDesktop, FEATURE_VALUE_TYPE(omnibox::kElideToRegistrableDomain)},
+
+    {"omnibox-ui-hide-steady-state-url-scheme",
+     flag_descriptions::kOmniboxUIHideSteadyStateUrlSchemeName,
+     flag_descriptions::kOmniboxUIHideSteadyStateUrlSchemeDescription, kOsAll,
+     FEATURE_VALUE_TYPE(omnibox::kHideSteadyStateUrlScheme)},
+
+    {"omnibox-ui-hide-steady-state-url-trivial-subdomains",
+     flag_descriptions::kOmniboxUIHideSteadyStateUrlTrivialSubdomainsName,
+     flag_descriptions::
+         kOmniboxUIHideSteadyStateUrlTrivialSubdomainsDescription,
+     kOsAll, FEATURE_VALUE_TYPE(omnibox::kHideSteadyStateUrlTrivialSubdomains)},
 
     {"omnibox-ui-reveal-steady-state-url-path-query-and-ref-on-hover",
      flag_descriptions::
@@ -5553,14 +5569,16 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::
          kContextMenuPerformanceInfoAndRemoteHintFetchingDescription,
      kOsAndroid,
-     FEATURE_VALUE_TYPE(kContextMenuPerformanceInfoAndRemoteHintFetching)},
+     FEATURE_VALUE_TYPE(performance_hints::features::
+                            kContextMenuPerformanceInfoAndRemoteHintFetching)},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
     {"page-info-performance-hints",
      flag_descriptions::kPageInfoPerformanceHintsName,
      flag_descriptions::kPageInfoPerformanceHintsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(kPageInfoPerformanceHints)},
+     FEATURE_VALUE_TYPE(
+         performance_hints::features::kPageInfoPerformanceHints)},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)

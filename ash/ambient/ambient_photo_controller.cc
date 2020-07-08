@@ -135,7 +135,7 @@ void WriteFile(const base::FilePath& path, const std::string& data) {
   int written_size = base::WriteFile(temp_file, data.data(), size);
   if (written_size != size) {
     LOG(ERROR) << "Cannot write the temporary file.";
-    base::DeleteFile(temp_file, /*recursive=*/false);
+    base::DeleteFile(temp_file);
     return;
   }
 

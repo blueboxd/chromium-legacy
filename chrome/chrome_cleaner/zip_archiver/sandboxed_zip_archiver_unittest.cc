@@ -202,7 +202,7 @@ TEST_F(ZipArchiverSandboxedArchiverTest, Archive) {
 }
 
 TEST_F(ZipArchiverSandboxedArchiverTest, SourceFileNotFound) {
-  ASSERT_TRUE(base::DeleteFile(test_file_.GetSourceFilePath(), false));
+  ASSERT_TRUE(base::DeleteFile(test_file_.GetSourceFilePath()));
 
   EXPECT_EQ(ZipArchiverResultCode::kErrorCannotOpenSourceFile,
             Archive(test_file_.GetSourceFilePath()));

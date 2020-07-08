@@ -218,7 +218,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   bool in_gpu_initialization_ = false;
 
   // The number of logical processors/cores on the current machine.
-  unsigned num_of_processors_;
+  int num_of_processors_ = 0;
 
   // Don't kill the GPU process immediately after a gpu hang is detected. Wait
   // for extra cycles of timeout. Kill it, if the GPU still doesn't respond

@@ -2592,6 +2592,11 @@ void RenderWidgetHostViewAura::TransferTouches(
   env->gesture_recognizer()->TransferTouches(window(), touches);
 }
 
+void RenderWidgetHostViewAura::SetLastPointerType(
+    ui::EventPointerType last_pointer_type) {
+  last_pointer_type_ = last_pointer_type;
+}
+
 void RenderWidgetHostViewAura::InvalidateLocalSurfaceIdOnEviction() {
   window_->InvalidateLocalSurfaceId();
 }

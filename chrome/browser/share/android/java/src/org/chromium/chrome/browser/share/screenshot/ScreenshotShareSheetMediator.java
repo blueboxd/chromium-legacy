@@ -30,7 +30,7 @@ class ScreenshotShareSheetMediator {
     private final Runnable mInstallRunnable;
     private final ChromeOptionShareCallback mChromeOptionShareCallback;
 
-    private Tab mTab;
+    private final Tab mTab;
 
     /**
      * The ScreenshotShareSheetMediator constructor.
@@ -67,6 +67,7 @@ class ScreenshotShareSheetMediator {
             share();
         } else if (NoArgOperation.SAVE == operation) {
             mSaveRunnable.run();
+            mDeleteRunnable.run();
         } else if (NoArgOperation.DELETE == operation) {
             mDeleteRunnable.run();
         } else if (NoArgOperation.INSTALL == operation) {

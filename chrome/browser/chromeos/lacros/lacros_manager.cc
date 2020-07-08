@@ -40,7 +40,6 @@
 // to debug and develop. Get rid of the log spamming
 // when it gets stable enough.
 
-namespace chromeos {
 namespace {
 
 // Pointer to the global instance of LacrosManager.
@@ -326,5 +325,3 @@ void LacrosManager::OnLoadComplete(const base::FilePath& path) {
     std::move(load_complete_callback_).Run(success);
   }
 }
-
-}  // namespace chromeos

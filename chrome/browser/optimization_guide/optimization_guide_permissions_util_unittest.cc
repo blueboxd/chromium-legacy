@@ -194,7 +194,8 @@ TEST_F(OptimizationGuidePermissionsUtilTest,
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {optimization_guide::features::kRemoteOptimizationGuideFetching,
-       kContextMenuPerformanceInfoAndRemoteHintFetching},
+       performance_hints::features::
+           kContextMenuPerformanceInfoAndRemoteHintFetching},
       {});
   SetDataSaverEnabled(false);
   SetSyncServiceEnabled(false);
@@ -210,7 +211,8 @@ TEST_F(OptimizationGuidePermissionsUtilTest,
       {optimization_guide::features::kRemoteOptimizationGuideFetching,
        optimization_guide::features::
            kRemoteOptimizationGuideFetchingAnonymousDataConsent,
-       kContextMenuPerformanceInfoAndRemoteHintFetching},
+       performance_hints::features::
+           kContextMenuPerformanceInfoAndRemoteHintFetching},
       {});
   SetDataSaverEnabled(true);
   SetInfobarSeen(true);

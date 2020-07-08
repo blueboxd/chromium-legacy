@@ -545,6 +545,14 @@ const char kExpectedStructTreeJSON[] = R"({
          } ]
       } ]
    }, {
+      "type": "Div",
+      "~children": [ {
+         "type": "Link",
+         "~children": [ {
+            "type": "NonStruct"
+         } ]
+      } ]
+   }, {
       "type": "Table",
       "~children": [ {
          "type": "TR",

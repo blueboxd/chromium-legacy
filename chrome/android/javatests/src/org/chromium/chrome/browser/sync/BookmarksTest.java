@@ -8,6 +8,7 @@ import android.util.Pair;
 
 import androidx.test.filters.LargeTest;
 
+import org.hamcrest.Matchers;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -28,6 +29,7 @@ import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.protocol.BookmarkSpecifics;
 import org.chromium.components.sync.protocol.SyncEntity;
 import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaNotSatisfiedException;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
@@ -492,14 +494,17 @@ public class BookmarksTest {
     }
 
     private void waitForClientBookmarkCount(int n) {
-        mSyncTestRule.pollInstrumentationThread(Criteria.equals(n, new Callable<Integer>() {
-            @Override
-            public Integer call() throws Exception {
-                return SyncTestUtil
-                        .getLocalData(mSyncTestRule.getTargetContext(), BOOKMARKS_TYPE_STRING)
-                        .size();
+        mSyncTestRule.pollInstrumentationThread(() -> {
+            try {
+                Criteria.checkThat(SyncTestUtil
+                                           .getLocalData(mSyncTestRule.getTargetContext(),
+                                                   BOOKMARKS_TYPE_STRING)
+                                           .size(),
+                        Matchers.is(n));
+            } catch (JSONException ex) {
+                throw new CriteriaNotSatisfiedException(ex);
             }
-        }));
+        });
     }
 
     private void waitForServerBookmarkCountWithName(final int count, final String name) {

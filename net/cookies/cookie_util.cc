@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
@@ -331,23 +332,33 @@ base::Time ParseCookieExpirationTime(const std::string& time_string) {
   return base::Time();
 }
 
-GURL CookieOriginToURL(const std::string& domain, bool is_https) {
-  if (domain.empty())
+GURL CookieDomainAndPathToURL(const std::string& domain,
+                              const std::string& path,
+                              const std::string& source_scheme) {
+  // Note: domain_no_dot could be empty for e.g. file cookies.
+  std::string domain_no_dot = CookieDomainAsHost(domain);
+  if (domain_no_dot.empty() || source_scheme.empty())
     return GURL();
+  return GURL(base::StrCat(
+      {source_scheme, url::kStandardSchemeSeparator, domain_no_dot, path}));
+}
 
-  const std::string scheme = is_https ? url::kHttpsScheme : url::kHttpScheme;
-  return GURL(scheme + url::kStandardSchemeSeparator +
-              CookieDomainAsHost(domain) + "/");
+GURL CookieDomainAndPathToURL(const std::string& domain,
+                              const std::string& path,
+                              bool is_https) {
+  return CookieDomainAndPathToURL(
+      domain, path,
+      std::string(is_https ? url::kHttpsScheme : url::kHttpScheme));
+}
+
+GURL CookieOriginToURL(const std::string& domain, bool is_https) {
+  return CookieDomainAndPathToURL(domain, "/", is_https);
 }
 
 GURL SimulatedCookieSource(const CanonicalCookie& cookie,
                            const std::string& source_scheme) {
-  // Note: cookie.DomainWithoutDot() could be empty for e.g. file cookies.
-  if (cookie.DomainWithoutDot().empty() || source_scheme.empty())
-    return GURL();
-
-  return GURL(source_scheme + url::kStandardSchemeSeparator +
-              cookie.DomainWithoutDot() + cookie.Path());
+  return CookieDomainAndPathToURL(cookie.Domain(), cookie.Path(),
+                                  source_scheme);
 }
 
 bool IsDomainMatch(const std::string& domain, const std::string& host) {

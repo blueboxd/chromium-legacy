@@ -5,6 +5,7 @@
 module media.mojom;
 
 import "chrome/browser/media/feeds/media_feeds_store.mojom";
+import "url/mojom/origin.mojom";
 
 // The credentials required to make Google API calls from JS.
 struct Credentials {
@@ -27,4 +28,8 @@ interface KaleidoscopeDataProvider {
 
   // Retrieves the current credentials.
   GetCredentials() => (Credentials credentials);
+
+  // Returns all the watch time origins from media history store that have
+  // watch time above a threshold.
+  GetHighWatchTimeOrigins() => (array<url.mojom.Origin> origins);
 };

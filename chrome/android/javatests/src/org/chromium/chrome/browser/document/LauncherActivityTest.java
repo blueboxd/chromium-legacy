@@ -15,6 +15,7 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -33,7 +34,6 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -113,13 +113,10 @@ public class LauncherActivityTest {
         mContext.startActivity(intent);
 
         // Check that ChromeLauncher Activity successfully launched
-        CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(ApplicationState.HAS_RUNNING_ACTIVITIES, new Callable<Integer>() {
-                    @Override
-                    public Integer call() {
-                        return ApplicationStatus.getStateForApplication();
-                    }
-                }));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(ApplicationStatus.getStateForApplication(),
+                    Matchers.is(ApplicationState.HAS_RUNNING_ACTIVITIES));
+        });
 
         // Check that Chrome proper was successfully launched as a follow-up
         final AtomicReference<Activity> launchedActivity = new AtomicReference<>();

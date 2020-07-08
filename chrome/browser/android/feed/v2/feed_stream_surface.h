@@ -31,7 +31,9 @@ class FeedStreamSurface : public FeedStreamApi::SurfaceInterface {
 
   void OnStreamUpdated(const feedui::StreamUpdate& stream_update);
 
-  void LoadMore(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void LoadMore(JNIEnv* env,
+                const base::android::JavaParamRef<jobject>& obj,
+                const base::android::JavaParamRef<jobject>& callback_obj);
 
   void ProcessThereAndBackAgain(
       JNIEnv* env,

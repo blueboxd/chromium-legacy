@@ -40,9 +40,9 @@ class BluetoothLocalGattServiceBlueZ
   bool IsPrimary() const override;
 
   // device::BluetoothLocalGattService overrides.
-  void Register(const base::Closure& callback,
+  void Register(base::OnceClosure callback,
                 ErrorCallback error_callback) override;
-  void Unregister(const base::Closure& callback,
+  void Unregister(base::OnceClosure callback,
                   ErrorCallback error_callback) override;
   bool IsRegistered() override;
   void Delete() override;

@@ -107,7 +107,7 @@ jumbo_component("service") {
     ]
     deps += [ "//ui/accelerated_widget_mac" ]
     lib_dirs = [ "$mac_sdk_path/usr/lib" ]
-    libs += [
+    frameworks = [
       "CoreGraphics.framework",
       "IOSurface.framework",
       "OpenGL.framework",

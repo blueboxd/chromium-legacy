@@ -792,7 +792,7 @@ PlatformJobId PrintSystemCUPS::SpoolPrintJob(
       PrintFile(server_info->url, cups_encryption_, short_printer_name.c_str(),
                 print_data_file_path.value().c_str(), job_title.c_str(),
                 cups_options.size(), cups_options.data());
-  base::DeleteFile(print_data_file_path, false);
+  base::DeleteFile(print_data_file_path);
 
   // TODO(alexyu): Output printer id.
   VLOG(1) << "CP_CUPS: Job spooled"

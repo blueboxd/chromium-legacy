@@ -187,6 +187,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       override;
   void TransferTouches(
       const std::vector<std::unique_ptr<ui::TouchEvent>>& touches) override;
+  // TODO(lanwei): Use TestApi interface to write functions that are used in
+  // tests and remove FRIEND_TEST_ALL_PREFIXES.
+  void SetLastPointerType(ui::EventPointerType last_pointer_type) override;
 
   // Overridden from ui::TextInputClient:
   void SetCompositionText(const ui::CompositionText& composition) override;
@@ -349,11 +352,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   void ScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
 
-  // TODO(lanwei): Use TestApi interface to write functions that are used in
-  // tests and remove FRIEND_TEST_ALL_PREFIXES.
-  void SetLastPointerType(ui::EventPointerType last_pointer_type) {
-    last_pointer_type_ = last_pointer_type;
-  }
   ui::EventPointerType GetLastPointerType() const { return last_pointer_type_; }
 
   MouseWheelPhaseHandler* GetMouseWheelPhaseHandler() override;

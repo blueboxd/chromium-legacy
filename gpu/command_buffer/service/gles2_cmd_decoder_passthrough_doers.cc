@@ -5103,59 +5103,6 @@ error::Error GLES2DecoderPassthroughImpl::DoGetFragDataIndexEXT(
   return error::kNoError;
 }
 
-error::Error
-GLES2DecoderPassthroughImpl::DoUniformMatrix4fvStreamTextureMatrixCHROMIUM(
-    GLint location,
-    GLboolean transpose,
-    const volatile GLfloat* transform) {
-  constexpr GLenum kTextureTarget = GL_TEXTURE_EXTERNAL_OES;
-  scoped_refptr<TexturePassthrough> bound_texture =
-      bound_textures_[static_cast<size_t>(
-          GLenumToTextureTarget(kTextureTarget))][active_texture_unit_]
-          .texture;
-  if (!bound_texture) {
-    InsertError(GL_INVALID_OPERATION, "no texture bound");
-    return error::kNoError;
-  }
-
-  api()->glUniformMatrix4fvFn(location, 1, transpose,
-                              const_cast<const GLfloat*>(transform));
-
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderPassthroughImpl::DoOverlayPromotionHintCHROMIUM(
-    GLuint texture,
-    GLboolean promotion_hint,
-    GLint display_x,
-    GLint display_y,
-    GLint display_width,
-    GLint display_height) {
-  if (texture == 0) {
-    return error::kNoError;
-  }
-
-  scoped_refptr<TexturePassthrough> passthrough_texture = nullptr;
-  if (!resources_->texture_object_map.GetServiceID(texture,
-                                                   &passthrough_texture) ||
-      passthrough_texture == nullptr) {
-    InsertError(GL_INVALID_VALUE, "invalid texture id");
-    return error::kNoError;
-  }
-
-  GLStreamTextureImage* image =
-      passthrough_texture->GetStreamLevelImage(GL_TEXTURE_EXTERNAL_OES, 0);
-  if (!image) {
-    InsertError(GL_INVALID_OPERATION, "texture has no StreamTextureImage");
-    return error::kNoError;
-  }
-
-  image->NotifyPromotionHint(promotion_hint != GL_FALSE, display_x, display_y,
-                             display_width, display_height);
-
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderPassthroughImpl::DoSetDrawRectangleCHROMIUM(
     GLint x,
     GLint y,

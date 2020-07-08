@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "components/performance_manager/decorators/page_load_tracker_decorator.h"
+#include "components/performance_manager/execution_context/execution_context_registry_impl.h"
 #include "components/performance_manager/graph/frame_node_impl_describer.h"
 #include "components/performance_manager/graph/page_node_impl_describer.h"
 #include "components/performance_manager/graph/process_node_impl_describer.h"
@@ -22,6 +23,8 @@ namespace {
 void DefaultGraphCreatedCallback(
     GraphCreatedCallback external_graph_created_callback,
     GraphImpl* graph) {
+  graph->PassToGraph(
+      std::make_unique<execution_context::ExecutionContextRegistryImpl>());
   graph->PassToGraph(std::make_unique<FrameNodeImplDescriber>());
   graph->PassToGraph(std::make_unique<PageLiveStateDecorator>());
   graph->PassToGraph(std::make_unique<PageLoadTrackerDecorator>());

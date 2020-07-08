@@ -335,7 +335,6 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
         blink::scheduler::GetSingleThreadTaskRunnerForTesting());
     auto* processed_audio_source_ptr = processed_audio_source.get();
     processed_audio_source->SetAllowInvalidRenderFrameIdForTesting(true);
-    processed_audio_source->SetOwner(audio_source);
     audio_source->SetPlatformSource(std::move(processed_audio_source));
 
     auto* video_source = MakeGarbageCollected<MediaStreamSource>(
@@ -343,7 +342,6 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
         String::FromUTF8("video_track"), false /* remote */);
     auto native_video_source = std::make_unique<MockMediaStreamVideoSource>();
     auto* native_video_source_ptr = native_video_source.get();
-    native_video_source->SetOwner(video_source);
     video_source->SetPlatformSource(std::move(native_video_source));
 
     HeapVector<Member<MediaStreamComponent>> audio_components(

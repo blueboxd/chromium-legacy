@@ -13,6 +13,7 @@ import android.util.Pair;
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -124,14 +125,10 @@ public class MediaLauncherActivityTest {
         CustomTabActivity cta = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), CustomTabActivity.class, trigger);
 
-        CriteriaHelper.pollUiThread(Criteria.equals(expectedUrl, new Callable<String>() {
-            @Override
-            public String call() {
-                Tab tab = cta.getActivityTab();
-                if (tab == null) return null;
-
-                return tab.getUrlString();
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Tab tab = cta.getActivityTab();
+            Criteria.checkThat(tab, Matchers.notNullValue());
+            Criteria.checkThat(tab.getUrlString(), Matchers.is(expectedUrl));
+        });
     }
 }

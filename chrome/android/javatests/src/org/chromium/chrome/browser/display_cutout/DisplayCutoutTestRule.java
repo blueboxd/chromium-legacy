@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.display_cutout;
 import android.graphics.Rect;
 import android.support.test.InstrumentationRegistry;
 
+import org.hamcrest.Matchers;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -22,6 +23,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaNotSatisfiedException;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -214,29 +216,38 @@ public class DisplayCutoutTestRule<T extends ChromeActivity> extends ChromeActiv
     public void exitFullscreen() {
         JavaScriptUtils.executeJavaScript(mTab.getWebContents(), "document.webkitExitFullscreen()");
 
-        CriteriaHelper.pollUiThread(Criteria.equals(false, () -> mIsTabFullscreen), TEST_TIMEOUT,
-                CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollUiThread(
+                () -> !mIsTabFullscreen, TEST_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     /** Wait for the main frame to have a certain applied safe area. */
     public void waitForSafeArea(Rect expected) {
-        CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(expected, () -> getAppliedSafeArea()), TEST_TIMEOUT,
-                CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            try {
+                Criteria.checkThat(getAppliedSafeArea(), Matchers.is(expected));
+            } catch (TimeoutException ex) {
+                throw new CriteriaNotSatisfiedException(ex);
+            }
+        }, TEST_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     /** Wait for the sub frame to have a certain applied safe area. */
     public void waitForSafeAreaOnSubframe(Rect expected) {
-        CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(expected, () -> getAppliedSafeAreaOnSubframe()), TEST_TIMEOUT,
-                CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            try {
+                Criteria.checkThat(getAppliedSafeAreaOnSubframe(), Matchers.is(expected));
+            } catch (TimeoutException ex) {
+                throw new CriteriaNotSatisfiedException(ex);
+            }
+        }, TEST_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     /** Wait for the tab to have a certain {@layoutInDisplayCutoutMode. */
     public void waitForLayoutInDisplayCutoutMode(int expected) {
-        CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(expected, () -> mTestController.getLayoutInDisplayCutoutMode()),
-                TEST_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(
+                    mTestController.getLayoutInDisplayCutoutMode(), Matchers.is(expected));
+        }, TEST_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     /** Enter fullscreen on the subframe and wait for the tab to go fullscreen. */
@@ -286,7 +297,7 @@ public class DisplayCutoutTestRule<T extends ChromeActivity> extends ChromeActiv
     private void enterFullscreenUsingButton(String id) throws TimeoutException {
         Assert.assertTrue(DOMUtils.clickNode(mTab.getWebContents(), id));
 
-        CriteriaHelper.pollUiThread(Criteria.equals(true, () -> mIsTabFullscreen), TEST_TIMEOUT,
-                CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollUiThread(
+                () -> mIsTabFullscreen, TEST_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 }

@@ -46,40 +46,48 @@ TextAttachment::Type GetCommonTextAttachmentType(
   return type;
 }
 
-base::string16 GetUnknownAttachmentsString(size_t count) {
-  // TODO(crbug.com/1102348): Provide translated string.
-  return base::string16();
-}
-
-base::string16 GetFileAttachmentsString(
-    const std::vector<FileAttachment>& files) {
-  // TODO(crbug.com/1102348): Add translated special cases for file types.
+int GetFileAttachmentsStringId(const std::vector<FileAttachment>& files) {
   switch (GetCommonFileAttachmentType(files)) {
+    case FileAttachment::Type::kApp:
+      return IDS_NEARBY_FILE_ATTACHMENTS_APPS;
+    case FileAttachment::Type::kImage:
+      return IDS_NEARBY_FILE_ATTACHMENTS_IMAGES;
+    case FileAttachment::Type::kUnknown:
+      return IDS_NEARBY_FILE_ATTACHMENTS_UNKNOWN;
+    case FileAttachment::Type::kVideo:
+      return IDS_NEARBY_FILE_ATTACHMENTS_VIDEOS;
     default:
-      return GetUnknownAttachmentsString(files.size());
+      return IDS_NEARBY_UNKNOWN_ATTACHMENTS;
   }
 }
 
-base::string16 GetTextAttachmentsString(
-    const std::vector<TextAttachment>& texts) {
-  // TODO(crbug.com/1102348): Add translated special cases for text types.
+int GetTextAttachmentsStringId(const std::vector<TextAttachment>& texts) {
   switch (GetCommonTextAttachmentType(texts)) {
+    case TextAttachment::Type::kAddress:
+      return IDS_NEARBY_TEXT_ATTACHMENTS_ADDRESSES;
+    case TextAttachment::Type::kPhoneNumber:
+      return IDS_NEARBY_TEXT_ATTACHMENTS_PHONE_NUMBERS;
+    case TextAttachment::Type::kText:
+      return IDS_NEARBY_TEXT_ATTACHMENTS_UNKNOWN;
+    case TextAttachment::Type::kUrl:
+      return IDS_NEARBY_TEXT_ATTACHMENTS_LINKS;
     default:
-      return GetUnknownAttachmentsString(texts.size());
+      return IDS_NEARBY_UNKNOWN_ATTACHMENTS;
   }
 }
 
 base::string16 GetAttachmentsString(const ShareTarget& share_target) {
   size_t file_count = share_target.file_attachments().size();
   size_t text_count = share_target.text_attachments().size();
+  int resource_id = IDS_NEARBY_UNKNOWN_ATTACHMENTS;
 
   if (file_count > 0 && text_count == 0)
-    return GetFileAttachmentsString(share_target.file_attachments());
+    resource_id = GetFileAttachmentsStringId(share_target.file_attachments());
 
   if (text_count > 0 && file_count == 0)
-    return GetTextAttachmentsString(share_target.text_attachments());
+    resource_id = GetTextAttachmentsStringId(share_target.text_attachments());
 
-  return GetUnknownAttachmentsString(file_count + text_count);
+  return l10n_util::GetPluralStringFUTF16(resource_id, text_count + file_count);
 }
 
 }  // namespace
@@ -99,19 +107,20 @@ void NearbyNotificationManager::ShowProgress(
 
   message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_PROGRESS, kNearbyNotificationId,
-      // TODO(crbug.com/1102348): Provide translated title.
-      /*title=*/GetAttachmentsString(share_target),
+      l10n_util::GetStringFUTF16(
+          IDS_NEARBY_NOTIFICATION_SEND_PROGRESS_TITLE,
+          GetAttachmentsString(share_target),
+          base::ASCIIToUTF16(share_target.device_name())),
       /*message=*/base::string16(),
       /*icon=*/gfx::Image(),
-      // TODO(crbug.com/1102348): Provide translated source.
-      /*display_source=*/base::string16(),
+      l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_SOURCE),
       /*origin_url=*/GURL(),
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNearbyNotifier),
       rich_notification_data,
       /*delegate=*/nullptr);
 
-  // TODO(crbug.com/1102348): Set Nearby Share icon.
+  notification.set_vector_small_image(kNearbyShareIcon);
   notification.set_progress(100.0 * transfer_metadata.progress());
 
   std::vector<message_center::ButtonInfo> notification_actions;

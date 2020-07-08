@@ -106,6 +106,11 @@ class LocationBarModelImplTest : public testing::Test {
 
 TEST_F(LocationBarModelImplTest,
        DisplayUrlAppliesFormattedStringWithEquivalentMeaning) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({omnibox::kHideSteadyStateUrlScheme,
+                                 omnibox::kHideSteadyStateUrlTrivialSubdomains},
+                                {});
+
   delegate()->SetURL(GURL("http://www.google.com/"));
 
   // Verify that both the full formatted URL and the display URL add the test
@@ -179,6 +184,11 @@ TEST_F(LocationBarModelImplTest, FormatsReaderModeUrls) {
 #define MAYBE_PreventElisionWorks PreventElisionWorks
 #endif
 TEST_F(LocationBarModelImplTest, MAYBE_PreventElisionWorks) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({omnibox::kHideSteadyStateUrlScheme,
+                                 omnibox::kHideSteadyStateUrlTrivialSubdomains},
+                                {});
+
   delegate()->SetShouldPreventElision(true);
   delegate()->SetURL(GURL("https://www.google.com/search?q=foo+query+unelide"));
 

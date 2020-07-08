@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/url_formatter/url_formatter.h"
 #include "sql/statement.h"
@@ -631,9 +632,10 @@ void URLDatabase::GetMostRecentKeywordSearchTerms(
   }
 }
 
-std::vector<KeywordSearchTermVisit>
-URLDatabase::GetMostRecentKeywordSearchTerms(KeywordID keyword_id,
-                                             int max_count) {
+std::vector<NormalizedKeywordSearchTermVisit>
+URLDatabase::GetMostRecentNormalizedKeywordSearchTerms(
+    KeywordID keyword_id,
+    base::Time age_threshold) {
   // NOTE: the keyword_id can be zero if on first run the user does a query
   // before the TemplateURLService has finished loading. As the chances of this
   // occurring are small, we ignore it.
@@ -642,22 +644,23 @@ URLDatabase::GetMostRecentKeywordSearchTerms(KeywordID keyword_id,
 
   sql::Statement statement(GetDB().GetCachedStatement(
       SQL_FROM_HERE,
-      "SELECT DISTINCT "
-      "kv.term, kv.normalized_term, u.visit_count, u.last_visit_time "
+      "SELECT "
+      "kv.normalized_term, SUM(u.visit_count), MAX(u.last_visit_time) "
       "FROM keyword_search_terms kv JOIN urls u ON kv.url_id = u.id "
-      "WHERE kv.keyword_id = ? "
-      "ORDER BY u.last_visit_time DESC LIMIT ?"));
+      "WHERE kv.keyword_id = ? AND u.last_visit_time > ? "
+      "AND kv.normalized_term IS NOT NULL AND kv.normalized_term != \"\" "
+      "GROUP BY kv.normalized_term"));
 
   statement.BindInt64(0, keyword_id);
-  statement.BindInt(1, max_count);
+  statement.BindInt64(1, age_threshold.ToInternalValue());
 
-  std::vector<KeywordSearchTermVisit> visits;
+  std::vector<NormalizedKeywordSearchTermVisit> visits;
   while (statement.Step()) {
-    KeywordSearchTermVisit visit;
-    visit.term = statement.ColumnString16(0);
-    visit.normalized_term = statement.ColumnString16(1);
-    visit.visits = statement.ColumnInt(2);
-    visit.time = base::Time::FromInternalValue(statement.ColumnInt64(3));
+    NormalizedKeywordSearchTermVisit visit;
+    visit.normalized_term = statement.ColumnString16(0);
+    visit.visits = statement.ColumnInt(1);
+    visit.most_recent_visit_time =
+        base::Time::FromInternalValue(statement.ColumnInt64(2));
     visits.push_back(visit);
   }
   return visits;

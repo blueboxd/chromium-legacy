@@ -121,7 +121,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
                               int64_t quota,
                               blink::mojom::UsageBreakdownPtr usage_breakdown)>;
 
-  static const int64_t kNoLimit;
+  static constexpr int64_t kNoLimit = INT64_MAX;
+  static constexpr int64_t kMBytes = 1024 * 1024;
+  static constexpr int kMinutesInMilliSeconds = 60 * 1000;
 
   QuotaManager(bool is_incognito,
                const base::FilePath& profile_path,
@@ -249,13 +251,23 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   void SetStoragePressureCallback(
       base::RepeatingCallback<void(url::Origin)> storage_pressure_callback);
 
-  static const int64_t kPerHostPersistentQuotaLimit;
-  static const char kDatabaseName[];
-  static const int kThresholdOfErrorsToBeBlacklisted;
-  static const int kEvictionIntervalInMilliSeconds;
-  static const char kDaysBetweenRepeatedOriginEvictionsHistogram[];
-  static const char kEvictedOriginAccessedCountHistogram[];
-  static const char kEvictedOriginDaysSinceAccessHistogram[];
+  // Cap size for per-host persistent quota determined by the histogram.
+  // This is a bit lax value because the histogram says nothing about per-host
+  // persistent storage usage and we determined by global persistent storage
+  // usage that is less than 10GB for almost all users.
+  static constexpr int64_t kPerHostPersistentQuotaLimit = 10 * 1024 * kMBytes;
+
+  static constexpr int kEvictionIntervalInMilliSeconds =
+      30 * kMinutesInMilliSeconds;
+  static constexpr int kThresholdOfErrorsToBeBlacklisted = 3;
+
+  static constexpr char kDatabaseName[] = "QuotaManager";
+  static constexpr char kDaysBetweenRepeatedOriginEvictionsHistogram[] =
+      "Quota.DaysBetweenRepeatedOriginEvictions";
+  static constexpr char kEvictedOriginAccessedCountHistogram[] =
+      "Quota.EvictedOriginAccessCount";
+  static constexpr char kEvictedOriginDaysSinceAccessHistogram[] =
+      "Quota.EvictedOriginDaysSinceAccess";
 
   // Kept non-const so that test code can change the value.
   // TODO(kinuko): Make this a real const value and add a proper way to set

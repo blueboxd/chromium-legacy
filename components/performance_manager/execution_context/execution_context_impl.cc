@@ -1,0 +1,159 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/performance_manager/execution_context/execution_context_impl.h"
+
+#include "base/sequence_checker.h"
+#include "base/util/type_safety/pass_key.h"
+#include "components/performance_manager/graph/frame_node_impl.h"
+#include "components/performance_manager/graph/node_attached_data_impl.h"
+#include "components/performance_manager/graph/worker_node_impl.h"
+#include "components/performance_manager/public/execution_context/execution_context.h"
+
+namespace performance_manager {
+namespace execution_context {
+
+// Allows accessing internal NodeAttachedData storage for ExecutionContext
+// implementations.
+class ExecutionContextAccess {
+ public:
+  using PassKey = util::PassKey<ExecutionContextAccess>;
+
+  template <typename NodeImplType>
+  static std::unique_ptr<NodeAttachedData>* GetExecutionAccessStorage(
+      NodeImplType* node) {
+    return node->GetExecutionContextStorage(PassKey());
+  }
+};
+
+namespace {
+
+// Templated partial implementation of ExecutionContext. Implements the common
+// bits of ExecutionContext, except for GetToken().
+template <typename DerivedType,
+          typename NodeImplType,
+          ExecutionContextType kExecutionContextType>
+class ExecutionContextImpl : public ExecutionContext,
+                             public NodeAttachedDataImpl<DerivedType> {
+ public:
+  using ImplType = ExecutionContextImpl;
+
+  struct Traits : public NodeAttachedDataImpl<DerivedType>::
+                      template NodeAttachedDataOwnedByNodeType<NodeImplType> {};
+
+  ExecutionContextImpl(const ExecutionContextImpl&) = delete;
+  ExecutionContextImpl& operator=(const ExecutionContextImpl&) = delete;
+  ~ExecutionContextImpl() override {}
+
+  // ExecutionContext implementation:
+  ExecutionContextType GetType() const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return kExecutionContextType;
+  }
+
+  const GURL& GetUrl() const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return node_->url();
+  }
+
+  const FrameNode* GetFrameNode() const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    if (std::is_same<FrameNodeImpl, NodeImplType>::value)
+      return reinterpret_cast<const FrameNode*>(node_);
+    return nullptr;
+  }
+
+  const WorkerNode* GetWorkerNode() const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    if (std::is_same<WorkerNodeImpl, NodeImplType>::value)
+      return reinterpret_cast<const WorkerNodeImpl*>(node_);
+    return nullptr;
+  }
+
+ protected:
+  explicit ExecutionContextImpl(const NodeImplType* node) : node_(node) {
+    DCHECK(node);
+  }
+
+  static std::unique_ptr<NodeAttachedData>* GetUniquePtrStorage(
+      NodeImplType* node) {
+    return ExecutionContextAccess::GetExecutionAccessStorage(node);
+  }
+
+  SEQUENCE_CHECKER(sequence_checker_);
+  const NodeImplType* node_ = nullptr;
+};
+
+// An ExecutionContext implementation that wraps a FrameNodeImpl.
+class FrameExecutionContext
+    : public ExecutionContextImpl<FrameExecutionContext,
+                                  FrameNodeImpl,
+                                  ExecutionContextType::kFrameNode> {
+ public:
+  FrameExecutionContext(const FrameExecutionContext&) = delete;
+  FrameExecutionContext& operator=(const FrameExecutionContext&) = delete;
+  ~FrameExecutionContext() override = default;
+
+  // Remaining ExecutionContext implementation not provided by
+  // ExecutionContextImpl:
+  const ExecutionContextToken& GetToken() const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    // The casting is safe because ExecutionContext guarantees it has the same
+    // layout as base::UnguessableToken.
+    return *reinterpret_cast<const ExecutionContextToken*>(
+        &node_->frame_token().value());
+  }
+
+ protected:
+  friend class NodeAttachedDataImpl<FrameExecutionContext>;
+  explicit FrameExecutionContext(const FrameNodeImpl* frame_node)
+      : ImplType(frame_node) {}
+};
+
+// An ExecutionContext implementation that wraps a WorkerNodeImpl.
+class WorkerExecutionContext
+    : public ExecutionContextImpl<WorkerExecutionContext,
+                                  WorkerNodeImpl,
+                                  ExecutionContextType::kWorkerNode> {
+ public:
+  WorkerExecutionContext(const WorkerExecutionContext&) = delete;
+  WorkerExecutionContext& operator=(const WorkerExecutionContext&) = delete;
+  ~WorkerExecutionContext() override = default;
+
+  // Remaining ExecutionContext implementation not provided by
+  // ExecutionContextImpl:
+  const ExecutionContextToken& GetToken() const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    // The casting is safe because ExecutionContext guarantees it has the same
+    // layout as base::UnguessableToken.
+    return *reinterpret_cast<const ExecutionContextToken*>(
+        &node_->dev_tools_token());
+  }
+
+ protected:
+  friend class NodeAttachedDataImpl<WorkerExecutionContext>;
+  explicit WorkerExecutionContext(const WorkerNodeImpl* worker_node)
+      : ImplType(worker_node) {}
+};
+
+}  // namespace
+
+const ExecutionContext* GetOrCreateExecutionContextForFrameNode(
+    const FrameNode* frame_node) {
+  DCHECK(frame_node);
+  DCHECK_ON_GRAPH_SEQUENCE(frame_node->GetGraph());
+  return FrameExecutionContext::GetOrCreate(
+      FrameNodeImpl::FromNode(frame_node));
+}
+
+const ExecutionContext* GetOrCreateExecutionContextForWorkerNode(
+    const WorkerNode* worker_node) {
+  DCHECK(worker_node);
+  DCHECK_ON_GRAPH_SEQUENCE(worker_node->GetGraph());
+  return WorkerExecutionContext::GetOrCreate(
+      WorkerNodeImpl::FromNode(worker_node));
+}
+
+}  // namespace execution_context
+}  // namespace performance_manager

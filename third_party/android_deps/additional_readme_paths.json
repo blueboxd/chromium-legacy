@@ -24,6 +24,7 @@
     "libs/androidx_customview_customview",
     "libs/androidx_documentfile_documentfile",
     "libs/androidx_drawerlayout_drawerlayout",
+    "libs/androidx_exifinterface_exifinterface",
     "libs/androidx_fragment_fragment",
     "libs/androidx_gridlayout_gridlayout",
     "libs/androidx_interpolator_interpolator",

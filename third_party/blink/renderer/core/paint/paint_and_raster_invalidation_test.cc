@@ -385,6 +385,14 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedLayoutViewGradientResize) {
   GetDocument().View()->SetTracksRasterInvalidations(false);
 }
 
+static const LayoutBoxModelObject& EnclosingCompositedContainer(
+    const LayoutObject& layout_object) {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+  return layout_object.PaintingLayer()
+      ->EnclosingLayerForPaintInvalidationCrossingFrameBoundaries()
+      ->GetLayoutObject();
+}
+
 TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewResize) {
   ScopedPreferNonCompositedScrollingForTest non_composited_scrolling(true);
 
@@ -407,7 +415,7 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewResize) {
   Element* content = ChildDocument().getElementById("content");
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_EQ(GetLayoutView(),
-              content->GetLayoutObject()->ContainerForPaintInvalidation());
+              EnclosingCompositedContainer(*content->GetLayoutObject()));
   }
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
             content->GetLayoutObject()
@@ -489,7 +497,7 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewGradientResize) {
   Element* content = ChildDocument().getElementById("content");
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_EQ(GetLayoutView(),
-              content->GetLayoutObject()->ContainerForPaintInvalidation());
+              EnclosingCompositedContainer(*content->GetLayoutObject()));
   }
 
   // Resize the content.
@@ -656,7 +664,7 @@ TEST_P(PaintAndRasterInvalidationTest,
   Element* child = GetDocument().getElementById("child");
   UpdateAllLifecyclePhasesForTest();
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    EXPECT_EQ(&GetLayoutView(), object->ContainerForPaintInvalidation());
+    EXPECT_EQ(&GetLayoutView(), EnclosingCompositedContainer(*object));
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
             ToLayoutBoxModelObject(object)
                 ->ComputeBackgroundPaintLocationIfComposited());
@@ -783,7 +791,7 @@ TEST_P(PaintAndRasterInvalidationTest,
   LayoutView* child_layout_view = ChildDocument().GetLayoutView();
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_EQ(GetDocument().GetLayoutView(),
-              &child_layout_view->ContainerForPaintInvalidation());
+              &EnclosingCompositedContainer(*child_layout_view));
   }
   EXPECT_EQ(IntRect(0, 0, 100, 100),
             child_layout_view->FirstFragment().VisualRect());
@@ -792,7 +800,7 @@ TEST_P(PaintAndRasterInvalidationTest,
   UpdateAllLifecyclePhasesForTest();
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_EQ(GetDocument().GetLayoutView(),
-              &child_layout_view->ContainerForPaintInvalidation());
+              EnclosingCompositedContainer(*child_layout_view));
   }
   EXPECT_EQ(IntRect(0, 0, 100, 100),
             child_layout_view->FirstFragment().VisualRect());

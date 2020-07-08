@@ -220,7 +220,7 @@ void HTMLTrackElement::LoadTimerFired(TimerBase*) {
 
 bool HTMLTrackElement::CanLoadUrl(const KURL& url) {
   HTMLMediaElement* parent = MediaElement();
-  if (!parent)
+  if (!parent || !GetExecutionContext())
     return false;
 
   if (url.IsEmpty())

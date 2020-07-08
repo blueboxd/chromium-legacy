@@ -49,34 +49,42 @@
 
 namespace blink {
 
+const PaintLayer* EnclosingCompositedContainer(
+    const LayoutObject& layout_object) {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+  return layout_object.PaintingLayer()
+      ->EnclosingLayerForPaintInvalidationCrossingFrameBoundaries();
+}
+
 // Convert a local point into the coordinate system of backing coordinates.
 static gfx::Point LocalToInvalidationBackingPoint(
     const PhysicalOffset& local_point,
     const LayoutObject& layout_object,
     const GraphicsLayer& graphics_layer) {
-  const LayoutBoxModelObject& paint_invalidation_container =
-      layout_object.ContainerForPaintInvalidation();
-  const PaintLayer& paint_layer = *paint_invalidation_container.Layer();
+  const PaintLayer* paint_invalidation_container =
+      EnclosingCompositedContainer(layout_object);
+  if (!paint_invalidation_container)
+    return gfx::Point();
 
   PhysicalOffset container_point = layout_object.LocalToAncestorPoint(
-      local_point, &paint_invalidation_container, kTraverseDocumentBoundaries);
+      local_point, &paint_invalidation_container->GetLayoutObject(),
+      kTraverseDocumentBoundaries);
 
   // A layoutObject can have no invalidation backing if it is from a detached
   // frame, or when forced compositing is disabled.
-  if (paint_layer.GetCompositingState() == kNotComposited)
+  if (paint_invalidation_container->GetCompositingState() == kNotComposited)
     return RoundedIntPoint(container_point);
 
   PaintLayer::MapPointInPaintInvalidationContainerToBacking(
-      paint_invalidation_container, container_point);
+      paint_invalidation_container->GetLayoutObject(), container_point);
   container_point -= PhysicalOffset(graphics_layer.OffsetFromLayoutObject());
 
   // Ensure the coordinates are in the scrolling contents space, if the object
   // is a scroller.
-  if (paint_invalidation_container.UsesCompositedScrolling()) {
-    container_point +=
-        PhysicalOffset::FromFloatSizeRound(paint_invalidation_container.Layer()
-                                               ->GetScrollableArea()
-                                               ->GetScrollOffset());
+  if (paint_invalidation_container->GetLayoutObject()
+          .UsesCompositedScrolling()) {
+    container_point += PhysicalOffset::FromFloatSizeRound(
+        paint_invalidation_container->GetScrollableArea()->GetScrollOffset());
   }
 
   return RoundedIntPoint(container_point);
@@ -178,15 +186,13 @@ static inline bool IsTextDirectionRTL(const Node& node,
 }
 
 static GraphicsLayer* GetGraphicsLayerFor(const LayoutObject& layout_object) {
-  const LayoutBoxModelObject& paint_invalidation_container =
-      layout_object.ContainerForPaintInvalidation();
-  DCHECK(paint_invalidation_container.Layer()) << layout_object;
-  if (!paint_invalidation_container.Layer())
+  const PaintLayer* paint_invalidation_container =
+      EnclosingCompositedContainer(layout_object);
+  if (!paint_invalidation_container)
     return nullptr;
-  const PaintLayer& paint_layer = *paint_invalidation_container.Layer();
-  if (paint_layer.GetCompositingState() == kNotComposited)
+  if (paint_invalidation_container->GetCompositingState() == kNotComposited)
     return nullptr;
-  return paint_layer.GraphicsLayerBacking(&layout_object);
+  return paint_invalidation_container->GraphicsLayerBacking(&layout_object);
 }
 
 static base::Optional<cc::LayerSelectionBound>

@@ -755,7 +755,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
 
       if (Page* page = select_->GetDocument().GetPage()) {
         page->GetAutoscrollController().StartAutoscrollForSelection(
-            select_->GetLayoutObject());
+            layout_object);
       }
     }
     // Mousedown didn't happen in this element.

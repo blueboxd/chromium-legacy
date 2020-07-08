@@ -112,8 +112,8 @@ bool SandboxPrioritizedOriginDatabase::RemovePathForOrigin(
   if (primary_origin_database_ &&
       primary_origin_database_->HasOriginPath(origin)) {
     primary_origin_database_.reset();
-    base::DeleteFile(file_system_directory_.Append(kPrimaryOriginFile),
-                     true /* recursive */);
+    base::DeletePathRecursively(
+        file_system_directory_.Append(kPrimaryOriginFile));
     return true;
   }
   if (origin_database_)
@@ -165,8 +165,7 @@ bool SandboxPrioritizedOriginDatabase::ResetPrimaryOrigin(
   // (This means the origin file corruption causes data loss
   // We could keep the directory there as the same origin will likely
   // become the primary origin, but let's play conservatively.)
-  base::DeleteFile(file_system_directory_.Append(kPrimaryDirectory),
-                   true /* recursive */);
+  base::DeletePathRecursively(file_system_directory_.Append(kPrimaryDirectory));
   return true;
 }
 

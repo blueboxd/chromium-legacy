@@ -11,8 +11,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
-namespace chromeos {
-
 class SelectFileImpl;
 
 // Implementation of AshChromeService. It provides a set of APIs that
@@ -32,7 +30,5 @@ class AshChromeServiceImpl : public lacros::mojom::AshChromeService {
 
   std::unique_ptr<SelectFileImpl> select_file_impl_;
 };
-
-}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LACROS_ASH_CHROME_SERVICE_IMPL_H_

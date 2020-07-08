@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 
 #include "base/bind.h"
-#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/flex_layout.h"
@@ -34,7 +33,6 @@ TabStrip* TabStripRegionView::AddTabStrip(std::unique_ptr<TabStrip> tab_strip) {
         AddChildView(std::make_unique<views::ScrollView>());
     tab_strip_scroll_container->SetBackgroundColor(base::nullopt);
     tab_strip_scroll_container->SetHideHorizontalScrollBar(true);
-    tab_strip_scroll_container->ClipHeightTo(0, GetLayoutConstant(TAB_HEIGHT));
     tab_strip_container_ = tab_strip_scroll_container;
     return tab_strip_scroll_container->SetContents(std::move(tab_strip));
   } else {

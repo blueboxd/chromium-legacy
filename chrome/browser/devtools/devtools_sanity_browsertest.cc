@@ -44,6 +44,7 @@
 #include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -2433,6 +2434,23 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, BrowserCloseWithBeforeUnload) {
   content::PrepContentsForBeforeUnloadTest(tab);
   BrowserHandler handler(nullptr, std::string());
   handler.Close();
+  ui_test_utils::WaitForBrowserToClose(browser());
+}
+
+IN_PROC_BROWSER_TEST_F(InProcessBrowserTest,
+                       BrowserCloseWithContextMenuOpened) {
+  EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
+      KeepAliveOrigin::REMOTE_DEBUGGING));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  auto callback = [](RenderViewContextMenu* context_menu) {
+    BrowserHandler handler(nullptr, std::string());
+    handler.Close();
+  };
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  RenderViewContextMenu::RegisterMenuShownCallbackForTesting(
+      base::BindOnce(callback));
+  content::SimulateMouseClickAt(tab, 0, blink::WebMouseEvent::Button::kRight,
+                                gfx::Point(15, 15));
   ui_test_utils::WaitForBrowserToClose(browser());
 }
 

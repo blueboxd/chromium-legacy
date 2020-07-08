@@ -1067,7 +1067,7 @@ Status ParseDevToolsActivePortFile(const base::FilePath& user_data_dir,
 Status RemoveOldDevToolsActivePortFile(const base::FilePath& user_data_dir) {
   base::FilePath port_filepath = user_data_dir.Append(kDevToolsActivePort);
   // Note that calling DeleteFile on a path that doesn't exist returns True.
-  if (base::DeleteFile(port_filepath, false)) {
+  if (base::DeleteFile(port_filepath)) {
     return Status(kOk);
   }
   return Status(

@@ -180,6 +180,9 @@ class OmniboxViewViews : public OmniboxView,
   FRIEND_TEST_ALL_PREFIXES(
       OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
       PathChangeDuringAnimation);
+  FRIEND_TEST_ALL_PREFIXES(
+      OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
+      VerticalAndHorizontalPosition);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsHideOnInteractionTest,
                            SameDocNavigations);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsHideOnInteractionTest,

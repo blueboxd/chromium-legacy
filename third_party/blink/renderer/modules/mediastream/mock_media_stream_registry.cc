@@ -67,7 +67,6 @@ MockMediaStreamVideoSource* MockMediaStreamRegistry::AddVideoTrack(
       "mock video source name", false /* remote */);
   auto native_source = std::make_unique<MockMediaStreamVideoSource>();
   auto* native_source_ptr = native_source.get();
-  native_source->SetOwner(source);
   source->SetPlatformSource(std::move(native_source));
 
   auto* component = MakeGarbageCollected<MediaStreamComponent>(
@@ -94,7 +93,6 @@ void MockMediaStreamRegistry::AddAudioTrack(const std::string& track_id) {
       "mock audio source name", false /* remote */);
   auto audio_source = std::make_unique<MockCDQualityAudioSource>();
   auto* audio_source_ptr = audio_source.get();
-  audio_source->SetOwner(source);
   source->SetPlatformSource(std::move(audio_source));
 
   auto* component = MakeGarbageCollected<MediaStreamComponent>(source);

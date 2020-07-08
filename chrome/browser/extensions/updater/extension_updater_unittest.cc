@@ -335,13 +335,14 @@ class MockService : public TestExtensionService {
   }
 
   ExtensionDownloader::Factory GetDownloaderFactory() {
-    return base::Bind(&MockService::CreateExtensionDownloader,
-                      base::Unretained(this));
+    return base::BindRepeating(&MockService::CreateExtensionDownloader,
+                               base::Unretained(this));
   }
 
   ExtensionDownloader::Factory GetAuthenticatedDownloaderFactory() {
-    return base::Bind(&MockService::CreateExtensionDownloaderWithIdentity,
-                      base::Unretained(this));
+    return base::BindRepeating(
+        &MockService::CreateExtensionDownloaderWithIdentity,
+        base::Unretained(this));
   }
 
   void OverrideDownloaderDelegate(ExtensionDownloaderDelegate* delegate) {
@@ -1532,7 +1533,7 @@ class ExtensionUpdaterTest : public testing::Test {
     } else {
       EXPECT_TRUE(updater.downloader_->extension_loader_);
       EXPECT_CALL(delegate,
-                  OnExtensionDownloadFinished(_, _, _, _, requests, _))
+                  OnExtensionDownloadFinished_(_, _, _, _, requests, _))
           .WillOnce(
               DoAll(testing::SaveArg<0>(&crx_file_info),
                     InvokeWithoutArgs(&delegate,
@@ -1930,7 +1931,7 @@ class ExtensionUpdaterTest : public testing::Test {
           *updater.downloader_->extensions_queue_.active_request();
 
       CRXFileInfo crx_file_info;
-      EXPECT_CALL(delegate, OnExtensionDownloadFinished(_, _, _, _, _, _))
+      EXPECT_CALL(delegate, OnExtensionDownloadFinished_(_, _, _, _, _, _))
           .WillOnce(
               DoAll(testing::SaveArg<0>(&crx_file_info),
                     InvokeWithoutArgs(&delegate,

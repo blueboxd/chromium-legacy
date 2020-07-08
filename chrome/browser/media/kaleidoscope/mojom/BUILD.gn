@@ -7,5 +7,8 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("mojom") {
   sources = [ "kaleidoscope.mojom" ]
 
-  public_deps = [ "//chrome/browser/media/feeds:mojo_bindings" ]
+  public_deps = [
+    "//chrome/browser/media/feeds:mojo_bindings",
+    "//url/mojom:url_mojom_origin",
+  ]
 }

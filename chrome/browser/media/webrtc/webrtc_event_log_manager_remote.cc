@@ -975,7 +975,7 @@ WebRtcRemoteEventLogManager::PruneAndLoadHistoryFilesForBrowserContext(
   }
 
   for (const base::FilePath& path : files_to_delete) {
-    if (!base::DeleteFile(path, /*recursive=*/false)) {
+    if (!base::DeleteFile(path)) {
       LOG(ERROR) << "Failed to delete " << path << ".";
     }
   }
@@ -1142,7 +1142,7 @@ void WebRtcRemoteEventLogManager::MaybeRemovePendingLogs(
               ? WebRtcEventLoggingUploadUma::kPendingLogDeletedDueToCacheClear
               : WebRtcEventLoggingUploadUma::kExpiredLogFileDuringSession);
 
-      if (!base::DeleteFile(it->path, /*recursive=*/false)) {
+      if (!base::DeleteFile(it->path)) {
         LOG(ERROR) << "Failed to delete " << it->path << ".";
       }
 

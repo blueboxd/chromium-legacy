@@ -52,9 +52,13 @@ enum class LiteVideoBlocklistReason {
   // LiteVideos were blocked because the host was on the
   // NavigationBlocklist.
   kNavigationBlocklisted,
+  // LiteVideo not shown because it was a reloaded navigation.
+  kNavigationReload,
+  // LiteVideo not shown because it was a forward-back navigation.
+  kNavigationForwardBack,
 
   // Insert new values before this line.
-  kMaxValue = kNavigationBlocklisted,
+  kMaxValue = kNavigationForwardBack,
 };
 
 // The LiteVideoUserBlocklist maintains information about hosts the user
@@ -76,6 +80,11 @@ class LiteVideoUserBlocklist : public blocklist::OptOutBlocklist {
   // Virtual for testing.
   virtual LiteVideoBlocklistReason IsLiteVideoAllowedOnNavigation(
       content::NavigationHandle* navigation_handle) const;
+
+  // Update the entry within the NavigationBlocklistType for the
+  // |navigation_handle| based on whether it was an opt-out or not.
+  void AddNavigationToBlocklist(content::NavigationHandle* navigation_handle,
+                                bool opt_out);
 
  protected:
   // OptOutBlocklist:

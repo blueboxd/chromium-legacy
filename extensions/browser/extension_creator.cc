@@ -280,7 +280,7 @@ bool ExtensionCreator::Run(const base::FilePath& extension_dir,
     result = true;
   }
 
-  base::DeleteFile(zip_path, false);
+  base::DeleteFile(zip_path);
   return result;
 }
 

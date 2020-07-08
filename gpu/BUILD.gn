@@ -410,7 +410,7 @@ test("gl_tests") {
     deps += [ "//ui/android:ui_java" ]
     sources += [ "command_buffer/service/shared_image_backing_factory_ahardwarebuffer_unittest.cc" ]
   } else if (is_mac) {
-    libs += [ "IOSurface.framework" ]
+    frameworks = [ "IOSurface.framework" ]
     sources += [ "command_buffer/service/shared_image_backing_factory_iosurface_unittest.cc" ]
   } else if (is_win) {
     deps += [

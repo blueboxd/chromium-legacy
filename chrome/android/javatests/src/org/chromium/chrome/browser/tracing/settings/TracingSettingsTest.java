@@ -233,7 +233,7 @@ public class TracingSettingsTest {
         callbackHelper.waitForCallback(3 /* currentCallCount */);
 
         // The temporary file should be deleted asynchronously.
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(false, () -> tempFile.exists()));
+        CriteriaHelper.pollInstrumentationThread(() -> !tempFile.exists());
 
         // Notification should be deleted, too.
         waitForNotificationManagerMutation();

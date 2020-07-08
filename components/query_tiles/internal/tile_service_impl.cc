@@ -22,12 +22,14 @@ TileServiceImpl::TileServiceImpl(
     std::unique_ptr<TileManager> tile_manager,
     std::unique_ptr<TileServiceScheduler> scheduler,
     std::unique_ptr<TileFetcher> tile_fetcher,
-    base::Clock* clock)
+    base::Clock* clock,
+    std::unique_ptr<Logger> logger)
     : image_prefetcher_(std::move(image_prefetcher)),
       tile_manager_(std::move(tile_manager)),
       scheduler_(std::move(scheduler)),
       tile_fetcher_(std::move(tile_fetcher)),
-      clock_(clock) {}
+      clock_(clock),
+      logger_(std::move(logger)) {}
 
 TileServiceImpl::~TileServiceImpl() = default;
 
@@ -131,6 +133,10 @@ void TileServiceImpl::OnPrefetchImagesDone(
 
 TileGroup* TileServiceImpl::GetTileGroup() {
   return tile_manager_->GetTileGroup();
+}
+
+Logger* TileServiceImpl::GetLogger() {
+  return logger_.get();
 }
 
 }  // namespace query_tiles

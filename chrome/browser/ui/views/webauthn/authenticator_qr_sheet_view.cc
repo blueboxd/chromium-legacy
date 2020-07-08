@@ -29,7 +29,7 @@ class QRView : public views::View {
   static constexpr int kDinoTilePixels = 3;
   // kMid is the pixel offset from the top (or left) to the middle of the
   // displayed QR code.
-  static constexpr int kMid = (kTilePixels * (2 + QRCode::kSize + 2)) / 2;
+  static constexpr int kMid = (kTilePixels * (2 + QRCode::V5::kSize + 2)) / 2;
   // kDinoX is the x-coordinate of the dino image.
   static constexpr int kDinoX =
       kMid - (dino_image::kDinoWidth * kDinoTilePixels) / 2;
@@ -37,21 +37,30 @@ class QRView : public views::View {
   static constexpr int kDinoY =
       kMid - (dino_image::kDinoHeight * kDinoTilePixels) / 2;
 
-  explicit QRView(base::span<const uint8_t> qr_data)
-      : qr_tiles_(qr_.Generate(qr_data)) {}
+  explicit QRView(base::span<const uint8_t> qr_data) {
+    base::Optional<QRCode::GeneratedCode> code = qr_.Generate(qr_data);
+    DCHECK(code);
+    // The QR Encoder supports dynamic sizing but we expect our data to fit in
+    // a version five code.
+    DCHECK(code->qr_size == QRCode::V5::kSize);
+    qr_tiles_ = code->data;
+  }
+
   ~QRView() override = default;
 
   void RefreshQRCode(base::span<const uint8_t> new_qr_data) {
     state_ = (state_ + 1) % 6;
-    qr_tiles_ = qr_.Generate(new_qr_data);
+    base::Optional<QRCode::GeneratedCode> code = qr_.Generate(new_qr_data);
+    DCHECK(code);
+    qr_tiles_ = code->data;
     SchedulePaint();
   }
 
   // View:
   gfx::Size CalculatePreferredSize() const override {
     // A two-tile border is required around the QR code.
-    return gfx::Size((2 + QRCode::kSize + 2) * kTilePixels,
-                     (2 + QRCode::kSize + 2) * kTilePixels);
+    return gfx::Size((2 + QRCode::V5::kSize + 2) * kTilePixels,
+                     (2 + QRCode::V5::kSize + 2) * kTilePixels);
   }
 
   void OnPaint(gfx::Canvas* canvas) override {
@@ -83,28 +92,28 @@ class QRView : public views::View {
 
     // Draw the two-tile border around the edge.
     // Top.
-    canvas->FillRect(
-        gfx::Rect(0, 0, (2 + QRCode::kSize + 2) * kTilePixels, 2 * kTilePixels),
-        off);
+    canvas->FillRect(gfx::Rect(0, 0, (2 + QRCode::V5::kSize + 2) * kTilePixels,
+                               2 * kTilePixels),
+                     off);
     // Bottom.
     canvas->FillRect(
-        gfx::Rect(0, (2 + QRCode::kSize) * kTilePixels,
-                  (2 + QRCode::kSize + 2) * kTilePixels, 2 * kTilePixels),
+        gfx::Rect(0, (2 + QRCode::V5::kSize) * kTilePixels,
+                  (2 + QRCode::V5::kSize + 2) * kTilePixels, 2 * kTilePixels),
         off);
     // Left
     canvas->FillRect(gfx::Rect(0, 2 * kTilePixels, 2 * kTilePixels,
-                               QRCode::kSize * kTilePixels),
+                               QRCode::V5::kSize * kTilePixels),
                      off);
     // Right
     canvas->FillRect(
-        gfx::Rect((2 + QRCode::kSize) * kTilePixels, 2 * kTilePixels,
-                  2 * kTilePixels, QRCode::kSize * kTilePixels),
+        gfx::Rect((2 + QRCode::V5::kSize) * kTilePixels, 2 * kTilePixels,
+                  2 * kTilePixels, QRCode::V5::kSize * kTilePixels),
         off);
 
     // Paint the QR code.
     int index = 0;
-    for (int y = 0; y < QRCode::kSize; y++) {
-      for (int x = 0; x < QRCode::kSize; x++) {
+    for (int y = 0; y < QRCode::V5::kSize; y++) {
+      for (int x = 0; x < QRCode::V5::kSize; x++) {
         SkColor tile_color = qr_tiles_[index++] & 1 ? on : off;
         canvas->FillRect(gfx::Rect((x + 2) * kTilePixels, (y + 2) * kTilePixels,
                                    kTilePixels, kTilePixels),
@@ -152,7 +161,7 @@ class QRView : public views::View {
   }
 
   QRCode qr_;
-  base::span<const uint8_t, QRCode::kTotalSize> qr_tiles_;
+  base::span<const uint8_t> qr_tiles_;
   int state_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(QRView);
@@ -169,7 +178,7 @@ constexpr size_t Base64EncodedSize(size_t input_length) {
 // |qr_generator_key| and the current time such that the caBLE discovery code
 // can recognise the URL as valid.
 base::span<uint8_t> QRDataForCurrentTime(
-    uint8_t out_buf[QRCode::kInputBytes],
+    uint8_t out_buf[QRCode::V5::kInputBytes],
     base::span<const uint8_t, 32> qr_generator_key) {
   const int64_t current_tick = device::CableDiscoveryData::CurrentTimeTick();
   const device::CableQRData qr_data =
@@ -187,7 +196,7 @@ base::span<uint8_t> QRDataForCurrentTime(
   static constexpr char kPrefix[] = "fido://c1/";
   static constexpr size_t kPrefixLength = sizeof(kPrefix) - 1;
 
-  static_assert(QRCode::kInputBytes >= kPrefixLength + kEncodedDataLength,
+  static_assert(QRCode::V5::kInputBytes >= kPrefixLength + kEncodedDataLength,
                 "unexpected QR input length");
   memcpy(out_buf, kPrefix, kPrefixLength);
   memcpy(&out_buf[kPrefixLength], base64_qr_data.data(), kEncodedDataLength);
@@ -228,7 +237,7 @@ AuthenticatorQRSheetView::~AuthenticatorQRSheetView() = default;
 
 std::unique_ptr<views::View>
 AuthenticatorQRSheetView::BuildStepSpecificContent() {
-  uint8_t qr_data_buf[QRCode::kInputBytes];
+  uint8_t qr_data_buf[QRCode::V5::kInputBytes];
   auto qr_view = std::make_unique<AuthenticatorQRViewCentered>(
       QRDataForCurrentTime(qr_data_buf, qr_generator_key_));
   qr_view_ = qr_view.get();
@@ -239,6 +248,6 @@ AuthenticatorQRSheetView::BuildStepSpecificContent() {
 }
 
 void AuthenticatorQRSheetView::Update() {
-  uint8_t qr_data_buf[QRCode::kInputBytes];
+  uint8_t qr_data_buf[QRCode::V5::kInputBytes];
   qr_view_->RefreshQRCode(QRDataForCurrentTime(qr_data_buf, qr_generator_key_));
 }

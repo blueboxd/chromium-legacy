@@ -50,7 +50,6 @@ void RemoteVideoTrackAdapter::InitializeWebVideoTrack(
       std::make_unique<MediaStreamRemoteVideoSource>(std::move(observer));
   MediaStreamRemoteVideoSource* video_source = video_source_ptr.get();
   InitializeTrack(MediaStreamSource::kTypeVideo);
-  video_source_ptr->SetOwner(track()->Source());
   track()->Source()->SetPlatformSource(std::move(video_source_ptr));
 
   WebMediaStreamSource::Capabilities capabilities;
@@ -99,8 +98,7 @@ void RemoteAudioTrackAdapter::InitializeWebAudioTrack(
   auto source = std::make_unique<PeerConnectionRemoteAudioSource>(
       observed_track().get(), main_thread);
   auto* source_ptr = source.get();
-  source_ptr->SetOwner(track()->Source());
-  track()->Source()->SetPlatformSource(std::move(source));  // Takes ownership.
+  track()->Source()->SetPlatformSource(std::move(source));
 
   WebMediaStreamSource::Capabilities capabilities;
   capabilities.device_id = id();

@@ -31,7 +31,7 @@ SVGColorProperty::SVGColorProperty(const String& color_string)
     : style_color_(StyleColor::CurrentColor()) {
   Color color;
   if (CSSParser::ParseColor(color, color_string.StripWhiteSpace()))
-    style_color_ = color;
+    style_color_ = StyleColor(color);
 }
 
 String SVGColorProperty::ValueAsString() const {

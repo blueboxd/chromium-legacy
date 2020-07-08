@@ -5,9 +5,11 @@
 package org.chromium.chrome.browser.feed.v2;
 
 import android.app.Activity;
+import android.util.TypedValue;
 import android.view.View;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -34,16 +36,23 @@ public class FeedStream implements Stream {
     private static final String TAG = "FeedStream";
     private static final String SCROLL_POSITION = "scroll_pos";
     private static final String SCROLL_OFFSET = "scroll_off";
+    // How far the user has to scroll down in DP before attempting to load more content.
+    static final int LOAD_MORE_TRIGGER_SCROLL_DISTANCE_DP = 100;
 
     private final Activity mActivity;
     private final FeedStreamSurface mFeedStreamSurface;
-    private final ObserverList<ScrollListener> mScrollListeners;
+    private final ObserverList<ScrollListener> mScrollListeners =
+            new ObserverList<ScrollListener>();
+    private final int mLoadMoreTriggerLookahead;
 
     private RecyclerView mRecyclerView;
     // setStreamContentVisibility() is always called once after onCreate(). So we can assume the
     // stream content is hidden initially and it can be made visible later when
     // setStreamContentVisibility() is called.
     private boolean mIsStreamContentVisible = false;
+    // For loading more content.
+    private int mAccumulatedDySinceLastLoadMore;
+    private boolean mIsLoadingMoreContent;
 
     public FeedStream(Activity activity, boolean isBackgroundDark, SnackbarManager snackbarManager,
             NativePageNavigationDelegate nativePageNavigationDelegate,
@@ -52,7 +61,7 @@ public class FeedStream implements Stream {
         this.mActivity = activity;
         this.mFeedStreamSurface = new FeedStreamSurface(activity, isBackgroundDark, snackbarManager,
                 nativePageNavigationDelegate, bottomSheetController);
-        this.mScrollListeners = new ObserverList<ScrollListener>();
+        this.mLoadMoreTriggerLookahead = FeedServiceBridge.getLoadMoreTriggerLookahead();
     }
 
     @Override
@@ -205,12 +214,47 @@ public class FeedStream implements Stream {
         mRecyclerView.setClipToPadding(false);
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrolled(RecyclerView v, int x, int y) {
+            public void onScrolled(RecyclerView v, int dx, int dy) {
+                super.onScrolled(v, dx, dy);
+                checkScrollingForLoadMore(dy);
                 for (ScrollListener listener : mScrollListeners) {
-                    listener.onScrolled(x, y);
+                    listener.onScrolled(dx, dy);
                 }
             }
         });
+    }
+
+    @VisibleForTesting
+    void checkScrollingForLoadMore(int dy) {
+        if (!mIsStreamContentVisible) {
+            return;
+        }
+
+        mAccumulatedDySinceLastLoadMore += dy;
+        if (mAccumulatedDySinceLastLoadMore < TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                    LOAD_MORE_TRIGGER_SCROLL_DISTANCE_DP,
+                    mRecyclerView.getResources().getDisplayMetrics())) {
+            return;
+        }
+
+        LinearLayoutManager layoutManager = (LinearLayoutManager) mRecyclerView.getLayoutManager();
+        if (layoutManager == null) {
+            return;
+        }
+        int totalItemCount = layoutManager.getItemCount();
+        int lastVisibleItem = layoutManager.findLastVisibleItemPosition();
+        if (totalItemCount - lastVisibleItem <= mLoadMoreTriggerLookahead) {
+            mAccumulatedDySinceLastLoadMore = 0;
+            loadMore();
+        }
+    }
+
+    private void loadMore() {
+        if (mIsLoadingMoreContent) {
+            return;
+        }
+        mIsLoadingMoreContent = true;
+        mFeedStreamSurface.loadMoreContent((Boolean success) -> { mIsLoadingMoreContent = false; });
     }
 
     private void restoreScrollState(String savedInstanceState) {

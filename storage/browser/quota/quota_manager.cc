@@ -49,46 +49,23 @@ namespace storage {
 
 namespace {
 
-const int64_t kMBytes = 1024 * 1024;
-const int kMinutesInMilliSeconds = 60 * 1000;
-const int64_t kReportHistogramInterval = 60 * 60 * 1000;  // 1 hour
+constexpr int64_t kReportHistogramInterval = 60 * 60 * 1000;  // 1 hour
 
 // Take action on write errors if there is <= 2% disk space
 // available.
-const double kStoragePressureThresholdRatio = 2;
+constexpr double kStoragePressureThresholdRatio = 2;
 
 // Limit how frequently QuotaManager polls for free disk space when
 // only using that information to identify storage pressure.
-const base::TimeDelta kStoragePressureCheckDiskStatsInterval =
+constexpr base::TimeDelta kStoragePressureCheckDiskStatsInterval =
     base::TimeDelta::FromMinutes(5);
 
 }  // namespace
-
-const int64_t QuotaManager::kNoLimit = INT64_MAX;
-
-// Cap size for per-host persistent quota determined by the histogram.
-// This is a bit lax value because the histogram says nothing about per-host
-// persistent storage usage and we determined by global persistent storage
-// usage that is less than 10GB for almost all users.
-const int64_t QuotaManager::kPerHostPersistentQuotaLimit = 10 * 1024 * kMBytes;
 
 // Heuristics: assuming average cloud server allows a few Gigs storage
 // on the server side and the storage needs to be shared for user data
 // and by multiple apps.
 int64_t QuotaManager::kSyncableStorageDefaultHostQuota = 500 * kMBytes;
-
-const char QuotaManager::kDatabaseName[] = "QuotaManager";
-
-const int QuotaManager::kThresholdOfErrorsToBeBlacklisted = 3;
-const int QuotaManager::kEvictionIntervalInMilliSeconds =
-    30 * kMinutesInMilliSeconds;
-
-const char QuotaManager::kDaysBetweenRepeatedOriginEvictionsHistogram[] =
-    "Quota.DaysBetweenRepeatedOriginEvictions";
-const char QuotaManager::kEvictedOriginAccessedCountHistogram[] =
-    "Quota.EvictedOriginAccessCount";
-const char QuotaManager::kEvictedOriginDaysSinceAccessHistogram[] =
-    "Quota.EvictedOriginDaysSinceAccess";
 
 namespace {
 
@@ -207,6 +184,15 @@ void DidGetUsageAndQuotaStripBreakdown(
 }
 
 }  // namespace
+
+constexpr int64_t QuotaManager::kNoLimit;
+constexpr int64_t QuotaManager::kPerHostPersistentQuotaLimit;
+constexpr int QuotaManager::kEvictionIntervalInMilliSeconds;
+constexpr int QuotaManager::kThresholdOfErrorsToBeBlacklisted;
+constexpr char QuotaManager::kDatabaseName[];
+constexpr char QuotaManager::kDaysBetweenRepeatedOriginEvictionsHistogram[];
+constexpr char QuotaManager::kEvictedOriginAccessedCountHistogram[];
+constexpr char QuotaManager::kEvictedOriginDaysSinceAccessHistogram[];
 
 class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
  public:

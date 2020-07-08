@@ -1,0 +1,271 @@
+This test verifies the names, positions and sizes of the highlight rectangles overlayed on CSS Grid areas.
+
+grid-with-areas{
+  "paths": [
+    {
+      "path": [
+        "M",
+        0,
+        0,
+        "L",
+        401,
+        0,
+        "L",
+        401,
+        601,
+        "L",
+        0,
+        601,
+        "Z"
+      ],
+      "fillColor": "rgba(255, 0, 0, 0)",
+      "outlineColor": "rgba(128, 0, 0, 0)",
+      "name": "content"
+    },
+    {
+      "path": [
+        "M",
+        0,
+        0,
+        "L",
+        401,
+        0,
+        "L",
+        401,
+        601,
+        "L",
+        0,
+        601,
+        "Z"
+      ],
+      "fillColor": "rgba(0, 255, 0, 0)",
+      "name": "padding"
+    },
+    {
+      "path": [
+        "M",
+        0,
+        0,
+        "L",
+        401,
+        0,
+        "L",
+        401,
+        601,
+        "L",
+        0,
+        601,
+        "Z"
+      ],
+      "fillColor": "rgba(0, 0, 255, 0)",
+      "name": "border"
+    },
+    {
+      "path": [
+        "M",
+        0,
+        0,
+        "L",
+        401,
+        0,
+        "L",
+        401,
+        601,
+        "L",
+        0,
+        601,
+        "Z"
+      ],
+      "fillColor": "rgba(255, 255, 255, 0)",
+      "name": "margin"
+    }
+  ],
+  "showRulers": true,
+  "showExtensionLines": true,
+  "showAccessibilityInfo": true,
+  "colorFormat": "hex",
+  "elementInfo": {
+    "tagName": "div",
+    "idValue": "grid-with-areas",
+    "nodeWidth": "401",
+    "nodeHeight": "601",
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic",
+    "layoutObjectName": "LayoutGrid",
+    "showAccessibilityInfo": true
+  },
+  "gridInfo": [
+    {
+      "rows": [
+        "M",
+        0,
+        0,
+        "L",
+        401,
+        0,
+        "M",
+        0,
+        300.5,
+        "L",
+        401,
+        300.5,
+        "M",
+        401,
+        601,
+        "L",
+        0,
+        601
+      ],
+      "rowGaps": [
+        "M",
+        0,
+        300.5,
+        "L",
+        401,
+        300.5,
+        "L",
+        401,
+        300.5,
+        "L",
+        0,
+        300.5,
+        "Z"
+      ],
+      "columns": [
+        "M",
+        0,
+        0,
+        "L",
+        0,
+        601,
+        "M",
+        200.5,
+        0,
+        "L",
+        200.5,
+        601,
+        "M",
+        401,
+        601,
+        "L",
+        401,
+        0
+      ],
+      "columnGaps": [
+        "M",
+        200.5,
+        0,
+        "L",
+        200.5,
+        0,
+        "L",
+        200.5,
+        601,
+        "L",
+        200.5,
+        601,
+        "Z"
+      ],
+      "positiveRowLineNumberOffsets": [
+        0,
+        300.5,
+        601
+      ],
+      "positiveColumnLineNumberOffsets": [
+        0,
+        200.5,
+        401
+      ],
+      "negativeRowLineNumberOffsets": [
+        0,
+        300.5,
+        601
+      ],
+      "negativeColumnLineNumberOffsets": [
+        0,
+        200.5,
+        401
+      ],
+      "areaNames": {
+        "header": [
+          "M",
+          0,
+          0,
+          "L",
+          401,
+          0,
+          "L",
+          401,
+          300.5,
+          "L",
+          0,
+          300.5,
+          "Z"
+        ],
+        "sidebar": [
+          "M",
+          0,
+          300.5,
+          "L",
+          200.5,
+          300.5,
+          "L",
+          200.5,
+          601,
+          "L",
+          0,
+          601,
+          "Z"
+        ],
+        "main": [
+          "M",
+          200.5,
+          300.5,
+          "L",
+          401,
+          300.5,
+          "L",
+          401,
+          601,
+          "L",
+          200.5,
+          601,
+          "Z"
+        ]
+      },
+      "gridBorder": [
+        "M",
+        0,
+        0,
+        "L",
+        401,
+        0,
+        "L",
+        401,
+        601,
+        "L",
+        0,
+        601,
+        "Z"
+      ],
+      "gridHighlightConfig": {
+        "gridBorderDash": false,
+        "cellBorderDash": true,
+        "showGridExtensionLines": true,
+        "showPositiveLineNumbers": true,
+        "showNegativeLineNumbers": true,
+        "showAreaNames": true,
+        "gridBorderColor": "rgba(255, 0, 0, 0)",
+        "cellBorderColor": "rgba(128, 0, 0, 0)",
+        "rowGapColor": "rgba(0, 255, 0, 0)",
+        "columnGapColor": "rgba(0, 0, 255, 0)",
+        "rowHatchColor": "rgba(255, 255, 255, 0)",
+        "columnHatchColor": "rgba(128, 128, 128, 0)",
+        "areaBorderColor": "rgba(255, 0, 0, 0)"
+      },
+      "isPrimaryGrid": true
+    }
+  ]
+}
+

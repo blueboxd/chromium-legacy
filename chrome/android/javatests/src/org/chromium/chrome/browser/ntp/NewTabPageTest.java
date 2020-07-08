@@ -11,6 +11,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
@@ -518,12 +519,8 @@ public class NewTabPageTest {
     }
 
     private void waitForUrlFocusAnimationsDisabledState(boolean disabled) {
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(disabled, new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return getUrlFocusAnimationsDisabled();
-            }
-        }));
+        CriteriaHelper.pollInstrumentationThread(
+                () -> Criteria.checkThat(getUrlFocusAnimationsDisabled(), is(disabled)));
     }
 
     private void waitForTabLoading() {
@@ -540,12 +537,10 @@ public class NewTabPageTest {
     }
 
     private void waitForUrlFocusPercent(final NewTabPage ntp, float percent) {
-        CriteriaHelper.pollUiThread(Criteria.equals(percent, new Callable<Float>() {
-            @Override
-            public Float call() {
-                return ntp.getNewTabPageLayout().getUrlFocusChangeAnimationPercent();
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    ntp.getNewTabPageLayout().getUrlFocusChangeAnimationPercent(), is(percent));
+        });
     }
 
     private void clickFakebox() {
@@ -572,11 +567,6 @@ public class NewTabPageTest {
      * Waits until the top of the fakebox reaches the given position.
      */
     private void waitForFakeboxTopPosition(final NewTabPage ntp, int position) {
-        CriteriaHelper.pollUiThread(Criteria.equals(position, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return getFakeboxTop(ntp);
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> Criteria.checkThat(getFakeboxTop(ntp), is(position)));
     }
 }

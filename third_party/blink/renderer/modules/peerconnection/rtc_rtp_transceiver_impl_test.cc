@@ -158,7 +158,6 @@ class RTCRtpTransceiverImplTest : public ::testing::Test {
         scheduler::GetSingleThreadTaskRunnerForTesting(), true);
     auto* audio_source_ptr = audio_source.get();
     // Takes ownership of |audio_source|.
-    audio_source->SetOwner(source);
     source->SetPlatformSource(std::move(audio_source));
 
     auto* component =

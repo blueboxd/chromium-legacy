@@ -268,9 +268,24 @@ interface AudioContext : BaseAudioContext
     method getOutputTimestamp
     method resume
     method suspend
+interface AudioDecoder
+    attribute @@toStringTag
+    getter decodeQueueSize
+    method close
+    method configure
+    method constructor
+    method decode
+    method flush
+    method reset
 interface AudioDestinationNode : AudioNode
     attribute @@toStringTag
     getter maxChannelCount
+    method constructor
+interface AudioFrame
+    attribute @@toStringTag
+    getter buffer
+    getter timestamp
+    method close
     method constructor
 interface AudioListener
     attribute @@toStringTag
@@ -2280,6 +2295,12 @@ interface ElementInternals
     setter ariaValueNow
     setter ariaValueText
     setter role
+interface EncodedAudioChunk
+    attribute @@toStringTag
+    getter data
+    getter timestamp
+    getter type
+    method constructor
 interface EncodedVideoChunk
     attribute @@toStringTag
     getter data

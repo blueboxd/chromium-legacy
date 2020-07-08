@@ -999,7 +999,7 @@ class SaveToFileBodyHandler : public BodyHandler {
         on_done_callback_.Reset();
 
         DCHECK(!path_.empty());
-        base::DeleteFile(path_, false /* recursive */);
+        base::DeleteFile(path_);
 
         owns_file_ = false;
       }

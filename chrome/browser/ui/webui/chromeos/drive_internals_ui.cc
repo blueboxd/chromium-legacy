@@ -854,7 +854,7 @@ class LogsZipper : public download::AllDownloadItemNotifier::Observer {
     // Note: this may be racy if multiple attempts to export logs are run
     // concurrently, but it's a debug page and it requires explicit action to
     // cause problems.
-    base::DeleteFile(zip_path, false);
+    base::DeleteFile(zip_path);
     std::vector<base::FilePath> log_files;
     base::FileEnumerator enumerator(logs_path, false /* recursive */,
                                     base::FileEnumerator::FILES);

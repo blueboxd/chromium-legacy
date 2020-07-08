@@ -18,6 +18,8 @@
 #include "base/run_loop.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
@@ -67,6 +69,7 @@ void AmbientAshTestBase::SetUp() {
       chromeos::features::kAmbientModeFeature);
   image_downloader_ = std::make_unique<TestImageDownloader>();
   ambient_client_ = std::make_unique<TestAmbientClient>(&wake_lock_provider_);
+  chromeos::PowerManagerClient::InitializeFake();
 
   AshTestBase::SetUp();
 
@@ -90,14 +93,13 @@ void AmbientAshTestBase::TearDown() {
 
 void AmbientAshTestBase::ShowAmbientScreen() {
   // The widget will be destroyed in |AshTestBase::TearDown()|.
-  ambient_controller()->ambient_ui_model()->SetUiVisibility(
-      AmbientUiVisibility::kShown);
+  ambient_controller()->ShowUi(AmbientUiMode::kLockScreenUi);
   // Flush the message loop to finish all async calls.
   base::RunLoop().RunUntilIdle();
 }
 
 void AmbientAshTestBase::HideAmbientScreen() {
-  ambient_controller()->HideContainerView();
+  ambient_controller()->HideLockScreenUi();
 }
 
 void AmbientAshTestBase::CloseAmbientScreen() {
@@ -111,6 +113,17 @@ void AmbientAshTestBase::LockScreen() {
 
 void AmbientAshTestBase::UnlockScreen() {
   GetSessionControllerClient()->UnlockScreen();
+}
+
+void AmbientAshTestBase::SimulateSystemSuspendAndWait(
+    power_manager::SuspendImminent::Reason reason) {
+  chromeos::FakePowerManagerClient::Get()->SendSuspendImminent(reason);
+  base::RunLoop().RunUntilIdle();
+}
+
+void AmbientAshTestBase::SimulateSystemResumeAndWait() {
+  chromeos::FakePowerManagerClient::Get()->SendSuspendDone();
+  base::RunLoop().RunUntilIdle();
 }
 
 const gfx::ImageSkia& AmbientAshTestBase::GetImageInPhotoView() {

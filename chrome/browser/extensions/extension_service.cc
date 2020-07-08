@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -97,7 +98,6 @@
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/features/feature_channel.h"
-#include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/manifest_url_handlers.h"
@@ -586,8 +586,9 @@ bool ExtensionService::UpdateExtension(const CRXFileInfo& file,
     if (file_ownership_passed &&
         !GetExtensionFileTaskRunner()->PostTask(
             FROM_HERE,
-            base::BindOnce(&file_util::DeleteFile, file.path, false)))
+            base::BindOnce(base::GetDeleteFileCallback(), file.path))) {
       NOTREACHED();
+    }
 
     return false;
   }
@@ -1545,8 +1546,9 @@ void ExtensionService::OnExtensionInstalled(
       // Delete the extension directory since we're not going to
       // load it.
       if (!GetExtensionFileTaskRunner()->PostTask(
-              FROM_HERE, base::BindOnce(&file_util::DeleteFile,
-                                        extension->path(), true))) {
+              FROM_HERE,
+              base::BindOnce(base::GetDeletePathRecursivelyCallback(),
+                             extension->path()))) {
         NOTREACHED();
       }
       return;

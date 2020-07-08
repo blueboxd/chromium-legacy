@@ -25,6 +25,7 @@ import android.widget.TextView;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -49,8 +50,6 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.test.util.UiUtils;
 import org.chromium.net.test.EmbeddedTestServer;
-
-import java.util.concurrent.Callable;
 
 /**
  * Find in page tests.
@@ -84,12 +83,8 @@ public class FindTest {
                 (TextView) mActivityTestRule.getActivity().findViewById(R.id.find_status);
         Assert.assertNotNull(expectedResult);
         Assert.assertNotNull(findResults);
-        CriteriaHelper.pollUiThread(Criteria.equals(expectedResult, new Callable<CharSequence>() {
-            @Override
-            public CharSequence call() {
-                return findResults.getText();
-            }
-        }));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(findResults.getText(), Matchers.is(expectedResult)));
         return findResults.getText().toString();
     }
 
@@ -443,9 +438,10 @@ public class FindTest {
 
     private void waitForIME(final boolean imePresent) {
         // Wait for IME to appear.
-        CriteriaHelper.pollUiThread(Criteria.equals(imePresent,
-                ()
-                        -> mActivityTestRule.getKeyboardDelegate().isKeyboardShowing(
-                                mActivityTestRule.getActivity(), getFindQueryText())));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mActivityTestRule.getKeyboardDelegate().isKeyboardShowing(
+                                       mActivityTestRule.getActivity(), getFindQueryText()),
+                    Matchers.is(imePresent));
+        });
     }
 }

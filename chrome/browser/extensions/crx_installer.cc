@@ -1088,12 +1088,12 @@ void CrxInstaller::CleanupTempFiles() {
 
   // Delete the temp directory and crx file as necessary.
   if (!temp_dir_.value().empty()) {
-    file_util::DeleteFile(temp_dir_, true);
+    base::DeletePathRecursively(temp_dir_);
     temp_dir_ = base::FilePath();
   }
 
   if (delete_source_ && !source_file_.value().empty()) {
-    file_util::DeleteFile(source_file_, false);
+    base::DeleteFile(source_file_);
     source_file_ = base::FilePath();
   }
 }

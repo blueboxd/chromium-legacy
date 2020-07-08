@@ -11,6 +11,7 @@ import android.widget.ListView;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -142,8 +143,9 @@ public class NavigationSheetTest {
         ThreadUtils.runOnUiThreadBlocking(() -> listview.getChildAt(1).callOnClick());
 
         CriteriaHelper.pollUiThread(sheet::isHidden);
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(NAVIGATION_INDEX_2, () -> controller.mNavigatedIndex));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(controller.mNavigatedIndex, Matchers.is(NAVIGATION_INDEX_2));
+        });
     }
 
     @Test

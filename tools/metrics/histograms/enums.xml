@@ -5626,11 +5626,17 @@ Unknown properties are collapsed to zero. -->
   <int value="4" label="Does not have a site"/>
   <int value="5" label="Source URL scheme is not HTTP(S)"/>
   <int value="6" label="Destination URL scheme is not HTTP(S)"/>
-  <int value="7" label="Same site navigation"/>
+  <int value="7"
+      label="Same site navigation, same-site proactive swap disabled"/>
   <int value="8" label="Error page"/>
   <int value="9" label="Already has matching browsing instance"/>
   <int value="10" label="Renderer debug URL"/>
   <int value="11" label="Not enabled and not needed for back-forward cache"/>
+  <int value="14" label="Same-document navigation"/>
+  <int value="15" label="Same-page navigation"/>
+  <int value="16" label="The current history entry will get replaced"/>
+  <int value="17" label="Reload"/>
+  <int value="18" label="Guest"/>
 </enum>
 
 <enum name="BackForwardCacheDisabledForRenderFrameHostReason">
@@ -33622,7 +33628,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="6" label="ContinueOnNonHostServerTty"/>
   <int value="7" label="LessThanFullThreadTimeAfterCapped"/>
   <int value="8" label="KillOnLessThreadTime"/>
-  <int value="9" label="kSlowWatchdogThread"/>
+  <int value="9" label="SlowWatchdogThread"/>
 </enum>
 
 <enum name="GPUWebGraphicsContext3D_Init_CanLoseContext">
@@ -39863,6 +39869,8 @@ from previous Chrome versions.
   <int value="-1670137340"
       label="OptimizeLoadingIPCForSmallResources:disabled"/>
   <int value="-1669486359" label="ImportantSitesInCBD:enabled"/>
+  <int value="-1665720309"
+      label="ArcNativeBridge64BitSupportExperiment:disabled"/>
   <int value="-1664795930" label="StorageAccessAPI:disabled"/>
   <int value="-1663410466" label="top-document-isolation"/>
   <int value="-1663125441" label="OptInImeMenu:enabled"/>
@@ -40379,6 +40387,8 @@ from previous Chrome versions.
   <int value="-1153892430"
       label="AlignFontDisplayAutoTimeoutWithLCPGoal:enabled"/>
   <int value="-1151766565" label="enable-fullscreen-tab-detaching"/>
+  <int value="-1150881704"
+      label="ArcNativeBridge64BitSupportExperiment:enabled"/>
   <int value="-1145905507" label="SendTabToSelfWhenSignedIn:disabled"/>
   <int value="-1145702446" label="ChromeHomeInactivitySheetExpansion:enabled"/>
   <int value="-1145246849" label="ThirdPartyDoodles:enabled"/>
@@ -40978,7 +40988,6 @@ from previous Chrome versions.
   <int value="-491131428" label="OmniboxNewAnswerLayout:disabled"/>
   <int value="-488779992" label="blink-settings"/>
   <int value="-488449930" label="SafetyCheckAndroid:enabled"/>
-  <int value="-483290305" label="WebUITabStripDemoOptions:enabled"/>
   <int value="-482494879"
       label="OmniboxHistoryQuickProviderAllowMidwordContinuations:disabled"/>
   <int value="-482259889" label="MacMDDownloadShelf:disabled"/>
@@ -41374,7 +41383,6 @@ from previous Chrome versions.
   <int value="-45074716" label="SystemDownloadManager:disabled"/>
   <int value="-45067971" label="NewPrintPreview:disabled"/>
   <int value="-43428597" label="ClickToCallDetectionV2:enabled"/>
-  <int value="-41672681" label="WebUITabStripDemoOptions:disabled"/>
   <int value="-40935502" label="ContextualSuggestionsSlimPeekUI:enabled"/>
   <int value="-36503306" label="HomepageLocationPolicy:enabled"/>
   <int value="-36234530" label="PluginVmShowMicrophonePermissions:enabled"/>

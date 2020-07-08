@@ -42,26 +42,6 @@ void FlushFile(const base::FilePath& path) {
   file.Close();
 }
 
-// Wraps a base::OnceCallback with a base::Callback, which can be passed as a
-// callback to extensions::LocalExtensionCache::PutExtension().
-// TODO(tbarzic): Remove this when LocalExtensionCache starts using
-//     OnceCallback.
-void WrapPutExtensionCallback(
-    base::OnceCallback<void(const base::FilePath&, bool)> callback,
-    const base::FilePath& file_path,
-    bool file_ownership_passed) {
-  if (callback)
-    std::move(callback).Run(file_path, file_ownership_passed);
-}
-
-// Wraps OnceClosure with a base::Closure, so it can be passed to
-// extensions::LocalExtensionCache::Shutdown.
-// TODO(tbarzic): Remove this when LocakExtensionCache starts using OnceClosure.
-void WrapOnceClosure(base::OnceClosure closure) {
-  if (closure)
-    std::move(closure).Run();
-}
-
 }  // namespace
 
 ExternalCacheImpl::ExternalCacheImpl(
@@ -90,8 +70,7 @@ const base::DictionaryValue* ExternalCacheImpl::GetCachedExtensions() {
 }
 
 void ExternalCacheImpl::Shutdown(base::OnceClosure callback) {
-  local_cache_.Shutdown(
-      base::Bind(&WrapOnceClosure, base::Passed(std::move(callback))));
+  local_cache_.Shutdown(std::move(callback));
 }
 
 void ExternalCacheImpl::UpdateExtensionsList(
@@ -109,8 +88,8 @@ void ExternalCacheImpl::UpdateExtensionsList(
 
   if (local_cache_.is_uninitialized()) {
     local_cache_.Init(wait_for_cache_initialization_,
-                      base::Bind(&ExternalCacheImpl::CheckCache,
-                                 weak_ptr_factory_.GetWeakPtr()));
+                      base::BindOnce(&ExternalCacheImpl::CheckCache,
+                                     weak_ptr_factory_.GetWeakPtr()));
   } else {
     CheckCache();
   }
@@ -176,11 +155,8 @@ void ExternalCacheImpl::PutExternalExtension(
     PutExternalExtensionCallback callback) {
   local_cache_.PutExtension(
       id, std::string(), crx_file_path, version,
-      base::Bind(
-          &WrapPutExtensionCallback,
-          base::Passed(base::BindOnce(
-              &ExternalCacheImpl::OnPutExternalExtension,
-              weak_ptr_factory_.GetWeakPtr(), id, std::move(callback)))));
+      base::BindOnce(&ExternalCacheImpl::OnPutExternalExtension,
+                     weak_ptr_factory_.GetWeakPtr(), id, std::move(callback)));
 }
 
 void ExternalCacheImpl::Observe(int type,
@@ -221,16 +197,16 @@ void ExternalCacheImpl::OnExtensionDownloadFinished(
     const GURL& download_url,
     const extensions::ExtensionDownloaderDelegate::PingResult& ping_result,
     const std::set<int>& request_ids,
-    const InstallCallback& callback) {
+    InstallCallback callback) {
   DCHECK(file_ownership_passed);
   DCHECK(file.expected_version.IsValid());
   local_cache_.PutExtension(
       file.extension_id, file.expected_hash, file.path,
       file.expected_version.GetString(),
-      base::Bind(&ExternalCacheImpl::OnPutExtension,
-                 weak_ptr_factory_.GetWeakPtr(), file.extension_id));
+      base::BindOnce(&ExternalCacheImpl::OnPutExtension,
+                     weak_ptr_factory_.GetWeakPtr(), file.extension_id));
   if (!callback.is_null())
-    callback.Run(true);
+    std::move(callback).Run(true);
 }
 
 bool ExternalCacheImpl::IsExtensionPending(const std::string& id) {

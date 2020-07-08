@@ -1761,7 +1761,7 @@ message ChromeDeviceSettingsProto {
       required_client_certificate_for_device = 101;
   optional DeviceCrostiniArcAdbSideloadingAllowedProto
       device_crostini_arc_adb_sideloading_allowed = 102;
-  optional StringPolicyProto minimum_chrome_version_eol_message = 103;
+  optional StringPolicyProto minimum_chrome_version_aue_message = 103;
   optional ManagedGuestSessionPrivacyWarningsProto
       managed_guest_session_privacy_warnings = 104;
   optional DeviceExternalPrintServersProto external_print_servers = 105;

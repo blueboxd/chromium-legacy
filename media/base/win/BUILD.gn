@@ -69,5 +69,6 @@ source_set("test_support") {
   deps = [
     "//base",
     "//testing/gmock",
+    "//testing/gtest",
   ]
 }

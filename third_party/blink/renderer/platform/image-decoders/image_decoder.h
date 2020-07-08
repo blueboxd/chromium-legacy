@@ -390,7 +390,14 @@ class PLATFORM_EXPORT ImageDecoder {
   virtual bool HotSpot(IntPoint&) const { return false; }
 
   virtual void SetMemoryAllocator(SkBitmap::Allocator* allocator) {
-    // FIXME: this doesn't work for images with multiple frames.
+    // This currently doesn't work for images with multiple frames.
+    // Some animated image formats require extra guarantees:
+    // 1. The memory is cheaply readable, which isn't true for GPU memory, and
+    // 2. The memory's lifetime will persist long enough to allow reading past
+    //   frames, which isn't true for discardable memory.
+    // Not all animated image formats share these requirements. Blocking
+    // all animated formats is overly aggressive. If a need arises for an
+    // external memory allocator for animated images, this should be changed.
     if (frame_buffer_cache_.IsEmpty()) {
       // Ensure that InitializeNewFrame is called, after parsing if
       // necessary.

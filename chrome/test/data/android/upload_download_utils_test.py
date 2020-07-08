@@ -15,14 +15,11 @@ import sys
 import unittest
 import upload_download_utils
 
-THIS_DIR = os.path.abspath(os.path.dirname(__file__))
-CHROMIUM_SRC = os.path.abspath(os.path.join(THIS_DIR, '..', '..', '..', '..'))
-PYMOCK_PATH = os.path.join(
-    CHROMIUM_SRC, 'third_party', 'pymock')
-sys.path.append(PYMOCK_PATH)
 import mock
 
 from pyfakefs import fake_filesystem_unittest
+
+THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 
 
 def filter_all(f):

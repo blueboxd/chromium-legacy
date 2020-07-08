@@ -667,7 +667,7 @@ TEST_P(CleanerLoggingServiceTest, CompleteFailure) {
   // Now forget about the scheduled logs upload retry.
   registry_logger_->GetNextLogFilePath(&log_file);
   ASSERT_FALSE(log_file.empty());
-  bool success = base::DeleteFile(log_file, false);
+  bool success = base::DeleteFile(log_file);
   EXPECT_TRUE(success) << "Failed to delete " << log_file.value();
   bool more_log_files = registry_logger_->RemoveLogFilePath(log_file);
   EXPECT_FALSE(more_log_files);

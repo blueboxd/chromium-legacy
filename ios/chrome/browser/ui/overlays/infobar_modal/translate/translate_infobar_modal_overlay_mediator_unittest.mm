@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/overlays/infobar_modal/translate/translate_infobar_modal_overlay_mediator.h"
 
+#include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/infobars/core/infobar_feature.h"
@@ -120,14 +121,20 @@ TEST_F(TranslateInfobarModalOverlayMediatorTest, ShowOriginalLanguage) {
 // called, and didSelectSourceLanguageIndex and didSelectTargetLanguageIndex
 // were called beforehand to change the source and target languages.
 TEST_F(TranslateInfobarModalOverlayMediatorTest, UpdateLanguageInfo) {
-  [mediator_ didSelectSourceLanguageIndex:69 withName:@"Portuguese"];
-  [mediator_ didSelectTargetLanguageIndex:83 withName:@"Spanish"];
+  // Language indexes are different on iOS 14.
+  // TODO(crbug.com/1102968): Avoid hard-coding indexes here.
+  const int portuguese_index = base::ios::IsRunningOnIOS14OrLater() ? 67 : 69;
+  const int spanish_index = base::ios::IsRunningOnIOS14OrLater() ? 81 : 83;
+
+  [mediator_ didSelectSourceLanguageIndex:portuguese_index
+                                 withName:@"Portuguese"];
+  [mediator_ didSelectTargetLanguageIndex:spanish_index withName:@"Spanish"];
   request_->GetCallbackManager()->AddDispatchCallback(OverlayDispatchCallback(
       base::BindRepeating(^(OverlayResponse* response) {
         UpdateLanguageInfo* info = response->GetInfo<UpdateLanguageInfo>();
         ASSERT_TRUE(info);
-        EXPECT_EQ(69, info->source_language_index());
-        EXPECT_EQ(83, info->target_language_index());
+        EXPECT_EQ(portuguese_index, info->source_language_index());
+        EXPECT_EQ(spanish_index, info->target_language_index());
       }),
       UpdateLanguageInfo::ResponseSupport()));
   EXPECT_CALL(

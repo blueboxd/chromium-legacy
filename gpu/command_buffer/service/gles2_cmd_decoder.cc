@@ -1946,14 +1946,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
   void DoMultiDrawBeginCHROMIUM(GLsizei drawcount);
   void DoMultiDrawEndCHROMIUM();
 
-  // Wrapper for glOverlayPromotionHintCHROMIUIM
-  void DoOverlayPromotionHintCHROMIUM(GLuint client_id,
-                                      GLboolean promotion_hint,
-                                      GLint display_x,
-                                      GLint display_y,
-                                      GLint display_width,
-                                      GLint display_height);
-
   // Wrapper for glSetDrawRectangleCHROMIUM
   void DoSetDrawRectangleCHROMIUM(GLint x, GLint y, GLint width, GLint height);
 
@@ -2091,10 +2083,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
                           GLsizei count,
                           GLboolean transpose,
                           const volatile GLfloat* value);
-  void DoUniformMatrix4fvStreamTextureMatrixCHROMIUM(
-      GLint fake_location,
-      GLboolean transpose,
-      const volatile GLfloat* default_value);
   void DoUniformMatrix2x3fv(GLint fake_location,
                             GLsizei count,
                             GLboolean transpose,
@@ -9808,34 +9796,6 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program_id) {
   ExitCommandProcessingEarly();
 }
 
-void GLES2DecoderImpl::DoOverlayPromotionHintCHROMIUM(GLuint client_id,
-                                                      GLboolean promotion_hint,
-                                                      GLint display_x,
-                                                      GLint display_y,
-                                                      GLint display_width,
-                                                      GLint display_height) {
-  if (client_id == 0)
-    return;
-
-  TextureRef* texture_ref = GetTexture(client_id);
-  if (!texture_ref) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glOverlayPromotionHintCHROMIUM",
-                       "invalid texture id");
-    return;
-  }
-  GLStreamTextureImage* image =
-      texture_ref->texture()->GetLevelStreamTextureImage(
-          GL_TEXTURE_EXTERNAL_OES, 0);
-  if (!image) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glOverlayPromotionHintCHROMIUM",
-                       "texture has no StreamTextureImage");
-    return;
-  }
-
-  image->NotifyPromotionHint(promotion_hint != GL_FALSE, display_x, display_y,
-                             display_width, display_height);
-}
-
 void GLES2DecoderImpl::DoSetDrawRectangleCHROMIUM(GLint x,
                                                   GLint y,
                                                   GLint width,
@@ -10460,32 +10420,6 @@ void GLES2DecoderImpl::DoUniformMatrix4fv(GLint fake_location,
   }
   api()->glUniformMatrix4fvFn(real_location, count, transpose,
                               const_cast<const GLfloat*>(value));
-}
-
-void GLES2DecoderImpl::DoUniformMatrix4fvStreamTextureMatrixCHROMIUM(
-    GLint fake_location,
-    GLboolean transpose,
-    const volatile GLfloat* transform) {
-  // This refers to the bound external texture on the active unit.
-  TextureUnit& unit = state_.texture_units[state_.active_texture_unit];
-  if (!unit.bound_texture_external_oes.get()) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
-                       "DoUniformMatrix4vStreamTextureMatrix",
-                       "no texture bound");
-    return;
-  }
-
-  GLenum type = 0;
-  GLint real_location = -1;
-  GLsizei count = 1;
-  if (!PrepForSetUniformByLocation(fake_location, "glUniformMatrix4fv",
-                                   UniformApiType::kUniformMatrix4f,
-                                   &real_location, &type, &count)) {
-    return;
-  }
-
-  api()->glUniformMatrix4fvFn(real_location, count, transpose,
-                              const_cast<const GLfloat*>(transform));
 }
 
 void GLES2DecoderImpl::DoUniformMatrix2x3fv(GLint fake_location,

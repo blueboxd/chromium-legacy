@@ -235,6 +235,7 @@
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
 #include "ui/accessibility/ax_tree_update.h"
+#include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -1793,6 +1794,14 @@ void RenderFrameHostImpl::AccessibilityPerformAction(
                          action_data.hit_test_event_to_fire,
                          action_data.request_id, {});
     return;
+  }
+  // Set the input modality in RenderWidgetHostViewAura to touch so the
+  // VK shows up.
+  if (action_data.action == ax::mojom::Action::kDoDefault) {
+    RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
+        render_view_host_->GetWidget()->GetView());
+    if (view)
+      view->SetLastPointerType(ui::EventPointerType::kTouch);
   }
 
   render_accessibility_->PerformAction(action_data);

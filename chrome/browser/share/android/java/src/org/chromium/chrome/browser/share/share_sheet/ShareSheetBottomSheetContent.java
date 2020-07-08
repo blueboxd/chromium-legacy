@@ -133,6 +133,14 @@ class ShareSheetBottomSheetContent implements BottomSheetContent, OnItemClickLis
         return mContentView;
     }
 
+    protected View getTopRowView() {
+        return mContentView.findViewById(R.id.share_sheet_chrome_apps);
+    }
+
+    protected View getBottomRowView() {
+        return mContentView.findViewById(R.id.share_sheet_other_apps);
+    }
+
     @Override
     public View getToolbarView() {
         return null;

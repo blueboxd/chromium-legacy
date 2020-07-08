@@ -937,7 +937,7 @@ void TruncateLogFileToTail(const base::FilePath& path,
 
   if (bytes_read != tail_size_bytes) {
     // Something went wrong, clean the file.
-    base::DeleteFile(path, /*recursive=*/false);
+    base::DeleteFile(path);
     return;
   }
 

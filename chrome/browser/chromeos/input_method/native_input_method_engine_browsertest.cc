@@ -330,7 +330,8 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, SuggestUserEmail) {
                                       chromeos::AssistiveType::kPersonalEmail,
                                       1);
 
-  DispatchKeyPress(ui::VKEY_TAB, false);
+  DispatchKeyPress(ui::VKEY_DOWN, false);
+  DispatchKeyPress(ui::VKEY_RETURN, false);
   helper.WaitForSurroundingTextChanged(expected_result_text);
 
   EXPECT_EQ(expected_result_text, helper.GetSurroundingText());
@@ -361,8 +362,9 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, DismissSuggestion) {
   helper.WaitForSurroundingTextChanged(prefix_text);
 
   DispatchKeyPress(ui::VKEY_ESCAPE, false);
-  // This tab should make no effect.
-  DispatchKeyPress(ui::VKEY_TAB, false);
+  // This down and enter should make no effect.
+  DispatchKeyPress(ui::VKEY_DOWN, false);
+  DispatchKeyPress(ui::VKEY_RETURN, false);
   helper.GetTextInputClient()->InsertText(base::UTF8ToUTF16("john@abc.com"));
   helper.WaitForSurroundingTextChanged(expected_result_text);
 
@@ -407,7 +409,8 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, SuggestUserName) {
   helper.GetTextInputClient()->InsertText(base::UTF8ToUTF16("jo"));
   helper.WaitForSurroundingTextChanged(base::UTF8ToUTF16("my name is jo"));
 
-  DispatchKeyPress(ui::VKEY_TAB, false);
+  DispatchKeyPress(ui::VKEY_DOWN, false);
+  DispatchKeyPress(ui::VKEY_RETURN, false);
   helper.WaitForSurroundingTextChanged(expected_result_text);
 
   EXPECT_EQ(expected_result_text, helper.GetSurroundingText());

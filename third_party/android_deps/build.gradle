@@ -50,6 +50,7 @@ dependencies {
     compile "androidx.vectordrawable:vectordrawable-animated:${androidXSupportLibVersion}"
     compile "androidx.tvprovider:tvprovider:${androidXSupportLibVersion}"
     compile "androidx.viewpager:viewpager:${androidXSupportLibVersion}"
+    compile "androidx.exifinterface:exifinterface:${androidXSupportLibVersion}"
 
     compile "androidx.multidex:multidex:2.0.0"
 

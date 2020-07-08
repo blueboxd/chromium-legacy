@@ -834,7 +834,7 @@ leveldb::Status IndexedDBBackingStore::Initialize(bool clean_active_journal) {
   // Delete all empty files that resulted from the migration to v4. If this
   // fails it's not a big deal.
   for (const auto& path : empty_blobs_to_delete) {
-    ignore_result(base::DeleteFile(path, /*recursive=*/false));
+    base::DeleteFile(path);
   }
 
   if (clean_active_journal) {
@@ -1706,7 +1706,7 @@ bool IndexedDBBackingStore::RemoveBlobFile(int64_t database_id,
   DVLOG(1) << "Deleting blob " << blob_number << " from IndexedDB database "
            << database_id << " at path " << path.value();
 #endif
-  return base::DeleteFile(path, false);
+  return base::DeleteFile(path);
 }
 
 bool IndexedDBBackingStore::RemoveBlobDirectory(int64_t database_id) const {

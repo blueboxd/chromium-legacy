@@ -274,7 +274,7 @@ HRESULT DoUninstall(const base::FilePath& installer_path,
   // |dest_path| is of the form %ProgramFile%\Google\GCP\VERSION.  Now try to
   // delete the parent directory if possible.
   if (base::IsDirectoryEmpty(dest_path.DirName()))
-    has_failures |= !base::DeleteFile(dest_path.DirName(), false);
+    has_failures |= !base::DeleteFile(dest_path.DirName());
 
   // TODO(rogerta): ask user to reboot if anything went wrong during uninstall.
 

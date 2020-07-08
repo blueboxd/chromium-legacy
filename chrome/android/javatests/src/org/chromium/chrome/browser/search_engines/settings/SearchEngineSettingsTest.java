@@ -8,6 +8,7 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,7 +39,6 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.policy.test.annotations.Policies;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -141,12 +141,7 @@ public class SearchEngineSettingsTest {
                 () -> { ChromeBrowserInitializer.getInstance().handleSynchronousStartup(); });
 
         ensureTemplateUrlServiceLoaded();
-        CriteriaHelper.pollUiThread(Criteria.equals(true, new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return TemplateUrlServiceFactory.get().isDefaultSearchManaged();
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> TemplateUrlServiceFactory.get().isDefaultSearchManaged());
 
         mMainSettingsTestRule.startSettingsActivity();
 
@@ -155,12 +150,9 @@ public class SearchEngineSettingsTest {
         final Preference searchEnginePref =
                 waitForPreference(mainSettings, MainSettings.PREF_SEARCH_ENGINE);
 
-        CriteriaHelper.pollUiThread(Criteria.equals(null, new Callable<Object>() {
-            @Override
-            public Object call() {
-                return searchEnginePref.getFragment();
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(searchEnginePref.getFragment(), Matchers.nullValue());
+        });
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ManagedPreferenceDelegate managedPrefDelegate =
                     mainSettings.getManagedPreferenceDelegateForTest();

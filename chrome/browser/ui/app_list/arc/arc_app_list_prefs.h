@@ -180,10 +180,10 @@ class ArcAppListPrefs : public KeyedService,
                                const std::string& activity,
                                const std::string& intent) {}
     // Notifies that task description has been updated.
-    virtual void OnTaskDescriptionUpdated(
+    virtual void OnTaskDescriptionChanged(
         int32_t task_id,
         const std::string& label,
-        const std::vector<uint8_t>& icon_png_data) {}
+        const arc::mojom::RawIconPngData& icon) {}
     // Notifies that task has been destroyed.
     virtual void OnTaskDestroyed(int32_t task_id) {}
     // Notifies that task has been activated and moved to the front.
@@ -389,15 +389,23 @@ class ArcAppListPrefs : public KeyedService,
   void OnIcon(const std::string& app_id,
               const ArcAppIconDescriptor& descriptor,
               const std::vector<uint8_t>& icon_png_data);
+  void OnIconLoaded(const std::string& app_id,
+                    const ArcAppIconDescriptor& descriptor,
+                    arc::mojom::RawIconPngDataPtr icon);
   void OnTaskCreated(int32_t task_id,
                      const std::string& package_name,
                      const std::string& activity,
                      const base::Optional<std::string>& name,
                      const base::Optional<std::string>& intent) override;
+  // This interface is deprecated and will soon be replaced by
+  // OnTaskDescriptionChanged().
   void OnTaskDescriptionUpdated(
       int32_t task_id,
       const std::string& label,
       const std::vector<uint8_t>& icon_png_data) override;
+  void OnTaskDescriptionChanged(int32_t task_id,
+                                const std::string& label,
+                                arc::mojom::RawIconPngDataPtr icon) override;
   void OnTaskDestroyed(int32_t task_id) override;
   void OnTaskSetActive(int32_t task_id) override;
   void OnNotificationsEnabledChanged(const std::string& package_name,
@@ -463,7 +471,7 @@ class ArcAppListPrefs : public KeyedService,
   // directory.
   void InstallIcon(const std::string& app_id,
                    const ArcAppIconDescriptor& descriptor,
-                   const std::vector<uint8_t>& contentPng);
+                   arc::mojom::RawIconPngDataPtr icon);
   void OnIconInstalled(const std::string& app_id,
                        const ArcAppIconDescriptor& descriptor,
                        bool install_succeed);

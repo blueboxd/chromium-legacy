@@ -83,6 +83,12 @@ const char kArcDataCleanupOnStart[] = "arc-data-cleanup-on-start";
 // in autotests to resolve racy conditions.
 const char kArcDisableAppSync[] = "arc-disable-app-sync";
 
+// Flag to enables an experiment to allow users to turn on 64-bit support in
+// native bridge on systems that have such support available but not yet enabled
+// by default.
+const char kArcEnableNativeBridge64BitSupportExperiment[] =
+    "arc-enable-native-bridge-64bit-support-experiment";
+
 // Used in autotest to disable GMS-core caches which is on by default.
 const char kArcDisableGmsCoreCache[] = "arc-disable-gms-core-cache";
 

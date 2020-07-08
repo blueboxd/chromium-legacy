@@ -285,7 +285,7 @@ if (use_system_harfbuzz) {
     if (use_system_freetype) {
       configs += [ "//build/linux:freetype_from_pkgconfig" ]
     } else {
-      configs += [ "//third_party/freetype:freetype_config" ]
+      configs += [ "//third_party/freetype:freetype_component_config" ]
     }
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [

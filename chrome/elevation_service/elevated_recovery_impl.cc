@@ -186,7 +186,7 @@ HRESULT ValidateAndUnpackCRX(const base::FilePath& from_crx_path,
   if (!zip::Unzip(to_crx_path, to_dir.GetPath()))
     return E_UNEXPECTED;
 
-  LOG_IF(WARNING, !base::DeleteFile(to_crx_path, false));
+  LOG_IF(WARNING, !base::DeleteFile(to_crx_path));
 
   LOG_IF(WARNING, !unpacked_crx_dir->Set(to_dir.Take()));
   return S_OK;

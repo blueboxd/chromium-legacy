@@ -70,7 +70,7 @@ class UpdateRequiredScreen : public BaseScreen,
 
   void EnsureScreenIsShown();
 
-  // Callback for changes to chromeos::kMinimumChromeVersionEolMessage.
+  // Callback for changes to chromeos::kMinimumChromeVersionAueMessage.
   void OnEolMessageChanged();
 
   void OnSelectNetworkButtonClicked();

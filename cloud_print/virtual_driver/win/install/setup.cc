@@ -137,9 +137,9 @@ HRESULT RegisterPortMonitor(bool install, const base::FilePath& install_path) {
       return HRESULT_FROM_WIN32(exit_code);
     }
   } else {
-    if (!base::DeleteFile(target_path, false)) {
+    if (!base::DeleteFile(target_path)) {
       SpoolerServiceCommand("stop");
-      bool deleted = base::DeleteFile(target_path, false);
+      bool deleted = base::DeleteFile(target_path);
       SpoolerServiceCommand("start");
 
       if (!deleted) {

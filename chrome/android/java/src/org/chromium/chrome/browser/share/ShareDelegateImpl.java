@@ -52,6 +52,7 @@ public class ShareDelegateImpl implements ShareDelegate {
     private final ShareSheetDelegate mDelegate;
     private final Supplier<Tab> mTabProvider;
     private long mShareStartTime;
+    private boolean mIsCustomTab;
 
     private static boolean sScreenshotCaptureSkippedForTesting;
 
@@ -61,12 +62,14 @@ public class ShareDelegateImpl implements ShareDelegate {
      * @param controller The BottomSheetController for the current activity.
      * @param tabProvider Supplier for the current activity tab.
      * @param delegate The ShareSheetDelegate for the current activity.
+     * @param isCustomTab This share delegate is associated with a CCT.
      */
     public ShareDelegateImpl(BottomSheetController controller, Supplier<Tab> tabProvider,
-            ShareSheetDelegate delegate) {
+            ShareSheetDelegate delegate, boolean isCustomTab) {
         mBottomSheetController = controller;
         mDelegate = delegate;
         mTabProvider = tabProvider;
+        mIsCustomTab = isCustomTab;
     }
 
     // ShareDelegate implementation.
@@ -76,7 +79,7 @@ public class ShareDelegateImpl implements ShareDelegate {
             mShareStartTime = System.currentTimeMillis();
         }
         mDelegate.share(params, chromeShareExtras, mBottomSheetController, mTabProvider,
-                this::printTab, mShareStartTime);
+                this::printTab, mShareStartTime, isSharingHubV1Enabled());
         mShareStartTime = 0;
     }
 
@@ -265,6 +268,17 @@ public class ShareDelegateImpl implements ShareDelegate {
         }
     }
 
+    @Override
+    public boolean isSharingHubV1Enabled() {
+        return !mIsCustomTab && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB);
+    }
+
+    @Override
+    public boolean isSharingHubV15Enabled() {
+        return isSharingHubV1Enabled()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB);
+    }
+
     /**
      * Delegate for share handling.
      */
@@ -274,10 +288,10 @@ public class ShareDelegateImpl implements ShareDelegate {
          */
         void share(ShareParams params, ChromeShareExtras chromeShareExtras,
                 BottomSheetController controller, Supplier<Tab> tabProvider,
-                Callback<Tab> printCallback, long shareStartTime) {
+                Callback<Tab> printCallback, long shareStartTime, boolean sharingHubEnabled) {
             if (chromeShareExtras.shareDirectly()) {
                 ShareHelper.shareWithLastUsedComponent(params);
-            } else if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB)) {
+            } else if (sharingHubEnabled) {
                 ShareSheetCoordinator coordinator =
                         new ShareSheetCoordinator(controller, tabProvider,
                                 new ShareSheetPropertyModelBuilder(controller,

@@ -815,7 +815,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
      */
     private void shareImage(RenderFrameHost renderFrameHost, String srcUrl) {
         retrieveImage(renderFrameHost, ContextMenuImageFormat.ORIGINAL, (Uri imageUri) -> {
-            if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB_V15)) {
+            if (!mShareDelegateSupplier.get().isSharingHubV15Enabled()) {
                 ShareHelper.shareImage(getWindow(), null, imageUri);
                 return;
             }

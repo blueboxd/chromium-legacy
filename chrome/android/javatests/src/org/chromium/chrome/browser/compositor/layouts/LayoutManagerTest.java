@@ -59,7 +59,6 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModel.MockTabModelDelegate;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
@@ -685,17 +684,16 @@ public class LayoutManagerTest implements MockTabModelDelegate {
 
     private void launchedChromeAndEnterTabSwitcher() {
         mActivityTestRule.startMainActivityOnBlankPage();
-        CriteriaHelper.pollUiThread(Criteria.equals(true,
-                mActivityTestRule.getActivity()
-                        .getTabModelSelector()
-                        .getTabModelFilterProvider()
-                        .getCurrentTabModelFilter()::isTabModelRestored));
+        CriteriaHelper.pollUiThread(mActivityTestRule.getActivity()
+                                            .getTabModelSelector()
+                                            .getTabModelFilterProvider()
+                                            .getCurrentTabModelFilter()::isTabModelRestored);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             LayoutManagerChrome layoutManager = mActivityTestRule.getActivity().getLayoutManager();
             layoutManager.showOverview(false);
 
-            CriteriaHelper.pollUiThread(Criteria.equals(true, layoutManager::overviewVisible));
+            CriteriaHelper.pollUiThread(layoutManager::overviewVisible);
         });
     }
 

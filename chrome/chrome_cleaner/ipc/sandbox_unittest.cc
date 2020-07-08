@@ -93,7 +93,7 @@ class SandboxTest : public base::MultiProcessTest {
     // exist.
     sandbox_process_log_file_path_ =
         ScopedLogging::GetLogFilePath(kSandboxLogFileSuffix);
-    EXPECT_TRUE(base::DeleteFile(sandbox_process_log_file_path_, false));
+    EXPECT_TRUE(base::DeleteFile(sandbox_process_log_file_path_));
   }
 
   void TearDown() override {
@@ -148,7 +148,7 @@ MULTIPROCESS_TEST_MAIN(MockSandboxProcessMain) {
   base::FilePath temp_file;
   if (base::CreateTemporaryFileInDir(product_path, &temp_file)) {
     have_write_access = true;
-    base::DeleteFile(temp_file, /*recursive=*/false);
+    base::DeleteFile(temp_file);
   }
 
 #if BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)

@@ -21,6 +21,7 @@ import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.browser.customtabs.CustomTabsSessionToken;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -303,10 +304,10 @@ public class TrustedCdnPublisherUrlTest {
         String testUrl = mWebServer.getResponseUrl("/test.html");
         String expectedUrl = UrlFormatter.formatUrlForDisplayOmitScheme(testUrl);
 
-        CriteriaHelper.pollUiThread(Criteria.equals(expectedUrl, () -> {
+        CriteriaHelper.pollUiThread(() -> {
             UrlBar urlBar = newActivity.findViewById(R.id.url_bar);
-            return urlBar.getText().toString();
-        }));
+            Criteria.checkThat(urlBar.getText().toString(), Matchers.is(expectedUrl));
+        });
 
         verifySecurityIcon(getDefaultSecurityIcon());
     }

@@ -143,7 +143,8 @@ ShadowData InterpolableShadow::CreateShadowData(
   return ShadowData(
       FloatPoint(shadow_x.Value(), shadow_y.Value()), shadow_blur.Value(),
       shadow_spread.Value(), shadow_style_,
-      CSSColorInterpolationType::ResolveInterpolableColor(*color_, state));
+      StyleColor(
+          CSSColorInterpolationType::ResolveInterpolableColor(*color_, state)));
 }
 
 InterpolableShadow* InterpolableShadow::RawClone() const {

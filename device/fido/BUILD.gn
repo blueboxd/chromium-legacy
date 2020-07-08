@@ -66,8 +66,6 @@ component("fido") {
     "//services/device/public/mojom",
   ]
 
-  libs = []  # Extended for mac.
-
   # Android implementation of FIDO is delegated to GMSCore.
   if (!is_android) {
     sources += [
@@ -213,7 +211,7 @@ component("fido") {
       "mac/util.mm",
     ]
 
-    libs += [
+    frameworks = [
       "Foundation.framework",
       "LocalAuthentication.framework",
       "Security.framework",

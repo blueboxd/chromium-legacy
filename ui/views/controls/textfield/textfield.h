@@ -261,6 +261,10 @@ class VIEWS_EXPORT Textfield : public View,
 
   void SetExtraInsets(const gfx::Insets& insets);
 
+  // Fits the textfield to the local bounds, applying internal padding and
+  // updating the cursor position and visibility.
+  void FitToLocalBounds();
+
   // View overrides:
   int GetBaseline() const override;
   gfx::Size CalculatePreferredSize() const override;

@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
 #include "chrome/browser/ui/views/frame/windows_10_caption_button.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -99,16 +98,6 @@ void GlassBrowserCaptionButtonContainer::AddedToWidget() {
   if (!widget_observer_.IsObserving(widget))
     widget_observer_.Add(widget);
   UpdateButtonVisibility();
-}
-
-void GlassBrowserCaptionButtonContainer::OnPaintBackground(
-    gfx::Canvas* canvas) {
-  const SkColor caption_color =
-      GetThemeProvider()->GetColor(GetWidget()->ShouldPaintAsActive()
-                                       ? ThemeProperties::COLOR_FRAME_ACTIVE
-                                       : ThemeProperties::COLOR_FRAME_INACTIVE);
-  canvas->DrawColor(caption_color);
-  View::OnPaintBackground(canvas);
 }
 
 void GlassBrowserCaptionButtonContainer::OnWidgetBoundsChanged(

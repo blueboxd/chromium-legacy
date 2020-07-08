@@ -24,6 +24,7 @@
 #include "chrome/browser/media/history/media_history_feed_items_table.h"
 #include "chrome/browser/media/history/media_history_feeds_table.h"
 #include "chrome/browser/media/history/media_history_images_table.h"
+#include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "chrome/browser/media/history/media_history_origin_table.h"
 #include "chrome/browser/media/history/media_history_playback_table.h"
 #include "chrome/browser/media/history/media_history_session_images_table.h"
@@ -640,6 +641,55 @@ TEST_P(MediaHistoryStoreUnitTest,
 
   // The OTR service should have the same data.
   EXPECT_EQ(origins, GetOriginRowsSync(otr_service()));
+}
+
+// TODO(crbug.com/1087974).
+#if defined(THREAD_SANITIZER)
+#define MAYBE_GetOriginsWithHighWatchTime DISABLED_GetOriginsWithHighWatchTime
+#else
+#define MAYBE_GetOriginsWithHighWatchTime GetOriginsWithHighWatchTime
+#endif
+TEST_P(MediaHistoryStoreUnitTest, MAYBE_GetOriginsWithHighWatchTime) {
+  const GURL url("http://google.com/test");
+  const GURL url_alt("http://example.org/test");
+  const base::TimeDelta min_watch_time = base::TimeDelta::FromMinutes(30);
+
+  {
+    // Record a watch time that isn't high enough to get with our request.
+    content::MediaPlayerWatchTime watch_time(
+        url, url.GetOrigin(), min_watch_time - base::TimeDelta::FromSeconds(1),
+        base::TimeDelta(), true /* has_video */, true /* has_audio */);
+    service()->SavePlayback(watch_time);
+    WaitForDB();
+  }
+
+  {
+    // Record a watchtime that we should get with our request.
+    content::MediaPlayerWatchTime watch_time(
+        url_alt, url_alt.GetOrigin(), min_watch_time, base::TimeDelta(),
+        true /* has_video */, true /* has_audio */);
+    service()->SavePlayback(watch_time);
+    WaitForDB();
+  }
+
+  base::RunLoop run_loop;
+  std::vector<url::Origin> out;
+
+  service()->GetHighWatchTimeOrigins(
+      min_watch_time,
+      base::BindLambdaForTesting([&](const std::vector<url::Origin>& origins) {
+        out = std::move(origins);
+        run_loop.Quit();
+      }));
+
+  run_loop.Run();
+
+  if (IsReadOnly()) {
+    EXPECT_TRUE(out.empty());
+  } else {
+    std::vector<url::Origin> expected = {url::Origin::Create(url_alt)};
+    EXPECT_EQ(out, expected);
+  }
 }
 
 #if !defined(OS_ANDROID)
@@ -1433,7 +1483,6 @@ TEST_P(MediaHistoryStoreFeedsTest,
   // feed will not have been stored. This is so we can run the rest of the test
   // to ensure a no-op.
   const int feed_id = IsReadOnly() ? -1 : GetMediaFeedsSync(service())[0]->id;
-
 
   {
     auto result =

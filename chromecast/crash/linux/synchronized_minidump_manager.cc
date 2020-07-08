@@ -202,7 +202,7 @@ int SynchronizedMinidumpManager::GetNumDumps(bool delete_all_dumps) {
       if (delete_all_dumps) {
         LOG(INFO) << "Removing " << reader.name()
                   << "which was not in the lockfile";
-        if (!base::DeleteFile(dump_file, false))
+        if (!base::DeleteFile(dump_file))
           PLOG(INFO) << "Removing " << dump_file.value() << " failed";
       }
     }

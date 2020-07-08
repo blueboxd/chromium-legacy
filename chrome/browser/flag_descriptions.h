@@ -1921,6 +1921,9 @@ extern const char kArcFilePickerExperimentDescription[];
 extern const char kArcNativeBridgeToggleName[];
 extern const char kArcNativeBridgeToggleDescription[];
 
+extern const char kArcNativeBridge64BitSupportExperimentName[];
+extern const char kArcNativeBridge64BitSupportExperimentDescription[];
+
 extern const char kArcUsbHostName[];
 extern const char kArcUsbHostDescription[];
 
@@ -2501,9 +2504,6 @@ extern const char kPdfViewerUpdateDescription[];
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 extern const char kWebUITabStripName[];
 extern const char kWebUITabStripDescription[];
-
-extern const char kWebUITabStripDemoOptionsName[];
-extern const char kWebUITabStripDemoOptionsDescription[];
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)

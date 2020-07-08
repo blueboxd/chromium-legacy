@@ -37,7 +37,7 @@ class MockArcAppListPrefsObserver : public ArcAppListPrefs::Observer {
   MOCK_METHOD3(OnTaskDescriptionUpdated,
                void(int32_t task_id,
                     const std::string& label,
-                    const std::vector<uint8_t>& icon_png_data));
+                    const arc::mojom::RawIconPngDataPtr& icon));
   MOCK_METHOD1(OnTaskDestroyed, void(int32_t task_id));
   MOCK_METHOD1(OnTaskSetActive, void(int32_t task_id));
   MOCK_METHOD2(OnNotificationsEnabledChanged,

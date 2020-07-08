@@ -37,8 +37,6 @@ bool EquivalentData(const T& a, const T& b) {
 
 void CreateTestFieldDataPredictions(const std::string& signature,
                                     FormFieldDataPredictions* field_predict) {
-  test::CreateTestSelectField("TestLabel", "TestName", "TestValue", kOptions,
-                              kOptions, 4, &field_predict->field);
   field_predict->signature = signature;
   field_predict->heuristic_type = "TestSignature";
   field_predict->server_type = "TestServerType";

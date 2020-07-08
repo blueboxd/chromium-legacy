@@ -17,6 +17,7 @@ import androidx.core.util.ObjectsCompat;
 import androidx.test.filters.LargeTest;
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -122,14 +123,14 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
         TouchCommon.singleClickView(items.getChildAt(position - 1));
 
         CriteriaHelper.pollUiThread(
-                Criteria.equals(expectedEnabledState, () -> button.isEnabled()));
+                () -> Criteria.checkThat(button.isEnabled(), Matchers.is(expectedEnabledState)));
 
         if (!expectedEnabledState) return;
 
         TouchCommon.singleClickView(button);
 
         CriteriaHelper.pollUiThread(
-                Criteria.equals(expectedItemId, () -> mLastSelectedId));
+                () -> Criteria.checkThat(mLastSelectedId, Matchers.is(expectedItemId)));
     }
 
     private View getRowView(Dialog dialog, int position) {

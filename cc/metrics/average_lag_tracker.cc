@@ -7,10 +7,12 @@
 #include <algorithm>
 
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/string_util.h"
 
 namespace cc {
 
-AverageLagTracker::AverageLagTracker() = default;
+AverageLagTracker::AverageLagTracker(FinishTimeType finish_time_type)
+    : finish_time_type_(finish_time_type) {}
 AverageLagTracker::~AverageLagTracker() = default;
 
 void AverageLagTracker::AddScrollEventInFrame(const EventInfo& event_info) {
@@ -23,6 +25,18 @@ void AverageLagTracker::AddScrollEventInFrame(const EventInfo& event_info) {
   last_event_timestamp_ = event_info.event_timestamp;
   last_event_accumulated_delta_ += event_info.event_scroll_delta;
   last_rendered_accumulated_delta_ += event_info.predicted_scroll_delta;
+}
+
+std::string AverageLagTracker::GetAverageLagMetricName(EventType event) const {
+  std::string metric_name = finish_time_type_ == FinishTimeType::GpuSwapBegin
+                                ? "AverageLag"
+                                : "AverageLagPresentation";
+
+  std::string event_name =
+      event == EventType::ScrollBegin ? "ScrollBegin" : "ScrollUpdate";
+
+  return base::JoinString(
+      {"Event", "Latency", event_name, "Touch", metric_name}, ".");
 }
 
 void AverageLagTracker::AddScrollBeginInFrame(const EventInfo& event_info) {
@@ -173,12 +187,14 @@ void AverageLagTracker::CalculateAndReportAverageLagUma(bool send_anyway) {
   // reaching the 1 second gap.
   if (send_anyway || is_begin_ ||
       (frame_lag.frame_time - last_reported_time_).InSecondsF() >= 1.0f) {
-    std::string scroll_name = is_begin_ ? "ScrollBegin" : "ScrollUpdate";
+    const EventType event_type =
+        is_begin_ ? EventType::ScrollBegin : EventType::ScrollUpdate;
+
     const float time_delta =
         (frame_lag.frame_time - last_reported_time_).InMillisecondsF();
     const float scaled_lag = accumulated_lag_ / time_delta;
-    base::UmaHistogramCounts1000(
-        "Event.Latency." + scroll_name + ".Touch.AverageLag", scaled_lag);
+    base::UmaHistogramCounts1000(GetAverageLagMetricName(event_type),
+                                 scaled_lag);
 
     const float prediction_effect =
         (accumulated_lag_no_prediction_ - accumulated_lag_) / time_delta;
@@ -187,14 +203,18 @@ void AverageLagTracker::CalculateAndReportAverageLagUma(bool send_anyway) {
     // Positive effect means that the prediction reduced the perceived lag,
     // where negative means prediction made lag worse (most likely due to
     // misprediction).
-    if (!is_begin_) {
+    if (event_type == EventType::ScrollUpdate) {
       if (prediction_effect >= 0.f) {
         base::UmaHistogramCounts1000(
-            "Event.Latency.ScrollUpdate.Touch.AverageLag.PredictionPositive",
+            base::JoinString(
+                {GetAverageLagMetricName(event_type), "PredictionPositive"},
+                "."),
             prediction_effect);
       } else {
         base::UmaHistogramCounts1000(
-            "Event.Latency.ScrollUpdate.Touch.AverageLag.PredictionNegative",
+            base::JoinString(
+                {GetAverageLagMetricName(event_type), "PredictionNegative"},
+                "."),
             -prediction_effect);
       }
     }

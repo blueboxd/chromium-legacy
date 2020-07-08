@@ -2128,6 +2128,7 @@ void TabStrip::Layout() {
     // It should be as wide as possible subject to the above constraints.
     const int width = std::min(max_width, std::max(min_width, available_width));
     SetBounds(0, 0, width, height());
+    SetTabVisibility();
   }
 
   // Only do a layout if our size changed.

@@ -65,25 +65,61 @@ void NGGridLayoutAlgorithm::ConstructAndAppendGridItems() {
 
 void NGGridLayoutAlgorithm::ConstructAndAppendGridItem(
     const NGBlockNode& node) {
-  GridItem item;
-  item.constraint_space = BuildSpaceForMeasure(node);
-  items_.emplace_back(item);
+  items_.emplace_back(MeasureGridItem(node));
 }
 
-NGConstraintSpace NGGridLayoutAlgorithm::BuildSpaceForMeasure(
-    const NGBlockNode& grid_item) {
-  const ComputedStyle& child_style = grid_item.Style();
+NGGridLayoutAlgorithm::GridItemData NGGridLayoutAlgorithm::MeasureGridItem(
+    const NGBlockNode& node) {
+  // Before we take track sizing into account for column width contributions,
+  // have all child inline and min/max sizes measured for content-based width
+  // resolution.
+  NGConstraintSpace constraint_space = BuildSpaceForGridItem(node);
+  const ComputedStyle& child_style = node.Style();
+  bool is_orthogonal_flow_root = !IsParallelWritingMode(
+      ConstraintSpace().GetWritingMode(), child_style.GetWritingMode());
+  GridItemData grid_item_data;
 
+  // Children with orthogonal writing modes require a full layout pass to
+  // determine inline size.
+  if (is_orthogonal_flow_root) {
+    scoped_refptr<const NGLayoutResult> result = node.Layout(constraint_space);
+    grid_item_data.inline_size = NGFragment(ConstraintSpace().GetWritingMode(),
+                                            result->PhysicalFragment())
+                                     .InlineSize();
+  } else {
+    NGBoxStrut border_padding_in_child_writing_mode =
+        ComputeBorders(constraint_space, child_style) +
+        ComputePadding(constraint_space, child_style);
+    grid_item_data.inline_size = ComputeInlineSizeForFragment(
+        constraint_space, node, border_padding_in_child_writing_mode);
+  }
+
+  grid_item_data.margins =
+      ComputeMarginsFor(constraint_space, child_style, ConstraintSpace());
+
+  grid_item_data.min_max_sizes =
+      node.ComputeMinMaxSizes(
+              ConstraintSpace().GetWritingMode(),
+              MinMaxSizesInput(child_percentage_size_.block_size,
+                               MinMaxSizesType::kContent),
+              &constraint_space)
+          .sizes;
+
+  return grid_item_data;
+}
+
+NGConstraintSpace NGGridLayoutAlgorithm::BuildSpaceForGridItem(
+    const NGBlockNode& node) const {
   NGConstraintSpaceBuilder space_builder(ConstraintSpace(),
-                                         child_style.GetWritingMode(),
-                                         /* is_new_fc */ true);
+                                         node.Style().GetWritingMode(),
+                                         node.CreatesNewFormattingContext());
+
   space_builder.SetCacheSlot(NGCacheSlot::kMeasure);
   space_builder.SetIsPaintedAtomically(true);
-
-  // TODO(kschmi): - do layout/measuring and handle non-fixed sizes here.
   space_builder.SetAvailableSize(ChildAvailableSize());
   space_builder.SetPercentageResolutionSize(child_percentage_size_);
-  space_builder.SetTextDirection(child_style.Direction());
+  space_builder.SetTextDirection(node.Style().Direction());
+  space_builder.SetIsShrinkToFit(node.Style().LogicalWidth().IsAuto());
   return space_builder.ToConstraintSpace();
 }
 

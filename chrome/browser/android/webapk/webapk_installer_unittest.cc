@@ -262,9 +262,7 @@ class ScopedTempFile {
  public:
   ScopedTempFile() { CHECK(base::CreateTemporaryFile(&file_path_)); }
 
-  ~ScopedTempFile() {
-    base::DeleteFile(file_path_, false);
-  }
+  ~ScopedTempFile() { base::DeleteFile(file_path_); }
 
   const base::FilePath& GetFilePath() { return file_path_; }
 

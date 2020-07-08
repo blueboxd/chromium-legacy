@@ -18,6 +18,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/page_transition_types.h"
 
 namespace {
 
@@ -95,7 +96,7 @@ LiteVideoDecider::~LiteVideoDecider() {
 }
 
 base::Optional<LiteVideoHint> LiteVideoDecider::CanApplyLiteVideo(
-    content::NavigationHandle* navigation_handle) const {
+    content::NavigationHandle* navigation_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!IsLiteVideoAllowedForUser(Profile::FromBrowserContext(
@@ -109,13 +110,25 @@ base::Optional<LiteVideoHint> LiteVideoDecider::CanApplyLiteVideo(
   if (current_effective_connection_type_ < features::MinLiteVideoECT())
     return base::nullopt;
 
-  // TODO(crbug/1096796): Add checks on the page transition and update
-  // the blocklist if needed page transition.
-
   GURL url = navigation_handle->GetURL();
 
   if (!url.SchemeIsHTTPOrHTTPS())
     return base::nullopt;
+
+  // Reloads and Forward-Back navigations are considered opt-outs and are added
+  // to the blocklist so that a host that is frequently reloaded on does not get
+  // LiteVideos.
+  bool is_reload = PageTransitionCoreTypeIs(
+      navigation_handle->GetPageTransition(), ui::PAGE_TRANSITION_RELOAD);
+  if (is_reload || (navigation_handle->GetPageTransition() &
+                    ui::PAGE_TRANSITION_FORWARD_BACK)) {
+    user_blocklist_->AddNavigationToBlocklist(navigation_handle, true);
+    ScopedLiteVideoDecisionRecorder scoped_decision_recorder(
+        is_reload ? LiteVideoBlocklistReason::kNavigationReload
+                  : LiteVideoBlocklistReason::kNavigationForwardBack,
+        navigation_handle->IsInMainFrame());
+    return base::nullopt;
+  }
 
   auto blocklist_reason =
       user_blocklist_->IsLiteVideoAllowedOnNavigation(navigation_handle);
@@ -130,6 +143,9 @@ base::Optional<LiteVideoHint> LiteVideoDecider::CanApplyLiteVideo(
   if (blocklist_reason != LiteVideoBlocklistReason::kAllowed || !hint)
     return base::nullopt;
 
+  // The navigation will have the LiteVideo optimization triggered so
+  // update the navigation blocklist.
+  user_blocklist_->AddNavigationToBlocklist(navigation_handle, false);
   return hint;
 }
 

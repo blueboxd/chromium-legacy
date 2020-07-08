@@ -57,6 +57,11 @@ const base::Feature kEnableUnifiedAudioFocusFeature{
 const base::Feature kFilePickerExperimentFeature{
     "ArcFilePickerExperiment", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls experimental 64-bit native bridge support for ARC on boards that
+// have 64-bit native bridge support available but not yet enabled.
+const base::Feature kNativeBridge64BitSupportExperimentFeature{
+    "ArcNativeBridge64BitSupportExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Toggles between native bridge implementations for ARC.
 // Note, that we keep the original feature name to preserve
 // corresponding metrics.

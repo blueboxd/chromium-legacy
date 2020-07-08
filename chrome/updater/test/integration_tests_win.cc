@@ -68,7 +68,7 @@ void Clean() {
   // TODO(crbug.com/1062288): Delete the COM service items.
   // TODO(crbug.com/1062288): Delete the COM interfaces.
   // TODO(crbug.com/1062288): Delete the Wake task.
-  EXPECT_TRUE(base::DeleteFile(GetProductPath(), true));
+  EXPECT_TRUE(base::DeletePathRecursively(GetProductPath()));
 }
 
 void ExpectClean() {

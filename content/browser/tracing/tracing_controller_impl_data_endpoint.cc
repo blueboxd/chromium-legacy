@@ -110,7 +110,7 @@ class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
     if (!base::ReplaceFile(pending_file_path_, file_path_, &error)) {
       LOG(ERROR) << "Cannot replace file '" << file_path_
                  << "' : " << base::File::ErrorToString(error);
-      base::DeleteFile(pending_file_path_, false);
+      base::DeleteFile(pending_file_path_);
       return;
     }
 

@@ -1493,11 +1493,11 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     }
   }
 
-  if (policy.has_minimum_chrome_version_eol_message()) {
+  if (policy.has_minimum_chrome_version_aue_message()) {
     const em::StringPolicyProto& container(
-        policy.minimum_chrome_version_eol_message());
+        policy.minimum_chrome_version_aue_message());
     if (container.has_value()) {
-      policies->Set(key::kMinimumChromeVersionEolMessage,
+      policies->Set(key::kMinimumChromeVersionAueMessage,
                     POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                     POLICY_SOURCE_CLOUD, base::Value(container.value()),
                     nullptr);

@@ -20,28 +20,6 @@
           'chromiumos_preflight',
         ],
       },
-      'chromeos-betty-cfi-thin-lto-chrome': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-      },
-      'chromeos-betty-chrome': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromeos_browser_integration_tests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'kvm': '1',
-              'os': 'Ubuntu-16.04',
-              'pool': 'chrome.tests.cros-vm',
-            },
-          ],
-        },
-      },
       'chromeos-betty-pi-arc-cfi-thin-lto-chrome': {
         'additional_compile_targets': [
           'chromiumos_preflight',
@@ -1872,7 +1850,6 @@
         ],
         'additional_compile_targets': [
           'vr_common_perftests',
-          'vr_testapp',
         ],
         'test_suites': {
           'gtest_tests': 'vr_platform_specific_chromium_gtests',

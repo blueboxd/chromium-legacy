@@ -21,17 +21,12 @@ struct FormFieldDataPredictions {
   FormFieldDataPredictions& operator=(FormFieldDataPredictions&&);
   ~FormFieldDataPredictions();
 
-  FormFieldData field;
   std::string signature;
   std::string heuristic_type;
   std::string server_type;
   std::string overall_type;
   std::string parseable_name;
   std::string section;
-
-  // Added for the sake of testing.
-  bool operator==(const FormFieldDataPredictions& predictions) const;
-  bool operator!=(const FormFieldDataPredictions& predictions) const;
 };
 
 }  // namespace autofill

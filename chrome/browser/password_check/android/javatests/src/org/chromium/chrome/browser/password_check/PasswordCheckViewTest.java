@@ -76,7 +76,8 @@ public class PasswordCheckViewTest {
                                     .build()));
             mModel.get(ITEMS).add(buildCredentialItem(ANA));
         });
-        pollUiThread(Criteria.equals(2, mPasswordCheckView.getListView()::getChildCount));
+        pollUiThread(
+                () -> Criteria.checkThat(mPasswordCheckView.getListView().getChildCount(), is(2)));
         TextView entry = (TextView) mPasswordCheckView.getListView().getChildAt(1);
         assertThat(entry.getText(), is(stripScheme(ANA.getOriginUrl())));
     }

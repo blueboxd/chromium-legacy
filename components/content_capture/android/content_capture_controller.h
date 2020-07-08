@@ -29,9 +29,9 @@ class ContentCaptureController {
   bool ShouldCapture(const GURL& url);
 
   // The methods called by Java peer.
-  void SetWhitelist(JNIEnv* env,
+  void SetAllowlist(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& jcaller,
-                    const base::android::JavaParamRef<jobjectArray>& jwhitelist,
+                    const base::android::JavaParamRef<jobjectArray>& jallowlist,
                     const base::android::JavaParamRef<jbooleanArray>& jtype);
   void SetJavaPeer(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& jcaller);
@@ -39,9 +39,9 @@ class ContentCaptureController {
  private:
   virtual ~ContentCaptureController();
   JavaObjectWeakGlobalRef java_ref_;
-  base::Optional<bool> has_whitelist_;
-  std::vector<std::string> whitelist_;
-  std::vector<std::unique_ptr<re2::RE2>> whitelist_regex_;
+  base::Optional<bool> has_allowlist_;
+  std::vector<std::string> allowlist_;
+  std::vector<std::unique_ptr<re2::RE2>> allowlist_regex_;
 };
 
 }  // namespace content_capture

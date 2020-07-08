@@ -80,7 +80,7 @@ void OnArchiveDone(const base::FilePath& zip_file_path,
   if (result_code != ZipArchiverResultCode::kSuccess) {
     // The zip file handle has been closed by mojo. Delete the incomplete zip
     // file directly.
-    if (!base::DeleteFile(zip_file_path, /*recursive=*/false))
+    if (!base::DeleteFile(zip_file_path))
       LOG(ERROR) << "Failed to delete the incomplete zip file.";
   }
   // Call |result_callback| for SandboxedZipArchiver::Archive.

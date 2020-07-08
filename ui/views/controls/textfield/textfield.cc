@@ -656,6 +656,24 @@ void Textfield::SetExtraInsets(const gfx::Insets& insets) {
   UpdateBorder();
 }
 
+void Textfield::FitToLocalBounds() {
+  // Textfield insets include a reasonable amount of whitespace on all sides of
+  // the default font list. Fallback fonts with larger heights may paint over
+  // the vertical whitespace as needed. Alternate solutions involve undesirable
+  // behavior like changing the default font size, shrinking some fallback fonts
+  // beyond their legibility, or enlarging controls dynamically with content.
+  gfx::Rect bounds = GetLocalBounds();
+  const gfx::Insets insets = GetInsets();
+  // The text will draw with the correct vertical alignment if we don't apply
+  // the vertical insets.
+  bounds.Inset(insets.left(), 0, insets.right(), 0);
+  bounds.set_x(GetMirroredXForRect(bounds));
+  GetRenderText()->SetDisplayRect(bounds);
+  OnCaretBoundsChanged();
+  UpdateCursorViewPosition();
+  UpdateCursorVisibility();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, View overrides:
 
@@ -1091,21 +1109,7 @@ bool Textfield::HandleAccessibleAction(const ui::AXActionData& action_data) {
 }
 
 void Textfield::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  // Textfield insets include a reasonable amount of whitespace on all sides of
-  // the default font list. Fallback fonts with larger heights may paint over
-  // the vertical whitespace as needed. Alternate solutions involve undesirable
-  // behavior like changing the default font size, shrinking some fallback fonts
-  // beyond their legibility, or enlarging controls dynamically with content.
-  gfx::Rect bounds = GetLocalBounds();
-  const gfx::Insets insets = GetInsets();
-  // The text will draw with the correct vertical alignment if we don't apply
-  // the vertical insets.
-  bounds.Inset(insets.left(), 0, insets.right(), 0);
-  bounds.set_x(GetMirroredXForRect(bounds));
-  GetRenderText()->SetDisplayRect(bounds);
-  OnCaretBoundsChanged();
-  UpdateCursorViewPosition();
-  UpdateCursorVisibility();
+  FitToLocalBounds();
 }
 
 bool Textfield::GetNeedsNotificationWhenVisibleBoundsChange() const {

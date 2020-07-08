@@ -68,7 +68,7 @@ bool FileProviderImpl::WriteSecureFile(const std::string& path,
 }
 
 void FileProviderImpl::CleanAssistantData() {
-  base::DeleteFile(root_path_, true);
+  base::DeletePathRecursively(root_path_);
 }
 
 bool FileProviderImpl::GetResource(uint16_t resource_id, std::string* out) {

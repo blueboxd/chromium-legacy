@@ -105,11 +105,6 @@ const base::Feature kWebFooterExperiment{"WebFooterExperiment",
 const base::Feature kWebUITabStrip{"WebUITabStrip",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables the demo options for the WebUI Tab Strip. This flag will only work
-// if kWebUITabStrip is enabled.
-const base::Feature kWebUITabStripDemoOptions{
-    "WebUITabStripDemoOptions", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables friendly settings for the |chrome://settings/syncSetup| page.
 // https://crbug.com/1035421.
 const base::Feature kSyncSetupFriendlySettings{

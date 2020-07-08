@@ -6,6 +6,9 @@
 
 #include "base/metrics/field_trial_params.h"
 
+namespace performance_hints {
+namespace features {
+
 const base::Feature kPerformanceHintsObserver{
     "PerformanceHintsObserver", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kPerformanceHintsTreatUnknownAsFast{
@@ -60,3 +63,6 @@ bool IsRemoteFetchingExplicitlyAllowedForPerformanceInfo() {
   return base::FeatureList::IsEnabled(
       kContextMenuPerformanceInfoAndRemoteHintFetching);
 }
+
+}  // namespace features
+}  // namespace performance_hints

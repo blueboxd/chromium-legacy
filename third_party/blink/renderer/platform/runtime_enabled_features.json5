@@ -423,7 +423,7 @@
     },
     {
       name: "CSSFocusVisible",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSFoldables",

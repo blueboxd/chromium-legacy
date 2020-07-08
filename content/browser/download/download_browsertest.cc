@@ -2519,7 +2519,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RestartIfNoPartialFile) {
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(PathExists(download->GetFullPath()));
-    ASSERT_TRUE(base::DeleteFile(download->GetFullPath(), false));
+    ASSERT_TRUE(base::DeleteFile(download->GetFullPath()));
   }
 
   parameters.ClearInjectedErrors();

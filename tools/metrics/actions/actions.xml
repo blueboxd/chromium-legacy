@@ -22766,6 +22766,12 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="StartSurface.TrendyTerms.TapTerm">
+  <owner>wychen@chromium.org</owner>
+  <owner>yuezhanggg@chromium.org</owner>
+  <description>The user tapped a trendy term.</description>
+</action>
+
 <action name="StartSurface.TwoPanes">
   <owner>gogerald@chromium.org</owner>
   <description>

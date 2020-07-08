@@ -252,6 +252,16 @@ void MediaHistoryKeyedService::SavePlaybackSession(
   }
 }
 
+void MediaHistoryKeyedService::GetHighWatchTimeOrigins(
+    const base::TimeDelta& audio_video_watchtime_min,
+    base::OnceCallback<void(const std::vector<url::Origin>&)> callback) {
+  base::PostTaskAndReplyWithResult(
+      store_->GetForRead()->db_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&MediaHistoryStore::GetHighWatchTimeOrigins,
+                     store_->GetForRead(), audio_video_watchtime_min),
+      std::move(callback));
+}
+
 MediaHistoryKeyedService::GetMediaFeedItemsRequest
 MediaHistoryKeyedService::GetMediaFeedItemsRequest::CreateItemsForDebug(
     int64_t feed_id) {

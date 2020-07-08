@@ -202,9 +202,13 @@ bool ImageDecoderWrapper::Decode(ImageDecoderFactory* factory,
 bool ImageDecoderWrapper::ShouldDecodeToExternalMemory(
     size_t frame_count,
     bool resume_decoding) const {
-  // Multi-frame images need their decode cached in the decoder to allow using
-  // subsequent frames to be decoded by caching dependent frames.
-  // Also external allocators don't work for multi-frame images right now.
+  // Some multi-frame images need their decode cached in the decoder to allow
+  // future frames to reference previous frames.
+  //
+  // This implies extra requirements on external memory allocators for
+  // multi-frame images. However, there is no enforcement of these extra
+  // requirements. As a result, do not attempt to use external memory
+  // allocators for multi-frame images.
   if (generator_->IsMultiFrame())
     return false;
 

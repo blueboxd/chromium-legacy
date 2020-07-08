@@ -47,8 +47,9 @@ const int kMockSourceHeight = 480;
 class MediaStreamVideoTrackTest
     : public testing::TestWithParam<ContentHintType> {
  public:
-  MediaStreamVideoTrackTest() = default;
-  ~MediaStreamVideoTrackTest() override = default;
+  MediaStreamVideoTrackTest() : mock_source_(nullptr), source_started_(false) {}
+
+  ~MediaStreamVideoTrackTest() override {}
 
   void TearDown() override {
     source_ = nullptr;
@@ -98,7 +99,6 @@ class MediaStreamVideoTrackTest
     source_ = MakeGarbageCollected<MediaStreamSource>(
         "dummy_source_id", MediaStreamSource::kTypeVideo, "dummy_source_name",
         false /* remote */);
-    mock_source_->SetOwner(source_);
     source_->SetPlatformSource(base::WrapUnique(mock_source_));
   }
 
@@ -141,7 +141,6 @@ class MediaStreamVideoTrackTest
     source_ = MakeGarbageCollected<MediaStreamSource>(
         "dummy_source_id", MediaStreamSource::kTypeVideo, "dummy_source_name",
         false /* remote */);
-    mock_source_->SetOwner(source_);
     source_->SetPlatformSource(base::WrapUnique(mock_source_));
   }
 
@@ -161,8 +160,8 @@ class MediaStreamVideoTrackTest
   ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
   Persistent<MediaStreamSource> source_;
   // |mock_source_| is owned by |source_|.
-  MockMediaStreamVideoSource* mock_source_ = nullptr;
-  bool source_started_ = false;
+  MockMediaStreamVideoSource* mock_source_;
+  bool source_started_;
 };
 
 TEST_F(MediaStreamVideoTrackTest, AddAndRemoveSink) {

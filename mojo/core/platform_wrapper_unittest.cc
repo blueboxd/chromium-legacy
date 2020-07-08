@@ -92,7 +92,7 @@ TEST_F(PlatformWrapperTest, WrapPlatformHandle) {
     WriteMessageWithHandles(h, kMessage, &wrapped_handle, 1);
   });
 
-  base::DeleteFile(temp_file_path, false);
+  base::DeleteFile(temp_file_path);
 }
 
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadPlatformFile, PlatformWrapperTest, h) {

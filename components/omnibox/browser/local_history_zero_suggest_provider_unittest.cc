@@ -442,10 +442,10 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Delete) {
   ExpectMatches({{"hello world", 500}, {"not to be deleted", 499}});
 
   // The keyword search terms database should be queried for the search terms
-  // submitted to the default search provider only; which are 4 unique search
-  // terms in this case.
+  // submitted to the default search provider only; which are 2 unique
+  // normalized search terms in this case.
   histogram_tester.ExpectUniqueSample(
-      "Omnibox.LocalHistoryZeroSuggest.SearchTermsSeenCount", 4, 1);
+      "Omnibox.LocalHistoryZeroSuggest.SearchTermsSeenCount", 2, 1);
 
   provider_->DeleteMatch(provider_->matches()[0]);
 
@@ -479,16 +479,16 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Delete) {
   // produce the deleted match are deleted.
   history::URLDatabase* url_db =
       client_->GetHistoryService()->InMemoryDatabase();
-  std::vector<history::KeywordSearchTermVisit> visits =
-      url_db->GetMostRecentKeywordSearchTerms(default_search_provider()->id(),
-                                              /*max_count=*/10);
+  std::vector<history::NormalizedKeywordSearchTermVisit> visits =
+      url_db->GetMostRecentNormalizedKeywordSearchTerms(
+          default_search_provider()->id(), history::AutocompleteAgeThreshold());
   EXPECT_EQ(1U, visits.size());
-  EXPECT_EQ(base::ASCIIToUTF16("not to be deleted"), visits[0].term);
+  EXPECT_EQ(base::ASCIIToUTF16("not to be deleted"), visits[0].normalized_term);
 
   // Make sure search terms from other search providers that would produce the
   // deleted match are not deleted.
-  visits = url_db->GetMostRecentKeywordSearchTerms(other_search_provider->id(),
-                                                   /*max_count=*/10);
+  visits = url_db->GetMostRecentNormalizedKeywordSearchTerms(
+      other_search_provider->id(), history::AutocompleteAgeThreshold());
   EXPECT_EQ(1U, visits.size());
-  EXPECT_EQ(base::ASCIIToUTF16("hello world"), visits[0].term);
+  EXPECT_EQ(base::ASCIIToUTF16("hello world"), visits[0].normalized_term);
 }

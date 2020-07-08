@@ -253,7 +253,7 @@ TEST_F(SandboxMacTest, FontLoadingTest) {
   ExecuteWithParams("FontLoadingProcess",
                     service_manager::SandboxType::kRenderer);
   temp_file.reset();
-  ASSERT_TRUE(base::DeleteFile(temp_file_path, false));
+  ASSERT_TRUE(base::DeleteFile(temp_file_path));
 }
 
 }  // namespace content

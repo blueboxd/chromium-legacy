@@ -1092,13 +1092,13 @@ class ComputedStyle : public ComputedStyleBase,
   void SetFillOpacity(float f) { AccessSVGStyle().SetFillOpacity(f); }
 
   // stop-color
-  void SetStopColor(const Color& c) { AccessSVGStyle().SetStopColor(c); }
+  void SetStopColor(const StyleColor& c) { AccessSVGStyle().SetStopColor(c); }
 
   // flood-color
-  void SetFloodColor(const Color& c) { AccessSVGStyle().SetFloodColor(c); }
+  void SetFloodColor(const StyleColor& c) { AccessSVGStyle().SetFloodColor(c); }
 
   // lighting-color
-  void SetLightingColor(const Color& c) {
+  void SetLightingColor(const StyleColor& c) {
     AccessSVGStyle().SetLightingColor(c);
   }
 
@@ -2576,12 +2576,12 @@ class ComputedStyle : public ComputedStyleBase,
     return DarkColorScheme() ? WebColorScheme::kDark : WebColorScheme::kLight;
   }
 
-  Color InitialColorForColorScheme() const {
+  StyleColor InitialColorForColorScheme() const {
     // TODO(crbug.com/1046753, crbug.com/929098): The initial value of the color
     // property should be canvastext, but since we do not yet ship color-scheme
     // aware system colors, we use this method instead. This should be replaced
     // by default_value:"canvastext" in css_properties.json5.
-    return DarkColorScheme() ? Color::kWhite : Color::kBlack;
+    return StyleColor(DarkColorScheme() ? Color::kWhite : Color::kBlack);
   }
 
   bool GeneratesMarkerImage() const {

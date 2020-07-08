@@ -71,13 +71,13 @@ ClientUsageTracker::ClientUsageTracker(
     UsageTracker* tracker,
     scoped_refptr<QuotaClient> client,
     blink::mojom::StorageType type,
-    SpecialStoragePolicy* special_storage_policy)
-    : client_(client),
+    scoped_refptr<SpecialStoragePolicy> special_storage_policy)
+    : client_(std::move(client)),
       type_(type),
       global_limited_usage_(0),
       global_unlimited_usage_(0),
       global_usage_retrieved_(false),
-      special_storage_policy_(special_storage_policy) {
+      special_storage_policy_(std::move(special_storage_policy)) {
   DCHECK(client_);
   if (special_storage_policy_.get())
     special_storage_policy_->AddObserver(this);
@@ -105,9 +105,10 @@ void ClientUsageTracker::GetGlobalLimitedUsage(UsageCallback callback) {
 
   AccumulateInfo* info = new AccumulateInfo;
   info->pending_jobs = non_cached_limited_origins_by_host_.size() + 1;
-  auto accumulator = base::BindRepeating(
-      &ClientUsageTracker::AccumulateLimitedOriginUsage, AsWeakPtr(),
-      base::Owned(info), AdaptCallbackForRepeating(std::move(callback)));
+  auto accumulator =
+      base::BindRepeating(&ClientUsageTracker::AccumulateLimitedOriginUsage,
+                          weak_factory_.GetWeakPtr(), base::Owned(info),
+                          AdaptCallbackForRepeating(std::move(callback)));
 
   for (const auto& host_and_origins : non_cached_limited_origins_by_host_) {
     for (const auto& origin : host_and_origins.second)
@@ -129,7 +130,7 @@ void ClientUsageTracker::GetGlobalUsage(GlobalUsageCallback callback) {
 
   client_->GetOriginsForType(
       type_, base::BindOnce(&ClientUsageTracker::DidGetOriginsForGlobalUsage,
-                            AsWeakPtr(), std::move(callback)));
+                            weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void ClientUsageTracker::GetHostUsage(const std::string& host,
@@ -149,7 +150,7 @@ void ClientUsageTracker::GetHostUsage(const std::string& host,
   client_->GetOriginsForHost(
       type_, host,
       base::BindOnce(&ClientUsageTracker::DidGetOriginsForHostUsage,
-                     AsWeakPtr(), host));
+                     weak_factory_.GetWeakPtr(), host));
 }
 
 void ClientUsageTracker::UpdateUsageCache(const url::Origin& origin,
@@ -284,8 +285,8 @@ void ClientUsageTracker::DidGetOriginsForGlobalUsage(
   // fire the sentinel callback at the end.
   info->pending_jobs = origins_by_host.size() + 1;
   auto accumulator = base::BindRepeating(
-      &ClientUsageTracker::AccumulateHostUsage, AsWeakPtr(), base::Owned(info),
-      base::AdaptCallbackForRepeating(std::move(callback)));
+      &ClientUsageTracker::AccumulateHostUsage, weak_factory_.GetWeakPtr(),
+      base::Owned(info), base::AdaptCallbackForRepeating(std::move(callback)));
 
   for (const auto& host_and_origins : origins_by_host) {
     const std::string& host = host_and_origins.first;
@@ -337,7 +338,7 @@ void ClientUsageTracker::GetUsageForOrigins(
   info->pending_jobs = origins.size() + 1;
   auto accumulator =
       base::BindRepeating(&ClientUsageTracker::AccumulateOriginUsage,
-                          AsWeakPtr(), base::Owned(info), host);
+                          weak_factory_.GetWeakPtr(), base::Owned(info), host);
 
   for (const auto& origin : origins) {
     DCHECK_EQ(host, origin.host());

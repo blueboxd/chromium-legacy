@@ -518,7 +518,6 @@ void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
   auto* stream_video_source_ptr = stream_video_source.get();
   auto* stream_source = MakeGarbageCollected<MediaStreamSource>(
       track_id, MediaStreamSource::kTypeVideo, track_id, false);
-  stream_video_source->SetOwner(stream_source);
   stream_source->SetPlatformSource(std::move(stream_video_source));
   stream_source->SetCapabilities(ComputeCapabilitiesForVideoSource(
       track_id, preferred_formats,

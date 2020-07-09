@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-PASS Paste blocks script injection
-PASS Paste blocks HTML style injection
-PASS Paste blocks SVG style injection
-Harness: the test ran to completion.
-

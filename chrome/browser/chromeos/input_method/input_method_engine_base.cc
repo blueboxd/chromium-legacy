@@ -15,6 +15,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
@@ -141,7 +143,8 @@ InputMethodEngineBase::InputMethodEngineBase()
       composition_changed_(false),
       text_(""),
       commit_text_changed_(false),
-      handling_key_event_(false) {}
+      handling_key_event_(false),
+      pref_change_registrar_(nullptr) {}
 
 InputMethodEngineBase::~InputMethodEngineBase() {}
 
@@ -155,6 +158,39 @@ void InputMethodEngineBase::Initialize(
   observer_ = std::move(observer);
   extension_id_ = extension_id;
   profile_ = profile;
+
+  if (profile_ && profile->GetPrefs()) {
+    input_method_settings_snapshot_ =
+        profile->GetPrefs()
+            ->GetDictionary(prefs::kLanguageInputMethodSpecificSettings)
+            ->Clone();
+
+    pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+    pref_change_registrar_->Init(profile->GetPrefs());
+    pref_change_registrar_->Add(
+        prefs::kLanguageInputMethodSpecificSettings,
+        base::BindRepeating(&InputMethodEngineBase::OnInputMethodOptionsChanged,
+                            base::Unretained(this)));
+  }
+}
+
+void InputMethodEngineBase::OnInputMethodOptionsChanged() {
+  const base::DictionaryValue* new_settings =
+      profile_->GetPrefs()->GetDictionary(
+          prefs::kLanguageInputMethodSpecificSettings);
+  const base::DictionaryValue& old_settings =
+      base::Value::AsDictionaryValue(input_method_settings_snapshot_);
+  for (const auto& it : new_settings->DictItems()) {
+    if (old_settings.HasKey(it.first)) {
+      if (*(old_settings.FindPath(it.first)) !=
+          *(new_settings->FindPath(it.first))) {
+        observer_->OnInputMethodOptionsChanged(it.first);
+      }
+    } else {
+      observer_->OnInputMethodOptionsChanged(it.first);
+    }
+  }
+  input_method_settings_snapshot_ = new_settings->Clone();
 }
 
 void InputMethodEngineBase::FocusIn(
@@ -201,6 +237,9 @@ void InputMethodEngineBase::Disable() {
 
 void InputMethodEngineBase::Reset() {
   observer_->OnReset(active_component_id_);
+  if (pref_change_registrar_) {
+    pref_change_registrar_.reset();
+  }
 }
 
 void InputMethodEngineBase::ProcessKeyEvent(const ui::KeyEvent& key_event,

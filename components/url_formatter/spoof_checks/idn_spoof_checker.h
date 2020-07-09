@@ -104,17 +104,24 @@ class IDNSpoofChecker {
 
   IDNSpoofChecker();
   ~IDNSpoofChecker();
-  // Returns kSafe if |label| is safe to display as Unicode and fills
-  // |top_level_domain_unicode| with the converted value. Otherwise, returns the
-  // reason of the failure and leaves |top_level_domain_unicode| unchanged.
+
+  // Returns kSafe if |label| is safe to display as Unicode. Some of the checks
+  // depend on the TLD of the full domain name, so this function also takes
+  // the ASCII (including punycode) TLD in |top_level_domain| and its unicode
+  // version in |top_level_domain_unicode|.
   // This method doesn't check for similarity to a top domain: If the input
   // matches a top domain but is otherwise safe (e.g. googlé.com), the result
   // will be kSafe.
   // In the event of library failure, all IDN inputs will be treated as unsafe
-  // and the return value will be kUSpoofChecks.
+  // and the return value will be kICUSpoofChecks.
   // See the function body for details on the specific safety checks performed.
-  // |top_level_domain_unicode| can be empty if |top_level_domain| is not well
-  // formed punycode.
+  // |top_level_domain_unicode| can be passed as empty if |top_level_domain| is
+  // not well formed punycode.
+  // Example usages:
+  // - SafeToDisplayAsUnicode(L"google", "com", "com") -> kSafe
+  // - SafeToDisplayAsUnicode(L"аррӏе", "com", "com") -> kWholeScriptConfusable
+  // - SafeToDisplayAsUnicode(L"аррӏе", "xn--p1ai", "рф") -> kSafe (xn--p1ai is
+  //   the punycode form of рф)
   Result SafeToDisplayAsUnicode(base::StringPiece16 label,
                                 base::StringPiece top_level_domain,
                                 base::StringPiece16 top_level_domain_unicode);

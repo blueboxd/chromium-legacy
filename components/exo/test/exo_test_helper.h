@@ -25,6 +25,8 @@ class InputMethodSurface;
 class InputMethodSurfaceManager;
 class Surface;
 class ShellSurface;
+class ToastSurface;
+class ToastSurfaceManager;
 
 namespace test {
 
@@ -63,6 +65,9 @@ class ExoTestHelper {
   std::unique_ptr<InputMethodSurface> CreateInputMethodSurface(
       Surface* surface,
       InputMethodSurfaceManager* surface_manager);
+  std::unique_ptr<ToastSurface> CreateToastSurface(
+      Surface* surface,
+      ToastSurfaceManager* surface_manager);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExoTestHelper);

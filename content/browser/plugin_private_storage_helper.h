@@ -15,11 +15,14 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "content/public/browser/storage_partition.h"
-#include "url/gurl.h"
 
 namespace storage {
 class FileSystemContext;
 class SpecialStoragePolicy;
+}
+
+namespace url {
+class GURL;
 }
 
 namespace content {

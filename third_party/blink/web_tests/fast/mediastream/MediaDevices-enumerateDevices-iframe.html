@@ -16,23 +16,20 @@
 var t = async_test(
   "Result of enumerateDevices() on an iframe matches that of the main frame",
    {timeout: 4000});
-let iframe = document.createElement('iframe');
+var iframe = document.createElement('iframe');
 window.onmessage = t.step_func(event => {
   if (event.source != iframe.contentWindow)
     return;
 
-  let iframe_devices = JSON.parse(event.data);
-  navigator.mediaDevices.getUserMedia({audio:true, video:true}).then(stream => {
-    stream.getTracks().forEach(track => track.stop());
-    navigator.mediaDevices.enumerateDevices().then(main_devices => {
-      assert_equals(main_devices.length, iframe_devices.length);
-      for (let i = 0; i < main_devices.length; i++) {
-        assert_not_equals(main_devices[i].groupId, iframe_devices[i].groupId);
-        assert_equals(main_devices[i].kind, iframe_devices[i].kind);
-        assert_equals(main_devices[i].label, iframe_devices[i].label);
-      }
-      t.done();
-    });
+  var iframe_devices = JSON.parse(event.data);
+  navigator.mediaDevices.enumerateDevices().then(main_devices => {
+    assert_equals(main_devices.length, iframe_devices.length);
+    for (var i = 0; i < main_devices.length; i++) {
+      assert_not_equals(main_devices[i].groupId, iframe_devices[i].groupId);
+      assert_equals(main_devices[i].kind, iframe_devices[i].kind);
+      assert_equals(main_devices[i].label, iframe_devices[i].label);
+    }
+    t.done();
   });
 });
 

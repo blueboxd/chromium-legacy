@@ -47,11 +47,11 @@ bool StructTraits<viz::mojom::PaintFilterDataView, sk_sp<cc::PaintFilter>>::
   }
 
   // We don't need to populate the DeserializeOptions here since the security
-  // constraints explicitly disable serializing images using the transfer cache
-  // and serialization of PaintRecords.
+  // constraints explicitly disable serializing images using the transfer
+  // cache/gpu::Mailbox and serialization of PaintRecords.
   std::vector<uint8_t> scratch_buffer;
   cc::PaintOp::DeserializeOptions options(nullptr, nullptr, nullptr,
-                                          &scratch_buffer, false);
+                                          &scratch_buffer, false, nullptr);
   cc::PaintOpReader reader(buffer->data(), buffer->size(), options,
                            true /* enable_security_constraints */);
   sk_sp<cc::PaintFilter> filter;

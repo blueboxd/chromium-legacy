@@ -31,9 +31,9 @@ base::Value CaptureModeToValue(NetLogCaptureMode capture_mode) {
 }
 
 base::Value NetCaptureModeParams(NetLogCaptureMode capture_mode) {
-  base::DictionaryValue dict;
+  base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetKey("capture_mode", CaptureModeToValue(capture_mode));
-  return std::move(dict);
+  return dict;
 }
 
 TEST(NetLogTest, BasicGlobalEvents) {
@@ -212,19 +212,17 @@ class LoggingObserver : public NetLog::ThreadSafeObserver {
   }
 
   void OnAddEntry(const NetLogEntry& entry) override {
-    std::unique_ptr<base::DictionaryValue> dict = base::DictionaryValue::From(
-        base::Value::ToUniquePtrValue(entry.ToValue()));
+    std::unique_ptr<base::Value> dict =
+        base::Value::ToUniquePtrValue(entry.ToValue());
     ASSERT_TRUE(dict);
     values_.push_back(std::move(dict));
   }
 
   size_t GetNumValues() const { return values_.size(); }
-  base::DictionaryValue* GetValue(size_t index) const {
-    return values_[index].get();
-  }
+  base::Value* GetValue(size_t index) const { return values_[index].get(); }
 
  private:
-  std::vector<std::unique_ptr<base::DictionaryValue>> values_;
+  std::vector<std::unique_ptr<base::Value>> values_;
 };
 
 void AddEvent(NetLog* net_log) {
@@ -416,14 +414,16 @@ TEST(NetLogTest, NetLogTwoObservers) {
 
   // Add event and make sure both observers receive it at their respective log
   // levels.
-  int param;
+  base::Optional<int> param;
   AddEvent(&net_log);
   ASSERT_EQ(1U, observer[0].GetNumValues());
-  ASSERT_TRUE(observer[0].GetValue(0)->GetInteger("params", &param));
-  EXPECT_EQ(CaptureModeToInt(observer[0].capture_mode()), param);
+  param = observer[0].GetValue(0)->FindIntKey("params");
+  ASSERT_TRUE(param);
+  EXPECT_EQ(CaptureModeToInt(observer[0].capture_mode()), param.value());
   ASSERT_EQ(1U, observer[1].GetNumValues());
-  ASSERT_TRUE(observer[1].GetValue(0)->GetInteger("params", &param));
-  EXPECT_EQ(CaptureModeToInt(observer[1].capture_mode()), param);
+  param = observer[1].GetValue(0)->FindIntKey("params");
+  ASSERT_TRUE(param);
+  EXPECT_EQ(CaptureModeToInt(observer[1].capture_mode()), param.value());
 
   // Remove second observer.
   net_log.RemoveObserver(&observer[1]);

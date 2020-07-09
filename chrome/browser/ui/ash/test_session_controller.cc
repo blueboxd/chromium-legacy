@@ -80,3 +80,8 @@ void TestSessionController::RemoveSessionActivationObserverForAccountId(
 void TestSessionController::AddObserver(ash::SessionObserver* observer) {}
 
 void TestSessionController::RemoveObserver(ash::SessionObserver* observer) {}
+
+bool TestSessionController::IsScreenLocked() const {
+  NOTIMPLEMENTED();
+  return false;
+}

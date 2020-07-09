@@ -14,12 +14,17 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Parses WebView crash JSON log files which contain crash info keys extracted from crash minidump.
  */
 public class WebViewCrashLogParser extends CrashInfoLoader {
     private static final String TAG = "WebViewCrashUI";
+
+    // 30 days to match org.chromium.components.minidump_uploader.CrashFileManager minidump reports
+    // max age.
+    private static final long MAX_CRASH_REPORT_AGE_MILLIS = TimeUnit.DAYS.toMillis(30);
 
     private File mLogDir;
 
@@ -45,10 +50,15 @@ public class WebViewCrashLogParser extends CrashInfoLoader {
         for (File logFile : logFiles) {
             // Ignore non-json files.
             if (!logFile.isFile() || !logFile.getName().endsWith(".json")) continue;
+            // Delete old crash report logs.
+            long ageInMillis = System.currentTimeMillis() - logFile.lastModified();
+            if (ageInMillis > MAX_CRASH_REPORT_AGE_MILLIS) {
+                logFile.delete();
+                continue;
+            }
             try {
                 CrashInfo crashInfo = CrashInfo.readFromJsonString(readEntireFile(logFile));
-                // TODO(987806) remove the null check.
-                if (crashInfo.localId != null) infoList.add(crashInfo);
+                infoList.add(crashInfo);
             } catch (JSONException e) {
                 Log.e(TAG, "Error while reading JSON", e);
             } catch (IOException e) {

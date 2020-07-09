@@ -190,11 +190,24 @@ class DialogFooter {
    */
   onKeyDown_(evt) {
     const options = this.fileTypeSelector.querySelector('.options');
+    const selectedItem = options.querySelector('.selected');
+    const isExpanded = options.getAttribute('expanded') === 'expanded';
+
+    const fireChangeEvent = () => {
+      this.fileTypeSelector.dispatchEvent(new Event('change'));
+    };
+
+    const changeSelection = (element) => {
+      this.setOptionSelected(/** @type {HTMLOptionElement} */ (element));
+      if (!isExpanded) {
+        fireChangeEvent();  // crbug.com/1002410
+      }
+    };
 
     switch (evt.key) {
       case 'Escape':
         // If options are open, stop the window from closing.
-        if (options.getAttribute('expanded') === 'expanded') {
+        if (isExpanded) {
           evt.stopPropagation();
           evt.preventDefault();
         }
@@ -204,54 +217,31 @@ class DialogFooter {
         break;
       case 'Enter':
       case ' ':
-        if (options.getAttribute('expanded') === 'expanded') {
-          const changeEvent = new Event('change');
-          this.fileTypeSelector.dispatchEvent(changeEvent);
+        if (isExpanded) {
+          fireChangeEvent();
           this.selectHideDropDown(options);
         } else {
           this.selectShowDropDown(options);
         }
         break;
-      case 'ArrowDown':
-      case 'ArrowLeft':
       case 'ArrowRight':
-      case 'ArrowUp':
-        const selectedItem = options.querySelector('.selected');
-        const isCollapsed = options.getAttribute('expanded') !== 'expanded';
-        let selectionChanged = false;
-        if (selectedItem) {
-          switch (evt.key) {
-            case 'ArrowRight':
-              if (!isCollapsed) {
-                break;
-              }
-              // fall through
-            case 'ArrowDown':
-              if (selectedItem.nextSibling) {
-                this.setOptionSelected(
-                    /** @type {HTMLOptionElement} */ (
-                        selectedItem.nextSibling));
-                selectionChanged = true;
-              }
-              break;
-            case 'ArrowLeft':
-              if (!isCollapsed) {
-                break;
-              }
-              // fall through
-            case 'ArrowUp':
-              if (selectedItem.previousSibling) {
-                this.setOptionSelected(
-                    /** @type {HTMLOptionElement} */ (
-                        selectedItem.previousSibling));
-                selectionChanged = true;
-              }
-              break;
-          }
+        if (isExpanded) {
+          break;
         }
-        if (selectionChanged && isCollapsed) {
-          const changeEvent = new Event('change');
-          this.fileTypeSelector.dispatchEvent(changeEvent);
+        // fall through
+      case 'ArrowDown':
+        if (selectedItem && selectedItem.nextSibling) {
+          changeSelection(selectedItem.nextSibling);
+        }
+        break;
+      case 'ArrowLeft':
+        if (isExpanded) {
+          break;
+        }
+        // fall through
+      case 'ArrowUp':
+        if (selectedItem && selectedItem.previousSibling) {
+          changeSelection(selectedItem.previousSibling);
         }
         break;
     }

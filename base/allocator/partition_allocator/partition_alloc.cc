@@ -192,7 +192,7 @@ void PartitionAllocGlobalUninitForTesting() {
 }
 
 template <bool thread_safe>
-void PartitionRoot<thread_safe>::InitSlowPath(bool enable_tag_pointers) {
+void PartitionRoot<thread_safe>::InitSlowPath(bool enforce_alignment) {
   ScopedGuard guard{lock_};
 
   if (initialized.load(std::memory_order_relaxed))
@@ -204,7 +204,9 @@ void PartitionRoot<thread_safe>::InitSlowPath(bool enable_tag_pointers) {
     internal::PartitionAddressSpace::Init();
 #endif
 
-  tag_pointers = enable_tag_pointers;
+  // If alignment needs to be enforced, disallow adding cookies and/or tags at
+  // the beginning of the slot.
+  allow_extras = !enforce_alignment;
 
   // We mark the sentinel bucket/page as free to make sure it is skipped by our
   // logic to find a new active page.
@@ -304,7 +306,7 @@ bool PartitionRoot<thread_safe>::ReallocDirectMappedInPlace(
     size_t raw_size) {
   PA_DCHECK(page->bucket->is_direct_mapped());
 
-  raw_size = internal::PartitionSizeAdjustAdd(tag_pointers, raw_size);
+  raw_size = internal::PartitionSizeAdjustAdd(allow_extras, raw_size);
   // Note that the new size might be a bucketed size; this function is called
   // whenever we're reallocating a direct mapped allocation.
   size_t new_size = Bucket::get_direct_map_size(raw_size);
@@ -346,8 +348,10 @@ bool PartitionRoot<thread_safe>::ReallocDirectMappedInPlace(
 
 #if DCHECK_IS_ON()
   // Write a new trailing cookie.
-  internal::PartitionCookieWriteValue(char_ptr + raw_size -
-                                      internal::kCookieSize);
+  if (allow_extras) {
+    internal::PartitionCookieWriteValue(char_ptr + raw_size -
+                                        internal::kCookieSize);
+  }
 #endif
 
   page->set_raw_size(raw_size);
@@ -390,7 +394,7 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
   }
   if (LIKELY(!overridden)) {
     auto* page = Page::FromPointer(
-        internal::PartitionPointerAdjustSubtract(tag_pointers, ptr));
+        internal::PartitionPointerAdjustSubtract(allow_extras, ptr));
     bool success = false;
     {
       internal::ScopedGuard<thread_safe> guard{lock_};
@@ -423,13 +427,14 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
       // the same size as the one we've already got, so re-use the allocation
       // after updating statistics (and cookies, if present).
       size_t new_raw_size =
-          internal::PartitionSizeAdjustAdd(tag_pointers, new_size);
+          internal::PartitionSizeAdjustAdd(allow_extras, new_size);
       page->set_raw_size(new_raw_size);
 #if DCHECK_IS_ON()
       // Write a new trailing cookie when it is possible to keep track of
       // |new_size| via the raw size pointer.
-      if (page->get_raw_size_ptr())
+      if (page->get_raw_size_ptr() && allow_extras) {
         internal::PartitionCookieWriteValue(static_cast<char*>(ptr) + new_size);
+      }
 #endif
       return ptr;
     }

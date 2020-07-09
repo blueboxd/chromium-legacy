@@ -57,19 +57,18 @@ base::string16 GetFlyoutParentAutomationId(IUIAutomation* automation,
   // name in the tree view.
   base::win::ScopedVariant class_name(L"Flyout");
   Microsoft::WRL::ComPtr<IUIAutomationCondition> condition;
-  HRESULT result = automation->CreatePropertyCondition(
-      UIA_ClassNamePropertyId, class_name, condition.GetAddressOf());
+  HRESULT result = automation->CreatePropertyCondition(UIA_ClassNamePropertyId,
+                                                       class_name, &condition);
   if (FAILED(result))
     return base::string16();
 
   Microsoft::WRL::ComPtr<IUIAutomationTreeWalker> tree_walker;
-  result =
-      automation->CreateTreeWalker(condition.Get(), tree_walker.GetAddressOf());
+  result = automation->CreateTreeWalker(condition.Get(), &tree_walker);
   if (FAILED(result))
     return base::string16();
 
   Microsoft::WRL::ComPtr<IUIAutomationCacheRequest> cache_request;
-  result = automation->CreateCacheRequest(cache_request.GetAddressOf());
+  result = automation->CreateCacheRequest(&cache_request);
   if (FAILED(result))
     return base::string16();
   ConfigureCacheRequest(cache_request.Get());

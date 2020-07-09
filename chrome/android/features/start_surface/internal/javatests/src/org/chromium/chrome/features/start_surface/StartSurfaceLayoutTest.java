@@ -213,10 +213,8 @@ public class StartSurfaceLayoutTest {
         mActivityTestRule.getActivity().getTabContentManager().setCaptureMinRequestTimeForTesting(
                 0);
 
-        CriteriaHelper.pollUiThread(mActivityTestRule.getActivity()
-                                            .getTabModelSelector()
-                                            .getTabModelFilterProvider()
-                                            .getCurrentTabModelFilter()::isTabModelRestored);
+        CriteriaHelper.pollUiThread(
+                mActivityTestRule.getActivity().getTabModelSelector()::isTabStateInitialized);
 
         assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting());
     }
@@ -1908,9 +1906,7 @@ public class StartSurfaceLayoutTest {
         cta = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), ChromeTabbedActivity.class);
         assertTrue(cta.getNightModeStateProvider().isInNightMode());
-        CriteriaHelper.pollUiThread(cta.getTabModelSelector()
-                                            .getTabModelFilterProvider()
-                                            .getCurrentTabModelFilter()::isTabModelRestored);
+        CriteriaHelper.pollUiThread(cta.getTabModelSelector()::isTabStateInitialized);
         enterTabSwitcher(cta);
         verifyTabSwitcherCardCount(cta, 2);
     }

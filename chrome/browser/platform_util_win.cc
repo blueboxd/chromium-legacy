@@ -46,7 +46,7 @@ void ShowItemInFolderOnWorkerThread(const base::FilePath& full_path) {
     return;
 
   Microsoft::WRL::ComPtr<IShellFolder> desktop;
-  HRESULT hr = SHGetDesktopFolder(desktop.GetAddressOf());
+  HRESULT hr = SHGetDesktopFolder(&desktop);
   if (FAILED(hr))
     return;
 

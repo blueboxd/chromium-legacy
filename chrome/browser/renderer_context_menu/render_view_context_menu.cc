@@ -1309,9 +1309,8 @@ void RenderViewContextMenu::AppendSmartSelectionActionItems() {
 
 void RenderViewContextMenu::AppendOpenInWebAppLinkItems() {
   Profile* const profile = Profile::FromBrowserContext(browser_context_);
-  // TODO(crbug.com/1100255): Check whether
-  // AppServiceProxy::BrowserAppLauncher() is nullptr instead to be more direct.
-  if (profile->IsOffTheRecord())
+  auto* app_service = apps::AppServiceProxyFactory::GetForProfile(profile);
+  if (!app_service || !app_service->BrowserAppLauncher())
     return;
 
   base::Optional<web_app::AppId> app_id =
@@ -2690,7 +2689,7 @@ void RenderViewContextMenu::ExecOpenWebApp() {
   launch_params.override_url = params_.link_url;
   apps::AppServiceProxyFactory::GetForProfile(GetProfile())
       ->BrowserAppLauncher()
-      .LaunchAppWithParams(launch_params);
+      ->LaunchAppWithParams(launch_params);
 }
 
 void RenderViewContextMenu::ExecProtocolHandler(int event_flags,

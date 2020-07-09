@@ -82,17 +82,17 @@ class TestFileSystemBackend::QuotaUtil : public FileSystemQuotaUtil,
     return scoped_refptr<QuotaReservation>();
   }
 
-  void GetOriginsForTypeOnFileTaskRunner(
-      FileSystemType type,
-      std::set<url::Origin>* origins) override {
+  std::vector<url::Origin> GetOriginsForTypeOnFileTaskRunner(
+      FileSystemType type) override {
     NOTREACHED();
+    return std::vector<url::Origin>();
   }
 
-  void GetOriginsForHostOnFileTaskRunner(
+  std::vector<url::Origin> GetOriginsForHostOnFileTaskRunner(
       FileSystemType type,
-      const std::string& host,
-      std::set<url::Origin>* origins) override {
+      const std::string& host) override {
     NOTREACHED();
+    return std::vector<url::Origin>();
   }
 
   int64_t GetOriginUsageOnFileTaskRunner(FileSystemContext* context,

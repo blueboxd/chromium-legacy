@@ -11,6 +11,8 @@
 #include <vector>
 
 #include "base/time/time.h"
+#include "base/values.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
@@ -127,6 +129,9 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
     // Called when the suggestions to display have changed.
     virtual void OnSuggestionsChanged(
         const std::vector<std::string>& suggestions) = 0;
+
+    // Called when the input method options are updated.
+    virtual void OnInputMethodOptionsChanged(const std::string& engine_id) = 0;
   };
 
   InputMethodEngineBase();
@@ -227,6 +232,8 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   std::string AddPendingKeyEvent(
       const std::string& component_id,
       ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback);
+
+  void OnInputMethodOptionsChanged();
 
   int GetContextIdForTesting() const { return context_id_; }
 
@@ -330,6 +337,10 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
 
  private:
   ui::KeyEvent ConvertKeyboardEventToUIKeyEvent(const KeyboardEvent& event);
+
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+
+  base::Value input_method_settings_snapshot_;
 };
 
 }  // namespace chromeos

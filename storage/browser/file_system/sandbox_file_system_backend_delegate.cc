@@ -368,41 +368,43 @@ void SandboxFileSystemBackendDelegate::PerformStorageCleanupOnFileTaskRunner(
   obfuscated_file_util()->RewriteDatabases();
 }
 
-void SandboxFileSystemBackendDelegate::GetOriginsForTypeOnFileTaskRunner(
-    FileSystemType type,
-    std::set<url::Origin>* origins) {
+std::vector<url::Origin>
+SandboxFileSystemBackendDelegate::GetOriginsForTypeOnFileTaskRunner(
+    FileSystemType type) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(origins);
   std::unique_ptr<OriginEnumerator> enumerator(CreateOriginEnumerator());
+  std::vector<url::Origin> origins;
   base::Optional<url::Origin> origin;
   while ((origin = enumerator->Next()).has_value()) {
     if (enumerator->HasFileSystemType(type))
-      origins->insert(origin.value());
+      origins.push_back(std::move(origin).value());
   }
   switch (type) {
     case kFileSystemTypeTemporary:
-      UMA_HISTOGRAM_COUNTS_1M(kTemporaryOriginsCountLabel, origins->size());
+      UMA_HISTOGRAM_COUNTS_1M(kTemporaryOriginsCountLabel, origins.size());
       break;
     case kFileSystemTypePersistent:
-      UMA_HISTOGRAM_COUNTS_1M(kPersistentOriginsCountLabel, origins->size());
+      UMA_HISTOGRAM_COUNTS_1M(kPersistentOriginsCountLabel, origins.size());
       break;
     default:
       break;
   }
+  return origins;
 }
 
-void SandboxFileSystemBackendDelegate::GetOriginsForHostOnFileTaskRunner(
+std::vector<url::Origin>
+SandboxFileSystemBackendDelegate::GetOriginsForHostOnFileTaskRunner(
     FileSystemType type,
-    const std::string& host,
-    std::set<url::Origin>* origins) {
+    const std::string& host) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(origins);
+  std::vector<url::Origin> origins;
   std::unique_ptr<OriginEnumerator> enumerator(CreateOriginEnumerator());
   base::Optional<url::Origin> origin;
   while ((origin = enumerator->Next()).has_value()) {
     if (host == origin->host() && enumerator->HasFileSystemType(type))
-      origins->insert(origin.value());
+      origins.push_back(std::move(origin).value());
   }
+  return origins;
 }
 
 int64_t SandboxFileSystemBackendDelegate::GetOriginUsageOnFileTaskRunner(

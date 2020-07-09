@@ -584,7 +584,6 @@ public class TabListMediatorUnitTest {
     public void tabAddition_RestoreNotComplete() {
         initAndAssertAllProperties();
         mMediator.setActionOnAllRelatedTabsForTesting(true);
-        assertThat(mTabModelFilter.isTabModelRestored(), equalTo(false));
 
         TabImpl newTab = prepareTab(TAB3_ID, TAB3_TITLE, TAB3_URL);
         doReturn(mTab1).when(mTabModelFilter).getTabAt(0);
@@ -607,7 +606,7 @@ public class TabListMediatorUnitTest {
         initAndAssertAllProperties();
         mMediator.setActionOnAllRelatedTabsForTesting(true);
         // Mock that tab restoring stage is over.
-        doReturn(true).when(mTabModelFilter).isTabModelRestored();
+        doReturn(true).when(mTabModelSelector).isTabStateInitialized();
         TabListMediator.TabActionListener actionListenerBeforeUpdate =
                 mModel.get(1).model.get(TabProperties.TAB_SELECTED_LISTENER);
 
@@ -637,7 +636,7 @@ public class TabListMediatorUnitTest {
     public void tabAddition_Restore_SyncingTabListModelWithTabModel() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
         // Mock that tab restoring stage is over.
-        doReturn(true).when(mTabGroupModelFilter).isTabModelRestored();
+        doReturn(true).when(mTabModelSelector).isTabStateInitialized();
 
         // Mock that tab1 and tab2 are in the same group, and they are being restored. The
         // TabListModel has been cleaned out before the restoring happens. This case could happen
@@ -662,7 +661,7 @@ public class TabListMediatorUnitTest {
     public void tabAddition_GTS() {
         initAndAssertAllProperties();
         mMediator.setActionOnAllRelatedTabsForTesting(true);
-        doReturn(true).when(mTabModelFilter).isTabModelRestored();
+        doReturn(true).when(mTabModelSelector).isTabStateInitialized();
 
         TabImpl newTab = prepareTab(TAB3_ID, TAB3_TITLE, TAB3_URL);
         doReturn(mTab1).when(mTabModelFilter).getTabAt(0);
@@ -686,7 +685,7 @@ public class TabListMediatorUnitTest {
     public void tabAddition_GTS_Skip() {
         initAndAssertAllProperties();
         mMediator.setActionOnAllRelatedTabsForTesting(true);
-        doReturn(true).when(mTabModelFilter).isTabModelRestored();
+        doReturn(true).when(mTabModelSelector).isTabStateInitialized();
 
         // Add a new tab to the group with mTab2.
         TabImpl newTab = prepareTab(TAB3_ID, TAB3_TITLE, TAB3_URL);
@@ -708,7 +707,7 @@ public class TabListMediatorUnitTest {
     public void tabAddition_GTS_Middle() {
         initAndAssertAllProperties();
         mMediator.setActionOnAllRelatedTabsForTesting(true);
-        doReturn(true).when(mTabModelFilter).isTabModelRestored();
+        doReturn(true).when(mTabModelSelector).isTabStateInitialized();
 
         TabImpl newTab = prepareTab(TAB3_ID, TAB3_TITLE, TAB3_URL);
         doReturn(mTab1).when(mTabModelFilter).getTabAt(0);
@@ -731,7 +730,7 @@ public class TabListMediatorUnitTest {
     @Test
     public void tabAddition_Dialog_End() {
         initAndAssertAllProperties();
-        doReturn(true).when(mTabModelFilter).isTabModelRestored();
+        doReturn(true).when(mTabModelSelector).isTabStateInitialized();
 
         TabImpl newTab = prepareTab(TAB3_ID, TAB3_TITLE, TAB3_URL);
         doReturn(3).when(mTabModel).getCount();
@@ -751,7 +750,7 @@ public class TabListMediatorUnitTest {
     @Test
     public void tabAddition_Dialog_Middle() {
         initAndAssertAllProperties();
-        doReturn(true).when(mTabModelFilter).isTabModelRestored();
+        doReturn(true).when(mTabModelSelector).isTabStateInitialized();
 
         TabImpl newTab = prepareTab(TAB3_ID, TAB3_TITLE, TAB3_URL);
         doReturn(3).when(mTabModel).getCount();
@@ -771,7 +770,7 @@ public class TabListMediatorUnitTest {
     @Test
     public void tabAddition_Dialog_Skip() {
         initAndAssertAllProperties();
-        doReturn(true).when(mTabModelFilter).isTabModelRestored();
+        doReturn(true).when(mTabModelSelector).isTabStateInitialized();
 
         TabImpl newTab = prepareTab(TAB3_ID, TAB3_TITLE, TAB3_URL);
         // newTab is of another group.
@@ -788,7 +787,7 @@ public class TabListMediatorUnitTest {
     @Features.DisableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
     public void tabAddition_Redundant() {
         initAndAssertAllProperties();
-        doReturn(true).when(mTabModelFilter).isTabModelRestored();
+        doReturn(true).when(mTabModelSelector).isTabStateInitialized();
         assertThat(mModel.size(), equalTo(2));
         doReturn(Arrays.asList(mTab1, mTab2)).when(mTabModelFilter).getRelatedTabList(eq(TAB1_ID));
 

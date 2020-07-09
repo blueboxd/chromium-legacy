@@ -84,7 +84,7 @@ void Raster(scoped_refptr<viz::TestContextProvider> context_provider,
   std::vector<uint8_t> scratch_buffer;
   cc::PaintOp::DeserializeOptions deserialize_options(
       &transfer_cache_helper, paint_cache, strike_client, &scratch_buffer,
-      true /* is_privileged */);
+      true /* is_privileged */, nullptr /* shared_image_provider */);
 
   // Need 4 bytes to be able to read the type/skip.
   while (size >= 4) {

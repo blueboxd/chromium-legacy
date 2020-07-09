@@ -3209,6 +3209,8 @@ ci.win_builder(
     ),
     main_console_view = 'main',
     triggered_by = ['Win x64 Builder (dbg)'],
+    # Too flaky. See crbug.com/876224 for more details.
+    tree_closing = False,
 )
 
 ci.win_builder(

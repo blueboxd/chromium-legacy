@@ -50,6 +50,7 @@ _\fname:
 .endm
 
 asm_function PushAllRegisters
+        .p2align 2
         /* Save return address. */
         sub sp, sp, #96
         stp x19, x20, [sp, #80]

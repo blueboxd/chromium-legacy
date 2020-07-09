@@ -171,6 +171,12 @@ bool QueryContainsComponent(const base::StringPiece query,
 bool QueryContainsComponentPrefix(const base::StringPiece query,
                                   const base::StringPiece component);
 
+// Adjusts the layout shift score for UKM.
+int64_t LayoutShiftUkmValue(float shift_score);
+
+// Adjusts the layout shift score for UMA.
+int32_t LayoutShiftUmaValue(float shift_score);
+
 }  // namespace page_load_metrics
 
 #endif  // COMPONENTS_PAGE_LOAD_METRICS_BROWSER_PAGE_LOAD_METRICS_UTIL_H_

@@ -9,7 +9,7 @@ assert(is_chromeos, "Non-Chrome-OS builds must not depend on //chromeos")
 
 declare_args() {
   # Instantiate real D-Bus clients instead of fakes.
-  use_real_dbus_clients = false
+  use_real_dbus_clients = is_chromeos_device
 }
 
 component("dbus") {

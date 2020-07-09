@@ -31,9 +31,6 @@
 
 namespace blink {
 
-const base::Feature kEnumerateRequiresGetUserMedia{
-    "EnumerateRequiresGetUserMedia", base::FEATURE_ENABLED_BY_DEFAULT};
-
 namespace {
 
 class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
@@ -118,17 +115,12 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   auto* callbacks = MakeGarbageCollected<PromiseResolverCallbacks>(resolver);
-  base::OnceClosure success_update_callback;
-  if (media_type == UserMediaRequest::MediaType::kUserMedia) {
-    success_update_callback = WTF::Bind(
-        &MediaDevices::SetEnumerateCanExposeDevices, WrapWeakPersistent(this));
-  }
+
   LocalDOMWindow* window = LocalDOMWindow::From(script_state);
   UserMediaController* user_media = UserMediaController::From(window);
   MediaErrorState error_state;
   UserMediaRequest* request = UserMediaRequest::Create(
-      window, user_media, media_type, options, callbacks,
-      std::move(success_update_callback), error_state);
+      window, user_media, media_type, options, callbacks, error_state);
   if (!request) {
     DCHECK(error_state.HadException());
     if (error_state.CanGenerateException()) {
@@ -303,12 +295,6 @@ void MediaDevices::DevicesEnumerated(
     for (wtf_size_t j = 0; j < enumeration[i].size(); ++j) {
       mojom::blink::MediaDeviceType device_type =
           static_cast<mojom::blink::MediaDeviceType>(i);
-      if (base::FeatureList::IsEnabled(kEnumerateRequiresGetUserMedia) &&
-          !enumerate_can_expose_devices_) {
-        media_devices.push_back(MakeGarbageCollected<MediaDeviceInfo>(
-            String(), String(), String(), device_type));
-        break;
-      }
       WebMediaDeviceInfo device_info = enumeration[i][j];
       if (device_type == mojom::blink::MediaDeviceType::MEDIA_AUDIO_INPUT ||
           device_type == mojom::blink::MediaDeviceType::MEDIA_VIDEO_INPUT) {
@@ -375,10 +361,6 @@ void MediaDevices::SetDispatcherHostForTesting(
   dispatcher_host_.set_disconnect_handler(
       WTF::Bind(&MediaDevices::OnDispatcherHostConnectionError,
                 WrapWeakPersistent(this)));
-}
-
-void MediaDevices::SetEnumerateCanExposeDevices() {
-  enumerate_can_expose_devices_ = true;
 }
 
 void MediaDevices::Trace(Visitor* visitor) const {

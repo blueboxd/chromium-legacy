@@ -240,9 +240,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
             public void didAddTab(Tab tab, int type, @TabCreationState int creationState) {
                 // TODO(wychen): move didAddTab and didSelectTab to another observer and inject
                 //  after restoreCompleted.
-                if (!mTabModelSelector.getTabModelFilterProvider()
-                                .getCurrentTabModelFilter()
-                                .isTabModelRestored()) {
+                if (!mTabModelSelector.isTabStateInitialized()) {
                     return;
                 }
                 mShouldIgnoreNextSelect = false;
@@ -250,9 +248,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
             @Override
             public void didSelectTab(Tab tab, int type, int lastId) {
-                if (!mTabModelSelector.getTabModelFilterProvider()
-                                .getCurrentTabModelFilter()
-                                .isTabModelRestored()) {
+                if (!mTabModelSelector.isTabStateInitialized()) {
                     return;
                 }
                 if (type == TabSelectionType.FROM_CLOSE || mShouldIgnoreNextSelect) {
@@ -575,10 +571,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         mRegisteredFirstMeaningfulPaintRecorder = true;
 
         boolean hasTabs = false;
-        if (mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter() != null
-                && mTabModelSelector.getTabModelFilterProvider()
-                           .getCurrentTabModelFilter()
-                           .isTabModelRestored()) {
+        if (mTabModelSelector.isTabStateInitialized()) {
             hasTabs = mTabModelSelector.getTabModelFilterProvider()
                               .getCurrentTabModelFilter()
                               .getCount()
@@ -614,15 +607,14 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         mHandler.removeCallbacks(mSoftClearTabListRunnable);
         mHandler.removeCallbacks(mClearTabListRunnable);
         boolean quick = false;
-        TabModelFilter currentTabModelFilter =
-                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter();
-        if (currentTabModelFilter != null && currentTabModelFilter.isTabModelRestored()) {
-            if (TabUiFeatureUtilities.isTabToGtsAnimationEnabled()) {
-                quick = mResetHandler.resetWithTabList(
-                        currentTabModelFilter, false, mShowTabsInMruOrder);
-            }
-            setInitialScrollIndexOffset();
+        if (!mTabModelSelector.isTabStateInitialized()) return quick;
+        if (TabUiFeatureUtilities.isTabToGtsAnimationEnabled()) {
+            quick = mResetHandler.resetWithTabList(
+                    mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(), false,
+                    mShowTabsInMruOrder);
         }
+        setInitialScrollIndexOffset();
+
         return quick;
     }
 
@@ -640,10 +632,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     public void showOverview(boolean animate) {
         mHandler.removeCallbacks(mSoftClearTabListRunnable);
         mHandler.removeCallbacks(mClearTabListRunnable);
-        if (mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter() != null
-                && mTabModelSelector.getTabModelFilterProvider()
-                           .getCurrentTabModelFilter()
-                           .isTabModelRestored()) {
+        if (mTabModelSelector.isTabStateInitialized()) {
             mResetHandler.resetWithTabList(
                     mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(),
                     TabUiFeatureUtilities.isTabToGtsAnimationEnabled(), mShowTabsInMruOrder);

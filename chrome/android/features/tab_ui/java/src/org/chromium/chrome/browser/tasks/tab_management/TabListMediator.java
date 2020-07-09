@@ -523,10 +523,7 @@ class TabListMediator {
             @Override
             public void didAddTab(
                     Tab tab, @TabLaunchType int type, @TabCreationState int creationState) {
-                boolean isTabModelRestoreCompleted = mTabModelSelector.getTabModelFilterProvider()
-                                                             .getCurrentTabModelFilter()
-                                                             .isTabModelRestored();
-                if (!isTabModelRestoreCompleted) return;
+                if (!mTabModelSelector.isTabStateInitialized()) return;
                 onTabAdded(tab, !mActionsOnAllRelatedTabs);
                 if (type == TabLaunchType.FROM_RESTORE && mActionsOnAllRelatedTabs) {
                     // When tab is restored after restoring stage (e.g. exiting multi-window mode,

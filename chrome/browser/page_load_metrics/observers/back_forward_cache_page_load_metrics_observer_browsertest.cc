@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCachePageLoadMetricsObserverBrowserTest,
         internal::kHistogramFirstPaintAfterBackForwardCacheRestore, 1);
   }
 
-  // The render frame host for the page B was likely in the back-forward cache
+  // The RenderFrameHost for the page B was likely in the back-forward cache
   // just after the history navigation, but now this might be evicted due to
   // outstanding-network request.
 
@@ -184,4 +184,60 @@ IN_PROC_BROWSER_TEST_F(BackForwardCachePageLoadMetricsObserverBrowserTest,
     histogram_tester().ExpectTotalCount(
         internal::kHistogramFirstInputDelayAfterBackForwardCacheRestore, 1);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCachePageLoadMetricsObserverBrowserTest,
+                       CumulativeLayoutShiftAfterBackForwardCacheRestore) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // Navigate to A.
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url_a));
+  content::RenderFrameHost* rfh_a = top_frame_host();
+
+  // Navigate to B.
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url_b));
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+
+  // Go back to A.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  EXPECT_EQ(rfh_a, top_frame_host());
+  EXPECT_FALSE(rfh_a->IsInBackForwardCache());
+
+  // The RenderFrameHost for the page B was likely in the back-forward cache
+  // just after the history navigation, but now this might be evicted due to
+  // outstanding-network request.
+  //
+  // TODO(hajimehoshi): This is not 100% sure. Evict B explicitly?
+
+  // Navigate to B again.
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url_b));
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+
+  // As A enters to the back-forward cache once, CLS is recorded.
+  histogram_tester().ExpectTotalCount(
+      internal::
+          kHistogramCumulativeShiftScoreMainFrameAfterBackForwardCacheRestore,
+      1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramCumulativeShiftScoreAfterBackForwardCacheRestore, 1);
+
+  // Go back to A again.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  EXPECT_EQ(rfh_a, top_frame_host());
+  EXPECT_FALSE(rfh_a->IsInBackForwardCache());
+
+  // Navigate to B again.
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url_b));
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+
+  histogram_tester().ExpectTotalCount(
+      internal::
+          kHistogramCumulativeShiftScoreMainFrameAfterBackForwardCacheRestore,
+      2);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramCumulativeShiftScoreAfterBackForwardCacheRestore, 2);
 }

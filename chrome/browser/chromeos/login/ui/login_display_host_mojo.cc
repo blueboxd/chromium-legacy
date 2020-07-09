@@ -500,6 +500,10 @@ void LoginDisplayHostMojo::OnDestroyingOobeUI() {
   StopObservingOobeUI();
 }
 
+bool LoginDisplayHostMojo::IsOobeUIDialogVisible() const {
+  return dialog_ && dialog_->IsVisible();
+}
+
 void LoginDisplayHostMojo::LoadOobeDialog() {
   if (dialog_)
     return;

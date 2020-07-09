@@ -1,4 +1,13 @@
 <style include="cr-shared-style cr-hidden-style">
+  #destination-dropdown {
+    position: relative;
+  }
+
+  #destination-dropdown,
+  iron-dropdown {
+    width: var(--print-preview-dropdown-width);
+  }
+
   iron-dropdown {
     border: 0.5px solid rgba(0, 0, 0, 0.5);
     max-height: 270px;
@@ -59,10 +68,6 @@
   #destination-icon-box,
   .printer-display-name {
     padding-inline-start: 8px;
-  }
-
-  #destination-dropdown {
-    position: relative;
   }
 
   #destination-display-container {

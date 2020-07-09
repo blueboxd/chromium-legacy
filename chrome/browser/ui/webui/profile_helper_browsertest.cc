@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/platform_apps/shortcut_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -97,7 +98,20 @@ class BrowserAddedObserver : public BrowserListObserver {
 
 }  // namespace
 
-using ProfileHelperTest = InProcessBrowserTest;
+class ProfileHelperTest : public InProcessBrowserTest {
+ public:
+  ProfileHelperTest() = default;
+
+ protected:
+  void SetUp() override {
+    // Shortcut deletion delays tests shutdown on Win-7 and results in time out.
+    // See crbug.com/1073451.
+#if defined(OS_WIN)
+    AppShortcutManager::SuppressDeleteAllShortcutsForTesting();
+#endif
+    InProcessBrowserTest::SetUp();
+  }
+};
 
 IN_PROC_BROWSER_TEST_F(ProfileHelperTest, OpenNewWindowForProfile) {
   BrowserList* browser_list = BrowserList::GetInstance();
@@ -140,13 +154,7 @@ IN_PROC_BROWSER_TEST_F(ProfileHelperTest, OpenNewWindowForProfile) {
 #endif
 }
 
-// TODO(https://crbug.com/1073451) flaky on windows bots
-#if defined(OS_WIN)
-#define MAYBE_DeleteSoleProfile DISABLED_DeleteSoleProfile
-#else
-#define MAYBE_DeleteSoleProfile DeleteSoleProfile
-#endif
-IN_PROC_BROWSER_TEST_F(ProfileHelperTest, MAYBE_DeleteSoleProfile) {
+IN_PROC_BROWSER_TEST_F(ProfileHelperTest, DeleteSoleProfile) {
   content::TestWebUI web_ui;
   Browser* original_browser = browser();
   ProfileAttributesStorage& storage =
@@ -170,13 +178,7 @@ IN_PROC_BROWSER_TEST_F(ProfileHelperTest, MAYBE_DeleteSoleProfile) {
   EXPECT_EQ(1u, storage.GetNumberOfProfiles());
 }
 
-// TODO(https://crbug.com/1073451) flaky on windows bots
-#if defined(OS_WIN)
-#define MAYBE_DeleteActiveProfile DISABLED_DeleteActiveProfile
-#else
-#define MAYBE_DeleteActiveProfile DeleteActiveProfile
-#endif
-IN_PROC_BROWSER_TEST_F(ProfileHelperTest, MAYBE_DeleteActiveProfile) {
+IN_PROC_BROWSER_TEST_F(ProfileHelperTest, DeleteActiveProfile) {
   content::TestWebUI web_ui;
   Browser* original_browser = browser();
   ProfileAttributesStorage& storage =

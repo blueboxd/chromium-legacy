@@ -36,7 +36,7 @@ public abstract class BaseNotificationController
                         // we track the last foreground alive tab and update the notification with
                         // it?
                         .setInstanceId(mSessionController.getRouteCreationInfo().tabId)
-                        .setPrivate(mSessionController.getRouteCreationInfo().isIncognito)
+                        .setPrivate(mSessionController.getRouteCreationInfo().isOffTheRecord)
                         .setActions(MediaNotificationInfo.ACTION_STOP)
                         .setContentIntent(createContentIntent())
                         .setNotificationSmallIcon(R.drawable.ic_notification_media_route)

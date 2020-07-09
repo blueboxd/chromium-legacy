@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/platform_apps/shortcut_manager.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -225,11 +226,16 @@ base::FilePath GetFirstNonSigninNonLockScreenAppProfile(
 
 // This file contains tests for the ProfileManager that require a heavyweight
 // InProcessBrowserTest.  These include tests involving profile deletion.
-
-// TODO(jeremy): crbug.com/103355 - These tests should be enabled on all
-// platforms.
 class ProfileManagerBrowserTest : public InProcessBrowserTest {
  protected:
+  void SetUp() override {
+    // Shortcut deletion delays tests shutdown on Win-7 and results in time out.
+    // See crbug.com/1073451.
+#if defined(OS_WIN)
+    AppShortcutManager::SuppressDeleteAllShortcutsForTesting();
+#endif
+    InProcessBrowserTest::SetUp();
+  }
   void SetUpCommandLine(base::CommandLine* command_line) override {
 #if defined(OS_CHROMEOS)
     command_line->AppendSwitch(
@@ -241,15 +247,7 @@ class ProfileManagerBrowserTest : public InProcessBrowserTest {
 // CrOS multi-profiles implementation is too different for these tests.
 #if !defined(OS_CHROMEOS)
 
-// Delete single profile and make sure a new one is created.
-// TODO(https://crbug.com/1073451) flaky on windows bots
-#if defined(OS_WIN)
-#define MAYBE_DeleteSingletonProfile DISABLED_DeleteSingletonProfile
-#else
-#define MAYBE_DeleteSingletonProfile DeleteSingletonProfile
-#endif
-IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
-                       MAYBE_DeleteSingletonProfile) {
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteSingletonProfile) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();
@@ -320,15 +318,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteInactiveProfile) {
   EXPECT_EQ(current_profile_path, last_used->GetPath());
 }
 
-// Delete current profile in a multi profile setup and make sure an existing one
-// is loaded.
-// TODO(https://crbug.com/1073451) flaky on windows.
-#if defined(OS_WIN)
-#define MAYBE_DeleteCurrentProfile DISABLED_DeleteCurrentProfile
-#else
-#define MAYBE_DeleteCurrentProfile DeleteCurrentProfile
-#endif
-IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeleteCurrentProfile) {
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteCurrentProfile) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();
@@ -358,15 +348,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeleteCurrentProfile) {
   EXPECT_EQ(new_path, last_used->GetPath());
 }
 
-// Delete all profiles in a multi profile setup and make sure a new one is
-// created.
-// TODO(https://crbug.com/1073451) flaky on windows bots
-#if defined(OS_WIN)
-#define MAYBE_DeleteAllProfiles DISABLED_DeleteAllProfiles
-#else
-#define MAYBE_DeleteAllProfiles DeleteAllProfiles
-#endif
-IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeleteAllProfiles) {
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteAllProfiles) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();

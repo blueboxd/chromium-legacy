@@ -113,7 +113,7 @@ public class TileGroupTest {
 
         // Dismiss the tile using the context menu.
         invokeContextMenu(tileView, ContextMenuManager.ContextMenuItemId.REMOVE);
-        Assert.assertTrue(mMostVisitedSites.isUrlBlacklisted(mSiteSuggestionUrls[0]));
+        Assert.assertTrue(mMostVisitedSites.isUrlBlocklisted(mSiteSuggestionUrls[0]));
 
         // Ensure that the removal is reflected in the ui.
         Assert.assertEquals(3, getTileGridLayout().getChildCount());
@@ -162,10 +162,10 @@ public class TileGroupTest {
         Assert.assertEquals(2, tileContainer.getChildCount());
         final View snackbarButton = waitForSnackbar(mActivityTestRule.getActivity());
 
-        Assert.assertTrue(mMostVisitedSites.isUrlBlacklisted(mSiteSuggestionUrls[0]));
+        Assert.assertTrue(mMostVisitedSites.isUrlBlocklisted(mSiteSuggestionUrls[0]));
         TestThreadUtils.runOnUiThreadBlocking(() -> { snackbarButton.callOnClick(); });
 
-        Assert.assertFalse(mMostVisitedSites.isUrlBlacklisted(mSiteSuggestionUrls[0]));
+        Assert.assertFalse(mMostVisitedSites.isUrlBlocklisted(mSiteSuggestionUrls[0]));
 
         // Ensure that the removal of the update goes through.
         TestThreadUtils.runOnUiThreadBlocking(

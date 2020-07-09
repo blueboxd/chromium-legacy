@@ -63,7 +63,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse
 
   // Adds the specified |suggestions| that should be rendered for the
   // interaction.
-  void AddSuggestions(const std::vector<AssistantSuggestion>& suggestions);
+  void AddSuggestions(std::vector<AssistantSuggestion> suggestions);
 
   // Returns the suggestion uniquely identified by |id|.
   const AssistantSuggestion* GetSuggestionById(
@@ -90,7 +90,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse
 
  private:
   void NotifyUiElementAdded(const AssistantUiElement* ui_element);
-  void NotifySuggestionsAdded(const std::vector<const AssistantSuggestion*>&);
+  void NotifySuggestionsAdded(const std::vector<AssistantSuggestion>&);
 
   struct PendingUiElement;
   class Processor;

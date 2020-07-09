@@ -428,10 +428,8 @@ public class ReturnToChromeTest {
             Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
         }
 
-        CriteriaHelper.pollUiThread(mActivityTestRule.getActivity()
-                                            .getTabModelSelector()
-                                            .getTabModelFilterProvider()
-                                            .getCurrentTabModelFilter()::isTabModelRestored);
+        CriteriaHelper.pollUiThread(
+                mActivityTestRule.getActivity().getTabModelSelector()::isTabStateInitialized);
 
         assertEquals(2, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
     }
@@ -576,10 +574,8 @@ public class ReturnToChromeTest {
 
         Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
 
-        CriteriaHelper.pollUiThread(mActivityTestRule.getActivity()
-                                            .getTabModelSelector()
-                                            .getTabModelFilterProvider()
-                                            .getCurrentTabModelFilter()::isTabModelRestored);
+        CriteriaHelper.pollUiThread(
+                mActivityTestRule.getActivity().getTabModelSelector()::isTabStateInitialized);
 
         assertEquals(10, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
         assertEquals(9, mActivityTestRule.getActivity().getCurrentTabModel().index());
@@ -617,17 +613,8 @@ public class ReturnToChromeTest {
                             -> mActivityTestRule.getActivity()
                                        .startDelayedNativeInitializationForTests());
         }
-        CriteriaHelper.pollUiThread(()
-                                            -> mActivityTestRule.getActivity()
-                                                       .getTabModelSelector()
-                                                       .getTabModelFilterProvider()
-                                                       .getCurrentTabModelFilter()
-                                != null
-                        && mActivityTestRule.getActivity()
-                                   .getTabModelSelector()
-                                   .getTabModelFilterProvider()
-                                   .getCurrentTabModelFilter()
-                                   .isTabModelRestored());
+        CriteriaHelper.pollUiThread(
+                mActivityTestRule.getActivity().getTabModelSelector()::isTabStateInitialized);
         Assert.assertTrue(LibraryLoader.getInstance().isInitialized());
     }
 }

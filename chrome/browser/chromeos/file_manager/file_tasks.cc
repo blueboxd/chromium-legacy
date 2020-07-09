@@ -74,6 +74,10 @@ using storage::FileSystemURL;
 namespace file_manager {
 namespace file_tasks {
 
+const char kActionIdView[] = "view";
+const char kActionIdSend[] = "send";
+const char kActionIdSendMultiple[] = "send_multiple";
+
 namespace {
 
 // The values "file" and "app" are confusing, but cannot be changed easily as
@@ -291,6 +295,13 @@ void ExecuteByArcAfterMimeTypesCollected(
     FileTaskFinishedCallback done,
     extensions::app_file_handler_util::MimeTypeCollector* mime_collector,
     std::unique_ptr<std::vector<std::string>> mime_types) {
+  if (base::FeatureList::IsEnabled(features::kIntentHandlingSharing) &&
+      (task.action_id == kActionIdSend ||
+       task.action_id == kActionIdSendMultiple)) {
+    ExecuteAppServiceTask(profile, task, file_urls, *mime_types,
+                          std::move(done));
+    return;
+  }
   ExecuteArcTask(profile, task, file_urls, *mime_types, std::move(done));
 }
 

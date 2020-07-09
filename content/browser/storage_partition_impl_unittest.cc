@@ -570,10 +570,10 @@ class RemovePluginPrivateDataTester {
     storage::FileSystemQuotaUtil* quota_util = backend->GetQuotaUtil();
 
     // Determine the set of origins used.
-    std::set<url::Origin> origins;
-    quota_util->GetOriginsForTypeOnFileTaskRunner(
-        storage::kFileSystemTypePluginPrivate, &origins);
-    *data_exists_for_origin = origins.find(origin) != origins.end();
+    std::vector<url::Origin> origins =
+        quota_util->GetOriginsForTypeOnFileTaskRunner(
+            storage::kFileSystemTypePluginPrivate);
+    *data_exists_for_origin = base::Contains(origins, origin);
 
     // AwaitCompletionHelper and MessageLoop don't work on a
     // SequencedTaskRunner, so post a task on the IO thread.

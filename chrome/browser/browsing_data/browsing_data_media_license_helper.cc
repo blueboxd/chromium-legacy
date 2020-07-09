@@ -98,9 +98,9 @@ void BrowsingDataMediaLicenseHelperImpl::FetchMediaLicenseInfoOnFileTaskRunner(
           filesystem_context_->GetFileSystemBackend(kType));
 
   // Determine the set of origins used.
-  std::set<url::Origin> origins;
+  std::vector<url::Origin> origins =
+      backend->GetOriginsForTypeOnFileTaskRunner(kType);
   std::list<MediaLicenseInfo> result;
-  backend->GetOriginsForTypeOnFileTaskRunner(kType, &origins);
   for (const auto& origin : origins) {
     if (!browsing_data::HasWebScheme(origin.GetURL()))
       continue;  // Non-websafe state is not considered browsing data.

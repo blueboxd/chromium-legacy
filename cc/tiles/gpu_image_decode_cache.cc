@@ -1185,7 +1185,7 @@ void GpuImageDecodeCache::UnrefImage(const DrawImage& draw_image) {
 
 bool GpuImageDecodeCache::UseCacheForDrawImage(
     const DrawImage& draw_image) const {
-  if (draw_image.paint_image().GetSkImage()->isTextureBacked())
+  if (draw_image.paint_image().IsTextureBacked())
     return false;
 
   return true;

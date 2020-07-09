@@ -583,8 +583,8 @@ bool StartupBrowserCreatorImpl::MaybeLaunchApplication(Profile* profile) {
     // Opens an empty browser window if the app_id is invalid.
     apps::AppServiceProxyFactory::GetForProfile(profile)
         ->BrowserAppLauncher()
-        .LaunchAppWithCallback(app_id, command_line_, cur_dir_,
-                               base::BindOnce(&FinalizeWebAppLaunch));
+        ->LaunchAppWithCallback(app_id, command_line_, cur_dir_,
+                                base::BindOnce(&FinalizeWebAppLaunch));
     return true;
   }
 

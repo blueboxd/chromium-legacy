@@ -14,6 +14,10 @@
 #include "cc/paint/paint_op_writer.h"
 #include "cc/paint/transfer_cache_deserialize_helper.h"
 
+namespace gpu {
+struct Mailbox;
+}
+
 namespace cc {
 
 class PaintShader;
@@ -71,6 +75,7 @@ class CC_PAINT_EXPORT PaintOpReader {
   void Read(SkImageInfo* info);
   void Read(sk_sp<SkColorSpace>* color_space);
   void Read(SkYUVColorSpace* yuv_color_space);
+  void Read(gpu::Mailbox* mailbox);
 
 #if !defined(OS_ANDROID)
   void Read(scoped_refptr<SkottieWrapper>* skottie);

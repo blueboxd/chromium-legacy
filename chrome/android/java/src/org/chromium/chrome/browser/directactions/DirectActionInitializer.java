@@ -155,7 +155,7 @@ public class DirectActionInitializer implements NativeInitObserver, Destroyable 
                 new FindInPageDirectActionHandler(tabModelSelector, findToolbarManager));
 
         registerMenuHandlerIfNecessary(actionController, tabModelSelector)
-                .whitelistActions(R.id.forward_menu_id, R.id.reload_menu_id);
+                .allowlistActions(R.id.forward_menu_id, R.id.reload_menu_id);
 
         if (AutofillAssistantFacade.areDirectActionsAvailable(activityType)) {
             DirectActionHandler handler = AutofillAssistantFacade.createDirectActionHandler(context,
@@ -186,7 +186,7 @@ public class DirectActionInitializer implements NativeInitObserver, Destroyable 
     void allowMenuActions(MenuOrKeyboardActionController actionController,
             TabModelSelector tabModelSelector, Integer... itemIds) {
         registerMenuHandlerIfNecessary(actionController, tabModelSelector)
-                .whitelistActions(itemIds);
+                .allowlistActions(itemIds);
     }
 
     // Implements Destroyable

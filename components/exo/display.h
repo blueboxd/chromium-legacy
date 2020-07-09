@@ -40,6 +40,8 @@ class Surface;
 #if defined(OS_CHROMEOS)
 class InputMethodSurface;
 class ShellSurface;
+class ToastSurface;
+class ToastSurfaceManager;
 class XdgShellSurface;
 #endif
 
@@ -58,6 +60,7 @@ class Display {
   Display(
       std::unique_ptr<NotificationSurfaceManager> notification_surface_manager,
       std::unique_ptr<InputMethodSurfaceManager> input_method_surface_manager,
+      std::unique_ptr<ToastSurfaceManager> toast_surface_manager,
       std::unique_ptr<FileHelper> file_helper);
 #endif  // defined(OS_CHROMEOS)
 
@@ -103,6 +106,11 @@ class Display {
   std::unique_ptr<InputMethodSurface> CreateInputMethodSurface(
       Surface* surface,
       double default_device_scale_factor);
+
+  // Creates a toast surface for a surface.
+  std::unique_ptr<ToastSurface> CreateToastSurface(
+      Surface* surface,
+      double default_device_scale_factor);
 #endif  // defined(OS_CHROMEOS)
 
   // Creates a sub-surface for an existing surface. The sub-surface will be
@@ -126,6 +134,7 @@ class Display {
 #if defined(OS_CHROMEOS)
   std::unique_ptr<NotificationSurfaceManager> notification_surface_manager_;
   std::unique_ptr<InputMethodSurfaceManager> input_method_surface_manager_;
+  std::unique_ptr<ToastSurfaceManager> toast_surface_manager_;
 #endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<FileHelper> file_helper_;

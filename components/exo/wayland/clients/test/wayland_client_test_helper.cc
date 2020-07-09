@@ -20,6 +20,7 @@
 #include "components/exo/file_helper.h"
 #include "components/exo/input_method_surface_manager.h"
 #include "components/exo/notification_surface_manager.h"
+#include "components/exo/toast_surface_manager.h"
 #include "components/exo/wayland/server.h"
 #include "components/exo/wm_helper_chromeos.h"
 #include "ui/aura/window_tree_host.h"
@@ -110,7 +111,7 @@ void WaylandClientTestHelper::SetUpOnUIThread(base::WaitableEvent* event) {
   ash_test_helper_->SetUp();
 
   wm_helper_ = std::make_unique<WMHelperChromeOS>();
-  display_ = std::make_unique<Display>(nullptr, nullptr, nullptr);
+  display_ = std::make_unique<Display>(nullptr, nullptr, nullptr, nullptr);
   wayland_server_ = exo::wayland::Server::Create(display_.get());
   DCHECK(wayland_server_);
   wayland_watcher_ = std::make_unique<WaylandWatcher>(wayland_server_.get());

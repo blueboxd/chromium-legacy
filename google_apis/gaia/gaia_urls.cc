@@ -269,7 +269,7 @@ const GURL& GaiaUrls::reauth_api_url() const {
 }
 
 const GURL& GaiaUrls::gaia_login_form_realm() const {
-  return gaia_url_;
+  return gaia_login_form_realm_;
 }
 
 GURL GaiaUrls::ListAccountsURLWithSource(const std::string& source) {

@@ -477,6 +477,7 @@ enum HistogramValue {
   PASSWORDS_PRIVATE_ON_PASSWORD_CHECK_STATUS_CHANGED = 455,
   INPUT_IME_ON_ASSISTIVE_WINDOW_BUTTON_CLICKED = 456,
   INPUT_IME_ON_SUGGESTIONS_CHANGED = 457,
+  INPUT_IME_ON_INPUT_METHOD_OPTIONS_CHANGED = 458,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

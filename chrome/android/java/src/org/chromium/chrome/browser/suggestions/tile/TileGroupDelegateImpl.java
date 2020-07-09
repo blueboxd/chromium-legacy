@@ -48,7 +48,7 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
     public void removeMostVisitedItem(Tile item, Callback<String> removalUndoneCallback) {
         assert !mIsDestroyed;
 
-        mMostVisitedSites.addBlacklistedUrl(item.getUrl());
+        mMostVisitedSites.addBlocklistedUrl(item.getUrl());
         showTileRemovedSnackbar(item.getUrl(), removalUndoneCallback);
     }
 
@@ -115,7 +115,7 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
                     if (mIsDestroyed) return;
                     String url = (String) actionData;
                     removalUndoneCallback.onResult(url);
-                    mMostVisitedSites.removeBlacklistedUrl(url);
+                    mMostVisitedSites.removeBlocklistedUrl(url);
                 }
             };
         }

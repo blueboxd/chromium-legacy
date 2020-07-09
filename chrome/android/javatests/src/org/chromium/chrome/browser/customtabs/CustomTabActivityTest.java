@@ -1281,7 +1281,7 @@ public class CustomTabActivityTest {
     }
 
     /**
-     * Tests that page load metrics are not sent when the client is not whitelisted.
+     * Tests that page load metrics are not sent when the client is not allowlisted.
      */
     @Test
     @SmallTest

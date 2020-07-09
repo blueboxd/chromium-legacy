@@ -116,14 +116,14 @@ bool StatusTrayStateChangerWin::CreateTrayNotify() {
     return false;
 
   Microsoft::WRL::ComPtr<ITrayNotifyWin8> tray_notify_win8;
-  hr = tray_notify_.CopyTo(tray_notify_win8.GetAddressOf());
+  hr = tray_notify_.As(&tray_notify_win8);
   if (SUCCEEDED(hr)) {
     interface_version_ = INTERFACE_VERSION_WIN8;
     return true;
   }
 
   Microsoft::WRL::ComPtr<ITrayNotify> tray_notify_legacy;
-  hr = tray_notify_.CopyTo(tray_notify_legacy.GetAddressOf());
+  hr = tray_notify_.As(&tray_notify_legacy);
   if (SUCCEEDED(hr)) {
     interface_version_ = INTERFACE_VERSION_LEGACY;
     return true;
@@ -158,7 +158,7 @@ std::unique_ptr<NOTIFYITEM> StatusTrayStateChangerWin::RegisterCallback() {
 
 bool StatusTrayStateChangerWin::RegisterCallbackWin8() {
   Microsoft::WRL::ComPtr<ITrayNotifyWin8> tray_notify_win8;
-  HRESULT hr = tray_notify_.CopyTo(tray_notify_win8.GetAddressOf());
+  HRESULT hr = tray_notify_.As(&tray_notify_win8);
   if (FAILED(hr))
     return false;
 
@@ -178,7 +178,7 @@ bool StatusTrayStateChangerWin::RegisterCallbackWin8() {
 
 bool StatusTrayStateChangerWin::RegisterCallbackLegacy() {
   Microsoft::WRL::ComPtr<ITrayNotify> tray_notify;
-  HRESULT hr = tray_notify_.CopyTo(tray_notify.GetAddressOf());
+  HRESULT hr = tray_notify_.As(&tray_notify);
   if (FAILED(hr)) {
     return false;
   }
@@ -205,12 +205,12 @@ void StatusTrayStateChangerWin::SendNotifyItemUpdate(
     std::unique_ptr<NOTIFYITEM> notify_item) {
   if (interface_version_ == INTERFACE_VERSION_LEGACY) {
     Microsoft::WRL::ComPtr<ITrayNotify> tray_notify;
-    HRESULT hr = tray_notify_.CopyTo(tray_notify.GetAddressOf());
+    HRESULT hr = tray_notify_.As(&tray_notify);
     if (SUCCEEDED(hr))
       tray_notify->SetPreference(notify_item.get());
   } else if (interface_version_ == INTERFACE_VERSION_WIN8) {
     Microsoft::WRL::ComPtr<ITrayNotifyWin8> tray_notify;
-    HRESULT hr = tray_notify_.CopyTo(tray_notify.GetAddressOf());
+    HRESULT hr = tray_notify_.As(&tray_notify);
     if (SUCCEEDED(hr))
       tray_notify->SetPreference(notify_item.get());
   }

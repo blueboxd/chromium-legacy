@@ -234,18 +234,8 @@ public class InstantStartTest {
         CommandLine.getInstance().removeSwitch(ChromeSwitches.DISABLE_NATIVE_INITIALIZATION);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().startDelayedNativeInitializationForTests());
-        CriteriaHelper.pollUiThread(() -> {
-            return mActivityTestRule.getActivity()
-                            .getTabModelSelector()
-                            .getTabModelFilterProvider()
-                            .getCurrentTabModelFilter()
-                    != null
-                    && mActivityTestRule.getActivity()
-                               .getTabModelSelector()
-                               .getTabModelFilterProvider()
-                               .getCurrentTabModelFilter()
-                               .isTabModelRestored();
-        });
+        CriteriaHelper.pollUiThread(
+                mActivityTestRule.getActivity().getTabModelSelector()::isTabStateInitialized);
         Assert.assertTrue(LibraryLoader.getInstance().isInitialized());
     }
 

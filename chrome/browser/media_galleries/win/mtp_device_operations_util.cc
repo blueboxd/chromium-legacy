@@ -35,9 +35,9 @@ bool GetClientInformation(
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
   DCHECK(client_info);
-  HRESULT hr = ::CoCreateInstance(__uuidof(PortableDeviceValues), NULL,
-                                  CLSCTX_INPROC_SERVER,
-                                  IID_PPV_ARGS(client_info->GetAddressOf()));
+  HRESULT hr =
+      ::CoCreateInstance(__uuidof(PortableDeviceValues), NULL,
+                         CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&(*client_info)));
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to create an instance of IPortableDeviceValues";
     return false;
@@ -63,7 +63,7 @@ Microsoft::WRL::ComPtr<IPortableDeviceContent> GetDeviceContent(
                                                 base::BlockingType::MAY_BLOCK);
   DCHECK(device);
   Microsoft::WRL::ComPtr<IPortableDeviceContent> content;
-  if (SUCCEEDED(device->Content(content.GetAddressOf())))
+  if (SUCCEEDED(device->Content(&content)))
     return content;
   return Microsoft::WRL::ComPtr<IPortableDeviceContent>();
 }
@@ -84,8 +84,8 @@ Microsoft::WRL::ComPtr<IEnumPortableDeviceObjectIDs> GetDeviceObjectEnumerator(
     return Microsoft::WRL::ComPtr<IEnumPortableDeviceObjectIDs>();
 
   Microsoft::WRL::ComPtr<IEnumPortableDeviceObjectIDs> enum_object_ids;
-  if (SUCCEEDED(content->EnumObjects(0, parent_id.c_str(), NULL,
-                                     enum_object_ids.GetAddressOf())))
+  if (SUCCEEDED(
+          content->EnumObjects(0, parent_id.c_str(), NULL, &enum_object_ids)))
     return enum_object_ids;
   return Microsoft::WRL::ComPtr<IEnumPortableDeviceObjectIDs>();
 }
@@ -192,7 +192,7 @@ bool GetObjectDetails(IPortableDevice* device,
     return false;
 
   Microsoft::WRL::ComPtr<IPortableDeviceProperties> properties;
-  HRESULT hr = content->Properties(properties.GetAddressOf());
+  HRESULT hr = content->Properties(&properties);
   if (FAILED(hr))
     return false;
 
@@ -214,7 +214,7 @@ bool GetObjectDetails(IPortableDevice* device,
 
   Microsoft::WRL::ComPtr<IPortableDeviceValues> properties_values;
   hr = properties->GetValues(object_id.c_str(), properties_to_read.Get(),
-                             properties_values.GetAddressOf());
+                             &properties_values);
   if (FAILED(hr))
     return false;
 
@@ -373,7 +373,7 @@ HRESULT GetFileStreamForObject(IPortableDevice* device,
     return E_FAIL;
 
   Microsoft::WRL::ComPtr<IPortableDeviceResources> resources;
-  HRESULT hr = content->Transfer(resources.GetAddressOf());
+  HRESULT hr = content->Transfer(&resources);
   if (FAILED(hr))
     return hr;
   return resources->GetStream(file_object_id.c_str(), WPD_RESOURCE_DEFAULT,

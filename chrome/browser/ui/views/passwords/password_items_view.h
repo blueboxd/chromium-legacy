@@ -56,7 +56,14 @@ class PasswordItemsView : public PasswordBubbleViewBase,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // Called when the favicon is loaded. If |favicon| isn't empty, it sets
+  // |favicon_| and invokes RecreateLayout().
+  void OnFaviconReady(const gfx::Image& favicon);
+
   std::vector<std::unique_ptr<PasswordRow>> password_rows_;
+
+  // Holds the favicon of the page when it is asynchronously loaded.
+  gfx::Image favicon_;
 
   ItemsBubbleController controller_;
 

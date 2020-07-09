@@ -119,10 +119,8 @@ public class TabGridDialogTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
         assertTrue(layout instanceof StartSurfaceLayout);
-        CriteriaHelper.pollUiThread(mActivityTestRule.getActivity()
-                                            .getTabModelSelector()
-                                            .getTabModelFilterProvider()
-                                            .getCurrentTabModelFilter()::isTabModelRestored);
+        CriteriaHelper.pollUiThread(
+                mActivityTestRule.getActivity().getTabModelSelector()::isTabStateInitialized);
     }
 
     @After
@@ -608,10 +606,8 @@ public class TabGridDialogTest {
         // Restart the activity and open the dialog from strip to check the initial setup of dialog.
         TabUiTestHelper.finishActivity(cta);
         mActivityTestRule.startMainActivityFromLauncher();
-        CriteriaHelper.pollUiThread(mActivityTestRule.getActivity()
-                                            .getTabModelSelector()
-                                            .getTabModelFilterProvider()
-                                            .getCurrentTabModelFilter()::isTabModelRestored);
+        CriteriaHelper.pollUiThread(
+                mActivityTestRule.getActivity().getTabModelSelector()::isTabStateInitialized);
         openDialogFromStripAndVerify(mActivityTestRule.getActivity(), 2, null);
         closeNthTabInDialog(0);
         verifyShowingDialog(cta, 1, null);

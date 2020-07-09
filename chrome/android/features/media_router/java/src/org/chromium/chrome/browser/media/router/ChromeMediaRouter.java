@@ -274,12 +274,12 @@ public class ChromeMediaRouter implements MediaRouteManager {
      * @param presentationId the id of the presentation to be used by the page.
      * @param origin the origin of the frame requesting a new route.
      * @param tabId the id of the tab the requesting frame belongs to.
-     * @param isIncognito whether the route is being requested from an Incognito profile.
+     * @param isOffTheRecord whether the route is being requested from an OffTheRecord profile.
      * @param requestId the id of the route creation request tracked by the native side.
      */
     @CalledByNative
     public void createRoute(String sourceId, String sinkId, String presentationId, String origin,
-            int tabId, boolean isIncognito, int requestId) {
+            int tabId, boolean isOffTheRecord, int requestId) {
         MediaRouteProvider provider = getProviderForSource(sourceId);
         if (provider == null) {
             onRouteRequestError("No provider supports createRoute with source: " + sourceId
@@ -289,7 +289,7 @@ public class ChromeMediaRouter implements MediaRouteManager {
         }
 
         provider.createRoute(
-                sourceId, sinkId, presentationId, origin, tabId, isIncognito, requestId);
+                sourceId, sinkId, presentationId, origin, tabId, isOffTheRecord, requestId);
     }
 
     /**

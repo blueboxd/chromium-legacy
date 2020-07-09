@@ -68,8 +68,8 @@ void FileSystemHelper::FetchFileSystemInfoInFileThread(FetchCallback callback) {
     storage::FileSystemQuotaUtil* quota_util =
         filesystem_context_->GetQuotaUtil(type);
     DCHECK(quota_util);
-    std::set<url::Origin> origins;
-    quota_util->GetOriginsForTypeOnFileTaskRunner(type, &origins);
+    std::vector<url::Origin> origins =
+        quota_util->GetOriginsForTypeOnFileTaskRunner(type);
     for (const auto& current : origins) {
       if (!HasWebScheme(current.GetURL()))
         continue;  // Non-websafe state is not considered browsing data.

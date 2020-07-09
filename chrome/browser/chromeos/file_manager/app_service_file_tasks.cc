@@ -18,6 +18,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -76,7 +77,8 @@ void FindAppServiceTasks(Profile* profile,
   std::vector<apps::AppIdAndActivityName> app_id_and_activities =
       proxy->GetAppsForFiles(file_urls, mime_types);
 
-  std::string task_action_id = entries.size() == 1 ? "send" : "send_multiple";
+  std::string task_action_id =
+      entries.size() == 1 ? kActionIdSend : kActionIdSendMultiple;
   using extensions::api::file_manager_private::Verb;
   // TODO(crbug/1092784): Get the icons.
   // TODO(crbug/1092784): Support file open with in the future.
@@ -104,7 +106,32 @@ void ExecuteAppServiceTask(
     const std::vector<storage::FileSystemURL>& file_system_urls,
     const std::vector<std::string>& mime_types,
     FileTaskFinishedCallback done) {
-  NOTIMPLEMENTED();
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(file_system_urls.size(), mime_types.size());
+
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+
+  if (!proxy)
+    return;
+
+  constexpr auto launch_source = apps::mojom::LaunchSource::kFromFileManager;
+  constexpr auto launch_container =
+      apps::mojom::LaunchContainer::kLaunchContainerWindow;
+
+  std::vector<GURL> file_urls;
+
+  for (auto& file_system_url : file_system_urls)
+    file_urls.push_back(file_system_url.ToGURL());
+
+  proxy->LaunchAppWithFileUrls(
+      task.app_id,
+      apps::GetEventFlags(launch_container, WindowOpenDisposition::NEW_WINDOW,
+                          /*prefer_container=*/true),
+      launch_source, file_urls, mime_types);
+
+  std::move(done).Run(
+      extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT, "");
 }
 
 }  // namespace file_tasks

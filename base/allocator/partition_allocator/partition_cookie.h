@@ -15,16 +15,8 @@ namespace internal {
 // Handles alignment up to XMM instructions on Intel.
 static constexpr size_t kCookieSize = 16;
 
-// Cookies are enabled for debug builds, unless PartitionAlloc is used as the
-// malloc() implementation. This is a temporary workaround the alignment issues
-// caused by cookies. With them, PartitionAlloc cannot support posix_memalign(),
-// which is required.
-//
-// TODO(lizeb): Support cookies when used as the malloc() implementation.
-#define ENABLE_PARTITION_ALLOC_COOKIES \
-  DCHECK_IS_ON() && !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-
-#if ENABLE_PARTITION_ALLOC_COOKIES
+// Cookies are enabled for debug builds.
+#if DCHECK_IS_ON()
 
 static constexpr unsigned char kCookieValue[kCookieSize] = {
     0xDE, 0xAD, 0xBE, 0xEF, 0xCA, 0xFE, 0xD0, 0x0D,
@@ -91,7 +83,7 @@ ALWAYS_INLINE void* PartitionCookiePointerAdjustAdd(void* ptr) {
 }
 
 ALWAYS_INLINE void PartitionCookieWriteValue(void* ptr) {}
-#endif  // ENABLE_PARTITION_ALLOC_COOKIES
+#endif  // DCHECK_IS_ON()
 
 }  // namespace internal
 }  // namespace base

@@ -32,6 +32,7 @@
 #include "components/exo/shell_surface_base.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface_delegate.h"
+#include "components/exo/toast_surface.h"
 #include "components/exo/wayland/server_util.h"
 #include "components/exo/wm_helper_chromeos.h"
 #include "ui/display/display_observer.h"
@@ -699,6 +700,35 @@ const struct zcr_input_method_surface_v1_interface
                                            input_method_surface_set_bounds};
 
 ////////////////////////////////////////////////////////////////////////////////
+// toast_surface_interface:
+
+void toast_surface_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+void toast_surface_set_position(wl_client* client,
+                                wl_resource* resource,
+                                uint32_t display_id_hi,
+                                uint32_t display_id_lo,
+                                int32_t x,
+                                int32_t y) {
+  GetUserDataAs<ToastSurface>(resource)->SetDisplay(
+      static_cast<int64_t>(display_id_hi) << 32 | display_id_lo);
+  GetUserDataAs<ToastSurface>(resource)->SetBoundsOrigin(gfx::Point(x, y));
+}
+
+void toast_surface_set_size(wl_client* client,
+                            wl_resource* resource,
+                            int32_t width,
+                            int32_t height) {
+  GetUserDataAs<ToastSurface>(resource)->SetBoundsSize(
+      gfx::Size(width, height));
+}
+
+const struct zcr_toast_surface_v1_interface toast_surface_implementation = {
+    toast_surface_destroy, toast_surface_set_position, toast_surface_set_size};
+
+////////////////////////////////////////////////////////////////////////////////
 // remote_shell_interface:
 
 // Implements remote shell interface and monitors workspace state needed
@@ -754,6 +784,12 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
       double default_device_scale_factor) {
     return display_->CreateInputMethodSurface(surface,
                                               default_device_scale_factor);
+  }
+
+  std::unique_ptr<ToastSurface> CreateToastSurface(
+      Surface* surface,
+      double default_device_scale_factor) {
+    return display_->CreateToastSurface(surface, default_device_scale_factor);
   }
 
   // TODO(mukai, oshima): rewrite this through delegate-style instead of
@@ -1308,10 +1344,36 @@ void remote_shell_get_input_method_surface(wl_client* client,
                     std::move(input_method_surface));
 }
 
+void remote_shell_get_toast_surface(wl_client* client,
+                                    wl_resource* resource,
+                                    uint32_t id,
+                                    wl_resource* surface) {
+  if (GetUserDataAs<Surface>(surface)->HasSurfaceDelegate()) {
+    wl_resource_post_error(resource, ZCR_REMOTE_SHELL_V1_ERROR_ROLE,
+                           "surface has already been assigned a role");
+    return;
+  }
+
+  std::unique_ptr<ClientControlledShellSurface> toast_surface =
+      GetUserDataAs<WaylandRemoteShell>(resource)->CreateToastSurface(
+          GetUserDataAs<Surface>(surface), GetDefaultDeviceScaleFactor());
+  if (!toast_surface) {
+    wl_resource_post_error(resource, ZCR_REMOTE_SHELL_V1_ERROR_ROLE,
+                           "Cannot create an toast surface");
+    return;
+  }
+
+  wl_resource* toast_surface_resource =
+      wl_resource_create(client, &zcr_toast_surface_v1_interface,
+                         wl_resource_get_version(resource), id);
+  SetImplementation(toast_surface_resource, &toast_surface_implementation,
+                    std::move(toast_surface));
+}
+
 const struct zcr_remote_shell_v1_interface remote_shell_implementation = {
     remote_shell_destroy, remote_shell_get_remote_surface,
     remote_shell_get_notification_surface,
-    remote_shell_get_input_method_surface};
+    remote_shell_get_input_method_surface, remote_shell_get_toast_surface};
 
 }  // namespace
 

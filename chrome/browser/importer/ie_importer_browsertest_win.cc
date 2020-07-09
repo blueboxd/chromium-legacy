@@ -174,7 +174,7 @@ bool CreateUrlFileWithFavicon(const base::FilePath& file,
   if (FAILED(result))
     return false;
   Microsoft::WRL::ComPtr<IPersistFile> persist_file;
-  result = locator.CopyTo(persist_file.GetAddressOf());
+  result = locator.As(&persist_file);
   if (FAILED(result))
     return false;
   result = locator->SetURL(url.c_str(), 0);
@@ -184,11 +184,11 @@ bool CreateUrlFileWithFavicon(const base::FilePath& file,
   // Write favicon url if specified.
   if (!favicon_url.empty()) {
     Microsoft::WRL::ComPtr<IPropertySetStorage> property_set_storage;
-    if (FAILED(locator.CopyTo(property_set_storage.GetAddressOf())))
+    if (FAILED(locator.As(&property_set_storage)))
       return false;
     Microsoft::WRL::ComPtr<IPropertyStorage> property_storage;
     if (FAILED(property_set_storage->Open(FMTID_Intshcut, STGM_WRITE,
-                                          property_storage.GetAddressOf()))) {
+                                          &property_storage))) {
       return false;
     }
     PROPSPEC properties[] = {{PRSPEC_PROPID, {PID_IS_ICONFILE}}};

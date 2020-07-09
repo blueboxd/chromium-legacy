@@ -143,7 +143,7 @@ void ContentsView::Init(AppListModel* model) {
   AddLauncherPage(search_results_page_view_, AppListState::kStateSearchResults);
 
   assistant_page_view_ =
-      new AssistantPageView(view_delegate->GetAssistantViewDelegate(), this);
+      new AssistantPageView(view_delegate->GetAssistantViewDelegate());
   assistant_page_view_->SetVisible(false);
   AddLauncherPage(assistant_page_view_, AppListState::kStateEmbeddedAssistant);
 

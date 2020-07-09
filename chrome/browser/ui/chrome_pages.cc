@@ -168,7 +168,7 @@ void LaunchReleaseNotesImpl(Profile* profile) {
     params.override_url = GURL(BuildQueryString(profile));
     apps::AppServiceProxyFactory::GetForProfile(profile)
         ->BrowserAppLauncher()
-        .LaunchAppWithParams(params);
+        ->LaunchAppWithParams(params);
     return;
   }
   DVLOG(1) << "ReleaseNotes App Not Found";

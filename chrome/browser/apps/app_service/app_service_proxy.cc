@@ -24,6 +24,7 @@
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/url_data_source.h"
+#include "ui/display/types/display_constants.h"
 #include "url/url_constants.h"
 
 #if defined(OS_CHROMEOS)
@@ -225,8 +226,8 @@ apps::InstanceRegistry& AppServiceProxy::InstanceRegistry() {
 }
 #endif
 
-BrowserAppLauncher& AppServiceProxy::BrowserAppLauncher() {
-  return *browser_app_launcher_;
+BrowserAppLauncher* AppServiceProxy::BrowserAppLauncher() {
+  return browser_app_launcher_.get();
 }
 
 apps::PreferredAppsList& AppServiceProxy::PreferredApps() {
@@ -289,6 +290,18 @@ void AppServiceProxy::LaunchAppWithFiles(
                                        std::move(file_paths));
     });
   }
+}
+
+void AppServiceProxy::LaunchAppWithFileUrls(
+    const std::string& app_id,
+    int32_t event_flags,
+    apps::mojom::LaunchSource launch_source,
+    const std::vector<GURL>& file_urls,
+    const std::vector<std::string>& mime_types) {
+  LaunchAppWithIntent(
+      app_id, event_flags,
+      apps_util::CreateShareIntentFromFiles(file_urls, mime_types),
+      launch_source, display::kDefaultDisplayId);
 }
 
 void AppServiceProxy::LaunchAppWithIntent(

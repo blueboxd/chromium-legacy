@@ -39,10 +39,12 @@ namespace {
 
 constexpr const size_t kNumOfWorlds = 2;
 
-inline const DOMWrapperWorld& IndexToWorld(v8::Isolate* isolate, size_t index) {
-  return index == 0 ? DOMWrapperWorld::MainWorld()
-                    : *DOMWrapperWorld::EnsureIsolatedWorld(
-                          isolate, DOMWrapperWorld::WorldId::kMainWorldId + 1);
+inline scoped_refptr<DOMWrapperWorld> IndexToWorld(v8::Isolate* isolate,
+                                                   size_t index) {
+  return index == 0
+             ? scoped_refptr<DOMWrapperWorld>(&DOMWrapperWorld::MainWorld())
+             : DOMWrapperWorld::EnsureIsolatedWorld(
+                   isolate, DOMWrapperWorld::WorldId::kMainWorldId + 1);
 }
 
 inline int WorldToIndex(const DOMWrapperWorld& world) {
@@ -346,7 +348,7 @@ void V8ContextSnapshotImpl::InstallInterfaceTemplates(v8::Isolate* isolate) {
   v8::HandleScope handle_scope(isolate);
 
   for (size_t world_index = 0; world_index < kNumOfWorlds; ++world_index) {
-    const DOMWrapperWorld& world = IndexToWorld(isolate, world_index);
+    scoped_refptr<DOMWrapperWorld> world = IndexToWorld(isolate, world_index);
     for (size_t i = 0; i < base::size(type_info_table); ++i) {
       const auto& type_info = type_info_table[i];
       v8::Local<v8::FunctionTemplate> interface_template =
@@ -354,10 +356,10 @@ void V8ContextSnapshotImpl::InstallInterfaceTemplates(v8::Isolate* isolate) {
               ->GetDataFromSnapshotOnce<v8::FunctionTemplate>(
                   world_index * base::size(type_info_table) + i)
               .ToLocalChecked();
-      per_isolate_data->SetInterfaceTemplate(world, type_info.wrapper_type_info,
-                                             interface_template);
+      per_isolate_data->SetInterfaceTemplate(
+          *world, type_info.wrapper_type_info, interface_template);
       type_info.install_props_per_isolate(
-          isolate, world, interface_template->InstanceTemplate(),
+          isolate, *world, interface_template->InstanceTemplate(),
           interface_template->PrototypeTemplate(), interface_template);
     }
   }
@@ -383,7 +385,8 @@ v8::StartupData V8ContextSnapshotImpl::TakeSnapshot() {
     v8::HandleScope handle_scope(isolate);
     snapshot_creator->SetDefaultContext(v8::Context::New(isolate));
     for (size_t i = 0; i < kNumOfWorlds; ++i) {
-      TakeSnapshotForWorld(snapshot_creator, IndexToWorld(isolate, i));
+      scoped_refptr<DOMWrapperWorld> world = IndexToWorld(isolate, i);
+      TakeSnapshotForWorld(snapshot_creator, *world);
     }
   }
 

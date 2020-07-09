@@ -36,7 +36,10 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
+#include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_animations.h"
+#include "ui/wm/core/window_properties.h"
 
 namespace ui {
 namespace ime {
@@ -114,16 +117,25 @@ SuggestionWindowView::SuggestionWindowView(gfx::NativeView parent,
 
 SuggestionWindowView::~SuggestionWindowView() = default;
 
-views::Widget* SuggestionWindowView::InitWidget() {
-  views::Widget* widget = BubbleDialogDelegateView::CreateBubble(this);
-
+// static
+SuggestionWindowView* SuggestionWindowView::Create(
+    gfx::NativeView parent,
+    AssistiveDelegate* delegate) {
+  auto* const view = new SuggestionWindowView(parent, delegate);
+  views::Widget* const widget =
+      views::BubbleDialogDelegateView::CreateBubble(view);
   wm::SetWindowVisibilityAnimationTransition(widget->GetNativeView(),
                                              wm::ANIMATE_NONE);
+  return view;
+}
 
-  GetBubbleFrameView()->SetBubbleBorder(
-      GetBorderForWindow(WindowBorderType::Suggestion));
-  GetBubbleFrameView()->OnThemeChanged();
-  return widget;
+std::unique_ptr<views::NonClientFrameView>
+SuggestionWindowView::CreateNonClientFrameView(views::Widget* widget) {
+  std::unique_ptr<views::NonClientFrameView> frame =
+      views::BubbleDialogDelegateView::CreateNonClientFrameView(widget);
+  static_cast<views::BubbleFrameView*>(frame.get())
+      ->SetBubbleBorder(GetBorderForWindow(WindowBorderType::Suggestion));
+  return frame;
 }
 
 std::unique_ptr<views::ImageButton>
@@ -143,10 +155,6 @@ SuggestionWindowView::CreateLearnMoreButton() {
   button->AddButtonObserver(this);
   button->SetVisible(false);
   return button;
-}
-
-void SuggestionWindowView::Hide() {
-  GetWidget()->Close();
 }
 
 void SuggestionWindowView::MakeVisible() {
@@ -261,10 +269,6 @@ void SuggestionWindowView::SetLearnMoreButtonHighlighted(bool highlighted) {
   SchedulePaint();
 }
 
-void SuggestionWindowView::SetBounds(const gfx::Rect& cursor_bounds) {
-  SetAnchorRect(cursor_bounds);
-}
-
 // TODO(crbug/1099116): Add test for ButtonPressed.
 void SuggestionWindowView::ButtonPressed(views::Button* sender,
                                          const ui::Event& event) {
@@ -338,9 +342,9 @@ views::View* SuggestionWindowView::GetLearnMoreButtonForTesting() {
   return learn_more_button_;
 }
 
-const char* SuggestionWindowView::GetClassName() const {
-  return "SuggestionWindowView";
-}
+BEGIN_METADATA(SuggestionWindowView)
+METADATA_PARENT_CLASS(views::BubbleDialogDelegateView)
+END_METADATA()
 
 }  // namespace ime
 }  // namespace ui

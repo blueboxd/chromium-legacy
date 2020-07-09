@@ -324,6 +324,15 @@ class ImeObserverChromeOS : public ui::ImeObserver {
         std::move(args));
   }
 
+  void OnInputMethodOptionsChanged(const std::string& engine_id) override {
+    std::unique_ptr<base::ListValue> args(
+        input_method_private::OnInputMethodOptionsChanged::Create(engine_id));
+    DispatchEventToExtension(
+        extensions::events::INPUT_IME_ON_INPUT_METHOD_OPTIONS_CHANGED,
+        input_method_private::OnInputMethodOptionsChanged::kEventName,
+        std::move(args));
+  }
+
  private:
   // ui::ImeObserver overrides.
   void DispatchEventToExtension(

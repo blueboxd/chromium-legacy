@@ -669,6 +669,7 @@
     {
       // http://crbug.com/707656 content editable in LayoutNG.
       name: "EditingNG",
+      status: "test",
     },
     {
       name: "EncryptedMediaEncryptionSchemeQuery",

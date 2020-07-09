@@ -247,8 +247,7 @@ base::File::Error GetFileStreamOnBlockingPoolThread(
   Microsoft::WRL::ComPtr<IStream> file_stream;
   if (file_info.size > 0) {
     HRESULT hr = media_transfer_protocol::GetFileStreamForObject(
-        device, file_object_id, file_stream.GetAddressOf(),
-        &optimal_transfer_size);
+        device, file_object_id, &file_stream, &optimal_transfer_size);
     if (hr != S_OK)
       return base::File::FILE_ERROR_FAILED;
   }

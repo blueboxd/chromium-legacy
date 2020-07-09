@@ -307,7 +307,7 @@ public class NewTabPageTest {
         Assert.assertTrue(InstrumentationRegistry.getInstrumentation().invokeContextMenuAction(
                 mActivityTestRule.getActivity(), ContextMenuManager.ContextMenuItemId.REMOVE, 0));
 
-        Assert.assertTrue(mMostVisitedSites.isUrlBlacklisted(testSite.url));
+        Assert.assertTrue(mMostVisitedSites.isUrlBlocklisted(testSite.url));
     }
 
     @Test

@@ -9,6 +9,7 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/external_arc/keyboard/arc_input_method_surface_manager.h"
 #include "ash/public/cpp/external_arc/message_center/arc_notification_surface_manager_impl.h"
+#include "ash/public/cpp/external_arc/toast/arc_toast_surface_manager.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -125,7 +126,8 @@ ExoParts::ExoParts() {
   wayland_server_ = exo::WaylandServerController::CreateIfNecessary(
       std::make_unique<ChromeFileHelper>(),
       std::make_unique<ash::ArcNotificationSurfaceManagerImpl>(),
-      std::make_unique<ash::ArcInputMethodSurfaceManager>());
+      std::make_unique<ash::ArcInputMethodSurfaceManager>(),
+      std::make_unique<ash::ArcToastSurfaceManager>());
   ash::Shell::Get()->TrackInputMethodBounds(
       ash::ArcInputMethodBoundsTracker::Get());
 }

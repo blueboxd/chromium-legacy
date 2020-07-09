@@ -20,7 +20,7 @@ import org.chromium.chrome.browser.AppHooks;
  * Java-side handler for Offline page model changes.
  *
  * Will send a broadcast intent to the originating app if a page related to it has changed
- * and the app is part of the whitelist set of apps.
+ * and the app is part of the allowlist set of apps.
  */
 public class CctOfflinePageModelObserver {
     private static final String TAG = "CctModelObserver";
@@ -54,8 +54,8 @@ public class CctOfflinePageModelObserver {
     }
 
     private static void compareSignaturesAndFireIntent(OfflinePageOrigin origin, Bundle pageInfo) {
-        if (!isInWhitelist(origin.getAppName())) {
-            Log.w(TAG, "Non-whitelisted app: " + origin.getAppName());
+        if (!isInAllowlist(origin.getAppName())) {
+            Log.w(TAG, "Non-allowlisted app: " + origin.getAppName());
             return;
         }
         Context context = ContextUtils.getApplicationContext();
@@ -79,7 +79,7 @@ public class CctOfflinePageModelObserver {
         context.sendBroadcast(intent);
     }
 
-    private static boolean isInWhitelist(String appName) {
-        return AppHooks.get().getOfflinePagesCctWhitelist().contains(appName);
+    private static boolean isInAllowlist(String appName) {
+        return AppHooks.get().getOfflinePagesCctAllowlist().contains(appName);
     }
 }

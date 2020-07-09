@@ -563,6 +563,12 @@ crbug.com/591099 paint/invalidation/compositing/composited-float-under-composite
 crbug.com/591099 paint/invalidation/compositing/float-under-composited-inline.html [ Failure ]
 crbug.com/591099 paint/invalidation/compositing/stacked-float-under-composited-inline.html [ Failure ]
 
+# No H.254 decoder support in bot
+crbug.com/591099 external/wpt/webrtc/protocol/video-codecs.https.html [ Failure ]
+crbug.com/591099 external/wpt/webrtc/simulcast/h264.https.html [ Failure ]
+crbug.com/591099 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/protocol/video-codecs.https.html [ Failure ]
+crbug.com/591099 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/simulcast/h264.https.html [ Failure ]
+
 # FlexNG depends on LayoutNG.
 crbug.com/845235 virtual/layout_ng_flex_box/* [ Skip ]
 
@@ -621,4 +627,7 @@ crbug.com/845235 external/wpt/quirks/percentage-height-quirk-excludes-flex-grid-
 crbug.com/845235 external/wpt/css/css-flexbox/hittest-overlapping-order.html [ Failure ]
 
 crbug.com/1074752 editing/selection/selection-color.html [ Failure ]
-
+crbug.com/1074752 external/wpt/css/css-pseudo/active-selection-051.html [ Failure ]
+crbug.com/1074752 external/wpt/css/css-pseudo/active-selection-052.html [ Failure ]
+crbug.com/1074752 external/wpt/css/css-pseudo/active-selection-053.html [ Failure ]
+crbug.com/1074752 external/wpt/css/css-pseudo/active-selection-054.html [ Failure ]

@@ -203,7 +203,7 @@ public final class SubresourceFilterTest {
 
         CriteriaHelper.pollUiThread(() -> !InfoBarContainer.get(tab).hasInfoBars());
 
-        // Reloading should whitelist the site, so resources should no longer be filtered.
+        // Reloading should allowlist the site, so resources should no longer be filtered.
         loaded = mActivityTestRule.runJavaScriptCodeInCurrentTab("imgLoaded");
         Assert.assertEquals("true", loaded);
     }

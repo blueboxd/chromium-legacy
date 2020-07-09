@@ -946,12 +946,18 @@ def thin_tester(
   )
 
 
-def win_builder(*, name, os=builders.os.WINDOWS_DEFAULT, **kwargs):
+def win_builder(
+    *,
+    name,
+    os=builders.os.WINDOWS_DEFAULT,
+    tree_closing=True,
+    **kwargs):
   return ci.builder(
       name = name,
       goma_backend = builders.goma.backend.RBE_PROD,
       mastername = 'chromium.win',
       os = os,
+      tree_closing = tree_closing,
       **kwargs
   )
 

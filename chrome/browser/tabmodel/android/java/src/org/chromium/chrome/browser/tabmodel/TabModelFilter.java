@@ -160,6 +160,7 @@ public abstract class TabModelFilter implements TabModelObserver, TabList {
     /**
      * @return Whether the tab model is fully restored.
      */
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     public boolean isTabModelRestored() {
         // TODO(crbug.com/1081339): Remove |mTabRestoreCompleted|. |mTabRestoreCompleted| is always
         // false for incognito, while |mTabStateInitialized| is not. |mTabStateInitialized| is

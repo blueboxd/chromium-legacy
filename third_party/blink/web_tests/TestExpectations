@@ -902,6 +902,29 @@ crbug.com/636993 virtual/layout_ng_block_frag/fast/multicol/dynamic/remove-inlin
 
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/flowthread-with-floats-destroyed-crash.html [ Crash Pass ]
 
+
+### With LayoutNGFragmentItem enabled
+crbug.com/982194 [ Win ] external/wpt/css/CSS2/linebox/empty-inline-002.xht [ Failure ]
+crbug.com/982194 [ Win ] external/wpt/css/css-text/white-space/line-edge-white-space-collapse-001.html [ Failure ]
+crbug.com/982194 [ Win ] external/wpt/css/css-text/white-space/seg-break-transformation-018.html [ Failure ]
+crbug.com/982194 [ Win7 ] fast/inline/drawStyledEmptyInlines.html [ Failure ]
+crbug.com/982194 [ Win7 ] fast/inline/emptyInlinesWithinLists.html [ Failure ]
+crbug.com/982194 [ Win7 ] fast/writing-mode/background-vertical-lr.html [ Failure ]
+crbug.com/982194 [ Win7 ] fast/writing-mode/background-vertical-rl.html [ Failure ]
+crbug.com/982194 [ Win7 ] fast/writing-mode/border-image-vertical-lr.html [ Failure ]
+crbug.com/982194 [ Win7 ] fast/writing-mode/border-image-vertical-rl.html [ Failure ]
+crbug.com/982194 [ Win7 ] paint/invalidation/outline/focus-ring-on-continuation-move.html [ Failure ]
+crbug.com/982194 [ Win7 ] paint/invalidation/outline/focus-ring-on-inline-continuation-move.html [ Failure ]
+crbug.com/982194 [ Win10 ] fast/inline/drawStyledEmptyInlines.html [ Failure ]
+crbug.com/982194 [ Win10 ] fast/inline/emptyInlinesWithinLists.html [ Failure ]
+crbug.com/982194 [ Win10 ] fast/writing-mode/background-vertical-lr.html [ Failure ]
+crbug.com/982194 [ Win10 ] fast/writing-mode/background-vertical-rl.html [ Failure ]
+crbug.com/982194 [ Win10 ] fast/writing-mode/border-image-vertical-lr.html [ Failure ]
+crbug.com/982194 [ Win10 ] fast/writing-mode/border-image-vertical-rl.html [ Failure ]
+crbug.com/982194 [ Win10 ] paint/invalidation/outline/focus-ring-on-continuation-move.html [ Failure ]
+crbug.com/982194 [ Win10 ] paint/invalidation/outline/focus-ring-on-inline-continuation-move.html [ Failure ]
+
+
 ### With LayoutNGBlockFragmentation enabled:
 
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-break/block-end-aligned-abspos-nested.html [ Failure ]
@@ -6417,6 +6440,10 @@ crbug.com/1080997 fast/scrolling/events/scrollend-event-fired-to-scrolled-elemen
 # -expected.txt file for them, so instead they have to be marked flaky here.
 crbug.com/956688 [ Linux ] external/wpt/js-self-profiling/idlharness.any.html [ Pass Failure ]
 crbug.com/956688 [ Linux ] external/wpt/js-self-profiling/idlharness.any.worker.html [ Pass Failure ]
+
+# "in-multicol-child.html" is laid out in legacy layout due by "multicol" but
+# reference is laid out by LayoutNG.
+crbug.com/829028 [ Mac ] editing/caret/in-multicol-child.html [ Failure ]
 
 # Flaky tests blocking WPT import
 crbug.com/1054577 [ Linux ] virtual/storage-access-api/external/wpt/storage-access-api/requestStorageAccess.sub.window.html [ Pass Failure ]

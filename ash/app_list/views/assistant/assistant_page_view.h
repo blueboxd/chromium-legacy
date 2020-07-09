@@ -5,6 +5,8 @@
 #ifndef ASH_APP_LIST_VIEWS_ASSISTANT_ASSISTANT_PAGE_VIEW_H_
 #define ASH_APP_LIST_VIEWS_ASSISTANT_ASSISTANT_PAGE_VIEW_H_
 
+#include <memory>
+
 #include "ash/app_list/app_list_export.h"
 #include "ash/app_list/views/app_list_page.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
@@ -19,7 +21,6 @@ namespace ash {
 
 class AssistantMainView;
 class AssistantViewDelegate;
-class ContentsView;
 class ViewShadow;
 
 // The Assistant page for the app list.
@@ -27,31 +28,22 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage,
                                           public AssistantControllerObserver,
                                           public AssistantUiModelObserver {
  public:
-  AssistantPageView(AssistantViewDelegate* assistant_view_delegate,
-                    ContentsView* contents_view);
+  explicit AssistantPageView(AssistantViewDelegate* assistant_view_delegate);
   ~AssistantPageView() override;
 
-  void InitLayout();
-
-  // views::View:
+  // AppListPage:
   const char* GetClassName() const override;
-  gfx::Size CalculatePreferredSize() const override;
-  int GetHeightForWidth(int width) const override;
+  gfx::Size GetMinimumSize() const override;
   void OnBoundsChanged(const gfx::Rect& prev_bounds) override;
   void RequestFocus() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void ChildPreferredSizeChanged(views::View* child) override;
   void ChildVisibilityChanged(views::View* child) override;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
-
-  // ui::EventHandler:
-  void OnMouseEvent(ui::MouseEvent* event) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
-
-  // AppListPage:
-  void OnShown() override;
+  void OnWillBeShown() override;
   void OnAnimationStarted(AppListState from_state,
                           AppListState to_state) override;
+  gfx::Size GetPreferredSearchBoxSize() const override;
   base::Optional<int> GetSearchBoxTop(
       AppListViewState view_state) const override;
   void UpdatePageOpacityForState(AppListState state,
@@ -67,6 +59,10 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage,
                         const TransformAnimator& animator,
                         float default_offset) override;
 
+  // ui::EventHandler:
+  void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+
   // AssistantControllerObserver:
   void OnAssistantControllerDestroying() override;
 
@@ -78,12 +74,10 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage,
       base::Optional<AssistantExitPoint> exit_point) override;
 
  private:
-  int GetChildViewHeightForWidth(int width) const;
+  void InitLayout();
   void MaybeUpdateAppListState(int child_height);
-  gfx::Rect AddShadowBorderToBounds(const gfx::Rect& bounds) const;
 
   AssistantViewDelegate* const assistant_view_delegate_;
-  ContentsView* const contents_view_;
 
   // Owned by the view hierarchy.
   AssistantMainView* assistant_main_view_ = nullptr;

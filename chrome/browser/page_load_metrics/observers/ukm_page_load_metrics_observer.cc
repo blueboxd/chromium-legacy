@@ -64,16 +64,6 @@ bool IsSupportedProtocol(page_load_metrics::NetworkProtocol protocol) {
   }
 }
 
-int64_t LayoutShiftUkmValue(float shift_score) {
-  // Report (shift_score * 100) as an int in the range [0, 1000].
-  return static_cast<int>(roundf(std::min(shift_score, 10.0f) * 100.0f));
-}
-
-int32_t LayoutShiftUmaValue(float shift_score) {
-  // Report (shift_score * 10) as an int in the range [0, 100].
-  return static_cast<int>(roundf(std::min(shift_score, 10.0f) * 10.0f));
-}
-
 bool IsDefaultSearchEngine(content::BrowserContext* browser_context,
                            const GURL& url) {
   if (!browser_context)
@@ -811,21 +801,24 @@ void UkmPageLoadMetricsObserver::ReportMainResourceTimingMetrics(
 
 void UkmPageLoadMetricsObserver::ReportLayoutStability() {
   ukm::builders::PageLoad(GetDelegate().GetSourceId())
-      .SetLayoutInstability_CumulativeShiftScore(LayoutShiftUkmValue(
-          GetDelegate().GetPageRenderData().layout_shift_score))
-      .SetLayoutInstability_CumulativeShiftScore_MainFrame(LayoutShiftUkmValue(
-          GetDelegate().GetMainFrameRenderData().layout_shift_score))
+      .SetLayoutInstability_CumulativeShiftScore(
+          page_load_metrics::LayoutShiftUkmValue(
+              GetDelegate().GetPageRenderData().layout_shift_score))
+      .SetLayoutInstability_CumulativeShiftScore_MainFrame(
+          page_load_metrics::LayoutShiftUkmValue(
+              GetDelegate().GetMainFrameRenderData().layout_shift_score))
       .SetLayoutInstability_CumulativeShiftScore_MainFrame_BeforeInputOrScroll(
-          LayoutShiftUkmValue(GetDelegate()
-                                  .GetMainFrameRenderData()
-                                  .layout_shift_score_before_input_or_scroll))
+          page_load_metrics::LayoutShiftUkmValue(
+              GetDelegate()
+                  .GetMainFrameRenderData()
+                  .layout_shift_score_before_input_or_scroll))
       .Record(ukm::UkmRecorder::Get());
 
   // TODO(crbug.com/1064483): We should move UMA recording to components/
 
   UMA_HISTOGRAM_COUNTS_100(
       "PageLoad.LayoutInstability.CumulativeShiftScore",
-      LayoutShiftUmaValue(
+      page_load_metrics::LayoutShiftUmaValue(
           GetDelegate().GetPageRenderData().layout_shift_score));
 
   TRACE_EVENT_INSTANT1("loading", "CumulativeShiftScore::AllFrames::UMA",
@@ -838,7 +831,7 @@ void UkmPageLoadMetricsObserver::ReportLayoutStability() {
 
   UMA_HISTOGRAM_COUNTS_100(
       "PageLoad.LayoutInstability.CumulativeShiftScore.MainFrame",
-      LayoutShiftUmaValue(
+      page_load_metrics::LayoutShiftUmaValue(
           GetDelegate().GetMainFrameRenderData().layout_shift_score));
 
   // Note: This depends on PageLoadMetrics internally processing loading
@@ -846,7 +839,7 @@ void UkmPageLoadMetricsObserver::ReportLayoutStability() {
   if (font_preload_started_before_rendering_observed_) {
     UMA_HISTOGRAM_COUNTS_100(
         "PageLoad.Clients.FontPreload.LayoutInstability.CumulativeShiftScore",
-        LayoutShiftUmaValue(
+        page_load_metrics::LayoutShiftUmaValue(
             GetDelegate().GetPageRenderData().layout_shift_score));
   }
 }

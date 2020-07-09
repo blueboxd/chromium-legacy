@@ -46,6 +46,9 @@ paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html 
 crbug.com/957674 external/wpt/largest-contentful-paint/invisible-images-composited-2.html [ Pass ]
 crbug.com/957674 virtual/scalefactor200/external/wpt/largest-contentful-paint/invisible-images-composited-2.html [ Pass ]
 
+# With CompositeAfterPaint and LayoutNGFragmentItem enabled
+crbug.com/1103138 paint/invalidation/compositing/float-under-composited-inline.html [ Pass Crash ]
+
 # Raster invalidation doesn't work for huge layers.
 paint/invalidation/raster-under-invalidation-checking.html [ Failure ]
 

@@ -147,7 +147,7 @@ public abstract class CafBaseMediaRouteProvider
 
     @Override
     public final void createRoute(String sourceId, String sinkId, String presentationId,
-            String origin, int tabId, boolean isIncognito, int nativeRequestId) {
+            String origin, int tabId, boolean isOffTheRecord, int nativeRequestId) {
         Log.d(TAG, "createRoute");
         if (sessionController().isConnected()) {
             // If there is an active session or a pending create route request, force end the
@@ -187,7 +187,7 @@ public abstract class CafBaseMediaRouteProvider
                 this, CastSession.class);
 
         mPendingCreateRouteRequestInfo = new CreateRouteRequestInfo(source, sink, presentationId,
-                origin, tabId, isIncognito, nativeRequestId, targetRouteInfo);
+                origin, tabId, isOffTheRecord, nativeRequestId, targetRouteInfo);
 
         sessionController().requestSessionLaunch();
     }

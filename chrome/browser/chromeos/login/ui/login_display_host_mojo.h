@@ -123,6 +123,10 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
                               OobeScreenId new_screen) override;
   void OnDestroyingOobeUI() override;
 
+  // TODO(https://crbug.com/1103564) This function needed to isolate error
+  // messages on the Views and WebUI side. Consider removing.
+  bool IsOobeUIDialogVisible() const;
+
  private:
   void LoadOobeDialog();
 

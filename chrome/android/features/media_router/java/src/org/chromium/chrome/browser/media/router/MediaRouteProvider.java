@@ -48,11 +48,11 @@ public interface MediaRouteProvider {
      * @param presentationId The presentation id generated for this route.
      * @param origin The origin of the frame initiating the request.
      * @param tabId The id of the tab containing the frame initiating the request.
-     * @param isIncognito Whether the route is being requested from an Incognito profile.
+     * @param isOffTheRecord Whether the route is being requested from an OffTheRecord profile.
      * @param nativeRequestId The id of the request tracked by the native side.
      */
     void createRoute(String sourceId, String sinkId, String presentationId, String origin,
-            int tabId, boolean isIncognito, int nativeRequestId);
+            int tabId, boolean isOffTheRecord, int nativeRequestId);
 
     /**
      * Tries to join an existing media route for the given media source and presentation id.

@@ -200,6 +200,108 @@ bool AllowedBetweenBeginEndRaster(CommandId command) {
   }
 }
 
+// This class is sent to cc::PaintOpReader during paint op deserialization. When
+// a cc:PaintOp refers to a mailbox-backed cc:PaintImage, this class opens the
+// shared image for read access and returns an SkImage reference.
+// SharedImageProviderImpl maintains read access until it is destroyed
+// which should occur after |end_semaphores| have been flushed to Skia.
+class SharedImageProviderImpl final : public cc::SharedImageProvider {
+ public:
+  SharedImageProviderImpl(
+      SharedImageRepresentationFactory* shared_image_factory,
+      scoped_refptr<SharedContextState> shared_context_state,
+      SkSurface* output_surface,
+      std::vector<GrBackendSemaphore>* end_semaphores,
+      gles2::ErrorState* error_state)
+      : shared_image_factory_(shared_image_factory),
+        shared_context_state_(std::move(shared_context_state)),
+        output_surface_(output_surface),
+        end_semaphores_(end_semaphores),
+        error_state_(error_state) {
+    DCHECK(shared_image_factory_);
+    DCHECK(shared_context_state_);
+    DCHECK(output_surface_);
+    DCHECK(end_semaphores_);
+    DCHECK(error_state_);
+  }
+  SharedImageProviderImpl(const SharedImageProviderImpl&) = delete;
+  SharedImageProviderImpl& operator=(const SharedImageProviderImpl&) = delete;
+
+  ~SharedImageProviderImpl() override { read_accessors_.clear(); }
+
+  sk_sp<SkImage> OpenSharedImageForRead(const gpu::Mailbox& mailbox) override {
+    auto it = read_accessors_.find(mailbox);
+    if (it != read_accessors_.end())
+      return it->second.read_access_sk_image;
+
+    auto shared_image_skia =
+        shared_image_factory_->ProduceSkia(mailbox, shared_context_state_);
+    if (!shared_image_skia) {
+      ERRORSTATE_SET_GL_ERROR(error_state_, GL_INVALID_OPERATION,
+                              "SharedImageProviderImpl::OpenSharedImageForRead",
+                              ("Attempting to operate on unknown mailbox:" +
+                               mailbox.ToDebugString())
+                                  .c_str());
+      return nullptr;
+    }
+
+    std::vector<GrBackendSemaphore> begin_semaphores;
+    // |end_semaphores_| is owned by RasterDecoderImpl which will handle sending
+    // them to SkCanvas
+    auto scoped_read_access = shared_image_skia->BeginScopedReadAccess(
+        &begin_semaphores, end_semaphores_);
+    if (!scoped_read_access) {
+      ERRORSTATE_SET_GL_ERROR(error_state_, GL_INVALID_OPERATION,
+                              "SharedImageProviderImpl::OpenSharedImageForRead",
+                              ("Couldn't access shared image for mailbox:" +
+                               mailbox.ToDebugString())
+                                  .c_str());
+      return nullptr;
+    }
+
+    if (!begin_semaphores.empty()) {
+      bool result = output_surface_->wait(begin_semaphores.size(),
+                                          begin_semaphores.data());
+      DCHECK(result);
+    }
+
+    // TODO(http://crbug.com/1034086): We should initialize alpha_type and
+    // origin using metadata stored with the shared image.
+    auto sk_image = SkImage::MakeFromTexture(
+        shared_context_state_->gr_context(),
+        scoped_read_access->promise_image_texture()->backendTexture(),
+        kTopLeft_GrSurfaceOrigin,
+        viz::ResourceFormatToClosestSkColorType(true,
+                                                shared_image_skia->format()),
+        kPremul_SkAlphaType, shared_image_skia->color_space().ToSkColorSpace());
+    if (!sk_image) {
+      ERRORSTATE_SET_GL_ERROR(error_state_, GL_INVALID_OPERATION,
+                              "SharedImageProviderImpl::OpenSharedImageForRead",
+                              "Couldn't create output SkImage.");
+      return nullptr;
+    }
+
+    read_accessors_[mailbox] = {std::move(shared_image_skia),
+                                std::move(scoped_read_access), sk_image};
+    return sk_image;
+  }
+
+ private:
+  SharedImageRepresentationFactory* shared_image_factory_;
+  scoped_refptr<SharedContextState> shared_context_state_;
+  SkSurface* output_surface_;
+  std::vector<GrBackendSemaphore>* end_semaphores_;
+  gles2::ErrorState* error_state_;
+
+  struct SharedImageReadAccess {
+    std::unique_ptr<SharedImageRepresentationSkia> shared_image_skia;
+    std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>
+        scoped_read_access;
+    sk_sp<SkImage> read_access_sk_image;
+  };
+  base::flat_map<gpu::Mailbox, SharedImageReadAccess> read_accessors_;
+};
+
 }  // namespace
 
 // RasterDecoderImpl uses two separate state trackers (gpu::gles2::ContextState
@@ -651,6 +753,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
       scoped_shared_image_write_;
   SkSurface* sk_surface_ = nullptr;
+  std::unique_ptr<SharedImageProviderImpl> paint_op_shared_image_provider_;
 
   sk_sp<SkSurface> sk_surface_for_testing_;
   std::vector<GrBackendSemaphore> end_semaphores_;
@@ -890,6 +993,7 @@ void RasterDecoderImpl::Destroy(bool have_context) {
     scoped_shared_image_write_.reset();
     shared_image_.reset();
     sk_surface_for_testing_.reset();
+    paint_op_shared_image_provider_.reset();
   }
 
   copy_tex_image_blit_.reset();
@@ -2708,6 +2812,10 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(GLuint sk_color,
     raster_canvas_ = sk_surface_->getCanvas();
   }
 
+  paint_op_shared_image_provider_ = std::make_unique<SharedImageProviderImpl>(
+      &shared_image_representation_factory_, shared_context_state_, sk_surface_,
+      &end_semaphores_, error_state_.get());
+
   // All or nothing clearing, as no way to validate the client's input on what
   // is the "used" part of the texture.
   // TODO(enne): This doesn't handle the case where the background color
@@ -2782,7 +2890,8 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
   TransferCacheDeserializeHelperImpl impl(raster_decoder_id_, transfer_cache());
   cc::PaintOp::DeserializeOptions options(
       &impl, paint_cache_.get(), font_manager_->strike_client(),
-      shared_context_state_->scratch_deserialization_buffer(), is_privileged_);
+      shared_context_state_->scratch_deserialization_buffer(), is_privileged_,
+      paint_op_shared_image_provider_.get());
   options.crash_dump_on_failure = true;
 
   size_t paint_buffer_size = raster_shm_size;
@@ -2872,6 +2981,8 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
   sk_surface_ = nullptr;
   scoped_shared_image_write_.reset();
   shared_image_.reset();
+  paint_op_shared_image_provider_.reset();
+
   // Test only path for SetUpForRasterCHROMIUMForTest.
   sk_surface_for_testing_.reset();
 

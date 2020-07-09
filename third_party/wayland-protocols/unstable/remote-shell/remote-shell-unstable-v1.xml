@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zcr_remote_shell_v1" version="27">
+  <interface name="zcr_remote_shell_v1" version="28">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -235,6 +235,16 @@
       <arg name="identification_data" type="array" summary="EDID blob data"/>
     </event>
 
+    <!-- Version 28 additions -->
+
+    <request name="get_toast_surface" since="28">
+      <description summary="Create a toast surface from a surface">
+	Creates an toast_surface for the given surface, gives it
+	the toast_surface role.
+      </description>
+      <arg name="id" type="new_id" interface="zcr_toast_surface_v1"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
+    </request>
   </interface>
 
   <interface name="zcr_remote_surface_v1" version="27">
@@ -1123,6 +1133,61 @@
       <arg name="display_id_lo" type="uint"/>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+    </request>
+  </interface>
+
+  <interface name="zcr_toast_surface_v1" version="1">
+    <description summary="A toast window">
+      An interface that may be implemented by a wl_surface to host
+      toast contents.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="Destroy the toast_surface">
+	Unmap and destroy the toast surface.
+      </description>
+    </request>
+
+    <request name="set_position">
+      <description summary="set toast bounds position">
+	Set the position of bounds of a window from the user's perspective.
+
+	The bounds are double buffered, and will be applied at the
+	time wl_surface.commit of the corresponding wl_surface is called.
+
+	Once the bounds are set, it is not possible to unset them, and they will
+	remain the same until set_position is called again, even if a new sub-
+	surface or buffer is attached.
+
+	If never set, the compositor will determine the toast position.
+
+	The bounds are relative to the given display. If the display is invalid,
+	they are assumed to be relative to the primary display.
+      </description>
+      <arg name="display_id_hi" type="uint"/>
+      <arg name="display_id_lo" type="uint"/>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+    </request>
+
+    <request name="set_size">
+      <description summary="set toast bounds size">
+	Set the size of bounds of a window from the user's perspective.
+
+	The bounds are double buffered, and will be applied at the
+	time wl_surface.commit of the corresponding wl_surface is called.
+
+	Once the bounds are set, it is not possible to unset them, and they will
+	remain the same until set_size is called again, even if a new sub-
+	surface or buffer is attached.
+
+	If never set, the value is the surface content bounds. This updates
+	dynamically on every commit.
+
+	The width and height must be greater than zero.
+      </description>
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
     </request>

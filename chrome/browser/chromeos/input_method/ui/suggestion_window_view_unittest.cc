@@ -35,11 +35,10 @@ class SuggestionWindowViewTest : public ChromeViewsTestBase {
     window_.candidates = candidates_;
 
     suggestion_window_view_ =
-        new SuggestionWindowView(GetContext(), delegate_.get());
+        SuggestionWindowView::Create(GetContext(), delegate_.get());
     candidate_button_.id = ButtonId::kSuggestion;
     setting_link_view_.id = ButtonId::kSmartInputsSettingLink;
     learn_more_button_.id = ButtonId::kLearnMore;
-    suggestion_window_view_->InitWidget();
   }
 
   void TearDown() override {

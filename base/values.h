@@ -121,7 +121,7 @@ class BASE_EXPORT Value {
   static const ListValue& AsListValue(const Value& val);
 
   Value(Value&& that) noexcept;
-  Value() noexcept {}  // A null value
+  Value() noexcept {}  // A null value. NOLINT(modernize-use-equals-default)
   // Fun fact: using '= default' above instead of '{}' does not work because
   // the compiler complains that the default constructor was deleted since
   // the inner union contains fields with non-default constructors.

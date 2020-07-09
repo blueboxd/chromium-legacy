@@ -68,10 +68,6 @@ bool SessionControllerImpl::CanLockScreen() const {
   return IsActiveUserSessionStarted() && can_lock_;
 }
 
-bool SessionControllerImpl::IsScreenLocked() const {
-  return state_ == SessionState::LOCKED;
-}
-
 bool SessionControllerImpl::ShouldLockScreenAutomatically() const {
   return should_lock_screen_automatically_;
 }
@@ -274,6 +270,10 @@ void SessionControllerImpl::AddObserver(SessionObserver* observer) {
 
 void SessionControllerImpl::RemoveObserver(SessionObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+bool SessionControllerImpl::IsScreenLocked() const {
+  return state_ == SessionState::LOCKED;
 }
 
 void SessionControllerImpl::SetClient(SessionControllerClient* client) {

@@ -933,17 +933,8 @@ public class StartSurfaceTest {
     }
 
     private void waitForTabModel() {
-        CriteriaHelper.pollUiThread(()
-                                            -> mActivityTestRule.getActivity()
-                                                       .getTabModelSelector()
-                                                       .getTabModelFilterProvider()
-                                                       .getCurrentTabModelFilter()
-                                != null
-                        && mActivityTestRule.getActivity()
-                                   .getTabModelSelector()
-                                   .getTabModelFilterProvider()
-                                   .getCurrentTabModelFilter()
-                                   .isTabModelRestored());
+        CriteriaHelper.pollUiThread(
+                mActivityTestRule.getActivity().getTabModelSelector()::isTabStateInitialized);
     }
 
     /**

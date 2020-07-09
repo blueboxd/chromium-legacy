@@ -63,7 +63,7 @@ bool AddShellLink(Microsoft::WRL::ComPtr<IObjectCollection> collection,
   // shortcut which doesn't have titles.
   // So, we should use the IPropertyStore interface to set its title.
   Microsoft::WRL::ComPtr<IPropertyStore> property_store;
-  result = link.CopyTo(property_store.GetAddressOf());
+  result = link.As(&property_store);
   if (FAILED(result))
     return false;
 
@@ -187,7 +187,7 @@ bool JumpListUpdater::AddTasks(const ShellLinkItemList& link_items) {
   // interface to retrieve each item in the list. So, we retrieve the
   // IObjectArray interface from the EnumerableObjectCollection object.
   Microsoft::WRL::ComPtr<IObjectArray> object_array;
-  result = collection.CopyTo(object_array.GetAddressOf());
+  result = collection.As(&object_array);
   if (FAILED(result))
     return false;
 
@@ -235,7 +235,7 @@ bool JumpListUpdater::AddCustomCategory(const base::string16& category_name,
   // It seems the ICustomDestinationList::AppendCategory() function just
   // replaces all items in the given category with the ones in the new list.
   Microsoft::WRL::ComPtr<IObjectArray> object_array;
-  result = collection.CopyTo(object_array.GetAddressOf());
+  result = collection.As(&object_array);
   if (FAILED(result))
     return false;
 

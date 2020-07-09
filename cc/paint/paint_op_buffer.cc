@@ -365,12 +365,14 @@ PaintOp::DeserializeOptions::DeserializeOptions(
     ServicePaintCache* paint_cache,
     SkStrikeClient* strike_client,
     std::vector<uint8_t>* scratch_buffer,
-    bool is_privileged)
+    bool is_privileged,
+    SharedImageProvider* shared_image_provider)
     : transfer_cache(transfer_cache),
       paint_cache(paint_cache),
       strike_client(strike_client),
       scratch_buffer(scratch_buffer),
-      is_privileged(is_privileged) {
+      is_privileged(is_privileged),
+      shared_image_provider(shared_image_provider) {
   DCHECK(scratch_buffer);
 }
 

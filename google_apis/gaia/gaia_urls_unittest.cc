@@ -333,7 +333,7 @@ TEST_F(GaiaUrlsTest, InitializeFromConfig_AllUrls) {
   EXPECT_EQ(gaia_urls()->reauth_api_url().spec(),
             "https://www.exampleapis.com/reauth/v1beta/users/");
   EXPECT_EQ(gaia_urls()->gaia_login_form_realm().spec(),
-            "https://accounts.example.com/");
+            "https://accounts.example.com/LoginFormRealm");
 }
 
 TEST_F(GaiaUrlsTest, InitializeFromConfig_AllBaseUrls) {

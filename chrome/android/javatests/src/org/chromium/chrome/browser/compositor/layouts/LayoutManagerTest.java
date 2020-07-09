@@ -684,10 +684,8 @@ public class LayoutManagerTest implements MockTabModelDelegate {
 
     private void launchedChromeAndEnterTabSwitcher() {
         mActivityTestRule.startMainActivityOnBlankPage();
-        CriteriaHelper.pollUiThread(mActivityTestRule.getActivity()
-                                            .getTabModelSelector()
-                                            .getTabModelFilterProvider()
-                                            .getCurrentTabModelFilter()::isTabModelRestored);
+        CriteriaHelper.pollUiThread(
+                mActivityTestRule.getActivity().getTabModelSelector()::isTabStateInitialized);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             LayoutManagerChrome layoutManager = mActivityTestRule.getActivity().getLayoutManager();

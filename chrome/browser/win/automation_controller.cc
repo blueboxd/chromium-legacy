@@ -297,7 +297,7 @@ AutomationController::Context::GetEventHandler() {
     HRESULT result = ATL::CComObject<EventHandler>::CreateInstance(&obj);
     if (SUCCEEDED(result)) {
       obj->Initialize(automation_, ref_counted_delegate_);
-      obj->QueryInterface(event_handler_.GetAddressOf());
+      obj->QueryInterface(IID_PPV_ARGS(&event_handler_));
     }
   }
   return event_handler_;
@@ -307,7 +307,7 @@ Microsoft::WRL::ComPtr<IUIAutomationEventHandler>
 AutomationController::Context::GetAutomationEventHandler() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Microsoft::WRL::ComPtr<IUIAutomationEventHandler> handler;
-  GetEventHandler().CopyTo(handler.GetAddressOf());
+  GetEventHandler().As(&handler);
   return handler;
 }
 
@@ -315,7 +315,7 @@ Microsoft::WRL::ComPtr<IUIAutomationFocusChangedEventHandler>
 AutomationController::Context::GetFocusChangedEventHandler() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Microsoft::WRL::ComPtr<IUIAutomationFocusChangedEventHandler> handler;
-  GetEventHandler().CopyTo(handler.GetAddressOf());
+  GetEventHandler().As(&handler);
   return handler;
 }
 
@@ -326,8 +326,7 @@ HRESULT AutomationController::Context::InstallObservers() {
   // Create a cache request so that elements received by way of events contain
   // all data needed for processing.
   Microsoft::WRL::ComPtr<IUIAutomationCacheRequest> cache_request;
-  HRESULT result =
-      automation_->CreateCacheRequest(cache_request.GetAddressOf());
+  HRESULT result = automation_->CreateCacheRequest(&cache_request);
   if (FAILED(result))
     return result;
   ConfigureCacheRequestForLogging(cache_request.Get());
@@ -341,7 +340,7 @@ HRESULT AutomationController::Context::InstallObservers() {
 
   // Observe invocations.
   Microsoft::WRL::ComPtr<IUIAutomationElement> desktop;
-  result = automation_->GetRootElement(desktop.GetAddressOf());
+  result = automation_->GetRootElement(&desktop);
   if (desktop) {
     result = automation_->AddAutomationEventHandler(
         UIA_Invoke_InvokedEventId, desktop.Get(), TreeScope_Subtree,

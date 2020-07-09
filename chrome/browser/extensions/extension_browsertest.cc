@@ -438,7 +438,7 @@ const Extension* ExtensionBrowserTest::LoadAndLaunchApp(
   params.command_line = *base::CommandLine::ForCurrentProcess();
   apps::AppServiceProxyFactory::GetForProfile(profile())
       ->BrowserAppLauncher()
-      .LaunchAppWithParams(params);
+      ->LaunchAppWithParams(params);
   app_loaded_observer.Wait();
 
   return app;

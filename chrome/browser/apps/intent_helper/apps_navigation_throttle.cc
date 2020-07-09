@@ -580,7 +580,7 @@ bool AppsNavigationThrottle::CaptureExperimentalTabStripWebAppScopeNavigations(
   launch_params.override_url = handle->GetURL();
   apps::AppServiceProxyFactory::GetForProfile(profile)
       ->BrowserAppLauncher()
-      .LaunchAppWithParams(launch_params);
+      ->LaunchAppWithParams(launch_params);
   return true;
 }
 

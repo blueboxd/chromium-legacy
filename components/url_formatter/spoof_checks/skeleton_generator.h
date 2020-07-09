@@ -34,7 +34,7 @@ using Skeletons = base::flat_set<std::string>;
 // can be detected than would be by using plain ICU API.
 class SkeletonGenerator {
  public:
-  SkeletonGenerator(const USpoofChecker* checker);
+  explicit SkeletonGenerator(const USpoofChecker* checker);
   ~SkeletonGenerator();
 
   // Returns the set of skeletons for the |hostname|. For IDN, |hostname| must

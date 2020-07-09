@@ -49,7 +49,8 @@ TestOptionsProvider::TestOptionsProvider()
                            &service_paint_cache_,
                            &strike_client_,
                            &scratch_buffer_,
-                           true) {}
+                           true,
+                           nullptr) {}
 
 TestOptionsProvider::~TestOptionsProvider() = default;
 

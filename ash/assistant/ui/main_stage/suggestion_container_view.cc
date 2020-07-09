@@ -176,12 +176,7 @@ void SuggestionContainerView::OnConversationStartersChanged(
     return;
 
   RemoveAllViews();
-
-  std::vector<const AssistantSuggestion*> conversation_starters_ptrs;
-  for (const auto& conversation_starter : conversation_starters)
-    conversation_starters_ptrs.push_back(&conversation_starter);
-
-  OnSuggestionsAdded(conversation_starters_ptrs);
+  OnSuggestionsAdded(conversation_starters);
 }
 
 std::unique_ptr<ElementAnimator> SuggestionContainerView::HandleSuggestion(

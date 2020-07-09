@@ -47,9 +47,10 @@ ALWAYS_INLINE PartitionPage<thread_safe>* PartitionDirectMap(
   map_size &= kPageAllocationGranularityBaseMask;
 
   char* ptr = nullptr;
-  // Allocate outside of GigaCage if tags aren't used. CheckedPtr uses
-  // a GigaCage check to determine the tag existence.
-  if (root->tag_pointers && IsPartitionAllocGigaCageEnabled()) {
+  // Allocate from GigaCage, if enabled. However, the exception to this is when
+  // tags aren't allowed, as CheckedPtr assumes that everything inside GigaCage
+  // uses tags (specifically, inside the GigaCage's normal bucket pool).
+  if (root->allow_extras && IsPartitionAllocGigaCageEnabled()) {
 #if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
     ptr = internal::AddressPoolManager::GetInstance()->Alloc(GetDirectMapPool(),
                                                              map_size);
@@ -247,9 +248,10 @@ ALWAYS_INLINE void* PartitionBucket<thread_safe>::AllocNewSlotSpan(
   // architectures.
   char* requested_address = root->next_super_page;
   char* super_page = nullptr;
-  // Allocate outside of GigaCage if tags aren't used. CheckedPtr uses
-  // a GigaCage check to determine the tag existence.
-  if (root->tag_pointers && IsPartitionAllocGigaCageEnabled()) {
+  // Allocate from GigaCage, if enabled. However, the exception to this is when
+  // tags aren't allowed, as CheckedPtr assumes that everything inside GigaCage
+  // uses tags (specifically, inside the GigaCage's normal bucket pool).
+  if (root->allow_extras && IsPartitionAllocGigaCageEnabled()) {
 #if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
     super_page = AddressPoolManager::GetInstance()->Alloc(GetNormalBucketPool(),
                                                           kSuperPageSize);

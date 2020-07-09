@@ -27,6 +27,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Unit tests for WebViewCrashLogParser.
@@ -42,11 +43,12 @@ public class WebViewCrashLogParserTest {
     public TemporaryFolder mTestLogDir = new TemporaryFolder();
 
     // Write the given string to a new file in the temp test folder.
-    private void writeLogFile(String fileName, String content) throws IOException {
+    private File writeLogFile(String fileName, String content) throws IOException {
         File logFile = mTestLogDir.newFile(fileName);
         FileWriter writer = new FileWriter(logFile);
         writer.write(content);
         writer.close();
+        return logFile;
     }
 
     @Test
@@ -85,5 +87,32 @@ public class WebViewCrashLogParserTest {
         List<CrashInfo> crashInfoList =
                 new WebViewCrashLogParser(new File("non_exsiting_dir")).loadCrashesInfo();
         Assert.assertThat(crashInfoList, empty());
+    }
+
+    @Test
+    @MediumTest
+    public void testdeleteOldFiles() throws Exception {
+        final long oldTimeStamp =
+                System.currentTimeMillis() - TimeUnit.MILLISECONDS.convert(30, TimeUnit.DAYS);
+        File oldFile1 = writeLogFile("crash_file_crash1.json",
+                "{'crash-local-id':'crash1','app-package-name':'test.package'}");
+        oldFile1.setLastModified(oldTimeStamp);
+        File oldFile2 = writeLogFile("crash_file_crash2.json",
+                "{'crash-local-id':'crash2','app-package-name':'test.package'}");
+        oldFile2.setLastModified(oldTimeStamp - 1000);
+        File newFile = writeLogFile("crash_file_crash3.json",
+                "{'crash-local-id':'crash3','app-package-name':'test.package'}");
+
+        List<CrashInfo> crashInfoList =
+                new WebViewCrashLogParser(mTestLogDir.getRoot()).loadCrashesInfo();
+        Assert.assertEquals(1, crashInfoList.size());
+        Assert.assertEquals("crash3", crashInfoList.get(0).localId);
+
+        Assert.assertFalse(
+                "Log file should be deleted because it's more than 30 days old", oldFile1.exists());
+        Assert.assertFalse(
+                "Log file should be deleted because it's more than 30 days old", oldFile2.exists());
+        Assert.assertTrue("Log file should not be deleted because it's less than 30 days old",
+                newFile.exists());
     }
 }

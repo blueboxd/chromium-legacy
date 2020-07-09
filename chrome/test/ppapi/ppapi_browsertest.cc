@@ -2289,7 +2289,7 @@ class PackagedAppTest : public extensions::ExtensionBrowserTest {
     params.command_line = *base::CommandLine::ForCurrentProcess();
     apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
         ->BrowserAppLauncher()
-        .LaunchAppWithParams(params);
+        ->LaunchAppWithParams(params);
   }
 
   void RunTests(const std::string& extension_dirname) {

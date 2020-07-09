@@ -103,7 +103,7 @@ void WebAppShimManagerDelegate::LaunchApp(
   params.launch_files = files;
   apps::AppServiceProxyFactory::GetForProfile(profile)
       ->BrowserAppLauncher()
-      .LaunchAppWithParams(params);
+      ->LaunchAppWithParams(params);
 }
 
 void WebAppShimManagerDelegate::LaunchShim(

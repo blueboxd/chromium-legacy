@@ -3,8 +3,7 @@
 <script src="../resources/testharnessreport.js"></script>
 
 <p id="paragraph">
-  The <b id="quick">quick</b> brown fox
-  <br>
+  The <b id="quick">quick</b> brown fox<br>
   jumps over the lazy <b id="dog">dog</b>.
 </p>
 
@@ -35,8 +34,7 @@
 <div id="multilineInline" contenteditable="true">
   This is a
   <span style="outline-style: solid">
-    test with a
-    <br>
+    test with a<br>
     second
   </span>
   line.
@@ -45,8 +43,7 @@
 <div id="anonymousMultilineInline" contenteditable="true">
   This is a
   <span aria-invalid="grammar">
-    test with a
-    <br>
+    test with a<br>
     second
   </span>
   line.
@@ -68,7 +65,7 @@ test(() => {
     lastInlineText = axObj;
     axObj = axObj.nextOnLine();
   }
-  assert_array_equals(lineText, ['The ', 'quick', ' brown fox ']);
+  assert_array_equals(lineText, ['The ', 'quick', ' brown fox', '\n']);
 
   // Now walk backwards.
   lineText = [];
@@ -78,7 +75,7 @@ test(() => {
     lineText.unshift(axObj.name.replace('AXValue: ', ''));
     axObj = axObj.previousOnLine();
   }
-  assert_array_equals(lineText, ['The ', 'quick', ' brown fox ']);
+  assert_array_equals(lineText, ['The ', 'quick', ' brown fox', '\n']);
 }, 'Test |NextOnLine| and |PreviousOnLine| on |AXInlineTextBox|.');
 
 test(() => {
@@ -197,6 +194,7 @@ test(() => {
   // Both the inline text box, as well as its static text parent, should be pointing to the same "previousOnLine".
   assert_equals(axObj.parentElement().previousOnLine(), axObj.previousOnLine());
   axObj = axObj.previousOnLine();
+  axObj = axObj.parentElement().parentElement();
   assert_equals(axObj.role, 'AXRole: AXListMarker');
   lineText.push(axObj.name);
   assert_array_equals(lineText, ['1. ', 'List item', '1. ']);
@@ -215,6 +213,7 @@ test(() => {
   assert_equals(axObj.role, 'AXRole: AXButton');
   lineText.push(axObj.name);
   axObj = axObj.previousOnLine();
+  axObj = axObj.parentElement().parentElement();
   assert_equals(axObj.role, 'AXRole: AXListMarker');
   lineText.push(axObj.name);
   assert_array_equals(lineText, ['2. ', 'button', '2. ']);
@@ -222,11 +221,28 @@ test(() => {
 
 test(() => {
   let axObj = accessibilityController.accessibleElementById('multilineInline');
+
+  // The tree is:
+  //   [0] AXStaticText "This is a "
+  //     AXInlineTextBox "This is a "
+  //   [1] AXStaticText "test with a"
+  //     AXInlineTextBox "test with a"
+  //   [2] AXLineBreak "\n"
+  //     AXInlineTextBox "\n"
+  //   [3] AXStaticText "second "
+  //     AXInlineTextBox "second "
+  //   [4] AXStaticText "line."
+  //     AXInlineTextBox "line."
   // There should be 5 static text children in this contenteditable.
   // The span is not in the accessibility tree at all.
   assert_equals(axObj.childrenCount, 5);
+
+  const lineBreak = axObj.childAtIndex(2);
+  assert_equals(lineBreak.role, 'AXRole: AXLineBreak');
+
   axObj = axObj.childAtIndex(0);
   assert_equals(axObj.role, 'AXRole: AXStaticText');
+
 
   //
   // Test first line.
@@ -243,17 +259,21 @@ test(() => {
   axObj = axObj.nextOnLine();
   assert_equals(axObj.role, 'AXRole: AXInlineTextBox');
   lineText.push(axObj.name);
-  assert_equals(axObj.parentElement().nextOnLine(), undefined);
-  assert_equals(axObj.nextOnLine(), undefined);
+  assert_equals(axObj.parentElement().nextOnLine(), lineBreak.childAtIndex(0),
+                '"text with a".name.parentElement().nextOnLine()');
+  assert_equals(axObj.nextOnLine(), lineBreak.childAtIndex(0),
+                '"text with a".name.nextOnLine()');
 
   assert_equals(axObj.parentElement().previousOnLine(), axObj.previousOnLine());
   axObj = axObj.previousOnLine();
   assert_equals(axObj.role, 'AXRole: AXInlineTextBox');
   lineText.push(axObj.name);
-  assert_equals(axObj.parentElement().previousOnLine(), undefined);
-  assert_equals(axObj.previousOnLine(), undefined);
+  assert_equals(axObj.parentElement().previousOnLine(), undefined,
+                '"This is a ".name.parentElement().nextOnLine()');
+  assert_equals(axObj.previousOnLine(), undefined,
+                '"This is a ".name.nextOnLine()');
 
-  assert_array_equals(lineText, ['This is a ', 'test with a ', 'This is a ']);
+  assert_array_equals(lineText, ['This is a ', 'test with a', 'This is a ']);
 
   //
   // Test second line.
@@ -289,11 +309,27 @@ test(() => {
 
 test(() => {
   let axEditable = accessibilityController.accessibleElementById('anonymousMultilineInline');
+  // The tree is:
+  //  [0] AXStaticText "This is a "
+  //    AXInlineTextBox "This is a "
+  //  [1] AXGenericContainer ""
+  //    AXStaticText "test with a"
+  //      AXInlineTextBox "test with a"
+  //    AXLineBreak "\n"
+  //      AXInlineTextBox "\n"
+  //    AXStaticText "second "
+  //      AXInlineTextBox "second "
+  //  [2] AXStaticText "line."
+  //    AXInlineTextBox "line."
+
   // There should be two static text objects and a span.
   // The span, represented by a generic container, should be the second child.
   assert_equals(axEditable.childrenCount, 3);
   axObj = axEditable.childAtIndex(0);
   assert_equals(axObj.role, 'AXRole: AXStaticText');
+
+  const lineBreak = axEditable.childAtIndex(1).childAtIndex(1);
+  assert_equals(lineBreak.role, 'AXRole: AXLineBreak');
 
   //
   // Test first line.
@@ -310,21 +346,27 @@ test(() => {
   axObj = axObj.nextOnLine();
   assert_equals(axObj.role, 'AXRole: AXInlineTextBox');
   lineText.push(axObj.name);
-  assert_equals(axObj.parentElement().nextOnLine(), undefined);
-  assert_equals(axObj.nextOnLine(), undefined);
-
+  assert_equals(axObj.parentElement().nextOnLine(), lineBreak.childAtIndex(0),
+                '"This is a ".axObj.parentElement().nextOnLine()');
+  assert_equals(axObj.nextOnLine(), lineBreak.childAtIndex(0),
+                '"This is a ".axObj.nextOnLine()');
   // The span should also be connected to the inline text box that starts the first line.
   assert_equals(axEditable.childAtIndex(1).role, 'AXRole: AXGenericContainer');
-  assert_equals(axEditable.childAtIndex(1).previousOnLine(), axObj.previousOnLine());
-
-  assert_equals(axObj.parentElement().previousOnLine(), axObj.previousOnLine());
+  assert_equals(axObj.previousOnLine(),
+                axEditable.childAtIndex(0).childAtIndex(0),
+                'axEditable.childAtIndex(1).previousOnLine()');
+  assert_equals(axObj.parentElement().previousOnLine(), axObj.previousOnLine(),
+                '"test with a".parentElement().previousOnLine()');
   axObj = axObj.previousOnLine();
   assert_equals(axObj.role, 'AXRole: AXInlineTextBox');
   lineText.push(axObj.name);
-  assert_equals(axObj.parentElement().previousOnLine(), undefined);
-  assert_equals(axObj.previousOnLine(), undefined);
+  assert_equals(axObj.parentElement().previousOnLine(),
+                undefined,
+                '"This is a ".parentElement().previousOnLine()');
+  assert_equals(axObj.previousOnLine(), undefined,
+                '"This is a ".previousOnLine()');
 
-  assert_array_equals(lineText, ['This is a ', 'test with a ', 'This is a ']);
+  assert_array_equals(lineText, ['This is a ', 'test with a', 'This is a ']);
 
   //
   // Test second line.
@@ -339,22 +381,31 @@ test(() => {
   // should be connected to the same inline text box as their "previousOnLine".
   assert_equals(axObj.childrenCount, 1);
   assert_equals(axObj.childAtIndex(0).role, 'AXRole: AXInlineTextBox');
-  assert_equals(axObj.childAtIndex(0).previousOnLine(), axObj.previousOnLine());
+  assert_equals(axObj.childAtIndex(0).previousOnLine(), axObj.previousOnLine(),
+               '"line".childAtIndex(0).previousOnLine()');
 
   axObj = axObj.previousOnLine();
   assert_equals(axObj.role, 'AXRole: AXInlineTextBox');
   lineText.push(axObj.name);
-  assert_equals(axObj.parentElement().previousOnLine(), undefined);
-  assert_equals(axObj.previousOnLine(), undefined);
+  assert_equals(axObj.parentElement().previousOnLine(), undefined,
+                '"second ".parentElement().previousOnLine()');
+  assert_equals(axObj.previousOnLine(), undefined,
+                '"second ".previousOnLine()');
 
   // The span should also be connected to the inline text box that ends the second line.
-  assert_equals(axEditable.childAtIndex(1).nextOnLine(), axObj.nextOnLine());
-  assert_equals(axObj.parentElement().nextOnLine(), axObj.nextOnLine());
+  assert_equals(axObj.nextOnLine(), axEditable.childAtIndex(2).childAtIndex(0),
+                '"second ".nextOnLine()');
+  assert_equals(axObj.parentElement().nextOnLine(),
+                axEditable.childAtIndex(2).childAtIndex(0),
+                '"second ".parentElement().nextOnLine()');
+
   axObj = axObj.nextOnLine();
   assert_equals(axObj.role, 'AXRole: AXInlineTextBox');
   lineText.push(axObj.name);
-  assert_equals(axObj.parentElement().nextOnLine(), undefined);
-  assert_equals(axObj.nextOnLine(), undefined);
+  assert_equals(axObj.parentElement().nextOnLine(), undefined,
+                '"line.".parentElement().nextOnLine()');
+  assert_equals(axObj.nextOnLine(), undefined,
+                '"line.".nextOnLine()');
 
   assert_array_equals(lineText, ['line.', 'second ', 'line.']);
 }, 'Test |NextOnLine| and |PreviousOnLine| on anonymous multiline inline elements.');

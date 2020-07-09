@@ -2422,9 +2422,6 @@ class DownloadItemDestinationUpdateRaceTest
 
   DownloadItemImpl* item_;
   std::unique_ptr<MockDownloadFile> file_;
-
-  base::queue<base::Closure> successful_update_events_;
-  base::queue<base::Closure> failing_update_events_;
 };
 
 INSTANTIATE_TEST_SUITE_P(Success,

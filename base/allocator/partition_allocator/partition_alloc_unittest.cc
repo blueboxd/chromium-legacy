@@ -130,7 +130,7 @@ namespace base {
 namespace internal {
 
 const size_t kTestAllocSize = 16;
-#if !DCHECK_IS_ON() || BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#if !DCHECK_IS_ON()
 const size_t kPointerOffset = kPartitionTagSize;
 const size_t kExtraAllocSize = kPartitionTagSize;
 #else
@@ -2386,22 +2386,21 @@ TEST_F(PartitionAllocTest, Alignment) {
     // rounded up to the nearest bucket size, then have an address of the form:
     //
     // (page-aligned address) + i * bucket_size.
-#if DCHECK_IS_ON() || ENABLE_TAG_FOR_CHECKED_PTR2
-    // When DCHECK_IS_ON(), a kCookieSize (16) cookie is added on both sides
-    // before rounding up the allocation size. The returned pointer points after
-    // the cookie.
-    //
-    // When ENABLED_CHECKED_PTR, a kPartitionTagSize (16) is added
-    // before rounding up the allocation size. The returned pointer points after
-    // the partition tag.
-    //
-    // All in all, a power-of-two allocation is aligned on
-    // min(16, requested_size).
-    size_t expected_alignment = std::min(size, static_cast<size_t>(16));
-#else
+
     // All powers of two are bucket sizes, meaning that all power of two
     // allocations smaller than a page will be aligned on the allocation size.
     size_t expected_alignment = size;
+#if DCHECK_IS_ON()
+    // When DCHECK_IS_ON(), a kCookieSize cookie is added on both sides before
+    // rounding up the allocation size. The returned pointer points after the
+    // cookie.
+    expected_alignment = std::min(expected_alignment, kCookieSize);
+#endif
+#if ENABLE_TAG_FOR_CHECKED_PTR2
+    // When ENABLE_TAG_FOR_CHECKED_PTR2, a kPartitionTagSize is added before
+    // rounding up the allocation size. The returned pointer points after the
+    // partition tag.
+    expected_alignment = std::min({expected_alignment, kPartitionTagSize});
 #endif
     for (int index = 0; index < 3; index++) {
       void* ptr = allocator.root()->Alloc(size, "");
@@ -2443,7 +2442,6 @@ TEST_F(PartitionAllocTest, FundamentalAlignment) {
   }
 }
 
-#if !ENABLE_PARTITION_ALLOC_COOKIES
 TEST_F(PartitionAllocTest, AlignedAllocations) {
   size_t alloc_sizes[] = {1, 10, 100, 1000, 100000, 1000000};
   size_t alignemnts[] = {8, 16, 32, 64, 1024, 4096};
@@ -2457,7 +2455,6 @@ TEST_F(PartitionAllocTest, AlignedAllocations) {
     }
   }
 }
-#endif  // !ENABLE_PARTITION_ALLOC_COOKIES
 
 #if ENABLE_TAG_FOR_CHECKED_PTR2
 

@@ -15,6 +15,7 @@
 #include "cc/paint/paint_op_buffer_serializer.h"
 #include "cc/paint/paint_shader.h"
 #include "cc/paint/transfer_cache_serialize_helper.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/skia/include/core/SkSerialProcs.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 #include "third_party/skia/src/core/SkRemoteGlyphCache.h"
@@ -265,11 +266,9 @@ void PaintOpWriter::Write(const DrawImage& draw_image,
   DCHECK(decoded_draw_image.src_rect_offset().isEmpty())
       << "We shouldn't ask for image subsets";
 
-  base::Optional<uint32_t> id = decoded_draw_image.transfer_cache_entry_id();
   *scale_adjustment = decoded_draw_image.scale_adjustment();
-  // In the case of a decode failure, id may not be set. Send an invalid ID.
-  WriteImage(id.value_or(kInvalidImageTransferCacheEntryId),
-             decoded_draw_image.transfer_cache_entry_needs_mips());
+
+  WriteImage(decoded_draw_image);
 }
 
 // Android does not use skottie. Remove below section to keep binary size to a
@@ -301,6 +300,18 @@ void PaintOpWriter::Write(scoped_refptr<SkottieWrapper> skottie) {
 }
 #endif  // !defined(OS_ANDROID)
 
+void PaintOpWriter::WriteImage(const DecodedDrawImage& decoded_draw_image) {
+  if (!decoded_draw_image.mailbox().IsZero()) {
+    WriteImage(decoded_draw_image.mailbox());
+    return;
+  }
+
+  base::Optional<uint32_t> id = decoded_draw_image.transfer_cache_entry_id();
+  // In the case of a decode failure, id may not be set. Send an invalid ID.
+  WriteImage(id.value_or(kInvalidImageTransferCacheEntryId),
+             decoded_draw_image.transfer_cache_entry_needs_mips());
+}
+
 void PaintOpWriter::WriteImage(uint32_t transfer_cache_entry_id,
                                bool needs_mips) {
   if (transfer_cache_entry_id == kInvalidImageTransferCacheEntryId) {
@@ -312,6 +323,20 @@ void PaintOpWriter::WriteImage(uint32_t transfer_cache_entry_id,
       static_cast<uint8_t>(PaintOp::SerializedImageType::kTransferCacheEntry));
   Write(transfer_cache_entry_id);
   Write(needs_mips);
+}
+
+void PaintOpWriter::WriteImage(const gpu::Mailbox& mailbox) {
+  DCHECK(!mailbox.IsZero());
+
+  Write(static_cast<uint8_t>(PaintOp::SerializedImageType::kMailbox));
+
+  EnsureBytes(sizeof(mailbox.name));
+  if (!valid_)
+    return;
+
+  memcpy(memory_, mailbox.name, sizeof(mailbox.name));
+  memory_ += sizeof(mailbox.name);
+  remaining_bytes_ -= sizeof(mailbox.name);
 }
 
 void PaintOpWriter::Write(const sk_sp<SkData>& data) {
@@ -387,7 +412,8 @@ sk_sp<PaintShader> PaintOpWriter::TransformShaderIfNecessary(
     SkFilterQuality quality,
     uint32_t* paint_image_transfer_cache_entry_id,
     gfx::SizeF* paint_record_post_scale,
-    bool* paint_image_needs_mips) {
+    bool* paint_image_needs_mips,
+    gpu::Mailbox* mailbox_out) {
   DCHECK(!enable_security_constraints_);
 
   const auto type = original->shader_type();
@@ -397,7 +423,8 @@ sk_sp<PaintShader> PaintOpWriter::TransformShaderIfNecessary(
     if (!original->paint_image().IsPaintWorklet()) {
       return original->CreateDecodedImage(ctm, quality, options_.image_provider,
                                           paint_image_transfer_cache_entry_id,
-                                          &quality, paint_image_needs_mips);
+                                          &quality, paint_image_needs_mips,
+                                          mailbox_out);
     }
     sk_sp<PaintShader> record_shader =
         original->CreatePaintWorkletRecord(options_.image_provider);
@@ -426,11 +453,12 @@ void PaintOpWriter::Write(const PaintShader* shader, SkFilterQuality quality) {
   uint32_t paint_image_transfer_cache_id = kInvalidImageTransferCacheEntryId;
   gfx::SizeF paint_record_post_scale(1.f, 1.f);
   bool paint_image_needs_mips = false;
+  gpu::Mailbox mailbox;
 
   if (!enable_security_constraints_ && shader) {
     transformed_shader = TransformShaderIfNecessary(
         shader, quality, &paint_image_transfer_cache_id,
-        &paint_record_post_scale, &paint_image_needs_mips);
+        &paint_record_post_scale, &paint_image_needs_mips, &mailbox);
     shader = transformed_shader.get();
   }
 
@@ -474,7 +502,10 @@ void PaintOpWriter::Write(const PaintShader* shader, SkFilterQuality quality) {
     DCHECK_EQ(scale_adjustment.width(), 1.f);
     DCHECK_EQ(scale_adjustment.height(), 1.f);
   } else {
-    WriteImage(paint_image_transfer_cache_id, paint_image_needs_mips);
+    if (!mailbox.IsZero())
+      WriteImage(mailbox);
+    else
+      WriteImage(paint_image_transfer_cache_id, paint_image_needs_mips);
   }
 
   if (shader->record_) {

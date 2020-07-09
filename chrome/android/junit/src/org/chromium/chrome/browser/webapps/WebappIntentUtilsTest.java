@@ -93,12 +93,12 @@ public class WebappIntentUtilsTest {
     }
 
     /**
-     * Test that {@link WebappIntentUtils#copyWebappLaunchIntentExtras()} does not copy non white
+     * Test that {@link WebappIntentUtils#copyWebappLaunchIntentExtras()} does not copy non allow
      * listed intent extras.
      */
     @Test
-    public void testCopyWebappLaunchIntentExtrasWhitelist() {
-        final String extraKey = "not_in_whitelist";
+    public void testCopyWebappLaunchIntentExtrasAllowlist() {
+        final String extraKey = "not_in_allowlist";
         Intent fromIntent = new Intent();
         fromIntent.putExtra(extraKey, "random");
         Intent toIntent = new Intent();
@@ -112,14 +112,14 @@ public class WebappIntentUtilsTest {
      */
     @Test
     public void testCopyWebappLaunchIntentExtrasDoesNotModifyFromIntent() {
-        final String notInWhitelistKey = "not_in_whitelist";
+        final String notInAllowlistKey = "not_in_allowlist";
         Intent fromIntent = new Intent();
         fromIntent.putExtra(ShortcutHelper.EXTRA_NAME, "name");
-        fromIntent.putExtra(notInWhitelistKey, "random");
+        fromIntent.putExtra(notInAllowlistKey, "random");
         Intent toIntent = new Intent();
         WebappIntentUtils.copyWebappLaunchIntentExtras(fromIntent, toIntent);
         assertEquals("name", fromIntent.getStringExtra(ShortcutHelper.EXTRA_NAME));
-        assertEquals("random", fromIntent.getStringExtra(notInWhitelistKey));
+        assertEquals("random", fromIntent.getStringExtra(notInAllowlistKey));
         assertEquals("name", toIntent.getStringExtra(ShortcutHelper.EXTRA_NAME));
     }
 }

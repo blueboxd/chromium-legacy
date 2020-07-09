@@ -12,13 +12,13 @@ namespace {
 
 base::ThreadSafePartitionRoot& Allocator() {
   static base::NoDestructor<base::ThreadSafePartitionRoot> allocator;
-  allocator->Init(true /* enable_tag_pointers */);
+  allocator->Init(false /* enforce_alignment */);
   return *allocator;
 }
 
 base::ThreadSafePartitionRoot& AlignedAllocator() {
   static base::NoDestructor<base::ThreadSafePartitionRoot> allocator;
-  allocator->Init(false /* enable_tag_pointers */);
+  allocator->Init(true /* enforce_alignment */);
   return *allocator;
 }
 

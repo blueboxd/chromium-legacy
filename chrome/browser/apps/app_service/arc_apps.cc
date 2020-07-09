@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/app_menu_constants.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
@@ -20,8 +21,10 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/arc_apps_factory.h"
 #include "chrome/browser/apps/app_service/dip_px_util.h"
+#include "chrome/browser/apps/app_service/file_utils.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -32,6 +35,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/intent_helper/intent_constants.h"
 #include "components/arc/mojom/app_permissions.mojom.h"
+#include "components/arc/mojom/file_system.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
@@ -201,7 +205,6 @@ arc::mojom::IntentInfoPtr CreateArcIntent(apps::mojom::IntentPtr intent) {
   if (!intent->url.has_value()) {
     return arc_intent;
   }
-
   arc_intent = arc::mojom::IntentInfo::New();
   if (intent->action.has_value()) {
     if (intent->action.value() == apps_util::kIntentActionView) {
@@ -477,6 +480,64 @@ bool ShouldSkipFilter(const arc::IntentFilter& arc_intent_filter) {
                      });
 }
 
+arc::mojom::ActionType GetArcActionType(const std::string& action) {
+  if (action == apps_util::kIntentActionView) {
+    return arc::mojom::ActionType::VIEW;
+  } else if (action == apps_util::kIntentActionSend) {
+    return arc::mojom::ActionType::SEND;
+  } else if (action == apps_util::kIntentActionSendMultiple) {
+    return arc::mojom::ActionType::SEND_MULTIPLE;
+  } else {
+    return arc::mojom::ActionType::VIEW;
+  }
+}
+
+// Constructs an OpenUrlsRequest to be passed to
+// FileSystemInstance.OpenUrlsWithPermission.
+arc::mojom::OpenUrlsRequestPtr ConstructOpenUrlsRequest(
+    const apps::mojom::IntentPtr& intent,
+    const arc::mojom::ActivityNamePtr& activity,
+    const std::vector<GURL>& content_urls) {
+  arc::mojom::OpenUrlsRequestPtr request = arc::mojom::OpenUrlsRequest::New();
+  request->action_type = GetArcActionType(intent->action.value());
+  request->activity_name = activity.Clone();
+  // Set activity name to empty to avoid launching the main activity.
+  request->activity_name->activity_name = "";
+  for (const auto& content_url : content_urls) {
+    arc::mojom::ContentUrlWithMimeTypePtr url_with_type =
+        arc::mojom::ContentUrlWithMimeType::New();
+    url_with_type->content_url = content_url;
+    url_with_type->mime_type = intent->mime_type.value();
+    request->urls.push_back(std::move(url_with_type));
+  }
+  return request;
+}
+
+void OnContentUrlResolved(apps::mojom::IntentPtr intent,
+                          arc::mojom::ActivityNamePtr activity,
+                          const std::vector<GURL>& content_urls) {
+  for (const auto& content_url : content_urls) {
+    if (!content_url.is_valid()) {
+      LOG(ERROR) << "Share files failed, file urls are not valid";
+      return;
+    }
+  }
+
+  auto* arc_service_manager = arc::ArcServiceManager::Get();
+  if (!arc_service_manager) {
+    return;
+  }
+
+  arc::mojom::FileSystemInstance* arc_file_system = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_service_manager->arc_bridge_service()->file_system(),
+      OpenUrlsWithPermission);
+  if (arc_file_system) {
+    arc_file_system->OpenUrlsWithPermission(
+        ConstructOpenUrlsRequest(intent, activity, content_urls),
+        base::DoNothing());
+  }
+}
+
 }  // namespace
 
 namespace apps {
@@ -658,17 +719,6 @@ void ArcApps::LaunchAppWithIntent(const std::string& app_id,
   UMA_HISTOGRAM_ENUMERATION("Arc.UserInteraction",
                             user_interaction_type.value());
 
-  auto* arc_service_manager = arc::ArcServiceManager::Get();
-  arc::mojom::IntentHelperInstance* instance = nullptr;
-  if (arc_service_manager) {
-    instance = ARC_GET_INSTANCE_FOR_METHOD(
-        arc_service_manager->arc_bridge_service()->intent_helper(),
-        HandleIntent);
-  }
-  if (!instance) {
-    return;
-  }
-
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
   if (!prefs) {
     return;
@@ -683,6 +733,32 @@ void ArcApps::LaunchAppWithIntent(const std::string& app_id,
   arc::mojom::ActivityNamePtr activity = arc::mojom::ActivityName::New();
   activity->package_name = app_info->package_name;
   activity->activity_name = app_info->activity;
+
+  // At the moment, the only case we have mime_type field set is to share
+  // files, in this case, convert the file urls to content urls and use
+  // arc file system instance to launch the app with files.
+  if (intent->mime_type.has_value()) {
+    if (!intent->file_urls.has_value()) {
+      LOG(ERROR) << "Share files failed, share intent is not valid";
+      return;
+    }
+    file_manager::util::ConvertToContentUrls(
+        apps::GetFileSystemURL(profile_, intent->file_urls.value()),
+        base::BindOnce(&OnContentUrlResolved, std::move(intent),
+                       std::move(activity)));
+    return;
+  }
+
+  auto* arc_service_manager = arc::ArcServiceManager::Get();
+  arc::mojom::IntentHelperInstance* instance = nullptr;
+  if (arc_service_manager) {
+    instance = ARC_GET_INSTANCE_FOR_METHOD(
+        arc_service_manager->arc_bridge_service()->intent_helper(),
+        HandleIntent);
+  }
+  if (!instance) {
+    return;
+  }
 
   auto arc_intent = CreateArcIntent(std::move(intent));
 

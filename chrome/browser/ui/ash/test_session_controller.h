@@ -72,6 +72,7 @@ class TestSessionController : public ash::SessionController {
       ash::SessionActivationObserver* observer) override;
   void AddObserver(ash::SessionObserver* observer) override;
   void RemoveObserver(ash::SessionObserver* observer) override;
+  bool IsScreenLocked() const override;
 
  private:
   base::Optional<ash::SessionInfo> last_session_info_;

@@ -10,12 +10,14 @@
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/values.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/chromeos/input_method/textinput_test_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -78,8 +80,14 @@ class TestObserver : public InputMethodEngineBase::Observer {
   void OnReset(const std::string& engine_id) override {}
   void OnSuggestionsChanged(
       const std::vector<std::string>& suggestions) override {}
+  void OnInputMethodOptionsChanged(const std::string& engine_id) override {
+    changed_engine_id_ = engine_id;
+  }
+  void ClearChangedEngineId() { changed_engine_id_ = ""; }
+  std::string GetChangedEngineId() { return changed_engine_id_; }
 
  private:
+  std::string changed_engine_id_ = "";
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
@@ -145,11 +153,17 @@ class NativeInputMethodEngineTest : public InProcessBrowserTest,
     ui::IMEBridge::Get()->SetCurrentEngineHandler(&engine_);
 
     auto observer = std::make_unique<TestObserver>();
+    observer_ = observer.get();
 
     profile_ = browser()->profile();
+    prefs_ = profile_->GetPrefs();
+    prefs_->Set(prefs::kLanguageInputMethodSpecificSettings,
+                base::DictionaryValue());
     engine_.Initialize(std::move(observer), "", profile_);
     InProcessBrowserTest::SetUpOnMainThread();
   }
+
+  void TearDown() override { engine_.Reset(); }
 
   void SetUpTextInput(chromeos::TextInputTestHelper& helper) {
     GURL url = ui_test_utils::GetTestUrl(
@@ -199,6 +213,8 @@ class NativeInputMethodEngineTest : public InProcessBrowserTest,
 
   chromeos::NativeInputMethodEngine engine_;
   Profile* profile_;
+  PrefService* prefs_;
+  TestObserver* observer_;
 
  private:
   ui::InputMethodChromeOS input_method_;
@@ -452,4 +468,24 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(1,
             user_action_tester.GetActionCount(
                 "ChromeOS.Settings.SmartInputs.PersonalInfoSuggestions.Open"));
+}
+
+IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest,
+                       FiresOnInputMethodOptionsChangedEvent) {
+  base::DictionaryValue settings;
+
+  // Add key will trigger event.
+  base::Value pinyin1(base::Value::Type::DICTIONARY);
+  pinyin1.SetBoolKey("foo", true);
+  settings.SetPath("pinyin", std::move(pinyin1));
+  prefs_->Set(prefs::kLanguageInputMethodSpecificSettings, settings);
+  EXPECT_EQ(observer_->GetChangedEngineId(), "pinyin");
+  observer_->ClearChangedEngineId();
+
+  // Change key will trigger event.
+  base::Value pinyin2(base::Value::Type::DICTIONARY);
+  pinyin2.SetBoolKey("foo", false);
+  settings.SetPath("pinyin", std::move(pinyin2));
+  prefs_->Set(prefs::kLanguageInputMethodSpecificSettings, settings);
+  EXPECT_EQ(observer_->GetChangedEngineId(), "pinyin");
 }

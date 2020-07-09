@@ -86,10 +86,8 @@ public class AdaptiveToolbarTest {
                 ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, isGridTabSwitcherEnabled);
         CachedFeatureFlags.setForTesting(ChromeFeatureList.CHROME_DUET, isBottomToolbarEnabled);
         mActivityTestRule.startMainActivityOnBlankPage();
-        CriteriaHelper.pollUiThread(mActivityTestRule.getActivity()
-                                            .getTabModelSelector()
-                                            .getTabModelFilterProvider()
-                                            .getCurrentTabModelFilter()::isTabModelRestored);
+        CriteriaHelper.pollUiThread(
+                mActivityTestRule.getActivity().getTabModelSelector()::isTabStateInitialized);
     }
 
     @Test

@@ -29,8 +29,7 @@ TrustedSourcesManagerWin::~TrustedSourcesManagerWin() = default;
 
 bool TrustedSourcesManagerWin::IsFromTrustedSource(const GURL& url) const {
   Microsoft::WRL::ComPtr<IInternetSecurityManager> security_manager;
-  HRESULT hr = ::CoInternetCreateSecurityManager(
-      NULL, security_manager.GetAddressOf(), NULL);
+  HRESULT hr = ::CoInternetCreateSecurityManager(NULL, &security_manager, NULL);
   // URLZONE_LOCAL_MACHINE 0
   // URLZONE_INTRANET      1
   // URLZONE_TRUSTED       2

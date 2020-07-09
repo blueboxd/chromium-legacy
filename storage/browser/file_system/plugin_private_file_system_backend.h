@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include <memory>
-#include <set>
 #include <string>
+#include <vector>
 
 #include "base/component_export.h"
 #include "base/macros.h"
@@ -110,13 +110,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) PluginPrivateFileSystemBackend
   void PerformStorageCleanupOnFileTaskRunner(FileSystemContext* context,
                                              QuotaManagerProxy* proxy,
                                              FileSystemType type) override;
-  void GetOriginsForTypeOnFileTaskRunner(
+  std::vector<url::Origin> GetOriginsForTypeOnFileTaskRunner(
+      FileSystemType type) override;
+  std::vector<url::Origin> GetOriginsForHostOnFileTaskRunner(
       FileSystemType type,
-      std::set<url::Origin>* origins) override;
-  void GetOriginsForHostOnFileTaskRunner(
-      FileSystemType type,
-      const std::string& host,
-      std::set<url::Origin>* origins) override;
+      const std::string& host) override;
   int64_t GetOriginUsageOnFileTaskRunner(FileSystemContext* context,
                                          const url::Origin& origin,
                                          FileSystemType type) override;

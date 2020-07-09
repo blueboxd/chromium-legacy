@@ -18,6 +18,10 @@ extern const char kNearbySharingEnabledPrefName[];
 extern const char kNearbySharingActiveProfilePrefName[];
 extern const char kNearbySharingBackgroundVisibilityName[];
 extern const char kNearbySharingDataUsageName[];
+extern const char kNearbySharingDeviceIdPrefName[];
+extern const char kNearbySharingDeviceNamePrefName[];
+extern const char kNearbySharingFullNamePrefName[];
+extern const char kNearbySharingIconUrlPrefName[];
 }  // namespace prefs
 
 void RegisterNearbySharingPrefs(user_prefs::PrefRegistrySyncable* registry);

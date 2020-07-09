@@ -154,6 +154,9 @@ void LoginDisplayMojo::ShowError(int error_msg_id,
   if (!webui_handler_)
     return;
 
+  if (!host_->IsOobeUIDialogVisible())
+    return;
+
   std::string error_text;
   switch (error_msg_id) {
     case IDS_LOGIN_ERROR_CAPTIVE_PORTAL:

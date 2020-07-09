@@ -1488,6 +1488,8 @@ std::unique_ptr<MenuButton> BookmarkBarView::CreateOverflowButton() {
   // Set accessibility name.
   button->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_BOOKMARKS_CHEVRON));
+  button->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OVERFLOW_BUTTON_TOOLTIP));
   return button;
 }
 

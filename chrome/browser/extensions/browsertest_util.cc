@@ -56,7 +56,7 @@ Browser* LaunchAppBrowser(Profile* profile, const Extension* extension_app) {
   EXPECT_TRUE(
       apps::AppServiceProxyFactory::GetForProfile(profile)
           ->BrowserAppLauncher()
-          .LaunchAppWithParams(apps::AppLaunchParams(
+          ->LaunchAppWithParams(apps::AppLaunchParams(
               extension_app->id(), LaunchContainer::kLaunchContainerWindow,
               WindowOpenDisposition::CURRENT_TAB,
               AppLaunchSource::kSourceTest)));

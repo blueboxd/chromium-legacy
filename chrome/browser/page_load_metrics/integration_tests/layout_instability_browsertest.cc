@@ -6,6 +6,7 @@
 
 #include "base/test/trace_event_analyzer.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "content/public/test/browser_test.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 
@@ -16,20 +17,6 @@ using trace_analyzer::Query;
 using trace_analyzer::TraceAnalyzer;
 using trace_analyzer::TraceEventVector;
 using ukm::builders::PageLoad;
-
-namespace {
-
-int64_t LayoutShiftUkmValue(float shift_score) {
-  // Report (shift_score * 100) as an int in the range [0, 1000].
-  return static_cast<int>(roundf(std::min(shift_score, 10.0f) * 100.0f));
-}
-
-int32_t LayoutShiftUmaValue(float shift_score) {
-  // Report (shift_score * 10) as an int in the range [0, 100].
-  return static_cast<int>(roundf(std::min(shift_score, 10.0f) * 10.0f));
-}
-
-}  // namespace
 
 class LayoutInstabilityTest : public MetricIntegrationTest {
  protected:
@@ -61,13 +48,14 @@ void LayoutInstabilityTest::RunWPT(const std::string& test_file,
 
   // Check UKM.
   ExpectUKMPageLoadMetric(PageLoad::kLayoutInstability_CumulativeShiftScoreName,
-                          LayoutShiftUkmValue(final_score));
+                          page_load_metrics::LayoutShiftUkmValue(final_score));
 
   // Check UMA.
   auto samples = histogram_tester().GetAllSamples(
       "PageLoad.LayoutInstability.CumulativeShiftScore");
   EXPECT_EQ(1ul, samples.size());
-  EXPECT_EQ(samples[0], Bucket(LayoutShiftUmaValue(final_score), 1));
+  EXPECT_EQ(samples[0],
+            Bucket(page_load_metrics::LayoutShiftUmaValue(final_score), 1));
 }
 
 double LayoutInstabilityTest::CheckTraceData(Value& expectations,

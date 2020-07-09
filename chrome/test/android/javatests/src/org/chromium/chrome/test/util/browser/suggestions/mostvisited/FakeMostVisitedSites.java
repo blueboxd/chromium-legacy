@@ -25,7 +25,7 @@ import java.util.List;
  * be made on the UI thread, as they can result in UI manipulations.
  */
 public class FakeMostVisitedSites implements MostVisitedSites {
-    private final List<String> mBlacklistedUrls = new ArrayList<>();
+    private final List<String> mBlocklistedUrls = new ArrayList<>();
 
     private List<SiteSuggestion> mSites = new ArrayList<>();
     private Observer mObserver;
@@ -40,13 +40,13 @@ public class FakeMostVisitedSites implements MostVisitedSites {
     }
 
     @Override
-    public void addBlacklistedUrl(String url) {
-        mBlacklistedUrls.add(url);
+    public void addBlocklistedUrl(String url) {
+        mBlocklistedUrls.add(url);
     }
 
     @Override
-    public void removeBlacklistedUrl(String url) {
-        mBlacklistedUrls.remove(url);
+    public void removeBlocklistedUrl(String url) {
+        mBlocklistedUrls.remove(url);
     }
 
     @Override
@@ -64,9 +64,9 @@ public class FakeMostVisitedSites implements MostVisitedSites {
         //  Metrics are stubbed out.
     }
 
-    /** @return Whether {@link #addBlacklistedUrl} has been called on the given URL. */
-    public boolean isUrlBlacklisted(String url) {
-        return mBlacklistedUrls.contains(url);
+    /** @return Whether {@link #addBlocklistedUrl} has been called on the given URL. */
+    public boolean isUrlBlocklisted(String url) {
+        return mBlocklistedUrls.contains(url);
     }
 
     /**

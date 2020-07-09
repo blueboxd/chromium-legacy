@@ -59,6 +59,13 @@ class CC_PAINT_EXPORT ThreadsafePath : public SkPath {
   ThreadsafePath() { updateBoundsCache(); }
 };
 
+class CC_PAINT_EXPORT SharedImageProvider {
+ public:
+  virtual ~SharedImageProvider() = default;
+  virtual sk_sp<SkImage> OpenSharedImageForRead(
+      const gpu::Mailbox& mailbox) = 0;
+};
+
 // See PaintOp::Serialize/Deserialize for comments.  Derived Serialize types
 // don't write the 4 byte type/skip header because they don't know how much
 // data they will need to write.  PaintOp::Serialize itself must update it.
@@ -186,7 +193,8 @@ class CC_PAINT_EXPORT PaintOp {
                        ServicePaintCache* paint_cache,
                        SkStrikeClient* strike_client,
                        std::vector<uint8_t>* scratch_buffer,
-                       bool is_privileged);
+                       bool is_privileged,
+                       SharedImageProvider* shared_image_provider);
     TransferCacheDeserializeHelper* transfer_cache = nullptr;
     ServicePaintCache* paint_cache = nullptr;
     SkStrikeClient* strike_client = nullptr;
@@ -197,6 +205,7 @@ class CC_PAINT_EXPORT PaintOp {
     // True if the deserialization is happening on a privileged gpu channel.
     // e.g. in the case of UI.
     bool is_privileged = false;
+    SharedImageProvider* shared_image_provider = nullptr;
   };
 
   // Indicates how PaintImages are serialized.
@@ -204,7 +213,8 @@ class CC_PAINT_EXPORT PaintOp {
     kNoImage,
     kImageData,
     kTransferCacheEntry,
-    kLastType = kTransferCacheEntry
+    kMailbox,
+    kLastType = kMailbox
   };
 
   // Subclasses should provide a static Serialize() method called from here.

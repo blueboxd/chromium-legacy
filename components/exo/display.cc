@@ -40,6 +40,8 @@
 #include "components/exo/client_controlled_shell_surface.h"
 #include "components/exo/input_method_surface.h"
 #include "components/exo/shell_surface.h"
+#include "components/exo/toast_surface.h"
+#include "components/exo/toast_surface_manager.h"
 #include "components/exo/xdg_shell_surface.h"
 #endif
 
@@ -60,9 +62,11 @@ Display::Display()
 Display::Display(
     std::unique_ptr<NotificationSurfaceManager> notification_surface_manager,
     std::unique_ptr<InputMethodSurfaceManager> input_method_surface_manager,
+    std::unique_ptr<ToastSurfaceManager> toast_surface_manager,
     std::unique_ptr<FileHelper> file_helper)
     : notification_surface_manager_(std::move(notification_surface_manager)),
       input_method_surface_manager_(std::move(input_method_surface_manager)),
+      toast_surface_manager_(std::move(toast_surface_manager)),
       file_helper_(std::move(file_helper)),
       client_native_pixmap_factory_(
           gfx::CreateClientNativePixmapFactoryDmabuf()) {}
@@ -211,6 +215,26 @@ std::unique_ptr<InputMethodSurface> Display::CreateInputMethodSurface(
   return std::make_unique<InputMethodSurface>(
       input_method_surface_manager_.get(), surface,
       default_device_scale_factor);
+}
+
+std::unique_ptr<ToastSurface> Display::CreateToastSurface(
+    Surface* surface,
+    double default_device_scale_factor) {
+  TRACE_EVENT1("exo", "Display::CreateToastSurface", "surface",
+               surface->AsTracedValue());
+
+  if (!toast_surface_manager_) {
+    DLOG(ERROR) << "Toast surface cannot be registered";
+    return nullptr;
+  }
+
+  if (surface->HasSurfaceDelegate()) {
+    DLOG(ERROR) << "Surface has already been assigned a role";
+    return nullptr;
+  }
+
+  return std::make_unique<ToastSurface>(toast_surface_manager_.get(), surface,
+                                        default_device_scale_factor);
 }
 #endif  // defined(OS_CHROMEOS)
 

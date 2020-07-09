@@ -236,4 +236,14 @@ bool QueryContainsComponentPrefix(const base::StringPiece query,
   return QueryContainsComponentHelper(query, component, true);
 }
 
+int64_t LayoutShiftUkmValue(float shift_score) {
+  // Report (shift_score * 100) as an int in the range [0, 1000].
+  return static_cast<int>(roundf(std::min(shift_score, 10.0f) * 100.0f));
+}
+
+int32_t LayoutShiftUmaValue(float shift_score) {
+  // Report (shift_score * 10) as an int in the range [0, 100].
+  return static_cast<int>(roundf(std::min(shift_score, 10.0f) * 10.0f));
+}
+
 }  // namespace page_load_metrics

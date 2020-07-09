@@ -335,11 +335,40 @@ void PaintOpReader::Read(PaintImage* image) {
       }
         return;
       case PaintOp::SerializedImageType::kTransferCacheEntry:
+      case PaintOp::SerializedImageType::kMailbox:
         SetInvalid();
         return;
     }
 
     NOTREACHED();
+    return;
+  }
+
+  if (serialized_type == PaintOp::SerializedImageType::kMailbox) {
+    if (!options_.shared_image_provider) {
+      SetInvalid();
+      return;
+    }
+
+    gpu::Mailbox mailbox;
+    Read(&mailbox);
+    if (mailbox.IsZero()) {
+      SetInvalid();
+      return;
+    }
+
+    sk_sp<SkImage> sk_image =
+        options_.shared_image_provider->OpenSharedImageForRead(mailbox);
+    if (!sk_image) {
+      SetInvalid();
+      return;
+    }
+
+    *image = PaintImageBuilder::WithDefault()
+                 .set_id(PaintImage::GetNextId())
+                 .set_texture_image(std::move(sk_image),
+                                    PaintImage::kNonLazyStableId)
+                 .TakePaintImage();
     return;
   }
 
@@ -633,6 +662,10 @@ void PaintOpReader::Read(SkYUVColorSpace* yuv_color_space) {
   }
 
   *yuv_color_space = static_cast<SkYUVColorSpace>(raw_yuv_color_space);
+}
+
+void PaintOpReader::Read(gpu::Mailbox* mailbox) {
+  ReadData(sizeof(gpu::Mailbox::Name), (*mailbox).name);
 }
 
 // Android does not use skottie. Remove below section to keep binary size to a

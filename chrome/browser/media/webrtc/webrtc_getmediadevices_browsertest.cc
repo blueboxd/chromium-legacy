@@ -114,6 +114,8 @@ class WebRtcGetMediaDevicesBrowserTest
       } else if (device.kind == kDeviceKindVideoInput) {
         found_video_input = true;
       }
+
+      EXPECT_FALSE(device.group_id.empty());
       devices->push_back(device);
     }
 
@@ -195,12 +197,10 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetMediaDevicesBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(GetUserMediaAndAcceptIfPrompted(tab));
   std::vector<MediaDeviceInfo> devices;
   EnumerateDevices(tab, &devices);
 
   ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_TRUE(GetUserMediaAndAcceptIfPrompted(tab));
   std::vector<MediaDeviceInfo> devices2;
   EnumerateDevices(tab, &devices2);
 
@@ -227,7 +227,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetMediaDevicesBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* tab1 =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(GetUserMediaAndAcceptIfPrompted(tab1));
   std::vector<MediaDeviceInfo> devices;
   EnumerateDevices(tab1, &devices);
 
@@ -235,7 +234,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetMediaDevicesBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* tab2 =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(GetUserMediaAndAcceptIfPrompted(tab2));
   std::vector<MediaDeviceInfo> devices2;
   EnumerateDevices(tab2, &devices2);
 
@@ -305,7 +303,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetMediaDevicesBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* tab2 =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(GetUserMediaAndAcceptIfPrompted(tab2));
   std::vector<MediaDeviceInfo> devices2;
   EnumerateDevices(tab2, &devices2);
 
@@ -323,13 +320,14 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetMediaDevicesBrowserTest,
       ->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
+
   EXPECT_TRUE(GetUserMediaAndAccept(tab));
+
   std::vector<MediaDeviceInfo> devices;
   EnumerateDevices(tab, &devices);
 
   ui_test_utils::NavigateToURL(browser(), url);
   tab = browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(GetUserMediaAndAcceptIfPrompted(tab));
   std::vector<MediaDeviceInfo> devices2;
   EnumerateDevices(tab, &devices2);
 

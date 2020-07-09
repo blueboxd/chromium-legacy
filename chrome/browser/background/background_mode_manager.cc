@@ -380,7 +380,7 @@ void BackgroundModeManager::LaunchBackgroundApplication(
     const Extension* extension) {
   apps::AppServiceProxyFactory::GetForProfile(profile)
       ->BrowserAppLauncher()
-      .LaunchAppWithParams(CreateAppLaunchParamsUserContainer(
+      ->LaunchAppWithParams(CreateAppLaunchParamsUserContainer(
           profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
           apps::mojom::AppLaunchSource::kSourceBackground));
 }

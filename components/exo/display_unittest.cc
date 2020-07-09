@@ -18,6 +18,7 @@
 #include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
+#include "components/exo/toast_surface_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(USE_OZONE)
@@ -241,7 +242,8 @@ class TestFileHelper : public FileHelper {
 
 TEST_F(DisplayTest, CreateDataDevice) {
   TestDataDeviceDelegate device_delegate;
-  Display display(nullptr, nullptr, std::make_unique<TestFileHelper>());
+  Display display(nullptr, nullptr, nullptr,
+                  std::make_unique<TestFileHelper>());
 
   std::unique_ptr<DataDevice> device =
       display.CreateDataDevice(&device_delegate);

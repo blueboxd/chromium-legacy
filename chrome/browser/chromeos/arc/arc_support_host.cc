@@ -132,7 +132,7 @@ void RequestOpenApp(Profile* profile) {
   DCHECK(extensions::util::IsAppLaunchable(arc::kPlayStoreAppId, profile));
   apps::AppServiceProxyFactory::GetForProfile(profile)
       ->BrowserAppLauncher()
-      .LaunchAppWithParams(CreateAppLaunchParamsUserContainer(
+      ->LaunchAppWithParams(CreateAppLaunchParamsUserContainer(
           profile, extension, WindowOpenDisposition::NEW_WINDOW,
           apps::mojom::AppLaunchSource::kSourceChromeInternal));
 }

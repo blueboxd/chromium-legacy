@@ -42,15 +42,15 @@ import java.util.ArrayList;
  *  - IS_DENSE: true, false
  *  - category:
  *     - numSites: <MAX_COLUMNS, MAX_COLUMNS, >MAX_COLUMNS, >MAX_TILE_COUNT
- *     - numBlacklisted: 0, >0
+ *     - numBlocklisted: 0, >0
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class ExploreSitesCategoryCardViewTest {
     // Private test helper for bootstrapping categories
-    // All black listed sites are at beginning of category
-    // numMockSites is the total, it should be greater than numBlacklisted
-    private ExploreSitesCategory createSyntheticCategory(int numMockSites, int numBlacklisted) {
+    // All block listed sites are at beginning of category
+    // numMockSites is the total, it should be greater than numBlocklisted
+    private ExploreSitesCategory createSyntheticCategory(int numMockSites, int numBlocklisted) {
         final int id = 1;
         @ExploreSitesCategory.CategoryType
         final int type = ExploreSitesCategory.CategoryType.SCIENCE;
@@ -64,9 +64,9 @@ public class ExploreSitesCategoryCardViewTest {
             final int site_id = i;
             final String site_title = "Site #" + i;
             final String site_url = "http://example.com/" + i;
-            final boolean isBlacklisted = i < numBlacklisted;
+            final boolean isBlocklisted = i < numBlocklisted;
             ExploreSitesSite mockSite =
-                    new ExploreSitesSite(site_id, site_title, site_url, isBlacklisted);
+                    new ExploreSitesSite(site_id, site_title, site_url, isBlocklisted);
             syntheticCategory.addSite(mockSite);
         }
 
@@ -78,8 +78,8 @@ public class ExploreSitesCategoryCardViewTest {
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
     private Pair<ExploreSitesCategoryCardView, ExploreSitesCategory> initializeCategoryAndView(
-            int numSitesTotal, int numBlacklisted) {
-        ExploreSitesCategory category = createSyntheticCategory(numSitesTotal, numBlacklisted);
+            int numSitesTotal, int numBlocklisted) {
+        ExploreSitesCategory category = createSyntheticCategory(numSitesTotal, numBlocklisted);
 
         ArrayList<ExploreSitesCategory> catalog = new ArrayList<>();
         catalog.add(category);
@@ -104,10 +104,10 @@ public class ExploreSitesCategoryCardViewTest {
     }
 
     // package-private helper for running a tile quantity render tests.
-    void runTileQuantityTest(int numSitesTotal, int numBlacklisted, boolean incompleteAllowed,
+    void runTileQuantityTest(int numSitesTotal, int numBlocklisted, boolean incompleteAllowed,
             int expectedMaxRows, int expectedTilesToDisplay) {
         Pair<ExploreSitesCategoryCardView, ExploreSitesCategory> categoryState =
-                initializeCategoryAndView(numSitesTotal, numBlacklisted);
+                initializeCategoryAndView(numSitesTotal, numBlocklisted);
 
         ExploreSitesCategoryCardView categoryCardView = categoryState.first;
         ExploreSitesCategory category = categoryState.second;
@@ -123,7 +123,7 @@ public class ExploreSitesCategoryCardViewTest {
 
     // Tests that cover the original tile quantity rendering logic
 
-    // Covers: IS_DENSE=false, MAX_ROWS=2, MAX_COLUMNS=4, numSites=MAX_COLUMNS, numBlacklisted=0
+    // Covers: IS_DENSE=false, MAX_ROWS=2, MAX_COLUMNS=4, numSites=MAX_COLUMNS, numBlocklisted=0
     @Test
     @SmallTest
     @CommandLineFlags.
@@ -135,7 +135,7 @@ public class ExploreSitesCategoryCardViewTest {
         runTileQuantityTest(4, 0, false, 1, 4);
     }
 
-    // Covers: IS_DENSE=false, MAX_ROWS=2, MAX_COLUMNS=4, numSites>MAX_COLUMNS, numBlacklisted=0
+    // Covers: IS_DENSE=false, MAX_ROWS=2, MAX_COLUMNS=4, numSites>MAX_COLUMNS, numBlocklisted=0
     @Test
     @SmallTest
     @CommandLineFlags.
@@ -147,7 +147,7 @@ public class ExploreSitesCategoryCardViewTest {
         runTileQuantityTest(5, 0, false, 1, 4);
     }
 
-    // Covers: IS_DENSE=false, MAX_ROWS=2, MAX_COLUMNS=4, numSites=MAX_COLUMNS, numBlacklisted>0
+    // Covers: IS_DENSE=false, MAX_ROWS=2, MAX_COLUMNS=4, numSites=MAX_COLUMNS, numBlocklisted>0
     @Test
     @SmallTest
     @CommandLineFlags.
@@ -155,11 +155,11 @@ public class ExploreSitesCategoryCardViewTest {
             "force-fieldtrial-params=FakeStudyName.Enabled:variation/mostLikelyTile/"
                     + "denseVariation/original"})
     public void
-    testTileQuantityOriginalPerfectRowAfterBlacklisted() {
+    testTileQuantityOriginalPerfectRowAfterBlocklisted() {
         runTileQuantityTest(5, 1, false, 1, 4);
     }
 
-    // Covers: IS_DENSE=false, MAX_ROWS=2, MAX_COLUMNS=4, numSites>MAX_COLUMNS, numBlacklisted>0
+    // Covers: IS_DENSE=false, MAX_ROWS=2, MAX_COLUMNS=4, numSites>MAX_COLUMNS, numBlocklisted>0
     @Test
     @SmallTest
     @CommandLineFlags.
@@ -167,11 +167,11 @@ public class ExploreSitesCategoryCardViewTest {
             "force-fieldtrial-params=FakeStudyName.Enabled:variation/mostLikelyTile/"
                     + "denseVariation/original"})
     public void
-    testTileQuantityOriginalImperfectRowAfterBlacklisted() {
+    testTileQuantityOriginalImperfectRowAfterBlocklisted() {
         runTileQuantityTest(8, 2, false, 2, 6);
     }
 
-    // Covers: IS_DENSE=true, MAX_ROWS=2, MAX_COLUMNS=4, numSites<MAX_COLUMNS, numBlacklisted>0
+    // Covers: IS_DENSE=true, MAX_ROWS=2, MAX_COLUMNS=4, numSites<MAX_COLUMNS, numBlocklisted>0
     @Test
     @SmallTest
     @CommandLineFlags.
@@ -179,11 +179,11 @@ public class ExploreSitesCategoryCardViewTest {
             "force-fieldtrial-params=FakeStudyName.Enabled:variation/mostLikelyTile/"
                     + "denseVariation/original"})
     public void
-    testTileQuantityOriginalTooFewTilesAfterBlacklisted() {
+    testTileQuantityOriginalTooFewTilesAfterBlocklisted() {
         runTileQuantityTest(5, 4, false, 1, 1);
     }
 
-    // Covers: IS_DENSE=true, MAX_ROWS=2, MAX_COLUMNS=4, numSites>MAX_TILE_COUNT, numBlacklisted=0
+    // Covers: IS_DENSE=true, MAX_ROWS=2, MAX_COLUMNS=4, numSites>MAX_TILE_COUNT, numBlocklisted=0
     @Test
     @SmallTest
     @CommandLineFlags.

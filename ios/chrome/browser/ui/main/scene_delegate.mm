@@ -7,6 +7,7 @@
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/app/chrome_overlay_window.h"
 #import "ios/chrome/app/main_application_delegate.h"
+#import "ios/chrome/browser/ui/appearance/appearance_customization.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -37,6 +38,7 @@ NSString* const kOriginDetectedKey = @"OriginDetectedKey";
   if (!_window) {
     // Sizing of the window is handled by UIKit.
     _window = [[ChromeOverlayWindow alloc] init];
+    CustomizeUIWindowAppearance(_window);
   }
   return _window;
 }

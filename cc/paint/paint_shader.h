@@ -19,6 +19,10 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size_f.h"
 
+namespace gpu {
+struct Mailbox;
+}
+
 namespace cc {
 class ImageProvider;
 class PaintOpBuffer;
@@ -203,7 +207,8 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
                                         ImageProvider* image_provider,
                                         uint32_t* transfer_cache_entry_id,
                                         SkFilterQuality* raster_quality,
-                                        bool* needs_mips) const;
+                                        bool* needs_mips,
+                                        gpu::Mailbox* mailbox) const;
 
   // Creates a paint record shader for worklet-backed images.
   sk_sp<PaintShader> CreatePaintWorkletRecord(

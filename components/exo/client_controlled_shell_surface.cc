@@ -349,6 +349,24 @@ void ClientControlledShellSurface::SetBounds(int64_t display_id,
   SetGeometry(bounds);
 }
 
+void ClientControlledShellSurface::SetBoundsOrigin(const gfx::Point& origin) {
+  TRACE_EVENT1("exo", "ClientControlledShellSurface::SetBoundsOrigin", "origin",
+               origin.ToString());
+
+  pending_geometry_.set_origin(origin);
+}
+
+void ClientControlledShellSurface::SetBoundsSize(const gfx::Size& size) {
+  TRACE_EVENT1("exo", "ClientControlledShellSurface::SetBoundsSize", "size",
+               size.ToString());
+
+  if (size.IsEmpty()) {
+    DLOG(WARNING) << "Bounds size must be non-empty";
+    return;
+  }
+
+  pending_geometry_.set_size(size);
+}
 void ClientControlledShellSurface::SetMaximized() {
   TRACE_EVENT0("exo", "ClientControlledShellSurface::SetMaximized");
   pending_window_state_ = ash::WindowStateType::kMaximized;

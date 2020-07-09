@@ -291,7 +291,7 @@ bool LoadInternetShortcut(
     return false;
 
   Microsoft::WRL::ComPtr<IPersistFile> persist_file;
-  if (FAILED(url_locator.CopyTo(persist_file.GetAddressOf())))
+  if (FAILED(url_locator.As(&persist_file)))
     return false;
 
   // Loads the Internet Shortcut from persistent storage.
@@ -317,7 +317,7 @@ GURL ReadFaviconURLFromInternetShortcut(IUniformResourceLocator* url_locator) {
 
   Microsoft::WRL::ComPtr<IPropertyStorage> property_storage;
   if (FAILED(property_set_storage->Open(FMTID_Intshcut, STGM_READ,
-                                        property_storage.GetAddressOf()))) {
+                                        &property_storage))) {
     return GURL();
   }
 
@@ -496,7 +496,7 @@ void IEImporter::ImportHistory() {
     return;
   }
   Microsoft::WRL::ComPtr<IEnumSTATURL> enum_url;
-  if (SUCCEEDED(url_history_stg2->EnumUrls(enum_url.GetAddressOf()))) {
+  if (SUCCEEDED(url_history_stg2->EnumUrls(&enum_url))) {
     std::vector<ImporterURLRow> rows;
     STATURL stat_url;
 

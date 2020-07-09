@@ -425,7 +425,7 @@ void StartupAppLauncher::LaunchApp() {
   // Always open the app in a window.
   apps::AppServiceProxyFactory::GetForProfile(profile_)
       ->BrowserAppLauncher()
-      .LaunchAppWithParams(apps::AppLaunchParams(
+      ->LaunchAppWithParams(apps::AppLaunchParams(
           extension->id(), apps::mojom::LaunchContainer::kLaunchContainerWindow,
           WindowOpenDisposition::NEW_WINDOW,
           apps::mojom::AppLaunchSource::kSourceKiosk));

@@ -281,7 +281,7 @@ public class CafBaseMediaRouteProviderTest {
         assertEquals(pendingCreateRouteRequestInfo.presentationId, "presentation-id");
         assertEquals(pendingCreateRouteRequestInfo.origin, "origin");
         assertEquals(pendingCreateRouteRequestInfo.tabId, 1);
-        assertEquals(pendingCreateRouteRequestInfo.isIncognito, false);
+        assertEquals(pendingCreateRouteRequestInfo.isOffTheRecord, false);
         assertEquals(pendingCreateRouteRequestInfo.nativeRequestId, 1);
         assertEquals(pendingCreateRouteRequestInfo.routeInfo, mMediaRouterHelper.getCastRoute());
 
@@ -298,7 +298,7 @@ public class CafBaseMediaRouteProviderTest {
         assertEquals(pendingCreateRouteRequestInfo.presentationId, "presentation-id-2");
         assertEquals(pendingCreateRouteRequestInfo.origin, "origin-2");
         assertEquals(pendingCreateRouteRequestInfo.tabId, 2);
-        assertEquals(pendingCreateRouteRequestInfo.isIncognito, true);
+        assertEquals(pendingCreateRouteRequestInfo.isOffTheRecord, true);
         assertEquals(pendingCreateRouteRequestInfo.nativeRequestId, 2);
         assertEquals(
                 pendingCreateRouteRequestInfo.routeInfo, mMediaRouterHelper.getOtherCastRoute());

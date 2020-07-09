@@ -112,7 +112,7 @@
       "url": "https://www.exampleapis.com/reauth/v1beta/users/"
     },
     "gaia_login_form_realm": {
-      "url": "https://accounts.example.com/"
+      "url": "https://accounts.example.com/LoginFormRealm"
     }
   }
 }

@@ -20,7 +20,7 @@ selection_test(
     selection => selection.modify('move', 'backward', 'line'),
     [
         `<div contenteditable dir="rtl" style="${kStyle}">`,
-            '<bdo dir="rtl">A |BC</bdo>',
+            '<bdo dir="rtl">A| BC</bdo>',
         '</div>',
     ], '2 lines');
 
@@ -34,7 +34,7 @@ selection_test(
     selection => selection.modify('move', 'backward', 'line'),
     [
         `<div contenteditable dir="rtl" style="${kStyle}">`,
-            '<bdo dir="rtl">A BC |DE</bdo>',
+            '<bdo dir="rtl">A BC| DE</bdo>',
         '</div>',
     ], '3 lines-1');
 selection_test(
@@ -60,7 +60,7 @@ selection_test(
     selection => selection.modify('move', 'backward', 'line'),
     [
         `<div contenteditable dir="rtl" style="${kStyle}">`,
-            '<bdo dir="rtl">A BC DE FG |HI</bdo>',
+            '<bdo dir="rtl">A BC DE FG| HI</bdo>',
         '</div>',
     ], '5 lines-1');
 selection_test(

@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine_base.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager_impl.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client_test_helper.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -123,6 +122,7 @@ class TestObserver : public InputMethodEngineBase::Observer {
 
   void OnSuggestionsChanged(
       const std::vector<std::string>& suggestions) override {}
+  void OnInputMethodOptionsChanged(const std::string& engine_id) override {}
 
   void OnReset(const std::string& engine_id) override {
     calls_bitmap_ |= RESET;
@@ -176,7 +176,7 @@ class InputMethodEngineTest : public testing::Test {
     std::unique_ptr<InputMethodEngineBase::Observer> observer_ptr(observer_);
     engine_->Initialize(std::move(observer_ptr),
                         whitelisted ? kTestExtensionId : kTestExtensionId2,
-                        ProfileManager::GetActiveUserProfile());
+                        nullptr);
   }
 
   void FocusIn(ui::TextInputType input_type) {

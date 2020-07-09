@@ -128,9 +128,7 @@ public class ConditionalTabStripTest {
 
         mActivityTestRule.startMainActivityOnBlankPage();
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        CriteriaHelper.pollUiThread(cta.getTabModelSelector()
-                                            .getTabModelFilterProvider()
-                                            .getCurrentTabModelFilter()::isTabModelRestored);
+        CriteriaHelper.pollUiThread(cta.getTabModelSelector()::isTabStateInitialized);
 
         float dpToPx = InstrumentationRegistry.getInstrumentation()
                                .getContext()

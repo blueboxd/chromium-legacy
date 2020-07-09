@@ -15,6 +15,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_result_reporter.h"
 
+#if defined(OS_ANDROID) || defined(ARCH_CPU_32_BITS)
+// Some tests allocate many GB of memory, which can cause issues on Android and
+// address-space exhaustion for any 32-bit process.
+#define MEMORY_CONSTRAINED
+#endif
+
 namespace base {
 namespace {
 
@@ -119,7 +125,7 @@ class MemoryAllocationPerfNode {
   MemoryAllocationPerfNode* next_ = nullptr;
 };
 
-#if !defined(OS_ANDROID)
+#if !defined(MEMORY_CONSTRAINED)
 float SingleBucket(Allocator* allocator) {
   auto* first =
       reinterpret_cast<MemoryAllocationPerfNode*>(allocator->Alloc(40));
@@ -142,7 +148,7 @@ float SingleBucket(Allocator* allocator) {
   MemoryAllocationPerfNode::FreeAll(first, allocator);
   return timer.LapsPerSecond();
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(MEMORY_CONSTRAINED)
 
 float SingleBucketWithFree(Allocator* allocator) {
   // Allocate an initial element to make sure the bucket stays set up.
@@ -160,7 +166,7 @@ float SingleBucketWithFree(Allocator* allocator) {
   return timer.LapsPerSecond();
 }
 
-#if !defined(OS_ANDROID)
+#if !defined(MEMORY_CONSTRAINED)
 float MultiBucket(Allocator* allocator) {
   auto* first =
       reinterpret_cast<MemoryAllocationPerfNode*>(allocator->Alloc(40));
@@ -183,7 +189,7 @@ float MultiBucket(Allocator* allocator) {
 
   return timer.LapsPerSecond() * kMultiBucketRounds;
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(MEMORY_CONSTRAINED)
 
 float MultiBucketWithFree(Allocator* allocator) {
   std::vector<void*> elems;
@@ -263,13 +269,13 @@ INSTANTIATE_TEST_SUITE_P(
 
 // This test (and the other one below) allocates a large amount of memory, which
 // can cause issues on Android.
-#if !defined(OS_ANDROID)
+#if !defined(MEMORY_CONSTRAINED)
 TEST_P(MemoryAllocationPerfTest, SingleBucket) {
   auto params = GetParam();
   RunTest(std::get<0>(params), std::get<1>(params), SingleBucket,
           "SingleBucket");
 }
-#endif
+#endif  // defined(MEMORY_CONSTRAINED)
 
 TEST_P(MemoryAllocationPerfTest, SingleBucketWithFree) {
   auto params = GetParam();
@@ -277,12 +283,12 @@ TEST_P(MemoryAllocationPerfTest, SingleBucketWithFree) {
           "SingleBucketWithFree");
 }
 
-#if !defined(OS_ANDROID)
+#if !defined(MEMORY_CONSTRAINED)
 TEST_P(MemoryAllocationPerfTest, MultiBucket) {
   auto params = GetParam();
   RunTest(std::get<0>(params), std::get<1>(params), MultiBucket, "MultiBucket");
 }
-#endif
+#endif  // defined(MEMORY_CONSTRAINED)
 
 TEST_P(MemoryAllocationPerfTest, MultiBucketWithFree) {
   auto params = GetParam();

@@ -94,7 +94,7 @@ class AppServiceProxy : public KeyedService,
   apps::InstanceRegistry& InstanceRegistry();
 #endif
 
-  apps::BrowserAppLauncher& BrowserAppLauncher();
+  apps::BrowserAppLauncher* BrowserAppLauncher();
 
   apps::PreferredAppsList& PreferredApps();
 
@@ -131,6 +131,18 @@ class AppServiceProxy : public KeyedService,
                           int32_t event_flags,
                           apps::mojom::LaunchSource launch_source,
                           apps::mojom::FilePathsPtr file_paths);
+
+  // Launches the app for the given |app_id| with files from |file_urls| and
+  // their |mime_types|.
+  // |event_flags| provides additional context about the action which launches
+  // the app (e.g. a middle click indicating opening a background tab).
+  // |launch_source| is the possible app launch sources, e.g. from Shelf, from
+  // the search box, etc.
+  void LaunchAppWithFileUrls(const std::string& app_id,
+                             int32_t event_flags,
+                             apps::mojom::LaunchSource launch_source,
+                             const std::vector<GURL>& file_urls,
+                             const std::vector<std::string>& mime_types);
 
   // Launches an app for the given |app_id|, passing |intent| to the app.
   // |event_flags| provides additional context about the action which launch the

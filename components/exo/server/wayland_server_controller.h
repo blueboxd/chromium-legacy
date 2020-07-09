@@ -21,6 +21,7 @@ class FileHelper;
 class WMHelper;
 class NotificationSurfaceManager;
 class InputMethodSurfaceManager;
+class ToastSurfaceManager;
 
 class WaylandServerController {
  public:
@@ -32,7 +33,8 @@ class WaylandServerController {
   static std::unique_ptr<WaylandServerController> CreateIfNecessary(
       std::unique_ptr<FileHelper> file_helper,
       std::unique_ptr<NotificationSurfaceManager> notification_surface_manager,
-      std::unique_ptr<InputMethodSurfaceManager> input_method_surface_manager);
+      std::unique_ptr<InputMethodSurfaceManager> input_method_surface_manager,
+      std::unique_ptr<ToastSurfaceManager> toast_surface_manager);
 
   ~WaylandServerController();
 
@@ -43,7 +45,8 @@ class WaylandServerController {
   WaylandServerController(
       std::unique_ptr<FileHelper> file_helper,
       std::unique_ptr<NotificationSurfaceManager> notification_surface_manager,
-      std::unique_ptr<InputMethodSurfaceManager> input_method_surface_manager);
+      std::unique_ptr<InputMethodSurfaceManager> input_method_surface_manager,
+      std::unique_ptr<ToastSurfaceManager> toast_surface_manager);
 
  private:
   std::unique_ptr<WMHelper> wm_helper_;

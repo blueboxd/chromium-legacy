@@ -95,8 +95,8 @@ void AssistiveWindowController::InitSuggestionWindow() {
     return;
   // suggestion_window_view_ is deleted by DialogDelegateView::DeleteDelegate.
   suggestion_window_view_ =
-      new ui::ime::SuggestionWindowView(GetParentView(), this);
-  views::Widget* widget = suggestion_window_view_->InitWidget();
+      ui::ime::SuggestionWindowView::Create(GetParentView(), this);
+  views::Widget* widget = suggestion_window_view_->GetWidget();
   widget->AddObserver(this);
   widget->Show();
 }
@@ -139,7 +139,7 @@ void AssistiveWindowController::HideSuggestion() {
 
 void AssistiveWindowController::SetBounds(const gfx::Rect& cursor_bounds) {
   if (suggestion_window_view_ && confirmed_length_ == 0)
-    suggestion_window_view_->SetBounds(cursor_bounds);
+    suggestion_window_view_->SetAnchorRect(cursor_bounds);
   if (undo_window_)
     undo_window_->SetBounds(cursor_bounds);
 }

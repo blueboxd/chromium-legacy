@@ -63,6 +63,12 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   // Set bounds in root window coordinates relative to the given display.
   void SetBounds(int64_t display_id, const gfx::Rect& bounds);
 
+  // Set origin of bounds for surface while preserving the size.
+  void SetBoundsOrigin(const gfx::Point& origin);
+
+  // Set size of bounds for surface while preserving the origin.
+  void SetBoundsSize(const gfx::Size& size);
+
   // Called when the client was maximized.
   void SetMaximized();
 

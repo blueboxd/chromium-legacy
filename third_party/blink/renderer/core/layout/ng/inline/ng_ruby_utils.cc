@@ -260,6 +260,8 @@ NGAnnotationMetrics ComputeAnnotationOverflow(
               else if (overflow > LayoutUnit())
                 has_under_annotation = true;
             }
+          } else if (item.IsInlineBox()) {
+            continue;
           }
         }
         content_over = std::min(content_over, item_over);

@@ -17,25 +17,36 @@ const char prefs::kNearbySharingActiveProfilePrefName[] =
 const char prefs::kNearbySharingBackgroundVisibilityName[] =
     "nearby_sharing.background_visibility";
 const char prefs::kNearbySharingDataUsageName[] = "nearby_sharing.data_usage";
+const char prefs::kNearbySharingDeviceIdPrefName[] = "nearby_sharing.device_id";
+const char prefs::kNearbySharingDeviceNamePrefName[] =
+    "nearby_sharing.device_name";
+const char prefs::kNearbySharingFullNamePrefName[] = "nearby_sharing.full_name";
+const char prefs::kNearbySharingIconUrlPrefName[] = "nearby_sharing.icon_url";
 
 void RegisterNearbySharingPrefs(user_prefs::PrefRegistrySyncable* registry) {
-  // This pref is not synced.
+  // These prefs are not synced across devices on purpose.
+
   // TODO(vecore): Change the default to false after the settings ui is
   // available.
-  registry->RegisterBooleanPref(
-      prefs::kNearbySharingEnabledPrefName, true /* default_value */,
-      PrefRegistry::PrefRegistrationFlags::NO_REGISTRATION_FLAGS /* flags */);
+  registry->RegisterBooleanPref(prefs::kNearbySharingEnabledPrefName,
+                                /*default_value=*/true);
   registry->RegisterIntegerPref(
       prefs::kNearbySharingBackgroundVisibilityName,
-      static_cast<int>(Visibility::kNoOne) /* default_value */,
-      PrefRegistry::PrefRegistrationFlags::NO_REGISTRATION_FLAGS /* flags */);
+      /*default_value=*/static_cast<int>(Visibility::kNoOne));
   registry->RegisterIntegerPref(
       prefs::kNearbySharingDataUsageName,
-      static_cast<int>(DataUsage::kWifiOnly) /* default_value */,
-      PrefRegistry::PrefRegistrationFlags::NO_REGISTRATION_FLAGS /* flags */);
+      /*default_value=*/static_cast<int>(DataUsage::kWifiOnly));
+  registry->RegisterStringPref(prefs::kNearbySharingDeviceIdPrefName,
+                               /*default_value=*/std::string());
+  registry->RegisterStringPref(prefs::kNearbySharingDeviceNamePrefName,
+                               /*default_value=*/std::string());
+  registry->RegisterStringPref(prefs::kNearbySharingFullNamePrefName,
+                               /*default_value=*/std::string());
+  registry->RegisterStringPref(prefs::kNearbySharingIconUrlPrefName,
+                               /*default_value=*/std::string());
 }
 
 void RegisterNearbySharingLocalPrefs(PrefRegistrySimple* local_state) {
   local_state->RegisterFilePathPref(prefs::kNearbySharingActiveProfilePrefName,
-                                    base::FilePath() /* default_value */);
+                                    /*default_value=*/base::FilePath());
 }

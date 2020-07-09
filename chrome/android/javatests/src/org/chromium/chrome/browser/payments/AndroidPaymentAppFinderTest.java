@@ -1317,7 +1317,7 @@ public class AndroidPaymentAppFinderTest
 
     /**
      * For finding app store billing app, test that the TWA's installer app store must be a
-     * whitelisted one. The test setting sets the twa installer app store to be an unsupported one.
+     * allowlisted one. The test setting sets the twa installer app store to be an unsupported one.
      */
     @Test
     @Feature({"Payments"})

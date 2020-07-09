@@ -482,9 +482,8 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       if (FAILED(printing::XPSPrintModule::StartXpsPrintJob(
               base::UTF8ToWide(printer_name).c_str(),
               base::UTF8ToWide(job_title).c_str(), nullptr,
-              job_progress_event_.Get(), nullptr, nullptr, 0,
-              xps_print_job_.GetAddressOf(), doc_stream.GetAddressOf(),
-              print_ticket_stream.GetAddressOf()))) {
+              job_progress_event_.Get(), nullptr, nullptr, 0, &xps_print_job_,
+              &doc_stream, &print_ticket_stream))) {
         return false;
       }
 
@@ -733,7 +732,7 @@ bool PrintSystemWin::ValidatePrintTicket(
   bool ret;
   {
     Microsoft::WRL::ComPtr<IStream> print_ticket_stream;
-    CreateStreamOnHGlobal(nullptr, TRUE, print_ticket_stream.GetAddressOf());
+    CreateStreamOnHGlobal(nullptr, TRUE, &print_ticket_stream);
     ULONG bytes_written = 0;
     print_ticket_stream->Write(print_ticket_data.c_str(),
                                print_ticket_data.length(),
@@ -744,7 +743,7 @@ bool PrintSystemWin::ValidatePrintTicket(
     print_ticket_stream->Seek(pos, STREAM_SEEK_SET, &new_pos);
     base::win::ScopedBstr error;
     Microsoft::WRL::ComPtr<IStream> result_ticket_stream;
-    CreateStreamOnHGlobal(nullptr, TRUE, result_ticket_stream.GetAddressOf());
+    CreateStreamOnHGlobal(nullptr, TRUE, &result_ticket_stream);
     ret = SUCCEEDED(printing::XPSModule::MergeAndValidatePrintTicket(
         provider, print_ticket_stream.Get(), nullptr, kPTJobScope,
         result_ticket_stream.Get(), error.Receive()));

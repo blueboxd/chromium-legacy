@@ -64,14 +64,14 @@ public interface MostVisitedSites {
     void setObserver(Observer observer, int numSites);
 
     /**
-     * Blacklists a URL from the most visited URLs list.
+     * Blocklists a URL from the most visited URLs list.
      */
-    void addBlacklistedUrl(String url);
+    void addBlocklistedUrl(String url);
 
     /**
-     * Removes a URL from the most visited URLs blacklist.
+     * Removes a URL from the most visited URLs blocklist.
      */
-    void removeBlacklistedUrl(String url);
+    void removeBlocklistedUrl(String url);
 
     /**
      * Records metrics about an impression of the surface with tiles.

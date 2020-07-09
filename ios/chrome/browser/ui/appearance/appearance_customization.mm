@@ -19,3 +19,7 @@ void CustomizeUIAppearance() {
   }
   UISwitch.appearance.onTintColor = [UIColor colorNamed:kBlueColor];
 }
+
+void CustomizeUIWindowAppearance(UIWindow* window) {
+  window.tintColor = [UIColor colorNamed:kBlueColor];
+}

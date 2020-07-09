@@ -390,7 +390,7 @@ bool ServiceImageTransferCacheEntry::Deserialize(
   // only used for de-serializing primitives.
   std::vector<uint8_t> scratch_buffer;
   PaintOp::DeserializeOptions options(nullptr, nullptr, nullptr,
-                                      &scratch_buffer, false);
+                                      &scratch_buffer, false, nullptr);
   PaintOpReader reader(data.data(), data.size(), options);
   uint32_t image_is_yuv = 0;
   reader.Read(&image_is_yuv);

@@ -167,31 +167,37 @@ class BASE_EXPORT PartitionAllocHooks {
 
 namespace internal {
 
-ALWAYS_INLINE void* PartitionPointerAdjustSubtract(bool use_tag, void* ptr) {
-  if (use_tag)
+ALWAYS_INLINE void* PartitionPointerAdjustSubtract(bool allow_extras,
+                                                   void* ptr) {
+  if (allow_extras) {
     ptr = PartitionTagPointerAdjustSubtract(ptr);
-  ptr = PartitionCookiePointerAdjustSubtract(ptr);
+    ptr = PartitionCookiePointerAdjustSubtract(ptr);
+  }
   return ptr;
 }
 
-ALWAYS_INLINE void* PartitionPointerAdjustAdd(bool use_tag, void* ptr) {
-  if (use_tag)
+ALWAYS_INLINE void* PartitionPointerAdjustAdd(bool allow_extras, void* ptr) {
+  if (allow_extras) {
     ptr = PartitionTagPointerAdjustAdd(ptr);
-  ptr = PartitionCookiePointerAdjustAdd(ptr);
+    ptr = PartitionCookiePointerAdjustAdd(ptr);
+  }
   return ptr;
 }
 
-ALWAYS_INLINE size_t PartitionSizeAdjustAdd(bool use_tag, size_t size) {
-  if (use_tag)
+ALWAYS_INLINE size_t PartitionSizeAdjustAdd(bool allow_extras, size_t size) {
+  if (allow_extras) {
     size = PartitionTagSizeAdjustAdd(size);
-  size = PartitionCookieSizeAdjustAdd(size);
+    size = PartitionCookieSizeAdjustAdd(size);
+  }
   return size;
 }
 
-ALWAYS_INLINE size_t PartitionSizeAdjustSubtract(bool use_tag, size_t size) {
-  if (use_tag)
+ALWAYS_INLINE size_t PartitionSizeAdjustSubtract(bool allow_extras,
+                                                 size_t size) {
+  if (allow_extras) {
     size = PartitionTagSizeAdjustSubtract(size);
-  size = PartitionCookieSizeAdjustSubtract(size);
+    size = PartitionCookieSizeAdjustSubtract(size);
+  }
   return size;
 }
 
@@ -394,10 +400,10 @@ struct BASE_EXPORT PartitionRoot {
   size_t total_size_of_committed_pages = 0;
   size_t total_size_of_super_pages = 0;
   size_t total_size_of_direct_mapped_pages = 0;
-  // TODO(bartekn): Consider kPartitionTagSize/0 instead of true/false, so that
-  // we can just add or subtract the size instead of having an if branch on the
-  // hot paths.
-  bool tag_pointers;
+  // TODO(bartekn): Consider size of added extras (cookies and/or tag, or
+  // nothing) instead of true|false, so that we can just add or subtract the
+  // size instead of having an if branch on the hot paths.
+  bool allow_extras;
   // Atomic as initialization can be concurrent.
   std::atomic<bool> initialized = {};
   char* next_super_page = nullptr;
@@ -435,11 +441,11 @@ struct BASE_EXPORT PartitionRoot {
   //
   // Moving it a layer lower couples PartitionRoot and PartitionBucket, but
   // preserves the layering of the includes.
-  ALWAYS_INLINE void Init(bool enable_tag_pointers) {
+  ALWAYS_INLINE void Init(bool enforce_alignment) {
     if (LIKELY(initialized.load(std::memory_order_relaxed)))
       return;
 
-    InitSlowPath(enable_tag_pointers);
+    InitSlowPath(enforce_alignment);
   }
 
   ALWAYS_INLINE static bool IsValidPage(Page* page);
@@ -495,7 +501,7 @@ struct BASE_EXPORT PartitionRoot {
   internal::PartitionBucket<thread_safe>* SizeToBucket(size_t size) const;
 
  private:
-  void InitSlowPath(bool enable_tagged_pointers);
+  void InitSlowPath(bool enforce_alignment);
   ALWAYS_INLINE void* AllocFromBucket(Bucket* bucket, int flags, size_t size)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
   bool ReallocDirectMappedInPlace(internal::PartitionPage<thread_safe>* page,
@@ -558,15 +564,17 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(Bucket* bucket,
   // Note, empty space occurs if the slot size is larger than needed to
   // accommodate the request.
   size_t size_with_no_extras =
-      internal::PartitionSizeAdjustSubtract(tag_pointers, new_slot_size);
+      internal::PartitionSizeAdjustSubtract(allow_extras, new_slot_size);
   // The value given to the application is just after the tag and cookie.
-  ret = internal::PartitionPointerAdjustAdd(tag_pointers, ret);
+  ret = internal::PartitionPointerAdjustAdd(allow_extras, ret);
 
-#if DCHECK_IS_ON() && !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#if DCHECK_IS_ON()
   // Surround the region with 2 cookies.
-  char* char_ret = static_cast<char*>(ret);
-  internal::PartitionCookieWriteValue(char_ret - internal::kCookieSize);
-  internal::PartitionCookieWriteValue(char_ret + size_with_no_extras);
+  if (allow_extras) {
+    char* char_ret = static_cast<char*>(ret);
+    internal::PartitionCookieWriteValue(char_ret - internal::kCookieSize);
+    internal::PartitionCookieWriteValue(char_ret + size_with_no_extras);
+  }
 #endif
 
   // Fill the region kUninitializedByte (on debug builds, if not requested to 0)
@@ -579,7 +587,7 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(Bucket* bucket,
     memset(ret, 0, size_with_no_extras);
   }
 
-  if (tag_pointers) {
+  if (allow_extras) {
     // TODO(tasak): initialize tag randomly. Temporarily use
     // kTagTemporaryInitialValue to initialize the tag.
     internal::PartitionTagSetValue(ret, internal::kTagTemporaryInitialValue);
@@ -607,11 +615,11 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::Free(void* ptr) {
   // TODO(palmer): See if we can afford to make this a CHECK.
   PA_DCHECK(IsValidPage(page));
   auto* root = PartitionRoot<thread_safe>::FromPage(page);
-  if (root->tag_pointers) {
+  if (root->allow_extras) {
     // TODO(tasak): clear partition tag. Temporarily set the tag to be 0.
     internal::PartitionTagSetValue(ptr, 0);
   }
-  ptr = internal::PartitionPointerAdjustSubtract(root->tag_pointers, ptr);
+  ptr = internal::PartitionPointerAdjustSubtract(root->allow_extras, ptr);
   internal::DeferredUnmap deferred_unmap;
   {
     ScopedGuard guard{root->lock_};
@@ -726,9 +734,9 @@ ALWAYS_INLINE size_t PartitionRoot<thread_safe>::GetSizeFromPointer(void* ptr) {
 // partition page.
 template <bool thread_safe>
 ALWAYS_INLINE size_t PartitionRoot<thread_safe>::GetSize(void* ptr) const {
-  ptr = internal::PartitionPointerAdjustSubtract(tag_pointers, ptr);
+  ptr = internal::PartitionPointerAdjustSubtract(allow_extras, ptr);
   auto* page = internal::PartitionAllocGetPageForSize<thread_safe>(ptr);
-  size_t size = internal::PartitionSizeAdjustSubtract(tag_pointers,
+  size_t size = internal::PartitionSizeAdjustSubtract(allow_extras,
                                                       page->bucket->slot_size);
   return size;
 }
@@ -742,7 +750,7 @@ ALWAYS_INLINE size_t PartitionAllocGetSlotOffset(void* ptr) {
   PA_DCHECK(IsManagedByPartitionAllocNormalBuckets(ptr));
   // The only allocations that don't use tag are allocated outside of GigaCage,
   // hence we'd never get here in the use_tag=false case.
-  // TODO(bartekn): Add a DCHECK(page->root->tag_pointers) to assert this, once
+  // TODO(bartekn): Add a DCHECK(page->root->allow_extras) to assert this, once
   // we figure out the thread-safety variant mismatch problem (see the comment
   // in PartitionAllocGetPageForSize for the problem description).
   ptr = internal::PartitionPointerAdjustSubtract(true /* use_tag */, ptr);
@@ -804,7 +812,7 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlags(
     }
   }
   size_t requested_size = size;
-  size = internal::PartitionSizeAdjustAdd(tag_pointers, size);
+  size = internal::PartitionSizeAdjustAdd(allow_extras, size);
 #if ENABLE_TAG_FOR_CHECKED_PTR2
   PA_CHECK(size >= requested_size);
 #endif
@@ -829,11 +837,7 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AlignedAlloc(size_t alignment,
   // Aligned allocation support relies on the natural alignment guarantees of
   // PartitionAlloc. Since cookies and tags are layered on top of
   // PartitionAlloc, they change the guarantees. As a consequence, forbid both.
-  PA_DCHECK(!tag_pointers);
-#if ENABLE_PARTITION_ALLOC_COOKIES
-  CHECK(false) << "Aligned allocations do not work with cookies";
-  return nullptr;
-#else
+  PA_DCHECK(!allow_extras);
   // This is mandated by |posix_memalign()|, so should never fire.
   PA_CHECK(base::bits::IsPowerOfTwo(alignment));
 
@@ -856,7 +860,6 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AlignedAlloc(size_t alignment,
   PA_CHECK(reinterpret_cast<uintptr_t>(ptr) % alignment == 0ull);
 
   return ptr;
-#endif
 }
 
 template <bool thread_safe>
@@ -886,7 +889,7 @@ ALWAYS_INLINE size_t PartitionRoot<thread_safe>::ActualSize(size_t size) {
   return size;
 #else
   PA_DCHECK(PartitionRoot<thread_safe>::initialized);
-  size = internal::PartitionSizeAdjustAdd(tag_pointers, size);
+  size = internal::PartitionSizeAdjustAdd(allow_extras, size);
   auto* bucket = SizeToBucket(size);
   if (LIKELY(!bucket->is_direct_mapped())) {
     size = bucket->slot_size;
@@ -895,7 +898,7 @@ ALWAYS_INLINE size_t PartitionRoot<thread_safe>::ActualSize(size_t size) {
   } else {
     size = Bucket::get_direct_map_size(size);
   }
-  size = internal::PartitionSizeAdjustSubtract(tag_pointers, size);
+  size = internal::PartitionSizeAdjustSubtract(allow_extras, size);
   return size;
 #endif
 }
@@ -924,7 +927,9 @@ struct BASE_EXPORT PartitionAllocator {
 
   void init(PartitionAllocatorAlignment alignment =
                 PartitionAllocatorAlignment::kRegular) {
-    partition_root_.Init(alignment == PartitionAllocatorAlignment::kRegular);
+    partition_root_.Init(
+        alignment ==
+        PartitionAllocatorAlignment::kAlignedAlloc /* enforce_alignment */);
     PartitionAllocMemoryReclaimer::Instance()->RegisterPartition(
         &partition_root_);
   }

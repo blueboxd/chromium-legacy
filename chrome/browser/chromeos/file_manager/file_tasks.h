@@ -122,6 +122,10 @@ class FileSystemURL;
 namespace file_manager {
 namespace file_tasks {
 
+extern const char kActionIdView[];
+extern const char kActionIdSend[];
+extern const char kActionIdSendMultiple[];
+
 // Task types as explained in the comment above. Search for <task-type>.
 enum TaskType {
   TASK_TYPE_UNKNOWN = 0,  // Used only for handling errors.

@@ -31,9 +31,7 @@
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/modules/mediastream/media_devices.h"
 #include "third_party/blink/renderer/modules/mediastream/media_error_state.h"
-#include "third_party/blink/renderer/modules/mediastream/navigator_user_media.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -58,14 +56,10 @@ void NavigatorMediaStream::getUserMedia(
 
   UserMediaController* user_media =
       UserMediaController::From(navigator.DomWindow());
-  MediaDevices* media_devices = NavigatorUserMedia::mediaDevices(navigator);
   MediaErrorState error_state;
-  UserMediaRequest* request = UserMediaRequest::Create(
-      navigator.DomWindow(), user_media, options, success_callback,
-      error_callback,
-      WTF::Bind(&MediaDevices::SetEnumerateCanExposeDevices,
-                WrapWeakPersistent(media_devices)),
-      error_state);
+  UserMediaRequest* request =
+      UserMediaRequest::Create(navigator.DomWindow(), user_media, options,
+                               success_callback, error_callback, error_state);
   if (!request) {
     DCHECK(error_state.HadException());
     if (error_state.CanGenerateException()) {

@@ -199,8 +199,8 @@ HRESULT CreateGoogleUpdate3WebClass(
 
   ConfigureProxyBlanket(class_factory.Get());
 
-  return class_factory->CreateInstance(
-      nullptr, IID_PPV_ARGS(google_update->GetAddressOf()));
+  return class_factory->CreateInstance(nullptr,
+                                       IID_PPV_ARGS(&(*google_update)));
 }
 
 // Returns the process-wide storage for the state of the last update check.
@@ -567,10 +567,10 @@ UpdateCheckResult UpdateCheckDriver::BeginUpdateCheckInternal() {
   if (!app_bundle_) {
     Microsoft::WRL::ComPtr<IAppBundleWeb> app_bundle;
     Microsoft::WRL::ComPtr<IDispatch> dispatch;
-    hresult = google_update_->createAppBundleWeb(dispatch.GetAddressOf());
+    hresult = google_update_->createAppBundleWeb(&dispatch);
     if (FAILED(hresult))
       return {error_code, hresult};
-    hresult = dispatch.CopyTo(app_bundle.GetAddressOf());
+    hresult = dispatch.As(&app_bundle);
     if (FAILED(hresult))
       return {error_code, hresult};
     dispatch.Reset();
@@ -614,11 +614,11 @@ UpdateCheckResult UpdateCheckDriver::BeginUpdateCheckInternal() {
     // this point onward result in it being released.
     Microsoft::WRL::ComPtr<IAppBundleWeb> app_bundle;
     app_bundle.Swap(app_bundle_);
-    hresult = app_bundle->get_appWeb(0, dispatch.GetAddressOf());
+    hresult = app_bundle->get_appWeb(0, &dispatch);
     if (FAILED(hresult))
       return {error_code, hresult};
     Microsoft::WRL::ComPtr<IAppWeb> app;
-    hresult = dispatch.CopyTo(app.GetAddressOf());
+    hresult = dispatch.As(&app);
     if (FAILED(hresult))
       return {error_code, hresult};
     ConfigureProxyBlanket(app.Get());
@@ -637,10 +637,10 @@ bool UpdateCheckDriver::GetCurrentState(
     CurrentState* state_value,
     HRESULT* hresult) const {
   Microsoft::WRL::ComPtr<IDispatch> dispatch;
-  *hresult = app_->get_currentState(dispatch.GetAddressOf());
+  *hresult = app_->get_currentState(&dispatch);
   if (FAILED(*hresult))
     return false;
-  *hresult = dispatch.CopyTo(current_state->GetAddressOf());
+  *hresult = dispatch.As(&(*current_state));
   if (FAILED(*hresult))
     return false;
   ConfigureProxyBlanket(current_state->Get());

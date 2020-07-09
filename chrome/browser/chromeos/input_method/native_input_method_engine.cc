@@ -281,6 +281,11 @@ void NativeInputMethodEngine::ImeObserver::OnSuggestionsChanged(
   base_observer_->OnSuggestionsChanged(suggestions);
 }
 
+void NativeInputMethodEngine::ImeObserver::OnInputMethodOptionsChanged(
+    const std::string& engine_id) {
+  base_observer_->OnInputMethodOptionsChanged(engine_id);
+}
+
 void NativeInputMethodEngine::ImeObserver::FlushForTesting() {
   remote_manager_.FlushForTesting();
   if (remote_to_engine_.is_bound())

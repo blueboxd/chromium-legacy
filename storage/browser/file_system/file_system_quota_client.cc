@@ -6,7 +6,6 @@
 
 #include <algorithm>
 #include <memory>
-#include <set>
 #include <vector>
 
 #include "base/bind.h"
@@ -39,12 +38,7 @@ void GetOriginsForTypeOnFileTaskRunner(FileSystemContext* context,
   FileSystemQuotaUtil* quota_util = context->GetQuotaUtil(type);
   if (!quota_util)
     return;
-  // TODO(pwnall): Make QuotaUtil::GetOrigins*OnFileTaskRunner() use a
-  //               std::vector instead of a std::set, and avoid the copy here.
-  std::set<url::Origin> origins;
-  quota_util->GetOriginsForTypeOnFileTaskRunner(type, &origins);
-  for (auto& origin : origins)
-    origins_ptr->push_back(std::move(origin));
+  *origins_ptr = quota_util->GetOriginsForTypeOnFileTaskRunner(type);
 }
 
 void GetOriginsForHostOnFileTaskRunner(FileSystemContext* context,
@@ -57,12 +51,7 @@ void GetOriginsForHostOnFileTaskRunner(FileSystemContext* context,
   FileSystemQuotaUtil* quota_util = context->GetQuotaUtil(type);
   if (!quota_util)
     return;
-  // TODO(pwnall): Make QuotaUtil::GetOrigins*OnFileTaskRunner() use a
-  //               std::vector instead of a std::set, and avoid the copy here.
-  std::set<url::Origin> origins;
-  quota_util->GetOriginsForHostOnFileTaskRunner(type, host, &origins);
-  for (auto& origin : origins)
-    origins_ptr->push_back(std::move(origin));
+  *origins_ptr = quota_util->GetOriginsForHostOnFileTaskRunner(type, host);
 }
 
 void DidGetFileSystemQuotaClientOrigins(

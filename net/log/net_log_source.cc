@@ -60,17 +60,31 @@ base::Value NetLogSource::ToEventParameters() const {
 // static
 bool NetLogSource::FromEventParameters(const base::Value* event_params,
                                        NetLogSource* source) {
-  const base::DictionaryValue* dict = nullptr;
-  const base::DictionaryValue* source_dict = nullptr;
+  const base::Value* source_dict = nullptr;
   int source_id = -1;
   int source_type = static_cast<int>(NetLogSourceType::COUNT);
-  if (!event_params || !event_params->GetAsDictionary(&dict) ||
-      !dict->GetDictionary("source_dependency", &source_dict) ||
-      !source_dict->GetInteger("id", &source_id) ||
-      !source_dict->GetInteger("type", &source_type)) {
+  if (!event_params) {
     *source = NetLogSource();
     return false;
   }
+  source_dict = event_params->FindDictKey("source_dependency");
+  if (!source_dict) {
+    *source = NetLogSource();
+    return false;
+  }
+  base::Optional<int> opt_int;
+  opt_int = source_dict->FindIntKey("id");
+  if (!opt_int) {
+    *source = NetLogSource();
+    return false;
+  }
+  source_id = opt_int.value();
+  opt_int = source_dict->FindIntKey("type");
+  if (!opt_int) {
+    *source = NetLogSource();
+    return false;
+  }
+  source_type = opt_int.value();
 
   DCHECK_GE(source_id, 0);
   DCHECK_LT(source_type, static_cast<int>(NetLogSourceType::COUNT));

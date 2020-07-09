@@ -120,6 +120,9 @@ class ASH_PUBLIC_EXPORT SessionController {
   virtual void AddObserver(SessionObserver* observer) = 0;
   virtual void RemoveObserver(SessionObserver* observer) = 0;
 
+  // Returns true if the screen is currently locked.
+  virtual bool IsScreenLocked() const = 0;
+
  protected:
   SessionController();
   virtual ~SessionController();

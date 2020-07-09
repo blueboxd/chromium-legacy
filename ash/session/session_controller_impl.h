@@ -64,9 +64,6 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
   // Returns true if the screen can be locked.
   bool CanLockScreen() const;
 
-  // Returns true if the screen is currently locked.
-  bool IsScreenLocked() const;
-
   // Returns true if the screen should be locked automatically when the screen
   // is turned off or the system is suspended.
   bool ShouldLockScreenAutomatically() const;
@@ -207,6 +204,7 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
       SessionActivationObserver* observer) override;
   void AddObserver(SessionObserver* observer) override;
   void RemoveObserver(SessionObserver* observer) override;
+  bool IsScreenLocked() const override;
 
   // Test helpers.
   void ClearUserSessionsForTest();

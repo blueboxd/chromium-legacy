@@ -481,8 +481,7 @@ FileNetLogObserver::FileNetLogObserver(
       write_queue_(std::move(write_queue)),
       file_writer_(std::move(file_writer)) {
   if (!constants)
-    constants = base::DictionaryValue::From(
-        base::Value::ToUniquePtrValue(GetNetConstants()));
+    constants = base::Value::ToUniquePtrValue(GetNetConstants());
   file_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&FileNetLogObserver::FileWriter::Initialize,
                                 base::Unretained(file_writer_.get()),

@@ -83,6 +83,7 @@ class NativeInputMethodEngine : public InputMethodEngine {
     void OnScreenProjectionChanged(bool is_projected) override;
     void OnSuggestionsChanged(
         const std::vector<std::string>& suggestions) override;
+    void OnInputMethodOptionsChanged(const std::string& engine_id) override;
 
     // mojom::InputChannel:
     void ProcessMessage(const std::vector<uint8_t>& message,

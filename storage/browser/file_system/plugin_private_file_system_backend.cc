@@ -250,31 +250,35 @@ void PluginPrivateFileSystemBackend::PerformStorageCleanupOnFileTaskRunner(
   obfuscated_file_util()->RewriteDatabases();
 }
 
-void PluginPrivateFileSystemBackend::GetOriginsForTypeOnFileTaskRunner(
-    FileSystemType type,
-    std::set<url::Origin>* origins) {
+std::vector<url::Origin>
+PluginPrivateFileSystemBackend::GetOriginsForTypeOnFileTaskRunner(
+    FileSystemType type) {
   if (!CanHandleType(type))
-    return;
+    return std::vector<url::Origin>();
   std::unique_ptr<ObfuscatedFileUtil::AbstractOriginEnumerator> enumerator(
       obfuscated_file_util()->CreateOriginEnumerator());
+  std::vector<url::Origin> origins;
   base::Optional<url::Origin> origin;
   while ((origin = enumerator->Next()).has_value())
-    origins->insert(std::move(origin).value());
+    origins.push_back(std::move(origin).value());
+  return origins;
 }
 
-void PluginPrivateFileSystemBackend::GetOriginsForHostOnFileTaskRunner(
+std::vector<url::Origin>
+PluginPrivateFileSystemBackend::GetOriginsForHostOnFileTaskRunner(
     FileSystemType type,
-    const std::string& host,
-    std::set<url::Origin>* origins) {
+    const std::string& host) {
   if (!CanHandleType(type))
-    return;
+    return std::vector<url::Origin>();
   std::unique_ptr<ObfuscatedFileUtil::AbstractOriginEnumerator> enumerator(
       obfuscated_file_util()->CreateOriginEnumerator());
+  std::vector<url::Origin> origins;
   base::Optional<url::Origin> origin;
   while ((origin = enumerator->Next()).has_value()) {
     if (host == origin->host())
-      origins->insert(std::move(origin).value());
+      origins.push_back(std::move(origin).value());
   }
+  return origins;
 }
 
 int64_t PluginPrivateFileSystemBackend::GetOriginUsageOnFileTaskRunner(

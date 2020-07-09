@@ -9,9 +9,11 @@
 
 #include "base/macros.h"
 #include "ui/chromeos/ui_chromeos_export.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/button_observer.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 
 namespace chromeos {
 struct AssistiveWindowProperties;
@@ -38,12 +40,16 @@ class UI_CHROMEOS_EXPORT SuggestionWindowView
       public views::ButtonListener,
       public views::ButtonObserver {
  public:
-  SuggestionWindowView(gfx::NativeView parent, AssistiveDelegate* delegate);
-  ~SuggestionWindowView() override;
-  views::Widget* InitWidget();
+  METADATA_HEADER(SuggestionWindowView);
 
-  // Hides.
-  void Hide();
+  // Creates a bubble widget containing a SuggestionWindowView.  Returns a
+  // pointer to the contained view.
+  static SuggestionWindowView* Create(gfx::NativeView parent,
+                                      AssistiveDelegate* delegate);
+
+  // views::BubbleDialogDelegateView:
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
+      views::Widget* widget) override;
 
   // Shows suggestion text.
   void Show(const SuggestionDetails& details);
@@ -56,13 +62,14 @@ class UI_CHROMEOS_EXPORT SuggestionWindowView
   void SetButtonHighlighted(const AssistiveWindowButton& button,
                             bool highlighted);
 
-  void SetBounds(const gfx::Rect& cursor_bounds);
-
   views::View* GetCandidateAreaForTesting();
   views::View* GetSettingLinkViewForTesting();
   views::View* GetLearnMoreButtonForTesting();
 
  private:
+  SuggestionWindowView(gfx::NativeView parent, AssistiveDelegate* delegate);
+  ~SuggestionWindowView() override;
+
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
@@ -91,9 +98,6 @@ class UI_CHROMEOS_EXPORT SuggestionWindowView
   // This highlights or unhighlights the Learn More Button based on the given
   // parameter. No-op if the button is already in that state.
   void SetLearnMoreButtonHighlighted(bool highlighted);
-
-  // views::BubbleDialogDelegateView:
-  const char* GetClassName() const override;
 
   // The delegate to handle events from this class.
   AssistiveDelegate* delegate_;

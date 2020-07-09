@@ -256,7 +256,7 @@ class CC_PAINT_EXPORT PaintImage {
     return paint_worklet_input_ ? 0 : GetSkImage()->uniqueID();
   }
   explicit operator bool() const {
-    return paint_worklet_input_ || !!GetSkImage();
+    return paint_worklet_input_ || !!GetSkImage() || texture_backing_;
   }
   bool IsLazyGenerated() const {
     return paint_worklet_input_ ? false : GetSkImage()->isLazyGenerated();

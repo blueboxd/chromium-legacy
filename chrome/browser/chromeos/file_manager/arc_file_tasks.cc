@@ -50,11 +50,11 @@ constexpr char kAppIdSeparator = '/';
 // (see chrome/browser/chromeos/file_manager/file_tasks.h).
 std::string ArcActionToFileTaskActionId(const std::string& action) {
   if (action == arc::kIntentActionView)
-    return "view";
+    return kActionIdView;
   else if (action == arc::kIntentActionSend)
-    return "send";
+    return kActionIdSend;
   else if (action == arc::kIntentActionSendMultiple)
-    return "send_multiple";
+    return kActionIdSendMultiple;
   NOTREACHED() << "Unhandled ARC action \"" << action << "\"";
   return "";
 }
@@ -63,11 +63,11 @@ std::string ArcActionToFileTaskActionId(const std::string& action) {
 // HandleUrlList has been updated to take a string action rather than an
 // ArcActionType.
 arc::mojom::ActionType FileTaskActionIdToArcActionType(const std::string& id) {
-  if (id == "view")
+  if (id == kActionIdView)
     return arc::mojom::ActionType::VIEW;
-  if (id == "send")
+  if (id == kActionIdSend)
     return arc::mojom::ActionType::SEND;
-  if (id == "send_multiple")
+  if (id == kActionIdSendMultiple)
     return arc::mojom::ActionType::SEND_MULTIPLE;
   NOTREACHED() << "Unhandled file task action ID \"" << id << "\"";
   return arc::mojom::ActionType::VIEW;

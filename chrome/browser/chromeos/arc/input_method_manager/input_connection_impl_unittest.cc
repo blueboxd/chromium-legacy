@@ -54,6 +54,7 @@ class DummyInputMethodEngineObserver
   void OnScreenProjectionChanged(bool is_projected) override {}
   void OnSuggestionsChanged(
       const std::vector<std::string>& suggestions) override {}
+  void OnInputMethodOptionsChanged(const std::string& engine_id) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyInputMethodEngineObserver);

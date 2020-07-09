@@ -65,27 +65,23 @@ class BlinkTestRunner {
   void OnReplicateTestConfiguration(
       mojom::WebTestRunTestConfigurationPtr params);
   void OnSetupRendererProcessForNonTestWindow();
+  void CaptureDump(mojom::WebTestRenderFrame::CaptureDumpCallback callback);
   void DidCommitNavigationInMainFrame();
   void OnResetRendererAfterWebTest();
   void OnFinishTestInMainWindow();
+  void OnLayoutDumpCompleted(std::string completed_layout_dump);
 
  private:
   // Helper reused by OnSetTestConfiguration and OnReplicateTestConfiguration.
   void ApplyTestConfiguration(mojom::WebTestRunTestConfigurationPtr params);
 
-  // Grabs the audio results. This is only called when audio results are
-  // known to be present.
-  std::vector<uint8_t> CaptureLocalAudioDump();
-  // Returns a string if able to capture the dump locally. If not, then the
-  // browser must do the capture.
-  base::Optional<std::string> CaptureLocalLayoutDump();
-  // Grabs the pixel results. This is only called when pixel results are being
-  // captured in the renderer (aka CanDumpPixelsFromRenderer() is true), such as
-  // to grab the current image being dragged by the mouse.
-  SkBitmap CaptureLocalPixelsDump();
-  // Returns the current selection rect if it should be drawn in the pixel
-  // results, or an empty rect.
-  gfx::Rect CaptureLocalMainFrameSelectionRect();
+  // After finishing the test, retrieves the audio, text, and pixel dumps from
+  // the TestRunner library and sends them to the browser process.
+  void OnPixelsDumpCompleted(const SkBitmap& snapshot);
+  void CaptureDumpComplete();
+  void CaptureLocalAudioDump();
+  void CaptureLocalLayoutDump();
+  void CaptureLocalPixelsDump();
 
   mojo::AssociatedRemote<mojom::WebTestControlHost>&
   GetWebTestControlHostRemote();
@@ -97,6 +93,10 @@ class BlinkTestRunner {
 
   bool is_main_window_ = false;
   bool waiting_for_reset_navigation_to_about_blank_ = false;
+
+  mojom::WebTestRenderFrame::CaptureDumpCallback dump_callback_;
+  mojom::WebTestDumpPtr dump_result_;
+  bool waiting_for_layout_dump_results_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BlinkTestRunner);
 };

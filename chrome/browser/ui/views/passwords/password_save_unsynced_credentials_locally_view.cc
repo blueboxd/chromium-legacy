@@ -75,9 +75,8 @@ void PasswordSaveUnsyncedCredentialsLocallyView::CreateLayout() {
                                0));
   AddChildView(std::move(description));
 
-  DCHECK(!controller_.GetUnsyncedCredentials().empty());
-  for (const autofill::PasswordForm& row :
-       controller_.GetUnsyncedCredentials()) {
+  DCHECK(!controller_.unsynced_credentials().empty());
+  for (const autofill::PasswordForm& row : controller_.unsynced_credentials()) {
     auto* row_view = AddChildView(std::make_unique<views::View>());
     auto* username_label = row_view->AddChildView(CreateUsernameLabel(row));
     auto* password_label = row_view->AddChildView(

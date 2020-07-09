@@ -5945,7 +5945,29 @@
     ]
   },
 
-  "SafeBrowsingWhitelistDomains": {},
+  "SafeBrowsingWhitelistDomains": {
+    "os": ["win", "mac", "linux", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "SafeBrowsingAllowlistDomains": ["google.com"]
+        },
+        "prefs": { "safebrowsing.safe_browsing_whitelist_domains" : {}}
+      }
+    ]
+  },
+
+  "SafeBrowsingAllowlistDomains": {
+    "os": ["win", "mac", "linux", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "SafeBrowsingAllowlistDomains": ["google.com"]
+        },
+        "prefs": { "safebrowsing.safe_browsing_whitelist_domains" : {}}
+      }
+    ]
+  },
 
   "PasswordProtectionLoginURLs": {},
 

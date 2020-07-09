@@ -203,7 +203,8 @@ class BASE_EXPORT MemoryDumpManager {
   static void SetInstanceForTesting(MemoryDumpManager* instance);
 
   // Lazily initializes dump_thread_ and returns its TaskRunner.
-  scoped_refptr<base::SequencedTaskRunner> GetOrCreateBgTaskRunnerLocked();
+  scoped_refptr<base::SequencedTaskRunner> GetOrCreateBgTaskRunnerLocked()
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Calls InvokeOnMemoryDump() for the each MDP that belongs to the current
   // task runner and switches to the task runner of the next MDP. Handles
@@ -237,13 +238,13 @@ class BASE_EXPORT MemoryDumpManager {
 
   // An ordered set of registered MemoryDumpProviderInfo(s), sorted by task
   // runner affinity (MDPs belonging to the same task runners are adjacent).
-  MemoryDumpProviderInfo::OrderedSet dump_providers_;
+  MemoryDumpProviderInfo::OrderedSet dump_providers_ GUARDED_BY(lock_);
 
   // Function provided by the embedder to handle global dump requests.
   RequestGlobalDumpFunction request_dump_function_;
 
   // True when current process coordinates the periodic dump triggering.
-  bool is_coordinator_;
+  bool is_coordinator_ GUARDED_BY(lock_);
 
   // Protects from concurrent accesses to the local state, eg: to guard against
   // disabling logging while dumping on another thread.
@@ -251,7 +252,7 @@ class BASE_EXPORT MemoryDumpManager {
 
   // Thread used for MemoryDumpProviders which don't specify a task runner
   // affinity.
-  std::unique_ptr<Thread> dump_thread_;
+  std::unique_ptr<Thread> dump_thread_ GUARDED_BY(lock_);
 
   // The unique id of the child process. This is created only for tracing and is
   // expected to be valid only when tracing is enabled.

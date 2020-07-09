@@ -4477,6 +4477,15 @@
   <message name="IDS_CROSTINI_UPGRADING_SUBTEXT" desc="Description for upgrade dialog warning user of delay starting container due to running upgrades.">
     Your app will open when the upgrade is finished. Upgrades can take a few minutes.
   </message>
+  <message name="IDS_CROSTINI_UPGRADE_AVAILABLE_NOTIFICATION_TITLE" desc="Title of the notification shown to the user when a Linux upgrade is available.">
+    Linux
+  </message>
+  <message name="IDS_CROSTINI_UPGRADE_AVAILABLE_NOTIFICATION_BODY" desc="Body text  of the notification shown to the user when a Linux upgrade is available.">
+    An upgrade is available for your Linux Container. You can also upgrade later from the Settings app.
+  </message>
+  <message name="IDS_CROSTINI_UPGRADE_AVAILABLE_NOTIFICATION_UPGRADE" desc="Text on the action button of the notification shown to the user when a Linux upgrade is available.">
+    Upgrade
+  </message>
   <message name="IDS_CROSTINI_UPGRADER_TITLE" desc="Title of the Crostini upgrader, a dialog for upgrading Linux.">
     Upgrade Linux (Beta)
   </message>

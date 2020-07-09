@@ -277,8 +277,6 @@ MemoryDumpManager::GetDumpThreadTaskRunner() {
 
 scoped_refptr<base::SequencedTaskRunner>
 MemoryDumpManager::GetOrCreateBgTaskRunnerLocked() {
-  lock_.AssertAcquired();
-
   if (dump_thread_)
     return dump_thread_->task_runner();
 

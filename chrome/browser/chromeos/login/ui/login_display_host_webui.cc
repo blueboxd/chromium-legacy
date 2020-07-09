@@ -46,6 +46,7 @@
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_mojo.h"
 #include "chrome/browser/chromeos/login/ui/login_display_webui.h"
+#include "chrome/browser/chromeos/login/ui/webui_accelerator_mapping.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
@@ -903,7 +904,8 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
   login_window_ = new views::Widget;
   login_window_->Init(std::move(params));
 
-  login_view_ = new WebUILoginView(WebUILoginView::WebViewSettings());
+  login_view_ = new WebUILoginView(WebUILoginView::WebViewSettings(),
+                                   weak_factory_.GetWeakPtr());
   login_view_->Init();
   if (login_view_->webui_visible())
     OnLoginPromptVisible();
@@ -1003,12 +1005,13 @@ void LoginDisplayHostWebUI::UpdateOobeDialogState(ash::OobeDialogState state) {
   ash::LoginScreen::Get()->GetModel()->NotifyOobeDialogState(state);
 }
 
-void LoginDisplayHostWebUI::ShowFeedback() {
-  NOTREACHED();
-}
-
-void LoginDisplayHostWebUI::ShowResetScreen() {
-  NOTREACHED();
+bool LoginDisplayHostWebUI::HandleAccelerator(
+    ash::LoginAcceleratorAction action) {
+  auto* oobe_ui = GetOobeUI();
+  if (!oobe_ui)
+    return false;
+  oobe_ui->ForwardAccelerator(MapToWebUIAccelerator(action));
+  return true;
 }
 
 void LoginDisplayHostWebUI::HandleDisplayCaptivePortal() {

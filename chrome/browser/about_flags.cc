@@ -203,6 +203,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "components/arc/arc_features.h"
+#include "media/capture/video/chromeos/video_capture_features_chromeos.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #include "ui/events/ozone/features.h"
 #endif  // OS_CHROMEOS
@@ -3338,6 +3339,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrostiniUsbAllowUnsupportedName,
      flag_descriptions::kCrostiniUsbAllowUnsupportedDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniUsbAllowUnsupported)},
+    {"disable-camera-frame-rotation-at-source",
+     flag_descriptions::kDisableCameraFrameRotationAtSourceName,
+     flag_descriptions::kDisableCameraFrameRotationAtSourceDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(media::features::kDisableCameraFrameRotationAtSource)},
     {"files-ng", flag_descriptions::kFilesNGName,
      flag_descriptions::kFilesNGDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFilesNG)},
@@ -5086,6 +5091,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kGlobalMediaControlsSeamlessTransferDescription,
      kOsWin | kOsMac | kOsLinux,
      FEATURE_VALUE_TYPE(media::kGlobalMediaControlsSeamlessTransfer)},
+
+    {"global-media-controls-overlay-controls",
+     flag_descriptions::kGlobalMediaControlsOverlayControlsName,
+     flag_descriptions::kGlobalMediaControlsOverlayControlsDescription,
+     kOsWin | kOsMac | kOsLinux,
+     FEATURE_VALUE_TYPE(media::kGlobalMediaControlsOverlayControls)},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 #if BUILDFLAG(ENABLE_SPELLCHECK) && defined(OS_WIN)
@@ -5916,9 +5927,7 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   // The following flags are only available to teamfooders.
   if (!strcmp(kAssistantBetterOnboardingInternalName, entry.internal_name) ||
       !strcmp(kAssistantTimersV2InternalName, entry.internal_name)) {
-    constexpr base::Feature kTeamfoodFlags{"TeamfoodFlags",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-    return !base::FeatureList::IsEnabled(kTeamfoodFlags);
+    return !base::FeatureList::IsEnabled(features::kTeamfoodFlags);
   }
 #endif  // defined(OS_CHROMEOS)
 
@@ -5954,6 +5963,10 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
            ->ShouldDisableDohForManaged() ||
        features::kDnsOverHttpsShowUiParam.Get())) {
     return true;
+  }
+
+  if (!strcmp("password-change-support", entry.internal_name)) {
+    return !base::FeatureList::IsEnabled(features::kTeamfoodFlags);
   }
 
   if (flags::IsFlagExpired(entry.internal_name))

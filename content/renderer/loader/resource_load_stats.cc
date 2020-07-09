@@ -14,26 +14,13 @@
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/common/loader/network_utils.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 
 namespace content {
 
 namespace {
-
-// Returns true if the headers indicate that this resource should always be
-// revalidated or not cached.
-bool AlwaysAccessNetwork(
-    const scoped_refptr<net::HttpResponseHeaders>& headers) {
-  if (!headers)
-    return false;
-
-  // RFC 2616, section 14.9.
-  return headers->HasHeaderValue("cache-control", "no-cache") ||
-         headers->HasHeaderValue("cache-control", "no-store") ||
-         headers->HasHeaderValue("pragma", "no-cache") ||
-         headers->HasHeaderValue("vary", "*");
-}
 
 #if defined(OS_ANDROID)
 void UpdateUserGestureCarryoverInfo(int render_frame_id) {
@@ -137,7 +124,7 @@ void NotifyResourceRedirectReceived(
   net_redirect_info->network_info->network_accessed =
       redirect_response->network_accessed;
   net_redirect_info->network_info->always_access_network =
-      AlwaysAccessNetwork(redirect_response->headers);
+      blink::AlwaysAccessNetwork(redirect_response->headers);
   net_redirect_info->network_info->remote_endpoint =
       redirect_response->remote_endpoint;
   resource_load_info->redirect_info_chain.push_back(
@@ -167,7 +154,7 @@ void NotifyResourceResponseReceived(
   resource_load_info->network_info->network_accessed =
       response_head->network_accessed;
   resource_load_info->network_info->always_access_network =
-      AlwaysAccessNetwork(response_head->headers);
+      blink::AlwaysAccessNetwork(response_head->headers);
   resource_load_info->network_info->remote_endpoint =
       response_head->remote_endpoint;
 

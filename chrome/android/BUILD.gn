@@ -420,6 +420,8 @@ android_library("chrome_java") {
     "//components/subresource_filter/android:java",
     "//components/sync/android:sync_java",
     "//components/sync/protocol:protocol_java",
+    "//components/translate/content/android:java",
+    "//components/translate/content/android:translate_android_enums_java",
     "//components/url_formatter/android:url_formatter_java",
     "//components/user_prefs/android:java",
     "//components/variations/android:variations_java",
@@ -690,7 +692,6 @@ java_cpp_enum("chrome_android_java_enums_srcjar") {
     "//chrome/browser/notifications/notification_platform_bridge_android.cc",
     "//chrome/browser/ntp_snippets/ntp_snippets_metrics.h",
     "//chrome/browser/profiles/profile_metrics.h",
-    "//chrome/browser/translate/android/translate_utils.h",
   ]
 }
 
@@ -1068,6 +1069,7 @@ android_library("chrome_test_java") {
     "//components/sync:sync_java_test_support",
     "//components/sync/android:sync_java",
     "//components/sync/protocol:protocol_java",
+    "//components/translate/content/android:javatests",
     "//components/url_formatter/android:url_formatter_java",
     "//components/user_prefs/android:java",
     "//components/webapk/android/libs/client:java",

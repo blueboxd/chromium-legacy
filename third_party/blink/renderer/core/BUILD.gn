@@ -578,10 +578,7 @@ css_properties("make_core_generated_cssom_types") {
 
 code_generator("make_core_generated_css_value_keywords") {
   script = "../build/scripts/core/css/make_css_value_keywords.py"
-  json_inputs = [
-    "css/css_value_keywords.json5",
-    "css/svg_css_value_keywords.json5",
-  ]
+  json_inputs = [ "css/css_value_keywords.json5" ]
   other_inputs = [ "../build/scripts/gperf.py" ]
   templates = [
     "../build/scripts/core/css/templates/css_value_keywords.cc.tmpl",

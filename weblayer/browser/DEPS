@@ -50,6 +50,7 @@ include_rules = [
   "+components/ssl_errors",
   "+components/startup_metric_utils",
   "+components/strings",
+  "+components/translate/content/android",
   "+components/translate/content/browser",
   "+components/translate/core/browser",
   "+components/translate/core/common",

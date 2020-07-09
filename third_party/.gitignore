@@ -160,6 +160,7 @@
 /mockito/src
 /nacl_sdk_binaries/
 /nasm
+/nearby/src
 /netty-tcnative/src
 /netty4/src
 /node/linux

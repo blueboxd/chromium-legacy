@@ -1671,6 +1671,41 @@ def make_attribute_set_callback_def(cg_context, function_name):
         body.append(TextNode(text))
         return func_def
 
+    # Binary size reduction hack
+    # 1. Drop the check of argument length although this is a violation of
+    #   Web IDL.
+    # 2. Leverage the nature of [LegacyTreatNonObjectAsNull] (ES to IDL
+    #   conversion never fails).
+    if (cg_context.attribute.idl_type.is_typedef
+            and (cg_context.attribute.idl_type.identifier in (
+                "EventHandler", "OnBeforeUnloadEventHandler",
+                "OnErrorEventHandler"))):
+        body.extend([
+            make_check_receiver(cg_context),
+            EmptyNode(),
+            TextNode("""\
+EventListener* event_handler = JSEventHandler::CreateOrNull(
+    ${v8_property_value},
+    JSEventHandler::HandlerType::k${attribute.idl_type.identifier});\
+"""),
+        ])
+        code_generator_info = cg_context.attribute.code_generator_info
+        func_name = name_style.api_func("set", cg_context.attribute.identifier)
+        if code_generator_info.defined_in_partial:
+            class_name = (code_generator_info.receiver_implemented_as
+                          or name_style.class_(
+                              cg_context.attribute.owner_mixin.identifier))
+            text = _format(
+                "{class_name}::{func_name}"
+                "(*${blink_receiver}, event_handler);",
+                class_name=class_name,
+                func_name=func_name)
+        else:
+            text = _format("${blink_receiver}->{func_name}(event_handler);",
+                           func_name=func_name)
+        body.append(TextNode(text))
+        return func_def
+
     body.extend([
         make_check_receiver(cg_context),
         make_check_argument_length(cg_context),

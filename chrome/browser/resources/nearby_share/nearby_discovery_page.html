@@ -1,1 +1,73 @@
-<h1>Nearby Discovery Page</h1>
+<style>
+  #actions {
+    margin-top: 17px;
+    text-align: end;
+  }
+
+  nearby-preview {
+    margin-inline-end: 10px;
+    margin-inline-start: 10px;
+  }
+
+  #help {
+    color: rgb(95, 99, 104);
+    font-size: 9px;
+    line-height: 12px;
+    margin: 12px auto;
+  }
+
+  #page-content {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 27px 32px 25px 37px;
+  }
+
+  #process-row {
+    display: flex;
+    flex-grow: 1;
+    margin-top: 48px;
+  }
+
+  #subtitle {
+    color: rgb(32, 33, 36);
+    font-size: 100%;
+    font-weight: normal;
+    line-height: 154%;
+    margin: 0;
+  }
+
+  #title {
+    color: rgb(32, 33, 36);
+    font-size: 123%;
+    font-weight: normal;
+    letter-spacing: 0.27px;
+    line-height: 150%;
+    margin: 0;
+  }
+</style>
+
+<div id="page-content">
+  <h1 id="title">Nearby Share</h1>
+  <h2 id="subtitle">Select people you would like to share with</h2>
+
+  <div id="process-row">
+    <nearby-preview title="Doggo.jpg"></nearby-preview>
+  </div>
+
+  <div id="help">
+    Make sure both devices are unlocked, close together (within 1 ft), and have
+    Bluetooth turned on. If you’re sharing with a Chromebook make sure Nearby
+    Share is turned on from quick settings.
+  </div>
+
+  <div id="actions">
+    <cr-button class="cancel-button">
+      Cancel
+    </cr-button>
+    <cr-button class="action-button" disabled="disabled">
+      Next
+    </cr-button>
+  </div>
+</div>

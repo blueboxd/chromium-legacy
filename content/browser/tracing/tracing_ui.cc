@@ -40,9 +40,16 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_config.h"
+#include "third_party/perfetto/include/perfetto/tracing/tracing.h"
+#include "third_party/perfetto/protos/perfetto/common/trace_stats.gen.h"
 
 namespace content {
 namespace {
+constexpr char kStreamFormat[] = "stream_format";
+constexpr char kStreamFormatProtobuf[] = "protobuf";
+constexpr char kStreamFormatJSON[] = "json";
+perfetto::TracingSession* g_tracing_session;
 
 void OnGotCategories(WebUIDataSource::GotDataCallback callback,
                      const std::set<std::string>& categorySet) {
@@ -61,16 +68,25 @@ void OnRecordingEnabledAck(WebUIDataSource::GotDataCallback callback);
 bool BeginRecording(const std::string& data64,
                     WebUIDataSource::GotDataCallback callback) {
   base::trace_event::TraceConfig trace_config("", "");
-  if (!TracingUI::GetTracingOptions(data64, &trace_config))
+  std::string stream_format;
+  if (!TracingUI::GetTracingOptions(data64, trace_config, stream_format))
     return false;
 
+  // TODO(skyostil): Migrate all use cases from TracingController to Perfetto.
+  if (stream_format == kStreamFormatProtobuf) {
+    if (g_tracing_session)
+      delete g_tracing_session;
+    g_tracing_session = perfetto::Tracing::NewTrace().release();
+    g_tracing_session->Setup(tracing::GetDefaultPerfettoConfig(trace_config));
+    g_tracing_session->Start();
+    // TODO(skyostil): Wait for the "tracing started" callback once it is
+    // available in Perfetto.
+    OnRecordingEnabledAck(std::move(callback));
+    return true;
+  }
   return TracingController::GetInstance()->StartTracing(
       trace_config,
       base::BindOnce(&OnRecordingEnabledAck, std::move(callback)));
-}
-
-void OnRecordingEnabledAck(WebUIDataSource::GotDataCallback callback) {
-  std::move(callback).Run(base::MakeRefCounted<base::RefCountedString>());
 }
 
 void OnTraceBufferUsageResult(WebUIDataSource::GotDataCallback callback,
@@ -80,11 +96,91 @@ void OnTraceBufferUsageResult(WebUIDataSource::GotDataCallback callback,
   std::move(callback).Run(base::RefCountedString::TakeString(&str));
 }
 
+bool GetTraceBufferUsage(WebUIDataSource::GotDataCallback callback) {
+  if (g_tracing_session) {
+    // |callback| is move-only, so in order to pass it through a copied lambda
+    // we need to temporarily move it on the heap.
+    auto shared_callback(std::make_shared<WebUIDataSource::GotDataCallback>(
+        std::move(callback)));
+    g_tracing_session->GetTraceStats(
+        [shared_callback](
+            perfetto::TracingSession::GetTraceStatsCallbackArgs args) {
+          std::string usage;
+          perfetto::protos::gen::TraceStats trace_stats;
+          if (args.success &&
+              trace_stats.ParseFromArray(args.trace_stats_data.data(),
+                                         args.trace_stats_data.size()) &&
+              trace_stats.buffer_stats_size()) {
+            // Note: Chrome's configs only use a single buffer.
+            const perfetto::protos::gen::TraceStats::BufferStats& buf_stats =
+                trace_stats.buffer_stats()[0];
+            size_t bytes_in_buffer = buf_stats.bytes_written() -
+                                     buf_stats.bytes_read() -
+                                     buf_stats.bytes_overwritten() +
+                                     buf_stats.padding_bytes_written() -
+                                     buf_stats.padding_bytes_cleared();
+            double percent_full =
+                bytes_in_buffer / static_cast<double>(buf_stats.buffer_size());
+            usage = base::NumberToString(percent_full);
+          }
+          std::move(*shared_callback)
+              .Run(base::RefCountedString::TakeString(&usage));
+        });
+    return true;
+  }
+
+  return TracingController::GetInstance()->GetTraceBufferUsage(
+      base::BindOnce(OnTraceBufferUsageResult, std::move(callback)));
+}
+
+void ReadProtobufTraceData(
+    scoped_refptr<TracingController::TraceDataEndpoint> endpoint,
+    perfetto::TracingSession::ReadTraceCallbackArgs args) {
+  if (args.size) {
+    auto data_string = std::make_unique<std::string>(args.data, args.size);
+    endpoint->ReceiveTraceChunk(std::move(data_string));
+  }
+  if (!args.has_more)
+    endpoint->ReceivedTraceFinalContents();
+}
+
 void TracingCallbackWrapperBase64(WebUIDataSource::GotDataCallback callback,
                                   std::unique_ptr<std::string> data) {
   base::RefCountedString* data_base64 = new base::RefCountedString();
   base::Base64Encode(*data, &data_base64->data());
   std::move(callback).Run(data_base64);
+}
+
+bool EndRecording(WebUIDataSource::GotDataCallback callback) {
+  if (!TracingController::GetInstance()->IsTracing() && !g_tracing_session)
+    return false;
+
+  scoped_refptr<TracingController::TraceDataEndpoint> data_endpoint =
+      TracingControllerImpl::CreateCompressedStringEndpoint(
+          TracingControllerImpl::CreateCallbackEndpoint(base::BindOnce(
+              TracingCallbackWrapperBase64, std::move(callback))),
+          false /* compress_with_background_priority */);
+
+  if (g_tracing_session) {
+    perfetto::TracingSession* session = g_tracing_session;
+    g_tracing_session = nullptr;
+    session->SetOnStopCallback([session, data_endpoint] {
+      session->ReadTrace(
+          [session, data_endpoint](
+              perfetto::TracingSession::ReadTraceCallbackArgs args) {
+            ReadProtobufTraceData(data_endpoint, args);
+            if (!args.has_more)
+              delete session;
+          });
+    });
+    session->Stop();
+    return true;
+  }
+  return TracingController::GetInstance()->StopTracing(data_endpoint);
+}
+
+void OnRecordingEnabledAck(WebUIDataSource::GotDataCallback callback) {
+  std::move(callback).Run(base::MakeRefCounted<base::RefCountedString>());
 }
 
 bool OnBeginJSONRequest(const std::string& path,
@@ -101,18 +197,10 @@ bool OnBeginJSONRequest(const std::string& path,
     return BeginRecording(data, std::move(callback));
   }
   if (path == "json/get_buffer_percent_full") {
-    return TracingController::GetInstance()->GetTraceBufferUsage(
-        base::BindOnce(OnTraceBufferUsageResult, std::move(callback)));
+    return GetTraceBufferUsage(std::move(callback));
   }
   if (path == "json/end_recording_compressed") {
-    if (!TracingController::GetInstance()->IsTracing())
-      return false;
-    scoped_refptr<TracingController::TraceDataEndpoint> data_endpoint =
-        TracingControllerImpl::CreateCompressedStringEndpoint(
-            TracingControllerImpl::CreateCallbackEndpoint(base::BindOnce(
-                TracingCallbackWrapperBase64, std::move(callback))),
-            false /* compress_with_background_priority */);
-    return TracingController::GetInstance()->StopTracing(data_endpoint);
+    return EndRecording(std::move(callback));
   }
 
   LOG(ERROR) << "Unhandled request to " << path;
@@ -167,9 +255,9 @@ TracingUI::TracingUI(WebUI* web_ui)
 TracingUI::~TracingUI() = default;
 
 // static
-bool TracingUI::GetTracingOptions(
-    const std::string& data64,
-    base::trace_event::TraceConfig* trace_config) {
+bool TracingUI::GetTracingOptions(const std::string& data64,
+                                  base::trace_event::TraceConfig& trace_config,
+                                  std::string& out_stream_format) {
   std::string data;
   if (!base::Base64Decode(data64, &data)) {
     LOG(ERROR) << "Options were not base64 encoded.";
@@ -188,13 +276,14 @@ bool TracingUI::GetTracingOptions(
     return false;
   }
 
-  if (!trace_config) {
-    LOG(ERROR) << "trace_config can't be passed as NULL";
-    return false;
+  if (options->HasKey(kStreamFormat)) {
+    options->GetString(kStreamFormat, &out_stream_format);
+  } else {
+    out_stream_format = kStreamFormatJSON;
   }
 
   // New style options dictionary.
-  *trace_config = base::trace_event::TraceConfig(*options);
+  trace_config = base::trace_event::TraceConfig(*options);
   return true;
 }
 

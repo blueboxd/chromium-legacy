@@ -57,8 +57,7 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   void CancelPasswordChangedFlow() override;
   void MigrateUserData(const std::string& old_password) override;
   void ResyncUserData() override;
-  void ShowFeedback() override;
-  void ShowResetScreen() override;
+  bool HandleAccelerator(ash::LoginAcceleratorAction action) override;
   void HandleDisplayCaptivePortal() override;
   void UpdateAddUserButtonStatus() override;
   void RequestSystemInfoUpdate() override;

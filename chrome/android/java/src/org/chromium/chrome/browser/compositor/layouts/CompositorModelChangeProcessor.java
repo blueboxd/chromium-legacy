@@ -10,15 +10,17 @@ import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
-import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor.ViewBinder;
 import org.chromium.ui.modelutil.PropertyObservable;
 
 /**
  * A specialized ModelChangeProcessor for compositor. When a new frame is generated, it will bind
  * the whole Model to the View. If everything is idle, it requests another frame on Property
  * changes.
+ *
+ * @param <V> A view type that extends {@link SceneLayer}.
  */
-public class CompositorModelChangeProcessor {
+public class CompositorModelChangeProcessor<V extends SceneLayer> {
     /**
      * A {@link ObservableSupplier} for the newly generated frame. In addition, this has ability to
      * request another frame.
@@ -38,9 +40,9 @@ public class CompositorModelChangeProcessor {
         }
     }
 
-    private final SceneLayer mView;
+    private final V mView;
     private final PropertyModel mModel;
-    private final PropertyModelChangeProcessor.ViewBinder mViewBinder;
+    private final ViewBinder<PropertyModel, V, PropertyKey> mViewBinder;
     private final FrameRequestSupplier mFrameSupplier;
     private final PropertyObservable.PropertyObserver<PropertyKey> mPropertyObserver;
     private final Callback<Long> mNewFrameCallback;
@@ -52,9 +54,9 @@ public class CompositorModelChangeProcessor {
      * @param viewBinder This is used to bind the model to the view.
      * @param frameSupplier A supplier for the new generated frame.
      */
-    private CompositorModelChangeProcessor(PropertyModel model, SceneLayer view,
-            PropertyModelChangeProcessor.ViewBinder viewBinder, FrameRequestSupplier frameSupplier,
-            boolean performInitialBind) {
+    private CompositorModelChangeProcessor(PropertyModel model, V view,
+            ViewBinder<PropertyModel, V, PropertyKey> viewBinder,
+            FrameRequestSupplier frameSupplier, boolean performInitialBind) {
         mModel = model;
         mView = view;
         mViewBinder = viewBinder;
@@ -79,9 +81,9 @@ public class CompositorModelChangeProcessor {
      * @param frameSupplier A supplier for the new generated frame.
      * @param performInitialBind Whether the model should be immediately bound to the view.
      */
-    public static CompositorModelChangeProcessor create(PropertyModel model, SceneLayer view,
-            PropertyModelChangeProcessor.ViewBinder viewBinder, FrameRequestSupplier frameSupplier,
-            boolean performInitialBind) {
+    public static <V extends SceneLayer> CompositorModelChangeProcessor<V> create(
+            PropertyModel model, V view, ViewBinder<PropertyModel, V, PropertyKey> viewBinder,
+            FrameRequestSupplier frameSupplier, boolean performInitialBind) {
         return new CompositorModelChangeProcessor(
                 model, view, viewBinder, frameSupplier, performInitialBind);
     }
@@ -95,8 +97,8 @@ public class CompositorModelChangeProcessor {
      * @param viewBinder This is used to bind the model to the view.
      * @param frameSupplier A supplier for the new generated frame.
      */
-    public static CompositorModelChangeProcessor create(PropertyModel model, SceneLayer view,
-            PropertyModelChangeProcessor.ViewBinder viewBinder,
+    public static <V extends SceneLayer> CompositorModelChangeProcessor<V> create(
+            PropertyModel model, V view, ViewBinder<PropertyModel, V, PropertyKey> viewBinder,
             FrameRequestSupplier frameSupplier) {
         return create(model, view, viewBinder, frameSupplier, true);
     }

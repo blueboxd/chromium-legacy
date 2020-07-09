@@ -545,6 +545,7 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
              value_id == CSSValueID::kAlphabetic ||
              value_id == CSSValueID::kBaseline ||
              value_id == CSSValueID::kMiddle ||
+             value_id == CSSValueID::kHanging ||
              (value_id >= CSSValueID::kBeforeEdge &&
               value_id <= CSSValueID::kMathematical);
     case CSSPropertyID::kAll:
@@ -610,6 +611,7 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueID::kAuto ||
              value_id == CSSValueID::kAlphabetic ||
              value_id == CSSValueID::kMiddle ||
+             value_id == CSSValueID::kHanging ||
              (value_id >= CSSValueID::kUseScript &&
               value_id <= CSSValueID::kResetSize) ||
              (value_id >= CSSValueID::kCentral &&

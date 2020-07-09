@@ -1153,6 +1153,12 @@ const char kGlobalMediaControlsSeamlessTransferDescription[] =
     "the Global Media Controls UI. Requires #global-media-controls to "
     "also be enabled.";
 
+const char kGlobalMediaControlsOverlayControlsName[] =
+    "Enable overlay controls for Global Nedia Controls";
+const char kGlobalMediaControlsOverlayControlsDescription[] =
+    "Allowing controls to be dragged out from Global Media Controls dialog."
+    "Requires #global-media-controls to also be enabled.";
+
 const char kGpuRasterizationName[] = "GPU rasterization";
 const char kGpuRasterizationDescription[] = "Use GPU to rasterize web content.";
 
@@ -3470,6 +3476,12 @@ const char kCryptAuthV2DeviceSyncDescription[] =
 const char kCryptAuthV2EnrollmentName[] = "CryptAuth v2 Enrollment";
 const char kCryptAuthV2EnrollmentDescription[] =
     "Use the CryptAuth v2 Enrollment protocol.";
+
+const char kDisableCameraFrameRotationAtSourceName[] =
+    "Disable camera frame rotation at source";
+const char kDisableCameraFrameRotationAtSourceDescription[] =
+    "Disable camera frame rotation to the upright display orientation in the "
+    "video capture device";
 
 const char kDisableCancelAllTouchesName[] = "Disable CancelAllTouches()";
 const char kDisableCancelAllTouchesDescription[] =

@@ -122,9 +122,10 @@ void FakeLoginDisplayHost::MigrateUserData(const std::string& old_password) {}
 
 void FakeLoginDisplayHost::ResyncUserData() {}
 
-void FakeLoginDisplayHost::ShowFeedback() {}
-
-void FakeLoginDisplayHost::ShowResetScreen() {}
+bool FakeLoginDisplayHost::HandleAccelerator(
+    ash::LoginAcceleratorAction action) {
+  return false;
+}
 
 void FakeLoginDisplayHost::HandleDisplayCaptivePortal() {}
 

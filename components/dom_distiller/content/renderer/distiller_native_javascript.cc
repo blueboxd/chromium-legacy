@@ -63,14 +63,15 @@ void DistillerNativeJavaScript::AddJavaScriptObjectToFrame(
           &mojom::DistillerJavaScriptService::HandleDistillerOpenSettingsCall,
           base::Unretained(distiller_js_service_.get())));
 
-  BindFunctionToObject(isolate, distiller_obj, "storeThemePref",
-                       base::Bind(&DistillerNativeJavaScript::StoreIntTheme,
-                                  base::Unretained(this)));
+  BindFunctionToObject(
+      isolate, distiller_obj, "storeThemePref",
+      base::BindRepeating(&DistillerNativeJavaScript::StoreIntTheme,
+                          base::Unretained(this)));
 
   BindFunctionToObject(
       isolate, distiller_obj, "storeFontFamilyPref",
-      base::Bind(&DistillerNativeJavaScript::StoreIntFontFamily,
-                 base::Unretained(this)));
+      base::BindRepeating(&DistillerNativeJavaScript::StoreIntFontFamily,
+                          base::Unretained(this)));
 }
 
 template <typename Sig>

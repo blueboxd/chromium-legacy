@@ -41,7 +41,8 @@ namespace {
 
 class CookieSettingsObserver : public CookieSettings::Observer {
  public:
-  CookieSettingsObserver(CookieSettings* settings) : settings_(settings) {
+  explicit CookieSettingsObserver(CookieSettings* settings)
+      : settings_(settings) {
     scoped_observer_.Add(settings);
   }
 
@@ -217,7 +218,20 @@ TEST_F(ImprovedCookieControlsCookieSettingsTest,
       kBlockedSite, kFirstPartySite));
 }
 
-TEST_F(CookieSettingsTest, CookiesControlsEnabledButFeatureDisabled) {
+// Test fixture with ImprovedCookieControls disabled.
+class ImprovedCookieControlsDisabledCookieSettingsTest
+    : public CookieSettingsTest {
+ public:
+  ImprovedCookieControlsDisabledCookieSettingsTest() : CookieSettingsTest() {
+    feature_list_.InitAndDisableFeature(kImprovedCookieControls);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(ImprovedCookieControlsDisabledCookieSettingsTest,
+       CookiesControlsEnabledButFeatureDisabled) {
   EXPECT_TRUE(
       cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
   EXPECT_TRUE(cookie_settings_incognito_->IsCookieAccessAllowed(

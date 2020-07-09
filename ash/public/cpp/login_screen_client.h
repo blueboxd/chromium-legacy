@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "ash/public/cpp/login_accelerators.h"
 #include "base/callback_forward.h"
 #include "base/time/time.h"
 #include "ui/gfx/native_widget_types.h"
@@ -132,11 +133,8 @@ class ASH_PUBLIC_EXPORT LoginScreenClient {
       const AccountId& account_id,
       const std::string& locale) = 0;
 
-  // Request to show a feedback report dialog in chrome.
-  virtual void ShowFeedback() = 0;
-
-  // Show the powerwash (device reset) dialog.
-  virtual void ShowResetScreen() = 0;
+  // Request to handle a login-specific accelerator action.
+  virtual void HandleAccelerator(ash::LoginAcceleratorAction action) = 0;
 
   // Show the help app for when users have trouble signing in to their account.
   virtual void ShowAccountAccessHelpApp(gfx::NativeWindow parent_window) = 0;

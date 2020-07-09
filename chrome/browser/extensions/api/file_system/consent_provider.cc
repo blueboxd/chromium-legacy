@@ -55,17 +55,20 @@ content::WebContents* GetWebContentsForAppId(Profile* profile,
 // Converts the clicked button to a consent result and passes it via the
 // |callback|.
 void DialogResultToConsent(
-    const file_system_api::ConsentProvider::ConsentCallback& callback,
+    file_system_api::ConsentProvider::ConsentCallback callback,
     ui::DialogButton button) {
   switch (button) {
     case ui::DIALOG_BUTTON_NONE:
-      callback.Run(file_system_api::ConsentProvider::CONSENT_IMPOSSIBLE);
+      std::move(callback).Run(
+          file_system_api::ConsentProvider::CONSENT_IMPOSSIBLE);
       break;
     case ui::DIALOG_BUTTON_OK:
-      callback.Run(file_system_api::ConsentProvider::CONSENT_GRANTED);
+      std::move(callback).Run(
+          file_system_api::ConsentProvider::CONSENT_GRANTED);
       break;
     case ui::DIALOG_BUTTON_CANCEL:
-      callback.Run(file_system_api::ConsentProvider::CONSENT_REJECTED);
+      std::move(callback).Run(
+          file_system_api::ConsentProvider::CONSENT_REJECTED);
       break;
   }
 }
@@ -87,14 +90,14 @@ void ConsentProvider::RequestConsent(
     content::RenderFrameHost* host,
     const base::WeakPtr<file_manager::Volume>& volume,
     bool writable,
-    const ConsentCallback& callback) {
+    ConsentCallback callback) {
   DCHECK(IsGrantableForVolume(extension, volume));
 
   // If a whitelisted component, then no need to ask or inform the user.
   if (extension.location() == Manifest::COMPONENT &&
       delegate_->IsWhitelistedComponent(extension)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, CONSENT_GRANTED));
+        FROM_HERE, base::BindOnce(std::move(callback), CONSENT_GRANTED));
     return;
   }
 
@@ -104,7 +107,7 @@ void ConsentProvider::RequestConsent(
       volume->type() == file_manager::VOLUME_TYPE_DOWNLOADS_DIRECTORY &&
       delegate_->HasRequestDownloadsPermission(extension)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, CONSENT_GRANTED));
+        FROM_HERE, base::BindOnce(std::move(callback), CONSENT_GRANTED));
     return;
   }
 
@@ -113,7 +116,7 @@ void ConsentProvider::RequestConsent(
   if (delegate_->IsAutoLaunched(extension)) {
     delegate_->ShowNotification(extension, volume, writable);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, CONSENT_GRANTED));
+        FROM_HERE, base::BindOnce(std::move(callback), CONSENT_GRANTED));
     return;
   }
 
@@ -121,8 +124,9 @@ void ConsentProvider::RequestConsent(
   // the confirmation dialog.
   if (KioskModeInfo::IsKioskOnly(&extension) &&
       user_manager::UserManager::Get()->IsLoggedInAsKioskApp()) {
-    delegate_->ShowDialog(extension, host, volume, writable,
-                          base::Bind(&DialogResultToConsent, callback));
+    delegate_->ShowDialog(
+        extension, host, volume, writable,
+        base::BindOnce(&DialogResultToConsent, std::move(callback)));
     return;
   }
 
@@ -180,7 +184,7 @@ void ConsentProviderDelegate::ShowDialog(
     content::RenderFrameHost* host,
     const base::WeakPtr<file_manager::Volume>& volume,
     bool writable,
-    const file_system_api::ConsentProvider::ShowDialogCallback& callback) {
+    file_system_api::ConsentProvider::ShowDialogCallback callback) {
   DCHECK(host);
   content::WebContents* web_contents = nullptr;
 
@@ -199,7 +203,7 @@ void ConsentProviderDelegate::ShowDialog(
 
   if (!web_contents) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, ui::DIALOG_BUTTON_NONE));
+        FROM_HERE, base::BindOnce(std::move(callback), ui::DIALOG_BUTTON_NONE));
     return;
   }
 
@@ -207,15 +211,16 @@ void ConsentProviderDelegate::ShowDialog(
   // code design.
   if (g_auto_dialog_button_for_test != ui::DIALOG_BUTTON_NONE) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(callback, g_auto_dialog_button_for_test /* result */));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  g_auto_dialog_button_for_test /* result */));
     return;
   }
 
   // If the volume is gone, then cancel the dialog.
   if (!volume.get()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, ui::DIALOG_BUTTON_CANCEL));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), ui::DIALOG_BUTTON_CANCEL));
     return;
   }
 
@@ -223,7 +228,7 @@ void ConsentProviderDelegate::ShowDialog(
       web_contents, extension.name(),
       (volume->volume_label().empty() ? volume->volume_id()
                                       : volume->volume_label()),
-      writable, callback);
+      writable, std::move(callback));
 }
 
 void ConsentProviderDelegate::ShowNotification(

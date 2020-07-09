@@ -123,7 +123,7 @@ class TestRunner {
   bool ShouldDumpAsAudio() const;
   // Gets the audio test output for when audio test results are requested by
   // the current test.
-  const std::vector<uint8_t>& GetAudioData() const;
+  void GetAudioData(std::vector<unsigned char>* buffer_view) const;
 
   // Reports if tests requested a recursive layout dump of all frames
   // (i.e. by calling testRunner.dumpChildFramesAsText() from javascript).
@@ -224,6 +224,8 @@ class TestRunner {
   // Controls whether console messages produced by the page are dumped
   // to test output.
   void SetDumpConsoleMessages(bool value);
+
+  bool ShouldDumpJavaScriptDialogs() const;
 
   // The following trigger navigations on the main WebView.
   void GoToOffset(int offset);
@@ -545,7 +547,7 @@ class TestRunner {
   bool clear_referrer_ = false;
 
   // WAV audio data is stored here.
-  std::vector<uint8_t> audio_data_;
+  std::vector<unsigned char> audio_data_;
 
   TestInterfaces* test_interfaces_;
   BlinkTestRunner* blink_test_runner_ = nullptr;

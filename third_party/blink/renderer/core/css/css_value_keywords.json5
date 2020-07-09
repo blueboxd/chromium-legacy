@@ -1111,7 +1111,7 @@
 
     // text-indent
     "each-line",
-    //hanging   // hanging exists in SVGCSSValueKeywords.in
+    "hanging",
 
     // (scan:) media feature
     "progressive",
@@ -1124,6 +1124,53 @@
     // fill
     // stroke
     "markers",
+
+    // mask-type
+    "alpha",
+    "luminance",
+
+    // color-interpolation / color-interpolation-filters
+    // auto
+    "srgb",
+    "linearrgb",
+
+    // stroke-linecap
+    "butt",
+    // round
+    // square
+
+    // stroke-linejoin
+    "miter",
+    // round
+    "bevel",
+
+    // alignment-baseline
+    // auto
+    // baseline
+    "before-edge",
+    "after-edge",
+    // middle
+    "central",
+    "text-before-edge",
+    "text-after-edge",
+    "ideographic",
+    // hanging
+    "mathematical",
+
+    // dominant-baseline
+    // auto
+    "use-script",
+    "no-change",
+    "reset-size",
+
+    // buffered-rendering
+    // auto
+    // static
+    "dynamic",
+
+    // vector-effect
+    // none
+    "non-scaling-stroke",
 
     //
     // CSS3 viewport-length keywords

@@ -522,12 +522,12 @@ void ManagePasswordsUIController::SavePassword(const base::string16& username,
     browser->window()->GetAutofillBubbleHandler()->OnPasswordSaved();
 }
 
-void ManagePasswordsUIController::SaveUnsyncedCredentialsInProfileStore() {
+void ManagePasswordsUIController::SaveUnsyncedCredentialsInProfileStore(
+    const std::vector<autofill::PasswordForm>& selected_credentials) {
   auto profile_store_form_saver =
       std::make_unique<password_manager::FormSaverImpl>(
           passwords_data_.client()->GetProfilePasswordStore());
-  for (const autofill::PasswordForm& form :
-       passwords_data_.unsynced_credentials()) {
+  for (const autofill::PasswordForm& form : selected_credentials) {
     // Only newly-saved or newly-updated credentials can be unsynced. Since
     // conflicts are solved in that process, any entry in the profile store
     // similar to |form| actually contains the same essential information. This

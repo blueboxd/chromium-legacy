@@ -32,8 +32,8 @@ class CONTENT_EXPORT TracingUI : public WebUIController {
 
   // Public for testing.
   static bool GetTracingOptions(const std::string& data64,
-                                base::trace_event::TraceConfig* trace_config);
-
+                                base::trace_event::TraceConfig& trace_config,
+                                std::string& out_stream_format);
 
  private:
   std::unique_ptr<TracingDelegate> delegate_;

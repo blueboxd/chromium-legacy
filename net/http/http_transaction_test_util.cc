@@ -523,7 +523,12 @@ int MockNetworkTransaction::StartInternal(const HttpRequestInfo* request,
   if (test_mode_ & TEST_MODE_SYNC_NET_START)
     return OK;
 
-  CallbackLater(std::move(callback), OK);
+  int result = OK;
+  if (!connected_callback_.is_null()) {
+    result = connected_callback_.Run();
+  }
+
+  CallbackLater(std::move(callback), result);
   return ERR_IO_PENDING;
 }
 
@@ -533,7 +538,9 @@ void MockNetworkTransaction::SetBeforeNetworkStartCallback(
 }
 
 void MockNetworkTransaction::SetConnectedCallback(
-    const ConnectedCallback& callback) {}
+    const ConnectedCallback& callback) {
+  connected_callback_ = callback;
+}
 
 int MockNetworkTransaction::ResumeNetworkStart() {
   DCHECK(!resume_start_callback_.is_null());

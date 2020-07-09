@@ -47,14 +47,8 @@ void CameraDeviceContext::SubmitCapturedVideoCaptureBuffer(
     VideoCaptureDevice::Client::Buffer buffer,
     const VideoCaptureFormat& frame_format,
     base::TimeTicks reference_time,
-    base::TimeDelta timestamp) {
-  VideoFrameMetadata metadata;
-  // All frames are pre-rotated to the display orientation.
-  metadata.rotation = VideoRotation::VIDEO_ROTATION_0;
-
-  // TODO: Figure out the right color space for the camera frame.  We may need
-  // to populate the camera metadata with the color space reported by the V4L2
-  // device.
+    base::TimeDelta timestamp,
+    const VideoFrameMetadata& metadata) {
   client_->OnIncomingCapturedBufferExt(
       std::move(buffer), frame_format, gfx::ColorSpace(), reference_time,
       timestamp, gfx::Rect(frame_format.frame_size), std::move(metadata));

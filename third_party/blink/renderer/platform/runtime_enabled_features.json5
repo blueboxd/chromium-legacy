@@ -973,7 +973,8 @@
     {
       name: "LayoutNGRuby",
       depends_on: ["LayoutNG"],
-      status: "experimental",
+      // The flag value is managed by kLayoutNGRuby in common/features.cc too.
+      status: "stable",
     },
     {
       name: "LayoutNGTable",

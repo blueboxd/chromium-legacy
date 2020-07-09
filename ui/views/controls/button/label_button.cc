@@ -228,15 +228,13 @@ void LabelButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 gfx::Size LabelButton::CalculatePreferredSize() const {
   gfx::Size size = GetUnclampedSizeWithoutLabel();
 
-  // Disregard label in the preferred size if the button is shrinking down to
-  // show no label soon.
+  // Account for the label only when the button is not shrinking down to hide
+  // the label entirely.
   if (!shrinking_down_label_) {
     const gfx::Size preferred_label_size = label_->GetPreferredSize();
     size.Enlarge(preferred_label_size.width(), 0);
-
-    // Increase the height of the label (with insets) if larger.
-    size.set_height(std::max(
-        preferred_label_size.height() + GetInsets().height(), size.height()));
+    size.SetToMax(
+        gfx::Size(0, preferred_label_size.height() + GetInsets().height()));
   }
 
   size.SetToMax(GetMinSize());
@@ -391,7 +389,7 @@ ui::NativeTheme::State LabelButton::GetThemeState(
     case STATE_DISABLED:
       return ui::NativeTheme::kDisabled;
     case STATE_COUNT:
-      NOTREACHED() << "Unknown state: " << state();
+      NOTREACHED();
   }
   return ui::NativeTheme::kNormal;
 }
@@ -414,15 +412,6 @@ ui::NativeTheme::State LabelButton::GetForegroundThemeState(
 
 void LabelButton::UpdateImage() {
   image_->SetImage(GetImage(GetVisualState()));
-}
-
-void LabelButton::UpdateThemedBorder() {
-  // Don't override borders set by others.
-  if (!border_is_themed_border_)
-    return;
-
-  SetBorder(PlatformStyle::CreateThemedLabelButtonBorder(this));
-  border_is_themed_border_ = true;
 }
 
 void LabelButton::AddLayerBeneathView(ui::Layer* new_layer) {
@@ -470,7 +459,7 @@ void LabelButton::AddedToWidget() {
   if (PlatformStyle::kInactiveWidgetControlsAppearDisabled) {
     paint_as_active_subscription_ =
         GetWidget()->RegisterPaintAsActiveChangedCallback(base::BindRepeating(
-            &LabelButton::PaintAsActiveChanged, base::Unretained(this)));
+            &LabelButton::VisualStateChanged, base::Unretained(this)));
   }
 }
 
@@ -494,23 +483,18 @@ void LabelButton::OnThemeChanged() {
   Button::OnThemeChanged();
   ResetColorsFromNativeTheme();
   UpdateImage();
-  UpdateThemedBorder();
+  if (border_is_themed_border_)
+    View::SetBorder(PlatformStyle::CreateThemedLabelButtonBorder(this));
   ResetLabelEnabledColor();
-  // Invalidate the layout to pickup the new insets from the border.
-  InvalidateLayout();
   // The entire button has to be repainted here, since the native theme can
   // define the tint for the entire background/border/focus ring.
   SchedulePaint();
 }
 
 void LabelButton::StateChanged(ButtonState old_state) {
-  const gfx::Size previous_image_size(image_->GetPreferredSize());
-  UpdateImage();
-  ResetLabelEnabledColor();
-  label_->SetEnabled(state() != STATE_DISABLED);
-  if (image_->GetPreferredSize() != previous_image_size)
-    InvalidateLayout();
   Button::StateChanged(old_state);
+  ResetLabelEnabledColor();
+  VisualStateChanged();
 }
 
 void LabelButton::SetTextInternal(const base::string16& text) {
@@ -518,14 +502,14 @@ void LabelButton::SetTextInternal(const base::string16& text) {
   label_->SetText(text);
 
   // Setting text cancels ShrinkDownThenClearText().
-  if (shrinking_down_label_) {
-    shrinking_down_label_ = false;
-    PreferredSizeChanged();
-  }
+  const auto effects = shrinking_down_label_
+                           ? kPropertyEffectsPreferredSizeChanged
+                           : kPropertyEffectsNone;
+  shrinking_down_label_ = false;
 
   // TODO(pkasting): Remove this and forward callback subscriptions to the
   // underlying label property when Label is converted to properties.
-  OnPropertyChanged(label_, kPropertyEffectsNone);
+  OnPropertyChanged(label_, effects);
 }
 
 void LabelButton::ClearTextIfShrunkDown() {
@@ -534,7 +518,6 @@ void LabelButton::ClearTextIfShrunkDown() {
       height() <= preferred_size.height()) {
     // Once the button shrinks down to its preferred size (that disregards the
     // current text), we finish the operation by clearing the text.
-    shrinking_down_label_ = false;
     SetText(base::string16());
   }
 }
@@ -563,8 +546,9 @@ Button::ButtonState LabelButton::GetVisualState() const {
   return force_disabled ? STATE_DISABLED : state();
 }
 
-void LabelButton::PaintAsActiveChanged() {
-  StateChanged(state());
+void LabelButton::VisualStateChanged() {
+  UpdateImage();
+  label_->SetEnabled(state() != STATE_DISABLED);
 }
 
 void LabelButton::ResetColorsFromNativeTheme() {

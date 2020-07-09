@@ -540,7 +540,7 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
     will_create_browser_context_services_subscription_ =
         BrowserContextDependencyManager::GetInstance()
             ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
-                base::Bind(
+                base::BindRepeating(
                     &IdentityTestWithSignin::OnWillCreateBrowserContextServices,
                     base::Unretained(this)));
   }
@@ -598,7 +598,7 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
       identity_test_env_profile_adaptor_;
 
   std::unique_ptr<
-      base::CallbackList<void(content::BrowserContext*)>::Subscription>
+      base::RepeatingCallbackList<void(content::BrowserContext*)>::Subscription>
       will_create_browser_context_services_subscription_;
 };
 
@@ -2967,8 +2967,8 @@ class OnSignInChangedEventTest : public IdentityTestWithSignin {
     // JavaScript extension listener and having that listener do the
     // verification, but it's not clear how to set that up.
     id_api()->set_on_signin_changed_callback_for_testing(
-        base::Bind(&OnSignInChangedEventTest::OnSignInEventChanged,
-                   base::Unretained(this)));
+        base::BindRepeating(&OnSignInChangedEventTest::OnSignInEventChanged,
+                            base::Unretained(this)));
 
     IdentityTestWithSignin::SetUpOnMainThread();
   }

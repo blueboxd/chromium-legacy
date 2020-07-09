@@ -40,6 +40,7 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/network_change_notifier.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_config.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/trace_event_agent.h"
 #include "services/tracing/public/cpp/traced_process_impl.h"
 #include "services/tracing/public/cpp/tracing_features.h"
@@ -188,6 +189,9 @@ TracingControllerImpl::TracingControllerImpl()
           base::BindOnce(&TracingControllerImpl::OnMachineStatisticsLoaded,
                          weak_ptr_factory_.GetWeakPtr()));
 #endif
+
+  tracing::PerfettoTracedProcess::Get()->SetConsumerConnectionFactory(
+      &GetTracingService, base::ThreadTaskRunnerHandle::Get());
 }
 
 TracingControllerImpl::~TracingControllerImpl() = default;

@@ -135,7 +135,7 @@ public class AccountPickerBottomSheetTest {
         onView(allOf(withText(FULL_NAME1), withEffectiveVisibility(VISIBLE)))
                 .check(matches(isDisplayed()));
         onView(withText(ACCOUNT_NAME2)).check(matches(isDisplayed()));
-        onView(withText(R.string.signin_add_account)).check(matches(isDisplayed()));
+        onView(withText(R.string.signin_add_account_to_device)).check(matches(isDisplayed()));
 
         onView(withId(R.id.account_picker_selected_account)).check(matches(not(isDisplayed())));
         onView(withId(R.id.account_picker_continue_as_button)).check(matches(not(isDisplayed())));
@@ -155,7 +155,7 @@ public class AccountPickerBottomSheetTest {
         onView(withText(ACCOUNT_NAME2)).check(doesNotExist());
         onView(withId(R.id.account_picker_account_list)).check(matches(not(isDisplayed())));
         onView(withId(R.id.account_picker_selected_account)).check(matches(not(isDisplayed())));
-        onView(withText(R.string.signin_add_account)).perform(click());
+        onView(withText(R.string.signin_add_account_to_device)).perform(click());
         verify(mAccountPickerDelegateMock).addAccount();
     }
 
@@ -234,7 +234,7 @@ public class AccountPickerBottomSheetTest {
     public void testAddAccountOnExpandedSheet() {
         buildAndShowAccountPickerBottomSheet();
         onView(withText(FULL_NAME1)).perform(click());
-        onView(withText(R.string.signin_add_account)).perform(click());
+        onView(withText(R.string.signin_add_account_to_device)).perform(click());
         verify(mAccountPickerDelegateMock).addAccount();
     }
 

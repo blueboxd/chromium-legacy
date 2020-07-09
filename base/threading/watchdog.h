@@ -74,13 +74,13 @@ class BASE_EXPORT Watchdog {
     Watchdog* watchdog_;
   };
 
-  enum State {ARMED, DISARMED, SHUTDOWN, JOINABLE };
+  enum State { ARMED, DISARMED, SHUTDOWN, JOINABLE };
 
   bool enabled_;
 
-  Lock lock_;  // Mutex for state_.
+  Lock lock_;
   ConditionVariable condition_variable_;
-  State state_;
+  State state_ GUARDED_BY(lock_);
   const TimeDelta duration_;  // How long after start_time_ do we alarm?
   const std::string thread_watched_name_;
   PlatformThreadHandle handle_;

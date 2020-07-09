@@ -3,11 +3,13 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<org.chromium.chrome.browser.infobar.translate.TranslateTabContent
+<org.chromium.components.translate.TranslateTabContent
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/translate_tabcontent"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="UnusedResources">
     <!-- Add both the textView and progressBar to the tab, and only keep one of them visible.
          This way the width of the Tab will always be fixed no matter which one is visible. -->
     <TextView
@@ -25,4 +27,4 @@
         android:layout_gravity="center"
         android:indeterminate="true"
         android:visibility="invisible" />
-</org.chromium.chrome.browser.infobar.translate.TranslateTabContent>
+</org.chromium.components.translate.TranslateTabContent>

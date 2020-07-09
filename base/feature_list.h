@@ -369,7 +369,8 @@ class BASE_EXPORT FeatureList {
   // only defined once. This verification is only done in builds with DCHECKs
   // enabled.
   Lock feature_identity_tracker_lock_;
-  std::map<std::string, const Feature*> feature_identity_tracker_;
+  std::map<std::string, const Feature*> feature_identity_tracker_
+      GUARDED_BY(feature_identity_tracker_lock_);
 
   // Tracks the associated FieldTrialList for DCHECKs. This is used to catch
   // the scenario where multiple FieldTrialList are used with the same

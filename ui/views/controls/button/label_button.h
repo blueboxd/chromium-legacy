@@ -148,10 +148,6 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // Updates the image view to contain the appropriate button state image.
   void UpdateImage();
 
-  // Updates the border as per the NativeTheme, unless a different border was
-  // set with SetBorder.
-  void UpdateThemedBorder();
-
   // Fills |params| with information about the button.
   virtual void GetExtraParams(ui::NativeTheme::ExtraParams* params) const;
 
@@ -187,8 +183,9 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // widget.
   ButtonState GetVisualState() const;
 
-  // Called when the widget's "paint as active" state has changed.
-  void PaintAsActiveChanged();
+  // Updates the portions of the object that might change in response to a
+  // change in the value returned by GetVisualState().
+  void VisualStateChanged();
 
   // Resets colors from the NativeTheme, explicitly set colors are unchanged.
   void ResetColorsFromNativeTheme();

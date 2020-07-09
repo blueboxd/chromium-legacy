@@ -148,10 +148,9 @@ class BASE_EXPORT MachPortRendezvousServer {
   // Mach message dispatch source for |server_port_|.
   std::unique_ptr<DispatchSourceMach> dispatch_source_;
 
-  // Lock that protects |client_data_|.
   Lock lock_;
   // Association of pid-to-ports.
-  std::map<pid_t, ClientData> client_data_;
+  std::map<pid_t, ClientData> client_data_ GUARDED_BY(lock_);
 
   DISALLOW_COPY_AND_ASSIGN(MachPortRendezvousServer);
 };
@@ -197,17 +196,17 @@ class BASE_EXPORT MachPortRendezvousClient {
   bool AcquirePorts();
 
   // Sends the actual IPC message to |server_port| and parses the reply.
-  bool SendRequest(mac::ScopedMachSendRight server_port);
+  bool SendRequest(mac::ScopedMachSendRight server_port)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Returns a MachRendezvousPort for a given key and removes it from the
   // |ports_| map. If an entry does not exist for that key, then a
   // MachRendezvousPort with MACH_PORT_NULL is returned.
   MachRendezvousPort PortForKey(MachPortsForRendezvous::key_type key);
 
-  // Lock for the below data members.
   Lock lock_;
   // The collection of ports that was acquired.
-  MachPortsForRendezvous ports_;
+  MachPortsForRendezvous ports_ GUARDED_BY(lock_);
 
   DISALLOW_COPY_AND_ASSIGN(MachPortRendezvousClient);
 };

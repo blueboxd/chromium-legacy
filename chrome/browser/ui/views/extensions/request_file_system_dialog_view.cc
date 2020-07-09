@@ -34,10 +34,10 @@ void RequestFileSystemDialogView::ShowDialog(
     const std::string& extension_name,
     const std::string& volume_label,
     bool writable,
-    const base::Callback<void(ui::DialogButton)>& callback) {
+    base::OnceCallback<void(ui::DialogButton)> callback) {
   constrained_window::ShowWebModalDialogViews(
       new RequestFileSystemDialogView(extension_name, volume_label, writable,
-                                      callback),
+                                      std::move(callback)),
       web_contents);
 }
 
@@ -61,8 +61,8 @@ RequestFileSystemDialogView::RequestFileSystemDialogView(
     const std::string& extension_name,
     const std::string& volume_label,
     bool writable,
-    const base::Callback<void(ui::DialogButton)>& callback)
-    : callback_(callback) {
+    base::OnceCallback<void(ui::DialogButton)> callback)
+    : callback_(std::move(callback)) {
   SetDefaultButton(ui::DIALOG_BUTTON_CANCEL);
   SetButtonLabel(ui::DIALOG_BUTTON_OK,
                  l10n_util::GetStringUTF16(
@@ -73,7 +73,7 @@ RequestFileSystemDialogView::RequestFileSystemDialogView(
 
   auto run_callback = [](RequestFileSystemDialogView* dialog,
                          ui::DialogButton button) {
-    dialog->callback_.Run(button);
+    std::move(dialog->callback_).Run(button);
   };
   SetAcceptCallback(base::BindOnce(run_callback, base::Unretained(this),
                                    ui::DIALOG_BUTTON_OK));

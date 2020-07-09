@@ -351,6 +351,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
               const spdy::SettingsMap& initial_settings,
               const base::Optional<SpdySessionPool::GreasedHttp2Frame>&
                   greased_http2_frame,
+              bool http2_end_stream_with_data_frame,
               TimeFunc time_func,
               ServerPushDelegate* push_delegate,
               NetworkQualityEstimator* network_quality_estimator,
@@ -430,6 +431,14 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // For more details on greased frames, see
   // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
   bool GreasedFramesEnabled() const;
+
+  // Returns true if HEADERS frames on request streams should not have the
+  // END_STREAM flag set, but instead an empty DATA frame with END_STREAM should
+  // be sent afterwards to close the stream.  Does not apply to bidirectional or
+  // proxy streams.
+  bool EndStreamWithDataFrame() const {
+    return http2_end_stream_with_data_frame_;
+  }
 
   // Send greased frame, that is, a frame of reserved type.
   void EnqueueGreasedFrame(const base::WeakPtr<SpdyStream>& stream);
@@ -1111,6 +1120,14 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // every HTTP/2 SETTINGS frame and before every HTTP/2 DATA frame. See
   // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
   const base::Optional<SpdySessionPool::GreasedHttp2Frame> greased_http2_frame_;
+
+  // If set, the HEADERS frame carrying a request without body will not have the
+  // END_STREAM flag set.  The stream will be closed by a subsequent empty DATA
+  // frame with END_STREAM.  Does not affect bidirectional or proxy streams.
+  // If unset, the HEADERS frame will have the END_STREAM flag set on.
+  // This is useful in conjuction with |greased_http2_frame_| so that a frame
+  // of reserved type can be sent out even on requests without a body.
+  bool http2_end_stream_with_data_frame_;
 
   // The callbacks to notify a request that the handshake has been confirmed.
   std::vector<CompletionOnceCallback> waiting_for_confirmation_callbacks_;

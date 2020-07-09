@@ -9,7 +9,12 @@
 #include "base/bind_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
+#include "chromeos/dbus/shill/shill_clients.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state_handler.h"
 #include "components/image_fetcher/core/mock_image_fetcher.h"
 #include "components/image_fetcher/core/request_metadata.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -160,12 +165,47 @@ class MockEduAccountLoginHandler : public EduAccountLoginHandler {
 
 class EduAccountLoginHandlerTest : public testing::Test {
  public:
-  EduAccountLoginHandlerTest() {}
+  EduAccountLoginHandlerTest() = default;
 
   void SetUp() override {
+    shill_clients::InitializeFakes();
+    NetworkHandler::Initialize();
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void SetupNetwork(bool network_status_online = true) {
+    const NetworkState* default_network =
+        NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
+    const std::string guid =
+        default_network ? default_network->guid() : std::string();
+
+    network_portal_detector::InitializeForTesting(&network_portal_detector_);
+    network_portal_detector_.SetDefaultNetworkForTesting(guid);
+    NetworkPortalDetector::CaptivePortalState online_state;
+    if (network_status_online) {
+      online_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
+      // HTTP 204 No Content.
+      online_state.response_code = 204;
+    } else {
+      online_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
+      // HTTP 200 OK.
+      online_state.response_code = 200;
+    }
+    if (!guid.empty()) {
+      network_portal_detector_.SetDetectionResultsForTesting(guid,
+                                                             online_state);
+    }
+
     mock_image_fetcher_ = std::make_unique<image_fetcher::MockImageFetcher>();
     handler_ = std::make_unique<MockEduAccountLoginHandler>(base::DoNothing());
     handler_->set_web_ui(web_ui());
+  }
+
+  void TearDown() override {
+    handler_.reset();
+    network_portal_detector::InitializeForTesting(nullptr);
+    chromeos::NetworkHandler::Shutdown();
+    chromeos::shill_clients::Shutdown();
   }
 
   void VerifyJavascriptCallbackResolved(
@@ -192,12 +232,15 @@ class EduAccountLoginHandlerTest : public testing::Test {
   content::TestWebUI* web_ui() { return &web_ui_; }
 
  private:
+  base::test::SingleThreadTaskEnvironment task_environment_;
+  NetworkPortalDetectorTestImpl network_portal_detector_;
   std::unique_ptr<image_fetcher::MockImageFetcher> mock_image_fetcher_;
   std::unique_ptr<MockEduAccountLoginHandler> handler_;
   content::TestWebUI web_ui_;
 };
 
 TEST_F(EduAccountLoginHandlerTest, HandleGetParentsSuccess) {
+  SetupNetwork();
   constexpr char callback_id[] = "handle-get-parents-callback";
   base::ListValue list_args;
   list_args.AppendString(callback_id);
@@ -222,6 +265,7 @@ TEST_F(EduAccountLoginHandlerTest, HandleGetParentsSuccess) {
 }
 
 TEST_F(EduAccountLoginHandlerTest, HandleGetParentsFailure) {
+  SetupNetwork();
   constexpr char callback_id[] = "handle-get-parents-callback";
   base::ListValue list_args;
   list_args.AppendString(callback_id);
@@ -238,6 +282,7 @@ TEST_F(EduAccountLoginHandlerTest, HandleGetParentsFailure) {
 }
 
 TEST_F(EduAccountLoginHandlerTest, HandleParentSigninSuccess) {
+  SetupNetwork();
   handler()->AllowJavascriptForTesting();
 
   constexpr char callback_id[] = "handle-parent-signin-callback";
@@ -270,6 +315,7 @@ TEST_F(EduAccountLoginHandlerTest, HandleParentSigninSuccess) {
 }
 
 TEST_F(EduAccountLoginHandlerTest, HandleParentSigninAccessTokenFailure) {
+  SetupNetwork();
   handler()->AllowJavascriptForTesting();
 
   constexpr char callback_id[] = "handle-parent-signin-callback";
@@ -295,6 +341,7 @@ TEST_F(EduAccountLoginHandlerTest, HandleParentSigninAccessTokenFailure) {
 }
 
 TEST_F(EduAccountLoginHandlerTest, HandleParentSigninReAuthProofTokenFailure) {
+  SetupNetwork();
   handler()->AllowJavascriptForTesting();
 
   constexpr char callback_id[] = "handle-parent-signin-callback";
@@ -329,6 +376,7 @@ TEST_F(EduAccountLoginHandlerTest, HandleParentSigninReAuthProofTokenFailure) {
 }
 
 TEST_F(EduAccountLoginHandlerTest, ProfileImageFetcherTest) {
+  SetupNetwork();
   std::map<std::string, gfx::Image> expected_profile_images =
       GetFakeProfileImageMap();
 
@@ -358,6 +406,40 @@ TEST_F(EduAccountLoginHandlerTest, ProfileImageFetcherTest) {
   // callback to be called.
   profile_image_fetcher->OnImageFetched(kFakeParentGaiaId, GetFakeImage(),
                                         image_fetcher::RequestMetadata());
+}
+
+TEST_F(EduAccountLoginHandlerTest, HandleIsNetworkReadyOffline) {
+  SetupNetwork(/*network_status_online=*/false);
+  constexpr char callback_id[] = "is-network-ready-callback";
+  base::ListValue list_args;
+  list_args.AppendString(callback_id);
+
+  handler()->HandleIsNetworkReady(&list_args);
+
+  const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+  VerifyJavascriptCallbackResolved(data, callback_id);
+
+  bool result = false;
+  ASSERT_TRUE(data.arg3()->GetAsBoolean(&result));
+  // IsNetworkReady should return false.
+  ASSERT_FALSE(result);
+}
+
+TEST_F(EduAccountLoginHandlerTest, HandleIsNetworkReadyOnline) {
+  SetupNetwork(/*network_status_online=*/true);
+  constexpr char callback_id[] = "is-network-ready-callback";
+  base::ListValue list_args;
+  list_args.AppendString(callback_id);
+
+  handler()->HandleIsNetworkReady(&list_args);
+
+  const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+  VerifyJavascriptCallbackResolved(data, callback_id);
+
+  bool result = false;
+  ASSERT_TRUE(data.arg3()->GetAsBoolean(&result));
+  // IsNetworkReady should return true.
+  ASSERT_TRUE(result);
 }
 
 }  // namespace chromeos

@@ -7,6 +7,9 @@
  * the Nearby Share flow. It shows a list of devices to select from.
  */
 
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import './nearby_preview.js';
+
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 Polymer({

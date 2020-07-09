@@ -2213,19 +2213,11 @@ void LockContentsView::RegisterAccelerators() {
 }
 
 void LockContentsView::PerformAction(LoginAcceleratorAction action) {
-  switch (action) {
-    case LoginAcceleratorAction::kToggleSystemInfo:
-      ToggleSystemInfo();
-      break;
-    case LoginAcceleratorAction::kShowFeedback:
-      Shell::Get()->login_screen_controller()->ShowFeedback();
-      break;
-    case LoginAcceleratorAction::kShowResetScreen:
-      Shell::Get()->login_screen_controller()->ShowResetScreen();
-      break;
-    default:
-      NOTREACHED();
+  if (action == LoginAcceleratorAction::kToggleSystemInfo) {
+    ToggleSystemInfo();
+    return;
   }
+  Shell::Get()->login_screen_controller()->HandleAccelerator(action);
 }
 
 bool LockContentsView::GetSystemInfoVisibility() const {

@@ -234,8 +234,8 @@ void IdentityAPI::SetConsentResult(const std::string& result,
   on_set_consent_result_callback_list_.Notify(result, window_id);
 }
 
-std::unique_ptr<
-    base::CallbackList<IdentityAPI::OnSetConsentResultSignature>::Subscription>
+std::unique_ptr<base::RepeatingCallbackList<
+    IdentityAPI::OnSetConsentResultSignature>::Subscription>
 IdentityAPI::RegisterOnSetConsentResultCallback(
     const base::RepeatingCallback<OnSetConsentResultSignature>& callback) {
   return on_set_consent_result_callback_list_.Add(callback);
@@ -254,9 +254,9 @@ BrowserContextKeyedAPIFactory<IdentityAPI>* IdentityAPI::GetFactoryInstance() {
   return g_identity_api_factory.Pointer();
 }
 
-std::unique_ptr<base::CallbackList<void()>::Subscription>
-IdentityAPI::RegisterOnShutdownCallback(const base::Closure& cb) {
-  return on_shutdown_callback_list_.Add(cb);
+std::unique_ptr<base::OnceCallbackList<void()>::Subscription>
+IdentityAPI::RegisterOnShutdownCallback(base::OnceClosure cb) {
+  return on_shutdown_callback_list_.Add(std::move(cb));
 }
 
 bool IdentityAPI::AreExtensionsRestrictedToPrimaryAccount() {

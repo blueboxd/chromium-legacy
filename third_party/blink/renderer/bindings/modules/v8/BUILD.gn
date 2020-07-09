@@ -52,7 +52,7 @@ idl_impl("bindings_modules_impl_generated") {
 }
 
 idl_compiler("generate_bindings_modules_v8_partial_interfaces") {
-  sources = core_idl_with_modules_dependency_files
+  sources = core_interface_idl_files_modules_dependent
   output_dir = bindings_modules_v8_output_dir
   output_name_suffix = "_partial"
   target_component = "modules"
@@ -85,7 +85,7 @@ action("bindings_modules_v8_generated_init_partial") {
 
   # Put the IDL file list in a response file to avoid command-line limits.
   response_file_contents =
-      rebase_path(core_idl_with_modules_dependency_files, root_build_dir)
+      rebase_path(core_interface_idl_files_modules_dependent, root_build_dir)
 
   args = [
     "--idl-files-list",
@@ -145,8 +145,9 @@ blink_modules_sources("bindings_modules_impl") {
 
 action("generate_v8_context_snapshot_external_references") {
   script = "$bindings_scripts_dir/generate_v8_context_snapshot_external_references.py"
-  idl_files = core_idl_files + core_idl_with_modules_dependency_files +
-              modules_definition_idl_files
+  idl_files =
+      core_interface_idl_files_core_only +
+      core_interface_idl_files_modules_dependent + modules_definition_idl_files
   output = bindings_generated_v8_context_snapshot_external_references_file
 
   inputs = idl_files + [ script ]

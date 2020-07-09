@@ -32,8 +32,9 @@ namespace {
 
 class AppLoadObserver : public ExtensionRegistryObserver {
  public:
-  AppLoadObserver(content::BrowserContext* browser_context,
-                  base::Callback<void(const Extension*)> callback)
+  AppLoadObserver(
+      content::BrowserContext* browser_context,
+      const base::RepeatingCallback<void(const Extension*)>& callback)
       : callback_(callback) {
     extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context));
   }
@@ -44,7 +45,7 @@ class AppLoadObserver : public ExtensionRegistryObserver {
   }
 
  private:
-  base::Callback<void(const Extension*)> callback_;
+  base::RepeatingCallback<void(const Extension*)> callback_;
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_{this};
   DISALLOW_COPY_AND_ASSIGN(AppLoadObserver);
@@ -215,10 +216,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   FileSystemChooseEntryFunction::
       SkipPickerAndSelectSuggestedPathForTest();
   {
-    AppLoadObserver observer(profile(),
-                             base::Bind(SetLastChooseEntryDirectory,
-                                        test_file.DirName(),
-                                        ExtensionPrefs::Get(profile())));
+    AppLoadObserver observer(
+        profile(),
+        base::BindRepeating(SetLastChooseEntryDirectory, test_file.DirName(),
+                            ExtensionPrefs::Get(profile())));
     ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_existing"))
         << message_;
   }
@@ -239,10 +240,11 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   {
     AppLoadObserver observer(
         profile(),
-        base::Bind(SetLastChooseEntryDirectory,
-                   test_file.DirName().Append(base::FilePath::FromUTF8Unsafe(
-                       "fake_directory_does_not_exist")),
-                   ExtensionPrefs::Get(profile())));
+        base::BindRepeating(
+            SetLastChooseEntryDirectory,
+            test_file.DirName().Append(base::FilePath::FromUTF8Unsafe(
+                "fake_directory_does_not_exist")),
+            ExtensionPrefs::Get(profile())));
     ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_existing"))
         << message_;
   }
@@ -644,11 +646,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiRestoreEntry) {
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  AppLoadObserver observer(profile(),
-                           base::Bind(AddSavedEntry,
-                                      test_file,
-                                      false,
-                                      apps::SavedFilesService::Get(profile())));
+  AppLoadObserver observer(
+      profile(), base::BindRepeating(AddSavedEntry, test_file, false,
+                                     apps::SavedFilesService::Get(profile())));
   ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/restore_entry"))
       << message_;
 }
@@ -659,11 +659,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiRestoreDirectoryEntry) {
   base::FilePath test_directory = test_file.DirName();
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  AppLoadObserver observer(profile(),
-                           base::Bind(AddSavedEntry,
-                                      test_directory,
-                                      true,
-                                      apps::SavedFilesService::Get(profile())));
+  AppLoadObserver observer(
+      profile(), base::BindRepeating(AddSavedEntry, test_directory, true,
+                                     apps::SavedFilesService::Get(profile())));
   ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/restore_directory"))
       << message_;
 }

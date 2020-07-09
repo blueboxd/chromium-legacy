@@ -63,13 +63,14 @@ public class AndroidSyncSettings {
 
     private boolean mMasterSyncEnabled;
 
-    private final ObserverList<AndroidSyncSettingsObserver> mObservers =
-            new ObserverList<AndroidSyncSettingsObserver>();
+    private final ObserverList<AndroidSyncSettingsObserver> mObservers = new ObserverList<>();
 
     /**
      * Provides notifications when Android sync settings have changed.
      */
-    public interface AndroidSyncSettingsObserver { public void androidSyncSettingsChanged(); }
+    public interface AndroidSyncSettingsObserver {
+        void androidSyncSettingsChanged();
+    }
 
     /**
       Singleton instance getter. Will initialize the singleton if it hasn't been initialized before.

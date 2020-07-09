@@ -10,9 +10,11 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_refptr.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/child_accounts/family_info_fetcher.h"
+#include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
@@ -86,11 +88,16 @@ class EduAccountLoginHandler : public content::WebUIMessageHandler,
   FRIEND_TEST_ALL_PREFIXES(EduAccountLoginHandlerTest,
                            HandleParentSigninReAuthProofTokenFailure);
   FRIEND_TEST_ALL_PREFIXES(EduAccountLoginHandlerTest, ProfileImageFetcherTest);
+  FRIEND_TEST_ALL_PREFIXES(EduAccountLoginHandlerTest,
+                           HandleIsNetworkReadyOnline);
+  FRIEND_TEST_ALL_PREFIXES(EduAccountLoginHandlerTest,
+                           HandleIsNetworkReadyOffline);
 
   // content::WebUIMessageHandler:
   void RegisterMessages() override;
   void OnJavascriptDisallowed() override;
 
+  void HandleIsNetworkReady(const base::ListValue* args);
   void HandleGetParents(const base::ListValue* args);
   void HandleCloseDialog(const base::ListValue* args);
   void HandleParentSignin(const base::ListValue* args);
@@ -138,6 +145,9 @@ class EduAccountLoginHandler : public content::WebUIMessageHandler,
   std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher>
       access_token_fetcher_;
   base::RepeatingClosure close_dialog_closure_;
+  // Reference to NetworkStateInformer that handles changes in network
+  // state.
+  scoped_refptr<NetworkStateInformer> network_state_informer_;
   std::unique_ptr<FamilyInfoFetcher> family_fetcher_;
 
   std::unique_ptr<ProfileImageFetcher> profile_image_fetcher_;

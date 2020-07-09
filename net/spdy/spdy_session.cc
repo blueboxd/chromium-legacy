@@ -907,6 +907,7 @@ SpdySession::SpdySession(
     const spdy::SettingsMap& initial_settings,
     const base::Optional<SpdySessionPool::GreasedHttp2Frame>&
         greased_http2_frame,
+    bool http2_end_stream_with_data_frame,
     TimeFunc time_func,
     ServerPushDelegate* push_delegate,
     NetworkQualityEstimator* network_quality_estimator,
@@ -933,6 +934,7 @@ SpdySession::SpdySession(
       error_on_close_(OK),
       initial_settings_(initial_settings),
       greased_http2_frame_(greased_http2_frame),
+      http2_end_stream_with_data_frame_(http2_end_stream_with_data_frame),
       in_confirm_handshake_(false),
       max_concurrent_streams_(kInitialMaxConcurrentStreams),
       max_concurrent_pushed_streams_(

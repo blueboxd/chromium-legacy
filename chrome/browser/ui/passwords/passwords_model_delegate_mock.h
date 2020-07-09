@@ -64,7 +64,10 @@ class PasswordsModelDelegateMock
               SavePassword,
               (const base::string16&, const base::string16&),
               (override));
-  MOCK_METHOD(void, SaveUnsyncedCredentialsInProfileStore, (), (override));
+  MOCK_METHOD(void,
+              SaveUnsyncedCredentialsInProfileStore,
+              (const std::vector<autofill::PasswordForm>&),
+              (override));
   MOCK_METHOD(void, DiscardUnsyncedCredentials, (), (override));
   MOCK_METHOD(void, MovePasswordToAccountStore, (), (override));
   MOCK_METHOD(void, BlockMovingPasswordToAccountStore, (), (override));

@@ -144,10 +144,10 @@
   // Otherwise, show the full encryption options.
   if (self.syncService->GetUserSettings()->IsPassphraseRequired()) {
     controllerToPush = [[SyncEncryptionPassphraseTableViewController alloc]
-        initWithBrowserState:self.browser->GetBrowserState()];
+        initWithBrowser:self.browser];
   } else {
     controllerToPush = [[SyncEncryptionTableViewController alloc]
-        initWithBrowserState:self.browser->GetBrowserState()];
+        initWithBrowser:self.browser];
   }
   // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
   // clean up.

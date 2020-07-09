@@ -81,6 +81,7 @@ class WebFrameTestProxy : public RenderFrameImpl,
 
  private:
   // mojom::WebTestRenderFrame implementation.
+  void CaptureDump(CaptureDumpCallback callback) override;
   void SynchronouslyCompositeAfterTest(
       SynchronouslyCompositeAfterTestCallback callback) override;
   void DumpFrameLayout(DumpFrameLayoutCallback callback) override;
@@ -91,6 +92,7 @@ class WebFrameTestProxy : public RenderFrameImpl,
   void SetupRendererProcessForNonTestWindow() override;
   void ResetRendererAfterWebTest() override;
   void FinishTestInMainWindow() override;
+  void LayoutDumpCompleted(const std::string& completed_layout_dump) override;
 
   void BindReceiver(
       mojo::PendingAssociatedReceiver<mojom::WebTestRenderFrame> receiver);

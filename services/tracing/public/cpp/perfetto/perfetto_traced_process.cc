@@ -14,10 +14,12 @@
 #include "build/build_config.h"
 #include "services/tracing/public/cpp/perfetto/dummy_producer.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_platform.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_tracing_backend.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "services/tracing/public/cpp/trace_startup.h"
+#include "services/tracing/public/mojom/tracing_service.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/tracing.h"
 
 #if defined(OS_POSIX)
@@ -79,11 +81,19 @@ PerfettoTracedProcess* PerfettoTracedProcess::Get() {
 
 PerfettoTracedProcess::PerfettoTracedProcess()
     : producer_client_(std::make_unique<ProducerClient>(GetTaskRunner())),
-      platform_(std::make_unique<PerfettoPlatform>()) {
+      platform_(std::make_unique<PerfettoPlatform>()),
+      tracing_backend_(std::make_unique<PerfettoTracingBackend>(*this)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 PerfettoTracedProcess::~PerfettoTracedProcess() {}
+
+void PerfettoTracedProcess::SetConsumerConnectionFactory(
+    ConsumerConnectionFactory factory,
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  consumer_connection_factory_ = factory;
+  consumer_connection_task_runner_ = task_runner;
+}
 
 void PerfettoTracedProcess::ClearDataSourcesForTesting() {
   base::AutoLock lock(data_sources_lock_);
@@ -113,6 +123,25 @@ void PerfettoTracedProcess::DeleteSoonForTesting(
     std::unique_ptr<PerfettoTracedProcess> perfetto_traced_process) {
   GetTaskRunner()->GetOrCreateTaskRunner()->DeleteSoon(
       FROM_HERE, std::move(perfetto_traced_process));
+}
+
+void PerfettoTracedProcess::CreateConsumerConnection(
+    base::OnceCallback<void(mojo::PendingRemote<mojom::ConsumerHost>)>
+        callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  consumer_connection_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](ConsumerConnectionFactory factory,
+             base::OnceCallback<void(mojo::PendingRemote<mojom::ConsumerHost>)>
+                 callback) {
+            auto& tracing_service = factory();
+            mojo::PendingRemote<mojom::ConsumerHost> consumer_host_remote;
+            tracing_service.BindConsumerHost(
+                consumer_host_remote.InitWithNewPipeAndPassReceiver());
+            std::move(callback).Run(std::move(consumer_host_remote));
+          },
+          consumer_connection_factory_, std::move(callback)));
 }
 
 // We never destroy the taskrunner as we may need it for cleanup
@@ -205,6 +234,8 @@ bool PerfettoTracedProcess::SetupStartupTracing(
 void PerfettoTracedProcess::SetupClientLibrary() {
   perfetto::TracingInitArgs init_args;
   init_args.platform = platform_.get();
+  init_args.custom_backend = tracing_backend_.get();
+  init_args.backends |= perfetto::kCustomBackend;
   perfetto::Tracing::Initialize(init_args);
 }
 
@@ -217,7 +248,8 @@ void PerfettoTracedProcess::OnThreadPoolAvailable() {
   producer_client_->OnThreadPoolAvailable();
   if (system_producer_)
     system_producer_->OnThreadPoolAvailable();
-  platform_->OnThreadPoolAvailable();
+  if (!platform_->did_start_task_runner())
+    platform_->StartTaskRunner(GetTaskRunner()->GetOrCreateTaskRunner());
 }
 
 void PerfettoTracedProcess::SetupSystemTracing(

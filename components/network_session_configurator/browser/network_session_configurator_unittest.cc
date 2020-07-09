@@ -67,6 +67,7 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
   EXPECT_TRUE(params_.enable_http2);
   EXPECT_TRUE(params_.http2_settings.empty());
   EXPECT_FALSE(params_.greased_http2_frame);
+  EXPECT_FALSE(params_.http2_end_stream_with_data_frame);
   EXPECT_FALSE(params_.enable_websocket_over_http2);
 
   EXPECT_TRUE(params_.enable_quic);
@@ -850,6 +851,18 @@ TEST_F(NetworkSessionConfiguratorTest, Http2GreaseFrameTypeFromFieldTrial) {
   ASSERT_TRUE(params_.greased_http2_frame);
   const uint8_t frame_type = params_.greased_http2_frame.value().type;
   EXPECT_EQ(0x0b, frame_type % 0x1f);
+}
+
+TEST_F(NetworkSessionConfiguratorTest,
+       Http2EndStreamWithDataFrameFromFieldTrial) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["http2_end_stream_with_data_frame"] = "true";
+  variations::AssociateVariationParams("HTTP2", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("HTTP2", "Enabled");
+
+  ParseFieldTrials();
+
+  ASSERT_TRUE(params_.http2_end_stream_with_data_frame);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,

@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/login_accelerators.h"
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -179,11 +180,9 @@ class LoginDisplayHost {
   // user data.
   virtual void ResyncUserData() = 0;
 
-  // Shows a feedback report dialog.
-  virtual void ShowFeedback() = 0;
-
-  // Shows the powerwash dialog.
-  virtual void ShowResetScreen() = 0;
+  // Handles an accelerator action.
+  // Returns |true| if the accelerator was handled.
+  virtual bool HandleAccelerator(ash::LoginAcceleratorAction action) = 0;
 
   // Handles a request to show the captive portal web dialog. For webui, the
   // dialog is displayed immediately. For views, the dialog is displayed as soon

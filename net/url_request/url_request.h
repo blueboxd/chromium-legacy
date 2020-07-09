@@ -168,7 +168,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
     // transactions, e.g. if the request is redirected. It may also be called
     // several times per transaction, e.g. if the connection is retried, after
     // each HTTP auth challenge, or for split HTTP range requests.
-    // TODO(crbug.com/986744): Verify range request behavior with tests.
     //
     // The delegate may call request->GetTransactionRemoteEndpoint() to
     // determine where the latest connection terminates.

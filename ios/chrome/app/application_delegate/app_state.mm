@@ -529,6 +529,9 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 - (void)decrementBlockingUICounter {
   DCHECK(self.blockingUICounter > 0 && self.sceneShowingBlockingUI != nil);
   self.blockingUICounter--;
+  if (self.blockingUICounter == 0) {
+    self.sceneShowingBlockingUI = nil;
+  }
 }
 
 - (void)incrementBlockingUICounterForScene:(SceneState*)scene {

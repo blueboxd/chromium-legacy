@@ -254,13 +254,12 @@ class ObserverListThreadSafe : public internal::ObserverListThreadSafeBase {
 
   const ObserverListPolicy policy_ = ObserverListPolicy::ALL;
 
-  // Synchronizes access to |observers_|.
   mutable Lock lock_;
 
   // Keys are observers. Values are the SequencedTaskRunners on which they must
   // be notified.
   std::unordered_map<ObserverType*, scoped_refptr<SequencedTaskRunner>>
-      observers_;
+      observers_ GUARDED_BY(lock_);
 
   DISALLOW_COPY_AND_ASSIGN(ObserverListThreadSafe);
 };

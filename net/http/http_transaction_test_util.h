@@ -273,6 +273,7 @@ class MockNetworkTransaction
   MockTransactionReadHandler read_handler_;
   CreateHelper* websocket_handshake_stream_create_helper_;
   BeforeNetworkStartCallback before_network_start_callback_;
+  ConnectedCallback connected_callback_;
   base::WeakPtr<MockNetworkLayer> transaction_factory_;
   int64_t received_bytes_;
   int64_t sent_bytes_;
@@ -359,6 +360,43 @@ class MockNetworkLayer : public HttpTransactionFactory,
 
 // read the transaction completely
 int ReadTransaction(HttpTransaction* trans, std::string* result);
+
+//-----------------------------------------------------------------------------
+// connected callback handler
+
+// Used for injecting ConnectedCallback instances in HttpTransaction.
+class ConnectedHandler {
+ public:
+  ConnectedHandler() = default;
+
+  ConnectedHandler(const ConnectedHandler&) = default;
+  ConnectedHandler& operator=(const ConnectedHandler&) = default;
+  ConnectedHandler(ConnectedHandler&&) = default;
+  ConnectedHandler& operator=(ConnectedHandler&&) = default;
+
+  // Returns a callback bound to this->OnConnected().
+  // The returned callback must not outlive this instance.
+  HttpTransaction::ConnectedCallback Callback() {
+    return base::BindRepeating(&ConnectedHandler::OnConnected,
+                               base::Unretained(this));
+  }
+
+  // Compatible with HttpTransaction::ConnectedCallback.
+  int OnConnected() {
+    call_count_++;
+    return result_;
+  }
+
+  // Returns the number of times OnConnected() was called.
+  int call_count() const { return call_count_; }
+
+  // Sets the value to be returned by subsequent calls to OnConnected().
+  void set_result(int result) { result_ = result; }
+
+ private:
+  int call_count_ = 0;
+  int result_ = OK;
+};
 
 }  // namespace net
 

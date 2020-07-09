@@ -122,7 +122,8 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   // Consent result.
   void SetConsentResult(const std::string& result,
                         const std::string& window_id);
-  std::unique_ptr<base::CallbackList<OnSetConsentResultSignature>::Subscription>
+  std::unique_ptr<
+      base::RepeatingCallbackList<OnSetConsentResultSignature>::Subscription>
   RegisterOnSetConsentResultCallback(
       const base::RepeatingCallback<OnSetConsentResultSignature>& callback);
 
@@ -130,8 +131,8 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   void Shutdown() override;
   static BrowserContextKeyedAPIFactory<IdentityAPI>* GetFactoryInstance();
 
-  std::unique_ptr<base::CallbackList<void()>::Subscription>
-  RegisterOnShutdownCallback(const base::Closure& cb);
+  std::unique_ptr<base::OnceCallbackList<void()>::Subscription>
+  RegisterOnShutdownCallback(base::OnceClosure cb);
 
   // Callback that is used in testing contexts to test the implementation of
   // the chrome.identity.onSignInChanged event. Note that the passed-in Event is
@@ -183,9 +184,9 @@ class IdentityAPI : public BrowserContextKeyedAPI,
 
   OnSignInChangedCallback on_signin_changed_callback_for_testing_;
 
-  base::CallbackList<OnSetConsentResultSignature>
+  base::RepeatingCallbackList<OnSetConsentResultSignature>
       on_set_consent_result_callback_list_;
-  base::CallbackList<void()> on_shutdown_callback_list_;
+  base::OnceCallbackList<void()> on_shutdown_callback_list_;
 };
 
 template <>

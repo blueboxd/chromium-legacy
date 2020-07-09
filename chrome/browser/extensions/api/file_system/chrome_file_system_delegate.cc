@@ -106,31 +106,30 @@ bool GetVolumeListForExtension(
 }
 
 // Callback called when consent is granted or denied.
-void OnConsentReceived(
-    content::BrowserContext* browser_context,
-    scoped_refptr<ExtensionFunction> requester,
-    const FileSystemDelegate::FileSystemCallback& success_callback,
-    const FileSystemDelegate::ErrorCallback& error_callback,
-    const std::string& extension_id,
-    const base::WeakPtr<file_manager::Volume>& volume,
-    bool writable,
-    ConsentProvider::Consent result) {
+void OnConsentReceived(content::BrowserContext* browser_context,
+                       scoped_refptr<ExtensionFunction> requester,
+                       FileSystemDelegate::FileSystemCallback success_callback,
+                       FileSystemDelegate::ErrorCallback error_callback,
+                       const std::string& extension_id,
+                       const base::WeakPtr<file_manager::Volume>& volume,
+                       bool writable,
+                       ConsentProvider::Consent result) {
   using file_manager::VolumeManager;
   using file_manager::Volume;
 
   // Render frame host can be gone before this callback method is executed.
   if (!requester->render_frame_host()) {
-    error_callback.Run(std::string());
+    std::move(error_callback).Run(std::string());
     return;
   }
 
   switch (result) {
     case ConsentProvider::CONSENT_REJECTED:
-      error_callback.Run(kSecurityError);
+      std::move(error_callback).Run(kSecurityError);
       return;
 
     case ConsentProvider::CONSENT_IMPOSSIBLE:
-      error_callback.Run(kConsentImpossible);
+      std::move(error_callback).Run(kConsentImpossible);
       return;
 
     case ConsentProvider::CONSENT_GRANTED:
@@ -138,7 +137,7 @@ void OnConsentReceived(
   }
 
   if (!volume.get()) {
-    error_callback.Run(kVolumeNotFoundError);
+    std::move(error_callback).Run(kVolumeNotFoundError);
     return;
   }
 
@@ -151,7 +150,7 @@ void OnConsentReceived(
 
   base::FilePath virtual_path;
   if (!backend->GetVirtualPath(volume->mount_path(), &virtual_path)) {
-    error_callback.Run(kSecurityError);
+    std::move(error_callback).Run(kSecurityError);
     return;
   }
 
@@ -175,7 +174,7 @@ void OnConsentReceived(
           std::string() /* file_system_id */, original_url.path(),
           &register_name);
   if (!file_system.is_valid()) {
-    error_callback.Run(kSecurityError);
+    std::move(error_callback).Run(kSecurityError);
     return;
   }
 
@@ -200,7 +199,7 @@ void OnConsentReceived(
     policy->GrantCreateFileForFileSystem(process_id, file_system.id());
   }
 
-  success_callback.Run(file_system.id(), register_name);
+  std::move(success_callback).Run(file_system.id(), register_name);
 }
 
 }  // namespace
@@ -337,8 +336,8 @@ void ChromeFileSystemDelegate::RequestFileSystem(
     const Extension& extension,
     std::string volume_id,
     bool writable,
-    const FileSystemCallback& success_callback,
-    const ErrorCallback& error_callback) {
+    FileSystemCallback success_callback,
+    ErrorCallback error_callback) {
   ConsentProviderDelegate consent_provider_delegate(
       Profile::FromBrowserContext(browser_context));
   ConsentProvider consent_provider(&consent_provider_delegate);
@@ -350,13 +349,13 @@ void ChromeFileSystemDelegate::RequestFileSystem(
 
   if (writable &&
       !app_file_handler_util::HasFileSystemWritePermission(&extension)) {
-    error_callback.Run(kRequiresFileSystemWriteError);
+    std::move(error_callback).Run(kRequiresFileSystemWriteError);
     return;
   }
 
   if (consent_provider.GetGrantVolumesMode(extension) ==
       FileSystemDelegate::kGrantNone) {
-    error_callback.Run(kNotSupportedOnNonKioskSessionError);
+    std::move(error_callback).Run(kNotSupportedOnNonKioskSessionError);
     return;
   }
 
@@ -364,7 +363,7 @@ void ChromeFileSystemDelegate::RequestFileSystem(
       volume_manager->FindVolumeById(volume_id);
   if (!volume.get() ||
       !consent_provider.IsGrantableForVolume(extension, volume)) {
-    error_callback.Run(kVolumeNotFoundError);
+    std::move(error_callback).Run(kVolumeNotFoundError);
     return;
   }
 
@@ -377,28 +376,29 @@ void ChromeFileSystemDelegate::RequestFileSystem(
 
   base::FilePath virtual_path;
   if (!backend->GetVirtualPath(volume->mount_path(), &virtual_path)) {
-    error_callback.Run(kSecurityError);
+    std::move(error_callback).Run(kSecurityError);
     return;
   }
 
   if (writable && (volume->is_read_only())) {
-    error_callback.Run(kSecurityError);
+    std::move(error_callback).Run(kSecurityError);
     return;
   }
 
-  const ConsentProvider::ConsentCallback& callback = base::Bind(
-      &OnConsentReceived, browser_context, requester, success_callback,
-      error_callback, extension.id(), volume, writable);
+  ConsentProvider::ConsentCallback callback =
+      base::BindOnce(&OnConsentReceived, browser_context, requester,
+                     std::move(success_callback), std::move(error_callback),
+                     extension.id(), volume, writable);
 
   consent_provider.RequestConsent(extension, requester->render_frame_host(),
-                                  volume, writable, callback);
+                                  volume, writable, std::move(callback));
 }
 
 void ChromeFileSystemDelegate::GetVolumeList(
     content::BrowserContext* browser_context,
     const Extension& extension,
-    const VolumeListCallback& success_callback,
-    const ErrorCallback& error_callback) {
+    VolumeListCallback success_callback,
+    ErrorCallback error_callback) {
   ConsentProviderDelegate consent_provider_delegate(
       Profile::FromBrowserContext(browser_context));
   ConsentProvider consent_provider(&consent_provider_delegate);
@@ -409,7 +409,7 @@ void ChromeFileSystemDelegate::GetVolumeList(
 
   GetVolumeListForExtension(volume_list, &consent_provider, extension,
                             &result_volume_list);
-  success_callback.Run(result_volume_list);
+  std::move(success_callback).Run(result_volume_list);
 }
 
 #endif  // defined(OS_CHROMEOS)

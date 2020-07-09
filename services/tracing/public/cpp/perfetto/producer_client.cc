@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/process/process.h"
@@ -398,7 +397,6 @@ bool ProducerClient::InitSharedMemoryIfNeeded() {
   base::UmaHistogramBoolean(kSharedBufferIsValidMetricName, valid);
 
   if (!valid) {
-    base::debug::DumpWithoutCrashing();
     LOG(ERROR) << "Failed to create tracing SMB";
     shared_memory_.reset();
     return false;

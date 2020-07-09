@@ -80,6 +80,8 @@ target(tracing_lib_type, "cpp") {
       "perfetto/perfetto_producer.h",
       "perfetto/perfetto_traced_process.cc",
       "perfetto/perfetto_traced_process.h",
+      "perfetto/perfetto_tracing_backend.cc",
+      "perfetto/perfetto_tracing_backend.h",
       "perfetto/producer_client.cc",
       "perfetto/producer_client.h",
       "perfetto/shared_memory.cc",

@@ -61,7 +61,7 @@ class BASE_EXPORT PowerMonitorSource {
   void SetInitialOnBatteryPowerState(bool on_battery_power);
 
  private:
-  bool on_battery_power_ = false;
+  bool on_battery_power_ GUARDED_BY(battery_lock_) = false;
   bool suspended_ = false;
 
   // This lock guards access to on_battery_power_, to ensure that

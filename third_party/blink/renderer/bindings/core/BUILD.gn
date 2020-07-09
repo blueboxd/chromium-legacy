@@ -21,14 +21,20 @@ compute_interfaces_info("interfaces_info_core") {
 }
 
 compute_global_objects("core_global_objects") {
-  sources = core_idl_files + core_idl_with_modules_dependency_files
+  sources =
+      core_interface_idl_files_core_only +
+      core_interface_idl_files_modules_dependent +
+      core_buffer_source_type_idl_files + core_callback_interface_idl_files
   sources_generated = []
   output_file = "$bindings_core_output_dir/global_objects_core.pickle"
   deps = []
 }
 
 generate_global_constructors("core_global_constructors_idls") {
-  sources = core_idl_files + core_idl_with_modules_dependency_files
+  sources =
+      core_interface_idl_files_core_only +
+      core_interface_idl_files_modules_dependent +
+      core_buffer_source_type_idl_files + core_callback_interface_idl_files
   global_objects_file = "$bindings_core_output_dir/global_objects_core.pickle"
   interfaces = core_global_constructors_original_interfaces
   basenames = core_global_constructors_original_interface_basenames

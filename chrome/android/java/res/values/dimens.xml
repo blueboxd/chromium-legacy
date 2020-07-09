@@ -59,7 +59,6 @@
 
     <!-- Dimensions for compact translate infobar. -->
     <dimen name="infobar_translate_fade_edge_length">18dp</dimen>
-    <dimen name="infobar_translate_menu_width">260dp</dimen>
 
     <!-- Overlay Panel dimensions -->
     <dimen name="overlay_panel_end_buttons_width">94dp</dimen>

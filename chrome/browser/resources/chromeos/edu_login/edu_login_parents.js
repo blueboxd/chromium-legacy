@@ -66,6 +66,20 @@ Polymer({
 
   /** @override */
   ready() {
+    EduAccountLoginBrowserProxyImpl.getInstance().isNetworkReady().then(
+        result => {
+          if (result) {
+            this.getParents_();
+            return;
+          }
+          // No internet connection.
+          this.fire(
+              'edu-login-error', {errorType: EduLoginErrorType.NO_INTERNET});
+        });
+  },
+
+  /** @private */
+  getParents_() {
     EduAccountLoginBrowserProxyImpl.getInstance().getParents().then(
         result => {
           this.parents_ = result;

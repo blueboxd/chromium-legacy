@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ASH_LOGIN_SCREEN_CLIENT_H_
 #define CHROME_BROWSER_UI_ASH_LOGIN_SCREEN_CLIENT_H_
 
+#include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/login_screen_client.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
 #include "base/macros.h"
@@ -107,8 +108,7 @@ class LoginScreenClient : public ash::LoginScreenClient {
                            const std::string& input_method) override;
   void RequestPublicSessionKeyboardLayouts(const AccountId& account_id,
                                            const std::string& locale) override;
-  void ShowFeedback() override;
-  void ShowResetScreen() override;
+  void HandleAccelerator(ash::LoginAcceleratorAction action) override;
   void ShowAccountAccessHelpApp(gfx::NativeWindow parent_window) override;
   void ShowParentAccessHelpApp(gfx::NativeWindow parent_window) override;
   void ShowLockScreenNotificationSettings() override;

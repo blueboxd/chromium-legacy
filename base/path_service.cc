@@ -143,8 +143,9 @@ static PathData* GetPathData() {
   return path_data;
 }
 
-// Tries to find |key| in the cache. |path_data| should be locked by the caller!
-bool LockedGetFromCache(int key, const PathData* path_data, FilePath* result) {
+// Tries to find |key| in the cache.
+bool LockedGetFromCache(int key, const PathData* path_data, FilePath* result)
+    EXCLUSIVE_LOCKS_REQUIRED(path_data->lock) {
   if (path_data->cache_disabled)
     return false;
   // check for a cached version
@@ -156,9 +157,9 @@ bool LockedGetFromCache(int key, const PathData* path_data, FilePath* result) {
   return false;
 }
 
-// Tries to find |key| in the overrides map. |path_data| should be locked by the
-// caller!
-bool LockedGetFromOverrides(int key, PathData* path_data, FilePath* result) {
+// Tries to find |key| in the overrides map.
+bool LockedGetFromOverrides(int key, PathData* path_data, FilePath* result)
+    EXCLUSIVE_LOCKS_REQUIRED(path_data->lock) {
   // check for an overridden version.
   PathMap::const_iterator it = path_data->overrides.find(key);
   if (it != path_data->overrides.end()) {

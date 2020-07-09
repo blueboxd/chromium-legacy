@@ -113,8 +113,8 @@ WebView:
   `monochrome_{public_}apk`, this is not a valid WebView provider. Unlike on
   `userdebug`/`eng` images, the WebView update service performs additional
   signature checks on `user` images, only loading code that has been signed by
-  one of the expected signatures--as above, these keys are not available for
-  local builds.
+  one of the expected signatures&mdash;as above, these keys are not available
+  for local builds.
 
 Both of the above are important security features: these protect users from
 running malware in the context of WebView (which runs inside the context of

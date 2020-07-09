@@ -118,8 +118,8 @@ const base::Feature kChangePictureVideoMode{"ChangePictureVideoMode",
 // Dispatches a dummy fetch event to a service worker to check the offline
 // capability of the PWA site before promoting installation. See
 // https://crbug.com/965802 for more details.
-const base::Feature kCheckOfflineCapability {
-    "CheckOfflineCapability", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kCheckOfflineCapability{"CheckOfflineCapability",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_CHROMEOS)
 // Enables passing additional user authentication in requests to DMServer
@@ -764,6 +764,10 @@ const base::Feature kSchedulerConfiguration{"SchedulerConfiguration",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 #endif  // defined(OS_CHROMEOS)
+
+// Enables the teamfood flags.
+const base::Feature kTeamfoodFlags{"TeamfoodFlags",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if !defined(OS_ANDROID)
 // Allow capturing of WebRTC event logs, and uploading of those logs to Crash.

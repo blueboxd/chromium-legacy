@@ -10231,6 +10231,54 @@ TEST_F(SpdyNetworkTransactionTest, ZeroRTTConfirmErrorAsync) {
   EXPECT_THAT(out.rv, IsError(ERR_SSL_PROTOCOL_ERROR));
 }
 
+// If |http2_end_stream_with_data_frame| is false, then the HEADERS frame of a
+// GET request will close the stream using the END_STREAM flag.  Test that
+// |greased_http2_frame| is ignored and no reserved frames are sent on a closed
+// stream.
+TEST_F(SpdyNetworkTransactionTest,
+       DoNotGreaseFrameTypeWithGetRequestIfHeadersFrameClosesStream) {
+  auto session_deps = std::make_unique<SpdySessionDependencies>();
+
+  const uint8_t type = 0x0b;
+  const uint8_t flags = 0xcc;
+  const std::string payload("foo");
+  session_deps->greased_http2_frame =
+      base::Optional<net::SpdySessionPool::GreasedHttp2Frame>(
+          {type, flags, payload});
+  session_deps->http2_end_stream_with_data_frame = false;
+
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
+                                     std::move(session_deps));
+
+  spdy::SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, DEFAULT_PRIORITY));
+  MockWrite writes[] = {CreateMockWrite(req, 0)};
+
+  spdy::SpdySerializedFrame resp(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame response_body(
+      spdy_util_.ConstructSpdyDataFrame(1, true));
+
+  MockRead reads[] = {CreateMockRead(resp, 1), CreateMockRead(response_body, 2),
+                      MockRead(ASYNC, 0, 3)};
+
+  SequencedSocketData data(reads, writes);
+  helper.RunPreTestSetup();
+  helper.AddData(&data);
+
+  TestCompletionCallback callback;
+  int rv = helper.trans()->Start(&request_, callback.callback(), log_);
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+
+  base::RunLoop().RunUntilIdle();
+
+  helper.VerifyDataConsumed();
+}
+
+// Test that if |http2_end_stream_with_data_frame| and |greased_http2_frame| are
+// both set, then the HEADERS frame does not have the END_STREAM flag set, it is
+// followed by a greased frame, and then by an empty DATA frame with END_STREAM
+// set.
 TEST_F(SpdyNetworkTransactionTest, GreaseFrameTypeWithGetRequest) {
   auto session_deps = std::make_unique<SpdySessionDependencies>();
 
@@ -10240,6 +10288,7 @@ TEST_F(SpdyNetworkTransactionTest, GreaseFrameTypeWithGetRequest) {
   session_deps->greased_http2_frame =
       base::Optional<net::SpdySessionPool::GreasedHttp2Frame>(
           {type, flags, payload});
+  session_deps->http2_end_stream_with_data_frame = true;
 
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
                                      std::move(session_deps));
@@ -10287,7 +10336,10 @@ TEST_F(SpdyNetworkTransactionTest, GreaseFrameTypeWithGetRequest) {
   helper.VerifyDataConsumed();
 }
 
-TEST_F(SpdyNetworkTransactionTest, GreaseFrameTypeWithPostRequest) {
+// Test sending a greased frame before DATA frame that closes the stream when
+// |http2_end_stream_with_data_frame| is false.
+TEST_F(SpdyNetworkTransactionTest,
+       GreaseFrameTypeWithPostRequestWhenHeadersFrameClosesStream) {
   UsePostRequest();
 
   auto session_deps = std::make_unique<SpdySessionDependencies>();
@@ -10298,6 +10350,67 @@ TEST_F(SpdyNetworkTransactionTest, GreaseFrameTypeWithPostRequest) {
   session_deps->greased_http2_frame =
       base::Optional<net::SpdySessionPool::GreasedHttp2Frame>(
           {type, flags, payload});
+  session_deps->http2_end_stream_with_data_frame = true;
+
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
+                                     std::move(session_deps));
+
+  spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
+      kDefaultUrl, 1, kUploadDataSize, LOWEST, nullptr, 0));
+
+  const char kRawFrameData[] = {
+      0x00, 0x00, 0x03,        // length
+      0x0b,                    // type
+      0xcc,                    // flags
+      0x00, 0x00, 0x00, 0x01,  // stream ID
+      'f',  'o',  'o'          // payload
+  };
+  spdy::SpdySerializedFrame grease(const_cast<char*>(kRawFrameData),
+                                   base::size(kRawFrameData),
+                                   /* owns_buffer = */ false);
+  spdy::SpdySerializedFrame request_body(
+      spdy_util_.ConstructSpdyDataFrame(1, true));
+
+  MockWrite writes[] = {CreateMockWrite(req, 0), CreateMockWrite(grease, 1),
+                        CreateMockWrite(request_body, 2)};
+
+  spdy::SpdySerializedFrame resp(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame response_body(
+      spdy_util_.ConstructSpdyDataFrame(1, true));
+
+  MockRead reads[] = {CreateMockRead(resp, 3), CreateMockRead(response_body, 4),
+                      MockRead(ASYNC, 0, 5)};
+
+  SequencedSocketData data(reads, writes);
+  helper.RunPreTestSetup();
+  helper.AddData(&data);
+
+  TestCompletionCallback callback;
+  int rv = helper.trans()->Start(&request_, callback.callback(), log_);
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+
+  base::RunLoop().RunUntilIdle();
+
+  helper.VerifyDataConsumed();
+}
+
+// Test sending a greased frame before DATA frame that closes the stream.
+// |http2_end_stream_with_data_frame| is true but should make no difference,
+// because the stream is already closed by a DATA frame.
+TEST_F(SpdyNetworkTransactionTest,
+       GreaseFrameTypeWithPostRequestWhenEmptyDataFrameClosesStream) {
+  UsePostRequest();
+
+  auto session_deps = std::make_unique<SpdySessionDependencies>();
+
+  const uint8_t type = 0x0b;
+  const uint8_t flags = 0xcc;
+  const std::string payload("foo");
+  session_deps->greased_http2_frame =
+      base::Optional<net::SpdySessionPool::GreasedHttp2Frame>(
+          {type, flags, payload});
+  session_deps->http2_end_stream_with_data_frame = true;
 
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
                                      std::move(session_deps));
@@ -10345,6 +10458,8 @@ TEST_F(SpdyNetworkTransactionTest, GreaseFrameTypeWithPostRequest) {
 // According to https://httpwg.org/specs/rfc7540.html#CONNECT, "frame types
 // other than DATA or stream management frames (RST_STREAM, WINDOW_UPDATE, and
 // PRIORITY) MUST NOT be sent on a connected stream".
+// Also test that |http2_end_stream_with_data_frame| has no effect on proxy
+// streams.
 TEST_F(SpdyNetworkTransactionTest, DoNotGreaseFrameTypeWithConnect) {
   auto session_deps = std::make_unique<SpdySessionDependencies>(
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
@@ -10356,6 +10471,7 @@ TEST_F(SpdyNetworkTransactionTest, DoNotGreaseFrameTypeWithConnect) {
   session_deps->greased_http2_frame =
       base::Optional<net::SpdySessionPool::GreasedHttp2Frame>(
           {type, flags, payload});
+  session_deps->http2_end_stream_with_data_frame = true;
 
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
                                      std::move(session_deps));
@@ -10437,6 +10553,7 @@ TEST_F(SpdyNetworkTransactionTest, OnDataSentDoesNotCrashWithGreasedFrameType) {
   session_deps->greased_http2_frame =
       base::Optional<net::SpdySessionPool::GreasedHttp2Frame>(
           {type, flags, payload});
+  session_deps->http2_end_stream_with_data_frame = true;
 
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
                                      std::move(session_deps));

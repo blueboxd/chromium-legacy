@@ -1,14 +1,6 @@
 <!DOCTYPE html>
-<script>
-if (window.testRunner)
-  testRunner.waitUntilDone();
-function compositeAndEnd() {
-  if (window.testRunner)
-    testRunner.updateAllLifecyclePhasesAndCompositeThen(() => testRunner.notifyDone())
-}
-</script>
 <body>
   <iframe id="simple" src="resources/frame-with-oversized-images-edge-cases.php"
-           width="600" height="500" onload="compositeAndEnd()">
+           width="600" height="500">
   </iframe>
 </body>

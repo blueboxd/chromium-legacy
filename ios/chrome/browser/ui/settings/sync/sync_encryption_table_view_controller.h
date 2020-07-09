@@ -7,14 +7,13 @@
 
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 
-class ChromeBrowserState;
+class Browser;
 
 // Controller to allow user to specify encryption passphrase for Sync.
 @interface SyncEncryptionTableViewController : SettingsRootTableViewController
 
 // Designated initializer. |browserState| must not be nil.
-- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
-    NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithBrowser:(Browser*)browser NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
 
 @end

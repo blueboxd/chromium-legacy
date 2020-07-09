@@ -117,7 +117,8 @@ class CAPTURE_EXPORT CameraDeviceContext {
       VideoCaptureDevice::Client::Buffer buffer,
       const VideoCaptureFormat& frame_format,
       base::TimeTicks reference_time,
-      base::TimeDelta timestamp);
+      base::TimeDelta timestamp,
+      const VideoFrameMetadata& metadata);
 
   // Submits the captured camera frame through a locally-allocated
   // GpuMemoryBuffer.  The captured buffer would be submitted through

@@ -29,7 +29,9 @@ class SaveUnsyncedCredentialsLocallyBubbleController
   // Drops the unsynced credentials.
   void OnCancelClicked();
 
-  const std::vector<autofill::PasswordForm>& GetUnsyncedCredentials() const;
+  const std::vector<autofill::PasswordForm>& unsynced_credentials() const {
+    return unsynced_credentials_;
+  }
 
  private:
   // PasswordBubbleControllerBase methods:
@@ -37,6 +39,7 @@ class SaveUnsyncedCredentialsLocallyBubbleController
   void ReportInteractions() override;
 
   password_manager::metrics_util::UIDismissalReason dismissal_reason_;
+  std::vector<autofill::PasswordForm> unsynced_credentials_;
 };
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_BUBBLE_CONTROLLERS_SAVE_UNSYNCED_CREDENTIALS_LOCALLY_BUBBLE_CONTROLLER_H_

@@ -92,7 +92,7 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
      */
     void updateCollapsedAccountList(DisplayableProfileData accountProfileData) {
         if (accountProfileData == null) {
-            mContinueAsButton.setText(R.string.signin_add_account);
+            mContinueAsButton.setText(R.string.signin_add_account_to_device);
         } else {
             ExistingAccountRowViewBinder.bindAccountView(accountProfileData, mSelectedAccountView);
 

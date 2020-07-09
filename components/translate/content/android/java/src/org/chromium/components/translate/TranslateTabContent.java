@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.infobar.translate;
+package org.chromium.components.translate;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -11,8 +11,6 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
-import org.chromium.chrome.R;
 
 /**
  * The content of the tab shown in the TranslateTabLayout.

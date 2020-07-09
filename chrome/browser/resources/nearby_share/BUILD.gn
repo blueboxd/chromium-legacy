@@ -38,7 +38,9 @@ js_library("nearby_confirmation_page") {
 
 js_library("nearby_discovery_page") {
   deps = [
+    ":nearby_preview",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
   ]
 }
 

@@ -15,7 +15,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_mojo.h"
 #include "chrome/browser/chromeos/login/ui/oobe_dialog_size_utils.h"
-#include "chrome/browser/chromeos/login/ui/webui_accelerator_mapping.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
@@ -495,9 +494,9 @@ bool OobeUIDialogDelegate::AcceleratorPressed(
   auto entry = accel_map_.find(accelerator);
   if (entry == accel_map_.end())
     return false;
-
-  GetOobeUI()->ForwardAccelerator(MapToWebUIAccelerator(entry->second));
-  return true;
+  if (controller_)
+    return controller_->HandleAccelerator(entry->second);
+  return false;
 }
 
 void OobeUIDialogDelegate::OnViewBoundsChanged(views::View* observed_view) {

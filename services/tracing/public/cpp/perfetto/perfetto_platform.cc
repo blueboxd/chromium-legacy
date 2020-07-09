@@ -19,10 +19,15 @@ PerfettoPlatform::PerfettoPlatform()
 
 PerfettoPlatform::~PerfettoPlatform() = default;
 
-void PerfettoPlatform::OnThreadPoolAvailable() {
-  deferred_task_runner_->StartWithTaskRunner(
-      base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::TaskPriority::USER_BLOCKING}));
+void PerfettoPlatform::StartTaskRunner(
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  DCHECK(!did_start_task_runner_);
+  deferred_task_runner_->StartWithTaskRunner(task_runner);
+  did_start_task_runner_ = true;
+}
+
+base::SequencedTaskRunner* PerfettoPlatform::task_runner() const {
+  return deferred_task_runner_.get();
 }
 
 PerfettoPlatform::ThreadLocalObject*
@@ -39,8 +44,7 @@ std::unique_ptr<perfetto::base::TaskRunner> PerfettoPlatform::CreateTaskRunner(
     const CreateTaskRunnerArgs&) {
   // We can't create a real task runner yet because the ThreadPool may not be
   // initialized. Instead, we point Perfetto to a buffering task runner which
-  // will become active as soon as the thread pool is up (see
-  // OnThreadPoolAvailable).
+  // will become active as soon as the thread pool is up (see StartTaskRunner).
   return std::make_unique<PerfettoTaskRunner>(deferred_task_runner_);
 }
 

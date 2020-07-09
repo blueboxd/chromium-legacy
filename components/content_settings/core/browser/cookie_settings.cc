@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/feature_list.h"
+#include "build/build_config.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -245,13 +246,14 @@ void CookieSettings::GetCookieSettingInternal(
 CookieSettings::~CookieSettings() = default;
 
 bool CookieSettings::IsCookieControlsEnabled() {
+#if !defined(OS_IOS)
   if (base::FeatureList::IsEnabled(
           kImprovedCookieControlsForThirdPartyCookieBlocking) &&
       pref_change_registrar_.prefs()->GetBoolean(
           prefs::kBlockThirdPartyCookies)) {
     return true;
   }
-
+#endif
   if (!base::FeatureList::IsEnabled(kImprovedCookieControls))
     return false;
 

@@ -54,12 +54,12 @@ class ChromeFileSystemDelegate : public FileSystemDelegate {
                          const Extension& extension,
                          std::string volume_id,
                          bool writable,
-                         const FileSystemCallback& success_callback,
-                         const ErrorCallback& error_callback) override;
+                         FileSystemCallback success_callback,
+                         ErrorCallback error_callback) override;
   void GetVolumeList(content::BrowserContext* browser_context,
                      const Extension& extension,
-                     const VolumeListCallback& success_callback,
-                     const ErrorCallback& error_callback) override;
+                     VolumeListCallback success_callback,
+                     ErrorCallback error_callback) override;
 #endif  // defined(OS_CHROMEOS)
   SavedFilesServiceInterface* GetSavedFilesService(
       content::BrowserContext* browser_context) override;

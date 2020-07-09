@@ -50,7 +50,7 @@ class IdentityPrivateApiTest : public ExtensionBrowserTest {
   std::string consent_result_;
   std::string window_id_;
   std::unique_ptr<base::RunLoop> callback_loop_;
-  std::unique_ptr<base::CallbackList<
+  std::unique_ptr<base::RepeatingCallbackList<
       IdentityAPI::OnSetConsentResultSignature>::Subscription>
       callback_subscription_;
 };

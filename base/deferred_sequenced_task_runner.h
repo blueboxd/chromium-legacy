@@ -80,14 +80,13 @@ class BASE_EXPORT DeferredSequencedTaskRunner : public SequencedTaskRunner {
                          TimeDelta delay,
                          bool is_non_nestable);
 
-  // // Protects |started_| and |deferred_tasks_queue_|.
   mutable Lock lock_;
 
   const PlatformThreadId created_thread_id_;
 
-  bool started_ = false;
-  scoped_refptr<SequencedTaskRunner> target_task_runner_;
-  std::vector<DeferredTask> deferred_tasks_queue_;
+  bool started_ GUARDED_BY(lock_) = false;
+  scoped_refptr<SequencedTaskRunner> target_task_runner_ GUARDED_BY(lock_);
+  std::vector<DeferredTask> deferred_tasks_queue_ GUARDED_BY(lock_);
 
   DISALLOW_COPY_AND_ASSIGN(DeferredSequencedTaskRunner);
 };

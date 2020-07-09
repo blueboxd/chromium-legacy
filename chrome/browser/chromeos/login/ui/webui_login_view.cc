@@ -23,7 +23,6 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/ui/login_display_webui.h"
 #include "chrome/browser/chromeos/login/ui/web_contents_forced_title.h"
-#include "chrome/browser/chromeos/login/ui/webui_accelerator_mapping.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
@@ -95,8 +94,9 @@ const char WebUILoginView::kViewClassName[] =
 
 // WebUILoginView public: ------------------------------------------------------
 
-WebUILoginView::WebUILoginView(const WebViewSettings& settings)
-    : settings_(settings) {
+WebUILoginView::WebUILoginView(const WebViewSettings& settings,
+                               base::WeakPtr<LoginDisplayHostWebUI> controller)
+    : settings_(settings), controller_(controller) {
   ChromeKeyboardControllerClient::Get()->AddObserver(this);
 
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
@@ -237,18 +237,9 @@ bool WebUILoginView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   AccelMap::const_iterator entry = accel_map_.find(accelerator);
   if (entry == accel_map_.end())
     return false;
-
-  if (!web_view_)
-    return true;
-
-  content::WebUI* web_ui = GetWebUI();
-  if (web_ui) {
-    base::Value accel_name(MapToWebUIAccelerator(entry->second));
-    web_ui->CallJavascriptFunctionUnsafe("cr.ui.Oobe.handleAccelerator",
-                                         accel_name);
-  }
-
-  return true;
+  if (controller_)
+    controller_->HandleAccelerator(entry->second);
+  return false;
 }
 
 gfx::NativeWindow WebUILoginView::GetNativeWindow() const {

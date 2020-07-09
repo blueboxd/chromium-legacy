@@ -121,11 +121,11 @@ class InotifyReader {
   // Returns true on successful thread creation.
   bool StartThread();
 
-  // Lock to protect |watchers_|.
   Lock lock_;
 
   // We keep track of which delegates want to be notified on which watches.
-  std::unordered_map<Watch, std::set<FilePathWatcherImpl*>> watchers_;
+  std::unordered_map<Watch, std::set<FilePathWatcherImpl*>> watchers_
+      GUARDED_BY(lock_);
 
   // File descriptor returned by inotify_init.
   const int inotify_fd_;

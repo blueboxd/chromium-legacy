@@ -155,11 +155,12 @@ void ScopedHandleVerifier::StartTracking(HANDLE handle,
   // Grab the thread id before the lock.
   DWORD thread_id = GetCurrentThreadId();
 
-  AutoNativeLock lock(*lock_);
-
+  // Grab the thread stacktrace before the lock.
   ScopedHandleVerifierInfo handle_info = {owner, pc1, pc2,
                                           base::debug::StackTrace(), thread_id};
   std::pair<HANDLE, ScopedHandleVerifierInfo> item(handle, handle_info);
+
+  AutoNativeLock lock(*lock_);
   std::pair<HandleMap::iterator, bool> result = map_.insert(item);
   if (!result.second) {
     ScopedHandleVerifierInfo other = result.first->second;

@@ -144,7 +144,8 @@ class ManagePasswordsUIController
   void OnPasswordsRevealed() override;
   void SavePassword(const base::string16& username,
                     const base::string16& password) override;
-  void SaveUnsyncedCredentialsInProfileStore() override;
+  void SaveUnsyncedCredentialsInProfileStore(
+      const std::vector<autofill::PasswordForm>& selected_credentials) override;
   void DiscardUnsyncedCredentials() override;
   void MovePasswordToAccountStore() override;
   void BlockMovingPasswordToAccountStore() override;

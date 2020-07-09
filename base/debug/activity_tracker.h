@@ -1207,41 +1207,44 @@ class BASE_EXPORT GlobalActivityTracker {
   std::atomic<int> thread_tracker_count_;
 
   // A caching memory allocator for thread-tracker objects.
-  ActivityTrackerMemoryAllocator thread_tracker_allocator_;
+  ActivityTrackerMemoryAllocator thread_tracker_allocator_
+      GUARDED_BY(thread_tracker_allocator_lock_);
   Lock thread_tracker_allocator_lock_;
 
   // A caching memory allocator for user data attached to activity data.
-  ActivityTrackerMemoryAllocator user_data_allocator_;
+  ActivityTrackerMemoryAllocator user_data_allocator_
+      GUARDED_BY(user_data_allocator_lock_);
   Lock user_data_allocator_lock_;
 
   // An object for holding arbitrary key value pairs with thread-safe access.
   ThreadSafeUserData process_data_;
 
   // A map of global module information, keyed by module path.
-  std::map<const std::string, ModuleInfoRecord*> modules_;
+  std::map<const std::string, ModuleInfoRecord*> modules_
+      GUARDED_BY(modules_lock_);
   Lock modules_lock_;
 
   // The active global activity tracker.
   static subtle::AtomicWord g_tracker_;
 
-  // A lock that is used to protect access to the following fields.
   Lock global_tracker_lock_;
 
   // The collection of processes being tracked and their command-lines.
-  std::map<int64_t, std::string> known_processes_;
+  std::map<int64_t, std::string> known_processes_
+      GUARDED_BY(global_tracker_lock_);
 
   // A task-runner that can be used for doing background processing.
-  scoped_refptr<SequencedTaskRunner> background_task_runner_;
+  scoped_refptr<SequencedTaskRunner> background_task_runner_
+      GUARDED_BY(global_tracker_lock_);
 
   // A callback performed when a subprocess exits, including its exit-code
   // and the phase it was in when that occurred. This will be called via
   // the |background_task_runner_| if one is set or whatever thread reaped
   // the process otherwise.
-  ProcessExitCallback process_exit_callback_;
+  ProcessExitCallback process_exit_callback_ GUARDED_BY(global_tracker_lock_);
 
   DISALLOW_COPY_AND_ASSIGN(GlobalActivityTracker);
 };
-
 
 // Record entry in to and out of an arbitrary block of code.
 class BASE_EXPORT ScopedActivity

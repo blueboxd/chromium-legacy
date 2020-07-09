@@ -193,13 +193,9 @@ void LoginScreenClient::RequestPublicSessionKeyboardLayouts(
       locale);
 }
 
-void LoginScreenClient::ShowFeedback() {
+void LoginScreenClient::HandleAccelerator(ash::LoginAcceleratorAction action) {
   if (chromeos::LoginDisplayHost::default_host())
-    chromeos::LoginDisplayHost::default_host()->ShowFeedback();
-}
-
-void LoginScreenClient::ShowResetScreen() {
-  chromeos::LoginDisplayHost::default_host()->ShowResetScreen();
+    chromeos::LoginDisplayHost::default_host()->HandleAccelerator(action);
 }
 
 void LoginScreenClient::ShowAccountAccessHelpApp(

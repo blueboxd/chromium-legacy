@@ -8,6 +8,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/strings/sys_string_conversions.h"
+#include "base/test/bind_test_util.h"
+#import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/signin/feature_flags.h"
@@ -17,6 +20,7 @@
 #include "ios/web/common/features.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "net/base/net_errors.h"
+#include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
 #include "testing/platform_test.h"
@@ -129,12 +133,16 @@ class GaiaAuthFetcherIOSNSURLSessionBridgeTest : public ChromeWebTest {
 
   void ExpectCookies(NSArray<NSHTTPCookie*>* cookies);
 
-  void AllCookies(const std::vector<net::CanonicalCookie>& all_cookies);
+  std::vector<net::CanonicalCookie> GetCookiesInCookieJar();
 
-  void AddCookiesToCookieManager(NSArray<NSHTTPCookie*>* cookies);
+  bool AddAllCookiesInCookieManager(
+      network::mojom::CookieManager* cookie_manager,
+      const net::CanonicalCookie& cookie);
+
+  bool SetCookiesInCookieManager(NSArray<NSHTTPCookie*>* cookies);
 
   std::string GetCookieDomain() { return std::string("example.com"); }
-  GURL GetFetchGURL() { return GURL("http://www." + GetCookieDomain()); }
+  GURL GetFetchGURL() { return GURL("https://www." + GetCookieDomain()); }
 
   NSHTTPCookie* GetCookie1();
 
@@ -144,6 +152,8 @@ class GaiaAuthFetcherIOSNSURLSessionBridgeTest : public ChromeWebTest {
                                            NSArray<NSHTTPCookie*>* cookies);
 
   NSDictionary* GetHeaderFieldsWithCookies(NSArray<NSHTTPCookie*>* cookies);
+
+  bool FetchURL(const GURL& url);
 
   friend TestGaiaAuthFetcherIOSNSURLSessionBridge;
 
@@ -157,8 +167,6 @@ class GaiaAuthFetcherIOSNSURLSessionBridgeTest : public ChromeWebTest {
       ns_url_session_bridge_;
   // Fake delegate for |ns_url_session_bridge_|.
   std::unique_ptr<FakeGaiaAuthFetcherIOSBridgeDelegate> delegate_;
-  // Cookies returned by the cookie manager.
-  std::vector<net::CanonicalCookie> all_cookies_;
   // Delegate for |url_session_mock_|, provided by |ns_url_session_bridge_|.
   id<NSURLSessionTaskDelegate> url_session_delegate_;
 
@@ -211,7 +219,6 @@ void GaiaAuthFetcherIOSNSURLSessionBridgeTest::SetUp() {
       .andReturn(url_session_configuration_mock_);
   url_session_data_task_mock_ =
       OCMStrictClassMock([NSURLSessionDataTask class]);
-  OCMExpect([url_session_data_task_mock_ resume]);
   completion_handler_ = nil;
 }
 
@@ -243,47 +250,79 @@ NSURLSession* GaiaAuthFetcherIOSNSURLSessionBridgeTest::CreateNSURLSession(
   return url_session_mock_;
 }
 
-void GaiaAuthFetcherIOSNSURLSessionBridgeTest::ExpectCookies(
-    NSArray<NSHTTPCookie*>* expected_cookies) {
+std::vector<net::CanonicalCookie>
+GaiaAuthFetcherIOSNSURLSessionBridgeTest::GetCookiesInCookieJar() {
+  std::vector<net::CanonicalCookie> cookies_out;
+  base::RunLoop run_loop;
   network::mojom::CookieManager* cookie_manager =
       browser_state_->GetCookieManager();
-  cookie_manager->GetAllCookies(
-      base::BindOnce(&GaiaAuthFetcherIOSNSURLSessionBridgeTest::AllCookies,
-                     base::Unretained(this)));
-  WaitForBackgroundTasks();
+  std::vector<net::CanonicalCookie> all_cookies;
+  cookie_manager->GetAllCookies(base::BindOnce(base::BindLambdaForTesting(
+      [&run_loop,
+       &cookies_out](const std::vector<net::CanonicalCookie>& cookies) {
+        cookies_out = cookies;
+        run_loop.Quit();
+      })));
+  run_loop.Run();
+
+  return cookies_out;
+}
+
+void GaiaAuthFetcherIOSNSURLSessionBridgeTest::ExpectCookies(
+    NSArray<NSHTTPCookie*>* expected_cookies) {
+  std::vector<net::CanonicalCookie> actual_cookies = GetCookiesInCookieJar();
+
   NSMutableSet<NSString*>* expected_cookies_set = [NSMutableSet set];
   for (NSHTTPCookie* cookie in expected_cookies) {
     [expected_cookies_set addObject:GetStringWithNSHTTPCookie(cookie)];
   }
-  NSMutableSet<NSString*>* cookies_set = [NSMutableSet set];
-  for (net::CanonicalCookie cookie : all_cookies_) {
-    [cookies_set addObject:GetStringWithCanonicalCookie(cookie)];
+  NSMutableSet<NSString*>* actual_cookies_set = [NSMutableSet set];
+  for (net::CanonicalCookie cookie : actual_cookies) {
+    [actual_cookies_set addObject:GetStringWithCanonicalCookie(cookie)];
   }
-  EXPECT_TRUE([expected_cookies_set isEqualToSet:cookies_set]);
+  EXPECT_TRUE([expected_cookies_set isEqualToSet:actual_cookies_set])
+      << base::SysNSStringToUTF8(
+             [NSString stringWithFormat:@"expected = %@", expected_cookies_set])
+      << base::SysNSStringToUTF8(
+             [NSString stringWithFormat:@"\nactual = %@", actual_cookies_set]);
 }
 
-void GaiaAuthFetcherIOSNSURLSessionBridgeTest::AllCookies(
-    const std::vector<net::CanonicalCookie>& all_cookies) {
-  all_cookies_ = all_cookies;
+bool GaiaAuthFetcherIOSNSURLSessionBridgeTest::AddAllCookiesInCookieManager(
+    network::mojom::CookieManager* cookie_manager,
+    const net::CanonicalCookie& cookie) {
+  base::RunLoop run_loop;
+  net::CookieAccessResult result_out;
+  net::CookieOptions options;
+  options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::MakeInclusiveForSet());
+  options.set_include_httponly();
+  cookie_manager->SetCanonicalCookie(
+      cookie, net::cookie_util::SimulatedCookieSource(cookie, "https"), options,
+      base::BindLambdaForTesting(
+          [&run_loop, &result_out](net::CookieAccessResult result) {
+            result_out = result;
+            run_loop.Quit();
+          }));
+
+  run_loop.Run();
+
+  if (!result_out.status.IsInclude())
+    LOG(ERROR) << "Failed to set cookie in cookie jar: " << result_out.status;
+
+  return result_out.status.IsInclude();
 }
 
-void GaiaAuthFetcherIOSNSURLSessionBridgeTest::AddCookiesToCookieManager(
+bool GaiaAuthFetcherIOSNSURLSessionBridgeTest::SetCookiesInCookieManager(
     NSArray<NSHTTPCookie*>* cookies) {
   network::mojom::CookieManager* cookie_manager =
       browser_state_->GetCookieManager();
   for (NSHTTPCookie* cookie in cookies) {
-    net::CookieOptions options;
-    options.set_include_httponly();
-    options.set_same_site_cookie_context(
-        net::CookieOptions::SameSiteCookieContext::MakeInclusive());
     net::CanonicalCookie canonical_cookie =
         net::CanonicalCookieFromSystemCookie(cookie, base::Time::Now());
-    cookie_manager->SetCanonicalCookie(
-        canonical_cookie,
-        net::cookie_util::SimulatedCookieSource(canonical_cookie, "https"),
-        options, base::DoNothing());
+    if (!AddAllCookiesInCookieManager(cookie_manager, canonical_cookie))
+      return false;
   }
-  WaitForBackgroundTasks();
+  return true;
 }
 
 NSHTTPCookie* GaiaAuthFetcherIOSNSURLSessionBridgeTest::GetCookie1() {
@@ -313,7 +352,7 @@ GaiaAuthFetcherIOSNSURLSessionBridgeTest::CreateHTTPURLResponse(
     int status_code,
     NSArray<NSHTTPCookie*>* cookies) {
   NSString* url_string =
-      [NSString stringWithFormat:@"http://www.%s/", GetCookieDomain().c_str()];
+      [NSString stringWithFormat:@"https://www.%s/", GetCookieDomain().c_str()];
   NSURL* url = [NSURL URLWithString:url_string];
   return [[NSHTTPURLResponse alloc]
        initWithURL:url
@@ -334,19 +373,36 @@ GaiaAuthFetcherIOSNSURLSessionBridgeTest::GetHeaderFieldsWithCookies(
   return @{@"Set-Cookie" : cookie_string};
 }
 
+bool GaiaAuthFetcherIOSNSURLSessionBridgeTest::FetchURL(const GURL& url) {
+  DCHECK(url_session_data_task_mock_);
+  __block base::RunLoop run_loop;
+  __block base::OnceClosure quit_closure = run_loop.QuitClosure();
+  OCMExpect([url_session_data_task_mock_ resume]).andDo(^(NSInvocation*) {
+    std::move(quit_closure).Run();
+  });
+  ns_url_session_bridge_->Fetch(url, "", "", false);
+  run_loop.Run();
+  return true;
+}
+
 #pragma mark - Tests
 
 // Tests to send a request with no cookies set in the cookie store and receive
 // multiples cookies from the request.
-// TODO(crbug.com/1065349): this test is flaky.
+// TODO(crbug.com/1100917): Test fails on device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_FetchWithEmptyCookieStore FetchWithEmptyCookieStore
+#else
+#define MAYBE_FetchWithEmptyCookieStore DISABLED_FetchWithEmptyCookieStore
+#endif
 TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest,
-       DISABLED_FetchWithEmptyCookieStore) {
-  ns_url_session_bridge_->Fetch(GetFetchGURL(), "", "", false);
+       MAYBE_FetchWithEmptyCookieStore) {
   OCMExpect([http_cookie_storage_mock_
       storeCookies:@[]
            forTask:url_session_data_task_mock_]);
-  WaitForBackgroundTasks();
-  EXPECT_NE(nullptr, completion_handler_);
+  ASSERT_TRUE(FetchURL(GetFetchGURL()));
+  ASSERT_TRUE(completion_handler_);
+
   NSHTTPURLResponse* http_url_reponse =
       CreateHTTPURLResponse(200, @[ GetCookie1(), GetCookie2() ]);
   completion_handler_([@"Test" dataUsingEncoding:NSUTF8StringEncoding],
@@ -361,17 +417,22 @@ TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest,
 
 // Tests to send a request with one cookie set in the cookie store and receive
 // another cookies from the request.
-// TODO(crbug.com/1065349): this test is flaky.
-TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest,
-       DISABLED_FetchWithCookieStore) {
+// TODO(crbug.com/1100917): Test fails on device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_FetchWithCookieStore FetchWithCookieStore
+#else
+#define MAYBE_FetchWithCookieStore DISABLED_FetchWithCookieStore
+#endif
+TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, MAYBE_FetchWithCookieStore) {
   NSArray* cookies_to_send = @[ GetCookie1() ];
-  AddCookiesToCookieManager(cookies_to_send);
-  ns_url_session_bridge_->Fetch(GetFetchGURL(), "", "", false);
+  ASSERT_TRUE(SetCookiesInCookieManager(cookies_to_send));
+
   OCMExpect([http_cookie_storage_mock_
       storeCookies:cookies_to_send
            forTask:url_session_data_task_mock_]);
-  WaitForBackgroundTasks();
-  EXPECT_NE(nullptr, completion_handler_);
+  ASSERT_TRUE(FetchURL(GetFetchGURL()));
+  ASSERT_TRUE(completion_handler_);
+
   NSHTTPURLResponse* http_url_reponse =
       CreateHTTPURLResponse(200, @[ GetCookie2() ]);
   completion_handler_(nil, http_url_reponse, nil);
@@ -385,14 +446,19 @@ TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest,
 
 // Tests to a request with a redirect. One cookie is received by the first
 // request, and a second one by the redirected request.
-// TODO(crbug.com/1065349): this test is flaky.
-TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, DISABLED_FetchWithRedirect) {
-  ns_url_session_bridge_->Fetch(GetFetchGURL(), "", "", false);
+// TODO(crbug.com/1100917): Test fails on device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_FetchWithRedirect FetchWithRedirect
+#else
+#define MAYBE_FetchWithRedirect DISABLED_FetchWithRedirect
+#endif
+TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, MAYBE_FetchWithRedirect) {
   OCMExpect([http_cookie_storage_mock_
       storeCookies:@[]
            forTask:url_session_data_task_mock_]);
-  WaitForBackgroundTasks();
-  EXPECT_NE(nullptr, completion_handler_);
+  ASSERT_TRUE(FetchURL(GetFetchGURL()));
+  ASSERT_TRUE(completion_handler_);
+
   NSURLRequest* redirected_url_request =
       OCMStrictClassMock([NSURLRequest class]);
   __block bool completion_handler_called = false;
@@ -428,15 +494,14 @@ TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithCancel) {
     return;
   }
 
-  ns_url_session_bridge_->Fetch(GetFetchGURL(), "", "", false);
   OCMExpect([http_cookie_storage_mock_
       storeCookies:@[]
            forTask:url_session_data_task_mock_]);
-  WaitForBackgroundTasks();
-  EXPECT_NE(nullptr, completion_handler_);
+  ASSERT_TRUE(FetchURL(GetFetchGURL()));
+  ASSERT_TRUE(completion_handler_);
+
   OCMExpect([url_session_data_task_mock_ cancel]);
   ns_url_session_bridge_->Cancel();
-  WaitForBackgroundTasks();
   EXPECT_TRUE(delegate_->GetFetchCompleteCalled());
   EXPECT_EQ(delegate_->GetURL(), GetFetchGURL());
   EXPECT_EQ(delegate_->GetNetError(), net::ERR_ABORTED);
@@ -452,12 +517,12 @@ TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithError) {
     return;
   }
 
-  ns_url_session_bridge_->Fetch(GetFetchGURL(), "", "", false);
   OCMExpect([http_cookie_storage_mock_
       storeCookies:@[]
            forTask:url_session_data_task_mock_]);
-  WaitForBackgroundTasks();
-  EXPECT_NE(nullptr, completion_handler_);
+  ASSERT_TRUE(FetchURL(GetFetchGURL()));
+  ASSERT_TRUE(completion_handler_);
+
   NSHTTPURLResponse* http_url_reponse =
       CreateHTTPURLResponse(501, @[ GetCookie1(), GetCookie2() ]);
   completion_handler_(nil, http_url_reponse,

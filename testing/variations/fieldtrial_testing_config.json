@@ -3414,23 +3414,6 @@
             ]
         }
     ],
-    "ImprovedCookieControls": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ImprovedCookieControls",
-                        "ImprovedCookieControlsForThirdPartyCookieBlocking"
-                    ]
-                }
-            ]
-        }
-    ],
     "IncludeBetaForumMenuItem": [
         {
             "platforms": [
@@ -4971,28 +4954,6 @@
                         "PartitionHttpServerPropertiesByNetworkIsolationKey",
                         "PartitionSSLSessionsByNetworkIsolationKey",
                         "SplitHostCacheByNetworkIsolationKey"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PasswordCheck": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "WithEnhancedExperiment_20200616",
-                    "params": {
-                        "DefaultInIncognito": "true"
-                    },
-                    "enable_features": [
-                        "ImprovedCookieControls",
-                        "ImprovedCookieControlsForThirdPartyCookieBlocking"
                     ]
                 }
             ]
@@ -7595,6 +7556,21 @@
                     "params": {
                         "blocklist_additions": "00060000:e,fffd:e,ed5f25a4:e"
                     }
+                }
+            ]
+        }
+    ],
+    "WebComponentsV0": [
+        {
+            "platforms": [
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Disabled_20200708",
+                    "disable_features": [
+                        "WebComponentsV0"
+                    ]
                 }
             ]
         }

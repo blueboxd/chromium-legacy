@@ -205,7 +205,7 @@ using signin_metrics::PromoAction;
 - (void)openPassphraseDialog {
   SyncEncryptionPassphraseTableViewController* controller =
       [[SyncEncryptionPassphraseTableViewController alloc]
-          initWithBrowserState:self.browser->GetBrowserState()];
+          initWithBrowser:self.browser];
   // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
   // clean up.
   controller.dispatcher = static_cast<

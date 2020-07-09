@@ -21096,6 +21096,7 @@ Called by update_document_policy_enum.py.-->
   <int value="729" label="AssistantOnboardingMode"/>
   <int value="730" label="DeviceExternalPrintServers"/>
   <int value="731" label="DeviceExternalPrintServersAllowlist"/>
+  <int value="732" label="SafeBrowsingAllowlistDomains"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -40221,6 +40222,7 @@ from previous Chrome versions.
   <int value="-1357778876" label="ExplicitLanguageAsk:enabled"/>
   <int value="-1357655121" label="enable-iframe-based-signin"/>
   <int value="-1357008397" label="ContextualSuggestionsCarousel:disabled"/>
+  <int value="-1356379431" label="GlobalMediaControlsOverlayControls:enabled"/>
   <int value="-1353714232" label="FilesTransferDetails:enabled"/>
   <int value="-1353195918" label="UseSkiaRenderer:enabled"/>
   <int value="-1351968795" label="SingleProcessMash:enabled"/>
@@ -41236,6 +41238,7 @@ from previous Chrome versions.
   <int value="-271084069" label="ClickToCallUI:enabled"/>
   <int value="-270626757" label="log-net-log"/>
   <int value="-270261701" label="WebRtcEnableCaptureMultiChannelApm:disabled"/>
+  <int value="-268897347" label="DisableCameraFrameRotationAtSource:disabled"/>
   <int value="-268549184"
       label="AutofillSaveCreditCardUsesStrikeSystemV2:enabled"/>
   <int value="-268357961" label="enable-feature-policy"/>
@@ -41694,6 +41697,7 @@ from previous Chrome versions.
   <int value="278756320" label="disable-app-list-app-info"/>
   <int value="280644887" label="mash"/>
   <int value="280925459" label="LiveCaption:disabled"/>
+  <int value="282582564" label="DisableCameraFrameRotationAtSource:enabled"/>
   <int value="282636212" label="VideoPlayerNativeControls:disabled"/>
   <int value="283182071" label="SecurityInterstitialsDarkMode:enabled"/>
   <int value="283232244" label="OmniboxUIExperimentNarrowDropdown:enabled"/>
@@ -42000,6 +42004,7 @@ from previous Chrome versions.
   <int value="609580715" label="ArcCupsApi:disabled"/>
   <int value="610545308" label="enable-potentially-annoying-security-features"/>
   <int value="613629912" label="LookalikeUrlNavigationSuggestions:enabled"/>
+  <int value="614174812" label="GlobalMediaControlsOverlayControls:disabled"/>
   <int value="616660621" label="ImeInputLogicFst:disabled"/>
   <int value="617762656" label="FirstScrollLatencyMeasurement:enabled"/>
   <int value="618532343" label="DesktopPWAsLocalUpdating:disabled"/>

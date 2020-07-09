@@ -23,10 +23,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.util.TestWebServer;
+import org.chromium.ui.test.util.UiDisableIf;
 import org.chromium.weblayer.LoadError;
 import org.chromium.weblayer.NavigateParams;
 import org.chromium.weblayer.Navigation;
@@ -361,6 +363,7 @@ public class NavigationTest {
 
     @Test
     @SmallTest
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/1103504
     public void testGetNavigationEntryTitle() throws Exception {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(
                 "data:text/html,<head><title>Page A</title></head>");

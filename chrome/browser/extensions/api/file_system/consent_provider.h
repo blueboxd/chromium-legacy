@@ -39,8 +39,8 @@ namespace file_system_api {
 class ConsentProvider {
  public:
   enum Consent { CONSENT_GRANTED, CONSENT_REJECTED, CONSENT_IMPOSSIBLE };
-  typedef base::Callback<void(Consent)> ConsentCallback;
-  typedef base::Callback<void(ui::DialogButton)> ShowDialogCallback;
+  using ConsentCallback = base::OnceCallback<void(Consent)>;
+  using ShowDialogCallback = base::OnceCallback<void(ui::DialogButton)>;
 
   // Interface for delegating user interaction for granting permissions.
   class DelegateInterface {
@@ -50,7 +50,7 @@ class ConsentProvider {
                             content::RenderFrameHost* host,
                             const base::WeakPtr<file_manager::Volume>& volume,
                             bool writable,
-                            const ShowDialogCallback& callback) = 0;
+                            ShowDialogCallback callback) = 0;
 
     // Shows a notification about permissions automatically granted access.
     virtual void ShowNotification(
@@ -79,7 +79,7 @@ class ConsentProvider {
                       content::RenderFrameHost* host,
                       const base::WeakPtr<file_manager::Volume>& volume,
                       bool writable,
-                      const ConsentCallback& callback);
+                      ConsentCallback callback);
 
   // Returns granted access mode for the |extension|.
   FileSystemDelegate::GrantVolumesMode GetGrantVolumesMode(
@@ -110,12 +110,12 @@ class ConsentProviderDelegate : public ConsentProvider::DelegateInterface {
   static void SetAutoDialogButtonForTest(ui::DialogButton button);
 
   // ConsentProvider::DelegateInterface overrides:
-  void ShowDialog(const Extension& extension,
-                  content::RenderFrameHost* host,
-                  const base::WeakPtr<file_manager::Volume>& volume,
-                  bool writable,
-                  const file_system_api::ConsentProvider::ShowDialogCallback&
-                      callback) override;
+  void ShowDialog(
+      const Extension& extension,
+      content::RenderFrameHost* host,
+      const base::WeakPtr<file_manager::Volume>& volume,
+      bool writable,
+      file_system_api::ConsentProvider::ShowDialogCallback callback) override;
   void ShowNotification(const Extension& extension,
                         const base::WeakPtr<file_manager::Volume>& volume,
                         bool writable) override;

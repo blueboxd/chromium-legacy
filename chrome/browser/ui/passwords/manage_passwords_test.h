@@ -20,7 +20,7 @@
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-class PasswordsClientUIDelegate;
+class ManagePasswordsUIController;
 
 // Test class for the various password management view bits and pieces. Provides
 // some helper methods to poke at the bubble, icon, and controller's state.
@@ -48,6 +48,16 @@ class ManagePasswordsTest : public InProcessBrowserTest {
   void SetupAutoSignin(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials);
 
+  // Put the controller, icon, and bubble into the state with 0 compromised
+  // passwords saved.
+  void SetupSafeState();
+
+  // Put the controller, icon, and bubble into the "More problems to fix" state.
+  void SetupMoreToFixState();
+
+  // Put the controller, icon, and bubble into the "Some problems to fix" state.
+  void SetupUnsafeState();
+
   // Put the controller, icon, and bubble into a moving-password state.
   void SetupMovingPasswords();
 
@@ -57,7 +67,7 @@ class ManagePasswordsTest : public InProcessBrowserTest {
   autofill::PasswordForm* test_form() { return &password_form_; }
 
   // Get the UI controller for the current WebContents.
-  PasswordsClientUIDelegate* GetController();
+  ManagePasswordsUIController* GetController();
 
   MOCK_METHOD1(OnChooseCredential,
                void(const password_manager::CredentialInfo&));

@@ -83,6 +83,7 @@ class ActivityTrackerTest : public testing::Test {
   }
 
   size_t GetGlobalUserDataMemoryCacheUsed() {
+    AutoLock autolock(GlobalActivityTracker::Get()->user_data_allocator_lock_);
     return GlobalActivityTracker::Get()->user_data_allocator_.cache_used();
   }
 

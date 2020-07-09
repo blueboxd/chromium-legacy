@@ -13,5 +13,5 @@
     android:paddingTop="8dp"
     android:paddingBottom="8dp"
     android:gravity="center_vertical"
-    android:text="@string/signin_add_account"
+    android:text="@string/signin_add_account_to_device"
     android:textAppearance="@style/TextAppearance.TextLarge.Primary" />

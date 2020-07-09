@@ -100,6 +100,34 @@ the list of targets and files in the Xcode solution may be stale. You can run
 the script directly or use either `gclient sync` or `gclient runhooks` which
 will run `setup-gn.py` for you as part of the update hooks.
 
+You can add a custom hook to `.gclient` file to configure `setup-gn.py` to
+be run as part of `gclient runhooks`. In that case, your `.gclient` file
+would look like this:
+
+```
+solutions = [
+  {
+    "name"        : "src",
+    "url"         : "https://chromium.googlesource.com/chromium/src.git",
+    "deps_file"   : "DEPS",
+    "managed"     : False,
+    "custom_deps" : {},
+    "custom_vars" : {},
+    "custom_hooks": [{
+      "name": "setup_gn",
+      "pattern": ".",
+      "action": [
+        "python",
+        "src/ios/build/tools/setup-gn.py",
+      ]
+    }],
+    "safesync_url": "",
+  },
+]
+target_os = ["ios"]
+target_os_only = True
+```
+
 You can also follow the manual instructions on the
 [Mac page](../mac_build_instructions.md), but make sure you set the
 GN arg `target_os="ios"`.

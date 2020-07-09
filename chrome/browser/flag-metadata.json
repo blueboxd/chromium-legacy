@@ -916,6 +916,11 @@
     "expiry_milestone": 75
   },
   {
+    "name": "disable-camera-frame-rotation-at-source",
+    "owners": [ "chromeos-camera-eng@google.com" ],
+    "expiry_milestone": 88
+  },
+  {
     "name": "disable-cancel-all-touches",
     "owners": [ "chrome-knowledge-eng@google.com" ],
     // This flag is use to disable CancelAllTouches() function, which enable the
@@ -2766,6 +2771,11 @@
     "name": "global-media-controls-for-cast",
     "owners": [ "takumif", "openscreen-eng@google.com" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "global-media-controls-overlay-controls",
+    "owners" : [ "jazzhsu", "steimel", "media-dev" ],
+    "expiry_milestone": 93
   },
   {
     "name": "global-media-controls-picture-in-picture",

@@ -1128,11 +1128,12 @@ void NotificationViewMD::CreateOrUpdateActionButtonViews(
       action_buttons_.push_back(action_buttons_row_->AddChildView(
           std::make_unique<NotificationMdTextButton>(this, button_info.title,
                                                      button_info.placeholder)));
+      // TODO(pkasting): BoxLayout should invalidate automatically when a child
+      // is added, at which point we can remove this call.
+      action_buttons_row_->InvalidateLayout();
     } else {
       action_buttons_[i]->SetText(button_info.title);
       action_buttons_[i]->set_placeholder(button_info.placeholder);
-      action_buttons_[i]->SchedulePaint();
-      action_buttons_[i]->Layout();
     }
 
     // Change action button color to the accent color.

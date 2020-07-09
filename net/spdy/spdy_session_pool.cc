@@ -89,6 +89,7 @@ SpdySessionPool::SpdySessionPool(
     int session_max_queued_capped_frames,
     const spdy::SettingsMap& initial_settings,
     const base::Optional<GreasedHttp2Frame>& greased_http2_frame,
+    bool http2_end_stream_with_data_frame,
     SpdySessionPool::TimeFunc time_func,
     NetworkQualityEstimator* network_quality_estimator)
     : http_server_properties_(http_server_properties),
@@ -105,6 +106,7 @@ SpdySessionPool::SpdySessionPool(
       session_max_queued_capped_frames_(session_max_queued_capped_frames),
       initial_settings_(initial_settings),
       greased_http2_frame_(greased_http2_frame),
+      http2_end_stream_with_data_frame_(http2_end_stream_with_data_frame),
       time_func_(time_func),
       push_delegate_(nullptr),
       network_quality_estimator_(network_quality_estimator) {
@@ -670,8 +672,8 @@ std::unique_ptr<SpdySession> SpdySessionPool::CreateSession(
       enable_ping_based_connection_checking_, is_http2_enabled_,
       is_quic_enabled_, is_trusted_proxy, session_max_recv_window_size_,
       session_max_queued_capped_frames_, initial_settings_,
-      greased_http2_frame_, time_func_, push_delegate_,
-      network_quality_estimator_, net_log);
+      greased_http2_frame_, http2_end_stream_with_data_frame_, time_func_,
+      push_delegate_, network_quality_estimator_, net_log);
 }
 
 base::WeakPtr<SpdySession> SpdySessionPool::InsertSession(

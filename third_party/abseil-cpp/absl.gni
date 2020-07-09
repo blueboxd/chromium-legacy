@@ -41,6 +41,7 @@ _chromium_absl_clients = [
   "//third_party/private_membership/*",
   "//third_party/shell-encryption/*",
   "//third_party/webrtc/*",
+  "//third_party/nearby/*",
 ]
 
 # When adding a new package to `absl_visibility`, please check that all the
@@ -82,6 +83,7 @@ template("absl_source_set") {
           # is_component_build=false but it cannot depend on the absl
           # component because it uses absl/flags.
           "//third_party/webrtc/rtc_tools:frame_analyzer",
+
           # WebRTC binaries used by //:chromium_builder_asan, they both
           # statically link absl (because they depend on absl/flags) and are
           # used by Chromium only when is_component_build=false.
@@ -89,7 +91,10 @@ template("absl_source_set") {
           "//third_party/webrtc/rtc_tools:video_replay",
 
           # Not used by Chromium directly.
+          "//chromecast/internal/*",
           "//libassistant/*",
+
+          "//third_party/nearby/*",
         ]
       } else {
         visibility = [ "*" ]

@@ -90,8 +90,8 @@ void GaiaRemoteConsentFlow::OnSetAccountsComplete(
       IdentityAPI::GetFactoryInstance()
           ->Get(profile_)
           ->RegisterOnSetConsentResultCallback(
-              base::Bind(&GaiaRemoteConsentFlow::OnConsentResultSet,
-                         base::Unretained(this)));
+              base::BindRepeating(&GaiaRemoteConsentFlow::OnConsentResultSet,
+                                  base::Unretained(this)));
 
   scoped_observer_.Add(IdentityManagerFactory::GetForProfile(profile_));
   web_flow_->Start();

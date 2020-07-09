@@ -120,6 +120,14 @@ class NET_EXPORT HttpNetworkSession {
     // The same frame will be sent out on all connections to prevent the retry
     // logic from hiding broken servers.
     base::Optional<SpdySessionPool::GreasedHttp2Frame> greased_http2_frame;
+    // If set, the HEADERS frame carrying a request without body will not have
+    // the END_STREAM flag set.  The stream will be closed by a subsequent empty
+    // DATA frame with END_STREAM.  Does not affect bidirectional or proxy
+    // streams.
+    // If unset, the HEADERS frame will have the END_STREAM flag set on.
+    // This is useful in conjuction with |greased_http2_frame| so that a frame
+    // of reserved type can be sent out even on requests without a body.
+    bool http2_end_stream_with_data_frame;
     // Source of time for SPDY connections.
     SpdySessionPool::TimeFunc time_func;
     // Whether to enable HTTP/2 Alt-Svc entries.

@@ -76,6 +76,7 @@ void PowerMonitorSource::SetInitialOnBatteryPowerState(bool on_battery_power) {
   // the caller should have just used a normal
   // ProcessPowerEvent(POWER_STATE_EVENT) call.
   DCHECK(!PowerMonitor::Source());
+  AutoLock auto_lock(battery_lock_);
   on_battery_power_ = on_battery_power;
 }
 

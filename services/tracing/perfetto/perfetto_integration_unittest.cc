@@ -387,9 +387,11 @@ TEST_F(PerfettoIntegrationTest, PerfettoPlatformTest) {
 
 TEST_F(PerfettoIntegrationTest, PerfettoClientLibraryTest) {
   PerfettoTracedProcess::Get()->SetupClientLibrary();
-  // Create a dummy tracing session without any active backends to check that
+  // Create a dummy tracing session without a real backend to check that
   // the client library was initialized.
-  auto tracing_session = perfetto::Tracing::NewTrace();
+  constexpr perfetto::BackendType kInvalidBackend(
+      static_cast<perfetto::BackendType>(1u << 31));
+  auto tracing_session = perfetto::Tracing::NewTrace(kInvalidBackend);
   EXPECT_TRUE(tracing_session);
 }
 

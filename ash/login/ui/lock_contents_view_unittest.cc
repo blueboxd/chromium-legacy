@@ -2442,7 +2442,8 @@ TEST_F(LockContentsViewUnitTest, PowerwashShortcutSendsMojoCall) {
   SetWidget(CreateWidgetWithContent(contents));
 
   auto client = std::make_unique<MockLoginScreenClient>();
-  EXPECT_CALL(*client, ShowResetScreen());
+  EXPECT_CALL(*client,
+              HandleAccelerator(ash::LoginAcceleratorAction::kShowResetScreen));
 
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->PressKey(ui::KeyboardCode::VKEY_R, ui::EF_CONTROL_DOWN |

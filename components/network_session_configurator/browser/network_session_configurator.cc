@@ -164,6 +164,12 @@ void ConfigureHttp2Params(const base::CommandLine& command_line,
             {type, flags, payload});
   }
 
+  if (command_line.HasSwitch(switches::kHttp2EndStreamWithDataFrame) ||
+      GetVariationParam(http2_trial_params,
+                        "http2_end_stream_with_data_frame") == "true") {
+    params->http2_end_stream_with_data_frame = true;
+  }
+
   params->enable_websocket_over_http2 =
       ConfigureWebsocketOverHttp2(command_line, http2_trial_params);
 

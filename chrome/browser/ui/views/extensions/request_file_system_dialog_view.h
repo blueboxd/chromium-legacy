@@ -26,12 +26,11 @@ class RequestFileSystemDialogView : public views::DialogDelegateView {
   ~RequestFileSystemDialogView() override;
 
   // Shows the dialog and calls |callback| on completion.
-  static void ShowDialog(
-      content::WebContents* web_contents,
-      const std::string& extension_name,
-      const std::string& volume_label,
-      bool writable,
-      const base::Callback<void(ui::DialogButton)>& callback);
+  static void ShowDialog(content::WebContents* web_contents,
+                         const std::string& extension_name,
+                         const std::string& volume_label,
+                         bool writable,
+                         base::OnceCallback<void(ui::DialogButton)> callback);
 
   // views::DialogDelegate overrides:
   base::string16 GetAccessibleWindowTitle() const override;
@@ -43,9 +42,9 @@ class RequestFileSystemDialogView : public views::DialogDelegateView {
       const std::string& extension_name,
       const std::string& volume_label,
       bool writable,
-      const base::Callback<void(ui::DialogButton)>& callback);
+      base::OnceCallback<void(ui::DialogButton)> callback);
 
-  const base::Callback<void(ui::DialogButton)> callback_;
+  base::OnceCallback<void(ui::DialogButton)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestFileSystemDialogView);
 };

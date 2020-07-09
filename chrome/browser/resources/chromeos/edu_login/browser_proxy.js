@@ -17,6 +17,11 @@ export class EduAccountLoginBrowserProxy {
   updateEduCoexistenceFlowResult(result) {}
 
   /**
+   * @return {Promise<boolean>}
+   */
+  isNetworkReady() {}
+
+  /**
    * Send 'getParents' request to the handler. The promise will be resolved
    * with the list of parents (Array<ParentAccount>).
    * @return {Promise<Array<ParentAccount>>}
@@ -67,6 +72,11 @@ export class EduAccountLoginBrowserProxyImpl {
   /** @override */
   updateEduCoexistenceFlowResult(result) {
     chrome.send('updateEduCoexistenceFlowResult', [result]);
+  }
+
+  /** @override */
+  isNetworkReady() {
+    return sendWithPromise('isNetworkReady');
   }
 
   /** @override */

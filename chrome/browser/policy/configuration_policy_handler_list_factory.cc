@@ -336,9 +336,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kPasswordProtectionWarningTrigger,
     prefs::kPasswordProtectionWarningTrigger,
     base::Value::Type::INTEGER },
-  { key::kSafeBrowsingWhitelistDomains,
-    prefs::kSafeBrowsingWhitelistDomains,
-    base::Value::Type::LIST },
   { key::kPasswordProtectionLoginURLs,
     prefs::kPasswordProtectionLoginURLs,
     base::Value::Type::LIST },
@@ -1446,6 +1443,13 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<RestoreOnStartupPolicyHandler>());
   handlers->AddHandler(
       std::make_unique<safe_browsing::SafeBrowsingPolicyHandler>());
+  handlers->AddHandler(std::make_unique<SimpleDeprecatingPolicyHandler>(
+      std::make_unique<SimplePolicyHandler>(
+          key::kSafeBrowsingWhitelistDomains,
+          prefs::kSafeBrowsingWhitelistDomains, base::Value::Type::LIST),
+      std::make_unique<SimplePolicyHandler>(
+          key::kSafeBrowsingAllowlistDomains,
+          prefs::kSafeBrowsingWhitelistDomains, base::Value::Type::LIST)));
   handlers->AddHandler(std::make_unique<syncer::SyncPolicyHandler>());
   handlers->AddHandler(std::make_unique<StringMappingListPolicyHandler>(
       key::kEnableDeprecatedWebPlatformFeatures,

@@ -237,7 +237,7 @@ class IdentityGetAuthTokenFunction : public ExtensionFunction,
   bool remote_consent_approved_ = false;
 
   // Invoked when IdentityAPI is shut down.
-  std::unique_ptr<base::CallbackList<void()>::Subscription>
+  std::unique_ptr<base::OnceCallbackList<void()>::Subscription>
       identity_api_shutdown_subscription_;
 
   ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>

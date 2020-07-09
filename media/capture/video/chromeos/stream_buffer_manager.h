@@ -64,6 +64,9 @@ class CAPTURE_EXPORT StreamBufferManager final {
   // clockwise degrees that the source frame would be rotated to, and the valid
   // values are 0, 90, 180, and 270.  Returns the VideoCaptureFormat of the
   // returned buffer in |format|.
+  //
+  // TODO(crbug.com/990682): Remove the |rotation| arg when we disable the
+  // camera frame rotation for good.
   base::Optional<Buffer> AcquireBufferForClientById(StreamType stream_type,
                                                     uint64_t buffer_ipc_id,
                                                     int rotation,

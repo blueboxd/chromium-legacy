@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/ui/login_display_mojo.h"
+#include "chrome/browser/chromeos/login/ui/webui_accelerator_mapping.h"
 #include "chrome/browser/chromeos/login/user_board_view_mojo.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -48,8 +49,6 @@ namespace chromeos {
 namespace {
 
 constexpr char kLoginDisplay[] = "login";
-constexpr char kAccelSendFeedback[] = "send_feedback";
-constexpr char kAccelReset[] = "reset";
 
 CertificateProviderService* GetLoginScreenCertProviderService() {
   DCHECK(ProfileHelper::IsSigninProfileInitialized());
@@ -335,14 +334,11 @@ void LoginDisplayHostMojo::UpdateOobeDialogState(ash::OobeDialogState state) {
     dialog_->SetState(state);
 }
 
-void LoginDisplayHostMojo::ShowFeedback() {
+bool LoginDisplayHostMojo::HandleAccelerator(
+    ash::LoginAcceleratorAction action) {
   DCHECK(GetOobeUI());
-  GetOobeUI()->ForwardAccelerator(kAccelSendFeedback);
-}
-
-void LoginDisplayHostMojo::ShowResetScreen() {
-  DCHECK(GetOobeUI());
-  GetOobeUI()->ForwardAccelerator(kAccelReset);
+  GetOobeUI()->ForwardAccelerator(MapToWebUIAccelerator(action));
+  return true;
 }
 
 void LoginDisplayHostMojo::UpdateAddUserButtonStatus() {

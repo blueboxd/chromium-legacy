@@ -102,7 +102,7 @@ class DefaultLocaleBreakIteratorCache {
  private:
   UErrorCode main_status_;
   UBreakIterator* main_;
-  bool main_could_be_leased_;
+  bool main_could_be_leased_ GUARDED_BY(lock_);
   Lock lock_;
 };
 

@@ -65,7 +65,10 @@ constexpr char kCreateRaptResultHistogram[] =
 
 EduAccountLoginHandler::EduAccountLoginHandler(
     const base::RepeatingClosure& close_dialog_closure)
-    : close_dialog_closure_(close_dialog_closure) {}
+    : close_dialog_closure_(close_dialog_closure) {
+  network_state_informer_ = base::MakeRefCounted<NetworkStateInformer>();
+  network_state_informer_->Init();
+}
 
 EduAccountLoginHandler::~EduAccountLoginHandler() {
   close_dialog_closure_.Run();
@@ -122,6 +125,10 @@ void EduAccountLoginHandler::ProfileImageFetcher::OnImageFetched(
 
 void EduAccountLoginHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
+      "isNetworkReady",
+      base::BindRepeating(&EduAccountLoginHandler::HandleIsNetworkReady,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "getParents",
       base::BindRepeating(&EduAccountLoginHandler::HandleGetParents,
                           base::Unretained(this)));
@@ -143,6 +150,14 @@ void EduAccountLoginHandler::OnJavascriptDisallowed() {
   profile_image_fetcher_.reset();
   get_parents_callback_id_.clear();
   parent_signin_callback_id_.clear();
+}
+
+void EduAccountLoginHandler::HandleIsNetworkReady(const base::ListValue* args) {
+  AllowJavascript();
+
+  bool is_network_ready =
+      network_state_informer_->state() == NetworkStateInformer::ONLINE;
+  ResolveJavascriptCallback(args->GetList()[0], base::Value(is_network_ready));
 }
 
 void EduAccountLoginHandler::HandleGetParents(const base::ListValue* args) {

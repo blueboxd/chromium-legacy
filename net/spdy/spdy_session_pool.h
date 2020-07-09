@@ -144,6 +144,7 @@ class NET_EXPORT SpdySessionPool
                   int session_max_queued_capped_frames,
                   const spdy::SettingsMap& initial_settings,
                   const base::Optional<GreasedHttp2Frame>& greased_http2_frame,
+                  bool http2_end_stream_with_data_frame,
                   SpdySessionPool::TimeFunc time_func,
                   NetworkQualityEstimator* network_quality_estimator);
   ~SpdySessionPool() override;
@@ -438,10 +439,18 @@ class NET_EXPORT SpdySessionPool
   // and maximum HPACK dynamic table size.
   const spdy::SettingsMap initial_settings_;
 
-  // If set, an HTTP/2 frame with a reserved frame type will be sent after every
-  // valid HTTP/2 frame.  See
+  // If set, an HTTP/2 frame with a reserved frame type will be sent after
+  // every HTTP/2 SETTINGS frame and before every HTTP/2 DATA frame. See
   // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
   const base::Optional<GreasedHttp2Frame> greased_http2_frame_;
+
+  // If set, the HEADERS frame carrying a request without body will not have the
+  // END_STREAM flag set.  The stream will be closed by a subsequent empty DATA
+  // frame with END_STREAM.  Does not affect bidirectional or proxy streams.
+  // If unset, the HEADERS frame will have the END_STREAM flag set on.
+  // This is useful in conjuction with |greased_http2_frame_| so that a frame
+  // of reserved type can be sent out even on requests without a body.
+  bool http2_end_stream_with_data_frame_;
 
   SpdySessionRequestMap spdy_session_request_map_;
 

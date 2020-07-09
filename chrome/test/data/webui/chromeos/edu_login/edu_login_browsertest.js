@@ -98,6 +98,14 @@ TEST_F('EduLoginParentsTest', 'SelectedParent', function() {
   this.runMochaTest(edu_login_parents_tests.TestNames.SelectedParent);
 });
 
+TEST_F('EduLoginParentsTest', 'NoInternetError', function() {
+  this.runMochaTest(edu_login_parents_tests.TestNames.NoInternetError);
+});
+
+TEST_F('EduLoginParentsTest', 'CannotAddAccountError', function() {
+  this.runMochaTest(edu_login_parents_tests.TestNames.CannotAddAccountError);
+});
+
 var EduLoginParentSigninTest = class extends EduLoginTest {
   /** @override */
   get browsePreload() {

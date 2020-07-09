@@ -2,22 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBLAYER_BROWSER_TRANSLATE_UTILS_H_
-#define WEBLAYER_BROWSER_TRANSLATE_UTILS_H_
+#ifndef COMPONENTS_TRANSLATE_CONTENT_ANDROID_TRANSLATE_UTILS_H_
+#define COMPONENTS_TRANSLATE_CONTENT_ANDROID_TRANSLATE_UTILS_H_
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 
 namespace translate {
-class TranslateInfoBarDelegate;
-}
 
-namespace weblayer {
+class TranslateInfoBarDelegate;
 
 class TranslateUtils {
  public:
   // A Java counterpart will be generated for this enum.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.weblayer_private
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.translate
   // GENERATED_JAVA_PREFIX_TO_STRIP:OPTION_
   enum TranslateOption {
     OPTION_SOURCE_CODE,
@@ -29,15 +27,15 @@ class TranslateUtils {
 
   static base::android::ScopedJavaLocalRef<jobjectArray> GetJavaLanguages(
       JNIEnv* env,
-      translate::TranslateInfoBarDelegate* delegate);
+      TranslateInfoBarDelegate* delegate);
   static base::android::ScopedJavaLocalRef<jobjectArray> GetJavaLanguageCodes(
       JNIEnv* env,
-      translate::TranslateInfoBarDelegate* delegate);
+      TranslateInfoBarDelegate* delegate);
   static base::android::ScopedJavaLocalRef<jintArray> GetJavaLanguageHashCodes(
       JNIEnv* env,
-      translate::TranslateInfoBarDelegate* delegate);
+      TranslateInfoBarDelegate* delegate);
 };
 
-}  // namespace weblayer
+}  // namespace translate
 
-#endif  // WEBLAYER_BROWSER_TRANSLATE_UTILS_H_
+#endif  // COMPONENTS_TRANSLATE_CONTENT_ANDROID_TRANSLATE_UTILS_H_

@@ -11,6 +11,7 @@
 #include "ash/login/security_token_request_controller.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/public/cpp/kiosk_app_menu.h"
+#include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
 #include "base/macros.h"
@@ -87,8 +88,7 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
                            const std::string& input_method);
   void RequestPublicSessionKeyboardLayouts(const AccountId& account_id,
                                            const std::string& locale);
-  void ShowFeedback();
-  void ShowResetScreen();
+  void HandleAccelerator(ash::LoginAcceleratorAction action);
   void ShowAccountAccessHelpApp(gfx::NativeWindow parent_window);
   void ShowParentAccessHelpApp(gfx::NativeWindow parent_window);
   void ShowLockScreenNotificationSettings();

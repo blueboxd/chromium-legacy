@@ -33,24 +33,6 @@ typedef void (^SigninCompletionCallback)(ChromeIdentity* identity,
 @property(nonatomic, weak) id<ChromeIdentityInteractionManagerDelegate>
     delegate;
 
-// Whether the manager is currently being canceled. Delegates may inquire if the
-// dismissal is due to sign-in being canceled.
-@property(nonatomic, readonly) BOOL isCanceling;
-
-// Deprecated.
-// Use |addAccountWithPresentingViewController:completion|.
-- (void)addAccountWithCompletion:(SigninCompletionCallback)completion;
-
-// Deprecated.
-// Use |addAccountWithPresentingViewController:userEmail:completion|.
-- (void)reauthenticateUserWithID:(NSString*)userID
-                           email:(NSString*)userEmail
-                      completion:(SigninCompletionCallback)completion;
-
-// Deprecated.
-// Use |cancelAddAccountWithAnimation:completion|.
-- (void)cancelAndDismissAnimated:(BOOL)animated;
-
 // Starts the add account operation for a user. Presents user with the screen to
 // enter credentials.
 // Note: Calling this method will fail and the completion will be called with a

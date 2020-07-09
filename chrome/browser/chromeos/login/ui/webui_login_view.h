@@ -37,6 +37,7 @@ class Widget;
 namespace chromeos {
 
 class OobeUI;
+class LoginDisplayHostWebUI;
 
 // View used to render a WebUI supporting Widget. This widget is used for the
 // WebUI based start up and lock screens. It contains a WebView.
@@ -61,7 +62,8 @@ class WebUILoginView : public views::View,
   // Internal class name.
   static const char kViewClassName[];
 
-  explicit WebUILoginView(const WebViewSettings& settings);
+  WebUILoginView(const WebViewSettings& settings,
+                 base::WeakPtr<LoginDisplayHostWebUI> controller);
   ~WebUILoginView() override;
 
   // Initializes the webui login view.
@@ -171,6 +173,8 @@ class WebUILoginView : public views::View,
 
   // WebView configuration options.
   const WebViewSettings settings_;
+
+  base::WeakPtr<LoginDisplayHostWebUI> controller_;
 
   // WebView for rendering a webpage as a webui login.
   views::WebView* web_view_ = nullptr;

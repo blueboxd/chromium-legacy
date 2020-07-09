@@ -270,12 +270,6 @@ void LoginScreenController::RequestPublicSessionKeyboardLayouts(
   client_->RequestPublicSessionKeyboardLayouts(account_id, locale);
 }
 
-void LoginScreenController::ShowFeedback() {
-  if (!client_)
-    return;
-  client_->ShowFeedback();
-}
-
 void LoginScreenController::SetClient(LoginScreenClient* client) {
   client_ = client;
 }
@@ -421,8 +415,11 @@ void LoginScreenController::SetKioskApps(
       ->SetKioskApps(kiosk_apps, launch_app, on_show_menu);
 }
 
-void LoginScreenController::ShowResetScreen() {
-  client_->ShowResetScreen();
+void LoginScreenController::HandleAccelerator(
+    ash::LoginAcceleratorAction action) {
+  if (!client_)
+    return;
+  client_->HandleAccelerator(action);
 }
 
 void LoginScreenController::ShowAccountAccessHelpApp(

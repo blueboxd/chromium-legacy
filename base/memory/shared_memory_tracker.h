@@ -70,9 +70,8 @@ class BASE_EXPORT SharedMemoryTracker : public trace_event::MemoryDumpProvider {
     UnguessableToken mapped_id;
   };
 
-  // Used to lock when |usages_| is modified or read.
   Lock usages_lock_;
-  std::map<void*, UsageInfo> usages_;
+  std::map<void*, UsageInfo> usages_ GUARDED_BY(usages_lock_);
 
   DISALLOW_COPY_AND_ASSIGN(SharedMemoryTracker);
 };

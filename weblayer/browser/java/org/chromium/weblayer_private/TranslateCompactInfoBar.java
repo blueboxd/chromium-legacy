@@ -23,6 +23,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.infobar.ActionType;
 import org.chromium.components.infobars.InfoBar;
 import org.chromium.components.infobars.InfoBarCompactLayout;
+import org.chromium.components.translate.TranslateOption;
 import org.chromium.ui.widget.Toast;
 
 /**

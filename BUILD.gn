@@ -149,7 +149,6 @@ group("gn_all") {
       "//printing:printing_unittests",
       "//third_party/SPIRV-Tools/src:SPIRV-Tools",
       "//third_party/SPIRV-Tools/src/test/fuzzers",
-      "//third_party/cacheinvalidation:cacheinvalidation_unittests",
       "//third_party/pdfium/samples:pdfium_test",
       "//tools/perf/clear_system_cache",
       "//tools/polymer:polymer_tools_python_unittests",

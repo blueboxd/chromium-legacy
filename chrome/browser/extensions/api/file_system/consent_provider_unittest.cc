@@ -62,14 +62,13 @@ class TestingConsentProviderDelegate
 
  private:
   // ConsentProvider::DelegateInterface overrides:
-  void ShowDialog(
-      const extensions::Extension& extension,
-      content::RenderFrameHost* host,
-      const base::WeakPtr<Volume>& volume,
-      bool writable,
-      const ConsentProvider::ShowDialogCallback& callback) override {
+  void ShowDialog(const extensions::Extension& extension,
+                  content::RenderFrameHost* host,
+                  const base::WeakPtr<Volume>& volume,
+                  bool writable,
+                  ConsentProvider::ShowDialogCallback callback) override {
     ++show_dialog_counter_;
-    callback.Run(dialog_button_);
+    std::move(callback).Run(dialog_button_);
   }
 
   void ShowNotification(const extensions::Extension& extension,
@@ -171,7 +170,7 @@ TEST_F(FileSystemApiConsentProviderTest, ForNonKioskApps) {
     ConsentProvider::Consent result = ConsentProvider::CONSENT_IMPOSSIBLE;
     provider.RequestConsent(*whitelisted_component_extension.get(), nullptr,
                             volume_, true /* writable */,
-                            base::Bind(&OnConsentReceived, &result));
+                            base::BindOnce(&OnConsentReceived, &result));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(0, delegate.show_dialog_counter());
@@ -242,7 +241,7 @@ TEST_F(FileSystemApiConsentProviderTest, ForKioskApps) {
     ConsentProvider::Consent result = ConsentProvider::CONSENT_IMPOSSIBLE;
     provider.RequestConsent(*auto_launch_kiosk_app.get(), nullptr, volume_,
                             true /* writable */,
-                            base::Bind(&OnConsentReceived, &result));
+                            base::BindOnce(&OnConsentReceived, &result));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(0, delegate.show_dialog_counter());
@@ -271,7 +270,7 @@ TEST_F(FileSystemApiConsentProviderTest, ForKioskApps) {
     ConsentProvider::Consent result = ConsentProvider::CONSENT_IMPOSSIBLE;
     provider.RequestConsent(*manual_launch_kiosk_app.get(), nullptr, volume_,
                             true /* writable */,
-                            base::Bind(&OnConsentReceived, &result));
+                            base::BindOnce(&OnConsentReceived, &result));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(1, delegate.show_dialog_counter());
@@ -291,7 +290,7 @@ TEST_F(FileSystemApiConsentProviderTest, ForKioskApps) {
     ConsentProvider::Consent result = ConsentProvider::CONSENT_IMPOSSIBLE;
     provider.RequestConsent(*manual_launch_kiosk_app.get(), nullptr, volume_,
                             true /* writable */,
-                            base::Bind(&OnConsentReceived, &result));
+                            base::BindOnce(&OnConsentReceived, &result));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(1, delegate.show_dialog_counter());

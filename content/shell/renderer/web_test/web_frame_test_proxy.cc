@@ -719,6 +719,10 @@ WebWidgetTestProxy* WebFrameTestProxy::GetLocalRootWebWidgetTestProxy() {
   return static_cast<WebWidgetTestProxy*>(GetLocalRootRenderWidget());
 }
 
+void WebFrameTestProxy::CaptureDump(CaptureDumpCallback callback) {
+  blink_test_runner()->CaptureDump(std::move(callback));
+}
+
 void WebFrameTestProxy::SynchronouslyCompositeAfterTest(
     SynchronouslyCompositeAfterTestCallback callback) {
   // When the TestFinished() occurred, if the browser is capturing pixels, it
@@ -753,6 +757,11 @@ void WebFrameTestProxy::ResetRendererAfterWebTest() {
 
 void WebFrameTestProxy::FinishTestInMainWindow() {
   blink_test_runner()->OnFinishTestInMainWindow();
+}
+
+void WebFrameTestProxy::LayoutDumpCompleted(
+    const std::string& completed_layout_dump) {
+  blink_test_runner()->OnLayoutDumpCompleted(completed_layout_dump);
 }
 
 void WebFrameTestProxy::BindReceiver(

@@ -27,11 +27,18 @@ class PasswordBubbleBrowserTest
  public:
   PasswordBubbleBrowserTest() {
     if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          password_manager::features::kEnablePasswordsAccountStorage);
+      // |kEnablePasswordsAccountStorage|, |kCompromisedPasswordsReengagement|
+      // are both enabled.
+      scoped_feature_list_.InitWithFeatures(
+          {password_manager::features::kEnablePasswordsAccountStorage,
+           password_manager::features::kCompromisedPasswordsReengagement},
+          {});
     } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          password_manager::features::kEnablePasswordsAccountStorage);
+      // |kCompromisedPasswordsReengagement| enabled,
+      // |kEnablePasswordsAccountStorage| disabled.
+      scoped_feature_list_.InitWithFeatures(
+          {password_manager::features::kCompromisedPasswordsReengagement},
+          {password_manager::features::kEnablePasswordsAccountStorage});
     }
   }
 
@@ -65,6 +72,13 @@ class PasswordBubbleBrowserTest
     } else if (StartsWith(name, "MoveToAccountStoreBubble",
                           base::CompareCase::SENSITIVE)) {
       SetupMovingPasswords();
+    } else if (StartsWith(name, "SafeState", base::CompareCase::SENSITIVE)) {
+      SetupSafeState();
+    } else if (StartsWith(name, "MoreToFixState",
+                          base::CompareCase::SENSITIVE)) {
+      SetupMoreToFixState();
+    } else if (StartsWith(name, "UnsafeState", base::CompareCase::SENSITIVE)) {
+      SetupUnsafeState();
     } else {
       ADD_FAILURE() << "Unknown dialog type";
       return;
@@ -94,6 +108,18 @@ IN_PROC_BROWSER_TEST_P(PasswordBubbleBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(PasswordBubbleBrowserTest, InvokeUi_AutoSignin) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_P(PasswordBubbleBrowserTest, InvokeUi_SafeState) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_P(PasswordBubbleBrowserTest, InvokeUi_MoreToFixState) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_P(PasswordBubbleBrowserTest, InvokeUi_UnsafeState) {
   ShowAndVerifyUi();
 }
 

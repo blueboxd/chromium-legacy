@@ -346,6 +346,7 @@ SpdySessionDependencies::SpdySessionDependencies(
       time_func(&base::TimeTicks::Now),
       enable_http2_alternative_service(false),
       enable_websocket_over_http2(false),
+      http2_end_stream_with_data_frame(false),
       net_log(nullptr),
       disable_idle_sockets_close_on_memory_pressure(false),
       enable_early_data(false),
@@ -400,6 +401,8 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.enable_websocket_over_http2 =
       session_deps->enable_websocket_over_http2;
   params.greased_http2_frame = session_deps->greased_http2_frame;
+  params.http2_end_stream_with_data_frame =
+      session_deps->http2_end_stream_with_data_frame;
   params.disable_idle_sockets_close_on_memory_pressure =
       session_deps->disable_idle_sockets_close_on_memory_pressure;
   params.enable_early_data = session_deps->enable_early_data;

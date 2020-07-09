@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/flat_set.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
@@ -16,6 +17,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/export/password_csv_writer.h"
+#include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/ui/credential_provider_interface.h"
 
@@ -55,6 +57,21 @@ bool DefaultDeleteFunction(const base::FilePath& file) {
   return base::DeleteFile(file);
 }
 
+std::vector<std::unique_ptr<autofill::PasswordForm>>
+DeduplicatePasswordsAcrossStores(
+    std::vector<std::unique_ptr<autofill::PasswordForm>> passwords) {
+  auto get_sort_key = [](const auto& password) {
+    return password_manager::CreateSortKey(*password,
+                                           password_manager::IgnoreStore(true));
+  };
+  auto cmp = [&](const auto& lhs, const auto& rhs) {
+    return get_sort_key(lhs) < get_sort_key(rhs);
+  };
+  base::flat_set<std::unique_ptr<autofill::PasswordForm>, decltype(cmp)>
+      unique_passwords(std::move(passwords), cmp);
+  return std::move(unique_passwords).extract();
+}
+
 }  // namespace
 
 namespace password_manager {
@@ -85,14 +102,21 @@ void PasswordManagerExporter::PreparePasswordsForExport() {
 
   std::vector<std::unique_ptr<autofill::PasswordForm>> password_list =
       credential_provider_interface_->GetAllPasswords();
-  size_t password_list_size = password_list.size();
 
+  // Deduplicate passwords that are present in multiple stores, so the output
+  // file doesn't contain repeated data.
+  std::vector<std::unique_ptr<autofill::PasswordForm>>
+      deduplicated_password_list =
+          DeduplicatePasswordsAcrossStores(std::move(password_list));
+
+  size_t deduplicated_password_list_size = deduplicated_password_list.size();
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
       base::BindOnce(&password_manager::PasswordCSVWriter::SerializePasswords,
-                     std::move(password_list)),
+                     std::move(deduplicated_password_list)),
       base::BindOnce(&PasswordManagerExporter::SetSerialisedPasswordList,
-                     weak_factory_.GetWeakPtr(), password_list_size));
+                     weak_factory_.GetWeakPtr(),
+                     deduplicated_password_list_size));
 }
 
 void PasswordManagerExporter::SetDestination(

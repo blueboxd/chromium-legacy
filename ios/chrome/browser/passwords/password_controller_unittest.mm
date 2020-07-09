@@ -9,7 +9,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/ios/ios_util.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
@@ -62,6 +61,7 @@
 #error "This file requires ARC support."
 #endif
 
+using autofill::FormActivityParams;
 using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::FormRendererId;
@@ -318,6 +318,17 @@ class PasswordControllerTest : public ChromeWebTest {
     ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool() {
       return !form_managers.empty();
     }));
+  }
+
+  void SimulateFormActivityObserverSignal() {
+    std::string mainFrameID = web::GetMainWebFrameId(web_state());
+    WebFrame* frame = web::GetWebFrameWithId(web_state(), mainFrameID);
+    FormActivityParams params;
+    params.type = "form_changed";
+    params.frame_id = mainFrameID;
+    [passwordController_ webState:web_state()
+          didRegisterFormActivity:params
+                          inFrame:frame];
   }
 
  protected:
@@ -1016,6 +1027,8 @@ struct SuggestionTestData {
 // controller.
 TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
   LoadHtml(kHtmlWithPasswordForm);
+  WaitForFormManagersCreation();
+
   const std::string base_url = BaseUrl();
   ExecuteJavaScript(
       [NSString stringWithFormat:kUsernameAndPasswordTestPreparationScript,
@@ -1327,6 +1340,7 @@ TEST_F(PasswordControllerTestSimple, SaveOnNonHTMLLandingPage) {
 // not sent to the store then the request the the store is sent.
 TEST_F(PasswordControllerTest, SendingToStoreDynamicallyAddedFormsOnFocus) {
   LoadHtml(kHtmlWithoutPasswordForm);
+  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
   ExecuteJavaScript(kAddFormDynamicallyScript);
 
   // The standard pattern is to use a __block variable WaitUntilCondition but
@@ -1459,21 +1473,7 @@ TEST_F(PasswordControllerTest, SavingFromSameOriginIframe) {
 // PassworController is waiting to the response in order to show or not to show
 // password suggestions.
 TEST_F(PasswordControllerTest, CheckAsyncSuggestions) {
-#if !(TARGET_OS_SIMULATOR)
-  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
-    // TODO(crbug.com/1099720): This test is failing on iOS 12.4 device.
-    return;
-  }
-#endif
-
   for (bool store_has_credentials : {false, true}) {
-    LoadHtml(kHtmlWithoutPasswordForm);
-    ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
-    ExecuteJavaScript(kAddFormDynamicallyScript);
-
-    __block BOOL completion_handler_success = NO;
-    __block BOOL completion_handler_called = NO;
-
     if (store_has_credentials) {
       PasswordForm form(CreatePasswordForm(BaseUrl().c_str(), "user", "pw"));
       // TODO(crbug.com/949519): replace WillRepeatedly with WillOnce when the
@@ -1484,13 +1484,27 @@ TEST_F(PasswordControllerTest, CheckAsyncSuggestions) {
       EXPECT_CALL(*store_, GetLogins)
           .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
     }
+    LoadHtml(kHtmlWithoutPasswordForm);
+    ExecuteJavaScript(kAddFormDynamicallyScript);
+
+    SimulateFormActivityObserverSignal();
+    WaitForFormManagersCreation();
+
+    __block BOOL completion_handler_success = NO;
+    __block BOOL completion_handler_called = NO;
+
+    FormRendererId form_id =
+        store_has_credentials ? FormRendererId(3) : FormRendererId(0);
+    FieldRendererId field_id =
+        store_has_credentials ? FieldRendererId(4) : FieldRendererId(1);
     std::string mainFrameID = web::GetMainWebFrameId(web_state());
+
     FormSuggestionProviderQuery* form_query =
         [[FormSuggestionProviderQuery alloc]
             initWithFormName:@"dynamic_form"
-                uniqueFormID:FormRendererId(0)
+                uniqueFormID:form_id
              fieldIdentifier:@"username"
-               uniqueFieldID:FieldRendererId(1)
+               uniqueFieldID:field_id
                    fieldType:@"text"
                         type:@"focus"
                   typedValue:@""
@@ -1518,16 +1532,19 @@ TEST_F(PasswordControllerTest, CheckAsyncSuggestions) {
 // field in this form, then the request to the Password Store is sent but no
 // suggestions are shown.
 TEST_F(PasswordControllerTest, CheckNoAsyncSuggestionsOnNonUsernameField) {
+  PasswordForm form(CreatePasswordForm(BaseUrl().c_str(), "user", "pw"));
+  EXPECT_CALL(*store_, GetLogins).WillOnce(WithArg<1>(InvokeConsumer(form)));
+
   LoadHtml(kHtmlWithoutPasswordForm);
-  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
   ExecuteJavaScript(kAddFormDynamicallyScript);
+
+  SimulateFormActivityObserverSignal();
+  WaitForFormManagersCreation();
 
   __block BOOL completion_handler_success = NO;
   __block BOOL completion_handler_called = NO;
-
-  PasswordForm form(CreatePasswordForm(BaseUrl().c_str(), "user", "pw"));
-  EXPECT_CALL(*store_, GetLogins).WillOnce(WithArg<1>(InvokeConsumer(form)));
   std::string mainFrameID = web::GetMainWebFrameId(web_state());
+
   FormSuggestionProviderQuery* form_query = [[FormSuggestionProviderQuery alloc]
       initWithFormName:@"dynamic_form"
           uniqueFormID:FormRendererId(0)
@@ -1596,6 +1613,8 @@ TEST_F(PasswordControllerTest, CheckPasswordGenerationSuggestion) {
       .WillRepeatedly(Return(true));
 
   LoadHtml(kHtmlWithNewPasswordForm);
+  WaitForFormManagersCreation();
+
   const std::string base_url = BaseUrl();
   ExecuteJavaScript(
       [NSString stringWithFormat:kUsernameAndPasswordTestPreparationScript,
@@ -1953,16 +1972,9 @@ TEST_F(PasswordControllerTest, FindDynamicallyAddedForm2) {
   LoadHtml(kHtmlWithoutPasswordForm);
   ExecuteJavaScript(kAddFormDynamicallyScript);
 
-  std::string mainFrameID = web::GetMainWebFrameId(web_state());
-  WebFrame* frame = web::GetWebFrameWithId(web_state(), mainFrameID);
-  autofill::FormActivityParams params;
-  params.type = "form_changed";
-  params.frame_id = mainFrameID;
-
-  [passwordController_ webState:web_state()
-        didRegisterFormActivity:params
-                        inFrame:frame];
+  SimulateFormActivityObserverSignal();
   WaitForFormManagersCreation();
+
   auto& form_managers = passwordController_.passwordManager->form_managers();
   ASSERT_EQ(1u, form_managers.size());
   auto& password_form = form_managers[0]->observed_form();
@@ -1988,7 +2000,7 @@ TEST_F(PasswordControllerTest, DetectSubmissionOnRemovedForm) {
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
 
   WebFrame* frame = web::GetWebFrameWithId(web_state(), mainFrameID);
-  autofill::FormActivityParams params;
+  FormActivityParams params;
   params.type = "password_form_removed";
   params.unique_form_id = 0;
   params.frame_id = mainFrameID;
@@ -2027,7 +2039,7 @@ TEST_F(PasswordControllerTest,
 
   std::string mainFrameID = web::GetMainWebFrameId(web_state());
   WebFrame* frame = web::GetWebFrameWithId(web_state(), mainFrameID);
-  autofill::FormActivityParams params;
+  FormActivityParams params;
   params.type = "password_form_removed";
   params.unique_form_id = 0;
   params.frame_id = mainFrameID;

@@ -18,6 +18,7 @@
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
 #include "media/capture/video/chromeos/pixel_format_utils.h"
 #include "media/capture/video/chromeos/request_builder.h"
+#include "media/capture/video/chromeos/video_capture_features_chromeos.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/libyuv/include/libyuv.h"
@@ -79,6 +80,11 @@ StreamBufferManager::AcquireBufferForClientById(StreamType stream_type,
   *format = GetStreamCaptureFormat(stream_type);
   // We only support NV12 at the moment.
   DCHECK_EQ(format->pixel_format, PIXEL_FORMAT_NV12);
+
+  if (base::FeatureList::IsEnabled(
+          features::kDisableCameraFrameRotationAtSource)) {
+    return std::move(buffer_pair.vcd_buffer);
+  }
 
   if (rotation == 0) {
     return std::move(buffer_pair.vcd_buffer);

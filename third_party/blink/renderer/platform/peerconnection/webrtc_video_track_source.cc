@@ -64,6 +64,25 @@ gfx::Rect ScaleRectangle(const gfx::Rect& input_rect,
   result.Intersect(gfx::Rect(0, 0, scaled.width(), scaled.height()));
   return result;
 }
+
+webrtc::VideoRotation GetFrameRotation(const media::VideoFrame* frame) {
+  if (!frame->metadata()->rotation) {
+    return webrtc::kVideoRotation_0;
+  }
+  switch (*frame->metadata()->rotation) {
+    case media::VIDEO_ROTATION_0:
+      return webrtc::kVideoRotation_0;
+    case media::VIDEO_ROTATION_90:
+      return webrtc::kVideoRotation_90;
+    case media::VIDEO_ROTATION_180:
+      return webrtc::kVideoRotation_180;
+    case media::VIDEO_ROTATION_270:
+      return webrtc::kVideoRotation_270;
+    default:
+      return webrtc::kVideoRotation_0;
+  }
+}
+
 }  // anonymous namespace
 
 namespace blink {
@@ -335,7 +354,7 @@ void WebRtcVideoTrackSource::DeliverFrame(
                   (log_to_webrtc_
                        ? WebRtcVideoFrameAdapter::LogStatus::kLogToWebRtc
                        : WebRtcVideoFrameAdapter::LogStatus::kNoLogging)))
-          .set_rotation(webrtc::kVideoRotation_0)
+          .set_rotation(GetFrameRotation(frame.get()))
           .set_timestamp_us(timestamp_us);
   if (update_rect) {
     frame_builder.set_update_rect(webrtc::VideoFrame::UpdateRect{

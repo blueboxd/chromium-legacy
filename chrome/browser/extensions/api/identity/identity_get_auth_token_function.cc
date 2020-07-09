@@ -315,7 +315,7 @@ void IdentityGetAuthTokenFunction::StartAsyncRun() {
   identity_api_shutdown_subscription_ =
       extensions::IdentityAPI::GetFactoryInstance()
           ->Get(GetProfile())
-          ->RegisterOnShutdownCallback(base::Bind(
+          ->RegisterOnShutdownCallback(base::BindOnce(
               &IdentityGetAuthTokenFunction::OnIdentityAPIShutdown, this));
 }
 

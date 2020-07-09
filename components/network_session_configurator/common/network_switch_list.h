@@ -70,3 +70,9 @@ NETWORK_SWITCH(kHostRules, "host-rules")
 // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00 for more detail.
 NETWORK_SWITCH(kHttp2GreaseSettings, "http2-grease-settings")
 NETWORK_SWITCH(kHttp2GreaseFrameType, "http2-grease-frame-type")
+
+// If request has no body, close the stream not by setting END_STREAM flag on
+// the HEADERS frame, but by sending an empty DATA frame with END_STREAM
+// afterwards.  Only affects HTTP/2 request streams, not proxy or bidirectional
+// streams.
+NETWORK_SWITCH(kHttp2EndStreamWithDataFrame, "http2-end-stream-with-data-frame")

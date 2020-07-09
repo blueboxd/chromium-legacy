@@ -290,6 +290,8 @@ jumbo_component("capture_lib") {
       "video/chromeos/video_capture_device_chromeos_halv3.h",
       "video/chromeos/video_capture_device_factory_chromeos.cc",
       "video/chromeos/video_capture_device_factory_chromeos.h",
+      "video/chromeos/video_capture_features_chromeos.cc",
+      "video/chromeos/video_capture_features_chromeos.h",
       "video/chromeos/video_capture_jpeg_decoder.h",
       "video/chromeos/video_capture_jpeg_decoder_impl.cc",
       "video/chromeos/video_capture_jpeg_decoder_impl.h",

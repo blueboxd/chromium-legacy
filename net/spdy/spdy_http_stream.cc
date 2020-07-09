@@ -353,7 +353,8 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
       });
   DispatchRequestHeadersCallback(headers);
 
-  bool will_send_data = HasUploadData() | spdy_session_->GreasedFramesEnabled();
+  bool will_send_data =
+      HasUploadData() | spdy_session_->EndStreamWithDataFrame();
   result = stream_->SendRequestHeaders(
       std::move(headers),
       will_send_data ? MORE_DATA_TO_SEND : NO_MORE_DATA_TO_SEND);
@@ -377,7 +378,7 @@ void SpdyHttpStream::Cancel() {
 void SpdyHttpStream::OnHeadersSent() {
   if (HasUploadData()) {
     ReadAndSendRequestBodyData();
-  } else if (spdy_session_->GreasedFramesEnabled()) {
+  } else if (spdy_session_->EndStreamWithDataFrame()) {
     SendEmptyBody();
   } else {
     MaybePostRequestCallback(OK);
@@ -456,7 +457,7 @@ void SpdyHttpStream::OnDataSent() {
     request_body_buf_size_ = 0;
     ReadAndSendRequestBodyData();
   } else {
-    CHECK(spdy_session_->GreasedFramesEnabled());
+    CHECK(spdy_session_->EndStreamWithDataFrame());
     MaybePostRequestCallback(OK);
   }
 }
@@ -554,7 +555,7 @@ void SpdyHttpStream::ReadAndSendRequestBodyData() {
 
 void SpdyHttpStream::SendEmptyBody() {
   CHECK(!HasUploadData());
-  CHECK(spdy_session_->GreasedFramesEnabled());
+  CHECK(spdy_session_->EndStreamWithDataFrame());
 
   auto buffer = base::MakeRefCounted<IOBuffer>(/* buffer_size = */ 0);
   stream_->SendData(buffer.get(), /* length = */ 0, NO_MORE_DATA_TO_SEND);

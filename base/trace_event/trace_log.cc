@@ -716,8 +716,6 @@ void TraceLog::SetDisabled(uint8_t modes_to_disable) {
 }
 
 void TraceLog::SetDisabledWhileLocked(uint8_t modes_to_disable) {
-  lock_.AssertAcquired();
-
   if (!(enabled_modes_ & modes_to_disable))
     return;
 
@@ -830,8 +828,6 @@ bool TraceLog::BufferIsFull() const {
 TraceEvent* TraceLog::AddEventToThreadSharedChunkWhileLocked(
     TraceEventHandle* handle,
     bool check_buffer_is_full) {
-  lock_.AssertAcquired();
-
   if (thread_shared_chunk_ && thread_shared_chunk_->IsFull()) {
     logged_events_->ReturnChunk(thread_shared_chunk_index_,
                                 std::move(thread_shared_chunk_));
@@ -856,7 +852,6 @@ TraceEvent* TraceLog::AddEventToThreadSharedChunkWhileLocked(
 }
 
 void TraceLog::CheckIfBufferIsFullWhileLocked() {
-  lock_.AssertAcquired();
   if (logged_events_->IsFull()) {
     if (buffer_limit_reached_timestamp_.is_null()) {
       buffer_limit_reached_timestamp_ = OffsetNow();
@@ -1554,8 +1549,6 @@ void TraceLog::AddMetadataEventWhileLocked(int thread_id,
 }
 
 void TraceLog::AddMetadataEventsWhileLocked() {
-  lock_.AssertAcquired();
-
   auto trace_event_override =
       add_trace_event_override_.load(std::memory_order_relaxed);
 
@@ -1718,6 +1711,7 @@ void TraceLog::SetTimeOffset(TimeDelta offset) {
 }
 
 size_t TraceLog::GetObserverCountForTest() const {
+  AutoLock lock(observers_lock_);
   return enabled_state_observers_.size();
 }
 

@@ -7,6 +7,7 @@
 
 #include "third_party/perfetto/include/perfetto/tracing/platform.h"
 
+#include "base/component_export.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread_local_storage.h"
 
@@ -16,12 +17,15 @@ class DeferredSequencedTaskRunner;
 
 namespace tracing {
 
-class PerfettoPlatform : public perfetto::Platform {
+class COMPONENT_EXPORT(TRACING_CPP) PerfettoPlatform
+    : public perfetto::Platform {
  public:
   PerfettoPlatform();
   ~PerfettoPlatform() override;
 
-  void OnThreadPoolAvailable();
+  base::SequencedTaskRunner* task_runner() const;
+  bool did_start_task_runner() const { return did_start_task_runner_; }
+  void StartTaskRunner(scoped_refptr<base::SequencedTaskRunner>);
 
   // perfetto::Platform implementation:
   ThreadLocalObject* GetOrCreateThreadLocalObject() override;
@@ -31,6 +35,7 @@ class PerfettoPlatform : public perfetto::Platform {
 
  private:
   scoped_refptr<base::DeferredSequencedTaskRunner> deferred_task_runner_;
+  bool did_start_task_runner_ = false;
   base::ThreadLocalStorage::Slot thread_local_object_;
 };
 

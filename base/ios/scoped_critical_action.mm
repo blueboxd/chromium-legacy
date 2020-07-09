@@ -99,6 +99,7 @@ void ScopedCriticalAction::Core::StartBackgroundTask(scoped_refptr<Core> core,
                                base::TimeDelta::FromSeconds(time));
   }
 
+  AutoLock lock_scope(core->background_task_id_lock_);
   NSString* task_string =
       !task_name.empty() ? base::SysUTF8ToNSString(task_name) : nil;
   core->background_task_id_ = [application

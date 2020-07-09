@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "weblayer/browser/translate_utils.h"
+#include "components/translate/content/android/translate_utils.h"
 
 #include <stddef.h>
 
@@ -15,11 +15,11 @@
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
-namespace weblayer {
+namespace translate {
 
 ScopedJavaLocalRef<jobjectArray> TranslateUtils::GetJavaLanguages(
     JNIEnv* env,
-    translate::TranslateInfoBarDelegate* delegate) {
+    TranslateInfoBarDelegate* delegate) {
   std::vector<base::string16> languages;
   languages.reserve(delegate->num_languages());
   for (size_t i = 0; i < delegate->num_languages(); ++i) {
@@ -30,7 +30,7 @@ ScopedJavaLocalRef<jobjectArray> TranslateUtils::GetJavaLanguages(
 
 ScopedJavaLocalRef<jobjectArray> TranslateUtils::GetJavaLanguageCodes(
     JNIEnv* env,
-    translate::TranslateInfoBarDelegate* delegate) {
+    TranslateInfoBarDelegate* delegate) {
   std::vector<std::string> codes;
   codes.reserve(delegate->num_languages());
   for (size_t i = 0; i < delegate->num_languages(); ++i) {
@@ -41,7 +41,7 @@ ScopedJavaLocalRef<jobjectArray> TranslateUtils::GetJavaLanguageCodes(
 
 ScopedJavaLocalRef<jintArray> TranslateUtils::GetJavaLanguageHashCodes(
     JNIEnv* env,
-    translate::TranslateInfoBarDelegate* delegate) {
+    TranslateInfoBarDelegate* delegate) {
   std::vector<int> hashCodes;
   hashCodes.reserve(delegate->num_languages());
   for (size_t i = 0; i < delegate->num_languages(); ++i) {
@@ -51,4 +51,4 @@ ScopedJavaLocalRef<jintArray> TranslateUtils::GetJavaLanguageHashCodes(
   return base::android::ToJavaIntArray(env, hashCodes);
 }
 
-}  // namespace weblayer
+}  // namespace translate

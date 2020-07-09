@@ -673,6 +673,9 @@ extern const char kGlobalMediaControlsPictureInPictureDescription[];
 extern const char kGlobalMediaControlsSeamlessTransferName[];
 extern const char kGlobalMediaControlsSeamlessTransferDescription[];
 
+extern const char kGlobalMediaControlsOverlayControlsName[];
+extern const char kGlobalMediaControlsOverlayControlsDescription[];
+
 extern const char kGpuRasterizationName[];
 extern const char kGpuRasterizationDescription[];
 
@@ -2009,6 +2012,9 @@ extern const char kCryptAuthV2DeviceSyncDescription[];
 
 extern const char kCryptAuthV2EnrollmentName[];
 extern const char kCryptAuthV2EnrollmentDescription[];
+
+extern const char kDisableCameraFrameRotationAtSourceName[];
+extern const char kDisableCameraFrameRotationAtSourceDescription[];
 
 extern const char kDisableCancelAllTouchesName[];
 extern const char kDisableCancelAllTouchesDescription[];

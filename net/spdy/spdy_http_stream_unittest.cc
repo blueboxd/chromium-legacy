@@ -1177,42 +1177,28 @@ TEST_F(SpdyHttpStreamTest, RequestCallbackCancelsStream) {
 // Regression test for https://crbug.com/1082683.
 // SendRequest() callback should be called as soon as sending is done,
 // even when sending greased frame type is allowed.
-TEST_F(SpdyHttpStreamTest, DownloadWithGreasedFrames) {
-  const uint8_t type = 0x0b;
-  const uint8_t flags = 0xcc;
-  const std::string payload("foo");
-  session_deps_.greased_http2_frame =
-      base::Optional<net::SpdySessionPool::GreasedHttp2Frame>(
-          {type, flags, payload});
+TEST_F(SpdyHttpStreamTest, DownloadWithEmptyDataFrame) {
+  session_deps_.http2_end_stream_with_data_frame = true;
 
+  // HEADERS frame without END_STREAM
   spdy::SpdyHeaderBlock request_headers;
   request_headers[spdy::kHttp2MethodHeader] = "GET";
   spdy_util_.AddUrlToHeaderBlock(kDefaultUrl, &request_headers);
   spdy::SpdySerializedFrame req = spdy_util_.ConstructSpdyHeaders(
       1, std::move(request_headers), LOWEST, /* fin = */ false);
 
-  const char kRawFrameData[] = {
-      0x00, 0x00, 0x03,        // length
-      0x0b,                    // type
-      0xcc,                    // flags
-      0x00, 0x00, 0x00, 0x01,  // stream ID
-      'f',  'o',  'o'          // payload
-  };
-  spdy::SpdySerializedFrame grease(const_cast<char*>(kRawFrameData),
-                                   base::size(kRawFrameData),
-                                   /* owns_buffer = */ false);
-
+  // Empty DATA frame with END_STREAM
   spdy::SpdySerializedFrame empty_body(
-      spdy_util_.ConstructSpdyDataFrame(1, "", true));
+      spdy_util_.ConstructSpdyDataFrame(1, "", /* fin = */ true));
 
-  MockWrite writes[] = {CreateMockWrite(req, 0), CreateMockWrite(grease, 1),
-                        CreateMockWrite(empty_body, 2)};
+  MockWrite writes[] = {CreateMockWrite(req, 0),
+                        CreateMockWrite(empty_body, 1)};
 
   // This test only concerns the request,
   // no need to construct a meaningful response.
   MockRead reads[] = {
-      MockRead(ASYNC, ERR_IO_PENDING, 3),  // Pause reads.
-      MockRead(ASYNC, 0, 4)                // Close connection.
+      MockRead(ASYNC, ERR_IO_PENDING, 2),  // Pause reads.
+      MockRead(ASYNC, 0, 3)                // Close connection.
   };
 
   InitSession(reads, writes);

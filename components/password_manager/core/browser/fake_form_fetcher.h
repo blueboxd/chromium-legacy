@@ -74,6 +74,10 @@ class FakeFormFetcher : public FormFetcher {
     federated_ = federated;
   }
 
+  void set_compromised(const std::vector<CompromisedCredentials>& compromised) {
+    compromised_ = compromised;
+  }
+
   void SetNonFederated(
       const std::vector<const autofill::PasswordForm*>& non_federated);
 
@@ -91,6 +95,7 @@ class FakeFormFetcher : public FormFetcher {
   std::vector<const autofill::PasswordForm*> federated_;
   std::vector<const autofill::PasswordForm*> non_federated_same_scheme_;
   std::vector<const autofill::PasswordForm*> best_matches_;
+  std::vector<CompromisedCredentials> compromised_;
   const autofill::PasswordForm* preferred_match_ = nullptr;
   bool is_blacklisted_ = false;
 

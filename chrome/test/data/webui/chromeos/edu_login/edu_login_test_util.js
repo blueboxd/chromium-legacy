@@ -33,6 +33,7 @@ export function getFakeParentsList() {
 export class TestEduAccountLoginBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
+      'isNetworkReady',
       'getParents',
       'parentSignin',
       'loginInitialize',
@@ -44,12 +45,34 @@ export class TestEduAccountLoginBrowserProxy extends TestBrowserProxy {
 
     /** @private {function} */
     this.parentSigninResponse_ = null;
+    /** @private {function} */
+    this.getParentsResponse_ = null;
+    /** @private {function} */
+    this.isNetworkReadyResponse_ = null;
+  }
+
+  /** @override */
+  isNetworkReady() {
+    this.methodCalled('isNetworkReady');
+    return this.isNetworkReadyResponse_ ? this.isNetworkReadyResponse_() :
+                                          Promise.resolve(true);
+  }
+
+  /** @param {function} isNetworkReadyResponse */
+  setIsNetworkReadyResponse(isNetworkReadyResponse) {
+    this.isNetworkReadyResponse_ = isNetworkReadyResponse;
   }
 
   /** @override */
   getParents() {
     this.methodCalled('getParents');
-    return Promise.resolve(getFakeParentsList());
+    return this.getParentsResponse_ ? this.getParentsResponse_() :
+                                      Promise.resolve(getFakeParentsList());
+  }
+
+  /** @param {function} getParentsResponse */
+  setGetParentsResponse(getParentsResponse) {
+    this.getParentsResponse_ = getParentsResponse;
   }
 
   /** @override */

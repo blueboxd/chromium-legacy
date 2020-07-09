@@ -42,7 +42,10 @@ action("interfaces_info") {
 }
 
 generate_global_constructors("global_constructors_idls") {
-  sources = core_idl_files + core_idl_with_modules_dependency_files
+  sources =
+      core_interface_idl_files_core_only +
+      core_interface_idl_files_modules_dependent +
+      core_buffer_source_type_idl_files + core_callback_interface_idl_files
   global_objects_file =
       "$bindings_modules_output_dir/global_objects_modules.pickle"
   interfaces = modules_core_global_constructors_original_interfaces

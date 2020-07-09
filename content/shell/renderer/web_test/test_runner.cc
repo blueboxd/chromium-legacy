@@ -2340,8 +2340,8 @@ bool TestRunner::ShouldDumpAsAudio() const {
   return dump_as_audio_;
 }
 
-const std::vector<uint8_t>& TestRunner::GetAudioData() const {
-  return audio_data_;
+void TestRunner::GetAudioData(std::vector<unsigned char>* buffer_view) const {
+  *buffer_view = audio_data_;
 }
 
 bool TestRunner::IsRecursiveLayoutDumpRequested() {
@@ -2909,7 +2909,7 @@ void TestRunner::DumpIconChanges() {
 }
 
 void TestRunner::SetAudioData(const gin::ArrayBufferView& view) {
-  uint8_t* bytes = static_cast<uint8_t*>(view.bytes());
+  unsigned char* bytes = static_cast<unsigned char*>(view.bytes());
   audio_data_.resize(view.num_bytes());
   std::copy(bytes, bytes + view.num_bytes(), audio_data_.begin());
   dump_as_audio_ = true;
@@ -3058,10 +3058,11 @@ void TestRunner::SetEffectiveConnectionType(
 }
 
 bool TestRunner::ShouldDumpConsoleMessages() const {
-  // Once TestFinished() is entered, we don't want additional log lines to
-  // be printed while we collect the renderer-side test results, so we check
-  // |test_is_running_| here as well.
-  return test_is_running_ && web_test_runtime_flags_.dump_console_messages();
+  return web_test_runtime_flags_.dump_console_messages();
+}
+
+bool TestRunner::ShouldDumpJavaScriptDialogs() const {
+  return web_test_runtime_flags_.dump_javascript_dialogs();
 }
 
 void TestRunner::GoToOffset(int offset) {

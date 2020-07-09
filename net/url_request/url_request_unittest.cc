@@ -1571,11 +1571,6 @@ TEST_F(URLRequestTest, NotifyDelegateConnectedReturnError) {
   EXPECT_THAT(delegate.request_status(), IsError(ERR_NOT_IMPLEMENTED));
 }
 
-// TODO(crbug.com/986744): Test that OnConnected() is called multiple times for
-// split HTTP range requests. This behavior should happen when a range is
-// requested for which a subrange "in the middle" is already cached. See the
-// comment threads on crrev.com/c/2257752 for details.
-
 TEST_F(URLRequestTest, DelayedCookieCallback) {
   HttpTestServer test_server;
   ASSERT_TRUE(test_server.Start());

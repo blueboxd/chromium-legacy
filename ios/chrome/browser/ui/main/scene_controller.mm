@@ -191,7 +191,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 @property(nonatomic, assign) BOOL dismissingTabSwitcher;
 
 // Wrangler to handle BVC and tab model creation, access, and related logic.
-// Implements faetures exposed from this object through the
+// Implements features exposed from this object through the
 // BrowserViewInformation protocol.
 @property(nonatomic, strong) BrowserViewWrangler* browserViewWrangler;
 // The coordinator used to control sign-in UI flows. Lazily created the first
@@ -204,7 +204,10 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
 @end
 
-@implementation SceneController
+@implementation SceneController {
+  // UI blocker used while FRE is shown in the scene controlled by this object.
+  std::unique_ptr<ScopedUIBlocker> _firstRunUIBlocker;
+}
 @synthesize startupParameters = _startupParameters;
 
 - (instancetype)initWithSceneState:(SceneState*)sceneState {
@@ -646,16 +649,11 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
   // If this is first run, show the first run UI on top of the new tab.
   // If this isn't first run, check if the sign-in promo needs to display.
-  if (firstRun) {
-    if (self.mainController.isPresentingFirstRunUI) {
-      [self displayBlockingOverlay];
-    } else {
-      [self.mainController prepareForFirstRunUI:self.sceneState];
-      [self showFirstRunUI];
-      // Do not ever show the 'restore' infobar during first run.
-      self.mainController.restoreHelper = nil;
-    }
-
+  if (firstRun && !self.mainController.isPresentingFirstRunUI) {
+    [self.mainController prepareForFirstRunUI:self.sceneState];
+    [self showFirstRunUI];
+    // Do not ever show the 'restore' infobar during first run.
+    self.mainController.restoreHelper = nil;
   } else {
     [self scheduleShowPromo];
   }
@@ -698,6 +696,8 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 // Initializes the first run UI and presents it to the user.
 - (void)showFirstRunUI {
   DCHECK(!self.signinCoordinator);
+  DCHECK(!_firstRunUIBlocker);
+  _firstRunUIBlocker = std::make_unique<ScopedUIBlocker>(self.sceneState);
   // Register for the first run dismissal notification to reset
   // |sceneState.presentingFirstRunUI| flag;
   [[NSNotificationCenter defaultCenter]
@@ -730,6 +730,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
 - (void)handleFirstRunUIWillFinish {
   DCHECK(self.sceneState.presentingFirstRunUI);
+  _firstRunUIBlocker.reset();
   self.sceneState.presentingFirstRunUI = NO;
   [[NSNotificationCenter defaultCenter]
       removeObserver:self

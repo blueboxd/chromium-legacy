@@ -30,8 +30,8 @@ using sync_encryption_passphrase::SectionIdentifierPassphrase;
 
 @implementation SyncCreatePassphraseTableViewController
 
-- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState {
-  self = [super initWithBrowserState:browserState];
+- (instancetype)initWithBrowser:(Browser*)browser {
+  self = [super initWithBrowser:browser];
   if (self) {
     self.title =
         l10n_util::GetNSString(IDS_IOS_SYNC_ENCRYPTION_CREATE_PASSPHRASE);

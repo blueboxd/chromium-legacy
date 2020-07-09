@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.infobar.translate;
+package org.chromium.components.translate;
 
 import android.content.Context;
 import android.graphics.Rect;
@@ -20,9 +20,6 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
-
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.infobar.TranslateOptions;
 
 import java.util.ArrayList;
 import java.util.List;

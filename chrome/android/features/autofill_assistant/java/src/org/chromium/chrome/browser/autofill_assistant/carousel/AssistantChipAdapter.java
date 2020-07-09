@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.ListUpdateCallback;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -59,15 +58,14 @@ public class AssistantChipAdapter extends RecyclerView.Adapter<AssistantChipView
 
         // TODO(b/144075373): The following should work, but does not fire change notifications
         //  properly, leading to missing change animations:
-        //   mChips.clear();
-        //   mChips.addAll(chips);
         //   diffResult.dispatchUpdatesTo(this);
         // The workaround is to update manually:
+        mChips.clear();
+        mChips.addAll(chips);
         diffResult.dispatchUpdatesTo(new ListUpdateCallback() {
             @Override
             public void onInserted(int position, int count) {
                 for (int i = 0; i < count; ++i) {
-                    mChips.add(position + i, chips.get(i));
                     notifyItemInserted(position);
                 }
             }
@@ -75,22 +73,17 @@ public class AssistantChipAdapter extends RecyclerView.Adapter<AssistantChipView
             @Override
             public void onRemoved(int position, int count) {
                 for (int i = 0; i < count; ++i) {
-                    mChips.remove(position);
                     notifyItemRemoved(position);
                 }
             }
 
             @Override
             public void onMoved(int fromPosition, int toPosition) {
-                Collections.swap(mChips, fromPosition, toPosition);
                 notifyItemMoved(fromPosition, toPosition);
             }
 
             @Override
             public void onChanged(int position, int count, @Nullable Object payload) {
-                assert payload instanceof AssistantChip;
-                AssistantChip newChip = (AssistantChip) payload;
-                mChips.set(position, newChip);
                 notifyItemChanged(position);
             }
         });

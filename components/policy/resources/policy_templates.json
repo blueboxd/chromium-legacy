@@ -738,6 +738,7 @@
         'SafeBrowsingExtendedReportingEnabled',
         'SafeBrowsingProtectionLevel',
         'SafeBrowsingWhitelistDomains',
+        'SafeBrowsingAllowlistDomains',
         'PasswordProtectionWarningTrigger',
         'PasswordProtectionLoginURLs',
         'PasswordProtectionChangePasswordURL',
@@ -16302,12 +16303,42 @@
         'items': { 'type': 'string' },
       },
       'supported_on': ['chrome.*:68-', 'chrome_os:68-'],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
       },
       'example_value': ['mydomain.com', 'myuniversity.edu'],
       'id': 422,
+      'caption': '''Configure the list of domains on which Safe Browsing will not trigger warnings.''',
+      'tags': [],
+      'desc': '''This policy is deprecated, please use <ph name="SAFE_BROWSING_ALLOWLIST_DOMAINS_POLICY_NAME">SafeBrowsingAllowlistDomains</ph> instead.
+
+      Configure the list of domains which Safe Browsing will trust. This means:
+      Safe Browsing will not check for dangerous resources (e.g. phishing, malware, or unwanted software) if their URLs match these domains.
+      Safe Browsing's download protection service will not check downloads hosted on these domains.
+      Safe Browsing's password protection service will not check for password reuse if the page URL matches these domains.
+
+      If this setting is enabled, then Safe Browsing will trust these domains.
+      If this setting is disabled or not set, then default Safe Browsing protection is applied to all resources.
+
+      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain. or Windows 10 Pro or Enterprise instances that enrolled for device management and macOS instances that are that are managed via MDM or joined to a domain via MCX.''',
+    },
+    {
+      'name': 'SafeBrowsingAllowlistDomains',
+      'owners': ['bdea@chromium.org', 'nparker@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome.*:86-', 'chrome_os:86-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['mydomain.com', 'myuniversity.edu'],
+      'id': 732,
       'caption': '''Configure the list of domains on which Safe Browsing will not trigger warnings.''',
       'tags': [],
       'desc': '''Configure the list of domains which Safe Browsing will trust. This means:
@@ -22475,6 +22506,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'SafeBrowsingExtendedReportingEnabled',
         'SafeBrowsingProtectionLevel',
         'SafeBrowsingWhitelistDomains',
+        'SafeBrowsingAllowlistDomains',
       ],
     },
     {
@@ -22661,6 +22693,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 731,
+  'highest_id_currently_used': 732,
   'highest_atomic_group_id_currently_used': 38
 }

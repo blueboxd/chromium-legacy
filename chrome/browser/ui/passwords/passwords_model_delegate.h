@@ -111,10 +111,10 @@ class PasswordsModelDelegate {
   virtual void SavePassword(const base::string16& username,
                             const base::string16& password) = 0;
 
-  // Called when the user chooses to save locally the unsynced credentials
-  // deleted from the account store on signout (the ones returned by
-  // GetUnsyncedCredentials()).
-  virtual void SaveUnsyncedCredentialsInProfileStore() = 0;
+  // Called when the user chooses to save locally some of the unsynced
+  // credentials that were deleted from the account store on signout.
+  virtual void SaveUnsyncedCredentialsInProfileStore(
+      const std::vector<autofill::PasswordForm>& selected_credentials) = 0;
 
   // Called when the user chooses not to save locally the unsynced credentials
   // deleted from the account store on signout (the ones returned by

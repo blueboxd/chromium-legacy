@@ -64,7 +64,6 @@ java_strings_grd("weblayer_strings_grd") {
 java_cpp_enum("generated_enums") {
   sources = [
     "//weblayer/browser/controls_visibility_reason.h",
-    "//weblayer/browser/translate_utils.h",
     "//weblayer/public/download.h",
     "//weblayer/public/navigation.h",
     "//weblayer/public/new_tab_delegate.h",
@@ -184,6 +183,7 @@ android_library("java") {
     "//components/security_interstitials/content/android:java",
     "//components/signin/core/browser:signin_enums_java",
     "//components/spellcheck/browser/android:java",
+    "//components/translate/content/android:translate_android_enums_java",
     "//components/url_formatter/android:url_formatter_java",
     "//components/variations/android:variations_java",
     "//components/version_info/android:version_constants_java",

@@ -17,7 +17,7 @@
 #include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/translate/android/translate_utils.h"
+#include "components/translate/content/android/translate_utils.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_context.h"
@@ -60,11 +60,11 @@ ScopedJavaLocalRef<jobject> TranslateCompactInfoBar::CreateRenderInfoBar(
   translate::TranslateInfoBarDelegate* delegate = GetDelegate();
 
   base::android::ScopedJavaLocalRef<jobjectArray> java_languages =
-      TranslateUtils::GetJavaLanguages(env, delegate);
+      translate::TranslateUtils::GetJavaLanguages(env, delegate);
   base::android::ScopedJavaLocalRef<jobjectArray> java_codes =
-      TranslateUtils::GetJavaLanguageCodes(env, delegate);
+      translate::TranslateUtils::GetJavaLanguageCodes(env, delegate);
   base::android::ScopedJavaLocalRef<jintArray> java_hash_codes =
-      TranslateUtils::GetJavaLanguageHashCodes(env, delegate);
+      translate::TranslateUtils::GetJavaLanguageHashCodes(env, delegate);
 
   ScopedJavaLocalRef<jstring> source_language_code =
       base::android::ConvertUTF8ToJavaString(
@@ -122,12 +122,12 @@ void TranslateCompactInfoBar::ApplyStringTranslateOption(
     int option,
     const JavaParamRef<jstring>& value) {
   translate::TranslateInfoBarDelegate* delegate = GetDelegate();
-  if (option == TranslateUtils::OPTION_SOURCE_CODE) {
+  if (option == translate::TranslateUtils::OPTION_SOURCE_CODE) {
     std::string source_code =
         base::android::ConvertJavaStringToUTF8(env, value);
     if (delegate->original_language_code().compare(source_code) != 0)
       delegate->UpdateOriginalLanguage(source_code);
-  } else if (option == TranslateUtils::OPTION_TARGET_CODE) {
+  } else if (option == translate::TranslateUtils::OPTION_TARGET_CODE) {
     std::string target_code =
         base::android::ConvertJavaStringToUTF8(env, value);
     if (delegate->target_language_code().compare(target_code) != 0)
@@ -143,18 +143,18 @@ void TranslateCompactInfoBar::ApplyBoolTranslateOption(
     int option,
     jboolean value) {
   translate::TranslateInfoBarDelegate* delegate = GetDelegate();
-  if (option == TranslateUtils::OPTION_ALWAYS_TRANSLATE) {
+  if (option == translate::TranslateUtils::OPTION_ALWAYS_TRANSLATE) {
     if (delegate->ShouldAlwaysTranslate() != value) {
       action_flags_ |= FLAG_ALWAYS_TRANSLATE;
       delegate->ToggleAlwaysTranslate();
     }
-  } else if (option == TranslateUtils::OPTION_NEVER_TRANSLATE) {
+  } else if (option == translate::TranslateUtils::OPTION_NEVER_TRANSLATE) {
     if (value && delegate->IsTranslatableLanguageByPrefs()) {
       action_flags_ |= FLAG_NEVER_LANGUAGE;
       delegate->ToggleTranslatableLanguageByPrefs();
       RemoveSelf();
     }
-  } else if (option == TranslateUtils::OPTION_NEVER_TRANSLATE_SITE) {
+  } else if (option == translate::TranslateUtils::OPTION_NEVER_TRANSLATE_SITE) {
     if (value && !delegate->IsSiteBlacklisted()) {
       action_flags_ |= FLAG_NEVER_SITE;
       delegate->ToggleSiteBlacklist();

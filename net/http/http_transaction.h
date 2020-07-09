@@ -43,7 +43,6 @@ class NET_EXPORT_PRIVATE HttpTransaction {
   //
   // This can be called multiple times for a single transaction, in the case of
   // retries, auth challenges, and split range requests.
-  // TODO(crbug.com/986744): Verify range request behavior with tests.
   //
   // The callee can call GetRemoteEndpoint() on the caller transaction to
   // determine where the latest connection terminates.

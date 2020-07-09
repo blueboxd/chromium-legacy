@@ -72,13 +72,13 @@
 
 using net::test::IsError;
 using net::test::IsOk;
-using testing::Gt;
 using testing::AllOf;
+using testing::ByRef;
 using testing::Contains;
 using testing::Eq;
 using testing::Field;
-using testing::Contains;
-using testing::ByRef;
+using testing::Gt;
+using testing::NotNull;
 
 using base::Time;
 
@@ -817,6 +817,95 @@ TEST_F(HttpCacheTest, SimpleGET) {
   EXPECT_EQ(0, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
   TestLoadTimingNetworkRequest(load_timing_info);
+}
+
+// This test verifies that the callback passed to SetConnectedCallback() is
+// called once for simple GET calls that traverse the cache.
+TEST_F(HttpCacheTest, SimpleGET_ConnectedCallback) {
+  MockHttpCache cache;
+
+  ConnectedHandler connected_handler;
+
+  MockHttpRequest request(kSimpleGET_Transaction);
+
+  std::unique_ptr<HttpTransaction> transaction;
+  EXPECT_THAT(cache.CreateTransaction(&transaction), IsOk());
+  ASSERT_THAT(transaction, NotNull());
+
+  transaction->SetConnectedCallback(connected_handler.Callback());
+
+  TestCompletionCallback callback;
+  ASSERT_THAT(
+      transaction->Start(&request, callback.callback(), NetLogWithSource()),
+      IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+  EXPECT_EQ(1, connected_handler.call_count());
+}
+
+// This test verifies that when the callback passed to SetConnectedCallback()
+// returns an error, the transaction fails with that error.
+TEST_F(HttpCacheTest, SimpleGET_ConnectedCallbackReturnError) {
+  MockHttpCache cache;
+
+  ConnectedHandler connected_handler;
+  // The exact error code does not matter. We only care that it is passed to
+  // the transaction's completion callback unmodified.
+  connected_handler.set_result(ERR_NOT_IMPLEMENTED);
+
+  MockHttpRequest request(kSimpleGET_Transaction);
+
+  std::unique_ptr<HttpTransaction> transaction;
+  EXPECT_THAT(cache.CreateTransaction(&transaction), IsOk());
+  ASSERT_THAT(transaction, NotNull());
+
+  transaction->SetConnectedCallback(connected_handler.Callback());
+
+  TestCompletionCallback callback;
+  ASSERT_THAT(
+      transaction->Start(&request, callback.callback(), NetLogWithSource()),
+      IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_NOT_IMPLEMENTED));
+}
+
+// This test verifies that the callback passed to SetConnectedCallback() is
+// called once for requests that hit the cache.
+// TODO(crbug.com/986744): This is not yet the case, but this test serves to
+// document the intent.
+TEST_F(HttpCacheTest, SimpleGET_ConnectedCallbackOnCacheHit) {
+  MockHttpCache cache;
+
+  // Populate the cache.
+  RunTransactionTest(cache.http_cache(), kSimpleGET_Transaction);
+
+  // Establish a baseline.
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+
+  // Load from the cache (only), observe the callback being called.
+
+  ConnectedHandler connected_handler;
+
+  MockHttpRequest request(kSimpleGET_Transaction);
+
+  std::unique_ptr<HttpTransaction> transaction;
+  EXPECT_THAT(cache.CreateTransaction(&transaction), IsOk());
+  ASSERT_THAT(transaction, NotNull());
+
+  transaction->SetConnectedCallback(connected_handler.Callback());
+
+  TestCompletionCallback callback;
+  ASSERT_THAT(
+      transaction->Start(&request, callback.callback(), NetLogWithSource()),
+      IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+  // Still only 1 transaction for the previous request. The connected callback
+  // was not called by a second network transaction.
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+
+  // TODO(crbug.com/986744): Expect 1 call once HttpCache::Transaction is
+  // modified to call the callback on cache hits.
+  EXPECT_EQ(0, connected_handler.call_count());
 }
 
 class HttpCacheTest_SplitCacheFeature
@@ -1911,6 +2000,114 @@ TEST_F(HttpCacheTest, RangeGET_FullAfterPartialReuse) {
     EXPECT_EQ(3, cache.network_layer()->transaction_count());
     EXPECT_EQ(2, cache.disk_cache()->open_count());
     EXPECT_EQ(1, cache.disk_cache()->create_count());
+  }
+}
+
+// This test verifies that the ConnectedCallback passed to a cache transaction
+// is called once per subrange in the case of a range request with a partial
+// cache hit.
+TEST_F(HttpCacheTest, RangeGET_ConnectedCallbackCalledForEachRange) {
+  MockHttpCache cache;
+
+  // Request an infix range and populate the cache with it.
+  {
+    ScopedMockTransaction mock_transaction(kRangeGET_TransactionOK);
+    mock_transaction.request_headers = "Range: bytes = 20-29\r\n" EXTRA_HEADER;
+    mock_transaction.data = "rg: 20-29 ";
+
+    RunTransactionTest(cache.http_cache(), mock_transaction);
+  }
+
+  // Request a surrounding range and observe that the callback is called once
+  // per subrange, as split up by cache hits.
+  {
+    ScopedMockTransaction mock_transaction(kRangeGET_TransactionOK);
+    mock_transaction.request_headers = "Range: bytes = 10-39\r\n" EXTRA_HEADER;
+    mock_transaction.data = "rg: 10-19 rg: 20-29 rg: 30-39 ";
+    MockHttpRequest request(mock_transaction);
+
+    ConnectedHandler connected_handler;
+
+    std::unique_ptr<HttpTransaction> transaction;
+    EXPECT_THAT(cache.CreateTransaction(&transaction), IsOk());
+    ASSERT_THAT(transaction, NotNull());
+
+    transaction->SetConnectedCallback(connected_handler.Callback());
+
+    TestCompletionCallback callback;
+    ASSERT_THAT(
+        transaction->Start(&request, callback.callback(), NetLogWithSource()),
+        IsError(ERR_IO_PENDING));
+    EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+    // 1 call for the first range's network transaction.
+    EXPECT_EQ(1, connected_handler.call_count());
+
+    ReadAndVerifyTransaction(transaction.get(), mock_transaction);
+
+    // A second call for the last range's network transaction.
+    // TODO(crbug.com/986744): Expect 3 calls once the callback is notified on
+    // cache hits as well as network connections.
+    EXPECT_EQ(2, connected_handler.call_count());
+  }
+}
+
+// This test verifies that when the ConnectedCallback passed to a cache
+// transaction returns an error for the second (or third) subrange transaction,
+// the overall cache transaction fails with that error.
+TEST_F(HttpCacheTest, RangeGET_ConnectedCallbackReturnErrorSecondTime) {
+  MockHttpCache cache;
+
+  // Request an infix range and populate the cache with it.
+  {
+    ScopedMockTransaction mock_transaction(kRangeGET_TransactionOK);
+    mock_transaction.request_headers = "Range: bytes = 20-29\r\n" EXTRA_HEADER;
+    mock_transaction.data = "rg: 20-29 ";
+
+    RunTransactionTest(cache.http_cache(), mock_transaction);
+  }
+
+  // Request a surrounding range. This results in three transactions:
+  //
+  // 1. for the prefix, from the network
+  // 2. for the cached infix, from the cache
+  // 3. for the suffix, from the network
+  //
+  // The connected callback returns OK for 1), but fails after that.
+  {
+    ScopedMockTransaction mock_transaction(kRangeGET_TransactionOK);
+    mock_transaction.request_headers = "Range: bytes = 10-39\r\n" EXTRA_HEADER;
+    mock_transaction.data = "rg: 10-19 rg: 20-29 rg: 30-39 ";
+    MockHttpRequest request(mock_transaction);
+
+    ConnectedHandler connected_handler;
+
+    std::unique_ptr<HttpTransaction> transaction;
+    EXPECT_THAT(cache.CreateTransaction(&transaction), IsOk());
+    ASSERT_THAT(transaction, NotNull());
+
+    transaction->SetConnectedCallback(connected_handler.Callback());
+
+    TestCompletionCallback callback;
+    ASSERT_THAT(
+        transaction->Start(&request, callback.callback(), NetLogWithSource()),
+        IsError(ERR_IO_PENDING));
+    EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+    // 1 call for the first range's network transaction.
+    EXPECT_EQ(1, connected_handler.call_count());
+
+    // Set the callback to return an error the next time it is called. The exact
+    // error code is irrelevant, what matters is that it is reflected in the
+    // overall status of the transaction.
+    connected_handler.set_result(ERR_NOT_IMPLEMENTED);
+
+    std::string content;
+    EXPECT_THAT(ReadTransaction(transaction.get(), &content),
+                IsError(ERR_NOT_IMPLEMENTED));
+
+    // A second call that failed.
+    EXPECT_EQ(2, connected_handler.call_count());
   }
 }
 

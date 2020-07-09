@@ -6,6 +6,7 @@
 
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/network_utils.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_response.h"
@@ -19,26 +20,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/script_cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/loader/fetch/url_loader/worker_main_script_loader_client.h"
-
-namespace {
-
-// TODO(minggang): Move this to a common place where we could share it outside
-// the Blink.
-// Returns true if the headers indicate that this resource should
-// always be revalidated or not cached.
-bool AlwaysAccessNetwork(
-    const scoped_refptr<net::HttpResponseHeaders>& headers) {
-  if (!headers)
-    return false;
-
-  // RFC 2616, section 14.9.
-  return headers->HasHeaderValue("cache-control", "no-cache") ||
-         headers->HasHeaderValue("cache-control", "no-store") ||
-         headers->HasHeaderValue("pragma", "no-cache") ||
-         headers->HasHeaderValue("vary", "*");
-}
-
-}  // namespace
 
 namespace blink {
 

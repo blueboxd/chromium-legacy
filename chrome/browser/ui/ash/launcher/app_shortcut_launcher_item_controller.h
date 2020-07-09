@@ -44,8 +44,11 @@ class AppShortcutLauncherItemController : public ash::ShelfItemDelegate,
   void ItemSelected(std::unique_ptr<ui::Event> event,
                     int64_t display_id,
                     ash::ShelfLaunchSource source,
-                    ItemSelectedCallback callback) override;
-  AppMenuItems GetAppMenuItems(int event_flags) override;
+                    ItemSelectedCallback callback,
+                    const ItemFilterPredicate& filter_predicate) override;
+  AppMenuItems GetAppMenuItems(
+      int event_flags,
+      const ItemFilterPredicate& filter_predicate) override;
   void GetContextMenu(int64_t display_id,
                       GetContextMenuCallback callback) override;
   void ExecuteCommand(bool from_context_menu,
@@ -69,13 +72,20 @@ class AppShortcutLauncherItemController : public ash::ShelfItemDelegate,
   // BrowserListObserver:
   void OnBrowserClosing(Browser* browser) override;
 
-  std::vector<content::WebContents*> GetAppWebContents();
-  std::vector<Browser*> GetAppBrowsers();
+  // |filter_predicate| is used to filter out the app webcontents and app
+  // browsers results based on their corresponding windows.
+  std::vector<content::WebContents*> GetAppWebContents(
+      const ItemFilterPredicate& filter_predicate);
+  std::vector<Browser*> GetAppBrowsers(
+      const ItemFilterPredicate& filter_predicate);
 
   // If an owned item is already active, this function advances to the next item
   // (or bounce the browser if there is only one item) and returns a shelf
   // action. Otherwise, it returns nullopt.
-  base::Optional<ash::ShelfAction> AdvanceToNextApp();
+  // |filter_predicate| is used to filter out unwanted options to advance to
+  // based on their corresponding windows.
+  base::Optional<ash::ShelfAction> AdvanceToNextApp(
+      const ItemFilterPredicate& filter_predicate);
 
   // Returns true if the application is a V2 app.
   bool IsV2App();

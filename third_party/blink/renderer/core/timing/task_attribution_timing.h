@@ -20,9 +20,9 @@ class TaskAttributionTiming final : public PerformanceEntry {
   PerformanceEntryType EntryTypeEnum() const override;
 
   AtomicString containerType() const;
-  String containerSrc() const;
-  String containerId() const;
-  String containerName() const;
+  AtomicString containerSrc() const;
+  AtomicString containerId() const;
+  AtomicString containerName() const;
 
   void Trace(Visitor*) const override;
 
@@ -37,10 +37,9 @@ class TaskAttributionTiming final : public PerformanceEntry {
   void BuildJSONValue(V8ObjectBuilder&) const override;
 
   AtomicString container_type_;
-  // TODO(crbug.com/1030396): change the members below to AtomicString.
-  String container_src_;
-  String container_id_;
-  String container_name_;
+  AtomicString container_src_;
+  AtomicString container_id_;
+  AtomicString container_name_;
 };
 
 }  // namespace blink

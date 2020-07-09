@@ -26,6 +26,7 @@
 #include "chromeos/services/assistant/public/cpp/assistant_notification.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/cpp/device_actions.h"
+#include "chromeos/services/assistant/public/shared/utils.h"
 #include "libassistant/shared/internal_api/assistant_manager_delegate.h"
 #include "libassistant/shared/public/conversation_state_listener.h"
 #include "libassistant/shared/public/device_state_listener.h"
@@ -173,11 +174,10 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   void OnShowText(const std::string& text) override;
   void OnOpenUrl(const std::string& url, bool in_background) override;
   void OnShowNotification(const action::Notification& notification) override;
-  void OnOpenAndroidApp(const action::AndroidAppInfo& action_app_info,
-                        const action::InteractionInfo& interaction) override;
-  void OnVerifyAndroidApp(
-      const std::vector<action::AndroidAppInfo>& action_apps_info,
-      const action::InteractionInfo& interaction) override;
+  void OnOpenAndroidApp(const AndroidAppInfo& app_info,
+                        const InteractionInfo& interaction) override;
+  void OnVerifyAndroidApp(const std::vector<AndroidAppInfo>& apps_info,
+                          const InteractionInfo& interaction) override;
   void OnModifyDeviceSetting(
       const ::assistant::api::client_op::ModifySettingArgs& args) override;
   void OnGetDeviceSettings(
@@ -263,9 +263,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
 
   void OnAlarmTimerStateChanged();
   void OnModifySettingsAction(const std::string& modify_setting_args_proto);
-  void OnOpenMediaAndroidIntent(const std::string play_media_args_proto,
-                                action::AndroidAppInfo* action_app_info);
-  void OnPlayMedia(const std::string play_media_args_proto);
+  void OnOpenMediaAndroidIntent(const std::string& play_media_args_proto,
+                                AndroidAppInfo* app_info);
+  void OnPlayMedia(const std::string& play_media_args_proto);
   void OnMediaControlAction(const std::string& action_name,
                             const std::string& media_action_args_proto);
 

@@ -63,7 +63,6 @@ class NetErrorHelper
 
   // NetErrorPageController::Delegate implementation
   void ButtonPressed(NetErrorHelperCore::Button button) override;
-  void TrackClick(int tracking_id) override;
   void LaunchOfflineItem(const std::string& id,
                          const std::string& name_space) override;
   void LaunchDownloadsPage() override;
@@ -133,8 +132,6 @@ class NetErrorHelper
       const GURL& navigation_correction_url,
       const std::string& navigation_correction_request_body) override;
   void CancelFetchNavigationCorrections() override;
-  void SendTrackingRequest(const GURL& tracking_url,
-                           const std::string& tracking_request_body) override;
   void ReloadFrame() override;
   void DiagnoseError(const GURL& page_url) override;
   void DownloadPageLater() override;
@@ -158,8 +155,6 @@ class NetErrorHelper
   void OnNavigationCorrectionsFetched(
       std::unique_ptr<std::string> response_body);
 
-  void OnTrackingRequestComplete(std::unique_ptr<std::string> response_body);
-
   void OnNetworkDiagnosticsClientRequest(
       mojo::PendingAssociatedReceiver<chrome::mojom::NetworkDiagnosticsClient>
           receiver);
@@ -179,7 +174,6 @@ class NetErrorHelper
                                    const GURL& search_url) override;
 
   std::unique_ptr<network::SimpleURLLoader> correction_loader_;
-  std::unique_ptr<network::SimpleURLLoader> tracking_loader_;
 
   std::unique_ptr<NetErrorHelperCore> core_;
 

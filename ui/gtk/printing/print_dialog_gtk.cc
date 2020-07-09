@@ -389,7 +389,7 @@ void PrintDialogGtk::PrintDocument(const printing::MetafilePlayer& metafile,
     success = metafile.SaveTo(&file);
     file.Close();
     if (!success)
-      base::DeleteFile(path_to_pdf_, false);
+      base::DeleteFile(path_to_pdf_);
   }
 
   if (!success) {

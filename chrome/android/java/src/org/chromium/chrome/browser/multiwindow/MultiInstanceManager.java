@@ -20,7 +20,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ActivityState;
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
 import org.chromium.base.metrics.RecordUserAction;
@@ -86,7 +85,6 @@ public class MultiInstanceManager
     private boolean mShouldMergeOnConfigurationChange;
     private boolean mIsRecreating;
     private int mDisplayId;
-    private static List<Integer> sTestDisplayIds;
 
     /**
      * Create a new {@link MultiInstanceManager}.
@@ -222,13 +220,7 @@ public class MultiInstanceManager
 
             @Override
             public void onDisplayChanged(int displayId) {
-                if (displayId == mDisplayId) return;
-                List<Integer> ids = sTestDisplayIds != null
-                        ? sTestDisplayIds
-                        : ApiCompatibilityUtils.getTargetableDisplayIds(mActivity);
-                if (ids.size() == 1 && ids.get(0).equals(mDisplayId)) {
-                    maybeMergeTabs();
-                }
+                // TODO(crbug.com/824954): try to merge tabs sharing logic w/ onDisplayRemoved
             }
         };
         displayManager.registerDisplayListener(mDisplayListener, null);
@@ -440,10 +432,5 @@ public class MultiInstanceManager
     @VisibleForTesting
     public DisplayManager.DisplayListener getDisplayListenerForTesting() {
         return mDisplayListener;
-    }
-
-    @VisibleForTesting
-    public static void setTestDisplayIds(List<Integer> testDisplayIds) {
-        sTestDisplayIds = testDisplayIds;
     }
 }

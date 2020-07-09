@@ -19,7 +19,6 @@
 #include "build/build_config.h"
 #include "chrome/test/chromedriver/chrome/browser_info.h"
 #include "chrome/test/chromedriver/chrome/cast_tracker.h"
-#include "chrome/test/chromedriver/chrome/debugger_tracker.h"
 #include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
 #include "chrome/test/chromedriver/chrome/dom_tracker.h"
 #include "chrome/test/chromedriver/chrome/download_directory_override_manager.h"
@@ -177,8 +176,7 @@ WebViewImpl::WebViewImpl(const std::string& id,
           new GeolocationOverrideManager(client_.get())),
       network_conditions_override_manager_(
           new NetworkConditionsOverrideManager(client_.get())),
-      heap_snapshot_taker_(new HeapSnapshotTaker(client_.get())),
-      debugger_(new DebuggerTracker(client_.get())) {
+      heap_snapshot_taker_(new HeapSnapshotTaker(client_.get())) {
   // Downloading in headless mode requires the setting of
   // Browser.setDownloadBehavior. This is handled by the
   // DownloadDirectoryOverrideManager, which is only instantiated

@@ -27,7 +27,7 @@ using api::feedback_private::LogSource;
 using system_logs::SystemLogsResponse;
 using system_logs::SystemLogsSource;
 
-// A fake MAC address used to test anonymization.
+// A fake MAC address used to test redaction.
 const char kDummyMacAddress[] = "11:22:33:44:55:66";
 
 std::unique_ptr<KeyedService> ApiResourceManagerTestFactory(

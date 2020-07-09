@@ -58,7 +58,7 @@ def _Key4(s):
   return s.section, s.full_name
 
 
-def _MatchSymbols(before, after, key_func, padding_by_section_name):
+def _MatchSymbols(before, after, key_func, padding_by_segment):
   logging.debug('%s: Building symbol index', key_func.__name__)
   before_symbols_by_key = collections.defaultdict(list)
   for s in before:
@@ -74,8 +74,9 @@ def _MatchSymbols(before, after, key_func, padding_by_section_name):
       before_sym = before_sym.pop(0)
       # Padding tracked in aggregate, except for padding-only symbols.
       if before_sym.size_without_padding != 0:
-        padding_by_section_name[before_sym.section_name] += (
-            after_sym.padding_pss - before_sym.padding_pss)
+        segment = (before_sym.container_name, before_sym.section_name)
+        padding_by_segment[segment] += (after_sym.padding_pss -
+                                        before_sym.padding_pss)
       delta_symbols.append(models.DeltaSymbol(before_sym, after_sym))
     else:
       unmatched_after.append(after_sym)
@@ -89,20 +90,19 @@ def _MatchSymbols(before, after, key_func, padding_by_section_name):
   return delta_symbols, unmatched_before, unmatched_after
 
 
-def _DiffSymbolGroups(before, after):
+def _DiffSymbolGroups(containers, before, after):
   # For changed symbols, padding is zeroed out. In order to not lose the
-  # information entirely, store it in aggregate.
-  # Ignoring Containers, i.e., paddings from sections across Containers are
-  # combined.
-  padding_by_section_name = collections.defaultdict(int)
+  # information entirely, store it in aggregate. These aggregations are grouped
+  # by "segment names", which are (container name, section name) tuples.
+  padding_by_segment = collections.defaultdict(float)
 
   # Usually >90% of symbols are exact matches, so all of the time is spent in
   # this first pass.
   all_deltas, before, after = _MatchSymbols(before, after, _Key1,
-                                            padding_by_section_name)
+                                            padding_by_segment)
   for key_func in (_Key2, _Key3, _Key4):
-    delta_syms, before, after = _MatchSymbols(
-        before, after, key_func, padding_by_section_name)
+    delta_syms, before, after = _MatchSymbols(before, after, key_func,
+                                              padding_by_segment)
     all_deltas.extend(delta_syms)
 
   logging.debug('Creating %d unmatched symbols', len(after) + len(before))
@@ -111,10 +111,13 @@ def _DiffSymbolGroups(before, after):
   for before_sym in before:
     all_deltas.append(models.DeltaSymbol(before_sym, None))
 
+  container_from_name = {c.name: c for c in containers}
+
   # Create a DeltaSymbol to represent the zero'd out padding of matched symbols.
-  for section_name, padding in padding_by_section_name.items():
+  for (container_name, section_name), padding in padding_by_segment.items():
     if padding != 0:
       after_sym = models.Symbol(section_name, padding)
+      after_sym.container = container_from_name[container_name]
       # This is after _NormalizeNames() is called, so set |full_name|,
       # |template_name|, and |name|.
       after_sym.SetName("Overhead: aggregate padding of diff'ed symbols")
@@ -179,7 +182,8 @@ def Diff(before, after, sort=False):
   assert isinstance(before, models.SizeInfo)
   assert isinstance(after, models.SizeInfo)
   containers_diff = _DiffContainerLists(before.containers, after.containers)
-  symbol_diff = _DiffSymbolGroups(before.raw_symbols, after.raw_symbols)
+  symbol_diff = _DiffSymbolGroups(containers_diff, before.raw_symbols,
+                                  after.raw_symbols)
   ret = models.DeltaSizeInfo(before, after, containers_diff, symbol_diff)
 
   if sort:

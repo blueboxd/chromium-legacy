@@ -562,8 +562,10 @@ interface FileSystemDirectoryHandle : FileSystemHandle
     attribute @@toStringTag
     method constructor
     method getDirectory
+    method getDirectoryHandle
     method getEntries
     method getFile
+    method getFileHandle
     method removeEntry
     method resolve
 interface FileSystemFileHandle : FileSystemHandle

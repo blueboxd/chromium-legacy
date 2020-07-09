@@ -229,7 +229,8 @@ class ShelfItemSelectionTracker : public ShelfItemDelegate {
   void ItemSelected(std::unique_ptr<ui::Event> event,
                     int64_t display_id,
                     ShelfLaunchSource source,
-                    ItemSelectedCallback callback) override {
+                    ItemSelectedCallback callback,
+                    const ItemFilterPredicate& filter_predicate) override {
     item_selected_count_++;
     std::move(callback).Run(item_selected_action_, {});
   }
@@ -2249,7 +2250,8 @@ class ListMenuShelfItemDelegate : public ShelfItemDelegate {
   void ItemSelected(std::unique_ptr<ui::Event> event,
                     int64_t display_id,
                     ShelfLaunchSource source,
-                    ItemSelectedCallback callback) override {
+                    ItemSelectedCallback callback,
+                    const ItemFilterPredicate& filter_predicate) override {
     // Two items are needed to show a menu; the data in the items is not tested.
     std::move(callback).Run(SHELF_ACTION_NONE, {{}, {}});
   }

@@ -186,12 +186,6 @@ Tree link: https://github.com/PolymerElements/paper-tooltip/tree/v2.1.1
 
 Name: polymer
 Repository: https://github.com/Polymer/polymer.git
-Tree: v1.11.2
-Revision: 1dcf3839b3ce058d2d87737674a25ecdd7343f9a
-Tree link: https://github.com/Polymer/polymer/tree/v1.11.2
-
-Name: polymer
-Repository: https://github.com/Polymer/polymer.git
 Tree: v2.7.0
 Revision: 176bc8fb41da317b1b2fa647227e6b1fd47ced11
 Tree link: https://github.com/Polymer/polymer/tree/v2.7.0

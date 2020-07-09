@@ -48,6 +48,10 @@ class APP_MENU_EXPORT AppMenuModelAdapter : public views::MenuModelAdapter {
   // Closes the menu if one is being shown.
   void Cancel();
 
+  // Gives subclasses a chance to map |command_id| to a certain range to avoid
+  // conflicts with other command IDs. See app_menu_constants.h.
+  virtual int GetCommandIdForHistograms(int command_id);
+
   base::TimeTicks GetClosingEventTime();
 
   // Overridden from views::MenuModelAdapter:

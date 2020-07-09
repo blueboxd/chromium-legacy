@@ -7,8 +7,43 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("mojom") {
   sources = [
     "lacros.mojom",
+    "screen_manager.mojom",
     "select_file.mojom",
   ]
 
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "lacros.mojom.WindowSnapshot"
+          cpp = "lacros::WindowSnapshot"
+        },
+      ]
+      traits_headers =
+          [ "//chromeos/lacros/mojom/window_snapshot_mojom_traits.h" ]
+      traits_public_deps = [
+        ":mojom_traits",
+        "//chromeos/lacros/cpp",
+      ]
+    },
+  ]
+
   public_deps = [ "//mojo/public/mojom/base" ]
+}
+
+component("mojom_traits") {
+  output_name = "lacros_mojom_traits"
+
+  sources = [
+    "window_snapshot_mojom_traits.cc",
+    "window_snapshot_mojom_traits.h",
+  ]
+
+  defines = [ "IS_LACROS_MOJOM_TRAITS_IMPL" ]
+
+  public_deps = [
+    ":mojom_shared",
+    "//chromeos/lacros/cpp",
+    "//mojo/public/cpp/base:shared_typemap_traits",
+  ]
 }

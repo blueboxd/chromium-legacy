@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
+#include "build/build_config.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_filter.h"
 #include "cc/paint/paint_op_writer.h"
@@ -71,7 +72,7 @@ class CC_PAINT_EXPORT PaintOpReader {
   void Read(sk_sp<SkColorSpace>* color_space);
   void Read(SkYUVColorSpace* yuv_color_space);
 
-#ifndef OS_ANDROID
+#if !defined(OS_ANDROID)
   void Read(scoped_refptr<SkottieWrapper>* skottie);
 #endif
 

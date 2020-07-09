@@ -18520,6 +18520,9 @@ Called by update_document_policy_enum.py.-->
 </enum>
 
 <enum name="DumpWithoutCrashingResult">
+  <obsolete>
+    Obsolete July 2020.
+  </obsolete>
   <int value="0" label="Failure from Crashpad"/>
   <int value="1" label="Success from Crashpad"/>
   <int value="2" label="Failure from Breakpad"/>
@@ -39778,6 +39781,7 @@ from previous Chrome versions.
   <int value="-1835608319" label="EnableHeuristicPalmDetectionFilter:disabled"/>
   <int value="-1834841895" label="CrostiniWebUIUpgrader:enabled"/>
   <int value="-1834536026" label="AppServiceIntentHandling:enabled"/>
+  <int value="-1834151268" label="OmniboxDynamicMaxAutocomplete:disabled"/>
   <int value="-1833149810" label="enable-accessibility-tab-switcher"/>
   <int value="-1832575380" label="show-saved-copy"/>
   <int value="-1832221649" label="disable-out-of-process-pac"/>
@@ -40496,6 +40500,7 @@ from previous Chrome versions.
       label="ContextMenuSearchAndShopWithGoogleLens:enabled"/>
   <int value="-1078093206" label="ash-debug-shortcuts"/>
   <int value="-1077752943" label="enable-password-generation"/>
+  <int value="-1077534880" label="OmniboxDynamicMaxAutocomplete:enabled"/>
   <int value="-1075156797" label="enable-brotli"/>
   <int value="-1075089382" label="enable-physical-web"/>
   <int value="-1074257709" label="ScalableAppList:enabled"/>

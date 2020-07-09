@@ -5,7 +5,7 @@
 import './elements/viewer-error-screen.js';
 import './elements/viewer-password-screen.js';
 import './elements/viewer-pdf-toolbar.js';
-import './elements/viewer-pdf-toolbar-new.js';
+import './elements/viewer-zoom-toolbar.js';
 import './elements/shared-vars.js';
 // <if expr="chromeos">
 import './elements/viewer-ink-host.js';
@@ -15,12 +15,16 @@ import './pdf_viewer_shared_style.js';
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {hasKeyModifiers, isRTL} from 'chrome://resources/js/util.m.js';
+import {hasKeyModifiers} from 'chrome://resources/js/util.m.js';
 import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Bookmark} from './bookmark_type.js';
 import {BrowserApi} from './browser_api.js';
 import {FittingType, SaveRequestType, TwoUpViewAction} from './constants.js';
+import {ViewerPdfToolbarNewElement} from './elements/viewer-pdf-toolbar-new.js';
+// <if expr="chromeos">
+import {InkController} from './ink_controller.js';
+//</if>
 import {PDFMetrics} from './metrics.js';
 import {NavigatorDelegate, PdfNavigator} from './navigator.js';
 import {OpenPdfParamsParser} from './open_pdf_params_parser.js';
@@ -29,10 +33,6 @@ import {PDFViewerBaseElement} from './pdf_viewer_base.js';
 import {DestinationMessageData, DocumentDimensionsMessageData, shouldIgnoreKeyEvents} from './pdf_viewer_utils.js';
 import {ToolbarManager} from './toolbar_manager.js';
 import {Point} from './viewport.js';
-
-// <if expr="chromeos">
-import {InkController} from './ink_controller.js';
-// </if>
 
 
 /**
@@ -268,6 +268,15 @@ class PDFViewerElement extends PDFViewerBaseElement {
   }
 
   /**
+   * @return {!ViewerPdfToolbarNewElement}
+   * @private
+   */
+  getToolbarNew_() {
+    assert(this.pdfViewerUpdateEnabled_);
+    return /** @type {!ViewerPdfToolbarNewElement} */ (this.$$('#toolbar'));
+  }
+
+  /**
    * @return {!ViewerZoomToolbarElement}
    * @private
    */
@@ -356,7 +365,10 @@ class PDFViewerElement extends PDFViewerBaseElement {
    */
   handleToolbarKeyEvent_(e) {
     if (this.pdfViewerUpdateEnabled_) {
-      // TODO: Add handling for any relevant hotkeys for the new unified
+      if (e.key === '\\' && e.ctrlKey) {
+        this.getToolbarNew_().fitToggle();
+      }
+      // TODO: Add handling for additional relevant hotkeys for the new unified
       // toolbar.
       return;
     }
@@ -515,8 +527,8 @@ class PDFViewerElement extends PDFViewerBaseElement {
       return;
     }
 
-    if (e.detail.fittingType === FittingType.FIT_TO_PAGE ||
-        e.detail.fittingType === FittingType.FIT_TO_HEIGHT) {
+    if (e.detail === FittingType.FIT_TO_PAGE ||
+        e.detail === FittingType.FIT_TO_HEIGHT) {
       this.toolbarManager_.forceHideTopToolbar();
     }
   }
@@ -596,31 +608,9 @@ class PDFViewerElement extends PDFViewerBaseElement {
 
   /** @override */
   updateUIForViewportChange() {
-    // Offset the toolbar position so that it doesn't move if scrollbars appear.
-    const hasScrollbars = this.viewport.documentHasScrollbars();
-    const scrollbarWidth = this.viewport.scrollbarWidth;
-    const verticalScrollbarWidth = hasScrollbars.vertical ? scrollbarWidth : 0;
-    const horizontalScrollbarWidth =
-        hasScrollbars.horizontal ? scrollbarWidth : 0;
-
     if (!this.pdfViewerUpdateEnabled_) {
-      // Shift the zoom toolbar to the left by half a scrollbar width. This
-      // gives a compromise: if there is no scrollbar visible then the toolbar
-      // will be half a scrollbar width further left than the spec but if there
-      // is a scrollbar visible it will be half a scrollbar width further right
-      // than the spec. In RTL layout normally, the zoom toolbar is on the left
-      // left side, but the scrollbar is still on the right, so this is not
-      // necessary.
-      const zoomToolbar = this.getZoomToolbar_();
-      if (!isRTL()) {
-        zoomToolbar.style.right =
-            -verticalScrollbarWidth + (scrollbarWidth / 2) + 'px';
-      }
-      // Having a horizontal scrollbar is much rarer so we don't offset the
-      // toolbar from the bottom any more than what the spec says. This means
-      // that when there is a scrollbar visible, it will be a full scrollbar
-      // width closer to the bottom of the screen than usual, but this is ok.
-      zoomToolbar.style.bottom = -horizontalScrollbarWidth + 'px';
+      this.getZoomToolbar_().shiftForScrollbars(
+          this.viewport.documentHasScrollbars(), this.viewport.scrollbarWidth);
     }
 
     // Update the page indicator.
@@ -724,9 +714,14 @@ class PDFViewerElement extends PDFViewerBaseElement {
   /** @override */
   forceFit(view) {
     if (!this.pdfViewerUpdateEnabled_) {
+      if (view === FittingType.FIT_TO_PAGE ||
+          view === FittingType.FIT_TO_HEIGHT) {
+        this.toolbarManager_.forceHideTopToolbar();
+      }
       this.getZoomToolbar_().forceFit(view);
+    } else {
+      this.getToolbarNew_().forceFit(view);
     }
-    // TODO: Add handling for the case where the new toolbar is enabled.
   }
 
   /** @override */

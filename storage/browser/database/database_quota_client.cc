@@ -23,6 +23,7 @@
 #include "storage/browser/quota/quota_client_type.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
+#include "url/origin.h"
 
 using blink::mojom::StorageType;
 
@@ -39,30 +40,30 @@ int64_t GetOriginUsageOnDBThread(DatabaseTracker* db_tracker,
 }
 
 void GetOriginsOnDBThread(DatabaseTracker* db_tracker,
-                          std::set<url::Origin>* origins_ptr) {
+                          std::vector<url::Origin>* origins_ptr) {
   std::vector<std::string> origin_identifiers;
   if (db_tracker->GetAllOriginIdentifiers(&origin_identifiers)) {
     for (const auto& identifier : origin_identifiers) {
-      origins_ptr->insert(GetOriginFromIdentifier(identifier));
+      origins_ptr->push_back(GetOriginFromIdentifier(identifier));
     }
   }
 }
 
 void GetOriginsForHostOnDBThread(DatabaseTracker* db_tracker,
-                                 std::set<url::Origin>* origins_ptr,
+                                 std::vector<url::Origin>* origins_ptr,
                                  const std::string& host) {
   std::vector<std::string> origin_identifiers;
   if (db_tracker->GetAllOriginIdentifiers(&origin_identifiers)) {
     for (const auto& identifier : origin_identifiers) {
       url::Origin origin = GetOriginFromIdentifier(identifier);
       if (host == origin.host())
-        origins_ptr->insert(origin);
+        origins_ptr->push_back(std::move(origin));
     }
   }
 }
 
 void DidGetQuotaClientOrigins(QuotaClient::GetOriginsCallback callback,
-                              std::set<url::Origin>* origins_ptr) {
+                              std::vector<url::Origin>* origins_ptr) {
   std::move(callback).Run(*origins_ptr);
 }
 
@@ -119,7 +120,7 @@ void DatabaseQuotaClient::GetOriginsForType(StorageType type,
   DCHECK(db_tracker_.get());
   DCHECK_EQ(type, StorageType::kTemporary);
 
-  std::set<url::Origin>* origins_ptr = new std::set<url::Origin>();
+  auto* origins_ptr = new std::vector<url::Origin>();
   db_tracker_->task_runner()->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&GetOriginsOnDBThread, base::RetainedRef(db_tracker_),
@@ -135,7 +136,7 @@ void DatabaseQuotaClient::GetOriginsForHost(StorageType type,
   DCHECK(db_tracker_.get());
   DCHECK_EQ(type, StorageType::kTemporary);
 
-  std::set<url::Origin>* origins_ptr = new std::set<url::Origin>();
+  auto* origins_ptr = new std::vector<url::Origin>();
   db_tracker_->task_runner()->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&GetOriginsForHostOnDBThread,

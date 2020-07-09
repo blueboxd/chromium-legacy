@@ -303,6 +303,7 @@ void XRFrameProvider::OnImmersiveFrameData(
 
   frame_id_ = data->frame_id;
   buffer_mailbox_holder_ = data->buffer_holder;
+  camera_image_mailbox_holder_ = data->camera_image_buffer_holder;
 
   pending_immersive_vsync_ = false;
 
@@ -490,7 +491,8 @@ void XRFrameProvider::ProcessScheduledFrame(
         ->PostTask(FROM_HERE,
                    WTF::Bind(&XRSession::OnFrame,
                              WrapWeakPersistent(immersive_session_.Get()),
-                             high_res_now_ms, buffer_mailbox_holder_));
+                             high_res_now_ms, buffer_mailbox_holder_,
+                             camera_image_mailbox_holder_));
   } else {
     // In the process of fulfilling the frame requests for each session they are
     // extremely likely to request another frame. Work off of a separate list
@@ -539,7 +541,7 @@ void XRFrameProvider::ProcessScheduledFrame(
       frame->GetTaskRunner(blink::TaskType::kInternalMedia)
           ->PostTask(FROM_HERE,
                      WTF::Bind(&XRSession::OnFrame, WrapWeakPersistent(session),
-                               high_res_now_ms, base::nullopt));
+                               high_res_now_ms, base::nullopt, base::nullopt));
     }
   }
 }

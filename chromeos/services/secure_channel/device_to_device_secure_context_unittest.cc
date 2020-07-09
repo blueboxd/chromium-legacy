@@ -10,9 +10,9 @@
 #include "base/callback.h"
 #include "chromeos/components/multidevice/fake_secure_message_delegate.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
-#include "chromeos/services/device_sync/proto/securemessage.pb.h"
 #include "chromeos/services/secure_channel/session_keys.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/securemessage/proto/securemessage.pb.h"
 
 namespace chromeos {
 

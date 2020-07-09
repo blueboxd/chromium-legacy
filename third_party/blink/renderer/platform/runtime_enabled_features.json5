@@ -1358,7 +1358,7 @@
     },
     {
       name: "ParentNodeReplaceChildren",
-      status: "experimental",
+      status: "stable",
     },
     {
       // This flag enables the Manifest parser to handle URL Protocols.

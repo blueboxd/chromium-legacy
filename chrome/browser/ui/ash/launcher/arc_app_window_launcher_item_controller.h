@@ -25,7 +25,8 @@ class ArcAppWindowLauncherItemController
   void ItemSelected(std::unique_ptr<ui::Event> event,
                     int64_t display_id,
                     ash::ShelfLaunchSource source,
-                    ItemSelectedCallback callback) override;
+                    ItemSelectedCallback callback,
+                    const ItemFilterPredicate& filter_predicate) override;
 
   void AddTaskId(int task_id);
   void RemoveTaskId(int task_id);

@@ -194,19 +194,6 @@ const std::map<int, std::string> CreateChromeosMojoResourceIdToAliasMap() {
 }
 #endif  // !defined(OS_CHROMEOS)
 
-#if !defined(OS_ANDROID)
-bool ShouldIgnore(std::string resource) {
-  if (base::StartsWith(
-          resource,
-          "../../../third_party/polymer/v1_0/components-chromium/polymer/",
-          base::CompareCase::SENSITIVE)) {
-    return true;
-  }
-
-  return false;
-}
-#endif  // !defined(OS_ANDROID)
-
 void AddResource(const std::string& path,
                  int resource_id,
                  ResourcesMap* resources_map) {
@@ -220,12 +207,6 @@ void AddResourcesToMap(ResourcesMap* resources_map) {
 
   for (size_t i = 0; i < kWebuiResourcesSize; ++i) {
     const auto& resource = kWebuiResources[i];
-
-#if !defined(OS_ANDROID)
-    if (ShouldIgnore(resource.name))
-      continue;
-#endif  // !defined(OS_ANDROID)
-
     AddResource(resource.name, resource.value, resources_map);
 
     for (auto it = aliases.begin(); it != aliases.end(); ++it) {

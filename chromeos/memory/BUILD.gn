@@ -43,6 +43,8 @@ component("memory") {
     "userspace_swap/swap_storage.h",
     "userspace_swap/userfaultfd.cc",
     "userspace_swap/userfaultfd.h",
+    "userspace_swap/userspace_swap.cc",
+    "userspace_swap/userspace_swap.h",
   ]
 }
 

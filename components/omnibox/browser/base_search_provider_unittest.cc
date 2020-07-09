@@ -187,6 +187,7 @@ TEST_F(BaseSearchProviderTest, MatchTailSuggestionProperly) {
   base::string16 suggestion = base::ASCIIToUTF16("weather los ") + query;
   SearchSuggestionParser::SuggestResult suggest_result(
       suggestion, AutocompleteMatchType::SEARCH_SUGGEST_TAIL,
+      /*subtypes=*/{},
       /*subtype_identifier=*/0,
       /*match_contents=*/query,
       /*match_contents_prefix=*/base::ASCIIToUTF16("..."),

@@ -7364,8 +7364,13 @@ bool WebGLRenderingContextBase::ValidateTexFuncFormatAndType(
   if (internalformat != 0 && supported_internal_formats_.find(internalformat) ==
                                  supported_internal_formats_.end()) {
     if (function_type == kTexImage) {
-      SynthesizeGLError(GL_INVALID_VALUE, function_name,
-                        "invalid internalformat");
+      if (compressed_texture_formats_.Contains(internalformat)) {
+        SynthesizeGLError(GL_INVALID_OPERATION, function_name,
+                          "compressed texture formats are not accepted");
+      } else {
+        SynthesizeGLError(GL_INVALID_VALUE, function_name,
+                          "invalid internalformat");
+      }
     } else {
       SynthesizeGLError(GL_INVALID_ENUM, function_name,
                         "invalid internalformat");

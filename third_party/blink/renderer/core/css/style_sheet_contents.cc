@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
-#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 
@@ -323,8 +322,7 @@ const AtomicString& StyleSheetContents::NamespaceURIFromPrefix(
 }
 
 void StyleSheetContents::ParseAuthorStyleSheet(
-    const CSSStyleSheetResource* cached_style_sheet,
-    const SecurityOrigin* security_origin) {
+    const CSSStyleSheetResource* cached_style_sheet) {
   TRACE_EVENT1(
       "blink,devtools.timeline", "ParseAuthorStyleSheet", "data",
       inspector_parse_author_style_sheet_event::Data(cached_style_sheet));

@@ -34,6 +34,7 @@ static_library("multidevice") {
     "//chromeos/services/device_sync/proto",
     "//chromeos/services/device_sync/proto:util",
     "//components/prefs",
+    "//third_party/securemessage/proto",
   ]
 }
 

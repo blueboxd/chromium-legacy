@@ -6,6 +6,7 @@ include_rules = [
   "+chrome/browser/performance_hints/android/java",
   "+chrome/browser/profiles/android",
   "+chrome/browser/tab",
+  "+chrome/browser/tabmodel",
   "+chrome/browser/thumbnail/generator/android/java",
   "+chrome/browser/ui/messages/android/java",
   "+components/autofill/android/java/src/org/chromium/components/autofill",

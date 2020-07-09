@@ -27,8 +27,8 @@ class WebSocketStreamCreateTestBase::TestConnectDelegate
     : public WebSocketStream::ConnectDelegate {
  public:
   TestConnectDelegate(WebSocketStreamCreateTestBase* owner,
-                      const base::Closure& done_callback)
-      : owner_(owner), done_callback_(done_callback) {}
+                      base::OnceClosure done_callback)
+      : owner_(owner), done_callback_(std::move(done_callback)) {}
 
   void OnCreateRequest(URLRequest* request) override {
     owner_->url_request_ = request;
@@ -41,13 +41,13 @@ class WebSocketStreamCreateTestBase::TestConnectDelegate
       ADD_FAILURE();
     owner_->response_info_ = std::move(response);
     stream.swap(owner_->stream_);
-    done_callback_.Run();
+    std::move(done_callback_).Run();
   }
 
   void OnFailure(const std::string& message) override {
     owner_->has_failed_ = true;
     owner_->failure_message_ = message;
-    done_callback_.Run();
+    std::move(done_callback_).Run();
   }
 
   void OnStartOpeningHandshake(
@@ -82,7 +82,7 @@ class WebSocketStreamCreateTestBase::TestConnectDelegate
 
  private:
   WebSocketStreamCreateTestBase* owner_;
-  base::Closure done_callback_;
+  base::OnceClosure done_callback_;
   DISALLOW_COPY_AND_ASSIGN(TestConnectDelegate);
 };
 

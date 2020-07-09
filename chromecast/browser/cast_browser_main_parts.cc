@@ -106,6 +106,7 @@
 #include "chromecast/browser/devtools/cast_ui_devtools.h"
 #include "chromecast/graphics/cast_screen.h"
 #include "chromecast/graphics/cast_window_manager_aura.h"
+#include "chromecast/graphics/rounded_window_corners_manager.h"
 #include "chromecast/media/service/cast_renderer.h"  // nogncheck
 #if !defined(OS_FUCHSIA)
 #include "components/ui_devtools/devtools_server.h"  // nogncheck
@@ -610,6 +611,8 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
       CAST_IS_DEBUG_BUILD() ||
       GetSwitchValueBoolean(switches::kEnableInput, false));
   window_manager_->Setup();
+  rounded_window_corners_manager_ =
+      std::make_unique<RoundedWindowCornersManager>(window_manager_.get());
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   cast_browser_process_->SetAccessibilityManager(
@@ -767,6 +770,10 @@ void CastBrowserMainParts::PostMainMessageLoopRun() {
   cast_browser_process_->cast_service()->Finalize();
   cast_browser_process_->cast_browser_metrics()->Finalize();
   cast_browser_process_.reset();
+
+#if defined(USE_AURA)
+  rounded_window_corners_manager_.reset();
+#endif
 
   window_manager_.reset();
 #if defined(USE_AURA)

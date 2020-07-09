@@ -74,9 +74,6 @@ class CastWindowManagerAura : public CastWindowManager,
  private:
   const bool enable_input_;
 
-  // true if the current app explicitly requested rounded corners
-  bool needs_rounded_corners_ = false;
-
   std::unique_ptr<CastWindowTreeHostAura> window_tree_host_;
   std::unique_ptr<aura::client::DefaultCaptureClient> capture_client_;
   std::unique_ptr<CastFocusClientAura> focus_client_;

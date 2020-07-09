@@ -13,6 +13,7 @@ import android.widget.TextView;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,6 +32,7 @@ import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.test.mock.MockNavigationController;
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -99,8 +101,8 @@ public class NavigationPopupTest {
         CriteriaHelper.pollUiThread(() -> {
             NavigationHistory history = controller.mHistory;
             for (int i = 0; i < history.getEntryCount(); i++) {
-                Assert.assertNotNull(
-                        "Favicon[" + i + "] not updated", history.getEntryAtIndex(i).getFavicon());
+                Criteria.checkThat("Favicon[" + i + "] not updated",
+                        history.getEntryAtIndex(i).getFavicon(), Matchers.notNullValue());
             }
         });
 

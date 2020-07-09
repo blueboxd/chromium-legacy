@@ -406,7 +406,8 @@ bool Gav1VideoDecoder::MaybeDequeueFrames() {
   while (true) {
     const libgav1::DecoderBuffer* buffer;
     libgav1::StatusCode status = libgav1_decoder_->DequeueFrame(&buffer);
-    if (status != kLibgav1StatusOk) {
+    if (status != kLibgav1StatusOk &&
+        status != kLibgav1StatusNothingToDequeue) {
       MEDIA_LOG(ERROR, media_log_) << "libgav1::Decoder::DequeueFrame failed, "
                                    << "status=" << status;
       return false;

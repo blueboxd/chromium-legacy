@@ -10,6 +10,7 @@ per-file .gitattributes=*
 per-file .gitignore=*
 per-file .git-blame-ignore-revs=mgiuca@chromium.org
 per-file .git-blame-ignore-revs=thakis@chromium.org
+per-file .gn=estaab@chromium.org
 per-file .gn=file://build/OWNERS
 per-file .vpython*=dpranke@chromium.org
 per-file .vpython*=dpranke@google.com

@@ -2889,6 +2889,7 @@ ci.memory_builder(
     # TODO(https://crbug.com/919430) Remove the larger timeout once compile
     # times have been brought down to reasonable level
     execution_timeout = time.hour * 9 / 2,  # 4.5 (can't multiply float * duration)
+    tree_closing = False,
 )
 
 ci.memory_builder(
@@ -3028,6 +3029,7 @@ ci.memory_builder(
         short_name = 'asn',
     ),
     main_console_view = 'main',
+    tree_closing = False,
 )
 
 ci.memory_builder(

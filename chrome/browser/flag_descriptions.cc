@@ -1560,6 +1560,12 @@ const char kOmniboxMaxURLMatchesDescription[] =
     "The maximum number of URL matches to show, unless there are no "
     "replacements.";
 
+const char kOmniboxDynamicMaxAutocompleteName[] =
+    "Omnibox Dynamic Max Autocomplete";
+const char kOmniboxDynamicMaxAutocompleteDescription[] =
+    "Configures the maximum number of autocomplete matches displayed in the "
+    "Omnibox UI dynamically based on the number of URL matches.";
+
 const char kOmniboxOnDeviceHeadSuggestionsIncognitoName[] =
     "Omnibox on device head suggestions (incognito only)";
 const char kOmniboxOnDeviceHeadSuggestionsIncognitoDescription[] =

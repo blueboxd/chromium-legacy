@@ -777,6 +777,17 @@
             }
           }
         ]
+      }, {
+        "name": "onInputMethodOptionsChanged",
+        "type": "function",
+        "description": "This event is sent when input method options are changed.",
+        "parameters": [
+          {
+            "name": "engineID",
+            "type": "string",
+            "description": "The engine ID for the input method being changed."
+          }
+        ]
       }
     ]
   }

@@ -543,12 +543,12 @@ struct XRFrameData {
   VRPose? pose;
   // Time delta from an unspecified origin.
   mojo_base.mojom.TimeDelta time_delta;
-  // The buffer_holder is used for sending data imagery back and forth across
-  // the process boundary. For application with pass through camera, it holds
-  // the camera image to be passed to the renderer. For immersive sessions, it
-  // is the place for the renderer to draw into to pass imagery to the device
-  // for rendering.
+  // The buffer_holder is used for sending imagery data back and forth across
+  // the process boundary.
   gpu.mojom.MailboxHolder? buffer_holder;
+  // The camera_image_buffer_holder is used to send a copy of the camera image
+  // across the process boundary for immersive-ar sessions.
+  gpu.mojom.MailboxHolder? camera_image_buffer_holder;
 
   // Indicates that there has been a significant discontinuity in the mojo space
   // coordinate system, and that poses from this point forward with the same

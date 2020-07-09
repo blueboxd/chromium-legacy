@@ -11,8 +11,8 @@
 #include "base/stl_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/secure_message_delegate_impl.h"
-#include "chromeos/services/device_sync/proto/securemessage.pb.h"
 #include "chromeos/services/device_sync/value_string_encoding.h"
+#include "third_party/securemessage/proto/securemessage.pb.h"
 
 namespace chromeos {
 

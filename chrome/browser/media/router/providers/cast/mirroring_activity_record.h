@@ -66,6 +66,7 @@ class MirroringActivityRecord : public ActivityRecord,
   void OnInternalMessage(const cast_channel::InternalMessage& message) override;
 
  protected:
+  void OnSessionSet(const CastSession& session) override;
   void CreateMediaController(
       mojo::PendingReceiver<mojom::MediaController> media_controller,
       mojo::PendingRemote<mojom::MediaStatusObserver> observer) override;
@@ -74,15 +75,17 @@ class MirroringActivityRecord : public ActivityRecord,
   void HandleParseJsonResult(const std::string& route_id,
                              data_decoder::DataDecoder::ValueOrError result);
 
-  void StartMirroring(
-      mirroring::mojom::SessionParametersPtr session_params,
-      mojo::PendingReceiver<CastMessageChannel> channel_to_service);
   void StopMirroring();
 
   mojo::Remote<mirroring::mojom::MirroringServiceHost> host_;
 
   // Sends Cast messages from the mirroring receiver to the mirroring service.
   mojo::Remote<mirroring::mojom::CastMessageChannel> channel_to_service_;
+
+  // Only used to store pending CastMessageChannel receiver while waiting for
+  // OnSessionSet() to be called.
+  mojo::PendingReceiver<mirroring::mojom::CastMessageChannel>
+      channel_to_service_receiver_;
 
   mojo::Receiver<mirroring::mojom::SessionObserver> observer_receiver_{this};
 

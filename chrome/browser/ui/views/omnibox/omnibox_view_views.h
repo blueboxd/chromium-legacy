@@ -204,12 +204,13 @@ class OmniboxViewViews : public OmniboxView,
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, FriendlyAccessibleLabel);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, DoNotNavigateOnDrop);
 
-  // Animates the URL to |elide_to_bounds|, which could be a substring or
-  // superstring of what's currently displayed. The elision starts after
-  // |delay_ms| ms. An elision animation hides the path (and optionally
-  // subdomains) by narrowing the bounds of each side of the URL while also
-  // shifting the text to remain aligned with the leading edge of the display
-  // area. An unelision animation is the reverse.
+  // Animates the URL to a given range of text, which could be a substring or
+  // superstring of what's currently displayed. An elision animation hides the
+  // path (and optionally subdomains) by narrowing the bounds of each side of
+  // the URL while also shifting the text to remain aligned with the leading
+  // edge of the display area. While the bounds change, the text being elided
+  // can be simultaneously faded to transparent to make the transition smoother.
+  // An unelision animation is the reverse.
   //
   // Animation is used for elision when the elision is in response to a user
   // interaction and we want to draw attention to where the URL is going and how
@@ -229,7 +230,14 @@ class OmniboxViewViews : public OmniboxView,
     ElideAnimation(OmniboxViewViews* view, gfx::RenderText* render_text);
     ~ElideAnimation() override;
 
-    void Start(const gfx::Range& elide_to_bounds, uint32_t delay_ms);
+    // Begin the elision animation targeting |elide_to_bounds|, after a delay of
+    // |delay_ms|. As the animation runs, each range in |ranges_to_color| will
+    // be faded from |starting_color| to |ending_color|.
+    void Start(const gfx::Range& elide_to_bounds,
+               uint32_t delay_ms,
+               const std::vector<gfx::Range>& ranges_to_color,
+               SkColor starting_color,
+               SkColor ending_color);
 
     void Stop();
 
@@ -239,6 +247,12 @@ class OmniboxViewViews : public OmniboxView,
     // Returns the bounds to which the animation is eliding, as passed in to
     // Start().
     const gfx::Range& GetElideToBounds() const;
+
+    // Returns the current color applied to each of the ranges in
+    // |ranges_to_color| passed in to Start(), if the animation is running or
+    // has completed running. Returns gfx::kPlaceholderColor if the animation
+    // has not starting running yet.
+    SkColor GetCurrentColor() const;
 
     gfx::MultiAnimation* GetAnimationForTesting();
 
@@ -262,6 +276,12 @@ class OmniboxViewViews : public OmniboxView,
     // The starting and ending display offsets for |render_text_|.
     int starting_display_offset_ = 0;
     int ending_display_offset_ = 0;
+
+    // As the animation runs, each range in |ranges_to_color_| fades from
+    // |starting_color_| to |ending_color_|.
+    std::vector<gfx::Range> ranges_to_color_;
+    SkColor starting_color_;
+    SkColor ending_color_;
 
     // The underlying animation. We use a MultiAnimation to implement the
     // |delay_ms| delay passed into Start(). When this delay is nonzero, the
@@ -399,8 +419,11 @@ class OmniboxViewViews : public OmniboxView,
   // Returns the gfx::Range of the simplified domain of the current URL, if
   // there is one. The simplified domain could be either the registrable domain
   // (if OmniboxFieldTrial::ElideToRegistrableDomain() is enabled) or the full
-  // hostname.
-  gfx::Range GetSimplifiedDomainBounds();
+  // hostname. |ranges_surrounding_simplified_domain| is an optional output
+  // parameter; if non-null, it will be populated with the ranges that do not
+  // contain the simplified domain.
+  gfx::Range GetSimplifiedDomainBounds(
+      std::vector<gfx::Range>* ranges_surrounding_simplified_domain);
 
   // Returns true if the currently displayed URL is eligible for elision to a
   // simplified domain. This takes into account the omnibox's current state
@@ -439,8 +462,12 @@ class OmniboxViewViews : public OmniboxView,
   // simplification -- for example, if the URL is already simplified and the
   // user performs a same-document navigation, we want to keep the URL
   // simplified without it appearing to be a change from the user's perspective.
-  virtual void ElideToSimplifiedDomain();
-  virtual void UnelideFromSimplifiedDomain();
+  void ElideToSimplifiedDomain();
+  void UnelideFromSimplifiedDomain();
+
+  // Applies the given |color| to |range|. This is a wrapper method around
+  // Textfield::ApplyColor that tests can override.
+  virtual void ApplyColor(SkColor color, const gfx::Range& range);
 
   ElideAnimation* GetHoverElideOrUnelideAnimationForTesting();
   ElideAnimation* GetElideAfterInteractionAnimationForTesting();

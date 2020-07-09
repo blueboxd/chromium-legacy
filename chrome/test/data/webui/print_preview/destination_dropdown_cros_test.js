@@ -48,9 +48,18 @@ suite(destination_dropdown_cros_test.suiteName, function() {
     return dropdown.shadowRoot.querySelectorAll('.list-item');
   }
 
-  /** @param {?Element} element */
-  function pointerDown(element) {
-    element.dispatchEvent(new PointerEvent('pointerdown', {
+  function clickDropdown() {
+    dropdown.$$('#destination-dropdown')
+        .dispatchEvent(new PointerEvent('pointerdown', {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          buttons: 1,
+        }));
+  }
+
+  function clickOutsideDropdown() {
+    document.body.dispatchEvent(new PointerEvent('pointerdown', {
       bubbles: true,
       cancelable: true,
       composed: true,
@@ -59,19 +68,20 @@ suite(destination_dropdown_cros_test.suiteName, function() {
   }
 
   function down() {
-    keyDownOn(dropdown.$$('#dropdownInput'), 'ArrowDown', [], 'ArrowDown');
+    keyDownOn(
+        dropdown.$$('#destination-dropdown'), 'ArrowDown', [], 'ArrowDown');
   }
 
   function up() {
-    keyDownOn(dropdown.$$('#dropdownInput'), 'ArrowUp', [], 'ArrowUp');
+    keyDownOn(dropdown.$$('#destination-dropdown'), 'ArrowUp', [], 'ArrowUp');
   }
 
   function enter() {
-    keyDownOn(dropdown.$$('#dropdownInput'), 'Enter', [], 'Enter');
+    keyDownOn(dropdown.$$('#destination-dropdown'), 'Enter', [], 'Enter');
   }
 
   function tab() {
-    keyDownOn(dropdown.$$('#dropdownInput'), 'Tab', [], 'Tab');
+    keyDownOn(dropdown.$$('#destination-dropdown'), 'Tab', [], 'Tab');
   }
 
   /** @return {?Element} */
@@ -145,17 +155,17 @@ suite(destination_dropdown_cros_test.suiteName, function() {
         dropdown.value = destinationOne;
         const ironDropdown = dropdown.$$('iron-dropdown');
 
-        pointerDown(dropdown.$$('#dropdownInput'));
+        clickDropdown();
         assertTrue(ironDropdown.opened);
 
         getList()[0].click();
         assertFalse(ironDropdown.opened);
 
-        pointerDown(dropdown.$$('#dropdownInput'));
+        clickDropdown();
         assertTrue(ironDropdown.opened);
 
         // Click outside dropdown to close the dropdown.
-        pointerDown(document.body);
+        clickOutsideDropdown();
         assertFalse(ironDropdown.opened);
       });
 
@@ -165,7 +175,7 @@ suite(destination_dropdown_cros_test.suiteName, function() {
     dropdown.value = destinationOne;
     const ironDropdown = dropdown.$$('iron-dropdown');
 
-    pointerDown(dropdown.$$('#dropdownInput'));
+    clickDropdown();
     assertTrue(ironDropdown.opened);
 
     tab();
@@ -178,7 +188,7 @@ suite(destination_dropdown_cros_test.suiteName, function() {
         const destinationOne = createDestination('One', DestinationOrigin.CROS);
         setItemList([destinationOne]);
         dropdown.value = destinationOne;
-        pointerDown(dropdown.$$('#dropdownInput'));
+        clickDropdown();
 
         assertEquals('One', getHighlightedElementText());
         down();
@@ -255,7 +265,7 @@ suite(destination_dropdown_cros_test.suiteName, function() {
           createDestination('Three', DestinationOrigin.CROS)
         ]);
         dropdown.value = destinationOne;
-        pointerDown(dropdown.$$('#dropdownInput'));
+        clickDropdown();
 
         move(getList()[1], {x: 0, y: 0}, {x: 0, y: 0}, 1);
         assertEquals('Two', getHighlightedElementText());
@@ -278,11 +288,11 @@ suite(destination_dropdown_cros_test.suiteName, function() {
     dropdown.value = destinationOne;
     dropdown.disabled = true;
 
-    pointerDown(dropdown.$$('#dropdownInput'));
+    clickDropdown();
     assertFalse(dropdown.$$('iron-dropdown').opened);
 
     dropdown.disabled = false;
-    pointerDown(dropdown.$$('#dropdownInput'));
+    clickDropdown();
     assertTrue(dropdown.$$('iron-dropdown').opened);
   });
 
@@ -345,12 +355,12 @@ suite(destination_dropdown_cros_test.suiteName, function() {
         ]);
 
         dropdown.value = destinationTwo;
-        pointerDown(dropdown.$$('#dropdownInput'));
+        clickDropdown();
         assertEquals('Two', getHighlightedElementText());
-        pointerDown(dropdown.$$('#dropdownInput'));
+        clickDropdown();
 
         dropdown.value = destinationThree;
-        pointerDown(dropdown.$$('#dropdownInput'));
+        clickDropdown();
         assertEquals('Three', getHighlightedElementText());
       });
 });

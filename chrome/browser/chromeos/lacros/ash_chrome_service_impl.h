@@ -11,6 +11,8 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
+class ScreenManagerCrosapi;
+
 class SelectFileImpl;
 
 // Implementation of AshChromeService. It provides a set of APIs that
@@ -22,12 +24,15 @@ class AshChromeServiceImpl : public lacros::mojom::AshChromeService {
   ~AshChromeServiceImpl() override;
 
   // lacros::mojom::AshChromeService:
+  void BindScreenManager(
+      mojo::PendingReceiver<lacros::mojom::ScreenManager> receiver) override;
   void BindSelectFile(
       mojo::PendingReceiver<lacros::mojom::SelectFile> receiver) override;
 
  private:
   mojo::Receiver<lacros::mojom::AshChromeService> receiver_;
 
+  std::unique_ptr<ScreenManagerCrosapi> screen_manager_crosapi_;
   std::unique_ptr<SelectFileImpl> select_file_impl_;
 };
 

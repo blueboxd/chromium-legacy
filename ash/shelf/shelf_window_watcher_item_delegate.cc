@@ -44,7 +44,8 @@ void ShelfWindowWatcherItemDelegate::ItemSelected(
     std::unique_ptr<ui::Event> event,
     int64_t display_id,
     ShelfLaunchSource source,
-    ItemSelectedCallback callback) {
+    ItemSelectedCallback callback,
+    const ItemFilterPredicate& filter_predicate) {
   if (wm::IsActiveWindow(window_)) {
     if (event && event->type() == ui::ET_KEY_RELEASED) {
       ::wm::AnimateWindow(window_, ::wm::WINDOW_ANIMATION_TYPE_BOUNCE);

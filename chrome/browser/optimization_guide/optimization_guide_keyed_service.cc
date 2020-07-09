@@ -174,8 +174,9 @@ OptimizationGuideKeyedService::ShouldTargetNavigation(
   }
 
   optimization_guide::OptimizationTargetDecision optimization_target_decision =
-      prediction_manager_->ShouldTargetNavigation(navigation_handle,
-                                                  optimization_target);
+      prediction_manager_->ShouldTargetNavigation(
+          navigation_handle, optimization_target,
+          /*override_client_model_feature_values=*/{});
 
   base::UmaHistogramExactLinear(
       "OptimizationGuide.TargetDecision." +
@@ -185,6 +186,36 @@ OptimizationGuideKeyedService::ShouldTargetNavigation(
           optimization_guide::OptimizationTargetDecision::kMaxValue));
   return GetOptimizationGuideDecisionFromOptimizationTargetDecision(
       optimization_target_decision);
+}
+
+void OptimizationGuideKeyedService::ShouldTargetNavigationAsync(
+    content::NavigationHandle* navigation_handle,
+    optimization_guide::proto::OptimizationTarget optimization_target,
+    const base::flat_map<optimization_guide::proto::ClientModelFeature, float>&
+        client_model_feature_values,
+    optimization_guide::OptimizationGuideTargetDecisionCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(navigation_handle->IsInMainFrame());
+
+  if (!prediction_manager_) {
+    // We are not initialized yet, so just return unknown.
+    std::move(callback).Run(
+        optimization_guide::OptimizationGuideDecision::kUnknown);
+    return;
+  }
+
+  optimization_guide::OptimizationTargetDecision optimization_target_decision =
+      prediction_manager_->ShouldTargetNavigation(
+          navigation_handle, optimization_target, client_model_feature_values);
+  base::UmaHistogramExactLinear(
+      "OptimizationGuide.TargetDecision." +
+          GetStringNameForOptimizationTarget(optimization_target),
+      static_cast<int>(optimization_target_decision),
+      static_cast<int>(
+          optimization_guide::OptimizationTargetDecision::kMaxValue));
+  std::move(callback).Run(
+      GetOptimizationGuideDecisionFromOptimizationTargetDecision(
+          optimization_target_decision));
 }
 
 void OptimizationGuideKeyedService::RegisterOptimizationTypes(

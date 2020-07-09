@@ -19,6 +19,10 @@ namespace chromecast {
 class CastCdmOriginProvider;
 }  // namespace chromecast
 
+namespace content {
+class DesktopCapturerLacros;
+}  // namespace content
+
 namespace ui {
 class Compositor;
 }  // namespace ui
@@ -67,6 +71,9 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) SyncCallRestrictions {
   // BEGIN ALLOWED USAGE.
   // SynchronousCompositorHost is used for Android webview.
   friend class content::SynchronousCompositorHost;
+  // Lacros-chrome is allowed to make sync calls to ash-chrome to mimic
+  // cross-platform sync APIs.
+  friend class content::DesktopCapturerLacros;
   friend class mojo::ScopedAllowSyncCallForTesting;
   // For destroying the GL context/surface that draw to a platform window before
   // the platform window is destroyed.

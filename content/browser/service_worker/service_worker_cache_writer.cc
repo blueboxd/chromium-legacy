@@ -624,7 +624,8 @@ int ServiceWorkerCacheWriter::ReadResponseHead(
   return adapter->result();
 }
 
-class ServiceWorkerCacheWriter::DataPipeReader {
+class ServiceWorkerCacheWriter::DataPipeReader
+    : public storage::mojom::ServiceWorkerDataPipeStateNotifier {
  public:
   DataPipeReader(storage::mojom::ServiceWorkerResourceReader* reader,
                  ServiceWorkerCacheWriter* owner,
@@ -646,8 +647,9 @@ class ServiceWorkerCacheWriter::DataPipeReader {
     if (!data_.is_valid()) {
       // This is the initial call of Read(). Call ReadData() to get a data pipe
       // to read the body.
+      DCHECK(!receiver_.is_bound());
       reader_->ReadData(
-          -1,
+          -1, receiver_.BindNewPipeAndPassRemote(),
           base::BindOnce(&ServiceWorkerCacheWriter::DataPipeReader::OnReadData,
                          weak_factory_.GetWeakPtr()));
       return;
@@ -685,6 +687,11 @@ class ServiceWorkerCacheWriter::DataPipeReader {
     ReadInternal(MOJO_RESULT_OK);
   }
 
+  // storage::mojom::ServiceWorkerDataPipeStateNotifier override:
+  void OnComplete(int32_t status) override {
+    // TODO(https://crbug.com/1055677): notify of errors.
+  }
+
   // Parameters set on Read().
   net::IOBuffer* buffer_ = nullptr;
   uint32_t num_bytes_to_read_ = 0;
@@ -700,6 +707,9 @@ class ServiceWorkerCacheWriter::DataPipeReader {
   mojo::ScopedDataPipeConsumerHandle data_;
   mojo::SimpleWatcher watcher_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  mojo::Receiver<storage::mojom::ServiceWorkerDataPipeStateNotifier> receiver_{
+      this};
 
   base::WeakPtrFactory<DataPipeReader> weak_factory_{this};
 };

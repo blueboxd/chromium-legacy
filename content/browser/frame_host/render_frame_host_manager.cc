@@ -1763,6 +1763,33 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
       return SiteInstanceDescriptor(opener_frame->GetSiteInstance());
   }
 
+  // Keep subframes in the parent's SiteInstance unless a dedicated process is
+  // required for either the parent or the subframe's destination URL. Although
+  // this consolidation is usually handled by default SiteInstances, there are
+  // some corner cases in which default SiteInstances cannot currently be used,
+  // such as file: URLs.  This logic prevents unneeded OOPIFs in those cases.
+  // This turns out to be important for correctness on Android Webview, which
+  // does not yet support OOPIFs (https://crbug.com/1101214).
+  // TODO(https://crbug.com/1103352): Remove this block when default
+  // SiteInstances support file: URLs.
+  //
+  // Also if kProcessSharingWithStrictSiteInstances is enabled, don't lump the
+  // subframe into the same SiteInstance as the parent. These separate
+  // SiteInstances can get assigned to the same process later.
+  if (!base::FeatureList::IsEnabled(
+          features::kProcessSharingWithStrictSiteInstances)) {
+    if (!frame_tree_node_->IsMainFrame()) {
+      RenderFrameHostImpl* parent = frame_tree_node_->parent();
+      bool dest_url_requires_dedicated_process =
+          SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
+              parent->GetSiteInstance()->GetIsolationContext(), dest_url);
+      if (!parent->GetSiteInstance()->RequiresDedicatedProcess() &&
+          !dest_url_requires_dedicated_process) {
+        return SiteInstanceDescriptor(parent->GetSiteInstance());
+      }
+    }
+  }
+
   // Start the new renderer in a new SiteInstance, but in the current
   // BrowsingInstance.
   return SiteInstanceDescriptor(dest_url, SiteInstanceRelation::RELATED);

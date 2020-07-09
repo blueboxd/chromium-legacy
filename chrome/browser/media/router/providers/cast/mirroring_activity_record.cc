@@ -142,7 +142,8 @@ MirroringActivityRecord::~MirroringActivityRecord() {
 
 void MirroringActivityRecord::CreateMojoBindings(
     mojom::MediaRouter* media_router) {
-  DCHECK(mirroring_type_);
+  if (!mirroring_type_)
+    return;
 
   // Get a reference to the mirroring service host.
   switch (*mirroring_type_) {
@@ -165,28 +166,9 @@ void MirroringActivityRecord::CreateMojoBindings(
       break;
   }
 
-  auto cast_source = CastMediaSource::FromMediaSource(route_.media_source());
-  DCHECK(cast_source);
-
-  // Derive session type from capabilities and media source.
-  const bool has_audio = (cast_data_.capabilities &
-                          static_cast<uint8_t>(cast_channel::AUDIO_OUT)) != 0 &&
-                         cast_source->allow_audio_capture();
-  const bool has_video = (cast_data_.capabilities &
-                          static_cast<uint8_t>(cast_channel::VIDEO_OUT)) != 0;
-  DCHECK(has_audio || has_video);
-  const SessionType session_type =
-      has_audio && has_video
-          ? SessionType::AUDIO_AND_VIDEO
-          : has_audio ? SessionType::AUDIO_ONLY : SessionType::VIDEO_ONLY;
-
-  // Arrange to start mirroring once the session is set.
-  on_session_set_ = base::BindOnce(
-      &MirroringActivityRecord::StartMirroring, base::Unretained(this),
-      SessionParameters::New(session_type, cast_data_.ip_endpoint.address(),
-                             cast_data_.model_name,
-                             cast_source->target_playout_delay()),
-      channel_to_service_.BindNewPipeAndPassReceiver());
+  DCHECK(!channel_to_service_receiver_);
+  channel_to_service_receiver_ =
+      channel_to_service_.BindNewPipeAndPassReceiver();
 }
 
 void MirroringActivityRecord::OnError(SessionError error) {
@@ -293,9 +275,25 @@ void MirroringActivityRecord::HandleParseJsonResult(
   message_handler_->SendCastMessage(cast_data_.cast_channel_id, cast_message);
 }
 
-void MirroringActivityRecord::StartMirroring(
-    mirroring::mojom::SessionParametersPtr session_params,
-    mojo::PendingReceiver<CastMessageChannel> channel_to_service) {
+void MirroringActivityRecord::OnSessionSet(const CastSession& session) {
+  if (!mirroring_type_)
+    return;
+
+  auto cast_source = CastMediaSource::FromMediaSource(route_.media_source());
+  DCHECK(cast_source);
+
+  // Derive session type from capabilities and media source.
+  const bool has_audio = (cast_data_.capabilities &
+                          static_cast<uint8_t>(cast_channel::AUDIO_OUT)) != 0 &&
+                         cast_source->allow_audio_capture();
+  const bool has_video = (cast_data_.capabilities &
+                          static_cast<uint8_t>(cast_channel::VIDEO_OUT)) != 0;
+  DCHECK(has_audio || has_video);
+  const SessionType session_type =
+      has_audio && has_video
+          ? SessionType::AUDIO_AND_VIDEO
+          : has_audio ? SessionType::AUDIO_ONLY : SessionType::VIDEO_ONLY;
+
   will_start_mirroring_timestamp_ = base::Time::Now();
 
   // Bind Mojo receivers for the interfaces this object implements.
@@ -304,8 +302,15 @@ void MirroringActivityRecord::StartMirroring(
   mojo::PendingRemote<mirroring::mojom::CastMessageChannel> channel_remote;
   channel_receiver_.Bind(channel_remote.InitWithNewPipeAndPassReceiver());
 
-  host_->Start(std::move(session_params), std::move(observer_remote),
-               std::move(channel_remote), std::move(channel_to_service));
+  // If this fails, it's probably because CreateMojoBindings() hasn't been
+  // called.
+  DCHECK(channel_to_service_receiver_);
+
+  host_->Start(SessionParameters::New(
+                   session_type, cast_data_.ip_endpoint.address(),
+                   cast_data_.model_name, cast_source->target_playout_delay()),
+               std::move(observer_remote), std::move(channel_remote),
+               std::move(channel_to_service_receiver_));
 }
 
 void MirroringActivityRecord::StopMirroring() {

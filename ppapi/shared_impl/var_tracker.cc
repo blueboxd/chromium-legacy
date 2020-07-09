@@ -83,6 +83,7 @@ bool VarTracker::AddRefVar(int32_t var_id) {
 
   // Basic refcount increment.
   info.ref_count++;
+  CHECK(info.ref_count != std::numeric_limits<decltype(info.ref_count)>::max());
   return true;
 }
 

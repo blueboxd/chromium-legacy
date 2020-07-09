@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/check.h"
 #include "base/feature_list.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -99,7 +100,7 @@ class FetchManager::Loader final
          FetchManager*,
          ScriptPromiseResolver*,
          FetchRequestData*,
-         bool is_isolated_world,
+         scoped_refptr<const DOMWrapperWorld>,
          AbortSignal*);
   ~Loader() override;
   void Trace(Visitor*) const override;
@@ -245,7 +246,7 @@ class FetchManager::Loader final
   int response_http_status_code_;
   bool response_has_no_store_header_ = false;
   Member<SRIVerifier> integrity_verifier_;
-  bool is_isolated_world_;
+  scoped_refptr<const DOMWrapperWorld> world_;
   Member<AbortSignal> signal_;
   Vector<KURL> url_list_;
   Member<ExecutionContext> execution_context_;
@@ -255,7 +256,7 @@ FetchManager::Loader::Loader(ExecutionContext* execution_context,
                              FetchManager* fetch_manager,
                              ScriptPromiseResolver* resolver,
                              FetchRequestData* fetch_request_data,
-                             bool is_isolated_world,
+                             scoped_refptr<const DOMWrapperWorld> world,
                              AbortSignal* signal)
     : fetch_manager_(fetch_manager),
       resolver_(resolver),
@@ -264,9 +265,10 @@ FetchManager::Loader::Loader(ExecutionContext* execution_context,
       finished_(false),
       response_http_status_code_(0),
       integrity_verifier_(nullptr),
-      is_isolated_world_(is_isolated_world),
+      world_(std::move(world)),
       signal_(signal),
       execution_context_(execution_context) {
+  DCHECK(world_);
   url_list_.push_back(fetch_request_data->Url());
 }
 
@@ -548,7 +550,7 @@ void FetchManager::Loader::Start(ExceptionState& exception_state) {
 
   // "- should fetching |request| be blocked as content security returns
   //    blocked"
-  if (!execution_context_->GetContentSecurityPolicyForCurrentWorld()
+  if (!execution_context_->GetContentSecurityPolicyForWorld(world_.get())
            ->AllowConnectToSource(fetch_request_data_->Url(),
                                   fetch_request_data_->Url(),
                                   RedirectStatus::kNoRedirect)) {
@@ -764,7 +766,7 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
   request.SetReferrerString(fetch_request_data_->ReferrerString());
   request.SetReferrerPolicy(fetch_request_data_->GetReferrerPolicy());
 
-  request.SetSkipServiceWorker(is_isolated_world_);
+  request.SetSkipServiceWorker(world_->IsIsolatedWorld());
 
   if (fetch_request_data_->Keepalive()) {
     if (!RuntimeEnabledFeatures::OutOfBlinkCorsEnabled() &&
@@ -795,6 +797,7 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
   // and the |CORS flag| is unset, and unset otherwise."
 
   ResourceLoaderOptions resource_loader_options;
+  resource_loader_options.world = world_;
   resource_loader_options.initiator_info.name =
       fetch_initiator_type_names::kFetch;
   resource_loader_options.data_buffering_policy = kDoNotBufferData;
@@ -891,9 +894,9 @@ ScriptPromise FetchManager::Fetch(ScriptState* script_state,
   request->SetContext(mojom::RequestContextType::FETCH);
   request->SetDestination(network::mojom::RequestDestination::kEmpty);
 
-  auto* loader = MakeGarbageCollected<Loader>(
-      GetExecutionContext(), this, resolver, request,
-      script_state->World().IsIsolatedWorld(), signal);
+  auto* loader =
+      MakeGarbageCollected<Loader>(GetExecutionContext(), this, resolver,
+                                   request, &script_state->World(), signal);
   loaders_.insert(loader);
   signal->AddAlgorithm(WTF::Bind(&Loader::Abort, WrapWeakPersistent(loader)));
   // TODO(ricea): Reject the Response body with AbortError, not TypeError.

@@ -22,7 +22,8 @@ class ArcPlaystoreShortcutLauncherItemController
   void ItemSelected(std::unique_ptr<ui::Event> event,
                     int64_t display_id,
                     ash::ShelfLaunchSource source,
-                    ItemSelectedCallback callback) override;
+                    ItemSelectedCallback callback,
+                    const ItemFilterPredicate& filter_predicate) override;
 
  private:
   std::unique_ptr<ArcAppLauncher> playstore_launcher_;

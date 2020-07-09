@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/shelf_item_delegate.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/image/image_skia.h"
@@ -31,8 +33,7 @@ class ASH_EXPORT ShelfApplicationMenuModel
     : public ui::SimpleMenuModel,
       public ui::SimpleMenuModel::Delegate {
  public:
-  using Item = std::pair<base::string16, gfx::ImageSkia>;
-  using Items = std::vector<Item>;
+  using Items = ShelfItemDelegate::AppMenuItems;
 
   // Makes a menu with a |title|, |items|, and a separator for |delegate|.
   // |delegate| may be null in unit tests that do not execute commands.
@@ -54,6 +55,9 @@ class ASH_EXPORT ShelfApplicationMenuModel
 
   // The shelf item delegate that created the menu and executes its commands.
   ShelfItemDelegate* delegate_;
+
+  // A set containing the enabled command IDs.
+  base::flat_set<int> enabled_commands_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfApplicationMenuModel);
 };

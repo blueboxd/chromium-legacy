@@ -58,6 +58,13 @@ class OptimizationGuideKeyedService
       content::NavigationHandle* navigation_handle,
       optimization_guide::proto::OptimizationTarget optimization_target)
       override;
+  void ShouldTargetNavigationAsync(
+      content::NavigationHandle* navigation_handle,
+      optimization_guide::proto::OptimizationTarget optimization_target,
+      const base::flat_map<optimization_guide::proto::ClientModelFeature,
+                           float>& client_model_feature_values,
+      optimization_guide::OptimizationGuideTargetDecisionCallback callback)
+      override;
   void RegisterOptimizationTypes(
       const std::vector<optimization_guide::proto::OptimizationType>&
           optimization_types) override;

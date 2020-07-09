@@ -113,15 +113,13 @@ GetValidEnsemblePredictionModel() {
   std::unique_ptr<optimization_guide::proto::PredictionModel> prediction_model =
       std::make_unique<optimization_guide::proto::PredictionModel>();
   prediction_model->mutable_model()->mutable_threshold()->set_value(5.0);
-  optimization_guide::proto::Ensemble ensemble =
-      optimization_guide::proto::Ensemble();
-  *ensemble.add_members()->mutable_submodel() =
-      *GetValidDecisionTreePredictionModel()->mutable_model();
 
-  *ensemble.add_members()->mutable_submodel() =
-      *GetValidDecisionTreePredictionModel()->mutable_model();
-
-  *prediction_model->mutable_model()->mutable_ensemble() = ensemble;
+  optimization_guide::proto::Model valid_decision_tree_model =
+      GetValidDecisionTreePredictionModel()->model();
+  optimization_guide::proto::Ensemble* ensemble =
+      prediction_model->mutable_model()->mutable_ensemble();
+  *ensemble->add_members()->mutable_submodel() = valid_decision_tree_model;
+  *ensemble->add_members()->mutable_submodel() = valid_decision_tree_model;
   return prediction_model;
 }
 
@@ -136,6 +134,7 @@ CreatePredictionModel() {
   model_info->add_supported_model_features(
       optimization_guide::proto::
           CLIENT_MODEL_FEATURE_EFFECTIVE_CONNECTION_TYPE);
+  model_info->add_supported_host_model_features("agg1");
   model_info->set_optimization_target(
       optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
   model_info->add_supported_model_types(
@@ -158,7 +157,7 @@ BuildGetModelsResponse(
     host_model_features->set_host(host);
     optimization_guide::proto::ModelFeature* model_feature =
         host_model_features->add_model_features();
-    model_feature->set_feature_name("host_feat1");
+    model_feature->set_feature_name("agg1");
     model_feature->set_double_value(2.0);
   }
 
@@ -197,10 +196,33 @@ class OptimizationGuideConsumerWebContentsObserver
     OptimizationGuideKeyedService* service =
         OptimizationGuideKeyedServiceFactory::GetForProfile(
             Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-    service->ShouldTargetNavigation(
+    last_should_target_decision_ = service->ShouldTargetNavigation(
         navigation_handle,
         optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+    if (callback_) {
+      // Intentionally do not set client model feature values to override to
+      // make sure decisions are the same in both sync and async variants.
+      service->ShouldTargetNavigationAsync(
+          navigation_handle,
+          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {},
+          std::move(callback_));
+    }
   }
+
+  void set_callback(
+      optimization_guide::OptimizationGuideTargetDecisionCallback callback) {
+    callback_ = std::move(callback);
+  }
+
+  optimization_guide::OptimizationGuideDecision last_should_target_decision()
+      const {
+    return last_should_target_decision_;
+  }
+
+ private:
+  optimization_guide::OptimizationGuideTargetDecisionCallback callback_;
+  optimization_guide::OptimizationGuideDecision last_should_target_decision_ =
+      optimization_guide::OptimizationGuideDecision::kUnknown;
 };
 
 }  // namespace
@@ -283,6 +305,19 @@ class PredictionManagerBrowserTest : public InProcessBrowserTest {
     OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
         ->RegisterOptimizationTargets(
             {optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
+  }
+
+  // Sets the callback on the consumer of the OptimizationGuideKeyedService. If
+  // set, this will call the async version of ShouldTargetNavigation.
+  void SetCallbackOnConsumer(
+      optimization_guide::OptimizationGuideTargetDecisionCallback callback) {
+    ASSERT_TRUE(consumer_);
+
+    consumer_->set_callback(std::move(callback));
+  }
+
+  OptimizationGuideConsumerWebContentsObserver* consumer() {
+    return consumer_.get();
   }
 
   PredictionManager* GetPredictionManager() {
@@ -579,6 +614,42 @@ IN_PROC_BROWSER_TEST_F(PredictionManagerBrowserSameOriginTest,
       "OptimizationGuide.PredictionManager.IsSameOrigin", false, 2);
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.PredictionManager.IsSameOrigin", true, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PredictionManagerBrowserSameOriginTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(
+        ShouldTargetNavigationAsyncAndSyncDecisionAreTheSameWithoutOverrides)) {
+  base::HistogramTester histogram_tester;
+
+  RegisterWithKeyedService();
+
+  // Wait until histograms have been updated before performing checks for
+  // correct behavior based on the response.
+  RetryForHistogramUntilCountReached(
+      &histogram_tester,
+      "OptimizationGuide.PredictionModelFetcher.GetModelsResponse.Status", 1);
+
+  RetryForHistogramUntilCountReached(
+      &histogram_tester,
+      "OptimizationGuide.PredictionManager.HostModelFeaturesStored", 1);
+
+  RetryForHistogramUntilCountReached(
+      &histogram_tester,
+      "OptimizationGuide.PredictionManager.PredictionModelsStored", 1);
+
+  std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
+  SetCallbackOnConsumer(base::BindOnce(
+      [](base::RunLoop* run_loop,
+         OptimizationGuideConsumerWebContentsObserver* consumer,
+         optimization_guide::OptimizationGuideDecision decision) {
+        EXPECT_EQ(consumer->last_should_target_decision(), decision);
+        run_loop->Quit();
+      },
+      run_loop.get(), consumer()));
+
+  ui_test_utils::NavigateToURL(browser(), https_url_with_content());
+  run_loop->Run();
 }
 
 }  // namespace optimization_guide

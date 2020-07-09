@@ -178,11 +178,11 @@ void DisplayAlignmentController::ShowIndicators(
       // peers.
       const std::string& dst_name =
           display_manager->GetDisplayInfo(peer.id()).name();
-      active_indicators_.push_back(std::make_unique<DisplayAlignmentIndicator>(
+      active_indicators_.push_back(DisplayAlignmentIndicator::CreateWithPill(
           src_display, source_edge, dst_name));
 
-      active_indicators_.push_back(std::make_unique<DisplayAlignmentIndicator>(
-          peer, peer_edge, /*target_name=*/""));
+      active_indicators_.push_back(
+          DisplayAlignmentIndicator::Create(peer, peer_edge));
     }
   }
 

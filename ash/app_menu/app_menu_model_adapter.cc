@@ -84,6 +84,10 @@ void AppMenuModelAdapter::Cancel() {
   menu_runner_->Cancel();
 }
 
+int AppMenuModelAdapter::GetCommandIdForHistograms(int command_id) {
+  return command_id;
+}
+
 base::TimeTicks AppMenuModelAdapter::GetClosingEventTime() {
   DCHECK(menu_runner_);
   return menu_runner_->closing_event_time();
@@ -91,7 +95,7 @@ base::TimeTicks AppMenuModelAdapter::GetClosingEventTime() {
 
 void AppMenuModelAdapter::ExecuteCommand(int id, int mouse_event_flags) {
   views::MenuModelAdapter::ExecuteCommand(id, mouse_event_flags);
-  RecordExecuteCommandHistogram(id);
+  RecordExecuteCommandHistogram(GetCommandIdForHistograms(id));
 }
 
 void AppMenuModelAdapter::OnMenuClosed(views::MenuItemView* menu) {

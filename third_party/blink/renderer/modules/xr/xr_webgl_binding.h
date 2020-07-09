@@ -15,9 +15,9 @@ namespace blink {
 class ExceptionState;
 class WebGLRenderingContextBase;
 class WebGLTexture;
+class XRFrame;
 class XRLightProbe;
 class XRSession;
-class XRFrame;
 class XRView;
 
 class XRWebGLBinding final : public ScriptWrappable {

@@ -52,6 +52,8 @@ class XRFrame final : public ScriptWrappable {
 
   void Deactivate();
 
+  bool IsActive() const;
+
   void SetAnimationFrame(bool is_animation_frame) {
     is_animation_frame_ = is_animation_frame;
   }

@@ -52,31 +52,39 @@ GPUTestConfig::OS GetCurrentOS() {
   int32_t bugfix_version = 0;
   base::SysInfo::OperatingSystemVersionNumbers(
       &major_version, &minor_version, &bugfix_version);
-  if (major_version == 10) {
-    switch (minor_version) {
-      case 5:
-        return GPUTestConfig::kOsMacLeopard;
-      case 6:
-        return GPUTestConfig::kOsMacSnowLeopard;
-      case 7:
-        return GPUTestConfig::kOsMacLion;
-      case 8:
-        return GPUTestConfig::kOsMacMountainLion;
-      case 9:
-        return GPUTestConfig::kOsMacMavericks;
-      case 10:
-        return GPUTestConfig::kOsMacYosemite;
-      case 11:
-        return GPUTestConfig::kOsMacElCapitan;
-      case 12:
-        return GPUTestConfig::kOsMacSierra;
-      case 13:
-        return GPUTestConfig::kOsMacHighSierra;
-      case 14:
-        return GPUTestConfig::kOsMacMojave;
-      case 15:
-        return GPUTestConfig::kOsMacCatalina;
-    }
+  switch (major_version) {
+    case 10:
+      switch (minor_version) {
+        case 5:
+          return GPUTestConfig::kOsMacLeopard;
+        case 6:
+          return GPUTestConfig::kOsMacSnowLeopard;
+        case 7:
+          return GPUTestConfig::kOsMacLion;
+        case 8:
+          return GPUTestConfig::kOsMacMountainLion;
+        case 9:
+          return GPUTestConfig::kOsMacMavericks;
+        case 10:
+          return GPUTestConfig::kOsMacYosemite;
+        case 11:
+          return GPUTestConfig::kOsMacElCapitan;
+        case 12:
+          return GPUTestConfig::kOsMacSierra;
+        case 13:
+          return GPUTestConfig::kOsMacHighSierra;
+        case 14:
+          return GPUTestConfig::kOsMacMojave;
+        case 15:
+          return GPUTestConfig::kOsMacCatalina;
+      }
+      break;
+    case 11:
+      switch (minor_version) {
+        case 0:
+          return GPUTestConfig::kOsMacBigSur;
+      }
+      break;
   }
   return GPUTestConfig::kOsUnknown;
 #elif defined(OS_ANDROID)

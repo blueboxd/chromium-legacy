@@ -402,7 +402,7 @@ int main(int argc, const char* argv[]) {
     return MasterCode();
 
   logging::ScopedLogAssertHandler scoped_assert_handler(
-      base::Bind(CrashHandler));
+      base::BindRepeating(CrashHandler));
 
 #if defined(OS_WIN)
   logging::LogEventProvider::Initialize(kStressCacheTraceProviderName);

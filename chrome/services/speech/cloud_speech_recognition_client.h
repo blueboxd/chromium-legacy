@@ -90,7 +90,10 @@ class CloudSpeechRecognitionClient : public speech::UpstreamLoaderClient,
   std::string previous_result_;
 
   // Stores the last time the stream was reset.
-  base::Time last_reset_;
+  base::TimeTicks last_reset_;
+
+  // Stores the last time audio was uploaded.
+  base::TimeTicks last_upload_;
 
   OnRecognitionEventCallback recognition_event_callback_;
 

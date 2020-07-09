@@ -62,6 +62,8 @@
 #include "third_party/blink/renderer/platform/fonts/opentype/open_type_math_support.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -276,21 +278,33 @@ StyleBuilderConverter::ConvertFontFeatureSettings(StyleResolverState& state,
   return settings;
 }
 
+static bool CompareTags(FontVariationAxis a, FontVariationAxis b) {
+  return a.Tag() < b.Tag();
+}
+
 scoped_refptr<FontVariationSettings>
-StyleBuilderConverter::ConvertFontVariationSettings(StyleResolverState& state,
-                                                    const CSSValue& value) {
+StyleBuilderConverter::ConvertFontVariationSettings(
+    const StyleResolverState& state,
+    const CSSValue& value) {
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value && identifier_value->GetValueID() == CSSValueID::kNormal)
     return FontBuilder::InitialVariationSettings();
 
   const auto& list = To<CSSValueList>(value);
-  scoped_refptr<FontVariationSettings> settings =
-      FontVariationSettings::Create();
   int len = list.length();
+  HashMap<uint32_t, float> axes;
+  // Use a temporary HashMap to remove duplicate tags, keeping the last
+  // occurrence of each.
   for (int i = 0; i < len; ++i) {
     const auto& feature = To<cssvalue::CSSFontVariationValue>(list.Item(i));
-    settings->Append(FontVariationAxis(feature.Tag(), feature.Value()));
+    axes.Set(AtomicStringToFourByteTag(feature.Tag()), feature.Value());
   }
+  scoped_refptr<FontVariationSettings> settings =
+      FontVariationSettings::Create();
+  for (auto& axis : axes) {
+    settings->Append(FontVariationAxis(axis.key, axis.value));
+  }
+  std::sort(settings->begin(), settings->end(), CompareTags);
   return settings;
 }
 

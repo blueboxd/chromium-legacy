@@ -37,12 +37,6 @@ void DidGetGlobalUsage(bool* done,
   *unlimited_usage_out = unlimited_usage;
 }
 
-void DidGetUsage(bool* done, int64_t* usage_out, int64_t usage) {
-  EXPECT_FALSE(*done);
-  *done = true;
-  *usage_out = usage;
-}
-
 class UsageTrackerTestQuotaClient : public QuotaClient {
  public:
   UsageTrackerTestQuotaClient() = default;
@@ -61,24 +55,24 @@ class UsageTrackerTestQuotaClient : public QuotaClient {
   void GetOriginsForType(StorageType type,
                          GetOriginsCallback callback) override {
     EXPECT_EQ(StorageType::kTemporary, type);
-    std::set<url::Origin> origins;
+    std::vector<url::Origin> origins;
     for (const auto& origin_usage_pair : origin_usage_map_)
-      origins.insert(origin_usage_pair.first);
+      origins.push_back(origin_usage_pair.first);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), origins));
+        FROM_HERE, base::BindOnce(std::move(callback), std::move(origins)));
   }
 
   void GetOriginsForHost(StorageType type,
                          const std::string& host,
                          GetOriginsCallback callback) override {
     EXPECT_EQ(StorageType::kTemporary, type);
-    std::set<url::Origin> origins;
+    std::vector<url::Origin> origins;
     for (const auto& origin_usage_pair : origin_usage_map_) {
       if (origin_usage_pair.first.host() == host)
-        origins.insert(origin_usage_pair.first);
+        origins.push_back(origin_usage_pair.first);
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), origins));
+        FROM_HERE, base::BindOnce(std::move(callback), std::move(origins)));
   }
 
   void DeleteOriginData(const url::Origin& origin,
@@ -157,15 +151,6 @@ class UsageTrackerTest : public testing::Test {
   void UpdateUsageWithoutNotification(const url::Origin& origin,
                                       int64_t delta) {
     quota_client_->UpdateUsage(origin, delta);
-  }
-
-  void GetGlobalLimitedUsage(int64_t* limited_usage) {
-    bool done = false;
-    usage_tracker_.GetGlobalLimitedUsage(
-        base::BindOnce(&DidGetUsage, &done, limited_usage));
-    base::RunLoop().RunUntilIdle();
-
-    EXPECT_TRUE(done);
   }
 
   void GetGlobalUsage(int64_t* usage, int64_t* unlimited_usage) {
@@ -329,7 +314,7 @@ TEST_F(UsageTrackerTest, CacheDisabledClientTest) {
   EXPECT_EQ(host_usage_breakdown_expected, host_usage_breakdown.second);
 }
 
-TEST_F(UsageTrackerTest, LimitedGlobalUsageTest) {
+TEST_F(UsageTrackerTest, GlobalUsageUnlimitedUncached) {
   const url::Origin kNormal = url::Origin::Create(GURL("http://normal"));
   const url::Origin kUnlimited = url::Origin::Create(GURL("http://unlimited"));
   const url::Origin kNonCached = url::Origin::Create(GURL("http://non_cached"));
@@ -347,24 +332,113 @@ TEST_F(UsageTrackerTest, LimitedGlobalUsageTest) {
   UpdateUsageWithoutNotification(kNonCached, 4);
   UpdateUsageWithoutNotification(kNonCachedUnlimited, 8);
 
-  int64_t limited_usage = 0;
   int64_t total_usage = 0;
   int64_t unlimited_usage = 0;
 
-  GetGlobalLimitedUsage(&limited_usage);
   GetGlobalUsage(&total_usage, &unlimited_usage);
-  EXPECT_EQ(1 + 4, limited_usage);
   EXPECT_EQ(1 + 2 + 4 + 8, total_usage);
   EXPECT_EQ(2 + 8, unlimited_usage);
 
   UpdateUsageWithoutNotification(kNonCached, 16 - 4);
   UpdateUsageWithoutNotification(kNonCachedUnlimited, 32 - 8);
 
-  GetGlobalLimitedUsage(&limited_usage);
   GetGlobalUsage(&total_usage, &unlimited_usage);
-  EXPECT_EQ(1 + 16, limited_usage);
   EXPECT_EQ(1 + 2 + 16 + 32, total_usage);
   EXPECT_EQ(2 + 32, unlimited_usage);
+}
+
+TEST_F(UsageTrackerTest, GlobalUsageMultipleOriginsPerHostCachedInit) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("http://example.com"));
+  const url::Origin kOrigin2 =
+      url::Origin::Create(GURL("http://example.com:8080"));
+  ASSERT_EQ(kOrigin1.host(), kOrigin2.host())
+      << "The test assumes that the two origins have the same host";
+
+  UpdateUsageWithoutNotification(kOrigin1, 100);
+  UpdateUsageWithoutNotification(kOrigin2, 200);
+
+  int64_t total_usage = 0;
+  int64_t unlimited_usage = 0;
+  // GetGlobalUsage() takes different code paths on the first call and on
+  // subsequent calls. This test covers the code path used by the first call.
+  // Therefore, we introduce the origins before the first call.
+  GetGlobalUsage(&total_usage, &unlimited_usage);
+  EXPECT_EQ(100 + 200, total_usage);
+  EXPECT_EQ(0, unlimited_usage);
+}
+
+TEST_F(UsageTrackerTest, GlobalUsageMultipleOriginsPerHostCachedUpdate) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("http://example.com"));
+  const url::Origin kOrigin2 =
+      url::Origin::Create(GURL("http://example.com:8080"));
+  ASSERT_EQ(kOrigin1.host(), kOrigin2.host())
+      << "The test assumes that the two origins have the same host";
+
+  int64_t total_usage = 0;
+  int64_t unlimited_usage = 0;
+  // GetGlobalUsage() takes different code paths on the first call and on
+  // subsequent calls. This test covers the code path used by subsequent calls.
+  // Therefore, we introduce the origins after the first call.
+  GetGlobalUsage(&total_usage, &unlimited_usage);
+  EXPECT_EQ(0, total_usage);
+  EXPECT_EQ(0, unlimited_usage);
+
+  UpdateUsage(kOrigin1, 100);
+  UpdateUsage(kOrigin2, 200);
+
+  GetGlobalUsage(&total_usage, &unlimited_usage);
+  EXPECT_EQ(100 + 200, total_usage);
+  EXPECT_EQ(0, unlimited_usage);
+}
+
+TEST_F(UsageTrackerTest, GlobalUsageMultipleOriginsPerHostUncachedInit) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("http://example.com"));
+  const url::Origin kOrigin2 =
+      url::Origin::Create(GURL("http://example.com:8080"));
+  ASSERT_EQ(kOrigin1.host(), kOrigin2.host())
+      << "The test assumes that the two origins have the same host";
+
+  SetUsageCacheEnabled(kOrigin1, false);
+  SetUsageCacheEnabled(kOrigin2, false);
+
+  UpdateUsageWithoutNotification(kOrigin1, 100);
+  UpdateUsageWithoutNotification(kOrigin2, 200);
+
+  int64_t total_usage = 0;
+  int64_t unlimited_usage = 0;
+  // GetGlobalUsage() takes different code paths on the first call and on
+  // subsequent calls. This test covers the code path used by the first call.
+  // Therefore, we introduce the origins before the first call.
+  GetGlobalUsage(&total_usage, &unlimited_usage);
+  EXPECT_EQ(100 + 200, total_usage);
+  EXPECT_EQ(0, unlimited_usage);
+}
+
+TEST_F(UsageTrackerTest, GlobalUsageMultipleOriginsPerHostUncachedUpdate) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("http://example.com"));
+  const url::Origin kOrigin2 =
+      url::Origin::Create(GURL("http://example.com:8080"));
+  ASSERT_EQ(kOrigin1.host(), kOrigin2.host())
+      << "The test assumes that the two origins have the same host";
+
+  int64_t total_usage = 0;
+  int64_t unlimited_usage = 0;
+  // GetGlobalUsage() takes different code paths on the first call and on
+  // subsequent calls. This test covers the code path used by subsequent calls.
+  // Therefore, we introduce the origins after the first call.
+  GetGlobalUsage(&total_usage, &unlimited_usage);
+  EXPECT_EQ(0, total_usage);
+  EXPECT_EQ(0, unlimited_usage);
+
+  SetUsageCacheEnabled(kOrigin1, false);
+  SetUsageCacheEnabled(kOrigin2, false);
+
+  UpdateUsageWithoutNotification(kOrigin1, 100);
+  UpdateUsageWithoutNotification(kOrigin2, 200);
+
+  GetGlobalUsage(&total_usage, &unlimited_usage);
+  EXPECT_EQ(100 + 200, total_usage);
+  EXPECT_EQ(0, unlimited_usage);
 }
 
 }  // namespace storage

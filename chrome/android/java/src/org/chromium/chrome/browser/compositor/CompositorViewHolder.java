@@ -18,6 +18,7 @@ import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Pair;
 import android.view.DragEvent;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.PointerIcon;
 import android.view.View;
@@ -26,6 +27,7 @@ import android.view.accessibility.AccessibilityEvent;
 import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.accessibility.AccessibilityEventCompat;
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
@@ -66,6 +68,7 @@ import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.widget.InsetObserverView;
 import org.chromium.components.content_capture.ContentCaptureConsumer;
 import org.chromium.components.content_capture.ContentCaptureConsumerImpl;
+import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.UiUtils;
@@ -91,7 +94,8 @@ import java.util.Set;
 public class CompositorViewHolder extends FrameLayout
         implements ContentOffsetProvider, LayoutManagerHost, LayoutRenderHost, Invalidator.Host,
                    BrowserControlsStateProvider.Observer, InsetObserverView.WindowInsetObserver,
-                   ChromeAccessibilityUtil.Observer, TabObscuringHandler.Observer {
+                   ChromeAccessibilityUtil.Observer, TabObscuringHandler.Observer,
+                   ViewGroup.OnHierarchyChangeListener {
     private static final long SYSTEM_UI_VIEWPORT_UPDATE_DELAY_MS = 500;
 
     /**
@@ -154,6 +158,12 @@ public class CompositorViewHolder extends FrameLayout
 
     /** The currently attached View. */
     private View mView;
+
+    /**
+     * Current ContentView. Updates when active tab is switched or WebContents is swapped
+     * in the current Tab.
+     */
+    private ContentView mContentView;
 
     private TabObserver mTabObserver;
 
@@ -290,6 +300,7 @@ public class CompositorViewHolder extends FrameLayout
             @Override
             public void onContentViewScrollingStateChanged(boolean scrolling) {
                 mContentViewScrolling = scrolling;
+                if (!scrolling) updateContentViewChildrenDimension();
             }
 
             @Override
@@ -521,6 +532,9 @@ public class CompositorViewHolder extends FrameLayout
             mContentCaptureConsumer.onWebContentsChanged(null);
             mContentCaptureConsumer = null;
         }
+        if (mContentView != null) {
+            mContentView.removeOnHierarchyChangeListener(this);
+        }
     }
 
     /**
@@ -708,7 +722,8 @@ public class CompositorViewHolder extends FrameLayout
         return currentTab;
     }
 
-    private View getContentView() {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    ViewGroup getContentView() {
         Tab tab = getCurrentTab();
         return tab != null ? tab.getContentView() : null;
     }
@@ -788,10 +803,7 @@ public class CompositorViewHolder extends FrameLayout
      * Called whenever the host activity is started.
      */
     public void onStart() {
-        if (mFullscreenManager != null) {
-            mFullscreenManager.addObserver(this);
-            mFullscreenManager.setViewportSizeDelegate(this::updateViewportSize);
-        }
+        if (mFullscreenManager != null) mFullscreenManager.addObserver(this);
         requestRender();
     }
 
@@ -799,10 +811,7 @@ public class CompositorViewHolder extends FrameLayout
      * Called whenever the host activity is stopped.
      */
     public void onStop() {
-        if (mFullscreenManager != null) {
-            mFullscreenManager.removeObserver(this);
-            mFullscreenManager.setViewportSizeDelegate(null);
-        }
+        if (mFullscreenManager != null) mFullscreenManager.removeObserver(this);
     }
 
     @Override
@@ -810,6 +819,7 @@ public class CompositorViewHolder extends FrameLayout
             int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
         onViewportChanged();
         if (needsAnimate) requestRender();
+        updateContentViewChildrenDimension();
     }
 
     @Override
@@ -859,6 +869,65 @@ public class CompositorViewHolder extends FrameLayout
         // Reflect the changes that may have happened in in view/control size.
         Point viewportSize = getViewportSize();
         setSize(getWebContents(), getContentView(), viewportSize.x, viewportSize.y);
+    }
+
+    // View.OnHierarchyChangeListener implementation
+
+    @Override
+    public void onChildViewRemoved(View parent, View child) {
+        updateContentViewChildrenDimension();
+    }
+
+    @Override
+    public void onChildViewAdded(View parent, View child) {
+        updateContentViewChildrenDimension();
+    }
+
+    private void updateContentViewChildrenDimension() {
+        TraceEvent.begin("CompositorViewHolder:updateContentViewChildrenDimension");
+        ViewGroup view = getContentView();
+        if (view != null) {
+            assert mFullscreenManager != null;
+            float topViewsTranslation = getOverlayTranslateY();
+            float bottomMargin = BrowserControlsUtils.getBottomContentOffset(mFullscreenManager);
+            applyTranslationToTopChildViews(view, topViewsTranslation);
+            applyMarginToFullscreenChildViews(view, topViewsTranslation, bottomMargin);
+            updateViewportSize();
+        }
+        TraceEvent.end("CompositorViewHolder:updateContentViewChildrenDimension");
+    }
+
+    private static void applyMarginToFullscreenChildViews(
+            ViewGroup contentView, float topMargin, float bottomMargin) {
+        for (int i = 0; i < contentView.getChildCount(); i++) {
+            View child = contentView.getChildAt(i);
+            if (!(child.getLayoutParams() instanceof FrameLayout.LayoutParams)) continue;
+            FrameLayout.LayoutParams layoutParams =
+                    (FrameLayout.LayoutParams) child.getLayoutParams();
+
+            if (layoutParams.height == LayoutParams.MATCH_PARENT
+                    && (layoutParams.topMargin != (int) topMargin
+                            || layoutParams.bottomMargin != (int) bottomMargin)) {
+                layoutParams.topMargin = (int) topMargin;
+                layoutParams.bottomMargin = (int) bottomMargin;
+                child.requestLayout();
+                TraceEvent.instant("FullscreenManager:child.requestLayout()");
+            }
+        }
+    }
+
+    private static void applyTranslationToTopChildViews(ViewGroup contentView, float translation) {
+        for (int i = 0; i < contentView.getChildCount(); i++) {
+            View child = contentView.getChildAt(i);
+            if (!(child.getLayoutParams() instanceof FrameLayout.LayoutParams)) continue;
+
+            FrameLayout.LayoutParams layoutParams =
+                    (FrameLayout.LayoutParams) child.getLayoutParams();
+            if (Gravity.TOP == (layoutParams.gravity & Gravity.FILL_VERTICAL)) {
+                child.setTranslationY(translation);
+                TraceEvent.instant("FullscreenManager:child.setTranslationY()");
+            }
+        }
     }
 
     /**
@@ -1041,7 +1110,6 @@ public class CompositorViewHolder extends FrameLayout
     public void setFullscreenHandler(ChromeFullscreenManager fullscreen) {
         mFullscreenManager = fullscreen;
         mFullscreenManager.addObserver(this);
-        mFullscreenManager.setViewportSizeDelegate(this::updateViewportSize);
         onViewportChanged();
     }
 
@@ -1224,6 +1292,7 @@ public class CompositorViewHolder extends FrameLayout
                 tab.addObserver(mTabObserver);
                 mCompositorView.onTabChanged();
             }
+            updateViewStateListener(tab != null ? tab.getContentView() : null);
         }
 
         mTabVisible = tab;
@@ -1243,6 +1312,16 @@ public class CompositorViewHolder extends FrameLayout
         if (mContentCaptureConsumer != null) {
             mContentCaptureConsumer.onWebContentsChanged(getWebContents());
         }
+    }
+
+    private void updateViewStateListener(ContentView newContentView) {
+        if (mContentView != null) {
+            mContentView.removeOnHierarchyChangeListener(this);
+        }
+        if (newContentView != null) {
+            newContentView.addOnHierarchyChangeListener(this);
+        }
+        mContentView = newContentView;
     }
 
     /**

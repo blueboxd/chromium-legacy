@@ -29,15 +29,16 @@ CastActivityRecord::CastActivityRecord(
 
 CastActivityRecord::~CastActivityRecord() = default;
 
-void CastActivityRecord::SetOrUpdateSession(const CastSession& session,
-                                            const MediaSinkInternal& sink,
-                                            const std::string& hash_token) {
-  bool had_session_id = session_id_.has_value();
-  ActivityRecord::SetOrUpdateSession(session, sink, hash_token);
-  if (had_session_id) {
-    for (auto& client : connected_clients_)
-      client.second->SendMessageToClient(
-          CreateUpdateSessionMessage(session, client.first, sink, hash_token));
+void CastActivityRecord::OnSessionSet(const CastSession& session) {
+  if (media_controller_)
+    media_controller_->SetSession(session);
+}
+
+void CastActivityRecord::OnSessionUpdated(const CastSession& session,
+                                          const std::string& hash_token) {
+  for (auto& client : connected_clients_) {
+    client.second->SendMessageToClient(
+        CreateUpdateSessionMessage(session, client.first, sink_, hash_token));
   }
   if (media_controller_)
     media_controller_->SetSession(session);

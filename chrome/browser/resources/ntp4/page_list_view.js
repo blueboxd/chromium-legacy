@@ -321,8 +321,6 @@ cr.define('ntp', function() {
      *     An object with all the data on available applications.
      */
     getAppsCallback(data) {
-      const startTime = Date.now();
-
       // Remember this to select the correct card when done rebuilding.
       const prevCurrentCard = this.cardSlider.currentCard;
 
@@ -408,8 +406,6 @@ cr.define('ntp', function() {
       if (highlightApp) {
         this.appAdded(highlightApp, true);
       }
-
-      logEvent('apps.layout: ' + (Date.now() - startTime));
 
       // Tell the slider about the pages and mark the current page.
       this.updateSliderCards();

@@ -224,10 +224,9 @@ std::unique_ptr<FontPlatformData> FontPlatformDataFromNSFont(
         axes_reconfigured = true;
       }
     }
-    FontVariationAxis found_variation_setting(AtomicString(), 0);
-    if (variation_settings &&
-        variation_settings->FindPair(FourByteTagToAtomicString(coordinate.axis),
-                                     &found_variation_setting)) {
+    FontVariationAxis found_variation_setting(0, 0);
+    if (variation_settings && variation_settings->FindPair(
+                                  coordinate.axis, &found_variation_setting)) {
       if (VariableAxisChangeEffective(typeface.get(), coordinate.axis,
                                       found_variation_setting.Value())) {
         coordinate.value = found_variation_setting.Value();

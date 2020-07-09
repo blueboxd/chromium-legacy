@@ -10,8 +10,10 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cell.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
+#import "ios/chrome/browser/ui/table_view/chrome_empty_table_view_background.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_empty_view.h"
+#import "ios/chrome/browser/ui/table_view/table_view_illustrated_empty_view.h"
 #import "ios/chrome/browser/ui/table_view/table_view_loading_view.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -27,8 +29,8 @@ const CGFloat kTableViewSeparatorInsetWithIcon = 56;
 @interface ChromeTableViewController ()
 // The loading displayed by [self startLoadingIndicatorWithLoadingMessage:].
 @property(nonatomic, strong) TableViewLoadingView* loadingView;
-// The view displayed by [self addEmptyTableViewWithMessage:].
-@property(nonatomic, strong) TableViewEmptyView* emptyView;
+// The view displayed by [self addEmptyTableViewWith...:].
+@property(nonatomic, strong) UIView<ChromeEmptyTableViewBackground>* emptyView;
 @end
 
 @implementation ChromeTableViewController
@@ -144,8 +146,18 @@ const CGFloat kTableViewSeparatorInsetWithIcon = 56;
   self.emptyView.tintColor = [UIColor colorNamed:kPlaceholderImageTintColor];
 }
 
-- (void)updateEmptyTableViewMessageAccessibilityLabel:(NSString*)newLabel {
-  self.emptyView.messageAccessibilityLabel = newLabel;
+- (void)addEmptyTableViewWithImage:(UIImage*)image
+                             title:(NSString*)title
+                          subtitle:(NSString*)subtitle {
+  self.emptyView =
+      [[TableViewIllustratedEmptyView alloc] initWithFrame:self.view.bounds
+                                                     image:image
+                                                     title:title
+                                                  subtitle:subtitle];
+}
+
+- (void)updateEmptyTableViewAccessibilityLabel:(NSString*)newLabel {
+  self.emptyView.viewAccessibilityLabel = newLabel;
 }
 
 - (void)removeEmptyTableView {

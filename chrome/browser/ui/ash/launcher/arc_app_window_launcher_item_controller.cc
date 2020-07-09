@@ -39,7 +39,8 @@ void ArcAppWindowLauncherItemController::ItemSelected(
     std::unique_ptr<ui::Event> event,
     int64_t display_id,
     ash::ShelfLaunchSource source,
-    ItemSelectedCallback callback) {
+    ItemSelectedCallback callback,
+    const ItemFilterPredicate& filter_predicate) {
   if (window_count()) {
     // Tapping the shelf icon of an app that's showing PIP means expanding PIP.
     // Even if the app contains multiple windows, we just expand PIP without
@@ -58,7 +59,8 @@ void ArcAppWindowLauncherItemController::ItemSelected(
       }
     }
     AppWindowLauncherItemController::ItemSelected(std::move(event), display_id,
-                                                  source, std::move(callback));
+                                                  source, std::move(callback),
+                                                  filter_predicate);
     return;
   }
 

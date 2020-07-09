@@ -63,14 +63,11 @@ namespace blink {
 
 namespace {
 
-String GetFrameAttribute(HTMLFrameOwnerElement* frame_owner,
-                         const QualifiedName& attr_name,
-                         bool truncate) {
-  String attr_value;
+AtomicString GetFrameAttribute(HTMLFrameOwnerElement* frame_owner,
+                               const QualifiedName& attr_name) {
+  AtomicString attr_value;
   if (frame_owner->hasAttribute(attr_name)) {
     attr_value = frame_owner->getAttribute(attr_name);
-    if (truncate && attr_value.length() > 100)
-      attr_value = attr_value.Substring(0, 100);  // Truncate to 100 chars
   }
   return attr_value;
 }
@@ -94,12 +91,12 @@ AtomicString GetFrameOwnerType(HTMLFrameOwnerElement* frame_owner) {
   return "";
 }
 
-String GetFrameSrc(HTMLFrameOwnerElement* frame_owner) {
+AtomicString GetFrameSrc(HTMLFrameOwnerElement* frame_owner) {
   switch (frame_owner->OwnerType()) {
     case mojom::blink::FrameOwnerElementType::kObject:
-      return GetFrameAttribute(frame_owner, html_names::kDataAttr, false);
+      return GetFrameAttribute(frame_owner, html_names::kDataAttr);
     default:
-      return GetFrameAttribute(frame_owner, html_names::kSrcAttr, false);
+      return GetFrameAttribute(frame_owner, html_names::kSrcAttr);
   }
 }
 
@@ -312,11 +309,10 @@ void WindowPerformance::ReportLongTask(base::TimeTicks start_time,
   } else {
     HTMLFrameOwnerElement* frame_owner =
         culprit_dom_window->GetFrame()->DeprecatedLocalOwner();
-    AddLongTaskTiming(
-        start_time, end_time, attribution.first, GetFrameOwnerType(frame_owner),
-        GetFrameSrc(frame_owner),
-        GetFrameAttribute(frame_owner, html_names::kIdAttr, false),
-        GetFrameAttribute(frame_owner, html_names::kNameAttr, true));
+    AddLongTaskTiming(start_time, end_time, attribution.first,
+                      GetFrameOwnerType(frame_owner), GetFrameSrc(frame_owner),
+                      GetFrameAttribute(frame_owner, html_names::kIdAttr),
+                      GetFrameAttribute(frame_owner, html_names::kNameAttr));
   }
 }
 

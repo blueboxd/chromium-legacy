@@ -333,9 +333,7 @@ unsigned FontDescription::StyleHashWithoutFamilyList() const {
   if (settings) {
     unsigned num_features = settings->size();
     for (unsigned i = 0; i < num_features; ++i) {
-      const AtomicString& tag = settings->at(i).Tag();
-      for (unsigned j = 0; j < tag.length(); j++)
-        string_hasher.AddCharacter(tag[j]);
+      WTF::AddIntToHash(hash, settings->at(i).Tag());
       WTF::AddIntToHash(hash, settings->at(i).Value());
     }
   }

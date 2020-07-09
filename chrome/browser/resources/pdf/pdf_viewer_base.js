@@ -11,7 +11,6 @@ import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/poly
 import {BrowserApi} from './browser_api.js';
 import {FittingType} from './constants.js';
 import {ContentController, MessageData, PluginController} from './controller.js';
-import {FitToChangedEvent} from './elements/viewer-zoom-toolbar.js';
 import {PDFMetrics} from './metrics.js';
 import {OpenPdfParamsParser} from './open_pdf_params_parser.js';
 import {LoadState} from './pdf_scripting_api.js';
@@ -502,6 +501,7 @@ export class PDFViewerBaseElement extends PolymerElement {
 
     if (params.view) {
       this.isUserInitiatedEvent = false;
+      this.updateViewportFit(params.view);
       this.forceFit(params.view);
       if (params.viewPosition) {
         const zoomedPositionShift =
@@ -562,22 +562,27 @@ export class PDFViewerBaseElement extends PolymerElement {
   }
 
   /**
+   * @param {!FittingType} fittingType
+   * @protected
+   */
+  updateViewportFit(fittingType) {
+    if (fittingType === FittingType.FIT_TO_PAGE) {
+      this.viewport_.fitToPage();
+    } else if (fittingType === FittingType.FIT_TO_WIDTH) {
+      this.viewport_.fitToWidth();
+    } else if (fittingType === FittingType.FIT_TO_HEIGHT) {
+      this.viewport_.fitToHeight();
+    }
+  }
+
+  /**
    * Request to change the viewport fitting type.
-   * @param {!CustomEvent<FitToChangedEvent>} e
+   * @param {!CustomEvent<!FittingType>} e
    * @protected
    */
   onFitToChanged(e) {
-    if (e.detail.fittingType === FittingType.FIT_TO_PAGE) {
-      this.viewport_.fitToPage();
-    } else if (e.detail.fittingType === FittingType.FIT_TO_WIDTH) {
-      this.viewport_.fitToWidth();
-    } else if (e.detail.fittingType === FittingType.FIT_TO_HEIGHT) {
-      this.viewport_.fitToHeight();
-    }
-
-    if (e.detail.userInitiated) {
-      PDFMetrics.recordFitTo(e.detail.fittingType);
-    }
+    this.updateViewportFit(e.detail);
+    PDFMetrics.recordFitTo(e.detail);
   }
 
   /** @protected */

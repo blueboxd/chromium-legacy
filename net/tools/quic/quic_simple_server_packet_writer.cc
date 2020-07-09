@@ -30,9 +30,6 @@ void QuicSimpleServerPacketWriter::OnWriteComplete(int rv) {
   write_blocked_ = false;
   quic::WriteResult result(
       rv < 0 ? quic::WRITE_STATUS_ERROR : quic::WRITE_STATUS_OK, rv);
-  if (!callback_.is_null()) {
-    std::move(callback_).Run(result);
-  }
   dispatcher_->OnCanWrite();
 }
 

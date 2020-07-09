@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_resource_ops.h"
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
@@ -86,15 +87,20 @@ void DidReadInfo(
 
 class ServiceWorkerResourceReaderImpl::DataReader {
  public:
-  DataReader(base::WeakPtr<ServiceWorkerResourceReaderImpl> owner,
-             size_t total_bytes_to_read,
-             mojo::ScopedDataPipeProducerHandle producer_handle)
+  DataReader(
+      base::WeakPtr<ServiceWorkerResourceReaderImpl> owner,
+      size_t total_bytes_to_read,
+      mojo::PendingRemote<storage::mojom::ServiceWorkerDataPipeStateNotifier>
+          notifier,
+      mojo::ScopedDataPipeProducerHandle producer_handle)
       : owner_(std::move(owner)),
         total_bytes_to_read_(total_bytes_to_read),
+        notifier_(std::move(notifier)),
         producer_handle_(std::move(producer_handle)),
         watcher_(FROM_HERE,
                  mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                  base::SequencedTaskRunnerHandle::Get()) {
+    DCHECK(notifier_);
     watcher_.Watch(producer_handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
                    base::BindRepeating(&DataReader::OnWritable,
                                        weak_factory_.GetWeakPtr()));
@@ -166,6 +172,11 @@ class ServiceWorkerResourceReaderImpl::DataReader {
   void Complete(int status) {
     watcher_.Cancel();
     producer_handle_.reset();
+
+    if (notifier_.is_connected()) {
+      notifier_->OnComplete(status);
+    }
+
     if (owner_) {
       owner_->DidReadDataComplete();
     }
@@ -174,6 +185,7 @@ class ServiceWorkerResourceReaderImpl::DataReader {
   base::WeakPtr<ServiceWorkerResourceReaderImpl> owner_;
   const size_t total_bytes_to_read_;
   size_t current_bytes_read_ = 0;
+  mojo::Remote<storage::mojom::ServiceWorkerDataPipeStateNotifier> notifier_;
   mojo::ScopedDataPipeProducerHandle producer_handle_;
   mojo::SimpleWatcher watcher_;
   scoped_refptr<network::NetToMojoPendingBuffer> pending_buffer_;
@@ -197,8 +209,11 @@ void ServiceWorkerResourceReaderImpl::ReadResponseHead(
                                                std::move(callback)));
 }
 
-void ServiceWorkerResourceReaderImpl::ReadData(int64_t size,
-                                               ReadDataCallback callback) {
+void ServiceWorkerResourceReaderImpl::ReadData(
+    int64_t size,
+    mojo::PendingRemote<storage::mojom::ServiceWorkerDataPipeStateNotifier>
+        notifier,
+    ReadDataCallback callback) {
   MojoCreateDataPipeOptions options;
   options.struct_size = sizeof(MojoCreateDataPipeOptions);
   options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
@@ -215,6 +230,7 @@ void ServiceWorkerResourceReaderImpl::ReadData(int64_t size,
   }
 
   data_reader_ = std::make_unique<DataReader>(weak_factory_.GetWeakPtr(), size,
+                                              std::move(notifier),
                                               std::move(producer_handle));
   std::move(callback).Run(std::move(consumer_handle));
 }

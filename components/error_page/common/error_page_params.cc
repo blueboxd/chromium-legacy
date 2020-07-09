@@ -8,11 +8,7 @@
 
 namespace error_page {
 
-ErrorPageParams::ErrorPageParams()
-    : suggest_reload(false),
-      reload_tracking_id(-1),
-      search_tracking_id(-1) {
-}
+ErrorPageParams::ErrorPageParams() : suggest_reload(false) {}
 
 ErrorPageParams::~ErrorPageParams() {
 }

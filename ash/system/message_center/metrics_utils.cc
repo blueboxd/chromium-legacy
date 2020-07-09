@@ -99,14 +99,18 @@ NotificationTypeDetailed GetNotificationTypeForCrosSystemPriority(
     const message_center::Notification& notification) {
   // The warning level is not stored in the notification data, so we need to
   // infer it from the accent color.
-  SkColor accent_color = notification.rich_notification_data().accent_color;
+  base::Optional<SkColor> accent_color =
+      notification.rich_notification_data().accent_color;
   message_center::SystemNotificationWarningLevel warning_level =
       message_center::SystemNotificationWarningLevel::NORMAL;
-  if (accent_color == kSystemNotificationColorWarning) {
-    warning_level = message_center::SystemNotificationWarningLevel::WARNING;
-  } else if (accent_color == kSystemNotificationColorCriticalWarning) {
-    warning_level =
-        message_center::SystemNotificationWarningLevel::CRITICAL_WARNING;
+  if (accent_color.has_value()) {
+    if (accent_color.value() == kSystemNotificationColorWarning) {
+      warning_level = message_center::SystemNotificationWarningLevel::WARNING;
+    } else if (accent_color.value() ==
+               kSystemNotificationColorCriticalWarning) {
+      warning_level =
+          message_center::SystemNotificationWarningLevel::CRITICAL_WARNING;
+    }
   }
 
   bool pinned = notification.rich_notification_data().pinned;

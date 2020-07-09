@@ -77,8 +77,6 @@ source_set("automation_client_lib") {
     "chrome/chrome_remote_impl.h",
     "chrome/console_logger.cc",
     "chrome/console_logger.h",
-    "chrome/debugger_tracker.cc",
-    "chrome/debugger_tracker.h",
     "chrome/device_manager.cc",
     "chrome/device_manager.h",
     "chrome/device_metrics.cc",

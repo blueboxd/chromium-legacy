@@ -497,8 +497,10 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker]     method getDirectory
+[Worker]     method getDirectoryHandle
 [Worker]     method getEntries
 [Worker]     method getFile
+[Worker]     method getFileHandle
 [Worker]     method removeEntry
 [Worker]     method resolve
 [Worker] interface FileSystemFileHandle : FileSystemHandle

@@ -33,7 +33,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "components/feedback/anonymizer_tool.h"
+#include "components/feedback/redaction_tool.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/browser/policy_conversions.h"
 #include "components/prefs/pref_service.h"
@@ -111,8 +111,8 @@ std::string ZipFiles(
   return compressed_logs;
 }
 
-std::string ReadAndAnonymizeLogFile(feedback::AnonymizerTool* anonymizer,
-                                    const base::FilePath& file_path) {
+std::string ReadAndRedactLogFile(feedback::RedactionTool* redactor,
+                                 const base::FilePath& file_path) {
   std::string data;
   if (!base::ReadFileToStringWithMaxSize(file_path, &data, kLogCutoffSize) &&
       data.empty()) {
@@ -120,27 +120,26 @@ std::string ReadAndAnonymizeLogFile(feedback::AnonymizerTool* anonymizer,
                   << file_path.value();
   }
   // We want to remove the last line completely because PII data might be cut in
-  // half (anonymizer might not recognize it).
+  // half (redactor might not recognize it).
   if (!data.empty() && data.back() != '\n') {
     size_t pos = data.find_last_of('\n');
     data.erase(pos != std::string::npos ? pos + 1 : 0);
     data += "... [truncated]\n";
   }
-  return SystemLogUploader::RemoveSensitiveData(anonymizer, data);
+  return SystemLogUploader::RemoveSensitiveData(redactor, data);
 }
 
-// Reads the system log files as binary files, anonymizes data, stores the files
+// Reads the system log files as binary files, redacts data, stores the files
 // as pairs (file name, data) and returns. Called on blocking thread.
 std::unique_ptr<SystemLogUploader::SystemLogs> ReadFiles() {
   auto system_logs = std::make_unique<SystemLogUploader::SystemLogs>();
-  feedback::AnonymizerTool anonymizer(
+  feedback::RedactionTool redactor(
       extension_misc::kBuiltInFirstPartyExtensionIds);
   for (const char* file_path : kSystemLogFileNames) {
     if (!base::PathExists(base::FilePath(file_path)))
       continue;
     system_logs->push_back(std::make_pair(
-        file_path,
-        ReadAndAnonymizeLogFile(&anonymizer, base::FilePath(file_path))));
+        file_path, ReadAndRedactLogFile(&redactor, base::FilePath(file_path))));
   }
   return system_logs;
 }
@@ -220,7 +219,7 @@ std::unique_ptr<UploadJob> SystemLogDelegate::CreateUploadJob(
               "Admins can ask that their devices regularly upload their system "
               "logs."
           trigger: "After reboot and every 12 hours."
-          data: "Non-user specific, anonymized system logs from /var/log/."
+          data: "Non-user specific, redacted system logs from /var/log/."
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
@@ -395,9 +394,9 @@ void SystemLogUploader::OnFailure(UploadJob::ErrorCode error_code) {
 
 // static
 std::string SystemLogUploader::RemoveSensitiveData(
-    feedback::AnonymizerTool* anonymizer,
+    feedback::RedactionTool* redactor,
     const std::string& data) {
-  return anonymizer->Anonymize(data);
+  return redactor->Redact(data);
 }
 
 void SystemLogUploader::ScheduleNextSystemLogUploadImmediately() {

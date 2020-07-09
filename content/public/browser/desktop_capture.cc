@@ -6,7 +6,12 @@
 
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "build/lacros_buildflags.h"
 #include "content/public/common/content_features.h"
+
+#if BUILDFLAG(IS_LACROS)
+#include "content/browser/media/capture/desktop_capturer_lacros.h"
+#endif
 
 namespace content {
 namespace desktop_capture {
@@ -39,11 +44,17 @@ webrtc::DesktopCaptureOptions CreateDesktopCaptureOptions() {
 }
 
 std::unique_ptr<webrtc::DesktopCapturer> CreateScreenCapturer() {
+#if BUILDFLAG(IS_LACROS)
+  return std::make_unique<DesktopCapturerLacros>(
+      webrtc::DesktopCaptureOptions());
+#else
   return webrtc::DesktopCapturer::CreateScreenCapturer(
       CreateDesktopCaptureOptions());
+#endif
 }
 
 std::unique_ptr<webrtc::DesktopCapturer> CreateWindowCapturer() {
+  // TODO(https://crbug.com/1094460): Implement window capture.
   return webrtc::DesktopCapturer::CreateWindowCapturer(
       CreateDesktopCaptureOptions());
 }

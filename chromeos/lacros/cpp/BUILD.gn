@@ -1,0 +1,18 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# C++ components used by both lacros-chrome and ash-chrome.
+config("lacros_implementation") {
+  defines = [ "IS_LACROS_IMPL" ]
+}
+
+component("cpp") {
+  output_name = "lacros_public_cpp"
+  sources = [
+    "window_snapshot.cc",
+    "window_snapshot.h",
+  ]
+  configs += [ ":lacros_implementation" ]
+  deps = [ "//base" ]
+}

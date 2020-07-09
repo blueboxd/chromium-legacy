@@ -88,7 +88,7 @@ def _GenerateDefFile(cpu, is_debug, extra_gn_args=[], suffix=None):
         f.write('    {}\n'.format(s))
 
     # Hack, it looks like there is a race in the directory cleanup.
-    time.sleep(3)
+    time.sleep(10)
 
   logging.info('[%s - %s] .def file successfully generated.', cpu, flavor)
 

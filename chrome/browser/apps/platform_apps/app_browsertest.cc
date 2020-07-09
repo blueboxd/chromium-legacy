@@ -1227,7 +1227,7 @@ class PlatformAppIncognitoBrowserTest : public PlatformAppBrowserTest,
 };
 
 // Seen to fail repeatedly on CrOS; crbug.com/774011.
-#ifndef OS_CHROMEOS
+#if !defined(OS_CHROMEOS)
 #define MAYBE_IncognitoComponentApp IncognitoComponentApp
 #else
 #define MAYBE_IncognitoComponentApp DISABLED_IncognitoComponentApp

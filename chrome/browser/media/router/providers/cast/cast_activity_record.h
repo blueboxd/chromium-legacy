@@ -40,10 +40,6 @@ class CastActivityRecord : public ActivityRecord {
                      CastSessionTracker* session_tracker);
   ~CastActivityRecord() override;
 
-  // ActivityRecord implementation
-  void SetOrUpdateSession(const CastSession& session,
-                          const MediaSinkInternal& sink,
-                          const std::string& hash_token) override;
   void SendMediaStatusToClients(const base::Value& media_status,
                                 base::Optional<int> request_id) override;
   void OnAppMessage(const cast::channel::CastMessage& message) override;
@@ -64,6 +60,9 @@ class CastActivityRecord : public ActivityRecord {
   bool HasJoinableClient(AutoJoinPolicy policy,
                          const url::Origin& origin,
                          int tab_id) const;
+  void OnSessionSet(const CastSession& session) override;
+  void OnSessionUpdated(const CastSession& session,
+                        const std::string& hash_token) override;
 
  private:
   friend class CastSessionClientImpl;

@@ -22,11 +22,6 @@
 namespace net {
 class NetworkQualityEstimator;
 
-typedef base::Callback<void(
-    const nqe::internal::NetworkID& network_id,
-    const nqe::internal::CachedNetworkQuality& cached_network_quality)>
-    OnChangeInCachedNetworkQualityCallback;
-
 typedef std::map<nqe::internal::NetworkID, nqe::internal::CachedNetworkQuality>
     ParsedPrefs;
 

@@ -162,6 +162,11 @@ static_library("secure_channel") {
     "//device/bluetooth/public/cpp",
   ]
 
+  public_deps = [
+    "//third_party/securemessage/proto",
+    "//third_party/ukey2:proto",
+  ]
+
   visibility = [
     ":*",
     "//chrome/browser/chromeos",
@@ -238,8 +243,9 @@ static_library("test_support") {
     "mock_foreground_eid_generator.h",
   ]
 
+  public_deps = [ ":secure_channel" ]
+
   deps = [
-    ":secure_channel",
     "//base",
     "//base/test:test_support",
     "//chromeos/components/multidevice",
@@ -295,8 +301,9 @@ source_set("unit_tests") {
     "wire_message_unittest.cc",
   ]
 
+  public_deps = [ ":secure_channel" ]
+
   deps = [
-    ":secure_channel",
     ":test_support",
     "//base/test:test_support",
     "//chromeos/components/multidevice",

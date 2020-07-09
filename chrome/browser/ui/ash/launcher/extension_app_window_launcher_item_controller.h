@@ -29,7 +29,9 @@ class ExtensionAppWindowLauncherItemController
   void OnWindowTitleChanged(aura::Window* window) override;
 
   // AppWindowLauncherItemController:
-  AppMenuItems GetAppMenuItems(int event_flags) override;
+  AppMenuItems GetAppMenuItems(
+      int event_flags,
+      const ItemFilterPredicate& filter_predicate) override;
   void ExecuteCommand(bool from_context_menu,
                       int64_t command_id,
                       int32_t event_flags,

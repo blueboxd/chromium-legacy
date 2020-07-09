@@ -12,6 +12,7 @@ angle_has_build = true
 angle_glslang_dir = "//third_party/glslang/src"
 angle_googletest_dir = "//third_party/googletest/src"
 angle_jsoncpp_dir = "//third_party/jsoncpp"
+angle_libjpeg_turbo_dir = "//third_party/libjpeg_turbo"
 angle_libpng_dir = "//third_party/libpng"
 angle_spirv_cross_dir = "//third_party/spirv-cross/spirv-cross"
 angle_spirv_headers_dir = "//third_party/spirv-headers/src"

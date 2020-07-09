@@ -496,9 +496,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, AcceptsOptions) {
   EXPECT_TRUE(dialog_params.file_types->include_all_files);
   ASSERT_EQ(2u, dialog_params.file_types->extensions.size());
   ASSERT_EQ(2u, dialog_params.file_types->extensions[0].size());
-  EXPECT_EQ(FILE_PATH_LITERAL("Js"),
-            dialog_params.file_types->extensions[0][0]);
   EXPECT_EQ(FILE_PATH_LITERAL("txt"),
+            dialog_params.file_types->extensions[0][0]);
+  EXPECT_EQ(FILE_PATH_LITERAL("Js"),
             dialog_params.file_types->extensions[0][1]);
   EXPECT_TRUE(base::Contains(dialog_params.file_types->extensions[1],
                              FILE_PATH_LITERAL("jpg")));

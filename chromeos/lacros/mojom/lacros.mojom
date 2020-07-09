@@ -4,11 +4,16 @@
 
 module lacros.mojom;
 
+import "chromeos/lacros/mojom/screen_manager.mojom";
 import "chromeos/lacros/mojom/select_file.mojom";
 
 // AshChromeService defines the APIs that live in ash-chrome and are
 // accessed from lacros-chrome.
 interface AshChromeService {
+  // Binds the ScreenManager interface for interacting with windows, screens and
+  // displays.
+  BindScreenManager@1(pending_receiver<ScreenManager> receiver);
+
   // Binds the SelectFile interface for open/save dialogs.
   BindSelectFile@0(pending_receiver<SelectFile> receiver);
 };

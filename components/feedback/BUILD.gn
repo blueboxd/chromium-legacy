@@ -4,8 +4,6 @@
 
 static_library("feedback") {
   sources = [
-    "anonymizer_tool.cc",
-    "anonymizer_tool.h",
     "feedback_common.cc",
     "feedback_common.h",
     "feedback_data.cc",
@@ -20,6 +18,8 @@ static_library("feedback") {
     "feedback_uploader_factory.h",
     "feedback_util.cc",
     "feedback_util.h",
+    "redaction_tool.cc",
+    "redaction_tool.h",
     "system_logs/system_logs_fetcher.cc",
     "system_logs/system_logs_fetcher.h",
     "system_logs/system_logs_source.cc",
@@ -47,11 +47,11 @@ static_library("feedback") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "anonymizer_tool_unittest.cc",
     "feedback_common_unittest.cc",
     "feedback_data_unittest.cc",
     "feedback_uploader_dispatch_unittest.cc",
     "feedback_uploader_unittest.cc",
+    "redaction_tool_unittest.cc",
   ]
   deps = [
     ":feedback",

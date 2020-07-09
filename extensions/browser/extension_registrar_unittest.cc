@@ -204,6 +204,8 @@ class ExtensionRegistrarTest : public ExtensionsTest {
                                 UnloadedExtensionReason::UNINSTALL);
     ExpectInSet(ExtensionRegistry::NONE);
 
+    ExtensionPrefs::Get(browser_context())
+        ->DeleteExtensionPrefs(extension_->id());
     // Removing a disabled extension should trigger a notification.
     EXPECT_TRUE(notification_tracker_.Check1AndReset(
         extensions::NOTIFICATION_EXTENSION_REMOVED));

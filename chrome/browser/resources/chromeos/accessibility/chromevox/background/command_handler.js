@@ -88,6 +88,7 @@ CommandHandler.onCommand = function(command) {
         });
         if (timeString) {
           ChromeVox.tts.speak(timeString, QueueMode.FLUSH);
+          ChromeVox.braille.write(NavBraille.fromText(timeString));
         } else {
           // Fallback to the old way of speaking time.
           const output = new Output();

@@ -694,6 +694,57 @@ ExtensionFunction::ResponseAction WindowsUpdateFunction::Run() {
     return RespondNow(
         Error(tabs_constants::kMissingLockWindowFullscreenPrivatePermission));
   }
+
+  // Before changing any of a window's state, validate the update parameters.
+  // This prevents Chrome from performing "half" an update.
+  ui::WindowShowState show_state =
+      ConvertToWindowShowState(params->update_info.state);
+  gfx::Rect bounds = browser->window()->IsMinimized()
+                         ? browser->window()->GetRestoredBounds()
+                         : browser->window()->GetBounds();
+  bool set_bounds = false;
+
+  // Any part of the bounds can optionally be set by the caller.
+  if (params->update_info.left) {
+    bounds.set_x(*params->update_info.left);
+    set_bounds = true;
+  }
+
+  if (params->update_info.top) {
+    bounds.set_y(*params->update_info.top);
+    set_bounds = true;
+  }
+
+  if (params->update_info.width) {
+    bounds.set_width(*params->update_info.width);
+    set_bounds = true;
+  }
+
+  if (params->update_info.height) {
+    bounds.set_height(*params->update_info.height);
+    set_bounds = true;
+  }
+
+  if (set_bounds && (show_state == ui::SHOW_STATE_MINIMIZED ||
+                     show_state == ui::SHOW_STATE_MAXIMIZED ||
+                     show_state == ui::SHOW_STATE_FULLSCREEN)) {
+    return RespondNow(Error(tabs_constants::kInvalidWindowStateError));
+  }
+
+  if (params->update_info.focused) {
+    bool focused = *params->update_info.focused;
+    // A window cannot be focused and minimized, or not focused and maximized
+    // or fullscreened.
+    if (focused && show_state == ui::SHOW_STATE_MINIMIZED)
+      return RespondNow(Error(tabs_constants::kInvalidWindowStateError));
+    if (!focused && (show_state == ui::SHOW_STATE_MAXIMIZED ||
+                     show_state == ui::SHOW_STATE_FULLSCREEN)) {
+      return RespondNow(Error(tabs_constants::kInvalidWindowStateError));
+    }
+  }
+
+  // Parameters are valid. Now to perform the actual updates.
+
   // state will be WINDOW_STATE_NONE if the state parameter wasn't passed from
   // the JS side, and in that case we don't want to change the locked state.
   if (is_locked_fullscreen &&
@@ -705,9 +756,6 @@ ExtensionFunction::ResponseAction WindowsUpdateFunction::Run() {
                  windows::WINDOW_STATE_LOCKED_FULLSCREEN) {
     tabs_util::SetLockedFullscreenState(browser, true);
   }
-
-  ui::WindowShowState show_state =
-      ConvertToWindowShowState(params->update_info.state);
 
   if (show_state != ui::SHOW_STATE_FULLSCREEN &&
       show_state != ui::SHOW_STATE_DEFAULT) {
@@ -737,40 +785,7 @@ ExtensionFunction::ResponseAction WindowsUpdateFunction::Run() {
       break;
   }
 
-  gfx::Rect bounds;
-  if (browser->window()->IsMinimized())
-    bounds = browser->window()->GetRestoredBounds();
-  else
-    bounds = browser->window()->GetBounds();
-  bool set_bounds = false;
-
-  // Any part of the bounds can optionally be set by the caller.
-  if (params->update_info.left) {
-    bounds.set_x(*params->update_info.left);
-    set_bounds = true;
-  }
-
-  if (params->update_info.top) {
-    bounds.set_y(*params->update_info.top);
-    set_bounds = true;
-  }
-
-  if (params->update_info.width) {
-    bounds.set_width(*params->update_info.width);
-    set_bounds = true;
-  }
-
-  if (params->update_info.height) {
-    bounds.set_height(*params->update_info.height);
-    set_bounds = true;
-  }
-
   if (set_bounds) {
-    if (show_state == ui::SHOW_STATE_MINIMIZED ||
-        show_state == ui::SHOW_STATE_MAXIMIZED ||
-        show_state == ui::SHOW_STATE_FULLSCREEN) {
-      return RespondNow(Error(tabs_constants::kInvalidWindowStateError));
-    }
     // TODO(varkha): Updating bounds during a drag can cause problems and a more
     // general solution is needed. See http://crbug.com/251813 .
     browser->window()->SetBounds(bounds);
@@ -778,14 +793,8 @@ ExtensionFunction::ResponseAction WindowsUpdateFunction::Run() {
 
   if (params->update_info.focused) {
     if (*params->update_info.focused) {
-      if (show_state == ui::SHOW_STATE_MINIMIZED)
-        return RespondNow(Error(tabs_constants::kInvalidWindowStateError));
       browser->window()->Activate();
     } else {
-      if (show_state == ui::SHOW_STATE_MAXIMIZED ||
-          show_state == ui::SHOW_STATE_FULLSCREEN) {
-        return RespondNow(Error(tabs_constants::kInvalidWindowStateError));
-      }
       browser->window()->Deactivate();
     }
   }

@@ -42,6 +42,11 @@ void LacrosChromeServiceImpl::BindReceiver(
   receiver_.Bind(std::move(receiver));
 }
 
+void LacrosChromeServiceImpl::BindScreenManagerReceiver(
+    mojo::PendingReceiver<lacros::mojom::ScreenManager> pending_receiver) {
+  ash_chrome_service_->BindScreenManager(std::move(pending_receiver));
+}
+
 void LacrosChromeServiceImpl::RequestAshChromeServiceReceiver(
     RequestAshChromeServiceReceiverCallback callback) {
   // TODO(hidehiko): Remove non-error logging from here.

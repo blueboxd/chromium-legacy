@@ -73,22 +73,6 @@ bool NetErrorPageController::DiagnoseErrorsButtonClick() {
   return ButtonClick(NetErrorHelperCore::DIAGNOSE_ERROR);
 }
 
-bool NetErrorPageController::TrackCachedCopyButtonClick() {
-  return ButtonClick(NetErrorHelperCore::SHOW_CACHED_COPY_BUTTON);
-}
-
-bool NetErrorPageController::TrackClick(const gin::Arguments& args) {
-  if (args.PeekNext().IsEmpty() || !args.PeekNext()->IsInt32())
-    return false;
-
-  if (delegate_) {
-    delegate_->TrackClick(args.PeekNext()
-                              ->Int32Value(args.GetHolderCreationContext())
-                              .FromMaybe(0));
-  }
-  return true;
-}
-
 bool NetErrorPageController::ButtonClick(NetErrorHelperCore::Button button) {
   if (delegate_)
     delegate_->ButtonPressed(button);
@@ -143,14 +127,11 @@ gin::ObjectTemplateBuilder NetErrorPageController::GetObjectTemplateBuilder(
                  &NetErrorPageController::DetailsButtonClick)
       .SetMethod("diagnoseErrorsButtonClick",
                  &NetErrorPageController::DiagnoseErrorsButtonClick)
-      .SetMethod("trackClick", &NetErrorPageController::TrackClick)
       .SetMethod("trackEasterEgg", &NetErrorPageController::TrackEasterEgg)
       .SetMethod("updateEasterEggHighScore",
                  &NetErrorPageController::UpdateEasterEggHighScore)
       .SetMethod("resetEasterEggHighScore",
                  &NetErrorPageController::ResetEasterEggHighScore)
-      .SetMethod("trackCachedCopyButtonClick",
-                 &NetErrorPageController::TrackCachedCopyButtonClick)
       .SetMethod("launchOfflineItem",
                  &NetErrorPageController::LaunchOfflineItem)
       .SetMethod("launchDownloadsPage",

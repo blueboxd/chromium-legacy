@@ -12,7 +12,6 @@
 namespace chromecast {
 
 class CastWindowManager;
-class RoundedCornersObserver;
 
 // Keeps track of new aura::Windows and listen for window property events to
 // find Exo windows with the |exo::kClientSurfaceIdKey| property set.
@@ -46,7 +45,6 @@ class WebviewWindowManager : public aura::EnvObserver,
   std::vector<aura::Window*> observed_windows_;
 
   base::ObserverList<Observer>::Unchecked observers_;
-  std::unique_ptr<RoundedCornersObserver> rounded_corners_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebviewWindowManager);
 };

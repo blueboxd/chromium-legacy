@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "chromeos/services/device_sync/proto/securemessage.pb.h"
+#include "third_party/securemessage/proto/securemessage.pb.h"
 
 namespace chromeos {
 

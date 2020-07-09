@@ -187,12 +187,12 @@ void AutocompleteResult::AppendMatches(const AutocompleteInput& input,
           break;
         case OmniboxFieldTrial::EMPHASIZE_WHEN_TITLE_MATCHES:
           emphasize = !i.description.empty() &&
-              AutocompleteMatch::HasMatchStyle(i.description_class);
+                      AutocompleteMatch::HasMatchStyle(i.description_class);
           break;
         case OmniboxFieldTrial::EMPHASIZE_WHEN_ONLY_TITLE_MATCHES:
           emphasize = !i.description.empty() &&
-              AutocompleteMatch::HasMatchStyle(i.description_class) &&
-              !AutocompleteMatch::HasMatchStyle(i.contents_class);
+                      AutocompleteMatch::HasMatchStyle(i.description_class) &&
+                      !AutocompleteMatch::HasMatchStyle(i.contents_class);
           break;
         case OmniboxFieldTrial::EMPHASIZE_NEVER:
           break;
@@ -262,8 +262,9 @@ void AutocompleteResult::SortAndCull(
     LimitNumberOfURLsShown(GetMaxMatches(input.from_omnibox_focus()),
                            max_url_count, comparing_object);
 
-  // Limit total matches per OmniboxUIExperimentMaxAutocompleteMatches &
-  // OmniboxMaxZeroSuggestMatches.
+  // Limit total matches accounting for suggestions score <= 0, sub matches, and
+  // feature configs such as OmniboxUIExperimentMaxAutocompleteMatches,
+  // OmniboxMaxZeroSuggestMatches, and OmniboxDynamicMaxAutocomplete.
   const size_t num_matches = CalculateNumMatches(input.from_omnibox_focus(),
                                                  matches_, comparing_object);
   matches_.resize(num_matches);
@@ -614,6 +615,15 @@ size_t AutocompleteResult::CalculateNumMatches(
     bool input_from_omnibox_focus,
     const ACMatches& matches,
     const CompareWithDemoteByType<AutocompleteMatch>& comparing_object) {
+  // Use alternative CalculateNumMatchesPerUrlCount if applicable.
+  // TODO (manukh): CalculateNumMatchesPerUrlCount doesn't account for
+  // submatches. That's ok since we plan to replace submatches with dedicated
+  // row suggestions. Otherwise, CalculateNumMatchesPerUrlCount should account
+  // for them.
+  if (!input_from_omnibox_focus &&
+      base::FeatureList::IsEnabled(omnibox::kNewSearchFeatures) &&
+      base::FeatureList::IsEnabled(omnibox::kDynamicMaxAutocomplete))
+    return CalculateNumMatchesPerUrlCount(matches, comparing_object);
   // In the process of trimming, drop all matches with a demoted relevance
   // score of 0.
   size_t max_matches_by_policy = GetMaxMatches(input_from_omnibox_focus);
@@ -630,6 +640,35 @@ size_t AutocompleteResult::CalculateNumMatches(
     if (num_matches >= max_matches_by_policy)
       break;
     ++num_matches;
+  }
+  return num_matches;
+}
+
+// static
+size_t AutocompleteResult::CalculateNumMatchesPerUrlCount(
+    const ACMatches& matches,
+    const CompareWithDemoteByType<AutocompleteMatch>& comparing_object) {
+  size_t base_limit = GetMaxMatches();
+  size_t url_cutoff = base::GetFieldTrialParamByFeatureAsInt(
+      omnibox::kDynamicMaxAutocomplete,
+      OmniboxFieldTrial::kDynamicMaxAutocompleteUrlCutoffParam, 0);
+  size_t increased_limit = base::GetFieldTrialParamByFeatureAsInt(
+      omnibox::kDynamicMaxAutocomplete,
+      OmniboxFieldTrial::kDynamicMaxAutocompleteIncreasedLimitParam,
+      base_limit);
+
+  size_t num_matches = 0;
+  size_t num_url_matches = 0;
+  for (auto match : matches) {
+    // Matches scored less than 0 won't be shown anyways, so we can break early.
+    if (comparing_object.GetDemotedRelevance(matches[num_matches]) <= 0)
+      break;
+    if (!AutocompleteMatch::IsSearchType(match.type))
+      num_url_matches++;
+    size_t limit = num_url_matches <= url_cutoff ? increased_limit : base_limit;
+    if (num_matches >= limit)
+      break;
+    num_matches++;
   }
   return num_matches;
 }

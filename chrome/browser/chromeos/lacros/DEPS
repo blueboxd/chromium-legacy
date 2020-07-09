@@ -3,4 +3,8 @@ specific_include_rules = {
     # For window parenting.
     "+ash/shell.h",
   ],
+  "screen_manager_crosapi\.cc": [
+    # For window parenting.
+    "+ash/shell.h",
+  ],
 }

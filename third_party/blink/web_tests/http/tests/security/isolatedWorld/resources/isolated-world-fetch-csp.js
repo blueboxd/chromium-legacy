@@ -96,9 +96,6 @@ const tests = [
     testRunner.setIsolatedWorldInfo(
         isolatedWorldId, isolatedWorldSecurityOrigin, 'connect-src \'self\'');
     testFetchInIsolatedWorld(expectBlocked, true /* redirect */);
-
-    // Clear the isolated world data.
-    testRunner.setIsolatedWorldInfo(1, null, null);
   },
 ];
 

@@ -54,9 +54,6 @@ class MetricsHandler : public content::WebUIMessageHandler {
   // contains the histogram name and a value in milliseconds.
   void HandleRecordTime(const base::ListValue* args);
 
-  // Callback for the "metricsHandler:logEventTime" message.
-  void HandleLogEventTime(const base::ListValue* args);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(MetricsHandler);
 };

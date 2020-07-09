@@ -750,8 +750,7 @@ void SetFontFeatures(const Font* font, FeaturesVector* features) {
   unsigned num_features = settings->size();
   for (unsigned i = 0; i < num_features; ++i) {
     hb_feature_t feature;
-    const AtomicString& tag = settings->at(i).Tag();
-    feature.tag = HB_TAG(tag[0], tag[1], tag[2], tag[3]);
+    feature.tag = settings->at(i).Tag();
     feature.value = settings->at(i).Value();
     feature.start = 0;
     feature.end = static_cast<unsigned>(-1);

@@ -15,6 +15,7 @@ const tests = [
    * available.
    */
   function testEditedPdfOption() {
+    document.body.innerHTML = '';
     /** @type {!ViewerDownloadControlsElement} */
     const downloadsElement = /** @type {!ViewerDownloadControlsElement} */ (
         document.createElement('viewer-download-controls'));

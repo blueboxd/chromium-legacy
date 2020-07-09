@@ -66,9 +66,15 @@ extern const CGFloat kTableViewSeparatorInsetWithIcon;
             (NSAttributedString*)attributedMessage
                                          image:(UIImage*)image;
 
-// Updates the accessibility label of the UILabel displaying the empty table
-// view message to |newLabel|.
-- (void)updateEmptyTableViewMessageAccessibilityLabel:(NSString*)newLabel;
+// Adds an empty table view in the center of the ChromeTableViewController which
+// displays an image, a title and a subtitle. This will remove any existing
+// table view background views.
+- (void)addEmptyTableViewWithImage:(UIImage*)image
+                             title:(NSString*)title
+                          subtitle:(NSString*)subtitle;
+
+// Updates the accessibility label of the empty view to |newLabel|.
+- (void)updateEmptyTableViewAccessibilityLabel:(NSString*)newLabel;
 
 // Removes the empty table view, if one is present.
 - (void)removeEmptyTableView;

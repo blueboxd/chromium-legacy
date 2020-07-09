@@ -112,6 +112,7 @@ class XRFrameProvider final : public GarbageCollected<XRFrameProvider> {
   bool pending_non_immersive_vsync_ = false;
 
   base::Optional<gpu::MailboxHolder> buffer_mailbox_holder_;
+  base::Optional<gpu::MailboxHolder> camera_image_mailbox_holder_;
   bool last_has_focus_ = false;
 };
 

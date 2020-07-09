@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -16,6 +17,7 @@
 #include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace storage {
 
@@ -132,25 +134,25 @@ void MockQuotaClient::RunGetOriginUsage(const url::Origin& origin,
 
 void MockQuotaClient::RunGetOriginsForType(blink::mojom::StorageType type,
                                            GetOriginsCallback callback) {
-  std::set<url::Origin> origins;
+  std::vector<url::Origin> origins;
   for (const auto& origin_type_usage : origin_data_) {
     if (type == origin_type_usage.first.second)
-      origins.insert(origin_type_usage.first.first);
+      origins.push_back(origin_type_usage.first.first);
   }
-  std::move(callback).Run(origins);
+  std::move(callback).Run(std::move(origins));
 }
 
 void MockQuotaClient::RunGetOriginsForHost(blink::mojom::StorageType type,
                                            const std::string& host,
                                            GetOriginsCallback callback) {
-  std::set<url::Origin> origins;
+  std::vector<url::Origin> origins;
   for (const auto& origin_type_usage : origin_data_) {
     if (type == origin_type_usage.first.second &&
         host == origin_type_usage.first.first.host()) {
-      origins.insert(origin_type_usage.first.first);
+      origins.push_back(origin_type_usage.first.first);
     }
   }
-  std::move(callback).Run(origins);
+  std::move(callback).Run(std::move(origins));
 }
 
 void MockQuotaClient::RunDeleteOriginData(

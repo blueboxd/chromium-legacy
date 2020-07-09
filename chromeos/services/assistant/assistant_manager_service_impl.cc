@@ -98,21 +98,6 @@ constexpr char kStopTrackClientOp[] = "media.STOP";
 
 constexpr char kAndroidSettingsAppPackage[] = "com.android.settings";
 
-action::AppStatus GetActionAppStatus(AppStatus status) {
-  switch (status) {
-    case AppStatus::kUnknown:
-      return action::UNKNOWN;
-    case AppStatus::kAvailable:
-      return action::AVAILABLE;
-    case AppStatus::kUnavailable:
-      return action::UNAVAILABLE;
-    case AppStatus::kVersionMismatch:
-      return action::VERSION_MISMATCH;
-    case AppStatus::kDisabled:
-      return action::DISABLED;
-  }
-}
-
 ash::AssistantTimerState GetTimerState(assistant_client::Timer::State state) {
   switch (state) {
     case assistant_client::Timer::State::UNKNOWN:
@@ -812,13 +797,10 @@ void AssistantManagerServiceImpl::OnShowNotification(
 }
 
 void AssistantManagerServiceImpl::OnOpenAndroidApp(
-    const action::AndroidAppInfo& action_app_info,
-    const action::InteractionInfo& interaction) {
-  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnOpenAndroidApp,
-                     action_app_info, interaction);
-  AndroidAppInfo app_info;
-  app_info.package_name = action_app_info.package_name;
-
+    const AndroidAppInfo& app_info,
+    const InteractionInfo& interaction) {
+  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnOpenAndroidApp, app_info,
+                     interaction);
   bool success = false;
   for (auto& it : interaction_subscribers_)
     success |= it.OnOpenAppResponse(app_info);
@@ -834,19 +816,16 @@ void AssistantManagerServiceImpl::OnOpenAndroidApp(
 }
 
 void AssistantManagerServiceImpl::OnVerifyAndroidApp(
-    const std::vector<action::AndroidAppInfo>& action_apps_info,
-    const action::InteractionInfo& interaction) {
+    const std::vector<AndroidAppInfo>& apps_info,
+    const InteractionInfo& interaction) {
   ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnVerifyAndroidApp,
-                     action_apps_info, interaction);
-  std::vector<action::AndroidAppInfo> result_apps_info;
-  for (auto& action_app_info : action_apps_info) {
-    AndroidAppInfo android_app_info;
-    android_app_info.package_name = action_app_info.package_name;
-    AppStatus status = device_actions()->GetAndroidAppStatus(android_app_info);
-    result_apps_info.emplace_back(
-        action_app_info.package_name, action_app_info.version,
-        action_app_info.localized_app_name, action_app_info.intent,
-        GetActionAppStatus(status));
+                     apps_info, interaction);
+  std::vector<AndroidAppInfo> result_apps_info;
+  for (auto& app_info : apps_info) {
+    AndroidAppInfo result_app_info(app_info);
+    AppStatus status = device_actions()->GetAndroidAppStatus(app_info);
+    result_app_info.status = status;
+    result_apps_info.emplace_back(result_app_info);
   }
   std::string interaction_proto = CreateVerifyProviderResponseInteraction(
       interaction.interaction_id, result_apps_info);
@@ -863,37 +842,32 @@ void AssistantManagerServiceImpl::OnVerifyAndroidApp(
 }
 
 void AssistantManagerServiceImpl::OnOpenMediaAndroidIntent(
-    const std::string play_media_args_proto,
-    action::AndroidAppInfo* action_app_info) {
+    const std::string& play_media_args_proto,
+    AndroidAppInfo* app_info) {
   DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
 
   // Handle android media playback intent.
-  AndroidAppInfo app_info;
-  app_info.package_name = action_app_info->package_name;
-  app_info.action = kIntentActionView;
-  if (!action_app_info->intent.empty()) {
-    app_info.intent = action_app_info->intent;
-  } else {
+  app_info->action = kIntentActionView;
+  if (app_info->intent.empty()) {
     std::string url = GetAndroidIntentUrlFromMediaArgs(play_media_args_proto);
-    if (!url.empty()) {
-      app_info.intent = url;
-    }
+    if (!url.empty())
+      app_info->intent = url;
   }
   for (auto& it : interaction_subscribers_) {
-    bool success = it.OnOpenAppResponse(app_info);
+    bool success = it.OnOpenAppResponse(*app_info);
     HandleLaunchMediaIntentResponse(success);
   }
 }
 
 void AssistantManagerServiceImpl::OnPlayMedia(
-    const std::string play_media_args_proto) {
+    const std::string& play_media_args_proto) {
   ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnPlayMedia,
                      play_media_args_proto);
 
-  std::unique_ptr<action::AndroidAppInfo> action_app_info =
-      GetAndroidAppInfoFromMediaArgs(play_media_args_proto);
-  if (action_app_info) {
-    OnOpenMediaAndroidIntent(play_media_args_proto, action_app_info.get());
+  std::unique_ptr<AndroidAppInfo> app_info =
+      GetAppInfoFromMediaArgs(play_media_args_proto);
+  if (app_info) {
+    OnOpenMediaAndroidIntent(play_media_args_proto, app_info.get());
   } else {
     std::string url = GetWebUrlFromMediaArgs(play_media_args_proto);
     // Fallack to web URL.
@@ -1174,16 +1148,15 @@ void AssistantManagerServiceImpl::OnStartFinished() {
 
 void AssistantManagerServiceImpl::OnAndroidAppListRefreshed(
     const std::vector<AndroidAppInfo>& apps_info) {
-  std::vector<action::AndroidAppInfo> action_apps_info;
+  std::vector<AndroidAppInfo> filtered_apps_info;
   for (const auto& app_info : apps_info) {
     // TODO(b/146355799): Remove the special handling for Android settings app.
     if (app_info.package_name == kAndroidSettingsAppPackage)
       continue;
 
-    action_apps_info.emplace_back(app_info.package_name, app_info.version,
-                                  app_info.localized_app_name, app_info.intent);
+    filtered_apps_info.emplace_back(app_info);
   }
-  display_connection_->OnAndroidAppListRefreshed(action_apps_info);
+  display_connection_->OnAndroidAppListRefreshed(filtered_apps_info);
 }
 
 void AssistantManagerServiceImpl::OnPlaybackStateChange(

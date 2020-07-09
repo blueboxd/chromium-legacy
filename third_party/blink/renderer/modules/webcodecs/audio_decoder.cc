@@ -11,7 +11,9 @@
 #include "media/base/encryption_scheme.h"
 #include "media/base/media_util.h"
 #include "media/base/waiting.h"
+#if BUILDFLAG(ENABLE_FFMPEG)
 #include "media/filters/ffmpeg_audio_decoder.h"
+#endif
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_decoder_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_audio_chunk.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_audio_config.h"
@@ -25,8 +27,12 @@ namespace blink {
 std::unique_ptr<AudioDecoderTraits::MediaDecoderType>
 AudioDecoderTraits::CreateDecoder(ExecutionContext& execution_context,
                                   media::MediaLog* media_log) {
+#if BUILDFLAG(ENABLE_FFMPEG)
   return std::make_unique<media::FFmpegAudioDecoder>(
       execution_context.GetTaskRunner(TaskType::kInternalMedia), media_log);
+#else
+  return nullptr;
+#endif
 }
 
 // static

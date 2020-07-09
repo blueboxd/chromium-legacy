@@ -238,8 +238,10 @@ class XRSession final
   const AtomicString& InterfaceName() const override;
 
   void OnFocusChanged();
-  void OnFrame(double timestamp,
-               const base::Optional<gpu::MailboxHolder>& output_mailbox_holder);
+  void OnFrame(
+      double timestamp,
+      const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
+      const base::Optional<gpu::MailboxHolder>& camera_image_mailbox_holder);
 
   // XRInputSourceButtonListener
   void OnButtonEvent(

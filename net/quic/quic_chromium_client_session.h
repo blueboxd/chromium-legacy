@@ -522,10 +522,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   QuicChromiumClientStream* CreateOutgoingUnidirectionalStream() override;
   const quic::QuicCryptoClientStream* GetCryptoStream() const override;
   quic::QuicCryptoClientStream* GetMutableCryptoStream() override;
-  void CloseStream(quic::QuicStreamId stream_id) override;
-  void SendRstStream(quic::QuicStreamId id,
-                     quic::QuicRstStreamErrorCode error,
-                     quic::QuicStreamOffset bytes_written) override;
   void SetDefaultEncryptionLevel(quic::EncryptionLevel level) override;
   void OnOneRttKeysAvailable() override;
   void OnCryptoHandshakeMessageSent(
@@ -539,7 +535,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       const quic::QuicSocketAddress& self_address,
       const quic::QuicSocketAddress& peer_address) override;
 
-  // QuicClientSessionBase methods:
+  // QuicSpdyClientSessionBase methods:
   void OnConfigNegotiated() override;
   void OnProofValid(
       const quic::QuicCryptoClientConfig::CachedState& cached) override;
@@ -562,6 +558,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   bool OnPacket(const quic::QuicReceivedPacket& packet,
                 const quic::QuicSocketAddress& local_address,
                 const quic::QuicSocketAddress& peer_address) override;
+  void OnStreamClosed(quic::QuicStreamId stream_id) override;
 
   // MultiplexedSession methods:
   bool GetRemoteEndpoint(IPEndPoint* endpoint) override;

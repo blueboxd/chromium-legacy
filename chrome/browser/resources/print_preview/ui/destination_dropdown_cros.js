@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
-import 'chrome://resources/cr_elements/md_select_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 // TODO(gavinwill): Remove iron-dropdown dependency https://crbug.com/1082587.
 import 'chrome://resources/polymer/v3_0/iron-dropdown/iron-dropdown.js';
@@ -142,8 +140,8 @@ Polymer({
     const paths = event.composedPath();
     const dropdown =
         /** @type {!IronDropdownElement} */ (this.$$('iron-dropdown'));
-    const dropdownInput =
-        /** @type {!CrInputElement} */ (this.$$('#dropdownInput'));
+    const destinationDropdown =
+        /** @type {!Element} */ (this.$$('#destination-dropdown'));
 
     // Exit if path includes |dropdown| because event will be handled by
     // onSelect_.
@@ -151,7 +149,7 @@ Polymer({
       return;
     }
 
-    if (!paths.includes(dropdownInput) || dropdown.opened) {
+    if (!paths.includes(destinationDropdown) || dropdown.opened) {
       this.closeDropdown_();
       return;
     }

@@ -11,9 +11,7 @@ CONSOLE MESSAGE: PASS: Request blocked by CSP as expected.
 CONSOLE MESSAGE: line 65: Testing isolated world with permissive csp.
 CONSOLE MESSAGE: PASS: Request succeeded as expected.
 CONSOLE MESSAGE: line 71: Testing fetch redirect in isolated world with permissive csp.
-CONSOLE ERROR: Refused to connect to 'http://127.0.0.1:8000/security/isolatedWorld/resources/access_control_allow_origin.php' because it violates the following Content Security Policy directive: "connect-src 'none'".
-
-CONSOLE MESSAGE: FAIL: Request failed unexpectedly.
+CONSOLE MESSAGE: PASS: Request succeeded as expected.
 CONSOLE MESSAGE: line 78: Testing isolated world with strict csp.
 CONSOLE MESSAGE: line 79: internals.runtimeFlags.isolatedWorldCSPEnabled is true
 CONSOLE ERROR: Refused to connect to 'http://127.0.0.1:8000/security/isolatedWorld/resources/access_control_allow_origin.php' because it violates the following Content Security Policy directive: "connect-src 'self'".

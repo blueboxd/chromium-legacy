@@ -741,6 +741,71 @@ bool ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
   return true;
 }
 
+url::Origin GetOriginForURLLoaderFactoryUnchecked(
+    NavigationRequest* navigation_request) {
+  DCHECK(navigation_request);
+
+  // Check if this is loadDataWithBaseUrl (which needs special treatment).
+  auto& common_params = navigation_request->common_params();
+  if (NavigationRequest::IsLoadDataWithBaseURL(common_params)) {
+    // A (potentially attacker-controlled) renderer process should not be able
+    // to use loadDataWithBaseUrl code path to initiate fetches on behalf of a
+    // victim origin (fetches controlled by attacker-provided
+    // |common_params.url| data: URL in a victim's origin from the
+    // attacker-provided |common_params.base_url_for_data_url|).  Browser
+    // process should verify that |common_params.base_url_for_data_url| is empty
+    // for all renderer-initiated navigations (e.g. see
+    // VerifyBeginNavigationCommonParams), but as a defense-in-depth this is
+    // also asserted below.
+    CHECK(navigation_request->browser_initiated());
+
+    // loadDataWithBaseUrl submits a data: |common_params.url| (which has a
+    // opaque origin), but commits that URL as if it came from
+    // |common_params.base_url_for_data_url|.  See also
+    // https://crbug.com/976253.
+    return url::Origin::Create(common_params.base_url_for_data_url);
+  }
+
+  // MHTML frames should commit as a opaque origin (and should not be able to
+  // make network requests on behalf of the real origin).
+  //
+  // TODO(lukasza): Cover MHTML main frames here.
+  if (navigation_request->IsForMhtmlSubframe()) {
+    // TODO(lukasza): https://crbug.com/1056949: Stop using
+    // mhtml.subframe.invalid as the precursor (once https://crbug.com/1056949
+    // is debugged OR once network::VerifyRequestInitiatorLock starts to compare
+    // precursors).
+    url::Origin mhtml_subframe_origin =
+        url::Origin::Create(GURL("https://mhtml.subframe.invalid"))
+            .DeriveNewOpaqueOrigin();
+    return mhtml_subframe_origin;
+  }
+
+  // Srcdoc subframes need to inherit their origin from their parent frame.
+  if (navigation_request->GetURL().IsAboutSrcdoc()) {
+    // Srcdoc navigations in main frames should be blocked before this function
+    // is called.  This should guarantee existence of a parent here.
+    RenderFrameHostImpl* parent =
+        navigation_request->frame_tree_node()->parent();
+    DCHECK(parent);
+    return parent->GetLastCommittedOrigin();
+  }
+
+  // TODO(lukasza): https://crbug.com/1056949: Stop using
+  // browser.initiated.invalid as the precursor (once https://crbug.com/1056949
+  // is debugged OR once network::VerifyRequestInitiatorLock starts to compare
+  // precursors).
+  url::Origin browser_initiated_fallback_origin =
+      url::Origin::Create(GURL("https://browser.initiated.invalid"))
+          .DeriveNewOpaqueOrigin();
+
+  // In cases not covered above, URLLoaderFactory should be associated with the
+  // origin of |common_params.url| and/or |common_params.initiator_origin|.
+  return url::Origin::Resolve(common_params.url,
+                              common_params.initiator_origin.value_or(
+                                  browser_initiated_fallback_origin));
+}
+
 }  // namespace
 
 // static
@@ -4124,6 +4189,48 @@ NavigationRequest::TakeAppCacheHandle() {
 
 bool NavigationRequest::IsWaitingToCommit() {
   return state_ == READY_TO_COMMIT;
+}
+
+// static
+bool NavigationRequest::IsLoadDataWithBaseURL(const GURL& url,
+                                              const GURL& base_url) {
+  return url.SchemeIs(url::kDataScheme) && !base_url.is_empty();
+}
+
+// static
+bool NavigationRequest::IsLoadDataWithBaseURL(
+    const mojom::CommonNavigationParams& common_params) {
+  return IsLoadDataWithBaseURL(common_params.url,
+                               common_params.base_url_for_data_url);
+}
+
+url::Origin NavigationRequest::GetOriginForURLLoaderFactory() {
+  // Calculate an approximation (sandbox/csp is ignored - see
+  // https://crbug.com/1041376) of the origin that will be committed because of
+  // |this| NavigationRequest.
+  url::Origin result = GetOriginForURLLoaderFactoryUnchecked(this);
+
+  // Note that GetRenderFrameHost() only allows to retrieve the RenderFrameHost
+  // once it has been set for this navigation.  This will happens either at
+  // WillProcessResponse time for regular navigations or at WillFailRequest time
+  // for error pages.
+  RenderFrameHostImpl* target_frame = GetRenderFrameHost();
+  DCHECK(target_frame);
+
+  // Check that |result| origin is allowed to be accessed from the process that
+  // is the target of this navigation.
+  //
+  // TODO(lukasza): https://crbug.com/1056949: Stop excluding opaque origins
+  // from the security checks once the *.invalid diagnostics are no longer
+  // needed.
+  if (target_frame->ShouldBypassSecurityChecksForErrorPage(this) ||
+      result.opaque()) {
+    return result;
+  }
+  int process_id = target_frame->GetProcess()->GetID();
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  CHECK(policy->CanAccessDataForOrigin(process_id, result));
+  return result;
 }
 
 void NavigationRequest::RenderProcessBlockedStateChanged(bool blocked) {

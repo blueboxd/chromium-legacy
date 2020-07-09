@@ -27,7 +27,8 @@ void WindowWatcherShelfItemDelegate::ItemSelected(
     std::unique_ptr<ui::Event> event,
     int64_t display_id,
     ShelfLaunchSource source,
-    ItemSelectedCallback callback) {
+    ItemSelectedCallback callback,
+    const ItemFilterPredicate& filter_predicate) {
   aura::Window* window = watcher_->GetWindowByID(shelf_id());
   window->Show();
   wm::ActivateWindow(window);

@@ -32,7 +32,11 @@ class ServiceWorkerResourceReaderImpl
  private:
   // storage::mojom::ServiceWorkerResourceReader implementations:
   void ReadResponseHead(ReadResponseHeadCallback callback) override;
-  void ReadData(int64_t size, ReadDataCallback callback) override;
+  void ReadData(
+      int64_t size,
+      mojo::PendingRemote<storage::mojom::ServiceWorkerDataPipeStateNotifier>
+          notifier,
+      ReadDataCallback callback) override;
 
   void DidReadDataComplete();
 

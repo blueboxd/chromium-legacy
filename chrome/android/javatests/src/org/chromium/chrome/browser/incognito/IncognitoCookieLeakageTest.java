@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.incognito;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import android.os.Build;
@@ -13,6 +12,7 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.LargeTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -39,6 +39,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -91,13 +92,15 @@ public class IncognitoCookieLeakageTest {
     }
 
     private void setCookies(Tab tab) throws TimeoutException {
-        CriteriaHelper.pollUiThread(() -> { assertNotNull(tab.getWebContents()); });
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(tab.getWebContents(), Matchers.notNullValue()));
         JavaScriptUtils.executeJavaScriptAndWaitForResult(tab.getWebContents(), "setCookie()");
         assertCookies(tab, "\"Foo=Bar\"");
     }
 
     private void assertCookies(Tab tab, String expected) throws TimeoutException {
-        CriteriaHelper.pollUiThread(() -> { assertNotNull(tab.getWebContents()); });
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(tab.getWebContents(), Matchers.notNullValue()));
         String actual = JavaScriptUtils.executeJavaScriptAndWaitForResult(
                 tab.getWebContents(), "getCookie()");
         if (actual.equalsIgnoreCase("null")) actual = "\"\"";

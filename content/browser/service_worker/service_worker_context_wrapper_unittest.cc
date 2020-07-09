@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 
 #include <memory>
+#include <vector>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
@@ -19,6 +20,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -90,16 +92,16 @@ class ServiceWorkerContextWrapperTest : public testing::Test {
     return result;
   }
 
-  std::set<url::Origin> GetInstalledRegistrationOrigins(
+  std::vector<url::Origin> GetInstalledRegistrationOrigins(
       base::Optional<std::string> host_filter) {
-    std::set<url::Origin> result;
+    std::vector<url::Origin> result;
     base::RunLoop loop;
     wrapper_->GetInstalledRegistrationOrigins(
-        host_filter,
-        base::BindLambdaForTesting([&](const std::set<url::Origin>& origins) {
-          result = origins;
-          loop.Quit();
-        }));
+        host_filter, base::BindLambdaForTesting(
+                         [&](const std::vector<url::Origin>& origins) {
+                           result = origins;
+                           loop.Quit();
+                         }));
     loop.Run();
     return result;
   }
@@ -247,7 +249,7 @@ TEST_F(ServiceWorkerContextWrapperTest, GetInstalledRegistrationOrigins_Empty) {
   wrapper_->WaitForRegistrationsInitializedForTest();
 
   // No registration stored yet.
-  std::set<url::Origin> registered_origins =
+  std::vector<url::Origin> registered_origins =
       GetInstalledRegistrationOrigins(base::nullopt);
   EXPECT_EQ(registered_origins.size(), 0UL);
 }
@@ -266,7 +268,7 @@ TEST_F(ServiceWorkerContextWrapperTest, GetInstalledRegistrationOrigins_One) {
             blink::ServiceWorkerStatusCode::kOk);
   base::RunLoop().RunUntilIdle();
 
-  std::set<url::Origin> installed_origins =
+  std::vector<url::Origin> installed_origins =
       GetInstalledRegistrationOrigins(base::nullopt);
   ASSERT_EQ(installed_origins.size(), 1UL);
   EXPECT_EQ(*installed_origins.begin(), origin);
@@ -295,7 +297,7 @@ TEST_F(ServiceWorkerContextWrapperTest,
             blink::ServiceWorkerStatusCode::kOk);
   base::RunLoop().RunUntilIdle();
 
-  std::set<url::Origin> installed_origins =
+  std::vector<url::Origin> installed_origins =
       GetInstalledRegistrationOrigins(base::nullopt);
   ASSERT_EQ(installed_origins.size(), 1UL);
   EXPECT_EQ(*installed_origins.begin(), origin);
@@ -325,7 +327,7 @@ TEST_F(ServiceWorkerContextWrapperTest,
             blink::ServiceWorkerStatusCode::kOk);
   base::RunLoop().RunUntilIdle();
 
-  std::set<url::Origin> installed_origins =
+  std::vector<url::Origin> installed_origins =
       GetInstalledRegistrationOrigins(base::nullopt);
   ASSERT_EQ(installed_origins.size(), 2UL);
   EXPECT_TRUE(base::Contains(installed_origins, origin1));
@@ -347,7 +349,7 @@ TEST_F(ServiceWorkerContextWrapperTest,
             blink::ServiceWorkerStatusCode::kOk);
   base::RunLoop().RunUntilIdle();
 
-  std::set<url::Origin> installed_origins =
+  std::vector<url::Origin> installed_origins =
       GetInstalledRegistrationOrigins("example.com");
   ASSERT_EQ(installed_origins.size(), 1UL);
   EXPECT_EQ(*installed_origins.begin(), origin);
@@ -368,7 +370,7 @@ TEST_F(ServiceWorkerContextWrapperTest,
             blink::ServiceWorkerStatusCode::kOk);
   base::RunLoop().RunUntilIdle();
 
-  std::set<url::Origin> installed_origins =
+  std::vector<url::Origin> installed_origins =
       GetInstalledRegistrationOrigins("example.test");
   EXPECT_EQ(installed_origins.size(), 0UL);
 }
@@ -398,7 +400,7 @@ TEST_F(ServiceWorkerContextWrapperTest,
   base::RunLoop().RunUntilIdle();
 
   {
-    std::set<url::Origin> installed_origins =
+    std::vector<url::Origin> installed_origins =
         GetInstalledRegistrationOrigins(base::nullopt);
     ASSERT_EQ(installed_origins.size(), 2UL);
     EXPECT_TRUE(base::Contains(installed_origins, origin1));
@@ -412,10 +414,10 @@ TEST_F(ServiceWorkerContextWrapperTest,
 
   // After |registration2| is deleted, only |origin1| should be returned.
   {
-    std::set<url::Origin> installed_origins =
+    std::vector<url::Origin> installed_origins =
         GetInstalledRegistrationOrigins(base::nullopt);
     ASSERT_EQ(installed_origins.size(), 1UL);
-    EXPECT_EQ(*installed_origins.begin(), origin1);
+    EXPECT_EQ(installed_origins[0], origin1);
   }
 }
 

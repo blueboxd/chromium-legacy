@@ -37,7 +37,8 @@ void AppServiceAppWindowLauncherItemController::ItemSelected(
     std::unique_ptr<ui::Event> event,
     int64_t display_id,
     ash::ShelfLaunchSource source,
-    ItemSelectedCallback callback) {
+    ItemSelectedCallback callback,
+    const ItemFilterPredicate& filter_predicate) {
   if (window_count()) {
     // Tapping the shelf icon of an app that's showing PIP means expanding PIP.
     // Even if the app contains multiple windows, we just expand PIP without
@@ -56,7 +57,8 @@ void AppServiceAppWindowLauncherItemController::ItemSelected(
       }
     }
     AppWindowLauncherItemController::ItemSelected(std::move(event), display_id,
-                                                  source, std::move(callback));
+                                                  source, std::move(callback),
+                                                  filter_predicate);
     return;
   }
 
@@ -70,9 +72,13 @@ void AppServiceAppWindowLauncherItemController::ItemSelected(
 }
 
 ash::ShelfItemDelegate::AppMenuItems
-AppServiceAppWindowLauncherItemController::GetAppMenuItems(int event_flags) {
-  if (!IsChromeApp())
-    return AppWindowLauncherItemController::GetAppMenuItems(event_flags);
+AppServiceAppWindowLauncherItemController::GetAppMenuItems(
+    int event_flags,
+    const ItemFilterPredicate& filter_predicate) {
+  if (!IsChromeApp()) {
+    return AppWindowLauncherItemController::GetAppMenuItems(event_flags,
+                                                            filter_predicate);
+  }
 
   // The window could be teleported from the inactive user's profile to the
   // current active user, so search all profiles.
@@ -83,10 +89,15 @@ AppServiceAppWindowLauncherItemController::GetAppMenuItems(int event_flags) {
 
     AppMenuItems items;
     bool switch_profile = false;
+    int command_id = -1;
     for (const ui::BaseWindow* window : windows()) {
+      ++command_id;
+      auto* native_window = window->GetNativeWindow();
+      if (!filter_predicate.is_null() && !filter_predicate.Run(native_window))
+        continue;
+
       extensions::AppWindow* const app_window =
-          app_window_registry->GetAppWindowForNativeWindow(
-              window->GetNativeWindow());
+          app_window_registry->GetAppWindowForNativeWindow(native_window);
       if (!app_window) {
         switch_profile = true;
         break;
@@ -108,7 +119,7 @@ AppServiceAppWindowLauncherItemController::GetAppMenuItems(int event_flags) {
           image = *app_icon;
       }
 
-      items.push_back({app_window->GetTitle(), image});
+      items.push_back({command_id, app_window->GetTitle(), image});
     }
     if (!switch_profile)
       return items;

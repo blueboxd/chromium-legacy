@@ -90,16 +90,6 @@ PersistentMemoryAllocator::Reference AllocateFrom(
   return allocator->Allocate(size, to_type);
 }
 
-// Determines the previous aligned index.
-size_t RoundDownToAlignment(size_t index, size_t alignment) {
-  return bits::AlignDown(index, alignment);
-}
-
-// Determines the next aligned index.
-size_t RoundUpToAlignment(size_t index, size_t alignment) {
-  return bits::Align(index, alignment);
-}
-
 // Converts "tick" timing into wall time.
 Time WallTimeFromTickTime(int64_t ticks_start, int64_t ticks, Time time_start) {
   return time_start + TimeDelta::FromInternalValue(ticks - ticks_start);
@@ -338,7 +328,7 @@ ActivityUserData::ActivityUserData() : ActivityUserData(nullptr, 0, -1) {}
 
 ActivityUserData::ActivityUserData(void* memory, size_t size, int64_t pid)
     : memory_(reinterpret_cast<char*>(memory)),
-      available_(RoundDownToAlignment(size, kMemoryAlignment)),
+      available_(bits::AlignDown(size, kMemoryAlignment)),
       header_(reinterpret_cast<MemoryHeader*>(memory)),
       orig_data_id(0),
       orig_process_id(0),
@@ -478,9 +468,9 @@ void* ActivityUserData::Set(StringPiece name,
     // following field will be aligned properly.
     size_t name_size = name.length();
     size_t name_extent =
-        RoundUpToAlignment(sizeof(FieldHeader) + name_size, kMemoryAlignment) -
+        bits::Align(sizeof(FieldHeader) + name_size, kMemoryAlignment) -
         sizeof(FieldHeader);
-    size_t value_extent = RoundUpToAlignment(size, kMemoryAlignment);
+    size_t value_extent = bits::Align(size, kMemoryAlignment);
 
     // The "base size" is the size of the header and (padded) string key. Stop
     // now if there's not room enough for even this.
@@ -576,8 +566,8 @@ void ActivityUserData::ImportExistingData() const {
     if (header->record_size > available_)
       return;
 
-    size_t value_offset = RoundUpToAlignment(
-        sizeof(FieldHeader) + header->name_size, kMemoryAlignment);
+    size_t value_offset =
+        bits::Align(sizeof(FieldHeader) + header->name_size, kMemoryAlignment);
     if (header->record_size == value_offset &&
         header->value_size.load(std::memory_order_relaxed) == 1) {
       value_offset -= 1;

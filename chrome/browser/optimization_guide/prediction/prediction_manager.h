@@ -89,9 +89,18 @@ class PredictionManager
   // |optimization_target|. Return kUnknown if a PredictionModel for the
   // optimization target is not registered and kModelNotAvailableOnClient if the
   // if model for the optimization target is not currently on the client.
+  // If the model for the optimization target requires a client model feature
+  // that is present in |override_client_model_feature_values|, the value from
+  // |override_client_model_feature_values| will be used. The client will
+  // calculate the value for any required client model features not present in
+  // |override_client_model_feature_values| and inject any host model features
+  // it received from the server and send that complete feature map for
+  // evaluation.
   OptimizationTargetDecision ShouldTargetNavigation(
       content::NavigationHandle* navigation_handle,
-      proto::OptimizationTarget optimization_target);
+      proto::OptimizationTarget optimization_target,
+      const base::flat_map<proto::ClientModelFeature, float>&
+          override_client_model_feature_values);
 
   // Update |session_fcp_| and |previous_fcp_| with |fcp|.
   void UpdateFCPSessionStatistics(base::TimeDelta fcp);
@@ -184,14 +193,21 @@ class PredictionManager
   // based on if host model features were used.
   base::flat_map<std::string, float> BuildFeatureMap(
       content::NavigationHandle* navigation_handle,
-      const base::flat_set<std::string>& model_features);
+      const base::flat_set<std::string>& model_features,
+      const base::flat_map<proto::ClientModelFeature, float>&
+          override_client_model_feature_values);
 
   // Calculate and return the current value for the client feature specified
-  // by |model_feature|. Return nullopt if the client does not support the
+  // by |model_feature|. If |model_feature| is in
+  // |override_client_model_feature_values|, the value from
+  // |client_model_feature_values| will be used. Otherwise, the client will
+  // calculate the value or return nullopt if the client does not support the
   // model feature.
   base::Optional<float> GetValueForClientFeature(
       const std::string& model_feature,
-      content::NavigationHandle* navigation_handle) const;
+      content::NavigationHandle* navigation_handle,
+      const base::flat_map<proto::ClientModelFeature, float>&
+          override_client_model_feature_values) const;
 
   // Called to make a request to fetch models and host model features from the
   // remote Optimization Guide Service. Used to fetch models for the registered

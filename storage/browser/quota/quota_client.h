@@ -7,8 +7,8 @@
 
 #include <stdint.h>
 
-#include <set>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/component_export.h"
@@ -32,7 +32,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaClient
  public:
   using GetUsageCallback = base::OnceCallback<void(int64_t usage)>;
   using GetOriginsCallback =
-      base::OnceCallback<void(const std::set<url::Origin>& origins)>;
+      base::OnceCallback<void(const std::vector<url::Origin>& origins)>;
   using DeletionCallback =
       base::OnceCallback<void(blink::mojom::QuotaStatusCode status)>;
 

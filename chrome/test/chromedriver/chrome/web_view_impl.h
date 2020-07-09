@@ -20,7 +20,6 @@ class Value;
 }
 
 struct BrowserInfo;
-class DebuggerTracker;
 struct DeviceMetrics;
 class DevToolsClient;
 class DomTracker;
@@ -218,7 +217,6 @@ class WebViewImpl : public WebView {
   std::unique_ptr<DownloadDirectoryOverrideManager>
       download_directory_override_manager_;
   std::unique_ptr<HeapSnapshotTaker> heap_snapshot_taker_;
-  std::unique_ptr<DebuggerTracker> debugger_;
   std::unique_ptr<CastTracker> cast_tracker_;
 };
 

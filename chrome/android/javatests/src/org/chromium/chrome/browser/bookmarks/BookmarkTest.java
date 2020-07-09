@@ -1605,18 +1605,18 @@ public class BookmarkTest {
     }
 
     private void waitForEditActivity() {
-        CriteriaHelper.pollUiThread(
-                ()
-                        -> Assert.assertThat(ApplicationStatus.getLastTrackedFocusedActivity(),
-                                IsInstanceOf.instanceOf(BookmarkEditActivity.class)));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(ApplicationStatus.getLastTrackedFocusedActivity(),
+                    IsInstanceOf.instanceOf(BookmarkEditActivity.class));
+        });
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
     private ChromeTabbedActivity waitForTabbedActivity() {
-        CriteriaHelper.pollUiThread(
-                ()
-                        -> Assert.assertThat(ApplicationStatus.getLastTrackedFocusedActivity(),
-                                IsInstanceOf.instanceOf(ChromeTabbedActivity.class)));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(ApplicationStatus.getLastTrackedFocusedActivity(),
+                    IsInstanceOf.instanceOf(ChromeTabbedActivity.class));
+        });
         return (ChromeTabbedActivity) ApplicationStatus.getLastTrackedFocusedActivity();
     }
 }

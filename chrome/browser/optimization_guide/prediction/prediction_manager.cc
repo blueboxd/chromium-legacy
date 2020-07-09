@@ -266,12 +266,19 @@ void PredictionManager::RegisterOptimizationTargets(
 
 base::Optional<float> PredictionManager::GetValueForClientFeature(
     const std::string& model_feature,
-    content::NavigationHandle* navigation_handle) const {
+    content::NavigationHandle* navigation_handle,
+    const base::flat_map<proto::ClientModelFeature, float>&
+        override_client_model_feature_values) const {
   SEQUENCE_CHECKER(sequence_checker_);
 
   proto::ClientModelFeature client_model_feature;
   if (!proto::ClientModelFeature_Parse(model_feature, &client_model_feature))
     return base::nullopt;
+
+  auto cmf_value_it =
+      override_client_model_feature_values.find(client_model_feature);
+  if (cmf_value_it != override_client_model_feature_values.end())
+    return cmf_value_it->second;
 
   base::Optional<float> value;
 
@@ -348,7 +355,9 @@ base::Optional<float> PredictionManager::GetValueForClientFeature(
 
 base::flat_map<std::string, float> PredictionManager::BuildFeatureMap(
     content::NavigationHandle* navigation_handle,
-    const base::flat_set<std::string>& model_features) {
+    const base::flat_set<std::string>& model_features,
+    const base::flat_map<proto::ClientModelFeature, float>&
+        override_client_model_feature_values) {
   SEQUENCE_CHECKER(sequence_checker_);
   base::flat_map<std::string, float> feature_map;
   if (model_features.size() == 0)
@@ -370,8 +379,8 @@ base::flat_map<std::string, float> PredictionManager::BuildFeatureMap(
   // created for it. This ensures that the prediction model will have values for
   // every feature that it requires to be evaluated.
   for (const auto& model_feature : model_features) {
-    base::Optional<float> value =
-        GetValueForClientFeature(model_feature, navigation_handle);
+    base::Optional<float> value = GetValueForClientFeature(
+        model_feature, navigation_handle, override_client_model_feature_values);
     if (value) {
       feature_map[model_feature] = *value;
       continue;
@@ -388,7 +397,9 @@ base::flat_map<std::string, float> PredictionManager::BuildFeatureMap(
 
 OptimizationTargetDecision PredictionManager::ShouldTargetNavigation(
     content::NavigationHandle* navigation_handle,
-    proto::OptimizationTarget optimization_target) {
+    proto::OptimizationTarget optimization_target,
+    const base::flat_map<proto::ClientModelFeature, float>&
+        override_client_model_feature_values) {
   SEQUENCE_CHECKER(sequence_checker_);
   DCHECK(navigation_handle->GetURL().SchemeIsHTTPOrHTTPS());
 
@@ -434,7 +445,8 @@ OptimizationTargetDecision PredictionManager::ShouldTargetNavigation(
   PredictionModel* prediction_model = it->second.get();
 
   base::flat_map<std::string, float> feature_map =
-      BuildFeatureMap(navigation_handle, prediction_model->GetModelFeatures());
+      BuildFeatureMap(navigation_handle, prediction_model->GetModelFeatures(),
+                      override_client_model_feature_values);
 
   base::TimeTicks model_evaluation_start_time = base::TimeTicks::Now();
   double prediction_score = 0.0;

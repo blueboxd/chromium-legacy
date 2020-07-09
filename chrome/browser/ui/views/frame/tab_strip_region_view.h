@@ -12,11 +12,8 @@
 // TODO (https://crbug.com/949660) Under construction.
 class TabStripRegionView final : public views::View {
  public:
-  TabStripRegionView();
+  explicit TabStripRegionView(std::unique_ptr<TabStrip> tab_strip);
   ~TabStripRegionView() override;
-
-  // Takes ownership of the tabstrip.
-  TabStrip* AddTabStrip(std::unique_ptr<TabStrip> tab_strip);
 
   // views::View overrides:
   const char* GetClassName() const override;

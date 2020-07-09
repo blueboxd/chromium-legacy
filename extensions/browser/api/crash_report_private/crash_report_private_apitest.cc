@@ -160,8 +160,8 @@ IN_PROC_BROWSER_TEST_F(CrashReportPrivateApiTest, StackTraceWithErrorMessage) {
 }
 
 IN_PROC_BROWSER_TEST_F(CrashReportPrivateApiTest, AnonymizeMessage) {
-  // We use the feedback APIs anonymizer tool, which scrubs many different types
-  // of PII. As a sanity check, test if Mac addresses are anonymized.
+  // We use the feedback APIs redaction tool, which scrubs many different types
+  // of PII. As a sanity check, test if MAC addresses are redacted.
   constexpr char kTestScript[] = R"(
     chrome.crashReportPrivate.reportError({
         message: "06-00-00-00-00-00",

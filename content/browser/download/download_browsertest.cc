@@ -3825,12 +3825,13 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   std::vector<download::DownloadItem*> downloads;
   DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
   ASSERT_EQ(1u, downloads.size());
+  base::FilePath file_name = downloads[0]->GetTargetFilePath().BaseName();
 #if defined(OS_WIN)
-  EXPECT_EQ(FILE_PATH_LITERAL("download.htm"),
-            downloads[0]->GetTargetFilePath().BaseName().value());
+  // Windows file extension depends on system registry.
+  EXPECT_TRUE(file_name.value() == FILE_PATH_LITERAL("download.htm") ||
+              file_name.value() == FILE_PATH_LITERAL("download.html"));
 #else
-  EXPECT_EQ(FILE_PATH_LITERAL("download.html"),
-            downloads[0]->GetTargetFilePath().BaseName().value());
+  EXPECT_EQ(FILE_PATH_LITERAL("download.html"), file_name.value());
 #endif
 
   ASSERT_TRUE(origin_one.ShutdownAndWaitUntilComplete());

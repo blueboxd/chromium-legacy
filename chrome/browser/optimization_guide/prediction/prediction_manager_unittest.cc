@@ -571,9 +571,10 @@ TEST_F(PredictionManagerTest, OptimizationTargetNotRegisteredForNavigation) {
 
   EXPECT_TRUE(prediction_model_fetcher()->models_fetched());
 
-  EXPECT_EQ(OptimizationTargetDecision::kUnknown,
-            prediction_manager()->ShouldTargetNavigation(
-                navigation_handle.get(), proto::OPTIMIZATION_TARGET_UNKNOWN));
+  EXPECT_EQ(
+      OptimizationTargetDecision::kUnknown,
+      prediction_manager()->ShouldTargetNavigation(
+          navigation_handle.get(), proto::OPTIMIZATION_TARGET_UNKNOWN, {}));
   // OptimizationGuideNavData should not be populated.
   OptimizationGuideNavigationData* nav_data =
       OptimizationGuideNavigationData::GetFromNavigationHandle(
@@ -610,7 +611,7 @@ TEST_F(PredictionManagerTest,
   EXPECT_EQ(OptimizationTargetDecision::kModelNotAvailableOnClient,
             prediction_manager()->ShouldTargetNavigation(
                 navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
 
   // OptimizationGuideNavData should not be populated.
   OptimizationGuideNavigationData* nav_data =
@@ -654,7 +655,7 @@ TEST_F(PredictionManagerTest, EvaluatePredictionModel) {
   EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
             prediction_manager()->ShouldTargetNavigation(
                 navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
 
   TestPredictionModel* test_prediction_model =
       static_cast<TestPredictionModel*>(
@@ -792,7 +793,7 @@ TEST_F(PredictionManagerTest,
   EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
             prediction_manager()->ShouldTargetNavigation(
                 navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
   EXPECT_FALSE(test_prediction_model->WasModelEvaluated());
 }
 
@@ -833,7 +834,7 @@ TEST_F(PredictionManagerTest,
   EXPECT_EQ(OptimizationTargetDecision::kPageLoadDoesNotMatch,
             prediction_manager()->ShouldTargetNavigation(
                 navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
   EXPECT_FALSE(test_prediction_model->WasModelEvaluated());
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.ShouldTargetNavigation.PredictionModelStatus", 0);
@@ -875,7 +876,7 @@ TEST_F(PredictionManagerTest,
   EXPECT_EQ(OptimizationTargetDecision::kModelPredictionHoldback,
             prediction_manager()->ShouldTargetNavigation(
                 navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
   EXPECT_FALSE(test_prediction_model->WasModelEvaluated());
 }
 
@@ -915,7 +916,7 @@ TEST_F(PredictionManagerTest, EvaluatePredictionModelPopulatesNavData) {
   EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
             prediction_manager()->ShouldTargetNavigation(
                 navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
 
   TestPredictionModel* test_prediction_model =
       static_cast<TestPredictionModel*>(
@@ -960,7 +961,7 @@ TEST_F(PredictionManagerTest,
   EXPECT_EQ(OptimizationTargetDecision::kModelPredictionHoldback,
             prediction_manager()->ShouldTargetNavigation(
                 navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
 
   TestPredictionModel* test_prediction_model =
       static_cast<TestPredictionModel*>(
@@ -1009,7 +1010,7 @@ TEST_F(PredictionManagerTest, ShouldTargetNavigationStoreAvailableNoModel) {
   EXPECT_EQ(OptimizationTargetDecision::kModelNotAvailableOnClient,
             prediction_manager()->ShouldTargetNavigation(
                 navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
 
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.ShouldTargetNavigation.PredictionModelStatus",
@@ -1044,7 +1045,7 @@ TEST_F(PredictionManagerTest,
   EXPECT_EQ(OptimizationTargetDecision::kModelNotAvailableOnClient,
             prediction_manager()->ShouldTargetNavigation(
                 navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
 
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.ShouldTargetNavigation.PredictionModelStatus",
@@ -1079,7 +1080,7 @@ TEST_F(PredictionManagerTest,
   EXPECT_EQ(OptimizationTargetDecision::kModelNotAvailableOnClient,
             prediction_manager()->ShouldTargetNavigation(
                 navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
 
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.ShouldTargetNavigation.PredictionModelStatus",
@@ -1151,7 +1152,7 @@ TEST_F(
   EXPECT_EQ(OptimizationTargetDecision::kModelNotAvailableOnClient,
             prediction_manager()->ShouldTargetNavigation(
                 navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
 
   TestPredictionModel* test_prediction_model =
       static_cast<TestPredictionModel*>(
@@ -1211,7 +1212,7 @@ TEST_F(PredictionManagerTest, NoHostModelFeaturesForHost) {
   EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
             prediction_manager()->ShouldTargetNavigation(
                 navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
 
   TestPredictionModel* test_prediction_model =
       static_cast<TestPredictionModel*>(
@@ -1487,7 +1488,7 @@ TEST_P(PredictionManagerTest, ClientFeature) {
   EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
             prediction_manager()->ShouldTargetNavigation(
                 navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
 
   TestPredictionModel* test_prediction_model =
       static_cast<TestPredictionModel*>(
@@ -1554,7 +1555,7 @@ TEST_F(PredictionManagerTest, PreviousSessionStatisticsUsed) {
   EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
             prediction_manager()->ShouldTargetNavigation(
                 navigation_handle.get(),
-                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, {}));
 
   TestPredictionModel* test_prediction_model =
       static_cast<TestPredictionModel*>(
@@ -1574,6 +1575,81 @@ TEST_F(PredictionManagerTest, PreviousSessionStatisticsUsed) {
       evaluated_features["CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_"
                          "SESSION_STANDARD_DEVIATION"],
       50.0);
+  EXPECT_FLOAT_EQ(
+      evaluated_features
+          ["CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_PREVIOUS_PAGE_LOAD"],
+      200.0);
+}
+
+TEST_F(PredictionManagerTest,
+       OverriddenClientModelFeaturesUsedIfProvidedBackfilledIfNot) {
+  base::HistogramTester histogram_tester;
+  GURL previous_url = GURL("https://foo.com");
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          previous_url);
+  navigation_handle->set_url(previous_url);
+  navigation_handle->set_page_transition(
+      ui::PageTransition::PAGE_TRANSITION_RELOAD);
+
+  pref_service()->SetDouble(optimization_guide::prefs::kSessionStatisticFCPMean,
+                            200.0);
+  pref_service()->SetDouble(
+      optimization_guide::prefs::kSessionStatisticFCPStdDev, 50.0);
+
+  CreatePredictionManager({});
+  prediction_manager()->SetPredictionModelFetcherForTesting(
+      BuildTestPredictionModelFetcher(
+          PredictionModelFetcherEndState::kFetchFailed));
+
+  prediction_manager()->RegisterOptimizationTargets(
+      {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
+
+  SetStoreInitialized();
+
+  std::unique_ptr<proto::GetModelsResponse> get_models_response =
+      BuildGetModelsResponse(
+          {},
+          {proto::CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_SESSION_MEAN,
+           proto::
+               CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_SESSION_STANDARD_DEVIATION,
+           proto::
+               CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_PREVIOUS_PAGE_LOAD});
+  prediction_manager()->UpdateHostModelFeaturesForTesting(
+      get_models_response.get());
+  prediction_manager()->UpdatePredictionModelsForTesting(
+      get_models_response.get());
+
+  EXPECT_EQ(
+      OptimizationTargetDecision::kPageLoadMatches,
+      prediction_manager()->ShouldTargetNavigation(
+          navigation_handle.get(), proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+          {
+              {proto::CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_SESSION_MEAN,
+               3.0},
+              {proto::
+                   CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_SESSION_STANDARD_DEVIATION,
+               5.0},
+          }));
+
+  TestPredictionModel* test_prediction_model =
+      static_cast<TestPredictionModel*>(
+          prediction_manager()->GetPredictionModelForTesting(
+              proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+
+  EXPECT_TRUE(test_prediction_model);
+  EXPECT_TRUE(test_prediction_model->WasModelEvaluated());
+
+  base::flat_map<std::string, float> evaluated_features =
+      test_prediction_model->last_evaluated_features();
+  EXPECT_FLOAT_EQ(
+      evaluated_features
+          ["CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_SESSION_MEAN"],
+      3.0);
+  EXPECT_FLOAT_EQ(
+      evaluated_features["CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_"
+                         "SESSION_STANDARD_DEVIATION"],
+      5.0);
   EXPECT_FLOAT_EQ(
       evaluated_features
           ["CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_PREVIOUS_PAGE_LOAD"],

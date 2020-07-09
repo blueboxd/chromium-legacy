@@ -238,30 +238,6 @@ std::string CreateFixUrlRequestBody(
                            correction_params, std::move(params));
 }
 
-std::string CreateClickTrackingUrlRequestBody(
-    const error_page::Error& error,
-    const NetErrorHelperCore::NavigationCorrectionParams& correction_params,
-    const NavigationCorrectionResponse& response,
-    const NavigationCorrection& correction) {
-  std::string error_param;
-  bool result = ShouldUseFixUrlServiceForError(error, &error_param);
-  DCHECK(result);
-
-  std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
-
-  params->SetString("originalUrlQuery", PrepareUrlForUpload(error.url()));
-
-  params->SetString("clickedUrlCorrection", correction.url_correction);
-  params->SetString("clickType", correction.click_type);
-  params->SetString("clickData", correction.click_data);
-
-  params->SetString("eventId", response.event_id);
-  params->SetString("fingerprint", response.fingerprint);
-
-  return CreateRequestBody("linkdoctor.fixurl.clicktracking", error_param,
-                           correction_params, std::move(params));
-}
-
 base::string16 FormatURLForDisplay(const GURL& url, bool is_rtl) {
   // Translate punycode into UTF8, unescape UTF8 URLs.
   base::string16 url_for_display(url_formatter::FormatUrl(
@@ -316,7 +292,6 @@ std::unique_ptr<error_page::ErrorPageParams> CreateErrorPageParams(
 
     if ((*it)->correction_type == "reloadPage") {
       params->suggest_reload = true;
-      params->reload_tracking_id = tracking_id;
       continue;
     }
 
@@ -325,7 +300,6 @@ std::unique_ptr<error_page::ErrorPageParams> CreateErrorPageParams(
       if (params->search_terms.empty()) {
         params->search_url = correction_params.search_url;
         params->search_terms = (*it)->url_correction;
-        params->search_tracking_id = tracking_id;
         LogCorrectionTypeShown(kWebSearchQueryUMAId);
       }
       continue;
@@ -370,30 +344,6 @@ std::unique_ptr<error_page::ErrorPageParams> CreateErrorPageParams(
   if (params->override_suggestions->empty() && !params->search_url.is_valid())
     params.reset();
   return params;
-}
-
-// Tracks navigation correction service usage in UMA to enable more in depth
-// analysis.
-void TrackClickUMA(std::string type_id) {
-  // Web search suggestion isn't in |kCorrectionResourceTable| array.
-  if (type_id == "webSearchQuery") {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Net.ErrorPageCounts.NavigationCorrectionLinksUsed",
-        kWebSearchQueryUMAId, kWebSearchQueryUMAId + 1);
-    return;
-  }
-
-  size_t correction_index;
-  for (correction_index = 0;
-       correction_index < base::size(kCorrectionResourceTable);
-       ++correction_index) {
-    if (kCorrectionResourceTable[correction_index].correction_type == type_id) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "Net.ErrorPageCounts.NavigationCorrectionLinksUsed",
-          static_cast<int>(correction_index), kWebSearchQueryUMAId + 1);
-      break;
-    }
-  }
 }
 
 }  // namespace
@@ -642,9 +592,6 @@ void NetErrorHelperCore::OnFinishLoad(FrameType frame_type) {
   committed_error_page_info_->is_finished_loading = true;
 
   RecordEvent(error_page::NETWORK_ERROR_PAGE_SHOWN);
-  if (committed_error_page_info_->page_state.show_cached_copy_button_shown) {
-    RecordEvent(error_page::NETWORK_ERROR_PAGE_CACHED_COPY_BUTTON_SHOWN);
-  }
 
   delegate_->SetIsShowingDownloadButton(
       committed_error_page_info_->page_state.download_button_shown);
@@ -796,13 +743,6 @@ void NetErrorHelperCore::UpdateErrorPage() {
       delegate_->UpdateErrorPage(GetUpdatedError(*committed_error_page_info_),
                                  committed_error_page_info_->was_failed_post,
                                  can_show_network_diagnostics_dialog_);
-
-  // This button can't be changed by a DNS error update, so there's no code
-  // to update the related UMA in ErrorPageLoadedWithFinalErrorCode(). Instead,
-  // verify there's no change in this button's state.
-  DCHECK_EQ(
-      committed_error_page_info_->page_state.show_cached_copy_button_shown,
-      new_state.show_cached_copy_button_shown);
 
   committed_error_page_info_->page_state = std::move(new_state);
   if (!committed_error_page_info_->needs_dns_updates)
@@ -1004,9 +944,6 @@ void NetErrorHelperCore::ExecuteButtonPress(Button button) {
       RecordEvent(error_page::NETWORK_ERROR_EASTER_EGG_ACTIVATED);
       delegate_->RequestEasterEggHighScore();
       return;
-    case SHOW_CACHED_COPY_BUTTON:
-      RecordEvent(error_page::NETWORK_ERROR_PAGE_CACHED_COPY_BUTTON_CLICKED);
-      return;
     case DIAGNOSE_ERROR:
       RecordEvent(error_page::NETWORK_ERROR_DIAGNOSE_BUTTON_CLICKED);
       delegate_->DiagnoseError(committed_error_page_info_->error.url());
@@ -1019,43 +956,6 @@ void NetErrorHelperCore::ExecuteButtonPress(Button button) {
       NOTREACHED();
       return;
   }
-}
-
-void NetErrorHelperCore::TrackClick(int tracking_id) {
-  // It's technically possible for |navigation_correction_params| to be NULL but
-  // for |navigation_correction_response| not to be NULL, if the paramters
-  // changed between loading the original error page and loading the error page
-  if (!committed_error_page_info_ ||
-      !committed_error_page_info_->navigation_correction_response) {
-    return;
-  }
-
-  NavigationCorrectionResponse* response =
-      committed_error_page_info_->navigation_correction_response.get();
-
-  // |tracking_id| is less than 0 when the error page was not generated by the
-  // navigation correction service.  |tracking_id| should never be greater than
-  // the array size, but best to be safe, since it contains data from a remote
-  // site, though none of that data should make it into Javascript callbacks.
-  if (tracking_id < 0 ||
-      static_cast<size_t>(tracking_id) >= response->corrections.size()) {
-    return;
-  }
-
-  // Only report a clicked link once.
-  if (committed_error_page_info_->clicked_corrections.count(tracking_id))
-    return;
-
-  TrackClickUMA(response->corrections[tracking_id]->correction_type);
-
-  committed_error_page_info_->clicked_corrections.insert(tracking_id);
-  std::string request_body = CreateClickTrackingUrlRequestBody(
-      committed_error_page_info_->error,
-      *committed_error_page_info_->navigation_correction_params, *response,
-      *response->corrections[tracking_id]);
-  delegate_->SendTrackingRequest(
-      committed_error_page_info_->navigation_correction_params->url,
-      request_body);
 }
 
 void NetErrorHelperCore::LaunchOfflineItem(const std::string& id,

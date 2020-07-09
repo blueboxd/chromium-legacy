@@ -125,6 +125,8 @@ struct WebXrFrame {
   // In SharedBuffer mode, keep a swap chain.
   std::unique_ptr<WebXrSharedBuffer> shared_buffer;
 
+  std::unique_ptr<WebXrSharedBuffer> camera_image_shared_buffer;
+
   DISALLOW_COPY_AND_ASSIGN(WebXrFrame);
 };
 

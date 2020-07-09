@@ -11,7 +11,8 @@
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/secure_message_delegate.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
-#include "chromeos/services/device_sync/proto/securemessage.pb.h"
+#include "third_party/securemessage/proto/securemessage.pb.h"
+#include "third_party/ukey2/proto/device_to_device_messages.pb.h"
 
 namespace chromeos {
 
@@ -67,7 +68,7 @@ void DeviceToDeviceSecureContext::Encode(const std::string& message,
   gcm_metadata.set_version(kGcmMetadataVersion);
 
   // Wrap |message| inside a DeviceToDeviceMessage proto.
-  securemessage::DeviceToDeviceMessage device_to_device_message;
+  securegcm::DeviceToDeviceMessage device_to_device_message;
   device_to_device_message.set_sequence_number(++last_encode_sequence_number_);
   device_to_device_message.set_message(message);
 
@@ -96,7 +97,7 @@ void DeviceToDeviceSecureContext::HandleUnwrapResult(
     const std::string& payload,
     const securemessage::Header& header) {
   // The payload should contain a DeviceToDeviceMessage proto.
-  securemessage::DeviceToDeviceMessage device_to_device_message;
+  securegcm::DeviceToDeviceMessage device_to_device_message;
   if (!verified || !device_to_device_message.ParseFromString(payload)) {
     PA_LOG(ERROR) << "Failed to unwrap secure message.";
     callback.Run(std::string());

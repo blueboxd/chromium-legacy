@@ -2605,7 +2605,7 @@ const CSSValue* FontFeatureSettings::CSSValueFromComputedStyleInternal(
   for (wtf_size_t i = 0; i < feature_settings->size(); ++i) {
     const FontFeature& feature = feature_settings->at(i);
     auto* feature_value = MakeGarbageCollected<cssvalue::CSSFontFeatureValue>(
-        feature.Tag(), feature.Value());
+        feature.TagString(), feature.Value());
     list->Append(*feature_value);
   }
   return list;
@@ -2853,7 +2853,7 @@ const CSSValue* FontVariationSettings::CSSValueFromComputedStyleInternal(
     const FontVariationAxis& variation_axis = variation_settings->at(i);
     cssvalue::CSSFontVariationValue* variation_value =
         MakeGarbageCollected<cssvalue::CSSFontVariationValue>(
-            variation_axis.Tag(), variation_axis.Value());
+            variation_axis.TagString(), variation_axis.Value());
     list->Append(*variation_value);
   }
   return list;

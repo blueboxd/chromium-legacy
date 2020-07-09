@@ -182,10 +182,6 @@ void NetErrorHelper::ButtonPressed(NetErrorHelperCore::Button button) {
   core_->ExecuteButtonPress(button);
 }
 
-void NetErrorHelper::TrackClick(int tracking_id) {
-  core_->TrackClick(tracking_id);
-}
-
 void NetErrorHelper::LaunchOfflineItem(const std::string& id,
                                        const std::string& name_space) {
   core_->LaunchOfflineItem(id, name_space);
@@ -452,24 +448,6 @@ void NetErrorHelper::CancelFetchNavigationCorrections() {
   correction_loader_.reset();
 }
 
-void NetErrorHelper::SendTrackingRequest(
-    const GURL& tracking_url,
-    const std::string& tracking_request_body) {
-  // If there's already a pending tracking request, this will cancel it.
-  std::unique_ptr<network::ResourceRequest> resource_request =
-      CreatePostRequest(tracking_url);
-
-  tracking_loader_ = network::SimpleURLLoader::Create(
-      std::move(resource_request), GetNetworkTrafficAnnotationTag());
-  tracking_loader_->AttachStringForUpload(tracking_request_body,
-                                          "application/json");
-  tracking_loader_->DownloadToString(
-      render_frame()->GetURLLoaderFactory().get(),
-      base::BindOnce(&NetErrorHelper::OnTrackingRequestComplete,
-                     base::Unretained(this)),
-      network::SimpleURLLoader::kMaxBoundedStringDownloadSize);
-}
-
 void NetErrorHelper::ReloadFrame() {
   render_frame()->GetWebFrame()->StartReload(blink::WebFrameLoadType::kReload);
 }
@@ -549,11 +527,6 @@ void NetErrorHelper::OnNavigationCorrectionsFetched(
   correction_loader_.reset();
   core_->OnNavigationCorrectionsFetched(success ? *response_body : "",
                                         base::i18n::IsRTL());
-}
-
-void NetErrorHelper::OnTrackingRequestComplete(
-    std::unique_ptr<std::string> response_body) {
-  tracking_loader_.reset();
 }
 
 void NetErrorHelper::OnNetworkDiagnosticsClientRequest(

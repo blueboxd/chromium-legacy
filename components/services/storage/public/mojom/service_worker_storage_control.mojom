@@ -56,6 +56,14 @@ enum ServiceWorkerStorageOriginState {
   kDelete,
 };
 
+// A notifier interface for ServiceWorkerResourceReader::ReadData().
+interface ServiceWorkerDataPipeStateNotifier {
+  // Called when ReadData() completes. On success, |status| is the number of
+  // bytes written. On failure, |status| is a //net error, which is a negative
+  // number.
+  OnComplete(int32 status);
+};
+
 // An interface that reads a service worker script (resource) to storage.
 interface ServiceWorkerResourceReader {
   // Reads the response head of the resource associated with this reader.
@@ -66,7 +74,9 @@ interface ServiceWorkerResourceReader {
        network.mojom.URLResponseHead? response_head,
        mojo_base.mojom.BigBuffer? metadata);
   // Reads the content of the resource associated with this reader.
-  ReadData(int64 size) => (handle<data_pipe_consumer> pipe);
+  ReadData(int64 size,
+           pending_remote<ServiceWorkerDataPipeStateNotifier> notifier) =>
+      (handle<data_pipe_consumer> pipe);
 };
 
 // An interface that writes a service worker script (resource) to storage.

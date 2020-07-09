@@ -46,7 +46,6 @@ namespace {
 
 static const char kRedirectLoopLearnMoreUrl[] =
     "https://support.google.com/chrome?p=rl_error";
-static const int kGoogleCachedCopySuggestionType = 0;
 
 enum NAV_SUGGESTIONS {
   SUGGEST_NONE = 0,
@@ -527,40 +526,6 @@ const char* GetIconClassForError(const std::string& error_domain,
                                  int error_code) {
   return IsOfflineError(error_domain, error_code) ? "icon-offline"
                                                   : "icon-generic";
-}
-
-// If the first suggestion is for a Google cache copy link, promote the
-// suggestion to a separate set of strings for displaying as a button.
-// Returns true if the cache copy button is shown.
-bool AddGoogleCachedCopyButton(base::ListValue* suggestions_summary_list,
-                               base::DictionaryValue* error_strings) {
-  if (suggestions_summary_list->empty())
-    return false;
-
-  base::DictionaryValue* suggestion;
-  suggestions_summary_list->GetDictionary(0, &suggestion);
-  int type = -1;
-  suggestion->GetInteger("type", &type);
-
-  if (type != kGoogleCachedCopySuggestionType)
-    return false;
-
-  base::string16 cache_url;
-  suggestion->GetString("urlCorrection", &cache_url);
-  int cache_tracking_id = -1;
-  suggestion->GetInteger("trackingId", &cache_tracking_id);
-  std::unique_ptr<base::DictionaryValue> cache_button(
-      new base::DictionaryValue);
-  cache_button->SetString(
-      "msg", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_SHOW_SAVED_COPY));
-  cache_button->SetString("cacheUrl", cache_url);
-  cache_button->SetInteger("trackingId", cache_tracking_id);
-  error_strings->Set("cacheButton", std::move(cache_button));
-
-  // Remove the item from suggestions dictionary so that it does not get
-  // displayed by the template in the details section.
-  suggestions_summary_list->Remove(0, nullptr);
-  return true;
 }
 
 // Helper function that creates a single entry dictionary and adds it
@@ -1049,8 +1014,6 @@ LocalizedError::PageState LocalizedError::GetPageState(
     suggestions_summary_list = result.strings.SetList(
         "suggestionsSummaryList", std::move(params->override_suggestions));
     use_default_suggestions = false;
-    result.show_cached_copy_button_shown =
-        AddGoogleCachedCopyButton(suggestions_summary_list, &result.strings);
   }
 
   if (params->search_url.is_valid()) {
@@ -1061,8 +1024,6 @@ LocalizedError::PageState LocalizedError::GetPageState(
     search_suggestion->SetString("searchUrl", params->search_url.spec() +
                                  params->search_terms);
     search_suggestion->SetString("searchTerms", params->search_terms);
-    search_suggestion->SetInteger("trackingId",
-                                  params->search_tracking_id);
     suggestions_summary_list->Append(std::move(search_suggestion));
   }
 
@@ -1074,7 +1035,6 @@ LocalizedError::PageState LocalizedError::GetPageState(
     reload_button->SetString(
         "msg", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_RELOAD));
     reload_button->SetString("reloadUrl", failed_url.spec());
-    reload_button->SetInteger("reloadTrackingId", params->reload_tracking_id);
     result.strings.Set("reloadButton", std::move(reload_button));
   }
 

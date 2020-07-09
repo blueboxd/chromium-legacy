@@ -43,7 +43,7 @@ NativeFileSystemDirectoryHandle::NativeFileSystemDirectoryHandle(
   DCHECK(mojo_ptr_.is_bound());
 }
 
-ScriptPromise NativeFileSystemDirectoryHandle::getFile(
+ScriptPromise NativeFileSystemDirectoryHandle::getFileHandle(
     ScriptState* script_state,
     const String& name,
     const FileSystemGetFileOptions* options) {
@@ -72,7 +72,7 @@ ScriptPromise NativeFileSystemDirectoryHandle::getFile(
   return result;
 }
 
-ScriptPromise NativeFileSystemDirectoryHandle::getDirectory(
+ScriptPromise NativeFileSystemDirectoryHandle::getDirectoryHandle(
     ScriptState* script_state,
     const String& name,
     const FileSystemGetDirectoryOptions* options) {

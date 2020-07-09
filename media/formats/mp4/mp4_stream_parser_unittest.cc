@@ -696,6 +696,23 @@ TEST_F(MP4StreamParserTest, Flac192kHz) {
   EXPECT_TRUE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
 }
 
+TEST_F(MP4StreamParserTest, Vp9) {
+  auto params = GetDefaultInitParametersExpectations();
+  params.detected_audio_track_count = 0;
+  InitializeParserWithInitParametersExpectations(params);
+
+  auto buffer = ReadTestDataFile("vp9-hdr-init-segment.mp4");
+  EXPECT_TRUE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
+
+  EXPECT_EQ(video_decoder_config_.profile(), VP9PROFILE_PROFILE2);
+  EXPECT_EQ(video_decoder_config_.level(), 31u);
+  EXPECT_EQ(video_decoder_config_.color_space_info(),
+            VideoColorSpace(VideoColorSpace::PrimaryID::BT2020,
+                            VideoColorSpace::TransferID::SMPTEST2084,
+                            VideoColorSpace::MatrixID::BT2020_NCL,
+                            gfx::ColorSpace::RangeID::LIMITED));
+}
+
 TEST_F(MP4StreamParserTest, FourCCToString) {
   // A real FOURCC should print.
   EXPECT_EQ("mvex", FourCCToString(FOURCC_MVEX));

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/flat_map.h"
 #include "base/optional.h"
 #include "components/optimization_guide/optimization_metadata.h"
 #include "components/optimization_guide/proto/hints.pb.h"
@@ -38,6 +39,9 @@ enum class OptimizationGuideDecision {
   kMaxValue = kFalse,
 };
 
+using OptimizationGuideTargetDecisionCallback =
+    base::OnceCallback<void(optimization_guide::OptimizationGuideDecision)>;
+
 using OptimizationGuideDecisionCallback =
     base::OnceCallback<void(optimization_guide::OptimizationGuideDecision,
                             const optimization_guide::OptimizationMetadata&)>;
@@ -55,6 +59,20 @@ class OptimizationGuideDecider {
   virtual OptimizationGuideDecision ShouldTargetNavigation(
       content::NavigationHandle* navigation_handle,
       proto::OptimizationTarget optimization_target) = 0;
+
+  // Invokes |callback| with the decision for whether the current browser
+  // conditions, as expressed by |client_model_feature_values| and the
+  // |navigation_handle|, match |optimization_target|.
+  //
+  // Values provided in |client_model_feature_values| will be used over any
+  // values for features required by the model that may be calculated by the
+  // Optimization Guide.
+  virtual void ShouldTargetNavigationAsync(
+      content::NavigationHandle* navigation_handle,
+      proto::OptimizationTarget optimization_target,
+      const base::flat_map<proto::ClientModelFeature, float>&
+          client_model_feature_values,
+      OptimizationGuideTargetDecisionCallback callback) = 0;
 
   // Registers the optimization types that intend to be queried during the
   // session. It is expected for this to be called after the browser has been

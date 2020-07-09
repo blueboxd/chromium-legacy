@@ -52,16 +52,15 @@ void RecordSkippedOriginHistogram(const InvalidOriginReason reason) {
   UMA_HISTOGRAM_ENUMERATION("Quota.SkippedInvalidOriginUsage", reason);
 }
 
-void DidGetGlobalClientUsageForLimitedGlobalClientUsage(
-    UsageCallback callback,
-    int64_t total_global_usage,
-    int64_t global_unlimited_usage) {
-  std::move(callback).Run(total_global_usage - global_unlimited_usage);
-}
-
 }  // namespace
 
 struct ClientUsageTracker::AccumulateInfo {
+  AccumulateInfo() = default;
+  ~AccumulateInfo() = default;
+
+  AccumulateInfo(const AccumulateInfo&) = delete;
+  AccumulateInfo& operator=(const AccumulateInfo&) = delete;
+
   size_t pending_jobs = 0;
   int64_t limited_usage = 0;
   int64_t unlimited_usage = 0;
@@ -87,35 +86,6 @@ ClientUsageTracker::~ClientUsageTracker() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (special_storage_policy_.get())
     special_storage_policy_->RemoveObserver(this);
-}
-
-void ClientUsageTracker::GetGlobalLimitedUsage(UsageCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!global_usage_retrieved_) {
-    GetGlobalUsage(
-        base::BindOnce(&DidGetGlobalClientUsageForLimitedGlobalClientUsage,
-                       std::move(callback)));
-    return;
-  }
-
-  if (non_cached_limited_origins_by_host_.empty()) {
-    std::move(callback).Run(global_limited_usage_);
-    return;
-  }
-
-  AccumulateInfo* info = new AccumulateInfo;
-  info->pending_jobs = non_cached_limited_origins_by_host_.size() + 1;
-  auto accumulator =
-      base::BindRepeating(&ClientUsageTracker::AccumulateLimitedOriginUsage,
-                          weak_factory_.GetWeakPtr(), base::Owned(info),
-                          AdaptCallbackForRepeating(std::move(callback)));
-
-  for (const auto& host_and_origins : non_cached_limited_origins_by_host_) {
-    for (const auto& origin : host_and_origins.second)
-      client_->GetOriginUsage(origin, type_, accumulator);
-  }
-
-  accumulator.Run(global_limited_usage_);
 }
 
 void ClientUsageTracker::GetGlobalUsage(GlobalUsageCallback callback) {
@@ -257,25 +227,13 @@ void ClientUsageTracker::SetUsageCacheEnabled(const url::Origin& origin,
   }
 }
 
-void ClientUsageTracker::AccumulateLimitedOriginUsage(AccumulateInfo* info,
-                                                      UsageCallback callback,
-                                                      int64_t usage) {
-  DCHECK_GT(info->pending_jobs, 0U);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  info->limited_usage += usage;
-  if (--info->pending_jobs)
-    return;
-
-  std::move(callback).Run(info->limited_usage);
-}
-
 void ClientUsageTracker::DidGetOriginsForGlobalUsage(
     GlobalUsageCallback callback,
-    const std::set<url::Origin>& origins) {
+    const std::vector<url::Origin>& origins) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  OriginSetByHost origins_by_host;
+  std::map<std::string, std::vector<url::Origin>> origins_by_host;
   for (const auto& origin : origins)
-    origins_by_host[origin.host()].insert(origin);
+    origins_by_host[origin.host()].push_back(origin);
 
   AccumulateInfo* info = new AccumulateInfo;
   // Getting host usage may synchronously return the result if the usage is
@@ -290,7 +248,7 @@ void ClientUsageTracker::DidGetOriginsForGlobalUsage(
 
   for (const auto& host_and_origins : origins_by_host) {
     const std::string& host = host_and_origins.first;
-    const std::set<url::Origin>& origins = host_and_origins.second;
+    const std::vector<url::Origin>& origins = host_and_origins.second;
     if (host_usage_accumulators_.Add(host, accumulator))
       GetUsageForOrigins(host, origins);
   }
@@ -320,14 +278,14 @@ void ClientUsageTracker::AccumulateHostUsage(AccumulateInfo* info,
 
 void ClientUsageTracker::DidGetOriginsForHostUsage(
     const std::string& host,
-    const std::set<url::Origin>& origins) {
+    const std::vector<url::Origin>& origins) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   GetUsageForOrigins(host, origins);
 }
 
 void ClientUsageTracker::GetUsageForOrigins(
     const std::string& host,
-    const std::set<url::Origin>& origins) {
+    const std::vector<url::Origin>& origins) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   AccumulateInfo* info = new AccumulateInfo;
   // Getting origin usage may synchronously return the result if the usage is

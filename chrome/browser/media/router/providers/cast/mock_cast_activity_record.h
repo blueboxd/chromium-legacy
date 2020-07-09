@@ -21,12 +21,6 @@ class MockCastActivityRecord : public CastActivityRecord {
   MockCastActivityRecord(const MediaRoute& route, const std::string& app_id);
   ~MockCastActivityRecord() override;
 
-  void set_session_id(const std::string& new_id) {
-    if (!session_id_)
-      session_id_ = new_id;
-    ASSERT_EQ(session_id_, new_id);
-  }
-
   MOCK_METHOD1(SendAppMessageToReceiver,
                cast_channel::Result(const CastInternalMessage& cast_message));
   MOCK_METHOD1(SendMediaRequestToReceiver,
@@ -47,10 +41,9 @@ class MockCastActivityRecord : public CastActivityRecord {
                                             const url::Origin& origin,
                                             int tab_id));
   MOCK_METHOD1(RemoveClient, void(const std::string& client_id));
-  MOCK_METHOD3(SetOrUpdateSession,
-               void(const CastSession& session,
-                    const MediaSinkInternal& sink,
-                    const std::string& hash_token));
+  MOCK_METHOD1(OnSessionSet, void(const CastSession& session));
+  MOCK_METHOD2(OnSessionUpdated,
+               void(const CastSession& session, const std::string& hash_token));
   MOCK_METHOD2(SendMessageToClient,
                void(const std::string& client_id,
                     blink::mojom::PresentationConnectionMessagePtr message));

@@ -557,8 +557,8 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
     for (const auto& url : most_visited_urls_) {
       SearchSuggestionParser::NavigationResult nav(
           client()->GetSchemeClassifier(), url.url,
-          AutocompleteMatchType::NAVSUGGEST, 0, url.title, std::string(), false,
-          relevance, true, current_query_string16);
+          AutocompleteMatchType::NAVSUGGEST, {}, 0, url.title, std::string(),
+          false, relevance, true, current_query_string16);
       matches_.push_back(NavigationToMatch(nav));
       --relevance;
     }

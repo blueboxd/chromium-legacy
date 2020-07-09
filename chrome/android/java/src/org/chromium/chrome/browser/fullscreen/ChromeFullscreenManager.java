@@ -11,7 +11,6 @@ import android.app.Activity;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 
 import androidx.annotation.IntDef;
@@ -22,7 +21,6 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ObserverList;
-import org.chromium.base.TraceEvent;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -42,7 +40,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
-import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.util.TokenHolder;
@@ -54,9 +51,8 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * A class that manages control and content views to create the fullscreen mode.
  */
-public class ChromeFullscreenManager implements ActivityStateListener,
-                                                ViewGroup.OnHierarchyChangeListener, VrModeObserver,
-                                                BrowserControlsSizer, FullscreenManager {
+public class ChromeFullscreenManager
+        implements ActivityStateListener, VrModeObserver, BrowserControlsSizer, FullscreenManager {
     // The amount of time to delay the control show request after returning to a once visible
     // activity.  This delay is meant to allow Android to run its Activity focusing animation and
     // have the controls scroll back in smoothly once that has finished.
@@ -98,13 +94,8 @@ public class ChromeFullscreenManager implements ActivityStateListener,
     private boolean mOffsetsChanged;
     private ActivityTabTabObserver mActiveTabObserver;
 
-    // Current ContentView. Updates when active tab is switched or WebContents is swapped
-    // in the current Tab.
-    private ContentView mContentView;
-
     private final ObserverList<BrowserControlsStateProvider.Observer> mControlsObservers =
             new ObserverList<>();
-    private Runnable mViewportSizeDelegate;
     private FullscreenHtmlApiHandler mHtmlApiHandler;
     @Nullable
     private Tab mTab;
@@ -194,19 +185,9 @@ public class ChromeFullscreenManager implements ActivityStateListener,
             protected void onObservingDifferentTab(Tab tab) {
                 setTab(tab);
             }
-
-            @Override
-            public void onContentViewScrollingStateChanged(boolean scrolling) {
-                if (!scrolling) updateContentViewChildrenState();
-            }
         };
 
         mTabControlsObserver = new TabModelSelectorTabObserver(modelSelector) {
-            @Override
-            public void onContentChanged(Tab tab) {
-                if (tab == getTab()) updateViewStateListener();
-            }
-
             @Override
             public void onInteractabilityChanged(Tab tab, boolean interactable) {
                 if (!interactable || tab != getTab()) return;
@@ -267,8 +248,8 @@ public class ChromeFullscreenManager implements ActivityStateListener,
      * @return The currently selected tab for fullscreen.
      */
     @Nullable
-    @VisibleForTesting
-    Tab getTab() {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public Tab getTab() {
         return mTab;
     }
 
@@ -276,7 +257,6 @@ public class ChromeFullscreenManager implements ActivityStateListener,
         Tab previousTab = getTab();
         mTab = tab;
         if (previousTab != tab) {
-            updateViewStateListener();
             if (tab != null) {
                 mBrowserVisibilityDelegate.showControlsTransient();
                 if (tab.isUserInteractable()) restoreControlsPositions();
@@ -310,16 +290,6 @@ public class ChromeFullscreenManager implements ActivityStateListener,
         return mHtmlApiHandler.getPersistentFullscreenMode();
     }
 
-    private void updateViewStateListener() {
-        if (mContentView != null) {
-            mContentView.removeOnHierarchyChangeListener(this);
-        }
-        mContentView = getContentView();
-        if (mContentView != null) {
-            mContentView.addOnHierarchyChangeListener(this);
-        }
-    }
-
     // ActivityStateListener
 
     @Override
@@ -344,8 +314,8 @@ public class ChromeFullscreenManager implements ActivityStateListener,
      * {@link BrowserControlsUtils#areBrowserControlsOffScreen(BrowserControlsStateProvider)} when
      * both min-heights are 0.
      */
-    @VisibleForTesting
-    boolean areBrowserControlsAtMinHeight() {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public boolean areBrowserControlsAtMinHeight() {
         return mControlsAtMinHeight.get();
     }
 
@@ -489,43 +459,6 @@ public class ChromeFullscreenManager implements ActivityStateListener,
     }
 
     /**
-     * @param delegate A Runnable to be executed when the WebContents viewport should be updated.
-     */
-    public void setViewportSizeDelegate(Runnable delegate) {
-        mViewportSizeDelegate = delegate;
-    }
-
-    // View.OnHierarchyChangeListener implementation
-
-    @Override
-    public void onChildViewRemoved(View parent, View child) {
-        updateContentViewChildrenState();
-    }
-
-    @Override
-    public void onChildViewAdded(View parent, View child) {
-        updateContentViewChildrenState();
-    }
-
-    /**
-     * Updates the current ContentView's children and any popups with the correct offsets based on
-     * the current fullscreen state.
-     */
-    private void updateContentViewChildrenState() {
-        TraceEvent.begin("FullscreenManager:updateContentViewChildrenState");
-
-        ViewGroup view = getContentView();
-        if (view != null) {
-            float topViewsTranslation = getTopVisibleContentOffset();
-            float bottomMargin = getBottomContentOffset();
-            applyTranslationToTopChildViews(view, topViewsTranslation);
-            applyMarginToFullChildViews(view, topViewsTranslation, bottomMargin);
-            if (mViewportSizeDelegate != null) mViewportSizeDelegate.run();
-        }
-        TraceEvent.end("FullscreenManager:updateContentViewChildrenState");
-    }
-
-    /**
      * Utility routine for ensuring visibility updates are synchronized with
      * animation, preventing message loop stalls due to untimely invalidation.
      */
@@ -570,7 +503,7 @@ public class ChromeFullscreenManager implements ActivityStateListener,
         if (offsetOverridden()) return true;
 
         boolean showControls = !BrowserControlsUtils.drawControlsAsTexture(this);
-        ViewGroup contentView = getContentView();
+        ViewGroup contentView = mTab != null ? mTab.getContentView() : null;
         if (contentView == null) return showControls;
 
         for (int i = 0; i < contentView.getChildCount(); i++) {
@@ -586,44 +519,6 @@ public class ChromeFullscreenManager implements ActivityStateListener,
         }
 
         return showControls;
-    }
-
-    private void applyMarginToFullChildViews(
-            ViewGroup contentView, float topMargin, float bottomMargin) {
-        for (int i = 0; i < contentView.getChildCount(); i++) {
-            View child = contentView.getChildAt(i);
-            if (!(child.getLayoutParams() instanceof FrameLayout.LayoutParams)) continue;
-            FrameLayout.LayoutParams layoutParams =
-                    (FrameLayout.LayoutParams) child.getLayoutParams();
-
-            if (layoutParams.height == LayoutParams.MATCH_PARENT
-                    && (layoutParams.topMargin != (int) topMargin
-                               || layoutParams.bottomMargin != (int) bottomMargin)) {
-                layoutParams.topMargin = (int) topMargin;
-                layoutParams.bottomMargin = (int) bottomMargin;
-                child.requestLayout();
-                TraceEvent.instant("FullscreenManager:child.requestLayout()");
-            }
-        }
-    }
-
-    private void applyTranslationToTopChildViews(ViewGroup contentView, float translation) {
-        for (int i = 0; i < contentView.getChildCount(); i++) {
-            View child = contentView.getChildAt(i);
-            if (!(child.getLayoutParams() instanceof FrameLayout.LayoutParams)) continue;
-
-            FrameLayout.LayoutParams layoutParams =
-                    (FrameLayout.LayoutParams) child.getLayoutParams();
-            if (Gravity.TOP == (layoutParams.gravity & Gravity.FILL_VERTICAL)) {
-                child.setTranslationY(translation);
-                TraceEvent.instant("FullscreenManager:child.setTranslationY()");
-            }
-        }
-    }
-
-    private ContentView getContentView() {
-        Tab tab = getTab();
-        return tab != null ? (ContentView) tab.getContentView() : null;
     }
 
     /**
@@ -686,7 +581,6 @@ public class ChromeFullscreenManager implements ActivityStateListener,
                 && getBottomContentOffset() == getBottomControlsMinHeight());
         updateControlOffset();
         notifyControlOffsetChanged();
-        updateContentViewChildrenState();
     }
 
     private void notifyControlOffsetChanged() {
@@ -934,14 +828,11 @@ public class ChromeFullscreenManager implements ActivityStateListener,
         if (mActiveTabObserver != null) mActiveTabObserver.destroy();
         mBrowserVisibilityDelegate.destroy();
         if (mTabControlsObserver != null) mTabControlsObserver.destroy();
-        if (mContentView != null) {
-            mContentView.removeOnHierarchyChangeListener(this);
-        }
         VrModuleProvider.unregisterVrModeObserver(this);
     }
 
     @VisibleForTesting
-    TabModelSelectorTabObserver getTabControlsObserverForTesting() {
+    public TabModelSelectorTabObserver getTabControlsObserverForTesting() {
         return mTabControlsObserver;
     }
 

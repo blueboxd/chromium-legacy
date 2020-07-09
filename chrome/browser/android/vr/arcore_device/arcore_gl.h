@@ -181,6 +181,8 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   // state on session shutdown. See https://crbug.com/1065572.
   void RunNextGetFrameData();
 
+  bool IsFeatureEnabled(mojom::XRSessionFeature feature);
+
   // List of features enabled on this session. Required to correctly configure
   // the session and only send out necessary data related to reference spaces to
   // blink. Valid after the call to |Initialize()| method.

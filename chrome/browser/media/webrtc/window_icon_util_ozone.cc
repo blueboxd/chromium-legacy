@@ -8,6 +8,7 @@
 #include "ui/aura/client/aura_constants.h"
 
 gfx::ImageSkia GetWindowIcon(content::DesktopMediaID id) {
+  // TODO(https://crbug.com/1094460): Hook up Window Icons for lacros.
   DCHECK_EQ(content::DesktopMediaID::TYPE_WINDOW, id.type);
   // TODO(tonikitoo): can we make the implementation of
   // chrome/browser/media/webrtc/window_icon_util_chromeos.cc generic

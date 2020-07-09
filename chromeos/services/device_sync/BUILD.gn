@@ -163,6 +163,7 @@ static_library("device_sync") {
     "//components/gcm_driver",
     "//components/prefs",
     "//net",
+    "//third_party/securemessage/proto",
   ]
 
   visibility = [
@@ -303,5 +304,6 @@ source_set("unit_tests") {
     "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/securemessage/proto",
   ]
 }

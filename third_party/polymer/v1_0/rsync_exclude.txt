@@ -60,6 +60,9 @@ paper-styles/element-styles/paper-item-styles.html
 paper-styles/paper-styles-classes.html
 paper-styles/paper-styles.html
 
+# Polymer 1
+polymer/*
+
 # neon-animations
 neon-animation/animations/cascaded-animation.html
 neon-animation/animations/hero-animation.html

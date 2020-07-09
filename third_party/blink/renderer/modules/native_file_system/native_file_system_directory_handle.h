@@ -27,12 +27,12 @@ class NativeFileSystemDirectoryHandle final : public NativeFileSystemHandle {
 
   bool isDirectory() const override { return true; }
 
-  ScriptPromise getFile(ScriptState*,
-                        const String& name,
-                        const FileSystemGetFileOptions*);
-  ScriptPromise getDirectory(ScriptState*,
-                             const String& name,
-                             const FileSystemGetDirectoryOptions*);
+  ScriptPromise getFileHandle(ScriptState*,
+                              const String& name,
+                              const FileSystemGetFileOptions*);
+  ScriptPromise getDirectoryHandle(ScriptState*,
+                                   const String& name,
+                                   const FileSystemGetDirectoryOptions*);
   ScriptValue getEntries(ScriptState*);
   ScriptPromise removeEntry(ScriptState*,
                             const String& name,

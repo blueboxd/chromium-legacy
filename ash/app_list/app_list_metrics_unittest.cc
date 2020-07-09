@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
@@ -53,7 +54,8 @@ class TestShelfItemDelegate : public ShelfItemDelegate {
   void ItemSelected(std::unique_ptr<ui::Event> event,
                     int64_t display_id,
                     ash::ShelfLaunchSource source,
-                    ItemSelectedCallback callback) override {
+                    ItemSelectedCallback callback,
+                    const ItemFilterPredicate& filter_predicate) override {
     std::move(callback).Run(SHELF_ACTION_WINDOW_ACTIVATED, {});
   }
   void ExecuteCommand(bool from_context_menu,

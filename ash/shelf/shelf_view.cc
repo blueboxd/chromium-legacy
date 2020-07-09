@@ -36,12 +36,13 @@
 #include "ash/shell_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/bind_helpers.h"
 #include "base/containers/adapters.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -239,6 +240,16 @@ bool ShelfButtonIsInDrag(const ShelfItemType item_type,
     case TYPE_UNDEFINED:
       return false;
   }
+}
+
+// Called back by the shelf item delegates to determine whether an app menu item
+// should be included in the shelf app menu given its corresponding window. This
+// is used to filter out items whose windows are on inactive desks when the per-
+// desk shelf feature is enabled.
+bool ShouldIncludeMenuItem(aura::Window* window) {
+  if (!features::IsPerDeskShelfEnabled())
+    return true;
+  return desks_util::BelongsToActiveDesk(window);
 }
 
 }  // namespace
@@ -739,7 +750,8 @@ void ShelfView::ButtonPressed(views::Button* sender,
   model_->GetShelfItemDelegate(item.id)->ItemSelected(
       ui::Event::Clone(event), GetDisplayIdForView(this), LAUNCH_FROM_SHELF,
       base::BindOnce(&ShelfView::AfterItemSelected, weak_factory_.GetWeakPtr(),
-                     item, sender, ui::Event::Clone(event), ink_drop));
+                     item, sender, ui::Event::Clone(event), ink_drop),
+      base::BindRepeating(&ShouldIncludeMenuItem));
 }
 
 bool ShelfView::IsShowingMenuForView(const views::View* view) const {
@@ -2130,7 +2142,8 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
       item ? item->id.app_id : std::string(), std::move(menu_model), source,
       source_type,
       base::BindOnce(&ShelfView::OnMenuClosed, base::Unretained(this), source),
-      IsTabletModeEnabled());
+      IsTabletModeEnabled(),
+      /*for_application_menu_items*/ !context_menu);
   shelf_menu_model_adapter_->Run(
       GetMenuAnchorRect(*source, click_point, context_menu),
       shelf_->IsHorizontalAlignment() ? views::MenuAnchorPosition::kBubbleAbove

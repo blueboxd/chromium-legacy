@@ -4,6 +4,7 @@
 
 import './elements/viewer-error-screen.js';
 import './elements/viewer-page-indicator.js';
+import './elements/viewer-zoom-toolbar.js';
 import './elements/shared-vars.js';
 import './pdf_viewer_shared_style.js';
 
@@ -239,6 +240,7 @@ class PDFViewerPPElement extends PDFViewerBaseElement {
           this.inPrintPreviewMode_ = true;
           this.isUserInitiatedEvent = false;
           this.forceFit(FittingType.FIT_TO_PAGE);
+          this.updateViewportFit(FittingType.FIT_TO_PAGE);
           this.isUserInitiatedEvent = true;
         }
 

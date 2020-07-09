@@ -30,8 +30,11 @@ class AppServiceAppWindowLauncherItemController
   void ItemSelected(std::unique_ptr<ui::Event> event,
                     int64_t display_id,
                     ash::ShelfLaunchSource source,
-                    ItemSelectedCallback callback) override;
-  AppMenuItems GetAppMenuItems(int event_flags) override;
+                    ItemSelectedCallback callback,
+                    const ItemFilterPredicate& filter_predicate) override;
+  AppMenuItems GetAppMenuItems(
+      int event_flags,
+      const ItemFilterPredicate& filter_predicate) override;
 
   // aura::WindowObserver overrides:
   void OnWindowTitleChanged(aura::Window* window) override;

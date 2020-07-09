@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/system_tray.h"
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -207,8 +208,11 @@ void MinimumVersionPolicyHandler::OnPolicyChanged() {
                          weak_factory_.GetWeakPtr()));
   if (status != chromeos::CrosSettingsProvider::TRUSTED ||
       !IsPolicyApplicable() ||
-      !chromeos::features::IsMinimumChromeVersionEnabled())
+      !chromeos::features::IsMinimumChromeVersionEnabled()) {
+    VLOG(1) << "Ignore policy change - policy is not applicable or settings "
+               "are not trusted.";
     return;
+  }
 
   const base::ListValue* entries;
   std::vector<std::unique_ptr<MinimumVersionRequirement>> configs;
@@ -266,6 +270,7 @@ void MinimumVersionPolicyHandler::OnPolicyChanged() {
 }
 
 void MinimumVersionPolicyHandler::HandleUpdateNotRequired() {
+  VLOG(2) << "Update is not required.";
   // Reset the state including any running timers.
   Reset();
   // Hide update required screen if it is visible and switch back to the login
@@ -343,6 +348,10 @@ void MinimumVersionPolicyHandler::HandleUpdateRequired(
     update_required_deadline_ =
         stored_timer_start_time + std::max(stored_warning_time, warning_time);
   }
+  VLOG(1) << "Update is required with "
+          << "update required time " << update_required_time_
+          << " warning time " << warning_time
+          << " and update required deadline " << update_required_deadline_;
 
   const bool deadline_reached =
       update_required_deadline_ <= update_required_time_;
@@ -361,6 +370,7 @@ void MinimumVersionPolicyHandler::HandleUpdateRequired(
   if (update_required_deadline_timer_.IsRunning() &&
       update_required_deadline_timer_.desired_run_time() ==
           update_required_deadline_) {
+    DLOG(WARNING) << "Deadline is same as previous and timer is running.";
     return;
   }
 
@@ -383,6 +393,7 @@ void MinimumVersionPolicyHandler::HandleUpdateRequired(
   // reboot to apply it.
   if (GetBuildState()->update_type() == BuildState::UpdateType::kNormalUpdate) {
     OverrideRelaunchNotification(update_required_deadline_);
+    DLOG(WARNING) << "Update is already installed.";
     return;
   }
 
@@ -459,14 +470,17 @@ void MinimumVersionPolicyHandler::MaybeShowNotification(
       base::BindOnce(&MinimumVersionPolicyHandler::StopObservingNetwork,
                      weak_factory_.GetWeakPtr());
   if (eol_reached_) {
+    VLOG(2) << "Showing end of life notification.";
     type = NotificationType::kEolReached;
     button_click_callback = base::BindOnce(&OpenEnterpriseInfoPage);
   } else if (status == NetworkStatus::kMetered) {
+    VLOG(2) << "Showing metered network notification.";
     type = NotificationType::kMeteredConnection;
     button_click_callback = base::BindOnce(
         &MinimumVersionPolicyHandler::UpdateOverMeteredPermssionGranted,
         weak_factory_.GetWeakPtr());
   } else if (status == NetworkStatus::kOffline) {
+    VLOG(2) << "Showing no network notification.";
     button_click_callback = base::BindOnce(&OpenNetworkSettings);
   } else {
     NOTREACHED();
@@ -505,6 +519,7 @@ void MinimumVersionPolicyHandler::ShowAndScheduleNotification(
     expiry = deadline - base::TimeDelta::FromDays(1);
   }
 
+  VLOG(2) << "Next notification scheduled for " << expiry;
   MaybeShowNotification(base::TimeDelta::FromDays(days_remaining));
   if (!expiry.is_null()) {
     notification_timer_.Start(
@@ -518,6 +533,8 @@ void MinimumVersionPolicyHandler::ShowAndScheduleNotification(
 void MinimumVersionPolicyHandler::OnUpdate(const BuildState* build_state) {
   // If the device has been successfully updated, the relaunch notifications
   // will reboot it for applying the updates.
+  VLOG(1) << "Update installed successfully at " << clock_->Now()
+          << " with deadline " << update_required_deadline_;
   GetUpdateEngineClient()->RemoveObserver(this);
   if (build_state->update_type() == BuildState::UpdateType::kNormalUpdate) {
     ResetOnUpdateCompleted();
@@ -548,6 +565,7 @@ void MinimumVersionPolicyHandler::StopObservingNetwork() {
 }
 
 void MinimumVersionPolicyHandler::UpdateOverMeteredPermssionGranted() {
+  VLOG(1) << "Permission for update over metered network granted.";
   chromeos::UpdateEngineClient* const update_engine_client =
       GetUpdateEngineClient();
   if (!update_engine_client->HasObserver(this))
@@ -559,6 +577,7 @@ void MinimumVersionPolicyHandler::UpdateOverMeteredPermssionGranted() {
 
 void MinimumVersionPolicyHandler::OnUpdateCheckStarted(
     chromeos::UpdateEngineClient::UpdateCheckResult result) {
+  VLOG(1) << "Update check started.";
   if (result != chromeos::UpdateEngineClient::UPDATE_RESULT_SUCCESS)
     GetUpdateEngineClient()->RemoveObserver(this);
 }

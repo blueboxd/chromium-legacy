@@ -4,8 +4,8 @@
 
 #include <stdint.h>
 
-#include <set>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
@@ -16,6 +16,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/quota/quota_client.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/gurl.h"
@@ -49,7 +50,7 @@ class AppCacheQuotaClientTest : public testing::Test {
     return usage_;
   }
 
-  const std::set<url::Origin>& GetOriginsForType(
+  const std::vector<url::Origin>& GetOriginsForType(
       scoped_refptr<storage::QuotaClient> client,
       StorageType type) {
     origins_.clear();
@@ -58,7 +59,7 @@ class AppCacheQuotaClientTest : public testing::Test {
     return origins_;
   }
 
-  const std::set<url::Origin>& GetOriginsForHost(
+  const std::vector<url::Origin>& GetOriginsForHost(
       scoped_refptr<storage::QuotaClient> client,
       StorageType type,
       const std::string& host) {
@@ -145,7 +146,7 @@ class AppCacheQuotaClientTest : public testing::Test {
     usage_ = usage;
   }
 
-  void OnGetOriginsComplete(const std::set<url::Origin>& origins) {
+  void OnGetOriginsComplete(const std::vector<url::Origin>& origins) {
     ++num_get_origins_completions_;
     origins_ = origins;
   }
@@ -157,7 +158,7 @@ class AppCacheQuotaClientTest : public testing::Test {
 
   BrowserTaskEnvironment task_environment_;
   int64_t usage_ = 0;
-  std::set<url::Origin> origins_;
+  std::vector<url::Origin> origins_;
   blink::mojom::QuotaStatusCode delete_status_ =
       blink::mojom::QuotaStatusCode::kUnknown;
   int num_get_origin_usage_completions_ = 0;
@@ -235,7 +236,7 @@ TEST_F(AppCacheQuotaClientTest, GetOriginsForHost) {
   EXPECT_EQ(kOriginA.host(), kOriginB.host());
   EXPECT_NE(kOriginA.host(), kOriginOther.host());
 
-  std::set<url::Origin> origins =
+  std::vector<url::Origin> origins =
       GetOriginsForHost(client, kTemp, kOriginA.host());
   EXPECT_TRUE(origins.empty());
 
@@ -245,12 +246,12 @@ TEST_F(AppCacheQuotaClientTest, GetOriginsForHost) {
 
   origins = GetOriginsForHost(client, kTemp, kOriginA.host());
   EXPECT_EQ(2ul, origins.size());
-  EXPECT_TRUE(origins.find(kOriginA) != origins.end());
-  EXPECT_TRUE(origins.find(kOriginB) != origins.end());
+  EXPECT_THAT(origins, testing::Contains(kOriginA));
+  EXPECT_THAT(origins, testing::Contains(kOriginB));
 
   origins = GetOriginsForHost(client, kTemp, kOriginOther.host());
   EXPECT_EQ(1ul, origins.size());
-  EXPECT_TRUE(origins.find(kOriginOther) != origins.end());
+  EXPECT_THAT(origins, testing::Contains(kOriginOther));
 
   Call_NotifyAppCacheDestroyed(client);
   Call_OnQuotaManagerDestroyed(client);
@@ -265,10 +266,10 @@ TEST_F(AppCacheQuotaClientTest, GetOriginsForType) {
   SetUsageMapEntry(kOriginA, 1000);
   SetUsageMapEntry(kOriginB, 10);
 
-  std::set<url::Origin> origins = GetOriginsForType(client, kTemp);
+  std::vector<url::Origin> origins = GetOriginsForType(client, kTemp);
   EXPECT_EQ(2ul, origins.size());
-  EXPECT_TRUE(origins.find(kOriginA) != origins.end());
-  EXPECT_TRUE(origins.find(kOriginB) != origins.end());
+  EXPECT_THAT(origins, testing::Contains(kOriginA));
+  EXPECT_THAT(origins, testing::Contains(kOriginB));
 
   Call_NotifyAppCacheDestroyed(client);
   Call_OnQuotaManagerDestroyed(client);
@@ -327,7 +328,7 @@ TEST_F(AppCacheQuotaClientTest, PendingRequests) {
   // They should be serviced in order requested.
   EXPECT_EQ(10, usage_);
   EXPECT_EQ(1ul, origins_.size());
-  EXPECT_TRUE(origins_.find(kOriginOther) != origins_.end());
+  EXPECT_THAT(origins_, testing::Contains(kOriginOther));
 
   Call_NotifyAppCacheDestroyed(client);
   Call_OnQuotaManagerDestroyed(client);

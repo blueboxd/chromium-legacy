@@ -135,7 +135,7 @@ def copytree(src_dir, dst_dir):
 copytree('ui/webui/resources/', R_GEN)
 copytree('third_party/polymer/v1_0/components-chromium/',
          R_GEN + 'polymer/v1_0/')
-shutil.rmtree(GEN + R_GEN + 'polymer/v1_0/polymer')
+shutil.rmtree(GEN + R_GEN + 'polymer/v1_0/polymer', ignore_errors=True)
 os.rename(GEN + R_GEN + 'polymer/v1_0/polymer2',
           GEN + R_GEN + 'polymer/v1_0/polymer')
 for css in glob.glob(GEN + '../../webui/resources/css/*.css'):

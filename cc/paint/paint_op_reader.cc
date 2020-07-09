@@ -29,7 +29,7 @@
 #include "third_party/skia/include/core/SkTextBlob.h"
 #include "third_party/skia/src/core/SkRemoteGlyphCache.h"
 
-#ifndef OS_ANDROID
+#if !defined(OS_ANDROID)
 #include "cc/paint/skottie_transfer_cache_entry.h"
 #endif
 
@@ -637,7 +637,7 @@ void PaintOpReader::Read(SkYUVColorSpace* yuv_color_space) {
 
 // Android does not use skottie. Remove below section to keep binary size to a
 // minimum.
-#ifndef OS_ANDROID
+#if !defined(OS_ANDROID)
 void PaintOpReader::Read(scoped_refptr<SkottieWrapper>* skottie) {
   if (!options_.is_privileged) {
     valid_ = false;
@@ -668,7 +668,7 @@ void PaintOpReader::Read(scoped_refptr<SkottieWrapper>* skottie) {
   memory_ += bytes_to_skip;
   remaining_bytes_ -= bytes_to_skip;
 }
-#endif  // OS_ANDROID
+#endif  // !defined(OS_ANDROID)
 
 void PaintOpReader::AlignMemory(size_t alignment) {
   size_t memory = reinterpret_cast<size_t>(memory_);

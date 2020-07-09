@@ -8,6 +8,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "cc/paint/decoded_draw_image.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/image_provider.h"
@@ -45,7 +46,7 @@ namespace {
 // unit test suite as generally deserialized ops are smaller.
 static constexpr size_t kBufferBytesPerOp = 1000 + sizeof(LargestPaintOp);
 
-#ifndef OS_ANDROID
+#if !defined(OS_ANDROID)
 // A skottie animation with solid green color for the first 2.5 seconds and then
 // a solid blue color for the next 2.5 seconds.
 constexpr char kSkottieData[] =
@@ -77,7 +78,7 @@ constexpr char kSkottieData[] =
     "    }"
     "  ]"
     "}";
-#endif  // OS_ANDROID
+#endif  // !defined(OS_ANDROID)
 
 template <typename T>
 void ValidateOps(PaintOpBuffer* buffer) {
@@ -3373,7 +3374,7 @@ TEST(PaintOpBufferTest, PaintRecordShaderSerialization) {
   EXPECT_TRUE(!!rect_op->flags.getShader()->GetSkShader());
 }
 
-#ifndef OS_ANDROID
+#if !defined(OS_ANDROID)
 TEST(PaintOpBufferTest, DrawSkottieOpSerialization) {
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
@@ -3470,7 +3471,7 @@ TEST(PaintOpBufferTest, DrawSkottieOpSerializationFailure) {
       memory.get(), serializer.written(), d_options);
   ASSERT_FALSE(deserialized_buffer);
 }
-#endif  // OS_ANDROID
+#endif  // !defined(OS_ANDROID
 
 TEST(PaintOpBufferTest, CustomData) {
   // Basic tests: size, move, comparison.

@@ -281,6 +281,9 @@ is converted from four-colors.mp4 by adding an opacity of 0.5 using ffmpeg.
 VP9 encoded video with profile 2 (10-bit, 4:2:0).
 Codec string: vp09.02.10.10.01.02.02.02.00.
 
+#### vp9-hdr-init-segment.mp4
+Init segment for a VP9.2 HDR in MP4 file; from https://crbug.com/1102200#c6
+
 ### AAC test data from MPEG-DASH demoplayer (44100 Hz, stereo)
 Duration of each packet is (1024/44100 Hz), approximately 23.22 ms.
 

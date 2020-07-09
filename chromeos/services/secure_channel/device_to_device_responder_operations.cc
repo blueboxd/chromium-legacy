@@ -9,7 +9,8 @@
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/secure_message_delegate.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
-#include "chromeos/services/device_sync/proto/securemessage.pb.h"
+#include "third_party/securemessage/proto/securemessage.pb.h"
+#include "third_party/ukey2/proto/device_to_device_messages.pb.h"
 
 namespace chromeos {
 
@@ -36,7 +37,7 @@ void OnHelloMessageUnwrapped(
     bool verified,
     const std::string& payload,
     const securemessage::Header& header) {
-  securemessage::InitiatorHello initiator_hello;
+  securegcm::InitiatorHello initiator_hello;
   if (!verified || !initiator_hello.ParseFromString(header.public_metadata()) ||
       initiator_hello.protocol_version() != kD2DProtocolVersion) {
     callback.Run(false, std::string());
@@ -159,7 +160,7 @@ void OnSessionSymmetricKeyDerivedForResponderAuth(
   gcm_metadata.set_version(kGcmMetadataVersion);
 
   // Store the responder's session public key in plaintext in the header.
-  securemessage::ResponderHello responder_hello;
+  securegcm::ResponderHello responder_hello;
   if (!responder_hello.mutable_public_dh_key()->ParseFromString(
           context.session_public_key)) {
     PA_LOG(ERROR) << "Error parsing public key while creating [Responder Auth]";
@@ -171,7 +172,7 @@ void OnSessionSymmetricKeyDerivedForResponderAuth(
 
   // Create the outer most message, wrapping the other messages created
   // previously.
-  securemessage::DeviceToDeviceMessage device_to_device_message;
+  securegcm::DeviceToDeviceMessage device_to_device_message;
   device_to_device_message.set_message(context.middle_message);
   device_to_device_message.set_sequence_number(1);
 
@@ -220,7 +221,7 @@ void OnOuterMessageUnwrappedForInitiatorAuth(
   }
 
   // Parse the decrypted payload.
-  securemessage::DeviceToDeviceMessage device_to_device_message;
+  securegcm::DeviceToDeviceMessage device_to_device_message;
   if (!device_to_device_message.ParseFromString(payload) ||
       device_to_device_message.sequence_number() != 1) {
     PA_LOG(VERBOSE) << "Failed to validate DeviceToDeviceMessage payload.";

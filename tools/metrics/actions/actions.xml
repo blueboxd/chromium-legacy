@@ -22693,24 +22693,20 @@ should be able to be added at any place in this file.
 
 <action name="StartSurface.Hidden">
   <owner>gogerald@chromium.org</owner>
-  <description>
-    Metric record when the StartSurface overview is hidden.
-  </description>
+  <description>The start surface overview is hidden.</description>
 </action>
 
 <action name="StartSurface.OmniboxOnly">
   <owner>wychen@chromium.org</owner>
   <description>
-    Metric record when the omnibox only start surface is shown (the user taps
-    the tab switcher button or on chrome start).
+    The omnibox-only start surface is shown (the user taps the tab switcher
+    button or on Chrome start).
   </description>
 </action>
 
 <action name="StartSurface.Shown">
   <owner>gogerald@chromium.org</owner>
-  <description>
-    Metric record when the StartSurface overview is shown.
-  </description>
+  <description>The start surface overview is shown.</description>
 </action>
 
 <action name="StartSurface.SinglePane">
@@ -22720,40 +22716,39 @@ should be able to be added at any place in this file.
   </obsolete>
   <owner>gogerald@chromium.org</owner>
   <description>
-    Metric record when the single pane start surface is shown (the user taps the
-    tab switcher button or on chrome start).
+    The single-pane start surface is shown (the user taps the tab switcher
+    button or on Chrome start).
   </description>
 </action>
 
 <action name="StartSurface.SinglePane.Home">
   <owner>gogerald@chromium.org</owner>
   <description>
-    Metric record when the single pane home surface is shown (the user taps the
-    home button or on chrome start).
+    The single-pane home surface is shown (the user taps the home button or on
+    Chrome start).
   </description>
 </action>
 
 <action name="StartSurface.SinglePane.MoreTabs">
   <owner>gogerald@chromium.org</owner>
   <description>
-    Metric record when the user taps the more tabs button on the single pane
-    start surface.
+    The user taps the more tabs button on the single pane start surface.
   </description>
 </action>
 
 <action name="StartSurface.SinglePane.Tabswitcher">
   <owner>gogerald@chromium.org</owner>
   <description>
-    Metric record when the single pane tabswitcher surface is shown (the user
-    taps the tabswitcher button or more tabs button).
+    The single-pane tabswitcher surface is shown (the user taps the tabswitcher
+    button or more tabs button).
   </description>
 </action>
 
 <action name="StartSurface.TasksOnly">
   <owner>gogerald@chromium.org</owner>
   <description>
-    Metric record when the tasks only start surface is shown (the user taps the
-    tab switcher button or on chrome start).
+    The tasks only start surface is shown (the user taps the tab switcher button
+    or on chrome start).
   </description>
 </action>
 
@@ -22761,8 +22756,8 @@ should be able to be added at any place in this file.
   <owner>wychen@chromium.org</owner>
   <owner>yuezhanggg@chromium.org</owner>
   <description>
-    Metric record when the trendy terms start surface is shown (the user taps
-    the tab switcher button or on chrome start).
+    The trendy terms start surface is shown (the user taps the tab switcher
+    button or on Chrome start).
   </description>
 </action>
 
@@ -22775,40 +22770,37 @@ should be able to be added at any place in this file.
 <action name="StartSurface.TwoPanes">
   <owner>gogerald@chromium.org</owner>
   <description>
-    Metric record when the two panes start surface is shown (the user taps the
-    tab switcher button or on chrome start).
+    The two panes start surface is shown (the user taps the tab switcher button
+    or on chrome start).
   </description>
 </action>
 
 <action name="StartSurface.TwoPanes.BottomBar.TapExploreSurface">
   <owner>gogerald@chromium.org</owner>
   <description>
-    Metric record when the user taps the explore button on the two panes start
-    surface.
+    The user taps the explore button on the two panes start surface.
   </description>
 </action>
 
 <action name="StartSurface.TwoPanes.BottomBar.TapHome">
   <owner>gogerald@chromium.org</owner>
   <description>
-    Metric record when the user taps the home button on the two panes start
-    surface
+    The user taps the home button on the two panes start surface
   </description>
 </action>
 
 <action name="StartSurface.TwoPanes.DefaultOnExploreSurface">
   <owner>gogerald@chromium.org</owner>
   <description>
-    Metric record when the two panes start surface is shown with explore surface
-    visible by default.
+    The two panes start surface is shown with explore surface visible by
+    default.
   </description>
 </action>
 
 <action name="StartSurface.TwoPanes.DefaultOnHomeSurface">
   <owner>gogerald@chromium.org</owner>
   <description>
-    Metric record when the two panes start surface is shown with home surface
-    visible by default.
+    The two panes start surface is shown with home surface visible by default.
   </description>
 </action>
 

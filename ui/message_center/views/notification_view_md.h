@@ -15,13 +15,12 @@
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/animation/ink_drop_observer.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 
 namespace views {
 class ImageButton;
 class Label;
-class LabelButton;
 class ProgressBar;
 class RadioButton;
 class Textfield;
@@ -31,6 +30,33 @@ namespace message_center {
 
 class NotificationHeaderView;
 class ProportionalImageView;
+
+// NotificationMdTextButton extends MdText button to allow for placeholder text
+// as well as capitalizing the given label string.
+class NotificationMdTextButton : public views::MdTextButton {
+ public:
+  NotificationMdTextButton(views::ButtonListener* listener,
+                           const base::string16& label,
+                           const base::Optional<base::string16>& placeholder);
+  ~NotificationMdTextButton() override;
+
+  // Overridden from MdTextButton
+  void UpdateColors() override;
+  void SetText(const base::string16& text) override;
+
+  const base::Optional<base::string16>& placeholder() const {
+    return placeholder_;
+  }
+  void set_placeholder(base::Optional<base::string16> placeholder) {
+    placeholder_ = std::move(placeholder);
+  }
+  SkColor enabled_color_for_testing() const {
+    return label()->GetEnabledColor();
+  }
+
+ private:
+  base::Optional<base::string16> placeholder_;
+};
 
 // CompactTitleMessageView shows notification title and message in a single
 // line. This view is used for NOTIFICATION_TYPE_PROGRESS.
@@ -71,42 +97,6 @@ class LargeImageView : public views::View {
   gfx::ImageSkia image_;
 
   DISALLOW_COPY_AND_ASSIGN(LargeImageView);
-};
-
-// This class is needed in addition to LabelButton mainly becuase we want to set
-// visible_opacity of InkDropHighlight.
-// This button capitalizes the given label string.
-class NotificationButtonMD : public views::LabelButton {
- public:
-  // |is_inline_reply| is true when the notification action takes text as the
-  // return value i.e. the notification action is inline reply.
-  // The input field would be shown when the button is clicked.
-  // |placeholder| is placeholder text shown on the input field. Only used when
-  // |is_inline_reply| is true.
-  NotificationButtonMD(views::ButtonListener* listener,
-                       const base::string16& label,
-                       const base::Optional<base::string16>& placeholder);
-  ~NotificationButtonMD() override;
-
-  void SetText(const base::string16& text) override;
-  const char* GetClassName() const override;
-
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override;
-
-  SkColor enabled_color_for_testing() { return label()->GetEnabledColor(); }
-
-  const base::Optional<base::string16>& placeholder() const {
-    return placeholder_;
-  }
-  void set_placeholder(const base::Optional<base::string16>& placeholder) {
-    placeholder_ = placeholder;
-  }
-
- private:
-  base::Optional<base::string16> placeholder_;
-
-  DISALLOW_COPY_AND_ASSIGN(NotificationButtonMD);
 };
 
 class NotificationInputDelegate {
@@ -310,7 +300,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   views::Label* status_view_ = nullptr;
   ProportionalImageView* icon_view_ = nullptr;
   views::View* image_container_view_ = nullptr;
-  std::vector<NotificationButtonMD*> action_buttons_;
+  std::vector<NotificationMdTextButton*> action_buttons_;
   std::vector<views::View*> item_views_;
   views::ProgressBar* progress_bar_view_ = nullptr;
   CompactTitleMessageView* compact_title_message_view_ = nullptr;
@@ -324,7 +314,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   // Views for inline settings.
   views::RadioButton* block_all_button_ = nullptr;
   views::RadioButton* dont_block_button_ = nullptr;
-  views::LabelButton* settings_done_button_ = nullptr;
+  NotificationMdTextButton* settings_done_button_ = nullptr;
 
   // Owned by views properties. Guaranteed to be not null for the lifetime of
   // |this| because views properties are the last thing cleaned up.

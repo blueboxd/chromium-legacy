@@ -461,8 +461,9 @@ class TabStrip : public views::AccessiblePaneView,
   // Invoked from Layout if the size changes or layout is really needed.
   void CompleteAnimationAndLayout();
 
-  // Sets the visibility state of all tabs based on ShouldTabBeVisible().
-  void SetTabVisibility();
+  // Sets the visibility state of all tabs and group headers (if any) based on
+  // ShouldTabBeVisible().
+  void SetTabSlotVisibility();
 
   // Updates the indexes and count for AX data on all tabs. Used by some screen
   // readers (e.g. ChromeVox).

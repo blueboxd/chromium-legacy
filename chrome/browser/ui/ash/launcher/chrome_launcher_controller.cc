@@ -112,7 +112,8 @@ namespace {
 void SelectItemWithSource(ash::ShelfItemDelegate* delegate,
                           ash::ShelfLaunchSource source,
                           int64_t display_id) {
-  delegate->ItemSelected(nullptr, display_id, source, base::DoNothing());
+  delegate->ItemSelected(nullptr, display_id, source, base::DoNothing(),
+                         base::NullCallback());
 }
 
 // Returns true if the given |item| has a pinned shelf item type.
@@ -656,7 +657,7 @@ ash::ShelfItemDelegate::AppMenuItems
 ChromeLauncherController::GetAppMenuItemsForTesting(
     const ash::ShelfItem& item) {
   ash::ShelfItemDelegate* delegate = model_->GetShelfItemDelegate(item.id);
-  return delegate ? delegate->GetAppMenuItems(ui::EF_NONE)
+  return delegate ? delegate->GetAppMenuItems(ui::EF_NONE, base::NullCallback())
                   : ash::ShelfItemDelegate::AppMenuItems();
 }
 

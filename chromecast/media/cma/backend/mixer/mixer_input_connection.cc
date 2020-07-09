@@ -25,6 +25,7 @@
 #include "chromecast/media/cma/backend/mixer/stream_mixer.h"
 #include "chromecast/media/cma/base/decoder_config_adapter.h"
 #include "chromecast/net/io_buffer_pool.h"
+#include "chromecast/public/media/decoder_config.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_bus.h"
@@ -183,6 +184,7 @@ MixerInputConnection::MixerInputConnection(
                       ? mixer_service::ConvertContentType(params.focus_type())
                       : content_type_),
       playout_channel_(params.channel_selection()),
+      effective_playout_channel_(playout_channel_),
       io_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       max_queued_frames_(std::max(GetQueueSize(params), algorithm_fill_size_)),
       start_threshold_frames_(GetStartThreshold(params)),
@@ -453,8 +455,12 @@ void MixerInputConnection::SetMediaPlaybackRate(double rate) {
   if (rate == 1.0) {
     rate_shifter_.reset();
     rate_shifter_input_frames_ = rate_shifter_output_frames_ = 0;
+    effective_playout_channel_.store(playout_channel_,
+                                     std::memory_order_relaxed);
     return;
   }
+  // Always play all channels when playback is rate-shifted (b/151393870).
+  effective_playout_channel_.store(kChannelAll, std::memory_order_relaxed);
 
   rate_shifter_ =
       std::make_unique<::media::AudioRendererAlgorithm>(&media_log_);
@@ -538,7 +544,7 @@ int MixerInputConnection::desired_read_size() {
 }
 
 int MixerInputConnection::playout_channel() {
-  return playout_channel_;
+  return effective_playout_channel_.load(std::memory_order_relaxed);
 }
 
 bool MixerInputConnection::active() {

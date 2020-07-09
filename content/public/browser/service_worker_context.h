@@ -68,7 +68,7 @@ class CONTENT_EXPORT ServiceWorkerContext {
   using ResultCallback = base::OnceCallback<void(bool success)>;
 
   using GetInstalledRegistrationOriginsCallback =
-      base::OnceCallback<void(const std::set<url::Origin>& origins)>;
+      base::OnceCallback<void(const std::vector<url::Origin>& origins)>;
 
   using GetUsageInfoCallback =
       base::OnceCallback<void(const std::vector<StorageUsageInfo>& usage_info)>;

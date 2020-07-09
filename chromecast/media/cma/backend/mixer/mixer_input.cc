@@ -217,12 +217,12 @@ int MixerInput::FillAudioData(int num_frames,
   // and then do channel selection. Currently if the input is mono we don't
   // bother doing channel selection since the result would be the same as
   // doing nothing anyway.
-  if (source_->playout_channel() != kChannelAll &&
-      source_->playout_channel() < num_channels_) {
+  int playout_channel = source_->playout_channel();
+  if (playout_channel != kChannelAll && playout_channel < num_channels_) {
     // Duplicate selected channel to all channels.
     for (int c = 0; c < num_channels_; ++c) {
       if (c != source_->playout_channel()) {
-        std::copy_n(fill_dest->channel(source_->playout_channel()), filled,
+        std::copy_n(fill_dest->channel(playout_channel), filled,
                     fill_dest->channel(c));
       }
     }

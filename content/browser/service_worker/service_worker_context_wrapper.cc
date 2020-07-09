@@ -598,7 +598,7 @@ void ServiceWorkerContextWrapper::GetInstalledRegistrationOriginsOnCoreThread(
   if (!context_core_) {
     task_runner_for_callback->PostTask(
         FROM_HERE,
-        base::BindOnce(std::move(callback), std::set<url::Origin>()));
+        base::BindOnce(std::move(callback), std::vector<url::Origin>()));
     return;
   }
 
@@ -2114,11 +2114,11 @@ void ServiceWorkerContextWrapper::
         GetInstalledRegistrationOriginsCallback callback,
         scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback,
         std::vector<url::Origin> origins) {
-  std::set<url::Origin> filtered_origins;
-  for (const auto& origin : origins) {
+  std::vector<url::Origin> filtered_origins;
+  for (auto& origin : origins) {
     if (host_filter.has_value() && host_filter.value() != origin.host())
       continue;
-    filtered_origins.insert(origin);
+    filtered_origins.push_back(std::move(origin));
   }
   task_runner_for_callback->PostTask(
       FROM_HERE,

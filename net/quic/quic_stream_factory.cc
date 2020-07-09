@@ -2201,6 +2201,10 @@ void QuicStreamFactory::CollectDataOnPlatformNotification(
       return;
   }
 
+  UMA_HISTOGRAM_COUNTS_100(
+      "Net.QuicStreamFactory.NumQuicSessionsAtNetworkChange",
+      all_sessions_.size());
+
   // Skip degrading session collection if there are less than two sessions.
   if (all_sessions_.size() < 2)
     return;

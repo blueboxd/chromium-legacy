@@ -1437,3 +1437,22 @@ TEST_F('ChromeVoxEditingTest', 'MoveByLineIntent', function() {
         input.focus();
       });
 });
+
+TEST_F('ChromeVoxEditingTest', 'SelectAllBareTextContent', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+      `
+    <div contenteditable role="textbox">unread</div>
+  `,
+      function(root) {
+        const input = root.find({role: RoleType.TEXT_FIELD});
+        this.listenOnce(input, 'focus', function() {
+          mockFeedback.call(this.press(35 /* end */, {ctrl: true}))
+              .expectSpeech('unread')
+              .call(this.press(65 /* a */, {ctrl: true}))
+              .expectSpeech('unread', 'selected')
+              .replay();
+        });
+        input.focus();
+      });
+});

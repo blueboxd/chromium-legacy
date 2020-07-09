@@ -43,6 +43,12 @@ class SharedImageRepresentationSkiaVkAndroid
   void EndReadAccess() override;
 
  protected:
+  SharedImageBackingAndroid* android_backing() const {
+    return static_cast<SharedImageBackingAndroid*>(backing());
+  }
+
+  SharedContextState* context_state() const { return context_state_.get(); }
+
   std::unique_ptr<VulkanImage> vulkan_image_;
 
   // Initial read fence to wait on before reading |vulkan_image_|.
@@ -59,9 +65,6 @@ class SharedImageRepresentationSkiaVkAndroid
   VulkanImplementation* vk_implementation();
   VkPhysicalDevice vk_phy_device();
   VkQueue vk_queue();
-  SharedImageBackingAndroid* android_backing() {
-    return static_cast<SharedImageBackingAndroid*>(backing());
-  }
 
   RepresentationAccessMode mode_ = RepresentationAccessMode::kNone;
   int surface_msaa_count_ = 0;

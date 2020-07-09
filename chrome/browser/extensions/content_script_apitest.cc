@@ -328,6 +328,77 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest,
   ASSERT_TRUE(scripts_injected_twice);
 }
 
+// Tests that fetches made by content scripts are exempt from the page's CSP.
+// Regression test for crbug.com/934819.
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, FetchExemptFromCSP) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  // Create and load an extension that will inject a content script which does a
+  // fetch based on the host document's "fetchUrl" url search parameter.
+  constexpr char kManifest[] =
+      R"(
+      {
+        "name":"Fetch redirect test",
+        "version":"0.0.1",
+        "manifest_version": 2,
+        "content_scripts": [
+          {
+            "matches": ["*://bar.com/*"],
+            "js": ["content_script.js"],
+            "run_at": "document_start"
+          }
+        ]
+      })";
+  constexpr char kContentScript[] = R"(
+    let params = (new URL(document.location)).searchParams;
+    let fetchUrl = params.get('fetchUrl');
+    fetch(fetchUrl)
+      .then(response => response.text())
+      .then(text => chrome.test.sendMessage(text))
+      .catch(error => chrome.test.sendMessage(error.message));
+  )";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  test_dir.WriteFile(FILE_PATH_LITERAL("content_script.js"), kContentScript);
+  ASSERT_TRUE(LoadExtension(test_dir.UnpackedPath()));
+
+  ExtensionTestMessageListener listener(false /* will_reply */);
+
+  // The fetch will undergo a redirect. Note that the fetched file sets the
+  // "Access-Control-Allow-Origin: *" header to allow for cross origin access.
+  GURL fetch_url =
+      embedded_test_server()->GetURL("foo.com", "/extensions/xhr.txt");
+  GURL redirect_url = embedded_test_server()->GetURL(
+      "bar.com", "/server-redirect?" + fetch_url.spec());
+
+  // Navigate to a page with a CSP set that prevents resources from other
+  // origins to be loaded and wait for a response from the content script.
+  GURL csp_page_url = embedded_test_server()->GetURL(
+      "bar.com",
+      "/extensions/page_with_csp.html?fetchUrl=" + redirect_url.spec());
+  ui_test_utils::NavigateToURL(browser(), csp_page_url);
+
+  // Ensure the fetch is exempt from the page CSP and succeeds.
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
+  EXPECT_EQ("File to request via XHR.\n", listener.message());
+
+  // Sanity check that fetching a url which doesn't allow cross origin access
+  // fails.
+  listener.Reset();
+  fetch_url =
+      embedded_test_server()->GetURL("foo.com", "/extensions/test_file.txt");
+  redirect_url = embedded_test_server()->GetURL(
+      "bar.com", "/server-redirect?" + fetch_url.spec());
+  csp_page_url = embedded_test_server()->GetURL(
+      "bar.com",
+      "/extensions/page_with_csp.html?fetchUrl=" + redirect_url.spec());
+  ui_test_utils::NavigateToURL(browser(), csp_page_url);
+
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
+  EXPECT_EQ("Failed to fetch", listener.message());
+}
+
 class ContentScriptCssInjectionTest : public ExtensionApiTest {
  protected:
   // TODO(rdevlin.cronin): Make a testing switch that looks like FeatureSwitch,

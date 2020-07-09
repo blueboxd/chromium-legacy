@@ -28,9 +28,6 @@ class NetErrorPageController : public gin::Wrappable<NetErrorPageController> {
     // Button press notification from error page.
     virtual void ButtonPressed(NetErrorHelperCore::Button button) = 0;
 
-    // Called when a link with the given tracking ID is pressed.
-    virtual void TrackClick(int tracking_id) = 0;
-
     // Called to open suggested offline content when it is pressed.
     virtual void LaunchOfflineItem(const std::string& id,
                                    const std::string& name_space) = 0;
@@ -97,13 +94,6 @@ class NetErrorPageController : public gin::Wrappable<NetErrorPageController> {
 
   // Execute a "Diagnose Errors" button click.
   bool DiagnoseErrorsButtonClick();
-
-  // Track "Show cached copy" button clicks.
-  bool TrackCachedCopyButtonClick();
-
-  // Track a click when the page has suggestions from the navigation correction
-  // service.
-  bool TrackClick(const gin::Arguments& args);
 
   // Used internally by other button click methods.
   bool ButtonClick(NetErrorHelperCore::Button button);

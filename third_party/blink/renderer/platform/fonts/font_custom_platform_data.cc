@@ -105,9 +105,9 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
     if (variation_settings && variation_settings->size() < UINT16_MAX) {
       axes.ReserveCapacity(variation_settings->size() + axes.size());
       for (const auto& setting : *variation_settings) {
-        if (setting.Tag() == AtomicString("opsz"))
+        if (setting.Tag() == SkSetFourByteTag('o', 'p', 's', 'z'))
           explicit_opsz_configured = true;
-        SkFontArguments::Axis axis = {AtomicStringToFourByteTag(setting.Tag()),
+        SkFontArguments::Axis axis = {setting.Tag(),
                                       SkFloatToScalar(setting.Value())};
         axes.push_back(axis);
       }

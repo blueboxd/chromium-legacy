@@ -93,6 +93,7 @@
   OP(kColorId_NotificationPlaceholderIconColor),                               \
   OP(kColorId_NotificationEmptyPlaceholderIconColor),                          \
   OP(kColorId_NotificationDefaultAccentColor),                                 \
+  OP(kColorId_NotificationInkDropBase),                                        \
   /* Slider */                                                                 \
   OP(kColorId_SliderThumbDefault),                                             \
   OP(kColorId_SliderTroughDefault),                                            \

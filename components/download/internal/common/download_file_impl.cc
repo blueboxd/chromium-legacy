@@ -640,7 +640,7 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream,
                            source_stream->read_stream_callback()->callback());
   } else if (state == InputStream::EMPTY && !should_terminate) {
     source_stream->RegisterDataReadyCallback(
-        base::Bind(&DownloadFileImpl::StreamActive, weak_factory_.GetWeakPtr(),
+        base::BindRepeating(&DownloadFileImpl::StreamActive, weak_factory_.GetWeakPtr(),
                    source_stream));
   }
 

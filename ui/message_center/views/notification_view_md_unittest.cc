@@ -988,9 +988,10 @@ TEST_F(NotificationViewMDTest, TestAccentColor) {
     notification_view()->ToggleExpanded();
   EXPECT_TRUE(notification_view()->actions_row_->GetVisible());
 
-  // By default, header does not have accent color.
-  EXPECT_FALSE(
-      notification_view()->header_row_->accent_color_for_testing().has_value());
+  // By default, header does not have accent color (default grey), and
+  // buttons have default accent color.
+  EXPECT_EQ(ui::NativeTheme::kColorId_NotificationDefaultAccentColor,
+            notification_view()->header_row_->accent_color_for_testing());
   EXPECT_EQ(
       kActionButtonTextColor,
       notification_view()->action_buttons_[0]->enabled_color_for_testing());

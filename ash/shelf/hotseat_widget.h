@@ -205,11 +205,10 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   void LayoutHotseatByAnimation(double target_opacity,
                                 const gfx::Rect& target_bounds);
 
-  // Animates the hotseat for the transition between the home launcher state
-  // and the extended state.
-  void StartHomeLauncherExtendedTransitionAnimation(
-      double target_opacity,
-      const gfx::Rect& target_bounds);
+  // Start the animation designed specifically for |state_transition|.
+  void StartHotseatTransitionAnimation(StateTransition state_transition,
+                                       double target_opacity,
+                                       const gfx::Rect& target_bounds);
 
   // Starts the default bounds/opacity animation.
   void StartNormalBoundsAnimation(double target_opacity,

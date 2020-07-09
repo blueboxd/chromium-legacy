@@ -92,6 +92,22 @@ bool ReadMdcvColorCoordinate(BoxReader* reader,
   return true;
 }
 
+VideoColorSpace ConvertColorParameterInformationToColorSpace(
+    const ColorParameterInformation& info) {
+  auto primary_id =
+      static_cast<VideoColorSpace::PrimaryID>(info.colour_primaries);
+  auto transfer_id =
+      static_cast<VideoColorSpace::TransferID>(info.transfer_characteristics);
+  auto matrix_id =
+      static_cast<VideoColorSpace::MatrixID>(info.matrix_coefficients);
+
+  // Note that we don't check whether the embedded ids are valid.  We rely on
+  // the underlying video decoder to reject any ids that it doesn't support.
+  return VideoColorSpace(primary_id, transfer_id, matrix_id,
+                         info.full_range ? gfx::ColorSpace::RangeID::FULL
+                                         : gfx::ColorSpace::RangeID::LIMITED);
+}
+
 }  // namespace
 
 FileType::FileType() = default;
@@ -719,6 +735,25 @@ bool VPCodecConfigurationRecord::Parse(BoxReader* reader) {
           << static_cast<uint32_t>(profile_indication);
       return false;
   }
+
+  RCHECK(reader->Read1(&level));
+
+  uint8_t depth_chroma_full_range;
+  RCHECK(reader->Read1(&depth_chroma_full_range));
+
+  uint8_t primary_id;
+  RCHECK(reader->Read1(&primary_id));
+
+  uint8_t transfer_id;
+  RCHECK(reader->Read1(&transfer_id));
+
+  uint8_t matrix_id;
+  RCHECK(reader->Read1(&matrix_id));
+
+  color_space = VideoColorSpace(primary_id, transfer_id, matrix_id,
+                                depth_chroma_full_range & 1
+                                    ? gfx::ColorSpace::RangeID::FULL
+                                    : gfx::ColorSpace::RangeID::LIMITED);
   return true;
 }
 
@@ -862,6 +897,10 @@ bool MasteringDisplayColorVolume::Parse(BoxReader* reader) {
   return true;
 }
 
+FourCC SMPTE2086MasteringDisplayMetadataBox::BoxType() const {
+  return FOURCC_SMDM;
+}
+
 ContentLightLevelInformation::ContentLightLevelInformation() = default;
 ContentLightLevelInformation::ContentLightLevelInformation(
     const ContentLightLevelInformation& other) = default;
@@ -873,6 +912,10 @@ FourCC ContentLightLevelInformation::BoxType() const {
 bool ContentLightLevelInformation::Parse(BoxReader* reader) {
   return reader->Read2(&max_content_light_level) &&
          reader->Read2(&max_pic_average_light_level);
+}
+
+FourCC ContentLightLevel::BoxType() const {
+  return FOURCC_COLL;
 }
 
 VideoSampleEntry::VideoSampleEntry()
@@ -1014,6 +1057,20 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
       frame_bitstream_converter = nullptr;
       video_codec = kCodecVP9;
       video_codec_profile = vp_config->profile;
+      video_color_space = vp_config->color_space;
+      video_codec_level = vp_config->level;
+
+      SMPTE2086MasteringDisplayMetadataBox mastering_display_color_volume;
+      if (reader->HasChild(&mastering_display_color_volume)) {
+        RCHECK(reader->ReadChild(&mastering_display_color_volume));
+        this->mastering_display_color_volume = mastering_display_color_volume;
+      }
+
+      ContentLightLevel content_light_level_information;
+      if (reader->HasChild(&content_light_level_information)) {
+        RCHECK(reader->ReadChild(&content_light_level_information));
+        this->content_light_level_information = content_light_level_information;
+      }
       break;
     }
 #if BUILDFLAG(ENABLE_AV1_DECODER)
@@ -1024,24 +1081,6 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
       frame_bitstream_converter = nullptr;
       video_codec = kCodecAV1;
       video_codec_profile = av1_config.profile;
-
-      ColorParameterInformation color_parameter_information;
-      if (reader->HasChild(&color_parameter_information)) {
-        RCHECK(reader->ReadChild(&color_parameter_information));
-        this->color_parameter_information = color_parameter_information;
-      }
-
-      MasteringDisplayColorVolume mastering_display_color_volume;
-      if (reader->HasChild(&mastering_display_color_volume)) {
-        RCHECK(reader->ReadChild(&mastering_display_color_volume));
-        this->mastering_display_color_volume = mastering_display_color_volume;
-      }
-
-      ContentLightLevelInformation content_light_level_information;
-      if (reader->HasChild(&content_light_level_information)) {
-        RCHECK(reader->ReadChild(&content_light_level_information));
-        this->content_light_level_information = content_light_level_information;
-      }
       break;
     }
 #endif
@@ -1051,6 +1090,25 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
           << "Unsupported VisualSampleEntry type "
           << FourCCToString(actual_format);
       return false;
+  }
+
+  ColorParameterInformation color_parameter_information;
+  if (reader->HasChild(&color_parameter_information)) {
+    RCHECK(reader->ReadChild(&color_parameter_information));
+    video_color_space = ConvertColorParameterInformationToColorSpace(
+        color_parameter_information);
+  }
+
+  MasteringDisplayColorVolume mastering_display_color_volume;
+  if (reader->HasChild(&mastering_display_color_volume)) {
+    RCHECK(reader->ReadChild(&mastering_display_color_volume));
+    this->mastering_display_color_volume = mastering_display_color_volume;
+  }
+
+  ContentLightLevelInformation content_light_level_information;
+  if (reader->HasChild(&content_light_level_information)) {
+    RCHECK(reader->ReadChild(&content_light_level_information));
+    this->content_light_level_information = content_light_level_information;
   }
 
   if (video_codec_profile == VIDEO_CODEC_PROFILE_UNKNOWN) {

@@ -6,7 +6,6 @@ import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
-
 import './icons.js';
 import './viewer-download-controls.js';
 import './viewer-page-selector.js';
@@ -14,7 +13,9 @@ import './shared-css.js';
 
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-class ViewerPdfToolbarNewElement extends PolymerElement {
+import {FittingType} from '../constants.js';
+
+export class ViewerPdfToolbarNewElement extends PolymerElement {
   static get is() {
     return 'viewer-pdf-toolbar-new';
   }
@@ -45,14 +46,45 @@ class ViewerPdfToolbarNewElement extends PolymerElement {
       pdfAnnotationsEnabled: Boolean,
       pdfFormSaveEnabled: Boolean,
       printingEnabled: Boolean,
+
+      fittingType_: Number,
+
+      /** @private {string} */
+      fitToButtonIcon_: {
+        type: String,
+        computed: 'computeFitToButtonIcon_(fittingType_)',
+      },
     };
   }
 
   constructor() {
     super();
 
+    /** @private {!FittingType} */
+    this.fittingType_ = FittingType.FIT_TO_PAGE;
+
     /** @private {boolean} */
     this.loading_ = true;
+  }
+
+  /**
+   * @return {string}
+   * @private
+   */
+  computeFitToButtonIcon_() {
+    return this.fittingType_ === FittingType.FIT_TO_PAGE ? 'pdf:fit-to-height' :
+                                                           'pdf:fit-to-width';
+  }
+
+  /**
+   * @param {string} fitToPageTooltip
+   * @param {string} fitToWidthTooltip
+   * @return {string} The appropriate tooltip for the current state
+   * @private
+   */
+  getFitToButtonTooltip_(fitToPageTooltip, fitToWidthTooltip) {
+    return this.fittingType_ === FittingType.FIT_TO_PAGE ? fitToPageTooltip :
+                                                           fitToWidthTooltip;
   }
 
   /** @private */
@@ -63,6 +95,35 @@ class ViewerPdfToolbarNewElement extends PolymerElement {
   /** @private */
   onPrintClick_() {
     this.dispatchEvent(new CustomEvent('print'));
+  }
+
+  /** @private */
+  onZoomInClick_() {
+    this.dispatchEvent(new CustomEvent('zoom-in'));
+  }
+
+  /** @private */
+  onZoomOutClick_() {
+    this.dispatchEvent(new CustomEvent('zoom-out'));
+  }
+
+  /** @param {!FittingType} fittingType */
+  forceFit(fittingType) {
+    this.fittingType_ = fittingType;
+  }
+
+  fitToggle() {
+    const newState = this.fittingType_ === FittingType.FIT_TO_PAGE ?
+        FittingType.FIT_TO_WIDTH :
+        FittingType.FIT_TO_PAGE;
+    this.dispatchEvent(
+        new CustomEvent('fit-to-changed', {detail: this.fittingType_}));
+    this.fittingType_ = newState;
+  }
+
+  /** @private */
+  onFitToButtonClick_() {
+    this.fitToggle();
   }
 }
 

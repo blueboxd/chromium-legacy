@@ -16,6 +16,7 @@ import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager.DohEntry;
@@ -46,6 +47,7 @@ public class PrivacySettings
     private static final String PREF_SECURE_DNS = "secure_dns";
     private static final String PREF_USAGE_STATS = "usage_stats_reporting";
     private static final String PREF_DO_NOT_TRACK = "do_not_track";
+    private static final String PREF_SECURITY = "security";
     private static final String PREF_SYNC_AND_SERVICES_LINK = "sync_and_services_link";
 
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
@@ -55,7 +57,16 @@ public class PrivacySettings
         PrivacyPreferencesManager privacyPrefManager = PrivacyPreferencesManager.getInstance();
         privacyPrefManager.migrateNetworkPredictionPreferences();
         SettingsUtils.addPreferencesFromResource(this, R.xml.privacy_preferences);
-        getActivity().setTitle(R.string.prefs_privacy);
+
+        // If the flag for adding a "Security" section UI is enabled, a "Security" section will be
+        // added under this section and this section will be renamed to "Privacy and security".
+        // See (go/esb-clank-dd) for more context.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SAFE_BROWSING_SECURITY_SECTION_UI)) {
+            getActivity().setTitle(R.string.prefs_privacy_security);
+        } else {
+            getActivity().setTitle(R.string.prefs_privacy);
+            getPreferenceScreen().removePreference(findPreference(PREF_SECURITY));
+        }
         setHasOptionsMenu(true);
 
         mManagedPreferenceDelegate = createManagedPreferenceDelegate();

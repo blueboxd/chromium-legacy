@@ -37,18 +37,21 @@ import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FeatureList;
+import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
@@ -59,7 +62,6 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity2;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
@@ -89,6 +91,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.FullscreenTestUtils;
 import org.chromium.chrome.test.util.MenuUtils;
@@ -135,10 +138,40 @@ import java.util.concurrent.TimeoutException;
         "disable-features=" + ChromeFeatureList.CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION + ","
                 + ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO})
 @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+@Batch(Batch.PER_CLASS)
 public class ContextualSearchManagerTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    // This class batches with multiple paramaterized versions of itself, and therefore cannot use
+    // @BeforeClass/@AfterClass as these would be evaluated once for each parameterized class.
+    // TODO(crbug.com/1090043): Use @BeforeClass once this is fixed.
+    private static class SharedStaticState {
+        private static ChromeActivityTestRule<ChromeActivity> sActivityTestRule;
+        private static boolean sActivityStarted = false;
+        public static ChromeActivityTestRule<ChromeActivity> getActivityTestRule() {
+            if (sActivityTestRule == null) {
+                sActivityTestRule = new ChromeActivityTestRule<>(ChromeActivity.class);
+            }
+            return sActivityTestRule;
+        }
+
+        public static void ensureActivityStarted() {
+            if (sActivityStarted) return;
+            sActivityStarted = true;
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                FirstRunStatus.setFirstRunFlowComplete(true);
+                LocaleManager.setInstanceForTest(new LocaleManager() {
+                    @Override
+                    public boolean needToCheckForSearchEnginePromo() {
+                        return false;
+                    }
+                });
+            });
+            sActivityTestRule.startMainActivityOnBlankPage();
+        }
+    }
+
+    @ClassRule
+    public static ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            SharedStaticState.getActivityTestRule();
 
     /** Parameter provider for enabling/disabling triggering-related Features. */
     public static class FeatureParamProvider implements ParameterProvider {
@@ -152,10 +185,14 @@ public class ContextualSearchManagerTest {
         }
     }
 
+    private static final String TAG = "SearchManagerTest";
     private static final String TEST_PAGE =
             "/chrome/test/data/android/contextualsearch/tap_test.html";
     private static final int TEST_TIMEOUT = 15000;
     private static final int TEST_EXPECTED_FAILURE_TIMEOUT = 1000;
+
+    private static final int PANEL_INTERACTION_MAX_RETRIES = 3;
+    private static final int PANEL_INTERACTION_RETRY_DELAY_MS = 200;
 
     // TODO(donnd): get these from TemplateURL once the low-priority or Contextual Search API
     // is fully supported.
@@ -163,8 +200,6 @@ public class ContextualSearchManagerTest {
     private static final String LOW_PRIORITY_SEARCH_ENDPOINT = "/s?";
     private static final String LOW_PRIORITY_INVALID_SEARCH_ENDPOINT = "/s/invalid";
     private static final String CONTEXTUAL_SEARCH_PREFETCH_PARAM = "&pf=c";
-    // The number of ms to delay startup for all tests.
-    private static final int ACTIVITY_STARTUP_DELAY_MS = 1000;
 
     private static final ImmutableMap<String, Boolean> ENABLE_NONE =
             ImmutableMap.of(ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE, false,
@@ -207,22 +242,17 @@ public class ContextualSearchManagerTest {
 
     @Before
     public void setUp() throws Exception {
-        // We have to set up the test server before starting the activity.
-        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
+        SharedStaticState.ensureActivityStarted();
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(true));
-        LocaleManager.setInstanceForTest(new LocaleManager() {
-            @Override
-            public boolean needToCheckForSearchEnginePromo() {
-                return false;
-            }
-        });
+        // TODO(crbug.com/989569): Allow TestServer reuse across tests to avoid waiting on test
+        // server startup for each test.
+        mTestServer = mActivityTestRule.getTestServer();
 
-        mActivityTestRule.startMainActivityWithURL(mTestServer.getURL(TEST_PAGE));
-        // There's a problem with immediate startup that causes flakes due to the page not being
-        // ready, so specify a startup-delay of 1000 for legacy behavior.  See crbug.com/635661.
-        // TODO(donnd): find a better way to wait for page-ready, or at least reduce the delay!
-        Thread.sleep(ACTIVITY_STARTUP_DELAY_MS);
+        // Since we re-use the tab across tests, if the test page is already loaded, it's difficult
+        // to reload it without being racy, so we navigate to about:blank first.
+        mActivityTestRule.loadUrl("about:blank");
+        mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
+
         mManager = mActivityTestRule.getActivity().getContextualSearchManager();
 
         Assert.assertNotNull(mManager);
@@ -272,9 +302,18 @@ public class ContextualSearchManagerTest {
     }
 
     @After
-    public void tearDown() {
-        mTestServer.stopAndDestroyServer();
-        TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
+    public void tearDown() throws Exception {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // Close all but the first tab as these tests expect to start with a single tab.
+            while (TabModelUtils.closeTabByIndex(
+                    mActivityTestRule.getActivity().getCurrentTabModel(), 1)) {
+            }
+            mManager.dismissContextualSearchBar();
+            mPanel.closePanel(StateChangeReason.UNKNOWN, false);
+        });
+        InstrumentationRegistry.getInstrumentation().removeMonitor(mActivityMonitor);
+        mActivityMonitor = null;
+        mLatestSlowResolveSearch = null;
     }
 
     /**
@@ -336,6 +375,44 @@ public class ContextualSearchManagerTest {
         ChromeTabUtils.waitForTabPageLoaded(tab, testUrl);
     }
 
+    private interface ThrowingRunnable {
+        void run() throws TimeoutException;
+    }
+
+    // Panel interactions are flaky, see crbug.com/635661. Rather than adding a long delay to
+    // each test, we can retry failures. When trying to make the panel peak, we may also have to
+    // clear the selection before trying again.
+    private void retryPanelBarInteractions(ThrowingRunnable r, boolean clearSelection)
+            throws AssertionError, TimeoutException {
+        int tries = 0;
+        boolean success = false;
+        while (!success) {
+            tries++;
+            try {
+                r.run();
+                success = true;
+            } catch (AssertionError | TimeoutException e) {
+                if (tries > PANEL_INTERACTION_MAX_RETRIES) {
+                    throw e;
+                } else {
+                    Log.e(TAG, "Failed to peek panel bar, trying again.", e);
+                    if (clearSelection) clearSelection();
+                    try {
+                        Thread.sleep(PANEL_INTERACTION_RETRY_DELAY_MS);
+                    } catch (InterruptedException ex) {
+                    }
+                }
+            }
+        }
+    }
+
+    private void clearSelection() {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            SelectionPopupController.fromWebContents(mActivityTestRule.getWebContents())
+                    .clearSelection();
+        });
+    }
+
     //============================================================================================
     // Public API
     //============================================================================================
@@ -354,8 +431,10 @@ public class ContextualSearchManagerTest {
      * @param nodeId A string containing the node ID.
      */
     public void longPressNode(String nodeId) throws TimeoutException {
-        longPressNodeWithoutWaiting(nodeId);
-        waitForPanelToPeek();
+        retryPanelBarInteractions(() -> {
+            longPressNodeWithoutWaiting(nodeId);
+            waitForPanelToPeek();
+        }, true);
     }
 
     /**
@@ -379,7 +458,6 @@ public class ContextualSearchManagerTest {
         // When Long-press is our trigger we have no non-resolving gesture.
         assert !mPolicy.canResolveLongpress();
         longPressNode(nodeId);
-        waitForPanelToPeek();
     }
 
     /**
@@ -702,8 +780,10 @@ public class ContextualSearchManagerTest {
      * @param nodeId A string containing the node ID.
      */
     private void clickWordNode(String nodeId) throws TimeoutException {
-        clickNode(nodeId);
-        waitForPanelToPeek();
+        retryPanelBarInteractions(() -> {
+            clickNode(nodeId);
+            waitForPanelToPeek();
+        }, true);
     }
 
     /**
@@ -1079,7 +1159,7 @@ public class ContextualSearchManagerTest {
     /**
      * Tap on the peeking Bar to expand the panel, then close it.
      */
-    private void tapBarToExpandAndClosePanel() {
+    private void tapBarToExpandAndClosePanel() throws TimeoutException {
         tapPeekingBarToExpandAndAssert();
         closePanel();
     }
@@ -1099,9 +1179,11 @@ public class ContextualSearchManagerTest {
     /**
      * Taps the peeking bar to expand the panel
      */
-    private void tapPeekingBarToExpandAndAssert() {
-        clickPanelBar();
-        waitForPanelToExpand();
+    private void tapPeekingBarToExpandAndAssert() throws TimeoutException {
+        retryPanelBarInteractions(() -> {
+            clickPanelBar();
+            waitForPanelToExpand();
+        }, false);
     }
 
     /**
@@ -1752,16 +1834,14 @@ public class ContextualSearchManagerTest {
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     public void testContextualSearchNotDismissedOnBackgroundTabCrash(
             @EnabledFeature int enabledFeature) throws Exception {
-        ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(),
-                (ChromeTabbedActivity) mActivityTestRule.getActivity());
+        ChromeTabUtils.newTabFromMenu(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
         final Tab tab2 =
                 TabModelUtils.getCurrentTab(mActivityTestRule.getActivity().getCurrentTabModel());
 
-        // TODO(donnd): consider using runOnUiThreadBlocking, won't need to waitForIdleSync?
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             TabModelUtils.setIndex(mActivityTestRule.getActivity().getCurrentTabModel(), 0);
         });
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         triggerResolve("states");
         Assert.assertEquals("States", getSelectedText());
@@ -1990,6 +2070,11 @@ public class ContextualSearchManagerTest {
         pressKey(KeyEvent.KEYCODE_MENU);
     }
 
+    private void closeAppMenu() {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mActivityTestRule.getAppMenuCoordinator().getAppMenuHandler().hideAppMenu());
+    }
+
     /**
      * Asserts whether the App Menu is visible.
      */
@@ -2023,6 +2108,8 @@ public class ContextualSearchManagerTest {
 
         pressAppMenuKey();
         assertAppMenuVisibility(true);
+
+        closeAppMenu();
     }
 
     /**
@@ -2046,6 +2133,8 @@ public class ContextualSearchManagerTest {
 
         pressAppMenuKey();
         assertAppMenuVisibility(true);
+
+        closeAppMenu();
     }
 
     // --------------------------------------------------------------------------------------------
@@ -2384,6 +2473,7 @@ public class ContextualSearchManagerTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
+                mActivityTestRule.getActivity().onUserInteraction();
                 Assert.assertFalse(mManager.getOverlayContentDelegate().shouldInterceptNavigation(
                         externalNavHandler, navigationParams));
             }
@@ -2420,6 +2510,7 @@ public class ContextualSearchManagerTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
+                mActivityTestRule.getActivity().onUserInteraction();
                 OverlayContentDelegate delegate = mManager.getOverlayContentDelegate();
                 Assert.assertTrue(delegate.shouldInterceptNavigation(
                         externalNavHandler, initialNavigationParams));
@@ -2451,6 +2542,7 @@ public class ContextualSearchManagerTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
+                mActivityTestRule.getActivity().onUserInteraction();
                 Assert.assertFalse(mManager.getOverlayContentDelegate().shouldInterceptNavigation(
                         externalNavHandler, navigationParams));
             }
@@ -2785,6 +2877,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    @FlakyTest(message = "crbug.com/1103496")
     public void testChainedTapsRemovedFromHistory(@EnabledFeature int enabledFeature)
             throws Exception {
         // Simulate a resolving search and make sure a URL was loaded.
@@ -3086,6 +3179,8 @@ public class ContextualSearchManagerTest {
         } else {
             Assert.assertTrue(0.5f < imageControl.getCustomImageVisibilityPercentage());
         }
+
+        CompositorAnimationHandler.setTestingMode(false);
     }
 
     /**
@@ -3099,7 +3194,11 @@ public class ContextualSearchManagerTest {
         // Add a new filter to the activity monitor that matches the intent that should be fired.
         IntentFilter quickActionFilter = new IntentFilter(Intent.ACTION_VIEW);
         quickActionFilter.addDataScheme("tel");
-        mActivityMonitor =
+
+        // Note that we don't reuse mActivityMonitor here or we would leak the one already added
+        // (unless we removed it here first). When ActivityMonitors leak, Instrumentation silently
+        // ignores matching ones added after and tests will fail.
+        ActivityMonitor activityMonitor =
                 InstrumentationRegistry.getInstrumentation().addMonitor(quickActionFilter,
                         new Instrumentation.ActivityResult(Activity.RESULT_OK, null), true);
 
@@ -3110,11 +3209,16 @@ public class ContextualSearchManagerTest {
                         -> mPanel.onSearchTermResolved("search", null, "tel:555-555-5555",
                                 QuickActionCategory.PHONE, CardTag.CT_CONTACT));
 
-        // Tap on the portion of the bar that should trigger the quick action intent to be fired.
-        clickPanelBar();
+        mActivityTestRule.getActivity().onUserInteraction();
+        retryPanelBarInteractions(() -> {
+            // Tap on the portion of the bar that should trigger the quick action intent to be
+            // fired.
+            clickPanelBar();
 
-        // Assert that an intent was fired.
-        Assert.assertEquals(1, mActivityMonitor.getHits());
+            // Assert that an intent was fired.
+            Assert.assertEquals(1, activityMonitor.getHits());
+        }, false);
+        InstrumentationRegistry.getInstrumentation().removeMonitor(activityMonitor);
     }
 
     /**
@@ -3135,13 +3239,14 @@ public class ContextualSearchManagerTest {
                 ()
                         -> mPanel.onSearchTermResolved("search", null, testUrl,
                                 QuickActionCategory.WEBSITE, CardTag.CT_URL));
+        retryPanelBarInteractions(() -> {
+            // Tap on the portion of the bar that should trigger the quick action.
+            clickPanelBar();
 
-        // Tap on the portion of the bar that should trigger the quick action.
-        clickPanelBar();
-
-        // Assert that the URL was loaded.
-        ChromeTabUtils.waitForTabPageLoaded(
-                mActivityTestRule.getActivity().getActivityTab(), testUrl);
+            // Assert that the URL was loaded.
+            ChromeTabUtils.waitForTabPageLoaded(
+                    mActivityTestRule.getActivity().getActivityTab(), testUrl);
+        }, false);
     }
 
     private void runDictionaryCardTest(@CardTag int cardTag) throws Exception {
@@ -3152,11 +3257,7 @@ public class ContextualSearchManagerTest {
                         -> mPanel.onSearchTermResolved("obscure · əbˈskyo͝or", null, null,
                                 QuickActionCategory.NONE, cardTag));
 
-        // Tap on the main portion of the bar.
-        clickPanelBar();
-
-        // The panel should just expand open.
-        waitForPanelToExpand();
+        tapPeekingBarToExpandAndAssert();
     }
 
     /**
@@ -3203,6 +3304,7 @@ public class ContextualSearchManagerTest {
         longPressNodeWithoutWaiting("states");
         assertNoWebContents();
         assertNoSearchesLoaded();
+        mManager.onAccessibilityModeChanged(false);
     }
 
     //============================================================================================
@@ -3404,7 +3506,7 @@ public class ContextualSearchManagerTest {
      * happens with multiwindow modes.
      */
     @Test
-    @SmallTest
+    @LargeTest
     @Feature({"ContextualSearch"})
     @CommandLineFlags.Add(ChromeSwitches.DISABLE_TAB_MERGING_FOR_TESTING)
     @MinAndroidSdkLevel(Build.VERSION_CODES.N)
@@ -3412,6 +3514,11 @@ public class ContextualSearchManagerTest {
     public void testTabReparenting(@EnabledFeature int enabledFeature) throws Exception {
         // Move our "tap_test" tab to another activity.
         final ChromeActivity ca = mActivityTestRule.getActivity();
+
+        // Create a new tab so |ca| isn't destroyed.
+        ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(), ca);
+        ChromeTabUtils.switchTabInCurrentTabModel(ca, 0);
+
         int testTabId = ca.getActivityTab().getId();
         MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(), ca,
                 R.id.move_to_other_window_menu_id);
@@ -3428,6 +3535,8 @@ public class ContextualSearchManagerTest {
                                        .getSelectedText();
             Criteria.checkThat(selection, Matchers.is("Search"));
         });
+        TestThreadUtils.runOnUiThreadBlocking(() -> activity2.getCurrentTabModel().closeAllTabs());
+        ApplicationTestUtils.finishActivity(activity2);
     }
 
     @Test

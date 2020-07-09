@@ -185,14 +185,14 @@ void ListOriginsAndLastModifiedOnTaskRunner(
   }
 }
 
-std::set<url::Origin> ListOriginsOnTaskRunner(base::FilePath root_path,
-                                              CacheStorageOwner owner) {
+std::vector<url::Origin> ListOriginsOnTaskRunner(base::FilePath root_path,
+                                                 CacheStorageOwner owner) {
   std::vector<StorageUsageInfo> usages;
   ListOriginsAndLastModifiedOnTaskRunner(&usages, root_path, owner);
 
-  std::set<url::Origin> out_origins;
+  std::vector<url::Origin> out_origins;
   for (const StorageUsageInfo& usage : usages)
-    out_origins.insert(usage.origin);
+    out_origins.push_back(usage.origin);
 
   return out_origins;
 }
@@ -200,12 +200,12 @@ std::set<url::Origin> ListOriginsOnTaskRunner(base::FilePath root_path,
 void GetOriginsForHostDidListOrigins(
     const std::string& host,
     storage::QuotaClient::GetOriginsCallback callback,
-    const std::set<url::Origin>& origins) {
+    const std::vector<url::Origin>& origins) {
   // On scheduler sequence.
-  std::set<url::Origin> out_origins;
+  std::vector<url::Origin> out_origins;
   for (const url::Origin& origin : origins) {
     if (host == origin.host())
-      out_origins.insert(origin);
+      out_origins.push_back(origin);
   }
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(out_origins)));
@@ -414,10 +414,10 @@ void LegacyCacheStorageManager::GetOrigins(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (IsMemoryBacked()) {
-    std::set<url::Origin> origins;
+    std::vector<url::Origin> origins;
     for (const auto& key_value : cache_storage_map_)
       if (key_value.first.second == owner)
-        origins.insert(key_value.first.first);
+        origins.push_back(key_value.first.first);
 
     scheduler_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), std::move(origins)));
@@ -437,12 +437,12 @@ void LegacyCacheStorageManager::GetOriginsForHost(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (IsMemoryBacked()) {
-    std::set<url::Origin> origins;
+    std::vector<url::Origin> origins;
     for (const auto& key_value : cache_storage_map_) {
       if (key_value.first.second != owner)
         continue;
       if (host == key_value.first.first.host())
-        origins.insert(key_value.first.first);
+        origins.push_back(key_value.first.first);
     }
     scheduler_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), std::move(origins)));

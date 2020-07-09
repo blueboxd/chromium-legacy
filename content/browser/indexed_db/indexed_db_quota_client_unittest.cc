@@ -4,9 +4,9 @@
 
 #include <stdint.h>
 
-#include <map>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -26,7 +26,7 @@
 #include "storage/browser/test/mock_quota_manager.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/quota/quota_types.mojom-shared.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -94,33 +94,33 @@ class IndexedDBQuotaClientTest : public testing::Test {
     return result;
   }
 
-  static std::set<url::Origin> GetOriginsForType(
+  static std::vector<url::Origin> GetOriginsForType(
       scoped_refptr<storage::QuotaClient> client,
       StorageType type) {
-    std::set<url::Origin> result;
+    std::vector<url::Origin> result;
     base::RunLoop loop;
-    client->GetOriginsForType(
-        type,
-        base::BindLambdaForTesting([&](const std::set<url::Origin>& origins) {
-          result = origins;
-          loop.Quit();
-        }));
+    client->GetOriginsForType(type,
+                              base::BindLambdaForTesting(
+                                  [&](const std::vector<url::Origin>& origins) {
+                                    result = origins;
+                                    loop.Quit();
+                                  }));
     loop.Run();
     return result;
   }
 
-  static std::set<url::Origin> GetOriginsForHost(
+  static std::vector<url::Origin> GetOriginsForHost(
       scoped_refptr<storage::QuotaClient> client,
       StorageType type,
       const std::string& host) {
-    std::set<url::Origin> result;
+    std::vector<url::Origin> result;
     base::RunLoop loop;
-    client->GetOriginsForHost(
-        type, host,
-        base::BindLambdaForTesting([&](const std::set<url::Origin>& origins) {
-          result = origins;
-          loop.Quit();
-        }));
+    client->GetOriginsForHost(type, host,
+                              base::BindLambdaForTesting(
+                                  [&](const std::vector<url::Origin>& origins) {
+                                    result = origins;
+                                    loop.Quit();
+                                  }));
     loop.Run();
     return result;
   }
@@ -202,20 +202,20 @@ TEST_F(IndexedDBQuotaClientTest, GetOriginsForHost) {
   EXPECT_EQ(kOriginA.host(), kOriginB.host());
   EXPECT_NE(kOriginA.host(), kOriginOther.host());
 
-  std::set<url::Origin> origins =
+  std::vector<url::Origin> origins =
       GetOriginsForHost(client, kTemp, kOriginA.host());
   EXPECT_TRUE(origins.empty());
 
   AddFakeIndexedDB(kOriginA, 1000);
   origins = GetOriginsForHost(client, kTemp, kOriginA.host());
   EXPECT_EQ(origins.size(), 1ul);
-  EXPECT_TRUE(origins.find(kOriginA) != origins.end());
+  EXPECT_THAT(origins, testing::Contains(kOriginA));
 
   AddFakeIndexedDB(kOriginB, 1000);
   origins = GetOriginsForHost(client, kTemp, kOriginA.host());
   EXPECT_EQ(origins.size(), 2ul);
-  EXPECT_TRUE(origins.find(kOriginA) != origins.end());
-  EXPECT_TRUE(origins.find(kOriginB) != origins.end());
+  EXPECT_THAT(origins, testing::Contains(kOriginA));
+  EXPECT_THAT(origins, testing::Contains(kOriginB));
 
   EXPECT_TRUE(GetOriginsForHost(client, kTemp, kOriginOther.host()).empty());
 }
@@ -226,9 +226,9 @@ TEST_F(IndexedDBQuotaClientTest, GetOriginsForType) {
   EXPECT_TRUE(GetOriginsForType(client, kTemp).empty());
 
   AddFakeIndexedDB(kOriginA, 1000);
-  std::set<url::Origin> origins = GetOriginsForType(client, kTemp);
+  std::vector<url::Origin> origins = GetOriginsForType(client, kTemp);
   EXPECT_EQ(origins.size(), 1ul);
-  EXPECT_TRUE(origins.find(kOriginA) != origins.end());
+  EXPECT_THAT(origins, testing::Contains(kOriginA));
 }
 
 TEST_F(IndexedDBQuotaClientTest, DeleteOrigin) {

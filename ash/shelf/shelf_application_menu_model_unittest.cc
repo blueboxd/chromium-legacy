@@ -63,9 +63,9 @@ TEST(ShelfApplicationMenuModelTest, VerifyContentsWithMenuItems) {
   base::string16 title1 = base::ASCIIToUTF16("title1");
   base::string16 title2 = base::ASCIIToUTF16("title2");
   base::string16 title3 = base::ASCIIToUTF16("title3");
-  items.push_back({title1, gfx::ImageSkia()});
-  items.push_back({title2, gfx::ImageSkia()});
-  items.push_back({title3, gfx::ImageSkia()});
+  items.push_back({items.size(), title1, gfx::ImageSkia()});
+  items.push_back({items.size(), title2, gfx::ImageSkia()});
+  items.push_back({items.size(), title3, gfx::ImageSkia()});
 
   base::string16 title = base::ASCIIToUTF16("title");
   ShelfApplicationMenuModel menu(title, std::move(items), nullptr);

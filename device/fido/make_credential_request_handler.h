@@ -126,29 +126,47 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
 
   void HandleResponse(
       FidoAuthenticator* authenticator,
+      std::unique_ptr<CtapMakeCredentialRequest> request,
       base::ElapsedTimer request_timer,
       CtapDeviceResponseCode response_code,
       base::Optional<AuthenticatorMakeCredentialResponse> response);
-  void CollectPINThenSendRequest(FidoAuthenticator* authenticator);
-  void StartPINFallbackForInternalUv(FidoAuthenticator* authenticator);
-  void SetPINThenSendRequest(FidoAuthenticator* authenticator);
+  void CollectPINThenSendRequest(
+      FidoAuthenticator* authenticator,
+      std::unique_ptr<CtapMakeCredentialRequest> request);
+  void StartPINFallbackForInternalUv(
+      FidoAuthenticator* authenticator,
+      std::unique_ptr<CtapMakeCredentialRequest> request);
+  void SetPINThenSendRequest(
+      FidoAuthenticator* authenticator,
+      std::unique_ptr<CtapMakeCredentialRequest> request);
   void HandleInternalUvLocked(FidoAuthenticator* authenticator);
-  void HandleInapplicableAuthenticator(FidoAuthenticator* authenticator);
-  void OnHavePIN(std::string pin);
-  void OnRetriesResponse(CtapDeviceResponseCode status,
+  void HandleInapplicableAuthenticator(
+      FidoAuthenticator* authenticator,
+      std::unique_ptr<CtapMakeCredentialRequest> request);
+  void OnHavePIN(std::unique_ptr<CtapMakeCredentialRequest> request,
+                 std::string pin);
+  void OnRetriesResponse(std::unique_ptr<CtapMakeCredentialRequest> request,
+                         CtapDeviceResponseCode status,
                          base::Optional<pin::RetriesResponse> response);
-  void OnHaveSetPIN(std::string pin,
+  void OnHaveSetPIN(std::unique_ptr<CtapMakeCredentialRequest> request,
+                    std::string pin,
                     CtapDeviceResponseCode status,
                     base::Optional<pin::EmptyResponse> response);
-  void OnHavePINToken(CtapDeviceResponseCode status,
+  void OnHavePINToken(std::unique_ptr<CtapMakeCredentialRequest> request,
+                      CtapDeviceResponseCode status,
                       base::Optional<pin::TokenResponse> response);
+  void OnEnrollmentComplete(std::unique_ptr<CtapMakeCredentialRequest> request);
   void OnEnrollmentDismissed();
-  void OnUvRetriesResponse(CtapDeviceResponseCode status,
+  void OnUvRetriesResponse(std::unique_ptr<CtapMakeCredentialRequest> request,
+                           CtapDeviceResponseCode status,
                            base::Optional<pin::RetriesResponse> response);
   void OnHaveUvToken(FidoAuthenticator* authenticator,
+                     std::unique_ptr<CtapMakeCredentialRequest> request,
                      CtapDeviceResponseCode status,
                      base::Optional<pin::TokenResponse> response);
-  void DispatchRequestWithToken(pin::TokenResponse token);
+  void DispatchRequestWithToken(
+      std::unique_ptr<CtapMakeCredentialRequest> request,
+      pin::TokenResponse token);
 
   void SpecializeRequestForAuthenticator(
       CtapMakeCredentialRequest* request,
@@ -157,6 +175,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
   CompletionCallback completion_callback_;
   State state_ = State::kWaitingForTouch;
   CtapMakeCredentialRequest request_;
+  base::Optional<base::RepeatingClosure> bio_enrollment_complete_barrier_;
   AuthenticatorSelectionCriteria authenticator_selection_criteria_;
   const Options options_;
 

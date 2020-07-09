@@ -528,7 +528,7 @@ bool ParsePpdCapabilities(cups_dest_t* dest,
     return false;
 
   if (!base::WriteFile(ppd_file_path, printer_capabilities)) {
-    base::DeleteFile(ppd_file_path, false);
+    base::DeleteFile(ppd_file_path);
     return false;
   }
 
@@ -617,7 +617,7 @@ bool ParsePpdCapabilities(cups_dest_t* dest,
   }
 
   ppdClose(ppd);
-  base::DeleteFile(ppd_file_path, false);
+  base::DeleteFile(ppd_file_path);
 
   *printer_info = caps;
   return true;

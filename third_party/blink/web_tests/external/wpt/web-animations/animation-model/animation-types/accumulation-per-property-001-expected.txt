@@ -267,8 +267,8 @@ PASS font-variant-numeric: "lining-nums" onto "oldstyle-nums"
 PASS font-variation-settings (type: fontVariationSettings) has testAccumulation function
 PASS font-variation-settings with composite type accumulate
 PASS font-variation-settings (type: discrete) has testAccumulation function
-PASS font-variation-settings: ""wdth" 5" onto ""wght" 1.1, "wdth" 1"
-PASS font-variation-settings: ""wght" 1.1, "wdth" 1" onto ""wdth" 5"
+PASS font-variation-settings: ""wdth" 5" onto ""wdth" 1, "wght" 1.1"
+PASS font-variation-settings: ""wdth" 1, "wght" 1.1" onto ""wdth" 5"
 PASS font-variation-settings: "normal" onto ""wdth" 5"
 PASS font-variation-settings: ""wdth" 5" onto "normal"
 PASS grid-auto-columns (type: discrete) has testAccumulation function

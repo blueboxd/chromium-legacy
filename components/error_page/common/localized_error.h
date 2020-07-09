@@ -36,7 +36,6 @@ class LocalizedError {
 
     bool is_offline_error = false;
     bool reload_button_shown = false;
-    bool show_cached_copy_button_shown = false;
     bool download_button_shown = false;
     bool offline_content_feature_enabled = false;
     bool auto_fetch_allowed = false;

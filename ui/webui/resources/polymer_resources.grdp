@@ -329,26 +329,6 @@
   <structure name="IDR_POLYMER_1_0_PAPER_TOOLTIP_PAPER_TOOLTIP_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-tooltip/paper-tooltip.html"
              type="chrome_html" />
-  <if expr="chromeos">
-    <structure name="IDR_POLYMER_1_0_POLYMER_POLYMER_EXTRACTED_JS"
-               file="../../../third_party/polymer/v1_0/components-chromium/polymer/polymer-extracted.js"
-               type="chrome_html" />
-    <structure name="IDR_POLYMER_1_0_POLYMER_POLYMER_MICRO_EXTRACTED_JS"
-               file="../../../third_party/polymer/v1_0/components-chromium/polymer/polymer-micro-extracted.js"
-               type="chrome_html" />
-    <structure name="IDR_POLYMER_1_0_POLYMER_POLYMER_MICRO_HTML"
-               file="../../../third_party/polymer/v1_0/components-chromium/polymer/polymer-micro.html"
-               type="chrome_html" />
-    <structure name="IDR_POLYMER_1_0_POLYMER_POLYMER_MINI_EXTRACTED_JS"
-               file="../../../third_party/polymer/v1_0/components-chromium/polymer/polymer-mini-extracted.js"
-               type="chrome_html" />
-    <structure name="IDR_POLYMER_1_0_POLYMER_POLYMER_MINI_HTML"
-               file="../../../third_party/polymer/v1_0/components-chromium/polymer/polymer-mini.html"
-               type="chrome_html" />
-    <structure name="IDR_POLYMER_1_0_POLYMER_POLYMER_HTML"
-               file="../../../third_party/polymer/v1_0/components-chromium/polymer/polymer.html"
-               type="chrome_html" />
-  </if>
   <structure name="IDR_POLYMER_1_0_POLYMER2_POLYMER_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/polymer2/polymer-extracted.js"
              type="chrome_html" />

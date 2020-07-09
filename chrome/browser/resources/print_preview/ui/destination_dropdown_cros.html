@@ -1,21 +1,4 @@
-<style include="cr-shared-style cr-hidden-style md-select">
-  :host([opened_]) cr-input {
-    --cr-input-border-radius: 4px 4px 0 0;
-  }
-
-  iron-dropdown,
-  cr-input {
-    width: var(--md-select-width);
-  }
-
-  cr-input::part(input) {
-    cursor: pointer;
-    opacity: 1;
-    padding-inline-end: 32px;
-    padding-inline-start: 8px;
-    text-overflow: clip;
-  }
-
+<style include="cr-shared-style cr-hidden-style">
   iron-dropdown {
     border: 0.5px solid rgba(0, 0, 0, 0.5);
     max-height: 270px;
@@ -24,27 +7,14 @@
   iron-dropdown [slot='dropdown-content'] {
     background-color: white;
     box-shadow: 0 2px 6px var(--google-grey-600);
-    min-width: var(--md-select-width);
     padding: 8px 0;
   }
 
-  #input-overlay {
-    border-radius: 4px;
-    height: 100%;
-    left: 0;
-    overflow: hidden;
-    pointer-events: none;
-    position: absolute;
-    top: 0;
-    width: 100%;
-  }
-
   #dropdown-icon {
-    --iron-icon-height: 20px;
-    --iron-icon-width: 20px;
-    margin-top: -10px;
-    padding-inline-end: 6px;
-    position: absolute;
+    --iron-icon-height: 24px;
+    --iron-icon-width: 44px;
+    align-items: center;
+    margin-inline-start: -4px;
     right: 0;
     top: 50%;
   }
@@ -54,20 +24,15 @@
     right: unset;
   }
 
-  cr-input:focus-within #dropdown-icon {
-    --iron-icon-fill-color: var(--google-blue-600);
-  }
-
-  #input-box {
+  #dropdown-box {
+    border-radius: 4px;
     height: 100%;
     left: 0;
-    pointer-events: none;
-    top: 0;
-    width: 100%;
-  }
-
-  #dropdown-box {
+    margin-top: 24px;
+    overflow: hidden;
     pointer-events: initial;
+    position: absolute;
+    top: 0;
     width: 100%;
   }
 
@@ -91,27 +56,37 @@
     background-color: var(--google-blue-refresh-100);
   }
 
-  .dot {
-    background-color: #bbb;
-    border-radius: 50%;
-    display: inline-block;
-    height: 10px;
-    width: 10px;
-  }
-
-  #pre-input-box,
+  #destination-icon-box,
   .printer-display-name {
     padding-inline-start: 8px;
   }
 
-  #pre-input-box {
+  #destination-dropdown {
+    position: relative;
+  }
+
+  #destination-display-container {
+    align-items: center;
+    background-color: var(--google-grey-refresh-100);
+    border-radius: 4px;
     cursor: pointer;
+    display: flex;
+    width: 100%;
+  }
+
+  #destination-display {
+    box-sizing: border-box;
+    overflow: hidden;
+    padding-inline-end: 32px;
+    padding-inline-start: 8px;
+    text-overflow: clip;
+    white-space: nowrap;
+    width: 100%;
   }
 </style>
-<cr-input id="dropdownInput" on-keydown="onKeyDown_"
-    value="[[value.displayName]]" disabled="[[disabled]]" readonly>
-  <div id="pre-input-overlay" slot="inline-prefix">
-    <div id="pre-input-box">
+<div id="destination-dropdown" on-keydown="onKeyDown_" tabindex="0">
+  <div id="destination-display-container">
+    <div id="destination-icon-box">
       <iron-icon icon="[[destinationIcon]]"
           hidden="[[isCurrentDestinationCrosLocal]]">
       </iron-icon>
@@ -121,43 +96,40 @@
                       value.printerStatusReason)]]">
       </printer-status-icon-cros>
     </div>
+    <div id="destination-display">[[value.displayName]]</div>
+    <iron-icon id="dropdown-icon" icon="cr:arrow-drop-down"></iron-icon>
   </div>
-  <div id="input-overlay" slot="suffix">
-    <div id="input-box">
-      <iron-icon id="dropdown-icon" icon="cr:arrow-drop-down"></iron-icon>
-    </div>
-    <div id="dropdown-box">
-      <iron-dropdown horizontal-align="left" vertical-align="top"
-          vertical-offset="0" no-cancel-on-outside-click
-          no-cancel-on-esc-key>
-        <div slot="dropdown-content">
-          <template is="dom-repeat" items="[[itemList]]">
-            <button id="[[item.key]]" class="list-item" on-click="onSelect_"
-                tabindex="-1" value="[[item.key]]">
-              <printer-status-icon-cros background="white"
-                  state$="[[computePrinterState_(item.printerStatusReason)]]">
-              </printer-status-icon-cros>
-              <span class="printer-display-name">[[item.displayName]]</span>
-            </button>
-          </template>
-          <button class="list-item" on-click="onSelect_" tabindex="-1"
-            value="[[pdfDestinationKey]]" hidden$="[[pdfPrinterDisabled]]">
-            $i18n{printToPDF}
+  <div id="dropdown-box">
+    <iron-dropdown horizontal-align="left" vertical-align="top"
+        vertical-offset="0" no-cancel-on-outside-click
+        no-cancel-on-esc-key>
+      <div slot="dropdown-content">
+        <template is="dom-repeat" items="[[itemList]]">
+          <button id="[[item.key]]" class="list-item" on-click="onSelect_"
+              tabindex="-1" value="[[item.key]]">
+            <printer-status-icon-cros background="white"
+                state$="[[computePrinterState_(item.printerStatusReason)]]">
+            </printer-status-icon-cros>
+            <span class="printer-display-name">[[item.displayName]]</span>
           </button>
-          <button class="list-item" on-click="onSelect_" tabindex="-1"
-            value="[[driveDestinationKey]]" hidden$="[[!driveDestinationKey]]">
-            $i18n{printToGoogleDrive}
-          </button>
-          <button class="list-item" on-click="onSelect_" tabindex="-1"
-            value="noDestinations" hidden$="[[!noDestinations]]">
-            $i18n{noDestinationsMessage}
-          </button>
-          <button class="list-item" on-click="onSelect_" tabindex="-1"
-            value="seeMore" aria-label$="[[i18n(seeMoreDestinationsLabel)]]">
-            $i18n{seeMore}
-          </button>
-        </div>
-      </iron-dropdown>
-    </div>
+        </template>
+        <button class="list-item" on-click="onSelect_" tabindex="-1"
+          value="[[pdfDestinationKey]]" hidden$="[[pdfPrinterDisabled]]">
+          $i18n{printToPDF}
+        </button>
+        <button class="list-item" on-click="onSelect_" tabindex="-1"
+          value="[[driveDestinationKey]]" hidden$="[[!driveDestinationKey]]">
+          $i18n{printToGoogleDrive}
+        </button>
+        <button class="list-item" on-click="onSelect_" tabindex="-1"
+          value="noDestinations" hidden$="[[!noDestinations]]">
+          $i18n{noDestinationsMessage}
+        </button>
+        <button class="list-item" on-click="onSelect_" tabindex="-1"
+          value="seeMore" aria-label$="[[i18n(seeMoreDestinationsLabel)]]">
+          $i18n{seeMore}
+        </button>
+      </div>
+    </iron-dropdown>
   </div>
-</cr-input>
+</div>

@@ -340,6 +340,28 @@ public class SyncAndServicesSettingsTest {
         });
     }
 
+    @Test
+    @LargeTest
+    @Feature({"Preference"})
+    @EnableFeatures(ChromeFeatureList.SAFE_BROWSING_SECURITY_SECTION_UI)
+    public void testSafeBrowsingSecuritySectionUiFlagOn() {
+        final SyncAndServicesSettings syncAndServicesSettings = startSyncAndServicesPreferences();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertNull("Safe Browsing should be null when security section is enabled.",
+                    syncAndServicesSettings.findPreference(
+                            SyncAndServicesSettings.PREF_SAFE_BROWSING));
+            Assert.assertNull(
+                    "Password leak detection should be null when security section is enabled.",
+                    syncAndServicesSettings.findPreference(
+                            SyncAndServicesSettings.PREF_PASSWORD_LEAK_DETECTION));
+            Assert.assertNull(
+                    "Safe Browsing scout should be null when security section is enabled.",
+                    syncAndServicesSettings.findPreference(
+                            SyncAndServicesSettings.PREF_SAFE_BROWSING_SCOUT_REPORTING));
+        });
+    }
+
     private void setAutofillAssistantSwitchValue(boolean newValue) {
         SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceKeys.AUTOFILL_ASSISTANT_ENABLED, newValue);

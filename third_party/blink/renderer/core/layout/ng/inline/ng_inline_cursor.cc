@@ -934,12 +934,11 @@ PositionWithAffinity NGInlineCursor::PositionForPointInChild(
     case NGFragmentItem::kBox:
       if (const NGPhysicalBoxFragment* box_fragment =
               child_item.BoxFragment()) {
-        // We must fallback to legacy for old layout roots. We also fallback (to
-        // LayoutNGMixin::PositionForPoint()) for NG block layout, so that we
-        // can utilize LayoutBlock::PositionForPoint() that resolves the
-        // position in block layout.
-        // TODO(xiaochengh): Don't fallback to legacy for NG block layout.
         if (!box_fragment->IsInlineBox()) {
+          // In case of inline block with with block formatting context that
+          // has block children[1].
+          // Example: <b style="display:inline-block"><div>b</div></b>
+          // [1] NGInlineCursorTest.PositionForPointInChildBlockChildren
           return child_item.GetLayoutObject()->PositionForPoint(
               point_in_container - child_item.OffsetInContainerBlock());
         }

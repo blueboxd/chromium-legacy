@@ -957,6 +957,7 @@ void Node::ReplaceWith(const HeapVector<NodeOrStringOrTrustedScript>& nodes,
     parent_node->InsertBefore(node, viable_next_sibling, exception_state);
 }
 
+// https://dom.spec.whatwg.org/#dom-parentnode-replacechildren
 void Node::ReplaceChildren(const HeapVector<NodeOrStringOrTrustedScript>& nodes,
                            ExceptionState& exception_state) {
   auto* this_node = DynamicTo<ContainerNode>(this);
@@ -967,11 +968,20 @@ void Node::ReplaceChildren(const HeapVector<NodeOrStringOrTrustedScript>& nodes,
     return;
   }
 
+  // 1. Let node be the result of converting nodes into a node given nodes and
+  // this’s node document.
   Node* node =
       ConvertNodesIntoNode(this, nodes, GetDocument(), exception_state);
   if (exception_state.HadException())
     return;
 
+  // 2. Ensure pre-insertion validity of node into this before null.
+  if (!this_node->EnsurePreInsertionValidity(*node, nullptr, nullptr,
+                                             exception_state))
+    return;
+
+  // 3. Replace all with node within this.
+  ChildListMutationScope mutation(*this);
   while (Node* first_child = firstChild()) {
     removeChild(first_child, exception_state);
     if (exception_state.HadException())

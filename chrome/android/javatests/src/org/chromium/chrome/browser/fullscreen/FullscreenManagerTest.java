@@ -278,10 +278,6 @@ public class FullscreenManagerTest {
 
         final CallbackHelper viewportCallback = new CallbackHelper();
 
-        ChromeFullscreenManager fullscreenManager =
-                mActivityTestRule.getActivity().getFullscreenManager();
-        fullscreenManager.setViewportSizeDelegate(viewportCallback::notifyCalled);
-
         Assert.assertEquals(0, scrollStartCallback.getCallCount());
         Assert.assertEquals(0, viewportCallback.getCallCount());
 

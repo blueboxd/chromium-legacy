@@ -40,7 +40,6 @@ class CSSStyleSheet;
 class CSSStyleSheetResource;
 class Document;
 class Node;
-class SecurityOrigin;
 class StyleRuleBase;
 class StyleRuleFontFace;
 class StyleRuleImport;
@@ -66,8 +65,7 @@ class CORE_EXPORT StyleSheetContents final
   const AtomicString& DefaultNamespace() const { return default_namespace_; }
   const AtomicString& NamespaceURIFromPrefix(const AtomicString& prefix) const;
 
-  void ParseAuthorStyleSheet(const CSSStyleSheetResource*,
-                             const SecurityOrigin*);
+  void ParseAuthorStyleSheet(const CSSStyleSheetResource*);
   ParseSheetResult ParseString(const String&, bool allow_import_rules = true);
   ParseSheetResult ParseStringAtPosition(const String&,
                                          const TextPosition&,

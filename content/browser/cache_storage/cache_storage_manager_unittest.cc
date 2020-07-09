@@ -6,8 +6,8 @@
 #include <stdint.h>
 
 #include <list>
-#include <set>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/containers/flat_map.h"
@@ -53,9 +53,11 @@
 #include "storage/browser/test/fake_blob.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 using blink::mojom::CacheStorageError;
@@ -2444,7 +2446,7 @@ class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
   }
 
   void OriginsCallback(base::RunLoop* run_loop,
-                       const std::set<url::Origin>& origins) {
+                       const std::vector<url::Origin>& origins) {
     callback_origins_ = origins;
     run_loop->Quit();
   }
@@ -2499,7 +2501,7 @@ class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
 
   blink::mojom::QuotaStatusCode callback_status_;
   int64_t callback_quota_usage_ = 0;
-  std::set<url::Origin> callback_origins_;
+  std::vector<url::Origin> callback_origins_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CacheStorageQuotaClientTest);
@@ -2553,9 +2555,9 @@ TEST_P(CacheStorageQuotaClientTestP, QuotaGetOriginsForHost) {
   EXPECT_TRUE(Open(url::Origin::Create(GURL("http://example2.com")), "foo"));
   EXPECT_EQ(3u, QuotaGetOriginsForHost("example.com"));
   EXPECT_EQ(1u, QuotaGetOriginsForHost("example2.com"));
-  EXPECT_NE(
-      callback_origins_.find(url::Origin::Create(GURL("http://example2.com"))),
-      callback_origins_.end());
+  EXPECT_THAT(
+      callback_origins_,
+      testing::Contains(url::Origin::Create(GURL("http://example2.com"))));
   EXPECT_EQ(0u, QuotaGetOriginsForHost("unknown.com"));
 }
 

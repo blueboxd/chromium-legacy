@@ -1468,6 +1468,7 @@ interface Document : Node
     method querySelector
     method querySelectorAll
     method releaseEvents
+    method replaceChildren
     method webkitCancelFullScreen
     method webkitExitFullscreen
     method write
@@ -1606,6 +1607,7 @@ interface DocumentFragment : Node
     method prepend
     method querySelector
     method querySelectorAll
+    method replaceChildren
 interface DocumentTimeline : AnimationTimeline
     attribute @@toStringTag
     method constructor
@@ -1748,6 +1750,7 @@ interface Element : Node
     method removeAttribute
     method removeAttributeNS
     method removeAttributeNode
+    method replaceChildren
     method replaceWith
     method requestFullscreen
     method requestPointerLock

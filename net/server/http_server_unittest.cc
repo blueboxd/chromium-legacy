@@ -199,7 +199,7 @@ class HttpServerTest : public TestWithTaskEnvironment,
                      const HttpServerRequestInfo& info) override {
     requests_.push_back(std::make_pair(info, connection_id));
     if (requests_.size() == quit_after_request_count_)
-      run_loop_quit_func_.Run();
+      std::move(run_loop_quit_func_).Run();
   }
 
   void OnWebSocketRequest(int connection_id,
@@ -215,7 +215,7 @@ class HttpServerTest : public TestWithTaskEnvironment,
     DCHECK(connection_map_.find(connection_id) != connection_map_.end());
     connection_map_[connection_id] = false;
     if (connection_id == quit_on_close_connection_)
-      run_loop_quit_func_.Run();
+      std::move(run_loop_quit_func_).Run();
   }
 
   void RunUntilRequestsReceived(size_t count) {
@@ -224,7 +224,7 @@ class HttpServerTest : public TestWithTaskEnvironment,
       return;
 
     base::RunLoop run_loop;
-    base::AutoReset<base::RepeatingClosure> run_loop_quit_func(
+    base::AutoReset<base::OnceClosure> run_loop_quit_func(
         &run_loop_quit_func_, run_loop.QuitClosure());
     run_loop.Run();
 
@@ -250,7 +250,7 @@ class HttpServerTest : public TestWithTaskEnvironment,
     }
 
     base::RunLoop run_loop;
-    base::AutoReset<base::RepeatingClosure> run_loop_quit_func(
+    base::AutoReset<base::OnceClosure> run_loop_quit_func(
         &run_loop_quit_func_, run_loop.QuitClosure());
     run_loop.Run();
 
@@ -283,7 +283,7 @@ class HttpServerTest : public TestWithTaskEnvironment,
  protected:
   std::unique_ptr<HttpServer> server_;
   IPEndPoint server_address_;
-  base::Closure run_loop_quit_func_;
+  base::OnceClosure run_loop_quit_func_;
   std::vector<std::pair<HttpServerRequestInfo, int> > requests_;
   std::unordered_map<int /* connection_id */, bool /* connected */>
       connection_map_;

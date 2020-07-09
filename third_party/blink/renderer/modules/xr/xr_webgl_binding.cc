@@ -7,9 +7,13 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_texture.h"
 #include "third_party/blink/renderer/modules/xr/xr_cube_map.h"
+#include "third_party/blink/renderer/modules/xr/xr_frame.h"
 #include "third_party/blink/renderer/modules/xr/xr_light_probe.h"
+#include "third_party/blink/renderer/modules/xr/xr_render_state.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
+#include "third_party/blink/renderer/modules/xr/xr_viewer_pose.h"
+#include "third_party/blink/renderer/modules/xr/xr_webgl_layer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
 
@@ -78,7 +82,28 @@ WebGLTexture* XRWebGLBinding::getReflectionCubeMap(
 }
 
 WebGLTexture* XRWebGLBinding::getCameraImage(XRFrame* frame, XRView* view) {
-  return nullptr;
+  // Verify that frame is currently active.
+  if (!frame->IsActive()) {
+    return nullptr;
+  }
+
+  // TODO(https://crbug.com/1100978): Verify view is in camera_views_.
+
+  XRWebGLLayer* base_layer = view->session()->renderState()->baseLayer();
+  DCHECK(base_layer);
+
+  base::Optional<gpu::MailboxHolder> camera_image_mailbox_holder =
+      base_layer->CameraImageMailboxHolder();
+
+  if (!camera_image_mailbox_holder) {
+    return nullptr;
+  }
+
+  GLuint texture_id = base_layer->CameraImageTextureId();
+
+  WebGLTexture* texture = MakeGarbageCollected<WebGLTexture>(
+      webgl_context_, texture_id, GL_TEXTURE_2D);
+  return texture;
 }
 
 void XRWebGLBinding::Trace(Visitor* visitor) const {

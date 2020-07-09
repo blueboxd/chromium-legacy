@@ -2496,6 +2496,74 @@ TEST_F(ExtensionServiceTest, UnpackedExtensionMayNotHaveUnderscore) {
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
 }
 
+// Tests that an unpacked extension with a malformed manifest can't reload.
+// Reload succeeds after fixing the manifest.
+TEST_F(ExtensionServiceTest,
+       ReloadExtensionWithMalformedManifestAndCorrectManifest) {
+  InitializeEmptyExtensionService();
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath extension_dir = base::MakeAbsoluteFilePath(temp_dir.GetPath());
+  base::FilePath manifest_dir = extension_dir.Append(kManifestFilename);
+  ASSERT_FALSE(base::PathExists(manifest_dir));
+
+  // First create a correct manifest and Load the extension successfully.
+  base::DictionaryValue manifest;
+  manifest.SetString("version", "1.0");
+  manifest.SetString("name", "malformed manifest reload test");
+  manifest.SetInteger("manifest_version", 2);
+
+  JSONFileValueSerializer serializer(manifest_dir);
+  ASSERT_TRUE(serializer.Serialize(manifest));
+
+  // Load the extension successfully.
+  UnpackedInstaller::Create(service())->Load(extension_dir);
+  content::RunAllTasksUntilIdle();
+  // Verify that Load was successful
+  EXPECT_EQ(0u, GetErrors().size());
+  ASSERT_EQ(1u, loaded_.size());
+  EXPECT_EQ(Manifest::UNPACKED, loaded_[0]->location());
+  EXPECT_EQ(1u, registry()->enabled_extensions().size());
+  EXPECT_EQ("1.0", loaded_[0]->VersionString());
+
+  // Change the version to a malformed version.
+  manifest.SetString("version", "2.0b");
+  ASSERT_TRUE(serializer.Serialize(manifest));
+
+  std::string extension_id = loaded_[0]->id();
+
+  // Reload the extension.
+  service()->ReloadExtension(extension_id);
+  content::RunAllTasksUntilIdle();
+
+  // An error is generated.
+  ASSERT_EQ(1u, GetErrors().size());
+  EXPECT_THAT(
+      base::UTF16ToUTF8(GetErrors()[0]),
+      ::testing::HasSubstr("Required value 'version' is missing or invalid."));
+
+  // Verify that ReloadExtension() was not successful.
+  ASSERT_EQ(0u, loaded_.size());
+  EXPECT_TRUE(registry()->disabled_extensions().Contains(extension_id));
+
+  // Fix the version.
+  manifest.SetString("version", "2.0");
+  ASSERT_TRUE(serializer.Serialize(manifest));
+
+  // Reload the extension.
+  service()->ReloadExtension(extension_id);
+  content::RunAllTasksUntilIdle();
+
+  // No new error is generated. Since the error generated above is still there,
+  // the error size is 1.
+  EXPECT_EQ(1u, GetErrors().size());
+  // Verify that ReloadExtension() was successful.
+  ASSERT_EQ(1u, loaded_.size());
+  EXPECT_EQ(Manifest::UNPACKED, loaded_[0]->location());
+  EXPECT_EQ(1u, registry()->enabled_extensions().size());
+  EXPECT_EQ("2.0", loaded_[0]->VersionString());
+}
+
 TEST_F(ExtensionServiceTest, InstallLocalizedTheme) {
   InitializeEmptyExtensionService();
   service()->Init();

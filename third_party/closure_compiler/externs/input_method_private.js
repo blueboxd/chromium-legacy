@@ -328,7 +328,7 @@ chrome.inputMethodPrivate.setSettings = function(engineID, settings, callback) {
  * }} parameters
  * @param {function(boolean): void=} callback Called when the operation
  *     completes with a boolean indicating if the text was accepted or not. On
- *     failure, chrome.runtime.lastError is set.
+ *     failure, $(ref:runtime.lastError) is set.
  */
 chrome.inputMethodPrivate.setCompositionRange = function(parameters, callback) {};
 
@@ -341,8 +341,8 @@ chrome.inputMethodPrivate.setCompositionRange = function(parameters, callback) {
  *   selectionStart: number,
  *   selectionEnd: number
  * }} parameters
- * @param {function(boolean): void=} callback Called when the operation
- *     completes. On failure, chrome.runtime.lastError is set.
+ * @param {function(): void=} callback Called when the operation completes. On
+ *     failure, chrome.runtime.lastError is set.
  */
 chrome.inputMethodPrivate.setAutocorrectRange = function(parameters, callback) {};
 
@@ -421,3 +421,9 @@ chrome.inputMethodPrivate.onScreenProjectionChanged;
  * @type {!ChromeEvent}
  */
 chrome.inputMethodPrivate.onSuggestionsChanged;
+
+/**
+ * This event is sent when input method options are changed.
+ * @type {!ChromeEvent}
+ */
+chrome.inputMethodPrivate.onInputMethodOptionsChanged;

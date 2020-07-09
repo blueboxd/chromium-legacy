@@ -61,13 +61,13 @@ void GetLogLinesFromSystemLogsResponse(const SystemLogsResponse& response,
   }
 }
 
-// Anonymizes the strings in |result|.
-void AnonymizeResults(
-    scoped_refptr<feedback::AnonymizerToolContainer> anonymizer_container,
+// Redacts the strings in |result|.
+void RedactResults(
+    scoped_refptr<feedback::RedactionToolContainer> redactor_container,
     ReadLogSourceResult* result) {
-  feedback::AnonymizerTool* anonymizer = anonymizer_container->Get();
+  feedback::RedactionTool* redactor = redactor_container->Get();
   for (std::string& line : result->log_lines)
-    line = anonymizer->Anonymize(line);
+    line = redactor->Redact(line);
 }
 
 }  // namespace
@@ -75,14 +75,14 @@ void AnonymizeResults(
 LogSourceAccessManager::LogSourceAccessManager(content::BrowserContext* context)
     : context_(context),
       tick_clock_(base::DefaultTickClock::GetInstance()),
-      task_runner_for_anonymizer_(base::ThreadPool::CreateSequencedTaskRunner(
+      task_runner_for_redactor_(base::ThreadPool::CreateSequencedTaskRunner(
           // User visible as the feedback_api is used by the Chrome (OS)
           // feedback extension while the user may be looking at a spinner.
           {base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
-      anonymizer_container_(
-          base::MakeRefCounted<feedback::AnonymizerToolContainer>(
-              task_runner_for_anonymizer_,
+      redactor_container_(
+          base::MakeRefCounted<feedback::RedactionToolContainer>(
+              task_runner_for_redactor_,
               /* first_party_extension_ids= */ nullptr)) {}
 
 LogSourceAccessManager::~LogSourceAccessManager() {}
@@ -160,9 +160,9 @@ void LogSourceAccessManager::OnFetchComplete(
   // an undefined execution order of arguments in a function call
   // (std::move(result) being executed before result.get()).
   ReadLogSourceResult* result_ptr = result.get();
-  task_runner_for_anonymizer_->PostTaskAndReply(
+  task_runner_for_redactor_->PostTaskAndReply(
       FROM_HERE,
-      base::BindOnce(AnonymizeResults, anonymizer_container_,
+      base::BindOnce(RedactResults, redactor_container_,
                      base::Unretained(result_ptr)),
       base::BindOnce(std::move(callback), std::move(result)));
 

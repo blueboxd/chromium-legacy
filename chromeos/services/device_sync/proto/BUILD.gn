@@ -14,7 +14,6 @@ proto_library("proto") {
     "cryptauth_devicesync.proto",
     "cryptauth_directive.proto",
     "cryptauth_enrollment.proto",
-    "securemessage.proto",
   ]
 }
 
@@ -30,7 +29,10 @@ static_library("util") {
     "enum_util.h",
   ]
 
-  public_deps = [ ":proto" ]
+  public_deps = [
+    ":proto",
+    "//third_party/ukey2:proto",
+  ]
 
   deps = [
     "//base",

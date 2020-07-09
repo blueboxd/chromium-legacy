@@ -786,23 +786,26 @@ std::string InternetSection::ModifySearchResultUrl(
     mojom::SearchResultType type,
     OsSettingsIdentifier id,
     const std::string& url_to_modify) const {
+  std::string modified_url =
+      OsSettingsSection::ModifySearchResultUrl(type, id, url_to_modify);
+
   if (IsPartOfDetailsSubpage(type, id, mojom::Subpage::kEthernetDetails))
-    return GetDetailsSubpageUrl(url_to_modify, *connected_ethernet_guid_);
+    return GetDetailsSubpageUrl(modified_url, *connected_ethernet_guid_);
 
   if (IsPartOfDetailsSubpage(type, id, mojom::Subpage::kWifiDetails))
-    return GetDetailsSubpageUrl(url_to_modify, *connected_wifi_guid_);
+    return GetDetailsSubpageUrl(modified_url, *connected_wifi_guid_);
 
   if (IsPartOfDetailsSubpage(type, id, mojom::Subpage::kCellularDetails))
-    return GetDetailsSubpageUrl(url_to_modify, *connected_cellular_guid_);
+    return GetDetailsSubpageUrl(modified_url, *connected_cellular_guid_);
 
   if (IsPartOfDetailsSubpage(type, id, mojom::Subpage::kTetherDetails))
-    return GetDetailsSubpageUrl(url_to_modify, *connected_tether_guid_);
+    return GetDetailsSubpageUrl(modified_url, *connected_tether_guid_);
 
   if (IsPartOfDetailsSubpage(type, id, mojom::Subpage::kVpnDetails))
-    return GetDetailsSubpageUrl(url_to_modify, *connected_vpn_guid_);
+    return GetDetailsSubpageUrl(modified_url, *connected_vpn_guid_);
 
-  // URL does not need to be modified; use default implementation.
-  return OsSettingsSection::ModifySearchResultUrl(type, id, url_to_modify);
+  // Use default implementation.
+  return modified_url;
 }
 
 void InternetSection::OnDeviceStateListChanged() {

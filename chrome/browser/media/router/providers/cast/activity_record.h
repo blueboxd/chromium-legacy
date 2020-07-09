@@ -74,9 +74,9 @@ class ActivityRecord {
   //
   // The |hash_token| parameter is used for hashing receiver IDs in messages
   // sent to the Cast SDK, and |sink| is the sink associated with |session|.
-  virtual void SetOrUpdateSession(const CastSession& session,
-                                  const MediaSinkInternal& sink,
-                                  const std::string& hash_token);
+  void SetOrUpdateSession(const CastSession& session,
+                          const MediaSinkInternal& sink,
+                          const std::string& hash_token);
 
   virtual void SendStopSessionMessageToClients(const std::string& hash_token);
 
@@ -144,19 +144,24 @@ class ActivityRecord {
     client_factory_for_test_ = factory;
   }
 
-  void SetSessionAndSinkForTest(const CastSession& session,
-                                const MediaSinkInternal& sink,
-                                const std::string& hash_code) {
-    session_id_ = session.session_id();
-    sink_ = sink;
+  void SetSessionIdForTest(const std::string& session_id) {
+    session_id_ = session_id;
   }
 
  protected:
   using ClientMap =
       base::flat_map<std::string, std::unique_ptr<CastSessionClient>>;
 
-  // Gets the session associated with this activity.  May return nullptr.
+  // Gets the session based on its ID.  May return null.
   CastSession* GetSession() const;
+
+  // Called after the session has been set by SetOrUpdateSession.  The |session|
+  // parameters are somewhat redundant because the same information is available
+  // using the GetSession() method, but passing the parameter avoids some
+  // unnecessary lookups and eliminates the need to a null check.
+  virtual void OnSessionSet(const CastSession& session) = 0;
+  virtual void OnSessionUpdated(const CastSession& session,
+                                const std::string& hash_token);
 
   CastSessionClient* GetClient(const std::string& client_id) {
     auto it = connected_clients_.find(client_id);
@@ -168,9 +173,6 @@ class ActivityRecord {
   MediaRoute route_;
   std::string app_id_;
   base::Optional<int> mirroring_tab_id_;
-
-  // Called when a session is initially set from SetOrUpdateSession().
-  base::OnceCallback<void()> on_session_set_;
 
   // TODO(https://crbug.com/809249): Consider wrapping CastMessageHandler with
   // known parameters (sink, client ID, session transport ID) and passing them

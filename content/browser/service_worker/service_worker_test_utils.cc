@@ -559,8 +559,11 @@ void MockServiceWorkerResourceReader::ReadResponseHead(
   pending_read_response_head_callback_ = std::move(callback);
 }
 
-void MockServiceWorkerResourceReader::ReadData(int64_t,
-                                               ReadDataCallback callback) {
+void MockServiceWorkerResourceReader::ReadData(
+    int64_t,
+    mojo::PendingRemote<
+        storage::mojom::ServiceWorkerDataPipeStateNotifier> /*notifier*/,
+    ReadDataCallback callback) {
   DCHECK(!body_.is_valid());
   mojo::ScopedDataPipeConsumerHandle consumer;
   MojoCreateDataPipeOptions options;

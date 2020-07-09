@@ -202,6 +202,7 @@
 /robolectric/robolectric
 /scan-build/src
 /scons-2.0.1
+/securemessage/src
 /shaderc/src
 /skia
 /smhasher/src
@@ -220,6 +221,7 @@
 /turbine/src
 /turbine/*.jar
 /ub-uiautomator/lib
+/ukey2/src
 /usb_ids
 /usrsctp/usrsctplib
 /v8-i18n

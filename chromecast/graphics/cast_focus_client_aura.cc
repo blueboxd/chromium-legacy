@@ -6,12 +6,26 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "components/exo/surface.h"
 #include "ui/aura/window.h"
 
 #define LOG_WINDOW_INFO(top_level, window)                              \
   "top-level: " << (top_level)->id() << ": '" << (top_level)->GetName() \
                 << "', window: " << (window)->id() << ": '"             \
                 << (window)->GetName() << "'"
+
+namespace {
+
+bool IsVisibleExoWindow(aura::Window* window) {
+  for (aura::Window* w = window; w; w = w->parent()) {
+    if (w->GetProperty(exo::kClientSurfaceIdKey) && w->IsVisible()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+}  // namespace
 
 namespace chromecast {
 
@@ -193,7 +207,10 @@ aura::Window* CastFocusClientAura::GetWindowToFocus() {
   aura::Window* next = nullptr;
   aura::Window* next_top_level = nullptr;
   for (aura::Window* window : focusable_windows_) {
-    if (!window->CanFocus() || !window->IsVisible()) {
+    if (!window->CanFocus()) {
+      continue;
+    }
+    if (!window->IsVisible() && !IsVisibleExoWindow(window)) {
       continue;
     }
 

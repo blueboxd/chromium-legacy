@@ -69,6 +69,11 @@ enum CommandId {
   // AppContextMenu and ShelfContextMenu.
   SHUTDOWN_GUEST_OS = 2000,
 
+  // Range of command IDs reserved for shelf app menu items when there are
+  // multiple instances of the same app.
+  APP_MENU_ITEM_ID_FIRST = 3000,
+  APP_MENU_ITEM_ID_LAST = 3999,
+
   // Reserved range for extension/app custom menus as defined by
   //   IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST
   //   IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST

@@ -988,9 +988,10 @@ int main(int argc, const char* argv[]) {
   // See the doc comment for the anyCharType matcher
   // and the testcases in tests/gen-char-test.cc.
   auto char_ptr_field_decl_matcher = fieldDecl(allOf(
-      field_decl_matcher, hasType(pointerType(pointee(
-                              hasUnqualifiedDesugaredType(anyCharType()))))));
-  FilteredExprWriter char_ptr_field_decl_writer(&output_helper, "char");
+      field_decl_matcher,
+      hasType(pointerType(pointee(qualType(allOf(
+          isConstQualified(), hasUnqualifiedDesugaredType(anyCharType()))))))));
+  FilteredExprWriter char_ptr_field_decl_writer(&output_helper, "const-char");
   match_finder.addMatcher(char_ptr_field_decl_matcher,
                           &char_ptr_field_decl_writer);
 

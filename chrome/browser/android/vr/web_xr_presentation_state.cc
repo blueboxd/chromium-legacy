@@ -121,6 +121,8 @@ WebXrPresentationState::TakeSharedBuffers() {
   for (auto& frame : frames_storage_) {
     if (frame->shared_buffer)
       shared_buffers.emplace_back(std::move(frame->shared_buffer));
+    if (frame->camera_image_shared_buffer)
+      shared_buffers.emplace_back(std::move(frame->camera_image_shared_buffer));
   }
   return shared_buffers;
 }

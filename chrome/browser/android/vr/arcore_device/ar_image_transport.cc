@@ -206,16 +206,65 @@ gpu::MailboxHolder ArImageTransport::TransferFrame(
     const gfx::Size& frame_size,
     const gfx::Transform& uv_transform) {
   DCHECK(IsOnGlThread());
+  DCHECK(UseSharedBuffer());
 
   if (!webxr->GetAnimatingFrame()->shared_buffer) {
     webxr->GetAnimatingFrame()->shared_buffer = CreateBuffer();
   }
+
   vr::WebXrSharedBuffer* shared_buffer =
       webxr->GetAnimatingFrame()->shared_buffer.get();
   ResizeSharedBuffer(webxr, frame_size, shared_buffer);
 
   mailbox_bridge_->GenSyncToken(&shared_buffer->mailbox_holder.sync_token);
   return shared_buffer->mailbox_holder;
+}
+
+gpu::MailboxHolder ArImageTransport::TransferCameraImageFrame(
+    vr::WebXrPresentationState* webxr,
+    const gfx::Size& frame_size,
+    const gfx::Transform& uv_transform) {
+  DCHECK(IsOnGlThread());
+  DCHECK(UseSharedBuffer());
+
+  if (!webxr->GetAnimatingFrame()->camera_image_shared_buffer) {
+    webxr->GetAnimatingFrame()->camera_image_shared_buffer = CreateBuffer();
+  }
+
+  vr::WebXrSharedBuffer* camera_image_shared_buffer =
+      webxr->GetAnimatingFrame()->camera_image_shared_buffer.get();
+  ResizeSharedBuffer(webxr, frame_size, camera_image_shared_buffer);
+
+  // Temporarily change drawing buffer to the camera image buffer.
+  if (!camera_image_fbo_) {
+    glGenFramebuffersEXT(1, &camera_image_fbo_);
+  }
+  glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, camera_image_fbo_);
+  glFramebufferTexture2DEXT(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                            GL_TEXTURE_EXTERNAL_OES,
+                            camera_image_shared_buffer->local_texture, 0);
+
+  CopyCameraImageToFramebuffer(frame_size, uv_transform);
+
+#if DCHECK_IS_ON()
+  if (!framebuffer_complete_checked_for_camera_buffer_) {
+    auto status = glCheckFramebufferStatusEXT(GL_DRAW_FRAMEBUFFER);
+    DVLOG(1) << __func__ << ": framebuffer status=" << std::hex << status;
+    DCHECK(status == GL_FRAMEBUFFER_COMPLETE);
+    framebuffer_complete_checked_for_camera_buffer_ = true;
+  }
+#endif
+
+  // Restore default drawing buffer.
+  glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, 0);
+
+  std::unique_ptr<gl::GLFence> gl_fence = gl::GLFence::CreateForGpuFence();
+  std::unique_ptr<gfx::GpuFence> gpu_fence = gl_fence->GetGpuFence();
+  mailbox_bridge_->WaitForClientGpuFence(gpu_fence.release());
+
+  mailbox_bridge_->GenSyncToken(
+      &camera_image_shared_buffer->mailbox_holder.sync_token);
+  return camera_image_shared_buffer->mailbox_holder;
 }
 
 void ArImageTransport::CreateGpuFenceForSyncToken(

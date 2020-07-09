@@ -121,8 +121,9 @@ void SkiaOutputDeviceBufferQueue::ScheduleOverlays(
 }
 
 void SkiaOutputDeviceBufferQueue::PreGrContextSubmit() {
-  DCHECK(current_image_);
-  current_image_->PreGrContextSubmit();
+  // The current image may be missing, for example during WebXR presentation.
+  if (current_image_)
+    current_image_->PreGrContextSubmit();
 }
 
 void SkiaOutputDeviceBufferQueue::SwapBuffers(

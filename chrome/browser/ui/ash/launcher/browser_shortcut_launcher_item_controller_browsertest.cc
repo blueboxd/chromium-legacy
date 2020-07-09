@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 
+#include "ash/public/cpp/shelf_model.h"
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -17,6 +19,16 @@
 
 using BrowserShortcutLauncherItemControllerTest = InProcessBrowserTest;
 
+namespace {
+
+ash::ShelfItemDelegate::AppMenuItems GetAppMenuItems(
+    BrowserShortcutLauncherItemController* controller,
+    int event_flags) {
+  return controller->GetAppMenuItems(event_flags, base::NullCallback());
+}
+
+}  // namespace
+
 // Test the browser application menu for some browser window and tab states.
 IN_PROC_BROWSER_TEST_F(BrowserShortcutLauncherItemControllerTest, AppMenu) {
   BrowserShortcutLauncherItemController* controller =
@@ -27,26 +39,26 @@ IN_PROC_BROWSER_TEST_F(BrowserShortcutLauncherItemControllerTest, AppMenu) {
   // InProcessBrowserTest's default browser window is shown with a blank tab.
   BrowserList* browser_list = BrowserList::GetInstance();
   EXPECT_EQ(1U, browser_list->size());
-  auto items = controller->GetAppMenuItems(ui::EF_NONE);
+  auto items = GetAppMenuItems(controller, ui::EF_NONE);
   ASSERT_EQ(1U, items.size());
-  EXPECT_EQ(base::ASCIIToUTF16("about:blank"), items[0].first);
+  EXPECT_EQ(base::ASCIIToUTF16("about:blank"), items[0].title);
 
   // Browsers are not listed in the menu if their windows have not been shown.
   Browser* browser1 =
       new Browser(Browser::CreateParams(browser()->profile(), true));
   EXPECT_FALSE(browser1->window()->IsVisible());
   EXPECT_EQ(2U, browser_list->size());
-  EXPECT_EQ(1U, controller->GetAppMenuItems(ui::EF_NONE).size());
+  EXPECT_EQ(1U, GetAppMenuItems(controller, ui::EF_NONE).size());
 
   // Browsers shown with no active tab appear as "New Tab" without crashing.
   browser1->window()->Show();
   EXPECT_TRUE(browser1->window()->IsVisible());
   EXPECT_FALSE(browser1->tab_strip_model()->GetActiveWebContents());
   EXPECT_EQ(2U, browser_list->size());
-  items = controller->GetAppMenuItems(ui::EF_NONE);
+  items = GetAppMenuItems(controller, ui::EF_NONE);
   ASSERT_EQ(2U, items.size());
-  EXPECT_EQ(base::ASCIIToUTF16("about:blank"), items[0].first);
-  EXPECT_EQ(base::ASCIIToUTF16("New Tab"), items[1].first);
+  EXPECT_EQ(base::ASCIIToUTF16("about:blank"), items[0].title);
+  EXPECT_EQ(base::ASCIIToUTF16("New Tab"), items[1].title);
 
   // Browsers are listed with the title of their active contents.
   ui_test_utils::NavigateToURL(browser(),
@@ -58,17 +70,17 @@ IN_PROC_BROWSER_TEST_F(BrowserShortcutLauncherItemControllerTest, AppMenu) {
   ui_test_utils::NavigateToURL(browser1,
                                GURL("data:text/html,<title>2</title>"));
   EXPECT_EQ(1, browser1->tab_strip_model()->active_index());
-  items = controller->GetAppMenuItems(ui::EF_NONE);
+  items = GetAppMenuItems(controller, ui::EF_NONE);
   ASSERT_EQ(2U, items.size());
-  EXPECT_EQ(base::ASCIIToUTF16("0"), items[0].first);
-  EXPECT_EQ(base::ASCIIToUTF16("2"), items[1].first);
+  EXPECT_EQ(base::ASCIIToUTF16("0"), items[0].title);
+  EXPECT_EQ(base::ASCIIToUTF16("2"), items[1].title);
 
   // Shift-click will list all tabs in the applicable browsers.
-  items = controller->GetAppMenuItems(ui::EF_SHIFT_DOWN);
+  items = GetAppMenuItems(controller, ui::EF_SHIFT_DOWN);
   ASSERT_EQ(items.size(), 3U);
-  EXPECT_EQ(base::ASCIIToUTF16("0"), items[0].first);
-  EXPECT_EQ(base::ASCIIToUTF16("1"), items[1].first);
-  EXPECT_EQ(base::ASCIIToUTF16("2"), items[2].first);
+  EXPECT_EQ(base::ASCIIToUTF16("0"), items[0].title);
+  EXPECT_EQ(base::ASCIIToUTF16("1"), items[1].title);
+  EXPECT_EQ(base::ASCIIToUTF16("2"), items[2].title);
 
   // Close the window and wait for all asynchronous window teardown.
   CloseBrowserSynchronously(browser1);
@@ -83,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(BrowserShortcutLauncherItemControllerTest, AppMenu) {
   CloseBrowserAsynchronously(browser1);
   EXPECT_EQ(2U, browser_list->size());
   // The app menu should not list the browser window while it is closing.
-  items = controller->GetAppMenuItems(ui::EF_NONE);
+  items = GetAppMenuItems(controller, ui::EF_NONE);
   EXPECT_EQ(1U, items.size());
   // Now, allow the asynchronous teardown to occur.
   EXPECT_EQ(2U, browser_list->size());

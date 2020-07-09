@@ -1999,6 +1999,51 @@ TEST_F(AutocompleteResultTest, CalculateNumMatchesTest) {
   }
 }
 
+TEST_F(AutocompleteResultTest, CalculateNumMatchesPerUrlCountTest) {
+  CompareWithDemoteByType<AutocompleteMatch> comparison_object(
+      metrics::OmniboxEventProto::OTHER);
+  enum SuggestionType { search, url };
+
+  auto test = [comparison_object](std::string base_limit,
+                                  std::string url_cutoff,
+                                  std::string increased_limit,
+                                  std::vector<SuggestionType> types,
+                                  size_t expected_num_matches) {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeaturesAndParameters(
+        {{omnibox::kDynamicMaxAutocomplete,
+          {{OmniboxFieldTrial::kDynamicMaxAutocompleteUrlCutoffParam,
+            url_cutoff},
+           {OmniboxFieldTrial::kDynamicMaxAutocompleteIncreasedLimitParam,
+            increased_limit}}},
+         {omnibox::kUIExperimentMaxAutocompleteMatches,
+          {{OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, base_limit}}},
+         {omnibox::kNewSearchFeatures, {}}},
+        {});
+
+    ACMatches matches;
+    for (auto type : types) {
+      AutocompleteMatch m;
+      m.relevance = 100;
+      if (type)
+        m.type = AutocompleteMatchType::URL_WHAT_YOU_TYPED;
+      matches.push_back(m);
+    }
+    const size_t num_matches = AutocompleteResult::CalculateNumMatches(
+        false, matches, comparison_object);
+    EXPECT_EQ(num_matches, expected_num_matches);
+  };
+
+  test("2", "0", "4", {search}, 1);
+  test("2", "0", "4", {search, search, search, search, search}, 4);
+  test("2", "0", "4", {search, search, search, search, url}, 4);
+  test("2", "0", "4", {search, search, search, url, search}, 3);
+  test("2", "0", "4", {search, search, url, search, search}, 2);
+  test("2", "0", "4", {search, url, search, search, search}, 2);
+  test("2", "1", "4", {search, url, search, search, search}, 4);
+  test("2", "1", "4", {search, url, search, url, search}, 3);
+}
+
 TEST_F(AutocompleteResultTest, ClipboardSuggestionOnTopOfSearchSuggestionTest) {
   // clang-format off
   TestData data[] = {

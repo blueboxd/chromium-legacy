@@ -434,6 +434,13 @@ void ArCoreGl::GetFrameData(
     gpu::MailboxHolder buffer_holder = ar_image_transport_->TransferFrame(
         webxr_.get(), transfer_size_, uv_transform_);
     frame_data->buffer_holder = buffer_holder;
+
+    if (IsFeatureEnabled(device::mojom::XRSessionFeature::CAMERA_ACCESS)) {
+      gpu::MailboxHolder camera_image_buffer_holder =
+          ar_image_transport_->TransferCameraImageFrame(
+              webxr_.get(), transfer_size_, uv_transform_);
+      frame_data->camera_image_buffer_holder = camera_image_buffer_holder;
+    }
   }
 
   // Create the frame data to return to the renderer.
@@ -1069,6 +1076,10 @@ std::vector<mojom::XRInputSourceStatePtr> ArCoreGl::GetInputSourceStates() {
   screen_touch_events_.swap(still_touching_events);
 
   return result;
+}
+
+bool ArCoreGl::IsFeatureEnabled(mojom::XRSessionFeature feature) {
+  return base::Contains(enabled_features_, feature);
 }
 
 void ArCoreGl::Pause() {

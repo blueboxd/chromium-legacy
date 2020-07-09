@@ -884,6 +884,18 @@ TEST_P(NGInlineCursorTest, PositionForPointInChildVerticalRTL) {
             cursor.PositionForPointInChild(left_top + PhysicalOffset(0, 25)));
 }
 
+// For http://crbug.com/1096110
+TEST_P(NGInlineCursorTest, PositionForPointInChildBlockChildren) {
+  InsertStyleElement("b { display: inline-block; }");
+  // Note: <b>.ChildrenInline() == false
+  NGInlineCursor cursor =
+      SetupCursor("<div id=root>a<b id=target><div>x</div></b></div>");
+  const Element& target = *GetElementById("target");
+  cursor.MoveTo(*target.GetLayoutObject());
+  EXPECT_EQ(PositionWithAffinity(Position(target, 0)),
+            cursor.PositionForPointInChild(PhysicalOffset()));
+}
+
 TEST_P(NGInlineCursorTest, Previous) {
   // TDOO(yosin): Remove <style> once NGFragmentItem don't do culled inline.
   InsertStyleElement("b { background: gray; }");

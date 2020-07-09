@@ -14,15 +14,18 @@ ShelfItemDelegate::ShelfItemDelegate(const ShelfID& shelf_id)
 
 ShelfItemDelegate::~ShelfItemDelegate() = default;
 
-void ShelfItemDelegate::ItemSelected(std::unique_ptr<ui::Event> event,
-                                     int64_t display_id,
-                                     ShelfLaunchSource source,
-                                     ItemSelectedCallback callback) {
+void ShelfItemDelegate::ItemSelected(
+    std::unique_ptr<ui::Event> event,
+    int64_t display_id,
+    ShelfLaunchSource source,
+    ItemSelectedCallback callback,
+    const ItemFilterPredicate& filter_predicate) {
   std::move(callback).Run(SHELF_ACTION_NONE, {});
 }
 
 ShelfItemDelegate::AppMenuItems ShelfItemDelegate::GetAppMenuItems(
-    int event_flags) {
+    int event_flags,
+    const ItemFilterPredicate& filter_predicate) {
   return {};
 }
 

@@ -52,6 +52,7 @@ extern const base::Feature kUIExperimentMaxAutocompleteMatches;
 // OmniboxFieldTrial.
 extern const bool kOmniboxMaxURLMatchesEnabledByDefault;
 extern const base::Feature kOmniboxMaxURLMatches;
+extern const base::Feature kDynamicMaxAutocomplete;
 
 // On-Focus Suggestions a.k.a. ZeroSuggest.
 extern const base::Feature kOnFocusSuggestions;

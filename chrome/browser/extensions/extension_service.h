@@ -229,6 +229,11 @@ class ExtensionService : public ExtensionServiceInterface,
   // Called when the associated Profile is going to be destroyed.
   void Shutdown();
 
+  // Called when reloading an unpacked extension fails.
+  void OnUnpackedReloadFailure(const Extension* extension,
+                               const base::FilePath& file_path,
+                               const std::string& error);
+
   // Reloads the specified extension, sending the onLaunched() event to it if it
   // currently has any window showing.
   // Allows noisy failures.

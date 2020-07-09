@@ -20,7 +20,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/unguessable_token.h"
 #include "components/viz/common/gpu/context_lost_observer.h"
-#include "content/child/thread_safe_sender.h"
 #include "content/common/content_export.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "media/mojo/mojom/video_decoder.mojom.h"
@@ -200,8 +199,6 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
 
   base::Optional<media::VideoEncodeAccelerator::SupportedProfiles>
       supported_vea_profiles_ GUARDED_BY(supported_profiles_lock_);
-  // For sending requests to allocate shared memory in the Browser process.
-  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuVideoAcceleratorFactoriesImpl);
 };

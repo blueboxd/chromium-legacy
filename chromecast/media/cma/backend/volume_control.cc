@@ -246,6 +246,7 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
 
       // Note that mute state is not persisted across reboots.
       muted_[type] = false;
+      mixer_->SetMuted(type, false);
     }
 
 #if BUILDFLAG(SYSTEM_OWNS_VOLUME)

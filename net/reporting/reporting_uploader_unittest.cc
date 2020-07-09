@@ -119,7 +119,7 @@ class TestUploadCallback {
 
     if (waiting_) {
       waiting_ = false;
-      closure_.Run();
+      std::move(closure_).Run();
     }
   }
 
@@ -127,7 +127,7 @@ class TestUploadCallback {
   ReportingUploader::Outcome outcome_;
 
   bool waiting_;
-  base::Closure closure_;
+  base::OnceClosure closure_;
 };
 
 TEST_F(ReportingUploaderTest, Upload) {

@@ -469,17 +469,7 @@ std::unique_ptr<content::WebContents> TabStripModel::DetachWebContentsImpl(
   base::Optional<int> next_selected_index =
       order_controller_->DetermineNewSelectedIndex(index);
 
-  // Here we update the group model manually instead of calling UngroupTab(), so
-  // that the tab isn't prematurely ungrouped. Ungrouping the tab can change its
-  // position while it's still animating closed, which can result in the wrong
-  // view getting removed.
-  base::Optional<tab_groups::TabGroupId> group = GetTabGroupForTab(index);
-  if (group.has_value()) {
-    TabGroup* tab_group = group_model_->GetTabGroup(group.value());
-    tab_group->RemoveTab();
-    if (tab_group->IsEmpty())
-      group_model_->RemoveTabGroup(group.value());
-  }
+  UngroupTab(index);
 
   std::unique_ptr<WebContentsData> old_data = std::move(contents_data_[index]);
   contents_data_.erase(contents_data_.begin() + index);

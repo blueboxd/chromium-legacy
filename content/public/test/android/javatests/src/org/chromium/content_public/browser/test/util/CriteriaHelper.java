@@ -73,16 +73,12 @@ public class CriteriaHelper {
      */
     public static void pollInstrumentationThread(
             Runnable criteria, long maxTimeoutMs, long checkIntervalMs) {
-        Throwable throwable;
+        CriteriaNotSatisfiedException throwable;
         try {
             criteria.run();
             return;
         } catch (CriteriaNotSatisfiedException cnse) {
             throwable = cnse;
-        } catch (AssertionError ae) {
-            // TODO(tedchoc): Remove support for this once all clients move over to
-            //                CriteriaNotSatisfiedException.
-            throwable = ae;
         }
         TimeoutTimer timer = new TimeoutTimer(maxTimeoutMs);
         while (!timer.isTimedOut()) {
@@ -97,19 +93,9 @@ public class CriteriaHelper {
                 return;
             } catch (CriteriaNotSatisfiedException cnse) {
                 throwable = cnse;
-            } catch (AssertionError ae) {
-                // TODO(tedchoc): Remove support for this once all clients move over to
-                //                CriteriaNotSatisfiedException.
-                throwable = ae;
             }
         }
-        if (throwable instanceof CriteriaNotSatisfiedException) {
-            throw new AssertionError(throwable);
-        } else if (throwable instanceof AssertionError) {
-            throw(AssertionError) throwable;
-        }
-        assert false : "Invalid throwable";
-        throw new RuntimeException(throwable);
+        throw new AssertionError(throwable);
     }
 
     /**
@@ -219,10 +205,6 @@ public class CriteriaHelper {
             Throwable throwable = throwableRef.get();
             if (throwable != null) {
                 if (throwable instanceof CriteriaNotSatisfiedException) {
-                    throw new CriteriaNotSatisfiedException(throwable);
-                } else if (throwable instanceof AssertionError) {
-                    // TODO(tedchoc): Remove support for this once all clients move over to
-                    //                CriteriaNotSatisfiedException.
                     throw new CriteriaNotSatisfiedException(throwable);
                 } else if (throwable instanceof RuntimeException) {
                     throw (RuntimeException) throwable;

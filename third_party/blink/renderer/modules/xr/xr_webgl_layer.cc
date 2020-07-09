@@ -250,17 +250,59 @@ HTMLCanvasElement* XRWebGLLayer::output_canvas() const {
   return nullptr;
 }
 
+uint32_t XRWebGLLayer::CameraImageTextureId() const {
+  return camera_image_texture_id_;
+}
+
+base::Optional<gpu::MailboxHolder> XRWebGLLayer::CameraImageMailboxHolder()
+    const {
+  return camera_image_mailbox_holder_;
+}
+
 void XRWebGLLayer::OnFrameStart(
-    const base::Optional<gpu::MailboxHolder>& buffer_mailbox_holder) {
+    const base::Optional<gpu::MailboxHolder>& buffer_mailbox_holder,
+    const base::Optional<gpu::MailboxHolder>& camera_image_mailbox_holder) {
   if (framebuffer_) {
     framebuffer_->MarkOpaqueBufferComplete(true);
     framebuffer_->SetContentsChanged(false);
     if (buffer_mailbox_holder) {
       drawing_buffer_->UseSharedBuffer(buffer_mailbox_holder.value());
+      DVLOG(3) << __func__ << ": buffer_mailbox_holder->mailbox="
+               << buffer_mailbox_holder->mailbox.ToDebugString();
       is_direct_draw_frame = true;
     } else {
       is_direct_draw_frame = false;
     }
+
+    if (camera_image_mailbox_holder) {
+      DVLOG(3) << __func__ << ":camera_image_mailbox_holder->mailbox="
+               << camera_image_mailbox_holder->mailbox.ToDebugString();
+      camera_image_mailbox_holder_ = camera_image_mailbox_holder;
+      camera_image_texture_id_ =
+          GetBufferTextureId(camera_image_mailbox_holder_);
+      BindBufferTexture(camera_image_mailbox_holder_);
+    }
+  }
+}
+
+uint32_t XRWebGLLayer::GetBufferTextureId(
+    const base::Optional<gpu::MailboxHolder>& buffer_mailbox_holder) {
+  gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
+  gl->WaitSyncTokenCHROMIUM(buffer_mailbox_holder->sync_token.GetConstData());
+  GLuint texture_id = gl->CreateAndTexStorage2DSharedImageCHROMIUM(
+      buffer_mailbox_holder->mailbox.name);
+  return texture_id;
+}
+
+void XRWebGLLayer::BindBufferTexture(
+    const base::Optional<gpu::MailboxHolder>& buffer_mailbox_holder) {
+  gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
+
+  if (buffer_mailbox_holder) {
+    uint32_t texture_target = buffer_mailbox_holder->texture_target;
+    gl->BindTexture(texture_target, camera_image_texture_id_);
+    gl->BeginSharedImageAccessDirectCHROMIUM(
+        camera_image_texture_id_, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
   }
 }
 
@@ -300,6 +342,14 @@ void XRWebGLLayer::OnFrameEnd() {
       // Always call submit, but notify if the contents were changed or not.
       session()->xr()->frameProvider()->SubmitWebGLLayer(this,
                                                          framebuffer_dirty);
+      if (camera_image_mailbox_holder_ && camera_image_texture_id_) {
+        DVLOG(3) << __func__ << "Deleting camera image texture";
+        gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
+        gl->EndSharedImageAccessDirectCHROMIUM(camera_image_texture_id_);
+        gl->DeleteTextures(1, &camera_image_texture_id_);
+        camera_image_texture_id_ = 0;
+        camera_image_mailbox_holder_ = base::nullopt;
+      }
     }
   }
 }

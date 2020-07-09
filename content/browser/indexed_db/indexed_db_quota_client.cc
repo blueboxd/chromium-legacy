@@ -41,15 +41,15 @@ int64_t GetOriginUsageOnIndexedDBThread(IndexedDBContextImpl* context,
   return context->GetOriginDiskUsage(origin);
 }
 
-void GetAllOriginsOnIndexedDBThread(IndexedDBContextImpl* context,
-                                    std::set<url::Origin>* origins_to_return) {
+void GetAllOriginsOnIndexedDBThread(
+    IndexedDBContextImpl* context,
+    std::vector<url::Origin>* origins_to_return) {
   DCHECK(context->IDBTaskRunner()->RunsTasksInCurrentSequence());
-  for (const auto& origin : context->GetAllOrigins())
-    origins_to_return->insert(origin);
+  *origins_to_return = context->GetAllOrigins();
 }
 
 void DidGetOrigins(IndexedDBQuotaClient::GetOriginsCallback callback,
-                   const std::set<url::Origin>* origins) {
+                   const std::vector<url::Origin>* origins) {
   // Run on the same sequence that GetOriginsForType was called on,
   // which is likely the IO thread.
   std::move(callback).Run(*origins);
@@ -58,11 +58,12 @@ void DidGetOrigins(IndexedDBQuotaClient::GetOriginsCallback callback,
 void GetOriginsForHostOnIndexedDBThread(
     IndexedDBContextImpl* context,
     const std::string& host,
-    std::set<url::Origin>* origins_to_return) {
+    std::vector<url::Origin>* origins_to_return) {
   DCHECK(context->IDBTaskRunner()->RunsTasksInCurrentSequence());
-  for (const auto& origin : context->GetAllOrigins()) {
+  std::vector<url::Origin> all_origins = context->GetAllOrigins();
+  for (auto& origin : all_origins) {
     if (host == origin.host())
-      origins_to_return->insert(origin);
+      origins_to_return->push_back(std::move(origin));
   }
 }
 
@@ -98,7 +99,7 @@ void IndexedDBQuotaClient::GetOriginsForType(StorageType type,
   DCHECK(!callback.is_null());
   DCHECK_EQ(type, StorageType::kTemporary);
 
-  std::set<url::Origin>* origins_to_return = new std::set<url::Origin>();
+  auto* origins_to_return = new std::vector<url::Origin>();
   indexed_db_context_->IDBTaskRunner()->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&GetAllOriginsOnIndexedDBThread,
@@ -114,7 +115,7 @@ void IndexedDBQuotaClient::GetOriginsForHost(StorageType type,
   DCHECK(!callback.is_null());
   DCHECK_EQ(type, StorageType::kTemporary);
 
-  std::set<url::Origin>* origins_to_return = new std::set<url::Origin>();
+  auto* origins_to_return = new std::vector<url::Origin>();
   indexed_db_context_->IDBTaskRunner()->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&GetOriginsForHostOnIndexedDBThread,

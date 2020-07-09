@@ -39,8 +39,6 @@ if (enable_pdf) {
       "//ui/gfx/range",
     ]
 
-    public_deps = [ "//gin" ]
-
     public = [
       "pdf.h",
       "pdf_ppapi.h",
@@ -96,6 +94,7 @@ if (enable_pdf) {
 
     if (pdf_engine == 0) {
       deps += [
+        "//gin",
         "//pdf/pdfium/fuzzers",
         "//printing",
         "//third_party/pdfium",
@@ -144,13 +143,11 @@ if (enable_pdf) {
 
     public = [ "pdf_features.h" ]
 
-    sources = [
-      "pdf_features.cc",
-      "pdf_features.h",
-    ]
+    sources = [ "pdf_features.cc" ]
   }
 
   source_set("pdf_test_utils") {
+    visibility = [ ":*" ]
     testonly = true
     sources = [
       "test/test_client.cc",
@@ -207,8 +204,7 @@ if (enable_pdf) {
     if (pdf_engine == 0) {
       configs += [ "//v8:external_startup_data" ]
       deps += [
-        # Explicitly depend on PDFium to pick up its public configs, which are
-        # not transitive, possibly because the "pdf" target is a static_library.
+        "//gin",
         "//third_party/pdfium",
       ]
       sources += [
@@ -230,8 +226,10 @@ if (enable_pdf) {
     }
   }
 } else {
-  # Dummy group when PDF support is disabled so targets can unconditionally
+  # Dummy groups when PDF support is disabled so targets can unconditionally
   # depend on it.
+  group("features") {
+  }
   group("pdf") {
   }
 }

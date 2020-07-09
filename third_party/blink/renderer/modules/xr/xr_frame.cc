@@ -172,6 +172,10 @@ void XRFrame::Deactivate() {
   is_animation_frame_ = false;
 }
 
+bool XRFrame::IsActive() const {
+  return is_active_;
+}
+
 HeapVector<Member<XRHitTestResult>> XRFrame::getHitTestResults(
     XRHitTestSource* hit_test_source,
     ExceptionState& exception_state) {

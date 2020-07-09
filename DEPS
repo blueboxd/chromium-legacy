@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'babba97ae63a2d8de425c7cc3926d5824f647b9c',
+  'skia_revision': '6669b01267057f32bd02cddad00b8ad3cbbac918',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'a3f6dc2fadb487a6d53a94e9280d277537b275d6',
+  'angle_revision': '900c7e87ce707c081af72b51a5d08049a65c2fb8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -222,7 +222,7 @@ vars = {
   #
   # Note this revision should be updated with
   # third_party/boringssl/roll_boringssl.py, not roll-dep.
-  'boringssl_revision': '430a7423039682e4bbc7b522e3b57b2c8dca5e3b',
+  'boringssl_revision': 'eda849d2e6e6a15a5a4dc728568ec12f21ebfb6d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling google-toolbox-for-mac
   # and whatever else without interference from each other.
@@ -258,7 +258,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'f8597f2828522238543de171a3176c1f0c72478e',
+  'catapult_revision': '5d5af4ebd056a972d5d8dc2b725d35ca870e39fc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -318,7 +318,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '83fe1bc34d80040a479978acb76a60c5db769b63',
+  'dawn_revision': '8a9919980f5417cd3df6e1bf6d9a3dc53762ad18',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -343,6 +343,14 @@ vars = {
   # the commit queue can handle CLs rolling libavif
   # and whatever else without interference from each other.
   'libavif_revision': 'f48a33827db60223753e637699cef24f034c547d',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling securemessage
+  # and whatever else without interference from each other.
+  'securemessage_revision': '3955ec1700b9381a2562df35d48e42487a33d7a1',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling ukey2
+  # and whatever else without interference from each other.
+  'ukey2_revision': '0275885d8e6038c39b8a8ca55e75d1d4d1727f47',
 
   # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
@@ -857,7 +865,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'c5e8e8bf91ef7d1e00ebcd805b5cd7fd05db4601',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'c3a81f99020dd6ffd637f40562a9840b8dadf840',
       'condition': 'checkout_linux',
   },
 
@@ -877,7 +885,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'c49c88ac82fb8dc94ed366527c8bd8b9fa84e3fa',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '6402141d1f56c8b6e909a17b50474ae744bd5180',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -925,7 +933,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/google/emoji-segmenter.git' + '@' + Var('emoji_segmenter_revision'),
 
   'src/third_party/libgav1/src':
-    Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'bf190c43e5c7cc81751867c917a81bc2920be079',
+    Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'ba8dd2919fcaf65646858a6d7fd5e75ed4946cb1',
 
   'src/third_party/glslang/src':
     Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '29c9135d06f12628e3161e4aa751610c5941d8d6',
@@ -1076,6 +1084,12 @@ deps = {
 
   'src/third_party/libavif/src':
     Var('chromium_git') + '/external/github.com/AOMediaCodec/libavif.git' + '@' + Var('libavif_revision'),
+
+  'src/third_party/securemessage/src':
+    Var('chromium_git') + '/external/github.com/google/securemessage.git' + '@' + Var('securemessage_revision'),
+
+  'src/third_party/ukey2/src':
+    Var('chromium_git') + '/external/github.com/google/ukey2.git' + '@' + Var('ukey2_revision'),
 
   # Userspace interface to kernel DRM services.
   'src/third_party/libdrm/src': {
@@ -1449,7 +1463,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'a376518817f99f56c28c619f49eea7a679d24104',
+    Var('webrtc_git') + '/src.git' + '@' + '18523c34b464600540b4b1f042d0d5519a5be953',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1521,7 +1535,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@847ded3ada37e9200944d34e609da69983242183',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8e4267f23771ea71cf44437d9d5542efb417d871',
     'condition': 'checkout_src_internal',
   },
 

@@ -132,7 +132,7 @@ MediaRouteProviderId FixProviderId(MediaRouteProviderId provider_id) {
 
 DesktopMediaPickerController::Params MakeDesktopPickerParams(
     content::WebContents* web_contents) {
-#ifndef OS_CHROMEOS
+#if !defined(OS_CHROMEOS)
   DCHECK(web_contents);
 #endif
 
@@ -1105,7 +1105,7 @@ void MediaRouterMojoImpl::CreateRouteWithSelectedDesktop(
   DCHECK(!pending_stream_request_);
   pending_stream_request_.emplace();
   PendingStreamRequest& request = *pending_stream_request_;
-#ifndef OS_CHROMEOS
+#if !defined(OS_CHROMEOS)
   DCHECK(web_contents);
   content::RenderFrameHost* const main_frame = web_contents->GetMainFrame();
   request.render_process_id = main_frame->GetProcess()->GetID();

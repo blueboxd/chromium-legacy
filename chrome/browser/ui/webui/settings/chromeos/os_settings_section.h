@@ -154,6 +154,22 @@ class OsSettingsSection {
   SearchTagRegistry* registry() { return search_tag_registry_; }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(OsSettingsSectionTest, SectionWithFlag);
+  FRIEND_TEST_ALL_PREFIXES(OsSettingsSectionTest, SectionNoFlag);
+  FRIEND_TEST_ALL_PREFIXES(OsSettingsSectionTest, SubpageWithFlag);
+  FRIEND_TEST_ALL_PREFIXES(OsSettingsSectionTest, SubpageNoFlag);
+  FRIEND_TEST_ALL_PREFIXES(OsSettingsSectionTest, SettingWithFlag);
+  FRIEND_TEST_ALL_PREFIXES(OsSettingsSectionTest, SettingExistingQueryWithFlag);
+  FRIEND_TEST_ALL_PREFIXES(OsSettingsSectionTest, SettingNoFlag);
+
+  static constexpr char kSettingIdUrlParam[] = "settingId";
+
+  // If type is Setting, adds the kSettingIdUrlParam to the query parameter
+  // and returns the deep linked url. Doesn't modify url otherwise.
+  static std::string GetDefaultModifiedUrl(mojom::SearchResultType type,
+                                           OsSettingsIdentifier id,
+                                           const std::string& url_to_modify);
+
   Profile* profile_;
   SearchTagRegistry* search_tag_registry_;
 };

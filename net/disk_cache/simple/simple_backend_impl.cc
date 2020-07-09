@@ -653,8 +653,8 @@ size_t SimpleBackendImpl::DumpMemoryStats(
 
   size_t size = base::trace_event::EstimateMemoryUsage(index_) +
                 base::trace_event::EstimateMemoryUsage(active_entries_);
-  // TODO(xunjieli): crbug.com/669108. Track |entries_pending_doom_| once
-  // base::Closure is suppported in memory_usage_estimator.h.
+  // TODO(xunjieli): crbug.com/669108. Track |post_doom_waiting_| once
+  // base::OnceClosure is supported in memory_usage_estimator.h.
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes, size);
   return size;

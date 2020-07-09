@@ -2698,3 +2698,13 @@ TEST_F('ChromeVoxBackgroundTest', 'FocusOnUnknown', function() {
             .replay();
       });
 });
+
+TEST_F('ChromeVoxBackgroundTest', 'TimeDateCommand', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree('<p></p>', function(root) {
+    mockFeedback.call(doCmd('speakTimeAndDate'))
+        .expectSpeech(/(AM|PM)*(2)/)
+        .expectBraille(/(AM|PM)*(2)/)
+        .replay();
+  });
+});

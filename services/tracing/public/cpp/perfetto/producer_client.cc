@@ -398,18 +398,7 @@ bool ProducerClient::InitSharedMemoryIfNeeded() {
   base::UmaHistogramBoolean(kSharedBufferIsValidMetricName, valid);
 
   if (!valid) {
-    // TODO(crbug.com/1074115): Investigate why Breakpad doesn't seem to
-    // generate reports on some ChromeOS boards.
-    if (pre_dump_error_callback_) {
-      pre_dump_error_callback_.Run();
-    }
-
-    bool dump_with_crashing_result = base::debug::DumpWithoutCrashing();
-
-    if (post_dump_error_callback_) {
-      post_dump_error_callback_.Run(dump_with_crashing_result);
-    }
-
+    base::debug::DumpWithoutCrashing();
     LOG(ERROR) << "Failed to create tracing SMB";
     shared_memory_.reset();
     return false;
@@ -467,14 +456,6 @@ void ProducerClient::NotifyDataSourceFlushComplete(
   if (--pending_replies_for_latest_flush_.second == 0) {
     MaybeSharedMemoryArbiter()->NotifyFlushComplete(id);
   }
-}
-
-void ProducerClient::SetBufferAllocationFailureCallbacks(
-    base::Closure pre_dump_error_callback,
-    base::Callback<void(bool dump_result)> post_dump_error_callback) {
-  base::AutoLock lock(lock_);
-  pre_dump_error_callback_ = std::move(pre_dump_error_callback);
-  post_dump_error_callback_ = std::move(post_dump_error_callback);
 }
 
 }  // namespace tracing

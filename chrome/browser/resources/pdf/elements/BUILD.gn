@@ -116,6 +116,7 @@ js_library("viewer-zoom-toolbar") {
     ":viewer-zoom-button",
     "..:constants",
     "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:util.m",
   ]
 }
 

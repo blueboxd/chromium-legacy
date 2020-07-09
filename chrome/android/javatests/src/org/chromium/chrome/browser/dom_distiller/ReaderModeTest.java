@@ -138,7 +138,7 @@ public class ReaderModeTest implements CustomMainActivityStart {
         });
         CustomTabActivity customTabActivity = waitForCustomTabActivity();
         CriteriaHelper.pollUiThread(
-                () -> Assert.assertThat(customTabActivity.getActivityTab(), notNullValue()));
+                () -> Criteria.checkThat(customTabActivity.getActivityTab(), notNullValue()));
         @NonNull
         Tab distillerViewerTab = Objects.requireNonNull(customTabActivity.getActivityTab());
         waitForDistillation(TITLE, distillerViewerTab);
@@ -161,7 +161,7 @@ public class ReaderModeTest implements CustomMainActivityStart {
         });
         CustomTabActivity customTabActivity = waitForCustomTabActivity();
         CriteriaHelper.pollUiThread(
-                () -> Assert.assertThat(customTabActivity.getActivityTab(), notNullValue()));
+                () -> Criteria.checkThat(customTabActivity.getActivityTab(), notNullValue()));
         @NonNull
         Tab distillerViewerTab = Objects.requireNonNull(customTabActivity.getActivityTab());
         waitForDistillation(TITLE, distillerViewerTab);
@@ -187,7 +187,7 @@ public class ReaderModeTest implements CustomMainActivityStart {
         });
         CustomTabActivity customTabActivity = waitForCustomTabActivity();
         CriteriaHelper.pollUiThread(
-                () -> Assert.assertThat(customTabActivity.getActivityTab(), notNullValue()));
+                () -> Criteria.checkThat(customTabActivity.getActivityTab(), notNullValue()));
         @NonNull
         Tab distillerViewerTab = Objects.requireNonNull(customTabActivity.getActivityTab());
         waitForDistillation(TITLE, distillerViewerTab);

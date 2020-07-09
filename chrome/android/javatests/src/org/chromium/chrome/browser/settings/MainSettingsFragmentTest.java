@@ -179,6 +179,16 @@ public class MainSettingsFragmentTest {
 
     @Test
     @SmallTest
+    @EnableFeatures(ChromeFeatureList.SAFE_BROWSING_SECURITY_SECTION_UI)
+    public void testSafeBrowsingSecuritySectionUiFlagOn() {
+        launchSettingsActivity();
+        assertSettingsExists(MainSettings.PREF_PRIVACY, PrivacySettings.class);
+        Assert.assertEquals(mMainSettings.getString(R.string.prefs_privacy_security),
+                mMainSettings.findPreference(MainSettings.PREF_PRIVACY).getTitle().toString());
+    }
+
+    @Test
+    @SmallTest
     public void testHomepageOff() {
         mHomepageTestRule.disableHomepageForTest();
         launchSettingsActivity();

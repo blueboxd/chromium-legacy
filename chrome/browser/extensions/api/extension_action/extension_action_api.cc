@@ -150,8 +150,6 @@ void ExtensionActionAPI::DispatchExtensionActionClicked(
   const char* event_name = NULL;
   switch (extension_action.action_type()) {
     case ActionInfo::TYPE_ACTION:
-      // TODO(https://crbug.com/893373): Add testing for this API (currently
-      // restricted to trunk).
       histogram_value = events::ACTION_ON_CLICKED;
       event_name = "action.onClicked";
       break;

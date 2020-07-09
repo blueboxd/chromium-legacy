@@ -59,7 +59,6 @@ and the constructors for those listener objects are responsible for calling
 ChromeDriver has the following event listeners:
 * [`CastTracker`](https://source.chromium.org/chromium/chromium/src/+/master:chrome/test/chromedriver/chrome/cast_tracker.h?q=CastTracker)
 * [`ConsoleLogger`](https://source.chromium.org/chromium/chromium/src/+/master:chrome/test/chromedriver/chrome/console_logger.h?q=ConsoleLogger)
-* [`DebuggerTracker`](https://source.chromium.org/chromium/chromium/src/+/master:chrome/test/chromedriver/chrome/debugger_tracker.h?q=DebuggerTracker)
 * [`DevToolsEventsLogger`](https://source.chromium.org/chromium/chromium/src/+/master:chrome/test/chromedriver/devtools_events_logger.h?q=DevToolsEventsLogger)
 * [`DomTracker`](https://source.chromium.org/chromium/chromium/src/+/master:chrome/test/chromedriver/chrome/dom_tracker.h?q=DomTracker)
 * [`DownloadDirectoryOverrideManager`](https://source.chromium.org/chromium/chromium/src/+/master:chrome/test/chromedriver/chrome/download_directory_override_manager.h?q=DownloadDirectoryOverrideManager)

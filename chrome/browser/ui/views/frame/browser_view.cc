@@ -523,9 +523,6 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
 
   // Top container holds tab strip region and toolbar and lives at the front of
   // the view hierarchy.
-  top_container_ = AddChildView(std::make_unique<TopContainerView>(this));
-  tab_strip_region_view_ =
-      top_container_->AddChildView(std::make_unique<TabStripRegionView>());
 
   std::unique_ptr<TabMenuModelFactory> tab_menu_model_factory;
   if (browser_->app_controller()) {
@@ -537,9 +534,12 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
       browser_->tab_strip_model(), this, std::move(tab_menu_model_factory));
   BrowserTabStripController* tabstrip_controller_ptr =
       tabstrip_controller.get();
-  tabstrip_ = tab_strip_region_view_->AddTabStrip(std::make_unique<TabStrip>(
-      std::move(tabstrip_controller)));  // Takes ownership.
+  auto tabstrip = std::make_unique<TabStrip>(std::move(tabstrip_controller));
+  tabstrip_ = tabstrip.get();
   tabstrip_controller_ptr->InitFromModel(tabstrip_);
+  top_container_ = AddChildView(std::make_unique<TopContainerView>(this));
+  tab_strip_region_view_ = top_container_->AddChildView(
+      std::make_unique<TabStripRegionView>(std::move(tabstrip)));
 
   // Must be destroyed before the tab strip.
   tab_groups_iph_controller_ = std::make_unique<TabGroupsIPHController>(

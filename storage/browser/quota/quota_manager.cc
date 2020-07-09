@@ -648,7 +648,7 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
   }
 
  private:
-  void DidGetOriginsForHost(const std::set<url::Origin>& origins) {
+  void DidGetOriginsForHost(const std::vector<url::Origin>& origins) {
     DCHECK_GT(remaining_clients_, 0U);
 
     for (const auto& origin : origins)

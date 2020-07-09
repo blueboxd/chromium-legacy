@@ -22,8 +22,13 @@ namespace speech {
 
 // The maximum duration a stream can be open for. The Open Speech API supports 5
 // minutes of continuous recognition.
-constexpr base::TimeDelta kStreamResetDuration =
+constexpr base::TimeDelta kMaximumStreamDuration =
     base::TimeDelta::FromSeconds(295);
+
+// The Open Speech API will not return any recognition events if 30 seconds have
+// elapsed since the last audio upload.
+constexpr base::TimeDelta kMaximumPauseDuration =
+    base::TimeDelta::FromSeconds(28);
 
 constexpr char kWebServiceBaseUrl[] =
     "https://www.google.com/speech-api/full-duplex/v1";
@@ -108,12 +113,12 @@ void CloudSpeechRecognitionClient::OnDownstreamDataReceived(
 
 void CloudSpeechRecognitionClient::Reset() {
   DCHECK(is_initialized_);
-
   // Return if the URL loader factory has not been set.
   if (!url_loader_factory_)
     return;
 
-  last_reset_ = base::Time::Now();
+  last_reset_ = base::TimeTicks::Now();
+  last_upload_ = base::TimeTicks::Now();
   const std::string request_key = base::UnguessableToken::Create().ToString();
 
   // Setup downstream fetcher.
@@ -190,10 +195,13 @@ void CloudSpeechRecognitionClient::Reset() {
 
 void CloudSpeechRecognitionClient::AddAudio(base::span<const char> chunk) {
   DCHECK(is_initialized_);
-  if (base::Time::Now() - last_reset_ > kStreamResetDuration) {
+  base::TimeTicks now = base::TimeTicks::Now();
+  if (now - last_reset_ > kMaximumStreamDuration ||
+      now - last_upload_ > kMaximumPauseDuration) {
     Reset();
   }
 
+  last_upload_ = now;
   upstream_loader_->AppendChunkToUpload(std::string(chunk.data(), chunk.size()),
                                         false);
 }

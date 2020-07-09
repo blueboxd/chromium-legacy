@@ -28,16 +28,23 @@ void ExtensionAppWindowLauncherItemController::AddAppWindow(
 }
 
 ash::ShelfItemDelegate::AppMenuItems
-ExtensionAppWindowLauncherItemController::GetAppMenuItems(int event_flags) {
+ExtensionAppWindowLauncherItemController::GetAppMenuItems(
+    int event_flags,
+    const ItemFilterPredicate& filter_predicate) {
   AppMenuItems items;
   extensions::AppWindowRegistry* app_window_registry =
       extensions::AppWindowRegistry::Get(
           ChromeLauncherController::instance()->profile());
 
+  int command_id = -1;
   for (const ui::BaseWindow* window : windows()) {
+    ++command_id;
+    auto* native_window = window->GetNativeWindow();
+    if (!filter_predicate.is_null() && !filter_predicate.Run(native_window))
+      continue;
+
     extensions::AppWindow* app_window =
-        app_window_registry->GetAppWindowForNativeWindow(
-            window->GetNativeWindow());
+        app_window_registry->GetAppWindowForNativeWindow(native_window);
     DCHECK(app_window);
 
     // Use the app's web contents favicon, or the app window's icon.
@@ -55,7 +62,7 @@ ExtensionAppWindowLauncherItemController::GetAppMenuItems(int event_flags) {
         image = *app_icon;
     }
 
-    items.push_back({app_window->GetTitle(), image});
+    items.push_back({command_id, app_window->GetTitle(), image});
   }
   return items;
 }

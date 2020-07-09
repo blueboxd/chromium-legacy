@@ -481,16 +481,6 @@ public class ContextualSearchPanel extends OverlayPanel {
         super.maximizePanel(reason);
     }
 
-    /**
-     * Maximizes the Contextual Search Panel, then promotes it to a regular Tab.
-     * @param reason The {@code StateChangeReason} behind the maximization and promotion to tab.
-     * @param duration The animation duration in milliseconds.
-     */
-    public void maximizePanelThenPromoteToTab(@StateChangeReason int reason, long duration) {
-        mShouldPromoteToTabAfterMaximizing = true;
-        animatePanelToState(PanelState.MAXIMIZED, reason, duration);
-    }
-
     @Override
     public void peekPanel(@StateChangeReason int reason) {
         super.peekPanel(reason);

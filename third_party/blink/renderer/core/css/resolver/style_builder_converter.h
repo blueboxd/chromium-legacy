@@ -123,7 +123,7 @@ class StyleBuilderConverter {
       StyleResolverState&,
       const CSSValue&);
   static scoped_refptr<FontVariationSettings> ConvertFontVariationSettings(
-      StyleResolverState&,
+      const StyleResolverState&,
       const CSSValue&);
   static FontDescription::Size ConvertFontSize(StyleResolverState&,
                                                const CSSValue&);

@@ -26,6 +26,12 @@ class TestOptimizationGuideDecider : public OptimizationGuideDecider {
   OptimizationGuideDecision ShouldTargetNavigation(
       content::NavigationHandle* navigation_handle,
       proto::OptimizationTarget optimization_target) override;
+  void ShouldTargetNavigationAsync(
+      content::NavigationHandle* navigation_handle,
+      proto::OptimizationTarget optimization_target,
+      const base::flat_map<proto::ClientModelFeature, float>&
+          client_model_feature_values,
+      OptimizationGuideTargetDecisionCallback callback) override;
   void RegisterOptimizationTypes(
       const std::vector<proto::OptimizationType>& optimization_types) override;
   void CanApplyOptimizationAsync(

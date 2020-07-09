@@ -120,7 +120,7 @@ public class AutofillTest {
         mSyncTestRule.pollInstrumentationThread(() -> {
             try {
                 Autofill modifiedAutofill = getClientAutofillProfiles().get(0);
-                Assert.assertEquals(MODIFIED_CITY, modifiedAutofill.city);
+                Criteria.checkThat(modifiedAutofill.city, Matchers.is(MODIFIED_CITY));
             } catch (JSONException ex) {
                 throw new RuntimeException(ex);
             }

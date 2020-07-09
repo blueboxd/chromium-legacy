@@ -212,12 +212,21 @@ void GetDemotionsByType(
     DemotionMultipliers* demotions_by_type);
 
 // ---------------------------------------------------------
-// For the UIMaxAutocompleteMatchesByProvider experiment that's part of the
-// bundled omnibox field trial.
+// For experiments related to the number of suggestions shown.
 
 // If the user is in an experiment group that specifies the max results for a
 // particular provider, returns the limit. Otherwise returns the default limit.
 size_t GetProviderMaxMatches(AutocompleteProvider::Type provider);
+
+// Returns whether the feature to limit the number of shown URL matches
+// is enabled.
+bool IsMaxURLMatchesFeatureEnabled();
+
+// Returns the maximum number of URL matches that should be allowed within
+// the Omnibox if there are search-type matches available to replace them.
+// If the capping feature is not enabled, or the parameter cannot be
+// parsed, it returns 0.
+size_t GetMaxURLMatches();
 
 // ---------------------------------------------------------
 // For the HistoryURL provider new scoring experiment that is part of the
@@ -368,12 +377,6 @@ int KeywordScoreForSufficientlyCompleteMatch();
 EmphasizeTitlesCondition GetEmphasizeTitlesConditionForInput(
     const AutocompleteInput& input);
 
-// Returns the maximum number of URL matches that should be allowed within
-// the Omnibox if there are search-type matches available to replace them.
-// If the capping feature is not enabled, or the parameter cannot be
-// parsed, it returns 0.
-size_t GetMaxURLMatches();
-
 // ---------------------------------------------------------
 // For UI experiments.
 
@@ -403,10 +406,6 @@ bool IsPedalSuggestionsEnabled();
 // Simply a convenient wrapper for testing a flag. Used downstream for an
 // assortment of keyword mode experiments.
 bool IsExperimentalKeywordModeEnabled();
-
-// Returns whether the feature to limit the number of shown URL matches
-// is enabled.
-bool IsMaxURLMatchesFeatureEnabled();
 
 // Rich autocompletion.
 bool IsRichAutocompletionEnabled();
@@ -497,6 +496,17 @@ extern const char kMaxZeroSuggestMatchesParam[];
 extern const char kOmniboxMaxURLMatchesParam[];
 extern const char kUIMaxAutocompleteMatchesByProviderParam[];
 extern const char kUIMaxAutocompleteMatchesParam[];
+// The URL cutoff and increased limit for dynamic max autocompletion.
+// - When dynamic max autocompletion is disabled, the omnibox allows
+//   UIMaxAutocompleteMatches suggestions.
+// - When dynamic max autocompletion is enabled, the omnibox allows
+//   suggestions up to the increased limit if doing so has URL cutoff or less
+//   URL suggestions.
+// E.g. a UIMaxAutocompleteMatches of 8, URL cutoff of 2, and increased limit of
+// 10 translates to "show 10 or 9 suggestions if doing so includes at most 2
+// URLs; otherwise show 8 suggestions.
+extern const char kDynamicMaxAutocompleteUrlCutoffParam[];
+extern const char kDynamicMaxAutocompleteIncreasedLimitParam[];
 
 // Parameter names used by on device head provider.
 // These four parameters are shared by both non-incognito and incognito.

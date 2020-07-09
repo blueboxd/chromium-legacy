@@ -620,10 +620,7 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTestWithNavigationCorrectionsEnabled,
   EXPECT_EQ(base::ASCIIToUTF16("Title Of More Awesomeness"),
             title_watcher.WaitAndGetTitle());
 
-  // There should have been another Link Doctor request, for tracking purposes.
-  // Have to wait for it, since the search page does not depend on having
-  // sent the tracking request.
-  WaitForRequests(2);
+  WaitForRequests(1);
 
   // Check the path and query string.
   std::string url;
@@ -638,7 +635,7 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTestWithNavigationCorrectionsEnabled,
   GoBackAndWaitForNavigations(2);
   ExpectDisplayingNavigationCorrections(
       browser(), net::ERR_NAME_NOT_RESOLVED);
-  EXPECT_EQ(3, num_requests());
+  EXPECT_EQ(2, num_requests());
 }
 
 // Test that the reload button on a DNS error page works.
@@ -668,11 +665,9 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTestWithNavigationCorrectionsEnabled,
   nav_observer.Wait();
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
 
-  // There should have been two more requests to the correction service:  One
-  // for the new error page, and one for tracking purposes.  Have to make sure
-  // to wait for the tracking request, since the new error page does not depend
-  // on it.
-  WaitForRequests(3);
+  // There should have been one more request to the correction service for the
+  // new error page.
+  WaitForRequests(2);
 }
 
 // Test that the reload button on a DNS error page works after a same document
@@ -714,11 +709,9 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTestWithNavigationCorrectionsEnabled,
   nav_observer2.Wait();
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
 
-  // There should have been two more requests to the correction service:  One
-  // for the new error page, and one for tracking purposes.  Have to make sure
-  // to wait for the tracking request, since the new error page does not depend
-  // on it.
-  WaitForRequests(3);
+  // There should have been one more request to the correction service for the
+  // new error page.
+  WaitForRequests(2);
 }
 
 // Test that clicking links on a DNS error page works.
@@ -743,8 +736,6 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTestWithNavigationCorrectionsEnabled,
       base::ASCIIToUTF16("Title Of Awesomeness"));
   std::string link_selector =
       "document.querySelector('a[href=\"http://mock.http/title2.html\"]')";
-  // The tracking request is triggered by onmousedown, so it catches middle
-  // mouse button clicks, as well as left clicks.
   web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
       base::ASCIIToUTF16(link_selector + ".onmousedown();"),
       base::NullCallback());
@@ -756,10 +747,7 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTestWithNavigationCorrectionsEnabled,
   EXPECT_EQ(base::ASCIIToUTF16("Title Of Awesomeness"),
             title_watcher.WaitAndGetTitle());
 
-  // There should have been a tracking request to the correction service.  Have
-  // to make sure to wait the tracking request, since the new page does not
-  // depend on it.
-  WaitForRequests(2);
+  WaitForRequests(1);
 }
 
 // Test that a DNS error occuring in an iframe does not result in showing

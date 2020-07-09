@@ -28,12 +28,7 @@ unsigned FontVariationSettings::GetHash() const {
   unsigned computed_hash = size() ? 5381 : 0;
   unsigned num_features = size();
   for (unsigned i = 0; i < num_features; ++i) {
-    StringHasher string_hasher;
-    const AtomicString& tag = at(i).Tag();
-    for (unsigned j = 0; j < tag.length(); j++) {
-      string_hasher.AddCharacter(tag[j]);
-    }
-    WTF::AddIntToHash(computed_hash, string_hasher.GetHash());
+    WTF::AddIntToHash(computed_hash, at(i).Tag());
     WTF::AddFloatToHash(computed_hash, at(i).Value());
   }
   return computed_hash;

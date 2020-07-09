@@ -333,6 +333,9 @@ DocumentPolicy::FeatureState HTMLIFrameElement::ConstructRequiredPolicy()
 }
 
 ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy() const {
+  if (!GetExecutionContext())
+    return ParsedFeaturePolicy();
+
   scoped_refptr<const SecurityOrigin> src_origin = GetOriginForFeaturePolicy();
   scoped_refptr<const SecurityOrigin> self_origin =
       GetExecutionContext()->GetSecurityOrigin();

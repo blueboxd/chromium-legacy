@@ -131,6 +131,13 @@ namespace nacl {
 
 void AddNaClZygoteForkDelegates(
     std::vector<std::unique_ptr<content::ZygoteForkDelegate>>* delegates) {
+  // We don't need the delegates for the unsandboxed zygote since NaCl always
+  // starts from the sandboxed zygote.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          sandbox::policy::switches::kNoZygoteSandbox)) {
+    return;
+  }
+
   delegates->push_back(
       std::make_unique<NaClForkDelegate>(false /* nonsfi_mode */));
   delegates->push_back(

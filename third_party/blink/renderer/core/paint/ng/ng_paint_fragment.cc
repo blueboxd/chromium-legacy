@@ -996,10 +996,14 @@ PositionWithAffinity NGPaintFragment::PositionForPoint(
     return PositionForPointInText(point);
 
   if (PhysicalFragment().IsBlockFlow()) {
-    // We current fall back to legacy for block formatting contexts, so we
-    // should reach here only for inline formatting contexts.
-    // TODO(xiaochengh): Do not fall back.
-    return PositionForPointInInlineFormattingContext(point);
+    const LayoutObject& layout_object = *PhysicalFragment().GetLayoutObject();
+    if (layout_object.ChildrenInline())
+      return PositionForPointInInlineFormattingContext(point);
+    // |NGInlineCursor::PositionForPointInChild()| calls this function with
+    // inline block with with block formatting context that has block
+    // children[1], e.g: <b style="display:inline-block"><div>b</div></b>
+    // [1] NGInlineCursorTest.PositionForPointInChildBlockChildren
+    return layout_object.PositionForPoint(point);
   }
 
   DCHECK(PhysicalFragment().IsInline() || PhysicalFragment().IsLineBox());

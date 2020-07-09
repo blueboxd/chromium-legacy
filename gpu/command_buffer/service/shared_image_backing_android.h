@@ -30,6 +30,7 @@ class SharedImageBackingAndroid : public ClearTrackingSharedImageBacking {
                          base::ScopedFD* fd_to_wait_on);
   virtual void EndRead(const SharedImageRepresentation* reader,
                        base::ScopedFD end_read_fd);
+  base::ScopedFD TakeReadFence();
 
  protected:
   // All reads and writes must wait for exiting writes to complete.

@@ -478,6 +478,10 @@ bool IsAmbientModeEnabled() {
   return base::FeatureList::IsEnabled(kAmbientModeFeature);
 }
 
+bool IsDeepLinkingEnabled() {
+  return base::FeatureList::IsEnabled(kOsSettingsDeepLinking);
+}
+
 bool IsEduCoexistenceEnabled() {
   return base::FeatureList::IsEnabled(kEduCoexistence);
 }

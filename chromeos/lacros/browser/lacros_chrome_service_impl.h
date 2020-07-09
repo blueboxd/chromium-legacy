@@ -7,6 +7,7 @@
 
 #include "base/component_export.h"
 #include "chromeos/lacros/mojom/lacros.mojom.h"
+#include "chromeos/lacros/mojom/screen_manager.mojom.h"
 #include "chromeos/lacros/mojom/select_file.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -16,6 +17,7 @@ namespace chromeos {
 
 // Implements LacrosChromeService, which owns the mojo remote connection to
 // ash-chrome.
+// This class is not thread safe. It can only be used on the main thread.
 class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl
     : public lacros::mojom::LacrosChromeService {
  public:
@@ -30,6 +32,9 @@ class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl
   mojo::Remote<lacros::mojom::SelectFile>& select_file_remote() {
     return select_file_remote_;
   }
+
+  void BindScreenManagerReceiver(
+      mojo::PendingReceiver<lacros::mojom::ScreenManager> pending_receiver);
 
   // lacros::mojom::LacrosChromeService:
   void RequestAshChromeServiceReceiver(

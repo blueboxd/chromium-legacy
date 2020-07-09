@@ -9,7 +9,6 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.browserservices.TrustedWebActivityTestUtil.createSession;
@@ -145,7 +144,7 @@ public class RunningInChromeTest {
         launch(createTrustedWebActivityIntent(mTestPage));
 
         String scope = Origin.createOrThrow(mTestPage).toString();
-        CriteriaHelper.pollUiThread(() -> assertTrue(showingNotification(scope)));
+        CriteriaHelper.pollUiThread(() -> showingNotification(scope));
     }
 
     @Test
@@ -156,13 +155,11 @@ public class RunningInChromeTest {
         launch(createTrustedWebActivityIntent(mTestPage));
 
         String scope = Origin.createOrThrow(mTestPage).toString();
-        CriteriaHelper.pollUiThread(() ->
-                assertTrue(showingNotification(scope)));
+        CriteriaHelper.pollUiThread(() -> showingNotification(scope));
 
         mCustomTabActivityTestRule.loadUrl("https://www.example.com/");
 
-        CriteriaHelper.pollUiThread(() ->
-                assertFalse(showingNotification(scope)));
+        CriteriaHelper.pollUiThread(() -> !showingNotification(scope));
     }
 
     @Test
@@ -173,11 +170,11 @@ public class RunningInChromeTest {
         launch(createTrustedWebActivityIntent(mTestPage));
 
         String scope = Origin.createOrThrow(mTestPage).toString();
-        CriteriaHelper.pollUiThread(() -> assertTrue(showingNotification(scope)));
+        CriteriaHelper.pollUiThread(() -> showingNotification(scope));
 
         mCustomTabActivityTestRule.getActivity().finish();
 
-        CriteriaHelper.pollUiThread(() -> assertFalse(showingNotification(scope)));
+        CriteriaHelper.pollUiThread(() -> !showingNotification(scope));
     }
 
     private boolean showingNotification(String tag) {

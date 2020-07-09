@@ -398,6 +398,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"OriginPolicy", features::kOriginPolicy, kUseFeatureState},
           {"OriginIsolationHeader", features::kOriginIsolationHeader,
            kUseFeatureState},
+          {"ParentNodeReplaceChildren",
+           blink::features::kParentNodeReplaceChildren, kUseFeatureState},
           {"RawClipboard", blink::features::kRawClipboard, kEnableOnly},
           {"ShadowDOMV0", blink::features::kWebComponentsV0, kUseFeatureState},
           {"StorageAccessAPI", blink::features::kStorageAccessAPI, kEnableOnly},

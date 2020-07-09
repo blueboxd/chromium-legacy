@@ -90,11 +90,7 @@ void StyleRuleImport::NotifyFinished(Resource* resource) {
 
   style_sheet_ = MakeGarbageCollected<StyleSheetContents>(
       context, cached_style_sheet->Url(), this);
-
-  auto* origin = document && document->GetExecutionContext()
-                     ? document->GetExecutionContext()->GetSecurityOrigin()
-                     : nullptr;
-  style_sheet_->ParseAuthorStyleSheet(cached_style_sheet, origin);
+  style_sheet_->ParseAuthorStyleSheet(cached_style_sheet);
 
   loading_ = false;
 

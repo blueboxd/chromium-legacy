@@ -55,7 +55,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) UsageTracker
     return type_;
   }
 
-  void GetGlobalLimitedUsage(UsageCallback callback);
   void GetGlobalUsage(GlobalUsageCallback callback);
   void GetHostUsageWithBreakdown(const std::string& host,
                                  UsageWithBreakdownCallback callback);
@@ -79,8 +78,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) UsageTracker
   struct AccumulateInfo;
   friend class ClientUsageTracker;
 
-  void AccumulateClientGlobalLimitedUsage(AccumulateInfo* info,
-                                          int64_t limited_usage);
   void AccumulateClientGlobalUsage(AccumulateInfo* info,
                                    int64_t usage,
                                    int64_t unlimited_usage);
@@ -98,7 +95,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) UsageTracker
       client_tracker_map_;
   size_t client_count_;
 
-  std::vector<UsageCallback> global_limited_usage_callbacks_;
   std::vector<GlobalUsageCallback> global_usage_callbacks_;
   std::map<std::string, std::vector<UsageWithBreakdownCallback>>
       host_usage_callbacks_;

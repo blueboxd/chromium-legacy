@@ -1548,7 +1548,8 @@ void XRSession::SetMetricsReporter(std::unique_ptr<MetricsReporter> reporter) {
 
 void XRSession::OnFrame(
     double timestamp,
-    const base::Optional<gpu::MailboxHolder>& output_mailbox_holder) {
+    const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
+    const base::Optional<gpu::MailboxHolder>& camera_image_mailbox_holder) {
   TRACE_EVENT0("gpu", __func__);
   DVLOG(2) << __func__ << ": ended_=" << ended_
            << ", pending_frame_=" << pending_frame_;
@@ -1575,7 +1576,8 @@ void XRSession::OnFrame(
       if (prev_base_layer_) {
         DVLOG(2) << __func__
                  << ": prev_base_layer_ is valid, submitting frame to it";
-        prev_base_layer_->OnFrameStart(output_mailbox_holder);
+        prev_base_layer_->OnFrameStart(output_mailbox_holder,
+                                       camera_image_mailbox_holder);
         prev_base_layer_->OnFrameEnd();
         prev_base_layer_ = nullptr;
       }
@@ -1591,7 +1593,8 @@ void XRSession::OnFrame(
       return;
     }
 
-    frame_base_layer->OnFrameStart(output_mailbox_holder);
+    frame_base_layer->OnFrameStart(output_mailbox_holder,
+                                   camera_image_mailbox_holder);
 
     // Don't allow frames to be processed if the session's visibility state is
     // "hidden".

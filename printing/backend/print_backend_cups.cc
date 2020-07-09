@@ -186,7 +186,7 @@ bool PrintBackendCUPS::GetPrinterCapsAndDefaults(
   std::string content;
   bool res = base::ReadFileToString(ppd_path, &content);
 
-  base::DeleteFile(ppd_path, false);
+  base::DeleteFile(ppd_path);
 
   if (res) {
     printer_info->printer_capabilities.swap(content);
@@ -298,7 +298,7 @@ base::FilePath PrintBackendCUPS::GetPPD(const char* name) {
         LOG(ERROR) << "Error downloading PPD file, name: " << name
                    << ", CUPS error: " << static_cast<int>(error_code)
                    << ", HTTP error: " << http_error;
-        base::DeleteFile(ppd_path, false);
+        base::DeleteFile(ppd_path);
         ppd_path.clear();
       }
     }

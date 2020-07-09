@@ -262,6 +262,12 @@ bool IsCommandIdAnAppLaunch(int command_id_number) {
     return true;
   }
 
+  // All app menu items in a ShelfApplicationMenuModel are not launches.
+  if (command_id >= CommandId::APP_MENU_ITEM_ID_FIRST &&
+      command_id < CommandId::APP_MENU_ITEM_ID_LAST) {
+    return false;
+  }
+
   switch (command_id) {
     // Used by ShelfContextMenu (shelf).
     case CommandId::MENU_OPEN_NEW:
@@ -309,6 +315,9 @@ bool IsCommandIdAnAppLaunch(int command_id_number) {
     case CommandId::EXTENSIONS_CONTEXT_CUSTOM_FIRST:
     case CommandId::EXTENSIONS_CONTEXT_CUSTOM_LAST:
     case CommandId::COMMAND_ID_COUNT:
+    // Used by ShelfApplicationMenuModel.
+    case CommandId::APP_MENU_ITEM_ID_FIRST:
+    case CommandId::APP_MENU_ITEM_ID_LAST:
       return false;
   }
   NOTREACHED();

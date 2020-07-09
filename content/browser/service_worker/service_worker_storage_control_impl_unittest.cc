@@ -43,6 +43,11 @@ struct ReadResponseHeadResult {
   base::Optional<mojo_base::BigBuffer> metadata;
 };
 
+struct ReadDataResult {
+  int status;
+  std::string data;
+};
+
 struct GetRegistrationsForOriginResult {
   DatabaseStatus status;
   std::vector<storage::mojom::SerializedServiceWorkerRegistrationPtr>
@@ -95,19 +100,56 @@ ReadResponseHeadResult ReadResponseHead(
   return result;
 }
 
-std::string ReadResponseData(
+class MockServiceWorkerDataPipeStateNotifier
+    : public storage::mojom::ServiceWorkerDataPipeStateNotifier {
+ public:
+  MockServiceWorkerDataPipeStateNotifier() = default;
+
+  mojo::PendingRemote<storage::mojom::ServiceWorkerDataPipeStateNotifier>
+  BindNewPipeAndPassRemote() {
+    return receiver_.BindNewPipeAndPassRemote();
+  }
+
+  int32_t WaitUntilComplete() {
+    if (!complete_status_.has_value()) {
+      loop_.Run();
+      DCHECK(complete_status_.has_value());
+    }
+    return *complete_status_;
+  }
+
+ private:
+  void OnComplete(int32_t status) override {
+    complete_status_ = status;
+    if (loop_.running())
+      loop_.Quit();
+  }
+
+  base::Optional<int32_t> complete_status_;
+  base::RunLoop loop_;
+  mojo::Receiver<storage::mojom::ServiceWorkerDataPipeStateNotifier> receiver_{
+      this};
+};
+
+ReadDataResult ReadResponseData(
     storage::mojom::ServiceWorkerResourceReader* reader,
     int data_size) {
+  MockServiceWorkerDataPipeStateNotifier notifier;
   mojo::ScopedDataPipeConsumerHandle data_consumer;
   base::RunLoop loop;
-  reader->ReadData(data_size, base::BindLambdaForTesting(
-                                  [&](mojo::ScopedDataPipeConsumerHandle pipe) {
-                                    data_consumer = std::move(pipe);
-                                    loop.Quit();
-                                  }));
+  reader->ReadData(
+      data_size, notifier.BindNewPipeAndPassRemote(),
+      base::BindLambdaForTesting([&](mojo::ScopedDataPipeConsumerHandle pipe) {
+        data_consumer = std::move(pipe);
+        loop.Quit();
+      }));
   loop.Run();
 
-  return ReadDataPipe(std::move(data_consumer));
+  ReadDataResult result;
+  result.data = ReadDataPipe(std::move(data_consumer));
+  result.status = notifier.WaitUntilComplete();
+
+  return result;
 }
 
 int WriteResponseHead(storage::mojom::ServiceWorkerResourceWriter* writer,
@@ -612,7 +654,7 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
     return result;
   }
 
-  std::string ReadResource(int64_t resource_id, int data_size) {
+  ReadDataResult ReadResource(int64_t resource_id, int data_size) {
     mojo::Remote<storage::mojom::ServiceWorkerResourceReader> reader =
         CreateResourceReader(resource_id);
     return ReadResponseData(reader.get(), data_size);
@@ -1007,8 +1049,9 @@ TEST_F(ServiceWorkerStorageControlImplTest, WriteAndReadResource) {
               ssl_info.cert->serial_number());
     EXPECT_EQ(result.metadata, base::nullopt);
 
-    std::string data = ReadResponseData(reader.get(), data_size);
-    EXPECT_EQ(data, kData);
+    ReadDataResult data_result = ReadResponseData(reader.get(), data_size);
+    ASSERT_EQ(data_result.status, data_size);
+    EXPECT_EQ(data_result.data, kData);
   }
 
   const auto kMetadata = base::as_bytes(base::make_span("metadata"));
@@ -1491,12 +1534,16 @@ TEST_F(ServiceWorkerStorageControlImplTest, TrackRunningVersion) {
 
   // Resources shouldn't be purged because there is an active reference.
   {
-    std::string read_resource_data1 =
+    ReadDataResult read_resource_result1 =
         ReadResource(resource_id1, resource_data1.size());
-    ASSERT_EQ(read_resource_data1, resource_data1);
-    std::string read_resource_data2 =
+    ASSERT_EQ(read_resource_result1.status,
+              static_cast<int32_t>(resource_data1.size()));
+    EXPECT_EQ(read_resource_result1.data, resource_data1);
+    ReadDataResult read_resource_result2 =
         ReadResource(resource_id2, resource_data2.size());
-    ASSERT_EQ(read_resource_data2, resource_data2);
+    ASSERT_EQ(read_resource_result2.status,
+              static_cast<int32_t>(resource_data2.size()));
+    EXPECT_EQ(read_resource_result2.data, resource_data2);
   }
 
   // Drop the second reference.
@@ -1505,12 +1552,14 @@ TEST_F(ServiceWorkerStorageControlImplTest, TrackRunningVersion) {
 
   // Resources should have been purged.
   {
-    std::string read_resource_data1 =
+    ReadDataResult read_resource_result1 =
         ReadResource(resource_id1, resource_data1.size());
-    ASSERT_EQ(read_resource_data1, "");
-    std::string read_resource_data2 =
+    ASSERT_EQ(read_resource_result1.status, net::ERR_CACHE_MISS);
+    EXPECT_EQ(read_resource_result1.data, "");
+    ReadDataResult read_resource_result2 =
         ReadResource(resource_id2, resource_data2.size());
-    ASSERT_EQ(read_resource_data2, "");
+    ASSERT_EQ(read_resource_result2.status, net::ERR_CACHE_MISS);
+    EXPECT_EQ(read_resource_result2.data, "");
   }
 }
 

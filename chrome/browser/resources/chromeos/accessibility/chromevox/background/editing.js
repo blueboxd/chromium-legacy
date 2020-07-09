@@ -1038,15 +1038,16 @@ editing.EditableLine = class {
     // cursors.Cursor.deepEquivalent results in cursors to different container
     // nodes. The cursors can point directly to inline text boxes, in which case
     // we should not adjust the container start or end index.
-    if (startNode.role != RoleType.INLINE_TEXT_BOX &&
-        this.start_.node != startNode && this.start_.node.parent != startNode) {
+    if (!AutomationPredicate.text(startNode) ||
+        (this.start_.node != startNode &&
+         this.start_.node.parent != startNode)) {
       startIndex = this.start_.index == cursors.NODE_INDEX ?
           this.start_.node.name.length :
           this.start_.index;
     }
 
-    if (endNode.role != RoleType.INLINE_TEXT_BOX && this.end_.node != endNode &&
-        this.end_.node.parent != endNode) {
+    if (!AutomationPredicate.text(endNode) ||
+        (this.end_.node != endNode && this.end_.node.parent != endNode)) {
       endIndex = this.end_.index == cursors.NODE_INDEX ?
           this.end_.node.name.length :
           this.end_.index;

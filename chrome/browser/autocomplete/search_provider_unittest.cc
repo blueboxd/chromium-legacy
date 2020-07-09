@@ -2794,8 +2794,8 @@ TEST_F(SearchProviderTest, NavigationInline) {
     QueryForInput(ASCIIToUTF16(cases[i].input), false, false);
     SearchSuggestionParser::NavigationResult result(
         ChromeAutocompleteSchemeClassifier(&profile_), GURL(cases[i].url),
-        AutocompleteMatchType::NAVSUGGEST, 0, base::string16(), std::string(),
-        false, 0, false, ASCIIToUTF16(cases[i].input));
+        AutocompleteMatchType::NAVSUGGEST, {}, 0, base::string16(),
+        std::string(), false, 0, false, ASCIIToUTF16(cases[i].input));
     result.set_received_after_last_keystroke(false);
     AutocompleteMatch match(provider_->NavigationToMatch(result));
     EXPECT_EQ(ASCIIToUTF16(cases[i].inline_autocompletion),
@@ -2808,8 +2808,8 @@ TEST_F(SearchProviderTest, NavigationInline) {
     QueryForInput(ASCIIToUTF16(cases[i].input), true, false);
     SearchSuggestionParser::NavigationResult result_prevent_inline(
         ChromeAutocompleteSchemeClassifier(&profile_), GURL(cases[i].url),
-        AutocompleteMatchType::NAVSUGGEST, 0, base::string16(), std::string(),
-        false, 0, false, ASCIIToUTF16(cases[i].input));
+        AutocompleteMatchType::NAVSUGGEST, {}, 0, base::string16(),
+        std::string(), false, 0, false, ASCIIToUTF16(cases[i].input));
     result_prevent_inline.set_received_after_last_keystroke(false);
     AutocompleteMatch match_prevent_inline(
         provider_->NavigationToMatch(result_prevent_inline));
@@ -2828,7 +2828,7 @@ TEST_F(SearchProviderTest, NavigationInlineSchemeSubstring) {
   const base::string16 url(ASCIIToUTF16("http://a.com"));
   SearchSuggestionParser::NavigationResult result(
       ChromeAutocompleteSchemeClassifier(&profile_), GURL(url),
-      AutocompleteMatchType::NAVSUGGEST, 0, base::string16(), std::string(),
+      AutocompleteMatchType::NAVSUGGEST, {}, 0, base::string16(), std::string(),
       false, 0, false, input);
   result.set_received_after_last_keystroke(false);
 
@@ -2854,8 +2854,8 @@ TEST_F(SearchProviderTest, NavigationInlineDomainClassify) {
   QueryForInput(ASCIIToUTF16("h"), false, false);
   SearchSuggestionParser::NavigationResult result(
       ChromeAutocompleteSchemeClassifier(&profile_),
-      GURL("http://www.http.com/http"), AutocompleteMatchType::NAVSUGGEST, 0,
-      base::string16(), std::string(), false, 0, false, ASCIIToUTF16("h"));
+      GURL("http://www.http.com/http"), AutocompleteMatchType::NAVSUGGEST, {},
+      0, base::string16(), std::string(), false, 0, false, ASCIIToUTF16("h"));
   result.set_received_after_last_keystroke(false);
   AutocompleteMatch match(provider_->NavigationToMatch(result));
   EXPECT_EQ(ASCIIToUTF16("ttp.com/http"), match.inline_autocompletion);
@@ -2880,7 +2880,7 @@ TEST_F(SearchProviderTest, NavigationPrefixClassify) {
   QueryForInput(ASCIIToUTF16("moon"), false, false);
   SearchSuggestionParser::NavigationResult result(
       ChromeAutocompleteSchemeClassifier(&profile_),
-      GURL("http://moon.com/moon"), AutocompleteMatchType::NAVSUGGEST, 0,
+      GURL("http://moon.com/moon"), AutocompleteMatchType::NAVSUGGEST, {}, 0,
       base::string16(), std::string(), false, 0, false, ASCIIToUTF16("moon"));
   result.set_received_after_last_keystroke(false);
   AutocompleteMatch match(provider_->NavigationToMatch(result));
@@ -2900,7 +2900,7 @@ TEST_F(SearchProviderTest, NavigationMidWordClassify) {
   QueryForInput(ASCIIToUTF16("acebook"), false, false);
   SearchSuggestionParser::NavigationResult result(
       ChromeAutocompleteSchemeClassifier(&profile_),
-      GURL("http://www.facebook.com"), AutocompleteMatchType::NAVSUGGEST, 0,
+      GURL("http://www.facebook.com"), AutocompleteMatchType::NAVSUGGEST, {}, 0,
       base::string16(), std::string(), false, 0, false,
       ASCIIToUTF16("acebook"));
   result.set_received_after_last_keystroke(false);
@@ -2919,7 +2919,7 @@ TEST_F(SearchProviderTest, NavigationWordBreakClassify) {
   SearchSuggestionParser::NavigationResult result(
       ChromeAutocompleteSchemeClassifier(&profile_),
       GURL("http://www.yellow-animals.com/duck"),
-      AutocompleteMatchType::NAVSUGGEST, 0, base::string16(), std::string(),
+      AutocompleteMatchType::NAVSUGGEST, {}, 0, base::string16(), std::string(),
       false, 0, false, ASCIIToUTF16("duck"));
   result.set_received_after_last_keystroke(false);
   AutocompleteMatch match(provider_->NavigationToMatch(result));
@@ -2940,7 +2940,7 @@ TEST_F(SearchProviderTest, DoTrimHttpScheme) {
   const base::string16 url(ASCIIToUTF16("http://www.facebook.com"));
   SearchSuggestionParser::NavigationResult result(
       ChromeAutocompleteSchemeClassifier(&profile_), GURL(url),
-      AutocompleteMatchType::NAVSUGGEST, 0, base::string16(), std::string(),
+      AutocompleteMatchType::NAVSUGGEST, {}, 0, base::string16(), std::string(),
       false, 0, false, input);
 
   QueryForInput(input, false, false);
@@ -2955,7 +2955,7 @@ TEST_F(SearchProviderTest, DontTrimHttpSchemeIfInputHasScheme) {
   const base::string16 url(ASCIIToUTF16("http://www.facebook.com"));
   SearchSuggestionParser::NavigationResult result(
       ChromeAutocompleteSchemeClassifier(&profile_), GURL(url),
-      AutocompleteMatchType::NAVSUGGEST, 0, base::string16(), std::string(),
+      AutocompleteMatchType::NAVSUGGEST, {}, 0, base::string16(), std::string(),
       false, 0, false, input);
 
   QueryForInput(input, false, false);
@@ -2970,7 +2970,7 @@ TEST_F(SearchProviderTest, DontTrimHttpsSchemeIfInputHasScheme) {
   const base::string16 url(ASCIIToUTF16("https://www.facebook.com"));
   SearchSuggestionParser::NavigationResult result(
       ChromeAutocompleteSchemeClassifier(&profile_), GURL(url),
-      AutocompleteMatchType::NAVSUGGEST, 0, base::string16(), std::string(),
+      AutocompleteMatchType::NAVSUGGEST, {}, 0, base::string16(), std::string(),
       false, 0, false, input);
 
   QueryForInput(input, false, false);
@@ -2984,7 +2984,7 @@ TEST_F(SearchProviderTest, DoTrimHttpsScheme) {
   const base::string16 url(ASCIIToUTF16("https://www.facebook.com"));
   SearchSuggestionParser::NavigationResult result(
       ChromeAutocompleteSchemeClassifier(&profile_), GURL(url),
-      AutocompleteMatchType::NAVSUGGEST, 0, base::string16(), std::string(),
+      AutocompleteMatchType::NAVSUGGEST, {}, 0, base::string16(), std::string(),
       false, 0, false, input);
 
   QueryForInput(input, false, false);

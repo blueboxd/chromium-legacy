@@ -338,7 +338,7 @@ as required builders.
   * Experiment percentage: 50
 
 * [fuchsia_arm64](https://ci.chromium.org/p/chromium/builders/try/fuchsia_arm64) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+fuchsia_arm64)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+fuchsia_arm64))
-  * Experiment percentage: 50
+  * Experiment percentage: 100
 
 * [ios-simulator-code-coverage](https://ci.chromium.org/p/chromium/builders/try/ios-simulator-code-coverage) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+ios-simulator-code-coverage)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+ios-simulator-code-coverage))
   * Experiment percentage: 3

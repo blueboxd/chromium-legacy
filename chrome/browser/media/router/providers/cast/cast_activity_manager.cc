@@ -161,8 +161,8 @@ void CastActivityManager::LaunchSessionParsed(
         activity_it->second->route().media_route_id();
     // We cannot launch the new session in the TerminateSession() callback
     // because if we create a session there, then it may get deleted when
-    // OnSessionRemoved() is called to notify that the previous session was
-    // removed on the receiver.
+    // OnSessionRemoved() is called to notify that the previous session
+    // was removed on the receiver.
     TerminateSession(existing_route_id, base::DoNothing());
     // The new session will be launched when OnSessionRemoved() is called for
     // the old session.
@@ -487,8 +487,7 @@ ActivityRecord* CastActivityManager::AddMirroringActivityRecord(
           : std::make_unique<MirroringActivityRecord>(
                 route, app_id, message_handler_, session_tracker_, tab_id,
                 cast_data, std::move(on_stop));
-  if (route.is_local())
-    activity->CreateMojoBindings(media_router_);
+  activity->CreateMojoBindings(media_router_);
   auto* const activity_ptr = activity.get();
   activities_.emplace(route.media_route_id(), std::move(activity));
   return activity_ptr;

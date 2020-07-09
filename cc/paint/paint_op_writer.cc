@@ -4,6 +4,8 @@
 
 #include "cc/paint/paint_op_writer.h"
 
+#include <memory>
+
 #include "base/bits.h"
 #include "cc/paint/draw_image.h"
 #include "cc/paint/image_provider.h"
@@ -19,17 +21,13 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 
-#ifndef OS_ANDROID
+#if !defined(OS_ANDROID)
 #include "cc/paint/skottie_transfer_cache_entry.h"
 #endif
 
 namespace cc {
 namespace {
-const size_t kSkiaAlignment = 4u;
-
-size_t RoundDownToAlignment(size_t bytes, size_t alignment) {
-  return base::bits::AlignDown(bytes, alignment);
-}
+constexpr size_t kSkiaAlignment = 4u;
 
 SkIRect MakeSrcRect(const PaintImage& image) {
   if (!image)
@@ -124,7 +122,7 @@ void PaintOpWriter::WriteFlattenable(const SkFlattenable* val) {
     return;
 
   size_t bytes_written = val->serialize(
-      memory_, RoundDownToAlignment(remaining_bytes_, kSkiaAlignment));
+      memory_, base::bits::AlignDown(remaining_bytes_, kSkiaAlignment));
   if (bytes_written == 0u) {
     valid_ = false;
     return;
@@ -276,7 +274,7 @@ void PaintOpWriter::Write(const DrawImage& draw_image,
 
 // Android does not use skottie. Remove below section to keep binary size to a
 // minimum.
-#ifndef OS_ANDROID
+#if !defined(OS_ANDROID)
 void PaintOpWriter::Write(scoped_refptr<SkottieWrapper> skottie) {
   uint32_t id = skottie->id();
   Write(id);
@@ -301,7 +299,7 @@ void PaintOpWriter::Write(scoped_refptr<SkottieWrapper> skottie) {
   memory_ += bytes_written;
   remaining_bytes_ -= bytes_written;
 }
-#endif  // OS_ANDROID
+#endif  // !defined(OS_ANDROID)
 
 void PaintOpWriter::WriteImage(uint32_t transfer_cache_entry_id,
                                bool needs_mips) {
@@ -371,7 +369,7 @@ void PaintOpWriter::Write(const sk_sp<SkTextBlob>& blob) {
   procs.fTypefaceCtx = options_.strike_server;
 
   size_t bytes_written = blob->serialize(
-      procs, memory_, RoundDownToAlignment(remaining_bytes_, kSkiaAlignment));
+      procs, memory_, base::bits::AlignDown(remaining_bytes_, kSkiaAlignment));
   if (bytes_written == 0u) {
     valid_ = false;
     return;

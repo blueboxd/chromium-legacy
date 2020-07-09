@@ -21,15 +21,15 @@ namespace system_logs {
 namespace {
 
 // List of keys in the SystemLogsResponse map whose corresponding values will
-// not be anonymized.
+// not be redacted.
 constexpr const char* const kExemptKeysOfUUIDs[] = {
     "CHROMEOS_BOARD_APPID",
     "CHROMEOS_CANARY_APPID",
     "CHROMEOS_RELEASE_APPID",
 };
 
-// Returns true if the given |key| is anonymizer-exempt and whose corresponding
-// value should not be anonymized.
+// Returns true if the given |key| and its corresponding value are exempt from
+// redaction.
 bool IsKeyExempt(const std::string& key) {
   for (auto* const exempt_key : kExemptKeysOfUUIDs) {
     if (key == exempt_key)
@@ -38,12 +38,11 @@ bool IsKeyExempt(const std::string& key) {
   return false;
 }
 
-// Runs the Anonymizer tool over the entris of |response|.
-void Anonymize(feedback::AnonymizerTool* anonymizer,
-               SystemLogsResponse* response) {
+// Runs the Redaction tool over the entris of |response|.
+void Redact(feedback::RedactionTool* redactor, SystemLogsResponse* response) {
   for (auto& element : *response) {
     if (!IsKeyExempt(element.first))
-      element.second = anonymizer->Anonymize(element.second);
+      element.second = redactor->Redact(element.second);
   }
 }
 
@@ -54,7 +53,7 @@ SystemLogsFetcher::SystemLogsFetcher(
     const char* const first_party_extension_ids[])
     : response_(std::make_unique<SystemLogsResponse>()),
       num_pending_requests_(0),
-      task_runner_for_anonymizer_(
+      task_runner_for_redactor_(
           scrub_data
               ? base::ThreadPool::CreateSequencedTaskRunner(
                     // User visible because this is called when the user is
@@ -62,16 +61,16 @@ SystemLogsFetcher::SystemLogsFetcher(
                     {base::TaskPriority::USER_VISIBLE,
                      base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
               : nullptr),
-      anonymizer_(scrub_data ? std::make_unique<feedback::AnonymizerTool>(
-                                   first_party_extension_ids)
-                             : nullptr) {}
+      redactor_(scrub_data ? std::make_unique<feedback::RedactionTool>(
+                                 first_party_extension_ids)
+                           : nullptr) {}
 
 SystemLogsFetcher::~SystemLogsFetcher() {
   // Ensure that destruction happens on same sequence where the object is being
   // accessed.
-  if (anonymizer_) {
-    DCHECK(task_runner_for_anonymizer_);
-    task_runner_for_anonymizer_->DeleteSoon(FROM_HERE, std::move(anonymizer_));
+  if (redactor_) {
+    DCHECK(task_runner_for_redactor_);
+    task_runner_for_redactor_->DeleteSoon(FROM_HERE, std::move(redactor_));
   }
 }
 
@@ -107,14 +106,14 @@ void SystemLogsFetcher::OnFetched(
 
   VLOG(1) << "Received SystemLogSource: " << source_name;
 
-  if (anonymizer_) {
-    // It is safe to pass the unretained anonymizer_ instance here because
-    // the anonymizer_ is owned by |this| and |this| only deletes itself
+  if (redactor_) {
+    // It is safe to pass the unretained redactor_ instance here because
+    // the redactor_ is owned by |this| and |this| only deletes itself
     // once all responses have been collected and added (see AddResponse()).
     SystemLogsResponse* response_ptr = response.get();
-    task_runner_for_anonymizer_->PostTaskAndReply(
+    task_runner_for_redactor_->PostTaskAndReply(
         FROM_HERE,
-        base::BindOnce(Anonymize, base::Unretained(anonymizer_.get()),
+        base::BindOnce(Redact, base::Unretained(redactor_.get()),
                        base::Unretained(response_ptr)),
         base::BindOnce(&SystemLogsFetcher::AddResponse,
                        weak_ptr_factory_.GetWeakPtr(), source_name,

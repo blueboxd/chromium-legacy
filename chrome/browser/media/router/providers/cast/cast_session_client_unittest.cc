@@ -71,23 +71,20 @@ class MockPresentationConnection : public blink::mojom::PresentationConnection {
 
 }  // namespace
 
+#define EXPECT_ERROR_LOG(matcher)                                \
+  if (DLOG_IS_ON(ERROR)) {                                       \
+    EXPECT_CALL(log_, Log(logging::LOG_ERROR, _, _, _, matcher)) \
+        .WillOnce(Return(true)); /* suppress logging */          \
+  }
+
 class CastSessionClientImplTest : public testing::Test {
  public:
-  CastSessionClientImplTest() { activity_.set_session_id("theSessionId"); }
+  CastSessionClientImplTest() { activity_.SetSessionIdForTest("theSessionId"); }
 
   ~CastSessionClientImplTest() override { RunUntilIdle(); }
 
  protected:
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }
-
-  template <typename T>
-  void ExpectErrorLog(const T& matcher) {
-    if (DLOG_IS_ON(ERROR)) {
-      EXPECT_CALL(log_, Log(logging::LOG_ERROR, _, _, _,
-                            matcher))
-          .WillOnce(Return(true));  // suppress logging
-    }
-  }
 
   content::BrowserTaskEnvironment task_environment_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
@@ -111,7 +108,7 @@ class CastSessionClientImplTest : public testing::Test {
 TEST_F(CastSessionClientImplTest, OnInvalidJson) {
   // TODO(crbug.com/905002): Check UMA calls instead of logging (here and
   // below).
-  ExpectErrorLog(HasSubstr("Failed to parse Cast client message"));
+  EXPECT_ERROR_LOG(HasSubstr("Failed to parse Cast client message"));
 
   log_.StartCapturingLogs();
   client_->OnMessage(
@@ -119,8 +116,8 @@ TEST_F(CastSessionClientImplTest, OnInvalidJson) {
 }
 
 TEST_F(CastSessionClientImplTest, OnInvalidMessage) {
-  ExpectErrorLog(AllOf(HasSubstr("Failed to parse Cast client message"),
-                       HasSubstr("Not a Cast message")));
+  EXPECT_ERROR_LOG(AllOf(HasSubstr("Failed to parse Cast client message"),
+                         HasSubstr("Not a Cast message")));
 
   log_.StartCapturingLogs();
   client_->OnMessage(
@@ -128,9 +125,9 @@ TEST_F(CastSessionClientImplTest, OnInvalidMessage) {
 }
 
 TEST_F(CastSessionClientImplTest, OnMessageWrongClientId) {
-  ExpectErrorLog(AllOf(HasSubstr("Client ID mismatch"),
-                       HasSubstr("theClientId"),
-                       HasSubstr("theWrongClientId")));
+  EXPECT_ERROR_LOG(AllOf(HasSubstr("Client ID mismatch"),
+                         HasSubstr("theClientId"),
+                         HasSubstr("theWrongClientId")));
 
   log_.StartCapturingLogs();
   client_->OnMessage(
@@ -145,9 +142,9 @@ TEST_F(CastSessionClientImplTest, OnMessageWrongClientId) {
 }
 
 TEST_F(CastSessionClientImplTest, OnMessageWrongSessionId) {
-  ExpectErrorLog(AllOf(HasSubstr("Session ID mismatch"),
-                       HasSubstr("theSessionId"),
-                       HasSubstr("theWrongSessionId")));
+  EXPECT_ERROR_LOG(AllOf(HasSubstr("Session ID mismatch"),
+                         HasSubstr("theSessionId"),
+                         HasSubstr("theWrongSessionId")));
 
   log_.StartCapturingLogs();
   client_->OnMessage(

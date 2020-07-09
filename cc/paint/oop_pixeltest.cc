@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "cc/base/completion_event.h"
 #include "cc/base/region.h"
 #include "cc/layers/recording_source.h"
@@ -1805,7 +1806,7 @@ TEST_F(OopPixelTest, ConvertYUVToRGB) {
 // A workaround on Android that forces the use of GLES 2.0 instead of 3.0
 // prevents the use of the GL_RG textures required for NV12 format. This
 // test will be reactiviated on Android once the workaround is removed.
-#ifndef OS_ANDROID
+#if !defined(OS_ANDROID)
 TEST_F(OopPixelTest, ConvertNV12ToRGB) {
   RasterOptions options(gfx::Size(16, 16));
   RasterOptions uv_options(gfx::Size(options.resource_size.width() / 2,
@@ -1880,7 +1881,7 @@ TEST_F(OopPixelTest, ConvertNV12ToRGB) {
   sii->DestroySharedImage(sync_token, y_mailbox);
   sii->DestroySharedImage(sync_token, uv_mailbox);
 }
-#endif  // OS_ANDROID
+#endif  // !defined(OS_ANDROID)
 
 class OopPathPixelTest : public OopPixelTest,
                          public ::testing::WithParamInterface<bool> {

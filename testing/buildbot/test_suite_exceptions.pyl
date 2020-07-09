@@ -449,7 +449,7 @@
       },
       'Linux ASan Tests (sandboxed)': {
         'swarming': {
-          'shards': 12, # https://crbug.com/1056300
+          'shards': 30, # https://crbug.com/1103330
         },
       },
       'Linux Chromium OS ASan LSan Tests (1)': {
@@ -833,7 +833,7 @@
       },
       'Linux ASan Tests (sandboxed)': {
         'swarming': {
-          'shards': 4, # https://crbug.com/1051944
+          'shards': 10, # https://crbug.com/1103330
         },
       },
       'Linux TSan Tests': {

@@ -76,7 +76,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   using GetUserDataForAllRegistrationsCallback =
       ServiceWorkerRegistry::GetUserDataForAllRegistrationsCallback;
   using GetInstalledRegistrationOriginsCallback =
-      base::OnceCallback<void(const std::set<url::Origin>& origins)>;
+      base::OnceCallback<void(const std::vector<url::Origin>& origins)>;
   using GetStorageUsageForOriginCallback =
       ServiceWorkerRegistry::GetStorageUsageForOriginCallback;
 

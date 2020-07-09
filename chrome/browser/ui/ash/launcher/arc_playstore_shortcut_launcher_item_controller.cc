@@ -25,7 +25,8 @@ void ArcPlaystoreShortcutLauncherItemController::ItemSelected(
     std::unique_ptr<ui::Event> event,
     int64_t display_id,
     ash::ShelfLaunchSource source,
-    ItemSelectedCallback callback) {
+    ItemSelectedCallback callback,
+    const ItemFilterPredicate& filter_predicate) {
   // Report |callback| now, once Play Store launch request may cause inline
   // replacement of this controller to deferred launch controller and |callback|
   // will never be delivered to ash.

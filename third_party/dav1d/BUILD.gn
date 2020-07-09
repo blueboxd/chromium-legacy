@@ -256,6 +256,11 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       ":dav1d_config",
     ]
 
+    # Necessary to ensure macOS symbols end up with a _ prefix.
+    if (is_mac) {
+      defines = [ "PREFIX" ]
+    }
+
     cflags = dav1d_copts
   }
 }

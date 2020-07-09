@@ -125,11 +125,11 @@ TEST_F(FileSystemChooserTest, AcceptsExtensions) {
   EXPECT_TRUE(dialog_params.file_types->include_all_files);
   ASSERT_EQ(1u, dialog_params.file_types->extensions.size());
 
-  EXPECT_EQ(2u, dialog_params.file_types->extensions[0].size());
-  EXPECT_TRUE(base::Contains(dialog_params.file_types->extensions[0],
-                             FILE_PATH_LITERAL("text")));
-  EXPECT_TRUE(base::Contains(dialog_params.file_types->extensions[0],
-                             FILE_PATH_LITERAL("js")));
+  ASSERT_EQ(2u, dialog_params.file_types->extensions[0].size());
+  EXPECT_EQ(dialog_params.file_types->extensions[0][0],
+            FILE_PATH_LITERAL("text"));
+  EXPECT_EQ(dialog_params.file_types->extensions[0][1],
+            FILE_PATH_LITERAL("js"));
 
   ASSERT_EQ(1u,
             dialog_params.file_types->extension_description_overrides.size());
@@ -151,8 +151,11 @@ TEST_F(FileSystemChooserTest, AcceptsExtensionsAndMimeTypes) {
   EXPECT_FALSE(dialog_params.file_types->include_all_files);
   ASSERT_EQ(1u, dialog_params.file_types->extensions.size());
 
-  EXPECT_TRUE(base::Contains(dialog_params.file_types->extensions[0],
-                             FILE_PATH_LITERAL("text")));
+  ASSERT_GE(dialog_params.file_types->extensions[0].size(), 4u);
+  EXPECT_EQ(dialog_params.file_types->extensions[0][0],
+            FILE_PATH_LITERAL("text"));
+  EXPECT_EQ(dialog_params.file_types->extensions[0][1],
+            FILE_PATH_LITERAL("jpg"));
   EXPECT_TRUE(base::Contains(dialog_params.file_types->extensions[0],
                              FILE_PATH_LITERAL("gif")));
   EXPECT_TRUE(base::Contains(dialog_params.file_types->extensions[0],

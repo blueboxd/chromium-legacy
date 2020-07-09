@@ -51,7 +51,6 @@ class NetErrorHelperCore {
     RELOAD_BUTTON,
     MORE_BUTTON,
     EASTER_EGG,
-    SHOW_CACHED_COPY_BUTTON,  // "Google cached copy" button label experiment.
     DIAGNOSE_ERROR,
     DOWNLOAD_BUTTON,  // "Download page later" experiment.
   };
@@ -105,12 +104,6 @@ class NetErrorHelperCore {
     // Cancels fetching navigation corrections.  Does nothing if no fetch is
     // ongoing.
     virtual void CancelFetchNavigationCorrections() = 0;
-
-    // Sends an HTTP request used to track which link on the page was clicked to
-    // the navigation correction service.
-    virtual void SendTrackingRequest(
-        const GURL& tracking_url,
-        const std::string& tracking_request_body) = 0;
 
     // Starts a reload of the observed frame.
     virtual void ReloadFrame() = 0;
@@ -237,12 +230,6 @@ class NetErrorHelperCore {
   // Note that the visual effects of the 'MORE' button are taken
   // care of in JavaScript.
   void ExecuteButtonPress(Button button);
-
-  // Reports to the correction service that the link with the given tracking
-  // ID was clicked.  Only pages generated with information from the service
-  // have links with tracking IDs.  Duplicate requests from the same page with
-  // the same tracking ID are ignored.
-  void TrackClick(int tracking_id);
 
   // Opens a suggested offline item.
   void LaunchOfflineItem(const std::string& id, const std::string& name_space);

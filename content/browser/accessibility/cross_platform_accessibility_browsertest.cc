@@ -826,7 +826,7 @@ IN_PROC_BROWSER_TEST_F(
 
 // On Android root scroll offset is handled by the Java layer. The final rect
 // bounds is device specific.
-#ifndef OS_ANDROID
+#if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
                        GetBoundsRectUnclippedRootFrameFromIFrame) {
   // Start by loading a document with iframes.
@@ -1148,7 +1148,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
               root_accessibility_manager->GetFocus());
   }
 }
-#endif  // ifndef OS_ANDROID
+#endif  // !defined(OS_ANDROID)
 
 class CrossPlatformAccessibilityBrowserTestWithImplicitRootScrolling
     : public CrossPlatformAccessibilityBrowserTest {

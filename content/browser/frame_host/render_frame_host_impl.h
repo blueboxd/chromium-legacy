@@ -1702,6 +1702,19 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void GetSavableResourceLinksFromRenderer();
 
+  // Helper for checking if a navigation to an error page should be excluded
+  // from CanAccessDataForOrigin and/or CanCommitOriginAndUrl security checks.
+  //
+  // It is allowed for |navigation_request| to be null - for example when
+  // committing a same-document navigation.
+  //
+  // The optional |should_commit_unreachable_url| will be set to |true| if the
+  // caller should verify that FrameHostMsg_DidCommitProvisionalLoad_Params'
+  // url_is_unreachable is |true|.
+  bool ShouldBypassSecurityChecksForErrorPage(
+      NavigationRequest* navigation_request,
+      bool* should_commit_unreachable_url = nullptr);
+
  protected:
   friend class RenderFrameHostFactory;
 

@@ -3,6 +3,9 @@ include_rules = [
   "+services/audio/public/cpp",
   "+services/device/public/mojom",
 
+  "+third_party/securemessage",
+  "+third_party/ukey2",
+
   # Library used for calculating CRC-32 needed for HWID verification.
   "+third_party/zlib",
 ]

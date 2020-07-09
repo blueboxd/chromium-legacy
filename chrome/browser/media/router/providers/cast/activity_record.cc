@@ -73,10 +73,10 @@ void ActivityRecord::SetOrUpdateSession(const CastSession& session,
   sink_ = sink;
   if (session_id_) {
     DCHECK_EQ(*session_id_, session.session_id());
+    OnSessionUpdated(session, hash_token);
   } else {
     session_id_ = session.session_id();
-    if (on_session_set_)
-      std::move(on_session_set_).Run();
+    OnSessionSet(session);
   }
 }
 
@@ -174,6 +174,9 @@ void ActivityRecord::HandleLeaveSession(const std::string& client_id) {
     connected_clients_.erase(leaving_client_it);
   }
 }
+
+void ActivityRecord::OnSessionUpdated(const CastSession& session,
+                                      const std::string& hash_token) {}
 
 CastSessionClientFactoryForTest* ActivityRecord::client_factory_for_test_ =
     nullptr;

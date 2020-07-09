@@ -681,6 +681,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_PREFS_PRIVACY" desc="Title for the Privacy preferences. [CHAR-LIMIT=32]">
         Privacy
       </message>
+      <message name="IDS_PREFS_PRIVACY_SECURITY" desc="Title for the Privacy and Security preferences. [CHAR-LIMIT=32]">
+        Privacy and security
+      </message>
       <message name="IDS_SAFE_BROWSING_SCOUT_REPORTING_TITLE" desc="Title for checkbox that controls reporting data to detect bad apps/sites. Please ensure ‘Safe Browsing’ in this message matches the ‘Safe Browsing’ settings title.">
         Help improve Chrome security
       </message>
@@ -924,6 +927,17 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_SAFETY_CHECK_UPDATES_ERROR" desc="Text to display when the updates check failed for some reason.">
         Chrome could not check for updates
+      </message>
+
+       <!-- Security preferences -->
+      <message name="IDS_PREFS_SECURITY_TITLE" desc="Title for the Security preferences. [CHAR-LIMIT=32]">
+        Security
+      </message>
+      <message name="IDS_PREFS_SECURITY_SUMMARY" desc="Summary for the Security preferences.">
+        Safe Browsing (protection from dangerous sites) and other security settings
+      </message>
+      <message name="IDS_PREFS_SECTION_SAFE_BROWSING_TITLE" desc="Title for the Safe Browsing section. [CHAR-LIMIT=32]">
+        Safe Browsing
       </message>
 
       <!-- Accessibility preferences -->

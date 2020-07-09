@@ -40,7 +40,7 @@ void DeviceToDeviceInitiatorHelper::CreateHelloMessage(
     multidevice::SecureMessageDelegate* secure_message_delegate,
     const MessageCallback& callback) {
   // Decode public key into the |initator_hello| proto.
-  securemessage::InitiatorHello initiator_hello;
+  securegcm::InitiatorHello initiator_hello;
   if (!initiator_hello.mutable_public_dh_key()->ParseFromString(
           session_public_key)) {
     PA_LOG(ERROR) << "Unable to parse user's public key";
@@ -174,7 +174,7 @@ void DeviceToDeviceInitiatorHelper::OnInnerMessageCreatedForInitiatorAuth(
   gcm_metadata.set_version(kGcmMetadataVersion);
 
   // Store the inner message inside a DeviceToDeviceMessage proto.
-  securemessage::DeviceToDeviceMessage device_to_device_message;
+  securegcm::DeviceToDeviceMessage device_to_device_message;
   device_to_device_message.set_message(inner_message);
   device_to_device_message.set_sequence_number(1);
 
@@ -215,7 +215,7 @@ void DeviceToDeviceInitiatorHelper::BeginResponderAuthValidation(
   }
 
   // Extract responder session public key from |decryption_key_id| field.
-  securemessage::ResponderHello responder_hello;
+  securegcm::ResponderHello responder_hello;
   if (!responder_hello.ParseFromString(header.decryption_key_id()) ||
       !responder_hello.public_dh_key().SerializeToString(
           &context.responder_session_public_key)) {
@@ -261,7 +261,7 @@ void DeviceToDeviceInitiatorHelper::OnOuterMessageUnwrappedForResponderAuth(
   }
 
   // Parse the decrypted payload.
-  securemessage::DeviceToDeviceMessage device_to_device_message;
+  securegcm::DeviceToDeviceMessage device_to_device_message;
   if (!device_to_device_message.ParseFromString(payload) ||
       device_to_device_message.sequence_number() != 1) {
     PA_LOG(VERBOSE) << "Failed to validate DeviceToDeviceMessage payload.";

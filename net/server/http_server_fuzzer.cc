@@ -18,10 +18,10 @@ namespace {
 class WaitTillHttpCloseDelegate : public net::HttpServer::Delegate {
  public:
   WaitTillHttpCloseDelegate(FuzzedDataProvider* data_provider,
-                            const base::Closure& done_closure)
+                            base::OnceClosure done_closure)
       : server_(nullptr),
         data_provider_(data_provider),
-        done_closure_(done_closure),
+        done_closure_(std::move(done_closure)),
         action_flags_(data_provider_->ConsumeIntegral<uint8_t>()) {}
 
   void set_server(net::HttpServer* server) { server_ = server; }
@@ -70,7 +70,11 @@ class WaitTillHttpCloseDelegate : public net::HttpServer::Delegate {
     }
   }
 
-  void OnClose(int connection_id) override { done_closure_.Run(); }
+  void OnClose(int connection_id) override {
+    // In general, OnClose can be called more than once, but FuzzedServerSocket
+    // only makes one connection, and it is the only socket of interest here.
+    std::move(done_closure_).Run();
+  }
 
  private:
   enum {
@@ -83,7 +87,7 @@ class WaitTillHttpCloseDelegate : public net::HttpServer::Delegate {
 
   net::HttpServer* server_;
   FuzzedDataProvider* const data_provider_;
-  base::Closure done_closure_;
+  base::OnceClosure done_closure_;
   const uint8_t action_flags_;
 
   DISALLOW_COPY_AND_ASSIGN(WaitTillHttpCloseDelegate);

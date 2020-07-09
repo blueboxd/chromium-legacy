@@ -379,7 +379,7 @@ void Shelf::ActivateShelfItemOnDisplay(int item_index, int64_t display_id) {
   std::unique_ptr<ui::Event> event = std::make_unique<ui::KeyEvent>(
       ui::ET_KEY_RELEASED, ui::VKEY_UNKNOWN, ui::EF_NONE);
   item_delegate->ItemSelected(std::move(event), display_id, LAUNCH_FROM_SHELF,
-                              base::DoNothing());
+                              base::DoNothing(), base::NullCallback());
 }
 
 void Shelf::CreateNavigationWidget(aura::Window* container) {

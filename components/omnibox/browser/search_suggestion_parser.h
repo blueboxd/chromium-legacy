@@ -49,6 +49,7 @@ class SearchSuggestionParser {
            int relevance,
            bool relevance_from_server,
            AutocompleteMatchType::Type type,
+           std::vector<int> subtypes,
            int subtype_identifier,
            const std::string& deletion_url);
     Result(const Result& other);
@@ -62,6 +63,7 @@ class SearchSuggestionParser {
     }
 
     AutocompleteMatchType::Type type() const { return type_; }
+    const std::vector<int>& subtypes() const { return subtypes_; }
     int subtype_identifier() const { return subtype_identifier_; }
     int relevance() const { return relevance_; }
     void set_relevance(int relevance) { relevance_ = relevance; }
@@ -96,6 +98,9 @@ class SearchSuggestionParser {
     bool from_keyword_;
 
     AutocompleteMatchType::Type type_;
+
+    // Suggestion subtypes.
+    std::vector<int> subtypes_;
 
     // Used to identify the specific source / type for suggestions by the
     // suggest server. See |result_subtype_identifier| in omnibox.proto for more
@@ -136,6 +141,7 @@ class SearchSuggestionParser {
                   const base::string16& input_text);
     SuggestResult(const base::string16& suggestion,
                   AutocompleteMatchType::Type type,
+                  std::vector<int> subtypes,
                   int subtype_identifier,
                   const base::string16& match_contents,
                   const base::string16& match_contents_prefix,
@@ -235,6 +241,7 @@ class SearchSuggestionParser {
     NavigationResult(const AutocompleteSchemeClassifier& scheme_classifier,
                      const GURL& url,
                      AutocompleteMatchType::Type type,
+                     std::vector<int> subtypes,
                      int subtype_identifier,
                      const base::string16& description,
                      const std::string& deletion_url,

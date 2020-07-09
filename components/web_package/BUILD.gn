@@ -10,8 +10,6 @@ static_library("web_package") {
     "web_bundle_parser.h",
     "web_bundle_parser_factory.cc",
     "web_bundle_parser_factory.h",
-    "web_bundle_utils.cc",
-    "web_bundle_utils.h",
   ]
 
   deps = [
@@ -19,7 +17,6 @@ static_library("web_package") {
     "//components/cbor",
     "//mojo/public/cpp/bindings",
     "//net",
-    "//services/network/public/mojom",
   ]
 
   public_deps = [ "//components/web_package/mojom" ]

@@ -36,6 +36,13 @@ class WebGLTexture final : public WebGLSharedPlatform3DObject {
 
  public:
   explicit WebGLTexture(WebGLRenderingContextBase*);
+
+  // The provided GLuint must have been created in the same
+  // WebGLRenderingContextBase that is provided.
+  explicit WebGLTexture(WebGLRenderingContextBase* ctx,
+                        GLuint texture,
+                        GLenum target);
+
   ~WebGLTexture() override;
 
   void SetTarget(GLenum);

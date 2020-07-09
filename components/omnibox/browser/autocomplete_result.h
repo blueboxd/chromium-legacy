@@ -124,6 +124,12 @@ class AutocompleteResult {
       bool input_from_omnibox_focus,
       const ACMatches& matches,
       const CompareWithDemoteByType<AutocompleteMatch>& comparing_object);
+  // Determines how many matches to keep depending on how many URLs would be
+  // shown. CalculateNumMatches defers to CalculateNumMatchesPerUrlCount if the
+  // kDynamicMaxAutocomplete feature is enabled.
+  static size_t CalculateNumMatchesPerUrlCount(
+      const ACMatches& matches,
+      const CompareWithDemoteByType<AutocompleteMatch>& comparing_object);
 
   const SearchSuggestionParser::HeadersMap& headers_map() const {
     return headers_map_;

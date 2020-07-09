@@ -35,15 +35,15 @@ AtomicString TaskAttributionTiming::containerType() const {
   return container_type_;
 }
 
-String TaskAttributionTiming::containerSrc() const {
+AtomicString TaskAttributionTiming::containerSrc() const {
   return container_src_;
 }
 
-String TaskAttributionTiming::containerId() const {
+AtomicString TaskAttributionTiming::containerId() const {
   return container_id_;
 }
 
-String TaskAttributionTiming::containerName() const {
+AtomicString TaskAttributionTiming::containerName() const {
   return container_name_;
 }
 

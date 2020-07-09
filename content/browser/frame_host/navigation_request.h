@@ -665,6 +665,30 @@ class CONTENT_EXPORT NavigationRequest
   // navigation or an error page.
   bool IsWaitingToCommit();
 
+  // Returns true if |url| and |base_url| represent a WebView
+  // loadDataWithBaseUrl navigation.
+  static bool IsLoadDataWithBaseURL(const GURL& url, const GURL& base_url);
+
+  // Returns true if |common_params| represents a WebView loadDataWithBaseUrl
+  // navigation.
+  static bool IsLoadDataWithBaseURL(
+      const mojom::CommonNavigationParams& common_params);
+
+  // Will calculate an *approximation* of the origin that this NavigationRequest
+  // will commit.  (An "approximation", because sandboxing is not taken into
+  // account - see https://crbug.com/1041376.  The approximation is still good
+  // enough for |request_initiator_site_lock| in
+  // network::mojom::URLLoaderFactoryParams.)
+  //
+  // This method depends on GetRenderFrameHost() and therefore can only be
+  // called after a response has been delivered for processing, or after the
+  // navigation fails with an error page.
+  //
+  // TODO(lukasza, arthursonzogni): https://crbug.com/888079: Once the browser
+  // process is able to calculate the exact origin to commit, the method below
+  // should be renamed to something like GetOriginToCommit().
+  url::Origin GetOriginForURLLoaderFactory();
+
  private:
   friend class NavigationRequestTest;
 

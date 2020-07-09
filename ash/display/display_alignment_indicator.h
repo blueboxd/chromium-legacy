@@ -25,15 +25,24 @@ class IndicatorPillView;
 // display's name.
 class ASH_EXPORT DisplayAlignmentIndicator {
  public:
-  // Construct and show indicator highlight and pill.
+  // Construct and show indicator highlight without a pill.
   // |src_display| is the display that the indicator is shown in.
   // |bounds| is the position and size of the 1px thick shared edge between
-  // |src_display| and target display specified by |target_name|. |target_name|
-  // is the target display's name that is shown in the display settings. Pill
-  // does not render if |target_name| is an empty string.
-  DisplayAlignmentIndicator(const display::Display& src_display,
-                            const gfx::Rect& bounds,
-                            const std::string& target_name);
+  // |src_display| and target display.
+  static std::unique_ptr<DisplayAlignmentIndicator> Create(
+      const display::Display& src_display,
+      const gfx::Rect& bounds);
+
+  // Construct and show indicator highlight with a pill.
+  // |src_display| is the display that the indicator is shown in.
+  // |bounds| is the position and size of the 1px thick shared edge between
+  // |src_display| and target display. |target_name| is the name of the adjacent
+  // display that is displayed in the pill.
+  static std::unique_ptr<DisplayAlignmentIndicator> CreateWithPill(
+      const display::Display& src_display,
+      const gfx::Rect& bounds,
+      const std::string& target_name);
+
   DisplayAlignmentIndicator(const DisplayAlignmentIndicator&) = delete;
   DisplayAlignmentIndicator& operator=(const DisplayAlignmentIndicator&) =
       delete;
@@ -46,6 +55,11 @@ class ASH_EXPORT DisplayAlignmentIndicator {
  private:
   friend class DisplayAlignmentIndicatorTest;
   friend class DisplayAlignmentControllerTest;
+
+  // Pill does not render if |target_name| is an empty string.
+  DisplayAlignmentIndicator(const display::Display& src_display,
+                            const gfx::Rect& bounds,
+                            const std::string& target_name);
 
   // View and Widget for showing the blue indicator highlights on the edge of
   // the display.

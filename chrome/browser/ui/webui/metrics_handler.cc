@@ -40,10 +40,6 @@ void MetricsHandler::RegisterMessages() {
       "metricsHandler:recordTime",
       base::BindRepeating(&MetricsHandler::HandleRecordTime,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "metricsHandler:logEventTime",
-      base::BindRepeating(&MetricsHandler::HandleLogEventTime,
-                          base::Unretained(this)));
 }
 
 void MetricsHandler::HandleRecordAction(const base::ListValue* args) {
@@ -116,31 +112,4 @@ void MetricsHandler::HandleRecordTime(const base::ListValue* args) {
       base::TimeDelta::FromSeconds(10), 50,
       base::HistogramBase::kUmaTargetedHistogramFlag);
   counter->AddTime(time_value);
-}
-
-void MetricsHandler::HandleLogEventTime(const base::ListValue* args) {
-  std::string event_name = base::UTF16ToUTF8(ExtractStringValue(args));
-  WebContents* tab = web_ui()->GetWebContents();
-
-  // Not all new tab pages get timed. In those cases, we don't have a
-  // new_tab_start_time_.
-  CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(tab);
-  if (core_tab_helper->new_tab_start_time().is_null())
-    return;
-
-  base::TimeDelta duration =
-      base::TimeTicks::Now() - core_tab_helper->new_tab_start_time();
-
-  if (event_name == "Tab.NewTabScriptStart") {
-    UMA_HISTOGRAM_TIMES("Tab.NewTabScriptStart", duration);
-  } else if (event_name == "Tab.NewTabDOMContentLoaded") {
-    UMA_HISTOGRAM_TIMES("Tab.NewTabDOMContentLoaded", duration);
-  } else if (event_name == "Tab.NewTabOnload") {
-    UMA_HISTOGRAM_TIMES("Tab.NewTabOnload", duration);
-    // The new tab page has finished loading; reset it.
-    CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(tab);
-    core_tab_helper->set_new_tab_start_time(base::TimeTicks());
-  } else {
-    NOTREACHED();
-  }
 }

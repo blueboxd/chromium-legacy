@@ -477,8 +477,38 @@ TEST_F(CloudSpeechRecognitionClientUnitTest, StreamReset) {
   std::string DownloadUrlBeforeReset =
       GetDownstreamRequest()->request.url.spec();
 
-  // Fast forward by 325 seconds to trigger a reset.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(325));
+  // Fast forward by 325 total seconds to trigger a reset.
+  for (int i = 0; i < 13; i++) {
+    InjectDummyAudio();
+    task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(25));
+  }
+
+  ASSERT_EQ(2, speech_recognition_service_impl_->GetNumPending());
+
+  std::string UploadUrlAfterReset = GetUpstreamRequest()->request.url.spec();
+  std::string DownloadUrlAfterReset =
+      GetDownstreamRequest()->request.url.spec();
+
+  // The URLs after the reset should contain a different request key.
+  ASSERT_NE(UploadUrlBeforeReset, UploadUrlAfterReset);
+  ASSERT_NE(DownloadUrlBeforeReset, DownloadUrlAfterReset);
+}
+
+// Verifies that the stream is reset if the audio is paused for longer than 30
+// seconds.
+TEST_F(CloudSpeechRecognitionClientUnitTest, StreamResetAfterPause) {
+  ASSERT_TRUE(client_under_test_->IsInitialized());
+  ASSERT_TRUE(GetUpstreamRequest());
+  ASSERT_TRUE(GetDownstreamRequest());
+  ASSERT_EQ("", ConsumeChunkedUploadData(0));
+
+  InjectDummyAudio();
+  std::string UploadUrlBeforeReset = GetUpstreamRequest()->request.url.spec();
+  std::string DownloadUrlBeforeReset =
+      GetDownstreamRequest()->request.url.spec();
+
+  // Fast forward by 35 seconds to trigger a reset.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(35));
   InjectDummyAudio();
   ASSERT_EQ(2, speech_recognition_service_impl_->GetNumPending());
 

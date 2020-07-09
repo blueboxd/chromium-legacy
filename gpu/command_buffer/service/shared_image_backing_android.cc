@@ -102,4 +102,10 @@ void SharedImageBackingAndroid::EndRead(const SharedImageRepresentation* reader,
       gl::MergeFDs(std::move(read_sync_fd_), std::move(end_read_fd));
 }
 
+base::ScopedFD SharedImageBackingAndroid::TakeReadFence() {
+  AutoLock auto_lock(this);
+
+  return std::move(read_sync_fd_);
+}
+
 }  // namespace gpu

@@ -159,8 +159,16 @@ OmniboxViewViews::ElideAnimation::~ElideAnimation() = default;
 // TODO(estark): this code doesn't work for URLs with RTL components. Will need
 // to figure out another animation or just skip the animation entirely on URLs
 // with RTL components.
-void OmniboxViewViews::ElideAnimation::Start(const gfx::Range& elide_to_bounds,
-                                             uint32_t delay_ms) {
+void OmniboxViewViews::ElideAnimation::Start(
+    const gfx::Range& elide_to_bounds,
+    uint32_t delay_ms,
+    const std::vector<gfx::Range>& ranges_to_color,
+    SkColor starting_color,
+    SkColor ending_color) {
+  ranges_to_color_ = ranges_to_color;
+  starting_color_ = starting_color;
+  ending_color_ = ending_color;
+
   // After computing |elide_to_rect_| below, |elide_to_bounds| aren't actually
   // need anymore for the animation. However, the bounds provide a convenient
   // way for the animation consumer to check if an animation is currently in
@@ -211,6 +219,13 @@ const gfx::Range& OmniboxViewViews::ElideAnimation::GetElideToBounds() const {
   return elide_to_bounds_;
 }
 
+SkColor OmniboxViewViews::ElideAnimation::GetCurrentColor() const {
+  return animation_
+             ? gfx::Tween::ColorValueBetween(animation_->GetCurrentValue(),
+                                             starting_color_, ending_color_)
+             : gfx::kPlaceholderColor;
+}
+
 gfx::MultiAnimation*
 OmniboxViewViews::ElideAnimation::GetAnimationForTesting() {
   return animation_.get();
@@ -219,6 +234,8 @@ OmniboxViewViews::ElideAnimation::GetAnimationForTesting() {
 void OmniboxViewViews::ElideAnimation::AnimationProgressed(
     const gfx::Animation* animation) {
   DCHECK(!view_->model()->user_input_in_progress());
+  DCHECK_EQ(animation, animation_.get());
+
   if (animation->GetCurrentValue() == 0)
     return;
 
@@ -240,6 +257,10 @@ void OmniboxViewViews::ElideAnimation::AnimationProgressed(
   render_text_->SetDisplayOffset(gfx::Tween::IntValueBetween(
       animation->GetCurrentValue(), starting_display_offset_,
       ending_display_offset_));
+
+  for (const auto& range : ranges_to_color_) {
+    view_->ApplyColor(GetCurrentColor(), range);
+  }
 
   view_->SchedulePaint();
 }
@@ -1166,9 +1187,18 @@ void OmniboxViewViews::OnMouseMoved(const ui::MouseEvent& event) {
             unelide_bounds) {
       return;
     }
+    SkColor starting_color =
+        hover_elide_or_unelide_animation_->GetCurrentColor();
+    if (starting_color == gfx::kPlaceholderColor)
+      starting_color = SK_ColorTRANSPARENT;
     hover_elide_or_unelide_animation_->Stop();
+    std::vector<gfx::Range> ranges_surrounding_simplified_domain;
+    GetSimplifiedDomainBounds(&ranges_surrounding_simplified_domain);
     hover_elide_or_unelide_animation_->Start(
-        unelide_bounds, OmniboxFieldTrial::UnelideURLOnHoverThresholdMs());
+        unelide_bounds, OmniboxFieldTrial::UnelideURLOnHoverThresholdMs(),
+        ranges_surrounding_simplified_domain, starting_color,
+        GetOmniboxColor(GetThemeProvider(),
+                        OmniboxPart::LOCATION_BAR_TEXT_DIMMED));
   }
 }
 
@@ -1194,14 +1224,24 @@ void OmniboxViewViews::OnMouseExited(const ui::MouseEvent& event) {
   // |hover_elide_or_unelide_animation_| is created in DidGetUserInteraction()
   // so its existence signals that user interaction has taken place already.
   if (hover_elide_or_unelide_animation_) {
+    SkColor starting_color =
+        hover_elide_or_unelide_animation_->IsAnimating()
+            ? hover_elide_or_unelide_animation_->GetCurrentColor()
+            : GetOmniboxColor(GetThemeProvider(),
+                              OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
     hover_elide_or_unelide_animation_->Stop();
     // Elisions don't take display offset into account (see
     // https://crbug.com/1099078), so the RenderText must be in NO_ELIDE mode to
     // avoid over-eliding when some of the text is not visible due to display
     // offset.
     GetRenderText()->SetElideBehavior(gfx::NO_ELIDE);
-    hover_elide_or_unelide_animation_->Start(GetSimplifiedDomainBounds(),
-                                             0 /* delay_ms */);
+    std::vector<gfx::Range> ranges_surrounding_simplified_domain;
+    gfx::Range simplified_domain =
+        GetSimplifiedDomainBounds(&ranges_surrounding_simplified_domain);
+    hover_elide_or_unelide_animation_->Start(
+        simplified_domain, 0 /* delay_ms */,
+        ranges_surrounding_simplified_domain, starting_color,
+        SK_ColorTRANSPARENT);
   }
 }
 
@@ -1750,9 +1790,15 @@ void OmniboxViewViews::DidGetUserInteraction(
     GetRenderText()->SetElideBehavior(gfx::NO_ELIDE);
     elide_after_interaction_animation_ =
         std::make_unique<ElideAnimation>(this, GetRenderText());
-    std::make_unique<ElideAnimation>(this, GetRenderText());
-    elide_after_interaction_animation_->Start(GetSimplifiedDomainBounds(),
-                                              0 /* delay_ms */);
+    std::vector<gfx::Range> ranges_surrounding_simplified_domain;
+    gfx::Range simplified_domain =
+        GetSimplifiedDomainBounds(&ranges_surrounding_simplified_domain);
+    elide_after_interaction_animation_->Start(
+        simplified_domain, 0 /* delay_ms */,
+        ranges_surrounding_simplified_domain,
+        GetOmniboxColor(GetThemeProvider(),
+                        OmniboxPart::LOCATION_BAR_TEXT_DIMMED),
+        SK_ColorTRANSPARENT);
   }
   // Now that the URL is being elided, create the animation to bring it back on
   // hover (if enabled via field trial), if it hasn't already been created on an
@@ -2227,14 +2273,24 @@ void OmniboxViewViews::OnTemplateURLServiceChanged() {
   InstallPlaceholderText();
 }
 
-gfx::Range OmniboxViewViews::GetSimplifiedDomainBounds() {
+gfx::Range OmniboxViewViews::GetSimplifiedDomainBounds(
+    std::vector<gfx::Range>* ranges_surrounding_simplified_domain) {
+  // If provided, |ranges_surrounding_simplified_domain| should be empty.
+  DCHECK(!ranges_surrounding_simplified_domain ||
+         ranges_surrounding_simplified_domain->empty());
+
   url::Component scheme, host;
   base::string16 text = GetText();
   AutocompleteInput::ParseForEmphasizeComponents(
       text, model()->client()->GetSchemeClassifier(), &scheme, &host);
 
-  if (!OmniboxFieldTrial::ShouldElideToRegistrableDomain())
+  if (!OmniboxFieldTrial::ShouldElideToRegistrableDomain()) {
+    if (ranges_surrounding_simplified_domain) {
+      ranges_surrounding_simplified_domain->push_back(
+          gfx::Range(host.end(), text.size()));
+    }
     return gfx::Range(0, host.end());
+  }
 
   // TODO(estark): push this inside ParseForEmphasizeComponents()?
   GURL url = url_formatter::FixupURL(base::UTF16ToUTF8(text), std::string());
@@ -2242,12 +2298,23 @@ gfx::Range OmniboxViewViews::GetSimplifiedDomainBounds() {
       net::registry_controlled_domains::GetDomainAndRegistry(
           url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 
-  if (simplified_domain.empty())
+  if (simplified_domain.empty()) {
+    if (ranges_surrounding_simplified_domain) {
+      ranges_surrounding_simplified_domain->push_back(
+          gfx::Range(host.end(), text.size()));
+    }
     return gfx::Range(0, host.end());
+  }
 
   size_t simplified_domain_pos =
       text.find(base::ASCIIToUTF16(simplified_domain));
   DCHECK_NE(simplified_domain_pos, std::string::npos);
+  if (ranges_surrounding_simplified_domain) {
+    ranges_surrounding_simplified_domain->push_back(
+        gfx::Range(0, simplified_domain_pos));
+    ranges_surrounding_simplified_domain->push_back(
+        gfx::Range(host.end(), text.size()));
+  }
   return gfx::Range(simplified_domain_pos, host.end());
 }
 
@@ -2315,7 +2382,7 @@ void OmniboxViewViews::ElideToSimplifiedDomain() {
 
   // The simplified domain string must be a substring of the current display
   // text in order to elide to it.
-  gfx::Range simplified_domain_bounds = GetSimplifiedDomainBounds();
+  gfx::Range simplified_domain_bounds = GetSimplifiedDomainBounds(nullptr);
   if (GetRenderText()->GetDisplayText().find(GetText().substr(
           simplified_domain_bounds.start(), simplified_domain_bounds.end())) ==
       std::string::npos) {
@@ -2366,6 +2433,10 @@ void OmniboxViewViews::UnelideFromSimplifiedDomain() {
   ApplyCaretVisibility();
   FitToLocalBounds();
   GetRenderText()->SetElideBehavior(gfx::ELIDE_TAIL);
+}
+
+void OmniboxViewViews::ApplyColor(SkColor color, const gfx::Range& range) {
+  Textfield::ApplyColor(color, range);
 }
 
 OmniboxViewViews::ElideAnimation*

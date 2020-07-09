@@ -70,8 +70,8 @@ WebSourceBufferImpl::WebSourceBufferImpl(const std::string& id,
       append_window_end_(kInfiniteDuration) {
   DCHECK(demuxer_);
   demuxer_->SetTracksWatcher(
-      id, base::Bind(&WebSourceBufferImpl::InitSegmentReceived,
-                     base::Unretained(this)));
+      id, base::BindRepeating(&WebSourceBufferImpl::InitSegmentReceived,
+                              base::Unretained(this)));
   demuxer_->SetParseWarningCallback(
       id, base::BindRepeating(&WebSourceBufferImpl::NotifyParseWarning,
                               base::Unretained(this)));

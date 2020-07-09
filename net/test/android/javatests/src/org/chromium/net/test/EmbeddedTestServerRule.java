@@ -39,6 +39,7 @@ public class EmbeddedTestServerRule extends TestWatcher {
         synchronized (mLock) {
             if (mServer != null) {
                 mServer.stopAndDestroyServer();
+                mServer = null;
             }
         }
     }

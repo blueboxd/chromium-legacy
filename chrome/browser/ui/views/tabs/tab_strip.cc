@@ -715,7 +715,7 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
       DCHECK_NE(TabStripModel::kNoTab, tab_data_index);
       views[i]->SetBoundsRect(ideal_bounds(tab_data_index));
     }
-    tab_strip_->SetTabVisibility();
+    tab_strip_->SetTabSlotVisibility();
     tab_strip_->SchedulePaint();
   }
 
@@ -776,7 +776,7 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
         view->SetBoundsRect(new_bounds);
       }
     }
-    tab_strip_->SetTabVisibility();
+    tab_strip_->SetTabSlotVisibility();
   }
 
   // Forces the entire tabstrip to lay out.
@@ -1382,10 +1382,10 @@ void TabStrip::OnGroupMoved(const tab_groups::TabGroupId& group) {
 void TabStrip::OnGroupClosed(const tab_groups::TabGroupId& group) {
   bounds_animator_.StopAnimatingView(group_header(group));
   layout_helper_->RemoveGroupHeader(group);
-  group_views_.erase(group);
 
   UpdateIdealBounds();
   AnimateToIdealBounds();
+  group_views_.erase(group);
 }
 
 void TabStrip::ShiftGroupLeft(const tab_groups::TabGroupId& group) {
@@ -1400,14 +1400,6 @@ bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {
   // Detached tabs should always be invisible (as they close).
   if (tab->detached())
     return false;
-
-  // Collapsed tabs disappear once they've reached their minimum size. This is
-  // different than very small non-collapsed tabs, because in that case the tab
-  // (and its favicon) must still be visible.
-  if (tab->group() && controller()->IsGroupCollapsed(*tab->group()) &&
-      tab->bounds().width() <= tab->tab_style()->GetMinimumInactiveWidth()) {
-    return false;
-  }
 
   // When stacking tabs, all tabs should always be visible.
   if (stacked_layout_)
@@ -2111,7 +2103,7 @@ void TabStrip::Layout() {
 
   if (IsAnimating()) {
     // Hide tabs that have animated at least partially out of the clip region.
-    SetTabVisibility();
+    SetTabSlotVisibility();
     return;
   }
 
@@ -2128,7 +2120,7 @@ void TabStrip::Layout() {
     // It should be as wide as possible subject to the above constraints.
     const int width = std::min(max_width, std::max(min_width, available_width));
     SetBounds(0, 0, width, height());
-    SetTabVisibility();
+    SetTabSlotVisibility();
   }
 
   // Only do a layout if our size changed.
@@ -2478,7 +2470,6 @@ void TabStrip::StartRemoveTabAnimation(int model_index, bool was_active) {
     Tab* next_active_tab = tab_at(next_active_index);
     Tab* tab_being_removed = tab_at(model_index);
 
-    UpdateIdealBounds();
     int size_delta = tab_being_removed->width();
     if (!tab_being_removed->data().pinned && was_active &&
         GetActiveTabWidth() > GetInactiveTabWidth()) {
@@ -2666,18 +2657,32 @@ void TabStrip::CompleteAnimationAndLayout() {
   UpdateIdealBounds();
   SnapToIdealBounds();
 
-  SetTabVisibility();
+  SetTabSlotVisibility();
   SchedulePaint();
 }
 
-void TabStrip::SetTabVisibility() {
-  // We could probably be more efficient here by making use of the fact that the
-  // tabstrip will always have any visible tabs, and then any invisible tabs, so
-  // we could e.g. binary-search for the changeover point.  But since we have to
-  // iterate through all the tabs to call SetVisible() anyway, it doesn't seem
-  // worth it.
-  for (Tab* tab : layout_helper_->GetTabs())
-    tab->SetVisible(ShouldTabBeVisible(tab));
+void TabStrip::SetTabSlotVisibility() {
+  bool last_tab_visible = false;
+  base::Optional<tab_groups::TabGroupId> last_tab_group = base::nullopt;
+  std::vector<Tab*> tabs = layout_helper_->GetTabs();
+  for (std::vector<Tab*>::reverse_iterator tab = tabs.rbegin();
+       tab != tabs.rend(); ++tab) {
+    base::Optional<tab_groups::TabGroupId> current_group = (*tab)->group();
+    if (current_group != last_tab_group && last_tab_group.has_value())
+      group_header(last_tab_group.value())->SetVisible(last_tab_visible);
+    last_tab_visible = ShouldTabBeVisible(*tab);
+    last_tab_group = (*tab)->closing() ? base::nullopt : current_group;
+
+    // Collapsed tabs disappear once they've reached their minimum size. This
+    // is different than very small non-collapsed tabs, because in that case
+    // the tab (and its favicon) must still be visible.
+    bool is_collapsed =
+        (current_group.has_value() &&
+         controller()->IsGroupCollapsed(current_group.value()) &&
+         (*tab)->bounds().width() <=
+             (*tab)->tab_style()->GetMinimumInactiveWidth());
+    (*tab)->SetVisible(is_collapsed ? false : last_tab_visible);
+  }
 }
 
 void TabStrip::UpdateAccessibleTabIndices() {
@@ -2706,8 +2711,14 @@ int TabStrip::GetRightSideReservedWidth() const {
 const Tab* TabStrip::GetLastVisibleTab() const {
   for (int i = tab_count() - 1; i >= 0; --i) {
     const Tab* tab = tab_at(i);
-    if (tab->GetVisible())
+
+    // The tab is marked not visible in a collapsed group, but is "visible" in
+    // the tabstrip if the header is visible.
+    if (tab->GetVisible() ||
+        (tab->group().has_value() &&
+         group_header(tab->group().value())->GetVisible())) {
       return tab;
+    }
   }
   // While in normal use the tabstrip should always be wide enough to have at
   // least one visible tab, it can be zero-width in tests, meaning we get here.
@@ -3415,7 +3426,7 @@ void TabStrip::SwapLayoutIfNecessary() {
   PrepareForAnimation();
   UpdateIdealBounds();
   AnimateToIdealBounds();
-  SetTabVisibility();
+  SetTabSlotVisibility();
 }
 
 bool TabStrip::NeedsTouchLayout() const {

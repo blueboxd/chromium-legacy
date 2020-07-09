@@ -100,11 +100,6 @@ public class ContextualSearchManager
 
     private static final String INTENT_URL_PREFIX = "intent:";
 
-    // The animation duration of a URL being promoted to a tab when triggered by an
-    // intercept navigation. This is faster than the standard tab promotion animation
-    // so that it completes before the navigation.
-    private static final long INTERCEPT_NAVIGATION_PROMOTION_ANIMATION_DURATION_MS = 40;
-
     // We blacklist this URL because malformed URLs may bring up this page.
     private static final String BLACKLISTED_URL = ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL;
 
@@ -1106,8 +1101,6 @@ public class ContextualSearchManager
                             .build();
             if (externalNavHandler.shouldOverrideUrlLoading(params)
                     != OverrideUrlLoadingResult.NO_OVERRIDE) {
-                mSearchPanel.maximizePanelThenPromoteToTab(StateChangeReason.TAB_PROMOTION,
-                        INTERCEPT_NAVIGATION_PROMOTION_ANIMATION_DURATION_MS);
                 return false;
             }
             return !navigationParams.isExternalProtocol;

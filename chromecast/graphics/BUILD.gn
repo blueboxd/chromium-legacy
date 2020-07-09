@@ -66,10 +66,13 @@ cast_source_set("graphics") {
       "gestures/side_swipe_detector.cc",
       "gestures/side_swipe_detector.h",
       "rounded_window_corners_aura.cc",
+      "rounded_window_corners_manager.cc",
+      "rounded_window_corners_manager.h",
     ]
 
     deps += [
       "//chromecast:chromecast_buildflags",
+      "//components/exo",
       "//components/viz/common",
       "//ui/base/ime/init",
       "//ui/events:gesture_detection",
@@ -105,7 +108,10 @@ cast_source_set("graphics") {
   }
 
   if (use_ozone) {
-    deps += [ "//ui/ozone" ]
+    deps += [
+      "//components/exo",
+      "//ui/ozone",
+    ]
   }
 }
 
@@ -139,11 +145,13 @@ if (use_aura && !is_cast_audio_only) {
       "gestures/cast_system_gesture_dispatcher_test.cc",
       "gestures/multiple_tap_detector_test.cc",
       "gestures/side_swipe_detector_test.cc",
+      "rounded_window_corners_manager_unittest.cc",
       "run_all_unittests.cc",
     ]
     deps = [
       ":graphics",
       "//base/test:test_support",
+      "//components/exo",
       "//mojo/core/embedder",
       "//testing/gmock",
       "//testing/gtest",

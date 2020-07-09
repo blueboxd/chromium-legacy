@@ -121,8 +121,7 @@ void LinkStyle::NotifyFinished(Resource* resource) {
   if (owner_->IsInDocumentTree())
     SetSheetTitle(owner_->title());
 
-  style_sheet->ParseAuthorStyleSheet(
-      cached_style_sheet, GetExecutionContext()->GetSecurityOrigin());
+  style_sheet->ParseAuthorStyleSheet(cached_style_sheet);
 
   loading_ = false;
   style_sheet->NotifyLoadedSheet(cached_style_sheet);

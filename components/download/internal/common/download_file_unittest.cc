@@ -802,7 +802,7 @@ TEST_P(DownloadFileTestWithRename, RenameWithErrorRetry) {
     // the completion callback.
     InvokeRenameMethod(
         GetParam(), target_path,
-        base::Bind(&TestRenameCompletionCallback, succeeding_run.QuitClosure(),
+        base::BindOnce(&TestRenameCompletionCallback, succeeding_run.QuitClosure(),
                    &did_run_callback));
     EXPECT_FALSE(did_run_callback);
 

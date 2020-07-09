@@ -62,13 +62,15 @@ public class GoogleServicesSettings
 
     private ChromeSwitchPreference mSearchSuggestions;
     private ChromeSwitchPreference mNavigationError;
-    private ChromeSwitchPreference mSafeBrowsing;
-    private ChromeSwitchPreference mPasswordLeakDetection;
-    private ChromeSwitchPreference mSafeBrowsingReporting;
+    private @Nullable ChromeSwitchPreference mSafeBrowsing;
+    private @Nullable ChromeSwitchPreference mPasswordLeakDetection;
+    private @Nullable ChromeSwitchPreference mSafeBrowsingReporting;
     private ChromeSwitchPreference mUsageAndCrashReporting;
     private ChromeSwitchPreference mUrlKeyedAnonymizedData;
     private @Nullable ChromeSwitchPreference mAutofillAssistant;
     private @Nullable Preference mContextualSearch;
+
+    private boolean mIsSecurityPreferenceRemoved = false;
 
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, String rootKey) {
@@ -87,19 +89,33 @@ public class GoogleServicesSettings
         mNavigationError.setOnPreferenceChangeListener(this);
         mNavigationError.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
-        mSafeBrowsing = (ChromeSwitchPreference) findPreference(PREF_SAFE_BROWSING);
-        mSafeBrowsing.setOnPreferenceChangeListener(this);
-        mSafeBrowsing.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
+        // If security section UI is enabled, Safe Browsing related preferences will be moved to a
+        // dedicated "Security" preference page.
+        mIsSecurityPreferenceRemoved =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.SAFE_BROWSING_SECURITY_SECTION_UI);
+        if (mIsSecurityPreferenceRemoved) {
+            removePreference(getPreferenceScreen(), findPreference(PREF_SAFE_BROWSING));
+            removePreference(getPreferenceScreen(), findPreference(PREF_PASSWORD_LEAK_DETECTION));
+            removePreference(
+                    getPreferenceScreen(), findPreference(PREF_SAFE_BROWSING_SCOUT_REPORTING));
+            mSafeBrowsing = null;
+            mPasswordLeakDetection = null;
+            mSafeBrowsingReporting = null;
+        } else {
+            mSafeBrowsing = (ChromeSwitchPreference) findPreference(PREF_SAFE_BROWSING);
+            mSafeBrowsing.setOnPreferenceChangeListener(this);
+            mSafeBrowsing.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
-        mPasswordLeakDetection =
-                (ChromeSwitchPreference) findPreference(PREF_PASSWORD_LEAK_DETECTION);
-        mPasswordLeakDetection.setOnPreferenceChangeListener(this);
-        mPasswordLeakDetection.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
+            mPasswordLeakDetection =
+                    (ChromeSwitchPreference) findPreference(PREF_PASSWORD_LEAK_DETECTION);
+            mPasswordLeakDetection.setOnPreferenceChangeListener(this);
+            mPasswordLeakDetection.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
-        mSafeBrowsingReporting =
-                (ChromeSwitchPreference) findPreference(PREF_SAFE_BROWSING_SCOUT_REPORTING);
-        mSafeBrowsingReporting.setOnPreferenceChangeListener(this);
-        mSafeBrowsingReporting.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
+            mSafeBrowsingReporting =
+                    (ChromeSwitchPreference) findPreference(PREF_SAFE_BROWSING_SCOUT_REPORTING);
+            mSafeBrowsingReporting.setOnPreferenceChangeListener(this);
+            mSafeBrowsingReporting.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
+        }
 
         mUsageAndCrashReporting =
                 (ChromeSwitchPreference) findPreference(PREF_USAGE_AND_CRASH_REPORTING);
@@ -159,14 +175,17 @@ public class GoogleServicesSettings
         if (PREF_SEARCH_SUGGESTIONS.equals(key)) {
             mPrefServiceBridge.setBoolean(Pref.SEARCH_SUGGEST_ENABLED, (boolean) newValue);
         } else if (PREF_SAFE_BROWSING.equals(key)) {
+            assert !mIsSecurityPreferenceRemoved;
             mPrefServiceBridge.setBoolean(Pref.SAFE_BROWSING_ENABLED, (boolean) newValue);
             // Toggling the safe browsing preference impacts the leak detection and the
             // safe browsing reporting preferences as well.
             PostTask.postTask(UiThreadTaskTraits.DEFAULT,
                     this::updateLeakDetectionAndSafeBrowsingReportingPreferences);
         } else if (PREF_PASSWORD_LEAK_DETECTION.equals(key)) {
+            assert !mIsSecurityPreferenceRemoved;
             mPrefServiceBridge.setBoolean(Pref.PASSWORD_LEAK_DETECTION_ENABLED, (boolean) newValue);
         } else if (PREF_SAFE_BROWSING_SCOUT_REPORTING.equals(key)) {
+            assert !mIsSecurityPreferenceRemoved;
             SafeBrowsingBridge.setSafeBrowsingExtendedReportingEnabled((boolean) newValue);
         } else if (PREF_NAVIGATION_ERROR.equals(key)) {
             mPrefServiceBridge.setBoolean(Pref.ALTERNATE_ERROR_PAGES_ENABLED, (boolean) newValue);
@@ -190,9 +209,10 @@ public class GoogleServicesSettings
         mSearchSuggestions.setChecked(mPrefServiceBridge.getBoolean(Pref.SEARCH_SUGGEST_ENABLED));
         mNavigationError.setChecked(
                 mPrefServiceBridge.getBoolean(Pref.ALTERNATE_ERROR_PAGES_ENABLED));
-        mSafeBrowsing.setChecked(mPrefServiceBridge.getBoolean(Pref.SAFE_BROWSING_ENABLED));
-
-        updateLeakDetectionAndSafeBrowsingReportingPreferences();
+        if (!mIsSecurityPreferenceRemoved) {
+            mSafeBrowsing.setChecked(mPrefServiceBridge.getBoolean(Pref.SAFE_BROWSING_ENABLED));
+            updateLeakDetectionAndSafeBrowsingReportingPreferences();
+        }
 
         mUsageAndCrashReporting.setChecked(
                 mPrivacyPrefManager.isUsageAndCrashReportingPermittedByUser());
@@ -216,6 +236,7 @@ public class GoogleServicesSettings
      * its appearance needs to be updated. The same goes for safe browsing reporting.
      */
     private void updateLeakDetectionAndSafeBrowsingReportingPreferences() {
+        assert !mIsSecurityPreferenceRemoved;
         boolean safe_browsing_enabled = mPrefServiceBridge.getBoolean(Pref.SAFE_BROWSING_ENABLED);
         mSafeBrowsingReporting.setEnabled(safe_browsing_enabled);
         mSafeBrowsingReporting.setChecked(safe_browsing_enabled

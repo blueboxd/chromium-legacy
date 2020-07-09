@@ -833,6 +833,7 @@ def mac_builder(
       goma_backend = goma_backend,
       mastername = 'chromium.mac',
       os = os,
+      tree_closing = True,
       **kwargs
   )
 
@@ -867,6 +868,7 @@ def memory_builder(
     name,
     goma_jobs=builders.goma.jobs.MANY_JOBS_FOR_CI,
     notifies=None,
+    tree_closing=True,
     **kwargs):
   if name.startswith('Linux'):
     notifies = (notifies or []) + ['linux-memory']
@@ -877,6 +879,7 @@ def memory_builder(
       goma_jobs = goma_jobs,
       mastername = 'chromium.memory',
       notifies = notifies,
+      tree_closing=tree_closing,
       **kwargs
   )
 
@@ -938,6 +941,7 @@ def thin_tester(
       mastername = mastername,
       triggered_by = triggered_by,
       goma_backend = None,
+      tree_closing = True,
       **kwargs
   )
 

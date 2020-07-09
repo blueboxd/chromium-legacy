@@ -10,6 +10,7 @@
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/system_tray.h"
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -267,12 +268,14 @@ void UpdateRequiredScreen::OnUpdateButtonClicked() {
 }
 
 void UpdateRequiredScreen::OnWaitForRebootTimeElapsed() {
+  LOG(ERROR) << "Unable to reboot - asking for a manual reboot.";
   EnsureScreenIsShown();
   if (view_)
     view_->SetUIState(UpdateRequiredView::UPDATE_COMPLETED_NEED_REBOOT);
 }
 
 void UpdateRequiredScreen::PrepareForUpdateCheck() {
+  VLOG(1) << "Update check started.";
   error_message_timer_.Stop();
   error_screen_->HideCaptivePortal();
 
@@ -338,6 +341,7 @@ void UpdateRequiredScreen::UpdateInfoChanged(
       EnsureScreenIsShown();
       break;
     case update_engine::Operation::NEED_PERMISSION_TO_UPDATE:
+      VLOG(1) << "Need permission to update.";
       EnsureScreenIsShown();
       if (metered_network_update_permission) {
         version_updater_->SetUpdateOverCellularOneTimePermission();
@@ -345,12 +349,14 @@ void UpdateRequiredScreen::UpdateInfoChanged(
       }
       break;
     case update_engine::Operation::UPDATED_NEED_REBOOT:
+      VLOG(1) << "Update completed successfully.";
       EnsureScreenIsShown();
       waiting_for_reboot_ = true;
       version_updater_->RebootAfterUpdate();
       break;
     case update_engine::Operation::ERROR:
     case update_engine::Operation::REPORTING_ERROR_EVENT:
+      LOG(ERROR) << "Exiting update due to error.";
       version_updater_->StartExitUpdate(VersionUpdater::Result::UPDATE_ERROR);
       break;
     default:

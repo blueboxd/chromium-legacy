@@ -664,8 +664,9 @@ TEST_P(ToolbarActionsBarUnitTest, ReuploadExtensionFailed) {
 
   // Reload the extension again. Check that the updated extension cannot be
   // loaded due to the manifest errors.
+  ToolbarActionErrorTestObserver observer;
   service->ReloadExtensionWithQuietFailure(extension->id());
-  base::RunLoop().RunUntilIdle();
+  observer.WaitForOnLoadFailure();
 
   // Since the extension is removed, its icon should no longer be in the
   // toolbar.

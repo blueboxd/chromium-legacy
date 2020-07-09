@@ -123,7 +123,7 @@ void AppCacheQuotaClient::GetOriginsForHost(StorageType type,
   DCHECK(!callback.is_null());
 
   if (host.empty()) {
-    std::move(callback).Run(std::set<url::Origin>());
+    std::move(callback).Run(std::vector<url::Origin>());
     return;
   }
   GetOriginsHelper(host, std::move(callback));
@@ -187,7 +187,7 @@ void AppCacheQuotaClient::GetOriginsHelper(const std::string& opt_host,
   DCHECK(!callback.is_null());
 
   if (service_is_destroyed_) {
-    std::move(callback).Run(std::set<url::Origin>());
+    std::move(callback).Run(std::vector<url::Origin>());
     return;
   }
 
@@ -203,13 +203,13 @@ void AppCacheQuotaClient::GetOriginsHelper(const std::string& opt_host,
       base::BindOnce(
           [](base::WeakPtr<AppCacheServiceImpl> service,
              const std::string& opt_host) {
-            std::set<url::Origin> origins;
+            std::vector<url::Origin> origins;
             if (!service)
               return origins;
 
             for (const auto& pair : service->storage()->usage_map()) {
               if (opt_host.empty() || pair.first.host() == opt_host)
-                origins.insert(pair.first);
+                origins.push_back(pair.first);
             }
             return origins;
           },

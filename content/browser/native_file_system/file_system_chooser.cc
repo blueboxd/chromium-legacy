@@ -47,29 +47,50 @@ void RecordFileSelectionResult(blink::mojom::ChooseFileSystemEntryType type,
       "NativeFileSystemAPI.FileChooserResult." + TypeToString(type), count);
 }
 
+// Converts the accepted mime types and extensions from |option| into a list
+// of just extensions to be passed to the file dialog implementation.
+// The returned list will start with all the explicit website provided
+// extensions in order, followed by (for each mime type) the preferred
+// extension for that mime type (if any) and any other extensions associated
+// with that mime type. Duplicates are filtered out so each extension only
+// occurs once in the returned list.
 bool GetFileTypesFromAcceptsOption(
     const blink::mojom::ChooseFileSystemEntryAcceptsOption& option,
     std::vector<base::FilePath::StringType>* extensions,
     base::string16* description) {
   std::set<base::FilePath::StringType> extension_set;
 
-  for (const std::string& extension : option.extensions) {
+  for (const std::string& extension_string : option.extensions) {
+    base::FilePath::StringType extension;
 #if defined(OS_WIN)
-    extension_set.insert(base::UTF8ToWide(extension));
+    extension = base::UTF8ToWide(extension_string);
 #else
-    extension_set.insert(extension);
+    extension = extension_string;
 #endif
+    if (extension_set.insert(extension).second) {
+      extensions->push_back(std::move(extension));
+    }
   }
 
   for (const std::string& mime_type : option.mime_types) {
+    base::FilePath::StringType preferred_extension;
+    if (net::GetPreferredExtensionForMimeType(mime_type,
+                                              &preferred_extension)) {
+      if (extension_set.insert(preferred_extension).second) {
+        extensions->push_back(std::move(preferred_extension));
+      }
+    }
+
     std::vector<base::FilePath::StringType> inner;
     net::GetExtensionsForMimeType(mime_type, &inner);
     if (inner.empty())
       continue;
-    extension_set.insert(inner.begin(), inner.end());
+    for (auto& extension : inner) {
+      if (extension_set.insert(extension).second) {
+        extensions->push_back(std::move(extension));
+      }
+    }
   }
-
-  extensions->assign(extension_set.begin(), extension_set.end());
 
   if (extensions->empty())
     return false;
@@ -149,7 +170,7 @@ void FileSystemChooser::CreateAndShow(
   listener->dialog_->SelectFile(
       dialog_type, /*title=*/base::string16(),
       /*default_path=*/base::FilePath(), &options.file_type_info(),
-      /*file_type_index=*/0,
+      /*file_type_index=*/1,
       /*default_extension=*/base::FilePath::StringType(),
       web_contents ? web_contents->GetTopLevelNativeWindow() : nullptr,
       /*params=*/nullptr);

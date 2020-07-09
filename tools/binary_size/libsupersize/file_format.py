@@ -304,8 +304,8 @@ def _SaveSizeInfoToFile(size_info,
     w.WriteLine(comp)
   w.LogSize('components')
 
-  # Symbol counts by container and section.
-  symbol_group_by_section = raw_symbols.GroupedByContainerAndSectionName()
+  # Symbol counts by "segments", defined as (container, section) tuples.
+  symbol_group_by_segment = raw_symbols.GroupedByContainerAndSectionName()
   if has_multi_containers:
     container_name_to_index = {
         c.name: i
@@ -313,10 +313,10 @@ def _SaveSizeInfoToFile(size_info,
     }
     w.WriteLine('\t'.join('<%d>%s' %
                           (container_name_to_index[g.name[0]], g.name[1])
-                          for g in symbol_group_by_section))
+                          for g in symbol_group_by_segment))
   else:
-    w.WriteLine('\t'.join(g.name[1] for g in symbol_group_by_section))
-  w.WriteLine('\t'.join(str(len(g)) for g in symbol_group_by_section))
+    w.WriteLine('\t'.join(g.name[1] for g in symbol_group_by_segment))
+  w.WriteLine('\t'.join(str(len(g)) for g in symbol_group_by_segment))
 
   def gen_delta(gen, prev_value=0):
     """Adapts a generator of numbers to deltas."""
@@ -327,12 +327,12 @@ def _SaveSizeInfoToFile(size_info,
   def write_groups(func, delta=False):
     """Write func(symbol) for each symbol in each symbol group.
 
-    Each line written represents one symbol group in |symbol_group_by_section|.
+    Each line written represents one symbol group in |symbol_group_by_segment|.
     The values in each line are space separated and are the result of calling
     |func| with the Nth symbol in the group.
 
     If |delta| is True, the differences in values are written instead."""
-    for group in symbol_group_by_section:
+    for group in symbol_group_by_segment:
       gen = map(func, group)
       w.WriteNumberList(gen_delta(gen) if delta else gen)
 
@@ -356,7 +356,7 @@ def _SaveSizeInfoToFile(size_info,
   w.LogSize('component indices')
 
   prev_aliases = None
-  for group in symbol_group_by_section:
+  for group in symbol_group_by_segment:
     for symbol in group:
       w.WriteString(symbol.full_name)
       if symbol.aliases and symbol.aliases is not prev_aliases:
@@ -453,23 +453,23 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
   # Eat empty line.
   _ReadLine(lines)
 
-  # Path list
-  num_path_tuples = int(_ReadLine(lines))  # Number of paths in list
-  # Read the path list values and store for later
+  # Path list.
+  num_path_tuples = int(_ReadLine(lines))  # Number of paths in list.
+  # Read the path list values and store for later.
   path_tuples = [
       _ReadValuesFromLine(lines, split='\t') for _ in range(num_path_tuples)
   ]
 
-  # Component list
+  # Component list.
   if has_components:
-    num_components = int(_ReadLine(lines))  # number of components in list
+    num_components = int(_ReadLine(lines))  # Number of components in list.
     components = [_ReadLine(lines) for _ in range(num_components)]
 
-  # Symbol counts by section.
-  container_and_section_names = _ReadValuesFromLine(lines, split='\t')
+  # Symbol counts by "segments", defined as (container, section) tuples.
+  segment_names = _ReadValuesFromLine(lines, split='\t')
   symbol_counts = [int(c) for c in _ReadValuesFromLine(lines, split='\t')]
 
-  # Addresses, sizes, paddings, path indices, component indices
+  # Addresses, sizes, paddings, path indices, component indices.
   def read_numeric(delta=False):
     """Read numeric values, where each line corresponds to a symbol group.
 
@@ -493,28 +493,28 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
   if has_padding:
     paddings = read_numeric(delta=False)
   else:
-    paddings = [None] * len(container_and_section_names)
+    paddings = [None] * len(segment_names)
   path_indices = read_numeric(delta=True)
   if has_components:
     component_indices = read_numeric(delta=True)
   else:
-    component_indices = [None] * len(container_and_section_names)
+    component_indices = [None] * len(segment_names)
 
   raw_symbols = [None] * sum(symbol_counts)
   symbol_idx = 0
-  for (cur_container_and_section_name, cur_symbol_count, cur_addresses,
-       cur_sizes, cur_paddings, cur_path_indices,
-       cur_component_indices) in zip(container_and_section_names, symbol_counts,
-                                     addresses, sizes, paddings, path_indices,
+  for (cur_segment_name, cur_symbol_count, cur_addresses, cur_sizes,
+       cur_paddings, cur_path_indices,
+       cur_component_indices) in zip(segment_names, symbol_counts, addresses,
+                                     sizes, paddings, path_indices,
                                      component_indices):
     if has_multi_containers:
       # Extract '<cur_container_idx_str>cur_section_name'.
-      assert cur_container_and_section_name.startswith('<')
-      cur_container_idx_str, cur_section_name = (
-          cur_container_and_section_name[1:].split('>', 1))
+      assert cur_segment_name.startswith('<')
+      cur_container_idx_str, cur_section_name = (cur_segment_name[1:].split(
+          '>', 1))
       cur_container = containers[int(cur_container_idx_str)]
     else:
-      cur_section_name = cur_container_and_section_name
+      cur_section_name = cur_segment_name
       cur_container = containers[0]
     alias_counter = 0
     for i in range(cur_symbol_count):
@@ -542,7 +542,7 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
       flags = int(flags_part, 16) if flags_part else 0
       num_aliases = int(aliases_part, 16) if aliases_part else 0
 
-      # Skip the constructor to avoid default value checks
+      # Skip the constructor to avoid default value checks.
       new_sym = models.Symbol.__new__(models.Symbol)
       new_sym.container = cur_container
       new_sym.section_name = cur_section_name
@@ -554,12 +554,12 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
       component = components[cur_component_indices[i]] if has_components else ''
       new_sym.component = component
       new_sym.flags = flags
-      # Derived
+      # Derived.
       if cur_paddings:
         new_sym.padding = cur_paddings[i]
         new_sym.size += new_sym.padding
       else:
-        # This will be computed during CreateSizeInfo()
+        # This will be computed during CreateSizeInfo().
         new_sym.padding = 0
       new_sym.template_name = ''
       new_sym.name = ''

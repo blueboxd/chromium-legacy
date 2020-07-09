@@ -6,6 +6,8 @@
 
 #include <algorithm>
 #include <memory>
+#include <set>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/check.h"
@@ -20,6 +22,7 @@
 #include "storage/common/file_system/file_system_util.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 using blink::mojom::StorageType;
 
@@ -29,38 +32,42 @@ namespace {
 
 void GetOriginsForTypeOnFileTaskRunner(FileSystemContext* context,
                                        StorageType storage_type,
-                                       std::set<url::Origin>* origins_ptr) {
+                                       std::vector<url::Origin>* origins_ptr) {
   FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
   DCHECK(type != kFileSystemTypeUnknown);
 
   FileSystemQuotaUtil* quota_util = context->GetQuotaUtil(type);
   if (!quota_util)
     return;
+  // TODO(pwnall): Make QuotaUtil::GetOrigins*OnFileTaskRunner() use a
+  //               std::vector instead of a std::set, and avoid the copy here.
   std::set<url::Origin> origins;
   quota_util->GetOriginsForTypeOnFileTaskRunner(type, &origins);
-  for (auto origin : origins)
-    origins_ptr->insert(origin);
+  for (auto& origin : origins)
+    origins_ptr->push_back(std::move(origin));
 }
 
 void GetOriginsForHostOnFileTaskRunner(FileSystemContext* context,
                                        StorageType storage_type,
                                        const std::string& host,
-                                       std::set<url::Origin>* origins_ptr) {
+                                       std::vector<url::Origin>* origins_ptr) {
   FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
   DCHECK(type != kFileSystemTypeUnknown);
 
   FileSystemQuotaUtil* quota_util = context->GetQuotaUtil(type);
   if (!quota_util)
     return;
+  // TODO(pwnall): Make QuotaUtil::GetOrigins*OnFileTaskRunner() use a
+  //               std::vector instead of a std::set, and avoid the copy here.
   std::set<url::Origin> origins;
   quota_util->GetOriginsForHostOnFileTaskRunner(type, host, &origins);
-  for (auto origin : origins)
-    origins_ptr->insert(origin);
+  for (auto& origin : origins)
+    origins_ptr->push_back(std::move(origin));
 }
 
 void DidGetFileSystemQuotaClientOrigins(
     QuotaClient::GetOriginsCallback callback,
-    std::set<url::Origin>* origins_ptr) {
+    std::vector<url::Origin>* origins_ptr) {
   std::move(callback).Run(*origins_ptr);
 }
 
@@ -123,7 +130,7 @@ void FileSystemQuotaClient::GetOriginsForType(StorageType storage_type,
                                               GetOriginsCallback callback) {
   DCHECK(!callback.is_null());
 
-  std::set<url::Origin>* origins_ptr = new std::set<url::Origin>();
+  auto* origins_ptr = new std::vector<url::Origin>();
   file_task_runner()->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&GetOriginsForTypeOnFileTaskRunner,
@@ -138,7 +145,7 @@ void FileSystemQuotaClient::GetOriginsForHost(StorageType storage_type,
                                               GetOriginsCallback callback) {
   DCHECK(!callback.is_null());
 
-  std::set<url::Origin>* origins_ptr = new std::set<url::Origin>();
+  auto* origins_ptr = new std::vector<url::Origin>();
   file_task_runner()->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&GetOriginsForHostOnFileTaskRunner,

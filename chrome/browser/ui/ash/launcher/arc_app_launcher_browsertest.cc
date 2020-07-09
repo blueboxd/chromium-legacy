@@ -178,6 +178,12 @@ std::string CreateIntentUriWithShelfGroupAndLogicalWindow(
       logical_window_id.c_str(), shelf_group_id.c_str());
 }
 
+ash::ShelfItemDelegate::AppMenuItems GetAppMenuItems(
+    ash::ShelfItemDelegate* delegate,
+    int event_flags) {
+  return delegate->GetAppMenuItems(event_flags, base::NullCallback());
+}
+
 }  // namespace
 
 class ArcAppLauncherBrowserTest : public extensions::ExtensionBrowserTest {
@@ -713,8 +719,8 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, LogicalWindow) {
   ash::ShelfItemDelegate* delegate1 = GetShelfItemDelegate(shelf_id1);
 
   ASSERT_TRUE(delegate1);
-  ASSERT_EQ(1u, delegate1->GetAppMenuItems(0).size());
-  ASSERT_EQ(kTestWindowUTF16Title, delegate1->GetAppMenuItems(0)[0].first);
+  ASSERT_EQ(1u, GetAppMenuItems(delegate1, 0).size());
+  ASSERT_EQ(kTestWindowUTF16Title, GetAppMenuItems(delegate1, 0)[0].title);
 
   app_host()->OnTaskCreated(2, info->package_name, info->activity, info->name,
                             CreateIntentUriWithShelfGroupAndLogicalWindow(
@@ -724,8 +730,8 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, LogicalWindow) {
 
   WaitForDecompressTask();
   ASSERT_EQ(delegate1, GetShelfItemDelegate(shelf_id1));
-  ASSERT_EQ(1u, delegate1->GetAppMenuItems(0).size());
-  ASSERT_EQ(kTestWindowUTF16Title, delegate1->GetAppMenuItems(0)[0].first);
+  ASSERT_EQ(1u, GetAppMenuItems(delegate1, 0).size());
+  ASSERT_EQ(kTestWindowUTF16Title, GetAppMenuItems(delegate1, 0)[0].title);
 
   // Second logical window
   for (int task_id = 3; task_id <= 5; task_id++) {
@@ -739,8 +745,8 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, LogicalWindow) {
 
   WaitForDecompressTask();
   ASSERT_EQ(delegate1, GetShelfItemDelegate(shelf_id1));
-  ASSERT_EQ(2u, delegate1->GetAppMenuItems(0).size());
-  ASSERT_EQ(kTestWindowUTF16Title, delegate1->GetAppMenuItems(0)[1].first);
+  ASSERT_EQ(2u, GetAppMenuItems(delegate1, 0).size());
+  ASSERT_EQ(kTestWindowUTF16Title, GetAppMenuItems(delegate1, 0)[1].title);
 
   // Group 2 with one logical window out of 2 tasks. Same logical window id as
   // tasks 1 and 2, but different group.
@@ -754,8 +760,8 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, LogicalWindow) {
   WaitForDecompressTask();
   ASSERT_TRUE(delegate2);
   ASSERT_NE(delegate1, delegate2);
-  ASSERT_EQ(1u, delegate2->GetAppMenuItems(0).size());
-  ASSERT_EQ(kTestWindowUTF16Title, delegate2->GetAppMenuItems(0)[0].first);
+  ASSERT_EQ(1u, GetAppMenuItems(delegate2, 0).size());
+  ASSERT_EQ(kTestWindowUTF16Title, GetAppMenuItems(delegate2, 0)[0].title);
 
   app_host()->OnTaskCreated(7, info->package_name, info->activity, info->name,
                             CreateIntentUriWithShelfGroupAndLogicalWindow(
@@ -765,36 +771,36 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, LogicalWindow) {
 
   WaitForDecompressTask();
   ASSERT_EQ(delegate2, GetShelfItemDelegate(shelf_id2));
-  ASSERT_EQ(1u, delegate2->GetAppMenuItems(0).size());
-  ASSERT_EQ(kTestWindowUTF16Title, delegate2->GetAppMenuItems(0)[0].first);
+  ASSERT_EQ(1u, GetAppMenuItems(delegate2, 0).size());
+  ASSERT_EQ(kTestWindowUTF16Title, GetAppMenuItems(delegate2, 0)[0].title);
 
   // Group 1 should be unchanged.
-  ASSERT_EQ(2u, delegate1->GetAppMenuItems(0).size());
-  ASSERT_EQ(kTestWindowUTF16Title, delegate1->GetAppMenuItems(0)[0].first);
-  ASSERT_EQ(kTestWindowUTF16Title, delegate1->GetAppMenuItems(0)[1].first);
+  ASSERT_EQ(2u, GetAppMenuItems(delegate1, 0).size());
+  ASSERT_EQ(kTestWindowUTF16Title, GetAppMenuItems(delegate1, 0)[0].title);
+  ASSERT_EQ(kTestWindowUTF16Title, GetAppMenuItems(delegate1, 0)[1].title);
 
   // Start closing, and see if the other parts of the logical windows show up.
   // Group 1:
   // Task 1 closes, task 2 should become visible:
   app_host()->OnTaskDestroyed(1);
-  ASSERT_EQ(2u, delegate1->GetAppMenuItems(0).size());
-  ASSERT_EQ(kTestWindowUTF16Title2, delegate1->GetAppMenuItems(0)[0].first);
-  ASSERT_EQ(kTestWindowUTF16Title, delegate1->GetAppMenuItems(0)[1].first);
+  ASSERT_EQ(2u, GetAppMenuItems(delegate1, 0).size());
+  ASSERT_EQ(kTestWindowUTF16Title2, GetAppMenuItems(delegate1, 0)[0].title);
+  ASSERT_EQ(kTestWindowUTF16Title, GetAppMenuItems(delegate1, 0)[1].title);
   // Task 4 is hidden, so should not change its entry's title.
   app_host()->OnTaskDestroyed(4);
-  ASSERT_EQ(2u, delegate1->GetAppMenuItems(0).size());
-  ASSERT_EQ(kTestWindowUTF16Title2, delegate1->GetAppMenuItems(0)[0].first);
-  ASSERT_EQ(kTestWindowUTF16Title, delegate1->GetAppMenuItems(0)[1].first);
+  ASSERT_EQ(2u, GetAppMenuItems(delegate1, 0).size());
+  ASSERT_EQ(kTestWindowUTF16Title2, GetAppMenuItems(delegate1, 0)[0].title);
+  ASSERT_EQ(kTestWindowUTF16Title, GetAppMenuItems(delegate1, 0)[1].title);
   // Task 3 closes, leaving only task 5 of this entry. This swaps the two
   // entries.
   app_host()->OnTaskDestroyed(3);
-  ASSERT_EQ(2u, delegate1->GetAppMenuItems(0).size());
-  ASSERT_EQ(kTestWindowUTF16Title3, delegate1->GetAppMenuItems(0)[0].first);
-  ASSERT_EQ(kTestWindowUTF16Title2, delegate1->GetAppMenuItems(0)[1].first);
+  ASSERT_EQ(2u, GetAppMenuItems(delegate1, 0).size());
+  ASSERT_EQ(kTestWindowUTF16Title3, GetAppMenuItems(delegate1, 0)[0].title);
+  ASSERT_EQ(kTestWindowUTF16Title2, GetAppMenuItems(delegate1, 0)[1].title);
   // Task 5 closes, close this entry fully.
   app_host()->OnTaskDestroyed(5);
-  ASSERT_EQ(1u, delegate1->GetAppMenuItems(0).size());
-  ASSERT_EQ(kTestWindowUTF16Title2, delegate1->GetAppMenuItems(0)[0].first);
+  ASSERT_EQ(1u, GetAppMenuItems(delegate1, 0).size());
+  ASSERT_EQ(kTestWindowUTF16Title2, GetAppMenuItems(delegate1, 0)[0].title);
   // Task 2 closes, the full shelf group is closed now.
   ASSERT_EQ(delegate1, GetShelfItemDelegate(shelf_id1));
   app_host()->OnTaskDestroyed(2);
@@ -802,11 +808,11 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, LogicalWindow) {
 
   // Group 2:
   ASSERT_EQ(delegate2, GetShelfItemDelegate(shelf_id2));
-  ASSERT_EQ(1u, delegate2->GetAppMenuItems(0).size());
+  ASSERT_EQ(1u, GetAppMenuItems(delegate2, 0).size());
   // Task 7 is hidden, so should not change the entry:
   app_host()->OnTaskDestroyed(7);
-  ASSERT_EQ(1u, delegate2->GetAppMenuItems(0).size());
-  ASSERT_EQ(kTestWindowUTF16Title, delegate2->GetAppMenuItems(0)[0].first);
+  ASSERT_EQ(1u, GetAppMenuItems(delegate2, 0).size());
+  ASSERT_EQ(kTestWindowUTF16Title, GetAppMenuItems(delegate2, 0)[0].title);
   // Task 6 is the last task, close group:
   app_host()->OnTaskDestroyed(6);
   EXPECT_FALSE(GetShelfItemDelegate(shelf_id2));

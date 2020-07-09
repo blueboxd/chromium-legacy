@@ -125,7 +125,7 @@ public class BookmarksTest {
         SyncTestUtil.triggerSync();
         mSyncTestRule.pollInstrumentationThread(() -> {
             Bookmark modifiedBookmark = getClientBookmarks().get(0);
-            Assert.assertEquals(MODIFIED_TITLE, modifiedBookmark.title);
+            Criteria.checkThat(modifiedBookmark.title, Matchers.is(MODIFIED_TITLE));
         });
     }
 
@@ -185,7 +185,7 @@ public class BookmarksTest {
             List<Bookmark> bookmarks = getClientBookmarks();
             Bookmark modifiedBookmark = bookmarks.get(bookmarks.get(0).isFolder() ? 1 : 0);
             // The "s" is prepended because the server adds one to the parentId.
-            Assert.assertEquals("s" + folder.id, modifiedBookmark.parentId);
+            Criteria.checkThat(modifiedBookmark.parentId, Matchers.is("s" + folder.id));
         });
     }
 
@@ -224,8 +224,8 @@ public class BookmarksTest {
 
         mSyncTestRule.pollInstrumentationThread(() -> {
             Bookmark modifiedFolder = getClientBookmarks().get(0);
-            Assert.assertTrue(modifiedFolder.isFolder());
-            Assert.assertEquals(MODIFIED_TITLE, modifiedFolder.title);
+            Criteria.checkThat(modifiedFolder.isFolder(), Matchers.is(true));
+            Criteria.checkThat(modifiedFolder.title, Matchers.is(MODIFIED_TITLE));
         });
     }
 
@@ -317,7 +317,7 @@ public class BookmarksTest {
             List<Bookmark> serverBookmarks = getServerBookmarks();
             Bookmark modifiedBookmark =
                     serverBookmarks.get(serverBookmarks.get(0).isFolder() ? 1 : 0);
-            Assert.assertEquals(folder.id, modifiedBookmark.parentId);
+            Criteria.checkThat(modifiedBookmark.parentId, Matchers.is(folder.id));
         });
     }
 

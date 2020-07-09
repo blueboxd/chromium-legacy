@@ -9,6 +9,7 @@
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -48,7 +49,8 @@ ash::ShelfAction SelectShelfItem(const ash::ShelfID& id,
   ash::ShelfItemDelegate* delegate = model->GetShelfItemDelegate(id);
   delegate->ItemSelected(
       std::move(event), display_id, source,
-      base::BindOnce(&ItemSelectedCallback, &action, &run_loop));
+      base::BindOnce(&ItemSelectedCallback, &action, &run_loop),
+      base::NullCallback());
   run_loop.Run();
   return action;
 }

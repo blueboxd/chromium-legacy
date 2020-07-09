@@ -8,10 +8,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 namespace settings {
+
+// static
+constexpr const char OsSettingsSection::kSettingIdUrlParam[];
 
 // static
 base::string16 OsSettingsSection::GetHelpUrlWithBoard(
@@ -44,8 +48,7 @@ std::string OsSettingsSection::ModifySearchResultUrl(
     mojom::SearchResultType type,
     OsSettingsIdentifier id,
     const std::string& url_to_modify) const {
-  // Default case for static URLs which do not need to be modified.
-  return url_to_modify;
+  return GetDefaultModifiedUrl(type, id, url_to_modify);
 }
 
 mojom::SearchResultPtr OsSettingsSection::GenerateSectionSearchResult(
@@ -64,6 +67,30 @@ mojom::SearchResultPtr OsSettingsSection::GenerateSectionSearchResult(
       /*was_generated_from_text_match=*/false,
       mojom::SearchResultType::kSection,
       mojom::SearchResultIdentifier::NewSection(GetSection()));
+}
+
+// static
+std::string OsSettingsSection::GetDefaultModifiedUrl(
+    mojom::SearchResultType type,
+    OsSettingsIdentifier id,
+    const std::string& url_to_modify) {
+  if (!chromeos::features::IsDeepLinkingEnabled() ||
+      type != mojom::SearchResultType::kSetting) {
+    // Default case for static URLs which do not need to be modified.
+    return url_to_modify;
+  }
+
+  std::stringstream ss;
+  ss << url_to_modify;
+  // Handle existing query parameters.
+  if (url_to_modify.find('?') == std::string::npos) {
+    ss << '?';
+  } else {
+    ss << '&';
+  }
+  // Add deep link to query i.e. "settingId=4".
+  ss << kSettingIdUrlParam << '=' << static_cast<int32_t>(id.setting);
+  return ss.str();
 }
 
 }  // namespace settings

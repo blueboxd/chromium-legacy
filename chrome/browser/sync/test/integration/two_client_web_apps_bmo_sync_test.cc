@@ -362,9 +362,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest, NotSyncedThenSynced) {
             GetRegistrar(GetProfile(1)).GetAppUserDisplayMode(app_id));
 }
 
-// TODO(crbug.com/1099595): Fix flakiness on all platforms.
 IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest,
-                       DISABLED_PolicyAppPersistsUninstalledOnSync) {
+                       PolicyAppPersistsUninstalledOnSync) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameWebAppIds());
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -379,8 +378,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest,
 
   // Install a 'dummy' app & wait for installation to ensure sync has processed
   // the initial apps.
-  InstallDummyAppAndWaitForSync(GURL("http://www.dummy.org/"), GetProfile(0),
-                                GetProfile(1));
+  InstallDummyAppAndWaitForSync(GURL("http://www.dummy.org/"), GetProfile(1),
+                                GetProfile(0));
 
   // The app is in both profiles.
   EXPECT_TRUE(AllProfilesHaveSameWebAppIds());

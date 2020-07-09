@@ -43,6 +43,7 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
@@ -53,6 +54,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/native_cursor.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -80,13 +82,6 @@ constexpr gfx::Insets kInputReplyButtonPadding(0, 14, 0, 14);
 constexpr gfx::Insets kSettingsRowPadding(8, 0, 0, 0);
 constexpr gfx::Insets kSettingsRadioButtonPadding(14, 18, 14, 18);
 constexpr gfx::Insets kSettingsButtonRowPadding(8);
-
-// Ripple ink drop opacity of action buttons.
-const float kActionButtonInkDropRippleVisibleOpacity = 0.08f;
-// Highlight (hover) ink drop opacity of action buttons.
-const float kActionButtonInkDropHighlightVisibleOpacity = 0.08f;
-// Text color of action button.
-constexpr SkColor kActionButtonTextColor = gfx::kGoogleBlue600;
 
 // The icon size of inline reply input field.
 constexpr int kInputReplyButtonSize = 20;
@@ -311,46 +306,28 @@ gfx::Size LargeImageView::GetResizedImageSize() {
   return resized_size;
 }
 
-// NotificationButtonMD ////////////////////////////////////////////////////////
+// NotificationMDTextButton ////////////////////////////////////////////////
 
-NotificationButtonMD::NotificationButtonMD(
+NotificationMdTextButton::NotificationMdTextButton(
     views::ButtonListener* listener,
     const base::string16& label,
     const base::Optional<base::string16>& placeholder)
-    : views::LabelButton(listener,
-                         base::i18n::ToUpper(label),
-                         views::style::CONTEXT_BUTTON_MD),
+    : views::MdTextButton(listener, views::style::CONTEXT_BUTTON_MD),
       placeholder_(placeholder) {
-  SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  SetInkDropMode(InkDropMode::ON);
-  set_has_ink_drop_action_on_click(true);
-  set_ink_drop_base_color(SK_ColorBLACK);
-  set_ink_drop_visible_opacity(kActionButtonInkDropRippleVisibleOpacity);
-  SetEnabledTextColors(kActionButtonTextColor);
+  SetText(label);
   SetBorder(views::CreateEmptyBorder(kActionButtonPadding));
   SetMinSize(kActionButtonMinSize);
-  SetFocusForPlatform();
-
   views::InstallRectHighlightPathGenerator(this);
+  SetTextSubpixelRenderingEnabled(false);
 }
 
-NotificationButtonMD::~NotificationButtonMD() = default;
+NotificationMdTextButton::~NotificationMdTextButton() = default;
 
-void NotificationButtonMD::SetText(const base::string16& text) {
+void NotificationMdTextButton::SetText(const base::string16& text) {
   views::LabelButton::SetText(base::i18n::ToUpper(text));
 }
 
-const char* NotificationButtonMD::GetClassName() const {
-  return "NotificationButtonMD";
-}
-
-std::unique_ptr<views::InkDropHighlight>
-NotificationButtonMD::CreateInkDropHighlight() const {
-  std::unique_ptr<views::InkDropHighlight> highlight =
-      views::LabelButton::CreateInkDropHighlight();
-  highlight->set_visible_opacity(kActionButtonInkDropHighlightVisibleOpacity);
-  return highlight;
-}
+void NotificationMdTextButton::UpdateColors() {}
 
 // NotificationInputContainerMD ////////////////////////////////////////////////
 
@@ -419,7 +396,8 @@ NotificationInputContainerMD::CreateInkDropRipple() const {
 }
 
 SkColor NotificationInputContainerMD::GetInkDropBaseColor() const {
-  return gfx::kGoogleBlue600;
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_NotificationInkDropBase);
 }
 
 void NotificationInputContainerMD::OnThemeChanged() {
@@ -489,12 +467,6 @@ class InlineSettingsRadioButton : public views::RadioButton {
   }
 
  private:
-  // views::RadioButton:
-  SkColor GetIconImageColor(int icon_state) const override {
-    return (icon_state & IconState::CHECKED) ? kActionButtonTextColor
-                                             : GetTextColor();
-  }
-
   SkColor GetTextColor() const {
     return GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_LabelEnabledColor);
@@ -861,8 +833,8 @@ void NotificationViewMD::OnNotificationInputSubmit(size_t index,
 
 void NotificationViewMD::CreateOrUpdateContextTitleView(
     const Notification& notification) {
-  if (notification.accent_color() != SK_ColorTRANSPARENT)
-    header_row_->SetAccentColor(notification.accent_color());
+  header_row_->SetAccentColor(notification.accent_color().value_or(
+      ui::NativeTheme::kColorId_NotificationDefaultAccentColor));
   header_row_->SetTimestamp(notification.timestamp());
   header_row_->SetAppNameElideBehavior(gfx::ELIDE_TAIL);
   header_row_->SetSummaryText(base::string16());
@@ -992,7 +964,6 @@ void NotificationViewMD::CreateOrUpdateProgressBarView(
                                                 /* allow_round_corner */ false);
     progress_bar_view_->SetBorder(
         views::CreateEmptyBorder(kProgressBarTopPadding, 0, 0, 0));
-    progress_bar_view_->SetForegroundColor(kActionButtonTextColor);
     left_content_->AddChildViewAt(progress_bar_view_, left_content_count_);
   }
 
@@ -1087,10 +1058,8 @@ void NotificationViewMD::CreateOrUpdateSmallIconView(
   // cache images if so. (crbug.com/768748)
   gfx::Image masked_small_icon = notification.GenerateMaskedSmallIcon(
       kSmallImageSizeMD,
-      notification.accent_color() == SK_ColorTRANSPARENT
-          ? GetNativeTheme()->GetSystemColor(
-                ui::NativeTheme::kColorId_NotificationDefaultAccentColor)
-          : notification.accent_color());
+      notification.accent_color().value_or(
+          ui::NativeTheme::kColorId_NotificationDefaultAccentColor));
 
   if (masked_small_icon.IsEmpty()) {
     header_row_->ClearAppIcon();
@@ -1150,13 +1119,15 @@ void NotificationViewMD::CreateOrUpdateActionButtonViews(
     }
   }
 
+  SkColor accent_color =
+      notification.accent_color().value_or(views::style::GetColor(
+          *this, views::style::CONTEXT_BUTTON_MD, views::style::STYLE_PRIMARY));
   for (size_t i = 0; i < buttons.size(); ++i) {
     ButtonInfo button_info = buttons[i];
     if (new_buttons) {
-      NotificationButtonMD* button = new NotificationButtonMD(
-          this, button_info.title, button_info.placeholder);
-      action_buttons_.push_back(button);
-      action_buttons_row_->AddChildView(button);
+      action_buttons_.push_back(action_buttons_row_->AddChildView(
+          std::make_unique<NotificationMdTextButton>(this, button_info.title,
+                                                     button_info.placeholder)));
     } else {
       action_buttons_[i]->SetText(button_info.title);
       action_buttons_[i]->set_placeholder(button_info.placeholder);
@@ -1165,10 +1136,7 @@ void NotificationViewMD::CreateOrUpdateActionButtonViews(
     }
 
     // Change action button color to the accent color.
-    action_buttons_[i]->SetEnabledTextColors(notification.accent_color() ==
-                                                     SK_ColorTRANSPARENT
-                                                 ? kActionButtonTextColor
-                                                 : notification.accent_color());
+    action_buttons_[i]->SetEnabledTextColors(accent_color);
   }
 
   // Inherit mouse hover state when action button views reset.
@@ -1237,10 +1205,9 @@ void NotificationViewMD::CreateOrUpdateInlineSettingsViews(
   settings_row_->AddChildView(dont_block_button_);
   settings_row_->SetVisible(false);
 
-  settings_done_button_ = new NotificationButtonMD(
+  settings_done_button_ = new NotificationMdTextButton(
       this, l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_SETTINGS_DONE),
       base::nullopt);
-  settings_done_button_->SetTextSubpixelRenderingEnabled(false);
 
   auto* settings_button_row = new views::View;
   auto settings_button_layout = std::make_unique<views::BoxLayout>(

@@ -10,6 +10,7 @@
 #include <vector>
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "build/build_config.h"
 #include "components/safe_browsing/buildflags.h"
 
 #include "base/macros.h"
@@ -74,7 +75,13 @@ const base::Feature kPromptAppForDeepScanning{
     "SafeBrowsingPromptAppForDeepScanning", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kRealTimeUrlLookupEnabled{
-    "SafeBrowsingRealTimeUrlLookupEnabled", base::FEATURE_ENABLED_BY_DEFAULT};
+  "SafeBrowsingRealTimeUrlLookupEnabled",
+#if defined(OS_IOS)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 const base::Feature kRealTimeUrlLookupEnabledForAllAndroidDevices{
     "SafeBrowsingRealTimeUrlLookupEnabledForAllAndroidDevices",
@@ -108,6 +115,9 @@ const base::Feature kSafeBrowsingSeparateNetworkContexts{
 
 constexpr base::FeatureParam<bool> kShouldFillOldPhishGuardProto{
     &kPasswordProtectionForSignedInUsers, "DeprecateOldProto", false};
+
+const base::Feature kSafeBrowsingSecuritySectionUIAndroid{
+    "SafeBrowsingSecuritySectionUIAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSuspiciousSiteTriggerQuotaFeature{
     "SafeBrowsingSuspiciousSiteTriggerQuota", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -152,6 +162,7 @@ constexpr struct {
     {&kRealTimeUrlLookupNonMainframeEnabledForEP, true},
     {&kSafeBrowsingAvailableOnIOS, true},
     {&kSafeBrowsingSeparateNetworkContexts, true},
+    {&kSafeBrowsingSecuritySectionUIAndroid, true},
     {&kSuspiciousSiteTriggerQuotaFeature, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},

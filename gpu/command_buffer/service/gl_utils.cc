@@ -729,18 +729,23 @@ bool ValidateCompressedTexSubDimensions(GLenum target,
     case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
     case GL_COMPRESSED_RGBA8_ETC2_EAC:
     case GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
-    case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT:
-    case GL_COMPRESSED_RGBA_BPTC_UNORM_EXT:
-    case GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_EXT:
-    case GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_EXT:
     case GL_COMPRESSED_RED_RGTC1_EXT:
     case GL_COMPRESSED_SIGNED_RED_RGTC1_EXT:
     case GL_COMPRESSED_RED_GREEN_RGTC2_EXT:
     case GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT: {
+      if (target == GL_TEXTURE_3D) {
+        *error_message = "target == GL_TEXTURE_3D is not allowed";
+        return false;
+      }
+      FALLTHROUGH;
+    }
+    case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT:
+    case GL_COMPRESSED_RGBA_BPTC_UNORM_EXT:
+    case GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_EXT:
+    case GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_EXT: {
       const int kBlockSize = 4;
       GLsizei tex_width, tex_height;
-      if (target == GL_TEXTURE_3D ||
-          !texture->GetLevelSize(target, level, &tex_width, &tex_height,
+      if (!texture->GetLevelSize(target, level, &tex_width, &tex_height,
                                  nullptr) ||
           (xoffset % kBlockSize) || (yoffset % kBlockSize) ||
           ((width % kBlockSize) && xoffset + width != tex_width) ||
@@ -854,7 +859,8 @@ bool ValidateCompressedTexDimensions(GLenum target,
         *error_message = "width, height, or depth invalid";
         return false;
       }
-      if (!(width % kBPTCBlockWidth == 0 && height % kBPTCBlockHeight == 0)) {
+      if (level == 0 &&
+          !(width % kBPTCBlockWidth == 0 && height % kBPTCBlockHeight == 0)) {
         *error_message = "width or height is not a multiple of four";
         return false;
       }
@@ -867,7 +873,8 @@ bool ValidateCompressedTexDimensions(GLenum target,
         *error_message = "width, height, or depth invalid";
         return false;
       }
-      if (!(width % kRGTCBlockWidth == 0 && height % kRGTCBlockHeight == 0)) {
+      if (level == 0 &&
+          !(width % kRGTCBlockWidth == 0 && height % kRGTCBlockHeight == 0)) {
         *error_message = "width or height is not a multiple of four";
         return false;
       }

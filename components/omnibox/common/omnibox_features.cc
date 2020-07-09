@@ -215,6 +215,12 @@ const base::Feature kOmniboxMaxURLMatches{
                                 ? base::FEATURE_ENABLED_BY_DEFAULT
                                 : base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to cap max suggestions to a dynamic limit based on how many URLs
+// would be shown. E.g., show up to 10 suggestions if doing so would display no
+// URLs; else show up to 8 suggestions if doing so would include 1 or more URLs.
+const base::Feature kDynamicMaxAutocomplete{"OmniboxDynamicMaxAutocomplete",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature that configures ZeroSuggestProvider using the "ZeroSuggestVariant"
 // per-page-classification parameter.
 //

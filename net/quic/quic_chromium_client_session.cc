@@ -1507,7 +1507,7 @@ QuicChromiumClientSession::CreateIncomingReliableStreamImpl(
   return stream;
 }
 
-void QuicChromiumClientSession::CloseStream(quic::QuicStreamId stream_id) {
+void QuicChromiumClientSession::OnStreamClosed(quic::QuicStreamId stream_id) {
   most_recent_stream_close_time_ = tick_clock_->NowTicks();
   auto it = stream_map().find(stream_id);
   if (it != stream_map().end()) {
@@ -1519,22 +1519,7 @@ void QuicChromiumClientSession::CloseStream(quic::QuicStreamId stream_id) {
       bytes_pushed_count_ += it->second->stream_bytes_read();
     }
   }
-  quic::QuicSpdySession::CloseStream(stream_id);
-}
-
-void QuicChromiumClientSession::SendRstStream(
-    quic::QuicStreamId id,
-    quic::QuicRstStreamErrorCode error,
-    quic::QuicStreamOffset bytes_written) {
-  if (quic::QuicUtils::IsServerInitiatedStreamId(
-          connection()->transport_version(), id)) {
-    auto it = stream_map().find(id);
-    if (it != stream_map().end()) {
-      bytes_pushed_count_ += it->second->stream_bytes_read();
-    }
-  }
-
-  quic::QuicSpdySession::SendRstStream(id, error, bytes_written);
+  quic::QuicSpdyClientSessionBase::OnStreamClosed(stream_id);
 }
 
 void QuicChromiumClientSession::OnCanCreateNewOutgoingStream(

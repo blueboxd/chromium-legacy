@@ -1,0 +1,41 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module lacros.mojom;
+
+// A bitmap representation of the current contents of a window or screen. Each
+// pixel is represented by 4 bytes [RGBA].
+struct WindowSnapshot {
+  uint32 width;
+  uint32 height;
+  array<uint8> bitmap;
+};
+
+// This interface is implemented by ash-chrome. It allows lacros-chrome to query
+// information about existing windows, screens, and displays.
+//
+// This interface cannot be used to make changes to screens, windows or
+// displays. That's because Wayland is the protocol for that, and attempting to
+// introduce another protocol would require careful synchronization between the
+// two, which we'd like to avoid.
+//
+// TODO(https://crbug.com/1094460): This is a very simple interface. We will
+// likely want to replace it with a more feature-complete and performant
+// interface in the future.
+interface ScreenManager {
+  // TODO(https://crbug.com/1094460): We will need to add more methods for
+  // querying screens, windows, etc. Details still TBD.
+
+  // TODO(https://crbug.com/1094460): Use a more performant transport
+  // mechanism.
+  // This method assumes that there's exactly one screen. The implementation
+  // of this method takes a screenshot and converts it into a bitmap. Each
+  // pixel is represented by 4 bytes [RGBA].
+  //
+  // The media screen capture implementation assumes that every platform
+  // provides a synchronous method to take a snapshot of the screen.
+  [Sync]
+  TakeScreenSnapshot@0() => (WindowSnapshot snapshot);
+};
+

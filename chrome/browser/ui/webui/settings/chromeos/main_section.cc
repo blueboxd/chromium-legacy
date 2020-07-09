@@ -123,6 +123,9 @@ void MainSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       user_manager::UserManager::Get()->IsLoggedInAsAnyKioskApp());
   html_source->AddBoolean("isSupervised", profile()->IsSupervised());
 
+  html_source->AddBoolean("isDeepLinkingEnabled",
+                          chromeos::features::IsDeepLinkingEnabled());
+
   // Add the System Web App resources for Settings.
   if (web_app::SystemWebAppManager::IsEnabled()) {
     html_source->AddResourcePath("icon-192.png", IDR_SETTINGS_LOGO_192);

@@ -8,6 +8,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/display/display.h"
 #include "ui/gfx/color_palette.h"
@@ -329,6 +330,26 @@ class IndicatorPillView : public views::View {
 
 // -----------------------------------------------------------------------------
 // DisplayAlignmentIndicator:
+
+// static
+std::unique_ptr<DisplayAlignmentIndicator> DisplayAlignmentIndicator::Create(
+    const display::Display& src_display,
+    const gfx::Rect& bounds) {
+  // Using `new` to access a non-public constructor.
+  return base::WrapUnique(
+      new DisplayAlignmentIndicator(src_display, bounds, ""));
+}
+
+// static
+std::unique_ptr<DisplayAlignmentIndicator>
+DisplayAlignmentIndicator::CreateWithPill(const display::Display& src_display,
+                                          const gfx::Rect& bounds,
+                                          const std::string& target_name) {
+  // Using `new` to access a non-public constructor.
+  return base::WrapUnique(
+      new DisplayAlignmentIndicator(src_display, bounds, target_name));
+}
+
 DisplayAlignmentIndicator::DisplayAlignmentIndicator(
     const display::Display& src_display,
     const gfx::Rect& bounds,

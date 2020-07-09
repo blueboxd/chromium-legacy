@@ -252,7 +252,8 @@ class TestV2AppLauncherItemController : public ash::ShelfItemDelegate {
   void ItemSelected(std::unique_ptr<ui::Event> event,
                     int64_t display_id,
                     ash::ShelfLaunchSource source,
-                    ItemSelectedCallback callback) override {
+                    ItemSelectedCallback callback,
+                    const ItemFilterPredicate& filter_predicate) override {
     std::move(callback).Run(ash::SHELF_ACTION_WINDOW_ACTIVATED, {});
   }
   void ExecuteCommand(bool, int64_t, int32_t, int64_t) override {}
@@ -268,7 +269,8 @@ void SelectItem(ash::ShelfItemDelegate* delegate) {
       ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(), ui::EventTimeForNow(),
       ui::EF_NONE, 0);
   delegate->ItemSelected(std::move(event), display::kInvalidDisplayId,
-                         ash::LAUNCH_FROM_UNKNOWN, base::DoNothing());
+                         ash::LAUNCH_FROM_UNKNOWN, base::DoNothing(),
+                         base::NullCallback());
 }
 
 bool IsWindowOnDesktopOfUser(aura::Window* window,
@@ -3164,7 +3166,7 @@ void CheckAppMenu(ChromeLauncherController* controller,
   auto items = controller->GetAppMenuItemsForTesting(item);
   ASSERT_EQ(expected_item_count, items.size());
   for (size_t i = 0; i < expected_item_count; i++)
-    EXPECT_EQ(expected_item_titles[i], items[i].first);
+    EXPECT_EQ(expected_item_titles[i], items[i].title);
 }
 
 // Check that browsers get reflected correctly in the launcher menu.
@@ -4204,7 +4206,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ShelfItemWithMultipleWindows) {
 
   // Command ids are just app window indices. Note, apps are registered in
   // opposite order. Last created goes in front.
-  auto items = item_delegate->GetAppMenuItems(0);
+  auto items = item_delegate->GetAppMenuItems(0, base::NullCallback());
   ASSERT_EQ(items.size(), 2U);
 
   // Execute command 1 to activate the first window.

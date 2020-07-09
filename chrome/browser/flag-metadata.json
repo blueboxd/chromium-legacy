@@ -3386,6 +3386,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "omnibox-dynamic-max-autocomplete",
+    "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "omnibox-experimental-keyword-mode",
     "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 92

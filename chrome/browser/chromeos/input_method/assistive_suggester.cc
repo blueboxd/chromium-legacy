@@ -166,16 +166,16 @@ bool IsAllowedApp(const char* (&allowedApps)[N]) {
     return false;
 
   // TODO(crbug/1094113): improve to cover more scenarios such as chat heads.
-  const std::string* app_id = window->GetProperty(ash::kAppIDKey);
   const std::string* arc_package_name =
       window->GetProperty(ash::kArcPackageNameKey);
-  if (app_id) {
-    for (size_t i = 0; i < N; i++) {
-      if (strcmp(app_id->c_str(), allowedApps[i]) == 0 ||
-          strcmp(arc_package_name->c_str(), allowedApps[i]) == 0) {
-        return true;
-      }
-    }
+  if (arc_package_name && std::find(allowedApps, allowedApps + N,
+                                    *arc_package_name) != allowedApps + N) {
+    return true;
+  }
+  const std::string* app_id = window->GetProperty(ash::kAppIDKey);
+  if (app_id &&
+      std::find(allowedApps, allowedApps + N, *app_id) != allowedApps + N) {
+    return true;
   }
   return false;
 }

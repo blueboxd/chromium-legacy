@@ -807,6 +807,9 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
   } else {
     allocate_alpha_channel_ = false;
     have_alpha_channel_ = false;
+    // The following workarounds are used in order of importance; the
+    // first is a correctness issue, the second a major performance
+    // issue, and the third a minor performance issue.
     if (ContextProvider()->GetGpuFeatureInfo().IsWorkaroundEnabled(
             gpu::DISABLE_GL_RGB_FORMAT)) {
       // This configuration will
@@ -815,18 +818,17 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
       // https://crbug.com/776269
       allocate_alpha_channel_ = true;
       have_alpha_channel_ = true;
-    }
-    if (WantExplicitResolve() &&
-        ContextProvider()->GetGpuFeatureInfo().IsWorkaroundEnabled(
-            gpu::DISABLE_WEBGL_RGB_MULTISAMPLING_USAGE)) {
+    } else if (WantExplicitResolve() &&
+               ContextProvider()->GetGpuFeatureInfo().IsWorkaroundEnabled(
+                   gpu::DISABLE_WEBGL_RGB_MULTISAMPLING_USAGE)) {
       // This configuration avoids the above issues because
       //  - CopyTexImage is invalid from multisample renderbuffers
       //  - FramebufferBlit is invalid to multisample renderbuffers
       allocate_alpha_channel_ = true;
       have_alpha_channel_ = true;
-    }
-    if (ShouldUseChromiumImage() &&
-        ContextProvider()->GetCapabilities().chromium_image_rgb_emulation) {
+    } else if (ShouldUseChromiumImage() && ContextProvider()
+                                               ->GetCapabilities()
+                                               .chromium_image_rgb_emulation) {
       // This configuration avoids the above issues by
       //  - extra command buffer validation for CopyTexImage
       //  - explicity re-binding as RGB for FramebufferBlit

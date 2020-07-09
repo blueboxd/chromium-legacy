@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
 #include <stddef.h>
+#include <memory>
 
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
@@ -29,6 +30,7 @@
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -249,7 +251,7 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
 
   ~ShelfAppBrowserTest() override {}
 
-  ash::ShelfModel* shelf_model() { return controller_->shelf_model(); }
+  ash::ShelfModel* shelf_model() const { return controller_->shelf_model(); }
 
   void SetUpOnMainThread() override {
     controller_ = ChromeLauncherController::instance();
@@ -261,7 +263,8 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
     ash::ShelfItemDelegate* item_controller =
         controller_->GetBrowserShortcutLauncherItemController();
     return item_controller
-        ->GetAppMenuItems(show_all_tabs ? ui::EF_SHIFT_DOWN : 0)
+        ->GetAppMenuItems(show_all_tabs ? ui::EF_SHIFT_DOWN : 0,
+                          base::NullCallback())
         .size();
   }
 
@@ -304,7 +307,7 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
 
 
   // Get the index of an item which has the given type.
-  int GetIndexOfShelfItemType(ash::ShelfItemType type) {
+  int GetIndexOfShelfItemType(ash::ShelfItemType type) const {
     return shelf_model()->GetItemIndexForType(type);
   }
 
@@ -2621,9 +2624,127 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestWithDesks, MultipleDesks) {
               .size());
 }
 
+class PerDeskShelfAppBrowserTest : public ShelfAppBrowserTest,
+                                   public ::testing::WithParamInterface<bool> {
+ public:
+  PerDeskShelfAppBrowserTest() = default;
+  PerDeskShelfAppBrowserTest(const PerDeskShelfAppBrowserTest&) = delete;
+  PerDeskShelfAppBrowserTest& operator=(const PerDeskShelfAppBrowserTest&) =
+      delete;
+  ~PerDeskShelfAppBrowserTest() override = default;
+
+  ash::ShelfView* shelf_view() const { return shelf_view_; }
+
+  // ShelfAppBrowserTest:
+  void SetUp() override {
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(ash::features::kPerDeskShelf);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(ash::features::kPerDeskShelf);
+    }
+
+    ShelfAppBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    ShelfAppBrowserTest::SetUpOnMainThread();
+    shelf_view_ = ash::Shell::GetPrimaryRootWindowController()
+                      ->shelf()
+                      ->GetShelfViewForTesting();
+    // Start tests with 2 desks.
+    ash::DesksController::Get()->NewDesk(
+        ash::DesksCreationRemovalSource::kButton);
+    ash::ShelfViewTestAPI test_api(shelf_view());
+    test_api.SetShelfContextMenuCallback(base::BindRepeating(
+        &PerDeskShelfAppBrowserTest::OnAppMenuShown, base::Unretained(this)));
+  }
+
+  void CreateTestBrowser() {
+    Browser* new_browser = CreateBrowser(browser()->profile());
+    new_browser->window()->Show();
+    new_browser->window()->Activate();
+  }
+
+  ash::ShelfID GetBrowserId() const {
+    const int browser_index =
+        GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT);
+    return shelf_model()->items()[browser_index].id;
+  }
+
+  ash::ShelfMenuModelAdapter* ClickBrowserShelfButtonAndGetMenu() {
+    views::View* browser_icon = shelf_view()->GetShelfAppButton(GetBrowserId());
+    run_loop_ = std::make_unique<base::RunLoop>();
+    ui::test::EventGenerator event_generator(
+        ash::Shell::GetPrimaryRootWindow());
+    event_generator.MoveMouseTo(
+        browser_icon->GetBoundsInScreen().CenterPoint());
+    event_generator.ClickLeftButton();
+    run_loop_->Run();
+    ash::ShelfMenuModelAdapter* shelf_menu_model_adapter =
+        shelf_view()->shelf_menu_model_adapter_for_testing();
+    EXPECT_TRUE(shelf_menu_model_adapter);
+    EXPECT_TRUE(shelf_menu_model_adapter->IsShowingMenu());
+    return shelf_menu_model_adapter;
+  }
+
+ private:
+  void OnAppMenuShown() {
+    if (run_loop_)
+      std::move(run_loop_)->Quit();
+  }
+
+  ash::ShelfView* shelf_view_ = nullptr;
+  std::unique_ptr<base::RunLoop> run_loop_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(PerDeskShelfAppBrowserTest, AppMenus) {
+  // On desk_1, create 3 browsers. Note that the test starts with a default
+  // browser.
+  CreateTestBrowser();
+  CreateTestBrowser();
+  EXPECT_EQ(3u, chrome::GetTotalBrowserCount());
+
+  // Switch to desk_2, and create 2 more browsers.
+  auto* desks_controller = ash::DesksController::Get();
+  auto* desk_2 = desks_controller->desks()[1].get();
+  ash::ActivateDesk(desk_2);
+  CreateTestBrowser();
+  CreateTestBrowser();
+  EXPECT_EQ(5u, chrome::GetTotalBrowserCount());
+
+  // Click on the Browser icon on the shelf and expect the app items menu will
+  // show, and the number of items in the menu will depend on whether the
+  // per-desk shelf feature is enabled or not.
+  auto* model_adapter = ClickBrowserShelfButtonAndGetMenu();
+  const bool is_per_desk_shelf_enabled = GetParam();
+  constexpr int kTitleAndSeparatorCount = 2;
+  if (is_per_desk_shelf_enabled) {
+    EXPECT_EQ(2 + kTitleAndSeparatorCount,
+              model_adapter->model()->GetItemCount());
+  } else {
+    EXPECT_EQ(5 + kTitleAndSeparatorCount,
+              model_adapter->model()->GetItemCount());
+  }
+
+  // Switch to desk_1, and verify the app items count again.
+  auto* desk_1 = desks_controller->desks()[0].get();
+  ash::ActivateDesk(desk_1);
+  model_adapter = ClickBrowserShelfButtonAndGetMenu();
+  if (is_per_desk_shelf_enabled) {
+    EXPECT_EQ(3 + kTitleAndSeparatorCount,
+              model_adapter->model()->GetItemCount());
+  } else {
+    EXPECT_EQ(5 + kTitleAndSeparatorCount,
+              model_adapter->model()->GetItemCount());
+  }
+}
+
 // TODO(crbug.com/1054116): Also test with kWebApps.
 INSTANTIATE_TEST_SUITE_P(
     All,
     ShelfWebAppBrowserTest,
     ::testing::Values(web_app::ProviderType::kBookmarkApps),
     web_app::ProviderTypeParamToString);
+
+INSTANTIATE_TEST_SUITE_P(All, PerDeskShelfAppBrowserTest, ::testing::Bool());

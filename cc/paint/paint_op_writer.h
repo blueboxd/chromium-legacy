@@ -7,6 +7,7 @@
 
 #include <unordered_set>
 
+#include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_filter.h"
@@ -103,7 +104,7 @@ class CC_PAINT_EXPORT PaintOpWriter {
   // image.
   void Write(const DrawImage& draw_image, SkSize* scale_adjustment);
 
-#ifndef OS_ANDROID
+#if !defined(OS_ANDROID)
   // Serializes the given |skottie| vector graphic.
   void Write(scoped_refptr<SkottieWrapper> skottie);
 #endif

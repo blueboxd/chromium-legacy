@@ -5,13 +5,13 @@
 package org.chromium.chrome.browser.incognito;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.LargeTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -43,6 +43,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHistory;
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -179,11 +180,13 @@ public class IncognitoHistoryLeakageTest {
         Tab tab2 = activity2.launchUrl(
                 mChromeActivityTestRule, mCustomTabActivityTestRule, mTestPage2);
 
-        CriteriaHelper.pollUiThread(() -> { assertNotNull(tab1.getWebContents()); });
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(tab1.getWebContents(), Matchers.notNullValue()));
         NavigationHistory navigationHistory1 =
                 tab1.getWebContents().getNavigationController().getNavigationHistory();
 
-        CriteriaHelper.pollUiThread(() -> { assertNotNull(tab2.getWebContents()); });
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(tab2.getWebContents(), Matchers.notNullValue()));
         NavigationHistory navigationHistory2 =
                 tab2.getWebContents().getNavigationController().getNavigationHistory();
 

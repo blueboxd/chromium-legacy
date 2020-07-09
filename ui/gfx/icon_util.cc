@@ -526,7 +526,7 @@ bool IconUtil::CreateIconFileFromImageFamily(
   if (write_type == NORMAL_WRITE) {
     if (base::WriteFile(icon_path, buffer))
       return true;
-    bool delete_success = base::DeleteFile(icon_path, false);
+    bool delete_success = base::DeleteFile(icon_path);
     DCHECK(delete_success);
     return false;
   }

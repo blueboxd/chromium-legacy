@@ -139,6 +139,8 @@ class ExtensionRegistrar {
   // host is created.
   void DidCreateRenderViewForBackgroundPage(ExtensionHost* host);
 
+  void OnUnpackedExtensionReloadFailed(const base::FilePath& path);
+
  private:
   // Adds the extension to the appropriate registry set, based on ExtensionPrefs
   // and our |delegate_|. Activates the extension if it's added to the enabled
@@ -193,6 +195,10 @@ class ExtensionRegistrar {
   // Store the ids of reloading extensions. We use this to re-enable extensions
   // which were disabled for a reload.
   ExtensionIdSet reloading_extensions_;
+
+  // Store the paths of extensions that failed to reload. We use this to retry
+  // reload.
+  std::set<base::FilePath> failed_to_reload_unpacked_extensions_;
 
   base::WeakPtrFactory<ExtensionRegistrar> weak_factory_{this};
 

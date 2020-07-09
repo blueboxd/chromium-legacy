@@ -70,6 +70,7 @@ group("telemetry_chrome_test") {
 
   if (is_chromeos && cros_board != "") {
     data_deps += [
+      "//:chromiumos_preflight",
       "//chromeos:cros_chrome_deploy",
       "//chromeos:cros_test_wrapper",
     ]

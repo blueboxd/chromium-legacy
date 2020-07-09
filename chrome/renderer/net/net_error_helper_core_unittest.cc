@@ -180,8 +180,7 @@ class NetErrorHelperCoreTest : public testing::Test,
         list_visible_by_prefs_(true),
         enable_page_helper_functions_count_(0),
         default_url_(GURL(kFailedUrl)),
-        error_url_(GURL(content::kUnreachableWebDataURL)),
-        tracking_request_count_(0) {
+        error_url_(GURL(content::kUnreachableWebDataURL)) {
     SetUpCore(false, true);
   }
 
@@ -233,12 +232,6 @@ class NetErrorHelperCoreTest : public testing::Test,
   const error_page::ErrorPageParams* last_error_page_params() const {
     return last_error_page_params_.get();
   }
-
-  const GURL& last_tracking_url() const { return last_tracking_url_; }
-  const std::string& last_tracking_request_body() const {
-    return last_tracking_request_body_;
-  }
-  int tracking_request_count() const { return tracking_request_count_; }
 
   void set_offline_content_feature_enabled(
       bool offline_content_feature_enabled) {
@@ -458,27 +451,6 @@ class NetErrorHelperCoreTest : public testing::Test,
   }
 #endif
 
-  void SendTrackingRequest(const GURL& tracking_url,
-                           const std::string& tracking_request_body) override {
-    last_tracking_url_ = tracking_url;
-    last_tracking_request_body_ = tracking_request_body;
-    tracking_request_count_++;
-
-    // Check the body of the request.
-
-    base::Optional<base::Value> parsed_body =
-        base::JSONReader::Read(tracking_request_body);
-    ASSERT_TRUE(parsed_body);
-    base::DictionaryValue* dict = NULL;
-    ASSERT_TRUE(parsed_body->GetAsDictionary(&dict));
-
-    EXPECT_TRUE(
-        StringValueEquals(*dict, "params.originalUrlQuery", kFailedUrl));
-    EXPECT_TRUE(StringValueEquals(*dict, "params.language", kLanguage));
-    EXPECT_TRUE(StringValueEquals(*dict, "params.originCountry", kCountry));
-    EXPECT_TRUE(StringValueEquals(*dict, "params.key", kApiKey));
-  }
-
   content::RenderFrame* GetRenderFrame() override { return nullptr; }
 
   base::MockOneShotTimer* timer_;
@@ -526,10 +498,6 @@ class NetErrorHelperCoreTest : public testing::Test,
 
   const GURL default_url_;
   const GURL error_url_;
-
-  GURL last_tracking_url_;
-  std::string last_tracking_request_body_;
-  int tracking_request_count_;
 };
 
 //------------------------------------------------------------------------------
@@ -1970,94 +1938,6 @@ TEST_F(NetErrorHelperCoreTest, CorrectionServiceReturnsInvalidJsonResult) {
                       NetErrorHelperCore::ERROR_PAGE);
   core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-}
-
-TEST_F(NetErrorHelperCoreTest, CorrectionClickTracking) {
-  // Go through the standard navigation correction steps.
-
-  // Original page starts loading.
-  EnableNavigationCorrections();
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails.
-  std::string html;
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                           NetError(net::ERR_NAME_NOT_RESOLVED),
-                           false /* is_failed_post */, &html);
-  EXPECT_TRUE(html.empty());
-  EXPECT_FALSE(is_url_being_fetched());
-  EXPECT_FALSE(last_error_page_params());
-
-  // The blank page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-
-  // Corrections retrieval starts when the error page finishes loading.
-  EXPECT_FALSE(is_url_being_fetched());
-  EXPECT_FALSE(last_error_page_params());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  EXPECT_TRUE(is_url_being_fetched());
-  EXPECT_FALSE(last_error_page_params());
-
-  // Corrections are retrieved.
-  NavigationCorrectionsLoadSuccess(kDefaultCorrections,
-                                   base::size(kDefaultCorrections));
-  EXPECT_EQ(1, error_html_update_count());
-  EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
-  ExpectDefaultNavigationCorrections();
-  EXPECT_FALSE(is_url_being_fetched());
-
-  // Corrections load.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-
-  EXPECT_EQ(0, tracking_request_count());
-
-  // Invalid clicks should be ignored.
-  core()->TrackClick(-1);
-  core()->TrackClick(base::size(kDefaultCorrections));
-  EXPECT_EQ(0, tracking_request_count());
-
-  for (size_t i = 0; i < base::size(kDefaultCorrections); ++i) {
-    // Skip links that do not appear in the page.
-    if (kDefaultCorrections[i].is_porn || kDefaultCorrections[i].is_soft_porn)
-      continue;
-
-    int old_tracking_request_count = tracking_request_count();
-    core()->TrackClick(i);
-    EXPECT_EQ(old_tracking_request_count + 1, tracking_request_count());
-    EXPECT_EQ(GURL(kNavigationCorrectionUrl), last_tracking_url());
-
-    // Make sure all expected strings appear in output.
-    EXPECT_TRUE(last_tracking_request_body().find(
-        kDefaultCorrections[i].url_correction));
-    EXPECT_TRUE(
-        last_tracking_request_body().find(kDefaultCorrections[i].click_data));
-    EXPECT_TRUE(
-        last_tracking_request_body().find(kDefaultCorrections[i].click_type));
-    EXPECT_TRUE(
-        last_tracking_request_body().find(kNavigationCorrectionEventId));
-    EXPECT_TRUE(
-        last_tracking_request_body().find(kNavigationCorrectionFingerprint));
-  }
-
-  // Make sure duplicate tracking requests are ignored.
-  for (size_t i = 0; i < base::size(kDefaultCorrections); ++i) {
-    // Skip links that do not appear in the page.
-    if (kDefaultCorrections[i].is_porn || kDefaultCorrections[i].is_soft_porn)
-      continue;
-
-    int old_tracking_request_count = tracking_request_count();
-    core()->TrackClick(i);
-    EXPECT_EQ(old_tracking_request_count, tracking_request_count());
-  }
-
-  EXPECT_EQ(0, update_count());
-  EXPECT_EQ(1, error_html_update_count());
 }
 
 TEST_F(NetErrorHelperCoreTest, AutoReloadDisabled) {

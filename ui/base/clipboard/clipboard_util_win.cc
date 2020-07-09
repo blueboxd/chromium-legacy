@@ -211,7 +211,7 @@ base::FilePath WriteFileContentsToTempFile(const base::FilePath& suggested_name,
     // Don't write to the temp file for empty content--leave it at 0-bytes.
     if (!(data.Size() == 1 && data.get()[0] == '\0')) {
       if (base::WriteFile(temp_path, data.get(), data.Size()) < 0) {
-        base::DeleteFile(temp_path, false);
+        base::DeleteFile(temp_path);
         return base::FilePath();
       }
     }

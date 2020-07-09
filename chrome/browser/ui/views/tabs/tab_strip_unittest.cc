@@ -499,6 +499,48 @@ TEST_P(TabStripTest, VisibilityInOverflow) {
   EXPECT_TRUE(tab_strip_->tab_at(tab_strip_->tab_count() - 1)->GetVisible());
 }
 
+TEST_P(TabStripTest, GroupedTabSlotVisibility) {
+  constexpr int kInitialWidth = 250;
+  tab_strip_parent_->SetBounds(0, 0, kInitialWidth, 20);
+
+  // The first tab added to a reasonable-width strip should be visible.  If we
+  // add enough additional tabs, eventually one should be invisible due to
+  // overflow.
+  int invisible_tab_index = 0;
+  for (; invisible_tab_index < 100; ++invisible_tab_index) {
+    controller_->AddTab(invisible_tab_index, false);
+    CompleteAnimationAndLayout();
+    if (!tab_strip_->tab_at(invisible_tab_index)->GetVisible())
+      break;
+  }
+  ASSERT_GT(invisible_tab_index, 0);
+  ASSERT_LT(invisible_tab_index, 100);
+
+  // The tabs before the invisible tab should still be visible.
+  for (int i = 0; i < invisible_tab_index; ++i)
+    ASSERT_TRUE(tab_strip_->tab_at(i)->GetVisible());
+
+  // The group header of an invisible tab should not be visible.
+  base::Optional<tab_groups::TabGroupId> group1 =
+      tab_groups::TabGroupId::GenerateNew();
+  controller_->MoveTabIntoGroup(invisible_tab_index, group1);
+  CompleteAnimationAndLayout();
+  ASSERT_FALSE(tab_strip_->tab_at(invisible_tab_index)->GetVisible());
+  EXPECT_FALSE(tab_strip_->group_header(group1.value())->GetVisible());
+
+  // The group header of a visible tab should be visible when the group is
+  // expanded and collapsed.
+  base::Optional<tab_groups::TabGroupId> group2 =
+      tab_groups::TabGroupId::GenerateNew();
+  controller_->MoveTabIntoGroup(0, group2);
+  CompleteAnimationAndLayout();
+  ASSERT_FALSE(controller_->IsGroupCollapsed(group2.value()));
+  EXPECT_TRUE(tab_strip_->group_header(group2.value())->GetVisible());
+  controller_->ToggleTabGroupCollapsedState(group2.value(), false);
+  ASSERT_TRUE(controller_->IsGroupCollapsed(group2.value()));
+  EXPECT_TRUE(tab_strip_->group_header(group2.value())->GetVisible());
+}
+
 // Creates a tab strip in stacked layout mode and verifies that as we move
 // across the strip at the top, middle, and bottom, events will target each tab
 // in order.

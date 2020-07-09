@@ -23,7 +23,6 @@ struct ErrorPageParams {
 
   // Overrides whether reloading is suggested.
   bool suggest_reload;
-  int reload_tracking_id;
 
   // Overrides default suggestions.  Each entry must be a DictionaryValuethat
   // contains a "header" entry.  A "body" entry may optionally be specified.
@@ -37,7 +36,6 @@ struct ErrorPageParams {
   GURL search_url;
   // Default search terms.  Ignored if |search_url| is invalid.
   std::string search_terms;
-  int search_tracking_id;
 };
 
 }  // namespace error_page

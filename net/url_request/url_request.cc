@@ -1022,7 +1022,10 @@ net::PrivacyMode URLRequest::DeterminePrivacyMode() const {
   // Enable privacy mode if flags tell us not send or save cookies.
   if ((load_flags_ & LOAD_DO_NOT_SEND_COOKIES) ||
       (load_flags_ & LOAD_DO_NOT_SAVE_COOKIES)) {
-    return PRIVACY_MODE_ENABLED;
+    // TODO(https://crbug.com/775438): Client certs should always be
+    // affirmatively omitted for these requests.
+    return send_client_certs_ ? PRIVACY_MODE_ENABLED
+                              : PRIVACY_MODE_ENABLED_WITHOUT_CLIENT_CERTS;
   }
 
   // Otherwise, check with the delegate if present, or base it off of

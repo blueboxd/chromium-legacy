@@ -19,26 +19,44 @@ namespace {
 std::tuple<LayoutUnit, LayoutUnit> AdjustTextOverUnderOffsetsForEmHeight(
     LayoutUnit over,
     LayoutUnit under,
-    const ComputedStyle& style) {
+    const ComputedStyle& style,
+    const ShapeResultView& shape_view) {
   DCHECK_LE(over, under);
-  const SimpleFontData* font_data = style.GetFont().PrimaryFont();
-  if (!font_data)
+  const SimpleFontData* primary_font_data = style.GetFont().PrimaryFont();
+  if (!primary_font_data)
     return std::make_pair(over, under);
   const auto font_baseline = style.GetFontBaseline();
-  const LayoutUnit ascent =
-      font_data->GetFontMetrics().FixedAscent(font_baseline);
   const LayoutUnit line_height = under - over;
-  // Gap amount to avoid too dense result.
-  // TODO(crbug.com/1082087): Adjust the value.
-  constexpr int kGapPx = 1;
-  LayoutUnit over_diff(ascent - font_data->EmHeightAscent(font_baseline) -
-                       kGapPx);
-  // Floor() is better than Round().  We should not subtract pixels larger
-  // than |ascent - EmHeightAscent|.
-  over_diff = LayoutUnit(over_diff.ClampNegativeToZero().Floor());
-  LayoutUnit under_diff((line_height - ascent) -
-                        font_data->EmHeightDescent(font_baseline) - kGapPx);
-  under_diff = LayoutUnit(under_diff.ClampNegativeToZero().Floor());
+  const LayoutUnit primary_ascent =
+      primary_font_data->GetFontMetrics().FixedAscent(font_baseline);
+  const LayoutUnit primary_descent = line_height - primary_ascent;
+
+  Vector<ShapeResult::RunFontData> run_fonts;
+  // We don't use ShapeResultView::FallbackFonts() because we can't know if the
+  // primary font is actually used with FallbackFonts().
+  shape_view.GetRunFontData(&run_fonts);
+  const LayoutUnit kNoDiff = LayoutUnit::Max();
+  LayoutUnit over_diff = kNoDiff;
+  LayoutUnit under_diff = kNoDiff;
+  for (const auto& run_font : run_fonts) {
+    const SimpleFontData* font_data = run_font.font_data_;
+    if (!font_data)
+      continue;
+    const LayoutUnit em_ascent = font_data->EmHeightAscent(font_baseline);
+    const LayoutUnit em_descent = font_data->EmHeightDescent(font_baseline);
+    // Floor() is better than Round().  We should not subtract pixels larger
+    // than |primary_ascent - em_ascent|.
+    const LayoutUnit current_over_diff(
+        (primary_ascent - em_ascent).ClampNegativeToZero().Floor());
+    const LayoutUnit current_under_diff(
+        (primary_descent - em_descent).ClampNegativeToZero().Floor());
+    over_diff = std::min(over_diff, current_over_diff);
+    under_diff = std::min(under_diff, current_under_diff);
+  }
+  if (over_diff == kNoDiff)
+    over_diff = LayoutUnit();
+  if (under_diff == kNoDiff)
+    under_diff = LayoutUnit();
   return std::make_tuple(over + over_diff, under - under_diff);
 }
 
@@ -46,13 +64,16 @@ std::tuple<LayoutUnit, LayoutUnit> AdjustTextOverUnderOffsetsForEmHeight(
 
 PhysicalRect AdjustTextRectForEmHeight(const PhysicalRect& rect,
                                        const ComputedStyle& style,
+                                       const ShapeResultView* shape_view,
                                        WritingMode writing_mode) {
+  if (!shape_view)
+    return rect;
   const LayoutUnit line_height = IsHorizontalWritingMode(writing_mode)
                                      ? rect.size.height
                                      : rect.size.width;
   LayoutUnit over, under;
-  std::tie(over, under) =
-      AdjustTextOverUnderOffsetsForEmHeight(LayoutUnit(), line_height, style);
+  std::tie(over, under) = AdjustTextOverUnderOffsetsForEmHeight(
+      LayoutUnit(), line_height, style, *shape_view);
   const LayoutUnit over_diff = over;
   const LayoutUnit under_diff = line_height - under;
   const LayoutUnit new_line_height = under - over;
@@ -225,8 +246,10 @@ NGAnnotationMetrics ComputeAnnotationOverflow(
         if (item.fragment || item.shape_result) {
           if (const auto* style = item.Style()) {
             std::tie(item_over, item_under) =
-                AdjustTextOverUnderOffsetsForEmHeight(item_over, item_under,
-                                                      *style);
+                AdjustTextOverUnderOffsetsForEmHeight(
+                    item_over, item_under, *style,
+                    item.fragment ? *item.fragment->TextShapeResult()
+                                  : *item.shape_result);
           }
         } else {
           const auto* fragment = item.PhysicalFragment();

@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-GEN_INCLUDE(['../common/testing/callback_helper.js']);
+GEN_INCLUDE(['../common/testing/e2e_test_base.js']);
 GEN_INCLUDE(['mock_accessibility_private.js']);
 
 /**
  * Base class for browser tests for automatic clicks extension.
  */
-AutoclickE2ETest = class extends testing.Test {
+AutoclickE2ETest = class extends E2ETestBase {
   constructor() {
     super();
-    this.callbackHelper_ = new CallbackHelper(this);
     this.mockAccessibilityPrivate = MockAccessibilityPrivate;
     chrome.accessibilityPrivate = this.mockAccessibilityPrivate;
 
@@ -50,55 +49,6 @@ AutoclickE2ETest = class extends testing.Test {
   }
 
   /**
-   * Creates a callback that optionally calls {@code opt_callback} when
-   * called.  If this method is called one or more times, then
-   * {@code testDone()} will be called when all callbacks have been called.
-   * @param {Function=} opt_callback Wrapped callback that will have its this
-   *        reference bound to the test fixture.
-   * @return {Function}
-   */
-  newCallback(opt_callback) {
-    return this.callbackHelper_.wrap(opt_callback);
-  }
-
-  /**
-   * From chromevox_next_e2e_test_base.js
-   * Gets the desktop from the automation API and Launches a new tab with
-   * the given document, and runs |callback| with the desktop when a load
-   * complete fires on the created tab.
-   * Arranges to call |testDone()| after |callback| returns.
-   * NOTE: Callbacks created inside |callback| must be wrapped with
-   * |this.newCallback| if passed to asynchonous calls.  Otherwise, the test
-   * will be finished prematurely.
-   * @param {string} url Url to load and wait for.
-   * @param {function(chrome.automation.AutomationNode)} callback Called with
-   *     the desktop node once the document is ready.
-   */
-  runWithLoadedTree(url, callback) {
-    callback = this.newCallback(callback);
-    chrome.automation.getDesktop(function(desktopRootNode) {
-      var createParams = {active: true, url};
-      chrome.tabs.create(createParams, function(unused_tab) {
-        chrome.automation.getTree(function(returnedRootNode) {
-          const rootNode = returnedRootNode;
-          if (rootNode.docLoaded) {
-            callback && callback(desktopRootNode);
-            callback = null;
-            return;
-          }
-          rootNode.addEventListener('loadComplete', function(evt) {
-            if (evt.target.root.url != url) {
-              return;
-            }
-            callback && callback(desktopRootNode);
-            callback = null;
-          });
-        });
-      });
-    }.bind(this));
-  }
-
-  /**
    * Asserts that two rects are the same.
    * @param {!chrome.accessibilityPrivate.ScreenRect} first
    * @param {!chrome.accessibilityPrivate.ScreenRect} second
@@ -110,19 +60,6 @@ AutoclickE2ETest = class extends testing.Test {
     assertEquals(first.height, second.height);
   }
 };
-
-/**
- * @override
- * No UI in the background context.
- */
-AutoclickE2ETest.prototype.runAccessibilityChecks = false;
-
-/** @override */
-AutoclickE2ETest.prototype.isAsync = true;
-
-/** @override */
-AutoclickE2ETest.prototype.browsePreload = null;
-
 
 TEST_F('AutoclickE2ETest', 'HighlightsRootWebAreaIfNotScrollable', function() {
   this.runWithLoadedTree(

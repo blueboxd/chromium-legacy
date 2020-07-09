@@ -6,15 +6,13 @@
 
 #include "base/optional.h"
 #include "base/stl_util.h"
-#include "chromecast/graphics/cast_window_manager.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "ui/aura/env.h"
 
 namespace chromecast {
 
-WebviewWindowManager::WebviewWindowManager(
-    CastWindowManager* cast_window_manager) {
+WebviewWindowManager::WebviewWindowManager() {
   aura::Env::GetInstance()->AddObserver(this);
 }
 

@@ -339,6 +339,8 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
   ext.b_GL_ARB_shader_image_load_store =
       gfx::HasExtension(extensions, "GL_ARB_shader_image_load_store");
   ext.b_GL_ARB_sync = gfx::HasExtension(extensions, "GL_ARB_sync");
+  ext.b_GL_ARB_tessellation_shader =
+      gfx::HasExtension(extensions, "GL_ARB_tessellation_shader");
   ext.b_GL_ARB_texture_multisample =
       gfx::HasExtension(extensions, "GL_ARB_texture_multisample");
   ext.b_GL_ARB_texture_storage =
@@ -452,6 +454,8 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
   ext.b_GL_OES_get_program_binary =
       gfx::HasExtension(extensions, "GL_OES_get_program_binary");
   ext.b_GL_OES_mapbuffer = gfx::HasExtension(extensions, "GL_OES_mapbuffer");
+  ext.b_GL_OES_tessellation_shader =
+      gfx::HasExtension(extensions, "GL_OES_tessellation_shader");
   ext.b_GL_OES_texture_buffer =
       gfx::HasExtension(extensions, "GL_OES_texture_buffer");
   ext.b_GL_OES_vertex_array_object =
@@ -2173,9 +2177,13 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glObjectPtrLabelKHR"));
   }
 
-  if (ver->IsAtLeastGLES(3u, 2u) || ver->IsAtLeastGL(4u, 0u)) {
+  if (ver->IsAtLeastGLES(3u, 2u) || ver->IsAtLeastGL(4u, 0u) ||
+      ext.b_GL_ARB_tessellation_shader) {
     fn.glPatchParameteriFn = reinterpret_cast<glPatchParameteriProc>(
         GetGLProcAddress("glPatchParameteri"));
+  } else if (ext.b_GL_OES_tessellation_shader) {
+    fn.glPatchParameteriFn = reinterpret_cast<glPatchParameteriProc>(
+        GetGLProcAddress("glPatchParameteriOES"));
   }
 
   if (ext.b_GL_NV_path_rendering) {

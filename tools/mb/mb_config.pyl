@@ -1955,7 +1955,7 @@
 
     'ios_cronet': [
       'additional_target_cpus_x86', 'cronet_ios', 'debug_static_bot',
-      'ios_deployment_target_9_0', 'ios_simulator'
+      'ios_deployment_target_10_0', 'ios_simulator'
     ],
 
     'ios_device_release_compile_only': [
@@ -2701,8 +2701,8 @@
       'gn_args': 'ios_code_signing_identity_description=\"iPhone Developer\"',
     },
 
-    'ios_deployment_target_9_0': {
-      'gn_args': 'ios_deployment_target=\"9.0\"',
+    'ios_deployment_target_10_0': {
+      'gn_args': 'ios_deployment_target=\"10.0\"',
     },
 
     'ios_device': {
@@ -2896,7 +2896,7 @@
     },
 
     'sk_dawn': {
-      'gn_args': 'skia_use_dawn=true',
+      'gn_args': 'skia_use_dawn=true enable_skia_dawn_gtests=true',
     },
 
     'stable_channel': {

@@ -155,19 +155,18 @@ bool BluetoothDeviceCast::ExpectingConfirmation() const {
   return false;
 }
 
-void BluetoothDeviceCast::GetConnectionInfo(
-    const ConnectionInfoCallback& callback) {
+void BluetoothDeviceCast::GetConnectionInfo(ConnectionInfoCallback callback) {
   // TODO(slan): Implement this?
   NOTIMPLEMENTED();
 }
 
 void BluetoothDeviceCast::SetConnectionLatency(
     ConnectionLatency connection_latency,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    base::OnceClosure callback,
+    ErrorCallback error_callback) {
   // TODO(slan): This many be needed for some high-performance BLE devices.
   NOTIMPLEMENTED();
-  error_callback.Run();
+  std::move(error_callback).Run();
 }
 
 void BluetoothDeviceCast::Connect(PairingDelegate* pairing_delegate,
@@ -207,33 +206,33 @@ void BluetoothDeviceCast::CancelPairing() {
   NOTREACHED() << "Pairing not supported.";
 }
 
-void BluetoothDeviceCast::Disconnect(const base::Closure& callback,
-                                     const ErrorCallback& error_callback) {
+void BluetoothDeviceCast::Disconnect(base::OnceClosure callback,
+                                     ErrorCallback error_callback) {
   // This method is used only for Bluetooth classic.
   NOTIMPLEMENTED() << __func__ << " Only BLE functionality is supported.";
-  error_callback.Run();
+  std::move(error_callback).Run();
 }
 
-void BluetoothDeviceCast::Forget(const base::Closure& callback,
-                                 const ErrorCallback& error_callback) {
+void BluetoothDeviceCast::Forget(base::OnceClosure callback,
+                                 ErrorCallback error_callback) {
   NOTIMPLEMENTED() << __func__ << " Only BLE functionality is supported.";
-  error_callback.Run();
+  std::move(error_callback).Run();
 }
 
 void BluetoothDeviceCast::ConnectToService(
     const BluetoothUUID& uuid,
-    const ConnectToServiceCallback& callback,
-    const ConnectToServiceErrorCallback& error_callback) {
+    ConnectToServiceCallback callback,
+    ConnectToServiceErrorCallback error_callback) {
   NOTIMPLEMENTED() << __func__ << " GATT server mode not supported";
-  error_callback.Run("Not Implemented");
+  std::move(error_callback).Run("Not Implemented");
 }
 
 void BluetoothDeviceCast::ConnectToServiceInsecurely(
     const device::BluetoothUUID& uuid,
-    const ConnectToServiceCallback& callback,
-    const ConnectToServiceErrorCallback& error_callback) {
+    ConnectToServiceCallback callback,
+    ConnectToServiceErrorCallback error_callback) {
   NOTIMPLEMENTED() << __func__ << " GATT server mode not supported";
-  error_callback.Run("Not Implemented");
+  std::move(error_callback).Run("Not Implemented");
 }
 
 bool BluetoothDeviceCast::UpdateWithScanResult(

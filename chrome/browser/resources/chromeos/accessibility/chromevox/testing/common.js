@@ -41,27 +41,6 @@ class TestUtils {
     }
     return stringified.replace(/^[^\/]+\/\*!?/, '').replace(/\*\/[^\/]+$/, '');
   }
-
-  /**
-   * Creates a data url for a document.
-   * @param {function() : void} doc Snippet wrapped inside of a function.
-   * @return {string}
-   */
-  static createUrlForDoc(doc) {
-    const docString = TestUtils.extractHtmlFromCommentEncodedString(doc);
-    return 'data:text/html,<!doctype html>' +
-        encodeURIComponent(TestUtils.collapseWhitespace(
-            docString.replace(/[\n\r]/g, '').trim()));
-  }
-
-  /**
-   * Collapses inner whitespace.
-   * @param {string} str
-   * @return {string}
-   */
-  static collapseWhitespace(str) {
-    return str.replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
-  }
 }
 
 

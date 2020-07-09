@@ -43,8 +43,6 @@ python_library("system_webview_wpt") {
 }
 
 android_apk("webview_instrumentation_apk") {
-  # TODO(crbug.com/1099536): Fix tests that break when this is increased.
-  target_sdk_version = 24
   deps = [
     ":webview_instrumentation_apk_assets",
     ":webview_instrumentation_apk_resources",
@@ -159,7 +157,6 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
   apk_under_test = ":webview_instrumentation_apk"
   android_manifest = "../javatests/AndroidManifest.xml"
   min_sdk_version = 21
-
   deps = [
     ":webview_instrumentation_test_utils_java",
     "//android_webview:android_webview_java",

@@ -105,9 +105,8 @@ void ScopedHandleVerifier::InstallVerifier() {
           ::GetProcAddress(main_module, "GetHandleVerifier"));
 
   // This should only happen if running in a DLL is linked with base but the
-  // hosting EXE is not. In this case, create an ScopedHandleVerifier for the
-  // current
-  // module but leave it disabled.
+  // hosting EXE is not. In this case, create a ScopedHandleVerifier for the
+  // current module but leave it disabled.
   if (!get_handle_verifier) {
     ThreadSafeAssignOrCreateScopedHandleVerifier(nullptr, false);
     return;

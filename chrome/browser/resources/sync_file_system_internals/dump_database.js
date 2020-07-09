@@ -68,7 +68,7 @@ const DumpDatabase = (function() {
    */
   DumpDatabase.onGetDatabaseDump = function(databaseDump) {
     const placeholder = $('dump-database-placeholder');
-    placeholder.innerHTML = '';
+    placeholder.innerHTML = trustedTypes.emptyHTML;
     for (let i = 0; i < databaseDump.length; ++i) {
       const div = document.createElement('div');
       const table = document.createElement('table');

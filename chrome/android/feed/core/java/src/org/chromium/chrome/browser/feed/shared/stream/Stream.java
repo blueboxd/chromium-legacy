@@ -9,12 +9,23 @@ import android.view.View;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
 /** Interface used for interacting with the Stream library in order to render a stream of cards. */
 public interface Stream {
     /** Constant used to notify host that a view's position on screen is not known. */
     int POSITION_NOT_KNOWN = Integer.MIN_VALUE;
+
+    @IntDef({FeedFirstCardDensity.UNKNOWN, FeedFirstCardDensity.NOT_DENSE,
+            FeedFirstCardDensity.DENSE})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface FeedFirstCardDensity {
+        int UNKNOWN = 0;
+        int NOT_DENSE = 1;
+        int DENSE = 2;
+    }
 
     /**
      * Called when the Stream is being created. {@code savedInstanceState} should be a previous
@@ -118,6 +129,13 @@ public interface Stream {
      * <p>Note: this will assume {@link RequestReason.HOST_REQUESTED}.
      */
     void triggerRefresh();
+
+    /**
+     * Get whether the first card of Feed is dense in portrait mode.
+     */
+    default int getFirstCardDensity() {
+        return FeedFirstCardDensity.UNKNOWN;
+    };
 
     /**
      * Interface users can implement to know when content in the Stream has changed content on

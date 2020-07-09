@@ -337,8 +337,10 @@ bool LayoutThemeMacRefresh::IsAccentColorCustomized(
       return false;
     }
   } else {
-    if (NSBlueControlTint == [[NSUserDefaults standardUserDefaults]
-                                 integerForKey:@"AppleAquaColorVariant"]) {
+    int user_custom_color = [[NSUserDefaults standardUserDefaults]
+        integerForKey:@"AppleAquaColorVariant"];
+    if (user_custom_color == NSBlueControlTint ||
+        user_custom_color == NSDefaultControlTint) {
       return false;
     }
   }

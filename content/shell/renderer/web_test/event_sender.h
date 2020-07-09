@@ -41,7 +41,6 @@ class Arguments;
 
 namespace content {
 class BlinkTestRunner;
-class TestInterfaces;
 class TestRunner;
 class WebWidgetTestProxy;
 
@@ -122,7 +121,6 @@ class EventSender {
     kWillFail,
   };
 
-  TestInterfaces* interfaces();
   TestRunner* test_runner();
   BlinkTestRunner* blink_test_runner();
   const blink::WebView* view() const;

@@ -30,6 +30,7 @@ class VersionUpdater : public UpdateEngineClient::Observer,
   enum class Result {
     UPDATE_NOT_REQUIRED,
     UPDATE_ERROR,
+    UPDATE_SKIPPED,
   };
 
   enum class State {

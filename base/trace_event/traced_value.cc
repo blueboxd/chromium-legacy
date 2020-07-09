@@ -4,6 +4,7 @@
 
 #include "base/trace_event/traced_value.h"
 
+#include <inttypes.h>
 #include <stdint.h>
 
 #include <atomic>
@@ -14,6 +15,7 @@
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "base/trace_event/trace_event_memory_overhead.h"
@@ -616,6 +618,82 @@ bool TracedValue::AppendToProto(ProtoAppender* appender) {
 void TracedValue::EstimateTraceMemoryOverhead(
     TraceEventMemoryOverhead* overhead) {
   writer_->EstimateTraceMemoryOverhead(overhead);
+}
+
+TracedValue::DictionaryItem::DictionaryItem(const char* name, int value) {
+  name_ = name;
+  kept_value_.int_value = value;
+  kept_value_type_ = KeptValueType::kIntType;
+}
+
+TracedValue::DictionaryItem::DictionaryItem(const char* name, double value) {
+  name_ = name;
+  kept_value_.double_value = value;
+  kept_value_type_ = KeptValueType::kDoubleType;
+}
+
+TracedValue::DictionaryItem::DictionaryItem(const char* name, bool value) {
+  name_ = name;
+  kept_value_.bool_value = value;
+  kept_value_type_ = KeptValueType::kBoolType;
+}
+
+TracedValue::DictionaryItem::DictionaryItem(const char* name,
+                                            base::StringPiece value) {
+  name_ = name;
+  kept_value_.string_piece_value = value;
+  kept_value_type_ = KeptValueType::kStringPieceType;
+}
+
+TracedValue::DictionaryItem::DictionaryItem(const char* name, void* value) {
+  name_ = name;
+  kept_value_.void_ptr_value = value;
+  kept_value_type_ = KeptValueType::kVoidPtrType;
+}
+
+TracedValue::DictionaryItem::DictionaryItem(const char* name,
+                                            const char* value) {
+  name_ = name;
+  kept_value_.string_piece_value = value;
+  kept_value_type_ = KeptValueType::kStringPieceType;
+}
+
+void TracedValue::DictionaryItem::WriteToValue(TracedValue* value) const {
+  switch (kept_value_type_) {
+    case KeptValueType::kIntType: {
+      value->SetInteger(name_, kept_value_.int_value);
+      break;
+    }
+    case KeptValueType::kDoubleType: {
+      value->SetDouble(name_, kept_value_.double_value);
+      break;
+    }
+    case KeptValueType::kBoolType: {
+      value->SetBoolean(name_, kept_value_.bool_value);
+      break;
+    }
+    case KeptValueType::kStringPieceType: {
+      value->SetString(name_, kept_value_.string_piece_value);
+      break;
+    }
+    case KeptValueType::kVoidPtrType: {
+      value->SetString(
+          name_,
+          base::StringPrintf("0x%" PRIx64,
+                             static_cast<uint64_t>(reinterpret_cast<uintptr_t>(
+                                 kept_value_.void_ptr_value))));
+      break;
+    }
+  }
+}
+
+std::unique_ptr<TracedValue> TracedValue::Build(
+    std::initializer_list<DictionaryItem> items) {
+  std::unique_ptr<TracedValue> value(new TracedValue());
+  for (const auto& item : items) {
+    item.WriteToValue(value.get());
+  }
+  return value;
 }
 
 std::string TracedValueJSON::ToJSON() const {

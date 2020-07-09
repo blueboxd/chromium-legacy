@@ -297,10 +297,12 @@ SkColor AshColorProvider::GetContentLayerColorImpl(
       return cros_colors::ResolveColor(ColorName::kDefaultIconColorProminent,
                                        color_mode);
     case ContentLayerType::kButtonLabelColor:
+    case ContentLayerType::kButtonIconColor:
       light_color = gfx::kGoogleGrey700;
       dark_color = gfx::kGoogleGrey200;
       break;
     case ContentLayerType::kButtonLabelColorPrimary:
+    case ContentLayerType::kButtonIconColorPrimary:
       light_color = gfx::kGoogleRed900;
       dark_color = gfx::kGoogleRed200;
       break;

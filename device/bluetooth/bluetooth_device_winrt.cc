@@ -309,15 +309,14 @@ bool BluetoothDeviceWinrt::ExpectingConfirmation() const {
   return false;
 }
 
-void BluetoothDeviceWinrt::GetConnectionInfo(
-    const ConnectionInfoCallback& callback) {
+void BluetoothDeviceWinrt::GetConnectionInfo(ConnectionInfoCallback callback) {
   NOTIMPLEMENTED();
 }
 
 void BluetoothDeviceWinrt::SetConnectionLatency(
     ConnectionLatency connection_latency,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    base::OnceClosure callback,
+    ErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 
@@ -412,27 +411,27 @@ void BluetoothDeviceWinrt::CancelPairing() {
     pairing_->CancelPairing();
 }
 
-void BluetoothDeviceWinrt::Disconnect(const base::Closure& callback,
-                                      const ErrorCallback& error_callback) {
+void BluetoothDeviceWinrt::Disconnect(base::OnceClosure callback,
+                                      ErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 
-void BluetoothDeviceWinrt::Forget(const base::Closure& callback,
-                                  const ErrorCallback& error_callback) {
+void BluetoothDeviceWinrt::Forget(base::OnceClosure callback,
+                                  ErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 
 void BluetoothDeviceWinrt::ConnectToService(
     const BluetoothUUID& uuid,
-    const ConnectToServiceCallback& callback,
-    const ConnectToServiceErrorCallback& error_callback) {
+    ConnectToServiceCallback callback,
+    ConnectToServiceErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 
 void BluetoothDeviceWinrt::ConnectToServiceInsecurely(
     const device::BluetoothUUID& uuid,
-    const ConnectToServiceCallback& callback,
-    const ConnectToServiceErrorCallback& error_callback) {
+    ConnectToServiceCallback callback,
+    ConnectToServiceErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 

@@ -515,6 +515,11 @@ bool LayerImpl::IsScrollbarLayer() const {
   return false;
 }
 
+bool LayerImpl::IsScrollerOrScrollbar() const {
+  return IsScrollbarLayer() ||
+         GetScrollTree().FindNodeFromElementId(element_id());
+}
+
 void LayerImpl::SetDrawsContent(bool draws_content) {
   if (draws_content_ == draws_content)
     return;

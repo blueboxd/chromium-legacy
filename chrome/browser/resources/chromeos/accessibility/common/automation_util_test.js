@@ -33,35 +33,38 @@ AccessibilityExtensionAutomationUtilE2ETest =
     };
   }
 
-  basicDoc() { /*!
+  basicDoc() {
+    return `
   <p><a href='#'></a>hello</p>
   <h1><ul><li>a</ul><div role="group"><button></button></div></h1>
-  */
+    `;
   }
 
-  secondDoc() { /*!
+  secondDoc() {
+    return `
   <html>
   <head><title>Second doc</title></head>
   <body><div>Second</div></body>
   </html>
-  */
+    `;
   }
 
-  iframeDoc() { /*!
+  iframeDoc() {
+    return `
   <html>
   <head><title>Second doc</title></head>
   <body>
     <iframe src="data:text/html,<p>Inside</p>"></iframe>
   </body>
   </html>
-  */
+    `;
   }
 };
 
 
 TEST_F(
     'AccessibilityExtensionAutomationUtilE2ETest', 'GetAncestors', function() {
-      this.runWithLoadedTree(this.basicDoc, function(root) {
+      this.runWithLoadedTree(this.basicDoc(), function(root) {
         let expectedLength = 1;
         while (root) {
           const ancestors = getNonDesktopAncestors(root);
@@ -74,7 +77,7 @@ TEST_F(
 TEST_F(
     'AccessibilityExtensionAutomationUtilE2ETest', 'GetUniqueAncestors',
     function() {
-      this.runWithLoadedTree(this.basicDoc, function(root) {
+      this.runWithLoadedTree(this.basicDoc(), function(root) {
         let leftmost = root, rightmost = root;
         while (leftmost.firstChild) {
           leftmost = leftmost.firstChild;
@@ -114,7 +117,7 @@ TEST_F(
 
 TEST_F(
     'AccessibilityExtensionAutomationUtilE2ETest', 'GetDirection', function() {
-      this.runWithLoadedTree(this.basicDoc, function(root) {
+      this.runWithLoadedTree(this.basicDoc(), function(root) {
         let left = root, right = root;
 
         // Same node.
@@ -137,7 +140,7 @@ TEST_F(
 TEST_F(
     'AccessibilityExtensionAutomationUtilE2ETest', 'VisitContainer',
     function() {
-      this.runWithLoadedTree(toolbarDoc, function(r) {
+      this.runWithLoadedTree(toolbarDoc(), function(r) {
         const pred = function(n) {
           return n.role != 'rootWebArea';
         };
@@ -182,10 +185,7 @@ TEST_F(
     'AccessibilityExtensionAutomationUtilE2ETest', 'FindLastNodeSimple',
     function() {
       this.runWithLoadedTree(
-          function() { /*!
-    <p aria-label=" "><div aria-label="x"></div></p>
-    */ },
-          function(r) {
+          `<p aria-label=" "><div aria-label="x"></div></p>`, function(r) {
             assertEquals(
                 'x',
                 AutomationUtil
@@ -202,12 +202,12 @@ TEST_F(
     'AccessibilityExtensionAutomationUtilE2ETest', 'FindLastNodeNonLeaf',
     function() {
       this.runWithLoadedTree(
-          function() { /*!
+          `
     <div role="button" aria-label="outer">
-    <div role="button" aria-label="inner">
+      <div role="button" aria-label="inner">
+      </div>
     </div>
-    </div>
-    */ },
+    `,
           function(r) {
             assertEquals(
                 'outer',
@@ -225,11 +225,11 @@ TEST_F(
     'AccessibilityExtensionAutomationUtilE2ETest', 'FindLastNodeLeaf',
     function() {
       this.runWithLoadedTree(
-          function() { /*!
+          `
     <p>start</p>
     <div aria-label="outer"><div aria-label="inner"></div></div>
     <p>end</p>
-    */ },
+    `,
           function(r) {
             assertEquals(
                 'inner',

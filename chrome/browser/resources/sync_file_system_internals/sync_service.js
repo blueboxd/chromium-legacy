@@ -55,7 +55,7 @@ const SyncService = (function() {
    */
   function clearLogs() {
     chrome.send('clearLogs');
-    $('log-entries').innerHTML = '';
+    $('log-entries').innerHTML = trustedTypes.emptyHTML;
   }
 
   /**

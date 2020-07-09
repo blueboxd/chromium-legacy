@@ -556,9 +556,6 @@ class Internals final : public ScriptWrappable {
   // have a scrollable area.
   String getProgrammaticScrollAnimationState(Node*) const;
 
-  // Returns the visual rect of a node's LayoutObject.
-  DOMRect* visualRect(Node*);
-
   // Intentional crash.
   void crash();
 

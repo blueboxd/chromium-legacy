@@ -818,10 +818,6 @@ const char kPinUnlockWeakPinsAllowed[] = "pin_unlock_weak_pins_allowed";
 // digits are necessary to unlock the device. Can be recommended.
 const char kPinUnlockAutosubmitEnabled[] = "pin_unlock_autosubmit_enabled";
 
-// Boolean pref indicating whether this device supports BLE advertising.
-const char kInstantTetheringBleAdvertisingSupported[] =
-    "tether.ble_advertising_supported";
-
 // Boolean pref indicating whether someone can cast to the device.
 const char kCastReceiverEnabled[] = "cast_receiver.enabled";
 

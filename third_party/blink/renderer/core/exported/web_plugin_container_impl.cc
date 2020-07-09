@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element.h"
+#include "third_party/blink/renderer/core/clipboard/clipboard_utilities.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
@@ -397,8 +398,13 @@ void WebPluginContainerImpl::Copy() {
     return;
 
   LocalFrame* frame = element_->GetDocument().GetFrame();
-  frame->GetSystemClipboard()->WriteHTML(
-      web_plugin_->SelectionAsMarkup(), KURL(), web_plugin_->SelectionAsText());
+  frame->GetSystemClipboard()->WriteHTML(web_plugin_->SelectionAsMarkup(),
+                                         KURL());
+  // TODO(dsleeps): consider consolidating ReplaceNBSPWithSpace into
+  // WritePlainText. WriteHTML always used ReplaceNBSOWithSpace before writing.
+  String text = web_plugin_->SelectionAsText();
+  ReplaceNBSPWithSpace(text);
+  frame->GetSystemClipboard()->WritePlainText(text);
   frame->GetSystemClipboard()->CommitWrite();
 }
 

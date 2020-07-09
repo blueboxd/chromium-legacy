@@ -125,7 +125,7 @@ void LayoutShiftTracker::ObjectShifted(
     const PropertyTreeStateOrAlias& property_tree_state,
     FloatRect old_rect,
     FloatRect new_rect,
-    FloatSize paint_offset_delta) {
+    const FloatSize& paint_offset_delta) {
   if (old_rect.IsEmpty() || new_rect.IsEmpty())
     return;
 
@@ -281,7 +281,7 @@ void LayoutShiftTracker::NotifyObjectPrePaint(
     const PropertyTreeStateOrAlias& property_tree_state,
     const IntRect& old_visual_rect,
     const IntRect& new_visual_rect,
-    FloatSize paint_offset_delta) {
+    const FloatSize& paint_offset_delta) {
   if (!IsActive())
     return;
 

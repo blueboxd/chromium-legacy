@@ -1574,7 +1574,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   PropertyChangedSubscription AddPropertyChangedCallback(
       PropertyKey property,
-      PropertyChangedCallback callback);
+      PropertyChangedCallback callback) WARN_UNUSED_RESULT;
   void OnPropertyChanged(PropertyKey property,
                          PropertyEffects property_effects);
 

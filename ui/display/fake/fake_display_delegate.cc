@@ -35,6 +35,13 @@ constexpr uint32_t kProductCodeHash = 3692486807;
 constexpr base::TimeDelta kConfigureDisplayDelay =
     base::TimeDelta::FromMilliseconds(200);
 
+bool AreModesEqual(const display::DisplayMode& lhs,
+                   const display::DisplayMode& rhs) {
+  return lhs.size() == rhs.size() &&
+         lhs.is_interlaced() == rhs.is_interlaced() &&
+         lhs.refresh_rate() == rhs.refresh_rate();
+}
+
 }  // namespace
 
 FakeDisplayDelegate::FakeDisplayDelegate() = default;
@@ -137,7 +144,8 @@ void FakeDisplayDelegate::Configure(
     if (snapshot != displays_.end()) {
       // Check that config mode is appropriate for the display snapshot.
       for (const auto& existing_mode : snapshot->get()->modes()) {
-        if (existing_mode.get() == display_config_params.mode.value().get()) {
+        if (AreModesEqual(*existing_mode.get(),
+                          *display_config_params.mode.value().get())) {
           configure_success = true;
           break;
         }

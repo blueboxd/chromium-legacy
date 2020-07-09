@@ -52,6 +52,10 @@ const char kDisableExperimentalAccessibilityChromeVoxSearchMenus[] =
 const char kEnableExperimentalAccessibilityChromeVoxTutorial[] =
     "enable-experimental-accessibility-chromevox-tutorial";
 
+// Enables Switch Access point scanning. This feature hasn't launched yet.
+const char kEnableSwitchAccessPointScanning[] =
+    "enable-switch-access-point-scanning";
+
 bool IsExperimentalAccessibilityLanguageDetectionEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableExperimentalAccessibilityLanguageDetection);
@@ -65,6 +69,11 @@ bool IsExperimentalAccessibilityLanguageDetectionDynamicEnabled() {
 bool IsExperimentalAccessibilitySwitchAccessTextEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableExperimentalAccessibilitySwitchAccessText);
+}
+
+bool IsSwitchAccessPointScanningEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kEnableSwitchAccessPointScanning);
 }
 
 #if defined(OS_WIN)

@@ -296,6 +296,14 @@ scoped_refptr<SerializedScriptValue> SerializedScriptValue::NullValue() {
   return Create(reinterpret_cast<const char*>(kNullData), sizeof(kNullData));
 }
 
+scoped_refptr<SerializedScriptValue> SerializedScriptValue::UndefinedValue() {
+  // The format here may fall a bit out of date, because we support
+  // deserializing SSVs written by old browser versions.
+  static const uint8_t kUndefinedData[] = {0xFF, 17, 0xFF, 13, '_', 0x00};
+  return Create(reinterpret_cast<const char*>(kUndefinedData),
+                sizeof(kUndefinedData));
+}
+
 String SerializedScriptValue::ToWireString() const {
   // Add the padding '\0', but don't put it in |data_buffer_|.
   // This requires direct use of uninitialized strings, though.

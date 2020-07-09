@@ -75,11 +75,11 @@ public class VrInstallUpdateInfoBarTest {
      */
     private static MockVrCoreVersionChecker setVrCoreCompatibility(int compatibility) {
         final MockVrCoreVersionChecker mockChecker = new MockVrCoreVersionChecker();
-        mockChecker.setMockReturnValue(new VrCoreInfo(null, compatibility));
+        mockChecker.setMockReturnValue(compatibility);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { VrCoreInstallUtils.overrideVrCoreVersionChecker(mockChecker); });
         Assert.assertEquals("Overriding VrCoreVersionChecker failed", compatibility,
-                mockChecker.getLastReturnValue().compatibility);
+                mockChecker.getLastReturnValue());
         return mockChecker;
     }
 
@@ -96,14 +96,17 @@ public class VrInstallUpdateInfoBarTest {
             vrCoreInstallUtils.requestInstallVrCore(mVrTestRule.getActivity().getActivityTab());
         });
         View decorView = mVrTestRule.getActivity().getWindow().getDecorView();
-        if (checkerReturnCompatibility == VrCoreCompatibility.VR_READY) {
+        if (checkerReturnCompatibility == VrCoreVersionChecker.VrCoreCompatibility.VR_READY) {
             VrInfoBarUtils.expectInfoBarPresent(mVrTestRule, false);
-        } else if (checkerReturnCompatibility == VrCoreCompatibility.VR_OUT_OF_DATE
-                || checkerReturnCompatibility == VrCoreCompatibility.VR_NOT_AVAILABLE) {
+        } else if (checkerReturnCompatibility
+                        == VrCoreVersionChecker.VrCoreCompatibility.VR_OUT_OF_DATE
+                || checkerReturnCompatibility
+                        == VrCoreVersionChecker.VrCoreCompatibility.VR_NOT_AVAILABLE) {
             // Out of date and missing cases are the same, but with different text
             String expectedMessage;
             String expectedButton;
-            if (checkerReturnCompatibility == VrCoreCompatibility.VR_OUT_OF_DATE) {
+            if (checkerReturnCompatibility
+                    == VrCoreVersionChecker.VrCoreCompatibility.VR_OUT_OF_DATE) {
                 expectedMessage = ContextUtils.getApplicationContext().getString(
                         org.chromium.chrome.vr.R.string.vr_services_check_infobar_update_text);
                 expectedButton = ContextUtils.getApplicationContext().getString(
@@ -121,7 +124,8 @@ public class VrInstallUpdateInfoBarTest {
             tempView = (TextView) decorView.findViewById(R.id.button_primary);
             Assert.assertEquals("VR install/update button text did not match expectation",
                     expectedButton, tempView.getText().toString());
-        } else if (checkerReturnCompatibility == VrCoreCompatibility.VR_NOT_SUPPORTED) {
+        } else if (checkerReturnCompatibility
+                == VrCoreVersionChecker.VrCoreCompatibility.VR_NOT_SUPPORTED) {
             VrInfoBarUtils.expectInfoBarPresent(mVrTestRule, false);
         } else {
             Assert.fail("Invalid VrCoreVersionChecker compatibility: "
@@ -138,7 +142,7 @@ public class VrInstallUpdateInfoBarTest {
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testInfoBarNotPresentWhenVrServicesCurrent() {
-        infoBarTestHelper(VrCoreCompatibility.VR_READY);
+        infoBarTestHelper(VrCoreVersionChecker.VrCoreCompatibility.VR_READY);
     }
 
     /**
@@ -150,7 +154,7 @@ public class VrInstallUpdateInfoBarTest {
             XrActivityRestriction.SupportedActivity.CCT})
     public void
     testInfoBarPresentWhenVrServicesOutdated() {
-        infoBarTestHelper(VrCoreCompatibility.VR_OUT_OF_DATE);
+        infoBarTestHelper(VrCoreVersionChecker.VrCoreCompatibility.VR_OUT_OF_DATE);
     }
 
     /**
@@ -162,7 +166,7 @@ public class VrInstallUpdateInfoBarTest {
             XrActivityRestriction.SupportedActivity.CCT})
     public void
     testInfoBarPresentWhenVrServicesMissing() {
-        infoBarTestHelper(VrCoreCompatibility.VR_NOT_AVAILABLE);
+        infoBarTestHelper(VrCoreVersionChecker.VrCoreCompatibility.VR_NOT_AVAILABLE);
     }
 
     /**
@@ -173,6 +177,6 @@ public class VrInstallUpdateInfoBarTest {
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testInfoBarNotPresentWhenVrServicesNotSupported() {
-        infoBarTestHelper(VrCoreCompatibility.VR_NOT_SUPPORTED);
+        infoBarTestHelper(VrCoreVersionChecker.VrCoreCompatibility.VR_NOT_SUPPORTED);
     }
 }

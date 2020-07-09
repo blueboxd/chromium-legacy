@@ -657,6 +657,11 @@ void BinaryUploadService::Request::add_tag(const std::string& tag) {
   content_analysis_request_.add_tags(tag);
 }
 
+void BinaryUploadService::Request::set_email(const std::string& email) {
+  DCHECK(!use_legacy_proto_);
+  content_analysis_request_.mutable_request_data()->set_email(email);
+}
+
 const std::string& BinaryUploadService::Request::device_token() const {
   if (use_legacy_proto_)
     return deep_scanning_request_.dm_token();

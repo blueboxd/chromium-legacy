@@ -68,6 +68,8 @@ public class DefaultBrowserPromoManagerTest extends DummyUiActivityTestCase {
             }
         }, mWindowAndroid);
         mAppName = BuildInfo.getInstance().hostPackageLabel;
+        // Enabling feature can assign a default value to the fieldtrial param.
+        FeatureList.setTestFeatures(Collections.EMPTY_MAP);
     }
 
     @Override
@@ -79,9 +81,6 @@ public class DefaultBrowserPromoManagerTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     public void testPromoByRoleManager() {
-        // Enabling feature can assign a default value to the fieldtrial param.
-        FeatureList.setTestFeatures(Collections.EMPTY_MAP);
-
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mManager.promoForTesting(
                     DefaultBrowserPromoUtils.DefaultBrowserState.NO_DEFAULT, Build.VERSION_CODES.Q);

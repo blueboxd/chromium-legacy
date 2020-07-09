@@ -138,6 +138,20 @@ android_aar_prebuilt("android_arch_lifecycle_viewmodel_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("androidx_activity_activity_java") {
+  aar_path = "libs/androidx_activity_activity/activity-1.1.0.aar"
+  info_path = "libs/androidx_activity_activity/androidx_activity_activity.info"
+  deps = [
+    ":androidx_annotation_annotation_java",
+    ":androidx_core_core_java",
+    ":androidx_lifecycle_lifecycle_runtime_java",
+    ":androidx_lifecycle_lifecycle_viewmodel_java",
+    ":androidx_lifecycle_lifecycle_viewmodel_savedstate_java",
+    ":androidx_savedstate_savedstate_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("androidx_annotation_annotation_java") {
   jar_path = "libs/androidx_annotation_annotation/annotation-1.1.0.jar"
   output_name = "androidx_annotation_annotation"
@@ -487,6 +501,18 @@ android_aar_prebuilt("androidx_recyclerview_recyclerview_java") {
     ":androidx_collection_collection_java",
     ":androidx_core_core_java",
     ":androidx_customview_customview_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("androidx_savedstate_savedstate_java") {
+  aar_path = "libs/androidx_savedstate_savedstate/savedstate-1.0.0.aar"
+  info_path =
+      "libs/androidx_savedstate_savedstate/androidx_savedstate_savedstate.info"
+  deps = [
+    ":androidx_annotation_annotation_java",
+    ":androidx_arch_core_core_common_java",
+    ":androidx_lifecycle_lifecycle_common_java",
   ]
 }
 
@@ -1629,24 +1655,6 @@ android_aar_prebuilt("android_arch_lifecycle_livedata_core_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("androidx_activity_activity_java") {
-  aar_path = "libs/androidx_activity_activity/activity-1.1.0.aar"
-  info_path = "libs/androidx_activity_activity/androidx_activity_activity.info"
-
-  # To remove visibility constraint, add this dependency to
-  # //third_party/android_deps/build.gradle.
-  visibility = [ ":*" ]
-  deps = [
-    ":androidx_annotation_annotation_java",
-    ":androidx_core_core_java",
-    ":androidx_lifecycle_lifecycle_runtime_java",
-    ":androidx_lifecycle_lifecycle_viewmodel_java",
-    ":androidx_lifecycle_lifecycle_viewmodel_savedstate_java",
-    ":androidx_savedstate_savedstate_java",
-  ]
-}
-
-# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("androidx_annotation_annotation_experimental_java") {
   aar_path = "libs/androidx_annotation_annotation_experimental/annotation-experimental-1.0.0.aar"
   info_path = "libs/androidx_annotation_annotation_experimental/androidx_annotation_annotation_experimental.info"
@@ -1836,22 +1844,6 @@ android_aar_prebuilt("androidx_print_print_java") {
   # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [ ":androidx_annotation_annotation_java" ]
-}
-
-# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("androidx_savedstate_savedstate_java") {
-  aar_path = "libs/androidx_savedstate_savedstate/savedstate-1.0.0.aar"
-  info_path =
-      "libs/androidx_savedstate_savedstate/androidx_savedstate_savedstate.info"
-
-  # To remove visibility constraint, add this dependency to
-  # //third_party/android_deps/build.gradle.
-  visibility = [ ":*" ]
-  deps = [
-    ":androidx_annotation_annotation_java",
-    ":androidx_arch_core_core_common_java",
-    ":androidx_lifecycle_lifecycle_common_java",
-  ]
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.

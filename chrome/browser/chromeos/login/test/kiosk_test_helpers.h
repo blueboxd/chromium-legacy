@@ -9,6 +9,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_base.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
+#include "chrome/browser/chromeos/login/kiosk_launch_controller.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 
 namespace chromeos {
@@ -49,6 +50,25 @@ class ScopedDeviceSettings {
  private:
   ScopedCrosSettingsTestHelper settings_helper_;
   std::unique_ptr<FakeOwnerSettingsService> owner_settings_service_;
+};
+
+class ScopedCanConfigureNetwork {
+ public:
+  ScopedCanConfigureNetwork(bool can_configure, bool needs_owner_auth);
+  ScopedCanConfigureNetwork(const ScopedCanConfigureNetwork&) = delete;
+  ScopedCanConfigureNetwork& operator=(const ScopedCanConfigureNetwork&) =
+      delete;
+  ~ScopedCanConfigureNetwork();
+
+  bool CanConfigureNetwork() const { return can_configure_; }
+
+  bool NeedsOwnerAuthToConfigureNetwork() const { return needs_owner_auth_; }
+
+ private:
+  const bool can_configure_;
+  const bool needs_owner_auth_;
+  KioskLaunchController::ReturnBoolCallback can_configure_network_callback_;
+  KioskLaunchController::ReturnBoolCallback needs_owner_auth_callback_;
 };
 
 }  // namespace chromeos

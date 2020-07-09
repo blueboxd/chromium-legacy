@@ -2814,23 +2814,8 @@ void PaintLayer::ClearCompositedLayerMapping(bool layer_being_destroyed) {
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
 
   DisableCompositingQueryAsserts disabler;
-  if (layer_being_destroyed) {
-    // The visual rects will be in a different coordinate space after losing
-    // their compositing container. Clear them before prepaint to avoid
-    // spurious layout shift reports from LayoutShiftTracker.
-    // If the PaintLayer were not being destroyed, this would happen during
-    // the compositing update (PaintLayerCompositor::UpdateIfNeeded).
-    // TODO: LayoutShiftTracker's reliance on having visual rects cleared
-    // before prepaint in the case of compositing changes is not ideal, and
-    // will not work with CompositeAfterPaint. Some transform tree changes may
-    // still produce incorrect behavior from LayoutShiftTracker (see
-    // discussion on review thread of http://crrev.com/c/1636403).
-    if (Compositor()) {
-      Compositor()->ForceRecomputeVisualRectsIncludingNonCompositingDescendants(
-          layout_object_);
-    }
-  } else {
-    // We need to make sure our decendants get a geometry update. In principle,
+  if (!layer_being_destroyed) {
+    // We need to make sure our descendants get a geometry update. In principle,
     // we could call setNeedsGraphicsLayerUpdate on our children, but that would
     // require walking the z-order lists to find them. Instead, we
     // over-invalidate by marking our parent as needing a geometry update.

@@ -204,11 +204,14 @@ HRESULT MediaFoundationCdmFactory::CreateCdmInternal(
     return MF_NOT_SUPPORTED_ERR;
   }
 
-  ComPtr<IPropertyStore> configurations;
+  ComPtr<IPropertyStore> property_store;
+  RETURN_IF_FAILED(BuildCdmAccessConfigurations(cdm_config, property_store));
+
+  IPropertyStore* configurations[] = {property_store.Get()};
   ComPtr<IMFContentDecryptionModuleAccess> cdm_access;
-  RETURN_IF_FAILED(BuildCdmAccessConfigurations(cdm_config, configurations));
   RETURN_IF_FAILED(cdm_factory->CreateContentDecryptionModuleAccess(
-      key_system_str.c_str(), configurations.GetAddressOf(), 1u, &cdm_access));
+      key_system_str.c_str(), configurations, ARRAYSIZE(configurations),
+      &cdm_access));
 
   ComPtr<IPropertyStore> cdm_properties;
   ComPtr<IMFContentDecryptionModule> cdm;

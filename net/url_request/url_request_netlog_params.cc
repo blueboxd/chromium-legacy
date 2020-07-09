@@ -16,6 +16,22 @@
 
 namespace net {
 
+namespace {
+
+std::string PrivacyModeDebugString(PrivacyMode privacy_mode) {
+  switch (privacy_mode) {
+    case PRIVACY_MODE_DISABLED:
+      return "disabled";
+    case PRIVACY_MODE_ENABLED:
+      return "enabled";
+    case PRIVACY_MODE_ENABLED_WITHOUT_CLIENT_CERTS:
+      return "enabled without client certs";
+  }
+  return "";
+}
+
+}  // namespace
+
 base::Value NetLogURLRequestConstructorParams(
     const GURL& url,
     RequestPriority priority,
@@ -40,7 +56,7 @@ base::Value NetLogURLRequestStartParams(
   dict.SetStringKey("url", url.possibly_invalid_spec());
   dict.SetStringKey("method", method);
   dict.SetIntKey("load_flags", load_flags);
-  dict.SetIntKey("privacy_mode", privacy_mode == PRIVACY_MODE_ENABLED);
+  dict.SetStringKey("privacy_mode", PrivacyModeDebugString(privacy_mode));
   dict.SetStringKey("network_isolation_key",
                     network_isolation_key.ToDebugString());
   dict.SetStringKey("site_for_cookies", site_for_cookies.ToDebugString());

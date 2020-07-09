@@ -3050,12 +3050,6 @@ void PaintLayerScrollableArea::InvalidatePaintOfScrollControlsIfNeeded(
   ClearNeedsPaintInvalidationForScrollControls();
 }
 
-void PaintLayerScrollableArea::ClearPreviousVisualRects() {
-  SetHorizontalScrollbarVisualRect(IntRect());
-  SetVerticalScrollbarVisualRect(IntRect());
-  SetScrollCornerAndResizerVisualRect(IntRect());
-}
-
 void PaintLayerScrollableArea::SetHorizontalScrollbarVisualRect(
     const IntRect& rect) {
   horizontal_scrollbar_visual_rect_ = rect;

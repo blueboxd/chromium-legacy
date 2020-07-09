@@ -100,6 +100,13 @@ class TwoClientWebAppsBMOSyncTest : public SyncTest {
     return app_id;
   }
 
+  void WaitUntilProviderIsReady(Profile* profile) {
+    base::RunLoop loop;
+    WebAppProvider::Get(profile)->on_registry_ready().Post(FROM_HERE,
+                                                           loop.QuitClosure());
+    loop.Run();
+  }
+
   AppId InstallApp(const WebApplicationInfo& info, Profile* profile) {
     return InstallApp(info, profile, WebappInstallSource::OMNIBOX_INSTALL_ICON);
   }
@@ -108,6 +115,8 @@ class TwoClientWebAppsBMOSyncTest : public SyncTest {
                    Profile* profile,
                    WebappInstallSource source) {
     DCHECK(info.app_url.is_valid());
+    WaitUntilProviderIsReady(profile);
+
     base::RunLoop run_loop;
     AppId app_id;
 
@@ -182,12 +191,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest,
   EXPECT_TRUE(AllProfilesHaveSameWebAppIds());
 }
 
-// Flakily fails on multiple configurations. https://crbug.com/1099847
 IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest,
-                       DISABLED_SyncDoubleInstallationDifferentNames) {
-  ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(AllProfilesHaveSameWebAppIds());
-
+                       SyncDoubleInstallationDifferentNames) {
+  ASSERT_TRUE(SetupClients());
   WebApplicationInfo info;
   info.title = base::UTF8ToUTF16("Test name");
   info.app_url = GURL("http://www.chromium.org/path");
@@ -200,10 +206,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest,
 
   EXPECT_EQ(app_id, app_id2);
 
+  ASSERT_TRUE(SetupSync());
+
   // Install a 'dummy' app & wait for installation to ensure sync has processed
   // the initial apps.
-  InstallDummyAppAndWaitForSync(GURL("http://www.dummy.org/"), GetProfile(0),
+  InstallDummyAppAndWaitForSync(GURL("http://www.dummy1.org/"), GetProfile(0),
                                 GetProfile(1));
+  InstallDummyAppAndWaitForSync(GURL("http://www.dummy2.org/"), GetProfile(1),
+                                GetProfile(0));
 
   EXPECT_TRUE(AllProfilesHaveSameWebAppIds());
   // The titles should respect the installation, even though the sync system

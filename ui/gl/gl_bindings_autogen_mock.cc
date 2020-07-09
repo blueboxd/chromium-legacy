@@ -3460,6 +3460,12 @@ void GL_BINDING_CALL MockGLInterface::Mock_glPatchParameteri(GLenum pname,
   interface_->PatchParameteri(pname, value);
 }
 
+void GL_BINDING_CALL MockGLInterface::Mock_glPatchParameteriOES(GLenum pname,
+                                                                GLint value) {
+  MakeGlMockFunctionUnique("glPatchParameteriOES");
+  interface_->PatchParameteri(pname, value);
+}
+
 void GL_BINDING_CALL
 MockGLInterface::Mock_glPathCommandsCHROMIUM(GLuint path,
                                              GLsizei numCommands,
@@ -6342,6 +6348,8 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glObjectPtrLabelKHR);
   if (strcmp(name, "glPatchParameteri") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glPatchParameteri);
+  if (strcmp(name, "glPatchParameteriOES") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glPatchParameteriOES);
   if (strcmp(name, "glPathCommandsCHROMIUM") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glPathCommandsCHROMIUM);
   if (strcmp(name, "glPathCommandsNV") == 0)

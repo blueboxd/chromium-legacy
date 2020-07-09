@@ -525,10 +525,16 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
         for f in flags:
           logging.info('  %s', f)
 
-        raw_test_list = crash_handler.RetryOnSystemCrash(
-            lambda d: self._delegate.Run(
-                None, d, flags=' '.join(flags), timeout=timeout),
-            device=dev)
+        try:
+          raw_test_list = crash_handler.RetryOnSystemCrash(
+              lambda d: self._delegate.Run(
+                  None, d, flags=' '.join(flags), timeout=timeout),
+              device=dev)
+        except device_errors.AdbCommandFailedError:
+          logging.exception('Test listing failed.')
+          # Allow subsequent error handling to dump logcat.
+          raw_test_list = []
+
         tests = gtest_test_instance.ParseGTestListTests(raw_test_list)
         if not tests:
           logging.info('No tests found. Output:')

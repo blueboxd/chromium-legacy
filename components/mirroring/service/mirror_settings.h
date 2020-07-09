@@ -47,9 +47,6 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) MirrorSettings {
   int max_width() const { return max_width_; }
   int max_height() const { return max_height_; }
 
-  // Returns a dictionary value of the current settings.
-  base::Value ToDictionaryValue();
-
  private:
   const int min_width_;
   const int min_height_;

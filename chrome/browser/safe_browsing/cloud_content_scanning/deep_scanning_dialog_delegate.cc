@@ -792,10 +792,12 @@ void DeepScanningDialogDelegate::PrepareRequest(
 void DeepScanningDialogDelegate::PrepareRequest(
     enterprise_connectors::AnalysisConnector connector,
     BinaryUploadService::Request* request) {
-  request->set_device_token(GetDMToken(Profile::FromBrowserContext(
-                                           web_contents_->GetBrowserContext()))
-                                .value());
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+
+  request->set_device_token(GetDMToken(profile).value());
   request->set_analysis_connector(connector);
+  request->set_email(GetProfileEmail(profile));
   request->set_url(data_.url.spec());
   for (const std::string& tag : data_.settings.tags)
     request->add_tag(tag);

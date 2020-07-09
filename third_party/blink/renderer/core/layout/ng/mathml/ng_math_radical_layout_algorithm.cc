@@ -29,7 +29,6 @@ NGMathRadicalLayoutAlgorithm::NGMathRadicalLayoutAlgorithm(
   DCHECK(params.space.IsNewFormattingContext());
   container_builder_.SetIsNewFormattingContext(
       params.space.IsNewFormattingContext());
-  container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
 }
 
 void NGMathRadicalLayoutAlgorithm::GatherChildren(

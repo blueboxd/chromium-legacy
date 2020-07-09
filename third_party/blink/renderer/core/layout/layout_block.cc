@@ -1016,11 +1016,6 @@ void LayoutBlock::InvalidatePaint(
   BlockPaintInvalidator(*this).InvalidatePaint(context);
 }
 
-void LayoutBlock::ClearPreviousVisualRects() {
-  LayoutBox::ClearPreviousVisualRects();
-  BlockPaintInvalidator(*this).ClearPreviousVisualRects();
-}
-
 void LayoutBlock::ImageChanged(WrappedImagePtr image,
                                CanDeferInvalidation defer) {
   LayoutBox::ImageChanged(image, defer);

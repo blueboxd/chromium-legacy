@@ -52,7 +52,7 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(
   DCHECK_LE(text_offset_.end, source.EndOffset());
   DCHECK(shape_result_ || IsFlowControl()) << *this;
   base_or_resolved_direction_ = source.base_or_resolved_direction_;
-  ink_overflow_computed_or_mathml_paint_info_ = false;
+  ink_overflow_computed_ = false;
 }
 
 NGPhysicalTextFragment::NGPhysicalTextFragment(NGTextFragmentBuilder* builder)
@@ -65,7 +65,7 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(NGTextFragmentBuilder* builder)
   DCHECK(shape_result_ || IsFlowControl()) << *this;
   base_or_resolved_direction_ =
       static_cast<unsigned>(builder->ResolvedDirection());
-  ink_overflow_computed_or_mathml_paint_info_ = false;
+  ink_overflow_computed_ = false;
 }
 
 bool NGPhysicalTextFragment::IsGeneratedText() const {
@@ -187,7 +187,7 @@ PhysicalRect NGFragmentItem::LocalRect(StringView text,
 }
 
 PhysicalRect NGPhysicalTextFragment::SelfInkOverflow() const {
-  if (!ink_overflow_computed_or_mathml_paint_info_)
+  if (!ink_overflow_computed_)
     ComputeSelfInkOverflow();
   if (ink_overflow_)
     return ink_overflow_->ink_overflow;
@@ -195,7 +195,7 @@ PhysicalRect NGPhysicalTextFragment::SelfInkOverflow() const {
 }
 
 void NGPhysicalTextFragment::ComputeSelfInkOverflow() const {
-  ink_overflow_computed_or_mathml_paint_info_ = true;
+  ink_overflow_computed_ = true;
 
   if (UNLIKELY(!shape_result_)) {
     ink_overflow_ = nullptr;

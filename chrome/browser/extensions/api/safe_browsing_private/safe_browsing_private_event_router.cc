@@ -882,18 +882,7 @@ void SafeBrowsingPrivateEventRouter::ReportRealtimeEventCallback(
 }
 
 std::string SafeBrowsingPrivateEventRouter::GetProfileUserName() const {
-  // |identity_manager_| may be null in some tests.
-  if (!identity_manager_)
-    return std::string();
-
-  if (!identity_manager_->HasPrimaryAccount(
-          signin::ConsentLevel::kNotRequired)) {
-    return std::string();
-  }
-
-  return identity_manager_
-      ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
-      .email;
+  return safe_browsing::GetProfileEmail(identity_manager_);
 }
 
 #if defined(OS_CHROMEOS)

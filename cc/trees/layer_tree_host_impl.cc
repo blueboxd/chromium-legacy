@@ -3799,7 +3799,7 @@ gfx::Vector2dF LayerTreeHostImpl::ResolveScrollGranularityToPixels(
     scroller_size.Scale(active_tree()->page_scale_factor_for_scroll());
 
     pixel_delta = ScrollUtils::ResolveScrollPercentageToPixels(
-        scroll_delta, scroller_size, viewport_size);
+        pixel_delta, scroller_size, viewport_size);
   }
 
   return pixel_delta;
@@ -4252,10 +4252,14 @@ LayerTreeHostImpl::ScrollHitTestResult LayerTreeHostImpl::HitTestScrollNode(
   result.scroll_node = nullptr;
   result.hit_test_successful = false;
 
-  LayerImpl* layer_impl =
-      active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
+  std::vector<const LayerImpl*> layers =
+      active_tree_->FindAllLayersUpToAndIncludingFirstScrollable(
+          device_viewport_point);
 
-  if (!layer_impl) {
+  // It's theoretically possible to hit no layers or only non-scrolling layers.
+  // e.g. an API hit test outside the viewport. In that case, just fallback to
+  // scrolling the viewport.
+  if (layers.empty() || !layers.back()->IsScrollerOrScrollbar()) {
     result.hit_test_successful = true;
     if (InnerViewportScrollNode())
       result.scroll_node = GetNodeToScroll(InnerViewportScrollNode());
@@ -4263,40 +4267,55 @@ LayerTreeHostImpl::ScrollHitTestResult LayerTreeHostImpl::HitTestScrollNode(
     return result;
   }
 
-  // There are some cases where the hit layer may not be correct (e.g. layer
-  // squashing). If we detect this case, we can't target a scroll node here.
-  {
-    LayerImpl* first_scrolling_layer_or_scrollbar =
-        active_tree_->FindFirstScrollingLayerOrScrollbarThatIsHitByPoint(
-            device_viewport_point);
+  const LayerImpl* scroller_layer = layers.back();
+  layers.pop_back();
 
-    if (!IsInitialScrollHitTestReliable(layer_impl,
-                                        first_scrolling_layer_or_scrollbar)) {
+  // Go through each layer in front of the scroller. Any of them may block
+  // scrolling if they come from outside the scroller's scroll-subtree or if we
+  // hit a non-fast-scrolling-region.
+  for (const auto* layer_impl : layers) {
+    DCHECK(!layer_impl->IsScrollbarLayer());
+
+    // There are some cases where the hit layer may not be correct (e.g. layer
+    // squashing, pointer-events:none layer) because the compositor doesn't
+    // know what parts of the layer (if any) are actually visible to hit
+    // testing. This is fine if we can determine that the scrolling node will
+    // be the same regardless of whether we hit an opaque or transparent (to
+    // hit testing) point of the layer. If the scrolling node may depend on
+    // this, we have to get a hit test from the main thread.
+    if (!IsInitialScrollHitTestReliable(layer_impl, scroller_layer)) {
       TRACE_EVENT_INSTANT0("cc", "Failed Hit Test", TRACE_EVENT_SCOPE_THREAD);
       return result;
     }
-  }
 
-  // If we hit a non-fast scrollable region, that means there's some reason we
-  // can't scroll in this region.  Primarily, because there's another scroller
-  // there that isn't composited and we don't know about so we'll return
-  // nullptr in that case.
-  if (active_tree_->PointHitsNonFastScrollableRegion(device_viewport_point,
-                                                     *layer_impl)) {
-    return result;
+    // If we hit a non-fast scrollable region, that means there's some reason we
+    // can't scroll in this region. Primarily, because there's another scroller
+    // there that isn't composited and we don't know about so we'll return
+    // nullptr in that case.
+    if (active_tree_->PointHitsNonFastScrollableRegion(device_viewport_point,
+                                                       *layer_impl)) {
+      return result;
+    }
   }
 
   // If we hit a scrollbar layer, get the ScrollNode from its associated
   // scrolling layer, rather than directly from the scrollbar layer. The latter
   // would return the parent scroller's ScrollNode.
-  if (layer_impl->IsScrollbarLayer()) {
-    layer_impl = active_tree_->LayerByElementId(
-        ToScrollbarLayer(layer_impl)->scroll_element_id());
-    DCHECK(layer_impl);
+  if (scroller_layer->IsScrollbarLayer()) {
+    scroller_layer = active_tree_->LayerByElementId(
+        ToScrollbarLayer(scroller_layer)->scroll_element_id());
+    DCHECK(scroller_layer);
+  } else {
+    // We need to also make sure the scroller itself doesn't have a non-fast
+    // scrolling region in the hit tested area.
+    if (active_tree_->PointHitsNonFastScrollableRegion(device_viewport_point,
+                                                       *scroller_layer))
+      return result;
   }
 
   ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
-  ScrollNode* scroll_node = scroll_tree.Node(layer_impl->scroll_tree_index());
+  ScrollNode* scroll_node =
+      scroll_tree.Node(scroller_layer->scroll_tree_index());
 
   result.scroll_node = GetNodeToScroll(scroll_node);
   result.hit_test_successful = true;
@@ -4346,8 +4365,8 @@ ScrollNode* LayerTreeHostImpl::GetNodeToScroll(ScrollNode* node) const {
 }
 
 bool LayerTreeHostImpl::IsInitialScrollHitTestReliable(
-    LayerImpl* layer_impl,
-    LayerImpl* first_scrolling_layer_or_scrollbar) const {
+    const LayerImpl* layer_impl,
+    const LayerImpl* first_scrolling_layer_or_scrollbar) const {
   if (!first_scrolling_layer_or_scrollbar)
     return true;
 
@@ -4362,6 +4381,11 @@ bool LayerTreeHostImpl::IsInitialScrollHitTestReliable(
   ScrollNode* scroll_node = scroll_tree.Node(layer_impl->scroll_tree_index());
   for (; scroll_tree.parent(scroll_node);
        scroll_node = scroll_tree.parent(scroll_node)) {
+    // TODO(bokan): |scrollable| appears to always be true in LayerList mode.
+    // In non-LayerList, scroll hit tests should always be reliable because we
+    // don't have situations where a layer can be hit testable but pass some
+    // points through (e.g. squashing layers). Perhaps we can remove this
+    // condition?
     if (scroll_node->scrollable) {
       closest_scroll_node = GetNodeToScroll(scroll_node);
       break;

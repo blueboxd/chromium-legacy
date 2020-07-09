@@ -63,6 +63,73 @@ class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
 
   void EstimateTraceMemoryOverhead(TraceEventMemoryOverhead* overhead) override;
 
+  // TracedValue::Build is a friend of TracedValue::DictionaryItem.
+  class BASE_EXPORT DictionaryItem;
+
+  // Helper to enable easier initialization of TracedValue. This is intended for
+  // quick local debugging as there is overhead of creating
+  // std::initializer_list of name-value objects. This method does not support
+  // creation of dictionaries or arrays.
+  //
+  // Example:
+  //    auto value = TracedValue::Build({
+  //      {"int_var_name", 42},
+  //      {"double_var_name", 3.14},
+  //      {"string_var_name", "hello world"}
+  //    });
+  //
+  // |name| is assumed to be a long lived "quoted" string.
+  static std::unique_ptr<TracedValue> Build(
+      std::initializer_list<DictionaryItem> items);
+
+  // DictionaryItem instance represents a single name-value pair.
+  class DictionaryItem {
+   public:
+    // These constructors assume that |name| is a long lived "quoted" string.
+    DictionaryItem(const char* name, int value);
+    DictionaryItem(const char* name, double value);
+    DictionaryItem(const char* name, bool value);
+    DictionaryItem(const char* name, void* value);
+    // StringPiece's backing storage / const char* pointer needs to remain valid
+    // until TracedValue::Build is called.
+    DictionaryItem(const char* name, base::StringPiece value);
+    // Define an explicit overload for const char* to resolve the ambiguity
+    // between the base::StringPiece, void*, and bool constructors for string
+    // literals.
+    DictionaryItem(const char* name, const char* value);
+
+   private:
+    friend std::unique_ptr<TracedValue> TracedValue::Build(
+        std::initializer_list<DictionaryItem> items);
+
+    void WriteToValue(TracedValue* value) const;
+
+    union KeptValue {
+      int int_value;
+      double double_value;
+      bool bool_value;
+      base::StringPiece string_piece_value;
+      void* void_ptr_value;
+
+      // Default constructor is implicitly deleted because union field has a
+      // non-trivial default constructor.
+      KeptValue() {}
+    };
+
+    // Reimplementing a subset of C++17 std::variant.
+    enum class KeptValueType {
+      kIntType,
+      kDoubleType,
+      kBoolType,
+      kStringPieceType,
+      kVoidPtrType,
+    };
+
+    KeptValue kept_value_;
+    const char* name_;
+    KeptValueType kept_value_type_;
+  };
+
   // A custom serialization class can be supplied by implementing the
   // Writer interface and supplying a factory class to SetWriterFactoryCallback.
   // Primarily used by Perfetto to write TracedValues directly into its proto

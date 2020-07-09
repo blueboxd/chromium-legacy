@@ -45,8 +45,4 @@ void BaseScreen::OnUserAction(const std::string& action_id) {
   LOG(WARNING) << "Unhandled user action: action_id=" << action_id;
 }
 
-void BaseScreen::SetConfiguration(base::Value* configuration) {
-  configuration_ = configuration;
-}
-
 }  // namespace chromeos

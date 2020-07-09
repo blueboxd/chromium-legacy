@@ -87,13 +87,6 @@ constexpr int kAudioSsrcMax = 5e5;
 constexpr int kVideoSsrcMin = 5e5 + 1;
 constexpr int kVideoSsrcMax = 10e5;
 
-// Maximum number of bytes of file data allowed in a single Crash report. As of
-// this writing, the total report upload size is capped at 20 MB.
-//
-// 2 KB of "overhead bytes" are subtracted to account for all of the non-file
-// data in a report upload, including HTTP headers/requests and form data.
-constexpr int kMaxCrashReportBytes = (20 * 1024 - 2) * 1024;
-
 class TransportClient final : public media::cast::CastTransport::Client {
  public:
   explicit TransportClient(Session* session) : session_(session) {}
@@ -416,21 +409,8 @@ Session::Session(
   network_context_->CreateURLLoaderFactory(
       url_loader_factory.InitWithNewPipeAndPassReceiver(), std::move(params));
 
-  // Generate session level tags.
-  base::Value session_tags(base::Value::Type::DICTIONARY);
-  session_tags.SetKey("mirrorSettings", mirror_settings_.ToDictionaryValue());
-  session_tags.SetKey(
-      "shouldCaptureAudio",
-      base::Value(session_params_.type != SessionType::VIDEO_ONLY));
-  session_tags.SetKey(
-      "shouldCaptureVideo",
-      base::Value(session_params_.type != SessionType::AUDIO_ONLY));
-  session_tags.SetKey("receiverProductName",
-                      base::Value(session_params_.receiver_model_name));
-
-  session_monitor_.emplace(
-      kMaxCrashReportBytes, session_params_.receiver_address,
-      std::move(session_tags), std::move(url_loader_factory));
+  setup_querier_ = std::make_unique<ReceiverSetupQuerier>(
+      session_params_.receiver_address, std::move(url_loader_factory));
 
   if (gpu_) {
     gpu_channel_host_ = gpu_->EstablishGpuChannelSync();
@@ -459,8 +439,6 @@ Session::~Session() {
 
 void Session::ReportError(SessionError error) {
   UMA_HISTOGRAM_ENUMERATION("MediaRouter.MirroringService.SessionError", error);
-  if (session_monitor_.has_value())
-    session_monitor_->OnStreamingError(error);
   if (state_ == REMOTING) {
     media_remoter_->OnRemotingFailed();  // Try to fallback on mirroring.
     return;
@@ -477,7 +455,6 @@ void Session::StopStreaming() {
   if (!cast_environment_)
     return;
 
-  session_monitor_->StopStreamingSession();
   if (audio_input_device_) {
     audio_input_device_->Stop();
     audio_input_device_ = nullptr;
@@ -497,7 +474,7 @@ void Session::StopSession() {
   state_ = STOPPED;
   StopStreaming();
 
-  session_monitor_.reset();
+  setup_querier_.reset();
   weak_factory_.InvalidateWeakPtrs();
   audio_encode_thread_ = nullptr;
   video_encode_thread_ = nullptr;
@@ -766,11 +743,6 @@ void Session::OnAnswer(const std::vector<FrameSenderConfig>& audio_configs,
       media_remoter_->OnMirroringResumed();
   }
 
-  DCHECK(session_monitor_.has_value());
-  const SessionMonitor::SessionType session_type =
-      (has_audio && has_video)
-          ? SessionMonitor::AUDIO_AND_VIDEO
-          : has_audio ? SessionMonitor::AUDIO_ONLY : SessionMonitor::VIDEO_ONLY;
   std::unique_ptr<WifiStatusMonitor> wifi_status_monitor;
   if (answer.supports_get_status) {
     wifi_status_monitor =
@@ -786,9 +758,6 @@ void Session::OnAnswer(const std::vector<FrameSenderConfig>& audio_configs,
       QueryCapabilitiesForRemoting();
     }
   }
-  session_monitor_->StartStreamingSession(cast_environment_,
-                                          std::move(wifi_status_monitor),
-                                          session_type, state_ == REMOTING);
 
   if (initially_starting_session && observer_)
     observer_->DidStart();
@@ -968,15 +937,17 @@ void Session::OnCapabilitiesResponse(const ReceiverResponse& response) {
     return;
   }
   const std::vector<std::string>& caps = response.capabilities->media_caps;
-  const std::string receiver_build_version =
-      session_monitor_.has_value() ? session_monitor_->GetReceiverBuildVersion()
-                                   : "";
-  const std::string receiver_name =
-      session_monitor_.has_value() ? session_monitor_->receiver_name() : "";
+
+  std::string build_version;
+  std::string friendly_name;
+  if (setup_querier_) {
+    build_version = setup_querier_->build_version();
+    friendly_name = setup_querier_->friendly_name();
+  }
   media_remoter_ = std::make_unique<MediaRemoter>(
       this,
-      ToRemotingSinkMetadata(caps, receiver_name, session_params_,
-                             receiver_build_version),
+      ToRemotingSinkMetadata(caps, friendly_name, session_params_,
+                             build_version),
       &message_dispatcher_);
 }
 

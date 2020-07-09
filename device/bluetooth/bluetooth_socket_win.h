@@ -40,8 +40,8 @@ class BluetoothSocketWin : public BluetoothSocketNet {
   // |error_callback| with a system error message.
   void Connect(const BluetoothDeviceWin* device,
                const BluetoothUUID& uuid,
-               const base::Closure& success_callback,
-               const ErrorCompletionCallback& error_callback);
+               base::OnceClosure success_callback,
+               ErrorCompletionOnceCallback error_callback);
 
   // Listens using this socket using an RFCOMM service published as UUID |uuid|
   // with Channel |options.channel|, or an automatically allocated Channel if
@@ -70,8 +70,8 @@ class BluetoothSocketWin : public BluetoothSocketNet {
   BluetoothSocketWin(scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
                      scoped_refptr<BluetoothSocketThread> socket_thread);
 
-  void DoConnect(const base::Closure& success_callback,
-                 const ErrorCompletionCallback& error_callback);
+  void DoConnect(base::OnceClosure success_callback,
+                 ErrorCompletionOnceCallback error_callback);
   void DoListen(const BluetoothUUID& uuid,
                 int rfcomm_channel,
                 base::OnceClosure success_callback,

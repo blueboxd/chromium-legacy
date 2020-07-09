@@ -27,13 +27,21 @@ class CORE_EXPORT FragmentData {
   FragmentData& EnsureNextFragment();
   void ClearNextFragment() { DestroyTail(); }
 
-  // Visual offset of this fragment's top-left position from the
-  // "paint offset root" which is the containing root PaintLayer of the root
-  // LocalFrameView, or PaintLayer with a transform, whichever is nearer along
-  // the containing block chain.
+  // Physical offset of this fragment's local border box's top-left position
+  // from the origin of the transform node of the fragment's property tree
+  // state.
   PhysicalOffset PaintOffset() const { return paint_offset_; }
   void SetPaintOffset(const PhysicalOffset& paint_offset) {
     paint_offset_ = paint_offset;
+  }
+
+  // See PaintPropertyTreeBuilderFragmentContext::
+  //    ContainingBlockContext::offset_to_2d_translation_root for a definition.
+  PhysicalOffset OffsetTo2DTranslationRoot() const {
+    return offset_to_2d_translation_root_;
+  }
+  void SetOffsetTo2DTranslationRoot(const PhysicalOffset& offset) {
+    offset_to_2d_translation_root_ = offset;
   }
 
   // The visual rect computed by the latest paint invalidation.
@@ -261,6 +269,7 @@ class CORE_EXPORT FragmentData {
 
   IntRect visual_rect_;
   PhysicalOffset paint_offset_;
+  PhysicalOffset offset_to_2d_translation_root_;
 
   std::unique_ptr<RareData> rare_data_;
 };

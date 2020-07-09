@@ -40,6 +40,35 @@ static bool FloatsEqualWithinTolerance(const float* a,
   return true;
 }
 
+skcms_TransferFunction GetPQSkTransferFunction(float sdr_white_level) {
+  // Note that SkColorSpace doesn't have the notion of an unspecified SDR white
+  // level.
+  if (sdr_white_level == 0.f)
+    sdr_white_level = ColorSpace::kDefaultSDRWhiteLevel;
+
+  // The generic PQ transfer function produces normalized luminance values i.e.
+  // the range 0-1 represents 0-10000 nits for the reference display, but we
+  // want to map 1.0 to |sdr_white_level| nits so we need to scale accordingly.
+  const double w = 10000. / sdr_white_level;
+  // Distribute scaling factor W by scaling A and B with X ^ (1/F):
+  // ((A + Bx^C) / (D + Ex^C))^F * W = ((A + Bx^C) / (D + Ex^C) * W^(1/F))^F
+  // See https://crbug.com/1058580#c32 for discussion.
+  skcms_TransferFunction fn = SkNamedTransferFn::kPQ;
+  const double ws = pow(w, 1. / fn.f);
+  fn.a = ws * fn.a;
+  fn.b = ws * fn.b;
+  return fn;
+}
+
+float GetSDRWhiteLevelFromPQSkTransferFunction(
+    const skcms_TransferFunction& fn) {
+  DCHECK_EQ(fn.g, SkNamedTransferFn::kPQ.g);
+  const double ws_a = static_cast<double>(fn.a) / SkNamedTransferFn::kPQ.a;
+  const double w_a = pow(ws_a, fn.f);
+  const double sdr_white_level_a = 10000.0f / w_a;
+  return sdr_white_level_a;
+}
+
 }  // namespace
 
 // static
@@ -80,8 +109,9 @@ ColorSpace::ColorSpace(const SkColorSpace& sk_color_space)
     SetCustomTransferFunction(fn);
   } else if (transfer_eq(fn, SkNamedTransferFn::kHLG)) {
     transfer_ = TransferID::ARIB_STD_B67;
-  } else if (transfer_eq(fn, SkNamedTransferFn::kPQ)) {
+  } else if (fn.g == SkNamedTransferFn::kPQ.g) {
     transfer_ = TransferID::SMPTEST2084;
+    transfer_params_[0] = GetSDRWhiteLevelFromPQSkTransferFunction(fn);
   } else {
     // Construct an invalid result: Unable to extract necessary parameters
     return;
@@ -613,7 +643,7 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
       transfer_fn = SkNamedTransferFn::kHLG;
       break;
     case TransferID::SMPTEST2084:
-      GetPQTransferFunction(&transfer_fn);
+      transfer_fn = GetPQSkTransferFunction(transfer_params_[0]);
       break;
     default:
       if (!GetTransferFunction(&transfer_fn)) {
@@ -943,23 +973,6 @@ bool ColorSpace::GetTransferFunction(skcms_TransferFunction* fn) const {
   } else {
     return GetTransferFunction(transfer_, fn);
   }
-}
-
-void ColorSpace::GetPQTransferFunction(skcms_TransferFunction* fn) const {
-  DCHECK_EQ(transfer_, TransferID::SMPTEST2084);
-  const float sdr_white_level =
-      transfer_params_[0] == 0.0f ? kDefaultSDRWhiteLevel : transfer_params_[0];
-  // The generic PQ transfer function produces normalized luminance values i.e.
-  // the range 0-1 represents 0-10000 nits for the reference display, but we
-  // want to map 1.0 to |sdr_white_level| nits so we need to scale accordingly.
-  const float w = 10000.0f / sdr_white_level;
-  // Distribute scaling factor W by scaling A and B with X ^ (1/F):
-  // ((A + Bx^C) / (D + Ex^C))^F * W = ((A + Bx^C) / (D + Ex^C) * W^(1/F))^F
-  // See https://crbug.com/1058580#c32 for discussion.
-  *fn = SkNamedTransferFn::kPQ;
-  const float ws = powf(w, 1 / fn->f);
-  fn->a = ws * fn->a;
-  fn->b = ws * fn->b;
 }
 
 bool ColorSpace::GetInverseTransferFunction(skcms_TransferFunction* fn) const {

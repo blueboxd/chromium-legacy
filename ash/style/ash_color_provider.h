@@ -100,6 +100,9 @@ class ASH_EXPORT AshColorProvider {
     kButtonLabelColor,
     kButtonLabelColorPrimary,
 
+    kButtonIconColor,
+    kButtonIconColorPrimary,
+
     // Color for system menu icon buttons with inverted dark mode colors, e.g,
     // FeaturePodIconButton
     kSystemMenuIconColor,

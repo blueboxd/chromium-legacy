@@ -987,6 +987,10 @@ void SharedImageBackingGLImage::InitializePixels(GLenum format,
                                                  GLenum type,
                                                  const uint8_t* data) {
   DCHECK_EQ(image_->ShouldBindOrCopy(), gl::GLImage::BIND);
+#if defined(OS_MACOSX)
+  if (SharedImageBackingFactoryIOSurface::InitializePixels(this, image_, data))
+    return;
+#else
   BindOrCopyImageIfNeeded();
 
   const GLenum target = GetGLTarget();
@@ -997,6 +1001,7 @@ void SharedImageBackingGLImage::InitializePixels(GLenum format,
       api, gl_unpack_attribs_, true /* uploading_data */);
   api->glTexSubImage2DFn(target, 0, 0, 0, size().width(), size().height(),
                          format, type, data);
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

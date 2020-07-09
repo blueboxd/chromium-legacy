@@ -165,7 +165,15 @@ static bool ShouldUseInfiniteCullRect(const GraphicsContext& context,
   // Cull rects and clips can't be propagated across a filter which moves
   // pixels, since the input of the filter may be outside the cull rect /
   // clips yet still result in painted output.
-  if (layer.HasFilterThatMovesPixels())
+  if (layer.HasFilterThatMovesPixels() &&
+      // However during printing, we don't want filter outset to cross page
+      // boundaries. This also avoids performance issue because the PDF renderer
+      // is super slow for big filters. Otherwise all filtered contents would
+      // appear in the painted result of every page.
+      // TODO(crbug.com/1098995): For now we don't adjust cull rect for clips.
+      // When we do, we need to check if we are painting under a real clip.
+      // This won't be a problem when we use block fragments for printing.
+      !context.Printing())
     return true;
 
   // Cull rect mapping doesn't work under perspective in some cases.

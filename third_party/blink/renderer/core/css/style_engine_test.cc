@@ -2712,6 +2712,53 @@ TEST_F(StyleEngineTest, RevertUseCount) {
   EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kCSSKeywordRevert));
 }
 
+TEST_F(StyleEngineTest, RevertUseCountForCustomProperties) {
+  ScopedCSSRevertForTest scoped_feature(true);
+
+  GetDocument().body()->setInnerHTML(
+      "<style>div { --x: unset; }</style><div></div>");
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kCSSKeywordRevert));
+
+  GetDocument().body()->setInnerHTML(
+      "<style>div { --x: revert; }</style><div></div>");
+  UpdateAllLifecyclePhases();
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kCSSKeywordRevert));
+}
+
+TEST_F(StyleEngineTest, NoRevertUseCountForForcedColors) {
+  ScopedForcedColorsForTest scoped_feature(true);
+
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      #elem { color: red; }
+    </style>
+    <div id=ref></div>
+    <div id=elem></div>
+  )HTML");
+  UpdateAllLifecyclePhases();
+
+  Element* ref = GetDocument().getElementById("ref");
+  Element* elem = GetDocument().getElementById("elem");
+  ASSERT_TRUE(ref);
+  ASSERT_TRUE(elem);
+
+  // This test assumes that the initial color is not 'red'. Verify that
+  // assumption.
+  ASSERT_NE(ComputedValue(ref, "color")->CssText(),
+            ComputedValue(elem, "color")->CssText());
+
+  EXPECT_EQ("rgb(255, 0, 0)", ComputedValue(elem, "color")->CssText());
+
+  ColorSchemeHelper color_scheme_helper(GetDocument());
+  color_scheme_helper.SetForcedColors(GetDocument(), ForcedColors::kActive);
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(ComputedValue(ref, "color")->CssText(),
+            ComputedValue(elem, "color")->CssText());
+
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kCSSKeywordRevert));
+}
+
 TEST_F(StyleEngineTest, PrintNoDarkColorScheme) {
   ColorSchemeHelper color_scheme_helper(GetDocument());
   color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);

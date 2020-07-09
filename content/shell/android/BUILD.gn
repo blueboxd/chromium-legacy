@@ -233,9 +233,6 @@ content_shell_apk_tmpl("content_shell_test_apk") {
   if (enable_chrome_android_internal) {
     data_deps += [ "//clank/build/bot/filters:content_shell_test_apk_filters" ]
   }
-
-  # TODO(crbug.com/1099536): Fix tests that break when this is increased.
-  target_sdk_version = 24
 }
 
 android_library("content_shell_test_java") {

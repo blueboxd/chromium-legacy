@@ -13,6 +13,7 @@
 #include "ash/accessibility/accessibility_highlight_controller.h"
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/accessibility/accessibility_panel_layout_manager.h"
+#include "ash/accessibility/point_scan_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/events/select_to_speak_event_handler.h"
 #include "ash/events/switch_access_event_handler.h"
@@ -1169,6 +1170,13 @@ void AccessibilityControllerImpl::ForwardKeyEventsToSwitchAccess(
   switch_access_event_handler_->set_forward_key_events(should_forward);
 }
 
+void AccessibilityControllerImpl::StartPointScanning() {
+  if (!point_scan_controller_)
+    point_scan_controller_.reset(new PointScanController());
+
+  point_scan_controller_->Start();
+}
+
 void AccessibilityControllerImpl::SetSwitchAccessEventHandlerDelegate(
     SwitchAccessEventHandlerDelegate* delegate) {
   switch_access_event_handler_delegate_ = delegate;
@@ -1975,6 +1983,11 @@ void AccessibilityControllerImpl::UpdateFeatureFromPref(FeatureType feature) {
         switch_access_bubble_controller_ =
             std::make_unique<SwitchAccessMenuBubbleController>();
         MaybeCreateSwitchAccessEventHandler();
+
+        if (::switches::IsSwitchAccessPointScanningEnabled()) {
+          StartPointScanning();
+        }
+
         ShowAccessibilityNotification(
             A11yNotificationType::kSwitchAccessEnabled);
       }

@@ -1703,6 +1703,11 @@ jumbo_component("platform") {
 
   if (current_cpu == "x86" || current_cpu == "x64") {
     deps += [ ":blink_x86_avx" ]
+    sources += [ "audio/cpu/x86/audio_delay_dsp_kernel_sse2.cc" ]
+  }
+
+  if (current_cpu == "arm64" || (current_cpu == "arm" && arm_use_neon)) {
+    sources += [ "audio/cpu/arm/audio_delay_dsp_kernel_neon.cc" ]
   }
 
   if (use_webaudio_ffmpeg) {

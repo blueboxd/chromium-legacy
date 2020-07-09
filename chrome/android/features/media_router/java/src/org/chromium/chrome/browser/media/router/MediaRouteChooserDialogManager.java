@@ -14,11 +14,12 @@ import android.widget.ListView;
 
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.mediarouter.R;
 import androidx.mediarouter.app.MediaRouteChooserDialog;
 import androidx.mediarouter.app.MediaRouteChooserDialogFragment;
 import androidx.mediarouter.media.MediaRouteSelector;
 import androidx.mediarouter.media.MediaRouter;
+
+import org.chromium.chrome.media.router.R;
 
 /**
  * Manages the dialog responsible for selecting a {@link MediaSink}.

@@ -88,17 +88,16 @@ BluetoothSocketBlueZ::~BluetoothSocketBlueZ() {
   }
 }
 
-void BluetoothSocketBlueZ::Connect(
-    const BluetoothDeviceBlueZ* device,
-    const BluetoothUUID& uuid,
-    SecurityLevel security_level,
-    const base::Closure& success_callback,
-    const ErrorCompletionCallback& error_callback) {
+void BluetoothSocketBlueZ::Connect(const BluetoothDeviceBlueZ* device,
+                                   const BluetoothUUID& uuid,
+                                   SecurityLevel security_level,
+                                   base::OnceClosure success_callback,
+                                   ErrorCompletionOnceCallback error_callback) {
   DCHECK(ui_task_runner()->RunsTasksInCurrentSequence());
   DCHECK(!profile_);
 
   if (!uuid.IsValid()) {
-    error_callback.Run(kInvalidUUID);
+    std::move(error_callback).Run(kInvalidUUID);
     return;
   }
 
@@ -111,7 +110,8 @@ void BluetoothSocketBlueZ::Connect(
 
   adapter_ = device->adapter();
 
-  RegisterProfile(device->adapter(), success_callback, error_callback);
+  RegisterProfile(device->adapter(), std::move(success_callback),
+                  std::move(error_callback));
 }
 
 void BluetoothSocketBlueZ::Listen(

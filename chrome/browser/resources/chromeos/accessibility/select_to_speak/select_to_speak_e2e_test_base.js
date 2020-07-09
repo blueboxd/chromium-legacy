@@ -2,17 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-GEN_INCLUDE(['../common/testing/callback_helper.js']);
+GEN_INCLUDE(['../common/testing/e2e_test_base.js']);
 
 /**
  * Base class for browser tests for select-to-speak.
  */
-SelectToSpeakE2ETest = class extends testing.Test {
-  constructor() {
-    super();
-    this.callbackHelper_ = new CallbackHelper(this);
-  }
-
+SelectToSpeakE2ETest = class extends E2ETestBase {
   /** @override */
   testGenCppIncludes() {
     GEN(`
@@ -42,18 +37,6 @@ SelectToSpeakE2ETest = class extends testing.Test {
   }
 
   /**
-   * Creates a callback that optionally calls {@code opt_callback} when
-   * called.  If this method is called one or more times, then
-   * {@code testDone()} will be called when all callbacks have been called.
-   * @param {Function=} opt_callback Wrapped callback that will have its this
-   *        reference bound to the test fixture.
-   * @return {Function}
-   */
-  newCallback(opt_callback) {
-    return this.callbackHelper_.wrap(opt_callback);
-  }
-
-  /**
    * Asserts that two strings are equal, collapsing repeated spaces and
    * removing leading / trailing whitespace.
    * @param {string} first The first string to compare.
@@ -66,43 +49,6 @@ SelectToSpeakE2ETest = class extends testing.Test {
   }
 
   /**
-   * From chromevox_next_e2e_test_base.js
-   * Gets the desktop from the automation API and Launches a new tab with
-   * the given document, and runs |callback| with the desktop when a load
-   * complete fires on the created tab.
-   * Arranges to call |testDone()| after |callback| returns.
-   * NOTE: Callbacks created inside |callback| must be wrapped with
-   * |this.newCallback| if passed to asynchonous calls.  Otherwise, the test
-   * will be finished prematurely.
-   * @param {string} url Url to load and wait for.
-   * @param {function(chrome.automation.AutomationNode)} callback Called with
-   *     the desktop node once the document is ready.
-   */
-  runWithLoadedTree(url, callback) {
-    callback = this.newCallback(callback);
-    chrome.automation.getDesktop(function(desktopRootNode) {
-      var createParams = {active: true, url};
-      chrome.tabs.create(createParams, function(unused_tab) {
-        chrome.automation.getTree(function(returnedRootNode) {
-          const rootNode = returnedRootNode;
-          if (rootNode.docLoaded) {
-            callback && callback(desktopRootNode);
-            callback = null;
-            return;
-          }
-          rootNode.addEventListener('loadComplete', function(evt) {
-            if (evt.target.root.url != url) {
-              return;
-            }
-            callback && callback(desktopRootNode);
-            callback = null;
-          });
-        });
-      });
-    }.bind(this));
-  }
-
-  /**
    * Helper function to find a staticText node from a root
    * @param {AutomationNode} root The root node to search through
    * @param {string} text The text to search for
@@ -112,15 +58,3 @@ SelectToSpeakE2ETest = class extends testing.Test {
     return root.find({role: 'staticText', attributes: {name: text}});
   }
 };
-
-/**
- * @override
- * No UI in the background context.
- */
-SelectToSpeakE2ETest.prototype.runAccessibilityChecks = false;
-
-/** @override */
-SelectToSpeakE2ETest.prototype.isAsync = true;
-
-/** @override */
-SelectToSpeakE2ETest.prototype.browsePreload = null;

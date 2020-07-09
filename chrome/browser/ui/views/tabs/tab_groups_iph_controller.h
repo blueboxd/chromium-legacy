@@ -49,6 +49,7 @@ class TabGroupsIPHController : public TabStripModelObserver,
 
   // views::WidgetObserver:
   void OnWidgetClosing(views::Widget* widget) override;
+  void OnWidgetDestroying(views::Widget* widget) override;
 
  private:
   void HandlePromoClose();

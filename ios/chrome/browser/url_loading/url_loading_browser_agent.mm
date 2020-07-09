@@ -305,12 +305,16 @@ void UrlLoadingBrowserAgent::LoadUrlInNewTab(const UrlLoadParams& params) {
   if (params.append_to == kCurrentTab)
     adjacent_web_state = browser_->GetWebStateList()->GetActiveWebState();
 
+  int insertion_index = TabInsertion::kPositionAutomatically;
+  if (params.append_to == kSpecifiedIndex)
+    insertion_index = params.insertion_index;
+
   UrlLoadParams saved_params = params;
   auto openTab = ^{
     TabInsertionBrowserAgent* insertionAgent =
         TabInsertionBrowserAgent::FromBrowser(browser_);
     insertionAgent->InsertWebState(saved_params.web_params, adjacent_web_state,
-                                   false, TabInsertion::kPositionAutomatically,
+                                   false, insertion_index,
                                    saved_params.in_background());
     notifier_->NewTabDidLoadUrl(saved_params.web_params.url,
                                 saved_params.user_initiated);

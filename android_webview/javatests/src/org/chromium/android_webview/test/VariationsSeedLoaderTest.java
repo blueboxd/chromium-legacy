@@ -289,6 +289,31 @@ public class VariationsSeedLoaderTest {
     }
 
     // Test the case that:
+    // VariationsUtils.getSeedFile() - doesn't exist
+    // VariationsUtils.getNewSeedFile() - exists, empty
+    @Test
+    @MediumTest
+    public void testHaveEmptyNewSeed() throws Exception {
+        try {
+            File oldFile = VariationsUtils.getSeedFile();
+            File newFile = VariationsUtils.getNewSeedFile();
+            Assert.assertTrue("Seed file should not already exist", newFile.createNewFile());
+
+            boolean seedRequested = runTestLoaderBlocking();
+
+            // Neither file should have been touched.
+            Assert.assertFalse("Old seed file should not exist", oldFile.exists());
+            Assert.assertTrue("New seed file not found", newFile.exists());
+            Assert.assertEquals("New seed file is not empty", 0L, newFile.length());
+
+            // Since the "new" seed was empty/invalid, another seed should be requested.
+            Assert.assertTrue("No seed requested", seedRequested);
+        } finally {
+            VariationsTestUtils.deleteSeeds();
+        }
+    }
+
+    // Test the case that:
     // VariationsUtils.getSeedFile() - exists, timestamp = epoch
     // VariationsUtils.getNewSeedFile() - exists, timestamp = epoch + 1 day
     @Test

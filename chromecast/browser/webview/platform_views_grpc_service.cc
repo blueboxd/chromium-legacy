@@ -19,12 +19,10 @@ PlatformViewsAsyncService::PlatformViewsAsyncService(
     std::unique_ptr<grpc::ServerCompletionQueue> cq,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     WebContentsProvider* web_contents_provider,
-    CastWindowManager* cast_window_manager,
     bool enabled_for_dev)
     : ui_task_runner_(std::move(ui_task_runner)),
       cq_(std::move(cq)),
       service_(std::move(service)),
-      window_manager_(cast_window_manager),
       web_contents_provider_(web_contents_provider),
       enabled_for_dev_(enabled_for_dev) {
   base::PlatformThread::Create(0, this, &rpc_thread_);

@@ -127,6 +127,11 @@ inline ScrollbarLayerImplBase* ToScrollbarLayer(LayerImpl* layer) {
   return static_cast<ScrollbarLayerImplBase*>(layer);
 }
 
+inline const ScrollbarLayerImplBase* ToScrollbarLayer(const LayerImpl* layer) {
+  DCHECK(layer->IsScrollbarLayer());
+  return static_cast<const ScrollbarLayerImplBase*>(layer);
+}
+
 using ScrollbarSet = base::flat_set<ScrollbarLayerImplBase*>;
 
 }  // namespace cc

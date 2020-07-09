@@ -37,6 +37,10 @@ message ContentMetaData {
 
   // Specifically for the download case.
   optional safe_browsing.ClientDownloadRequest csd = 4;
+
+  // Optional email address of user.  This field may be empty if the user
+  // is not signed in.
+  optional string email = 5;
 }
 
 // Analysis request sent from chrome to backend.

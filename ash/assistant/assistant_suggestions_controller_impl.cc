@@ -257,38 +257,44 @@ void AssistantSuggestionsControllerImpl::ProvideConversationStarters() {
   model_.SetConversationStarters(std::move(conversation_starters));
 }
 
-// TODO(dmblack): Replace w/ actual suggestions.
+// TODO(dmblack): Replace w/ actual icons.
 void AssistantSuggestionsControllerImpl::UpdateOnboardingSuggestions() {
   DCHECK(IsBetterOnboardingEnabled());
 
-  // TODO(dmblack): Support non-EDU onboarding.
-  if (AssistantState::Get()->onboarding_mode() !=
-      AssistantOnboardingMode::kEducation) {
-    model_.SetOnboardingSuggestions({});
-    return;
-  }
-
   std::vector<AssistantSuggestion> onboarding_suggestions;
 
-  auto AddOnboardingSuggestion =
-      [&onboarding_suggestions](const std::string& text) {
+  auto AddSuggestion =
+      [&onboarding_suggestions](int message_id) {
         onboarding_suggestions.emplace_back();
         auto& suggestion = onboarding_suggestions.back();
         suggestion.id = base::UnguessableToken::Create();
         suggestion.type = AssistantSuggestionType::kBetterOnboarding;
-        suggestion.text = text;
+        suggestion.text = l10n_util::GetStringUTF8(message_id);
         suggestion.icon_url = GURL(
             "https://www.gstatic.com/images/branding/product/2x/"
             "googleg_48dp.png");
         suggestion.action_url = GURL();
       };
 
-  AddOnboardingSuggestion("First suggestion");
-  AddOnboardingSuggestion("Second suggestion");
-  AddOnboardingSuggestion("Third suggestion");
-  AddOnboardingSuggestion("Fourth suggestion");
-  AddOnboardingSuggestion("Fifth suggestion");
-  AddOnboardingSuggestion("Sixth suggestion");
+  switch (AssistantState::Get()->onboarding_mode().value_or(
+      AssistantOnboardingMode::kDefault)) {
+    case AssistantOnboardingMode::kEducation:
+      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_MATH);
+      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_KNOWLEDGE_EDU);
+      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_PRODUCTIVITY);
+      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_PERSONALITY);
+      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_LANGUAGE);
+      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_TECHNICAL);
+      break;
+    case AssistantOnboardingMode::kDefault:
+      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_CONVERSION);
+      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_KNOWLEDGE);
+      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_PRODUCTIVITY);
+      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_PERSONALITY);
+      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_LANGUAGE);
+      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_TECHNICAL);
+      break;
+  }
 
   model_.SetOnboardingSuggestions(std::move(onboarding_suggestions));
 }

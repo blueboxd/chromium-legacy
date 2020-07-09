@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/html/html_unknown_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/portal/document_portals.h"
+#include "third_party/blink/renderer/core/html/portal/portal_activation_delegate.h"
 #include "third_party/blink/renderer/core/html/portal/portal_contents.h"
 #include "third_party/blink/renderer/core/html/portal/portal_post_message_helper.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -112,6 +113,54 @@ bool HTMLPortalElement::IsCurrentlyWithinFrameLimit() const {
   if (!page)
     return false;
   return page->SubframeCount() < Page::MaxNumberOfFrames();
+}
+
+String HTMLPortalElement::PreActivateChecksCommon() {
+  if (!portal_)
+    return "The HTMLPortalElement is not associated with a portal context.";
+
+  if (DocumentPortals::From(GetDocument()).IsPortalInDocumentActivating())
+    return "Another portal in this document is activating.";
+
+  if (GetDocument().GetPage()->InsidePortal())
+    return "Cannot activate a portal that is inside another portal.";
+
+  if (GetDocument().BeforeUnloadStarted()) {
+    return "Cannot activate portal while document is in beforeunload or has "
+           "started unloading.";
+  }
+
+  return String();
+}
+
+void HTMLPortalElement::ActivateDefault() {
+  ExecutionContext* context = GetExecutionContext();
+  if (!CheckPortalsEnabledOrWarn() || !context)
+    return;
+
+  String pre_activate_error = PreActivateChecksCommon();
+  if (pre_activate_error) {
+    context->AddConsoleMessage(mojom::blink::ConsoleMessageSource::kRendering,
+                               mojom::blink::ConsoleMessageLevel::kWarning,
+                               pre_activate_error);
+    return;
+  }
+
+  // Quickly encode undefined without actually invoking script.
+  BlinkTransferableMessage data;
+  data.message = SerializedScriptValue::UndefinedValue();
+  data.message->UnregisterMemoryAllocatedWithCurrentScriptContext();
+  data.sender_origin =
+      GetExecutionContext()->GetSecurityOrigin()->IsolatedCopy();
+  if (ThreadDebugger* debugger =
+          ThreadDebugger::From(V8PerIsolateData::MainThreadIsolate())) {
+    data.sender_stack_trace_id =
+        debugger->StoreCurrentStackTrace("activate (implicit)");
+  }
+
+  PortalContents* portal = std::exchange(portal_, nullptr);
+  portal->Activate(std::move(data),
+                   PortalActivationDelegate::ForConsole(context));
 }
 
 bool HTMLPortalElement::CheckWithinFrameLimitOrWarn() const {
@@ -261,30 +310,11 @@ ScriptPromise HTMLPortalElement::activate(ScriptState* script_state,
                                           ExceptionState& exception_state) {
   if (!CheckPortalsEnabledOrThrow(exception_state))
     return ScriptPromise();
-  if (!portal_) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "The HTMLPortalElement is not associated with a portal context.");
-    return ScriptPromise();
-  }
-  if (DocumentPortals::From(GetDocument()).IsPortalInDocumentActivating()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "activate() has already been called on another "
-        "HTMLPortalElement in this document.");
-    return ScriptPromise();
-  }
-  if (GetDocument().GetPage()->InsidePortal()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "Cannot activate a portal that is inside another portal.");
-    return ScriptPromise();
-  }
-  if (GetDocument().BeforeUnloadStarted()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "Cannot activate portal while document is in beforeunload or has "
-        "started unloading.");
+
+  String pre_activate_error = PreActivateChecksCommon();
+  if (pre_activate_error) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      pre_activate_error);
     return ScriptPromise();
   }
 
@@ -294,7 +324,12 @@ ScriptPromise HTMLPortalElement::activate(ScriptState* script_state,
     return ScriptPromise();
 
   PortalContents* portal = std::exchange(portal_, nullptr);
-  return portal->Activate(script_state, std::move(data));
+  ScriptPromiseResolver* resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+  portal->Activate(std::move(data), PortalActivationDelegate::ForPromise(
+                                        resolver, exception_state));
+  return promise;
 }
 
 void HTMLPortalElement::postMessage(ScriptState* script_state,
@@ -446,27 +481,9 @@ void HTMLPortalElement::DefaultEventHandler(Event& event) {
   // Support the new behavior whereby clicking (or equivalent operations via
   // keyboard and other input modalities) a portal element causes it to activate
   // unless prevented.
-  //
-  // TODO(jbroman): Ideally we wouldn't need to bring up a script state context
-  // to do it, but presently it's how errors are reported and also required for
-  // serialization of the (absent) activation data.
   if (RuntimeEnabledFeatures::PortalsDefaultActivationEnabled() &&
       event.type() == event_type_names::kDOMActivate) {
-    if (LocalFrame* frame = GetDocument().GetFrame()) {
-      ScriptState* script_state = ToScriptStateForMainWorld(frame);
-      ScriptState::Scope scope(script_state);
-      ExceptionState exception_state(script_state->GetIsolate(),
-                                     ExceptionState::kUnknownContext, nullptr,
-                                     nullptr);
-      activate(ToScriptStateForMainWorld(frame),
-               MakeGarbageCollected<PortalActivateOptions>(), exception_state);
-      if (exception_state.HadException()) {
-        // The exception will be reported as an unhandled promise. This is
-        // slightly weird, but gets the point across.
-        ScriptPromise::Reject(script_state, exception_state);
-        exception_state.ClearException();
-      }
-    }
+    ActivateDefault();
     event.SetDefaultHandled();
   }
 

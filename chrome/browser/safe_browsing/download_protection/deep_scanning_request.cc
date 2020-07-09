@@ -348,6 +348,7 @@ void DeepScanningRequest::PrepareConnectorRequest(
     request->set_device_token(GetDMToken(profile).value());
 
   request->set_analysis_connector(enterprise_connectors::FILE_DOWNLOADED);
+  request->set_email(GetProfileEmail(profile));
 
   if (item_->GetURL().is_valid())
     request->set_url(item_->GetURL().spec());

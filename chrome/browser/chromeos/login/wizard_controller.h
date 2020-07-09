@@ -429,9 +429,6 @@ class WizardController {
   bool timezone_resolved_ = false;
   base::Closure on_timezone_resolved_for_testing_;
 
-  // Configuration (dictionary) for automating OOBE screens.
-  base::Value oobe_configuration_{base::Value::Type::DICTIONARY};
-
   bool is_initialized_ = false;
 
   base::WeakPtrFactory<WizardController> weak_factory_{this};

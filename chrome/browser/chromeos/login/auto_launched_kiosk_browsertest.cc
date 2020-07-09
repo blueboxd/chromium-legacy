@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/app_mode/fake_cws.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/login/app_launch_controller.h"
+#include "chrome/browser/chromeos/login/kiosk_launch_controller.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/embedded_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
@@ -131,7 +131,8 @@ class AutoLaunchedKioskTest : public MixinBasedInProcessBrowserTest {
   }
 
   void SetUp() override {
-    AppLaunchController::SkipSplashWaitForTesting();
+    skip_splash_wait_override_ =
+        AppLaunchController::SkipSplashScreenWaitForTesting();
     login_manager_.set_session_restore_enabled();
     login_manager_.SetDefaultLoginSwitches(
         {std::make_pair("test_switch_1", ""),
@@ -257,6 +258,7 @@ class AutoLaunchedKioskTest : public MixinBasedInProcessBrowserTest {
   FakeCWS fake_cws_;
   extensions::SandboxedUnpacker::ScopedVerifierFormatOverrideForTest
       verifier_format_override_;
+  std::unique_ptr<base::AutoReset<bool>> skip_splash_wait_override_;
 
   EmbeddedTestServerSetupMixin embedded_test_server_setup_{
       &mixin_host_, embedded_test_server()};

@@ -242,8 +242,10 @@ template("webapk_tmpl") {
 
     android_manifest = _manifest_output
     android_manifest_dep = ":$_manifest_target_name"
+    min_sdk_version = 21
     target_sdk_version = 29
     never_incremental = true
+    enable_multidex = false
 
     # Force 32 bit mode on 64 bit devices.
     native_lib_placeholders = [ "libfoo.so" ]

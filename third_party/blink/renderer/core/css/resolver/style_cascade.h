@@ -271,6 +271,7 @@ class CORE_EXPORT StyleCascade {
                                              const CSSPendingSubstitutionValue&,
                                              CascadeResolver&);
   const CSSValue* ResolveRevert(const CSSProperty&,
+                                const CSSValue&,
                                 CascadeOrigin,
                                 CascadeResolver&);
 

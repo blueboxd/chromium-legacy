@@ -56,7 +56,7 @@ class MetadataTestBaseView : public views::View {
   }
   int GetIntProperty() const { return int_property_; }
   views::PropertyChangedSubscription AddIntPropertyChangedCallback(
-      views::PropertyChangedCallback callback) {
+      views::PropertyChangedCallback callback) WARN_UNUSED_RESULT {
     return AddPropertyChangedCallback(&int_property_, std::move(callback));
   }
 
@@ -86,7 +86,7 @@ class MetadataTestView : public MetadataTestBaseView {
   }
   float GetFloatProperty() const { return float_property_; }
   views::PropertyChangedSubscription AddFloatPropertyChangedCallback(
-      views::PropertyChangedCallback callback) {
+      views::PropertyChangedCallback callback) WARN_UNUSED_RESULT {
     return AddPropertyChangedCallback(&float_property_, std::move(callback));
   }
 

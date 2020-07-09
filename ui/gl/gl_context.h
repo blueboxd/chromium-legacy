@@ -87,6 +87,13 @@ struct GL_EXPORT GLContextAttribs {
   int client_major_es_version = 3;
   int client_minor_es_version = 0;
   bool can_skip_validation = false;
+
+  // If true, and if supported (for EGL, this requires the robustness
+  // extension), set the reset notification strategy to lose context on reset.
+  // This setting can be changed independently of robust_buffer_access.
+  // (True by default to match previous behavior.)
+  bool lose_context_on_reset = true;
+
   ContextPriority context_priority = ContextPriorityMedium;
 };
 

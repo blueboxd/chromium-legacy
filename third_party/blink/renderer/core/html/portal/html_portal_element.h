@@ -81,6 +81,13 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
   void PortalContentsWillBeDestroyed(PortalContents*);
 
  private:
+  // Returns a null string if the checks passed, and a suitable error otherwise.
+  String PreActivateChecksCommon();
+
+  // Performs a default activation (e.g. due to an unprevented click), as
+  // opposed to one requested by invoking HTMLPortalElement::activate.
+  void ActivateDefault();
+
   // Checks whether the Portals feature is enabled for this document, and logs a
   // warning to the developer if not. Doing basically anything with an
   // HTMLPortalElement in a document which doesn't support portals is forbidden.

@@ -60,7 +60,6 @@ class BlinkTestRunner;
 class MockScreenOrientationClient;
 class RenderFrame;
 class SpellCheckClient;
-class TestInterfaces;
 class WebFrameTestProxy;
 class WebWidgetTestProxy;
 class WebViewTestProxy;
@@ -74,11 +73,11 @@ class WebViewTestProxy;
 //    - TestRunner.SetTextSubpixelPositioning (directly interacts with product).
 // 2. It manages global test state.  Example:
 //    - Tracking topLoadingFrame that can finish the test when it loads.
-//    - WorkQueue holding load requests from the TestInterfaces
+//    - WorkQueue holding load requests from web tests.
 //    - WebTestRuntimeFlags
 class TestRunner {
  public:
-  explicit TestRunner(TestInterfaces*);
+  TestRunner();
   virtual ~TestRunner();
 
   void Install(WebFrameTestProxy* frame, SpellCheckClient* spell_check);
@@ -110,6 +109,12 @@ class TestRunner {
   void AddMainFrame(WebFrameTestProxy* frame);
   void RemoveMainFrame(WebFrameTestProxy* frame);
 
+  // Track the set of all RenderViews in the process, which includes cross-site
+  // frames/windows accessible from this process but homed in a different
+  // renderer and parts of any windows' frame trees that share the same site.
+  void AddRenderView(WebViewTestProxy* view);
+  void RemoveRenderView(WebViewTestProxy* view);
+
   // Returns a mock WebContentSettings that is used for web tests. An
   // embedder should use this for all WebViews it creates.
   blink::WebContentSettingsClient* GetWebContentSettings();
@@ -123,7 +128,7 @@ class TestRunner {
   bool ShouldDumpAsAudio() const;
   // Gets the audio test output for when audio test results are requested by
   // the current test.
-  void GetAudioData(std::vector<unsigned char>* buffer_view) const;
+  const std::vector<uint8_t>& GetAudioData() const;
 
   // Reports if tests requested a recursive layout dump of all frames
   // (i.e. by calling testRunner.dumpChildFramesAsText() from javascript).
@@ -224,8 +229,6 @@ class TestRunner {
   // Controls whether console messages produced by the page are dumped
   // to test output.
   void SetDumpConsoleMessages(bool value);
-
-  bool ShouldDumpJavaScriptDialogs() const;
 
   // The following trigger navigations on the main WebView.
   void GoToOffset(int offset);
@@ -547,12 +550,15 @@ class TestRunner {
   bool clear_referrer_ = false;
 
   // WAV audio data is stored here.
-  std::vector<unsigned char> audio_data_;
+  std::vector<uint8_t> audio_data_;
 
-  TestInterfaces* test_interfaces_;
   BlinkTestRunner* blink_test_runner_ = nullptr;
   blink::WebView* main_view_ = nullptr;
   base::flat_set<WebFrameTestProxy*> main_frames_;
+  // The set of all render views in this renderer process. This may include
+  // cross-site windows accessible from this process, or parts of same-site
+  // windows opened from any renderer process.
+  base::flat_set<WebViewTestProxy*> render_views_;
 
   // This is non empty when a load is in progress.
   std::vector<blink::WebFrame*> loading_frames_;

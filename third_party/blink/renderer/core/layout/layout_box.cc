@@ -6454,12 +6454,6 @@ ShapeOutsideInfo* LayoutBox::GetShapeOutsideInfo() const {
   return ShapeOutsideInfo::Info(*this);
 }
 
-void LayoutBox::ClearPreviousVisualRects() {
-  LayoutBoxModelObject::ClearPreviousVisualRects();
-  if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea())
-    scrollable_area->ClearPreviousVisualRects();
-}
-
 void LayoutBox::SetPercentHeightContainer(LayoutBlock* container) {
   DCHECK(!container || !PercentHeightContainer());
   if (!container && !rare_data_)

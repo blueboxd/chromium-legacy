@@ -603,14 +603,10 @@ void AutoEnrollmentController::DetermineAutoEnrollmentCheckType() {
     return;
   }
 
-  // Skip everything if the device was in consumer mode previously.
+  // Determine whether to do an FRE check or an initial state determination.
+  // FRE has precedence since managed devices must go through an FRE check.
   fre_requirement_ = GetFRERequirement();
   VLOG(1) << FRERequirementToString(fre_requirement_);
-  if (fre_requirement_ == FRERequirement::kExplicitlyNotRequired) {
-    LOGIN_LOG(EVENT) << "Auto-enrollment disabled: VPD.";
-    auto_enrollment_check_type_ = AutoEnrollmentCheckType::kNone;
-    return;
-  }
 
   if (ShouldDoFRECheck(command_line, fre_requirement_)) {
     // FRE has precedence over Initial Enrollment.
@@ -619,6 +615,8 @@ void AutoEnrollmentController::DetermineAutoEnrollmentCheckType() {
     return;
   }
 
+  // The device is in consumer mode, check whether an initial state
+  // determination is in order.
   if (ShouldDoInitialEnrollmentCheck()) {
     LOGIN_LOG(EVENT) << "Proceeding with Initial State Determination.";
     auto_enrollment_check_type_ =
@@ -626,6 +624,7 @@ void AutoEnrollmentController::DetermineAutoEnrollmentCheckType() {
     return;
   }
 
+  // Neither FRE nor initial state determination checks are needed.
   auto_enrollment_check_type_ = AutoEnrollmentCheckType::kNone;
 }
 
@@ -643,6 +642,12 @@ bool AutoEnrollmentController::ShouldDoFRECheck(
   // Skip FRE check if it is not enabled by command-line switches.
   if (!IsFREEnabled()) {
     LOGIN_LOG(EVENT) << "FRE disabled.";
+    return false;
+  }
+
+  // Skip FRE check if explicitly not required to check.
+  if (fre_requirement == FRERequirement::kExplicitlyNotRequired) {
+    LOGIN_LOG(EVENT) << "FRE disabled for device in consumer mode.";
     return false;
   }
 

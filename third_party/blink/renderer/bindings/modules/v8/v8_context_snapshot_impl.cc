@@ -288,7 +288,7 @@ v8::Local<v8::Context> V8ContextSnapshotImpl::CreateContext(
     return v8::Local<v8::Context>();
   }
 
-  HTMLDocument* html_document = To<HTMLDocument>(document);
+  HTMLDocument* html_document = DynamicTo<HTMLDocument>(document);
   CHECK(!html_document || html_document->GetWrapperTypeInfo() ==
                               V8HTMLDocument::GetWrapperTypeInfo());
   if (world.IsMainWorld()) {

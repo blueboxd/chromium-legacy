@@ -46,7 +46,7 @@ class CORE_EXPORT LayoutShiftTracker final
                             const PropertyTreeStateOrAlias& property_tree_state,
                             const IntRect& old_visual_rect,
                             const IntRect& new_visual_rect,
-                            FloatSize paint_offset_delta);
+                            const FloatSize& paint_offset_delta);
   void NotifyPrePaintFinished();
   void NotifyInput(const WebInputEvent&);
   void NotifyScroll(mojom::blink::ScrollType, ScrollOffset delta);
@@ -92,7 +92,7 @@ class CORE_EXPORT LayoutShiftTracker final
                      const PropertyTreeStateOrAlias&,
                      FloatRect old_rect,
                      FloatRect new_rect,
-                     FloatSize paint_offset_diff);
+                     const FloatSize& paint_offset_delta);
   void ReportShift(double score_delta, double weighted_score_delta);
   void TimerFired(TimerBase*) {}
   std::unique_ptr<TracedValue> PerFrameTraceData(double score_delta,

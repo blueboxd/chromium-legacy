@@ -365,14 +365,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
 
   // The ErrorCallback is used for methods that can fail in which case it
   // is called, in the success case the callback is simply not called.
-  typedef base::Callback<void()> ErrorCallback;
+  using ErrorCallback = base::OnceClosure;
 
   // The ConnectErrorCallback is used for methods that can fail with an error,
   // passed back as an error code argument to this callback.
   // In the success case this callback is not called.
   using ConnectErrorCallback = base::OnceCallback<void(enum ConnectErrorCode)>;
 
-  typedef base::Callback<void(const ConnectionInfo&)> ConnectionInfoCallback;
+  using ConnectionInfoCallback =
+      base::OnceCallback<void(const ConnectionInfo&)>;
 
   // Indicates whether the device is currently pairing and expecting a
   // PIN Code to be returned.
@@ -399,13 +400,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   //
   // If the device isn't connected, then the ConnectionInfo struct passed into
   // the callback will be populated with |kUnknownPower|.
-  virtual void GetConnectionInfo(const ConnectionInfoCallback& callback) = 0;
+  virtual void GetConnectionInfo(ConnectionInfoCallback callback) = 0;
 
   // Sets the connection latency for the device. This API is only valid for LE
   // devices.
   virtual void SetConnectionLatency(ConnectionLatency connection_latency,
-                                    const base::Closure& callback,
-                                    const ErrorCallback& error_callback) = 0;
+                                    base::OnceClosure callback,
+                                    ErrorCallback error_callback) = 0;
 
   // Initiates a connection to the device, pairing first if necessary.
   //
@@ -464,8 +465,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // information are not discarded, and the device object is not deleted.
   // If the request fails, |error_callback| will be called; otherwise,
   // |callback| is called when the request is complete.
-  virtual void Disconnect(const base::Closure& callback,
-                          const ErrorCallback& error_callback) = 0;
+  virtual void Disconnect(base::OnceClosure callback,
+                          ErrorCallback error_callback) = 0;
 
   // Disconnects the device, terminating the low-level ACL connection
   // and any application connections using it, and then discards link keys
@@ -474,8 +475,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // have been deleted. If the request fails, |error_callback| will be called.
   // On success |callback| will be invoked, but note that the BluetoothDevice
   // object will have been deleted at that point.
-  virtual void Forget(const base::Closure& callback,
-                      const ErrorCallback& error_callback) = 0;
+  virtual void Forget(base::OnceClosure callback,
+                      ErrorCallback error_callback) = 0;
 
   // Attempts to initiate an outgoing L2CAP or RFCOMM connection to the
   // advertised service on this device matching |uuid|, performing an SDP lookup
@@ -484,14 +485,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // BluetoothSocket instance that is to be owned by the receiver.
   // |error_callback| will be called on failure with a message indicating the
   // cause.
-  typedef base::Callback<void(scoped_refptr<BluetoothSocket>)>
-      ConnectToServiceCallback;
-  typedef base::Callback<void(const std::string& message)>
-      ConnectToServiceErrorCallback;
+  using ConnectToServiceCallback =
+      base::OnceCallback<void(scoped_refptr<BluetoothSocket>)>;
+  using ConnectToServiceErrorCallback =
+      base::OnceCallback<void(const std::string& message)>;
   virtual void ConnectToService(
       const BluetoothUUID& uuid,
-      const ConnectToServiceCallback& callback,
-      const ConnectToServiceErrorCallback& error_callback) = 0;
+      ConnectToServiceCallback callback,
+      ConnectToServiceErrorCallback error_callback) = 0;
 
   // Attempts to initiate an insecure outgoing L2CAP or RFCOMM connection to the
   // advertised service on this device matching |uuid|, performing an SDP lookup
@@ -502,9 +503,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // by the receiver. |error_callback| will be called on failure with a message
   // indicating the cause.
   virtual void ConnectToServiceInsecurely(
-    const device::BluetoothUUID& uuid,
-    const ConnectToServiceCallback& callback,
-    const ConnectToServiceErrorCallback& error_callback) = 0;
+      const device::BluetoothUUID& uuid,
+      ConnectToServiceCallback callback,
+      ConnectToServiceErrorCallback error_callback) = 0;
 
   // Opens a new GATT connection to this device. On success, a new
   // BluetoothGattConnection will be handed to the caller via |callback|. On
@@ -590,17 +591,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
       const BluetoothUUID& service_uuid);
 
 #if defined(OS_CHROMEOS)
-  typedef base::Callback<void(device::BluetoothGattService::GattErrorCode)>
-      ExecuteWriteErrorCallback;
-  typedef base::Callback<void(device::BluetoothGattService::GattErrorCode)>
-      AbortWriteErrorCallback;
+  using ExecuteWriteErrorCallback =
+      base::OnceCallback<void(device::BluetoothGattService::GattErrorCode)>;
+  using AbortWriteErrorCallback =
+      base::OnceCallback<void(device::BluetoothGattService::GattErrorCode)>;
   // Executes all the previous prepare writes in a reliable write session.
-  virtual void ExecuteWrite(
-      const base::Closure& callback,
-      const ExecuteWriteErrorCallback& error_callback) = 0;
+  virtual void ExecuteWrite(base::OnceClosure callback,
+                            ExecuteWriteErrorCallback error_callback) = 0;
   // Aborts all the previous prepare writes in a reliable write session.
-  virtual void AbortWrite(const base::Closure& callback,
-                          const AbortWriteErrorCallback& error_callback) = 0;
+  virtual void AbortWrite(base::OnceClosure callback,
+                          AbortWriteErrorCallback error_callback) = 0;
 
   // Set the remaining battery of the device to show in the UI. This value must
   // be between 0 and 100, inclusive.

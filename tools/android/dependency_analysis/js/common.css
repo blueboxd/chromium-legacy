@@ -64,3 +64,21 @@
   stroke: #000;
   stroke-width: 3;
 }
+
+#filter-input {
+  width: 500px;
+}
+
+.autocomplete-result-list {
+  background: #fff;
+  box-sizing: content-box;
+  list-style: none;
+  max-height: 600px;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.autocomplete-result:hover,
+.autocomplete-result[aria-selected=true] {
+  background-color:rgba(0, 0, 0, 0.1)
+}

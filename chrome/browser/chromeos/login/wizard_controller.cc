@@ -972,6 +972,7 @@ void WizardController::OnUpdateScreenExit(UpdateScreen::Result result) {
 
   switch (result) {
     case UpdateScreen::Result::UPDATE_NOT_REQUIRED:
+    case UpdateScreen::Result::UPDATE_SKIPPED:
       OnUpdateCompleted();
       break;
     case UpdateScreen::Result::UPDATE_ERROR:
@@ -1023,8 +1024,9 @@ void WizardController::OnEnrollmentDone() {
 
   // Fetch the rollback flag from |oobe_configuration_|.
   bool enrollment_mode_rollback = false;
-  auto* restore_after_rollback_value = oobe_configuration_.FindKeyOfType(
-      configuration::kRestoreAfterRollback, base::Value::Type::BOOLEAN);
+  auto* restore_after_rollback_value =
+      wizard_context_->configuration.FindKeyOfType(
+          configuration::kRestoreAfterRollback, base::Value::Type::BOOLEAN);
   if (restore_after_rollback_value)
     enrollment_mode_rollback = restore_after_rollback_value->GetBool();
 
@@ -1310,16 +1312,17 @@ void WizardController::OnDeviceDisabledChecked(bool device_disabled) {
                                       ->GetPrescribedEnrollmentConfig();
 
   bool configuration_forced_enrollment = false;
-  auto* start_enrollment_value = oobe_configuration_.FindKeyOfType(
+  auto* start_enrollment_value = wizard_context_->configuration.FindKeyOfType(
       configuration::kWizardAutoEnroll, base::Value::Type::BOOLEAN);
   if (start_enrollment_value)
     configuration_forced_enrollment = start_enrollment_value->GetBool();
 
-  // Fetch the rollback flag from |oobe_configuration_|. It is not stored in the
+  // Fetch the rollback flag from |configuration|. It is not stored in the
   // |prescribed_enrollment_config_|. To restore after rollback the enrollment
   // screen needs to be started. (crbug.com/1093928)
-  auto* restore_after_rollback_value = oobe_configuration_.FindKeyOfType(
-      configuration::kRestoreAfterRollback, base::Value::Type::BOOLEAN);
+  auto* restore_after_rollback_value =
+      wizard_context_->configuration.FindKeyOfType(
+          configuration::kRestoreAfterRollback, base::Value::Type::BOOLEAN);
   if (restore_after_rollback_value)
     configuration_forced_enrollment |= restore_after_rollback_value->GetBool();
 
@@ -1349,16 +1352,6 @@ void WizardController::OnDeviceDisabledChecked(bool device_disabled) {
 void WizardController::InitiateOOBEUpdate() {
   if (policy::EnrollmentRequisitionManager::IsRemoraRequisition()) {
     VLOG(1) << "Skip OOBE Update for remora.";
-    OnUpdateCompleted();
-    return;
-  }
-
-  const auto* skip_screen_key = oobe_configuration_.FindKeyOfType(
-      configuration::kUpdateSkipUpdate, base::Value::Type::BOOLEAN);
-  const bool skip_screen = skip_screen_key && skip_screen_key->GetBool();
-
-  if (skip_screen) {
-    VLOG(1) << "Skip OOBE Update because of configuration.";
     OnUpdateCompleted();
     return;
   }
@@ -1465,7 +1458,6 @@ void WizardController::SetCurrentScreen(BaseScreen* new_current) {
 
   if (current_screen_) {
     current_screen_->Hide();
-    current_screen_->SetConfiguration(nullptr);
   }
 
   previous_screen_ = current_screen_;
@@ -1484,7 +1476,6 @@ void WizardController::SetCurrentScreen(BaseScreen* new_current) {
   }
 
   UpdateStatusAreaVisibilityForScreen(current_screen_->screen_id());
-  current_screen_->SetConfiguration(&oobe_configuration_);
   current_screen_->Show(wizard_context_.get());
 }
 
@@ -1509,23 +1500,19 @@ void WizardController::OnHIDScreenNecessityCheck(bool screen_needed) {
   if (StartupUtils::IsEulaAccepted() || StartupUtils::IsOobeCompleted())
     return;
 
-  const auto* skip_screen_key = oobe_configuration_.FindKeyOfType(
-      configuration::kSkipHIDDetection, base::Value::Type::BOOLEAN);
-  const bool skip_screen = skip_screen_key && skip_screen_key->GetBool();
-
-  if (screen_needed && !skip_screen)
+  if (screen_needed)
     ShowHIDDetectionScreen();
   else
     ShowWelcomeScreen();
 }
 
 void WizardController::UpdateOobeConfiguration() {
-  oobe_configuration_ = base::Value(base::Value::Type::DICTIONARY);
+  wizard_context_->configuration = base::Value(base::Value::Type::DICTIONARY);
   chromeos::configuration::FilterConfiguration(
       OobeConfiguration::Get()->GetConfiguration(),
       chromeos::configuration::ConfigurationHandlerSide::HANDLER_CPP,
-      oobe_configuration_);
-  auto* requisition_value = oobe_configuration_.FindKeyOfType(
+      wizard_context_->configuration);
+  auto* requisition_value = wizard_context_->configuration.FindKeyOfType(
       configuration::kDeviceRequisition, base::Value::Type::STRING);
   if (requisition_value) {
     VLOG(1) << "Using Device Requisition from configuration"
@@ -1899,14 +1886,15 @@ void WizardController::StartEnrollmentScreen(bool force_interactive) {
 
   // If chrome version is rolled back via policy, the device is actually
   // enrolled but some enrollment-flow steps still need to be taken.
-  auto* restore_after_rollback_value = oobe_configuration_.FindKeyOfType(
-      configuration::kRestoreAfterRollback, base::Value::Type::BOOLEAN);
+  auto* restore_after_rollback_value =
+      wizard_context_->configuration.FindKeyOfType(
+          configuration::kRestoreAfterRollback, base::Value::Type::BOOLEAN);
   if (restore_after_rollback_value && restore_after_rollback_value->GetBool())
     effective_config.mode = policy::EnrollmentConfig::MODE_ENROLLED_ROLLBACK;
 
   // If enrollment token is specified via OOBE configuration use corresponding
   // configuration.
-  auto* enrollment_token = oobe_configuration_.FindKeyOfType(
+  auto* enrollment_token = wizard_context_->configuration.FindKeyOfType(
       configuration::kEnrollmentToken, base::Value::Type::STRING);
   if (enrollment_token && !enrollment_token->GetString().empty()) {
     effective_config.mode =

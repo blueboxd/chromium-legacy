@@ -406,7 +406,7 @@ class VIEWS_EXPORT Textfield : public View,
 #endif
 
   views::PropertyChangedSubscription AddTextChangedCallback(
-      views::PropertyChangedCallback callback);
+      views::PropertyChangedCallback callback) WARN_UNUSED_RESULT;
 
  protected:
   // Inserts or appends a character in response to an IME operation.

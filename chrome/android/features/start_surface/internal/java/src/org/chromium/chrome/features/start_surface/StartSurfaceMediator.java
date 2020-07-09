@@ -44,6 +44,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
+import org.chromium.chrome.browser.feed.shared.stream.Stream;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
@@ -324,6 +325,24 @@ class StartSurfaceMediator
                         && mFeedSurfaceCreator != null) {
                     setExploreSurfaceVisibility(!mIsIncognito);
                 }
+            }
+
+            // Cache the preference on whether the placeholder of Feed is dense. If it's in
+            // landscape mode, the placeholder should always show in dense mode. Otherwise, whether
+            // the placeholder is dense depends on whether the first article card of Feed is dense.
+            FeedSurfaceCoordinator feedSurfaceCoordinator =
+                    mPropertyModel.get(FEED_SURFACE_COORDINATOR);
+            if (feedSurfaceCoordinator != null) {
+                Stream feedStream = feedSurfaceCoordinator.getStream();
+                assert feedStream != null;
+                feedStream.addOnContentChangedListener(() -> {
+                    int firstCardDensity = feedStream.getFirstCardDensity();
+                    if (firstCardDensity != Stream.FeedFirstCardDensity.UNKNOWN) {
+                        StartSurfaceConfiguration.setFeedPlaceholderDense(
+                                feedStream.getFirstCardDensity()
+                                == Stream.FeedFirstCardDensity.DENSE);
+                    }
+                });
             }
         }
 

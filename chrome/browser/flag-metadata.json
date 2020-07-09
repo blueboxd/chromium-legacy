@@ -4133,8 +4133,8 @@
   },
   {
     "name": "show-bluetooth-device-battery",
-    "owners": [ "hansberry", "cros-system-services@google.com" ],
-    "expiry_milestone": 85
+    "owners": [ "hansberry", "cros-system-services@google.com", "sonnysasaka" ],
+    "expiry_milestone": 88
   },
   {
     "name": "show-legacy-tls-warnings",
@@ -4477,7 +4477,7 @@
   {
     "name": "updated_cellular_activation_ui",
     "owners": [ "azeemarshad", "khorimoto", "vecore", "cros-system-services@google.com" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 89
   },
   {
     "name": "url-blocklist-ios",

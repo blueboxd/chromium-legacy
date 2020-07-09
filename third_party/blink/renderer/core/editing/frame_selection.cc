@@ -549,10 +549,6 @@ void FrameSelection::ContextDestroyed() {
   frame_->GetEditor().ClearTypingStyle();
 }
 
-void FrameSelection::ClearPreviousCaretVisualRect(const LayoutBlock& block) {
-  frame_caret_->ClearPreviousVisualRect(block);
-}
-
 void FrameSelection::LayoutBlockWillBeDestroyed(const LayoutBlock& block) {
   frame_caret_->LayoutBlockWillBeDestroyed(block);
 }

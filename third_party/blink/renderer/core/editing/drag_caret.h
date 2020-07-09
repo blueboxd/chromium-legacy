@@ -49,7 +49,6 @@ class DragCaret final : public GarbageCollected<DragCaret>,
   virtual ~DragCaret();
 
   // Paint invalidation methods delegating to CaretDisplayItemClient.
-  void ClearPreviousVisualRect(const LayoutBlock&);
   void LayoutBlockWillBeDestroyed(const LayoutBlock&);
   void UpdateStyleAndLayoutIfNeeded();
   void InvalidatePaint(const LayoutBlock&, const PaintInvalidatorContext&);

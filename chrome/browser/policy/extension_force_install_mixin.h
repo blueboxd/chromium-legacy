@@ -19,6 +19,10 @@ namespace base {
 class Version;
 }  // namespace base
 
+namespace extensions {
+class Extension;
+}  // namespace extensions
+
 #if defined(OS_CHROMEOS)
 
 namespace policy {
@@ -50,9 +54,17 @@ class DevicePolicyCrosTestHelper;
 //     ExtensionForceInstallMixin force_install_mixin_{&mixin_host_};
 //   };
 //
-// TODO(crbug.com/1090941): Add user policy, awaiting, auto update.
+// TODO(crbug.com/1090941): Add user policy, waiting for bg page, auto update.
 class ExtensionForceInstallMixin final : public InProcessBrowserTestMixin {
  public:
+  // The type of the waiting mode for the force installation operation.
+  enum class WaitMode {
+    // Don't wait, and return immediately.
+    kNone,
+    // Wait until the extension is loaded.
+    kLoad,
+  };
+
   explicit ExtensionForceInstallMixin(InProcessBrowserTestMixinHost* host);
   ExtensionForceInstallMixin(const ExtensionForceInstallMixin&) = delete;
   ExtensionForceInstallMixin& operator=(const ExtensionForceInstallMixin&) =
@@ -72,6 +84,7 @@ class ExtensionForceInstallMixin final : public InProcessBrowserTestMixin {
   // manifest and serves it and the CRX file by the embedded test server.
   // |extension_id| - if non-null, will be set to the installed extension ID.
   bool ForceInstallFromCrx(const base::FilePath& crx_path,
+                           WaitMode wait_mode,
                            extensions::ExtensionId* extension_id = nullptr);
   // Force-installs the extension from the given source directory (which should
   // contain the manifest.json file and all other files of the extension).
@@ -82,7 +95,16 @@ class ExtensionForceInstallMixin final : public InProcessBrowserTestMixin {
   // if non-null, will be set to the installed extension ID.
   bool ForceInstallFromSourceDir(const base::FilePath& extension_dir_path,
                                  const base::Optional<base::FilePath>& pem_path,
+                                 WaitMode wait_mode,
                                  std::string* extension_id = nullptr);
+
+  // Returns the extension, or null if it's not installed yet.
+  const extensions::Extension* GetInstalledExtension(
+      const extensions::ExtensionId& extension_id) const;
+  // Returns the extension, or null if it's not installed or not enabled yet.
+  const extensions::Extension* GetEnabledExtension(
+      const extensions::ExtensionId& extension_id) const;
+
   // InProcessBrowserTestMixin:
   void SetUpOnMainThread() override;
 
@@ -110,7 +132,8 @@ class ExtensionForceInstallMixin final : public InProcessBrowserTestMixin {
                          std::string* extension_id);
   // Force-installs the CRX file served by the embedded test server.
   bool ForceInstallFromServedCrx(const extensions::ExtensionId& extension_id,
-                                 const base::Version& extension_version);
+                                 const base::Version& extension_version,
+                                 WaitMode wait_mode);
   // Creates an update manifest with the CRX URL pointing to the embedded test
   // server.
   bool CreateAndServeUpdateManifestFile(

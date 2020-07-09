@@ -3333,14 +3333,6 @@ String Internals::getProgrammaticScrollAnimationState(Node* node) const {
   return String();
 }
 
-DOMRect* Internals::visualRect(Node* node) {
-  if (!node || !node->GetLayoutObject())
-    return DOMRect::Create();
-
-  return DOMRect::FromFloatRect(
-      FloatRect(node->GetLayoutObject()->FragmentsVisualRectBoundingBox()));
-}
-
 void Internals::crash() {
   CHECK(false) << "Intentional crash";
 }

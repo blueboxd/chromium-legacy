@@ -42,4 +42,13 @@
         android:layout_marginTop="30dp"
         android:text="@string/qr_code_download"
         style="@style/TextButton"/>
+
+    <org.chromium.ui.widget.ButtonCompat
+        android:id="@+id/settings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="30dp"
+        android:text="@string/open_settings_button"
+        style="@style/TextButton"/>
 </LinearLayout>

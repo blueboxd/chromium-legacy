@@ -124,6 +124,7 @@ const PackageGraphPage = Vue.component('package-graph-page', {
     <div id="page-container">
       <div id="page-controls">
         <graph-filter-input
+          :node-ids="this.pageModel.getNodeIds()"
           @${CUSTOM_EVENTS.FILTER_SUBMITTED}="this.addNodeToFilter"
         ></graph-filter-input>
         <graph-filter-items

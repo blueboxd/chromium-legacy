@@ -32,7 +32,6 @@ NGFlexLayoutAlgorithm::NGFlexLayoutAlgorithm(
       is_cross_size_definite_(IsContainerCrossSizeDefinite()) {
   container_builder_.SetIsNewFormattingContext(
       params.space.IsNewFormattingContext());
-  container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
 
   border_box_size_ = container_builder_.InitialBorderBoxSize();
   child_percentage_size_ = CalculateChildPercentageSize(

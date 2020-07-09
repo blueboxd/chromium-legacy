@@ -224,59 +224,6 @@ class DeviceIdentifierProviderInitialEnrollment
   std::string id_hash_;
 };
 
-// Handles DeviceStateRetrievalRequest / DeviceStateRetrievalResponse for
-// Forced Re-Enrollment (FRE).
-class StateDownloadMessageProcessorFRE
-    : public AutoEnrollmentClientImpl::StateDownloadMessageProcessor {
- public:
-  explicit StateDownloadMessageProcessorFRE(
-      const std::string& server_backed_state_key)
-      : server_backed_state_key_(server_backed_state_key) {}
-
-  DeviceManagementService::JobConfiguration::JobType GetJobType()
-      const override {
-    return DeviceManagementService::JobConfiguration::
-        TYPE_DEVICE_STATE_RETRIEVAL;
-  }
-
-  void FillRequest(em::DeviceManagementRequest* request) override {
-    request->mutable_device_state_retrieval_request()
-        ->set_server_backed_state_key(server_backed_state_key_);
-  }
-
-  base::Optional<ParsedResponse> ParseResponse(
-      const em::DeviceManagementResponse& response) override {
-    StateDownloadMessageProcessorFRE::ParsedResponse parsed_response;
-    if (!response.has_device_state_retrieval_response()) {
-      LOG(ERROR) << "Server failed to provide auto-enrollment response.";
-      return base::nullopt;
-    }
-    const em::DeviceStateRetrievalResponse& state_response =
-        response.device_state_retrieval_response();
-    parsed_response.restore_mode =
-        ConvertRestoreMode(state_response.restore_mode());
-    if (state_response.has_management_domain())
-      parsed_response.management_domain = state_response.management_domain();
-
-    if (state_response.has_disabled_state()) {
-      parsed_response.disabled_message =
-          state_response.disabled_state().message();
-    }
-
-    // Package license is not available during the re-enrollment
-    parsed_response.is_license_packaged_with_device.reset();
-
-    // Logging as "WARNING" to make sure it's preserved in the logs.
-    LOG(WARNING) << "Received restore_mode=" << parsed_response.restore_mode;
-
-    return parsed_response;
-  }
-
- private:
-  // Stable state key.
-  std::string server_backed_state_key_;
-};
-
 // Handles DeviceInitialEnrollmentStateRequest /
 // DeviceInitialEnrollmentStateResponse for Forced Initial Enrollment.
 class StateDownloadMessageProcessorInitialEnrollment
@@ -303,14 +250,19 @@ class StateDownloadMessageProcessorInitialEnrollment
 
   base::Optional<ParsedResponse> ParseResponse(
       const em::DeviceManagementResponse& response) override {
-    StateDownloadMessageProcessorFRE::ParsedResponse parsed_response;
     if (!response.has_device_initial_enrollment_state_response()) {
       LOG(ERROR) << "Server failed to provide initial enrollment response.";
       return base::nullopt;
     }
 
-    const em::DeviceInitialEnrollmentStateResponse& state_response =
-        response.device_initial_enrollment_state_response();
+    return ParseInitialEnrollmentStateResponse(
+        response.device_initial_enrollment_state_response());
+  }
+
+  static base::Optional<ParsedResponse> ParseInitialEnrollmentStateResponse(
+      const em::DeviceInitialEnrollmentStateResponse& state_response) {
+    StateDownloadMessageProcessor::ParsedResponse parsed_response;
+
     if (state_response.has_initial_enrollment_mode()) {
       parsed_response.restore_mode = ConvertInitialEnrollmentMode(
           state_response.initial_enrollment_mode());
@@ -332,7 +284,8 @@ class StateDownloadMessageProcessorInitialEnrollment
 
     // Logging as "WARNING" to make sure it's preserved in the logs.
     LOG(WARNING) << "Received initial_enrollment_mode="
-                 << state_response.initial_enrollment_mode() << ". "
+                 << state_response.initial_enrollment_mode() << " ("
+                 << parsed_response.restore_mode << "). "
                  << (state_response.is_license_packaged_with_device()
                          ? "Device has a packaged license for management."
                          : "No packaged license.");
@@ -345,6 +298,76 @@ class StateDownloadMessageProcessorInitialEnrollment
   std::string device_serial_number_;
   // 4-character brand code of the device.
   std::string device_brand_code_;
+};
+
+// Handles DeviceStateRetrievalRequest / DeviceStateRetrievalResponse for
+// Forced Re-Enrollment (FRE).
+class StateDownloadMessageProcessorFRE
+    : public AutoEnrollmentClientImpl::StateDownloadMessageProcessor {
+ public:
+  explicit StateDownloadMessageProcessorFRE(
+      const std::string& server_backed_state_key)
+      : server_backed_state_key_(server_backed_state_key) {}
+
+  DeviceManagementService::JobConfiguration::JobType GetJobType()
+      const override {
+    return DeviceManagementService::JobConfiguration::
+        TYPE_DEVICE_STATE_RETRIEVAL;
+  }
+
+  void FillRequest(em::DeviceManagementRequest* request) override {
+    request->mutable_device_state_retrieval_request()
+        ->set_server_backed_state_key(server_backed_state_key_);
+  }
+
+  base::Optional<ParsedResponse> ParseResponse(
+      const em::DeviceManagementResponse& response) override {
+    if (!response.has_device_state_retrieval_response()) {
+      LOG(ERROR) << "Server failed to provide auto-enrollment response.";
+      return base::nullopt;
+    }
+
+    const em::DeviceStateRetrievalResponse& state_response =
+        response.device_state_retrieval_response();
+    const auto restore_mode = state_response.restore_mode();
+
+    if (restore_mode == em::DeviceStateRetrievalResponse::RESTORE_MODE_NONE &&
+        state_response.has_initial_state_response()) {
+      // Logging as "WARNING" to make sure it's preserved in the logs.
+      LOG(WARNING) << "Received restore_mode=" << restore_mode << " ("
+                   << ConvertRestoreMode(restore_mode) << ")"
+                   << " . Parsing included initial state response.";
+
+      return StateDownloadMessageProcessorInitialEnrollment::
+          ParseInitialEnrollmentStateResponse(
+              state_response.initial_state_response());
+    } else {
+      StateDownloadMessageProcessor::ParsedResponse parsed_response;
+
+      parsed_response.restore_mode = ConvertRestoreMode(restore_mode);
+
+      if (state_response.has_management_domain())
+        parsed_response.management_domain = state_response.management_domain();
+
+      if (state_response.has_disabled_state()) {
+        parsed_response.disabled_message =
+            state_response.disabled_state().message();
+      }
+
+      // Package license is not available during the re-enrollment
+      parsed_response.is_license_packaged_with_device.reset();
+
+      // Logging as "WARNING" to make sure it's preserved in the logs.
+      LOG(WARNING) << "Received restore_mode=" << restore_mode << " ("
+                   << parsed_response.restore_mode << ").";
+
+      return parsed_response;
+    }
+  }
+
+ private:
+  // Stable state key.
+  std::string server_backed_state_key_;
 };
 
 }  // namespace
@@ -736,7 +759,7 @@ bool AutoEnrollmentClientImpl::OnDeviceStateRequestCompletion(
     DeviceManagementStatus status,
     int net_error,
     const em::DeviceManagementResponse& response) {
-  base::Optional<StateDownloadMessageProcessorFRE::ParsedResponse>
+  base::Optional<StateDownloadMessageProcessor::ParsedResponse>
       parsed_response_opt;
 
   parsed_response_opt =
@@ -744,7 +767,7 @@ bool AutoEnrollmentClientImpl::OnDeviceStateRequestCompletion(
   if (!parsed_response_opt)
     return false;
 
-  StateDownloadMessageProcessorFRE::ParsedResponse parsed_response =
+  StateDownloadMessageProcessor::ParsedResponse parsed_response =
       std::move(parsed_response_opt.value());
   {
     DictionaryPrefUpdate dict(local_state_, prefs::kServerBackedDeviceState);

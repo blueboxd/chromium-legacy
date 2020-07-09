@@ -968,21 +968,21 @@ if (enable_java_templates) {
       res_sources_path = _res_sources_path
       chromium_code = _chromium_code
 
-      if (defined(_srcjar_path)) {
-        forward_variables_from(invoker,
-                               [
-                                 "android_manifest",
-                                 "android_manifest_dep",
-                                 "custom_package",
-                               ])
+      forward_variables_from(invoker,
+                             [
+                               "android_manifest",
+                               "android_manifest_dep",
+                               "custom_package",
+                             ])
 
-        # No package means resources override their deps.
-        if (defined(custom_package) || defined(android_manifest)) {
-          r_text = _r_text_out_path
-        } else {
-          assert(defined(invoker.deps),
-                 "Must specify deps when custom_package is omitted.")
-        }
+      # No package means resources override their deps.
+      if (defined(custom_package) || defined(android_manifest)) {
+        r_text = _r_text_out_path
+      } else {
+        assert(defined(invoker.deps),
+               "Must specify deps when custom_package is omitted.")
+      }
+      if (defined(_srcjar_path)) {
         srcjar = _srcjar_path
       }
 
@@ -1374,7 +1374,7 @@ if (enable_java_templates) {
       }
       arsc_output = _resource_arsc_output
       min_sdk_version = default_min_sdk_version
-      target_sdk_version = android_sdk_version
+      target_sdk_version = 23
     }
 
     _jni_srcjar_target = "${target_name}__final_jni"
@@ -2108,7 +2108,7 @@ if (enable_java_templates) {
   #   min_sdk_version: The minimum Android SDK version this target supports.
   #     Optional, default $default_min_sdk_version.
   #   target_sdk_version: The target Android SDK version for this target.
-  #     Optional, default to android_sdk_version.
+  #     Optional, default 23.
   #   max_sdk_version: The maximum Android SDK version this target supports.
   #     Optional, default not set.
   #   require_native_mocks: Enforce that any native calls using
@@ -2142,7 +2142,7 @@ if (enable_java_templates) {
     _build_config_target = "$target_name$build_config_target_suffix"
 
     _min_sdk_version = default_min_sdk_version
-    _target_sdk_version = android_sdk_version
+    _target_sdk_version = 23
     if (defined(invoker.min_sdk_version)) {
       _min_sdk_version = invoker.min_sdk_version
     }
@@ -3905,12 +3905,6 @@ if (enable_java_templates) {
       create_apk_script = false
       enable_native_mocks = true
 
-      # TODO(crbug.com/1099849): Figure out why angle tests fail to launch
-      #     with newer target_sdk_version.
-      if (!defined(invoker.target_sdk_version) && _use_native_activity) {
-        target_sdk_version = 24
-      }
-
       assert(!defined(invoker.proguard_enabled) || !invoker.proguard_enabled ||
              invoker.proguard_configs != [])
 
@@ -4303,6 +4297,14 @@ if (enable_java_templates) {
         if (!_strip_resources && _scanned_files.has_r_text_file) {
           r_text_file = "${_output_path}/R.txt"
         }
+
+        # This is so we do not fail when different prebuilts have resources in
+        # the same package. android_library targets that require resources from
+        # prebuilts must add a resources_package gn flag to their target that
+        # would generate a fake R.java for all their dependencies. All
+        # android_library and android_resources targets will be migrated to
+        # this new way soon (tm) https://crbug.com/1073476
+        create_srcjar = false
       }
     } else if (defined(invoker.strip_drawables)) {
       not_needed(invoker, [ "strip_drawables" ])

@@ -28,17 +28,10 @@ NGFieldsetLayoutAlgorithm::NGFieldsetLayoutAlgorithm(
   DCHECK(params.fragment_geometry.scrollbar.IsEmpty());
   container_builder_.SetIsNewFormattingContext(
       params.space.IsNewFormattingContext());
-  container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
 
   borders_ = container_builder_.Borders();
   padding_ = container_builder_.Padding();
   border_box_size_ = container_builder_.InitialBorderBoxSize();
-
-  // Leading border and padding should only apply to the first fragment. We
-  // don't adjust the value of border_padding_ itself so that it can be used
-  // when calculating the block size of the last fragment.
-  adjusted_border_padding_ = BorderPadding();
-  AdjustForFragmentation(BreakToken(), &adjusted_border_padding_);
 }
 
 scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
@@ -72,7 +65,7 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
   }
 
   intrinsic_block_size_ = ClampIntrinsicBlockSize(
-      ConstraintSpace(), Node(), adjusted_border_padding_,
+      ConstraintSpace(), Node(), BorderScrollbarPadding(),
       intrinsic_block_size_ + borders_.block_end);
 
   // Recompute the block-axis size now that we know our content size.
@@ -337,7 +330,7 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutLegend(
   // of the border-box of the legend.
   // TODO(mstensho): inline alignment
   legend_offset = LogicalOffset(
-      adjusted_border_padding_.inline_start + legend_margins.inline_start,
+      BorderScrollbarPadding().inline_start + legend_margins.inline_start,
       block_offset);
 
   container_builder_.AddResult(*result, legend_offset);

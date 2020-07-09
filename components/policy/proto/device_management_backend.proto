@@ -2139,12 +2139,12 @@ message DeviceStateKeyUpdateRequest {
 // request is not authenticated, the only protection against state extraction
 // from server is the unpredictability of the server-backed state ID. Thus, the
 // response should not contain any sensitive data. If the server doesn't know
-// the requested identifier, it just return a message with restore_mode set to
+// the requested identifier, it just returns a message with restore_mode set to
 // RESTORE_MODE_NONE.
 message DeviceStateRetrievalResponse {
   // Restorative action to take after device reset.
   enum RestoreMode {
-    // No state restoration.
+    // No secondary state restoration.
     RESTORE_MODE_NONE = 0;
     // Enterprise enrollment requested, but user may skip.
     RESTORE_MODE_REENROLLMENT_REQUESTED = 1;
@@ -2165,6 +2165,9 @@ message DeviceStateRetrievalResponse {
   // State that is relevant only when the |restore_mode| is
   // |RESTORE_MODE_DISABLED|.
   optional DisabledState disabled_state = 3;
+
+  // Initial device state if |restore_mode| is |RESTORE_MODE_NONE|.
+  optional DeviceInitialEnrollmentStateResponse initial_state_response = 4;
 }
 
 // Request from device to server to retrieve the enrollment mode and domain for

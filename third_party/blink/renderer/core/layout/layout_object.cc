@@ -177,6 +177,7 @@ struct SameSizeAsLayoutObject : ImageResourceObserver, DisplayItemClient {
   // The following fields are in FragmentData.
   IntRect visual_rect_;
   PhysicalOffset paint_offset_;
+  PhysicalOffset offset_to_2d_translation_root_;
   std::unique_ptr<int> rare_data_;
 };
 
@@ -1712,20 +1713,6 @@ DISABLE_CFI_PERF
 void LayoutObject::InvalidatePaint(
     const PaintInvalidatorContext& context) const {
   ObjectPaintInvalidatorWithContext(*this, context).InvalidatePaint();
-}
-
-void LayoutObject::ClearPreviousVisualRects() {
-  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-
-  for (auto* fragment = &fragment_; fragment;
-       fragment = fragment->NextFragment()) {
-    fragment->SetVisualRect(IntRect());
-    fragment->SetSelectionVisualRect(IntRect());
-  }
-
-  // After clearing ("invalidating") the visual rects, mark this object as
-  // needing to re-compute them.
-  SetShouldDoFullPaintInvalidation();
 }
 
 PhysicalRect LayoutObject::VisualRectInDocument(VisualRectFlags flags) const {

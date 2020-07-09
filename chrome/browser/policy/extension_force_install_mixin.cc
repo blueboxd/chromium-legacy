@@ -24,7 +24,10 @@
 #include "base/version.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/crx_file/crx_verifier.h"
+#include "components/crx_file/id_util.h"
 #include "extensions/browser/extension_creator.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -54,6 +57,55 @@ constexpr char kUpdateManifestTemplate[] =
            <updatecheck codebase='$2' version='$3' />
          </app>
        </gupdate>)";
+
+// Implements waiting for the mixin's specified event.
+class ForceInstallWaiter final {
+ public:
+  ForceInstallWaiter(ExtensionForceInstallMixin::WaitMode wait_mode,
+                     const extensions::ExtensionId& extension_id,
+                     Profile* profile);
+  ForceInstallWaiter(const ForceInstallWaiter&) = delete;
+  ForceInstallWaiter& operator=(const ForceInstallWaiter&) = delete;
+  ~ForceInstallWaiter();
+
+  bool Wait();
+
+ private:
+  const ExtensionForceInstallMixin::WaitMode wait_mode_;
+  const extensions::ExtensionId extension_id_;
+  Profile* const profile_;
+  std::unique_ptr<extensions::TestExtensionRegistryObserver> registry_observer_;
+};
+
+ForceInstallWaiter::ForceInstallWaiter(
+    ExtensionForceInstallMixin::WaitMode wait_mode,
+    const extensions::ExtensionId& extension_id,
+    Profile* profile)
+    : wait_mode_(wait_mode), extension_id_(extension_id), profile_(profile) {
+  DCHECK(crx_file::id_util::IdIsValid(extension_id_));
+  DCHECK(profile_);
+  switch (wait_mode_) {
+    case ExtensionForceInstallMixin::WaitMode::kNone:
+      break;
+    case ExtensionForceInstallMixin::WaitMode::kLoad:
+      registry_observer_ =
+          std::make_unique<extensions::TestExtensionRegistryObserver>(
+              extensions::ExtensionRegistry::Get(profile_), extension_id);
+      break;
+  }
+}
+
+ForceInstallWaiter::~ForceInstallWaiter() = default;
+
+bool ForceInstallWaiter::Wait() {
+  switch (wait_mode_) {
+    case ExtensionForceInstallMixin::WaitMode::kNone:
+      // No waiting needed.
+      return true;
+    case ExtensionForceInstallMixin::WaitMode::kLoad:
+      return registry_observer_->WaitForExtensionLoaded() != nullptr;
+  }
+}
 
 std::string GetServedUpdateManifestFileName(
     const extensions::ExtensionId& extension_id) {
@@ -188,6 +240,7 @@ void ExtensionForceInstallMixin::InitWithDevicePolicyCrosTestHelper(
 
 bool ExtensionForceInstallMixin::ForceInstallFromCrx(
     const base::FilePath& crx_path,
+    WaitMode wait_mode,
     extensions::ExtensionId* extension_id) {
   DCHECK(profile_) << "Init not called";
   DCHECK(embedded_test_server_.Started()) << "Called before setup";
@@ -200,12 +253,14 @@ bool ExtensionForceInstallMixin::ForceInstallFromCrx(
   base::Version extension_version;
   return ParseCrxInnerData(crx_path, &extension_version) &&
          ServeExistingCrx(crx_path, local_extension_id, extension_version) &&
-         ForceInstallFromServedCrx(local_extension_id, extension_version);
+         ForceInstallFromServedCrx(local_extension_id, extension_version,
+                                   wait_mode);
 }
 
 bool ExtensionForceInstallMixin::ForceInstallFromSourceDir(
     const base::FilePath& extension_dir_path,
     const base::Optional<base::FilePath>& pem_path,
+    WaitMode wait_mode,
     extensions::ExtensionId* extension_id) {
   DCHECK(profile_) << "Init not called";
   DCHECK(embedded_test_server_.Started()) << "Called before setup";
@@ -220,7 +275,26 @@ bool ExtensionForceInstallMixin::ForceInstallFromSourceDir(
   }
   if (extension_id)
     *extension_id = local_extension_id;
-  return ForceInstallFromServedCrx(local_extension_id, extension_version);
+  return ForceInstallFromServedCrx(local_extension_id, extension_version,
+                                   wait_mode);
+}
+
+const extensions::Extension* ExtensionForceInstallMixin::GetInstalledExtension(
+    const extensions::ExtensionId& extension_id) const {
+  DCHECK(profile_) << "Init not called";
+
+  const auto* const registry = extensions::ExtensionRegistry::Get(profile_);
+  DCHECK(registry);
+  return registry->GetInstalledExtension(extension_id);
+}
+
+const extensions::Extension* ExtensionForceInstallMixin::GetEnabledExtension(
+    const extensions::ExtensionId& extension_id) const {
+  DCHECK(profile_) << "Init not called";
+
+  const auto* const registry = extensions::ExtensionRegistry::Get(profile_);
+  DCHECK(registry);
+  return registry->enabled_extensions().GetByID(extension_id);
 }
 
 void ExtensionForceInstallMixin::SetUpOnMainThread() {
@@ -307,12 +381,19 @@ bool ExtensionForceInstallMixin::CreateAndServeCrx(
 
 bool ExtensionForceInstallMixin::ForceInstallFromServedCrx(
     const extensions::ExtensionId& extension_id,
-    const base::Version& extension_version) {
+    const base::Version& extension_version,
+    WaitMode wait_mode) {
   DCHECK(profile_) << "Init not called";
   DCHECK(embedded_test_server_.Started()) << "Called before setup";
 
-  return CreateAndServeUpdateManifestFile(extension_id, extension_version) &&
-         UpdatePolicy(extension_id, GetServedUpdateManifestUrl(extension_id));
+  if (!CreateAndServeUpdateManifestFile(extension_id, extension_version))
+    return false;
+  // Prepare the waiter's observers before setting the policy, so that we don't
+  // miss synchronous operations triggered by the policy update.
+  ForceInstallWaiter waiter(wait_mode, extension_id, profile_);
+  if (!UpdatePolicy(extension_id, GetServedUpdateManifestUrl(extension_id)))
+    return false;
+  return waiter.Wait();
 }
 
 bool ExtensionForceInstallMixin::CreateAndServeUpdateManifestFile(

@@ -2131,8 +2131,7 @@ TEST_P(MediaHistoryStoreFeedsTest,
     // Check the media feed fetched items for display works.
     auto feeds = GetMediaFeedsSync(
         service(), MediaHistoryKeyedService::GetMediaFeedsRequest::
-                       CreateTopFeedsForDisplay(kNumberOfFeeds,
-                                                base::TimeDelta(), 1, false));
+                       CreateTopFeedsForDisplay(kNumberOfFeeds, 1, false));
 
     if (IsReadOnly()) {
       EXPECT_TRUE(feeds.empty());
@@ -2168,8 +2167,7 @@ TEST_P(MediaHistoryStoreFeedsTest,
     // Check the media feed fetched items for display works for safe search.
     auto feeds = GetMediaFeedsSync(
         service(), MediaHistoryKeyedService::GetMediaFeedsRequest::
-                       CreateTopFeedsForDisplay(kNumberOfFeeds,
-                                                base::TimeDelta(), 1, true));
+                       CreateTopFeedsForDisplay(kNumberOfFeeds, 1, true));
 
     if (IsReadOnly()) {
       EXPECT_TRUE(feeds.empty());

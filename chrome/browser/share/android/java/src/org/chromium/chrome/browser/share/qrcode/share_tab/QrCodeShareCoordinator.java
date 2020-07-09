@@ -17,12 +17,12 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
  */
 public class QrCodeShareCoordinator implements QrCodeDialogTab {
     private final QrCodeShareView mShareView;
+    private final QrCodeShareMediator mMediator;
 
     public QrCodeShareCoordinator(Context context, Runnable closeDialog, String url) {
         PropertyModel shareViewModel = new PropertyModel(QrCodeShareViewProperties.ALL_KEYS);
-        QrCodeShareMediator shareViewMediator =
-                new QrCodeShareMediator(context, shareViewModel, closeDialog, url);
-        mShareView = new QrCodeShareView(context, shareViewMediator::downloadQrCode);
+        mMediator = new QrCodeShareMediator(context, shareViewModel, closeDialog, url);
+        mShareView = new QrCodeShareView(context, mMediator::downloadQrCode);
         PropertyModelChangeProcessor.create(
                 shareViewModel, mShareView, new QrCodeShareViewBinder());
     }
@@ -35,11 +35,14 @@ public class QrCodeShareCoordinator implements QrCodeDialogTab {
 
     @Override
     public void onResume() {
+        mMediator.setIsOnForeground(true);
         RecordUserAction.record("SharingQRCode.TabVisible.Share");
     }
 
     @Override
-    public void onPause() {}
+    public void onPause() {
+        mMediator.setIsOnForeground(false);
+    }
 
     @Override
     public void onDestroy() {}

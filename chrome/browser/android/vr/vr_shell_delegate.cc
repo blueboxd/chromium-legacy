@@ -230,11 +230,6 @@ void VrShellDelegate::ExitWebVRPresent() {
     gvr_device->OnExitPresent();
 }
 
-std::unique_ptr<VrCoreInfo> VrShellDelegate::MakeVrCoreInfo(JNIEnv* env) {
-  return std::unique_ptr<VrCoreInfo>(reinterpret_cast<VrCoreInfo*>(
-      Java_VrShellDelegate_getVrCoreInfo(env, j_vr_shell_delegate_)));
-}
-
 void VrShellDelegate::OnRuntimeAdded(content::BrowserXRRuntime* runtime) {
   if (vr_shell_) {
     // See comment in VrShellDelegate::SetDelegate. This handles the case where

@@ -1,8 +1,9 @@
-/* A Bison parser, made by GNU Bison 3.0.2.  */
+/* A Bison parser, made by GNU Bison 3.5.1.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2013 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2020 Free Software Foundation,
+   Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -40,11 +41,14 @@
    define necessary library symbols; they are noted "INFRINGES ON
    USER NAME SPACE" below.  */
 
+/* Undocumented macros, especially those whose name start with YY_,
+   are private implementation details.  Do not rely on them.  */
+
 /* Identify Bison output.  */
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "3.0.2"
+#define YYBISON_VERSION "3.5.1"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -66,16 +70,24 @@
 #define yydebug         wds_debug
 #define yynerrs         wds_nerrs
 
-
-/* Copy the first part of user declarations.  */
-
-
-
+#ifndef YY_CAST
+#ifdef __cplusplus
+#define YY_CAST(Type, Val) static_cast<Type>(Val)
+#define YY_REINTERPRET_CAST(Type, Val) reinterpret_cast<Type>(Val)
+#else
+#define YY_CAST(Type, Val) ((Type)(Val))
+#define YY_REINTERPRET_CAST(Type, Val) ((Type)(Val))
+#endif
+#endif
 # ifndef YY_NULLPTR
-#  if defined __cplusplus && 201103L <= __cplusplus
-#   define YY_NULLPTR nullptr
+#if defined __cplusplus
+#if 201103L <= __cplusplus
+#define YY_NULLPTR nullptr
+#else
+#define YY_NULLPTR 0
+#endif
 #  else
-#   define YY_NULLPTR 0
+#define YY_NULLPTR ((void*)0)
 #  endif
 # endif
 
@@ -87,8 +99,8 @@
 # define YYERROR_VERBOSE 0
 #endif
 
-/* In a future release of Bison, this section will be replaced
-   by #include "parser.h".  */
+/* Use api.header.include to #include this header
+   instead of duplicating it here.  */
 #ifndef YY_WDS_GEN_PARSER_H_INCLUDED
 # define YY_WDS_GEN_PARSER_H_INCLUDED
 /* Debug traces.  */
@@ -99,7 +111,6 @@
 extern int wds_debug;
 #endif
 /* "%code requires" blocks.  */
-
 
 /*
  * This file is part of Wireless Display Software for Linux OS
@@ -149,7 +160,6 @@ extern int wds_debug;
       struct H264Codec3d;
    }
    }
-
 
 
 /* Token type.  */
@@ -266,10 +276,8 @@ extern int wds_debug;
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-
 
    std::string* sval;
    unsigned long long int nval;
@@ -309,6 +317,7 @@ union YYSTYPE
 
 
 };
+typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif
@@ -319,11 +328,8 @@ int wds_parse (void* scanner, std::unique_ptr<wds::rtsp::Message>& message);
 
 #endif /* !YY_WDS_GEN_PARSER_H_INCLUDED  */
 
-/* Copy the second part of user declarations.  */
-
 
 /* Unqualified %code blocks.  */
-
 
 #include <iostream>
 #include <cstdlib>
@@ -368,33 +374,79 @@ int wds_parse (void* scanner, std::unique_ptr<wds::rtsp::Message>& message);
     T = nullptr
 
 
-
 #ifdef short
 # undef short
 #endif
 
-#ifdef YYTYPE_UINT8
-typedef YYTYPE_UINT8 yytype_uint8;
-#else
-typedef unsigned char yytype_uint8;
+/* On compilers that do not define __PTRDIFF_MAX__ etc., make sure
+   <limits.h> and (if available) <stdint.h> are included
+   so that the code can choose integer types of a good width.  */
+
+#ifndef __PTRDIFF_MAX__
+#include <limits.h> /* INFRINGES ON USER NAME SPACE */
+#if defined __STDC_VERSION__ && 199901 <= __STDC_VERSION__
+#include <stdint.h> /* INFRINGES ON USER NAME SPACE */
+#define YY_STDINT_H
+#endif
 #endif
 
-#ifdef YYTYPE_INT8
-typedef YYTYPE_INT8 yytype_int8;
+/* Narrow types that promote to a signed type and that can represent a
+   signed or unsigned integer of at least N bits.  In tables they can
+   save space and decrease cache pressure.  Promoting to a signed type
+   helps avoid bugs in integer arithmetic.  */
+
+#ifdef __INT_LEAST8_MAX__
+typedef __INT_LEAST8_TYPE__ yytype_int8;
+#elif defined YY_STDINT_H
+typedef int_least8_t yytype_int8;
 #else
 typedef signed char yytype_int8;
 #endif
 
-#ifdef YYTYPE_UINT16
-typedef YYTYPE_UINT16 yytype_uint16;
+#ifdef __INT_LEAST16_MAX__
+typedef __INT_LEAST16_TYPE__ yytype_int16;
+#elif defined YY_STDINT_H
+typedef int_least16_t yytype_int16;
 #else
-typedef unsigned short int yytype_uint16;
+typedef short yytype_int16;
 #endif
 
-#ifdef YYTYPE_INT16
-typedef YYTYPE_INT16 yytype_int16;
+#if defined __UINT_LEAST8_MAX__ && __UINT_LEAST8_MAX__ <= __INT_MAX__
+typedef __UINT_LEAST8_TYPE__ yytype_uint8;
+#elif (!defined __UINT_LEAST8_MAX__ && defined YY_STDINT_H && \
+       UINT_LEAST8_MAX <= INT_MAX)
+typedef uint_least8_t yytype_uint8;
+#elif !defined __UINT_LEAST8_MAX__ && UCHAR_MAX <= INT_MAX
+typedef unsigned char yytype_uint8;
 #else
-typedef short int yytype_int16;
+typedef short yytype_uint8;
+#endif
+
+#if defined __UINT_LEAST16_MAX__ && __UINT_LEAST16_MAX__ <= __INT_MAX__
+typedef __UINT_LEAST16_TYPE__ yytype_uint16;
+#elif (!defined __UINT_LEAST16_MAX__ && defined YY_STDINT_H && \
+       UINT_LEAST16_MAX <= INT_MAX)
+typedef uint_least16_t yytype_uint16;
+#elif !defined __UINT_LEAST16_MAX__ && USHRT_MAX <= INT_MAX
+typedef unsigned short yytype_uint16;
+#else
+typedef int yytype_uint16;
+#endif
+
+#ifndef YYPTRDIFF_T
+#if defined __PTRDIFF_TYPE__ && defined __PTRDIFF_MAX__
+#define YYPTRDIFF_T __PTRDIFF_TYPE__
+#define YYPTRDIFF_MAXIMUM __PTRDIFF_MAX__
+#elif defined PTRDIFF_MAX
+#ifndef ptrdiff_t
+#include <stddef.h> /* INFRINGES ON USER NAME SPACE */
+#endif
+#define YYPTRDIFF_T ptrdiff_t
+#define YYPTRDIFF_MAXIMUM PTRDIFF_MAX
+#else
+#define YYPTRDIFF_T long
+#define YYPTRDIFF_MAXIMUM LONG_MAX
+#endif
 #endif
 
 #ifndef YYSIZE_T
@@ -402,15 +454,26 @@ typedef short int yytype_int16;
 #  define YYSIZE_T __SIZE_TYPE__
 # elif defined size_t
 #  define YYSIZE_T size_t
-# elif ! defined YYSIZE_T
+#elif defined __STDC_VERSION__ && 199901 <= __STDC_VERSION__
 #  include <stddef.h> /* INFRINGES ON USER NAME SPACE */
 #  define YYSIZE_T size_t
 # else
-#  define YYSIZE_T unsigned int
+#define YYSIZE_T unsigned
 # endif
 #endif
 
-#define YYSIZE_MAXIMUM ((YYSIZE_T) -1)
+#define YYSIZE_MAXIMUM                                                   \
+  YY_CAST(YYPTRDIFF_T,                                                   \
+          (YYPTRDIFF_MAXIMUM < YY_CAST(YYSIZE_T, -1) ? YYPTRDIFF_MAXIMUM \
+                                                     : YY_CAST(YYSIZE_T, -1)))
+
+#define YYSIZEOF(X) YY_CAST(YYPTRDIFF_T, sizeof(X))
+
+/* Stored state numbers (used for stacks). */
+typedef yytype_int16 yy_state_t;
+
+/* State numbers in computations.  */
+typedef int yy_state_fast_t;
 
 #ifndef YY_
 # if defined YYENABLE_NLS && YYENABLE_NLS
@@ -424,30 +487,19 @@ typedef short int yytype_int16;
 # endif
 #endif
 
-#ifndef YY_ATTRIBUTE
-# if (defined __GNUC__                                               \
-      && (2 < __GNUC__ || (__GNUC__ == 2 && 96 <= __GNUC_MINOR__)))  \
-     || defined __SUNPRO_C && 0x5110 <= __SUNPRO_C
-#  define YY_ATTRIBUTE(Spec) __attribute__(Spec)
+#ifndef YY_ATTRIBUTE_PURE
+#if defined __GNUC__ && 2 < __GNUC__ + (96 <= __GNUC_MINOR__)
+#define YY_ATTRIBUTE_PURE __attribute__((__pure__))
 # else
-#  define YY_ATTRIBUTE(Spec) /* empty */
+#define YY_ATTRIBUTE_PURE
 # endif
 #endif
 
-#ifndef YY_ATTRIBUTE_PURE
-# define YY_ATTRIBUTE_PURE   YY_ATTRIBUTE ((__pure__))
-#endif
-
 #ifndef YY_ATTRIBUTE_UNUSED
-# define YY_ATTRIBUTE_UNUSED YY_ATTRIBUTE ((__unused__))
-#endif
-
-#if !defined _Noreturn \
-     && (!defined __STDC_VERSION__ || __STDC_VERSION__ < 201112)
-# if defined _MSC_VER && 1200 <= _MSC_VER
-#  define _Noreturn __declspec (noreturn)
+#if defined __GNUC__ && 2 < __GNUC__ + (7 <= __GNUC_MINOR__)
+#define YY_ATTRIBUTE_UNUSED __attribute__((__unused__))
 # else
-#  define _Noreturn YY_ATTRIBUTE ((__noreturn__))
+#define YY_ATTRIBUTE_UNUSED
 # endif
 #endif
 
@@ -458,14 +510,13 @@ typedef short int yytype_int16;
 # define YYUSE(E) /* empty */
 #endif
 
-#if defined __GNUC__ && 407 <= __GNUC__ * 100 + __GNUC_MINOR__
+#if defined __GNUC__ && !defined __ICC && 407 <= __GNUC__ * 100 + __GNUC_MINOR__
 /* Suppress an incorrect diagnostic about yylval being uninitialized.  */
-# define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN \
-    _Pragma ("GCC diagnostic push") \
-    _Pragma ("GCC diagnostic ignored \"-Wuninitialized\"")\
-    _Pragma ("GCC diagnostic ignored \"-Wmaybe-uninitialized\"")
-# define YY_IGNORE_MAYBE_UNINITIALIZED_END \
-    _Pragma ("GCC diagnostic pop")
+#define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN                 \
+  _Pragma("GCC diagnostic push")                            \
+      _Pragma("GCC diagnostic ignored \"-Wuninitialized\"") \
+          _Pragma("GCC diagnostic ignored \"-Wmaybe-uninitialized\"")
+#define YY_IGNORE_MAYBE_UNINITIALIZED_END _Pragma("GCC diagnostic pop")
 #else
 # define YY_INITIAL_VALUE(Value) Value
 #endif
@@ -477,6 +528,18 @@ typedef short int yytype_int16;
 # define YY_INITIAL_VALUE(Value) /* Nothing. */
 #endif
 
+#if defined __cplusplus && defined __GNUC__ && !defined __ICC && 6 <= __GNUC__
+#define YY_IGNORE_USELESS_CAST_BEGIN \
+  _Pragma("GCC diagnostic push")     \
+      _Pragma("GCC diagnostic ignored \"-Wuseless-cast\"")
+#define YY_IGNORE_USELESS_CAST_END _Pragma("GCC diagnostic pop")
+#endif
+#ifndef YY_IGNORE_USELESS_CAST_BEGIN
+#define YY_IGNORE_USELESS_CAST_BEGIN
+#define YY_IGNORE_USELESS_CAST_END
+#endif
+
+#define YY_ASSERT(E) ((void)(0 && (E)))
 
 #if ! defined yyoverflow || YYERROR_VERBOSE
 
@@ -553,18 +616,17 @@ void free (void *); /* INFRINGES ON USER NAME SPACE */
 /* A type that is properly aligned for any stack member.  */
 union yyalloc
 {
-  yytype_int16 yyss_alloc;
+  yy_state_t yyss_alloc;
   YYSTYPE yyvs_alloc;
 };
 
 /* The size of the maximum gap between one aligned stack and the next.  */
-# define YYSTACK_GAP_MAXIMUM (sizeof (union yyalloc) - 1)
+#define YYSTACK_GAP_MAXIMUM (YYSIZEOF(union yyalloc) - 1)
 
 /* The size of an array large to enough to hold all stacks, each with
    N elements.  */
-# define YYSTACK_BYTES(N) \
-     ((N) * (sizeof (yytype_int16) + sizeof (YYSTYPE)) \
-      + YYSTACK_GAP_MAXIMUM)
+#define YYSTACK_BYTES(N) \
+  ((N) * (YYSIZEOF(yy_state_t) + YYSIZEOF(YYSTYPE)) + YYSTACK_GAP_MAXIMUM)
 
 # define YYCOPY_NEEDED 1
 
@@ -573,16 +635,14 @@ union yyalloc
    elements in the stack, and YYPTR gives the new location of the
    stack.  Advance YYPTR to a properly aligned location for the next
    stack.  */
-# define YYSTACK_RELOCATE(Stack_alloc, Stack)                           \
-    do                                                                  \
-      {                                                                 \
-        YYSIZE_T yynewbytes;                                            \
-        YYCOPY (&yyptr->Stack_alloc, Stack, yysize);                    \
-        Stack = &yyptr->Stack_alloc;                                    \
-        yynewbytes = yystacksize * sizeof (*Stack) + YYSTACK_GAP_MAXIMUM; \
-        yyptr += yynewbytes / sizeof (*yyptr);                          \
-      }                                                                 \
-    while (0)
+#define YYSTACK_RELOCATE(Stack_alloc, Stack)                           \
+  do {                                                                 \
+    YYPTRDIFF_T yynewbytes;                                            \
+    YYCOPY(&yyptr->Stack_alloc, Stack, yysize);                        \
+    Stack = &yyptr->Stack_alloc;                                       \
+    yynewbytes = yystacksize * YYSIZEOF(*Stack) + YYSTACK_GAP_MAXIMUM; \
+    yyptr += yynewbytes / YYSIZEOF(*yyptr);                            \
+  } while (0)
 
 #endif
 
@@ -591,17 +651,15 @@ union yyalloc
    not overlap.  */
 # ifndef YYCOPY
 #  if defined __GNUC__ && 1 < __GNUC__
-#   define YYCOPY(Dst, Src, Count) \
-      __builtin_memcpy (Dst, Src, (Count) * sizeof (*(Src)))
+#define YYCOPY(Dst, Src, Count) \
+  __builtin_memcpy(Dst, Src, YY_CAST(YYSIZE_T, (Count)) * sizeof(*(Src)))
 #  else
-#   define YYCOPY(Dst, Src, Count)              \
-      do                                        \
-        {                                       \
-          YYSIZE_T yyi;                         \
-          for (yyi = 0; yyi < (Count); yyi++)   \
-            (Dst)[yyi] = (Src)[yyi];            \
-        }                                       \
-      while (0)
+#define YYCOPY(Dst, Src, Count)         \
+  do {                                  \
+    YYPTRDIFF_T yyi;                    \
+    for (yyi = 0; yyi < (Count); yyi++) \
+      (Dst)[yyi] = (Src)[yyi];          \
+  } while (0)
 #  endif
 # endif
 #endif /* !YYCOPY_NEEDED */
@@ -620,84 +678,63 @@ union yyalloc
 /* YYNSTATES -- Number of states.  */
 #define YYNSTATES  515
 
-/* YYTRANSLATE[YYX] -- Symbol number corresponding to YYX as returned
-   by yylex, with out-of-bounds checking.  */
 #define YYUNDEFTOK  2
 #define YYMAXUTOK   360
 
-#define YYTRANSLATE(YYX)                                                \
-  ((unsigned int) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
+/* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
+   as returned by yylex, with out-of-bounds checking.  */
+#define YYTRANSLATE(YYX) \
+  (0 <= (YYX) && (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
 
 /* YYTRANSLATE[TOKEN-NUM] -- Symbol number corresponding to TOKEN-NUM
-   as returned by yylex, without out-of-bounds checking.  */
-static const yytype_uint8 yytranslate[] =
-{
-       0,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,   106,     2,   108,   107,     2,   111,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,   109,   110,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
-       5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
-      15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
-      25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
-      35,    36,    37,    38,    39,    40,    41,    42,    43,    44,
-      45,    46,    47,    48,    49,    50,    51,    52,    53,    54,
-      55,    56,    57,    58,    59,    60,    61,    62,    63,    64,
-      65,    66,    67,    68,    69,    70,    71,    72,    73,    74,
-      75,    76,    77,    78,    79,    80,    81,    82,    83,    84,
-      85,    86,    87,    88,    89,    90,    91,    92,    93,    94,
-      95,    96,    97,    98,    99,   100,   101,   102,   103,   104,
-     105
-};
+   as returned by yylex.  */
+static const yytype_int8 yytranslate[] = {
+    0,  2,  2,  2,   2,   2,   2,   2,   2,  2,  2,   2,   2,   2,   2,  2,
+    2,  2,  2,  2,   2,   2,   2,   2,   2,  2,  2,   2,   2,   2,   2,  2,
+    2,  2,  2,  2,   2,   2,   2,   2,   2,  2,  106, 2,   108, 107, 2,  111,
+    2,  2,  2,  2,   2,   2,   2,   2,   2,  2,  109, 110, 2,   2,   2,  2,
+    2,  2,  2,  2,   2,   2,   2,   2,   2,  2,  2,   2,   2,   2,   2,  2,
+    2,  2,  2,  2,   2,   2,   2,   2,   2,  2,  2,   2,   2,   2,   2,  2,
+    2,  2,  2,  2,   2,   2,   2,   2,   2,  2,  2,   2,   2,   2,   2,  2,
+    2,  2,  2,  2,   2,   2,   2,   2,   2,  2,  2,   2,   2,   2,   2,  2,
+    2,  2,  2,  2,   2,   2,   2,   2,   2,  2,  2,   2,   2,   2,   2,  2,
+    2,  2,  2,  2,   2,   2,   2,   2,   2,  2,  2,   2,   2,   2,   2,  2,
+    2,  2,  2,  2,   2,   2,   2,   2,   2,  2,  2,   2,   2,   2,   2,  2,
+    2,  2,  2,  2,   2,   2,   2,   2,   2,  2,  2,   2,   2,   2,   2,  2,
+    2,  2,  2,  2,   2,   2,   2,   2,   2,  2,  2,   2,   2,   2,   2,  2,
+    2,  2,  2,  2,   2,   2,   2,   2,   2,  2,  2,   2,   2,   2,   2,  2,
+    2,  2,  2,  2,   2,   2,   2,   2,   2,  2,  2,   2,   2,   2,   2,  2,
+    2,  2,  2,  2,   2,   2,   2,   2,   2,  2,  2,   2,   2,   2,   2,  2,
+    1,  2,  3,  4,   5,   6,   7,   8,   9,  10, 11,  12,  13,  14,  15, 16,
+    17, 18, 19, 20,  21,  22,  23,  24,  25, 26, 27,  28,  29,  30,  31, 32,
+    33, 34, 35, 36,  37,  38,  39,  40,  41, 42, 43,  44,  45,  46,  47, 48,
+    49, 50, 51, 52,  53,  54,  55,  56,  57, 58, 59,  60,  61,  62,  63, 64,
+    65, 66, 67, 68,  69,  70,  71,  72,  73, 74, 75,  76,  77,  78,  79, 80,
+    81, 82, 83, 84,  85,  86,  87,  88,  89, 90, 91,  92,  93,  94,  95, 96,
+    97, 98, 99, 100, 101, 102, 103, 104, 105};
 
 #if YYDEBUG
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-static const yytype_uint16 yyrline[] =
-{
-       0,   319,   319,   323,   327,   333,   341,   342,   343,   344,
-     345,   346,   347,   348,   352,   355,   362,   369,   376,   383,
-     390,   397,   404,   411,   414,   415,   416,   420,   421,   425,
-     430,   431,   439,   445,   451,   457,   461,   468,   472,   477,
-     482,   488,   494,   504,   510,   514,   521,   522,   523,   524,
-     525,   526,   527,   528,   531,   533,   536,   539,   540,   541,
-     546,   553,   557,   565,   573,   574,   575,   576,   577,   578,
-     579,   580,   581,   582,   583,   584,   585,   586,   587,   588,
-     589,   590,   594,   598,   603,   607,   611,   615,   619,   623,
-     627,   631,   635,   639,   643,   647,   651,   655,   659,   663,
-     667,   671,   675,   683,   687,   696,   700,   709,   710,   711,
-     712,   713,   714,   715,   716,   717,   718,   719,   720,   721,
-     722,   723,   724,   725,   726,   729,   732,   740,   744,   750,
-     755,   763,   769,   770,   771,   775,   779,   786,   791,   800,
-     806,   811,   819,   825,   828,   832,   835,   840,   844,   850,
-     853,   859,   862,   868,   871,   878,   881,   885,   888,   894,
-     897,   901,   907,   910,   913,   916,   922,   930,   933,   937,
-     940,   944,   949,   955,   958,   964,   970,   973,   977,   984,
-     991,   994,  1003,  1009,  1012,  1016,  1022,  1025,  1031,  1037,
-    1040,  1044,  1050,  1053,  1056,  1059,  1062,  1065,  1068,  1071,
-    1077,  1083,  1086,  1091,  1098,  1105,  1108,  1111,  1114,  1117,
-    1120,  1126,  1132,  1135,  1141,  1147,  1150,  1156,  1159
-};
+static const yytype_int16 yyrline[] = {
+    0,    319,  319,  323,  327,  333,  341,  342,  343,  344,  345,  346,
+    347,  348,  352,  355,  362,  369,  376,  383,  390,  397,  404,  411,
+    414,  415,  416,  420,  421,  425,  430,  431,  439,  445,  451,  457,
+    461,  468,  472,  477,  482,  488,  494,  504,  510,  514,  521,  522,
+    523,  524,  525,  526,  527,  528,  531,  533,  536,  539,  540,  541,
+    546,  553,  557,  565,  573,  574,  575,  576,  577,  578,  579,  580,
+    581,  582,  583,  584,  585,  586,  587,  588,  589,  590,  594,  598,
+    603,  607,  611,  615,  619,  623,  627,  631,  635,  639,  643,  647,
+    651,  655,  659,  663,  667,  671,  675,  683,  687,  696,  700,  709,
+    710,  711,  712,  713,  714,  715,  716,  717,  718,  719,  720,  721,
+    722,  723,  724,  725,  726,  729,  732,  740,  744,  750,  755,  763,
+    769,  770,  771,  775,  779,  786,  791,  800,  806,  811,  819,  825,
+    828,  832,  835,  840,  844,  850,  853,  859,  862,  868,  871,  878,
+    881,  885,  888,  894,  897,  901,  907,  910,  913,  916,  922,  930,
+    933,  937,  940,  944,  949,  955,  958,  964,  970,  973,  977,  984,
+    991,  994,  1003, 1009, 1012, 1016, 1022, 1025, 1031, 1037, 1040, 1044,
+    1050, 1053, 1056, 1059, 1062, 1065, 1068, 1071, 1077, 1083, 1086, 1091,
+    1098, 1105, 1108, 1111, 1114, 1117, 1120, 1126, 1132, 1135, 1141, 1147,
+    1150, 1156, 1159};
 #endif
 
 #if YYDEBUG || YYERROR_VERBOSE || 0
@@ -774,35 +811,27 @@ static const char *const yytname[] =
 # ifdef YYPRINT
 /* YYTOKNUM[NUM] -- (External) token number corresponding to the
    (internal) symbol number NUM (which must be that of a token).  */
-static const yytype_uint16 yytoknum[] =
-{
-       0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
-     265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
-     275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
-     285,   286,   287,   288,   289,   290,   291,   292,   293,   294,
-     295,   296,   297,   298,   299,   300,   301,   302,   303,   304,
-     305,   306,   307,   308,   309,   310,   311,   312,   313,   314,
-     315,   316,   317,   318,   319,   320,   321,   322,   323,   324,
-     325,   326,   327,   328,   329,   330,   331,   332,   333,   334,
-     335,   336,   337,   338,   339,   340,   341,   342,   343,   344,
-     345,   346,   347,   348,   349,   350,   351,   352,   353,   354,
-     355,   356,   357,   358,   359,   360,    42,    45,    44,    58,
-      59,    47
-};
+static const yytype_int16 yytoknum[] = {
+    0,   256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268,
+    269, 270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282,
+    283, 284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296,
+    297, 298, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310,
+    311, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324,
+    325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 336, 337, 338,
+    339, 340, 341, 342, 343, 344, 345, 346, 347, 348, 349, 350, 351, 352,
+    353, 354, 355, 356, 357, 358, 359, 360, 42,  45,  44,  58,  59,  47};
 # endif
 
-#define YYPACT_NINF -432
+#define YYPACT_NINF (-432)
 
-#define yypact_value_is_default(Yystate) \
-  (!!((Yystate) == (-432)))
+#define yypact_value_is_default(Yyn) ((Yyn) == YYPACT_NINF)
 
-#define YYTABLE_NINF -57
+#define YYTABLE_NINF (-57)
 
-#define yytable_value_is_error(Yytable_value) \
-  0
+#define yytable_value_is_error(Yyn) 0
 
-  /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
-     STATE-NUM.  */
+/* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
+   STATE-NUM.  */
 static const yytype_int16 yypact[] =
 {
       15,  -432,     6,    81,    85,   100,   118,   125,   126,     4,
@@ -1141,32 +1170,17 @@ static const yytype_uint8 yyr1[] =
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
-static const yytype_uint8 yyr2[] =
-{
-       0,     2,     1,     2,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     5,     5,     5,     5,     5,     5,
-       5,     5,     3,     0,     2,     2,     2,     2,     2,     2,
-       2,     4,     3,     3,     3,     3,     5,     2,     4,     4,
-       6,     6,     8,     3,     1,     5,     1,     1,     1,     1,
-       1,     1,     1,     1,     0,     1,     0,     1,     1,     1,
-       2,     1,     2,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     4,     4,     4,     4,     4,     4,     4,
-       4,     4,     4,     4,     4,     4,     4,     4,     4,     4,
-       4,     4,     4,     1,     2,     1,     2,     1,     1,     1,
-       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     1,     1,     2,     4,     4,     1,
-       4,     5,     1,     1,     1,     4,     8,     1,     5,    21,
-       1,     5,    17,     1,     1,     1,     1,     8,     4,     4,
-       7,     1,     1,     4,     6,     1,     1,     4,     6,     1,
-       1,     4,     1,     1,     1,     1,     6,     1,     1,     1,
-       1,    10,     4,     1,     1,     4,     1,     1,     6,    28,
-       4,    11,     2,     1,     1,     4,     1,     1,     2,     1,
-       1,     4,     1,     1,     1,     1,     1,     1,     1,     1,
-       2,     1,     1,     4,     3,     1,     1,     1,     1,     1,
-       1,     4,     1,     1,     4,     1,     1,     4,     4
-};
-
+static const yytype_int8 yyr2[] = {
+    0, 2, 1, 2,  1, 1,  1, 1,  1, 1, 1,  1, 1, 1, 5, 5, 5, 5,  5, 5, 5, 5,
+    3, 0, 2, 2,  2, 2,  2, 2,  2, 4, 3,  3, 3, 3, 5, 2, 4, 4,  6, 6, 8, 3,
+    1, 5, 1, 1,  1, 1,  1, 1,  1, 1, 0,  1, 0, 1, 1, 1, 2, 1,  2, 1, 1, 1,
+    1, 1, 1, 1,  1, 1,  1, 1,  1, 1, 1,  1, 1, 1, 1, 1, 1, 4,  4, 4, 4, 4,
+    4, 4, 4, 4,  4, 4,  4, 4,  4, 4, 4,  4, 4, 4, 4, 1, 2, 1,  2, 1, 1, 1,
+    1, 1, 1, 1,  1, 1,  1, 1,  1, 1, 1,  1, 1, 1, 1, 1, 2, 4,  4, 1, 4, 5,
+    1, 1, 1, 4,  8, 1,  5, 21, 1, 5, 17, 1, 1, 1, 1, 8, 4, 4,  7, 1, 1, 4,
+    6, 1, 1, 4,  6, 1,  1, 4,  1, 1, 1,  1, 6, 1, 1, 1, 1, 10, 4, 1, 1, 4,
+    1, 1, 6, 28, 4, 11, 2, 1,  1, 4, 1,  1, 2, 1, 1, 4, 1, 1,  1, 1, 1, 1,
+    1, 1, 2, 1,  1, 4,  3, 1,  1, 1, 1,  1, 1, 4, 1, 1, 4, 1,  1, 4, 4};
 
 #define yyerrok         (yyerrstatus = 0)
 #define yyclearin       (yychar = YYEMPTY)
@@ -1180,22 +1194,19 @@ static const yytype_uint8 yyr2[] =
 
 #define YYRECOVERING()  (!!yyerrstatus)
 
-#define YYBACKUP(Token, Value)                                  \
-do                                                              \
-  if (yychar == YYEMPTY)                                        \
-    {                                                           \
-      yychar = (Token);                                         \
-      yylval = (Value);                                         \
-      YYPOPSTACK (yylen);                                       \
-      yystate = *yyssp;                                         \
-      goto yybackup;                                            \
-    }                                                           \
-  else                                                          \
-    {                                                           \
-      yyerror (scanner, message, YY_("syntax error: cannot back up")); \
-      YYERROR;                                                  \
-    }                                                           \
-while (0)
+#define YYBACKUP(Token, Value)                                        \
+  do                                                                  \
+    if (yychar == YYEMPTY) {                                          \
+      yychar = (Token);                                               \
+      yylval = (Value);                                               \
+      YYPOPSTACK(yylen);                                              \
+      yystate = *yyssp;                                               \
+      goto yybackup;                                                  \
+    } else {                                                          \
+      yyerror(scanner, message, YY_("syntax error: cannot back up")); \
+      YYERROR;                                                        \
+    }                                                                 \
+  while (0)
 
 /* Error token number */
 #define YYTERROR        1
@@ -1234,40 +1245,45 @@ do {                                                                      \
     }                                                                     \
 } while (0)
 
+/*-----------------------------------.
+| Print this symbol's value on YYO.  |
+`-----------------------------------*/
 
-/*----------------------------------------.
-| Print this symbol's value on YYOUTPUT.  |
-`----------------------------------------*/
-
-static void
-yy_symbol_value_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep, void* scanner, std::unique_ptr<wds::rtsp::Message>& message)
-{
-  FILE *yyo = yyoutput;
-  YYUSE (yyo);
+static void yy_symbol_value_print(
+    FILE* yyo,
+    int yytype,
+    YYSTYPE const* const yyvaluep,
+    void* scanner,
+    std::unique_ptr<wds::rtsp::Message>& message) {
+  FILE* yyoutput = yyo;
+  YYUSE(yyoutput);
   YYUSE (scanner);
   YYUSE (message);
   if (!yyvaluep)
     return;
 # ifdef YYPRINT
   if (yytype < YYNTOKENS)
-    YYPRINT (yyoutput, yytoknum[yytype], *yyvaluep);
+    YYPRINT(yyo, yytoknum[yytype], *yyvaluep);
 # endif
+  YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
   YYUSE (yytype);
+  YY_IGNORE_MAYBE_UNINITIALIZED_END
 }
 
+/*---------------------------.
+| Print this symbol on YYO.  |
+`---------------------------*/
 
-/*--------------------------------.
-| Print this symbol on YYOUTPUT.  |
-`--------------------------------*/
+static void yy_symbol_print(FILE* yyo,
+                            int yytype,
+                            YYSTYPE const* const yyvaluep,
+                            void* scanner,
+                            std::unique_ptr<wds::rtsp::Message>& message) {
+  YYFPRINTF(yyo, "%s %s (", yytype < YYNTOKENS ? "token" : "nterm",
+            yytname[yytype]);
 
-static void
-yy_symbol_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep, void* scanner, std::unique_ptr<wds::rtsp::Message>& message)
-{
-  YYFPRINTF (yyoutput, "%s %s (",
-             yytype < YYNTOKENS ? "token" : "nterm", yytname[yytype]);
-
-  yy_symbol_value_print (yyoutput, yytype, yyvaluep, scanner, message);
-  YYFPRINTF (yyoutput, ")");
+  yy_symbol_value_print(yyo, yytype, yyvaluep, scanner, message);
+  YYFPRINTF(yyo, ")");
 }
 
 /*------------------------------------------------------------------.
@@ -1275,9 +1291,7 @@ yy_symbol_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep, voi
 | TOP (included).                                                   |
 `------------------------------------------------------------------*/
 
-static void
-yy_stack_print (yytype_int16 *yybottom, yytype_int16 *yytop)
-{
+static void yy_stack_print(yy_state_t* yybottom, yy_state_t* yytop) {
   YYFPRINTF (stderr, "Stack now");
   for (; yybottom <= yytop; yybottom++)
     {
@@ -1298,22 +1312,22 @@ do {                                                            \
 | Report that the YYRULE is going to be reduced.  |
 `------------------------------------------------*/
 
-static void
-yy_reduce_print (yytype_int16 *yyssp, YYSTYPE *yyvsp, int yyrule, void* scanner, std::unique_ptr<wds::rtsp::Message>& message)
-{
-  unsigned long int yylno = yyrline[yyrule];
+static void yy_reduce_print(yy_state_t* yyssp,
+                            YYSTYPE* yyvsp,
+                            int yyrule,
+                            void* scanner,
+                            std::unique_ptr<wds::rtsp::Message>& message) {
+  int yylno = yyrline[yyrule];
   int yynrhs = yyr2[yyrule];
   int yyi;
-  YYFPRINTF (stderr, "Reducing stack by rule %d (line %lu):\n",
-             yyrule - 1, yylno);
+  YYFPRINTF(stderr, "Reducing stack by rule %d (line %d):\n", yyrule - 1,
+            yylno);
   /* The symbols being reduced.  */
   for (yyi = 0; yyi < yynrhs; yyi++)
     {
       YYFPRINTF (stderr, "   $%d = ", yyi + 1);
-      yy_symbol_print (stderr,
-                       yystos[yyssp[yyi + 1 - yynrhs]],
-                       &(yyvsp[(yyi + 1) - (yynrhs)])
-                                              , scanner, message);
+      yy_symbol_print(stderr, yystos[+yyssp[yyi + 1 - yynrhs]],
+                      &yyvsp[(yyi + 1) - (yynrhs)], scanner, message);
       YYFPRINTF (stderr, "\n");
     }
 }
@@ -1356,13 +1370,11 @@ int yydebug;
 
 # ifndef yystrlen
 #  if defined __GLIBC__ && defined _STRING_H
-#   define yystrlen strlen
+#define yystrlen(S) (YY_CAST(YYPTRDIFF_T, strlen(S)))
 #  else
 /* Return the length of YYSTR.  */
-static YYSIZE_T
-yystrlen (const char *yystr)
-{
-  YYSIZE_T yylen;
+static YYPTRDIFF_T yystrlen(const char* yystr) {
+  YYPTRDIFF_T yylen;
   for (yylen = 0; yystr[yylen]; yylen++)
     continue;
   return yylen;
@@ -1398,43 +1410,43 @@ yystpcpy (char *yydest, const char *yysrc)
    backslash-backslash).  YYSTR is taken from yytname.  If YYRES is
    null, do not copy; instead, return the length of what the result
    would have been.  */
-static YYSIZE_T
-yytnamerr (char *yyres, const char *yystr)
-{
+static YYPTRDIFF_T yytnamerr(char* yyres, const char* yystr) {
   if (*yystr == '"')
     {
-      YYSIZE_T yyn = 0;
-      char const *yyp = yystr;
+    YYPTRDIFF_T yyn = 0;
+    char const* yyp = yystr;
 
-      for (;;)
-        switch (*++yyp)
-          {
-          case '\'':
-          case ',':
+    for (;;)
+      switch (*++yyp) {
+        case '\'':
+        case ',':
+          goto do_not_strip_quotes;
+
+        case '\\':
+          if (*++yyp != '\\')
             goto do_not_strip_quotes;
+          else
+            goto append;
 
-          case '\\':
-            if (*++yyp != '\\')
-              goto do_not_strip_quotes;
-            /* Fall through.  */
-          default:
-            if (yyres)
-              yyres[yyn] = *yyp;
-            yyn++;
-            break;
+        append:
+        default:
+          if (yyres)
+            yyres[yyn] = *yyp;
+          yyn++;
+          break;
 
-          case '"':
-            if (yyres)
-              yyres[yyn] = '\0';
-            return yyn;
-          }
+        case '"':
+          if (yyres)
+            yyres[yyn] = '\0';
+          return yyn;
+      }
     do_not_strip_quotes: ;
     }
 
-  if (! yyres)
-    return yystrlen (yystr);
-
-  return yystpcpy (yyres, yystr) - yyres;
+    if (yyres)
+      return yystpcpy(yyres, yystr) - yyres;
+    else
+      return yystrlen(yystr);
 }
 # endif
 
@@ -1446,20 +1458,20 @@ yytnamerr (char *yyres, const char *yystr)
    not large enough to hold the message.  In that case, also set
    *YYMSG_ALLOC to the required number of bytes.  Return 2 if the
    required number of bytes is too large to store.  */
-static int
-yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
-                yytype_int16 *yyssp, int yytoken)
-{
-  YYSIZE_T yysize0 = yytnamerr (YY_NULLPTR, yytname[yytoken]);
-  YYSIZE_T yysize = yysize0;
+static int yysyntax_error(YYPTRDIFF_T* yymsg_alloc,
+                          char** yymsg,
+                          yy_state_t* yyssp,
+                          int yytoken) {
   enum { YYERROR_VERBOSE_ARGS_MAXIMUM = 5 };
   /* Internationalized format string. */
   const char *yyformat = YY_NULLPTR;
-  /* Arguments of yyformat. */
+  /* Arguments of yyformat: reported tokens (one for the "unexpected",
+     one per "expected"). */
   char const *yyarg[YYERROR_VERBOSE_ARGS_MAXIMUM];
-  /* Number of reported tokens (one for the "unexpected", one per
-     "expected"). */
+  /* Actual size of YYARG. */
   int yycount = 0;
+  /* Cumulated lengths of YYARG.  */
+  YYPTRDIFF_T yysize = 0;
 
   /* There are many possibilities here to consider:
      - If this state is a consistent state with a default action, then
@@ -1486,40 +1498,39 @@ yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
   */
   if (yytoken != YYEMPTY)
     {
-      int yyn = yypact[*yyssp];
-      yyarg[yycount++] = yytname[yytoken];
-      if (!yypact_value_is_default (yyn))
-        {
-          /* Start YYX at -YYN if negative to avoid negative indexes in
-             YYCHECK.  In other words, skip the first -YYN actions for
-             this state because they are default actions.  */
-          int yyxbegin = yyn < 0 ? -yyn : 0;
-          /* Stay within bounds of both yycheck and yytname.  */
-          int yychecklim = YYLAST - yyn + 1;
-          int yyxend = yychecklim < YYNTOKENS ? yychecklim : YYNTOKENS;
-          int yyx;
+    int yyn = yypact[+*yyssp];
+    YYPTRDIFF_T yysize0 = yytnamerr(YY_NULLPTR, yytname[yytoken]);
+    yysize = yysize0;
+    yyarg[yycount++] = yytname[yytoken];
+    if (!yypact_value_is_default(yyn)) {
+      /* Start YYX at -YYN if negative to avoid negative indexes in
+         YYCHECK.  In other words, skip the first -YYN actions for
+         this state because they are default actions.  */
+      int yyxbegin = yyn < 0 ? -yyn : 0;
+      /* Stay within bounds of both yycheck and yytname.  */
+      int yychecklim = YYLAST - yyn + 1;
+      int yyxend = yychecklim < YYNTOKENS ? yychecklim : YYNTOKENS;
+      int yyx;
 
-          for (yyx = yyxbegin; yyx < yyxend; ++yyx)
-            if (yycheck[yyx + yyn] == yyx && yyx != YYTERROR
-                && !yytable_value_is_error (yytable[yyx + yyn]))
-              {
-                if (yycount == YYERROR_VERBOSE_ARGS_MAXIMUM)
-                  {
-                    yycount = 1;
-                    yysize = yysize0;
-                    break;
-                  }
-                yyarg[yycount++] = yytname[yyx];
-                {
-                  YYSIZE_T yysize1 = yysize + yytnamerr (YY_NULLPTR, yytname[yyx]);
-                  if (! (yysize <= yysize1
-                         && yysize1 <= YYSTACK_ALLOC_MAXIMUM))
-                    return 2;
-                  yysize = yysize1;
-                }
-              }
+      for (yyx = yyxbegin; yyx < yyxend; ++yyx)
+        if (yycheck[yyx + yyn] == yyx && yyx != YYTERROR &&
+            !yytable_value_is_error(yytable[yyx + yyn])) {
+          if (yycount == YYERROR_VERBOSE_ARGS_MAXIMUM) {
+            yycount = 1;
+            yysize = yysize0;
+            break;
+          }
+          yyarg[yycount++] = yytname[yyx];
+          {
+            YYPTRDIFF_T yysize1 = yysize + yytnamerr(YY_NULLPTR, yytname[yyx]);
+            if (yysize <= yysize1 && yysize1 <= YYSTACK_ALLOC_MAXIMUM)
+              yysize = yysize1;
+            else
+              return 2;
+          }
         }
     }
+  }
 
   switch (yycount)
     {
@@ -1527,6 +1538,7 @@ yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
       case N:                               \
         yyformat = S;                       \
       break
+    default: /* Avoid compiler warnings. */
       YYCASE_(0, YY_("syntax error"));
       YYCASE_(1, YY_("syntax error, unexpected %s"));
       YYCASE_(2, YY_("syntax error, unexpected %s, expecting %s"));
@@ -1537,10 +1549,13 @@ yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
     }
 
   {
-    YYSIZE_T yysize1 = yysize + yystrlen (yyformat);
-    if (! (yysize <= yysize1 && yysize1 <= YYSTACK_ALLOC_MAXIMUM))
+    /* Don't count the "%s"s in the final size, but reserve room for
+       the terminator.  */
+    YYPTRDIFF_T yysize1 = yysize + (yystrlen(yyformat) - 2 * yycount) + 1;
+    if (yysize <= yysize1 && yysize1 <= YYSTACK_ALLOC_MAXIMUM)
+      yysize = yysize1;
+    else
       return 2;
-    yysize = yysize1;
   }
 
   if (*yymsg_alloc < yysize)
@@ -1566,8 +1581,8 @@ yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
         }
       else
         {
-          yyp++;
-          yyformat++;
+          ++yyp;
+          ++yyformat;
         }
   }
   return 0;
@@ -1591,96 +1606,80 @@ yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep, void* scanner, std
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
   switch (yytype)
     {
-          case 15: /* WFD_STRING  */
-
-      { DELETE_TOKEN(((*yyvaluep).sval)); }
-
-        break;
+    case 15: /* WFD_STRING  */
+    {
+      DELETE_TOKEN(((*yyvaluep).sval));
+    } break;
 
     case 16: /* WFD_GENERIC_PROPERTY  */
-
-      { DELETE_TOKEN(((*yyvaluep).sval)); }
-
-        break;
+    {
+      DELETE_TOKEN(((*yyvaluep).sval));
+    } break;
 
     case 22: /* WFD_REQUEST_URI  */
-
-      { DELETE_TOKEN(((*yyvaluep).sval)); }
-
-        break;
+    {
+      DELETE_TOKEN(((*yyvaluep).sval));
+    } break;
 
     case 24: /* WFD_MIME  */
-
-      { DELETE_TOKEN(((*yyvaluep).sval)); }
-
-        break;
+    {
+      DELETE_TOKEN(((*yyvaluep).sval));
+    } break;
 
     case 130: /* wfd_supported_methods  */
-
-      { DELETE_TOKEN(((*yyvaluep).methods)); }
-
-        break;
+    {
+      DELETE_TOKEN(((*yyvaluep).methods));
+    } break;
 
     case 131: /* wfd_methods  */
-
-      { DELETE_TOKEN(((*yyvaluep).methods)); }
-
-        break;
+    {
+      DELETE_TOKEN(((*yyvaluep).methods));
+    } break;
 
     case 135: /* wfd_parameter_list  */
-
-      { DELETE_TOKEN(((*yyvaluep).mpayload)); }
-
-        break;
+    {
+      DELETE_TOKEN(((*yyvaluep).mpayload));
+    } break;
 
     case 143: /* wfd_audio_codec_list  */
-
-      { DELETE_TOKEN(((*yyvaluep).audio_codecs)); }
-
-        break;
+    {
+      DELETE_TOKEN(((*yyvaluep).audio_codecs));
+    } break;
 
     case 144: /* wfd_audio_codec  */
-
-      { DELETE_TOKEN(((*yyvaluep).audio_codec)); }
-
-        break;
+    {
+      DELETE_TOKEN(((*yyvaluep).audio_codec));
+    } break;
 
     case 147: /* wfd_h264_codecs  */
-
-      { DELETE_TOKEN(((*yyvaluep).codecs)); }
-
-        break;
+    {
+      DELETE_TOKEN(((*yyvaluep).codecs));
+    } break;
 
     case 148: /* wfd_h264_codec  */
-
-      { DELETE_TOKEN(((*yyvaluep).codec)); }
-
-        break;
+    {
+      DELETE_TOKEN(((*yyvaluep).codec));
+    } break;
 
     case 149: /* wfd_h264_codecs_3d  */
-
-      { DELETE_TOKEN(((*yyvaluep).codecs_3d)); }
-
-        break;
+    {
+      DELETE_TOKEN(((*yyvaluep).codecs_3d));
+    } break;
 
     case 150: /* wfd_h264_codec_3d  */
-
-      { DELETE_TOKEN(((*yyvaluep).codec_3d)); }
-
-        break;
+    {
+      DELETE_TOKEN(((*yyvaluep).codec_3d));
+    } break;
 
     case 157: /* wfd_edid_payload  */
-
-      { DELETE_TOKEN(((*yyvaluep).sval)); }
-
-        break;
+    {
+      DELETE_TOKEN(((*yyvaluep).sval));
+    } break;
 
     case 181: /* wfd_hidc_cap_list_value  */
-
-      { DELETE_TOKEN(((*yyvaluep).hidc_cap_list_value)); }
-
-        break;
-
+    {
+      DELETE_TOKEN(((*yyvaluep).hidc_cap_list_value));
+    } break;
 
       default:
         break;
@@ -1711,7 +1710,7 @@ YYSTYPE yylval YY_INITIAL_VALUE (= yyval_default);
     /* Number of syntax errors so far.  */
     int yynerrs;
 
-    int yystate;
+    yy_state_fast_t yystate;
     /* Number of tokens to shift before error messages enabled.  */
     int yyerrstatus;
 
@@ -1723,30 +1722,30 @@ YYSTYPE yylval YY_INITIAL_VALUE (= yyval_default);
        to reallocate them elsewhere.  */
 
     /* The state stack.  */
-    yytype_int16 yyssa[YYINITDEPTH];
-    yytype_int16 *yyss;
-    yytype_int16 *yyssp;
+    yy_state_t yyssa[YYINITDEPTH];
+    yy_state_t* yyss;
+    yy_state_t* yyssp;
 
     /* The semantic value stack.  */
     YYSTYPE yyvsa[YYINITDEPTH];
     YYSTYPE *yyvs;
     YYSTYPE *yyvsp;
 
-    YYSIZE_T yystacksize;
+    YYPTRDIFF_T yystacksize;
 
-  int yyn;
-  int yyresult;
-  /* Lookahead token as an internal (translated) token number.  */
-  int yytoken = 0;
-  /* The variables used to return semantic value and location from the
-     action routines.  */
-  YYSTYPE yyval;
+    int yyn;
+    int yyresult;
+    /* Lookahead token as an internal (translated) token number.  */
+    int yytoken = 0;
+    /* The variables used to return semantic value and location from the
+       action routines.  */
+    YYSTYPE yyval;
 
 #if YYERROR_VERBOSE
   /* Buffer for error messages, and its allocated size.  */
   char yymsgbuf[128];
   char *yymsg = yymsgbuf;
-  YYSIZE_T yymsg_alloc = sizeof yymsgbuf;
+  YYPTRDIFF_T yymsg_alloc = sizeof yymsgbuf;
 #endif
 
 #define YYPOPSTACK(N)   (yyvsp -= (N), yyssp -= (N))
@@ -1768,78 +1767,83 @@ YYSTYPE yylval YY_INITIAL_VALUE (= yyval_default);
   goto yysetstate;
 
 /*------------------------------------------------------------.
-| yynewstate -- Push a new state, which is found in yystate.  |
+| yynewstate -- push a new state, which is found in yystate.  |
 `------------------------------------------------------------*/
- yynewstate:
+yynewstate:
   /* In all cases, when you get here, the value and location stacks
      have just been pushed.  So pushing a state here evens the stacks.  */
   yyssp++;
 
- yysetstate:
-  *yyssp = yystate;
+/*--------------------------------------------------------------------.
+| yysetstate -- set current state (the top of the stack) to yystate.  |
+`--------------------------------------------------------------------*/
+yysetstate:
+  YYDPRINTF((stderr, "Entering state %d\n", yystate));
+  YY_ASSERT(0 <= yystate && yystate < YYNSTATES);
+  YY_IGNORE_USELESS_CAST_BEGIN
+  *yyssp = YY_CAST(yy_state_t, yystate);
+  YY_IGNORE_USELESS_CAST_END
 
   if (yyss + yystacksize - 1 <= yyssp)
+#if !defined yyoverflow && !defined YYSTACK_RELOCATE
+    goto yyexhaustedlab;
+#else
+  {
+    /* Get the current used size of the three stacks, in elements.  */
+    YYPTRDIFF_T yysize = yyssp - yyss + 1;
+
+#if defined yyoverflow
     {
-      /* Get the current used size of the three stacks, in elements.  */
-      YYSIZE_T yysize = yyssp - yyss + 1;
+      /* Give user a chance to reallocate the stack.  Use copies of
+         these so that the &'s don't force the real ones into
+         memory.  */
+      yy_state_t* yyss1 = yyss;
+      YYSTYPE* yyvs1 = yyvs;
 
-#ifdef yyoverflow
-      {
-        /* Give user a chance to reallocate the stack.  Use copies of
-           these so that the &'s don't force the real ones into
-           memory.  */
-        YYSTYPE *yyvs1 = yyvs;
-        yytype_int16 *yyss1 = yyss;
-
-        /* Each stack pointer address is followed by the size of the
-           data in use in that stack, in bytes.  This used to be a
-           conditional around just the two extra args, but that might
-           be undefined if yyoverflow is a macro.  */
-        yyoverflow (YY_("memory exhausted"),
-                    &yyss1, yysize * sizeof (*yyssp),
-                    &yyvs1, yysize * sizeof (*yyvsp),
-                    &yystacksize);
-
-        yyss = yyss1;
-        yyvs = yyvs1;
-      }
-#else /* no yyoverflow */
-# ifndef YYSTACK_RELOCATE
+      /* Each stack pointer address is followed by the size of the
+         data in use in that stack, in bytes.  This used to be a
+         conditional around just the two extra args, but that might
+         be undefined if yyoverflow is a macro.  */
+      yyoverflow(YY_("memory exhausted"), &yyss1, yysize * YYSIZEOF(*yyssp),
+                 &yyvs1, yysize * YYSIZEOF(*yyvsp), &yystacksize);
+      yyss = yyss1;
+      yyvs = yyvs1;
+    }
+#else /* defined YYSTACK_RELOCATE */
+    /* Extend the stack our own way.  */
+    if (YYMAXDEPTH <= yystacksize)
       goto yyexhaustedlab;
-# else
-      /* Extend the stack our own way.  */
-      if (YYMAXDEPTH <= yystacksize)
-        goto yyexhaustedlab;
-      yystacksize *= 2;
-      if (YYMAXDEPTH < yystacksize)
-        yystacksize = YYMAXDEPTH;
+    yystacksize *= 2;
+    if (YYMAXDEPTH < yystacksize)
+      yystacksize = YYMAXDEPTH;
 
-      {
-        yytype_int16 *yyss1 = yyss;
-        union yyalloc *yyptr =
-          (union yyalloc *) YYSTACK_ALLOC (YYSTACK_BYTES (yystacksize));
-        if (! yyptr)
-          goto yyexhaustedlab;
-        YYSTACK_RELOCATE (yyss_alloc, yyss);
-        YYSTACK_RELOCATE (yyvs_alloc, yyvs);
-#  undef YYSTACK_RELOCATE
-        if (yyss1 != yyssa)
-          YYSTACK_FREE (yyss1);
-      }
+    {
+      yy_state_t* yyss1 = yyss;
+      union yyalloc* yyptr =
+          YY_CAST(union yyalloc*,
+                  YYSTACK_ALLOC(YY_CAST(YYSIZE_T, YYSTACK_BYTES(yystacksize))));
+      if (!yyptr)
+        goto yyexhaustedlab;
+      YYSTACK_RELOCATE(yyss_alloc, yyss);
+      YYSTACK_RELOCATE(yyvs_alloc, yyvs);
+#undef YYSTACK_RELOCATE
+      if (yyss1 != yyssa)
+        YYSTACK_FREE(yyss1);
+    }
 # endif
-#endif /* no yyoverflow */
 
       yyssp = yyss + yysize - 1;
       yyvsp = yyvs + yysize - 1;
 
-      YYDPRINTF ((stderr, "Stack size increased to %lu\n",
-                  (unsigned long int) yystacksize));
+      YY_IGNORE_USELESS_CAST_BEGIN
+      YYDPRINTF((stderr, "Stack size increased to %ld\n",
+                 YY_CAST(long, yystacksize)));
+      YY_IGNORE_USELESS_CAST_END
 
       if (yyss + yystacksize - 1 <= yyssp)
         YYABORT;
-    }
-
-  YYDPRINTF ((stderr, "Entering state %d\n", yystate));
+  }
+#endif /* !defined yyoverflow && !defined YYSTACK_RELOCATE */
 
   if (yystate == YYFINAL)
     YYACCEPT;
@@ -1850,7 +1854,6 @@ YYSTYPE yylval YY_INITIAL_VALUE (= yyval_default);
 | yybackup.  |
 `-----------*/
 yybackup:
-
   /* Do appropriate processing given the current state.  Read a
      lookahead token if we need one and don't already have one.  */
 
@@ -1900,15 +1903,13 @@ yybackup:
 
   /* Shift the lookahead token.  */
   YY_SYMBOL_PRINT ("Shifting", yytoken, &yylval, &yylloc);
-
-  /* Discard the shifted token.  */
-  yychar = YYEMPTY;
-
   yystate = yyn;
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
   *++yyvsp = yylval;
   YY_IGNORE_MAYBE_UNINITIALIZED_END
 
+  /* Discard the shifted token.  */
+  yychar = YYEMPTY;
   goto yynewstate;
 
 
@@ -1921,9 +1922,8 @@ yydefault:
     goto yyerrlab;
   goto yyreduce;
 
-
 /*-----------------------------.
-| yyreduce -- Do a reduction.  |
+| yyreduce -- do a reduction.  |
 `-----------------------------*/
 yyreduce:
   /* yyn is the number of a rule to reduce with.  */
@@ -1943,1482 +1943,878 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-        case 3:
-
-    {
+    case 3: {
       message.reset((yyvsp[-1].message));
       (yyvsp[-1].message)->set_header(std::unique_ptr<wds::rtsp::Header>((yyvsp[0].header)));
-    }
+    } break;
 
-    break;
-
-  case 4:
-
-    {
+    case 4: {
       if (message && (yyvsp[0].mpayload))
         message->set_payload(std::unique_ptr<wds::rtsp::Payload>((yyvsp[0].mpayload)));
       else
         YYERROR;
-    }
+    } break;
 
-    break;
-
-  case 5:
-
-    {
+    case 5: {
       message.reset();
       std::cerr << "Unknown message" << std::endl;
       YYABORT;
-    }
+    } break;
 
-    break;
-
-  case 14:
-
-    {
+    case 14: {
       (yyval.message) = new wds::rtsp::Options("*");
-    }
+    } break;
 
-    break;
-
-  case 15:
-
-    {
+    case 15: {
       (yyval.message) = new wds::rtsp::Options(*(yyvsp[-2].sval));
       DELETE_TOKEN((yyvsp[-2].sval));
-    }
+    } break;
 
-    break;
-
-  case 16:
-
-    {
+    case 16: {
       (yyval.message) = new wds::rtsp::SetParameter(*(yyvsp[-2].sval));
       DELETE_TOKEN((yyvsp[-2].sval));
-    }
+    } break;
 
-    break;
-
-  case 17:
-
-    {
+    case 17: {
       (yyval.message) = new wds::rtsp::GetParameter(*(yyvsp[-2].sval));
       DELETE_TOKEN((yyvsp[-2].sval));
-    }
+    } break;
 
-    break;
-
-  case 18:
-
-    {
+    case 18: {
       (yyval.message) = new wds::rtsp::Setup(*(yyvsp[-2].sval));
       DELETE_TOKEN((yyvsp[-2].sval));
-    }
+    } break;
 
-    break;
-
-  case 19:
-
-    {
+    case 19: {
       (yyval.message) = new wds::rtsp::Play(*(yyvsp[-2].sval));
       DELETE_TOKEN((yyvsp[-2].sval));
-    }
+    } break;
 
-    break;
-
-  case 20:
-
-    {
+    case 20: {
       (yyval.message) = new wds::rtsp::Teardown(*(yyvsp[-2].sval));
       DELETE_TOKEN((yyvsp[-2].sval));
-    }
+    } break;
 
-    break;
-
-  case 21:
-
-    {
+    case 21: {
       (yyval.message) = new wds::rtsp::Pause(*(yyvsp[-2].sval));
       DELETE_TOKEN((yyvsp[-2].sval));
-    }
+    } break;
 
-    break;
-
-  case 22:
-
-    {
+    case 22: {
       DELETE_TOKEN((yyvsp[0].sval));
       (yyval.message) = new wds::rtsp::Reply((yyvsp[-1].nval));
-    }
-
-    break;
+    } break;
 
   case 23:
-
     {
       (yyval.header) = new wds::rtsp::Header();
     }
-
     break;
 
-  case 24:
+    case 24: {
+      (yyvsp[-1].header)->set_cseq((yyvsp[0].nval));
+    } break;
 
-    { (yyvsp[-1].header)->set_cseq((yyvsp[0].nval)); }
+    case 25: {
+      (yyvsp[-1].header)->set_require_wfd_support(true);
+    } break;
 
-    break;
+    case 26: {
+      (yyvsp[-1].header)->set_content_type(*(yyvsp[0].sval));
+      DELETE_TOKEN((yyvsp[0].sval));
+    } break;
 
-  case 25:
+    case 27: {
+      (yyvsp[-1].header)->set_content_length((yyvsp[0].nval));
+    } break;
 
-    { (yyvsp[-1].header)->set_require_wfd_support(true); }
+    case 28: {
+      (yyvsp[-1].header)->set_supported_methods(*(yyvsp[0].methods));
+      DELETE_TOKEN((yyvsp[0].methods));
+    } break;
 
-    break;
-
-  case 26:
-
-    {
-          (yyvsp[-1].header)->set_content_type(*(yyvsp[0].sval));
-          DELETE_TOKEN((yyvsp[0].sval));
-      }
-
-    break;
-
-  case 27:
-
-    { (yyvsp[-1].header)->set_content_length((yyvsp[0].nval)); }
-
-    break;
-
-  case 28:
-
-    {
-          (yyvsp[-1].header)->set_supported_methods(*(yyvsp[0].methods));
-          DELETE_TOKEN((yyvsp[0].methods));
-      }
-
-    break;
-
-  case 29:
-
-    {
+    case 29: {
       (yyvsp[-1].header)->set_session((*(yyvsp[0].session_info)).first);
       (yyvsp[-1].header)->set_timeout((*(yyvsp[0].session_info)).second);
       DELETE_TOKEN((yyvsp[0].session_info));
-    }
+    } break;
 
-    break;
+    case 30: {
+      (yyvsp[-1].header)->set_transport((yyvsp[0].transport));
+    } break;
 
-  case 30:
-
-    { (yyvsp[-1].header)->set_transport ((yyvsp[0].transport)); }
-
-    break;
-
-  case 31:
-
-    {
-          (yyvsp[-3].header)->add_generic_header(*(yyvsp[-2].sval), *(yyvsp[0].sval));
-          DELETE_TOKEN((yyvsp[-2].sval));
-          DELETE_TOKEN((yyvsp[0].sval));
-      }
-
-    break;
-
-  case 32:
-
-    {
-      (yyval.nval) = (yyvsp[0].nval);
-    }
-
-    break;
-
-  case 33:
-
-    {
-      (yyval.sval) = (yyvsp[0].sval);
-    }
-
-    break;
-
-  case 34:
-
-    {
-      (yyval.nval) = (yyvsp[0].nval);
-    }
-
-    break;
-
-  case 35:
-
-    {
-      (yyval.session_info) = new std::pair<std::string, unsigned int>(*(yyvsp[0].sval), 0);
+    case 31: {
+      (yyvsp[-3].header)
+          ->add_generic_header(*(yyvsp[-2].sval), *(yyvsp[0].sval));
+      DELETE_TOKEN((yyvsp[-2].sval));
       DELETE_TOKEN((yyvsp[0].sval));
-    }
+    } break;
 
-    break;
+    case 32: {
+      (yyval.nval) = (yyvsp[0].nval);
+    } break;
 
-  case 36:
+    case 33: {
+      (yyval.sval) = (yyvsp[0].sval);
+    } break;
 
-    {
+    case 34: {
+      (yyval.nval) = (yyvsp[0].nval);
+    } break;
+
+    case 35: {
+      (yyval.session_info) =
+          new std::pair<std::string, unsigned int>(*(yyvsp[0].sval), 0);
+      DELETE_TOKEN((yyvsp[0].sval));
+    } break;
+
+    case 36: {
       (yyval.session_info) = new std::pair<std::string, unsigned int>(*(yyvsp[-2].sval), (yyvsp[0].nval));
       DELETE_TOKEN((yyvsp[-2].sval));
-    }
+    } break;
 
-    break;
-
-  case 37:
-
-    {
+    case 37: {
       (yyval.transport) = new wds::rtsp::TransportHeader();
       (yyval.transport)->set_client_port ((yyvsp[0].nval));
-    }
+    } break;
 
-    break;
-
-  case 38:
-
-    {
+    case 38: {
       (yyval.transport) = new wds::rtsp::TransportHeader();
       (yyval.transport)->set_client_port ((yyvsp[-2].nval));
       (yyval.transport)->set_client_supports_rtcp (true);
-    }
+    } break;
 
-    break;
-
-  case 39:
-
-    {
+    case 39: {
       (yyval.transport) = new wds::rtsp::TransportHeader();
       (yyval.transport)->set_client_port ((yyvsp[-2].nval));
       (yyval.transport)->set_server_port ((yyvsp[0].nval));
-    }
+    } break;
 
-    break;
-
-  case 40:
-
-    {
+    case 40: {
       (yyval.transport) = new wds::rtsp::TransportHeader();
       (yyval.transport)->set_client_port ((yyvsp[-4].nval));
       (yyval.transport)->set_client_supports_rtcp (true);
       (yyval.transport)->set_server_port ((yyvsp[0].nval));
-    }
+    } break;
 
-    break;
-
-  case 41:
-
-    {
+    case 41: {
       (yyval.transport) = new wds::rtsp::TransportHeader();
       (yyval.transport)->set_client_port ((yyvsp[-4].nval));
       (yyval.transport)->set_server_port ((yyvsp[-2].nval));
       (yyval.transport)->set_server_supports_rtcp (true);
-    }
+    } break;
 
-    break;
-
-  case 42:
-
-    {
+    case 42: {
       (yyval.transport) = new wds::rtsp::TransportHeader();
       (yyval.transport)->set_client_port ((yyvsp[-6].nval));
       (yyval.transport)->set_client_supports_rtcp (true);
       (yyval.transport)->set_server_port ((yyvsp[-2].nval));
       (yyval.transport)->set_server_supports_rtcp (true);
-    }
+    } break;
 
-    break;
+    case 43: {
+      (yyval.methods) = (yyvsp[0].methods);
+    } break;
 
-  case 43:
-
-    {
-     (yyval.methods) = (yyvsp[0].methods);
-    }
-
-    break;
-
-  case 44:
-
-    {
+    case 44: {
       (yyval.methods) = new std::vector<wds::rtsp::Method>();
       (yyval.methods)->push_back((yyvsp[0].method));
-    }
+    } break;
 
-    break;
-
-  case 45:
-
-    {
+    case 45: {
       UNUSED_TOKEN((yyval.methods));
       (yyvsp[-4].methods)->push_back((yyvsp[0].method));
-    }
+    } break;
 
-    break;
+    case 46: {
+      (yyval.method) = wds::rtsp::OPTIONS;
+    } break;
 
-  case 46:
+    case 47: {
+      (yyval.method) = wds::rtsp::SET_PARAMETER;
+    } break;
 
-    { (yyval.method) = wds::rtsp::OPTIONS; }
+    case 48: {
+      (yyval.method) = wds::rtsp::GET_PARAMETER;
+    } break;
 
-    break;
+    case 49: {
+      (yyval.method) = wds::rtsp::SETUP;
+    } break;
 
-  case 47:
+    case 50: {
+      (yyval.method) = wds::rtsp::PLAY;
+    } break;
 
-    { (yyval.method) = wds::rtsp::SET_PARAMETER; }
+    case 51: {
+      (yyval.method) = wds::rtsp::TEARDOWN;
+    } break;
 
-    break;
+    case 52: {
+      (yyval.method) = wds::rtsp::PAUSE;
+    } break;
 
-  case 48:
+    case 53: {
+      (yyval.method) = wds::rtsp::ORG_WFA_WFD_1_0;
+    } break;
 
-    { (yyval.method) = wds::rtsp::GET_PARAMETER; }
+    case 56: {
+      (yyval.mpayload) = 0;
+    } break;
 
-    break;
-
-  case 49:
-
-    { (yyval.method) = wds::rtsp::SETUP; }
-
-    break;
-
-  case 50:
-
-    { (yyval.method) = wds::rtsp::PLAY; }
-
-    break;
-
-  case 51:
-
-    { (yyval.method) = wds::rtsp::TEARDOWN; }
-
-    break;
-
-  case 52:
-
-    { (yyval.method) = wds::rtsp::PAUSE; }
-
-    break;
-
-  case 53:
-
-    { (yyval.method) = wds::rtsp::ORG_WFA_WFD_1_0; }
-
-    break;
-
-  case 56:
-
-    {
-    (yyval.mpayload) = 0;
-    }
-
-    break;
-
-  case 60:
-
-    {
+    case 60: {
       UNUSED_TOKEN((yyval.mpayload));
       if (auto payload = ToGetParameterPayload((yyvsp[-1].mpayload)))
         payload->AddRequestProperty((yyvsp[0].parameter));
       else
         YYERROR;
-    }
+    } break;
 
-    break;
-
-  case 61:
-
-    {
+    case 61: {
       (yyval.mpayload) = new wds::rtsp::GetParameterPayload();
       wds::rtsp::ToGetParameterPayload((yyval.mpayload))->AddRequestProperty((yyvsp[0].parameter));
-    }
+    } break;
 
-    break;
-
-  case 62:
-
-    {
+    case 62: {
       UNUSED_TOKEN((yyval.mpayload));
       if (auto payload = ToGetParameterPayload((yyvsp[-1].mpayload)))
         payload->AddRequestProperty(*(yyvsp[0].sval));
       else
         YYERROR;
       DELETE_TOKEN((yyvsp[0].sval));
-    }
+    } break;
 
-    break;
-
-  case 63:
-
-    {
+    case 63: {
       (yyval.mpayload) = new wds::rtsp::GetParameterPayload();
       wds::rtsp::ToGetParameterPayload((yyval.mpayload))->AddRequestProperty(*(yyvsp[0].sval));
       DELETE_TOKEN((yyvsp[0].sval));
-    }
+    } break;
 
-    break;
+    case 64: {
+      (yyval.parameter) = wds::rtsp::AudioCodecsPropertyType;
+    } break;
 
-  case 64:
+    case 65: {
+      (yyval.parameter) = wds::rtsp::VideoFormatsPropertyType;
+    } break;
 
-    { (yyval.parameter) = wds::rtsp::AudioCodecsPropertyType; }
+    case 66: {
+      (yyval.parameter) = wds::rtsp::Video3DFormatsPropertyType;
+    } break;
 
-    break;
+    case 67: {
+      (yyval.parameter) = wds::rtsp::ContentProtectionPropertyType;
+    } break;
 
-  case 65:
+    case 68: {
+      (yyval.parameter) = wds::rtsp::DisplayEdidPropertyType;
+    } break;
 
-    { (yyval.parameter) = wds::rtsp::VideoFormatsPropertyType; }
+    case 69: {
+      (yyval.parameter) = wds::rtsp::CoupledSinkPropertyType;
+    } break;
 
-    break;
+    case 70: {
+      (yyval.parameter) = wds::rtsp::TriggerMethodPropertyType;
+    } break;
 
-  case 66:
+    case 71: {
+      (yyval.parameter) = wds::rtsp::PresentationURLPropertyType;
+    } break;
 
-    { (yyval.parameter) = wds::rtsp::Video3DFormatsPropertyType; }
+    case 72: {
+      (yyval.parameter) = wds::rtsp::ClientRTPPortsPropertyType;
+    } break;
 
-    break;
+    case 73: {
+      (yyval.parameter) = wds::rtsp::RoutePropertyType;
+    } break;
 
-  case 67:
+    case 74: {
+      (yyval.parameter) = wds::rtsp::I2CPropertyType;
+    } break;
 
-    { (yyval.parameter) = wds::rtsp::ContentProtectionPropertyType; }
+    case 75: {
+      (yyval.parameter) = wds::rtsp::AVFormatChangeTimingPropertyType;
+    } break;
 
-    break;
+    case 76: {
+      (yyval.parameter) = wds::rtsp::PreferredDisplayModePropertyType;
+    } break;
 
-  case 68:
+    case 77: {
+      (yyval.parameter) = wds::rtsp::UIBCCapabilityPropertyType;
+    } break;
 
-    { (yyval.parameter) = wds::rtsp::DisplayEdidPropertyType; }
+    case 78: {
+      (yyval.parameter) = wds::rtsp::UIBCSettingPropertyType;
+    } break;
 
-    break;
+    case 79: {
+      (yyval.parameter) = wds::rtsp::StandbyResumeCapabilityPropertyType;
+    } break;
 
-  case 69:
+    case 80: {
+      (yyval.parameter) = wds::rtsp::StandbyPropertyType;
+    } break;
 
-    { (yyval.parameter) = wds::rtsp::CoupledSinkPropertyType; }
+    case 81: {
+      (yyval.parameter) = wds::rtsp::ConnectorTypePropertyType;
+    } break;
 
-    break;
-
-  case 70:
-
-    { (yyval.parameter) = wds::rtsp::TriggerMethodPropertyType; }
-
-    break;
-
-  case 71:
-
-    { (yyval.parameter) = wds::rtsp::PresentationURLPropertyType; }
-
-    break;
-
-  case 72:
-
-    { (yyval.parameter) = wds::rtsp::ClientRTPPortsPropertyType; }
-
-    break;
-
-  case 73:
-
-    { (yyval.parameter) = wds::rtsp::RoutePropertyType; }
-
-    break;
-
-  case 74:
-
-    { (yyval.parameter) = wds::rtsp::I2CPropertyType; }
-
-    break;
-
-  case 75:
-
-    { (yyval.parameter) = wds::rtsp::AVFormatChangeTimingPropertyType; }
-
-    break;
-
-  case 76:
-
-    { (yyval.parameter) = wds::rtsp::PreferredDisplayModePropertyType; }
-
-    break;
-
-  case 77:
-
-    { (yyval.parameter) = wds::rtsp::UIBCCapabilityPropertyType; }
-
-    break;
-
-  case 78:
-
-    { (yyval.parameter) = wds::rtsp::UIBCSettingPropertyType; }
-
-    break;
-
-  case 79:
-
-    { (yyval.parameter) = wds::rtsp::StandbyResumeCapabilityPropertyType; }
-
-    break;
-
-  case 80:
-
-    { (yyval.parameter) = wds::rtsp::StandbyPropertyType; }
-
-    break;
-
-  case 81:
-
-    { (yyval.parameter) = wds::rtsp::ConnectorTypePropertyType; }
-
-    break;
-
-  case 82:
-
-    {
+    case 82: {
       (yyval.error_list) = new std::vector<unsigned short>();
       (yyval.error_list)->push_back((yyvsp[0].nval));
-    }
+    } break;
 
-    break;
-
-  case 83:
-
-    {
+    case 83: {
       (yyvsp[-3].error_list)->push_back((yyvsp[0].nval));
-    }
+    } break;
 
-    break;
-
-  case 84:
-
-    {
-      (yyval.property_errors) = new wds::rtsp::PropertyErrors(wds::rtsp::AudioCodecsPropertyType, *(yyvsp[0].error_list));
+    case 84: {
+      (yyval.property_errors) = new wds::rtsp::PropertyErrors(
+          wds::rtsp::AudioCodecsPropertyType, *(yyvsp[0].error_list));
       DELETE_TOKEN((yyvsp[0].error_list));
-    }
+    } break;
 
-    break;
-
-  case 85:
-
-    {
-      (yyval.property_errors) = new wds::rtsp::PropertyErrors(wds::rtsp::VideoFormatsPropertyType, *(yyvsp[0].error_list));
+    case 85: {
+      (yyval.property_errors) = new wds::rtsp::PropertyErrors(
+          wds::rtsp::VideoFormatsPropertyType, *(yyvsp[0].error_list));
       DELETE_TOKEN((yyvsp[0].error_list));
-    }
+    } break;
 
-    break;
-
-  case 86:
-
-    {
-      (yyval.property_errors) = new wds::rtsp::PropertyErrors(wds::rtsp::Video3DFormatsPropertyType, *(yyvsp[0].error_list));
+    case 86: {
+      (yyval.property_errors) = new wds::rtsp::PropertyErrors(
+          wds::rtsp::Video3DFormatsPropertyType, *(yyvsp[0].error_list));
       DELETE_TOKEN((yyvsp[0].error_list));
-    }
+    } break;
 
-    break;
-
-  case 87:
-
-    {
-      (yyval.property_errors) = new wds::rtsp::PropertyErrors(wds::rtsp::ContentProtectionPropertyType, *(yyvsp[0].error_list));
+    case 87: {
+      (yyval.property_errors) = new wds::rtsp::PropertyErrors(
+          wds::rtsp::ContentProtectionPropertyType, *(yyvsp[0].error_list));
       DELETE_TOKEN((yyvsp[0].error_list));
-    }
+    } break;
 
-    break;
-
-  case 88:
-
-    {
-      (yyval.property_errors) = new wds::rtsp::PropertyErrors(wds::rtsp::DisplayEdidPropertyType, *(yyvsp[0].error_list));
+    case 88: {
+      (yyval.property_errors) = new wds::rtsp::PropertyErrors(
+          wds::rtsp::DisplayEdidPropertyType, *(yyvsp[0].error_list));
       DELETE_TOKEN((yyvsp[0].error_list));
-    }
+    } break;
 
-    break;
-
-  case 89:
-
-    {
-      (yyval.property_errors) = new wds::rtsp::PropertyErrors(wds::rtsp::CoupledSinkPropertyType, *(yyvsp[0].error_list));
+    case 89: {
+      (yyval.property_errors) = new wds::rtsp::PropertyErrors(
+          wds::rtsp::CoupledSinkPropertyType, *(yyvsp[0].error_list));
       DELETE_TOKEN((yyvsp[0].error_list));
-    }
+    } break;
 
-    break;
-
-  case 90:
-
-    {
-      (yyval.property_errors) = new wds::rtsp::PropertyErrors(wds::rtsp::TriggerMethodPropertyType, *(yyvsp[0].error_list));
+    case 90: {
+      (yyval.property_errors) = new wds::rtsp::PropertyErrors(
+          wds::rtsp::TriggerMethodPropertyType, *(yyvsp[0].error_list));
       DELETE_TOKEN((yyvsp[0].error_list));
-    }
+    } break;
 
-    break;
-
-  case 91:
-
-    {
-      (yyval.property_errors) = new wds::rtsp::PropertyErrors(wds::rtsp::PresentationURLPropertyType, *(yyvsp[0].error_list));
+    case 91: {
+      (yyval.property_errors) = new wds::rtsp::PropertyErrors(
+          wds::rtsp::PresentationURLPropertyType, *(yyvsp[0].error_list));
       DELETE_TOKEN((yyvsp[0].error_list));
-    }
+    } break;
 
-    break;
-
-  case 92:
-
-    {
-      (yyval.property_errors) = new wds::rtsp::PropertyErrors(wds::rtsp::ClientRTPPortsPropertyType, *(yyvsp[0].error_list));
+    case 92: {
+      (yyval.property_errors) = new wds::rtsp::PropertyErrors(
+          wds::rtsp::ClientRTPPortsPropertyType, *(yyvsp[0].error_list));
       DELETE_TOKEN((yyvsp[0].error_list));
-    }
+    } break;
 
-    break;
-
-  case 93:
-
-    {
-      (yyval.property_errors) = new wds::rtsp::PropertyErrors(wds::rtsp::RoutePropertyType, *(yyvsp[0].error_list));
+    case 93: {
+      (yyval.property_errors) = new wds::rtsp::PropertyErrors(
+          wds::rtsp::RoutePropertyType, *(yyvsp[0].error_list));
       DELETE_TOKEN((yyvsp[0].error_list));
-    }
+    } break;
 
-    break;
-
-  case 94:
-
-    {
-      (yyval.property_errors) = new wds::rtsp::PropertyErrors(wds::rtsp::I2CPropertyType, *(yyvsp[0].error_list));
+    case 94: {
+      (yyval.property_errors) = new wds::rtsp::PropertyErrors(
+          wds::rtsp::I2CPropertyType, *(yyvsp[0].error_list));
       DELETE_TOKEN((yyvsp[0].error_list));
-    }
+    } break;
 
-    break;
-
-  case 95:
-
-    {
-      (yyval.property_errors) = new wds::rtsp::PropertyErrors(wds::rtsp::AVFormatChangeTimingPropertyType, *(yyvsp[0].error_list));
+    case 95: {
+      (yyval.property_errors) = new wds::rtsp::PropertyErrors(
+          wds::rtsp::AVFormatChangeTimingPropertyType, *(yyvsp[0].error_list));
       DELETE_TOKEN((yyvsp[0].error_list));
-    }
+    } break;
 
-    break;
-
-  case 96:
-
-    {
-      (yyval.property_errors) = new wds::rtsp::PropertyErrors(wds::rtsp::PreferredDisplayModePropertyType, *(yyvsp[0].error_list));
+    case 96: {
+      (yyval.property_errors) = new wds::rtsp::PropertyErrors(
+          wds::rtsp::PreferredDisplayModePropertyType, *(yyvsp[0].error_list));
       DELETE_TOKEN((yyvsp[0].error_list));
-    }
+    } break;
 
-    break;
-
-  case 97:
-
-    {
-      (yyval.property_errors) = new wds::rtsp::PropertyErrors(wds::rtsp::UIBCCapabilityPropertyType, *(yyvsp[0].error_list));
+    case 97: {
+      (yyval.property_errors) = new wds::rtsp::PropertyErrors(
+          wds::rtsp::UIBCCapabilityPropertyType, *(yyvsp[0].error_list));
       DELETE_TOKEN((yyvsp[0].error_list));
-    }
+    } break;
 
-    break;
-
-  case 98:
-
-    {
-      (yyval.property_errors) = new wds::rtsp::PropertyErrors(wds::rtsp::UIBCSettingPropertyType, *(yyvsp[0].error_list));
+    case 98: {
+      (yyval.property_errors) = new wds::rtsp::PropertyErrors(
+          wds::rtsp::UIBCSettingPropertyType, *(yyvsp[0].error_list));
       DELETE_TOKEN((yyvsp[0].error_list));
-    }
+    } break;
 
-    break;
-
-  case 99:
-
-    {
-      (yyval.property_errors) = new wds::rtsp::PropertyErrors(wds::rtsp::StandbyResumeCapabilityPropertyType, *(yyvsp[0].error_list));
+    case 99: {
+      (yyval.property_errors) = new wds::rtsp::PropertyErrors(
+          wds::rtsp::StandbyResumeCapabilityPropertyType,
+          *(yyvsp[0].error_list));
       DELETE_TOKEN((yyvsp[0].error_list));
-    }
+    } break;
 
-    break;
-
-  case 100:
-
-    {
-      (yyval.property_errors) = new wds::rtsp::PropertyErrors(wds::rtsp::ConnectorTypePropertyType, *(yyvsp[0].error_list));
+    case 100: {
+      (yyval.property_errors) = new wds::rtsp::PropertyErrors(
+          wds::rtsp::ConnectorTypePropertyType, *(yyvsp[0].error_list));
       DELETE_TOKEN((yyvsp[0].error_list));
-    }
+    } break;
 
-    break;
-
-  case 101:
-
-    {
-      (yyval.property_errors) = new wds::rtsp::PropertyErrors(wds::rtsp::IDRRequestPropertyType, *(yyvsp[0].error_list));
+    case 101: {
+      (yyval.property_errors) = new wds::rtsp::PropertyErrors(
+          wds::rtsp::IDRRequestPropertyType, *(yyvsp[0].error_list));
       DELETE_TOKEN((yyvsp[0].error_list));
-    }
+    } break;
 
-    break;
-
-  case 102:
-
-    {
-      (yyval.property_errors) = new wds::rtsp::PropertyErrors(*(yyvsp[-3].sval), *(yyvsp[0].error_list));
+    case 102: {
+      (yyval.property_errors) = new wds::rtsp::PropertyErrors(
+          *(yyvsp[-3].sval), *(yyvsp[0].error_list));
       DELETE_TOKEN((yyvsp[-3].sval));
       DELETE_TOKEN((yyvsp[0].error_list));
-    }
+    } break;
 
-    break;
-
-  case 103:
-
-    {
+    case 103: {
       (yyval.mpayload) = new wds::rtsp::PropertyErrorPayload();
-      ToPropertyErrorPayload((yyval.mpayload))->AddPropertyError(std::shared_ptr<wds::rtsp::PropertyErrors>((yyvsp[0].property_errors)));
-    }
+      ToPropertyErrorPayload((yyval.mpayload))
+          ->AddPropertyError(std::shared_ptr<wds::rtsp::PropertyErrors>(
+              (yyvsp[0].property_errors)));
+    } break;
 
-    break;
-
-  case 104:
-
-    {
+    case 104: {
       if (auto payload = ToPropertyErrorPayload((yyvsp[-1].mpayload)))
-        payload->AddPropertyError(std::shared_ptr<wds::rtsp::PropertyErrors>((yyvsp[0].property_errors)));
+        payload->AddPropertyError(std::shared_ptr<wds::rtsp::PropertyErrors>(
+            (yyvsp[0].property_errors)));
       else
         YYERROR;
-    }
+    } break;
 
-    break;
-
-  case 105:
-
-    {
+    case 105: {
       (yyval.mpayload) = new wds::rtsp::PropertyMapPayload();
-      ToPropertyMapPayload((yyval.mpayload))->AddProperty(std::shared_ptr<wds::rtsp::Property>((yyvsp[0].property)));
-    }
+      ToPropertyMapPayload((yyval.mpayload))
+          ->AddProperty(
+              std::shared_ptr<wds::rtsp::Property>((yyvsp[0].property)));
+    } break;
 
-    break;
-
-  case 106:
-
-    {
+    case 106: {
       if (auto payload = ToPropertyMapPayload((yyvsp[-1].mpayload)))
-        payload->AddProperty(std::shared_ptr<wds::rtsp::Property>((yyvsp[0].property)));
+        payload->AddProperty(
+            std::shared_ptr<wds::rtsp::Property>((yyvsp[0].property)));
       else
         YYERROR;
-    }
+    } break;
 
-    break;
-
-  case 124:
-
-    {
+    case 124: {
       (yyval.property) = new wds::rtsp::Standby();
-    }
+    } break;
 
-    break;
-
-  case 125:
-
-    {
+    case 125: {
       (yyval.property) = new wds::rtsp::IDRRequest();
-    }
+    } break;
 
-    break;
-
-  case 126:
-
-    {
-      (yyval.property) = new wds::rtsp::GenericProperty(*(yyvsp[-1].sval), *(yyvsp[0].sval));
+    case 126: {
+      (yyval.property) =
+          new wds::rtsp::GenericProperty(*(yyvsp[-1].sval), *(yyvsp[0].sval));
       DELETE_TOKEN((yyvsp[-1].sval));
       DELETE_TOKEN((yyvsp[0].sval));
-    }
+    } break;
 
-    break;
-
-  case 127:
-
-    {
+    case 127: {
       (yyval.property) = new wds::rtsp::AudioCodecs(*(yyvsp[0].audio_codecs));
       DELETE_TOKEN((yyvsp[0].audio_codecs));
-    }
+    } break;
 
-    break;
-
-  case 128:
-
-    {
+    case 128: {
       (yyval.property) = new wds::rtsp::AudioCodecs();
-    }
+    } break;
 
-    break;
-
-  case 129:
-
-    {
+    case 129: {
       (yyval.audio_codecs) = new std::vector<wds::AudioCodec>();
       (yyval.audio_codecs)->push_back(*(yyvsp[0].audio_codec));
       DELETE_TOKEN((yyvsp[0].audio_codec));
-    }
+    } break;
 
-    break;
-
-  case 130:
-
-    {
+    case 130: {
       UNUSED_TOKEN((yyval.audio_codecs));
       (yyvsp[-3].audio_codecs)->push_back(*(yyvsp[0].audio_codec));
       DELETE_TOKEN((yyvsp[0].audio_codec));
-    }
+    } break;
 
-    break;
+    case 131: {
+      (yyval.audio_codec) = new wds::AudioCodec(
+          (yyvsp[-4].audio_format), (yyvsp[-2].nval), (yyvsp[0].nval));
+    } break;
 
-  case 131:
+    case 132: {
+      (yyval.audio_format) = wds::LPCM;
+    } break;
 
-    {
-    (yyval.audio_codec) = new wds::AudioCodec((yyvsp[-4].audio_format), (yyvsp[-2].nval), (yyvsp[0].nval));
-  }
+    case 133: {
+      (yyval.audio_format) = wds::AAC;
+    } break;
 
-    break;
+    case 134: {
+      (yyval.audio_format) = wds::AC3;
+    } break;
 
-  case 132:
-
-    { (yyval.audio_format) = wds::LPCM; }
-
-    break;
-
-  case 133:
-
-    { (yyval.audio_format) = wds::AAC; }
-
-    break;
-
-  case 134:
-
-    { (yyval.audio_format) = wds::AC3; }
-
-    break;
-
-  case 135:
-
-    {
+    case 135: {
       (yyval.property) = new wds::rtsp::VideoFormats();
-    }
+    } break;
 
-    break;
-
-  case 136:
-
-    {
-      (yyval.property) = new wds::rtsp::VideoFormats((yyvsp[-4].nval), (yyvsp[-2].nval), *(yyvsp[0].codecs));
+    case 136: {
+      (yyval.property) = new wds::rtsp::VideoFormats(
+          (yyvsp[-4].nval), (yyvsp[-2].nval), *(yyvsp[0].codecs));
       DELETE_TOKEN((yyvsp[0].codecs));
-    }
+    } break;
 
-    break;
-
-  case 137:
-
-    {
+    case 137: {
       (yyval.codecs) = new wds::rtsp::H264Codecs();
       (yyval.codecs)->push_back(*(yyvsp[0].codec));
       DELETE_TOKEN((yyvsp[0].codec));
-    }
+    } break;
 
-    break;
-
-  case 138:
-
-    {
+    case 138: {
       UNUSED_TOKEN((yyval.codecs));
       (yyvsp[-4].codecs)->push_back(*(yyvsp[0].codec));
       DELETE_TOKEN((yyvsp[0].codec));
-    }
+    } break;
 
-    break;
+    case 139: {
+      (yyval.codec) = new wds::rtsp::H264Codec(
+          (yyvsp[-20].nval), (yyvsp[-18].nval), (yyvsp[-16].nval),
+          (yyvsp[-14].nval), (yyvsp[-12].nval), (yyvsp[-10].nval),
+          (yyvsp[-8].nval), (yyvsp[-6].nval), (yyvsp[-4].nval),
+          (yyvsp[-2].nval), (yyvsp[0].nval));
+    } break;
 
-  case 139:
-
-    {
-      (yyval.codec) = new wds::rtsp::H264Codec((yyvsp[-20].nval), (yyvsp[-18].nval), (yyvsp[-16].nval), (yyvsp[-14].nval), (yyvsp[-12].nval), (yyvsp[-10].nval), (yyvsp[-8].nval), (yyvsp[-6].nval), (yyvsp[-4].nval), (yyvsp[-2].nval), (yyvsp[0].nval));
-    }
-
-    break;
-
-  case 140:
-
-    {
+    case 140: {
       (yyval.codecs_3d) = new wds::rtsp::H264Codecs3d();
       (yyval.codecs_3d)->push_back(*(yyvsp[0].codec_3d));
       DELETE_TOKEN((yyvsp[0].codec_3d));
-    }
+    } break;
 
-    break;
-
-  case 141:
-
-    {
+    case 141: {
       UNUSED_TOKEN((yyval.codecs_3d));
       (yyvsp[-4].codecs_3d)->push_back(*(yyvsp[0].codec_3d));
       DELETE_TOKEN((yyvsp[0].codec_3d));
-    }
+    } break;
 
-    break;
+    case 142: {
+      (yyval.codec_3d) = new wds::rtsp::H264Codec3d(
+          (yyvsp[-16].nval), (yyvsp[-14].nval), (yyvsp[-12].nval),
+          (yyvsp[-10].nval), (yyvsp[-8].nval), (yyvsp[-6].nval),
+          (yyvsp[-4].nval), (yyvsp[-2].nval), (yyvsp[0].nval));
+    } break;
 
-  case 142:
-
-    {
-      (yyval.codec_3d) = new wds::rtsp::H264Codec3d((yyvsp[-16].nval), (yyvsp[-14].nval), (yyvsp[-12].nval), (yyvsp[-10].nval), (yyvsp[-8].nval), (yyvsp[-6].nval), (yyvsp[-4].nval), (yyvsp[-2].nval), (yyvsp[0].nval));
-    }
-
-    break;
-
-  case 143:
-
-    {
+    case 143: {
       (yyval.nval) = 0;
-    }
+    } break;
 
-    break;
-
-  case 145:
-
-    {
+    case 145: {
       (yyval.nval) = 0;
-    }
+    } break;
 
-    break;
-
-  case 147:
-
-    {
-      (yyval.property) = new wds::rtsp::Formats3d((yyvsp[-4].nval), (yyvsp[-2].nval), *(yyvsp[0].codecs_3d));
+    case 147: {
+      (yyval.property) = new wds::rtsp::Formats3d(
+          (yyvsp[-4].nval), (yyvsp[-2].nval), *(yyvsp[0].codecs_3d));
       DELETE_TOKEN((yyvsp[0].codecs_3d));
-    }
+    } break;
 
-    break;
-
-  case 148:
-
-    {
+    case 148: {
       (yyval.property) = new wds::rtsp::Formats3d();
-    }
+    } break;
 
-    break;
-
-  case 149:
-
-    {
+    case 149: {
       (yyval.property) = new wds::rtsp::ContentProtection();
-    }
+    } break;
 
-    break;
-
-  case 150:
-
-    {
+    case 150: {
       (yyval.property) = new wds::rtsp::ContentProtection((yyvsp[-3].hdcp_spec), (yyvsp[0].nval));
-    }
+    } break;
 
-    break;
-
-  case 151:
-
-    {
+    case 151: {
       (yyval.hdcp_spec) = wds::rtsp::ContentProtection::HDCP_SPEC_2_0;
-    }
+    } break;
 
-    break;
-
-  case 152:
-
-    {
+    case 152: {
       (yyval.hdcp_spec) = wds::rtsp::ContentProtection::HDCP_SPEC_2_1;
-    }
+    } break;
 
-    break;
-
-  case 153:
-
-    {
+    case 153: {
       (yyval.property) = new wds::rtsp::DisplayEdid();
-    }
+    } break;
 
-    break;
-
-  case 154:
-
-    {
-      (yyval.property) = new wds::rtsp::DisplayEdid((yyvsp[-2].nval), (yyvsp[0].sval) ? *(yyvsp[0].sval) : "");
+    case 154: {
+      (yyval.property) = new wds::rtsp::DisplayEdid(
+          (yyvsp[-2].nval), (yyvsp[0].sval) ? *(yyvsp[0].sval) : "");
       DELETE_TOKEN((yyvsp[0].sval));
-    }
+    } break;
 
-    break;
-
-  case 155:
-
-    {
+    case 155: {
       (yyval.sval) = 0;
-    }
+    } break;
 
-    break;
-
-  case 157:
-
-    {
+    case 157: {
       (yyval.property) = new wds::rtsp::CoupledSink();
-    }
+    } break;
 
-    break;
+    case 158: {
+      (yyval.property) =
+          new wds::rtsp::CoupledSink((yyvsp[-2].nval), (yyvsp[0].nval));
+    } break;
 
-  case 158:
+    case 159: {
+      (yyval.nval) = -1;
+    } break;
 
-    {
-      (yyval.property) = new wds::rtsp::CoupledSink((yyvsp[-2].nval), (yyvsp[0].nval));
-    }
+    case 161: {
+      (yyval.property) =
+          new wds::rtsp::TriggerMethod((yyvsp[0].trigger_method));
+    } break;
 
-    break;
-
-  case 159:
-
-    {
-     (yyval.nval) = -1;
-    }
-
-    break;
-
-  case 161:
-
-    {
-      (yyval.property) = new wds::rtsp::TriggerMethod((yyvsp[0].trigger_method));
-    }
-
-    break;
-
-  case 162:
-
-    {
+    case 162: {
       (yyval.trigger_method) = wds::rtsp::TriggerMethod::SETUP;
-    }
+    } break;
 
-    break;
-
-  case 163:
-
-    {
+    case 163: {
       (yyval.trigger_method) = wds::rtsp::TriggerMethod::PAUSE;
-    }
+    } break;
 
-    break;
-
-  case 164:
-
-    {
+    case 164: {
       (yyval.trigger_method) = wds::rtsp::TriggerMethod::TEARDOWN;
-    }
+    } break;
 
-    break;
-
-  case 165:
-
-    {
+    case 165: {
       (yyval.trigger_method) = wds::rtsp::TriggerMethod::PLAY;
-    }
+    } break;
 
-    break;
-
-  case 166:
-
-    {
-      (yyval.property) = new wds::rtsp::PresentationUrl((yyvsp[-2].sval) ? *(yyvsp[-2].sval) : "", (yyvsp[0].sval) ? *(yyvsp[0].sval) : "");
+    case 166: {
+      (yyval.property) = new wds::rtsp::PresentationUrl(
+          (yyvsp[-2].sval) ? *(yyvsp[-2].sval) : "",
+          (yyvsp[0].sval) ? *(yyvsp[0].sval) : "");
       DELETE_TOKEN((yyvsp[-2].sval));
       DELETE_TOKEN((yyvsp[0].sval));
-    }
+    } break;
 
-    break;
-
-  case 167:
-
-    {
+    case 167: {
       (yyval.sval) = 0;
-    }
+    } break;
 
-    break;
-
-  case 169:
-
-    {
+    case 169: {
       (yyval.sval) = 0;
-    }
+    } break;
 
-    break;
+    case 171: {
+      (yyval.property) =
+          new wds::rtsp::ClientRtpPorts((yyvsp[-4].nval), (yyvsp[-2].nval));
+    } break;
 
-  case 171:
-
-    {
-      (yyval.property) = new wds::rtsp::ClientRtpPorts((yyvsp[-4].nval), (yyvsp[-2].nval));
-  }
-
-    break;
-
-  case 172:
-
-    {
+    case 172: {
       (yyval.property) = new wds::rtsp::Route((yyvsp[0].route_destination));
-    }
+    } break;
 
-    break;
-
-  case 173:
-
-    {
+    case 173: {
       (yyval.route_destination) = wds::rtsp::Route::PRIMARY;
-    }
+    } break;
 
-    break;
-
-  case 174:
-
-    {
+    case 174: {
       (yyval.route_destination) = wds::rtsp::Route::SECONDARY;
-    }
+    } break;
 
-    break;
-
-  case 175:
-
-    {
+    case 175: {
       (yyval.property) = new wds::rtsp::I2C((yyvsp[0].nval));
-    }
+    } break;
 
-    break;
-
-  case 176:
-
-    {
+    case 176: {
       (yyval.nval) = -1;
-    }
+    } break;
 
-    break;
+    case 178: {
+      (yyval.property) = new wds::rtsp::AVFormatChangeTiming((yyvsp[-2].nval),
+                                                             (yyvsp[0].nval));
+    } break;
 
-  case 178:
-
-    {
-      (yyval.property) = new wds::rtsp::AVFormatChangeTiming((yyvsp[-2].nval), (yyvsp[0].nval));
-    }
-
-    break;
-
-  case 179:
-
-    {
+    case 179: {
       (yyval.property) = new wds::rtsp::PreferredDisplayMode((yyvsp[-24].nval), (yyvsp[-22].nval), (yyvsp[-20].nval), (yyvsp[-18].nval), (yyvsp[-16].nval), (yyvsp[-14].nval), (yyvsp[-12].nval), (yyvsp[-10].nval), (yyvsp[-8].nval), (yyvsp[-6].nval), (yyvsp[-4].nval), (yyvsp[-2].nval), *(yyvsp[0].codec));
       DELETE_TOKEN((yyvsp[0].codec));
-    }
+    } break;
 
-    break;
-
-  case 180:
-
-    {
+    case 180: {
       (yyval.property) = new wds::rtsp::UIBCCapability();
-    }
+    } break;
 
-    break;
-
-  case 181:
-
-    {
+    case 181: {
       (yyval.property) = new wds::rtsp::UIBCCapability(*(yyvsp[-7].input_category_list), *(yyvsp[-5].generic_cap_list), *(yyvsp[-3].hidc_cap_list), (yyvsp[0].nval));
       DELETE_TOKEN((yyvsp[-7].input_category_list));
       DELETE_TOKEN((yyvsp[-5].generic_cap_list));
       DELETE_TOKEN((yyvsp[-3].hidc_cap_list));
-    }
+    } break;
 
-    break;
-
-  case 182:
-
-    {
+    case 182: {
       (yyval.input_category_list) = (yyvsp[0].input_category_list);
-    }
+    } break;
 
-    break;
-
-  case 183:
-
-    {
+    case 183: {
       (yyval.input_category_list) = new std::vector<wds::rtsp::UIBCCapability::InputCategory>();
-    }
+    } break;
 
-    break;
-
-  case 184:
-
-    {
+    case 184: {
       (yyval.input_category_list) = new std::vector<wds::rtsp::UIBCCapability::InputCategory>();
       (yyval.input_category_list)->push_back((yyvsp[0].input_category_list_value));
-    }
+    } break;
 
-    break;
-
-  case 185:
-
-    {
+    case 185: {
       (yyvsp[-3].input_category_list)->push_back((yyvsp[0].input_category_list_value));
-    }
+    } break;
 
-    break;
-
-  case 186:
-
-    {
+    case 186: {
       (yyval.input_category_list_value) = wds::rtsp::UIBCCapability::GENERIC;
-    }
+    } break;
 
-    break;
-
-  case 187:
-
-    {
+    case 187: {
       (yyval.input_category_list_value) = wds::rtsp::UIBCCapability::HIDC;
-    }
+    } break;
 
-    break;
-
-  case 188:
-
-    {
+    case 188: {
       (yyval.generic_cap_list) = (yyvsp[0].generic_cap_list);
-    }
+    } break;
 
-    break;
-
-  case 189:
-
-    {
+    case 189: {
       (yyval.generic_cap_list) = new std::vector<wds::rtsp::UIBCCapability::InputType>();
-    }
+    } break;
 
-    break;
-
-  case 190:
-
-    {
+    case 190: {
       (yyval.generic_cap_list) = new std::vector<wds::rtsp::UIBCCapability::InputType>();
       (yyval.generic_cap_list)->push_back((yyvsp[0].generic_cap_list_value));
-    }
+    } break;
 
-    break;
-
-  case 191:
-
-    {
+    case 191: {
       (yyvsp[-3].generic_cap_list)->push_back((yyvsp[0].generic_cap_list_value));
-    }
+    } break;
 
-    break;
-
-  case 192:
-
-    {
+    case 192: {
       (yyval.generic_cap_list_value) = wds::rtsp::UIBCCapability::KEYBOARD;
-    }
+    } break;
 
-    break;
-
-  case 193:
-
-    {
+    case 193: {
       (yyval.generic_cap_list_value) = wds::rtsp::UIBCCapability::MOUSE;
-    }
+    } break;
 
-    break;
-
-  case 194:
-
-    {
+    case 194: {
       (yyval.generic_cap_list_value) = wds::rtsp::UIBCCapability::SINGLE_TOUCH;
-    }
+    } break;
 
-    break;
-
-  case 195:
-
-    {
+    case 195: {
       (yyval.generic_cap_list_value) = wds::rtsp::UIBCCapability::MULTI_TOUCH;
-    }
+    } break;
 
-    break;
-
-  case 196:
-
-    {
+    case 196: {
       (yyval.generic_cap_list_value) = wds::rtsp::UIBCCapability::JOYSTICK;
-    }
+    } break;
 
-    break;
-
-  case 197:
-
-    {
+    case 197: {
       (yyval.generic_cap_list_value) = wds::rtsp::UIBCCapability::CAMERA;
-    }
+    } break;
 
-    break;
-
-  case 198:
-
-    {
+    case 198: {
       (yyval.generic_cap_list_value) = wds::rtsp::UIBCCapability::GESTURE;
-    }
+    } break;
 
-    break;
-
-  case 199:
-
-    {
+    case 199: {
       (yyval.generic_cap_list_value) = wds::rtsp::UIBCCapability::REMOTE_CONTROL;
-    }
+    } break;
 
-    break;
-
-  case 200:
-
-    {
+    case 200: {
       (yyval.hidc_cap_list) = (yyvsp[0].hidc_cap_list);
-    }
+    } break;
 
-    break;
-
-  case 201:
-
-    {
+    case 201: {
       (yyval.hidc_cap_list) = new std::vector<wds::rtsp::UIBCCapability::DetailedCapability>();
-    }
+    } break;
 
-    break;
-
-  case 202:
-
-    {
+    case 202: {
       (yyval.hidc_cap_list) = new std::vector<wds::rtsp::UIBCCapability::DetailedCapability>();
       (yyval.hidc_cap_list)->push_back(*(yyvsp[0].hidc_cap_list_value));
       DELETE_TOKEN((yyvsp[0].hidc_cap_list_value));
-    }
+    } break;
 
-    break;
-
-  case 203:
-
-    {
+    case 203: {
       (yyvsp[-3].hidc_cap_list)->push_back(*(yyvsp[0].hidc_cap_list_value));
       DELETE_TOKEN((yyvsp[0].hidc_cap_list_value));
-    }
+    } break;
 
-    break;
-
-  case 204:
-
-    {
+    case 204: {
       (yyval.hidc_cap_list_value) = new wds::rtsp::UIBCCapability::DetailedCapability((yyvsp[-2].generic_cap_list_value), (yyvsp[0].input_path));
-    }
+    } break;
 
-    break;
-
-  case 205:
-
-    {
+    case 205: {
       (yyval.input_path) = wds::rtsp::UIBCCapability::INFRARED;
-    }
+    } break;
 
-    break;
-
-  case 206:
-
-    {
+    case 206: {
       (yyval.input_path) = wds::rtsp::UIBCCapability::USB;
-    }
+    } break;
 
-    break;
-
-  case 207:
-
-    {
+    case 207: {
       (yyval.input_path) = wds::rtsp::UIBCCapability::BT;
-    }
+    } break;
 
-    break;
-
-  case 208:
-
-    {
+    case 208: {
       (yyval.input_path) = wds::rtsp::UIBCCapability::ZIGBEE;
-    }
+    } break;
 
-    break;
-
-  case 209:
-
-    {
+    case 209: {
       (yyval.input_path) = wds::rtsp::UIBCCapability::WI_FI;
-    }
+    } break;
 
-    break;
-
-  case 210:
-
-    {
+    case 210: {
       (yyval.input_path) = wds::rtsp::UIBCCapability::NO_SP;
-    }
+    } break;
 
-    break;
-
-  case 211:
-
-    {
+    case 211: {
       (yyval.property) = new wds::rtsp::UIBCSetting((yyvsp[0].uibc_setting));
-    }
+    } break;
 
-    break;
-
-  case 212:
-
-    {
+    case 212: {
       (yyval.uibc_setting) = true;
-    }
+    } break;
 
-    break;
-
-  case 213:
-
-    {
+    case 213: {
       (yyval.uibc_setting) = false;
-    }
+    } break;
 
-    break;
-
-  case 214:
-
-    {
+    case 214: {
       (yyval.property) = new wds::rtsp::StandbyResumeCapability((yyvsp[0].bool_val));
-    }
+    } break;
 
-    break;
-
-  case 215:
-
-    {
+    case 215: {
       (yyval.bool_val) = false;
-    }
+    } break;
 
-    break;
-
-  case 216:
-
-    {
+    case 216: {
       (yyval.bool_val) = true;
-    }
+    } break;
 
-    break;
-
-  case 217:
-
-    {
+    case 217: {
       (yyval.property) = new wds::rtsp::ConnectorType((yyvsp[0].nval));
-    }
+    } break;
 
-    break;
-
-  case 218:
-
-    {
+    case 218: {
       (yyval.property) = new wds::rtsp::ConnectorType();
-    }
-
-    break;
-
-
+    } break;
 
       default: break;
     }
@@ -3444,14 +2840,13 @@ yyreduce:
   /* Now 'shift' the result of the reduction.  Determine what state
      that goes to, based on the state we popped back to and the rule
      number reduced by.  */
-
-  yyn = yyr1[yyn];
-
-  yystate = yypgoto[yyn - YYNTOKENS] + *yyssp;
-  if (0 <= yystate && yystate <= YYLAST && yycheck[yystate] == *yyssp)
-    yystate = yytable[yystate];
-  else
-    yystate = yydefgoto[yyn - YYNTOKENS];
+  {
+    const int yylhs = yyr1[yyn] - YYNTOKENS;
+    const int yyi = yypgoto[yylhs] + *yyssp;
+    yystate = (0 <= yyi && yyi <= YYLAST && yycheck[yyi] == *yyssp
+                   ? yytable[yyi]
+                   : yydefgoto[yylhs]);
+  }
 
   goto yynewstate;
 
@@ -3483,7 +2878,8 @@ yyerrlab:
           {
             if (yymsg != yymsgbuf)
               YYSTACK_FREE (yymsg);
-            yymsg = (char *) YYSTACK_ALLOC (yymsg_alloc);
+            yymsg =
+                YY_CAST(char*, YYSTACK_ALLOC(YY_CAST(YYSIZE_T, yymsg_alloc)));
             if (!yymsg)
               {
                 yymsg = yymsgbuf;
@@ -3534,12 +2930,10 @@ yyerrlab:
 | yyerrorlab -- error raised explicitly by YYERROR.  |
 `---------------------------------------------------*/
 yyerrorlab:
-
-  /* Pacify compilers like GCC when the user code never invokes
-     YYERROR and the label yyerrorlab therefore never appears in user
-     code.  */
-  if (/*CONSTCOND*/ 0)
-     goto yyerrorlab;
+  /* Pacify compilers when the user code never invokes YYERROR and the
+     label yyerrorlab therefore never appears in user code.  */
+  if (0)
+    YYERROR;
 
   /* Do not reclaim the symbols of the rule whose action triggered
      this YYERROR.  */
@@ -3618,6 +3012,9 @@ yyexhaustedlab:
   /* Fall through.  */
 #endif
 
+/*-----------------------------------------------------.
+| yyreturn -- parsing is finished, return the result.  |
+`-----------------------------------------------------*/
 yyreturn:
   if (yychar != YYEMPTY)
     {
@@ -3633,9 +3030,8 @@ yyreturn:
   YY_STACK_PRINT (yyss, yyssp);
   while (yyssp != yyss)
     {
-      yydestruct ("Cleanup: popping",
-                  yystos[*yyssp], yyvsp, scanner, message);
-      YYPOPSTACK (1);
+    yydestruct("Cleanup: popping", yystos[+*yyssp], yyvsp, scanner, message);
+    YYPOPSTACK(1);
     }
 #ifndef yyoverflow
   if (yyss != yyssa)
@@ -3647,5 +3043,4 @@ yyreturn:
 #endif
   return yyresult;
 }
-
 

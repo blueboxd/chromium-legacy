@@ -26,7 +26,7 @@ def print_package_dependencies_for_edge(begin, end):
         print(f'\t\t{begin_class.class_name} -> {end_class.class_name}')
 
 
-def print_package_dependencies_for_key(package_graph, key):
+def print_package_dependencies_for_key(package_graph, key, ignore_subpackages):
     """Prints dependencies for a valid key into the package graph.
 
     Since we store self-edges for the package graph
@@ -38,14 +38,17 @@ def print_package_dependencies_for_key(package_graph, key):
     print(f'{len(inbound_without_self)} inbound dependency(ies) '
           f'for {node.name}:')
     for inbound_dep in graph.sorted_nodes_by_name(inbound_without_self):
+        if ignore_subpackages and inbound_dep.name.startswith(node.name):
+            continue
         print_package_dependencies_for_edge(inbound_dep, node)
 
     outbound_without_self = [other for other in node.outbound if other != node]
     print(f'{len(outbound_without_self)} outbound dependency(ies) '
           f'for {node.name}:')
     for outbound_dep in graph.sorted_nodes_by_name(outbound_without_self):
+        if ignore_subpackages and outbound_dep.name.startswith(node.name):
+            continue
         print_package_dependencies_for_edge(node, outbound_dep)
-
 
 def main():
     """Prints package-level dependencies for an input package."""
@@ -67,6 +70,15 @@ def main():
         help='Case-insensitive name of the package to print dependencies for. '
         'Matches names of the form ...input, for example '
         '`browser` matches `org.chromium.browser`.')
+    optional_arg_group = arg_parser.add_argument_group('optional arguments')
+    optional_arg_group.add_argument(
+        '-s',
+        '--ignore-subpackages',
+        action='store_true',
+        help='If present, this tool will ignore dependencies between the '
+        'given package and subpackages. For example, if given '
+        'browser.customtabs, it won\'t print a dependency between '
+        'browser.customtabs and browser.customtabs.content.')
     arguments = arg_parser.parse_args()
 
     _, package_graph = serialization.load_class_and_package_graphs_from_file(
@@ -84,7 +96,8 @@ def main():
             print(f'\t{valid_key}')
     else:
         print(f'Printing package dependencies for {valid_keys[0]}:')
-        print_package_dependencies_for_key(package_graph, valid_keys[0])
+        print_package_dependencies_for_key(package_graph, valid_keys[0],
+                                           arguments.ignore_subpackages)
 
 
 if __name__ == '__main__':

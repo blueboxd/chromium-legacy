@@ -128,7 +128,6 @@ NGMathFractionLayoutAlgorithm::NGMathFractionLayoutAlgorithm(
   DCHECK(params.space.IsNewFormattingContext());
   container_builder_.SetIsNewFormattingContext(
       params.space.IsNewFormattingContext());
-  container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
   container_builder_.SetIsMathMLFraction();
 }
 

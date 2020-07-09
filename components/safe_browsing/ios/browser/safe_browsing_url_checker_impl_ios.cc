@@ -6,21 +6,19 @@
 
 namespace safe_browsing {
 
-bool SafeBrowsingUrlCheckerImpl::CanPerformFullURLLookup(const GURL& url) {
-  // TODO(crbug.com/1028755): Support real-time checks on iOS.
-  return false;
+void SafeBrowsingUrlCheckerImpl::LogRTLookupRequest(
+    const RTLookupRequest& request,
+    const std::string& oauth_token) {
+  // TODO(crbug.com/1103222): Log this request on open chrome://safe-browsing
+  // pages once chrome://safe-browsing works on iOS, or log this request to
+  // stderr.
 }
 
-void SafeBrowsingUrlCheckerImpl::OnRTLookupRequest(
-    std::unique_ptr<RTLookupRequest> request,
-    std::string oauth_token) {
-  NOTREACHED();
-}
-
-void SafeBrowsingUrlCheckerImpl::OnRTLookupResponse(
-    bool is_rt_lookup_successful,
-    std::unique_ptr<RTLookupResponse> response) {
-  NOTREACHED();
+void SafeBrowsingUrlCheckerImpl::LogRTLookupResponse(
+    const RTLookupResponse& response) {
+  // TODO(crbug.com/1103222): Log this response on open chrome://safe-browsing
+  // pages once chrome://safe-browsing works on iOS, or log this response to
+  // stderr.
 }
 
 }  // namespace safe_browsing

@@ -12,10 +12,10 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/fake_cws.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/login/app_launch_controller.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_view.h"
+#include "chrome/browser/chromeos/login/kiosk_launch_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/enrollment_ui_mixin.h"
@@ -870,7 +870,8 @@ class KioskEnrollmentTest : public EnrollmentLocalPolicyServerBase {
   // EnrollmentLocalPolicyServerBase:
   void SetUp() override {
     needs_background_networking_ = true;
-    AppLaunchController::SkipSplashWaitForTesting();
+    skip_splash_wait_override_ =
+        AppLaunchController::SkipSplashScreenWaitForTesting();
     EnrollmentLocalPolicyServerBase::SetUp();
   }
 
@@ -887,6 +888,7 @@ class KioskEnrollmentTest : public EnrollmentLocalPolicyServerBase {
 
  private:
   std::unique_ptr<FakeCWS> fake_cws_;
+  std::unique_ptr<base::AutoReset<bool>> skip_splash_wait_override_;
 };
 
 IN_PROC_BROWSER_TEST_F(KioskEnrollmentTest,

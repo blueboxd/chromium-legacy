@@ -76,4 +76,10 @@ class DefaultBrowserPromoMetrics {
                 : "Android.DefaultBrowserPromo.Outcome.OtherDefault";
         RecordHistogram.recordEnumeratedHistogram(name, newState, DefaultBrowserState.NUM_ENTRIES);
     }
+
+    static void recordLaunchedByDisambiguationSheet(@DefaultBrowserState int currentState) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Android.DefaultBrowserPromo.IntentReceivedFromDisambiguationSheet", currentState,
+                DefaultBrowserState.NUM_ENTRIES);
+    }
 }

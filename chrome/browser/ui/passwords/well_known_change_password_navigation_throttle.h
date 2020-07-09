@@ -9,6 +9,7 @@
 
 #include "content/public/browser/navigation_throttle.h"
 
+class GURL;
 namespace content {
 class NavigationHandle;
 }  // namespace content
@@ -52,6 +53,15 @@ class WellKnownChangePasswordNavigationThrottle
   // Callback for the request to the "not exist" path.
   void FetchNonExistingResourceCallback(
       scoped_refptr<net::HttpResponseHeaders> headers);
+  // Function is called when both requests are finished. Decides to continue or
+  // redirect to homepage.
+  ThrottleAction ContinueProcessing();
+  // Redirects to a given URL in the same tab.
+  void Redirect(const GURL& url);
+  // Checks if both requests are finished.
+  bool BothRequestsFinished() const;
+  // Checks the status codes and returns if change password is supported.
+  bool SupportsChangePasswordUrl() const;
 
   int non_existing_resource_response_code_ = 0;
   int change_password_response_code_ = 0;

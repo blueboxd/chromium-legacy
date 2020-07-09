@@ -582,7 +582,7 @@ viz_source_set("unit_tests") {
     }
   }
 
-  if (skia_use_dawn) {
+  if (skia_use_dawn && enable_skia_dawn_gtests) {
     defines += [ "ENABLE_VIZ_DAWN_TESTS" ]
   }
 }

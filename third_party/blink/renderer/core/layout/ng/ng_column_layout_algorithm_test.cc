@@ -4707,6 +4707,8 @@ TEST_F(NGColumnLayoutAlgorithmTest, SpannerInBlock) {
       offset:1,1 size:100x1
         offset:0,0 size:11x0
       offset:1,1 size:320x44
+      offset:1,45 size:100x1
+        offset:0,0 size:11x0
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }
@@ -4786,6 +4788,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, SpannerInBlockWithSiblings) {
         offset:0,0 size:11x0
       offset:1,1 size:320x44
       offset:1,45 size:100x40
+        offset:0,0 size:11x0
         offset:0,0 size:100x20
         offset:0,20 size:100x20
       offset:111,45 size:100x40

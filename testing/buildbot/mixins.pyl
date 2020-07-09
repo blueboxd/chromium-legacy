@@ -932,17 +932,17 @@
     },
   },
   # xcode 12
-  'xcode_12a6159': {
+  'xcode_12a6163b': {
     '$mixin_append': {
       'args': [
         '--xcode-build-version',
-        '12a6159'
+        '12a6163b'
       ],
     },
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_12a6159',
+          'name': 'xcode_ios_12a6163b',
           'path': 'Xcode.app',
         },
       ],

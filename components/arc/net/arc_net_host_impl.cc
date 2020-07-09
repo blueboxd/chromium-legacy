@@ -422,7 +422,7 @@ void ArcNetHostImpl::OnConnectionReady() {
   if (default_network && default_network->type() == shill::kTypeVPN &&
       default_network->GetVpnProviderType() == shill::kProviderArcVpn) {
     GetNetworkConnectionHandler()->DisconnectNetwork(
-        default_network->path(), base::Bind(&ArcVpnSuccessCallback),
+        default_network->path(), base::BindOnce(&ArcVpnSuccessCallback),
         base::Bind(&ArcVpnErrorCallback, "disconnecting stale ARC VPN"));
   }
 }
@@ -596,7 +596,7 @@ void ArcNetHostImpl::StartConnect(const std::string& guid,
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
   GetNetworkConnectionHandler()->ConnectToNetwork(
-      path, base::Bind(&StartConnectSuccessCallback, repeating_callback),
+      path, base::BindOnce(&StartConnectSuccessCallback, repeating_callback),
       base::Bind(&StartConnectFailureCallback, repeating_callback),
       false /* check_error_state */, chromeos::ConnectCallbackMode::ON_STARTED);
 }
@@ -615,7 +615,7 @@ void ArcNetHostImpl::StartDisconnect(const std::string& guid,
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
   GetNetworkConnectionHandler()->DisconnectNetwork(
-      path, base::Bind(&StartDisconnectSuccessCallback, repeating_callback),
+      path, base::BindOnce(&StartDisconnectSuccessCallback, repeating_callback),
       base::Bind(&StartDisconnectFailureCallback, repeating_callback));
 }
 
@@ -691,7 +691,7 @@ void ArcNetHostImpl::ConnectArcVpn(const std::string& service_path,
   arc_vpn_service_path_ = service_path;
 
   GetNetworkConnectionHandler()->ConnectToNetwork(
-      service_path, base::Bind(&ArcVpnSuccessCallback),
+      service_path, base::BindOnce(&ArcVpnSuccessCallback),
       base::Bind(&ArcVpnErrorCallback, "connecting ARC VPN"),
       false /* check_error_state */,
       chromeos::ConnectCallbackMode::ON_COMPLETED);
@@ -798,7 +798,7 @@ void ArcNetHostImpl::AndroidVpnStateChanged(mojom::ConnectionStateType state) {
   arc_vpn_service_path_.clear();
 
   GetNetworkConnectionHandler()->DisconnectNetwork(
-      service_path, base::Bind(&ArcVpnSuccessCallback),
+      service_path, base::BindOnce(&ArcVpnSuccessCallback),
       base::Bind(&ArcVpnErrorCallback, "disconnecting ARC VPN"));
 }
 

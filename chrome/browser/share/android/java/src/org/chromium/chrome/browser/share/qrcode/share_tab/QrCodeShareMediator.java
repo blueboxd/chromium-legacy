@@ -4,9 +4,13 @@
 
 package org.chromium.chrome.browser.share.qrcode.share_tab;
 
+import android.Manifest.permission;
+import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.os.Process;
 import android.text.DynamicLayout;
 import android.text.Layout.Alignment;
 import android.text.TextPaint;
@@ -15,10 +19,15 @@ import android.view.View;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.download.DownloadController;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.share.BitmapDownloadRequest;
 import org.chromium.chrome.browser.share.qrcode.QRCodeGenerationRequest;
+import org.chromium.ui.base.ActivityAndroidPermissionDelegate;
+import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
+
+import java.lang.ref.WeakReference;
 
 /**
  * QrCodeShareMediator is in charge of calculating and setting values for QrCodeShareViewProperties.
@@ -26,6 +35,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 class QrCodeShareMediator {
     private final Context mContext;
     private final PropertyModel mPropertyModel;
+    private final AndroidPermissionDelegate mPermissionDelegate;
 
     // The number of times the user has attempted to download the QR code in this dialog.
     private int mNumDownloads;
@@ -50,6 +60,9 @@ class QrCodeShareMediator {
         mUrl = url;
         ChromeBrowserInitializer.getInstance().runNowOrAfterFullBrowserStarted(
                 () -> refreshQrCode(mUrl));
+        mPermissionDelegate = new ActivityAndroidPermissionDelegate(
+                new WeakReference<Activity>((Activity) mContext));
+        updatePermissionSettings();
     }
 
     /**
@@ -72,15 +85,60 @@ class QrCodeShareMediator {
 
     /** Triggers download for the generated QR code bitmap if available. */
     protected void downloadQrCode(View view) {
+        logDownload();
         Bitmap qrcodeBitmap = mPropertyModel.get(QrCodeShareViewProperties.QRCODE_BITMAP);
         if (qrcodeBitmap != null && !mIsDownloadInProgress) {
+            DownloadController.requestFileAccessPermission(this::finishDownloadWithPermission);
+            return;
+        }
+    }
+
+    private void finishDownloadWithPermission(boolean granted) {
+        if (granted) {
+            updatePermissionSettings();
+            Bitmap qrcodeBitmap = mPropertyModel.get(QrCodeShareViewProperties.QRCODE_BITMAP);
             String fileName = mContext.getString(
                     R.string.qr_code_filename_prefix, String.valueOf(System.currentTimeMillis()));
             mIsDownloadInProgress = true;
             BitmapDownloadRequest.downloadBitmap(fileName, addUrlToBitmap(qrcodeBitmap, mUrl));
+            mCloseDialog.run();
         }
-        logDownload();
-        mCloseDialog.run();
+    }
+
+    /** Returns whether the user has granted storage permissions. */
+    private Boolean hasStoragePermission() {
+        return mContext.checkPermission(
+                       permission.WRITE_EXTERNAL_STORAGE, Process.myPid(), Process.myUid())
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    /** Returns whether the user can be prompted for storage permissions. */
+    private Boolean canPromptForPermission() {
+        return mPermissionDelegate.canRequestPermission(permission.WRITE_EXTERNAL_STORAGE);
+    }
+
+    /** Updates the permission settings with the latest values. */
+    private void updatePermissionSettings() {
+        mPropertyModel.set(
+                QrCodeShareViewProperties.CAN_PROMPT_FOR_PERMISSION, canPromptForPermission());
+        mPropertyModel.set(
+                QrCodeShareViewProperties.HAS_STORAGE_PERMISSION, hasStoragePermission());
+    }
+
+    /**
+     * Sets whether QrCode UI is on foreground.
+     *
+     * @param isOnForeground Indicates whether this component UI is current on foreground.
+     */
+    public void setIsOnForeground(boolean isOnForeground) {
+        // If the app is in the foreground, the permissions need to be checked again to ensure
+        // the user is seeing the right thing.
+        if (isOnForeground) {
+            updatePermissionSettings();
+        }
+        // This is intentionally done last so that the view is updated according to the latest
+        // permissions.
+        mPropertyModel.set(QrCodeShareViewProperties.IS_ON_FOREGROUND, isOnForeground);
     }
 
     /** Logs user actions when attempting to download a QR code. */

@@ -29,7 +29,7 @@ class SearchEngineBaseURLTracker : public TemplateURLServiceObserver {
     GOOGLE_BASE_URL,
   };
 
-  using BaseURLChangedCallback = base::Callback<void(ChangeReason)>;
+  using BaseURLChangedCallback = base::RepeatingCallback<void(ChangeReason)>;
 
   SearchEngineBaseURLTracker(
       TemplateURLService* template_url_service,

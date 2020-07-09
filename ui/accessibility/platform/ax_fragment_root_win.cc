@@ -53,16 +53,10 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
     UIA_VALIDATE_CALL_1_ARG(result);
     *result = nullptr;
 
-    // We currently only support the custom UIA property ID for unique id and we
-    // ignore |start_after_element|.
+    // We currently only support the custom UIA property ID for unique id.
     if (property_id ==
             UiaRegistrarWin::GetInstance().GetUiaUniqueIdPropertyId() &&
         value.vt == VT_BSTR) {
-      // TODO: We should support the case when |start_after_element| isn't
-      // nullptr for unique id (https://crbug.com/1098160).
-      if (start_after_element)
-        return E_INVALIDARG;
-
       int32_t ax_unique_id;
       if (!base::StringToInt(value.bstrVal, &ax_unique_id))
         return S_OK;
@@ -70,12 +64,22 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
       // In the Windows accessibility platform implementation, id 0 represents
       // self; a positive id represents the immediate descendants; and a
       // negative id represents a unique id that can be mapped to any node.
-      if (AXPlatformNodeWin* node_win =
+      if (AXPlatformNodeWin* result_platform_node =
               static_cast<AXPlatformNodeWin*>(GetFromUniqueId(-ax_unique_id))) {
-        node_win->QueryInterface(IID_PPV_ARGS(result));
-      }
+        if (start_after_element) {
+          Microsoft::WRL::ComPtr<AXPlatformNodeWin> start_after_platform_node;
+          if (!SUCCEEDED(start_after_element->QueryInterface(
+                  IID_PPV_ARGS(&start_after_platform_node))))
+            return E_INVALIDARG;
 
-      return S_OK;
+          // We want |result| to be nullptr if it comes before or is equal to
+          // |start_after_element|.
+          if (start_after_platform_node->CompareTo(*result_platform_node) >= 0)
+            return S_OK;
+        }
+
+        return result_platform_node->QueryInterface(IID_PPV_ARGS(result));
+      }
     }
 
     return E_INVALIDARG;

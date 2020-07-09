@@ -517,7 +517,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
  protected:
   void InvalidatePaint(const PaintInvalidatorContext&) const override;
-  void ClearPreviousVisualRects() override;
 
   void ImageChanged(WrappedImagePtr, CanDeferInvalidation) override;
 

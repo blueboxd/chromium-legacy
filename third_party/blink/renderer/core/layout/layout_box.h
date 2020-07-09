@@ -1521,8 +1521,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                           TransformState&,
                           MapCoordinatesFlags) const override;
 
-  void ClearPreviousVisualRects() override;
-
   LayoutBlock* PercentHeightContainer() const {
     return rare_data_ ? rare_data_->percent_height_container_ : nullptr;
   }

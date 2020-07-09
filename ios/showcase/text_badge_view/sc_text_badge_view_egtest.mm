@@ -21,7 +21,7 @@ using ::showcase_utils::Close;
 @implementation SCTextBadgeViewTestCase
 
 // Tests that the accessibility label matches the display text.
-- (void)FLAKY_testTextBadgeAccessibilityLabel {
+- (void)testTextBadgeAccessibilityLabel {
   Open(@"TextBadgeView");
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"TEXT")]
       assertWithMatcher:grey_notNil()];

@@ -28,6 +28,7 @@
 namespace chromeos {
 
 class HIDDetectionView;
+class WizardContext;
 
 // Representation independent class that controls screen showing warning about
 // HID absence to users.
@@ -40,7 +41,7 @@ class HIDDetectionScreen : public BaseScreen,
   using InputDeviceInfoPtr = device::mojom::InputDeviceInfoPtr;
   using DeviceMap = std::map<std::string, InputDeviceInfoPtr>;
 
-  enum class Result { NEXT, START_DEMO };
+  enum class Result { NEXT, START_DEMO, SKIP };
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
 
@@ -68,6 +69,7 @@ class HIDDetectionScreen : public BaseScreen,
   friend class HIDDetectionScreenTest;
 
   // BaseScreen:
+  bool MaybeSkip(WizardContext* context) override;
   void ShowImpl() override;
   void HideImpl() override;
   void OnUserAction(const std::string& action_id) override;

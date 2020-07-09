@@ -402,13 +402,11 @@ MediaHistoryKeyedService::GetMediaFeedsRequest::CreateTopFeedsForFetch(
 MediaHistoryKeyedService::GetMediaFeedsRequest
 MediaHistoryKeyedService::GetMediaFeedsRequest::CreateTopFeedsForDisplay(
     unsigned limit,
-    base::TimeDelta audio_video_watchtime_min,
     int fetched_items_min,
     bool fetched_items_min_should_be_safe) {
   GetMediaFeedsRequest request;
   request.type = Type::kTopFeedsForDisplay;
   request.limit = limit;
-  request.audio_video_watchtime_min = audio_video_watchtime_min;
   request.fetched_items_min = fetched_items_min;
   request.fetched_items_min_should_be_safe = fetched_items_min_should_be_safe;
   return request;

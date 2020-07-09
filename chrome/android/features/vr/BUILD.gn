@@ -42,7 +42,6 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/vr/VrAlertDialog.java",
     "java/src/org/chromium/chrome/browser/vr/VrCancelAnimationActivity.java",
     "java/src/org/chromium/chrome/browser/vr/VrCompositorSurfaceManager.java",
-    "java/src/org/chromium/chrome/browser/vr/VrCoreInfo.java",
     "java/src/org/chromium/chrome/browser/vr/VrCoreInstallUtils.java",
     "java/src/org/chromium/chrome/browser/vr/VrCoreVersionChecker.java",
     "java/src/org/chromium/chrome/browser/vr/VrDaydreamApi.java",
@@ -108,7 +107,6 @@ generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/chrome/browser/vr/AndroidUiGestureTarget.java",
     "java/src/org/chromium/chrome/browser/vr/AndroidVSyncHelper.java",
-    "java/src/org/chromium/chrome/browser/vr/VrCoreInfo.java",
     "java/src/org/chromium/chrome/browser/vr/VrCoreInstallUtils.java",
     "java/src/org/chromium/chrome/browser/vr/VrInputConnection.java",
     "java/src/org/chromium/chrome/browser/vr/VrModuleProvider.java",

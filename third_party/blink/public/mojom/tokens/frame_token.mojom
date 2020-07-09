@@ -1,0 +1,25 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module blink.mojom;
+
+import "mojo/public/mojom/base/unguessable_token.mojom";
+
+// This identifier represents the stable identifier between a
+// blink::LocalFrame <--> content::RenderFrameHostImpl or a
+// blink::RemoteFrame <--> content::RenderFrameProxyHost in the browser process.
+// Note that this identifier is unique per render process and
+// browser relationship. ie. If this is a LocalFrame, RemoteFrames that
+// represent this frame node in other processes will *not* have the same
+// identifier. Similarly, if this is a RemoteFrame, the LocalFrame and
+// other RemoteFrames that represent this frame node in other processes
+// will *not* have the same identifier. This is different than the
+// |devtools_frame_token_| in which all representations of this frame node
+// have the same value in all processes. This is intended to be transferred
+// between browser and renderer processes to uniquely identify a frame in the
+// context of that browser/renderer relationship.
+// See third_party/blink/public/common/tokens for helper classes.
+struct FrameToken {
+  mojo_base.mojom.UnguessableToken value;
+};

@@ -31,7 +31,7 @@ namespace nacl {
 
 class ManifestServiceChannel : public IPC::Listener {
  public:
-  typedef base::Callback<void(base::File, uint64_t, uint64_t)>
+  typedef base::OnceCallback<void(base::File, uint64_t, uint64_t)>
       OpenResourceCallback;
 
   class Delegate {
@@ -43,16 +43,14 @@ class ManifestServiceChannel : public IPC::Listener {
 
     // Called when irt_open_resource() is invoked in the NaCl plugin.
     // Upon completion, callback is invoked with the file.
-    virtual void OpenResource(
-        const std::string& key,
-        const OpenResourceCallback& callback) = 0;
+    virtual void OpenResource(const std::string& key,
+                              OpenResourceCallback callback) = 0;
   };
 
-  ManifestServiceChannel(
-      const IPC::ChannelHandle& handle,
-      const base::Callback<void(int32_t)>& connected_callback,
-      std::unique_ptr<Delegate> delegate,
-      base::WaitableEvent* waitable_event);
+  ManifestServiceChannel(const IPC::ChannelHandle& handle,
+                         base::OnceCallback<void(int32_t)> connected_callback,
+                         std::unique_ptr<Delegate> delegate,
+                         base::WaitableEvent* waitable_event);
   ~ManifestServiceChannel() override;
 
   void Send(IPC::Message* message);
@@ -69,7 +67,7 @@ class ManifestServiceChannel : public IPC::Listener {
                        base::File file,
                        uint64_t token_lo,
                        uint64_t token_hi);
-  base::Callback<void(int32_t)> connected_callback_;
+  base::OnceCallback<void(int32_t)> connected_callback_;
   std::unique_ptr<Delegate> delegate_;
   std::unique_ptr<IPC::SyncChannel> channel_;
 

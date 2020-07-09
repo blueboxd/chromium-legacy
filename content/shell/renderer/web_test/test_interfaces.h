@@ -23,14 +23,6 @@ class TestInterfaces {
   void WindowOpened(WebViewTestProxy* proxy);
   void WindowClosed(WebViewTestProxy* proxy);
 
-  // TODO(danakj): This is a list of all RenderViews not of all windows. There
-  // will be a RenderView for each frame tree fragment in the process, not just
-  // one per window. We should only return the RenderViews with a local main
-  // frame.
-  // TODO(danakj): Some clients want a list of the main frames (maybe most/all?)
-  // so can we use the |main_frames_| list in TestRunner instead?
-  const std::vector<WebViewTestProxy*>& GetWindowList();
-
   TestRunner* GetTestRunner() { return test_runner_.get(); }
 
  private:

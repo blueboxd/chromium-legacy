@@ -153,9 +153,6 @@ class CORE_EXPORT PaintLayerCompositor {
     compositing_inputs_root_.Update(layer);
   }
 
-  void ForceRecomputeVisualRectsIncludingNonCompositingDescendants(
-      LayoutObject&);
-
  private:
 #if DCHECK_IS_ON()
   void AssertNoUnresolvedDirtyBits();

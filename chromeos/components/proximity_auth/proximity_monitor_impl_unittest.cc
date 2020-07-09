@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/test/gmock_move_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -34,7 +35,6 @@ using device::BluetoothDevice;
 using testing::_;
 using testing::NiceMock;
 using testing::Return;
-using testing::SaveArg;
 
 namespace proximity_auth {
 namespace {
@@ -97,7 +97,7 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
     ON_CALL(*bluetooth_adapter_, GetDevice(std::string()))
         .WillByDefault(Return(&remote_bluetooth_device_));
     ON_CALL(remote_bluetooth_device_, GetConnectionInfo(_))
-        .WillByDefault(SaveArg<0>(&connection_info_callback_));
+        .WillByDefault(MoveArg<0>(&connection_info_callback_));
     monitor_->AddObserver(&observer_);
   }
 

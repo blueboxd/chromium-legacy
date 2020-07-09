@@ -8,7 +8,7 @@
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/fake_cws.h"
-#include "chrome/browser/chromeos/login/app_launch_controller.h"
+#include "chrome/browser/chromeos/login/kiosk_launch_controller.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
@@ -250,8 +250,10 @@ class KioskErrorScreenTest : public MixinBasedInProcessBrowserTest {
   void SetUpInProcessBrowserTestFixture() override {
     host_resolver()->AddRule("*", "127.0.0.1");
 
-    AppLaunchController::SkipSplashWaitForTesting();
-    AppLaunchController::SetNetworkWaitForTesting(0);
+    skip_splash_wait_override_ =
+        AppLaunchController::SkipSplashScreenWaitForTesting();
+    network_wait_override_ = AppLaunchController::SetNetworkWaitForTesting(
+        base::TimeDelta::FromSeconds(0));
 
     fake_cws_.Init(embedded_test_server());
     fake_cws_.SetUpdateCrx(kTestKioskAppId,
@@ -313,6 +315,9 @@ class KioskErrorScreenTest : public MixinBasedInProcessBrowserTest {
   std::unique_ptr<NetworkStateTestHelper> network_helper_;
 
   std::unique_ptr<content::WindowedNotificationObserver> apps_loaded_waiter_;
+
+  std::unique_ptr<base::AutoReset<bool>> skip_splash_wait_override_;
+  std::unique_ptr<base::AutoReset<base::TimeDelta>> network_wait_override_;
 
   FakeCWS fake_cws_;
 

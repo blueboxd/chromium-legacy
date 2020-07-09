@@ -44,6 +44,7 @@ source_set("common") {
     "//components/crash/core/common",
     "//components/version_info",
     "//google_apis:google_apis",
+    "//third_party/re2",
   ]
 }
 

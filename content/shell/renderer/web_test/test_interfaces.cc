@@ -23,7 +23,7 @@
 namespace content {
 
 TestInterfaces::TestInterfaces()
-    : test_runner_(std::make_unique<TestRunner>(this)) {
+    : test_runner_(std::make_unique<TestRunner>()) {
   test_runner_->Reset(nullptr);
 }
 
@@ -70,10 +70,6 @@ void TestInterfaces::WindowClosed(WebViewTestProxy* proxy) {
       test_runner_->SetMainView(nullptr);
     }
   }
-}
-
-const std::vector<WebViewTestProxy*>& TestInterfaces::GetWindowList() {
-  return window_list_;
 }
 
 }  // namespace content

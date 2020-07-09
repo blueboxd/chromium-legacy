@@ -4,13 +4,17 @@
 
 package org.chromium.chrome.browser.feed.library.basicstream;
 
+import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
+
 import static org.chromium.chrome.browser.feed.library.common.Validators.checkNotNull;
 import static org.chromium.chrome.browser.feed.library.common.Validators.checkState;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.util.Base64;
+import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
@@ -53,6 +57,7 @@ import org.chromium.chrome.browser.feed.library.basicstream.internal.StreamRecyc
 import org.chromium.chrome.browser.feed.library.basicstream.internal.drivers.StreamDriver;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.scroll.BasicStreamScrollMonitor;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.scroll.ScrollRestorer;
+import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.PietViewHolder;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewloggingupdater.ViewLoggingUpdater;
 import org.chromium.chrome.browser.feed.library.common.concurrent.CancelableTask;
 import org.chromium.chrome.browser.feed.library.common.concurrent.MainThreadRunner;
@@ -97,6 +102,9 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
     private static final long DEFAULT_LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS = 1000L;
     private static final long DEFAULT_MINIMUM_SPINNER_SHOW_TIME_MS = 500L;
     private static final long DEFAULT_SPINNER_DELAY_TIME_MS = 500L;
+    // The height of dense Feed article card is always 157dp based on the Feed Piet templates which
+    // are server-driven and may change later.
+    private static final int FEED_CARD_HEIGHT_DENSE_PX = dpToPx(157);
 
     private final CardConfiguration mCardConfiguration;
     private final Clock mClock;
@@ -449,6 +457,31 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
         }
         mContextMenuManager.dismissPopup();
         mActionManager.onLayoutChange();
+    }
+
+    @Override
+    public int getFirstCardDensity() {
+        if (mContext.getResources().getConfiguration().orientation == ORIENTATION_PORTRAIT) {
+            RecyclerView.ViewHolder firstArticleCard =
+                    mRecyclerView.findViewHolderForAdapterPosition(mHeaders.size());
+            for (int i = mHeaders.size();
+                    firstArticleCard != null && !(firstArticleCard instanceof PietViewHolder);
+                    i++) {
+                firstArticleCard = mRecyclerView.findViewHolderForAdapterPosition(i);
+            }
+            if (firstArticleCard != null) {
+                int firstCardHeight = firstArticleCard.itemView.getHeight();
+                return firstCardHeight <= FEED_CARD_HEIGHT_DENSE_PX
+                        ? FeedFirstCardDensity.DENSE
+                        : FeedFirstCardDensity.NOT_DENSE;
+            }
+        }
+        return FeedFirstCardDensity.UNKNOWN;
+    }
+
+    private static int dpToPx(int dp) {
+        return (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, dp, Resources.getSystem().getDisplayMetrics());
     }
 
     private void setupRecyclerView() {

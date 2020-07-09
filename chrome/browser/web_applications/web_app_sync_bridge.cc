@@ -267,6 +267,12 @@ void WebAppSyncBridge::SetUserPageOrdinal(const AppId& app_id,
                                           syncer::StringOrdinal page_ordinal) {
   ScopedRegistryUpdate update(this);
   WebApp* web_app = update->UpdateApp(app_id);
+  // Due to the extensions sync system setting ordinals on sync, this can get
+  // called before the app is installed in the web apps system. Until apps are
+  // no longer double-installed on both systems, ignore this case.
+  // https://crbug.com/1101781
+  if (!registrar_->IsInstalled(app_id))
+    return;
   if (web_app)
     web_app->SetUserPageOrdinal(page_ordinal);
 }
@@ -275,6 +281,12 @@ void WebAppSyncBridge::SetUserLaunchOrdinal(
     const AppId& app_id,
     syncer::StringOrdinal launch_ordinal) {
   ScopedRegistryUpdate update(this);
+  // Due to the extensions sync system setting ordinals on sync, this can get
+  // called before the app is installed in the web apps system. Until apps are
+  // no longer double-installed on both systems, ignore this case.
+  // https://crbug.com/1101781
+  if (!registrar_->IsInstalled(app_id))
+    return;
   WebApp* web_app = update->UpdateApp(app_id);
   if (web_app)
     web_app->SetUserLaunchOrdinal(launch_ordinal);

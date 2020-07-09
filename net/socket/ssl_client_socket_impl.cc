@@ -900,8 +900,12 @@ int SSLClientSocketImpl::Init() {
 
   // TODO(https://crbug.com/775438), if |ssl_config_.privacy_mode| is enabled,
   // this should always continue with no client certificate.
-  send_client_cert_ = context_->GetClientCertificate(
-      host_and_port_, &client_cert_, &client_private_key_);
+  if (ssl_config_.privacy_mode == PRIVACY_MODE_ENABLED_WITHOUT_CLIENT_CERTS) {
+    send_client_cert_ = true;
+  } else {
+    send_client_cert_ = context_->GetClientCertificate(
+        host_and_port_, &client_cert_, &client_private_key_);
+  }
 
   return OK;
 }

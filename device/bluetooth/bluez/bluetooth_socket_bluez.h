@@ -49,8 +49,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothSocketBlueZ
   virtual void Connect(const BluetoothDeviceBlueZ* device,
                        const device::BluetoothUUID& uuid,
                        SecurityLevel security_level,
-                       const base::Closure& success_callback,
-                       const ErrorCompletionCallback& error_callback);
+                       base::OnceClosure success_callback,
+                       ErrorCompletionOnceCallback error_callback);
 
   // Listens using this socket using a service published on |adapter|. The
   // service is either RFCOMM or L2CAP depending on |socket_type| and published

@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_mode_detector.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
+#include "chrome/browser/chromeos/login/wizard_context.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
 namespace chromeos {
@@ -99,7 +100,9 @@ class WelcomeScreen : public BaseScreen,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  base::Value* GetConfigurationForTesting() { return GetConfiguration(); }
+  base::Value* GetConfigurationForTesting() {
+    return &(context()->configuration);
+  }
 
  protected:
   // Exposes exit callback to test overrides.

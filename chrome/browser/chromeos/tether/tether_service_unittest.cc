@@ -86,33 +86,6 @@ chromeos::multidevice::RemoteDeviceRefList CreateTestDevices() {
   return list;
 }
 
-class MockExtendedBluetoothAdapter : public device::MockBluetoothAdapter {
- public:
-  void SetAdvertisingInterval(
-      const base::TimeDelta& min,
-      const base::TimeDelta& max,
-      base::OnceClosure callback,
-      AdvertisementErrorCallback error_callback) override {
-    if (is_ble_advertising_supported_) {
-      std::move(callback).Run();
-    } else {
-      std::move(error_callback)
-          .Run(device::BluetoothAdvertisement::ErrorCode::
-                   ERROR_INVALID_ADVERTISEMENT_INTERVAL);
-    }
-  }
-
-  void set_is_ble_advertising_supported(bool is_ble_advertising_supported) {
-    is_ble_advertising_supported_ = is_ble_advertising_supported;
-  }
-
- protected:
-  ~MockExtendedBluetoothAdapter() override {}
-
- private:
-  bool is_ble_advertising_supported_ = true;
-};
-
 class TestTetherService : public TetherService {
  public:
   TestTetherService(
@@ -380,7 +353,7 @@ class TetherServiceTest : public testing::Test {
     fake_enrollment_manager_->set_user_private_key(kTestUserPrivateKey);
 
     mock_adapter_ =
-        base::MakeRefCounted<NiceMock<MockExtendedBluetoothAdapter>>();
+        base::MakeRefCounted<NiceMock<device::MockBluetoothAdapter>>();
     SetIsBluetoothPowered(true);
     is_adapter_present_ = true;
     ON_CALL(*mock_adapter_, IsPresent())
@@ -595,7 +568,7 @@ class TetherServiceTest : public testing::Test {
 
   chromeos::multidevice_setup::mojom::FeatureState initial_feature_state_;
 
-  scoped_refptr<MockExtendedBluetoothAdapter> mock_adapter_;
+  scoped_refptr<device::MockBluetoothAdapter> mock_adapter_;
   bool is_adapter_present_;
   bool is_adapter_powered_;
   bool shutdown_reason_verified_;
@@ -827,114 +800,6 @@ TEST_F(TetherServiceTest, TestBetterTogetherSuiteBecomesDisabled) {
       1 /* expected_count */);
   VerifyLastShutdownReason(chromeos::tether::TetherComponent::ShutdownReason::
                                BETTER_TOGETHER_SUITE_DISABLED);
-}
-
-TEST_F(TetherServiceTest, TestBleAdvertisingNotSupported) {
-  mock_adapter_->set_is_ble_advertising_supported(false);
-
-  CreateTetherService();
-
-  EXPECT_EQ(
-      chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
-      network_state_handler()->GetTechnologyState(
-          chromeos::NetworkTypePattern::Tether()));
-  VerifyTetherActiveStatus(false /* expected_active */);
-
-  VerifyTetherFeatureStateRecorded(
-      TetherService::TetherFeatureState::BLE_ADVERTISING_NOT_SUPPORTED,
-      1 /* expected_count */);
-  VerifyLastShutdownReason(
-      chromeos::tether::TetherComponent::ShutdownReason::OTHER);
-}
-
-TEST_F(TetherServiceTest,
-       TestBleAdvertisingNotSupported_BluetoothIsInitiallyNotPowered) {
-  SetIsBluetoothPowered(false);
-
-  mock_adapter_->set_is_ble_advertising_supported(false);
-
-  CreateTetherService();
-
-  // TetherService has not yet been able to find out that BLE advertising is not
-  // supported.
-  EXPECT_EQ(
-      chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNINITIALIZED,
-      network_state_handler()->GetTechnologyState(
-          chromeos::NetworkTypePattern::Tether()));
-  VerifyTetherActiveStatus(false /* expected_active */);
-  EXPECT_TRUE(profile_->GetPrefs()->GetBoolean(
-      prefs::kInstantTetheringBleAdvertisingSupported));
-
-  SetIsBluetoothPowered(true);
-
-  EXPECT_EQ(
-      chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
-      network_state_handler()->GetTechnologyState(
-          chromeos::NetworkTypePattern::Tether()));
-  VerifyTetherActiveStatus(false /* expected_active */);
-  EXPECT_FALSE(profile_->GetPrefs()->GetBoolean(
-      prefs::kInstantTetheringBleAdvertisingSupported));
-
-  VerifyTetherFeatureStateRecorded(
-      TetherService::TetherFeatureState::BLE_ADVERTISING_NOT_SUPPORTED,
-      1 /* expected_count */);
-}
-
-TEST_F(
-    TetherServiceTest,
-    TestBleAdvertisingNotSupportedAndRecorded_BluetoothIsInitiallyNotPowered) {
-  SetIsBluetoothPowered(false);
-
-  mock_adapter_->set_is_ble_advertising_supported(false);
-
-  // Simulate a login after we determined that BLE advertising is not supported.
-  profile_->GetPrefs()->SetBoolean(
-      prefs::kInstantTetheringBleAdvertisingSupported, false);
-
-  CreateTetherService();
-
-  EXPECT_EQ(
-      chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
-      network_state_handler()->GetTechnologyState(
-          chromeos::NetworkTypePattern::Tether()));
-  VerifyTetherActiveStatus(false /* expected_active */);
-
-  SetIsBluetoothPowered(true);
-
-  EXPECT_EQ(
-      chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
-      network_state_handler()->GetTechnologyState(
-          chromeos::NetworkTypePattern::Tether()));
-  VerifyTetherActiveStatus(false /* expected_active */);
-
-  VerifyTetherFeatureStateRecorded(
-      TetherService::TetherFeatureState::BLE_ADVERTISING_NOT_SUPPORTED,
-      1 /* expected_count */);
-}
-
-TEST_F(TetherServiceTest, TestBleAdvertisingSupportedButIncorrectlyRecorded) {
-  // Simulate a login after we incorrectly determined that BLE advertising is
-  // not supported (this is not an expected case, but may have happened if
-  // BluetoothAdapter::SetAdvertisingInterval() failed for a weird, one-off
-  // reason).
-  profile_->GetPrefs()->SetBoolean(
-      prefs::kInstantTetheringBleAdvertisingSupported, false);
-
-  CreateTetherService();
-
-  EXPECT_EQ(chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED,
-            network_state_handler()->GetTechnologyState(
-                chromeos::NetworkTypePattern::Tether()));
-  VerifyTetherActiveStatus(true /* expected_active */);
-  EXPECT_TRUE(profile_->GetPrefs()->GetBoolean(
-      prefs::kInstantTetheringBleAdvertisingSupported));
-
-  VerifyTetherFeatureStateRecorded(TetherService::TetherFeatureState::ENABLED,
-                                   1 /* expected_count */);
-
-  ShutdownTetherService();
-  VerifyLastShutdownReason(
-      chromeos::tether::TetherComponent::ShutdownReason::USER_LOGGED_OUT);
 }
 
 TEST_F(TetherServiceTest, TestGet_NotPrimaryUser_FeatureFlagDisabled) {

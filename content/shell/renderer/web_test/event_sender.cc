@@ -27,7 +27,6 @@
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_widget.h"
 #include "content/shell/renderer/web_test/mock_spell_check.h"
-#include "content/shell/renderer/web_test/test_interfaces.h"
 #include "content/shell/renderer/web_test/test_runner.h"
 #include "content/shell/renderer/web_test/web_view_test_proxy.h"
 #include "content/shell/renderer/web_test/web_widget_test_proxy.h"
@@ -2973,12 +2972,8 @@ void EventSender::SendGesturesForMouseWheelEvent(
   HandleInputEventOnViewOrPopup(end_event);
 }
 
-TestInterfaces* EventSender::interfaces() {
-  return web_widget_test_proxy_->GetWebViewTestProxy()->test_interfaces();
-}
-
 TestRunner* EventSender::test_runner() {
-  return interfaces()->GetTestRunner();
+  return web_widget_test_proxy_->GetWebViewTestProxy()->GetTestRunner();
 }
 
 BlinkTestRunner* EventSender::blink_test_runner() {

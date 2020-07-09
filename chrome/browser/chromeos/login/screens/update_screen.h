@@ -26,6 +26,7 @@ namespace chromeos {
 class ErrorScreensHistogramHelper;
 class ScreenManager;
 class UpdateView;
+class WizardContext;
 
 // Controller for the update screen.
 //
@@ -102,6 +103,7 @@ class UpdateScreen : public BaseScreen, public VersionUpdater::Delegate {
 
  protected:
   // BaseScreen:
+  bool MaybeSkip(WizardContext* context) override;
   void ShowImpl() override;
   void HideImpl() override;
   void OnUserAction(const std::string& action_id) override;

@@ -316,8 +316,8 @@ class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,
         render_frame_host_->GetProcess()->GetStoragePartition());
   }
 
-  RenderFrameHost* render_frame_host_;
-  std::string scheme_;
+  RenderFrameHost* const render_frame_host_;
+  const std::string scheme_;
   const base::flat_set<std::string> allowed_hosts_;  // if empty all allowed.
   mojo::ReceiverSet<network::mojom::URLLoaderFactory> loader_factory_receivers_;
 

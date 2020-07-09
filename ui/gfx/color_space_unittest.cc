@@ -244,6 +244,34 @@ TEST(ColorSpace, ConversionToAndFromSkColorSpace) {
   }
 }
 
+TEST(ColorSpace, PQToSkColorSpace) {
+  ColorSpace color_space;
+  ColorSpace roundtrip_color_space;
+  float roundtrip_sdr_white_level;
+  const float kEpsilon = 1.e-5f;
+
+  // We expect that when a white point is specified, the conversion from
+  // ColorSpace -> SkColorSpace -> ColorSpace be the identity. Because of
+  // rounding error, this will not quite be the case.
+  color_space = ColorSpace::CreateHDR10(50.f);
+  roundtrip_color_space = ColorSpace(*color_space.ToSkColorSpace());
+  EXPECT_TRUE(
+      roundtrip_color_space.GetPQSDRWhiteLevel(&roundtrip_sdr_white_level));
+  EXPECT_NEAR(50.f, roundtrip_sdr_white_level, kEpsilon);
+  EXPECT_EQ(ColorSpace::TransferID::SMPTEST2084,
+            roundtrip_color_space.GetTransferID());
+
+  // When no white level is specified, we should get an SkColorSpace that
+  // specifies the default white level. Of note is that in the roundtrip, the
+  // value of kDefaultSDRWhiteLevel gets baked in.
+  color_space = ColorSpace::CreateHDR10();
+  roundtrip_color_space = ColorSpace(*color_space.ToSkColorSpace());
+  EXPECT_TRUE(
+      roundtrip_color_space.GetPQSDRWhiteLevel(&roundtrip_sdr_white_level));
+  EXPECT_NEAR(ColorSpace::kDefaultSDRWhiteLevel, roundtrip_sdr_white_level,
+              kEpsilon);
+}
+
 TEST(ColorSpace, MixedInvalid) {
   ColorSpace color_space;
   color_space = color_space.GetWithMatrixAndRange(ColorSpace::MatrixID::INVALID,

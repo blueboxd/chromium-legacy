@@ -138,6 +138,14 @@ base::scoped_nsprotocol<id<MTLTexture>> API_AVAILABLE(macos(10.11))
   return mtl_texture;
 }
 
+base::ScopedCFTypeRef<IOSurfaceRef> GetIOSurfaceFromImage(
+    scoped_refptr<gl::GLImage> image) {
+  base::ScopedCFTypeRef<IOSurfaceRef> result;
+  if (image->GetType() == gl::GLImage::Type::IOSURFACE)
+    result = static_cast<gl::GLImageIOSurface*>(image.get())->io_surface();
+  return result;
+}
+
 }  // anonymous namespace
 
 // Representation of a SharedImageBackingIOSurface as a GL Texture.
@@ -847,8 +855,9 @@ SharedImageBackingFactoryIOSurface::ProduceDawn(
   if (actual_format == viz::RGBA_8888)
     actual_format = viz::BGRA_8888;
 
-  base::ScopedCFTypeRef<IOSurfaceRef> io_surface =
-      static_cast<gl::GLImageIOSurface*>(image.get())->io_surface();
+  auto io_surface = GetIOSurfaceFromImage(image);
+  if (!io_surface)
+    return nullptr;
 
   base::Optional<WGPUTextureFormat> wgpu_format =
       viz::ToWGPUFormat(actual_format);
@@ -860,6 +869,36 @@ SharedImageBackingFactoryIOSurface::ProduceDawn(
 #else   // BUILDFLAG(USE_DAWN)
   return nullptr;
 #endif  // BUILDFLAG(USE_DAWN)
+}
+
+// static
+bool SharedImageBackingFactoryIOSurface::InitializePixels(
+    SharedImageBacking* backing,
+    scoped_refptr<gl::GLImage> image,
+    const uint8_t* src_data) {
+  auto io_surface = GetIOSurfaceFromImage(image);
+  if (!io_surface)
+    return false;
+
+  IOReturn r = IOSurfaceLock(io_surface, kIOSurfaceLockAvoidSync, nullptr);
+  DCHECK_EQ(kIOReturnSuccess, r);
+
+  uint8_t* dst_data =
+      reinterpret_cast<uint8_t*>(IOSurfaceGetBaseAddress(io_surface));
+  size_t dst_stride = IOSurfaceGetBytesPerRow(io_surface);
+  const size_t src_stride =
+      (BitsPerPixel(backing->format()) / 8) * backing->size().width();
+
+  size_t height = backing->size().height();
+  for (size_t y = 0; y < height; ++y) {
+    memcpy(dst_data, src_data, src_stride);
+    dst_data += dst_stride;
+    src_data += src_stride;
+  }
+
+  r = IOSurfaceUnlock(io_surface, 0, nullptr);
+  DCHECK_EQ(kIOReturnSuccess, r);
+  return true;
 }
 
 }  // namespace gpu

@@ -15,6 +15,44 @@
 namespace base {
 namespace trace_event {
 
+TEST(TraceEventArgumentTest, InitializerListCreatedFlatDictionary) {
+  std::string json;
+  TracedValue::Build({{"bool_var", true},
+                      {"double_var", 3.14},
+                      {"int_var", 2020},
+                      {"literal_var", "literal"}})
+      ->AppendAsTraceFormat(&json);
+  EXPECT_EQ(
+      "{\"bool_var\":true,\"double_var\":3.14,\"int_var\":2020,\""
+      "literal_var\":\"literal\"}",
+      json);
+}
+
+TEST(TraceEventArgumentTest, StringAndPointerConstructors) {
+  std::string json;
+  const char* const_char_ptr_var = "const char* value";
+  TracedValue::Build({
+                         {"literal_var", "literal"},
+                         {"std_string_var", std::string("std::string value")},
+                         {"base_string_piece_var",
+                          base::StringPiece("base::StringPiece value")},
+                         {"const_char_ptr_var", const_char_ptr_var},
+                         {"void_nullptr", static_cast<void*>(nullptr)},
+                         {"int_nullptr", static_cast<int*>(nullptr)},
+                         {"void_1234ptr", reinterpret_cast<void*>(0x1234)},
+                     })
+      ->AppendAsTraceFormat(&json);
+  EXPECT_EQ(
+      "{\"literal_var\":\"literal\","
+      "\"std_string_var\":\"std::string value\","
+      "\"base_string_piece_var\":\"base::StringPiece value\","
+      "\"const_char_ptr_var\":\"const char* value\","
+      "\"void_nullptr\":\"0x0\","
+      "\"int_nullptr\":\"0x0\","
+      "\"void_1234ptr\":\"0x1234\"}",
+      json);
+}
+
 TEST(TraceEventArgumentTest, FlatDictionary) {
   std::unique_ptr<TracedValue> value(new TracedValue());
   value->SetBoolean("bool", true);

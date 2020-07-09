@@ -12,7 +12,6 @@
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -395,7 +394,6 @@ TEST_F(AssistantPageViewTest, ShouldShowOnboardingWhenOpening) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       chromeos::assistant::features::kAssistantBetterOnboarding);
-  SetOnboardingMode(AssistantOnboardingMode::kEducation);
 
   ShowAssistantUi();
 
@@ -420,7 +418,6 @@ TEST_F(AssistantPageViewTest, ShouldDismissOnboardingAfterQuery) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       chromeos::assistant::features::kAssistantBetterOnboarding);
-  SetOnboardingMode(AssistantOnboardingMode::kEducation);
 
   ShowAssistantUi();
 
@@ -453,7 +450,6 @@ TEST_F(AssistantPageViewTest, ShouldShowOnboardingAgainAfterReopening) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       chromeos::assistant::features::kAssistantBetterOnboarding);
-  SetOnboardingMode(AssistantOnboardingMode::kEducation);
 
   ShowAssistantUi();
 
@@ -486,7 +482,6 @@ TEST_F(AssistantPageViewTest,
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       chromeos::assistant::features::kAssistantBetterOnboarding);
-  SetOnboardingMode(AssistantOnboardingMode::kEducation);
 
   ShowAssistantUi(AssistantEntryPoint::kLauncherSearchResult);
 
@@ -744,7 +739,6 @@ TEST_F(AssistantPageViewTest,
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       chromeos::assistant::features::kAssistantBetterOnboarding);
-  SetOnboardingMode(AssistantOnboardingMode::kEducation);
 
   ShowAssistantUi();
 

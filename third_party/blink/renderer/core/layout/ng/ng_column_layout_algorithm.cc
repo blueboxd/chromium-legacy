@@ -91,8 +91,6 @@ NGColumnLayoutAlgorithm::NGColumnLayoutAlgorithm(
     : NGLayoutAlgorithm(params), early_break_(params.early_break) {
   container_builder_.SetIsNewFormattingContext(
       params.space.IsNewFormattingContext());
-  container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
-  container_builder_.AdjustBorderScrollbarPaddingForFragmentation(BreakToken());
 }
 
 scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {

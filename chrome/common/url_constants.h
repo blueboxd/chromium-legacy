@@ -237,6 +237,15 @@ extern const char kWhoIsMyAdministratorHelpURL[];
 // Link to the flash roadmap
 extern const char kChromeFlashRoadmapURL[];
 
+// Path for Well-Known change password url
+// Spec: https://wicg.github.io/change-password-url/
+extern const char kWellKnownChangePasswordPath[];
+
+// This path should return 404. This enables us to check whether
+// we can trust the server's Well-Known response codes.
+// https://wicg.github.io/change-password-url/response-code-reliability.html#iana
+extern const char kWellKnownNotExistingResourcePath[];
+
 #if defined(OS_ANDROID)
 extern const char kAndroidAppScheme[];
 #endif

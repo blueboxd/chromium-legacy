@@ -516,6 +516,12 @@ XRSystem::PendingRequestSessionQuery::OptionalFeatures() const {
   return optional_features_.valid_features;
 }
 
+bool XRSystem::PendingRequestSessionQuery::HasFeature(
+    device::mojom::XRSessionFeature feature) const {
+  return RequiredFeatures().Contains(feature) ||
+         OptionalFeatures().Contains(feature);
+}
+
 bool XRSystem::PendingRequestSessionQuery::InvalidRequiredFeatures() const {
   return required_features_.invalid_features;
 }
@@ -1173,7 +1179,10 @@ ScriptPromise XRSystem::requestSession(ScriptState* script_state,
           GetSourceId(), resolver, session_mode, std::move(required_features),
           std::move(optional_features));
 
-  if (session_init && session_init->hasDomOverlay()) {
+  if (query->HasFeature(device::mojom::XRSessionFeature::DOM_OVERLAY)) {
+    // Prerequisites were checked by IsFeatureValidForMode and IDL.
+    DCHECK(session_init);
+    DCHECK(session_init->hasDomOverlay());
     DCHECK(session_init->domOverlay()->hasRoot()) << "required in IDL";
     query->SetDOMOverlayElement(session_init->domOverlay()->root());
   }
@@ -1345,7 +1354,8 @@ void XRSystem::OnRequestSessionReturned(
       LocalFrame* frame = GetFrame();
       DCHECK(frame);
 
-      if (query->DOMOverlayElement()) {
+      if (query->HasFeature(device::mojom::XRSessionFeature::DOM_OVERLAY)) {
+        DCHECK(query->DOMOverlayElement());
         // The session is using DOM overlay mode. At this point the overlay
         // element is already in fullscreen mode, and the session can
         // proceed.

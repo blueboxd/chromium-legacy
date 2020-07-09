@@ -10,7 +10,6 @@
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/persistent_memory_allocator.h"
 #include "content/public/browser/child_process_termination_info.h"
-#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -21,21 +20,27 @@ namespace metrics {
 
 namespace {
 
-bool HasTypicalRenderProcessMetrics(
+// Returns a random histogram in Allocator. It hard to know which metric will
+// not be deprecated and exist after navigation. this will work because we
+// always pick up a histogram from render process and verify if it is copied to
+// the global allocator.
+std::string GetAnyHistogramInAllocator(
     base::PersistentHistogramAllocator* allocator) {
   base::PersistentHistogramAllocator::Iterator iter(allocator);
-  bool found = false;
-  static const std::string kTypicalRenderHistogram(
-      "Blink.MainFrame.UpdateTime");
-  while (true) {
-    std::unique_ptr<base::HistogramBase> histogram = iter.GetNext();
-    if (!histogram)
-      break;
-    found = (kTypicalRenderHistogram == histogram->histogram_name());
-    if (found)
-      break;
+  std::string histogram_name;
+  if (std::unique_ptr<base::HistogramBase> histogram = iter.GetNext())
+    histogram_name = histogram->histogram_name();
+  return histogram_name;
+}
+
+bool HasHistogramInAllocator(base::PersistentHistogramAllocator* allocator,
+                             const std::string& histogram_name) {
+  base::PersistentHistogramAllocator::Iterator iter(allocator);
+  while (std::unique_ptr<base::HistogramBase> histogram = iter.GetNext()) {
+    if (histogram_name == histogram->histogram_name())
+      return true;
   }
-  return found;
+  return false;
 }
 
 size_t GetRenderProcessHostCount() {
@@ -123,14 +128,18 @@ IN_PROC_BROWSER_TEST_F(SubprocessMetricsProviderBrowserTest,
   auto* main_frame_allocator = GetMainFrameAllocator();
   EXPECT_TRUE(main_frame_allocator);
 
+  // Verify the render process's allocator have the render process metrics.
+  std::string render_process_histogram =
+      GetAnyHistogramInAllocator(main_frame_allocator);
+  EXPECT_FALSE(render_process_histogram.empty());
+
   // Verify the global histogram allocator have no render process metrics.
   base::GlobalHistogramAllocator* global_histogram_allocator =
       base::GlobalHistogramAllocator::Get();
   ASSERT_TRUE(global_histogram_allocator);
-  EXPECT_FALSE(HasTypicalRenderProcessMetrics(global_histogram_allocator));
-
-  // Verify the render process's allocator have the render process metrics.
-  EXPECT_TRUE(HasTypicalRenderProcessMetrics(main_frame_allocator));
+  EXPECT_FALSE(HasHistogramInAllocator(global_histogram_allocator,
+                                       render_process_histogram))
+      << " The histogram in the context is " << render_process_histogram;
 
   SimulateRenderProcessExit();
 
@@ -139,7 +148,9 @@ IN_PROC_BROWSER_TEST_F(SubprocessMetricsProviderBrowserTest,
 
   // Verify the render process metrics were merged to the global histogram
   // allocator.
-  EXPECT_TRUE(HasTypicalRenderProcessMetrics(global_histogram_allocator));
+  EXPECT_TRUE(HasHistogramInAllocator(global_histogram_allocator,
+                                      render_process_histogram))
+      << " The histogram in the context is " << render_process_histogram;
 
   auto* main_frame_process_host =
       shell()->web_contents()->GetMainFrame()->GetProcess();
@@ -160,28 +171,38 @@ IN_PROC_BROWSER_TEST_F(SubprocessMetricsProviderBrowserTest,
   // RenderProcessHost and the main frame allocator exists.
   EXPECT_EQ(get_scoped_observer().GetSourcesCount(),
             GetRenderProcessHostCount());
-  EXPECT_TRUE(GetMainFrameAllocator());
+  auto* main_frame_allocator = GetMainFrameAllocator();
+  EXPECT_TRUE(main_frame_allocator);
+
+  // Verify the render process's allocator have the render process metrics.
+  std::string render_process_histogram =
+      GetAnyHistogramInAllocator(main_frame_allocator);
+  EXPECT_FALSE(render_process_histogram.empty());
 
   // Verify the global histogram allocator have no render process metrics.
   base::GlobalHistogramAllocator* global_histogram_allocator =
       base::GlobalHistogramAllocator::Get();
   ASSERT_TRUE(global_histogram_allocator);
-  EXPECT_FALSE(HasTypicalRenderProcessMetrics(global_histogram_allocator));
+  EXPECT_FALSE(HasHistogramInAllocator(global_histogram_allocator,
+                                       render_process_histogram))
+      << " The histogram in the context is " << render_process_histogram;
 
-  // Verify the render process's allocator have the render process metrics.
-  EXPECT_TRUE(HasTypicalRenderProcessMetrics(GetMainFrameAllocator()));
-
-  // Crash the render process.
-  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes(shell());
-  NavigateToURLBlockUntilNavigationsComplete(
-      shell(), GURL(content::kChromeUICrashURL), 1);
-
-  // Verify the render process metrics were merged to the global histogram
-  // allocator.
-  EXPECT_TRUE(HasTypicalRenderProcessMetrics(global_histogram_allocator));
+  SimulateRenderProcessExit();
 
   // Verify the allocator deregistered.
   EXPECT_FALSE(GetMainFrameAllocator());
+
+  // Verify the render process metrics were merged to the global histogram
+  // allocator.
+  EXPECT_TRUE(HasHistogramInAllocator(global_histogram_allocator,
+                                      render_process_histogram))
+      << " The histogram in the context is " << render_process_histogram;
+
+  auto* main_frame_process_host =
+      shell()->web_contents()->GetMainFrame()->GetProcess();
+  SimulateRenderProcessHostDestroyed();
+  // Verify the observer removed.
+  EXPECT_FALSE(get_scoped_observer().IsObserving(main_frame_process_host));
 }
 
 }  // namespace metrics

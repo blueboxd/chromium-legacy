@@ -34,7 +34,6 @@
 #include "content/shell/renderer/web_test/mock_web_document_subresource_filter.h"
 #include "content/shell/renderer/web_test/pixel_dump.h"
 #include "content/shell/renderer/web_test/spell_check_client.h"
-#include "content/shell/renderer/web_test/test_interfaces.h"
 #include "content/shell/renderer/web_test/test_preferences.h"
 #include "content/shell/renderer/web_test/web_frame_test_proxy.h"
 #include "content/shell/renderer/web_test/web_view_test_proxy.h"
@@ -2188,9 +2187,8 @@ void TestRunner::WorkQueue::ProcessWork() {
   controller_->FinishTestIfReady();
 }
 
-TestRunner::TestRunner(TestInterfaces* interfaces)
+TestRunner::TestRunner()
     : work_queue_(this),
-      test_interfaces_(interfaces),
       mock_content_settings_client_(this, &web_test_runtime_flags_) {
   // NOTE: please don't put feature specific enable flags here,
   // instead add them to runtime_enabled_features.json5.
@@ -2340,8 +2338,8 @@ bool TestRunner::ShouldDumpAsAudio() const {
   return dump_as_audio_;
 }
 
-void TestRunner::GetAudioData(std::vector<unsigned char>* buffer_view) const {
-  *buffer_view = audio_data_;
+const std::vector<uint8_t>& TestRunner::GetAudioData() const {
+  return audio_data_;
 }
 
 bool TestRunner::IsRecursiveLayoutDumpRequested() {
@@ -2564,6 +2562,14 @@ void TestRunner::AddMainFrame(WebFrameTestProxy* frame) {
 
 void TestRunner::RemoveMainFrame(WebFrameTestProxy* frame) {
   main_frames_.erase(frame);
+}
+
+void TestRunner::AddRenderView(WebViewTestProxy* view) {
+  render_views_.insert(view);
+}
+
+void TestRunner::RemoveRenderView(WebViewTestProxy* view) {
+  render_views_.erase(view);
 }
 
 blink::WebFrame* TestRunner::MainFrame() const {
@@ -2796,20 +2802,9 @@ void TestRunner::SetTextSubpixelPositioning(bool value) {
 
 void TestRunner::UseUnfortunateSynchronousResizeMode() {
   // Sets the resize mode on the main frame of each open window.
-  for (WebViewTestProxy* window : test_interfaces_->GetWindowList()) {
-    blink::WebFrame* main_frame = window->GetWebView()->MainFrame();
-    if (main_frame->IsWebLocalFrame()) {
-      // Lots of pointers to get to the local main frame's WebWidgetTestProxy.
-      // The local frame has a paired RenderFrame, which will be a
-      // WebFrameTestProxy in web tests. Each local root frame (including the
-      // main frame) has a RenderWidget, which is the WebWidgetTestProxy in
-      // web tests.
-      blink::WebLocalFrame* local_frame = main_frame->ToWebLocalFrame();
-      RenderFrame* render_frame = RenderFrame::FromWebFrame(local_frame);
-      auto* frame_proxy = static_cast<WebFrameTestProxy*>(render_frame);
-      auto* widget_proxy = frame_proxy->GetLocalRootWebWidgetTestProxy();
-      widget_proxy->UseSynchronousResizeModeForTesting(true);
-    }
+  for (WebFrameTestProxy* frame : main_frames_) {
+    auto* widget_proxy = frame->GetLocalRootWebWidgetTestProxy();
+    widget_proxy->UseSynchronousResizeModeForTesting(true);
   }
 }
 
@@ -2831,17 +2826,15 @@ void TestRunner::SetMockScreenOrientation(const std::string& orientation_str) {
     orientation = blink::kWebScreenOrientationLandscapeSecondary;
   }
 
-  for (WebViewTestProxy* window : test_interfaces_->GetWindowList()) {
-    blink::WebFrame* main_frame = window->GetWebView()->MainFrame();
-    // TODO(lukasza): Need to make this work for remote frames.
-    if (main_frame->IsWebLocalFrame()) {
-      bool screen_orientation_changed =
-          mock_screen_orientation_client_.UpdateDeviceOrientation(
-              main_frame->ToWebLocalFrame(), orientation);
-      if (screen_orientation_changed)
-        GetWebTestControlHostRemote()->SetScreenOrientationChanged();
-    }
-  }
+  blink::WebLocalFrame* main_frame = nullptr;
+  if (main_view_ && main_view_->MainFrame()->IsWebLocalFrame())
+    main_frame = main_view_->MainFrame()->ToWebLocalFrame();
+  // TODO(lukasza): Need to make MockScreenOrientation updates work for
+  // cross-site iframes/windows.
+  bool changed = mock_screen_orientation_client_.UpdateDeviceOrientation(
+      main_frame, orientation);
+  if (changed)
+    GetWebTestControlHostRemote()->SetScreenOrientationChanged();
 }
 
 void TestRunner::DisableMockScreenOrientation() {
@@ -2856,11 +2849,15 @@ void TestRunner::SetAcceptLanguages(const std::string& accept_languages) {
   if (accept_languages == GetAcceptLanguages())
     return;
 
+  // TODO(danakj): IPC to WebTestControlHost, and have it change the
+  // WebContentsImpl::GetMutableRendererPrefs(). Then have the browser sync that
+  // to the window's RenderViews, instead of using WebTestRuntimeFlags for this.
+  // Then also get rid of |render_views_|.
   web_test_runtime_flags_.set_accept_languages(accept_languages);
   OnWebTestRuntimeFlagsChanged();
 
-  for (WebViewTestProxy* window : test_interfaces_->GetWindowList())
-    window->GetWebView()->AcceptLanguagesChanged();
+  for (WebViewTestProxy* view : render_views_)
+    view->GetWebView()->AcceptLanguagesChanged();
 }
 
 void TestRunner::DumpEditingCallbacks() {
@@ -2909,7 +2906,7 @@ void TestRunner::DumpIconChanges() {
 }
 
 void TestRunner::SetAudioData(const gin::ArrayBufferView& view) {
-  unsigned char* bytes = static_cast<unsigned char*>(view.bytes());
+  uint8_t* bytes = static_cast<uint8_t*>(view.bytes());
   audio_data_.resize(view.num_bytes());
   std::copy(bytes, bytes + view.num_bytes(), audio_data_.begin());
   dump_as_audio_ = true;
@@ -3058,11 +3055,10 @@ void TestRunner::SetEffectiveConnectionType(
 }
 
 bool TestRunner::ShouldDumpConsoleMessages() const {
-  return web_test_runtime_flags_.dump_console_messages();
-}
-
-bool TestRunner::ShouldDumpJavaScriptDialogs() const {
-  return web_test_runtime_flags_.dump_javascript_dialogs();
+  // Once TestFinished() is entered, we don't want additional log lines to
+  // be printed while we collect the renderer-side test results, so we check
+  // |test_is_running_| here as well.
+  return test_is_running_ && web_test_runtime_flags_.dump_console_messages();
 }
 
 void TestRunner::GoToOffset(int offset) {
@@ -3118,9 +3114,8 @@ void TestRunner::FocusWindow(RenderFrame* main_frame, bool focus) {
   }
 
   // Find the currently focused window, and remove its focus.
-  for (WebViewTestProxy* window : test_interfaces_->GetWindowList()) {
-    RenderFrameImpl* other_main_frame = window->GetMainRenderFrame();
-    if (other_main_frame && other_main_frame != main_frame) {
+  for (WebFrameTestProxy* other_main_frame : main_frames_) {
+    if (other_main_frame != main_frame) {
       RenderWidget* other_widget = other_main_frame->GetLocalRootRenderWidget();
       if (other_widget->GetWebWidget()->HasFocus()) {
         other_widget->OnSetActive(false);

@@ -33,6 +33,15 @@ static jboolean JNI_VariationsSeedLoader_ParseAndSaveSeedProto(
   if (!seed->ParseFromFileDescriptor(seed_fd)) {
     return false;
   }
+
+  // Empty or incomplete protos should be considered invalid. An empty seed
+  // file is expected when we request a seed from the service, but no new seed
+  // is available. In that case, an empty seed file will have been created, but
+  // never written to.
+  if (!seed->has_signature() || !seed->has_date() || !seed->has_country() ||
+      !seed->has_is_gzip_compressed() || !seed->has_seed_data()) {
+    return false;
+  }
   g_seed = seed.release();
   return true;
 }

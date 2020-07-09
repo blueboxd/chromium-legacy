@@ -372,8 +372,6 @@
 
     DOMString getProgrammaticScrollAnimationState(Node node);
 
-    DOMRect visualRect(Node node);
-
     OriginTrialsTest originTrialsTest();
 
     void crash();

@@ -160,6 +160,8 @@ public class SystemDownloadNotifier implements DownloadNotifier {
     @Override
     public void notifyDownloadInterrupted(
             DownloadInfo info, boolean isAutoResumable, @PendingState int pendingState) {
+        if (info.getOfflineItemSchedule() != null) return;
+
         NotificationInfo notificationInfo =
                 new NotificationInfo(NotificationType.INTERRUPTED, info, NotificationPriority.HIGH);
         notificationInfo.mIsAutoResumable = isAutoResumable;

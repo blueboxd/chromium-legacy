@@ -435,7 +435,6 @@ public class PaymentRequestImpl
     private final JourneyLogger mJourneyLogger;
     private final boolean mIsOffTheRecord;
 
-    private PaymentRequestClient mClient;
     private List<AutofillProfile> mAutofillProfiles;
     private boolean mHaveRequestedAutofillData = true;
     private boolean mIsCanMakePaymentResponsePending;
@@ -627,6 +626,7 @@ public class PaymentRequestImpl
         mPaymentUisShowStateReconciler = new PaymentUisShowStateReconciler();
     }
 
+    // Implement ComponentPaymentRequestDelegate:
     @Override
     public void setComponentPaymentRequestImpl(
             WeakReference<ComponentPaymentRequestImpl> componentPaymentRequestImpl) {
@@ -634,25 +634,14 @@ public class PaymentRequestImpl
         mComponentPaymentRequestImpl = componentPaymentRequestImpl;
     }
 
+    // Implement ComponentPaymentRequestDelegate:
     /**
      * Called by the merchant website to initialize the payment request data.
      */
     @Override
-    public void init(PaymentRequestClient client, PaymentMethodData[] methodData,
-            PaymentDetails details, PaymentOptions options, boolean googlePayBridgeEligible) {
-        if (mClient != null) {
-            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage(ErrorStrings.ATTEMPTED_INITIALIZATION_TWICE);
-            return;
-        }
-
-        if (client == null) {
-            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_STATE);
-            return;
-        }
-
-        mClient = client;
+    public void init(PaymentMethodData[] methodData, PaymentDetails details, PaymentOptions options,
+            boolean googlePayBridgeEligible) {
+        assert getClient() != null;
         mMethodData = new HashMap<>();
 
         if (!OriginSecurityChecker.isOriginSecure(mWebContents.getLastCommittedUrl())) {
@@ -935,7 +924,10 @@ public class PaymentRequestImpl
                 mWebContents.getLastCommittedUrl(),
                 activity.getResources().getDimensionPixelSize(R.dimen.payments_favicon_size),
                 (bitmap, iconUrl) -> {
-                    if (mClient != null && bitmap == null) mClient.warnNoFavicon();
+                    PaymentRequestClient client = getClient();
+                    if (client != null && bitmap == null) {
+                        client.warnNoFavicon();
+                    }
                     if (mUI != null && bitmap != null) mUI.setTitleBitmap(bitmap);
                     faviconHelper.destroy();
                 });
@@ -1015,12 +1007,13 @@ public class PaymentRequestImpl
                 PaymentRequestUI.DataType.SHIPPING_ADDRESSES, firstCompleteAddressIndex, addresses);
     }
 
+    // Implement ComponentPaymentRequestDelegate:
     /**
      * Called by the merchant website to show the payment request to the user.
      */
     @Override
     public void show(boolean isUserGesture, boolean waitForUpdatedDetails) {
-        if (mClient == null) return;
+        if (getClient() == null) return;
 
         if (mUI != null || mMinimalUi != null) {
             // Can be triggered only by a compromised renderer. In normal operation, calling show()
@@ -1176,13 +1169,16 @@ public class PaymentRequestImpl
     }
 
     private void onMinimalUiErroredAndClosed() {
-        closeClient();
+        mComponentPaymentRequestImpl.get().closeClient();
         closeUIAndDestroyNativeObjects();
     }
 
     private void onMinimalUiCompletedAndClosed() {
-        if (mClient != null) mClient.onComplete();
-        closeClient();
+        PaymentRequestClient client = getClient();
+        if (client != null) {
+            client.onComplete();
+        }
+        mComponentPaymentRequestImpl.get().closeClient();
         closeUIAndDestroyNativeObjects();
     }
 
@@ -1218,13 +1214,14 @@ public class PaymentRequestImpl
     /** Called by the payment app to get updated total based on the billing address, for example. */
     @Override
     public boolean changePaymentMethodFromInvokedApp(String methodName, String stringifiedDetails) {
-        if (TextUtils.isEmpty(methodName) || stringifiedDetails == null || mClient == null
+        PaymentRequestClient client = getClient();
+        if (TextUtils.isEmpty(methodName) || stringifiedDetails == null || client == null
                 || mInvokedPaymentApp == null
                 || mInvokedPaymentApp.isWaitingForPaymentDetailsUpdate()) {
             return false;
         }
 
-        mClient.onPaymentMethodChange(methodName, stringifiedDetails);
+        client.onPaymentMethodChange(methodName, stringifiedDetails);
         return true;
     }
 
@@ -1233,7 +1230,8 @@ public class PaymentRequestImpl
      */
     @Override
     public boolean changeShippingOptionFromInvokedApp(String shippingOptionId) {
-        if (TextUtils.isEmpty(shippingOptionId) || mClient == null || mInvokedPaymentApp == null
+        PaymentRequestClient client = getClient();
+        if (TextUtils.isEmpty(shippingOptionId) || client == null || mInvokedPaymentApp == null
                 || mInvokedPaymentApp.isWaitingForPaymentDetailsUpdate() || !mRequestShipping
                 || mRawShippingOptions == null) {
             return false;
@@ -1249,7 +1247,7 @@ public class PaymentRequestImpl
 
         if (!isValidId) return false;
 
-        mClient.onShippingOptionChange(shippingOptionId);
+        client.onShippingOptionChange(shippingOptionId);
         return true;
     }
 
@@ -1258,13 +1256,14 @@ public class PaymentRequestImpl
      */
     @Override
     public boolean changeShippingAddressFromInvokedApp(PaymentAddress shippingAddress) {
-        if (shippingAddress == null || mClient == null || mInvokedPaymentApp == null
+        PaymentRequestClient client = getClient();
+        if (shippingAddress == null || client == null || mInvokedPaymentApp == null
                 || mInvokedPaymentApp.isWaitingForPaymentDetailsUpdate() || !mRequestShipping) {
             return false;
         }
 
         redactShippingAddress(shippingAddress);
-        mClient.onShippingAddressChange(shippingAddress);
+        client.onShippingAddressChange(shippingAddress);
         return true;
     }
 
@@ -1400,13 +1399,14 @@ public class PaymentRequestImpl
                 && mInvokedPaymentApp.isValidForPaymentMethodData(methodName, null);
     }
 
+    // Implement ComponentPaymentRequestDelegate:
     /**
      * Called by merchant to update the shipping options and line items after the user has selected
      * their shipping address or shipping option.
      */
     @Override
     public void updateWith(PaymentDetails details) {
-        if (mClient == null) return;
+        if (getClient() == null) return;
 
         if (mWaitForUpdatedDetails) {
             initializeWithUpdatedDetails(details);
@@ -1497,13 +1497,14 @@ public class PaymentRequestImpl
         }
     }
 
+    // Implement ComponentPaymentRequestDelegate:
     /**
      * Called when the merchant received a new shipping address, shipping option, or payment method
      * info, but did not update the payment details in response.
      */
     @Override
     public void onPaymentDetailsNotUpdated() {
-        if (mClient == null) return;
+        if (getClient() == null) return;
 
         if (mUI == null) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
@@ -1851,7 +1852,7 @@ public class PaymentRequestImpl
         } else if (optionType == PaymentRequestUI.DataType.SHIPPING_OPTIONS) {
             // This may update the line items.
             mUiShippingOptions.setSelectedItem(option);
-            mClient.onShippingOptionChange(option.getIdentifier());
+            getClient().onShippingOptionChange(option.getIdentifier());
             mPaymentInformationCallback = callback;
             return PaymentRequestUI.SelectionResult.ASYNCHRONOUS_VALIDATION;
         } else if (optionType == PaymentRequestUI.DataType.CONTACT_DETAILS) {
@@ -2109,7 +2110,9 @@ public class PaymentRequestImpl
 
     @Override
     public void onInstrumentDetailsLoadingWithoutUI() {
-        if (mClient == null || mUI == null || mPaymentResponseHelper == null) return;
+        if (getClient() == null || mUI == null || mPaymentResponseHelper == null) {
+            return;
+        }
 
         assert getSelectedPaymentAppType() == PaymentAppType.AUTOFILL;
 
@@ -2207,29 +2210,40 @@ public class PaymentRequestImpl
     }
 
     @Override
+    public JourneyLogger getJourneyLogger() {
+        return mJourneyLogger;
+    }
+
+    @Override
     public void onDismiss() {
         mJourneyLogger.setAborted(AbortReason.ABORTED_BY_USER);
         disconnectFromClientWithDebugMessage(ErrorStrings.USER_CANCELLED);
     }
 
-    private void disconnectFromClientWithDebugMessage(String debugMessage) {
+    // Implement ComponentPaymentRequestDelegate:
+    // This method is not supposed to be used outside this class and
+    // ComponentPaymentRequestImpl.
+    @Override
+    public void disconnectFromClientWithDebugMessage(String debugMessage) {
         disconnectFromClientWithDebugMessage(debugMessage, PaymentErrorReason.USER_CANCEL);
     }
 
     private void disconnectFromClientWithDebugMessage(String debugMessage, int reason) {
         Log.d(TAG, debugMessage);
-        if (mClient != null) mClient.onError(reason, debugMessage);
-        closeClient();
+        PaymentRequestClient client = getClient();
+        if (client != null) client.onError(reason, debugMessage);
+        mComponentPaymentRequestImpl.get().closeClient();
         closeUIAndDestroyNativeObjects();
         if (mNativeObserverForTest != null) mNativeObserverForTest.onConnectionTerminated();
     }
 
+    // Implement ComponentPaymentRequestDelegate:
     /**
      * Called by the merchant website to abort the payment.
      */
     @Override
     public void abort() {
-        if (mClient == null) return;
+        if (getClient() == null) return;
 
         if (mInvokedPaymentApp != null) {
             mInvokedPaymentApp.abortPaymentApp(/*callback=*/this);
@@ -2241,9 +2255,9 @@ public class PaymentRequestImpl
     /** Called by the payment app in response to an abort request. */
     @Override
     public void onInstrumentAbortResult(boolean abortSucceeded) {
-        mClient.onAbort(abortSucceeded);
+        getClient().onAbort(abortSucceeded);
         if (abortSucceeded) {
-            closeClient();
+            mComponentPaymentRequestImpl.get().closeClient();
             mJourneyLogger.setAborted(AbortReason.ABORTED_BY_MERCHANT);
             closeUIAndDestroyNativeObjects();
         } else {
@@ -2252,12 +2266,13 @@ public class PaymentRequestImpl
         if (mNativeObserverForTest != null) mNativeObserverForTest.onAbortCalled();
     }
 
+    // Implement ComponentPaymentRequestDelegate:
     /**
      * Called when the merchant website has processed the payment.
      */
     @Override
     public void complete(int result) {
-        if (mClient == null) return;
+        if (getClient() == null) return;
 
         if (result != PaymentComplete.FAIL) {
             mJourneyLogger.setCompleted();
@@ -2292,9 +2307,10 @@ public class PaymentRequestImpl
         closeUIAndDestroyNativeObjects();
     }
 
+    // Implement ComponentPaymentRequestDelegate:
     @Override
     public void retry(PaymentValidationErrors errors) {
-        if (mClient == null) return;
+        if (getClient() == null) return;
 
         if (!PaymentValidator.validatePaymentValidationErrors(errors)) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
@@ -2375,7 +2391,7 @@ public class PaymentRequestImpl
 
     @Override
     public void onAddressUpdated(AutofillAddress address) {
-        if (mClient == null) return;
+        if (getClient() == null) return;
 
         address.setShippingAddressLabelWithCountry();
         mCardEditor.updateBillingAddressIfComplete(address);
@@ -2394,7 +2410,7 @@ public class PaymentRequestImpl
 
     @Override
     public void onAddressDeleted(String guid) {
-        if (mClient == null) return;
+        if (getClient() == null) return;
 
         // TODO: Delete the address from mShippingAddressesSection and mContactSection. Note that we
         // only displayed SUGGESTIONS_LIMIT addresses, so we may want to add back previously
@@ -2403,7 +2419,7 @@ public class PaymentRequestImpl
 
     @Override
     public void onCreditCardUpdated(CreditCard card) {
-        if (mClient == null || !mMerchantSupportsAutofillCards || mPaymentMethodsSection == null
+        if (getClient() == null || !mMerchantSupportsAutofillCards || mPaymentMethodsSection == null
                 || mAutofillPaymentAppCreator == null) {
             return;
         }
@@ -2426,7 +2442,7 @@ public class PaymentRequestImpl
 
     @Override
     public void onCreditCardDeleted(String guid) {
-        if (mClient == null) return;
+        if (getClient() == null) return;
         if (!mMerchantSupportsAutofillCards || mPaymentMethodsSection == null) return;
 
         mPaymentMethodsSection.removeAndUnselectItem(guid);
@@ -2438,10 +2454,11 @@ public class PaymentRequestImpl
         }
     }
 
+    // Implement ComponentPaymentRequestDelegate:
     /** Called by the merchant website to check if the user has complete payment apps. */
     @Override
     public void canMakePayment() {
-        if (mClient == null) return;
+        if (getClient() == null) return;
 
         if (mNativeObserverForTest != null) mNativeObserverForTest.onCanMakePaymentCalled();
 
@@ -2453,13 +2470,14 @@ public class PaymentRequestImpl
     }
 
     private void respondCanMakePaymentQuery() {
-        if (mClient == null) return;
+        PaymentRequestClient client = getClient();
+        if (client == null) return;
 
         mIsCanMakePaymentResponsePending = false;
 
         boolean response = mCanMakePayment && mDelegate.prefsCanMakePayment();
-        mClient.onCanMakePayment(response ? CanMakePaymentQueryResult.CAN_MAKE_PAYMENT
-                                          : CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
+        client.onCanMakePayment(response ? CanMakePaymentQueryResult.CAN_MAKE_PAYMENT
+                                         : CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
 
         mJourneyLogger.setCanMakePaymentValue(response || mIsOffTheRecord);
 
@@ -2469,10 +2487,11 @@ public class PaymentRequestImpl
         if (mNativeObserverForTest != null) mNativeObserverForTest.onCanMakePaymentReturned();
     }
 
+    // Implement ComponentPaymentRequestDelegate:
     /** Called by the merchant website to check if the user has complete payment instruments. */
     @Override
     public void hasEnrolledInstrument(boolean perMethodQuota) {
-        if (mClient == null) return;
+        if (getClient() == null) return;
 
         if (mNativeObserverForTest != null) mNativeObserverForTest.onHasEnrolledInstrumentCalled();
 
@@ -2486,19 +2505,20 @@ public class PaymentRequestImpl
     }
 
     private void respondHasEnrolledInstrumentQuery(boolean response) {
-        if (mClient == null) return;
+        PaymentRequestClient client = getClient();
+        if (client == null) return;
 
         mIsHasEnrolledInstrumentResponsePending = false;
 
         if (CanMakePaymentQuery.canQuery(mWebContents, mTopLevelOrigin, mPaymentRequestOrigin,
                     mQueryForQuota, mHasEnrolledInstrumentUsesPerMethodQuota)) {
-            mClient.onHasEnrolledInstrument(response
+            client.onHasEnrolledInstrument(response
                             ? HasEnrolledInstrumentQueryResult.HAS_ENROLLED_INSTRUMENT
                             : HasEnrolledInstrumentQueryResult.HAS_NO_ENROLLED_INSTRUMENT);
         } else if (shouldEnforceCanMakePaymentQueryQuota()) {
-            mClient.onHasEnrolledInstrument(HasEnrolledInstrumentQueryResult.QUERY_QUOTA_EXCEEDED);
+            client.onHasEnrolledInstrument(HasEnrolledInstrumentQueryResult.QUERY_QUOTA_EXCEEDED);
         } else {
-            mClient.onHasEnrolledInstrument(response
+            client.onHasEnrolledInstrument(response
                             ? HasEnrolledInstrumentQueryResult.WARNING_HAS_ENROLLED_INSTRUMENT
                             : HasEnrolledInstrumentQueryResult.WARNING_HAS_NO_ENROLLED_INSTRUMENT);
         }
@@ -2526,26 +2546,28 @@ public class PaymentRequestImpl
                 || sIsLocalCanMakePaymentQueryQuotaEnforcedForTest;
     }
 
+    // Implement ComponentPaymentRequestDelegate:
     /**
      * Called when the renderer closes the Mojo connection.
      */
     @Override
     public void close() {
-        if (mClient == null) return;
-        closeClient();
+        if (getClient() == null) return;
+        mComponentPaymentRequestImpl.get().closeClient();
         mJourneyLogger.setAborted(AbortReason.MOJO_RENDERER_CLOSING);
         if (sObserverForTest != null) sObserverForTest.onRendererClosedMojoConnection();
         closeUIAndDestroyNativeObjects();
         if (mNativeObserverForTest != null) mNativeObserverForTest.onConnectionTerminated();
     }
 
+    // Implement ComponentPaymentRequestDelegate:
     /**
      * Called when the Mojo connection encounters an error.
      */
     @Override
     public void onConnectionError(MojoException e) {
-        if (mClient == null) return;
-        closeClient();
+        if (getClient() == null) return;
+        mComponentPaymentRequestImpl.get().closeClient();
         mJourneyLogger.setAborted(AbortReason.MOJO_CONNECTION_ERROR);
         closeUIAndDestroyNativeObjects();
         if (mNativeObserverForTest != null) mNativeObserverForTest.onConnectionTerminated();
@@ -2647,7 +2669,7 @@ public class PaymentRequestImpl
     // PaymentAppFactoryDelegate implementation.
     @Override
     public void onCanMakePaymentCalculated(boolean canMakePayment) {
-        if (mClient == null) return;
+        if (getClient() == null) return;
 
         mCanMakePayment = canMakePayment;
 
@@ -2667,7 +2689,7 @@ public class PaymentRequestImpl
     // PaymentAppFactoryDelegate implementation.
     @Override
     public void onPaymentAppCreated(PaymentApp paymentApp) {
-        if (mClient == null) return;
+        if (getClient() == null) return;
 
         mHideServerAutofillCards |= paymentApp.isServerAutofillInstrumentReplacement();
         paymentApp.setHaveRequestedAutofillData(mHaveRequestedAutofillData);
@@ -2697,7 +2719,9 @@ public class PaymentRequestImpl
     public void onDoneCreatingPaymentApps(PaymentAppFactoryInterface factory /* Unused */) {
         mIsFinishedQueryingPaymentApps = true;
 
-        if (mClient == null || disconnectIfNoPaymentMethodsSupported()) return;
+        if (getClient() == null || disconnectIfNoPaymentMethodsSupported()) {
+            return;
+        }
 
         // Always return false when can make payment is disabled.
         mHasEnrolledInstrument &= mDelegate.prefsCanMakePayment();
@@ -2879,7 +2903,9 @@ public class PaymentRequestImpl
         assert methodName != null;
         assert stringifiedDetails != null;
 
-        if (mClient == null || mPaymentResponseHelper == null) return;
+        if (getClient() == null || mPaymentResponseHelper == null) {
+            return;
+        }
 
         // If the payment method was an Autofill credit card with an identifier, record its use.
         PaymentApp selectedPaymentMethod = (PaymentApp) mPaymentMethodsSection.getSelectedItem();
@@ -2908,7 +2934,7 @@ public class PaymentRequestImpl
                     ErrorStrings.PAYMENT_APP_INVALID_RESPONSE, PaymentErrorReason.NOT_SUPPORTED);
         }
 
-        mClient.onPaymentResponse(response);
+        getClient().onPaymentResponse(response);
         mPaymentResponseHelper = null;
         if (sObserverForTest != null) sObserverForTest.onPaymentResponseReady();
     }
@@ -2916,7 +2942,7 @@ public class PaymentRequestImpl
     /** Called if unable to retrieve payment details. */
     @Override
     public void onInstrumentDetailsError(String errorMessage) {
-        if (mClient == null) return;
+        if (getClient() == null) return;
         mInvokedPaymentApp = null;
         if (mMinimalUi != null) {
             mJourneyLogger.setAborted(AbortReason.ABORTED_BY_USER);
@@ -2974,7 +3000,7 @@ public class PaymentRequestImpl
         redactShippingAddress(redactedAddress);
 
         // This updates the line items and the shipping options asynchronously.
-        mClient.onShippingAddressChange(redactedAddress);
+        getClient().onShippingAddressChange(redactedAddress);
     }
 
     @Override
@@ -3011,11 +3037,12 @@ public class PaymentRequestImpl
 
         if (mUI != null) {
             mUI.close();
-            if (mClient != null) {
+            PaymentRequestClient client = getClient();
+            if (client != null) {
                 if (sObserverForTest != null) sObserverForTest.onCompleteReplied();
-                mClient.onComplete();
+                client.onComplete();
             }
-            closeClient();
+            mComponentPaymentRequestImpl.get().closeClient();
             ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
             if (activity != null) {
                 activity.getLifecycleDispatcher().unregister(mUI);
@@ -3072,14 +3099,10 @@ public class PaymentRequestImpl
         PaymentDetailsUpdateServiceHelper.getInstance().reset();
     }
 
-    private void closeClient() {
-        if (mClient != null) mClient.close();
-        mClient = null;
-    }
-
     private void dispatchPayerDetailChangeEventIfNeeded(PayerDetail detail) {
-        if (mClient == null || !mWasRetryCalled) return;
-        mClient.onPayerDetailChange(detail);
+        PaymentRequestClient client = getClient();
+        if (client == null || !mWasRetryCalled) return;
+        client.onPayerDetailChange(detail);
     }
 
     /**
@@ -3159,5 +3182,9 @@ public class PaymentRequestImpl
     private static final double getFrecencyScore(int count, long date) {
         long currentTime = System.currentTimeMillis();
         return -Math.log((currentTime - date) / (24 * 60 * 60 * 1000) + 2) / Math.log(count + 2);
+    }
+
+    private PaymentRequestClient getClient() {
+        return mComponentPaymentRequestImpl.get().getClient();
     }
 }

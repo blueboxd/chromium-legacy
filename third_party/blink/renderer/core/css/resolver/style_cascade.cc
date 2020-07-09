@@ -110,6 +110,14 @@ CSSPropertyID UnvisitedID(CSSPropertyID id) {
   return property.GetUnvisitedProperty()->PropertyID();
 }
 
+bool IsRevert(const CSSValue& value) {
+  // TODO(andruud): Don't transport CSS-wide keywords in
+  // CustomPropertyDeclaration.
+  return value.IsRevertValue() ||
+         (value.IsCustomPropertyDeclaration() &&
+          To<CSSCustomPropertyDeclaration>(value).IsRevert());
+}
+
 }  // namespace
 
 MatchResult& StyleCascade::MutableMatchResult() {
@@ -524,7 +532,7 @@ StyleCascade::TokenSequence::BuildVariableData() {
 bool StyleCascade::ShouldRevert(const CSSProperty& property,
                                 const CSSValue& value,
                                 CascadeOrigin origin) {
-  return value.IsRevertValue() ||
+  return IsRevert(value) ||
          (state_.GetDocument().InForcedColorsMode() &&
           state_.Style()->ForcedColorAdjust() != EForcedColorAdjust::kNone &&
           property.IsAffectedByForcedColors() &&
@@ -539,7 +547,7 @@ const CSSValue* StyleCascade::Resolve(const CSSProperty& property,
                                       CascadeResolver& resolver) {
   DCHECK(!property.IsSurrogate());
   if (ShouldRevert(property, value, origin))
-    return ResolveRevert(property, origin, resolver);
+    return ResolveRevert(property, value, origin, resolver);
   resolver.CollectAuthorFlags(property, origin);
   if (const auto* v = DynamicTo<CSSCustomPropertyDeclaration>(value))
     return ResolveCustomProperty(property, *v, origin, resolver);
@@ -558,11 +566,8 @@ const CSSValue* StyleCascade::ResolveCustomProperty(
   DCHECK(!property.IsSurrogate());
 
   // TODO(andruud): Don't transport css-wide keywords in this value.
-  if (!decl.Value()) {
-    if (decl.IsRevert())
-      return ResolveRevert(property, origin, resolver);
+  if (!decl.Value())
     return &decl;
-  }
 
   DCHECK(!resolver.IsLocked(property));
   CascadeResolver::AutoLock lock(property, resolver);
@@ -684,9 +689,14 @@ const CSSValue* StyleCascade::ResolvePendingSubstitution(
 }
 
 const CSSValue* StyleCascade::ResolveRevert(const CSSProperty& property,
+                                            const CSSValue& value,
                                             CascadeOrigin origin,
                                             CascadeResolver& resolver) {
-  GetDocument().CountUse(WebFeature::kCSSKeywordRevert);
+  // In forced colors mode, we can behave like 'revert' any value [1], but we
+  // should only use-count the true uses of 'revert'.
+  // [1] https://drafts.csswg.org/css-color-adjust-1/#forced-colors-properties
+  if (IsRevert(value))
+    GetDocument().CountUse(WebFeature::kCSSKeywordRevert);
 
   CascadeOrigin target_origin = TargetOriginForRevert(origin);
 

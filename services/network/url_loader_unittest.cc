@@ -3863,6 +3863,180 @@ TEST_F(URLLoaderTest, AllowAllCookies) {
   EXPECT_TRUE(url_loader->AllowCookies(first_party_url, site_for_cookies));
   EXPECT_TRUE(url_loader->AllowCookies(third_party_url, site_for_cookies));
 }
+
+// Tests that a request with CredentialsMode::kOmit still sends client
+// certificates. This should be removed when crbug.com/775438 is fixed.
+TEST_F(URLLoaderTest, CredentialsModeOmit) {
+  // Set up a server that requires certificates.
+  net::SSLServerConfig ssl_config;
+  ssl_config.client_cert_type =
+      net::SSLServerConfig::ClientCertType::REQUIRE_CLIENT_CERT;
+  net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
+  test_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
+  ASSERT_TRUE(test_server.Start());
+
+  // Make sure the client has valid certificates.
+  std::unique_ptr<net::FakeClientCertIdentity> identity =
+      net::FakeClientCertIdentity::CreateFromCertAndKeyFiles(
+          net::GetTestCertsDirectory(), "client_1.pem", "client_1.pk8");
+  ASSERT_TRUE(identity);
+  scoped_refptr<TestSSLPrivateKey> private_key =
+      base::MakeRefCounted<TestSSLPrivateKey>(identity->ssl_private_key());
+
+  MockNetworkServiceClient network_service_client;
+  MockNetworkContextClient network_context_client;
+  network_context_client.set_certificate_response(
+      MockNetworkContextClient::CertificateResponse::
+          VALID_CERTIFICATE_SIGNATURE);
+  network_context_client.set_private_key(private_key);
+  network_context_client.set_certificate(identity->certificate());
+
+  ResourceRequest request =
+      CreateResourceRequest("GET", test_server.GetURL("/simple_page.html"));
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
+
+  base::RunLoop delete_run_loop;
+  mojo::Remote<mojom::URLLoader> loader;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = kProcessId;
+  params.is_corb_enabled = false;
+  url_loader = std::make_unique<URLLoader>(
+      context(), &network_service_client, &network_context_client,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      loader.BindNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone, request,
+      client()->CreateRemote(), /*reponse_body_use_tracker=*/base::nullopt,
+      TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      /*coep_reporter=*/nullptr, 0 /* request_id */,
+      0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */,
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */,
+      mojo::NullRemote() /* cookie_observer */);
+
+  client()->RunUntilComplete();
+  delete_run_loop.Run();
+
+  EXPECT_EQ(net::OK, client()->completion_status().error_code);
+}
+
+// Tests that a request with CredentialsMode::kOmitBug_775438_Workaround
+// doesn't send client certificates.
+TEST_F(URLLoaderTest, CredentialsModeOmitWorkaround) {
+  // Set up a server that requires certificates.
+  net::SSLServerConfig ssl_config;
+  ssl_config.client_cert_type =
+      net::SSLServerConfig::ClientCertType::REQUIRE_CLIENT_CERT;
+  net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
+  test_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
+  ASSERT_TRUE(test_server.Start());
+
+  // Make sure the client has valid certificates.
+  std::unique_ptr<net::FakeClientCertIdentity> identity =
+      net::FakeClientCertIdentity::CreateFromCertAndKeyFiles(
+          net::GetTestCertsDirectory(), "client_1.pem", "client_1.pk8");
+  ASSERT_TRUE(identity);
+  scoped_refptr<TestSSLPrivateKey> private_key =
+      base::MakeRefCounted<TestSSLPrivateKey>(identity->ssl_private_key());
+
+  MockNetworkServiceClient network_service_client;
+  MockNetworkContextClient network_context_client;
+  network_context_client.set_certificate_response(
+      MockNetworkContextClient::CertificateResponse::
+          VALID_CERTIFICATE_SIGNATURE);
+  network_context_client.set_private_key(private_key);
+  network_context_client.set_certificate(identity->certificate());
+
+  ResourceRequest request =
+      CreateResourceRequest("GET", test_server.GetURL("/simple_page.html"));
+  request.credentials_mode = mojom::CredentialsMode::kOmitBug_775438_Workaround;
+
+  base::RunLoop delete_run_loop;
+  mojo::Remote<mojom::URLLoader> loader;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = kProcessId;
+  params.is_corb_enabled = false;
+  url_loader = std::make_unique<URLLoader>(
+      context(), &network_service_client, &network_context_client,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      loader.BindNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone, request,
+      client()->CreateRemote(), /*reponse_body_use_tracker=*/base::nullopt,
+      TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      /*coep_reporter=*/nullptr, 0 /* request_id */,
+      0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */,
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */,
+      mojo::NullRemote() /* cookie_observer */);
+
+  client()->RunUntilComplete();
+  delete_run_loop.Run();
+
+  EXPECT_EQ(0, network_context_client.on_certificate_requested_counter());
+  EXPECT_NE(net::OK, client()->completion_status().error_code);
+}
+
+// Tests that a request with CredentialsMode::kOmitBug_775438_Workaround
+// doesn't send client certificates with a server that optionally requires
+// certificates.
+TEST_F(URLLoaderTest, CredentialsModeOmitWorkaroundWithOptionalCerts) {
+  // Set up a server that requires certificates.
+  net::SSLServerConfig ssl_config;
+  ssl_config.client_cert_type =
+      net::SSLServerConfig::ClientCertType::OPTIONAL_CLIENT_CERT;
+  net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
+  test_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
+  ASSERT_TRUE(test_server.Start());
+
+  // Make sure the client has valid certificates.
+  std::unique_ptr<net::FakeClientCertIdentity> identity =
+      net::FakeClientCertIdentity::CreateFromCertAndKeyFiles(
+          net::GetTestCertsDirectory(), "client_1.pem", "client_1.pk8");
+  ASSERT_TRUE(identity);
+  scoped_refptr<TestSSLPrivateKey> private_key =
+      base::MakeRefCounted<TestSSLPrivateKey>(identity->ssl_private_key());
+
+  MockNetworkServiceClient network_service_client;
+  MockNetworkContextClient network_context_client;
+  network_context_client.set_certificate_response(
+      MockNetworkContextClient::CertificateResponse::
+          VALID_CERTIFICATE_SIGNATURE);
+  network_context_client.set_private_key(private_key);
+  network_context_client.set_certificate(identity->certificate());
+
+  ResourceRequest request =
+      CreateResourceRequest("GET", test_server.GetURL("/simple_page.html"));
+  request.credentials_mode = mojom::CredentialsMode::kOmitBug_775438_Workaround;
+
+  base::RunLoop delete_run_loop;
+  mojo::Remote<mojom::URLLoader> loader;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = kProcessId;
+  params.is_corb_enabled = false;
+  url_loader = std::make_unique<URLLoader>(
+      context(), &network_service_client, &network_context_client,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      loader.BindNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone, request,
+      client()->CreateRemote(), /*reponse_body_use_tracker=*/base::nullopt,
+      TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      /*coep_reporter=*/nullptr, 0 /* request_id */,
+      0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */,
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */,
+      mojo::NullRemote() /* cookie_observer */);
+
+  client()->RunUntilComplete();
+  delete_run_loop.Run();
+
+  EXPECT_EQ(0, network_context_client.on_certificate_requested_counter());
+  EXPECT_EQ(net::OK, client()->completion_status().error_code);
+}
 #endif  // !defined(OS_IOS)
 
 TEST_F(URLLoaderTest, CookieReporting) {

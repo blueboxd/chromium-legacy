@@ -228,7 +228,7 @@ TEST_F(
 TEST_F(
     'AccessibilityExtensionAutomationTreeWalkerTest', 'RootPredicateEnding',
     function() {
-      this.runWithLoadedTree(toolbarDoc, function(r) {
+      this.runWithLoadedTree(toolbarDoc(), function(r) {
         const backwardWalker =
             new AutomationTreeWalker(r.firstChild, 'backward', {
               root(node) {

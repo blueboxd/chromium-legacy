@@ -9,8 +9,9 @@
 
 @protocol DropAndNavigateDelegate;
 
-// A UIDropManager that notifies it's DropAndNavigateDelegate whenever an object
-// that can trigger a navigation is dropped.
+// TODO(crbug.com/1101363): This class is now deprecated in favor of
+// URLDropHandler. A UIDropManager that notifies it's DropAndNavigateDelegate
+// whenever an object that can trigger a navigation is dropped.
 API_AVAILABLE(ios(11.0))
 @interface DropAndNavigateInteraction : UIDropInteraction
 

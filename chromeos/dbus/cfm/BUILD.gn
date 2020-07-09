@@ -1,0 +1,39 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/protobuf/proto_library.gni")
+
+assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
+
+component("cfm") {
+  defines = [ "IS_CFM_HOTLINE_CLIENT_IMPL" ]
+  public_deps = [
+    "//chromeos/dbus:common",
+    "//chromeos/dbus:dbus",
+  ]
+  deps = [
+    "//base",
+    "//dbus",
+  ]
+  sources = [
+    "cfm_hotline_client.cc",
+    "cfm_hotline_client.h",
+    "fake_cfm_hotline_client.cc",
+    "fake_cfm_hotline_client.h",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  public_deps = [ ":cfm" ]
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//dbus:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  sources = [ "cfm_hotline_client_unittest.cc" ]
+}

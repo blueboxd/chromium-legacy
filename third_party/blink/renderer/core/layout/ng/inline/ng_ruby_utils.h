@@ -13,6 +13,7 @@ namespace blink {
 class ComputedStyle;
 class NGLineInfo;
 class NGLogicalLineItems;
+class ShapeResultView;
 struct NGInlineItemResult;
 struct NGLineHeightMetrics;
 struct PhysicalRect;
@@ -21,6 +22,7 @@ struct PhysicalRect;
 // This is called on computing scrollable overflow with kEmHeight.
 PhysicalRect AdjustTextRectForEmHeight(const PhysicalRect& rect,
                                        const ComputedStyle& style,
+                                       const ShapeResultView* shape_view,
                                        WritingMode writing_mode);
 
 struct NGAnnotationOverhang {

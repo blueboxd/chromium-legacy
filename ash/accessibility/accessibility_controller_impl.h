@@ -39,6 +39,7 @@ namespace ash {
 class AccessibilityHighlightController;
 class AccessibilityObserver;
 class FloatingAccessibilityController;
+class PointScanController;
 class ScopedBacklightsForcedOff;
 class SelectToSpeakEventHandler;
 class SwitchAccessMenuBubbleController;
@@ -370,6 +371,10 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   // accessibility tray menu.
   bool IsAdditionalSettingsSeparatorVisibleInTray();
 
+  // Starts point scanning, to select a point onscreen without using a mouse
+  // (as used by Switch Access).
+  void StartPointScanning();
+
   // AccessibilityController:
   void SetClient(AccessibilityControllerClient* client) override;
   void SetDarkenScreen(bool darken) override;
@@ -491,6 +496,10 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   // postpone the showing of the menu till the splash screen closes. This value
   // makes floating menu visible as soon as it is enabled.
   bool always_show_floating_menu_when_enabled_ = false;
+
+  // Used to control point scanning, or selecting a point onscreen without using
+  // a mouse (as done by Switch Access).
+  std::unique_ptr<PointScanController> point_scan_controller_;
 
   // Used to force the backlights off to darken the screen.
   std::unique_ptr<ScopedBacklightsForcedOff> scoped_backlights_forced_off_;

@@ -192,6 +192,7 @@ source_set("unit_tests") {
     "//chromeos/dbus/audio",
     "//chromeos/dbus/authpolicy",
     "//chromeos/dbus/biod:test_support",
+    "//chromeos/dbus/cfm:unit_tests",
     "//chromeos/dbus/cryptohome",
     "//chromeos/dbus/cryptohome:attestation_proto",
     "//chromeos/dbus/dlcservice:test_support",

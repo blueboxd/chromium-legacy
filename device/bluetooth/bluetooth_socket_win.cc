@@ -98,23 +98,22 @@ BluetoothSocketWin::BluetoothSocketWin(
 BluetoothSocketWin::~BluetoothSocketWin() {
 }
 
-void BluetoothSocketWin::Connect(
-    const BluetoothDeviceWin* device,
-    const BluetoothUUID& uuid,
-    const base::Closure& success_callback,
-    const ErrorCompletionCallback& error_callback) {
+void BluetoothSocketWin::Connect(const BluetoothDeviceWin* device,
+                                 const BluetoothUUID& uuid,
+                                 base::OnceClosure success_callback,
+                                 ErrorCompletionOnceCallback error_callback) {
   DCHECK(ui_task_runner()->RunsTasksInCurrentSequence());
   DCHECK(device);
 
   if (!uuid.IsValid()) {
-    error_callback.Run(kInvalidUUID);
+    std::move(error_callback).Run(kInvalidUUID);
     return;
   }
 
   const BluetoothServiceRecordWin* service_record_win =
       device->GetServiceRecord(uuid);
   if (!service_record_win) {
-    error_callback.Run(kInvalidUUID);
+    std::move(error_callback).Run(kInvalidUUID);
     return;
   }
 
@@ -127,11 +126,11 @@ void BluetoothSocketWin::Connect(
 
   socket_thread()->task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &BluetoothSocketWin::DoConnect, this,
-          base::Bind(&BluetoothSocketWin::PostSuccess, this, success_callback),
-          base::Bind(&BluetoothSocketWin::PostErrorCompletion, this,
-                     error_callback)));
+      base::BindOnce(&BluetoothSocketWin::DoConnect, this,
+                     base::BindOnce(&BluetoothSocketWin::PostSuccess, this,
+                                    std::move(success_callback)),
+                     base::BindOnce(&BluetoothSocketWin::PostErrorCompletion,
+                                    this, std::move(error_callback))));
 }
 
 void BluetoothSocketWin::Listen(scoped_refptr<BluetoothAdapter> adapter,
@@ -171,21 +170,20 @@ void BluetoothSocketWin::Accept(
                                 success_callback, error_callback));
 }
 
-void BluetoothSocketWin::DoConnect(
-    const base::Closure& success_callback,
-    const ErrorCompletionCallback& error_callback) {
+void BluetoothSocketWin::DoConnect(base::OnceClosure success_callback,
+                                   ErrorCompletionOnceCallback error_callback) {
   DCHECK(socket_thread()->task_runner()->RunsTasksInCurrentSequence());
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
   if (tcp_socket()) {
-    error_callback.Run(kSocketAlreadyConnected);
+    std::move(error_callback).Run(kSocketAlreadyConnected);
     return;
   }
 
   if (!supports_rfcomm_) {
     // TODO(youngki) add support for L2CAP sockets as well.
-    error_callback.Run(kL2CAPNotSupported);
+    std::move(error_callback).Run(kL2CAPNotSupported);
     return;
   }
 
@@ -206,8 +204,9 @@ void BluetoothSocketWin::DoConnect(
     LOG(ERROR) << "Failed to connect bluetooth socket "
                << "(" << device_address_ << "): "
                << logging::SystemErrorCodeToString(error_code);
-    error_callback.Run("Error connecting to socket: " +
-                       logging::SystemErrorCodeToString(error_code));
+    std::move(error_callback)
+        .Run("Error connecting to socket: " +
+             logging::SystemErrorCodeToString(error_code));
     closesocket(socket_fd);
     return;
   }
@@ -217,14 +216,14 @@ void BluetoothSocketWin::DoConnect(
   int net_result =
       scoped_socket->AdoptConnectedSocket(socket_fd, net::IPEndPoint());
   if (net_result != net::OK) {
-    error_callback.Run("Error connecting to socket: " +
-                       net::ErrorToString(net_result));
+    std::move(error_callback)
+        .Run("Error connecting to socket: " + net::ErrorToString(net_result));
     closesocket(socket_fd);
     return;
   }
 
   SetTCPSocket(std::move(scoped_socket));
-  success_callback.Run();
+  std::move(success_callback).Run();
 }
 
 void BluetoothSocketWin::DoListen(const BluetoothUUID& uuid,

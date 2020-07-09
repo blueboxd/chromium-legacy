@@ -46,6 +46,36 @@ class TestFragmentRootDelegate : public AXFragmentRootDelegateWin {
   bool is_control_element_ = true;
 };
 
+class MockIRawElementProviderSimple
+    : public CComObjectRootEx<CComMultiThreadModel>,
+      public IRawElementProviderSimple {
+ public:
+  BEGIN_COM_MAP(MockIRawElementProviderSimple)
+  COM_INTERFACE_ENTRY(IRawElementProviderSimple)
+  END_COM_MAP()
+
+  MockIRawElementProviderSimple();
+  ~MockIRawElementProviderSimple();
+
+  static HRESULT CreateMockIRawElementProviderSimple(
+      IRawElementProviderSimple** provider);
+
+  //
+  // IRawElementProviderSimple methods.
+  //
+  IFACEMETHODIMP GetPatternProvider(PATTERNID pattern_id,
+                                    IUnknown** result) override;
+
+  IFACEMETHODIMP GetPropertyValue(PROPERTYID property_id,
+                                  VARIANT* result) override;
+
+  IFACEMETHODIMP
+  get_ProviderOptions(enum ProviderOptions* ret) override;
+
+  IFACEMETHODIMP
+  get_HostRawElementProvider(IRawElementProviderSimple** provider) override;
+};
+
 class AXPlatformNodeWinTest : public AXPlatformNodeTest {
  public:
   AXPlatformNodeWinTest();

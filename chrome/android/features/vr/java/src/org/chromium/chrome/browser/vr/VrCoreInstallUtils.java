@@ -122,7 +122,8 @@ public class VrCoreInstallUtils {
     private static boolean isVrCoreCompatible() {
         VrCoreVersionChecker checker = getVrCoreVersionChecker();
         if (checker == null) return false;
-        return checker.getVrCoreCompatibility() == VrCoreCompatibility.VR_READY;
+        return checker.getVrCoreCompatibility()
+                == VrCoreVersionChecker.VrCoreCompatibility.VR_READY;
     }
 
     /**
@@ -161,18 +162,19 @@ public class VrCoreInstallUtils {
             return;
         }
 
+        @VrCoreVersionChecker.VrCoreCompatibility
         int vrCoreCompatibility = getVrCoreVersionChecker().getVrCoreCompatibility();
 
         String infobarText;
         String buttonText;
 
-        if (vrCoreCompatibility == VrCoreCompatibility.VR_NOT_AVAILABLE) {
+        if (vrCoreCompatibility == VrCoreVersionChecker.VrCoreCompatibility.VR_NOT_AVAILABLE) {
             // Supported, but not installed. Ask user to install instead of upgrade.
             infobarText = ContextUtils.getApplicationContext().getString(
                     org.chromium.chrome.vr.R.string.vr_services_check_infobar_install_text);
             buttonText = ContextUtils.getApplicationContext().getString(
                     org.chromium.chrome.vr.R.string.vr_services_check_infobar_install_button);
-        } else if (vrCoreCompatibility == VrCoreCompatibility.VR_OUT_OF_DATE) {
+        } else if (vrCoreCompatibility == VrCoreVersionChecker.VrCoreCompatibility.VR_OUT_OF_DATE) {
             infobarText = ContextUtils.getApplicationContext().getString(
                     org.chromium.chrome.vr.R.string.vr_services_check_infobar_update_text);
             buttonText = ContextUtils.getApplicationContext().getString(

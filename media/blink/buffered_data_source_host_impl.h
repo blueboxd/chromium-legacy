@@ -39,7 +39,7 @@ class MEDIA_BLINK_EXPORT BufferedDataSourceHost {
 class MEDIA_BLINK_EXPORT BufferedDataSourceHostImpl
     : public BufferedDataSourceHost {
  public:
-  BufferedDataSourceHostImpl(base::Closure progress_cb,
+  BufferedDataSourceHostImpl(base::RepeatingClosure progress_cb,
                              const base::TickClock* tick_clock);
   ~BufferedDataSourceHostImpl() override;
 
@@ -86,7 +86,7 @@ class MEDIA_BLINK_EXPORT BufferedDataSourceHostImpl
   // Contains how much we had downloaded at a given time.
   // Pruned to contain roughly the last 10 seconds of data.
   base::circular_deque<std::pair<base::TimeTicks, uint64_t>> download_history_;
-  base::Closure progress_cb_;
+  base::RepeatingClosure progress_cb_;
 
   const base::TickClock* tick_clock_;
 

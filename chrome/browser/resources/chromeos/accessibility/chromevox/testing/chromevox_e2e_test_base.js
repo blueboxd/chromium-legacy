@@ -4,7 +4,7 @@
 
 GEN_INCLUDE([
   'common.js', '../../common/testing/assert_additions.js',
-  '../../common/testing/callback_helper.js'
+  '../../common/testing/e2e_test_base.js'
 ]);
 
 /**
@@ -12,12 +12,7 @@ GEN_INCLUDE([
  * These tests run against production ChromeVox inside of the extension's
  * background page context.
  */
-ChromeVoxE2ETest = class extends testing.Test {
-  constructor() {
-    super();
-    this.callbackHelper_ = new CallbackHelper(this);
-  }
-
+ChromeVoxE2ETest = class extends E2ETestBase {
   /** @override */
   testGenCppIncludes() {
     GEN(`
@@ -66,7 +61,7 @@ ChromeVoxE2ETest = class extends testing.Test {
    *     document is created.
    */
   runWithTab(doc, opt_callback) {
-    const url = TestUtils.createUrlForDoc(doc);
+    const url = DocUtils.createUrlForDoc(doc);
     const createParams = {active: true, url};
     chrome.tabs.create(createParams, function(tab) {
       if (opt_callback) {
@@ -74,21 +69,4 @@ ChromeVoxE2ETest = class extends testing.Test {
       }
     });
   }
-
-  /**
-   * Creates a callback that optionally calls {@code opt_callback} when
-   * called.  If this method is called one or more times, then
-   * {@code testDone()} will be called when all callbacks have been called.
-   * @param {Function=} opt_callback Wrapped callback that will have its this
-   *        reference bound to the test fixture.
-   * @return {Function}
-   */
-  newCallback(opt_callback) {
-    return this.callbackHelper_.wrap(opt_callback);
-  }
 };
-
-/** @override */
-ChromeVoxE2ETest.prototype.isAsync = true;
-/** @override */
-ChromeVoxE2ETest.prototype.runAccessibilityChecks = false;

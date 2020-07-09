@@ -1138,13 +1138,6 @@ be describing additional metrics about the same event.
     <summary>
       The observed type of the field. See: autofill::ServerFieldType
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="FieldSignature">
     <summary>
@@ -1160,56 +1153,22 @@ be describing additional metrics about the same event.
     <summary>
       Time since form parse.
     </summary>
-    <aggregation>
-      <history>
-        <index fields="metrics.ValidationEvent"/>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="PredictedType" enum="AutofillServerFieldType">
     <summary>
       The predicted type of the field. See: autofill::ServerFieldType
     </summary>
-    <aggregation>
-      <history>
-        <index fields="metrics.ActualType"/>
-        <index fields="metrics.ActualType,metrics.PredictionSource"/>
-        <index fields="metrics.PredictionSource"/>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="PredictionSource" enum="AutofillPredictionSource">
     <summary>
       The system which generated the prediction: heuristics, server, overall.
     </summary>
-    <aggregation>
-      <history>
-        <index fields="metrics.ActualType,metrics.PredictedType"/>
-        <index fields="metrics.PredictedType"/>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="ValidationEvent" enum="AutofillQualitiyMetricType">
     <summary>
       The event which triggered the validation: Submission, Left Form, Form has
       Autocomplete attributes.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
 </event>
 
@@ -9009,13 +8968,6 @@ be describing additional metrics about the same event.
       fields renderer ids, bit 2 - changes in autocomplete attributes, bit 3 -
       changes in form control types.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="Fill.FirstFillingResultInRenderer"
       enum="PasswordManagerFirstRendererFillingResult">
@@ -9026,13 +8978,6 @@ be describing additional metrics about the same event.
 
       This is replicated as PasswordManager.FirstFillingResultInRenderer in UMA.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="Fill.FirstWaitForUsernameReason"
       enum="PasswordManagerFirstWaitForUsernameReason">
@@ -9044,13 +8989,6 @@ be describing additional metrics about the same event.
 
       This is replicated as PasswordManager.FirstWaitForUsernameReason in UMA.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="FillOnLoad">
     <summary>
@@ -9065,37 +9003,16 @@ be describing additional metrics about the same event.
     <summary>
       Records '1' if the user has generated a password on this form.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="Generation.GeneratedPasswordModified" enum="Boolean">
     <summary>
       Records '1' if the user has modified a generated a password on this form.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="Generation.PopupShown" enum="PasswordGenerationPopupShown">
     <summary>
       Records an entry if (and only if) a popup was shown.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="Generation.SpecPriority">
     <obsolete>
@@ -9123,13 +9040,6 @@ be describing additional metrics about the same event.
 
       This is replicated as PasswordManager.FillingAssistance in UMA.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="ParsingComparison">
     <obsolete>
@@ -9173,13 +9083,6 @@ be describing additional metrics about the same event.
     <summary>
       Records how the user interacted with a saving prompt.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="Saving.Prompt.Shown" enum="Boolean">
     <summary>
@@ -9188,26 +9091,12 @@ be describing additional metrics about the same event.
       In case a store() via the Credential Management API, a virtual password
       form is created, for which this metric is recorded.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="Saving.Prompt.Trigger" enum="PasswordBubbleTrigger">
     <summary>
       Records the trigger of each password save bubble that was shown to the
       user to ask for permission to save new credentials.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="Saving.ShowedManualFallbackForSaving">
     <summary>
@@ -9223,39 +9112,18 @@ be describing additional metrics about the same event.
       Records the event that led the password manager to believe the submission
       was successful. Metrics is recorded only when the password is saved.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="Submission.Observed" enum="Boolean">
     <summary>
       Records whether a submission of a password form has been observered. The
       values 0 and 1 correspond to false and true respectively.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="Submission.SubmissionResult"
       enum="PasswordFormSubmissionResult">
     <summary>
       Records the outcome of a password form submission.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="Submission.SubmittedFormType" enum="PasswordFormType">
     <summary>
@@ -9263,13 +9131,6 @@ be describing additional metrics about the same event.
 
       This is replicated as PasswordManager.SubmittedFormType in UMA.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="SuppressedAccount.Generated.HTTPSNotHTTP">
     <obsolete>
@@ -9374,13 +9235,6 @@ be describing additional metrics about the same event.
     <summary>
       Records how the user interacted with an updating prompt.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="Updating.Prompt.Shown" enum="Boolean">
     <summary>
@@ -9388,26 +9242,12 @@ be describing additional metrics about the same event.
       user was shown a prompt that asked for permission to update existing
       credentials.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="Updating.Prompt.Trigger" enum="PasswordBubbleTrigger">
     <summary>
       Records the trigger of each password update bubble that was shown to the
       user to ask for permission to update existing credentials.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="User.Action">
     <obsolete>

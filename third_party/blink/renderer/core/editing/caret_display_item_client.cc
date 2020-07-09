@@ -114,13 +114,6 @@ CaretDisplayItemClient::ComputeCaretRectAndPainterBlock(
   return {MapCaretRectToCaretPainter(caret_block, caret_rect), caret_block};
 }
 
-void CaretDisplayItemClient::ClearPreviousVisualRect(const LayoutBlock& block) {
-  if (block == layout_block_)
-    visual_rect_ = IntRect();
-  if (block == previous_layout_block_)
-    visual_rect_in_previous_layout_block_ = IntRect();
-}
-
 void CaretDisplayItemClient::LayoutBlockWillBeDestroyed(
     const LayoutBlock& block) {
   if (block == layout_block_)

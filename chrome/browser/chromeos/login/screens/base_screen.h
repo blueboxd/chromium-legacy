@@ -50,9 +50,6 @@ class BaseScreen {
   // Returns the priority of the screen.
   OobeScreenPriority screen_priority() const { return screen_priority_; }
 
-  // Change the configuration for the screen. |configuration| is unowned.
-  virtual void SetConfiguration(base::Value* configuration);
-
   bool is_hidden() { return is_hidden_; }
 
  protected:
@@ -64,24 +61,10 @@ class BaseScreen {
   // counterpart. Not called if the screen is hidden
   virtual void OnUserAction(const std::string& action_id);
 
-  // Global configuration for OOBE screens, that can be used to automate some
-  // screens.
-  // Screens can use values in Configuration to fill in UI values or
-  // automatically finish.
-  // Configuration is guaranteed to exist between pair of OnShow/OnHide calls,
-  // no external changes will be made to configuration during that time.
-  // Outside that time the configuration is set to nullptr to prevent any logic
-  // triggering while the screen is not displayed.
-  base::Value* GetConfiguration() { return configuration_; }
-
   WizardContext* context() { return wizard_context_; }
 
  private:
   bool is_hidden_ = true;
-
-  // Configuration itself is owned by WizardController and is accessible
-  // to screen only between OnShow / OnHide calls.
-  base::Value* configuration_ = nullptr;
 
   // Wizard context itself is owned by WizardController and is accessible
   // to screen only between OnShow / OnHide calls.

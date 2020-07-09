@@ -29,3 +29,10 @@ To be a sheriff, you must be both a Chromium committer and a Google employee.
 For more detailed sheriffing instructions, please see the internal documentation
 at
 [go/chrome-sheriffing-how-to](https://goto.google.com/chrome-sheriffing-how-to).
+
+## Contacting the Sheriffs
+
+The currently oncall sheriffs can be viewed in the top-left corner of the
+[Chromium Main Console](https://ci.chromium.org/p/chromium/g/main/console). You
+can also get in touch with sheriffs using the
+[#sheriffing Slack channel](https://chromium.slack.com/messages/CGJ5WKRUH/).

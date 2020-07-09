@@ -9,7 +9,6 @@
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "base/strings/string_util.h"
 #include "chromeos/constants/devicetype.h"
-#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 
 namespace {
@@ -23,7 +22,6 @@ namespace assistant {
 namespace util {
 
 using chromeos::assistant::AssistantEntryPoint;
-using chromeos::assistant::prefs::AssistantOnboardingMode;
 
 bool IsStartingSession(AssistantVisibility new_visibility,
                        AssistantVisibility old_visibility) {
@@ -72,11 +70,9 @@ bool ShouldAttemptWarmerWelcome(AssistantEntryPoint entry_point) {
   }
 }
 
-// TODO(dmblack): Support non-EDU onboarding.
-bool ShouldShowOnboarding(
-    const base::Optional<AssistantOnboardingMode>& onboarding_mode) {
-  return chromeos::assistant::features::IsBetterOnboardingEnabled() &&
-         onboarding_mode == AssistantOnboardingMode::kEducation;
+// TODO(dmblack): Show onboarding a max of three times, once per user session.
+bool ShouldShowOnboarding() {
+  return chromeos::assistant::features::IsBetterOnboardingEnabled();
 }
 
 bool IsGoogleDevice() {

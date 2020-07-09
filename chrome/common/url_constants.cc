@@ -282,6 +282,12 @@ const char kWhoIsMyAdministratorHelpURL[] =
 
 const char kChromeFlashRoadmapURL[] = "https://www.chromium.org/flash-roadmap/";
 
+const char kWellKnownChangePasswordPath[] = "/.well-known/change-password";
+
+const char kWellKnownNotExistingResourcePath[] =
+    "/.well-known/"
+    "resource-that-should-not-exist-whose-status-code-should-not-be-200";
+
 #if defined(OS_ANDROID)
 const char kAndroidAppScheme[] = "android-app";
 #endif

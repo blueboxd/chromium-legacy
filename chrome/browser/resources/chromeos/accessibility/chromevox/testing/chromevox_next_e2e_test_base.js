@@ -42,44 +42,19 @@ ChromeVoxNextE2ETest = class extends ChromeVoxE2ETest {
     return [];
   }
 
-  /**
-   * Gets the desktop from the automation API and Launches a new tab with
-   * the given document, and runs |callback| when a load complete fires.
-   * Arranges to call |testDone()| after |callback| returns.
-   * NOTE: Callbacks creatd instide |opt_callback| must be wrapped with
-   * |this.newCallback| if passed to asynchonous calls.  Otherwise, the test
-   * will be finished prematurely.
-   * @param {function() : void} doc Snippet wrapped inside of a function.
-   * @param {function(chrome.automation.AutomationNode)} callback
-   *     Called once the document is ready.
-   * @param {{url: (boolean=)}} opt_params
-   *           url Optional url to wait for. Defaults to undefined.
-   */
-  runWithLoadedTree(doc, callback, opt_params) {
-    opt_params = opt_params || {};
+  /** @override */
+  runWithLoadedTree(doc, callback, opt_params = {}) {
+    if (opt_params.returnPage === undefined) {
+      opt_params.returnPage = true;
+    }
+
     callback = this.newCallback(callback);
-    chrome.automation.getDesktop(function(r) {
-      const url = opt_params.url || TestUtils.createUrlForDoc(doc);
-      const listener = function(evt) {
-        if (evt.target.root.url != url) {
-          return;
-        }
+    const wrappedCallback = (node) => {
+      CommandHandler.onCommand('nextObject');
+      callback(node);
+    };
 
-        if (!evt.target.root.docLoaded) {
-          return;
-        }
-
-        r.removeEventListener('focus', listener, true);
-        r.removeEventListener('loadComplete', listener, true);
-        CommandHandler.onCommand('nextObject');
-        callback && callback(evt.target);
-        callback = null;
-      };
-      r.addEventListener('focus', listener, true);
-      r.addEventListener('loadComplete', listener, true);
-      const createParams = {active: true, url};
-      chrome.tabs.create(createParams);
-    }.bind(this));
+    super.runWithLoadedTree(doc, wrappedCallback, opt_params);
   }
 
   listenOnce(node, eventType, callback, capture) {

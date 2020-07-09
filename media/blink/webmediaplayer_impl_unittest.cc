@@ -1622,6 +1622,26 @@ TEST_F(WebMediaPlayerImplTest, MediaPositionState_Underflow) {
   wmpi_->OnTimeUpdate();
 }
 
+// It's possible for current time to be infinite if the page seeks to
+// |kInfiniteDuration| (2**64 - 1) when duration is infinite.
+TEST_F(WebMediaPlayerImplTest, MediaPositionState_InfiniteCurrentTime) {
+  InitializeWebMediaPlayerImpl();
+  SetDuration(kInfiniteDuration);
+  wmpi_->OnTimeUpdate();
+
+  EXPECT_CALL(delegate_, DidPlayerMediaPositionStateChange(
+                             delegate_.player_id(),
+                             media_session::MediaPosition(
+                                 0.0, kInfiniteDuration, kInfiniteDuration)));
+  wmpi_->Seek(kInfiniteDuration.InSecondsF());
+  wmpi_->OnTimeUpdate();
+
+  testing::Mock::VerifyAndClearExpectations(&delegate_);
+
+  EXPECT_CALL(delegate_, DidPlayerMediaPositionStateChange(_, _)).Times(0);
+  wmpi_->OnTimeUpdate();
+}
+
 TEST_F(WebMediaPlayerImplTest, NoStreams) {
   InitializeWebMediaPlayerImpl();
   PipelineMetadata metadata;

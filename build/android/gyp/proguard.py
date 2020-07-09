@@ -27,8 +27,8 @@ _API_LEVEL_VERSION_CODE = [
     (28, 'P'),
     (29, 'Q'),
 ]
-_CHECKDISCARD_RE = re.compile(r'-checkdiscard[\s\S]*?}')
-_DIRECTIVE_RE = re.compile(r'^-', re.MULTILINE)
+_CHECKDISCARD_RE = re.compile(r'^\s*-checkdiscard[\s\S]*?}', re.MULTILINE)
+_DIRECTIVE_RE = re.compile(r'^\s*-', re.MULTILINE)
 
 
 class _ProguardOutputFilter(object):

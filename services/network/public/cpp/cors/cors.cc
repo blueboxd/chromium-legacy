@@ -616,6 +616,7 @@ bool CalculateCredentialsFlag(mojom::CredentialsMode credentials_mode,
   // is true, and unset otherwise.
   switch (credentials_mode) {
     case network::mojom::CredentialsMode::kOmit:
+    case network::mojom::CredentialsMode::kOmitBug_775438_Workaround:
       return false;
     case network::mojom::CredentialsMode::kSameOrigin:
       return response_tainting == network::mojom::FetchResponseType::kBasic;

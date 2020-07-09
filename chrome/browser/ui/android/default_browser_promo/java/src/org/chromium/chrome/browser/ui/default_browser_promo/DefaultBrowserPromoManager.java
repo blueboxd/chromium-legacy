@@ -31,6 +31,7 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class DefaultBrowserPromoManager implements PauseResumeWithNativeObserver, Destroyable {
     private static final String SKIP_PRIMER_PARAM = "skip_primer";
+    private static final String DISABLE_DISAMBIGUATION_SHEET = "disable_disambiguation_sheet";
 
     private final Activity mActivity;
     private DefaultBrowserPromoDialog mDialog;
@@ -71,7 +72,14 @@ public class DefaultBrowserPromoManager implements PauseResumeWithNativeObserver
         if (sdkInt >= Build.VERSION_CODES.Q) {
             promoByRoleManager();
         } else if (state == DefaultBrowserPromoUtils.DefaultBrowserState.NO_DEFAULT) {
-            promoByDisambiguationSheet();
+            boolean disabled = ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                    ChromeFeatureList.ANDROID_DEFAULT_BROWSER_PROMO, DISABLE_DISAMBIGUATION_SHEET,
+                    false);
+            if (disabled) {
+                destroy();
+            } else {
+                promoByDisambiguationSheet();
+            }
         } else if (sdkInt >= Build.VERSION_CODES.M) {
             promoBySystemSettings();
         } else {
@@ -138,7 +146,8 @@ public class DefaultBrowserPromoManager implements PauseResumeWithNativeObserver
                     mCurrentState, UIDismissalReason.CHANGE_DEFAULT);
 
             Intent intent = new Intent(Intent.ACTION_MAIN);
-            intent.addCategory(Intent.CATEGORY_BROWSABLE);
+            intent.addCategory(Intent.CATEGORY_APP_BROWSER);
+            intent.putExtra(DefaultBrowserPromoUtils.DISAMBIGUATION_SHEET_PROMOED_KEY, true);
             mActivity.startActivity(intent);
         });
     }

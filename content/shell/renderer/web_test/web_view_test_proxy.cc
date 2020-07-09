@@ -26,6 +26,12 @@ WebViewTestProxy::WebViewTestProxy(CompositorDependencies* compositor_deps,
                                    TestInterfaces* interfaces)
     : RenderViewImpl(compositor_deps, params), test_interfaces_(interfaces) {
   test_interfaces_->WindowOpened(this);
+  GetTestRunner()->AddRenderView(this);
+}
+
+WebViewTestProxy::~WebViewTestProxy() {
+  GetTestRunner()->RemoveRenderView(this);
+  test_interfaces_->WindowClosed(this);
 }
 
 blink::WebView* WebViewTestProxy::CreateView(
@@ -84,10 +90,6 @@ void WebViewTestProxy::Reset() {
 void WebViewTestProxy::Install(blink::WebLocalFrame* frame) {
   accessibility_controller_.Install(frame);
   text_input_controller_.Install(frame);
-}
-
-WebViewTestProxy::~WebViewTestProxy() {
-  test_interfaces_->WindowClosed(this);
 }
 
 TestRunner* WebViewTestProxy::GetTestRunner() {

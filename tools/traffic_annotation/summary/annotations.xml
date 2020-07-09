@@ -164,7 +164,7 @@ Refer to README.md for content description and update process.
  <item id="media_router_global_media_controls_image" hash_code="95983790" type="0" content_hash_code="48851217" os_list="linux,windows" file_path="chrome/browser/ui/global_media_controls/cast_media_notification_item.cc"/>
  <item id="metrics_report_ukm" hash_code="727478" type="0" content_hash_code="8746987" os_list="linux,windows" file_path="components/metrics/net/net_metrics_log_uploader.cc"/>
  <item id="metrics_report_uma" hash_code="727528" type="0" content_hash_code="10176197" os_list="linux,windows" file_path="components/metrics/net/net_metrics_log_uploader.cc"/>
- <item id="mirroring_get_setup_info" hash_code="78447809" type="0" content_hash_code="112561099" os_list="linux,windows" file_path="components/mirroring/service/session_monitor.cc"/>
+ <item id="mirroring_get_setup_info" hash_code="78447809" type="0" content_hash_code="64839410" os_list="windows,linux" file_path="components/mirroring/service/receiver_setup_querier.cc"/>
  <item id="missing" hash_code="77012883" type="0" reserved="1" os_list="linux,windows" file_path=""/>
  <item id="mojo_context_state" hash_code="93232258" type="0" deprecated="2017-10-20" content_hash_code="124821232" file_path=""/>
  <item id="navigation_predictor_srp_prefetch" hash_code="57773453" type="0" content_hash_code="38811322" os_list="linux,windows" file_path="chrome/browser/prerender/isolated/isolated_prerender_tab_helper.cc"/>

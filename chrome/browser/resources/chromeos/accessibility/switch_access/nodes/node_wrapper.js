@@ -351,11 +351,6 @@ class RootNodeWrapper extends SARootNode {
          rootNode.parent.role === chrome.automation.RoleType.WINDOW)) {
       return WindowRootNode.buildTree(rootNode);
     }
-    if (rootNode.role === chrome.automation.RoleType.MENU ||
-        rootNode.role === chrome.automation.RoleType.MENU_BAR ||
-        rootNode.modal) {
-      return ModalDialogRootNode.buildTree(rootNode);
-    }
 
     const root = new RootNodeWrapper(rootNode);
     const childConstructor = (node) => NodeWrapper.create(node, root);

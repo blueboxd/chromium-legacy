@@ -291,6 +291,11 @@ bool MediaPositionNeedsUpdate(
   if (old_position.duration() != new_position.duration())
     return true;
 
+  // Special handling for "infinite" position required to avoid calculations
+  // involving infinities.
+  if (new_position.GetPosition().is_max())
+    return !old_position.GetPosition().is_max();
+
   // MediaPosition is potentially changed upon each OnTimeUpdate() call. In
   // practice most of these calls happen periodically during normal playback,
   // with unchanged rate and duration. If we want to avoid updating

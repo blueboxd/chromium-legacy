@@ -69,7 +69,6 @@
 #include "media/cast/cast_receiver.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/encoding_event_subscriber.h"
-#include "media/cast/logging/log_serializer.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/logging/proto/raw_events.pb.h"
 #include "media/cast/logging/raw_event_subscriber_bundle.h"
@@ -286,38 +285,6 @@ void GotAudioFrame(int* counter,
   ++*counter;
   cast_receiver->RequestDecodedAudioFrame(
       base::Bind(&GotAudioFrame, counter, cast_receiver));
-}
-
-// Serialize |frame_events| and |packet_events| and append to the file
-// located at |output_path|.
-void AppendLogToFile(media::cast::proto::LogMetadata* metadata,
-                     const media::cast::FrameEventList& frame_events,
-                     const media::cast::PacketEventList& packet_events,
-                     const base::FilePath& output_path) {
-  media::cast::proto::GeneralDescription* gen_desc =
-      metadata->mutable_general_description();
-  gen_desc->set_product("Cast Simulator");
-  gen_desc->set_product_version("0.1");
-
-  std::unique_ptr<char[]> serialized_log(
-      new char[media::cast::kMaxSerializedBytes]);
-  int output_bytes;
-  bool success = media::cast::SerializeEvents(*metadata,
-                                              frame_events,
-                                              packet_events,
-                                              true,
-                                              media::cast::kMaxSerializedBytes,
-                                              serialized_log.get(),
-                                              &output_bytes);
-
-  if (!success) {
-    LOG(ERROR) << "Failed to serialize log.";
-    return;
-  }
-
-  if (!AppendToFile(output_path, serialized_log.get(), output_bytes)) {
-    LOG(ERROR) << "Failed to append to log.";
-  }
 }
 
 // Run simulation once.
@@ -596,10 +563,6 @@ void RunSimulation(const base::FilePath& source_path,
       return;
     }
   }
-  AppendLogToFile(&video_metadata, video_frame_events, video_packet_events,
-                  log_output_path);
-  AppendLogToFile(&audio_metadata, audio_frame_events, audio_packet_events,
-                  log_output_path);
 
   // Write quality metrics.
   if (quality_test) {

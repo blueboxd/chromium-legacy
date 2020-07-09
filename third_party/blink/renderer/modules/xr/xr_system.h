@@ -198,6 +198,7 @@ class XRSystem final : public EventTargetWithInlineData,
     const XRSessionFeatureSet& OptionalFeatures() const;
     bool InvalidRequiredFeatures() const;
     bool InvalidOptionalFeatures() const;
+    bool HasFeature(device::mojom::XRSessionFeature) const;
 
     SensorRequirement GetSensorRequirement() const {
       return sensor_requirement_;

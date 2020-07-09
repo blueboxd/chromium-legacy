@@ -20,7 +20,6 @@ NGPageLayoutAlgorithm::NGPageLayoutAlgorithm(
     : NGLayoutAlgorithm(params) {
   container_builder_.SetIsNewFormattingContext(
       params.space.IsNewFormattingContext());
-  container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
 }
 
 scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {

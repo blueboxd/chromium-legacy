@@ -210,6 +210,8 @@ void SetupFragmentBuilderForFragmentation(
     builder->SetIsFirstForNode(false);
   }
   builder->SetSequenceNumber(sequence_number);
+
+  builder->AdjustBorderScrollbarPaddingForFragmentation(previous_break_token);
 }
 
 bool IsNodeFullyGrown(NGBlockNode node,
@@ -243,7 +245,28 @@ bool FinishFragmentation(NGBlockNode node,
   LayoutUnit intrinsic_block_size = builder->IntrinsicBlockSize();
 
   LayoutUnit final_block_size = desired_block_size;
-  if (space_left != kIndefiniteSize && desired_block_size > space_left) {
+  if (builder->FoundColumnSpanner()) {
+    // There's a column spanner (or more) inside. This means that layout got
+    // interrupted and thus hasn't reached the end of this block yet. We're
+    // going to resume inside this block when done with the spanner(s). This is
+    // true even if there is no column content siblings after the spanner(s).
+    //
+    // <div style="columns:2;">
+    //   <div id="container" style="height:100px;">
+    //     <div id="child" style="height:20px;"></div>
+    //     <div style="column-span:all;"></div>
+    //   </div>
+    // </div>
+    //
+    // We'll create fragments for #container both before and after the spanner.
+    // Before the spanner we'll create one for each column, each 10px tall
+    // (height of #child divided into 2 columns). After the spanner, there's no
+    // more content, but the specified height is 100px, so distribute what we
+    // haven't already consumed (100px - 20px = 80px) over two columns. We get
+    // two fragments for #container after the spanner, each 40px tall.
+    final_block_size = std::min(final_block_size, intrinsic_block_size);
+    builder->SetDidBreakSelf();
+  } else if (space_left != kIndefiniteSize && desired_block_size > space_left) {
     // We're taller than what we have room for. We don't want to use more than
     // |space_left|, but if the intrinsic block-size is larger than that, it
     // means that there's something unbreakable (monolithic) inside (or we'd
@@ -277,6 +300,9 @@ bool FinishFragmentation(NGBlockNode node,
   builder->SetConsumedBlockSize(previously_consumed_block_size +
                                 final_block_size);
   builder->SetFragmentBlockSize(final_block_size);
+
+  if (builder->FoundColumnSpanner())
+    return true;
 
   if (space_left == kIndefiniteSize) {
     // We don't know how space is available (initial column balancing pass), so

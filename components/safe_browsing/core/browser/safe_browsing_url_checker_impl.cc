@@ -566,4 +566,52 @@ void SafeBrowsingUrlCheckerImpl::PerformHashBasedCheck(const GURL& url) {
   }
 }
 
+bool SafeBrowsingUrlCheckerImpl::CanPerformFullURLLookup(const GURL& url) {
+  return real_time_lookup_enabled_ &&
+         RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
+             resource_type_, can_rt_check_subresource_url_) &&
+         RealTimeUrlLookupServiceBase::CanCheckUrl(url);
+}
+
+void SafeBrowsingUrlCheckerImpl::OnRTLookupRequest(
+    std::unique_ptr<RTLookupRequest> request,
+    std::string oauth_token) {
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
+
+  LogRTLookupRequest(*request, oauth_token);
+}
+
+void SafeBrowsingUrlCheckerImpl::OnRTLookupResponse(
+    bool is_rt_lookup_successful,
+    std::unique_ptr<RTLookupResponse> response) {
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
+  bool is_expected_resource_type =
+      (ResourceType::kMainFrame == resource_type_) ||
+      ((ResourceType::kSubFrame == resource_type_) &&
+       can_rt_check_subresource_url_);
+  DCHECK(is_expected_resource_type);
+
+  const GURL& url = urls_[next_index_].url;
+
+  if (!is_rt_lookup_successful) {
+    PerformHashBasedCheck(url);
+    return;
+  }
+
+  LogRTLookupResponse(*response);
+
+  SBThreatType sb_threat_type = SB_THREAT_TYPE_SAFE;
+  if (response && (response->threat_info_size() > 0) &&
+      response->threat_info(0).verdict_type() ==
+          RTLookupResponse::ThreatInfo::DANGEROUS) {
+    // TODO(crbug.com/1033692): Only take the first threat info into account
+    // because threat infos are returned in decreasing order of severity.
+    // Consider extend it to support multiple threat types.
+    sb_threat_type =
+        RealTimeUrlLookupServiceBase::GetSBThreatTypeForRTThreatType(
+            response->threat_info(0).threat_type());
+  }
+  OnUrlResult(url, sb_threat_type, ThreatMetadata());
+}
+
 }  // namespace safe_browsing

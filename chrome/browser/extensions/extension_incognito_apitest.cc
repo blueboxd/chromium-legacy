@@ -87,21 +87,15 @@ IN_PROC_BROWSER_TEST_F(IncognitoApiTest, IncognitoYesScript) {
 }
 
 // Tests that an extension which is enabled for incognito mode doesn't
-// accidentially create and incognito profile.
-// Test disabled due to http://crbug.com/89054.
-IN_PROC_BROWSER_TEST_F(IncognitoApiTest, DISABLED_DontCreateIncognitoProfile) {
+// accidentally create and incognito profile.
+IN_PROC_BROWSER_TEST_F(IncognitoApiTest, DontCreateIncognitoProfile) {
   ASSERT_FALSE(browser()->profile()->HasPrimaryOTRProfile());
   ASSERT_TRUE(RunExtensionTestIncognito(
       "incognito/dont_create_profile")) << message_;
   ASSERT_FALSE(browser()->profile()->HasPrimaryOTRProfile());
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-// http://crbug.com/120484
-IN_PROC_BROWSER_TEST_F(IncognitoApiTest, DISABLED_Incognito) {
-#else
 IN_PROC_BROWSER_TEST_F(IncognitoApiTest, Incognito) {
-#endif
   ResultCatcher catcher;
 
   // Open incognito window and navigate to test page.
@@ -117,8 +111,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoApiTest, Incognito) {
 
 // Tests that the APIs in an incognito-enabled split-mode extension work
 // properly.
-// http://crbug.com/120484
-IN_PROC_BROWSER_TEST_F(IncognitoApiTest, DISABLED_IncognitoSplitMode) {
+IN_PROC_BROWSER_TEST_F(IncognitoApiTest, IncognitoSplitMode) {
   // We need 2 ResultCatchers because we'll be running the same test in both
   // regular and incognito mode.
   ResultCatcher catcher;
@@ -149,12 +142,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoApiTest, DISABLED_IncognitoSplitMode) {
 
 // Tests that the APIs in an incognito-disabled extension don't see incognito
 // events or callbacks.
-#if defined(OS_WIN)
-// http://crbug.com/120484
-IN_PROC_BROWSER_TEST_F(IncognitoApiTest, DISABLED_IncognitoDisabled) {
-#else
 IN_PROC_BROWSER_TEST_F(IncognitoApiTest, IncognitoDisabled) {
-#endif
   ResultCatcher catcher;
   ExtensionTestMessageListener listener("createIncognitoTab", true);
 

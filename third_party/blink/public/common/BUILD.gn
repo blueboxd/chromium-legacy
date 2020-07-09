@@ -166,6 +166,7 @@ source_set("headers") {
     "sms/sms_receiver_destroyed_reason.h",
     "sms/sms_receiver_outcome.h",
     "switches.h",
+    "tokens/hash.h",
     "user_agent/user_agent_metadata.h",
     "web_cache/web_cache_resource_type_stats.h",
     "web_package/signed_exchange_consts.h",

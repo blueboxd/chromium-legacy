@@ -75,20 +75,10 @@ ScopedJavaLocalRef<jobject> JNI_DownloadManagerService_CreateJavaDownloadItem(
     JNIEnv* env,
     download::DownloadItem* item) {
   DCHECK(!item->IsTransient());
-
-  base::Optional<OfflineItemSchedule> offline_item_schedule;
-  auto download_schedule = item->GetDownloadSchedule();
-  if (download_schedule.has_value()) {
-    offline_item_schedule = base::make_optional<OfflineItemSchedule>(
-        download_schedule->only_on_wifi(), download_schedule->start_time());
-  }
-  auto j_offline_item_schedule =
-      OfflineItemBridge::CreateOfflineItemSchedule(env, offline_item_schedule);
-
   return Java_DownloadItem_createDownloadItem(
       env, DownloadManagerService::CreateJavaDownloadInfo(env, item),
       item->GetStartTime().ToJavaTime(), item->GetEndTime().ToJavaTime(),
-      item->GetFileExternallyRemoved(), j_offline_item_schedule);
+      item->GetFileExternallyRemoved());
 }
 
 void RenameItemCallback(
@@ -155,6 +145,15 @@ ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
                                  : item->GetOriginalUrl().spec();
   content::BrowserContext* browser_context =
       content::DownloadItemUtils::GetBrowserContext(item);
+
+  base::Optional<OfflineItemSchedule> offline_item_schedule;
+  auto download_schedule = item->GetDownloadSchedule();
+  if (download_schedule.has_value()) {
+    offline_item_schedule = base::make_optional<OfflineItemSchedule>(
+        download_schedule->only_on_wifi(), download_schedule->start_time());
+  }
+  auto j_offline_item_schedule =
+      OfflineItemBridge::CreateOfflineItemSchedule(env, offline_item_schedule);
   return Java_DownloadInfo_createDownloadInfo(
       env, ConvertUTF8ToJavaString(env, item->GetGuid()),
       ConvertUTF8ToJavaString(env, item->GetFileNameToReportUser().value()),
@@ -172,7 +171,8 @@ ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
       item->GetLastAccessTime().ToJavaTime(), item->IsDangerous(),
       static_cast<int>(
           OfflineItemUtils::ConvertDownloadInterruptReasonToFailState(
-              item->GetLastReason())));
+              item->GetLastReason())),
+      j_offline_item_schedule);
 }
 
 static jlong JNI_DownloadManagerService_Init(JNIEnv* env,

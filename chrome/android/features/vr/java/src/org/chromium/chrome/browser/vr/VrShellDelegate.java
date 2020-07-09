@@ -1672,12 +1672,6 @@ public class VrShellDelegate
         return mNativeVrShellDelegate;
     }
 
-    @CalledByNative
-    private long getVrCoreInfo() {
-        assert VrCoreInstallUtils.getVrCoreVersionChecker() != null;
-        return VrCoreInstallUtils.getVrCoreVersionChecker().makeNativeVrCoreInfo();
-    }
-
     private void destroy() {
         if (sInstance == null) return;
         shutdownVr(false /* disableVrMode */, false /* stayingInChrome */);

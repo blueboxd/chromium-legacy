@@ -211,13 +211,13 @@ bool FakePeripheral::ExpectingConfirmation() const {
   return false;
 }
 
-void FakePeripheral::GetConnectionInfo(const ConnectionInfoCallback& callback) {
+void FakePeripheral::GetConnectionInfo(ConnectionInfoCallback callback) {
   NOTREACHED();
 }
 
 void FakePeripheral::SetConnectionLatency(ConnectionLatency connection_latency,
-                                          const base::Closure& callback,
-                                          const ErrorCallback& error_callback) {
+                                          base::OnceClosure callback,
+                                          ErrorCallback error_callback) {
   NOTREACHED();
 }
 
@@ -247,27 +247,27 @@ void FakePeripheral::CancelPairing() {
   NOTREACHED();
 }
 
-void FakePeripheral::Disconnect(const base::Closure& callback,
-                                const ErrorCallback& error_callback) {
+void FakePeripheral::Disconnect(base::OnceClosure callback,
+                                ErrorCallback error_callback) {
   NOTREACHED();
 }
 
-void FakePeripheral::Forget(const base::Closure& callback,
-                            const ErrorCallback& error_callback) {
+void FakePeripheral::Forget(base::OnceClosure callback,
+                            ErrorCallback error_callback) {
   NOTREACHED();
 }
 
 void FakePeripheral::ConnectToService(
     const device::BluetoothUUID& uuid,
-    const ConnectToServiceCallback& callback,
-    const ConnectToServiceErrorCallback& error_callback) {
+    ConnectToServiceCallback callback,
+    ConnectToServiceErrorCallback error_callback) {
   NOTREACHED();
 }
 
 void FakePeripheral::ConnectToServiceInsecurely(
     const device::BluetoothUUID& uuid,
-    const ConnectToServiceCallback& callback,
-    const ConnectToServiceErrorCallback& error_callback) {
+    ConnectToServiceCallback callback,
+    ConnectToServiceErrorCallback error_callback) {
   NOTREACHED();
 }
 
@@ -354,14 +354,13 @@ void FakePeripheral::DisconnectGatt() {
 }
 
 #if defined(OS_CHROMEOS)
-void FakePeripheral::ExecuteWrite(
-    const base::Closure& callback,
-    const ExecuteWriteErrorCallback& error_callback) {
+void FakePeripheral::ExecuteWrite(base::OnceClosure callback,
+                                  ExecuteWriteErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 
-void FakePeripheral::AbortWrite(const base::Closure& callback,
-                                const AbortWriteErrorCallback& error_callback) {
+void FakePeripheral::AbortWrite(base::OnceClosure callback,
+                                AbortWriteErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 #endif

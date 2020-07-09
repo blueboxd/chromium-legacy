@@ -79,7 +79,6 @@ NGMathUnderOverLayoutAlgorithm::NGMathUnderOverLayoutAlgorithm(
   DCHECK(params.space.IsNewFormattingContext());
   container_builder_.SetIsNewFormattingContext(
       params.space.IsNewFormattingContext());
-  container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
 }
 
 void NGMathUnderOverLayoutAlgorithm::GatherChildren(NGBlockNode* base,

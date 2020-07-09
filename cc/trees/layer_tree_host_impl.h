@@ -992,8 +992,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // outer viewport; however, it may still scroll using the viewport(). Hence,
   // this method must use the same scroll chaining logic we use in ApplyScroll.
   bool IsInitialScrollHitTestReliable(
-      LayerImpl* layer,
-      LayerImpl* first_scrolling_layer_or_drawn_scrollbar) const;
+      const LayerImpl* layer,
+      const LayerImpl* first_scrolling_layer_or_drawn_scrollbar) const;
 
   // Given a starting node (determined by hit-test), walks up the scroll tree
   // looking for the first node that can consume scroll from the given

@@ -899,7 +899,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
       'actions': [
           {'type': 'pointerMove', 'x': 100, 'y': 100},
           {'type': 'pointerDown', 'button': 0},
-          {'type': 'pointerMove', 'x': 200, 'y': 250}
+          {'type': 'pointerMove', 'x': 150, 'y': 175}
       ],
       'parameters': {'pointerType': 'mouse'},
       'id': 'pointer1'}]})
@@ -907,8 +907,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.PerformActions(actions)
     time.sleep(1)
     rect = target.GetRect()
-    self.assertAlmostEqual(150, rect['x'], delta=1)
-    self.assertAlmostEqual(200, rect['y'], delta=1)
+    self.assertAlmostEqual(100, rect['x'], delta=1)
+    self.assertAlmostEqual(125, rect['y'], delta=1)
 
     # Without releasing mouse button, should continue the drag.
     actions = ({'actions': [{
@@ -918,7 +918,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
       }, {
       'type': 'pointer',
       'actions': [
-          {'type': 'pointerMove', 'x': 30, 'y': 40, 'origin': 'pointer'}
+          {'type': 'pointerMove', 'x': 15, 'y': 20, 'origin': 'pointer'}
       ],
       'parameters': {'pointerType': 'mouse'},
       'id': 'pointer1'}]})
@@ -926,8 +926,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.PerformActions(actions)
     time.sleep(1)
     rect = target.GetRect()
-    self.assertAlmostEqual(180, rect['x'], delta=1)
-    self.assertAlmostEqual(240, rect['y'], delta=1)
+    self.assertAlmostEqual(115, rect['x'], delta=1)
+    self.assertAlmostEqual(145, rect['y'], delta=1)
 
     # Releasing mouse button stops the drag.
     actions = ({'actions': [{
@@ -939,7 +939,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
       'type': 'pointer',
       'actions': [
           {'type': 'pointerUp', 'button': 0},
-          {'type': 'pointerMove', 'x': 50, 'y': 50, 'origin': 'pointer'}
+          {'type': 'pointerMove', 'x': 25, 'y': 25, 'origin': 'pointer'}
       ],
       'parameters': {'pointerType': 'mouse'},
       'id': 'pointer1'}]})
@@ -947,8 +947,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.PerformActions(actions)
     time.sleep(1)
     rect = target.GetRect()
-    self.assertAlmostEqual(180, rect['x'], delta=1)
-    self.assertAlmostEqual(240, rect['y'], delta=1)
+    self.assertAlmostEqual(115, rect['x'], delta=1)
+    self.assertAlmostEqual(145, rect['y'], delta=1)
 
   def testActionsTouchTap(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
@@ -4358,7 +4358,7 @@ class JavaScriptTests(ChromeDriverBaseTestWithWebServer):
   def setUp(self):
     self._driver = self.CreateDriver()
     self.js_root = os.path.dirname(os.path.realpath(__file__)) + '/../js/'
-    self._driver.SetWindowRect(1000, 1000, 0, 0)
+    self._driver.SetWindowRect(640, 480, 0, 0)
 
   def checkTestResult(self):
     def getStatus():

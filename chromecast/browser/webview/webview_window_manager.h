@@ -11,8 +11,6 @@
 
 namespace chromecast {
 
-class CastWindowManager;
-
 // Keeps track of new aura::Windows and listen for window property events to
 // find Exo windows with the |exo::kClientSurfaceIdKey| property set.
 class WebviewWindowManager : public aura::EnvObserver,
@@ -28,7 +26,7 @@ class WebviewWindowManager : public aura::EnvObserver,
                                              int app_id) = 0;
   };
 
-  explicit WebviewWindowManager(CastWindowManager* cast_window_manager);
+  explicit WebviewWindowManager();
   ~WebviewWindowManager() override;
 
   void AddObserver(Observer* observer);

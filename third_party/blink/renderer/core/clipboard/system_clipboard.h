@@ -53,7 +53,6 @@ class CORE_EXPORT SystemClipboard final
   String ReadHTML(KURL&, unsigned& fragment_start, unsigned& fragment_end);
   void WriteHTML(const String& markup,
                  const KURL& document_url,
-                 const String& plain_text,
                  SmartReplaceOption = kCannotSmartReplace);
 
   String ReadRTF();

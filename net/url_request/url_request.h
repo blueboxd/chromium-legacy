@@ -741,6 +741,20 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   }
   bool upgrade_if_insecure() const { return upgrade_if_insecure_; }
 
+  // By default, client certs will be sent (provided via
+  // Delegate::OnCertificateRequested) when cookies are disabled
+  // (LOAD_DO_NOT_SEND_COOKIES / LOAD_DO_NOT_SAVE_COOKIES). As described at
+  // https://crbug.com/775438, this is not the desired behavior. When
+  // |send_client_certs| is set to false, this will suppress the
+  // Delegate::OnCertificateRequested callback when cookies/credentials are also
+  // suppressed. This method has no effect if credentials are enabled (cookies
+  // saved and sent).
+  // TODO(https://crbug.com/775438): Remove this when the underlying
+  // issue is fixed.
+  void set_send_client_certs(bool send_client_certs) {
+    send_client_certs_ = send_client_certs;
+  }
+
   base::WeakPtr<URLRequest> GetWeakPtr();
 
  protected:
@@ -974,6 +988,8 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   ResponseHeadersCallback response_headers_callback_;
 
   bool upgrade_if_insecure_;
+
+  bool send_client_certs_ = true;
 
   THREAD_CHECKER(thread_checker_);
 

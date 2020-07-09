@@ -52,12 +52,14 @@ scoped_refptr<const NGPhysicalBoxFragment> NGPhysicalBoxFragment::Create(
   const NGPhysicalBoxStrut padding =
       builder->initial_fragment_geometry_->padding.ConvertToPhysical(
           builder->GetWritingMode(), builder->Direction());
-  auto& mathml_paint_info = builder->mathml_paint_info_;
+  bool has_rare_data =
+      builder->mathml_paint_info_ ||
+      !builder->oof_positioned_fragmentainer_descendants_.IsEmpty();
   size_t byte_size = sizeof(NGPhysicalBoxFragment) +
                      sizeof(NGLink) * builder->children_.size() +
                      (borders.IsZero() ? 0 : sizeof(borders)) +
                      (padding.IsZero() ? 0 : sizeof(padding)) +
-                     (mathml_paint_info ? sizeof(*mathml_paint_info) : 0);
+                     (has_rare_data ? sizeof(RareData) : 0);
   if (const NGFragmentItemsBuilder* items_builder = builder->ItemsBuilder()) {
     // Omit |NGFragmentItems| if there were no items; e.g., display-lock.
     if (items_builder->Size())
@@ -73,9 +75,8 @@ scoped_refptr<const NGPhysicalBoxFragment> NGPhysicalBoxFragment::Create(
   // we pass the buffer as a constructor argument.
   void* data = ::WTF::Partitions::FastMalloc(
       byte_size, ::WTF::GetStringWithTypeName<NGPhysicalBoxFragment>());
-  new (data)
-      NGPhysicalBoxFragment(PassKey(), builder, borders, padding,
-                            mathml_paint_info, block_or_line_writing_mode);
+  new (data) NGPhysicalBoxFragment(PassKey(), builder, borders, padding,
+                                   has_rare_data, block_or_line_writing_mode);
   return base::AdoptRef(static_cast<NGPhysicalBoxFragment*>(data));
 }
 
@@ -84,7 +85,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     NGBoxFragmentBuilder* builder,
     const NGPhysicalBoxStrut& borders,
     const NGPhysicalBoxStrut& padding,
-    std::unique_ptr<NGMathMLPaintInfo>& mathml_paint_info,
+    bool has_rare_data,
     WritingMode block_or_line_writing_mode)
     : NGPhysicalContainerFragment(builder,
                                   block_or_line_writing_mode,
@@ -93,6 +94,8 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
                                   builder->BoxType()) {
   DCHECK(layout_object_);
   DCHECK(layout_object_->IsBoxModelObject());
+
+  has_rare_data_ = has_rare_data;
 
   has_fragment_items_ = false;
   if (NGFragmentItemsBuilder* items_builder = builder->ItemsBuilder()) {
@@ -113,11 +116,9 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
   has_padding_ = !padding.IsZero();
   if (has_padding_)
     *const_cast<NGPhysicalBoxStrut*>(ComputePaddingAddress()) = padding;
-  ink_overflow_computed_or_mathml_paint_info_ = !!mathml_paint_info;
-  if (ink_overflow_computed_or_mathml_paint_info_) {
-    memset(ComputeMathMLPaintInfoAddress(), 0, sizeof(NGMathMLPaintInfo));
-    new (static_cast<void*>(ComputeMathMLPaintInfoAddress()))
-        NGMathMLPaintInfo(*mathml_paint_info);
+  if (has_rare_data_) {
+    new (const_cast<RareData*>(ComputeRareDataAddress()))
+        RareData(builder, Size());
   }
 
   is_first_for_node_ = builder->is_first_for_node_;
@@ -145,31 +146,24 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     last_baseline_ = LayoutUnit::Min();
   }
 
-  PhysicalSize size = Size();
-  has_oof_positioned_fragmentainer_descendants_ = false;
-  if (!builder->oof_positioned_fragmentainer_descendants_.IsEmpty()) {
-    has_oof_positioned_fragmentainer_descendants_ = true;
-    Vector<NGPhysicalOutOfFlowPositionedNode>*
-        oof_positioned_fragmentainer_descendants =
-            const_cast<Vector<NGPhysicalOutOfFlowPositionedNode>*>(
-                ComputeOutOfFlowPositionedFragmentainerDescendantsAddress());
-    new (oof_positioned_fragmentainer_descendants)
-        Vector<NGPhysicalOutOfFlowPositionedNode>();
-    oof_positioned_fragmentainer_descendants->ReserveCapacity(
-        builder->oof_positioned_fragmentainer_descendants_.size());
-    for (const auto& descendant :
-         builder->oof_positioned_fragmentainer_descendants_) {
-      oof_positioned_fragmentainer_descendants->emplace_back(
-          descendant.node,
-          descendant.static_position.ConvertToPhysical(
-              builder->Style().GetWritingMode(), builder->Direction(), size),
-          descendant.inline_container, descendant.containing_block_fragment);
-    }
-  }
-
 #if DCHECK_IS_ON()
   CheckIntegrity();
 #endif
+}
+
+NGPhysicalBoxFragment::RareData::RareData(NGBoxFragmentBuilder* builder,
+                                          PhysicalSize size)
+    : mathml_paint_info(std::move(builder->mathml_paint_info_)) {
+  oof_positioned_fragmentainer_descendants.ReserveCapacity(
+      builder->oof_positioned_fragmentainer_descendants_.size());
+  for (const auto& descendant :
+       builder->oof_positioned_fragmentainer_descendants_) {
+    oof_positioned_fragmentainer_descendants.emplace_back(
+        descendant.node,
+        descendant.static_position.ConvertToPhysical(
+            builder->Style().GetWritingMode(), builder->Direction(), size),
+        descendant.inline_container, descendant.containing_block_fragment);
+  }
 }
 
 scoped_refptr<const NGLayoutResult>

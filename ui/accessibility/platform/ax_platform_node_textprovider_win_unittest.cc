@@ -52,50 +52,6 @@ class AXPlatformNodeTextProviderTest : public AXPlatformNodeWinTest {
   }
 };
 
-class MockIRawElementProviderSimple
-    : public CComObjectRootEx<CComMultiThreadModel>,
-      public IRawElementProviderSimple {
- public:
-  BEGIN_COM_MAP(MockIRawElementProviderSimple)
-  COM_INTERFACE_ENTRY(IRawElementProviderSimple)
-  END_COM_MAP()
-
-  MockIRawElementProviderSimple() {}
-  ~MockIRawElementProviderSimple() {}
-
-  static HRESULT CreateMockIRawElementProviderSimple(
-      IRawElementProviderSimple** provider) {
-    CComObject<MockIRawElementProviderSimple>* raw_element_provider = nullptr;
-    HRESULT hr = CComObject<MockIRawElementProviderSimple>::CreateInstance(
-        &raw_element_provider);
-    if (SUCCEEDED(hr)) {
-      *provider = raw_element_provider;
-    }
-
-    return hr;
-  }
-
-  //
-  // IRawElementProviderSimple methods.
-  //
-  IFACEMETHODIMP GetPatternProvider(PATTERNID pattern_id,
-                                    IUnknown** result) override {
-    return E_NOTIMPL;
-  }
-
-  IFACEMETHODIMP GetPropertyValue(PROPERTYID property_id,
-                                  VARIANT* result) override {
-    return E_NOTIMPL;
-  }
-
-  IFACEMETHODIMP
-  get_ProviderOptions(enum ProviderOptions* ret) override { return E_NOTIMPL; }
-
-  IFACEMETHODIMP
-  get_HostRawElementProvider(IRawElementProviderSimple** provider) override {
-    return E_NOTIMPL;
-  }
-};
 
 TEST_F(AXPlatformNodeTextProviderTest, ITextProviderRangeFromChild) {
   ui::AXNodeData text_data;

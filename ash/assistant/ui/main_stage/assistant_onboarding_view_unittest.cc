@@ -39,7 +39,6 @@ using chromeos::assistant::AssistantInteractionType;
 using chromeos::assistant::AssistantQuerySource;
 using chromeos::assistant::AssistantSuggestion;
 using chromeos::assistant::AssistantSuggestionType;
-using chromeos::assistant::prefs::AssistantOnboardingMode;
 
 // Helpers ---------------------------------------------------------------------
 
@@ -116,12 +115,6 @@ class AssistantOnboardingViewTest : public AssistantAshTestBase {
   }
 
   ~AssistantOnboardingViewTest() override = default;
-
-  // AssistantAshTestBase:
-  void SetUp() override {
-    AssistantAshTestBase::SetUp();
-    SetOnboardingMode(AssistantOnboardingMode::kEducation);
-  }
 
   void AdvanceClock(base::TimeDelta time_delta) {
     task_environment()->AdvanceClock(time_delta);
@@ -249,6 +242,44 @@ TEST_F(AssistantOnboardingViewTest, ShouldHaveExpectedIntro) {
             base::UTF8ToUTF16(
                 "I'm your Google Assistant, here to help you throughout your "
                 "day!\nHere are some things you can try to get started."));
+}
+
+TEST_F(AssistantOnboardingViewTest, ShouldHaveExpectedSuggestions) {
+  // Iterate over each onboarding mode.
+  for (int mode = 0;
+       mode <= static_cast<int>(AssistantOnboardingMode::kMaxValue); ++mode) {
+    auto onboarding_mode = static_cast<AssistantOnboardingMode>(mode);
+    SetOnboardingMode(onboarding_mode);
+
+    // Determine expected messages based on onboarding mode.
+    std::vector<std::string> expected_messages;
+    switch (onboarding_mode) {
+      case AssistantOnboardingMode::kEducation:
+        expected_messages = {
+            "Square root of 71", "How far is Venus",     "Set timer",
+            "Tell me a joke",    "\"Hello\" in Chinese", "Take a screenshot",
+        };
+        break;
+      case AssistantOnboardingMode::kDefault:
+        expected_messages = {
+            "5K in miles",    "Population in Nigeria", "Set timer",
+            "Tell me a joke", "\"Hello\" in Chinese",  "Take a screenshot",
+        };
+        break;
+    }
+
+    // Show Assistant UI and verify the expected number of suggestion views.
+    ShowAssistantUi();
+    ASSERT_EQ(suggestions_grid()->children().size(), expected_messages.size());
+
+    // Verify that each suggestion view has the expected message.
+    for (size_t i = 0; i < expected_messages.size(); ++i) {
+      views::Label* label = nullptr;
+      FindChildByClassName(suggestions_grid()->children().at(i), &label);
+      ASSERT_NE(label, nullptr);
+      EXPECT_EQ(label->GetText(), base::UTF8ToUTF16(expected_messages.at(i)));
+    }
+  }
 }
 
 TEST_F(AssistantOnboardingViewTest, ShouldHandleSuggestionPresses) {

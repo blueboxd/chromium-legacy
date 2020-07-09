@@ -195,10 +195,11 @@ class AutoEnrollmentClientImplTest
       const std::string& device_disabled_message,
       bool is_license_packaged_with_device) {
     if (GetParam() == AutoEnrollmentProtocol::kFRE) {
-      ServerWillSendFREState(management_domain, restore_mode,
-                             device_disabled_message);
+      ServerWillSendStateForFRE(management_domain, restore_mode,
+                                device_disabled_message,
+                                is_license_packaged_with_device);
     } else {
-      ServerWillSendInitialEnrollmentState(
+      ServerWillSendStateForInitialEnrollment(
           management_domain, is_license_packaged_with_device,
           MapRestoreModeToInitialEnrollmentMode(restore_mode));
     }
@@ -213,17 +214,27 @@ class AutoEnrollmentClientImplTest
                      TYPE_INITIAL_ENROLLMENT_STATE_RETRIEVAL;
   }
 
-  void ServerWillSendFREState(
+  void ServerWillSendStateForFRE(
       const std::string& management_domain,
       em::DeviceStateRetrievalResponse::RestoreMode restore_mode,
-      const std::string& device_disabled_message) {
+      const std::string& device_disabled_message,
+      bool is_license_packaged_with_device) {
     em::DeviceManagementResponse response;
     em::DeviceStateRetrievalResponse* state_response =
         response.mutable_device_state_retrieval_response();
     state_response->set_restore_mode(restore_mode);
-    state_response->set_management_domain(management_domain);
+    if (!management_domain.empty())
+      state_response->set_management_domain(management_domain);
     state_response->mutable_disabled_state()->set_message(
         device_disabled_message);
+
+    // Include an initial state response indicating a license.
+    if (is_license_packaged_with_device &&
+        restore_mode == em::DeviceStateRetrievalResponse::RESTORE_MODE_NONE) {
+      state_response->mutable_initial_state_response()
+          ->set_is_license_packaged_with_device(
+              is_license_packaged_with_device);
+    }
 
     EXPECT_CALL(*service_, StartJob(_))
         .WillOnce(
@@ -234,7 +245,7 @@ class AutoEnrollmentClientImplTest
         .RetiresOnSaturation();
   }
 
-  void ServerWillSendInitialEnrollmentState(
+  void ServerWillSendStateForInitialEnrollment(
       const std::string& management_domain,
       bool is_license_packaged_with_device,
       em::DeviceInitialEnrollmentStateResponse::InitialEnrollmentMode
@@ -243,7 +254,8 @@ class AutoEnrollmentClientImplTest
     em::DeviceInitialEnrollmentStateResponse* state_response =
         response.mutable_device_initial_enrollment_state_response();
     state_response->set_initial_enrollment_mode(initial_enrollment_mode);
-    state_response->set_management_domain(management_domain);
+    if (!management_domain.empty())
+      state_response->set_management_domain(management_domain);
     state_response->set_is_license_packaged_with_device(
         is_license_packaged_with_device);
     EXPECT_CALL(*service_, StartJob(_))
@@ -290,16 +302,54 @@ class AutoEnrollmentClientImplTest
                                const std::string& expected_restore_mode,
                                const std::string& expected_disabled_message,
                                bool expected_is_license_packaged_with_device) {
+    if (GetParam() == AutoEnrollmentProtocol::kFRE) {
+      VerifyServerBackedStateForFRE(expected_management_domain,
+                                    expected_restore_mode,
+                                    expected_disabled_message);
+    } else {
+      VerifyServerBackedStateForInitialEnrollment(
+          expected_management_domain, expected_restore_mode,
+          expected_is_license_packaged_with_device);
+    }
+  }
+
+  void VerifyServerBackedStateForAll(
+      const std::string& expected_management_domain,
+      const std::string& expected_restore_mode,
+      const base::DictionaryValue** local_state_dict) {
     const base::Value* state =
         local_state_->GetUserPref(prefs::kServerBackedDeviceState);
     ASSERT_TRUE(state);
     const base::DictionaryValue* state_dict = nullptr;
     ASSERT_TRUE(state->GetAsDictionary(&state_dict));
+    *local_state_dict = state_dict;
 
     std::string actual_management_domain;
-    EXPECT_TRUE(state_dict->GetString(kDeviceStateManagementDomain,
-                                      &actual_management_domain));
-    EXPECT_EQ(expected_management_domain, actual_management_domain);
+    if (expected_management_domain.empty()) {
+      EXPECT_FALSE(state_dict->GetString(kDeviceStateManagementDomain,
+                                         &actual_management_domain));
+    } else {
+      EXPECT_TRUE(state_dict->GetString(kDeviceStateManagementDomain,
+                                        &actual_management_domain));
+      EXPECT_EQ(expected_management_domain, actual_management_domain);
+    }
+
+    if (!expected_restore_mode.empty()) {
+      std::string actual_restore_mode;
+      EXPECT_TRUE(
+          state_dict->GetString(kDeviceStateMode, &actual_restore_mode));
+    } else {
+      EXPECT_FALSE(state_dict->HasKey(kDeviceStateMode));
+    }
+  }
+
+  void VerifyServerBackedStateForFRE(
+      const std::string& expected_management_domain,
+      const std::string& expected_restore_mode,
+      const std::string& expected_disabled_message) {
+    const base::DictionaryValue* state_dict;
+    VerifyServerBackedStateForAll(expected_management_domain,
+                                  expected_restore_mode, &state_dict);
 
     if (!expected_restore_mode.empty()) {
       std::string actual_restore_mode;
@@ -310,30 +360,34 @@ class AutoEnrollmentClientImplTest
                     : MapDeviceRestoreStateToDeviceInitialState(
                           expected_restore_mode),
                 actual_restore_mode);
-    } else {
-      EXPECT_FALSE(state_dict->HasKey(kDeviceStateMode));
     }
 
     std::string actual_disabled_message;
-    if (GetParam() == AutoEnrollmentProtocol::kFRE) {
-      EXPECT_TRUE(state_dict->GetString(kDeviceStateDisabledMessage,
-                                        &actual_disabled_message));
-      EXPECT_EQ(expected_disabled_message, actual_disabled_message);
-    } else {
-      EXPECT_FALSE(state_dict->GetString(kDeviceStateDisabledMessage,
-                                         &actual_disabled_message));
-    }
+    EXPECT_TRUE(state_dict->GetString(kDeviceStateDisabledMessage,
+                                      &actual_disabled_message));
+    EXPECT_EQ(expected_disabled_message, actual_disabled_message);
 
-    if (GetParam() == AutoEnrollmentProtocol::kFRE) {
-      EXPECT_FALSE(state_dict->FindBoolPath(kDeviceStatePackagedLicense));
-    } else {
-      base::Optional<bool> actual_is_license_packaged_with_device;
-      actual_is_license_packaged_with_device =
-          state_dict->FindBoolPath(kDeviceStatePackagedLicense);
-      EXPECT_TRUE(actual_is_license_packaged_with_device.has_value());
-      EXPECT_EQ(expected_is_license_packaged_with_device,
-                actual_is_license_packaged_with_device.value());
-    }
+    EXPECT_FALSE(state_dict->FindBoolPath(kDeviceStatePackagedLicense));
+  }
+
+  void VerifyServerBackedStateForInitialEnrollment(
+      const std::string& expected_management_domain,
+      const std::string& expected_restore_mode,
+      bool expected_is_license_packaged_with_device) {
+    const base::DictionaryValue* state_dict;
+    VerifyServerBackedStateForAll(expected_management_domain,
+                                  expected_restore_mode, &state_dict);
+
+    std::string actual_disabled_message;
+    EXPECT_FALSE(state_dict->GetString(kDeviceStateDisabledMessage,
+                                       &actual_disabled_message));
+
+    base::Optional<bool> actual_is_license_packaged_with_device;
+    actual_is_license_packaged_with_device =
+        state_dict->FindBoolPath(kDeviceStatePackagedLicense);
+    EXPECT_TRUE(actual_is_license_packaged_with_device.has_value());
+    EXPECT_EQ(expected_is_license_packaged_with_device,
+              actual_is_license_packaged_with_device.value());
   }
 
   const em::DeviceAutoEnrollmentRequest& auto_enrollment_request() {
@@ -671,6 +725,52 @@ TEST_P(AutoEnrollmentClientImplTest, DeviceDisabled) {
   VerifyCachedResult(true, 8);
   VerifyServerBackedState("example.com", kDeviceStateRestoreModeDisabled,
                           kDisabledMessage, kNotWithLicense);
+}
+
+TEST_P(AutoEnrollmentClientImplTest, NoReEnrollment) {
+  InSequence sequence;
+  ServerWillReply(-1, true, true);
+  ServerWillSendState(std::string(),
+                      em::DeviceStateRetrievalResponse::RESTORE_MODE_NONE,
+                      std::string(), kNotWithLicense);
+  client()->Start();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_AUTO_ENROLLMENT,
+            auto_enrollment_job_type_);
+  EXPECT_EQ(GetExpectedStateRetrievalJobType(), state_retrieval_job_type_);
+  EXPECT_EQ(AUTO_ENROLLMENT_STATE_NO_ENROLLMENT, state_);
+  VerifyCachedResult(true, 8);
+  VerifyServerBackedState(std::string(), std::string(), std::string(),
+                          kNotWithLicense);
+
+  // Network changes don't trigger retries after obtaining a response from
+  // the server.
+  client()->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_ETHERNET);
+  EXPECT_EQ(AUTO_ENROLLMENT_STATE_NO_ENROLLMENT, state_);
+}
+
+TEST_P(AutoEnrollmentClientImplTest, NoReEnrollmentWithInitialState) {
+  InSequence sequence;
+  ServerWillReply(-1, true, true);
+  ServerWillSendState(std::string(),
+                      em::DeviceStateRetrievalResponse::RESTORE_MODE_NONE,
+                      std::string(), kWithLicense);
+  client()->Start();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_AUTO_ENROLLMENT,
+            auto_enrollment_job_type_);
+  EXPECT_EQ(GetExpectedStateRetrievalJobType(), state_retrieval_job_type_);
+  EXPECT_EQ(AUTO_ENROLLMENT_STATE_NO_ENROLLMENT, state_);
+  VerifyCachedResult(true, 8);
+  VerifyServerBackedStateForInitialEnrollment(std::string(), std::string(),
+                                              kWithLicense);
+
+  // Network changes don't trigger retries after obtaining a response from
+  // the server.
+  client()->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_ETHERNET);
+  EXPECT_EQ(AUTO_ENROLLMENT_STATE_NO_ENROLLMENT, state_);
 }
 
 TEST_P(AutoEnrollmentClientImplTest, NoBitsUploaded) {

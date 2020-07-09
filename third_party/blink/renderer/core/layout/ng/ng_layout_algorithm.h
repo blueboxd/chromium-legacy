@@ -77,20 +77,25 @@ class CORE_EXPORT NGLayoutAlgorithm : public NGLayoutAlgorithmOperations {
         container_builder_(node,
                            style,
                            &space,
-                           {space.GetWritingMode(), direction}) {
-    if (UNLIKELY(space.HasBlockFragmentation())) {
-      DCHECK(space.IsAnonymous() || node.IsInline() || !node.IsMonolithic());
-      SetupFragmentBuilderForFragmentation(space, BreakToken(),
+                           {space.GetWritingMode(), direction}) {}
+
+  // Constructor for algorithms that use NGBoxFragmentBuilder and
+  // NGBlockBreakToken.
+  explicit NGLayoutAlgorithm(const NGLayoutAlgorithmParams& params)
+      : node_(params.node),
+        break_token_(params.break_token),
+        container_builder_(
+            params.node,
+            &params.node.Style(),
+            &params.space,
+            {params.space.GetWritingMode(), params.space.Direction()}) {
+    container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
+    if (UNLIKELY(params.space.HasBlockFragmentation())) {
+      DCHECK(params.space.IsAnonymous() || !params.node.IsMonolithic());
+      SetupFragmentBuilderForFragmentation(params.space, params.break_token,
                                            &container_builder_);
     }
   }
-
-  NGLayoutAlgorithm(const NGLayoutAlgorithmParams& params)
-      : NGLayoutAlgorithm(params.node,
-                          &params.node.Style(),
-                          params.space,
-                          params.space.Direction(),
-                          params.break_token) {}
 
   virtual ~NGLayoutAlgorithm() = default;
 

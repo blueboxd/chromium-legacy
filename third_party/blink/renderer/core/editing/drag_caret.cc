@@ -38,10 +38,6 @@ DragCaret::DragCaret() : display_item_client_(new CaretDisplayItemClient()) {}
 
 DragCaret::~DragCaret() = default;
 
-void DragCaret::ClearPreviousVisualRect(const LayoutBlock& block) {
-  display_item_client_->ClearPreviousVisualRect(block);
-}
-
 void DragCaret::LayoutBlockWillBeDestroyed(const LayoutBlock& block) {
   display_item_client_->LayoutBlockWillBeDestroyed(block);
 }

@@ -777,6 +777,10 @@ std::string EmbeddedTestServer::GetCertificateName() const {
       return "bad_validity.pem";
     case CERT_TEST_NAMES:
       return "test_names.pem";
+    case CERT_KEY_USAGE_RSA_ENCIPHERMENT:
+      return "key_usage_rsa_keyencipherment.pem";
+    case CERT_KEY_USAGE_RSA_DIGITAL_SIGNATURE:
+      return "key_usage_rsa_digitalsignature.pem";
     case CERT_AUTO:
       return std::string();
   }

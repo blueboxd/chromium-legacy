@@ -1,6 +1,7 @@
 Name: WDS
 URL: https://github.com/01org/wds
-Version: 1.0.0
+Version: 1.1.0+
+Revision: 404ede0f2186682fbbef624141e76ec2b601317d
 License: LGPL 2.1
 License File: src/COPYING
 Security Critical: yes

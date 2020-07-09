@@ -66,8 +66,7 @@ SelectToSpeakKeystrokeSelectionTest = class extends SelectToSpeakE2ETest {
    * selection on that page, and then trigger select-to-speak to read
    * the selected text. Tests that the tts output matches the expected
    * output.
-   * @param {string} contents The web contents to load as part of a
-   *     data:text/html link.
+   * @param {string} contents The web contents to load
    * @param {function(AutomationNode)} setSelectionCallback Callback
    *     to take the root node and set the selection appropriately. Once
    *     selection is set, the test will listen for the focus set event and
@@ -80,7 +79,7 @@ SelectToSpeakKeystrokeSelectionTest = class extends SelectToSpeakE2ETest {
   testReadTextAtKeystroke(contents, setFocusCallback, expected) {
     setFocusCallback = this.newCallback(setFocusCallback);
     this.runWithLoadedTree(
-        'data:text/html;charset=utf-8,' + contents, function(desktop) {
+        contents, function(desktop) {
           // Add an event listener that will start the user interaction
           // of the test once the selection is completed.
           desktop.addEventListener(
@@ -97,8 +96,7 @@ SelectToSpeakKeystrokeSelectionTest = class extends SelectToSpeakE2ETest {
   }
 
   generateHtmlWithSelection(selectionCode, bodyHtml) {
-    return 'data:text/html;charset=utf-8,' +
-        '<script type="text/javascript">' +
+    return '<script type="text/javascript">' +
         'function doSelection() {' +
         'let selection = window.getSelection();' +
         'let range = document.createRange();' +
@@ -190,9 +188,7 @@ TEST_F(
       };
       setFocusCallback = this.newCallback(setFocusCallback);
       this.runWithLoadedTree(
-          'data:text/html;charset=utf-8,' +
-              '<br/><p>Selected text</p><br/>',
-          function(desktop) {
+          '<br/><p>Selected text</p><br/>', function(desktop) {
             // Add an event listener that will start the user interaction
             // of the test once the selection is completed.
             desktop.addEventListener(
@@ -357,8 +353,7 @@ TEST_F(
 TEST_F(
     'SelectToSpeakKeystrokeSelectionTest', 'TextInputPartiallySelected',
     function() {
-      const html = 'data:text/html;charset=utf-8,' +
-          '<script type="text/javascript">' +
+      const html = '<script type="text/javascript">' +
           'function doSelection() {' +
           'let input = document.getElementById("input");' +
           'input.focus();' +
@@ -380,8 +375,7 @@ TEST_F(
 TEST_F(
     'SelectToSpeakKeystrokeSelectionTest', 'TextAreaPartiallySelected',
     function() {
-      const html = 'data:text/html;charset=utf-8,' +
-          '<script type="text/javascript">' +
+      const html = '<script type="text/javascript">' +
           'function doSelection() {' +
           'let input = document.getElementById("input");' +
           'input.focus();' +
@@ -527,8 +521,7 @@ TEST_F(
 TEST_F(
     'SelectToSpeakKeystrokeSelectionTest', 'contentEditableInternallySelected',
     function() {
-      const html = 'data:text/html;charset=utf-8,' +
-          '<script type="text/javascript">' +
+      const html = '<script type="text/javascript">' +
           'function doSelection() {' +
           'let input = document.getElementById("input");' +
           'input.focus();' +

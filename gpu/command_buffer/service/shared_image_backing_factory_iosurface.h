@@ -53,6 +53,9 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryIOSurface
       MemoryTypeTracker* tracker,
       WGPUDevice device,
       scoped_refptr<gl::GLImage> image);
+  static bool InitializePixels(SharedImageBacking* backing,
+                               scoped_refptr<gl::GLImage> image,
+                               const uint8_t* pixel_data);
 
   // SharedImageBackingFactory implementation.
   std::unique_ptr<SharedImageBacking> CreateSharedImage(

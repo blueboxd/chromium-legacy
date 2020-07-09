@@ -128,9 +128,11 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface,
     context_attributes.push_back(EGL_CONTEXT_OPENGL_ROBUST_ACCESS_EXT);
     context_attributes.push_back(attribs.robust_buffer_access ? EGL_TRUE
                                                               : EGL_FALSE);
-    context_attributes.push_back(
-        EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_EXT);
-    context_attributes.push_back(EGL_LOSE_CONTEXT_ON_RESET_EXT);
+    if (attribs.lose_context_on_reset) {
+      context_attributes.push_back(
+          EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_EXT);
+      context_attributes.push_back(EGL_LOSE_CONTEXT_ON_RESET_EXT);
+    }
   } else {
     // At some point we should require the presence of the robustness
     // extension and remove this code path.

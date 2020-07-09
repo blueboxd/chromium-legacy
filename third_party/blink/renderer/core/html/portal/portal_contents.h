@@ -20,10 +20,8 @@ namespace blink {
 class Document;
 class HTMLPortalElement;
 class KURL;
+class PortalActivationDelegate;
 class RemoteFrame;
-class ScriptPromise;
-class ScriptPromiseResolver;
-class ScriptState;
 class SecurityOrigin;
 struct BlinkTransferableMessage;
 
@@ -50,7 +48,7 @@ class PortalContents : public GarbageCollected<PortalContents>,
   bool IsValid() const { return remote_portal_.is_bound(); }
 
   // Returns true if this contents is currently being activated.
-  bool IsActivating() const { return activate_resolver_; }
+  bool IsActivating() const { return activation_delegate_; }
 
   // Returns an unguessable token which uniquely identifies the contents, if
   // valid.
@@ -62,7 +60,7 @@ class PortalContents : public GarbageCollected<PortalContents>,
   // Activates the portal contents, and produces a promise which resolves when
   // complete. The caller is expected to do all necessary preflight checks in
   // advance.
-  ScriptPromise Activate(ScriptState*, BlinkTransferableMessage data);
+  void Activate(BlinkTransferableMessage data, PortalActivationDelegate*);
 
   // Posts a message which will be delivered in the guest contents via the
   // PortalHost object.
@@ -110,7 +108,7 @@ class PortalContents : public GarbageCollected<PortalContents>,
   // Set if the portal contents is currently being activated.
   // If so it will be the activating portal contents of the associated
   // DocumentPortals.
-  Member<ScriptPromiseResolver> activate_resolver_;
+  Member<PortalActivationDelegate> activation_delegate_;
 
   // Uniquely identifies the portal, this token is used by the browser process
   // to reference this portal when communicating with the renderer.

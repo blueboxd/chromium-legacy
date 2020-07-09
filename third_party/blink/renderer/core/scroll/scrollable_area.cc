@@ -789,7 +789,7 @@ int ScrollableArea::PageStep(ScrollbarOrientation orientation) const {
   // rect.
   // [1] https://drafts.csswg.org/css-scroll-snap/#scroll-padding
   IntSize snapport_size =
-      VisibleScrollSnapportRect(kIncludeScrollbars).PixelSnappedSize();
+      VisibleScrollSnapportRect(kExcludeScrollbars).PixelSnappedSize();
   int length = (orientation == kHorizontalScrollbar) ? snapport_size.Width()
                                                      : snapport_size.Height();
   int min_page_step =

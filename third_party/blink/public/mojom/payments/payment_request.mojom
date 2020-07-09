@@ -55,7 +55,7 @@ enum HasEnrolledInstrumentQueryResult {
 };
 
 // Implemented in the renderer process. Sandboxed. Deals with untrusted data.
-//   components/payments/content/payment_request.h
+// Implementation: third_party/blink/renderer/modules/payments/payment_request.h
 interface PaymentRequestClient {
   OnPaymentMethodChange(string method_name, string stringified_details);
   OnShippingAddressChange(PaymentAddress address);

@@ -831,7 +831,7 @@ EVENT_TYPE(SOCKET_POOL_CLOSING_SOCKET)
 //      "initiator": <Initiator origin of the request, if any, or else "not an
 //                    origin">,
 //      "load_flags": <Numeric value of the combined load flags>,
-//      "privacy_mode": <True if privacy mode is enabled for the request>,
+//      "privacy_mode": <Privacy mode associated with the request>,
 //      "network_isolation_key": <NIK associated with the request>,
 //      "priority": <Numeric priority of the request>,
 //      "site_for_cookies": <SiteForCookies associated with the request>,

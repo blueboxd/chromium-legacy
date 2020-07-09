@@ -266,7 +266,7 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # Hit test group 1 with entry 152 from kSoftwareRenderingListEntries.
     self.RestartBrowserIfNecessaryWithArgs(
         self._AddDefaultArgs(
-            ['--gpu-blacklist-test-group=1', '--disable-gpu-compositing']))
+            ['--gpu-blocklist-test-group=1', '--disable-gpu-compositing']))
     self._Navigate(test_path)
     feature_status_list = self.tab.EvaluateJavaScript(
         'browserBridge.gpuInfo.featureStatus.featureStatus')
@@ -284,7 +284,7 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def _GpuProcess_feature_status_under_swiftshader(self, test_path):
     # Hit test group 2 with entry 153 from kSoftwareRenderingListEntries.
     self.RestartBrowserIfNecessaryWithArgs(
-        self._AddDefaultArgs(['--gpu-blacklist-test-group=2']))
+        self._AddDefaultArgs(['--gpu-blocklist-test-group=2']))
     self._Navigate(test_path)
     feature_status_list = self.tab.EvaluateJavaScript(
         'browserBridge.gpuInfo.featureStatus.featureStatus')
@@ -406,8 +406,8 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # This test loads functional_webgl.html so that there is a deliberate
     # attempt to use an API which would start the GPU process.
     args_list = (
-        # Triggering test_group 2 where WebGL is blacklisted.
-        ['--gpu-blacklist-test-group=2'],
+        # Triggering test_group 2 where WebGL is blocklisted.
+        ['--gpu-blocklist-test-group=2'],
         # Explicitly disable GPU access.
         ['--disable-gpu'])
     for args in args_list:

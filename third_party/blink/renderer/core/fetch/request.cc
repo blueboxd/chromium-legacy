@@ -850,6 +850,7 @@ String Request::credentials() const {
   // mode:"
   switch (request_->Credentials()) {
     case network::mojom::CredentialsMode::kOmit:
+    case network::mojom::CredentialsMode::kOmitBug_775438_Workaround:
       return "omit";
     case network::mojom::CredentialsMode::kSameOrigin:
       return "same-origin";

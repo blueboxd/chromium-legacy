@@ -275,23 +275,6 @@ void PaintLayerCompositor::SetNeedsCompositingUpdate(
   Lifecycle().EnsureStateAtMost(DocumentLifecycle::kLayoutClean);
 }
 
-void PaintLayerCompositor::
-    ForceRecomputeVisualRectsIncludingNonCompositingDescendants(
-        LayoutObject& layout_object) {
-  // We clear the previous visual rect as it's wrong (paint invalidation
-  // container changed, ...). Forcing a full invalidation will make us recompute
-  // it. Also we are not changing the previous position from our paint
-  // invalidation container, which is fine as we want a full paint invalidation
-  // anyway.
-  layout_object.ClearPreviousVisualRects();
-
-  for (LayoutObject* child = layout_object.SlowFirstChild(); child;
-       child = child->NextSibling()) {
-    if (!child->IsPaintInvalidationContainer())
-      ForceRecomputeVisualRectsIncludingNonCompositingDescendants(*child);
-  }
-}
-
 #if DCHECK_IS_ON()
 static void AssertWholeTreeNotComposited(const PaintLayer& paint_layer) {
   DCHECK(paint_layer.GetCompositingState() == kNotComposited);
@@ -324,18 +307,20 @@ void PaintLayerCompositor::UpdateIfNeeded(
 
   Vector<PaintLayer*> layers_needing_paint_invalidation;
 
-  CompositingRequirementsUpdater(layout_view_)
-      .Update(update_root, compositing_reasons_stats);
+  if (update_type >= kCompositingUpdateAfterCompositingInputChange) {
+    CompositingRequirementsUpdater(layout_view_)
+        .Update(update_root, compositing_reasons_stats);
 
-  CompositingLayerAssigner layer_assigner(this);
-  layer_assigner.Assign(update_root, layers_needing_paint_invalidation);
+    CompositingLayerAssigner layer_assigner(this);
+    layer_assigner.Assign(update_root, layers_needing_paint_invalidation);
 
-  if (layer_assigner.LayersChanged()) {
-    update_type = std::max(update_type, kCompositingUpdateRebuildTree);
-    if (ScrollingCoordinator* scrolling_coordinator =
-            GetScrollingCoordinator()) {
-      LocalFrameView* frame_view = layout_view_.GetFrameView();
-      scrolling_coordinator->NotifyGeometryChanged(frame_view);
+    if (layer_assigner.LayersChanged()) {
+      update_type = std::max(update_type, kCompositingUpdateRebuildTree);
+      if (ScrollingCoordinator* scrolling_coordinator =
+              GetScrollingCoordinator()) {
+        LocalFrameView* frame_view = layout_view_.GetFrameView();
+        scrolling_coordinator->NotifyGeometryChanged(frame_view);
+      }
     }
   }
 
@@ -379,9 +364,9 @@ void PaintLayerCompositor::UpdateIfNeeded(
     }
   }
 
-  for (unsigned i = 0; i < layers_needing_paint_invalidation.size(); i++) {
-    ForceRecomputeVisualRectsIncludingNonCompositingDescendants(
-        layers_needing_paint_invalidation[i]->GetLayoutObject());
+  for (auto* layer : layers_needing_paint_invalidation) {
+    layer->GetLayoutObject().SetSubtreeShouldDoFullPaintInvalidation(
+        PaintInvalidationReason::kCompositing);
   }
 
   Lifecycle().AdvanceTo(DocumentLifecycle::kCompositingClean);

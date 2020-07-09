@@ -58,11 +58,16 @@ class MockBluetoothDevice : public BluetoothDevice {
   MOCK_CONST_METHOD0(ExpectingPinCode, bool());
   MOCK_CONST_METHOD0(ExpectingPasskey, bool());
   MOCK_CONST_METHOD0(ExpectingConfirmation, bool());
-  MOCK_METHOD1(GetConnectionInfo, void(const ConnectionInfoCallback& callback));
-  MOCK_METHOD3(SetConnectionLatency,
+  MOCK_METHOD1(GetConnectionInfo, void(ConnectionInfoCallback callback));
+  void SetConnectionLatency(ConnectionLatency connection_latency,
+                            base::OnceClosure callback,
+                            ErrorCallback error_callback) override {
+    SetConnectionLatency_(connection_latency, callback, error_callback);
+  }
+  MOCK_METHOD3(SetConnectionLatency_,
                void(ConnectionLatency connection_latency,
-                    const base::Closure& callback,
-                    const ErrorCallback& error_callback));
+                    base::OnceClosure& callback,
+                    ErrorCallback& error_callback));
   void Connect(BluetoothDevice::PairingDelegate* pairing_delegate,
                base::OnceClosure callback,
                BluetoothDevice::ConnectErrorCallback error_callback) override {
@@ -87,19 +92,19 @@ class MockBluetoothDevice : public BluetoothDevice {
   MOCK_METHOD0(RejectPairing, void());
   MOCK_METHOD0(CancelPairing, void());
   MOCK_METHOD2(Disconnect,
-               void(const base::Closure& callback,
-                    const BluetoothDevice::ErrorCallback& error_callback));
+               void(base::OnceClosure callback,
+                    BluetoothDevice::ErrorCallback error_callback));
   MOCK_METHOD2(Forget,
-               void(const base::Closure& callback,
-                    const BluetoothDevice::ErrorCallback& error_callback));
+               void(base::OnceClosure callback,
+                    BluetoothDevice::ErrorCallback error_callback));
   MOCK_METHOD3(ConnectToService,
                void(const BluetoothUUID& uuid,
-                    const ConnectToServiceCallback& callback,
-                    const ConnectToServiceErrorCallback& error_callback));
+                    ConnectToServiceCallback callback,
+                    ConnectToServiceErrorCallback error_callback));
   MOCK_METHOD3(ConnectToServiceInsecurely,
                void(const BluetoothUUID& uuid,
-                    const ConnectToServiceCallback& callback,
-                    const ConnectToServiceErrorCallback& error_callback));
+                    ConnectToServiceCallback callback,
+                    ConnectToServiceErrorCallback error_callback));
   void CreateGattConnection(
       GattConnectionCallback callback,
       ConnectErrorCallback error_callback,
@@ -122,11 +127,11 @@ class MockBluetoothDevice : public BluetoothDevice {
   MOCK_METHOD0(DisconnectGatt, void());
 #if defined(OS_CHROMEOS)
   MOCK_METHOD2(ExecuteWrite,
-               void(const base::Closure& callback,
-                    const ExecuteWriteErrorCallback& error_callback));
+               void(base::OnceClosure callback,
+                    ExecuteWriteErrorCallback error_callback));
   MOCK_METHOD2(AbortWrite,
-               void(const base::Closure& callback,
-                    const AbortWriteErrorCallback& error_callback));
+               void(base::OnceClosure callback,
+                    AbortWriteErrorCallback error_callback));
 #endif
 
   // BluetoothDevice manages the lifetime of its BluetoothGATTServices.

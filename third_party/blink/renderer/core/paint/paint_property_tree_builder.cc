@@ -304,17 +304,6 @@ static bool NeedsReplacedContentTransform(const LayoutObject& object) {
   if (object.IsSVGRoot())
     return true;
 
-  // Only directly composited images need a transform node to scale contents
-  // to the object-fit box. Note that we don't actually know whether the image
-  // will be directly composited. This condition is relaxed to stay on the
-  // safe side.
-  // TODO(crbug.com/875110): Figure out the condition for CAP.
-  bool is_spv1_composited =
-      object.HasLayer() &&
-      ToLayoutBoxModelObject(object).Layer()->GetCompositedLayerMapping();
-  if (object.IsImage() && is_spv1_composited)
-    return true;
-
   return false;
 }
 
@@ -495,11 +484,6 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
     const base::Optional<IntPoint>& paint_offset_translation) {
   DCHECK(properties_);
 
-  FloatSize old_translation;
-  if (auto* translation = properties_->PaintOffsetTranslation()) {
-    old_translation = translation->Translation2D();
-  }
-
   if (paint_offset_translation) {
     FloatSize new_translation(ToIntSize(*paint_offset_translation));
     TransformPaintPropertyNode::State state{new_translation};
@@ -520,10 +504,10 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
       context_.fixed_position.transform = properties_->PaintOffsetTranslation();
     }
 
-    context_.paint_offset_delta = old_translation - new_translation;
+    context_.current.offset_to_2d_translation_root +=
+        PhysicalOffset(*paint_offset_translation);
   } else {
     OnClear(properties_->ClearPaintOffsetTranslation());
-    context_.paint_offset_delta = FloatSize();
   }
 }
 
@@ -616,6 +600,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateStickyTranslation() {
 
       OnUpdate(properties_->UpdateStickyTranslation(*context_.current.transform,
                                                     std::move(state)));
+      context_.current.offset_to_2d_translation_root +=
+          box_model.StickyPositionOffset();
     } else {
       OnClear(properties_->ClearStickyTranslation());
     }
@@ -754,6 +740,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
   DCHECK(properties_);
 
   if (NeedsPaintPropertyUpdate()) {
+    bool was_identity_or_2d_translation = true;
+    if (auto* transform = properties_->Transform())
+      was_identity_or_2d_translation = transform->IsIdentityOr2DTranslation();
+
     const ComputedStyle& style = object_.StyleRef();
     // A transform node is allocated for transforms, preserves-3d and any
     // direct compositing reason. The latter is required because this is the
@@ -835,6 +825,21 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
         }
       }
       OnUpdate(effective_change_type);
+      bool is_identity_or_2d_translation =
+          properties_->Transform()->IsIdentityOr2DTranslation();
+      if (is_identity_or_2d_translation) {
+        context_.current.offset_to_2d_translation_root +=
+            PhysicalOffset::FromFloatSizeRound(
+                properties_->Transform()->Translation2D());
+      } else {
+        context_.current.offset_to_2d_translation_root = PhysicalOffset();
+      }
+      if (was_identity_or_2d_translation != is_identity_or_2d_translation) {
+        // A change of identity or 2d translation affects
+        // offset_to_2d_translation_root for descendants also.
+        full_context_.force_subtree_update_reasons |=
+            PaintPropertyTreeBuilderContext::kSubtreeUpdateIsolationPiercing;
+      }
     } else {
       OnClear(properties_->ClearTransform());
     }
@@ -1706,6 +1711,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePerspective() {
       state.rendering_context_id = context_.current.rendering_context_id;
       OnUpdate(properties_->UpdatePerspective(*context_.current.transform,
                                               std::move(state)));
+      context_.current.offset_to_2d_translation_root = PhysicalOffset();
     } else {
       OnClear(properties_->ClearPerspective());
     }
@@ -1761,6 +1767,13 @@ void FragmentPaintPropertyTreeBuilder::UpdateReplacedContentTransform() {
           context_.current.should_flatten_inherited_transform;
       OnUpdate(properties_->UpdateReplacedContentTransform(
           *context_.current.transform, std::move(state)));
+      if (content_to_parent_space.IsIdentityOrTranslation()) {
+        context_.current.offset_to_2d_translation_root +=
+            PhysicalOffset::FromFloatSizeRound(
+                properties_->ReplacedContentTransform()->Translation2D());
+      } else {
+        context_.current.offset_to_2d_translation_root = PhysicalOffset();
+      }
     } else {
       OnClear(properties_->ClearReplacedContentTransform());
     }
@@ -1982,6 +1995,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
         }
       }
       OnUpdate(effective_change_type);
+      context_.current.offset_to_2d_translation_root = PhysicalOffset();
     } else {
       OnClear(properties_->ClearScrollTranslation());
     }
@@ -2569,8 +2583,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateForSelf() {
     // Update of PaintOffsetTranslation is checked by
     // FindPaintOffsetNeedingUpdateScope.
     UpdatePaintOffsetTranslation(paint_offset_translation);
-  } else {
-    context_.paint_offset_delta = FloatSize();
   }
 
 #if DCHECK_IS_ON()
@@ -2595,6 +2607,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateForSelf() {
     context_.current.should_flatten_inherited_transform = true;
   }
   UpdateLocalBorderBoxContext();
+
+  if (IsA<LayoutView>(object_))
+    context_.current.offset_to_2d_translation_root = PhysicalOffset();
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateForChildren() {

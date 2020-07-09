@@ -135,10 +135,6 @@ void FrameCaret::SetCaretVisibility(CaretVisibility visibility) {
   ScheduleVisualUpdateForPaintInvalidationIfNeeded();
 }
 
-void FrameCaret::ClearPreviousVisualRect(const LayoutBlock& block) {
-  display_item_client_->ClearPreviousVisualRect(block);
-}
-
 void FrameCaret::LayoutBlockWillBeDestroyed(const LayoutBlock& block) {
   display_item_client_->LayoutBlockWillBeDestroyed(block);
 }

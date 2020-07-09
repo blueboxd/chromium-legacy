@@ -158,6 +158,7 @@ class BinaryUploadService : public KeyedService {
     void set_url(const std::string& url);
     void set_csd(ClientDownloadRequest csd);
     void add_tag(const std::string& tag);
+    void set_email(const std::string& email);
 
     // Methods for modifying either internal proto requests.
     void set_fcm_token(const std::string& token);

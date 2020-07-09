@@ -6,9 +6,11 @@
 #define CC_TREES_LAYER_TREE_IMPL_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "base/containers/flat_set.h"
@@ -589,6 +591,11 @@ class CC_EXPORT LayerTreeImpl {
 
   // Return all layers with a hit non-fast scrollable region.
   std::vector<const LayerImpl*> FindLayersHitByPointInNonFastScrollableRegion(
+      const gfx::PointF& screen_space_point);
+  // Returns all layers up to the first scroller or scrollbar layer, inclusive.
+  // The returned vector is sorted in order of top most come first. The back of
+  // the vector will be the scrollable layer if one was hit.
+  std::vector<const LayerImpl*> FindAllLayersUpToAndIncludingFirstScrollable(
       const gfx::PointF& screen_space_point);
   bool PointHitsNonFastScrollableRegion(const gfx::PointF& scree_space_point,
                                         const LayerImpl& layer) const;

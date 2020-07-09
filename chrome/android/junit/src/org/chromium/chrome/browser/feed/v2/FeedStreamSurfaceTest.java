@@ -31,6 +31,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
@@ -62,6 +63,8 @@ public class FeedStreamSurfaceTest {
     private BottomSheetController mBottomSheetController;
     @Mock
     private NativePageNavigationDelegate mPageNavigationDelegate;
+    @Mock
+    private HelpAndFeedback mHelpAndFeedback;
 
     @Rule
     public JniMocker mocker = new JniMocker();
@@ -79,7 +82,7 @@ public class FeedStreamSurfaceTest {
         mActivity = Robolectric.buildActivity(Activity.class).get();
         mocker.mock(FeedStreamSurfaceJni.TEST_HOOKS, mFeedStreamSurfaceJniMock);
         mFeedStreamSurface = new FeedStreamSurface(mActivity, false, mSnackbarManager,
-                mPageNavigationDelegate, mBottomSheetController);
+                mPageNavigationDelegate, mBottomSheetController, mHelpAndFeedback);
     }
 
     @Test

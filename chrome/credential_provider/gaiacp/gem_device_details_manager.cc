@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/credential_provider/gaiacp/gem_device_details_manager.h"
+#include "chrome/credential_provider/gaiacp/mdm_utils.h"
 
 #include <windows.h>
 #include <winternl.h>
@@ -78,7 +79,7 @@ GemDeviceDetailsManager::GemDeviceDetailsManager(
 GemDeviceDetailsManager::~GemDeviceDetailsManager() = default;
 
 GURL GemDeviceDetailsManager::GetGemServiceUploadDeviceDetailsUrl() {
-  GURL gem_service_url = GURL(base::UTF16ToUTF8(kDefaultGcpwServiceUrl));
+  GURL gem_service_url = GetGcpwServiceUrl();
 
   return gem_service_url.Resolve(kGemServiceUploadDeviceDetailsPath);
 }

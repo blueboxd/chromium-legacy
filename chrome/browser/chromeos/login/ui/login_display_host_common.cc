@@ -10,12 +10,10 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_types.h"
-#include "chrome/browser/chromeos/login/app_launch_controller.h"
-#include "chrome/browser/chromeos/login/arc_kiosk_controller.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/kiosk_launch_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/web_kiosk_controller.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -88,7 +86,9 @@ void LoginDisplayHostCommon::FinalizeImmediately() {
 }
 
 AppLaunchController* LoginDisplayHostCommon::GetAppLaunchController() {
-  return app_launch_controller_.get();
+  // TODO(crbug.com/1046364): Some places are still using legacy
+  // AppLaunchController. Remove casting after they are changed.
+  return reinterpret_cast<AppLaunchController*>(app_launch_controller_.get());
 }
 
 void LoginDisplayHostCommon::StartUserAdding(
@@ -192,24 +192,8 @@ void LoginDisplayHostCommon::StartKiosk(const KioskAppId& kiosk_app_id,
           ? extensions::FeatureSessionType::AUTOLAUNCHED_KIOSK
           : extensions::FeatureSessionType::KIOSK);
 
-  switch (kiosk_app_id.type) {
-    case KioskAppType::ARC_APP:
-      arc_kiosk_controller_ =
-          std::make_unique<ArcKioskController>(this, GetOobeUI());
-      arc_kiosk_controller_->StartArcKiosk(*kiosk_app_id.account_id);
-      break;
-    case KioskAppType::CHROME_APP:
-      app_launch_controller_ = std::make_unique<AppLaunchController>(
-          *kiosk_app_id.app_id, this, GetOobeUI());
-      app_launch_controller_->StartAppLaunch(is_auto_launch &&
-                                             auto_launch_delay == 0);
-      break;
-    case KioskAppType::WEB_APP:
-      web_kiosk_controller_ =
-          std::make_unique<WebKioskController>(this, GetOobeUI());
-      web_kiosk_controller_->StartWebKiosk(*kiosk_app_id.account_id);
-      break;
-  }
+  app_launch_controller_ = std::make_unique<KioskLaunchController>(GetOobeUI());
+  app_launch_controller_->Start(kiosk_app_id, is_auto_launch);
 }
 
 void LoginDisplayHostCommon::CompleteLogin(const UserContext& user_context) {

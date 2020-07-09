@@ -294,6 +294,11 @@ bool DigitalAssetLinksHandler::CheckDigitalAssetLinkRelationship(
 
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = request_url;
+
+  // Exclude credentials (specifically client certs) from the request.
+  request->credentials_mode =
+      network::mojom::CredentialsMode::kOmitBug_775438_Workaround;
+
   url_loader_ =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
   url_loader_->SetRetryOptions(

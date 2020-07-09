@@ -259,8 +259,20 @@ bool ArCoreGl::InitializeGl(gfx::AcceleratedWidget drawing_widget) {
     return false;
   }
 
+  gl::GLContextAttribs context_attribs;
+  // When using augmented images or certain other ARCore features that involve a
+  // frame delay, ARCore's shared EGL context needs to be compatible with ours.
+  // Any mismatches result in a EGL_BAD_MATCH error, including different reset
+  // notification behavior according to
+  // https://www.khronos.org/registry/EGL/specs/eglspec.1.5.pdf page 56.
+  // Chromium defaults to lose context on reset when the robustness extension is
+  // present, even if robustness features are not requested specifically.
+  context_attribs.client_major_es_version = 3;
+  context_attribs.client_minor_es_version = 0;
+  context_attribs.lose_context_on_reset = false;
+
   scoped_refptr<gl::GLContext> context =
-      gl::init::CreateGLContext(nullptr, surface.get(), gl::GLContextAttribs());
+      gl::init::CreateGLContext(nullptr, surface.get(), context_attribs);
   if (!context.get()) {
     DLOG(ERROR) << "gl::init::CreateGLContext failed";
     return false;

@@ -66,6 +66,10 @@ extern const wchar_t kRegUserDeviceResourceId[];
 // enforce auth.
 extern const int kMaxNumConsecutiveUploadDeviceFailures;
 
+// The URL part that is used when constructing the developer complete URL. When
+// it is empty, developer mode isn't enabled.
+extern const wchar_t kRegDeveloperMode[];
+
 // Class used in tests to force either a successful on unsuccessful enrollment
 // to google MDM.
 class GoogleMdmEnrollmentStatusForTesting {
@@ -112,9 +116,12 @@ bool IsGemEnabled();
 // |kRegMdmEnforceOnlineLogin| is set to true at global or user level.
 bool IsOnlineLoginEnforced(const base::string16& sid);
 
-// Gets the escrow service URL as defined in the registry or a default value if
-// nothing is set.
+// Gets the escrow service URL unless password sync is disabled. Otherwise an
+// empty url is returned.
 GURL EscrowServiceUrl();
+
+// Gets the gcpw service URL.
+GURL GetGcpwServiceUrl();
 
 // Enrolls the machine to with the Google MDM server if not already.
 HRESULT EnrollToGoogleMdmIfNeeded(const base::Value& properties);
@@ -125,6 +132,13 @@ base::string16 GetUserPasswordLsaStoreKey(const base::string16& sid);
 // Get device resource ID for the user with given |sid|. Returns an empty string
 // if one has not been set for the user.
 base::string16 GetUserDeviceResourceId(const base::string16& sid);
+
+// Converts the |url| in the form of http://xxxxx.googleapis.com/...
+// to a form that points to a development URL as specified with |dev|
+// environment. Final url will be in the form
+// https://{dev}-xxxxx.sandbox.googleapis.com/...
+base::string16 GetDevelopmentUrl(const base::string16& url,
+                                 const base::string16& dev);
 
 }  // namespace credential_provider
 

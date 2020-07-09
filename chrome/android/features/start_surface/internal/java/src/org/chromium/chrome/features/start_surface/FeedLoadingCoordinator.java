@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.VisibleForTesting;
@@ -58,5 +59,7 @@ public class FeedLoadingCoordinator {
 
         StartSurfaceConfiguration.recordHistogram(FEEDS_LOADING_PLACEHOLDER_SHOWN_TIME_UMA,
                 layoutInflationCompleteMs - activityCreationTimeMs, true);
+
+        mFeedLoadingView.setVisibility(View.GONE);
     }
 }

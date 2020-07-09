@@ -45,6 +45,17 @@ struct PaintPropertyTreeBuilderFragmentContext {
     // Corresponds to FragmentData::PaintOffset, which does not include
     // fragmentation offsets. See FragmentContext for the fragmented version.
     PhysicalOffset paint_offset;
+
+    // The 2D translation root is the nearest transform node, inclusive of
+    // |transform|, that is one of:
+    //   * The transform property tree state of the containing LayoutView
+    //   * Not an identity or 2D translation
+    //   * A scroll translation
+    // |offset_to_2d_translation_root| is the offset representation of the
+    // product of the the transforms starting at |transform| but not inclusive
+    // of the 2D translation root.
+    PhysicalOffset offset_to_2d_translation_root;
+
     // The PaintLayer corresponding to the origin of |paint_offset|.
     const LayoutObject* paint_offset_root = nullptr;
     // Whether newly created children should flatten their inherited transform
@@ -110,7 +121,6 @@ struct PaintPropertyTreeBuilderFragmentContext {
   // offset to paint at the desired place.
   PhysicalOffset repeating_paint_offset_adjustment;
 
-  FloatSize paint_offset_delta;
   PhysicalOffset old_paint_offset;
 };
 

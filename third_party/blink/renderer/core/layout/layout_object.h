@@ -2197,9 +2197,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   bool IsRelayoutBoundary() const;
 
-  // Called when the previous visual rect(s) is no longer valid.
-  virtual void ClearPreviousVisualRects();
-
   void SetSelfNeedsLayoutForAvailableSpace(bool flag) {
     bitfields_.SetSelfNeedsLayoutForAvailableSpace(flag);
     if (flag)
@@ -2413,9 +2410,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           layout_object_.OutlineMayBeAffectedByDescendants());
     }
 
-    void ClearPreviousVisualRects() {
-      layout_object_.ClearPreviousVisualRects();
-    }
     void SetNeedsPaintPropertyUpdate() {
       layout_object_.SetNeedsPaintPropertyUpdate();
     }

@@ -102,9 +102,7 @@ void AssistantZeroStateView::UpdateLayout() {
   if (!IsBetterOnboardingEnabled())
     return;
 
-  const bool show_onboarding = assistant::util::ShouldShowOnboarding(
-      AssistantState::Get()->onboarding_mode());
-
+  const bool show_onboarding = assistant::util::ShouldShowOnboarding();
   onboarding_view_->SetVisible(show_onboarding);
   greeting_label_->SetVisible(!show_onboarding);
 }

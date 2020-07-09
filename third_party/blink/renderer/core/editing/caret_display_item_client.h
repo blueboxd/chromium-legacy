@@ -46,9 +46,6 @@ class CORE_EXPORT CaretDisplayItemClient final : public DisplayItemClient {
   CaretDisplayItemClient();
   ~CaretDisplayItemClient() override;
 
-  // Called indirectly from LayoutBlock::clearPreviousVisualRects().
-  void ClearPreviousVisualRect(const LayoutBlock&);
-
   // Called indirectly from LayoutBlock::willBeDestroyed().
   void LayoutBlockWillBeDestroyed(const LayoutBlock&);
 

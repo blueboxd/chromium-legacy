@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.download;
 
-import androidx.annotation.Nullable;
-
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.components.download.DownloadState;
 import org.chromium.components.download.ResumeMode;
@@ -13,7 +11,6 @@ import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
-import org.chromium.components.offline_items_collection.OfflineItemSchedule;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 
 /**
@@ -31,7 +28,6 @@ public class DownloadItem {
     private long mStartTime;
     private long mEndTime;
     private boolean mHasBeenExternallyRemoved;
-    private OfflineItemSchedule mSchedule;
 
     public DownloadItem(boolean useAndroidDownloadManager, DownloadInfo info) {
         mUseAndroidDownloadManager = useAndroidDownloadManager;
@@ -150,22 +146,6 @@ public class DownloadItem {
     }
 
     /**
-     * Sets the {@link OfflineItemSchedule} to start the download on particular time or network.
-     * @param The {@link OfflineItemSchedule}.
-     */
-    public void setOfflineItemSchedule(@Nullable OfflineItemSchedule schedule) {
-        mSchedule = schedule;
-    }
-
-    /**
-     * Gets the {@link OfflineItemSchedule} to start the download on particular time or network.
-     * @return The {@link OfflineItemSchedule}.
-     */
-    public @Nullable OfflineItemSchedule getOfflineItemSchedule() {
-        return mSchedule;
-    }
-
-    /**
      * Helper method to build an {@link OfflineItem} from a {@link DownloadItem}.
      * @param item The {@link DownloadItem} to mimic.
      * @return     A {@link OfflineItem} containing the relevant fields from {@code item}.
@@ -198,7 +178,7 @@ public class DownloadItem {
         offlineItem.completionTimeMs = item.getEndTime();
         offlineItem.externallyRemoved = item.hasBeenExternallyRemoved();
         offlineItem.canRename = item.getDownloadInfo().state() == DownloadState.COMPLETE;
-        offlineItem.schedule = item.getOfflineItemSchedule();
+        offlineItem.schedule = downloadInfo.getOfflineItemSchedule();
         switch (downloadInfo.state()) {
             case DownloadState.IN_PROGRESS:
                 offlineItem.state = downloadInfo.isPaused() ? OfflineItemState.PAUSED
@@ -264,12 +244,11 @@ public class DownloadItem {
 
     @CalledByNative
     private static DownloadItem createDownloadItem(DownloadInfo downloadInfo, long startTimestamp,
-            long endTimestamp, boolean hasBeenExternallyRemoved, OfflineItemSchedule schedule) {
+            long endTimestamp, boolean hasBeenExternallyRemoved) {
         DownloadItem downloadItem = new DownloadItem(false, downloadInfo);
         downloadItem.setStartTime(startTimestamp);
         downloadItem.setEndTime(endTimestamp);
         downloadItem.setHasBeenExternallyRemoved(hasBeenExternallyRemoved);
-        downloadItem.setOfflineItemSchedule(schedule);
         return downloadItem;
     }
 

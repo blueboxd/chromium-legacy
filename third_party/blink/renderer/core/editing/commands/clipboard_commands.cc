@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/editing/commands/clipboard_commands.h"
 
 #include "third_party/blink/public/platform/web_content_settings_client.h"
+#include "third_party/blink/renderer/core/clipboard/clipboard_utilities.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer_access_policy.h"
 #include "third_party/blink/renderer/core/clipboard/paste_mode.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
@@ -203,9 +204,14 @@ static SystemClipboard::SmartReplaceOption GetSmartReplaceOption(
 void ClipboardCommands::WriteSelectionToClipboard(LocalFrame& frame) {
   const KURL& url = frame.GetDocument()->Url();
   const String html = frame.Selection().SelectedHTMLForClipboard();
-  const String plain_text = frame.SelectedTextForClipboard();
-  frame.GetSystemClipboard()->WriteHTML(html, url, plain_text,
+  String plain_text = frame.SelectedTextForClipboard();
+  frame.GetSystemClipboard()->WriteHTML(html, url,
                                         GetSmartReplaceOption(frame));
+  // TODO(dsleeps): consider consolidating ReplaceNBSPWithSpace into
+  // WritePlainText. WriteHTML always used ReplaceNBSOWithSpace before writing.
+  ReplaceNBSPWithSpace(plain_text);
+  frame.GetSystemClipboard()->WritePlainText(plain_text,
+                                             GetSmartReplaceOption(frame));
   frame.GetSystemClipboard()->CommitWrite();
 }
 

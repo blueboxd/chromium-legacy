@@ -51,8 +51,6 @@ static_library("vr_android") {
     "scoped_gpu_trace.h",
     "vr_controller.cc",
     "vr_controller.h",
-    "vr_core_info.cc",
-    "vr_core_info.h",
     "vr_gl_thread.cc",
     "vr_gl_thread.h",
     "vr_input_connection.cc",

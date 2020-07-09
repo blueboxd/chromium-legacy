@@ -16,8 +16,8 @@
 #include "components/mirroring/service/media_remoter.h"
 #include "components/mirroring/service/message_dispatcher.h"
 #include "components/mirroring/service/mirror_settings.h"
+#include "components/mirroring/service/receiver_setup_querier.h"
 #include "components/mirroring/service/rtp_stream.h"
-#include "components/mirroring/service/session_monitor.h"
 #include "components/mirroring/service/wifi_status_monitor.h"
 #include "gpu/config/gpu_info.h"
 #include "media/cast/cast_environment.h"
@@ -47,7 +47,7 @@ namespace mirroring {
 
 struct ReceiverResponse;
 class VideoCaptureClient;
-class SessionMonitor;
+class ReceiverSetupQuerier;
 
 // Controls a mirroring session, including audio/video capturing, Cast
 // Streaming, and the switching to/from media remoting. When constructed, it
@@ -165,7 +165,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
 
   mojo::Remote<network::mojom::NetworkContext> network_context_;
 
-  base::Optional<SessionMonitor> session_monitor_;
+  std::unique_ptr<ReceiverSetupQuerier> setup_querier_;
 
   // Created after OFFER/ANSWER exchange succeeds.
   std::unique_ptr<AudioRtpStream> audio_stream_;

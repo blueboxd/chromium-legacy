@@ -38,6 +38,7 @@
 .macro asm_function fname
 #ifdef __APPLE__
     .globl _\fname
+    .private_extern _\fname
 _\fname:
 #else
     .global \fname

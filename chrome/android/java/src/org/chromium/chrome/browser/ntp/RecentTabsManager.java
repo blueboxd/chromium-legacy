@@ -10,7 +10,6 @@ import android.view.View;
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
@@ -384,22 +383,6 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
             return PromoState.PROMO_NONE;
         }
         return PromoState.PROMO_SYNC;
-    }
-
-    void recordRecentTabMetrics() {
-        RecordHistogram.recordCountHistogram(
-                "Android.RecentTabsManager.RecentlyClosedTabs", mRecentlyClosedTabs.size());
-        RecordHistogram.recordCountHistogram(
-                "Android.RecentTabsManager.OtherDevices", mForeignSessions.size());
-
-        int totalCount = mRecentlyClosedTabs.size();
-        for (int i = 0; i < mForeignSessions.size(); i++) {
-            ForeignSession foreignSession = mForeignSessions.get(i);
-            for (int j = 0; j < foreignSession.windows.size(); j++) {
-                totalCount += foreignSession.windows.get(j).tabs.size();
-            }
-        }
-        RecordHistogram.recordCountHistogram("Android.RecentTabsManager.TotalTabs", totalCount);
     }
 
     /**

@@ -281,7 +281,7 @@ static const char* const kSwitchNames[] = {
     switches::kX11Display,
     switches::kNoXshm,
 #endif
-    switches::kGpuBlacklistTestGroup,
+    switches::kGpuBlocklistTestGroup,
     switches::kGpuDriverBugListTestGroup,
     switches::kUseCmdDecoder,
     switches::kForceVideoOverlays,
@@ -506,7 +506,7 @@ void BindDiscardableMemoryReceiverOnUI(
 // static
 bool GpuProcessHost::ValidateHost(GpuProcessHost* host) {
   // The Gpu process is invalid if it's not using SwiftShader, the card is
-  // blacklisted, and we can kill it and start over.
+  // blocklisted, and we can kill it and start over.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(

@@ -28,10 +28,6 @@ namespace {
 // The number of top media feeds to load for potential display.
 constexpr unsigned kMediaFeedsLoadLimit = 5u;
 
-// The minimum audio+video watchtime that is needed for display in Kaleidoscope.
-constexpr base::TimeDelta kMediaFeedsAudioVideoWatchtimeMin =
-    base::TimeDelta::FromMinutes(30);
-
 // The minimum number of items a media feed needs to be displayed. This is the
 // number of items needed to populate a collection.
 constexpr int kMediaFeedsFetchedItemsMin = 4;
@@ -106,8 +102,7 @@ void KaleidoscopeDataProviderImpl::GetTopMediaFeeds(
   GetMediaHistoryService()->GetMediaFeeds(
       media_history::MediaHistoryKeyedService::GetMediaFeedsRequest::
           CreateTopFeedsForDisplay(
-              kMediaFeedsLoadLimit, kMediaFeedsAudioVideoWatchtimeMin,
-              kMediaFeedsFetchedItemsMin,
+              kMediaFeedsLoadLimit, kMediaFeedsFetchedItemsMin,
               // Require Safe Search checking if the integration is enabled.
               base::FeatureList::IsEnabled(media::kMediaFeedsSafeSearch)),
       std::move(callback));

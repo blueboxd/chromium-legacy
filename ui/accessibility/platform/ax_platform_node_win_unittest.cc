@@ -223,6 +223,47 @@ ScopedVariant SELF(CHILDID_SELF);
                 testing::UnorderedElementsAreArray(expected_property_values)); \
   }
 
+MockIRawElementProviderSimple::MockIRawElementProviderSimple() = default;
+MockIRawElementProviderSimple::~MockIRawElementProviderSimple() = default;
+
+HRESULT
+MockIRawElementProviderSimple::CreateMockIRawElementProviderSimple(
+    IRawElementProviderSimple** provider) {
+  CComObject<MockIRawElementProviderSimple>* raw_element_provider = nullptr;
+  HRESULT hr = CComObject<MockIRawElementProviderSimple>::CreateInstance(
+      &raw_element_provider);
+  if (SUCCEEDED(hr)) {
+    *provider = raw_element_provider;
+  }
+
+  return hr;
+}
+
+//
+// IRawElementProviderSimple methods.
+//
+IFACEMETHODIMP MockIRawElementProviderSimple::GetPatternProvider(
+    PATTERNID pattern_id,
+    IUnknown** result) {
+  return E_NOTIMPL;
+}
+
+IFACEMETHODIMP MockIRawElementProviderSimple::GetPropertyValue(
+    PROPERTYID property_id,
+    VARIANT* result) {
+  return E_NOTIMPL;
+}
+
+IFACEMETHODIMP
+MockIRawElementProviderSimple::get_ProviderOptions(enum ProviderOptions* ret) {
+  return E_NOTIMPL;
+}
+
+IFACEMETHODIMP MockIRawElementProviderSimple::get_HostRawElementProvider(
+    IRawElementProviderSimple** provider) {
+  return E_NOTIMPL;
+}
+
 AXPlatformNodeWinTest::AXPlatformNodeWinTest() {
   scoped_feature_list_.InitAndEnableFeature(features::kIChromeAccessible);
 }

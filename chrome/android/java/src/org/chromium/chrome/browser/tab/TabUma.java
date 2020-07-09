@@ -9,9 +9,7 @@ import android.text.format.DateUtils;
 
 import org.chromium.base.UserData;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.net.NetError;
 
 /**
@@ -63,12 +61,6 @@ public class TabUma extends EmptyTabObserver implements UserData {
 
     private long mLastTabStateChangeMillis = -1;
     private int mLastTabState = TAB_STATE_INITIAL;
-
-    // The number of background tabs opened by long pressing on this tab and selecting
-    // "Open in a new tab" from the context menu.
-    private int mNumBackgroundTabsOpened;
-
-    private TabModelSelectorObserver mNewTabObserver;
 
     /**
      * Creates {@link TabUma} instance optionally. Creates one only when tab creation type
@@ -153,18 +145,6 @@ public class TabUma extends EmptyTabObserver implements UserData {
     }
 
     /**
-     * Records the number of background tabs which were opened from this tab's
-     * current URL. Does not record anything if no background tabs were opened.
-     */
-    private void recordNumBackgroundTabsOpened() {
-        if (mNumBackgroundTabsOpened > 0) {
-            RecordHistogram.recordCount100Histogram(
-                    "Tab.BackgroundTabsOpenedViaContextMenuCount", mNumBackgroundTabsOpened);
-        }
-        mNumBackgroundTabsOpened = 0;
-    }
-
-    /**
      * Updates saved TabState and its timestamp. Records the state transition into the histogram.
      * @param newState New state of the tab.
      */
@@ -228,30 +208,10 @@ public class TabUma extends EmptyTabObserver implements UserData {
                     "Tab.StatusWhenSwitchedBackToForeground", status, TAB_STATUS_LIM);
         }
 
-        if (mLastShownTimestamp == -1) {
-            // Register the observer for context menu-triggering event here to avoid the case
-            // where this is created too early and we start missing out on metrics suddenly.
-            mNewTabObserver = new EmptyTabModelSelectorObserver() {
-                @Override
-                public void onNewTabCreated(Tab newTab, @TabCreationState int creationState) {
-                    if (newTab.getParentId() == tab.getId()
-                            && newTab.getLaunchType() == TabLaunchType.FROM_LONGPRESS_BACKGROUND) {
-                        ++mNumBackgroundTabsOpened;
-                    }
-                }
-            };
-            getTabModelSelector(tab).addObserver(mNewTabObserver);
-        }
-
         // Record "tab age upon first display" metrics. previousTimestampMillis is persisted through
         // cold starts.
         if (mLastShownTimestamp == -1 && previousTimestampMillis > 0) {
             long duration = System.currentTimeMillis() - previousTimestampMillis;
-            if (mTabCreationState == TabCreationState.LIVE_IN_BACKGROUND
-                    && mRestoreStartedAtMillis != -1) {
-                RecordHistogram.recordMediumTimesHistogram(
-                        "Tab.LostTabAgeWhenSwitchedToForeground", duration);
-            }
             if (isOnBrowserStartup) {
                 RecordHistogram.recordCountHistogram("Tabs.ForegroundTabAgeAtStartup",
                         (int) (duration / DateUtils.MINUTE_IN_MILLIS));
@@ -273,9 +233,7 @@ public class TabUma extends EmptyTabObserver implements UserData {
 
     @Override
     public void onHidden(Tab tab, @TabHidingType int type) {
-        if (type == TabHidingType.ACTIVITY_HIDDEN) {
-            recordNumBackgroundTabsOpened();
-        } else {
+        if (type != TabHidingType.ACTIVITY_HIDDEN) {
             updateTabState(TAB_STATE_INACTIVE);
         }
     }
@@ -283,18 +241,6 @@ public class TabUma extends EmptyTabObserver implements UserData {
     @Override
     public void onDestroyed(Tab tab) {
         updateTabState(TAB_STATE_CLOSED);
-
-        if (mTabCreationState == TabCreationState.LIVE_IN_BACKGROUND
-                || mTabCreationState == TabCreationState.FROZEN_FOR_LAZY_LOAD) {
-            RecordHistogram.recordBooleanHistogram(
-                    "Tab.BackgroundTabShown", mLastShownTimestamp != -1);
-        }
-
-        recordNumBackgroundTabsOpened();
-        if (mNewTabObserver != null) {
-            getTabModelSelector(tab).removeObserver(mNewTabObserver);
-            mNewTabObserver = null;
-        }
         tab.removeObserver(this);
     }
 
@@ -311,12 +257,6 @@ public class TabUma extends EmptyTabObserver implements UserData {
         } else {
             mTabCreationState = TabCreationState.LIVE_IN_BACKGROUND;
         }
-    }
-
-    /** Called when the corresponding tab starts a page load. */
-    @Override
-    public void onPageLoadStarted(Tab tab, String url) {
-        recordNumBackgroundTabsOpened();
     }
 
     /** Called when the corresponding tab completes a page load. */

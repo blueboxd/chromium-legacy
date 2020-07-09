@@ -153,6 +153,14 @@ class EmbeddedTestServer {
     // and rerunning net/data/ssl/scripts/generate-test-certs.sh.
     CERT_TEST_NAMES,
 
+    // An RSA certificate with the keyUsage extension specifying that the key
+    // is only for encipherment.
+    CERT_KEY_USAGE_RSA_ENCIPHERMENT,
+
+    // An RSA certificate with the keyUsage extension specifying that the key
+    // is only for digital signatures.
+    CERT_KEY_USAGE_RSA_DIGITAL_SIGNATURE,
+
     // A certificate will be generated at runtime. A ServerCertificateConfig
     // passed to SetSSLConfig may be used to configure the details of the
     // generated certificate.

@@ -147,15 +147,6 @@ class TetherService
                            TestBetterTogetherSuiteInitiallyDisabled);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest,
                            TestBetterTogetherSuiteBecomesDisabled);
-  FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestBleAdvertisingNotSupported);
-  FRIEND_TEST_ALL_PREFIXES(
-      TetherServiceTest,
-      TestBleAdvertisingNotSupported_BluetoothIsInitiallyNotPowered);
-  FRIEND_TEST_ALL_PREFIXES(
-      TetherServiceTest,
-      TestBleAdvertisingNotSupportedAndRecorded_BluetoothIsInitiallyNotPowered);
-  FRIEND_TEST_ALL_PREFIXES(TetherServiceTest,
-                           TestBleAdvertisingSupportedButIncorrectlyRecorded);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest,
                            TestGet_PrimaryUser_FeatureFlagEnabled);
   FRIEND_TEST_ALL_PREFIXES(
@@ -185,7 +176,8 @@ class TetherService
     // Note: Value 0 was previously OTHER_OR_UNKNOWN, but this was a vague
     // description.
     SHUT_DOWN = 0,
-    BLE_ADVERTISING_NOT_SUPPORTED = 1,
+    // Note: Value 1 was previously BLE_ADVERTISING_NOT_SUPPORTED, but this
+    // value is obsolete and should no longer be used.
     // Note: Value 2 was previously SCREEN_LOCKED, but this value is obsolete
     // and should no longer be used.
     NO_AVAILABLE_HOSTS = 3,
@@ -208,18 +200,6 @@ class TetherService
   void GetBluetoothAdapter();
   void OnBluetoothAdapterFetched(
       scoped_refptr<device::BluetoothAdapter> adapter);
-  void OnBluetoothAdapterAdvertisingIntervalSet();
-  void OnBluetoothAdapterAdvertisingIntervalError(
-      device::BluetoothAdvertisement::ErrorCode status);
-
-  void SetBleAdvertisingInterval();
-
-  // Whether BLE advertising is supported on this device. This should only
-  // return true if a call to BluetoothAdapter::SetAdvertisingInterval() during
-  // TetherService construction succeeds. That method will fail in cases like
-  // those captured in crbug.com/738222.
-  bool GetIsBleAdvertisingSupportedPref();
-  void SetIsBleAdvertisingSupportedPref(bool is_ble_advertising_supported);
 
   bool IsBluetoothPresent() const;
   bool IsBluetoothPowered() const;
@@ -269,10 +249,6 @@ class TetherService
 
   chromeos::multidevice_setup::mojom::HostStatus host_status_ =
       chromeos::multidevice_setup::mojom::HostStatus::kNoEligibleHosts;
-
-  // Whether the BLE advertising interval has attempted to be set during this
-  // session.
-  bool has_attempted_to_set_ble_advertising_interval_ = false;
 
   // The first report of TetherFeatureState::BLE_NOT_PRESENT is usually
   // incorrect and hence is a false positive. This property tracks if the first

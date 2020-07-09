@@ -594,6 +594,46 @@ template("generate_android_wrapper") {
   }
 }
 
+template("generate_r_java") {
+  action_with_pydeps(target_name) {
+    forward_variables_from(invoker, [ "deps" ])
+    if (!defined(deps)) {
+      deps = []
+    }
+    if (defined(invoker.possible_resource_deps)) {
+      foreach(_dep, invoker.possible_resource_deps) {
+        _target_label = get_label_info(_dep, "label_no_toolchain")
+        if (filter_exclude([ _target_label ], _java_library_patterns) == [] &&
+            filter_exclude([ _target_label ], _java_resource_patterns) != []) {
+          # Depend on the java libraries' transitive __assetres target instead.
+          # This is required to ensure depending on java_groups works.
+          deps += [ "${_target_label}__assetres" ]
+        } else {
+          deps += [ _dep ]
+        }
+      }
+    }
+    depfile = "$target_gen_dir/${invoker.target_name}.d"
+    inputs = [ invoker.build_config ]
+    outputs = [
+      invoker.srcjar_path,
+      invoker.r_text_path,
+    ]
+    _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
+    script = "//build/android/gyp/create_r_java.py"
+    args = [
+      "--depfile",
+      rebase_path(depfile, root_build_dir),
+      "--srcjar-out",
+      rebase_path(invoker.srcjar_path, root_build_dir),
+      "--rtxt-out",
+      rebase_path(invoker.r_text_path, root_build_dir),
+      "--resource-zips=@FileArg($_rebased_build_config:deps_info:dependency_zips)",
+      "--r-package=${invoker.package}",
+    ]
+  }
+}
+
 # Generates a script in the build bin directory which runs the test
 # target using the test runner script in build/android/test_runner.py.
 template("test_runner_script") {
@@ -3274,6 +3314,11 @@ if (enable_java_templates) {
       _main_target_name = invoker.main_target_name
     }
 
+    if (defined(invoker.resources_package)) {
+      _resources_package = invoker.resources_package
+      _fake_r_text = "$target_gen_dir/${target_name}.R.txt"
+    }
+
     _java_files = []
     if (defined(invoker.sources)) {
       _java_files = invoker.sources
@@ -3532,6 +3577,10 @@ if (enable_java_templates) {
       bypass_platform_checks = defined(invoker.bypass_platform_checks) &&
                                invoker.bypass_platform_checks
 
+      if (defined(_resources_package)) {
+        custom_package = _resources_package
+        r_text = _fake_r_text
+      }
       if (_is_prebuilt || _has_sources) {
         ijar_path = _final_ijar_path
         unprocessed_jar_path = _unprocessed_jar_path
@@ -3580,6 +3629,37 @@ if (enable_java_templates) {
       }
 
       _type = invoker.type
+
+      _uses_fake_rjava = _type == "java_library" && _requires_android
+
+      # android_apk and junit_binary pass real R.java srcjars via
+      # srcjar_deps. Other targets, that do not define resources_package,
+      # will use the owned_resource_srcjars of their android_resources
+      # dependencies instead.
+      if (_uses_fake_rjava && defined(_resources_package)) {
+        # has _resources at the end so it looks like a resources pattern, since
+        # it does act like one (and other resources patterns need to depend on
+        # this before they can read its output R.txt).
+        _fake_rjava_target = "${target_name}__rjava_resources"
+        if (defined(invoker.deps)) {
+          _possible_resource_deps = invoker.deps
+        }
+        generate_r_java(_fake_rjava_target) {
+          deps = [ ":$_build_config_target_name" ]
+          if (defined(_possible_resource_deps)) {
+            possible_resource_deps = _possible_resource_deps
+          }
+          build_config = _build_config
+
+          # Filepath has to be exactly this because compile_java looks for the
+          # srcjar of srcjar_deps at this location $gen_dir/$target_name.srcjar
+          srcjar_path = "$target_gen_dir/$target_name.srcjar"
+          r_text_path = _fake_r_text
+          package = _resources_package
+        }
+        _srcjar_deps += [ ":$_fake_rjava_target" ]
+      }
+
       template("compile_java_helper") {
         compile_java(target_name) {
           forward_variables_from(invoker, "*")
@@ -3603,8 +3683,11 @@ if (enable_java_templates) {
           }
           deps += _classpath_deps
 
-          # android_apk and junit_binary pass R.java srcjars via srcjar_deps.
-          if (_type == "java_library" && _requires_android) {
+          # android_apk and junit_binary pass real R.java srcjars via
+          # srcjar_deps. Other targets that do not define resources_package
+          # will use the owned_resource_srcjars of their android_resources
+          # dependencies instead.
+          if (_uses_fake_rjava && !defined(_resources_package)) {
             _rebased_build_config = rebase_path(_build_config, root_build_dir)
             srcjar_filearg = "@FileArg($_rebased_build_config:deps_info:owned_resource_srcjars)"
           }
@@ -3805,6 +3888,13 @@ if (enable_java_templates) {
     java_lib_group("${target_name}__assetres") {
       forward_variables_from(invoker, [ "deps" ])
       group_name = "assetres"
+
+      if (defined(_fake_rjava_target)) {
+        if (!defined(deps)) {
+          deps = []
+        }
+        deps += [ ":$_fake_rjava_target" ]
+      }
     }
 
     group(target_name) {

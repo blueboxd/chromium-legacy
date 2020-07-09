@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ui.default_browser_promo;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.text.TextUtils;
 
@@ -50,6 +51,7 @@ public class DefaultBrowserPromoUtils {
     private static final String PROMO_COUNT_PARAM = "max_promo_count";
     private static final String PROMO_INTERVAL_PARAM = "promo_interval";
 
+    static final String DISAMBIGUATION_SHEET_PROMOED_KEY = "disambiguation_sheet_promoed";
     static final String CHROME_STABLE_PACKAGE_NAME = "com.android.chrome";
 
     // TODO(crbug.com/1090103): move to some util class for reuse.
@@ -177,6 +179,17 @@ public class DefaultBrowserPromoUtils {
         // reset
         SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceKeys.DEFAULT_BROWSER_PROMO_PROMOED_BY_SYSTEM_SETTINGS, false);
+    }
+
+    /**
+     * Called on new intent is received on the activity so that we can record some metrics.
+     */
+    public static void onNewIntentReceived(Intent intent) {
+        boolean promoed = intent.getBooleanExtra(DISAMBIGUATION_SHEET_PROMOED_KEY, false);
+        if (promoed) {
+            DefaultBrowserPromoMetrics.recordLaunchedByDisambiguationSheet(
+                    getCurrentDefaultBrowserState());
+        }
     }
 
     @VisibleForTesting

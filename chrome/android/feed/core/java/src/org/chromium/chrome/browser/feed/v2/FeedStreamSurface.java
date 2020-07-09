@@ -21,6 +21,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.RequestCoordinatorBridge;
@@ -58,6 +59,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Bridge class that lets Android code access native code for feed related functionalities.
@@ -71,6 +73,11 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     private static final int SNACKBAR_DURATION_MS_SHORT = 4000;
     private static final int SNACKBAR_DURATION_MS_LONG = 10000;
 
+    private static final String FEEDBACK_REPORT_TYPE =
+            "com.google.chrome.feed.USER_INITIATED_FEEDBACK_REPORT";
+    public static final String FEEDBACK_CONTEXT = "mobile_browser";
+    public static final String XSURFACE_CARD_URL = "Card URL";
+
     private final long mNativeFeedStreamSurface;
     private final FeedListContentManager mContentManager;
     private final SurfaceScope mSurfaceScope;
@@ -82,6 +89,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     @Nullable
     private FeedSliceViewTracker mSliceViewTracker;
     private final NativePageNavigationDelegate mPageNavigationDelegate;
+    private final HelpAndFeedback mHelpAndFeedback;
 
     private int mHeaderCount;
     private BottomSheetContent mBottomSheetContent;
@@ -94,6 +102,13 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
                     new FeedSurfaceDependencyProvider());
         }
         return sXSurfaceProcessScope;
+    }
+
+    // This must match the FeedSendFeedbackType enum in enums.xml.
+    public @interface FeedFeedbackType {
+        int FEEDBACK_TAPPED_ON_CARD = 0;
+        int FEEDBACK_TAPPED_ON_PAGE = 1;
+        int NUM_ENTRIES = 2;
     }
 
     // We avoid attaching surfaces until after |startup()| is called. This ensures that
@@ -222,10 +237,11 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
      */
     public FeedStreamSurface(Activity activity, boolean isBackgroundDark,
             SnackbarManager snackbarManager, NativePageNavigationDelegate pageNavigationDelegate,
-            BottomSheetController bottomSheetController) {
+            BottomSheetController bottomSheetController, HelpAndFeedback helpAndFeedback) {
         mNativeFeedStreamSurface = FeedStreamSurfaceJni.get().init(FeedStreamSurface.this);
         mSnackbarManager = snackbarManager;
         mActivity = activity;
+        mHelpAndFeedback = helpAndFeedback;
 
         mPageNavigationDelegate = pageNavigationDelegate;
         mBottomSheetController = bottomSheetController;
@@ -477,6 +493,52 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     public void processThereAndBackAgainData(byte[] data) {
         FeedStreamSurfaceJni.get().processThereAndBackAgain(
                 mNativeFeedStreamSurface, FeedStreamSurface.this, data);
+    }
+
+    @Override
+    public void sendFeedback(Map<String, String> productSpecificDataMap) {
+        HashMap<String, String> feedContext = new HashMap<String, String>();
+
+        Profile profile = Profile.getLastUsedRegularProfile();
+        if (profile == null) {
+            return;
+        }
+
+        String url = productSpecificDataMap.get(XSURFACE_CARD_URL);
+        if (url == null) {
+            return;
+        }
+
+        convertNameFormat(productSpecificDataMap, feedContext);
+
+        // FEEDBACK_CONTEXT: This identifies this feedback as coming from Chrome for Android (as
+        // opposed to desktop).
+        // FEEDBACK_REPORT_TYPE: Reports for Chrome mobile must have a contextTag of the form
+        // com.chrome.feed.USER_INITIATED_FEEDBACK_REPORT, or they will be discarded for not
+        // matching an allow list rule.
+        mHelpAndFeedback.showFeedback(
+                mActivity, profile, url, FEEDBACK_REPORT_TYPE, feedContext, FEEDBACK_CONTEXT);
+    }
+
+    // Since the XSurface client strings are slightly different than the Feed strings, convert the
+    // name from the XSurface format to the format that can be handled by the feedback system.  Any
+    // new strings that are added on the XSurface side will need a code change here, and adding the
+    // PSD to the allow list.
+    private void convertNameFormat(
+            Map<String, String> xSurfaceMap, Map<String, String> feedbackMap) {
+        Map<String, String> feedbackNameConversionMap = new HashMap<>();
+        feedbackNameConversionMap.put("Card URL", "CardUrl");
+        feedbackNameConversionMap.put("Card Title", "CardTitle");
+        feedbackNameConversionMap.put("Card Snippet", "CardSnippet");
+        feedbackNameConversionMap.put("Card category", "CardCategory");
+        feedbackNameConversionMap.put("Doc Creation Date", "DocCreationDate");
+
+        // For each <name, value> entry in the input map, convert the name to the new name, and
+        // write the new <name, value> pair into the output map.
+        for (Map.Entry<String, String> entry : xSurfaceMap.entrySet()) {
+            String newName = feedbackNameConversionMap.get(entry.getKey());
+            feedbackMap.put(newName, entry.getValue());
+        }
     }
 
     @Override

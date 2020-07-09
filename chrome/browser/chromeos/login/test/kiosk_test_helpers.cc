@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
+#include "chrome/browser/chromeos/login/kiosk_launch_controller.h"
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 
@@ -38,5 +39,26 @@ ScopedDeviceSettings::ScopedDeviceSettings() : settings_helper_(false) {
 }
 
 ScopedDeviceSettings::~ScopedDeviceSettings() = default;
+
+ScopedCanConfigureNetwork::ScopedCanConfigureNetwork(bool can_configure,
+                                                     bool needs_owner_auth)
+    : can_configure_(can_configure),
+      needs_owner_auth_(needs_owner_auth),
+      can_configure_network_callback_(
+          base::Bind(&ScopedCanConfigureNetwork::CanConfigureNetwork,
+                     base::Unretained(this))),
+      needs_owner_auth_callback_(base::Bind(
+          &ScopedCanConfigureNetwork::NeedsOwnerAuthToConfigureNetwork,
+          base::Unretained(this))) {
+  KioskLaunchController::SetCanConfigureNetworkCallbackForTesting(
+      &can_configure_network_callback_);
+  KioskLaunchController::SetNeedOwnerAuthToConfigureNetworkCallbackForTesting(
+      &needs_owner_auth_callback_);
+}
+ScopedCanConfigureNetwork::~ScopedCanConfigureNetwork() {
+  KioskLaunchController::SetCanConfigureNetworkCallbackForTesting(nullptr);
+  KioskLaunchController::SetNeedOwnerAuthToConfigureNetworkCallbackForTesting(
+      nullptr);
+}
 
 }  // namespace chromeos

@@ -14,8 +14,9 @@ namespace media {
 class BufferedDataSourceHostImplTest : public testing::Test {
  public:
   BufferedDataSourceHostImplTest()
-      : host_(base::Bind(&BufferedDataSourceHostImplTest::ProgressCallback,
-                         base::Unretained(this)),
+      : host_(base::BindRepeating(
+                  &BufferedDataSourceHostImplTest::ProgressCallback,
+                  base::Unretained(this)),
               &clock_) {}
 
   void Add() {

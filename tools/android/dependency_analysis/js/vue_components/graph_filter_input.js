@@ -5,21 +5,31 @@
 import {CUSTOM_EVENTS} from '../vue_custom_events.js';
 
 const GraphFilterInput = {
-  data: function() {
-    return {
-      filterInputText: '',
-    };
-  },
+  props: {'nodeIds': Array},
   methods: {
-    submitFilter() {
-      this.$emit(CUSTOM_EVENTS.FILTER_SUBMITTED, this.filterInputText);
+    search: function(searchTerm) {
+      return this.nodeIds.filter(name => {
+        return name.toLowerCase().includes(searchTerm.toLowerCase());
+      });
+    },
+
+    onSelectOption(nodeNameToAdd) {
+      if (!this.nodeIds.includes(nodeNameToAdd)) {
+        return;
+      }
+      this.$emit(CUSTOM_EVENTS.FILTER_SUBMITTED, nodeNameToAdd);
+      this.$refs.autocomplete.value = '';
     },
   },
   template: `
     <div class="user-input-group">
       <label for="filter-input">Add node to filter (exact name):</label>
-      <input v-model="filterInputText" type="text" id="filter-input">
-      <button @click="submitFilter" type="button">Add</button>
+      <autocomplete
+          id="filter-input"
+          ref="autocomplete"
+          :search="search"
+          @submit="onSelectOption"
+      ></autocomplete>
     </div>`,
 };
 

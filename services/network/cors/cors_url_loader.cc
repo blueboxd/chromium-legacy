@@ -524,10 +524,12 @@ void CorsURLLoader::StartNetworkRequest(
   // network::URLLoader doesn't understand |kSameOrigin|.
   // TODO(crbug.com/943939): Fix this.
   auto original_credentials_mode = request_.credentials_mode;
-  request_.credentials_mode =
-      CalculateCredentialsFlag(original_credentials_mode, response_tainting_)
-          ? mojom::CredentialsMode::kInclude
-          : mojom::CredentialsMode::kOmit;
+  if (original_credentials_mode == mojom::CredentialsMode::kSameOrigin) {
+    request_.credentials_mode =
+        CalculateCredentialsFlag(original_credentials_mode, response_tainting_)
+            ? mojom::CredentialsMode::kInclude
+            : mojom::CredentialsMode::kOmit;
+  }
 
   // Binding |this| as an unretained pointer is safe because
   // |network_client_receiver_| shares this object's lifetime.

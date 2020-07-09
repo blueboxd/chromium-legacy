@@ -20,9 +20,8 @@ class AccountId;
 
 namespace chromeos {
 
-class ArcKioskController;
 class DemoAppLauncher;
-class WebKioskController;
+class KioskLaunchController;
 
 // LoginDisplayHostCommon contains code which is not specific to a particular UI
 // implementation - the goal is to reduce code duplication between
@@ -87,17 +86,11 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   // Active instance of authentication prewarmer.
   std::unique_ptr<AuthPrewarmer> auth_prewarmer_;
 
-  // App launch controller.
-  std::unique_ptr<AppLaunchController> app_launch_controller_;
+  // Kiosk launch controller.
+  std::unique_ptr<KioskLaunchController> app_launch_controller_;
 
   // Demo app launcher.
   std::unique_ptr<DemoAppLauncher> demo_app_launcher_;
-
-  // ARC kiosk controller.
-  std::unique_ptr<ArcKioskController> arc_kiosk_controller_;
-
-  // Web app launch controller.
-  std::unique_ptr<WebKioskController> web_kiosk_controller_;
 
   content::NotificationRegistrar registrar_;
 

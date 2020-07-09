@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/login/wizard_context.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/tpm_auto_update_mode_policy_handler.h"
@@ -444,15 +445,15 @@ void EnrollmentScreen::ShowAttributePromptScreen() {
   std::string asset_id;
   std::string location;
 
-  if (GetConfiguration()) {
-    auto* asset_id_value = GetConfiguration()->FindKeyOfType(
+  if (!context()->configuration.DictEmpty()) {
+    auto* asset_id_value = context()->configuration.FindKeyOfType(
         configuration::kEnrollmentAssetId, base::Value::Type::STRING);
     if (asset_id_value) {
       VLOG(1) << "Using Asset ID from configuration "
               << asset_id_value->GetString();
       asset_id = asset_id_value->GetString();
     }
-    auto* location_value = GetConfiguration()->FindKeyOfType(
+    auto* location_value = context()->configuration.FindKeyOfType(
         configuration::kEnrollmentLocation, base::Value::Type::STRING);
     if (location_value) {
       VLOG(1) << "Using Location from configuration "
@@ -470,8 +471,8 @@ void EnrollmentScreen::ShowAttributePromptScreen() {
     location = policy->annotated_location();
   }
 
-  if (GetConfiguration()) {
-    auto* auto_attributes = GetConfiguration()->FindKeyOfType(
+  if (!context()->configuration.DictEmpty()) {
+    auto* auto_attributes = context()->configuration.FindKeyOfType(
         configuration::kEnrollmentAutoAttributes, base::Value::Type::BOOLEAN);
     if (auto_attributes && auto_attributes->GetBool()) {
       VLOG(1) << "Automatically accept attributes";

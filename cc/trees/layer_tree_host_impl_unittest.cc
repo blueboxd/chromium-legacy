@@ -1827,6 +1827,462 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, NonFastScrollableRegionWithOffset) {
   }
 }
 
+// Tests the following tricky case:
+// - Scrolling Layer A with scrolling children:
+//    - Ordinary Layer B with NonFastScrollableRegion
+//    - Ordinary Layer C
+//
+//                   +---------+
+//         +---------|         |+
+//         | Layer A |         ||
+//         |   +-----+-----+   ||
+//         |   |  Layer C  |   ||
+//         |   +-----+-----+   ||
+//         |         | Layer B ||
+//         +---------|         |+
+//                   +---------+
+//
+//
+// Both B and C scroll with A but overlap each other and C appears above B. If
+// we try scrolling over C, we need to check if we intersect the NFSR on B
+// because C may not be fully opaque to hit testing (e.g. the layer may be for
+// |pointer-events:none| or be a squashing layer with "holes").
+TEST_P(ScrollUnifiedLayerTreeHostImplTest,
+       LayerOverlapsNonFastScrollableRegionInLayer) {
+  SetupViewportLayersOuterScrolls(gfx::Size(100, 100), gfx::Size(200, 200));
+
+  // The viewport will be layer A in the description above.
+  LayerImpl* outer_scroll = OuterViewportScrollLayer();
+
+  // Layer B is a 50x50 layer filled with a non fast scrollable region. It
+  // occupies the right half of the viewport.
+  auto* layer_b = AddLayer<LayerImpl>(host_impl_->active_tree());
+  layer_b->SetBounds(gfx::Size(50, 100));
+  layer_b->SetDrawsContent(true);
+  layer_b->SetHitTestable(true);
+  CopyProperties(outer_scroll, layer_b);
+  layer_b->SetOffsetToTransformParent(gfx::Vector2dF(50, 0));
+  layer_b->SetNonFastScrollableRegion(gfx::Rect(0, 0, 50, 100));
+
+  // Do a sanity check - scrolling over layer b should cause main thread
+  // scrolling/hit testing because of the non fast scrolling region.
+  {
+    ASSERT_EQ(layer_b, host_impl_->active_tree()->FindLayerThatIsHitByPoint(
+                           gfx::PointF(60, 50)));
+    InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
+        BeginState(gfx::Point(60, 50), gfx::Vector2d(0, 10),
+                   ui::ScrollInputType::kWheel)
+            .get(),
+        ui::ScrollInputType::kWheel);
+    if (base::FeatureList::IsEnabled(features::kScrollUnification)) {
+      ASSERT_EQ(ScrollThread::SCROLL_ON_IMPL_THREAD, status.thread);
+      ASSERT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
+                status.main_thread_scrolling_reasons);
+      ASSERT_TRUE(status.needs_main_thread_hit_test);
+    } else {
+      ASSERT_EQ(ScrollThread::SCROLL_ON_MAIN_THREAD, status.thread);
+      ASSERT_EQ(MainThreadScrollingReason::kNonFastScrollableRegion,
+                status.main_thread_scrolling_reasons);
+    }
+    host_impl_->ScrollEnd();
+  }
+
+  // Layer C is a 50x50 layer initially centered in the viewport. The right
+  // half overlaps Layer B.
+  auto* layer_c = AddLayer<LayerImpl>(host_impl_->active_tree());
+  layer_c->SetBounds(gfx::Size(50, 50));
+  layer_c->SetDrawsContent(true);
+  layer_c->SetHitTestable(true);
+  CopyProperties(outer_scroll, layer_c);
+  layer_c->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
+
+  // Do a sanity check - scrolling over layer c where it doesn't overlap B
+  // should cause scrolling on the viewport. It doesn't matter whether the
+  // point hits a "hit-test transparent" part of layer C because will cause
+  // scrolling in Layer A in either case since C scrolls with A.
+  {
+    ASSERT_EQ(layer_c, host_impl_->active_tree()->FindLayerThatIsHitByPoint(
+                           gfx::PointF(40, 50)));
+    InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
+        BeginState(gfx::Point(40, 50), gfx::Vector2d(0, 10),
+                   ui::ScrollInputType::kWheel)
+            .get(),
+        ui::ScrollInputType::kWheel);
+    ASSERT_EQ(ScrollThread::SCROLL_ON_IMPL_THREAD, status.thread);
+    ASSERT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
+              status.main_thread_scrolling_reasons);
+    ASSERT_EQ(host_impl_->CurrentlyScrollingNode(),
+              host_impl_->OuterViewportScrollNode());
+    host_impl_->ScrollEnd();
+  }
+
+  // Now perform the real test - scrolling in the overlapping region should
+  // fallback to the main thread. In this case, we really do need to know
+  // whether the point hits a "hit-test transparent" part of Layer C because if
+  // it does it'll hit the NonFastScrollingRegion but if it doesn't it targets
+  // Layer C which scrolls the viewport.
+  {
+    ASSERT_EQ(layer_c, host_impl_->active_tree()->FindLayerThatIsHitByPoint(
+                           gfx::PointF(60, 50)));
+    InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
+        BeginState(gfx::Point(60, 50), gfx::Vector2d(0, 10),
+                   ui::ScrollInputType::kWheel)
+            .get(),
+        ui::ScrollInputType::kWheel);
+    if (base::FeatureList::IsEnabled(features::kScrollUnification)) {
+      EXPECT_EQ(ScrollThread::SCROLL_ON_IMPL_THREAD, status.thread);
+      EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
+                status.main_thread_scrolling_reasons);
+      EXPECT_TRUE(status.needs_main_thread_hit_test);
+    } else {
+      EXPECT_EQ(ScrollThread::SCROLL_ON_MAIN_THREAD, status.thread);
+      EXPECT_EQ(MainThreadScrollingReason::kNonFastScrollableRegion,
+                status.main_thread_scrolling_reasons);
+    }
+    host_impl_->ScrollEnd();
+  }
+}
+
+// Similar to the above test but this time layer B does not scroll with layer
+// A. This is an edge case where the CSS painting algorithm allows a sibling of
+// an overflow scroller to appear on top of the scroller itself but below some
+// of the scroller's children. e.g. https://output.jsbin.com/tejulip/quiet.
+//
+// <div id="scroller" style="position:relative">
+//   <div id="child" style="position:relative; z-index:2"></div>
+// </div>
+// <div id="sibling" style="position:absolute; z-index: 1"></div>
+//
+// So we setup:
+//
+// - Scrolling Layer A with scrolling child:
+//    - Ordinary Layer C
+// - Ordinary layer B with a NonFastScrollableRegion
+//
+//                   +---------+
+//         +---------|         |+
+//         | Layer A |         ||
+//         |   +-----+-----+   ||
+//         |   |  Layer C  |   ||
+//         |   +-----+-----+   ||
+//         |         | Layer B ||
+//         +---------|         |+
+//                   +---------+
+//
+//
+// Only C scrolls with A but C appears above B. If we try scrolling over C, we
+// need to check if we intersect the NFSR on B because C may not be fully
+// opaque to hit testing (e.g. the layer may be for |pointer-events:none| or be
+// a squashing layer with "holes").
+TEST_P(ScrollUnifiedLayerTreeHostImplTest,
+       LayerOverlapsNonFastScrollableRegionInNonScrollAncestorLayer) {
+  // TODO(bokan): This fails without scroll unification.
+  // https://crbug.com/1098425.
+  if (!GetParam())
+    return;
+  SetupViewportLayersOuterScrolls(gfx::Size(100, 100), gfx::Size(200, 200));
+  LayerImpl* outer_scroll = OuterViewportScrollLayer();
+
+  LayerImpl* layer_a = AddScrollableLayer(outer_scroll, gfx::Size(100, 100),
+                                          gfx::Size(200, 200));
+
+  auto* layer_b = AddLayer<LayerImpl>(host_impl_->active_tree());
+  layer_b->SetBounds(gfx::Size(50, 100));
+  layer_b->SetDrawsContent(true);
+  layer_b->SetHitTestable(true);
+  CopyProperties(outer_scroll, layer_b);
+  layer_b->SetOffsetToTransformParent(gfx::Vector2dF(50, 0));
+
+  // Do a sanity check - scrolling over layer b should fallback to the main
+  // thread because the first hit scrolling layer is layer a which is not a
+  // scroll ancestor of b.
+  {
+    ASSERT_EQ(layer_b, host_impl_->active_tree()->FindLayerThatIsHitByPoint(
+                           gfx::PointF(75, 50)));
+    InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
+        BeginState(gfx::Point(75, 50), gfx::Vector2d(0, 10),
+                   ui::ScrollInputType::kWheel)
+            .get(),
+        ui::ScrollInputType::kWheel);
+    if (base::FeatureList::IsEnabled(features::kScrollUnification)) {
+      ASSERT_EQ(ScrollThread::SCROLL_ON_IMPL_THREAD, status.thread);
+      ASSERT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
+                status.main_thread_scrolling_reasons);
+      ASSERT_TRUE(status.needs_main_thread_hit_test);
+    } else {
+      ASSERT_EQ(ScrollThread::SCROLL_UNKNOWN, status.thread);
+      ASSERT_EQ(MainThreadScrollingReason::kFailedHitTest,
+                status.main_thread_scrolling_reasons);
+    }
+    host_impl_->ScrollEnd();
+  }
+
+  // Layer C is a 50x50 layer initially centered in the viewport. Layer C
+  // scrolls with Layer A and appears on top of Layer B. The right half of it
+  // overlaps Layer B.
+  auto* layer_c = AddLayer<LayerImpl>(host_impl_->active_tree());
+  layer_c->SetBounds(gfx::Size(50, 50));
+  layer_c->SetDrawsContent(true);
+  layer_c->SetHitTestable(true);
+  CopyProperties(layer_a, layer_c);
+  layer_c->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
+
+  // Do a sanity check - scrolling over layer c where it doesn't overlap B
+  // should cause scrolling of Layer A. It doesn't matter whether the
+  // point hits a "hit-test transparent" part of layer C because will cause
+  // scrolling in Layer A in either case since C scrolls with A.
+  {
+    ASSERT_EQ(layer_c, host_impl_->active_tree()->FindLayerThatIsHitByPoint(
+                           gfx::PointF(40, 50)));
+    InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
+        BeginState(gfx::Point(40, 50), gfx::Vector2d(0, 10),
+                   ui::ScrollInputType::kWheel)
+            .get(),
+        ui::ScrollInputType::kWheel);
+    ASSERT_EQ(ScrollThread::SCROLL_ON_IMPL_THREAD, status.thread);
+    ASSERT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
+              status.main_thread_scrolling_reasons);
+    ASSERT_EQ(host_impl_->CurrentlyScrollingNode()->id,
+              layer_a->scroll_tree_index());
+    host_impl_->ScrollEnd();
+  }
+
+  // Now perform the real test - scrolling in the overlapping region should
+  // fallback to the main thread. In this case, we really do need to know
+  // whether the point hits a "hit-test transparent" part of Layer C because if
+  // it does it'll hit Layer B which scrolls the outer viewport  but if it
+  // doesn't it targets Layer C which scrolls Layer A.
+  {
+    ASSERT_EQ(layer_c, host_impl_->active_tree()->FindLayerThatIsHitByPoint(
+                           gfx::PointF(60, 50)));
+    InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
+        BeginState(gfx::Point(60, 50), gfx::Vector2d(0, 10),
+                   ui::ScrollInputType::kWheel)
+            .get(),
+        ui::ScrollInputType::kWheel);
+    if (base::FeatureList::IsEnabled(features::kScrollUnification)) {
+      EXPECT_EQ(ScrollThread::SCROLL_ON_IMPL_THREAD, status.thread);
+      EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
+                status.main_thread_scrolling_reasons);
+      EXPECT_TRUE(status.needs_main_thread_hit_test);
+    } else {
+      EXPECT_EQ(ScrollThread::SCROLL_UNKNOWN, status.thread);
+      EXPECT_EQ(MainThreadScrollingReason::kFailedHitTest,
+                status.main_thread_scrolling_reasons);
+    }
+    host_impl_->ScrollEnd();
+  }
+}
+
+// - Scrolling Layer A with scrolling child:
+//    - Ordinary Layer B with NonFastScrollableRegion
+// - Fixed (scrolls with inner viewport) ordinary Layer C.
+//
+//         +---------+---------++
+//         | Layer A |         ||
+//         |   +-----+-----+   ||
+//         |   |  Layer C  |   ||
+//         |   +-----+-----+   ||
+//         |         | Layer B ||
+//         +---------+---------++
+//
+//
+// B scrolls with A but C, which is fixed, appears above B. If we try scrolling
+// over C, we need to check if we intersect the NFSR on B because C may not be
+// fully opaque to hit testing (e.g. the layer may be for |pointer-events:none|
+// or be a squashing layer with "holes"). This is similar to the cases above
+// but uses a fixed Layer C to exercise the case where we hit the viewport via
+// the inner viewport.
+TEST_P(ScrollUnifiedLayerTreeHostImplTest,
+       FixedLayerOverlapsNonFastScrollableRegionInLayer) {
+  SetupViewportLayersOuterScrolls(gfx::Size(100, 100), gfx::Size(200, 200));
+
+  // The viewport will be layer A in the description above.
+  LayerImpl* outer_scroll = OuterViewportScrollLayer();
+  LayerImpl* inner_scroll = InnerViewportScrollLayer();
+
+  // Layer B is a 50x50 layer filled with a non fast scrollable region. It
+  // occupies the right half of the viewport.
+  auto* layer_b = AddLayer<LayerImpl>(host_impl_->active_tree());
+  layer_b->SetBounds(gfx::Size(50, 100));
+  layer_b->SetDrawsContent(true);
+  layer_b->SetHitTestable(true);
+  CopyProperties(outer_scroll, layer_b);
+  layer_b->SetOffsetToTransformParent(gfx::Vector2dF(50, 0));
+  layer_b->SetNonFastScrollableRegion(gfx::Rect(0, 0, 50, 100));
+
+  // Do a sanity check - scrolling over layer b should cause main thread
+  // scrolling/hit testing because of the non fast scrolling region.
+  {
+    ASSERT_EQ(layer_b, host_impl_->active_tree()->FindLayerThatIsHitByPoint(
+                           gfx::PointF(60, 50)));
+    InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
+        BeginState(gfx::Point(60, 50), gfx::Vector2d(0, 10),
+                   ui::ScrollInputType::kWheel)
+            .get(),
+        ui::ScrollInputType::kWheel);
+    if (base::FeatureList::IsEnabled(features::kScrollUnification)) {
+      ASSERT_EQ(ScrollThread::SCROLL_ON_IMPL_THREAD, status.thread);
+      ASSERT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
+                status.main_thread_scrolling_reasons);
+      ASSERT_TRUE(status.needs_main_thread_hit_test);
+    } else {
+      ASSERT_EQ(ScrollThread::SCROLL_ON_MAIN_THREAD, status.thread);
+      ASSERT_EQ(MainThreadScrollingReason::kNonFastScrollableRegion,
+                status.main_thread_scrolling_reasons);
+    }
+    host_impl_->ScrollEnd();
+  }
+
+  // Layer C is a 50x50 layer initially centered in the viewport. The right
+  // half overlaps Layer B.
+  auto* layer_c = AddLayer<LayerImpl>(host_impl_->active_tree());
+  layer_c->SetBounds(gfx::Size(50, 50));
+  layer_c->SetDrawsContent(true);
+  layer_c->SetHitTestable(true);
+  CopyProperties(inner_scroll, layer_c);
+  layer_c->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
+
+  // Do a sanity check - scrolling over layer c where it doesn't overlap B
+  // should cause scrolling on the viewport. It doesn't matter whether the
+  // point hits a "hit-test transparent" part of layer C because will cause
+  // scrolling in Layer A in either case since C scrolls with A.
+  {
+    ASSERT_EQ(layer_c, host_impl_->active_tree()->FindLayerThatIsHitByPoint(
+                           gfx::PointF(40, 50)));
+    InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
+        BeginState(gfx::Point(40, 50), gfx::Vector2d(0, 10),
+                   ui::ScrollInputType::kWheel)
+            .get(),
+        ui::ScrollInputType::kWheel);
+    ASSERT_EQ(ScrollThread::SCROLL_ON_IMPL_THREAD, status.thread);
+    ASSERT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
+              status.main_thread_scrolling_reasons);
+    ASSERT_EQ(host_impl_->CurrentlyScrollingNode(),
+              host_impl_->OuterViewportScrollNode());
+    host_impl_->ScrollEnd();
+  }
+
+  // Now perform the real test - scrolling in the overlapping region should
+  // fallback to the main thread. In this case, we really do need to know
+  // whether the point hits a "hit-test transparent" part of Layer C because if
+  // it does it'll hit the NonFastScrollingRegion but if it doesn't it targets
+  // Layer C which scrolls the viewport.
+  {
+    ASSERT_EQ(layer_c, host_impl_->active_tree()->FindLayerThatIsHitByPoint(
+                           gfx::PointF(60, 50)));
+    InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
+        BeginState(gfx::Point(60, 50), gfx::Vector2d(0, 10),
+                   ui::ScrollInputType::kWheel)
+            .get(),
+        ui::ScrollInputType::kWheel);
+    if (base::FeatureList::IsEnabled(features::kScrollUnification)) {
+      EXPECT_EQ(ScrollThread::SCROLL_ON_IMPL_THREAD, status.thread);
+      EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
+                status.main_thread_scrolling_reasons);
+      EXPECT_TRUE(status.needs_main_thread_hit_test);
+    } else {
+      EXPECT_EQ(ScrollThread::SCROLL_ON_MAIN_THREAD, status.thread);
+      EXPECT_EQ(MainThreadScrollingReason::kNonFastScrollableRegion,
+                status.main_thread_scrolling_reasons);
+    }
+    host_impl_->ScrollEnd();
+  }
+}
+
+// - Scrolling Layer A with scrolling child:
+//    - Ordinary Layer B
+// - Fixed (scrolls with inner viewport) ordinary Layer C.
+//
+//         +---------+---------++
+//         | Layer A |         ||
+//         |   +-----+-----+   ||
+//         |   |  Layer C  |   ||
+//         |   +-----+-----+   ||
+//         |         | Layer B ||
+//         +---------+---------++
+//
+//  This test simply ensures that a scroll over the region where layer C and
+//  layer B overlap can be handled on the compositor thread. Both of these
+//  layers have the viewport as the first scrolling ancestor but C has the
+//  inner viewport while B has the outer viewport as an ancestor. Ensure we
+//  treat these as equivalent.
+TEST_P(ScrollUnifiedLayerTreeHostImplTest, FixedLayerOverNonFixedLayer) {
+  SetupViewportLayersOuterScrolls(gfx::Size(100, 100), gfx::Size(200, 200));
+
+  // The viewport will be layer A in the description above.
+  LayerImpl* outer_scroll = OuterViewportScrollLayer();
+  LayerImpl* inner_scroll = InnerViewportScrollLayer();
+
+  // Layer B is a 50x50 layer filled with a non fast scrollable region. It
+  // occupies the right half of the viewport.
+  auto* layer_b = AddLayer<LayerImpl>(host_impl_->active_tree());
+  layer_b->SetBounds(gfx::Size(50, 100));
+  layer_b->SetDrawsContent(true);
+  layer_b->SetHitTestable(true);
+  CopyProperties(outer_scroll, layer_b);
+  layer_b->SetOffsetToTransformParent(gfx::Vector2dF(50, 0));
+
+  // Layer C is a 50x50 layer initially centered in the viewport. The right
+  // half overlaps Layer B.
+  auto* layer_c = AddLayer<LayerImpl>(host_impl_->active_tree());
+  layer_c->SetBounds(gfx::Size(50, 50));
+  layer_c->SetDrawsContent(true);
+  layer_c->SetHitTestable(true);
+  CopyProperties(inner_scroll, layer_c);
+  layer_c->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
+
+  // A scroll in the overlapping region should not fallback to the main thread
+  // since we'll scroll the viewport regardless which layer we really should
+  // hit.
+  {
+    ASSERT_EQ(layer_c, host_impl_->active_tree()->FindLayerThatIsHitByPoint(
+                           gfx::PointF(60, 50)));
+    InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
+        BeginState(gfx::Point(60, 50), gfx::Vector2d(0, 10),
+                   ui::ScrollInputType::kWheel)
+            .get(),
+        ui::ScrollInputType::kWheel);
+    ASSERT_EQ(ScrollThread::SCROLL_ON_IMPL_THREAD, status.thread);
+    ASSERT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
+              status.main_thread_scrolling_reasons);
+    ASSERT_EQ(host_impl_->CurrentlyScrollingNode(),
+              host_impl_->OuterViewportScrollNode());
+    host_impl_->ScrollEnd();
+  }
+
+  // However, if we have a non-default root scroller, the inner and outer
+  // viewports really should be treated as separate scrollers (i.e. if you
+  // "bubble" up to the inner viewport, we shouldn't cause scrolling in the
+  // outer viewport because the outer viewport is not an ancestor of the
+  // scrolling Element so that would be unexpected). So now the scroll node to
+  // use for scrolling depends on whether Layer B or Layer C is actually hit so
+  // the main thread needs to decide.
+  {
+    GetScrollNode(InnerViewportScrollLayer())
+        ->prevent_viewport_scrolling_from_inner = true;
+
+    ASSERT_EQ(layer_c, host_impl_->active_tree()->FindLayerThatIsHitByPoint(
+                           gfx::PointF(60, 50)));
+    InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
+        BeginState(gfx::Point(60, 50), gfx::Vector2d(0, 10),
+                   ui::ScrollInputType::kWheel)
+            .get(),
+        ui::ScrollInputType::kWheel);
+    if (base::FeatureList::IsEnabled(features::kScrollUnification)) {
+      EXPECT_EQ(ScrollThread::SCROLL_ON_IMPL_THREAD, status.thread);
+      EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
+                status.main_thread_scrolling_reasons);
+      EXPECT_TRUE(status.needs_main_thread_hit_test);
+    } else {
+      EXPECT_EQ(ScrollThread::SCROLL_UNKNOWN, status.thread);
+      EXPECT_EQ(MainThreadScrollingReason::kFailedHitTest,
+                status.main_thread_scrolling_reasons);
+    }
+    host_impl_->ScrollEnd();
+  }
+}
+
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollHandlerNotPresent) {
   SetupViewportLayersInnerScrolls(gfx::Size(100, 100), gfx::Size(200, 200));
   EXPECT_FALSE(host_impl_->active_tree()->have_scroll_event_handlers());
@@ -16440,6 +16896,57 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PercentBasedScrollbarDeltasDSF3) {
   // Tear down the LayerTreeHostImpl before the InputHandlerClient.
   host_impl_->ReleaseLayerTreeFrameSink();
   host_impl_ = nullptr;
+}
+
+// Verify that page based scrolling resolves to the correct amount of scroll
+// delta.
+TEST_P(ScrollUnifiedLayerTreeHostImplTest, PageBasedScroll) {
+  const gfx::Size kViewportSize(100, 100);
+  const gfx::Size kContentSize(300, 300);
+  SetupViewportLayersOuterScrolls(kViewportSize, kContentSize);
+  DrawFrame();
+
+  const gfx::Vector2dF kPageDelta(2, 1);
+
+  auto begin_state =
+      BeginState(gfx::Point(), kPageDelta, ui::ScrollInputType::kWheel);
+  begin_state->data()->delta_granularity = ui::ScrollGranularity::kScrollByPage;
+  EXPECT_EQ(
+      ScrollThread::SCROLL_ON_IMPL_THREAD,
+      host_impl_->ScrollBegin(begin_state.get(), ui::ScrollInputType::kWheel)
+          .thread);
+
+  auto update_state =
+      UpdateState(gfx::Point(), kPageDelta, ui::ScrollInputType::kWheel);
+  update_state->data()->delta_granularity =
+      ui::ScrollGranularity::kScrollByPage;
+  // We should still be scrolling, because the scrolled layer also exists in the
+  // new tree.
+  host_impl_->ScrollUpdate(update_state.get());
+
+  viz::BeginFrameArgs begin_frame_args =
+      viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+
+  base::TimeTicks start_time =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
+  BeginImplFrameAndAnimate(begin_frame_args, start_time);
+  BeginImplFrameAndAnimate(begin_frame_args,
+                           start_time + base::TimeDelta::FromMilliseconds(50));
+  BeginImplFrameAndAnimate(
+      begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(2000));
+
+  const gfx::ScrollOffset kExpectedDelta(
+      kPageDelta.x() * kViewportSize.width() * kMinFractionToStepWhenPaging,
+      kPageDelta.y() * kViewportSize.height() * kMinFractionToStepWhenPaging);
+  const gfx::ScrollOffset kCurrentDelta =
+      host_impl_->active_tree()
+          ->property_trees()
+          ->scroll_tree.current_scroll_offset(
+              host_impl_->OuterViewportScrollNode()->element_id);
+
+  EXPECT_EQ(kExpectedDelta.ToString(), kCurrentDelta.ToString());
+
+  host_impl_->ScrollEnd();
 }
 
 class UnifiedScrollingTest : public LayerTreeHostImplTest {

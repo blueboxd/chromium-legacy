@@ -139,8 +139,7 @@ void ObjectPaintInvalidator::
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   SlowSetPaintingLayerNeedsRepaint();
   // This method may be used to invalidate paint of objects changing paint
-  // invalidation container. Visual rects don't have to be cleared, since they
-  // are relative to the transform ancestor.
+  // invalidation container.
   // TODO(vmpstr): After paint containment isolation is in place, we might not
   // have to recurse past the paint containment boundary.
   TraverseNonCompositingDescendantsInPaintOrder(
@@ -153,12 +152,11 @@ void ObjectPaintInvalidator::
     InvalidatePaintIncludingNonSelfPaintingLayerDescendants() {
   SlowSetPaintingLayerNeedsRepaint();
   // This method may be used to invalidate paint of objects changing paint
-  // invalidation container. Clear previous visual rect on the original paint
-  // invalidation container to avoid under-invalidation if the visual rect on
-  // the new paint invalidation container happens to be the same as the old one.
+  // invalidation container.
   struct Helper {
     static void Traverse(const LayoutObject& object) {
-      object.GetMutableForPainting().ClearPreviousVisualRects();
+      object.GetMutableForPainting().SetShouldDoFullPaintInvalidation(
+          PaintInvalidationReason::kCompositing);
       for (LayoutObject* child = object.SlowFirstChild(); child;
            child = child->NextSibling()) {
         if (!child->HasLayer() ||

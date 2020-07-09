@@ -2197,13 +2197,9 @@ LayerImpl* LayerTreeImpl::FindFirstScrollingLayerOrScrollbarThatIsHitByPoint(
 
   FindClosestMatchingLayerState state;
   LayerImpl* root_layer = layer_list_[0].get();
-  auto HitTestScrollingLayerOrScrollbarFunctor =
-      [this](const LayerImpl* layer) {
-        return layer->HitTestable() &&
-               (layer->IsScrollbarLayer() ||
-                (property_trees()->scroll_tree.FindNodeFromElementId(
-                    layer->element_id())));
-      };
+  auto HitTestScrollingLayerOrScrollbarFunctor = [](const LayerImpl* layer) {
+    return layer->HitTestable() && layer->IsScrollerOrScrollbar();
+  };
   FindClosestMatchingLayer(screen_space_point, root_layer,
                            HitTestScrollingLayerOrScrollbarFunctor, &state);
   return state.closest_match;
@@ -2289,6 +2285,91 @@ LayerTreeImpl::FindLayersHitByPointInNonFastScrollableRegion(
                         layer->non_fast_scrollable_region(), layer)) {
       layers.push_back(layer);
     }
+  }
+
+  return layers;
+}
+
+std::vector<const LayerImpl*>
+LayerTreeImpl::FindAllLayersUpToAndIncludingFirstScrollable(
+    const gfx::PointF& screen_space_point) {
+  std::vector<const LayerImpl*> layers;
+  if (layer_list_.empty())
+    return layers;
+  if (!UpdateDrawProperties())
+    return layers;
+
+  // If we hit a layer in a 3d context we can't rely on layer orders, we need
+  // to sort the layers by distance to hit. This is used only if the first_hit
+  // layer is in a 3d rendering context.
+  std::vector<std::pair<const LayerImpl*, float>> layers_3d;
+
+  const LayerImpl* first_hit = nullptr;
+
+  // We want to iterate from front to back when hit testing.
+  LayerImpl* root_layer = layer_list_[0].get();
+  for (const auto* layer : base::Reversed(*root_layer->layer_tree_impl())) {
+    if (!layer->HitTestable())
+      continue;
+
+    if (first_hit &&
+        layer->GetSortingContextId() != first_hit->GetSortingContextId())
+      continue;
+
+    float distance_to_intersection = 0.f;
+    bool hit = false;
+    if (layer->Is3dSorted()) {
+      hit =
+          PointHitsLayer(layer, screen_space_point, &distance_to_intersection);
+    } else {
+      hit = PointHitsLayer(layer, screen_space_point, nullptr);
+    }
+
+    if (!hit)
+      continue;
+
+    if (!first_hit)
+      first_hit = layer;
+
+    if (first_hit->Is3dSorted()) {
+      layers_3d.emplace_back(
+          std::pair<const LayerImpl*, float>(layer, distance_to_intersection));
+    } else {
+      layers.push_back(layer);
+      if (layer->IsScrollerOrScrollbar())
+        break;
+    }
+  }
+
+  if (!first_hit) {
+    DCHECK(layers.empty());
+    DCHECK(layers_3d.empty());
+    return layers;
+  }
+
+  if (first_hit->Is3dSorted()) {
+    DCHECK(layers.empty());
+    DCHECK(!layers_3d.empty());
+
+    // Since we hit a layer in a rendering context, we need to sort the layers
+    // based on their distance then add all until the first scrollable one to
+    // the return vector.
+    std::sort(layers_3d.begin(), layers_3d.end(),
+              [](const std::pair<const LayerImpl*, float>& a,
+                 const std::pair<const LayerImpl*, float>& b) {
+                return a.second > b.second;
+              });
+
+    for (const auto& pair : layers_3d) {
+      const LayerImpl* layer = pair.first;
+
+      layers.push_back(layer);
+      if (layer->IsScrollerOrScrollbar())
+        break;
+    }
+  } else {
+    DCHECK(!layers.empty());
+    DCHECK(layers_3d.empty());
   }
 
   return layers;

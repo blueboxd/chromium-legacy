@@ -576,9 +576,9 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
     if (gpu_preferences.log_gpu_control_list_decisions)
       list->EnableControlListLogging("gpu_blocklist");
     unsigned target_test_group = 0u;
-    if (command_line->HasSwitch(switches::kGpuBlacklistTestGroup)) {
+    if (command_line->HasSwitch(switches::kGpuBlocklistTestGroup)) {
       std::string test_group_string =
-          command_line->GetSwitchValueASCII(switches::kGpuBlacklistTestGroup);
+          command_line->GetSwitchValueASCII(switches::kGpuBlocklistTestGroup);
       if (!base::StringToUint(test_group_string, &target_test_group))
         target_test_group = 0u;
     }

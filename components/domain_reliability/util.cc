@@ -118,20 +118,6 @@ std::string GetDomainReliabilityProtocol(
   return "";
 }
 
-int GetNetErrorFromURLRequestStatus(const net::URLRequestStatus& status) {
-  switch (status.status()) {
-    case net::URLRequestStatus::SUCCESS:
-      return net::OK;
-    case net::URLRequestStatus::CANCELED:
-      return net::ERR_ABORTED;
-    case net::URLRequestStatus::FAILED:
-      return status.error();
-    default:
-      NOTREACHED();
-      return net::ERR_FAILED;
-  }
-}
-
 DomainReliabilityUploader::UploadResult GetUploadResultFromResponseDetails(
     int net_error,
     int http_response_code,

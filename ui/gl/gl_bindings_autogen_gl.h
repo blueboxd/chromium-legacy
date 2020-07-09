@@ -1973,6 +1973,7 @@ struct ExtensionsGL {
   bool b_GL_ARB_sampler_objects;
   bool b_GL_ARB_shader_image_load_store;
   bool b_GL_ARB_sync;
+  bool b_GL_ARB_tessellation_shader;
   bool b_GL_ARB_texture_multisample;
   bool b_GL_ARB_texture_storage;
   bool b_GL_ARB_texture_swizzle;
@@ -2033,6 +2034,7 @@ struct ExtensionsGL {
   bool b_GL_OES_draw_buffers_indexed;
   bool b_GL_OES_get_program_binary;
   bool b_GL_OES_mapbuffer;
+  bool b_GL_OES_tessellation_shader;
   bool b_GL_OES_texture_buffer;
   bool b_GL_OES_vertex_array_object;
   bool b_GL_OVR_multiview;

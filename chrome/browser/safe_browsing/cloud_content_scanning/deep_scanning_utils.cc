@@ -10,7 +10,9 @@
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/enterprise/common/proto/connectors.pb.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 
 namespace safe_browsing {
 
@@ -509,6 +511,22 @@ std::vector<ContentAnalysisScanResult> ContentAnalysisResponseToResults(
     results.push_back(ContentAnalysisResultToResult(result));
   }
   return results;
+}
+
+std::string GetProfileEmail(Profile* profile) {
+  return profile
+             ? GetProfileEmail(IdentityManagerFactory::GetForProfile(profile))
+             : std::string();
+}
+
+std::string GetProfileEmail(signin::IdentityManager* identity_manager) {
+  // If the profile is not signed in, GetPrimaryAccountInfo() returns an
+  // empty account info.
+  return identity_manager
+             ? identity_manager
+                   ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
+                   .email
+             : std::string();
 }
 
 }  // namespace safe_browsing

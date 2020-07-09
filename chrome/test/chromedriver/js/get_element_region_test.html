@@ -25,8 +25,8 @@ function testSvgElement() {
   var region = getElementRegion(document.getElementById('e'));
   assertEquals(0, region.left);
   assertEquals(0, region.top);
-  assertEquals(170, region.width);
-  assertEquals(110, region.height);
+  assertEquals(90, region.width);
+  assertEquals(40, region.height);
 }
 
 function testAreaPoly() {
@@ -140,7 +140,7 @@ function testAreaDefault() {
   <br>
   <div>
     <svg xmlns="http://www.w3.org/2000/svg" height="130px" width="300px">
-      <ellipse cx="150" cy="65" rx="85" ry="55" id="e">
+      <ellipse cx="150" cy="65" rx="45" ry="20" id="e">
       </ellipse>
     </svg>
   </div>

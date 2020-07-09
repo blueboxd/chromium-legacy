@@ -226,7 +226,8 @@ NGPositionedFloat PositionFloat(NGUnpositionedFloat* unpositioned_float,
     fragment_margins = ComputeMarginsFor(
         node.Style(), unpositioned_float->percentage_size.inline_size,
         parent_space.GetWritingMode(), parent_space.Direction());
-    AdjustForFragmentation(unpositioned_float->token.get(), &fragment_margins);
+    AdjustMarginsForFragmentation(unpositioned_float->token.get(),
+                                  &fragment_margins);
 
     // When fragmenting, we need to set the block-offset of the node before
     // laying it out. This is a float, and in order to calculate its offset, we

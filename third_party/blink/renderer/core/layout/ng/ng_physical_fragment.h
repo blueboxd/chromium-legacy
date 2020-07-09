@@ -432,7 +432,7 @@ class CORE_EXPORT NGPhysicalFragment
   unsigned has_borders_ : 1;
   unsigned has_padding_ : 1;
   unsigned is_first_for_node_ : 1;
-  unsigned has_oof_positioned_fragmentainer_descendants_ : 1;
+  unsigned has_rare_data_ : 1;
 
   LayoutObject* layout_object_;
   const PhysicalSize size_;
@@ -455,7 +455,7 @@ class CORE_EXPORT NGPhysicalFragment
 
   // The following bitfields are only to be used by NGPhysicalTextFragment
   // (it's defined here to save memory, since that class has no bitfields).
-  mutable unsigned ink_overflow_computed_or_mathml_paint_info_ : 1;
+  mutable unsigned ink_overflow_computed_ : 1;
 
   // Note: We've used 32-bit bit field. If you need more bits, please think to
   // share bit fields, or put them before layout_object_ to fill the gap after

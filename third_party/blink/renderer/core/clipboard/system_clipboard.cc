@@ -124,16 +124,8 @@ String SystemClipboard::ReadHTML(KURL& url,
 
 void SystemClipboard::WriteHTML(const String& markup,
                                 const KURL& document_url,
-                                const String& plain_text,
                                 SmartReplaceOption smart_replace_option) {
-  String text = plain_text;
-#if defined(OS_WIN)
-  ReplaceNewlinesWithWindowsStyleNewlines(text);
-#endif
-  ReplaceNBSPWithSpace(text);
-
   clipboard_->WriteHtml(NonNullString(markup), document_url);
-  clipboard_->WriteText(NonNullString(text));
   if (smart_replace_option == kCanSmartReplace)
     clipboard_->WriteSmartPasteMarker();
 }

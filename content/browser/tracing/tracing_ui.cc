@@ -78,10 +78,13 @@ bool BeginRecording(const std::string& data64,
       delete g_tracing_session;
     g_tracing_session = perfetto::Tracing::NewTrace().release();
     g_tracing_session->Setup(tracing::GetDefaultPerfettoConfig(trace_config));
+
+    auto shared_callback(std::make_shared<WebUIDataSource::GotDataCallback>(
+        std::move(callback)));
+    g_tracing_session->SetOnStartCallback([shared_callback] {
+      OnRecordingEnabledAck(std::move(*shared_callback));
+    });
     g_tracing_session->Start();
-    // TODO(skyostil): Wait for the "tracing started" callback once it is
-    // available in Perfetto.
-    OnRecordingEnabledAck(std::move(callback));
     return true;
   }
   return TracingController::GetInstance()->StartTracing(

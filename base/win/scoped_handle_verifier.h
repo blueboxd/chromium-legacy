@@ -77,7 +77,7 @@ class [[clang::lto_visibility_public]] ScopedHandleVerifier {
   DISALLOW_COPY_AND_ASSIGN(ScopedHandleVerifier);
 };
 
-// This testing function returns the module that the ActiveVerifier concrete
+// This testing function returns the module that the HandleVerifier concrete
 // implementation was instantiated in.
 BASE_EXPORT HMODULE GetHandleVerifierModuleForTesting();
 

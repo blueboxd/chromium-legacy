@@ -55,10 +55,6 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
   NGBoxStrut borders_;
   NGBoxStrut padding_;
 
-  // The border and padding after adjusting to ensure that the leading border
-  // and padding are only applied to the first fragment.
-  NGBoxStrut adjusted_border_padding_;
-
   LayoutUnit intrinsic_block_size_;
   const LayoutUnit consumed_block_size_;
   LogicalSize border_box_size_;

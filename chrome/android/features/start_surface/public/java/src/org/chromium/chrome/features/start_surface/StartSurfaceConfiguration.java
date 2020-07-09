@@ -144,4 +144,20 @@ public class StartSurfaceConfiguration {
         return STARTUP_UMA_PREFIX + name
                 + (isInstantStart ? INSTANT_START_SUBFIX : REGULAR_START_SUBFIX);
     }
+    /**
+     * @param isDense Whether the placeholder of Feed is dense. This depends on whether the first
+     *         article card of Feed is dense.
+     */
+    public static void setFeedPlaceholderDense(boolean isDense) {
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.FEED_PLACEHOLDER_DENSE, isDense);
+    }
+
+    /**
+     * @return Whether the placeholder of Feed is dense.
+     */
+    public static boolean isFeedPlaceholderDense() {
+        return SharedPreferencesManager.getInstance().readBoolean(
+                ChromePreferenceKeys.FEED_PLACEHOLDER_DENSE, false);
+    }
 }

@@ -63,6 +63,11 @@ class PLATFORM_EXPORT AudioDelayDSPKernel : public AudioDSPKernel {
       float* destination,
       uint32_t frames_to_process) const;
 
+  // Handle an NaN values in |delay_times|.  Replace NaN with |max_time|.
+  void HandleNaN(float* delay_times,
+                 uint32_t frames_to_process,
+                 float max_time);
+
   void Reset() override;
 
   float MaxDelayTime() const { return max_delay_time_; }

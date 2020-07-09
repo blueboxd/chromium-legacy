@@ -11,9 +11,6 @@
 namespace chromeos {
 namespace assistant {
 enum class AssistantEntryPoint;
-namespace prefs {
-enum class AssistantOnboardingMode;
-}  // namespace prefs
 }  // namespace assistant
 }  // namespace chromeos
 
@@ -48,9 +45,7 @@ bool ShouldAttemptWarmerWelcome(
 
 // Returns true if we should show Assistant onboarding.
 COMPONENT_EXPORT(ASSISTANT_UTIL)
-bool ShouldShowOnboarding(
-    const base::Optional<chromeos::assistant::prefs::AssistantOnboardingMode>&
-        onboarding_mode);
+bool ShouldShowOnboarding();
 
 COMPONENT_EXPORT(ASSISTANT_UTIL)
 bool IsGoogleDevice();

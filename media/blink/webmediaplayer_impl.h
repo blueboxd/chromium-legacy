@@ -873,8 +873,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   bool allow_media_player_renderer_credentials_ = false;
 #endif
 
-  // Stores the current position state of the media. See
-  // |UpdateMediaPositionState| for more details.
+  // Stores the current position state of the media.
   media_session::MediaPosition media_position_state_;
 
   // Set whenever the demuxer encounters an HLS file.

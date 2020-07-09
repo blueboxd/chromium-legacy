@@ -391,7 +391,7 @@ EventLogsUploadManager::EventLogsUploadManager()
 EventLogsUploadManager::~EventLogsUploadManager() = default;
 
 GURL EventLogsUploadManager::GetGcpwServiceUploadEventViewerLogsUrl() {
-  GURL gcpw_service_url = GURL(base::UTF16ToUTF8(kDefaultGcpwServiceUrl));
+  GURL gcpw_service_url = GetGcpwServiceUrl();
 
   return gcpw_service_url.Resolve(kGcpwServiceUploadEventLogsPath);
 }

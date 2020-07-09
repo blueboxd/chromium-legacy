@@ -1,0 +1,25 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/tools/bindings/mojom.gni")
+import("//third_party/blink/public/public_features.gni")
+
+mojom_component("tokens") {
+  output_prefix = "tokens_mojom"
+  macro_prefix = "TOKENS_MOJOM"
+
+  sources = [ "frame_token.mojom" ]
+
+  public_deps = [ "//mojo/public/mojom/base" ]
+
+  export_class_attribute = "BLINK_COMMON_EXPORT"
+  export_define = "BLINK_COMMON_IMPLEMENTATION=1"
+  export_header = "third_party/blink/public/common/common_export.h"
+
+  export_class_attribute_blink = "CORE_EXPORT"
+  export_define_blink = "BLINK_CORE_IMPLEMENTATION=1"
+  export_header_blink = "third_party/blink/renderer/core/core_export.h"
+
+  generate_java = true
+}

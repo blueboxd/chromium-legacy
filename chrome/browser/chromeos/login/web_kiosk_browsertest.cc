@@ -5,6 +5,7 @@
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
+#include "chrome/browser/chromeos/login/kiosk_launch_controller.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/kiosk_test_helpers.h"
@@ -12,7 +13,6 @@
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/web_kiosk_controller.h"
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
@@ -44,7 +44,6 @@ class WebKioskTest : public OobeBaseTest {
                 policy::DeviceLocalAccount::TYPE_WEB_KIOSK_APP))) {
     set_exit_when_last_browser_closes(false);
     needs_background_networking_ = true;
-
     skip_splash_wait_override_ =
         WebKioskController::SkipSplashScreenWaitForTesting();
     network_wait_override_ = WebKioskController::SetNetworkWaitForTesting(
@@ -105,7 +104,8 @@ class WebKioskTest : public OobeBaseTest {
   }
 
   void WaitNetworkConfigureScreenAndContinueWithOnlineState(
-      bool require_network) {
+      bool require_network,
+      bool auto_close = false) {
     SetOnline(false);
     OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
     // Unblock app launch after the network configure screen is shown.
@@ -113,15 +113,18 @@ class WebKioskTest : public OobeBaseTest {
     test::OobeJS().ExpectPathDisplayed(!require_network,
                                        kNetworkConfigureScreenContinueButton);
     SetOnline(true);
-    // Wait for update.
-    // Continue button should be visible since we are online.
-    test::OobeJS()
-        .CreateDisplayedWaiter(true, kNetworkConfigureScreenContinueButton)
-        ->Wait();
-    test::OobeJS().ExpectPathDisplayed(true,
-                                       kNetworkConfigureScreenContinueButton);
-    // Click on continue button.
-    test::OobeJS().TapOnPath(kNetworkConfigureScreenContinueButton);
+
+    if (!auto_close) {
+      // Wait for update.
+      // Continue button should be visible since we are online.
+      test::OobeJS()
+          .CreateDisplayedWaiter(true, kNetworkConfigureScreenContinueButton)
+          ->Wait();
+      test::OobeJS().ExpectPathDisplayed(true,
+                                         kNetworkConfigureScreenContinueButton);
+      // Click on continue button.
+      test::OobeJS().TapOnPath(kNetworkConfigureScreenContinueButton);
+    }
   }
 
  private:
@@ -135,6 +138,9 @@ class WebKioskTest : public OobeBaseTest {
   std::unique_ptr<base::AutoReset<bool>> skip_splash_wait_override_;
   std::unique_ptr<base::AutoReset<base::TimeDelta>> network_wait_override_;
   std::unique_ptr<base::AutoReset<bool>> block_app_launch_override_;
+  // Web kiosks do not support consumer-based kiosk. Network can always be
+  // configured.
+  ScopedCanConfigureNetwork can_configure_network_override_{true, false};
 };
 
 // Runs the kiosk app when the network is always present.
@@ -164,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(WebKioskTest, NetworkTimeout) {
   LaunchApp();
 
   WaitNetworkConfigureScreenAndContinueWithOnlineState(
-      /*require_network*/ true);
+      /*require_network*/ true, /*auto_close*/ true);
 
   KioskSessionInitializedWaiter().Wait();
 }

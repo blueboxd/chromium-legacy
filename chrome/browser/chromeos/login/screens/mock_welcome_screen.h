@@ -22,7 +22,6 @@ class MockWelcomeScreen : public WelcomeScreen {
 
   MOCK_METHOD(void, ShowImpl, ());
   MOCK_METHOD(void, HideImpl, ());
-  MOCK_METHOD(void, SetConfiguration, (base::Value * configuration));
 
   void ExitScreen();
 

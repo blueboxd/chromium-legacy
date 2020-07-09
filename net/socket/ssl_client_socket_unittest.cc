@@ -44,6 +44,7 @@
 #include "net/cert/ct_verifier.h"
 #include "net/cert/do_nothing_ct_verifier.h"
 #include "net/cert/mock_cert_verifier.h"
+#include "net/cert/mock_client_cert_verifier.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_util.h"
@@ -2431,23 +2432,17 @@ TEST_F(SSLClientSocketTest, PrematureApplicationData) {
 }
 
 TEST_F(SSLClientSocketTest, CipherSuiteDisables) {
-  // Rather than exhaustively disabling every AES_128_CBC ciphersuite defined at
-  // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml, only
-  // disabling those cipher suites that the test server actually implements.
-  const uint16_t kCiphersToDisable[] = {
-      0x002f,  // TLS_RSA_WITH_AES_128_CBC_SHA
-      0x0033,  // TLS_DHE_RSA_WITH_AES_128_CBC_SHA
-      0xc013,  // TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
-  };
+  // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+  static const uint16_t kTestCipher = 0xc02f;
 
-  SpawnedTestServer::SSLOptions ssl_options;
-  // Enable only AES_128_CBC on the test server.
-  ssl_options.bulk_ciphers = SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128;
-  ASSERT_TRUE(StartTestServer(ssl_options));
+  SSLServerConfig server_config;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  server_config.cipher_suite_for_testing = kTestCipher;
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
 
   SSLContextConfig ssl_context_config;
-  for (size_t i = 0; i < base::size(kCiphersToDisable); ++i)
-    ssl_context_config.disabled_cipher_suites.push_back(kCiphersToDisable[i]);
+  ssl_context_config.disabled_cipher_suites.push_back(kTestCipher);
   ssl_config_service_->UpdateSSLConfigAndNotify(ssl_context_config);
 
   int rv;
@@ -3394,9 +3389,12 @@ TEST_F(SSLClientSocketTest, NoDHE) {
 
 TEST_F(SSLClientSocketTest, RequireECDHE) {
   // Run test server without ECDHE.
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.key_exchanges = SpawnedTestServer::SSLOptions::KEY_EXCHANGE_RSA;
-  ASSERT_TRUE(StartTestServer(ssl_options));
+  SSLServerConfig server_config;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  // TLS_RSA_WITH_AES_128_GCM_SHA256
+  server_config.cipher_suite_for_testing = 0x009c;
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
 
   SSLConfig config;
   config.require_ecdhe = true;
@@ -3725,10 +3723,11 @@ TEST_F(SSLClientSocketTest, AlpnClientDisabled) {
 
 // Connect to a server requesting client authentication, do not send
 // any client certificates. It should refuse the connection.
-TEST_F(SSLClientSocketTest, NoCert) {
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.request_client_certificate = true;
-  ASSERT_TRUE(StartTestServer(ssl_options));
+TEST_P(SSLClientSocketVersionTest, NoCert) {
+  SSLServerConfig server_config = GetServerConfig();
+  server_config.client_cert_type = SSLServerConfig::OPTIONAL_CLIENT_CERT;
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
 
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
@@ -3739,13 +3738,11 @@ TEST_F(SSLClientSocketTest, NoCert) {
 
 // Connect to a server requesting client authentication, and send it
 // an empty certificate.
-TEST_F(SSLClientSocketTest, SendEmptyCert) {
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.request_client_certificate = true;
-  ssl_options.client_authorities.push_back(
-      GetTestClientCertsDirectory().AppendASCII("client_1_ca.pem"));
-
-  ASSERT_TRUE(StartTestServer(ssl_options));
+TEST_P(SSLClientSocketVersionTest, SendEmptyCert) {
+  SSLServerConfig server_config = GetServerConfig();
+  server_config.client_cert_type = SSLServerConfig::OPTIONAL_CLIENT_CERT;
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
 
   context_->SetClientCertificate(host_port_pair(), nullptr, nullptr);
 
@@ -3760,19 +3757,26 @@ TEST_F(SSLClientSocketTest, SendEmptyCert) {
   EXPECT_FALSE(ssl_info.client_cert_sent);
 }
 
-// Connect to a server requesting client authentication. Send it a
-// matching certificate. It should allow the connection.
-TEST_F(SSLClientSocketTest, SendGoodCert) {
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.request_client_certificate = true;
-  ssl_options.client_authorities.push_back(
-      GetTestClientCertsDirectory().AppendASCII("client_1_ca.pem"));
-
-  ASSERT_TRUE(StartTestServer(ssl_options));
-
+// Connect to a server requesting client authentication and send a certificate.
+TEST_P(SSLClientSocketVersionTest, SendGoodCert) {
   base::FilePath certs_dir = GetTestCertsDirectory();
+  scoped_refptr<X509Certificate> client_cert =
+      ImportCertFromFile(certs_dir, "client_1.pem");
+  ASSERT_TRUE(client_cert);
+
+  // Configure the server to only accept |client_cert|.
+  MockClientCertVerifier verifier;
+  verifier.set_default_result(ERR_CERT_INVALID);
+  verifier.AddResultForCert(client_cert.get(), OK);
+
+  SSLServerConfig server_config = GetServerConfig();
+  server_config.client_cert_type = SSLServerConfig::REQUIRE_CLIENT_CERT;
+  server_config.client_cert_verifier = &verifier;
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
+
   context_->SetClientCertificate(
-      host_port_pair(), ImportCertFromFile(certs_dir, "client_1.pem"),
+      host_port_pair(), client_cert,
       key_util::LoadPrivateKeyOpenSSL(certs_dir.AppendASCII("client_1.key")));
 
   int rv;
@@ -3787,6 +3791,9 @@ TEST_F(SSLClientSocketTest, SendGoodCert) {
 
   sock_->Disconnect();
   EXPECT_FALSE(sock_->IsConnected());
+
+  // Shut down the test server before |verifier| goes out of scope.
+  ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 }
 
 // When client certificate preferences change, the session cache should be
@@ -3933,9 +3940,18 @@ TEST_P(SSLClientSocketVersionTest, PKPEnforced) {
   EXPECT_FALSE(ssl_info.pkp_bypassed);
 }
 
+namespace {
+// TLS_RSA_WITH_AES_128_GCM_SHA256's key exchange involves encrypting to the
+// server long-term key.
+const uint16_t kEncryptingCipher = 0x009c;
+// TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256's key exchange involves a signature by
+// the server long-term key.
+const uint16_t kSigningCipher = 0xc02f;
+}  // namespace
+
 struct KeyUsageTest {
-  SpawnedTestServer::SSLOptions::ServerCertificate server_cert;
-  SpawnedTestServer::SSLOptions::KeyExchange key_exchange;
+  EmbeddedTestServer::ServerCertificate server_cert;
+  uint16_t cipher_suite;
   bool known_root;
   bool success;
 };
@@ -3946,32 +3962,33 @@ class SSLClientSocketKeyUsageTest
 
 const struct KeyUsageTest kKeyUsageTests[] = {
     // Known Root: Success iff keyUsage allows the key exchange method
-    {SpawnedTestServer::SSLOptions::CERT_KEY_USAGE_RSA_ENCIPHERMENT,
-     SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA, true, false},
-    {SpawnedTestServer::SSLOptions::CERT_KEY_USAGE_RSA_DIGITAL_SIGNATURE,
-     SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA, true, true},
-    {SpawnedTestServer::SSLOptions::CERT_KEY_USAGE_RSA_ENCIPHERMENT,
-     SpawnedTestServer::SSLOptions::KEY_EXCHANGE_RSA, true, true},
-    {SpawnedTestServer::SSLOptions::CERT_KEY_USAGE_RSA_DIGITAL_SIGNATURE,
-     SpawnedTestServer::SSLOptions::KEY_EXCHANGE_RSA, true, false},
+    {EmbeddedTestServer::CERT_KEY_USAGE_RSA_ENCIPHERMENT, kSigningCipher, true,
+     false},
+    {EmbeddedTestServer::CERT_KEY_USAGE_RSA_DIGITAL_SIGNATURE, kSigningCipher,
+     true, true},
+    {EmbeddedTestServer::CERT_KEY_USAGE_RSA_ENCIPHERMENT, kEncryptingCipher,
+     true, true},
+    {EmbeddedTestServer::CERT_KEY_USAGE_RSA_DIGITAL_SIGNATURE,
+     kEncryptingCipher, true, false},
     // Unknown Root: Always succeeds
-    {SpawnedTestServer::SSLOptions::CERT_KEY_USAGE_RSA_ENCIPHERMENT,
-     SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA, false, true},
-    {SpawnedTestServer::SSLOptions::CERT_KEY_USAGE_RSA_DIGITAL_SIGNATURE,
-     SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA, false, true},
-    {SpawnedTestServer::SSLOptions::CERT_KEY_USAGE_RSA_ENCIPHERMENT,
-     SpawnedTestServer::SSLOptions::KEY_EXCHANGE_RSA, false, true},
-    {SpawnedTestServer::SSLOptions::CERT_KEY_USAGE_RSA_DIGITAL_SIGNATURE,
-     SpawnedTestServer::SSLOptions::KEY_EXCHANGE_RSA, false, true},
+    {EmbeddedTestServer::CERT_KEY_USAGE_RSA_ENCIPHERMENT, kSigningCipher, false,
+     true},
+    {EmbeddedTestServer::CERT_KEY_USAGE_RSA_DIGITAL_SIGNATURE, kSigningCipher,
+     false, true},
+    {EmbeddedTestServer::CERT_KEY_USAGE_RSA_ENCIPHERMENT, kEncryptingCipher,
+     false, true},
+    {EmbeddedTestServer::CERT_KEY_USAGE_RSA_DIGITAL_SIGNATURE,
+     kEncryptingCipher, false, true},
 };
 
 TEST_P(SSLClientSocketKeyUsageTest, RSAKeyUsageEnforcedForKnownRoot) {
   const KeyUsageTest test = GetParam();
-  SpawnedTestServer::SSLOptions ssl_options(test.server_cert);
-  ssl_options.key_exchanges = test.key_exchange;
-  ASSERT_TRUE(StartTestServer(ssl_options));
+  SSLServerConfig server_config;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  server_config.cipher_suite_for_testing = test.cipher_suite;
+  ASSERT_TRUE(StartEmbeddedTestServer(test.server_cert, server_config));
   scoped_refptr<X509Certificate> server_cert =
-      spawned_test_server()->GetCertificate();
+      embedded_test_server()->GetCertificate();
 
   // Certificate is trusted.
   CertVerifyResult verify_result;

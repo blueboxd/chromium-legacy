@@ -88,10 +88,10 @@ class FakePeripheral : public device::BluetoothDevice {
   bool ExpectingPinCode() const override;
   bool ExpectingPasskey() const override;
   bool ExpectingConfirmation() const override;
-  void GetConnectionInfo(const ConnectionInfoCallback& callback) override;
+  void GetConnectionInfo(ConnectionInfoCallback callback) override;
   void SetConnectionLatency(ConnectionLatency connection_latency,
-                            const base::Closure& callback,
-                            const ErrorCallback& error_callback) override;
+                            base::OnceClosure callback,
+                            ErrorCallback error_callback) override;
   void Connect(PairingDelegate* pairing_delegate,
                base::OnceClosure callback,
                ConnectErrorCallback error_callback) override;
@@ -100,28 +100,27 @@ class FakePeripheral : public device::BluetoothDevice {
   void ConfirmPairing() override;
   void RejectPairing() override;
   void CancelPairing() override;
-  void Disconnect(const base::Closure& callback,
-                  const ErrorCallback& error_callback) override;
-  void Forget(const base::Closure& callback,
-              const ErrorCallback& error_callback) override;
-  void ConnectToService(
-      const device::BluetoothUUID& uuid,
-      const ConnectToServiceCallback& callback,
-      const ConnectToServiceErrorCallback& error_callback) override;
+  void Disconnect(base::OnceClosure callback,
+                  ErrorCallback error_callback) override;
+  void Forget(base::OnceClosure callback,
+              ErrorCallback error_callback) override;
+  void ConnectToService(const device::BluetoothUUID& uuid,
+                        ConnectToServiceCallback callback,
+                        ConnectToServiceErrorCallback error_callback) override;
   void ConnectToServiceInsecurely(
       const device::BluetoothUUID& uuid,
-      const ConnectToServiceCallback& callback,
-      const ConnectToServiceErrorCallback& error_callback) override;
+      ConnectToServiceCallback callback,
+      ConnectToServiceErrorCallback error_callback) override;
   void CreateGattConnection(
       GattConnectionCallback callback,
       ConnectErrorCallback error_callback,
       base::Optional<device::BluetoothUUID> service_uuid) override;
   bool IsGattServicesDiscoveryComplete() const override;
 #if defined(OS_CHROMEOS)
-  void ExecuteWrite(const base::Closure& callback,
-                    const ExecuteWriteErrorCallback& error_callback) override;
-  void AbortWrite(const base::Closure& callback,
-                  const AbortWriteErrorCallback& error_callback) override;
+  void ExecuteWrite(base::OnceClosure callback,
+                    ExecuteWriteErrorCallback error_callback) override;
+  void AbortWrite(base::OnceClosure callback,
+                  AbortWriteErrorCallback error_callback) override;
 #endif
 
  protected:

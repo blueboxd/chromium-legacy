@@ -627,7 +627,11 @@ crbug.com/845235 external/wpt/quirks/percentage-height-quirk-excludes-flex-grid-
 crbug.com/845235 external/wpt/css/css-flexbox/hittest-overlapping-order.html [ Failure ]
 
 crbug.com/1074752 editing/selection/selection-color.html [ Failure ]
+
 crbug.com/1074752 external/wpt/css/css-pseudo/active-selection-051.html [ Failure ]
 crbug.com/1074752 external/wpt/css/css-pseudo/active-selection-052.html [ Failure ]
 crbug.com/1074752 external/wpt/css/css-pseudo/active-selection-053.html [ Failure ]
 crbug.com/1074752 external/wpt/css/css-pseudo/active-selection-054.html [ Failure ]
+
+# Very small layout shift seen, only with LayoutNG disabled.
+crbug.com/1100711 external/wpt/layout-instability/ignore-fixed-and-sticky.html [ Failure ]

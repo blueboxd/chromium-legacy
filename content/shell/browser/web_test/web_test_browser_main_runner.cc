@@ -35,7 +35,9 @@
 #include "content/shell/browser/web_test/web_test_control_host.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/common/web_test/web_test_switches.h"
+#include "content/test/gpu_browsertest_helpers.h"
 #include "gpu/config/gpu_switches.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "media/base/media_switches.h"
 #include "net/base/filename_util.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -72,6 +74,17 @@ void RunTests(content::BrowserMainRunner* main_runner) {
     base::FilePath temp_path;
     base::GetTempDir(&temp_path);
     test_controller.SetTempPath(temp_path);
+  }
+
+  {
+    // Kick off the launch of the GPU process early, to minimize blocking
+    // startup of the first renderer process in PrepareForWebTest. (This avoids
+    // GPU process startup time from being counted in the first test's timeout,
+    // hopefully making it less likely to time out flakily.)
+    // https://crbug.com/953991
+    TRACE_EVENT0("shell",
+                 "WebTestBrowserMainRunner::RunTests::EstablishGpuChannelSync");
+    content::GpuBrowsertestEstablishGpuChannelSyncRunLoop();
   }
 
   std::cout << "#READY\n";

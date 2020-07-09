@@ -32,7 +32,6 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/encoding_event_subscriber.h"
-#include "media/cast/logging/log_serializer.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/logging/proto/raw_events.pb.h"
 #include "media/cast/logging/receiver_time_offset_estimator_impl.h"
@@ -45,9 +44,6 @@
 #include "media/cast/test/utility/input_builder.h"
 
 namespace {
-
-// The max allowed size of serialized log.
-const int kMaxSerializedLogBytes = 10 * 1000 * 1000;
 
 // Flags for this program:
 //
@@ -89,33 +85,6 @@ net::IPEndPoint CreateUDPAddress(const std::string& ip_str, uint16_t port) {
   return net::IPEndPoint(ip_address, port);
 }
 
-void DumpLoggingData(const media::cast::proto::LogMetadata& log_metadata,
-                     const media::cast::FrameEventList& frame_events,
-                     const media::cast::PacketEventList& packet_events,
-                     base::ScopedFILE log_file) {
-  VLOG(0) << "Frame map size: " << frame_events.size();
-  VLOG(0) << "Packet map size: " << packet_events.size();
-
-  std::unique_ptr<char[]> event_log(new char[kMaxSerializedLogBytes]);
-  int event_log_bytes;
-  if (!media::cast::SerializeEvents(log_metadata,
-                                    frame_events,
-                                    packet_events,
-                                    true,
-                                    kMaxSerializedLogBytes,
-                                    event_log.get(),
-                                    &event_log_bytes)) {
-    VLOG(0) << "Failed to serialize events.";
-    return;
-  }
-
-  VLOG(0) << "Events serialized length: " << event_log_bytes;
-
-  int ret = fwrite(event_log.get(), 1, event_log_bytes, log_file.get());
-  if (ret != event_log_bytes)
-    VLOG(0) << "Failed to write logs to file.";
-}
-
 void WriteLogsToFileAndDestroySubscribers(
     const scoped_refptr<media::cast::CastEnvironment>& cast_environment,
     std::unique_ptr<media::cast::EncodingEventSubscriber>
@@ -126,23 +95,6 @@ void WriteLogsToFileAndDestroySubscribers(
     base::ScopedFILE audio_log_file) {
   cast_environment->logger()->Unsubscribe(video_event_subscriber.get());
   cast_environment->logger()->Unsubscribe(audio_event_subscriber.get());
-
-  VLOG(0) << "Dumping logging data for video stream.";
-  media::cast::proto::LogMetadata log_metadata;
-  media::cast::FrameEventList frame_events;
-  media::cast::PacketEventList packet_events;
-  video_event_subscriber->GetEventsAndReset(
-      &log_metadata, &frame_events, &packet_events);
-
-  DumpLoggingData(log_metadata, frame_events, packet_events,
-                  std::move(video_log_file));
-
-  VLOG(0) << "Dumping logging data for audio stream.";
-  audio_event_subscriber->GetEventsAndReset(
-      &log_metadata, &frame_events, &packet_events);
-
-  DumpLoggingData(log_metadata, frame_events, packet_events,
-                  std::move(audio_log_file));
 }
 
 void WriteStatsAndDestroySubscribers(

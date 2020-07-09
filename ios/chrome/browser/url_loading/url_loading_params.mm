@@ -53,6 +53,14 @@ UrlLoadParams UrlLoadParams::InNewTab(const GURL& url) {
   return params;
 }
 
+UrlLoadParams UrlLoadParams::InNewTab(const GURL& url, int insertion_index) {
+  UrlLoadParams params = UrlLoadParams();
+  params.web_params = web::NavigationManager::WebLoadParams(url);
+  params.append_to = kSpecifiedIndex;
+  params.insertion_index = insertion_index;
+  return params;
+}
+
 UrlLoadParams UrlLoadParams::SwitchToTab(
     const web::NavigationManager::WebLoadParams& web_params) {
   UrlLoadParams params = UrlLoadParams();

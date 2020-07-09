@@ -251,7 +251,6 @@ class MediaHistoryKeyedService : public KeyedService,
 
     static GetMediaFeedsRequest CreateTopFeedsForDisplay(
         unsigned limit,
-        base::TimeDelta audio_video_watchtime_min,
         int fetched_items_min,
         bool fetched_items_min_should_be_safe);
 
@@ -265,7 +264,7 @@ class MediaHistoryKeyedService : public KeyedService,
     base::Optional<unsigned> limit;
 
     // The minimum audio+video watchtime required on the origin to return the
-    // feed. Only valid for |kTopFeedsForFetch| and |kTopFeedsForDisplay|.
+    // feed. Only valid for |kTopFeedsForFetch|.
     base::Optional<base::TimeDelta> audio_video_watchtime_min;
 
     // The minimum number of fetched items that are required and whether they

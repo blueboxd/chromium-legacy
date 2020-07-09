@@ -205,11 +205,13 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
   if (top_feeds) {
     // Check the request has the right parameters.
     DCHECK(request.limit.has_value());
-    DCHECK(request.audio_video_watchtime_min.has_value());
 
     if (request.type == MediaHistoryKeyedService::GetMediaFeedsRequest::Type::
                             kTopFeedsForDisplay) {
       DCHECK(request.fetched_items_min.has_value());
+    } else if (request.type == MediaHistoryKeyedService::GetMediaFeedsRequest::
+                                   Type::kTopFeedsForFetch) {
+      DCHECK(request.audio_video_watchtime_min.has_value());
     }
 
     // If we need the top feeds we should select rows from the origin table and
@@ -218,9 +220,14 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
     sql.push_back(
         "FROM origin "
         "LEFT JOIN mediaFeed "
-        "ON origin.id = mediaFeed.origin_id "
-        "WHERE origin.aggregate_watchtime_audio_video_s >= ? "
-        "ORDER BY origin.aggregate_watchtime_audio_video_s DESC");
+        "ON origin.id = mediaFeed.origin_id");
+
+    // If we have an audio/video watchtime requirement we should add that.
+    if (request.audio_video_watchtime_min.has_value())
+      sql.push_back("WHERE origin.aggregate_watchtime_audio_video_s >= ?");
+
+    // Finally, order the results by watchtime.
+    sql.push_back("ORDER BY origin.aggregate_watchtime_audio_video_s DESC");
 
     // Get the total count of the origins so we can calculate a percentile.
     sql::Statement origin_statement(DB()->GetCachedStatement(
@@ -233,10 +240,15 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
 
     DCHECK(origin_count.has_value());
 
-    statement.Assign(DB()->GetCachedStatement(
-        SQL_FROM_HERE, base::JoinString(sql, " ").c_str()));
+    if (request.audio_video_watchtime_min.has_value()) {
+      statement.Assign(DB()->GetCachedStatement(
+          SQL_FROM_HERE, base::JoinString(sql, " ").c_str()));
 
-    statement.BindInt64(0, request.audio_video_watchtime_min->InSeconds());
+      statement.BindInt64(0, request.audio_video_watchtime_min->InSeconds());
+    } else {
+      statement.Assign(DB()->GetCachedStatement(
+          SQL_FROM_HERE, base::JoinString(sql, " ").c_str()));
+    }
   } else {
     sql.push_back("FROM mediaFeed");
 

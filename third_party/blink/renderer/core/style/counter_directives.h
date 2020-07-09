@@ -28,12 +28,11 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/numerics/checked_math.h"
+#include "base/numerics/clamped_math.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
@@ -59,9 +58,7 @@ class CounterDirectives {
   bool IsIncrement() const { return !!increment_value_; }
   int IncrementValue() const { return *increment_value_; }
   void AddIncrementValue(int value) {
-    increment_value_ = clampTo<int>(
-        (increment_value_ ? static_cast<double>(*increment_value_) : 0.0) +
-        value);
+    increment_value_ = base::ClampAdd(increment_value_.value_or(0), value);
   }
   void ClearIncrement() { increment_value_.reset(); }
   void InheritIncrement(const CounterDirectives& parent) {

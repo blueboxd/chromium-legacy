@@ -7,6 +7,7 @@
 
 class GURL;
 
+// TODO(crbug.com/1101363): This protocol is now deprecated.
 // Protocol to implement to be notified by a DropAndNavigationInteraction that
 // a drop event that can trigger a navigation occurs.
 @protocol DropAndNavigateDelegate

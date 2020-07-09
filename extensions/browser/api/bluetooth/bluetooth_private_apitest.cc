@@ -22,7 +22,6 @@
 #include "extensions/common/switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using base::test::RunClosure;
 using base::test::RunOnceClosure;
 using device::BluetoothDiscoveryFilter;
 using device::BluetoothUUID;
@@ -90,10 +89,10 @@ class BluetoothPrivateApiTest : public ExtensionApiTest {
     callback.Run();
   }
 
-  void ForgetDevice(const base::Closure& callback) {
+  void ForgetDevice(base::OnceClosure callback) {
     mock_device_.reset();
     event_router()->SetAdapterForTest(nullptr);
-    callback.Run();
+    std::move(callback).Run();
   }
 
   void SetDiscoverable(bool discoverable, const base::Closure& callback) {
@@ -234,9 +233,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, DisconnectAll) {
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_device_, Disconnect(_, _))
       .Times(3)
-      .WillOnce(RunClosure<1>())
-      .WillOnce(RunClosure<1>())
-      .WillOnce(RunClosure<0>());
+      .WillOnce(RunOnceClosure<1>())
+      .WillOnce(RunOnceClosure<1>())
+      .WillOnce(RunOnceClosure<0>());
   ASSERT_TRUE(RunComponentExtensionTest("bluetooth_private/disconnect"))
       << message_;
 }

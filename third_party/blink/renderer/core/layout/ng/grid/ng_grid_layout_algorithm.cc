@@ -17,7 +17,6 @@ NGGridLayoutAlgorithm::NGGridLayoutAlgorithm(
   DCHECK(params.space.IsNewFormattingContext());
   DCHECK(!params.break_token);
   container_builder_.SetIsNewFormattingContext(true);
-  container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
 
   child_percentage_size_ = CalculateChildPercentageSize(
       ConstraintSpace(), Node(), ChildAvailableSize());

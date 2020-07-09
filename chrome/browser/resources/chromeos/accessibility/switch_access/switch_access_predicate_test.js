@@ -30,15 +30,14 @@ function testWebsite() {
               <p aria-label="leaf7">leaf7</p>`;
 }
 
-function getTree(desktop) {
-  const root = new AutomationTreeWalker(desktop, constants.Dir.FORWARD, {
-                 visit: (node) =>
-                     node.role === chrome.automation.RoleType.ROOT_WEB_AREA &&
-                     node.firstChild && node.firstChild.name === 'upper1'
-               })
-                   .next()
-                   .node;
-  assertNotNullNorUndefined(root, 'Root is missing');
+function getTree(loadedPage) {
+  const root = loadedPage;
+  assertTrue(
+      root.role === chrome.automation.RoleType.ROOT_WEB_AREA,
+      'We should receive the root web area');
+  assertTrue(
+      root.firstChild && root.firstChild.name === 'upper1',
+      'First child should be upper1');
 
   const upper1 = root.firstChild;
   assertTrue(upper1 && upper1.name === 'upper1', 'Upper1 not found');
@@ -83,8 +82,8 @@ function getTree(desktop) {
 }
 
 TEST_F('SwitchAccessPredicateTest', 'IsInteresting', function() {
-  this.runWithLoadedTree(testWebsite(), (desktop) => {
-    const t = getTree(desktop);
+  this.runWithLoadedTree(testWebsite(), (loadedPage) => {
+    const t = getTree(loadedPage);
 
     // The scope is only used to verify the locations are not the same, and
     // since the buildTree function depends on isInteresting, pass in null
@@ -128,12 +127,12 @@ TEST_F('SwitchAccessPredicateTest', 'IsInteresting', function() {
     assertFalse(
         SwitchAccessPredicate.isInteresting(t.leaf7, null),
         'Leaf7 should not be interesting');
-  });
+  }, {returnPage: true});
 });
 
 TEST_F('SwitchAccessPredicateTest', 'IsGroup', function() {
-  this.runWithLoadedTree(testWebsite(), (desktop) => {
-    const t = getTree(desktop);
+  this.runWithLoadedTree(testWebsite(), (loadedPage) => {
+    const t = getTree(loadedPage);
 
     // The scope is only used to verify the locations are not the same, and
     // since the buildTree function depends on isGroup, pass in null for
@@ -176,12 +175,12 @@ TEST_F('SwitchAccessPredicateTest', 'IsGroup', function() {
     assertFalse(
         SwitchAccessPredicate.isGroup(t.leaf7, null),
         'Leaf7 should not be a group');
-  });
+  }, {returnPage: true});
 });
 
 TEST_F('SwitchAccessPredicateTest', 'IsInterestingSubtree', function() {
-  this.runWithLoadedTree(testWebsite(), (desktop) => {
-    const t = getTree(desktop);
+  this.runWithLoadedTree(testWebsite(), (loadedPage) => {
+    const t = getTree(loadedPage);
 
     assertTrue(
         SwitchAccessPredicate.isInterestingSubtree(t.root),
@@ -222,7 +221,7 @@ TEST_F('SwitchAccessPredicateTest', 'IsInterestingSubtree', function() {
     assertFalse(
         SwitchAccessPredicate.isInterestingSubtree(t.leaf7),
         'Leaf7 should not be an interesting subtree');
-  });
+  }, {returnPage: true});
 });
 
 TEST_F('SwitchAccessPredicateTest', 'IsActionable', function() {
@@ -342,8 +341,8 @@ TEST_F('SwitchAccessPredicateTest', 'IsActionableFocusableElements', function() 
 });
 
 TEST_F('SwitchAccessPredicateTest', 'LeafPredicate', function() {
-  this.runWithLoadedTree(testWebsite(), (desktop) => {
-    const t = getTree(desktop);
+  this.runWithLoadedTree(testWebsite(), (loadedPage) => {
+    const t = getTree(loadedPage);
 
     // Start with root as scope
     let leaf = SwitchAccessPredicate.leaf(t.root);
@@ -364,12 +363,12 @@ TEST_F('SwitchAccessPredicateTest', 'LeafPredicate', function() {
     assertTrue(leaf(t.leaf1), 'Leaf1 should be a leaf for lower1 tree');
     assertTrue(leaf(t.leaf2), 'Leaf2 should be a leaf for lower1 tree');
     assertTrue(leaf(t.leaf3), 'Leaf3 should be a leaf for lower1 tree');
-  });
+  }, {returnPage: true});
 });
 
 TEST_F('SwitchAccessPredicateTest', 'RootPredicate', function() {
-  this.runWithLoadedTree(testWebsite(), (desktop) => {
-    const t = getTree(desktop);
+  this.runWithLoadedTree(testWebsite(), (loadedPage) => {
+    const t = getTree(loadedPage);
 
     // Start with root as scope
     let root = SwitchAccessPredicate.root(t.root);
@@ -391,12 +390,12 @@ TEST_F('SwitchAccessPredicateTest', 'RootPredicate', function() {
     assertFalse(root(t.leaf1), 'Leaf1 should not be a root of the lower1 tree');
     assertFalse(root(t.leaf2), 'Leaf2 should not be a root of the lower1 tree');
     assertFalse(root(t.leaf3), 'Leaf3 should not be a root of the lower1 tree');
-  });
+  }, {returnPage: true});
 });
 
 TEST_F('SwitchAccessPredicateTest', 'VisitPredicate', function() {
-  this.runWithLoadedTree(testWebsite(), (desktop) => {
-    const t = getTree(desktop);
+  this.runWithLoadedTree(testWebsite(), (loadedPage) => {
+    const t = getTree(loadedPage);
 
     // Start with root as scope
     let visit = SwitchAccessPredicate.visit(t.root);
@@ -423,5 +422,5 @@ TEST_F('SwitchAccessPredicateTest', 'VisitPredicate', function() {
     assertFalse(visit(t.lower3), 'Lower3 should not be visited in lower1 tree');
     assertFalse(visit(t.leaf6), 'Leaf6 should not be visited in lower1 tree');
     assertFalse(visit(t.leaf7), 'Leaf7 should not be visited in lower1 tree');
-  });
+  }, {returnPage: true});
 });

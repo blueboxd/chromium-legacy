@@ -33,7 +33,7 @@ public class FeedLoadingLayout extends LinearLayout {
     private static final int CARD_HEIGHT_DP = 180;
     private static final int CARD_HEIGHT_DENSE_DP = 156;
     private static final int CARD_MARGIN_DP = 12;
-    private static final int CARD_PADDING_DP = 15;
+    private static final int PLACEHOLDER_CARD_PADDING_DP = 15;
     private static final int IMAGE_PLACEHOLDER_BOTTOM_PADDING_DP = 48;
     private static final int IMAGE_PLACEHOLDER_BOTTOM_PADDING_DENSE_DP = 72;
     private static final int TEXT_PLACEHOLDER_WIDTH_DP = 150;
@@ -43,7 +43,6 @@ public class FeedLoadingLayout extends LinearLayout {
 
     private Context mContext;
     private @Nullable PersonalizedSigninPromoView mSigninPromoView;
-    private int mCardPadding;
     private Resources mResources;
     private long mLayoutInflationCompleteMs;
 
@@ -51,7 +50,6 @@ public class FeedLoadingLayout extends LinearLayout {
         super(context, attrs);
         mContext = context;
         mResources = mContext.getResources();
-        mCardPadding = dpToPx(CARD_PADDING_DP);
     }
 
     @Override
@@ -86,12 +84,18 @@ public class FeedLoadingLayout extends LinearLayout {
 
     private void setPlaceholders() {
         setPadding();
-        int currentOrientation = getResources().getConfiguration().orientation;
+        boolean isLandscape = getResources().getConfiguration().orientation
+                == Configuration.ORIENTATION_LANDSCAPE;
         LinearLayout cardsParentView = (LinearLayout) findViewById(R.id.placeholders_layout);
-        setPlaceholders(cardsParentView, currentOrientation == Configuration.ORIENTATION_LANDSCAPE);
+        // If it's in landscape mode, the placeholder should always show in dense mode. Otherwise,
+        // whether the placeholder is dense depends on whether the first article card of Feed is
+        // dense.
+        setPlaceholders(cardsParentView,
+                isLandscape || StartSurfaceConfiguration.isFeedPlaceholderDense(), isLandscape);
     }
 
-    private void setPlaceholders(LinearLayout cardsParentView, boolean isDense) {
+    private void setPlaceholders(
+            LinearLayout cardsParentView, boolean isDense, boolean isLandscape) {
         cardsParentView.removeAllViews();
         LinearLayout.LayoutParams cardLp =
                 new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
@@ -110,7 +114,7 @@ public class FeedLoadingLayout extends LinearLayout {
 
             // The placeholder of suggestion titles, context and publisher.
             ImageView textPlaceholder = new ImageView(mContext);
-            textPlaceholder.setImageDrawable(setTextPlaceholder(isDense));
+            textPlaceholder.setImageDrawable(setTextPlaceholder(isDense, isLandscape));
             textPlaceholder.setLayoutParams(textPlaceholderLp);
             container.addView(textPlaceholder);
 
@@ -127,18 +131,21 @@ public class FeedLoadingLayout extends LinearLayout {
     private LayerDrawable setImagePlaceholder(boolean isDense) {
         LayerDrawable layerDrawable = (LayerDrawable) getResources().getDrawable(
                 R.drawable.feed_loading_image_placeholder);
-        layerDrawable.setLayerInset(0, 0, mCardPadding, mCardPadding,
+        int padding = dpToPx(PLACEHOLDER_CARD_PADDING_DP);
+        layerDrawable.setLayerInset(0, 0, padding, padding,
                 isDense ? dpToPx(IMAGE_PLACEHOLDER_BOTTOM_PADDING_DP)
                         : dpToPx(IMAGE_PLACEHOLDER_BOTTOM_PADDING_DENSE_DP));
         return layerDrawable;
     }
 
-    private LayerDrawable setTextPlaceholder(boolean isDense) {
+    private LayerDrawable setTextPlaceholder(boolean isDense, boolean isLandscape) {
         int cardHeight = isDense ? dpToPx(CARD_HEIGHT_DENSE_DP) : dpToPx(CARD_HEIGHT_DP);
-        int top = mCardPadding;
-        int bottom = mCardPadding;
-        int width = isDense ? dpToPx(TEXT_PLACEHOLDER_WIDTH_LANDSCAPE_DP)
-                            : dpToPx(TEXT_PLACEHOLDER_WIDTH_DP);
+        int top = dpToPx(PLACEHOLDER_CARD_PADDING_DP);
+        int bottom = top;
+        int left = top;
+        int right = top;
+        int width = isLandscape ? dpToPx(TEXT_PLACEHOLDER_WIDTH_LANDSCAPE_DP)
+                                : dpToPx(TEXT_PLACEHOLDER_WIDTH_DP);
         int height = dpToPx(TEXT_PLACEHOLDER_HEIGHT_DP);
         GradientDrawable[] placeholders = new GradientDrawable[3];
         for (int i = 0; i < placeholders.length; i++) {
@@ -150,13 +157,12 @@ public class FeedLoadingLayout extends LinearLayout {
         }
         LayerDrawable layerDrawable = new LayerDrawable(placeholders);
         // Title Placeholder
-        layerDrawable.setLayerInset(0, mCardPadding, top, mCardPadding, cardHeight - top - height);
+        layerDrawable.setLayerInset(0, left, top, right, cardHeight - top - height);
         // Content Placeholder
-        layerDrawable.setLayerInset(1, mCardPadding, (cardHeight + top - bottom - height) / 2,
-                mCardPadding, (cardHeight - top + bottom - height) / 2);
+        layerDrawable.setLayerInset(1, left, (cardHeight + top - bottom - height) / 2, right,
+                (cardHeight - top + bottom - height) / 2);
         // Publisher Placeholder
-        layerDrawable.setLayerInset(
-                2, mCardPadding, cardHeight - bottom - height, mCardPadding * 10, bottom);
+        layerDrawable.setLayerInset(2, left, cardHeight - bottom - height, right * 10, bottom);
         return layerDrawable;
     }
 

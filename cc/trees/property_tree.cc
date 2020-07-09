@@ -4,7 +4,10 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <set>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/check_op.h"
@@ -1135,7 +1138,7 @@ void ClipTree::SetViewportClip(gfx::RectF viewport_rect) {
 }
 
 gfx::RectF ClipTree::ViewportClip() const {
-  const unsigned long min_size = 1;
+  const size_t min_size = 1;
   DCHECK_GT(size(), min_size);
   return Node(kViewportNodeId)->clip;
 }

@@ -261,7 +261,7 @@ class VIEWS_EXPORT Label : public View,
   void SelectRange(const gfx::Range& range);
 
   views::PropertyChangedSubscription AddTextChangedCallback(
-      views::PropertyChangedCallback callback);
+      views::PropertyChangedCallback callback) WARN_UNUSED_RESULT;
 
   // View:
   int GetBaseline() const override;

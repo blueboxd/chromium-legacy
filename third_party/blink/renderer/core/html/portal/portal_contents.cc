@@ -8,12 +8,12 @@
 #include "base/time/time.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/referrer.mojom-blink.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/increment_load_event_delay_count.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/html/portal/document_portals.h"
 #include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
+#include "third_party/blink/renderer/core/html/portal/portal_activation_delegate.h"
 #include "third_party/blink/renderer/core/html/portal/portal_post_message_helper.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
@@ -40,7 +40,7 @@ PortalContents::PortalContents(
   DocumentPortals::From(GetDocument()).RegisterPortalContents(this);
 }
 
-PortalContents::~PortalContents() {}
+PortalContents::~PortalContents() = default;
 
 RemoteFrame* PortalContents::GetFrame() const {
   if (portal_element_)
@@ -48,16 +48,15 @@ RemoteFrame* PortalContents::GetFrame() const {
   return nullptr;
 }
 
-ScriptPromise PortalContents::Activate(ScriptState* script_state,
-                                       BlinkTransferableMessage data) {
+void PortalContents::Activate(BlinkTransferableMessage data,
+                              PortalActivationDelegate* delegate) {
   DCHECK(!IsActivating());
   DCHECK(portal_element_);
 
   // Mark this contents as having activation in progress.
   DocumentPortals& document_portals = DocumentPortals::From(GetDocument());
   document_portals.SetActivatingPortalContents(this);
-  activate_resolver_ =
-      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  activation_delegate_ = delegate;
 
   // Request activation from the browser process.
   // This object (and thus the Mojo connection it owns) remains alive while the
@@ -68,27 +67,13 @@ ScriptPromise PortalContents::Activate(ScriptState* script_state,
 
   // Dissociate from the element. The element is expected to do the same.
   portal_element_ = nullptr;
-
-  return activate_resolver_->Promise();
 }
 
 void PortalContents::OnActivateResponse(
     mojom::blink::PortalActivateResult result) {
-  auto reject = [&](DOMExceptionCode code, const char* message) {
-    if (!GetDocument().GetExecutionContext())
-      return;
-
-    ScriptState* script_state = activate_resolver_->GetScriptState();
-    ScriptState::Scope scope(script_state);
-    // TODO(jbroman): It's slightly unfortunate to hard-code the string
-    // HTMLPortalElement here. Ideally this would be threaded through from
-    // there and carried with the ScriptPromiseResolver. See
-    // https://crbug.com/991544.
-    ExceptionState exception_state(script_state->GetIsolate(),
-                                   ExceptionState::kExecutionContext,
-                                   "HTMLPortalElement", "activate");
-    exception_state.ThrowDOMException(code, message);
-    activate_resolver_->Reject(exception_state);
+  auto reject = [&](const char* message) {
+    if (GetDocument().GetExecutionContext())
+      activation_delegate_->ActivationDidFail(message);
   };
 
   bool should_destroy_contents = false;
@@ -98,32 +83,29 @@ void PortalContents::OnActivateResponse(
         page->SetInsidePortal(true);
       FALLTHROUGH;
     case mojom::blink::PortalActivateResult::kPredecessorWillUnload:
-      activate_resolver_->Resolve();
+      activation_delegate_->ActivationDidSucceed();
       should_destroy_contents = true;
       break;
 
     case mojom::blink::PortalActivateResult::
         kRejectedDueToPredecessorNavigation:
-      reject(DOMExceptionCode::kInvalidStateError,
-             "A top-level navigation is in progress.");
+      reject("A top-level navigation is in progress.");
       break;
     case mojom::blink::PortalActivateResult::kRejectedDueToPortalNotReady:
-      reject(DOMExceptionCode::kInvalidStateError,
-             "The portal was not yet ready or was blocked.");
+      reject("The portal was not yet ready or was blocked.");
       break;
     case mojom::blink::PortalActivateResult::kRejectedDueToErrorInPortal:
-      reject(DOMExceptionCode::kInvalidStateError,
-             "The portal is in an error state.");
+      reject("The portal is in an error state.");
       break;
     case mojom::blink::PortalActivateResult::kDisconnected:
       // Only called when |remote_portal_| is disconnected. This usually happens
       // when the browser/test runner is being shut down.
-      activate_resolver_->Detach();
+      activation_delegate_->ActivationWasAbandoned();
       break;
     case mojom::blink::PortalActivateResult::kAbortedDueToBug:
       // This should never happen. Ignore this and wait for the frame to be
       // discarded by the browser, if it hasn't already.
-      activate_resolver_->Detach();
+      activation_delegate_->ActivationWasAbandoned();
       return;
   }
 
@@ -131,7 +113,7 @@ void PortalContents::OnActivateResponse(
   DCHECK_EQ(document_portals.GetActivatingPortalContents(), this);
   document_portals.ClearActivatingPortalContents();
 
-  activate_resolver_ = nullptr;
+  activation_delegate_ = nullptr;
 
   if (should_destroy_contents)
     Destroy();
@@ -221,7 +203,7 @@ void PortalContents::DispatchLoadEvent() {
 void PortalContents::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(portal_element_);
-  visitor->Trace(activate_resolver_);
+  visitor->Trace(activation_delegate_);
 }
 
 }  // namespace blink

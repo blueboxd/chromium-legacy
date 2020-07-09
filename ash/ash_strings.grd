@@ -2361,6 +2361,30 @@ This file contains the strings for ash.
       <message name="IDS_ASH_ASSISTANT_CHIP_WHATS_THE_WEATHER" desc="Message shown on suggestion chip in Assistant UI to initiate a query for the current weather.">
         What's the weather?
       </message>
+      <message name="IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_CONVERSION" desc="Message shown in an onboarding suggestion in Assistant UI to initiate a conversion query.">
+        5K in miles
+      </message>
+      <message name="IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_KNOWLEDGE" desc="Message shown in an onboarding suggestion in Assistant UI to initiate a knowledge query.">
+        Population in Nigeria
+      </message>
+      <message name="IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_KNOWLEDGE_EDU" desc="Message shown to EDU users in an onboarding suggestion in Assistant UI to initiate a knowledge query.">
+        How far is Venus
+      </message>
+      <message name="IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_LANGUAGE" desc="Message shown in an onboarding suggestion in Assistant UI to initiate a personality query.">
+        "Hello" in Chinese
+      </message>
+      <message name="IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_MATH" desc="Message shown in an onboarding suggestion in Assistant UI to initiate a math query.">
+        Square root of 71
+      </message>
+      <message name="IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_PERSONALITY" desc="Message shown in an onboarding suggestion in Assistant UI to initiate a personality query.">
+        Tell me a joke
+      </message>
+      <message name="IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_PRODUCTIVITY" desc="Message shown in an onboarding suggestion in Assistant UI to initiate a productivity query.">
+        Set timer
+      </message>
+      <message name="IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_TECHNICAL" desc="Message shown in an onboarding suggestion in Assistant UI to initiate a technical query.">
+        Take a screenshot
+      </message>
       <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_TITLE" desc="Title for Assistant timer notification.">
         Time's up
       </message>

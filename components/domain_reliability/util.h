@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_DOMAIN_RELIABILITY_UTIL_H_
 #define COMPONENTS_DOMAIN_RELIABILITY_UTIL_H_
 
-#include <map>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
@@ -17,7 +18,6 @@
 #include "components/domain_reliability/domain_reliability_export.h"
 #include "components/domain_reliability/uploader.h"
 #include "net/http/http_response_info.h"
-#include "net/url_request/url_request_status.h"
 
 namespace base {
 class Location;
@@ -39,11 +39,6 @@ bool GetDomainReliabilityBeaconStatus(
 std::string GetDomainReliabilityProtocol(
     net::HttpResponseInfo::ConnectionInfo connection_info,
     bool ssl_info_populated);
-
-// Converts a URLRequestStatus into a network error. Returns the error code for
-// FAILED; maps SUCCESS and CANCELED to OK and ERR_ABORTED, respectively; and
-// returns ERR_ABORTED for any other status.
-int GetNetErrorFromURLRequestStatus(const net::URLRequestStatus& status);
 
 // Based on the network error code, HTTP response code, and Retry-After value,
 // returns the result of a report upload.

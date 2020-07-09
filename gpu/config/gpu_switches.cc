@@ -16,8 +16,7 @@ const char kEnableGpuRasterization[] = "enable-gpu-rasterization";
 
 // Select a different set of GPU blocklist entries with the specified
 // test_group ID.
-// TODO(crbug.com/1101491): migrate to a more intentional name.
-const char kGpuBlacklistTestGroup[] = "gpu-blacklist-test-group";
+const char kGpuBlocklistTestGroup[] = "gpu-blocklist-test-group";
 
 // Enable an extra set of GPU driver bug list entries with the specified
 // test_group ID. Note the default test group (group 0) is still active.

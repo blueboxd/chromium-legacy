@@ -47,7 +47,7 @@ class BluetoothSocketMac : public BluetoothSocket {
   void Connect(IOBluetoothDevice* device,
                const BluetoothUUID& uuid,
                base::OnceClosure success_callback,
-               const ErrorCompletionCallback& error_callback);
+               ErrorCompletionOnceCallback error_callback);
 
   // Listens for incoming RFCOMM connections using this socket: Publishes an
   // RFCOMM service on the |adapter| as UUID |uuid| with Channel
@@ -95,7 +95,7 @@ class BluetoothSocketMac : public BluetoothSocket {
   void OnSDPQueryComplete(IOReturn status,
                           IOBluetoothDevice* device,
                           base::OnceClosure success_callback,
-                          const ErrorCompletionCallback& error_callback);
+                          ErrorCompletionOnceCallback error_callback);
 
   // Called by BluetoothRfcommConnectionListener and
   // BluetoothL2capConnectionListener.
@@ -140,7 +140,7 @@ class BluetoothSocketMac : public BluetoothSocket {
     ConnectCallbacks();
     ~ConnectCallbacks();
     base::OnceClosure success_callback;
-    ErrorCompletionCallback error_callback;
+    ErrorCompletionOnceCallback error_callback;
   };
 
   BluetoothSocketMac();

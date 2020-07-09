@@ -21,6 +21,10 @@ namespace enterprise_connectors {
 class ContentAnalysisResponse;
 }  // namespace enterprise_connectors
 
+namespace signin {
+class IdentityManager;
+}  // namespace signin
+
 namespace safe_browsing {
 
 // Represents a trigger that caused a a content analysis request to report a
@@ -178,6 +182,12 @@ ContentAnalysisScanResult MalwareVerdictToResult(
     const safe_browsing::MalwareDeepScanningVerdict& verdict);
 std::vector<ContentAnalysisScanResult> ContentAnalysisResponseToResults(
     const enterprise_connectors::ContentAnalysisResponse& response);
+
+// Returns the email address of the unconsented account signed in to the profile
+// or an empty string if no account is signed in.  If either |profile| or
+// |identity_manager| is null then the empty string is returned.
+std::string GetProfileEmail(Profile* profile);
+std::string GetProfileEmail(signin::IdentityManager* identity_manager);
 
 }  // namespace safe_browsing
 

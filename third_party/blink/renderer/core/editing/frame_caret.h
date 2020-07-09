@@ -74,7 +74,6 @@ class CORE_EXPORT FrameCaret final : public GarbageCollected<FrameCaret> {
   void SetShouldShowBlockCursor(bool);
 
   // Paint invalidation methods delegating to DisplayItemClient.
-  void ClearPreviousVisualRect(const LayoutBlock&);
   void LayoutBlockWillBeDestroyed(const LayoutBlock&);
   void UpdateStyleAndLayoutIfNeeded();
   void InvalidatePaint(const LayoutBlock&, const PaintInvalidatorContext&);

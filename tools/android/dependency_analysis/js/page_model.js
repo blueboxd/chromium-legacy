@@ -105,6 +105,14 @@ class PageModel {
         this.outboundDepthData.outboundDepth,
     );
   }
+
+  /**
+   * Gets the ids of all the nodes in the graph.
+   * @return {!Array<string>} An array with the all node ids.
+   */
+  getNodeIds() {
+    return [...this.graphModel_.nodes.keys()];
+  }
 }
 
 export {

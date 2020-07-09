@@ -125,6 +125,12 @@ are treated in different ways during painting:
     descendant property nodes. Currently, the `contain: paint` css property
     establishes an isolation boundary.
 
+*   Local property tree state: the `PropertyTreeState` associated with each
+    fragment. All fragments have a well-defined local property tree state.
+    This is often cached in the `LocalBorderBoxProperties`
+    struct that belongs to `FragmentData`. Some `FragmentData` objects don't
+    have a `LocalBorderBoxProperties`, but that is merely a memory optimization.
+
 ## Overview
 
 The primary responsibility of this directory is to convert the outputs from
@@ -590,7 +596,7 @@ point to the ith parent's transform.
 
 Each `FragmentData` receives its own `ClipPaintPropertyNode`. They
 also store a unique `PaintOffset, `PaginationOffset and
-`LocalBordreBoxProperties` object.
+`LocalBorderBoxProperties` object.
 
 See
 [`LayoutMultiColumnFlowThread.h`](../layout/layout_multi_column_flow_thread.h)

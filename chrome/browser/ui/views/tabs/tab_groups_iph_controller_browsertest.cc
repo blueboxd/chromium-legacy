@@ -36,14 +36,25 @@ class TabGroupsIPHControllerBrowserTest : public DialogBrowserTest {
   }
 
  protected:
-  void ShowUi(const std::string& name) override { OpenTabsToTrigger(); }
+  void ShowUi(const std::string& name) override {
+    OpenTabsToTrigger(browser());
+  }
 
-  void OpenTabsToTrigger() {
+  void OpenTabsToTrigger(Browser* browser) {
     // We need to have 6 tabs to trigger our IPH. Browser tests start
     // with one tab, so open 5 more.
     for (int i = 0; i < 5; ++i)
-      chrome::NewTab(browser());
+      chrome::NewTab(browser);
   }
+
+  void SetUpOnMainThread() override {
+    DialogBrowserTest::SetUpOnMainThread();
+    mock_tracker_ = static_cast<feature_engagement::test::MockTracker*>(
+        feature_engagement::TrackerFactory::GetForBrowserContext(
+            browser()->profile()));
+  }
+
+  feature_engagement::test::MockTracker* mock_tracker_;
 
  private:
   static void RegisterMockTrackerFactory(content::BrowserContext* context) {
@@ -68,13 +79,8 @@ class TabGroupsIPHControllerBrowserTest : public DialogBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(TabGroupsIPHControllerBrowserTest, InvokeUi_default) {
-  auto* const mock_tracker =
-      static_cast<feature_engagement::test::MockTracker*>(
-          feature_engagement::TrackerFactory::GetForBrowserContext(
-              browser()->profile()));
-
   // Allow the controller to show the promo.
-  EXPECT_CALL(*mock_tracker,
+  EXPECT_CALL(*mock_tracker_,
               ShouldTriggerHelpUI(
                   Ref(feature_engagement::kIPHDesktopTabGroupsNewGroupFeature)))
       .Times(1)
@@ -82,9 +88,28 @@ IN_PROC_BROWSER_TEST_F(TabGroupsIPHControllerBrowserTest, InvokeUi_default) {
 
   // Expect the controller to notify on dismissal.
   EXPECT_CALL(
-      *mock_tracker,
+      *mock_tracker_,
       Dismissed(Ref(feature_engagement::kIPHDesktopTabGroupsNewGroupFeature)))
       .Times(1);
 
   ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(TabGroupsIPHControllerBrowserTest,
+                       HandlesBrowserShutdown) {
+  Browser* second_browser = CreateBrowser(browser()->profile());
+
+  EXPECT_CALL(*mock_tracker_,
+              ShouldTriggerHelpUI(
+                  Ref(feature_engagement::kIPHDesktopTabGroupsNewGroupFeature)))
+      .Times(1)
+      .WillOnce(Return(true));
+
+  EXPECT_CALL(
+      *mock_tracker_,
+      Dismissed(Ref(feature_engagement::kIPHDesktopTabGroupsNewGroupFeature)))
+      .Times(1);
+
+  OpenTabsToTrigger(second_browser);
+  CloseBrowserSynchronously(second_browser);
 }

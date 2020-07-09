@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
@@ -145,7 +146,6 @@ class TabDesktopMediaListTest : public testing::Test {
   }
 
   void SetUp() override {
-    manually_added_web_contents_.clear();
     rvh_test_enabler_.reset(new content::RenderViewHostTestEnabler());
     // Create a new temporary directory, and store the path.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -277,13 +277,7 @@ TEST_F(TabDesktopMediaListTest, RemoveTab) {
   ASSERT_TRUE(tab_strip_model);
   std::unique_ptr<WebContents> released_web_contents =
       tab_strip_model->DetachWebContentsAt(kDefaultSourceCount - 1);
-  for (auto it = manually_added_web_contents_.begin();
-       it != manually_added_web_contents_.end(); ++it) {
-    if (*it == released_web_contents.get()) {
-      manually_added_web_contents_.erase(it);
-      break;
-    }
-  }
+  base::Erase(manually_added_web_contents_, released_web_contents.get());
 
   EXPECT_CALL(observer_, OnSourceRemoved(list_.get(), 0))
       .WillOnce(

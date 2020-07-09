@@ -35,7 +35,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_settings_navigation_throttle.h"
 #include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
-#include "chrome/browser/chromeos/login/app_launch_controller.h"
+#include "chrome/browser/chromeos/login/kiosk_launch_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
@@ -293,41 +293,6 @@ void SetPlatformVersion(const std::string& platform_version) {
   base::SysInfo::SetChromeOSVersionInfoForTest(lsb_release, base::Time::Now());
 }
 
-// Helper functions for CanConfigureNetwork mock.
-class ScopedCanConfigureNetwork {
- public:
-  ScopedCanConfigureNetwork(bool can_configure, bool needs_owner_auth)
-      : can_configure_(can_configure),
-        needs_owner_auth_(needs_owner_auth),
-        can_configure_network_callback_(
-            base::Bind(&ScopedCanConfigureNetwork::CanConfigureNetwork,
-                       base::Unretained(this))),
-        needs_owner_auth_callback_(base::Bind(
-            &ScopedCanConfigureNetwork::NeedsOwnerAuthToConfigureNetwork,
-            base::Unretained(this))) {
-    AppLaunchController::SetCanConfigureNetworkCallbackForTesting(
-        &can_configure_network_callback_);
-    AppLaunchController::SetNeedOwnerAuthToConfigureNetworkCallbackForTesting(
-        &needs_owner_auth_callback_);
-  }
-  ~ScopedCanConfigureNetwork() {
-    AppLaunchController::SetCanConfigureNetworkCallbackForTesting(nullptr);
-    AppLaunchController::SetNeedOwnerAuthToConfigureNetworkCallbackForTesting(
-        nullptr);
-  }
-
-  bool CanConfigureNetwork() { return can_configure_; }
-
-  bool NeedsOwnerAuthToConfigureNetwork() { return needs_owner_auth_; }
-
- private:
-  bool can_configure_;
-  bool needs_owner_auth_;
-  AppLaunchController::ReturnBoolCallback can_configure_network_callback_;
-  AppLaunchController::ReturnBoolCallback needs_owner_auth_callback_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedCanConfigureNetwork);
-};
-
 class KioskFakeDiskMountManager : public file_manager::FakeDiskMountManager {
  public:
   KioskFakeDiskMountManager() {}
@@ -509,8 +474,10 @@ class KioskTest : public OobeBaseTest {
     needs_background_networking_ = true;
     mock_user_manager_.reset(new MockUserManager);
     ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(true);
-    AppLaunchController::SkipSplashWaitForTesting();
-    AppLaunchController::SetNetworkWaitForTesting(kTestNetworkTimeoutSeconds);
+    skip_splash_wait_override_ =
+        AppLaunchController::SkipSplashScreenWaitForTesting();
+    network_wait_override_ = AppLaunchController::SetNetworkWaitForTesting(
+        base::TimeDelta::FromSeconds(kTestNetworkTimeoutSeconds));
 
     OobeBaseTest::SetUp();
   }
@@ -750,7 +717,8 @@ class KioskTest : public OobeBaseTest {
 
     // Configure network should bring up lock screen for owner.
     OobeScreenWaiter lock_screen_waiter(OobeScreen::SCREEN_ACCOUNT_PICKER);
-    GetAppLaunchController()->OnConfigureNetwork();
+    static_cast<AppLaunchSplashScreenView::Delegate*>(GetAppLaunchController())
+        ->OnConfigureNetwork();
     lock_screen_waiter.Wait();
 
     // There should be only one owner pod on this screen.
@@ -818,6 +786,15 @@ class KioskTest : public OobeBaseTest {
     return LoginDisplayHost::default_host()->GetAppLaunchController();
   }
 
+  void BlockAppLaunch(bool block) {
+    if (block) {
+      block_app_launch_override_ =
+          AppLaunchController::BlockAppLaunchForTesting();
+    } else {
+      block_app_launch_override_.reset();
+    }
+  }
+
   MockUserManager* mock_user_manager() { return mock_user_manager_.get(); }
 
   void set_test_app_id(const std::string& test_app_id) {
@@ -855,6 +832,10 @@ class KioskTest : public OobeBaseTest {
   std::string test_crx_file_;
   std::unique_ptr<FakeCWS> fake_cws_;
   std::unique_ptr<MockUserManager> mock_user_manager_;
+
+  std::unique_ptr<base::AutoReset<bool>> skip_splash_wait_override_;
+  std::unique_ptr<base::AutoReset<base::TimeDelta>> network_wait_override_;
+  std::unique_ptr<base::AutoReset<bool>> block_app_launch_override_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskTest);
 };
@@ -983,7 +964,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppWithNetworkConfigAccelerator) {
   ScopedCanConfigureNetwork can_configure_network(true, false);
 
   // Block app loading until the welcome screen is shown.
-  AppLaunchController::SetBlockAppLaunchForTesting(true);
+  BlockAppLaunch(true);
 
   // Start app launch and wait for network connectivity timeout.
   StartAppLaunchFromLoginScreen(
@@ -1003,7 +984,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppWithNetworkConfigAccelerator) {
   test::OobeJS().ExpectVisible("error-message-md-continue-button");
 
   // Let app launching resume.
-  AppLaunchController::SetBlockAppLaunchForTesting(false);
+  BlockAppLaunch(false);
 
   // Click on [Continue] button.
   test::OobeJS().TapOn("error-message-md-continue-button");
@@ -2571,13 +2552,21 @@ class KioskVirtualKeyboardTest : public KioskTest,
   DISALLOW_COPY_AND_ASSIGN(KioskVirtualKeyboardTest);
 };
 
-// Verifies that chrome.virtualKeyboard.restrictFeatures and related private
-// APIs work.
-// TODO(https://crbug.com/1094809): Flaky in debug builds.
-IN_PROC_BROWSER_TEST_F(KioskVirtualKeyboardTest, DISABLED_RestrictFeatures) {
+IN_PROC_BROWSER_TEST_F(KioskVirtualKeyboardTest, RestrictFeatures) {
   set_test_app_id(kTestVirtualKeyboardKioskApp);
   set_test_app_version("0.1");
   set_test_crx_file(test_app_id() + ".crx");
+
+  // Reset the keyboard config in case these values are changed in the previous
+  // test cases.
+  keyboard::KeyboardConfig config;
+  EXPECT_TRUE(config.auto_capitalize);
+  EXPECT_TRUE(config.auto_complete);
+  EXPECT_TRUE(config.auto_correct);
+  EXPECT_TRUE(config.handwriting);
+  EXPECT_TRUE(config.spell_check);
+  EXPECT_TRUE(config.voice_input);
+  ash::KeyboardController::Get()->SetKeyboardConfig(config);
 
   extensions::ResultCatcher catcher;
   StartAppLaunchFromLoginScreen(

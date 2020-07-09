@@ -621,13 +621,17 @@ URLLoader::URLLoader(
   // net::LOAD_DO_NOT_* are in the process of being converted to
   // credentials_mode. See https://crbug.com/799935.
   // TODO(crbug.com/943939): Make this work with CredentialsMode::kSameOrigin.
-  if (request.credentials_mode == mojom::CredentialsMode::kOmit) {
+  if (request.credentials_mode == mojom::CredentialsMode::kOmit ||
+      request.credentials_mode ==
+          mojom::CredentialsMode::kOmitBug_775438_Workaround) {
     const auto creds_mask = net::LOAD_DO_NOT_SAVE_COOKIES |
                             net::LOAD_DO_NOT_SEND_COOKIES |
                             net::LOAD_DO_NOT_SEND_AUTH_DATA;
     DCHECK((request.load_flags & creds_mask) == 0 ||
            (request.load_flags & creds_mask) == creds_mask);
     url_request_->set_allow_credentials(false);
+    url_request_->set_send_client_certs(request.credentials_mode ==
+                                        mojom::CredentialsMode::kOmit);
   }
 
   url_request_->SetRequestHeadersCallback(base::BindRepeating(

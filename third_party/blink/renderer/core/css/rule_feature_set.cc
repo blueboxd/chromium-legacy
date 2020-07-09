@@ -321,10 +321,10 @@ void RuleFeatureSet::AddInvalidationSet(
   scoped_refptr<InvalidationSet>& slot =
       map.insert(key, nullptr).stored_value->value;
   if (!slot) {
-    slot = invalidation_set;
+    slot = std::move(invalidation_set);
   } else {
-    EnsureInvalidationSet(
-        map, key, invalidation_set->GetType(),
+    EnsureMutableInvalidationSet(
+        slot, invalidation_set->GetType(),
         invalidation_set->IsSelfInvalidationSet() ? kSubject : kAncestor)
         .Combine(*invalidation_set);
   }
@@ -338,10 +338,10 @@ void RuleFeatureSet::AddInvalidationSet(
   scoped_refptr<InvalidationSet>& slot =
       map.insert(key, nullptr).stored_value->value;
   if (!slot) {
-    slot = invalidation_set;
+    slot = std::move(invalidation_set);
   } else {
-    EnsureInvalidationSet(
-        map, key, invalidation_set->GetType(),
+    EnsureMutableInvalidationSet(
+        slot, invalidation_set->GetType(),
         invalidation_set->IsSelfInvalidationSet() ? kSubject : kAncestor)
         .Combine(*invalidation_set);
   }

@@ -140,14 +140,14 @@ bool BluetoothLowEnergyDeviceMac::ExpectingConfirmation() const {
 }
 
 void BluetoothLowEnergyDeviceMac::GetConnectionInfo(
-    const ConnectionInfoCallback& callback) {
+    ConnectionInfoCallback callback) {
   NOTIMPLEMENTED();
 }
 
 void BluetoothLowEnergyDeviceMac::SetConnectionLatency(
     ConnectionLatency connection_latency,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    base::OnceClosure callback,
+    ErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 
@@ -177,28 +177,27 @@ void BluetoothLowEnergyDeviceMac::CancelPairing() {
   NOTIMPLEMENTED();
 }
 
-void BluetoothLowEnergyDeviceMac::Disconnect(
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+void BluetoothLowEnergyDeviceMac::Disconnect(base::OnceClosure callback,
+                                             ErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 
-void BluetoothLowEnergyDeviceMac::Forget(const base::Closure& callback,
-                                         const ErrorCallback& error_callback) {
+void BluetoothLowEnergyDeviceMac::Forget(base::OnceClosure callback,
+                                         ErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 
 void BluetoothLowEnergyDeviceMac::ConnectToService(
     const BluetoothUUID& uuid,
-    const ConnectToServiceCallback& callback,
-    const ConnectToServiceErrorCallback& error_callback) {
+    ConnectToServiceCallback callback,
+    ConnectToServiceErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 
 void BluetoothLowEnergyDeviceMac::ConnectToServiceInsecurely(
     const BluetoothUUID& uuid,
-    const ConnectToServiceCallback& callback,
-    const ConnectToServiceErrorCallback& error_callback) {
+    ConnectToServiceCallback callback,
+    ConnectToServiceErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 

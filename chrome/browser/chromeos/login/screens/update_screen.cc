@@ -13,9 +13,11 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/default_tick_clock.h"
 #include "build/branding_buildflags.h"
+#include "chrome/browser/chromeos/login/configuration_keys.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
+#include "chrome/browser/chromeos/login/wizard_context.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 #include "chromeos/network/network_state.h"
 
@@ -81,6 +83,8 @@ std::string UpdateScreen::GetResultString(Result result) {
       return "UpdateNotRequired";
     case Result::UPDATE_ERROR:
       return "UpdateError";
+    case Result::UPDATE_SKIPPED:
+      return chromeos::BaseScreen::kNotApplicable;
   }
 }
 
@@ -112,6 +116,19 @@ UpdateScreen::~UpdateScreen() {
 void UpdateScreen::OnViewDestroyed(UpdateView* view) {
   if (view_ == view)
     view_ = nullptr;
+}
+
+bool UpdateScreen::MaybeSkip(WizardContext* context) {
+  const auto* skip_screen_key = context->configuration.FindKeyOfType(
+      configuration::kUpdateSkipUpdate, base::Value::Type::BOOLEAN);
+  const bool skip_screen = skip_screen_key && skip_screen_key->GetBool();
+
+  if (skip_screen) {
+    VLOG(1) << "Skip OOBE Update because of configuration.";
+    exit_callback_.Run(VersionUpdater::Result::UPDATE_SKIPPED);
+    return true;
+  }
+  return false;
 }
 
 void UpdateScreen::ShowImpl() {

@@ -289,8 +289,8 @@ List of all resource zip files belonging to all transitive resource dependencies
 of this target. Excludes resources owned by non-chromium code.
 
 * `deps_info['owned_resource_srcjars']`:
-List of all .srcjar files belonging to all resource dependencies for this
-target.
+List of all .srcjar files belonging to all *direct* resource dependencies (i.e.
+without another java_library in the dependency path) for this target.
 
 * `deps_info['javac']`:
 A dictionary containing information about the way the sources in this library
@@ -782,18 +782,48 @@ def _DepsFromPaths(dep_paths, target_type, filter_root_targets=True):
 
   E.g. When a resource or asset depends on an apk target, the intent is to
   include the .apk as a resource/asset, not to have the apk's classpath added.
+
+  This method is meant to be called to get the top nodes (i.e. closest to
+  current target) that we could then use to get a full transitive dependants
+  list (eg using Deps#all). So filtering single elements out of this list,
+  filters whole branches of dependencies. By resolving groups (i.e. expanding
+  them to their consituents), depending on a group is equivalent to directly
+  depending on each element of that group.
+  """
+  blocklist = []
+  allowlist = []
+
+  # Don't allow root targets to be considered as a dep.
+  if filter_root_targets:
+    blocklist.extend(_ROOT_TYPES)
+
+  # Don't allow java libraries to cross through assets/resources.
+  if target_type in _RESOURCE_TYPES:
+    allowlist.extend(_RESOURCE_TYPES)
+
+  return _DepsFromPathsWithFilters(dep_paths, blocklist, allowlist)
+
+
+def _DepsFromPathsWithFilters(dep_paths, blocklist=None, allowlist=None):
+  """Resolves all groups and trims dependency branches that we never want.
+
+  See _DepsFromPaths.
+
+  |blocklist| if passed, are the types of direct dependencies we do not care
+  about (i.e. tips of branches that we wish to prune).
+
+  |allowlist| if passed, are the only types of direct dependencies we care
+  about (i.e. we wish to prune all other branches that do not start from one of
+  these).
   """
   configs = [GetDepConfig(p) for p in dep_paths]
   groups = DepsOfType('group', configs)
   configs = _ResolveGroups(configs)
   configs += groups
-  # Don't allow root targets to be considered as a dep.
-  if filter_root_targets:
-    configs = [c for c in configs if c['type'] not in _ROOT_TYPES]
-
-  # Don't allow java libraries to cross through assets/resources.
-  if target_type in _RESOURCE_TYPES:
-    configs = [c for c in configs if c['type'] in _RESOURCE_TYPES]
+  if blocklist:
+    configs = [c for c in configs if c['type'] not in blocklist]
+  if allowlist:
+    configs = [c for c in configs if c['type'] in allowlist]
 
   return Deps([c['path'] for c in configs])
 
@@ -1132,8 +1162,8 @@ def main(argv):
       for p in options.static_library_dependent_configs
   }
 
-  deps = _DepsFromPaths(
-      build_utils.ParseGnList(options.deps_configs), options.type)
+  deps_configs_paths = build_utils.ParseGnList(options.deps_configs)
+  deps = _DepsFromPaths(deps_configs_paths, options.type)
   processor_deps = _DepsFromPaths(
       build_utils.ParseGnList(options.annotation_processor_configs or ''),
       options.type, filter_root_targets=False)
@@ -1148,6 +1178,13 @@ def main(argv):
   all_group_deps = deps.All('group')
   all_library_deps = deps.All('java_library')
   all_resources_deps = deps.All('android_resources')
+
+  if options.type == 'java_library':
+    java_library_deps = _DepsFromPathsWithFilters(
+        deps_configs_paths, allowlist=['android_resources'])
+    # for java libraries, we only care about resources that are directly
+    # reachable without going through another java_library.
+    all_resources_deps = java_library_deps.All('android_resources')
 
   base_module_build_config = None
   if options.base_module_build_config:
@@ -1341,10 +1378,13 @@ def main(argv):
     if options.type == 'java_library':
       # Used to strip out R.class for android_prebuilt()s.
       config['javac']['resource_packages'] = [
-          c['package_name'] for c in all_resources_deps if 'package_name' in c]
+          c['package_name'] for c in all_resources_deps if 'package_name' in c
+      ]
+      if options.package_name:
+        deps_info['package_name'] = options.package_name
 
   if options.type in ('android_resources', 'android_apk', 'junit_binary',
-                      'dist_aar', 'android_app_bundle_module'):
+                      'dist_aar', 'android_app_bundle_module', 'java_library'):
 
     dependency_zips = [
         c['resources_zip'] for c in all_resources_deps if c['resources_zip']
@@ -1354,10 +1394,21 @@ def main(argv):
 
     if options.type != 'android_resources':
       extra_package_names = [
-          c['package_name'] for c in all_resources_deps if 'package_name' in c]
+          c['package_name'] for c in all_resources_deps if 'package_name' in c
+      ]
       extra_r_text_files = [
           c['r_text_path'] for c in all_resources_deps if 'r_text_path' in c
       ]
+      # In final types (i.e. apks and modules) that create real R.java files,
+      # they must collect package names and rtxt from java_libraries as well.
+      # https://crbug.com/1073476
+      if options.type != 'java_library':
+        extra_package_names.extend([
+            c['package_name'] for c in all_library_deps if 'package_name' in c
+        ])
+        extra_r_text_files.extend(
+            [c['r_text_path'] for c in all_library_deps if 'r_text_path' in c])
+
 
     # For feature modules, remove any resources that already exist in the base
     # module.

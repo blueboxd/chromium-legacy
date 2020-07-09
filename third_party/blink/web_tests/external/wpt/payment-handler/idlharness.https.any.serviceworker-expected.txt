@@ -17,13 +17,13 @@ FAIL PaymentManager interface: existence and properties of interface prototype o
 FAIL PaymentManager interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "PaymentManager" expected property "PaymentManager" missing
 FAIL PaymentManager interface: attribute instruments assert_own_property: self does not have own property "PaymentManager" expected property "PaymentManager" missing
 FAIL PaymentManager interface: attribute userHint assert_own_property: self does not have own property "PaymentManager" expected property "PaymentManager" missing
-FAIL PaymentManager interface: operation enableDelegations(FrozenArray<PaymentDelegation>) assert_own_property: self does not have own property "PaymentManager" expected property "PaymentManager" missing
+FAIL PaymentManager interface: operation enableDelegations(sequence<PaymentDelegation>) assert_own_property: self does not have own property "PaymentManager" expected property "PaymentManager" missing
 FAIL PaymentManager must be primary interface of paymentManager assert_own_property: self does not have own property "PaymentManager" expected property "PaymentManager" missing
 PASS Stringification of paymentManager
 PASS PaymentManager interface: paymentManager must inherit property "instruments" with the proper type
 PASS PaymentManager interface: paymentManager must inherit property "userHint" with the proper type
-PASS PaymentManager interface: paymentManager must inherit property "enableDelegations(FrozenArray<PaymentDelegation>)" with the proper type
-PASS PaymentManager interface: calling enableDelegations(FrozenArray<PaymentDelegation>) on paymentManager with too few arguments must throw TypeError
+PASS PaymentManager interface: paymentManager must inherit property "enableDelegations(sequence<PaymentDelegation>)" with the proper type
+PASS PaymentManager interface: calling enableDelegations(sequence<PaymentDelegation>) on paymentManager with too few arguments must throw TypeError
 PASS PaymentInstruments interface: existence and properties of interface object
 PASS PaymentInstruments interface object length
 PASS PaymentInstruments interface object name

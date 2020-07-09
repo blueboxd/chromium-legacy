@@ -78,6 +78,11 @@ void TabGroupsIPHController::OnWidgetClosing(views::Widget* widget) {
   HandlePromoClose();
 }
 
+void TabGroupsIPHController::OnWidgetDestroying(views::Widget* widget) {
+  DCHECK_EQ(widget, promo_widget_);
+  HandlePromoClose();
+}
+
 void TabGroupsIPHController::HandlePromoClose() {
   widget_observer_.Remove(promo_widget_);
   promo_widget_ = nullptr;

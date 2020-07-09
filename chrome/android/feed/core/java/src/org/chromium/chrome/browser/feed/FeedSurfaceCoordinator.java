@@ -293,7 +293,7 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
     }
 
     /** @return The {@link Stream} that this class holds. */
-    Stream getStream() {
+    public Stream getStream() {
         return mStream;
     }
 

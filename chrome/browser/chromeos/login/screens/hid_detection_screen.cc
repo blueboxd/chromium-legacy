@@ -12,6 +12,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/default_tick_clock.h"
+#include "chrome/browser/chromeos/login/configuration_keys.h"
+#include "chrome/browser/chromeos/login/wizard_context.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
@@ -68,6 +70,8 @@ std::string HIDDetectionScreen::GetResultString(Result result) {
       return "Next";
     case Result::START_DEMO:
       return "StartDemo";
+    case Result::SKIP:
+      return BaseScreen::kNotApplicable;
   }
 }
 
@@ -145,6 +149,18 @@ void HIDDetectionScreen::CheckIsScreenRequired(
   input_device_manager_->GetDevices(
       base::BindOnce(&HIDDetectionScreen::OnGetInputDevicesListForCheck,
                      weak_ptr_factory_.GetWeakPtr(), on_check_done));
+}
+
+bool HIDDetectionScreen::MaybeSkip(WizardContext* context) {
+  const auto* skip_screen_key = context->configuration.FindKeyOfType(
+      configuration::kSkipHIDDetection, base::Value::Type::BOOLEAN);
+  const bool skip_screen = skip_screen_key && skip_screen_key->GetBool();
+
+  if (skip_screen) {
+    exit_callback_.Run(Result::SKIP);
+    return true;
+  }
+  return false;
 }
 
 void HIDDetectionScreen::ShowImpl() {

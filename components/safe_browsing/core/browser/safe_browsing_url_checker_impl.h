@@ -192,6 +192,13 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   void OnRTLookupResponse(bool is_rt_lookup_successful,
                           std::unique_ptr<RTLookupResponse> response);
 
+  // Logs |request| on any open chrome://safe-browsing pages.
+  void LogRTLookupRequest(const RTLookupRequest& request,
+                          const std::string& oauth_token);
+
+  // Logs |response| on any open chrome://safe-browsing pages.
+  void LogRTLookupResponse(const RTLookupResponse& response);
+
   void SetWebUIToken(int token);
 
   security_interstitials::UnsafeResource MakeUnsafeResource(

@@ -288,10 +288,11 @@ void NGFragmentItems::LayoutObjectWillBeMoved(
     for (wtf_size_t idx = 0; idx < container.PhysicalFragmentCount(); idx++) {
       const NGPhysicalBoxFragment& fragment =
           *container.GetPhysicalFragment(idx);
-      DCHECK(fragment.Items());
-      for (const auto& item : fragment.Items()->Items()) {
-        if (item.GetLayoutObject() == &layout_object)
-          item.LayoutObjectWillBeMoved();
+      if (const NGFragmentItems* fragment_items = fragment.Items()) {
+        for (const auto& item : fragment_items->Items()) {
+          if (item.GetLayoutObject() == &layout_object)
+            item.LayoutObjectWillBeMoved();
+        }
       }
     }
     return;
@@ -315,10 +316,11 @@ void NGFragmentItems::LayoutObjectWillBeDestroyed(
     for (wtf_size_t idx = 0; idx < container.PhysicalFragmentCount(); idx++) {
       const NGPhysicalBoxFragment& fragment =
           *container.GetPhysicalFragment(idx);
-      DCHECK(fragment.Items());
-      for (const auto& item : fragment.Items()->Items()) {
-        if (item.GetLayoutObject() == &layout_object)
-          item.LayoutObjectWillBeDestroyed();
+      if (const NGFragmentItems* fragment_items = fragment.Items()) {
+        for (const auto& item : fragment_items->Items()) {
+          if (item.GetLayoutObject() == &layout_object)
+            item.LayoutObjectWillBeDestroyed();
+        }
       }
     }
     return;

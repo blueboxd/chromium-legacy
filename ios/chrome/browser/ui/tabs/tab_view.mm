@@ -11,6 +11,7 @@
 #include "base/i18n/rtl.h"
 #include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/drag_and_drop/drop_and_navigate_delegate.h"
 #include "ios/chrome/browser/drag_and_drop/drop_and_navigate_interaction.h"
 #include "ios/chrome/browser/system_flags.h"
@@ -137,9 +138,14 @@ UIImage* DefaultFaviconImage() {
                   action:@selector(tabWasTapped)
         forControlEvents:UIControlEventTouchUpInside];
 
-    _dropInteraction =
-        [[DropAndNavigateInteraction alloc] initWithDelegate:self];
-    [self addInteraction:_dropInteraction];
+    // TODO(crbug.com/1101363): A new and improved drop interaction in the tab
+    // strip controller supercedes this interaction. Remove this codepath once
+    // the experimental flag is removed.
+    if (!DragAndDropIsEnabled()) {
+      _dropInteraction =
+          [[DropAndNavigateInteraction alloc] initWithDelegate:self];
+      [self addInteraction:_dropInteraction];
+    }
   }
   return self;
 }
@@ -531,7 +537,7 @@ UIImage* DefaultFaviconImage() {
 #pragma mark - Touch events
 
 - (void)closeButtonPressed {
-  [_delegate tabViewcloseButtonPressed:self];
+  [_delegate tabViewCloseButtonPressed:self];
 }
 
 - (void)tabWasTapped {

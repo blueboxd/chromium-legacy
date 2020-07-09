@@ -243,18 +243,11 @@ base::FilePath GetTestDataDir() {
 // Tests that a whitelisted app gets installed.
 IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
                        WhitelistedAppInstallation) {
-  Profile* profile = GetInitialProfile();
-
-  extensions::TestExtensionRegistryObserver registry_observer(
-      extensions::ExtensionRegistry::Get(profile), kWhitelistedAppId);
-
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
-      GetTestDataDir().AppendASCII(kWhitelistedAppCrxPath)));
-
-  registry_observer.WaitForExtensionLoaded();
+      GetTestDataDir().AppendASCII(kWhitelistedAppCrxPath),
+      ExtensionForceInstallMixin::WaitMode::kLoad));
   const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(
-          kWhitelistedAppId);
+      extension_force_install_mixin_.GetEnabledExtension(kWhitelistedAppId);
   ASSERT_TRUE(extension);
   EXPECT_TRUE(extension->is_platform_app());
 }
@@ -268,11 +261,11 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
                                                        kNotWhitelistedAppId);
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromSourceDir(
       GetTestDataDir().AppendASCII(kNotWhitelistedAppPath),
-      GetTestDataDir().AppendASCII(kNotWhitelistedAppPemPath)));
+      GetTestDataDir().AppendASCII(kNotWhitelistedAppPemPath),
+      ExtensionForceInstallMixin::WaitMode::kNone));
   install_error_observer.Wait();
-  EXPECT_FALSE(
-      extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
-          kNotWhitelistedAppId));
+  EXPECT_FALSE(extension_force_install_mixin_.GetInstalledExtension(
+      kNotWhitelistedAppId));
 }
 
 // Tests that a whitelisted extension is installed. Force-installed extensions
@@ -280,17 +273,12 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
 // |login_screen_extension| type.
 IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
                        WhitelistedExtensionInstallation) {
-  Profile* profile = GetInitialProfile();
-
-  extensions::TestExtensionRegistryObserver registry_observer(
-      extensions::ExtensionRegistry::Get(profile), kWhitelistedExtensionId);
-
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
-      GetTestDataDir().AppendASCII(kWhitelistedExtensionCrxPath)));
+      GetTestDataDir().AppendASCII(kWhitelistedExtensionCrxPath),
+      ExtensionForceInstallMixin::WaitMode::kLoad));
 
-  registry_observer.WaitForExtensionLoaded();
   const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(
+      extension_force_install_mixin_.GetEnabledExtension(
           kWhitelistedExtensionId);
   ASSERT_TRUE(extension);
   EXPECT_TRUE(extension->is_login_screen_extension());
@@ -305,11 +293,11 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
       profile, kNotWhitelistedExtensionId);
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromSourceDir(
       GetTestDataDir().AppendASCII(kNotWhitelistedExtensionPath),
-      GetTestDataDir().AppendASCII(kNotWhitelistedExtensionPemPath)));
+      GetTestDataDir().AppendASCII(kNotWhitelistedExtensionPemPath),
+      ExtensionForceInstallMixin::WaitMode::kNone));
   install_error_observer.Wait();
-  EXPECT_FALSE(
-      extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
-          kNotWhitelistedExtensionId));
+  EXPECT_FALSE(extension_force_install_mixin_.GetInstalledExtension(
+      kNotWhitelistedExtensionId));
 }
 
 // Tests that the extension system enables non-standard extensions in the
@@ -327,7 +315,8 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest, BackgroundPage) {
       chromeos::ProfileHelper::SigninProfileHasLoginScreenExtensions());
   ExtensionBackgroundPageReadyObserver page_observer(kWhitelistedAppId);
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
-      GetTestDataDir().AppendASCII(kWhitelistedAppCrxPath)));
+      GetTestDataDir().AppendASCII(kWhitelistedAppCrxPath),
+      ExtensionForceInstallMixin::WaitMode::kNone));
   page_observer.Wait();
   EXPECT_TRUE(chromeos::ProfileHelper::SigninProfileHasLoginScreenExtensions());
 }
@@ -335,20 +324,17 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest, BackgroundPage) {
 // Tests installation of multiple sign-in profile apps/extensions.
 IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
                        MultipleAppsOrExtensions) {
-  Profile* profile = GetInitialProfile();
-
-  extensions::TestExtensionRegistryObserver registry_observer1(
-      extensions::ExtensionRegistry::Get(profile), kWhitelistedAppId);
-  extensions::TestExtensionRegistryObserver registry_observer2(
-      extensions::ExtensionRegistry::Get(profile), kWhitelistedExtensionId);
-
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
-      GetTestDataDir().AppendASCII(kWhitelistedAppCrxPath)));
+      GetTestDataDir().AppendASCII(kWhitelistedAppCrxPath),
+      ExtensionForceInstallMixin::WaitMode::kLoad));
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
-      GetTestDataDir().AppendASCII(kWhitelistedExtensionCrxPath)));
+      GetTestDataDir().AppendASCII(kWhitelistedExtensionCrxPath),
+      ExtensionForceInstallMixin::WaitMode::kLoad));
 
-  registry_observer1.WaitForExtensionLoaded();
-  registry_observer2.WaitForExtensionLoaded();
+  EXPECT_TRUE(
+      extension_force_install_mixin_.GetEnabledExtension(kWhitelistedAppId));
+  EXPECT_TRUE(extension_force_install_mixin_.GetEnabledExtension(
+      kWhitelistedExtensionId));
 }
 
 // Tests that a sign-in profile app or a sign-in profile extension has isolated
@@ -362,9 +348,11 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
       kWhitelistedExtensionId);
 
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
-      GetTestDataDir().AppendASCII(kWhitelistedAppCrxPath)));
+      GetTestDataDir().AppendASCII(kWhitelistedAppCrxPath),
+      ExtensionForceInstallMixin::WaitMode::kNone));
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
-      GetTestDataDir().AppendASCII(kWhitelistedExtensionCrxPath)));
+      GetTestDataDir().AppendASCII(kWhitelistedExtensionCrxPath),
+      ExtensionForceInstallMixin::WaitMode::kNone));
 
   page_observer_for_app.Wait();
   page_observer_for_extension.Wait();
@@ -401,7 +389,8 @@ class SigninProfileExtensionsPolicyOfflineLaunchTest
             kWhitelistedAppId);
 
     EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
-        GetTestDataDir().AppendASCII(kWhitelistedAppCrxPath)));
+        GetTestDataDir().AppendASCII(kWhitelistedAppCrxPath),
+        ExtensionForceInstallMixin::WaitMode::kNone));
 
     // In the non-PRE test, this simulates inability to make network requests
     // for fetching the extension update manifest and CRX files. In the PRE test

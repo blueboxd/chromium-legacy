@@ -48,6 +48,7 @@ android_apk("system_webview_shell_apk") {
   ]
   android_manifest = system_webview_shell_android_manifest
   android_manifest_dep = ":system_webview_shell_manifest"
+  target_sdk_version = 29
   deps = [
     ":system_webview_shell_apk_resources",
     "//base:base_java",

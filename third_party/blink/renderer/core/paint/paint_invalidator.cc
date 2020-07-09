@@ -288,6 +288,8 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
               fragment_data.PaintOffset());
   }
   fragment_data.SetVisualRect(visual_rect);
+  fragment_data.SetOffsetTo2DTranslationRoot(
+      context.tree_builder_context_->current.offset_to_2d_translation_root);
 
   object.GetFrameView()->GetLayoutShiftTracker().NotifyObjectPrePaint(
       object,
@@ -296,13 +298,8 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
           *context.tree_builder_context_->current.clip,
           *context.tree_builder_context_->current_effect),
       context.old_visual_rect, fragment_data.VisualRect(),
-      // Don't report a diff for a LayoutView. Any paint offset translation
-      // it has was inherited from the parent frame, and movements of a
-      // frame relative to its parent are tracked in the parent frame's
-      // LayoutShiftTracker, not the child frame's.
-      IsA<LayoutView>(object)
-          ? FloatSize()
-          : context.tree_builder_context_->paint_offset_delta);
+      FloatSize(context.old_offset_to_2d_translation_root -
+                fragment_data.OffsetTo2DTranslationRoot()));
 }
 
 void PaintInvalidator::UpdateEmptyVisualRectFlag(
@@ -372,8 +369,11 @@ bool PaintInvalidator::InvalidatePaint(
       // TODO(crbug.com/1043787): Fix this. The way we use FragmentData for
       // non-atomic inlines is not ideal for how LayoutNG works.
       context.old_visual_rect = IntRect();
+      context.old_offset_to_2d_translation_root = PhysicalOffset();
     } else {
       context.old_visual_rect = fragment_data.VisualRect();
+      context.old_offset_to_2d_translation_root =
+          fragment_data.OffsetTo2DTranslationRoot();
     }
     context.fragment_data = &fragment_data;
 
@@ -400,6 +400,8 @@ bool PaintInvalidator::InvalidatePaint(
          fragment_data;
          fragment_data = fragment_data->NextFragment(), tree_builder_index++) {
       context.old_visual_rect = fragment_data->VisualRect();
+      context.old_offset_to_2d_translation_root =
+          fragment_data->OffsetTo2DTranslationRoot();
       context.fragment_data = fragment_data;
 
       DCHECK(!tree_builder_context ||

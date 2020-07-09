@@ -150,6 +150,8 @@ class CC_EXPORT LayerImpl {
 
   virtual bool IsScrollbarLayer() const;
 
+  bool IsScrollerOrScrollbar() const;
+
   // Returns true if this layer has content to draw.
   void SetDrawsContent(bool draws_content);
   bool DrawsContent() const { return draws_content_; }

@@ -76,7 +76,7 @@ String ContentAfterPastingHTML(DummyPageHolder* page_holder,
       frame.Selection().ComputeVisibleSelectionInDOMTree().IsContentEditable())
       << "We should be pasting into something editable.";
 
-  frame.GetSystemClipboard()->WriteHTML(html_to_paste, BlankURL(), "",
+  frame.GetSystemClipboard()->WriteHTML(html_to_paste, BlankURL(),
                                         SystemClipboard::kCannotSmartReplace);
   frame.GetSystemClipboard()->CommitWrite();
   // Run all tasks in a message loop to allow asynchronous clipboard writing

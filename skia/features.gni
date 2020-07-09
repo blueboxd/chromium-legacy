@@ -4,6 +4,11 @@
 
 declare_args() {
   # Enable experimental SkiaRenderer Dawn backend.
-  skia_use_dawn = false
+  skia_use_dawn = is_win && !is_official_build
   skia_use_gl = true
+
+  # Enable gtests using SkiaRenderer Dawn.
+  # TODO(sgilhuly): Remove this and enable the tests by default once a software
+  # path for D3D12 is available.
+  enable_skia_dawn_gtests = false
 }

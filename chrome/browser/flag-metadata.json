@@ -2538,6 +2538,11 @@
     "expiry_milestone": 75
   },
   {
+    "name": "enhanced_clipboard",
+    "owners": ["newcomer@chromium.org", "tbarzic@chromium.org"],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enterprise-reporting-in-chromeos",
     "owners": [ "anqing" ],
     "expiry_milestone": 87

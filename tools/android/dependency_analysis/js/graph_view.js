@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {D3GraphData} from './graph_model.js';
+import {GraphNode, D3GraphData} from './graph_model.js';
 
 // The unique HTML IDs for the SVG's `defs`
 // (https://developer.mozilla.org/en-US/docs/Web/SVG/Element/defs)
@@ -29,7 +29,7 @@ const NODE_COLORS = {
 
 /**
  * Computes the color to display for a given node.
- * @param {!Node} node The node in question.
+ * @param {!GraphNode} node The node in question.
  * @return {string} The color of the node.
  */
 function getNodeColor(node) {
@@ -97,7 +97,7 @@ function countNumReheatTicks() {
 /**
  * A callback to be triggered whenever a node is clicked in the visualization.
  * @callback OnNodeClickedCallback
- * @param {!Node} node The node that was clicked.
+ * @param {!GraphNode} node The node that was clicked.
  */
 
 /** The view of the visualization, controlling display on the SVG. */

@@ -4,18 +4,52 @@
 
 #include "media/mojo/clients/mojo_cdm_factory.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/content_decryption_module.h"
 #include "media/base/key_systems.h"
 #include "media/cdm/aes_decryptor.h"
-#include "media/mojo/buildflags.h"
 #include "media/mojo/clients/mojo_cdm.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace media {
+
+namespace {
+
+void OnCdmCreated(
+    const SessionMessageCB& session_message_cb,
+    const SessionClosedCB& session_closed_cb,
+    const SessionKeysChangeCB& session_keys_change_cb,
+    const SessionExpirationUpdateCB& session_expiration_update_cb,
+    CdmCreatedCB cdm_created_cb,
+    mojo::PendingRemote<mojom::ContentDecryptionModule> cdm_remote,
+    int32_t cdm_id,
+    mojo::PendingRemote<mojom::Decryptor> decryptor,
+    const std::string& error_message) {
+  // Convert from a PendingRemote to Remote so we can verify that it is
+  // connected, this will also check if |cdm_remote| is null.
+  mojo::Remote<mojom::ContentDecryptionModule> remote(std::move(cdm_remote));
+  if (!remote || !remote.is_connected()) {
+    std::move(cdm_created_cb).Run(nullptr, error_message);
+    return;
+  }
+
+  std::move(cdm_created_cb)
+      .Run(base::MakeRefCounted<MojoCdm>(
+               std::move(remote), cdm_id, std::move(decryptor),
+               session_message_cb, session_closed_cb, session_keys_change_cb,
+               session_expiration_update_cb),
+           "");
+}
+
+}  // namespace
 
 MojoCdmFactory::MojoCdmFactory(
     media::mojom::InterfaceFactory* interface_factory)
@@ -49,13 +83,11 @@ void MojoCdmFactory::Create(
     return;
   }
 
-  mojo::PendingRemote<mojom::ContentDecryptionModule> cdm_pending_remote;
   interface_factory_->CreateCdm(
-      key_system, cdm_pending_remote.InitWithNewPipeAndPassReceiver());
-
-  MojoCdm::Create(key_system, cdm_config, std::move(cdm_pending_remote),
-                  session_message_cb, session_closed_cb, session_keys_change_cb,
-                  session_expiration_update_cb, std::move(cdm_created_cb));
+      key_system, cdm_config,
+      base::BindOnce(&OnCdmCreated, session_message_cb, session_closed_cb,
+                     session_keys_change_cb, session_expiration_update_cb,
+                     std::move(cdm_created_cb)));
 }
 
 }  // namespace media

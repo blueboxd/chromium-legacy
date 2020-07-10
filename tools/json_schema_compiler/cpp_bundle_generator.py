@@ -371,9 +371,7 @@ class _SchemasCCGenerator(object):
                   for api in self._bundle._api_defs]
     for namespace in sorted(namespaces):
       schema_constant_name = _FormatNameAsConstant(namespace)
-      c.Append('{{"%s", %d}, {%s, sizeof(%s) - 1}},' %
-               (namespace, len(namespace),
-                schema_constant_name, schema_constant_name))
+      c.Append('{"%s", %s},' % (namespace, schema_constant_name))
     c.Eblock('};')
     c.Sblock('for (const auto& schema : kSchemas) {')
     c.Sblock('if (schema.name == name)')

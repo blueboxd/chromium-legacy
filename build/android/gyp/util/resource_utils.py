@@ -52,6 +52,7 @@ _ALL_RESOURCE_TYPES = {
 
 AAPT_IGNORE_PATTERN = ':'.join([
     '*OWNERS',  # Allow OWNERS files within res/
+    'DIR_METADATA', # Allow DIR_METADATA files within res/
     '*.py',  # PRESUBMIT.py sometimes exist.
     '*.pyc',
     '*~',  # Some editors create these as temp files.

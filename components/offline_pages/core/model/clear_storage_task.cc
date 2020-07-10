@@ -118,11 +118,6 @@ std::vector<OfflinePageItem> GetPagesToClear(
   return std::move(result.pages);
 }
 
-bool DeleteArchiveSync(const base::FilePath& file_path) {
-  // Delete the file only, |false| for recursive.
-  return base::DeleteFile(file_path, false);
-}
-
 std::pair<size_t, DeletePageResult> ClearPagesSync(
     const base::Time& start_time,
     const ArchiveManager::StorageStats& stats,
@@ -132,8 +127,7 @@ std::pair<size_t, DeletePageResult> ClearPagesSync(
 
   size_t pages_cleared = 0;
   for (const OfflinePageItem& page : pages_to_delete) {
-    if (!base::PathExists(page.file_path) ||
-        DeleteArchiveSync(page.file_path)) {
+    if (!base::PathExists(page.file_path) || base::DeleteFile(page.file_path)) {
       if (DeletePageTask::DeletePageFromDbSync(page.offline_id, db)) {
         pages_cleared++;
         // Reports the time since creation in minutes.

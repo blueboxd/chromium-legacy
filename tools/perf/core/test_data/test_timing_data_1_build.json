@@ -164,10 +164,6 @@
         "name": "blink_perf.canvas/drawimage.html"
     },
     {
-        "duration": "6.865452",
-        "name": "blink_perf.canvas/getImageDataColorManaged.html"
-    },
-    {
         "duration": "6.5077667",
         "name": "blink_perf.canvas/toBlob_duration.html"
     },

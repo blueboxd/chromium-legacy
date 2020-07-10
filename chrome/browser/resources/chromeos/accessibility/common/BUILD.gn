@@ -123,6 +123,8 @@ js2gtest("accessibility_tests") {
     "array_util.js",
     "testing/assert_additions.js",
     "testing/callback_helper.js",
+    "testing/doc_utils.js",
+    "testing/e2e_test_base.js",
   ]
 
   if (is_chromeos) {

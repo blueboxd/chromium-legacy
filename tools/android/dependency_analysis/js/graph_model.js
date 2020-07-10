@@ -21,11 +21,8 @@ class NodeVisualizationState {
   }
 }
 
-/** A node in a directed graph.
- *
- * TODO(yjlong): Maybe rename to GraphNode to avoid confusion with window.Node?
- */
-class Node {
+/** A node in a directed graph. */
+class GraphNode {
   /**
    * @param {string} id The unique ID for the node.
    * @param {string} displayName The name to display when visualizing this node.
@@ -41,9 +38,9 @@ class Node {
 
     // This information (edges) already exists in Graph.edges. However, we
     // duplicate it here to make BFS traversal more efficient.
-    /** @public {!Set<!Node>} */
+    /** @public {!Set<!GraphNode>} */
     this.inbound = new Set();
-    /** @public {!Set<!Node>} */
+    /** @public {!Set<!GraphNode>} */
     this.outbound = new Set();
   }
 
@@ -56,7 +53,7 @@ class Node {
 
   /**
    * Adds a node to the inbound set of this node.
-   * @param {!Node} other The inbound node.
+   * @param {!GraphNode} other The inbound node.
    */
   addInbound(other) {
     this.inbound.add(other);
@@ -64,14 +61,15 @@ class Node {
 
   /**
    * Adds a node to the outbound set of this node.
-   * @param {!Node} other The outbound node.
+   * @param {!GraphNode} other The outbound node.
    */
   addOutbound(other) {
     this.outbound.add(other);
   }
 }
 
-class PackageNode extends Node {
+/** A node representing a Java package. */
+class PackageNode extends GraphNode {
   constructor(id, displayName, classNames) {
     super(id, displayName);
 
@@ -80,7 +78,8 @@ class PackageNode extends Node {
   }
 }
 
-class ClassNode extends Node {
+/** A node representing a Java class. */
+class ClassNode extends GraphNode {
   constructor(id, displayName, packageName) {
     super(id, displayName);
 
@@ -92,18 +91,18 @@ class ClassNode extends Node {
 /**
  * An edge in a directed graph.
  */
-class Edge {
+class GraphEdge {
   /**
    * @param {string} id The unique ID for the edge.
-   * @param {!Node} source The source Node object.
-   * @param {!Node} target The target Node object.
+   * @param {!GraphNode} source The source GraphNode object.
+   * @param {!GraphNode} target The target GraphNode object.
    */
   constructor(id, source, target) {
     /** @public @const {string} */
     this.id = id;
-    /** @public @const {!Node} */
+    /** @public @const {!GraphNode} */
     this.source = source;
-    /** @public @const {!Node} */
+    /** @public @const {!GraphNode} */
     this.target = target;
   }
 }
@@ -112,13 +111,13 @@ class Edge {
  * The graph data for d3 to visualize.
  *
  * @typedef {Object} D3GraphData
- * @property {!Array<!Node>} nodes The nodes to visualize.
- * @property {!Array<!Edge>} edges The edges to visualize.
+ * @property {!Array<!GraphNode>} nodes The nodes to visualize.
+ * @property {!Array<!GraphEdge>} edges The edges to visualize.
  */
 let D3GraphData;
 
 /**
- * Generates and returns a unique edge ID from its source/target Node IDs.
+ * Generates and returns a unique edge ID from its source/target GraphNode IDs.
  * @param {string} sourceId The ID of the source node.
  * @param {string} targetId The ID of the target node.
  * @return {string} The ID uniquely identifying the edge source -> target.
@@ -130,15 +129,15 @@ function getEdgeIdFromNodes(sourceId, targetId) {
 /** A directed graph. */
 class GraphModel {
   constructor() {
-    /** @public {!Map<string, !Node>} */
+    /** @public {!Map<string, !GraphNode>} */
     this.nodes = new Map();
-    /** @public {!Map<string, !Edge>} */
+    /** @public {!Map<string, !GraphEdge>} */
     this.edges = new Map();
   }
 
   /**
-   * Adds a Node to the node set.
-   * @param {!Node} node The node to add.
+   * Adds a GraphNode to the node set.
+   * @param {!GraphNode} node The node to add.
    */
   addNodeIfNew(node) {
     if (!this.nodes.has(node.id)) {
@@ -147,33 +146,33 @@ class GraphModel {
   }
 
   /**
-   * Retrieves a Node from the node set, if it exists.
+   * Retrieves a GraphNode from the node set, if it exists.
    * @param {string} id The ID of the desired node.
-   * @return {?Node} The Node if it exists, otherwise null.
+   * @return {?GraphNode} The GraphNode if it exists, otherwise null.
    */
   getNodeById(id) {
     return this.nodes.get(id) || null;
   }
 
   /**
-   * Retrieves an Edge from the edge set, if it exists.
+   * Retrieves a GraphEdge from the edge set, if it exists.
    * @param {string} id The ID of the desired edge.
-   * @return {?Edge} The Edge if it exists, otherwise null.
+   * @return {?GraphEdge} The GraphEdge if it exists, otherwise null.
    */
   getEdgeById(id) {
     return this.edges.get(id) || null;
   }
 
   /**
-   * Creates and adds an Edge to the edge set.
+   * Creates and adds an GraphEdge to the edge set.
    * Also updates the inbound/outbound sets of the edge's nodes.
-   * @param {!Node} sourceNode The node at the start of the edge.
-   * @param {!Node} targetNode The node at the end of the edge.
+   * @param {!GraphNode} sourceNode The node at the start of the edge.
+   * @param {!GraphNode} targetNode The node at the end of the edge.
    */
   addEdgeIfNew(sourceNode, targetNode) {
     const edgeId = getEdgeIdFromNodes(sourceNode.id, targetNode.id);
     if (!this.edges.has(edgeId)) {
-      const edge = new Edge(edgeId, sourceNode, targetNode);
+      const edge = new GraphEdge(edgeId, sourceNode, targetNode);
       this.edges.set(edgeId, edge);
       sourceNode.addOutbound(targetNode);
       targetNode.addInbound(sourceNode);
@@ -197,8 +196,8 @@ class GraphModel {
    */
   getDataForD3(includedNodeSet, inboundDepth, outboundDepth) {
     // These will be updated throughout the function and returned at the end.
-    const /** !Set<!Node> */ resultNodeSet = new Set();
-    const /** !Set<!Edge> */ resultEdgeSet = new Set();
+    const /** !Set<!GraphNode> */ resultNodeSet = new Set();
+    const /** !Set<!GraphNode> */ resultEdgeSet = new Set();
 
     for (const node of this.nodes.values()) {
       node.resetVisualizationState();
@@ -208,8 +207,8 @@ class GraphModel {
     // to the filter nodes. We maintain both a Set and array for efficiency.
     const /** !Set<string> */ inboundSeenNodes = new Set(includedNodeSet);
     const /** !Set<string> */ outboundSeenNodes = new Set(includedNodeSet);
-    const /** !Array<!Node> */ inboundNodeQueue = [];
-    const /** !Array<!Node> */ outboundNodeQueue = [];
+    const /** !Array<!GraphNode> */ inboundNodeQueue = [];
+    const /** !Array<!GraphNode> */ outboundNodeQueue = [];
     for (const nodeName of includedNodeSet) {
       const node = this.nodes.get(nodeName);
       if (node !== undefined) {
@@ -226,7 +225,8 @@ class GraphModel {
      *     traverse. If false, outbound edges are used.
      * @param {!Set<string>} seenNodes The IDs of nodes already visited in the
      *     BFS. Will be modified.
-     * @param {!Array<!Node>} nodeQueue The queue used in BFS. Will be modified.
+     * @param {!Array<!GraphNode>} nodeQueue The queue used in BFS. Will be
+     *     modified.
      * @param {number} maxDepth The depth of the traversal.
      */
     const updateResultBFS = (
@@ -296,10 +296,10 @@ class GraphModel {
 }
 
 export {
-  Node,
+  GraphNode,
   PackageNode,
   ClassNode,
-  Edge,
+  GraphEdge,
   GraphModel,
   D3GraphData,
 };

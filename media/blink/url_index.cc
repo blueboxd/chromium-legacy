@@ -217,9 +217,9 @@ UrlIndex::UrlIndex(ResourceFetchContext* fetch_context, int block_shift)
     : fetch_context_(fetch_context),
       lru_(new MultiBuffer::GlobalLRU(base::ThreadTaskRunnerHandle::Get())),
       block_shift_(block_shift),
-      memory_pressure_listener_(
-          FROM_HERE,
-          base::Bind(&UrlIndex::OnMemoryPressure, base::Unretained(this))) {}
+      memory_pressure_listener_(FROM_HERE,
+                                base::BindRepeating(&UrlIndex::OnMemoryPressure,
+                                                    base::Unretained(this))) {}
 
 UrlIndex::~UrlIndex() {
 #if DCHECK_IS_ON()

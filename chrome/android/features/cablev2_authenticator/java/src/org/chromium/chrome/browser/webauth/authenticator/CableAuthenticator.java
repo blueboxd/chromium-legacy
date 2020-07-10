@@ -74,8 +74,6 @@ class CableAuthenticator {
     private final SingleThreadTaskRunner mTaskRunner;
     private boolean mBleStarted = false;
 
-    private long mClientAddress;
-
     public enum Result {
         REGISTER_OK,
         REGISTER_ERROR,
@@ -192,12 +190,9 @@ class CableAuthenticator {
     }
 
     @CalledByNative
-    public void makeCredential(long clientAddress, String origin, String rpId, byte[] challenge,
-            byte[] userId, int[] algorithms, byte[][] excludedCredentialIds,
-            boolean residentKeyRequired) {
+    public void makeCredential(String origin, String rpId, byte[] challenge, byte[] userId,
+            int[] algorithms, byte[][] excludedCredentialIds, boolean residentKeyRequired) {
         // TODO: handle concurrent requests
-        assert mClientAddress == 0;
-        mClientAddress = clientAddress;
         Fido2PrivilegedApiClient client = Fido.getFido2PrivilegedApiClient(mContext);
         if (client == null) {
             Log.i(TAG, "getFido2PrivilegedApiClient failed");
@@ -264,12 +259,9 @@ class CableAuthenticator {
     }
 
     @CalledByNative
-    public void getAssertion(long clientAddress, String origin, String rpId, byte[] challenge,
-            byte[][] allowedCredentialIds) {
+    public void getAssertion(
+            String origin, String rpId, byte[] challenge, byte[][] allowedCredentialIds) {
         // TODO: handle concurrent requests
-        assert mClientAddress == 0;
-        mClientAddress = clientAddress;
-
         Fido2PrivilegedApiClient client = Fido.getFido2PrivilegedApiClient(mContext);
         if (client == null) {
             Log.i(TAG, "getFido2PrivilegedApiClient failed");
@@ -349,8 +341,7 @@ class CableAuthenticator {
     public boolean onRegisterResponse(int resultCode, Intent data) {
         if (resultCode != Activity.RESULT_OK || data == null) {
             Log.e(TAG, "Failed with result code" + resultCode);
-            onAuthenticatorAssertionResponse(
-                    mClientAddress, CTAP2_ERR_OPERATION_DENIED, null, null, null, null);
+            onAuthenticatorAssertionResponse(CTAP2_ERR_OPERATION_DENIED, null, null, null, null);
             return false;
         }
         Log.e(TAG, "OK.");
@@ -374,14 +365,14 @@ class CableAuthenticator {
                     ctap_status = CTAP2_ERR_OTHER;
                     break;
             }
-            onAuthenticatorAttestationResponse(mClientAddress, CTAP2_ERR_OTHER, null, null);
+            onAuthenticatorAttestationResponse(CTAP2_ERR_OTHER, null, null);
             return false;
         }
 
         if (!data.hasExtra(Fido.FIDO2_KEY_RESPONSE_EXTRA)
                 || !data.hasExtra(Fido.FIDO2_KEY_CREDENTIAL_EXTRA)) {
             Log.e(TAG, "Missing FIDO2_KEY_RESPONSE_EXTRA or FIDO2_KEY_CREDENTIAL_EXTRA");
-            onAuthenticatorAttestationResponse(mClientAddress, CTAP2_ERR_OTHER, null, null);
+            onAuthenticatorAttestationResponse(CTAP2_ERR_OTHER, null, null);
             return false;
         }
 
@@ -391,16 +382,15 @@ class CableAuthenticator {
         AuthenticatorAttestationResponse response =
                 AuthenticatorAttestationResponse.deserializeFromBytes(
                         data.getByteArrayExtra(Fido.FIDO2_KEY_RESPONSE_EXTRA));
-        onAuthenticatorAttestationResponse(mClientAddress, CTAP2_OK, response.getClientDataJSON(),
-                response.getAttestationObject());
+        onAuthenticatorAttestationResponse(
+                CTAP2_OK, response.getClientDataJSON(), response.getAttestationObject());
         return true;
     }
 
     public boolean onSignResponse(int resultCode, Intent data) {
         if (resultCode != Activity.RESULT_OK || data == null) {
             Log.e(TAG, "Failed with result code" + resultCode);
-            onAuthenticatorAssertionResponse(
-                    mClientAddress, CTAP2_ERR_OPERATION_DENIED, null, null, null, null);
+            onAuthenticatorAssertionResponse(CTAP2_ERR_OPERATION_DENIED, null, null, null, null);
             return false;
         }
         Log.e(TAG, "OK.");
@@ -424,15 +414,14 @@ class CableAuthenticator {
                     ctap_status = CTAP2_ERR_OTHER;
                     break;
             }
-            onAuthenticatorAssertionResponse(mClientAddress, ctap_status, null, null, null, null);
+            onAuthenticatorAssertionResponse(ctap_status, null, null, null, null);
             return false;
         }
 
         if (!data.hasExtra(Fido.FIDO2_KEY_RESPONSE_EXTRA)
                 || !data.hasExtra(Fido.FIDO2_KEY_CREDENTIAL_EXTRA)) {
             Log.e(TAG, "Missing FIDO2_KEY_RESPONSE_EXTRA or FIDO2_KEY_CREDENTIAL_EXTRA");
-            onAuthenticatorAssertionResponse(
-                    mClientAddress, CTAP2_ERR_OTHER, null, null, null, null);
+            onAuthenticatorAssertionResponse(CTAP2_ERR_OTHER, null, null, null, null);
             return false;
         }
 
@@ -442,27 +431,25 @@ class CableAuthenticator {
         AuthenticatorAssertionResponse response =
                 AuthenticatorAssertionResponse.deserializeFromBytes(
                         data.getByteArrayExtra(Fido.FIDO2_KEY_RESPONSE_EXTRA));
-        onAuthenticatorAssertionResponse(mClientAddress, CTAP2_OK, response.getClientDataJSON(),
+        onAuthenticatorAssertionResponse(CTAP2_OK, response.getClientDataJSON(),
                 response.getKeyHandle(), response.getAuthenticatorData(), response.getSignature());
         return true;
     }
 
     private void onAuthenticatorAttestationResponse(
-            long client, int ctapStatus, byte[] clientDataJSON, byte[] attestationObject) {
+            int ctapStatus, byte[] clientDataJSON, byte[] attestationObject) {
         mTaskRunner.postTask(
                 ()
                         -> CableAuthenticatorJni.get().onAuthenticatorAttestationResponse(
-                                client, ctapStatus, clientDataJSON, attestationObject));
+                                ctapStatus, clientDataJSON, attestationObject));
     }
 
-    private void onAuthenticatorAssertionResponse(long client, int ctapStatus,
-            byte[] clientDataJSON, byte[] credentialID, byte[] authenticatorData,
-            byte[] signature) {
+    private void onAuthenticatorAssertionResponse(int ctapStatus, byte[] clientDataJSON,
+            byte[] credentialID, byte[] authenticatorData, byte[] signature) {
         mTaskRunner.postTask(
                 ()
-                        -> CableAuthenticatorJni.get().onAuthenticatorAssertionResponse(client,
-                                ctapStatus, clientDataJSON, credentialID, authenticatorData,
-                                signature));
+                        -> CableAuthenticatorJni.get().onAuthenticatorAssertionResponse(ctapStatus,
+                                clientDataJSON, credentialID, authenticatorData, signature));
     }
 
     // Calls from UI.
@@ -505,11 +492,11 @@ class CableAuthenticator {
          * Called to alert native code of a response to a makeCredential request.
          */
         void onAuthenticatorAttestationResponse(
-                long client, int ctapStatus, byte[] clientDataJSON, byte[] attestationObject);
+                int ctapStatus, byte[] clientDataJSON, byte[] attestationObject);
         /**
          * Called to alert native code of a response to a getAssertion request.
          */
-        void onAuthenticatorAssertionResponse(long client, int ctapStatus, byte[] clientDataJSON,
+        void onAuthenticatorAssertionResponse(int ctapStatus, byte[] clientDataJSON,
                 byte[] credentialID, byte[] authenticatorData, byte[] signature);
     }
 }

@@ -138,6 +138,10 @@ class CORE_EXPORT InspectorHighlight {
   ColorFormat color_format_;
 };
 
+std::unique_ptr<protocol::DictionaryValue> InspectorGridHighlight(
+    Node*,
+    const InspectorGridHighlightConfig& config);
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_HIGHLIGHT_H_

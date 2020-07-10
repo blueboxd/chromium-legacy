@@ -366,7 +366,21 @@ need to be translated for each locale.-->
       <message name="IDS_APP_MENU_EMPTY_SUBMENU" desc="Used when a submenu has no entries">
         (empty)
       </message>
-
+      <message name="IDS_CLIPBOARD_MENU_IMAGE" desc="Used when an image is stored in the clipboard history">
+        Image
+      </message>
+      <message name="IDS_CLIPBOARD_MENU_RTF_CONTENT" desc="Used when Rich Text Format (RTF) content is stored in the clipboard history">
+        RTF Content
+      </message>
+      <message name="IDS_CLIPBOARD_MENU_WEB_SMART_PASTE" desc="Used when web smart paste content is stored in the clipboard history">
+        Web Smart Paste Content
+      </message>
+      <message name="IDS_CLIPBOARD_MENU_CLIPBOARD" desc="The name of the system clipboard">
+        Clipboard
+      </message>
+      <message name="IDS_CLIPBOARD_MENU_DELETE_ALL" desc="Used to indicate to a user that all clipboard items will be deleted if selected">
+        Delete All
+      </message>
       <message name="IDS_MENU_ITEM_NEW_BADGE" desc="Appears as a badge on menu items denoting new features">
         New
       </message>

@@ -3603,6 +3603,14 @@ const char kDragToSnapInClamshellModeDescription[] =
     "with multi-display-overview-and-split-view (otherwise you are likely to "
     "get a crash).";
 
+const char kEnhancedClipboardName[] =
+    "Productivity Experiment: Enable Enhanced Clipboard";
+const char kEnhancedClipboardDescription[] =
+    "Enables an experimental clipboard history which aims to reduce context "
+    "switching. After copying to the clipboard, press search + v to show the "
+    "history. Selecting something from the menu will result in a paste to the "
+    "active window.";
+
 const char kMultiDisplayOverviewAndSplitViewName[] =
     "Enable multi-display overview and split view.";
 const char kMultiDisplayOverviewAndSplitViewDescription[] =

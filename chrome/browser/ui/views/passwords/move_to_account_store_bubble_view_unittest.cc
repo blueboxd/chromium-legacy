@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/passwords/move_to_account_store_bubble_view.h"
 
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/passwords/password_bubble_view_test_base.h"
 #include "chrome/grit/generated_resources.h"
@@ -21,6 +22,11 @@ class MoveToAccountStoreBubbleViewTest : public PasswordBubbleViewTestBase {
   MoveToAccountStoreBubbleViewTest() {
     feature_list_.InitAndEnableFeature(
         password_manager::features::kEnablePasswordsAccountStorage);
+
+    autofill::PasswordForm pending_password;
+    pending_password.url = GURL("www.example.com");
+    ON_CALL(*model_delegate_mock(), GetPendingPassword)
+        .WillByDefault(testing::ReturnRef(pending_password));
   }
   ~MoveToAccountStoreBubbleViewTest() override = default;
 
@@ -34,6 +40,12 @@ class MoveToAccountStoreBubbleViewTest : public PasswordBubbleViewTestBase {
 };
 
 void MoveToAccountStoreBubbleViewTest::CreateViewAndShow() {
+  // The move bubble is shown only to signed in users. Make sure there is one.
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile());
+  AccountInfo info =
+      signin::MakePrimaryAccountAvailable(identity_manager, "test@email.com");
+
   CreateAnchorViewAndShow();
 
   view_ = new MoveToAccountStoreBubbleView(web_contents(), anchor_view());
@@ -60,7 +72,7 @@ TEST_F(MoveToAccountStoreBubbleViewTest, HasTwoButtons) {
 TEST_F(MoveToAccountStoreBubbleViewTest, HasDescription) {
   CreateViewAndShow();
 
-  ASSERT_EQ(view_->children().size(), 1u);
+  ASSERT_EQ(view_->children().size(), 2u);
   views::Label* description =
       static_cast<views::Label*>(*view_->children().begin());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MOVE_HINT),

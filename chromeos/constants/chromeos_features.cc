@@ -193,6 +193,11 @@ const base::Feature kFilesZipNoNaCl{"FilesZipNoNaCl",
 const base::Feature kMojoDBusRelay{"MojoDBusRelay",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables pasting a few recently copied items in a menu when pressing search +
+// v.
+const base::Feature kMultipaste{"MultiPaste",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to launch IME service with an 'ime' sandbox.
 const base::Feature kEnableImeSandbox{"EnableImeSandbox",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
@@ -509,6 +514,10 @@ bool IsLoginDisplayPasswordButtonEnabled() {
 
 bool IsMinimumChromeVersionEnabled() {
   return base::FeatureList::IsEnabled(kMinimumChromeVersion);
+}
+
+bool IsMultipasteEnabled() {
+  return base::FeatureList::IsEnabled(kMultipaste);
 }
 
 bool IsOobeScreensPriorityEnabled() {

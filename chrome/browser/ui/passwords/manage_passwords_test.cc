@@ -14,6 +14,7 @@
 #include "chrome/browser/password_manager/password_manager_test_base.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -31,6 +32,8 @@
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "content/public/test/test_utils.h"
 
 using base::ASCIIToUTF16;
@@ -185,12 +188,19 @@ void ManagePasswordsTest::SetupUnsafeState() {
 }
 
 void ManagePasswordsTest::SetupMovingPasswords() {
+  // The move bubble is shown only to signed in users. Make sure there is one.
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(browser()->profile());
+  AccountInfo info =
+      signin::MakePrimaryAccountAvailable(identity_manager, "test@email.com");
   auto form_manager = std::make_unique<
       testing::NiceMock<password_manager::MockPasswordFormManagerForUI>>();
   password_manager::MockPasswordFormManagerForUI* form_manager_ptr =
       form_manager.get();
   std::vector<const autofill::PasswordForm*> best_matches = {test_form()};
   EXPECT_CALL(*form_manager, GetBestMatches).WillOnce(ReturnRef(best_matches));
+  ON_CALL(*form_manager, GetPendingCredentials)
+      .WillByDefault(ReturnRef(*test_form()));
   ON_CALL(*form_manager, GetFederatedMatches)
       .WillByDefault(Return(std::vector<const autofill::PasswordForm*>{}));
   ON_CALL(*form_manager, GetURL).WillByDefault(ReturnRef(test_form()->url));

@@ -35,45 +35,36 @@ void RecordConnectionError(bool connection_error_happened) {
 
 }  // namespace
 
-// static
-void MojoCdm::Create(
-    const std::string& key_system,
-    const CdmConfig& cdm_config,
-    mojo::PendingRemote<mojom::ContentDecryptionModule> remote_cdm,
-    const SessionMessageCB& session_message_cb,
-    const SessionClosedCB& session_closed_cb,
-    const SessionKeysChangeCB& session_keys_change_cb,
-    const SessionExpirationUpdateCB& session_expiration_update_cb,
-    CdmCreatedCB cdm_created_cb) {
-  scoped_refptr<MojoCdm> mojo_cdm(
-      new MojoCdm(std::move(remote_cdm), session_message_cb, session_closed_cb,
-                  session_keys_change_cb, session_expiration_update_cb));
-
-  // |mojo_cdm| ownership is passed to the promise.
-  auto promise = std::make_unique<CdmInitializedPromise>(
-      std::move(cdm_created_cb), mojo_cdm);
-
-  mojo_cdm->InitializeCdm(key_system, cdm_config, std::move(promise));
-}
-
-MojoCdm::MojoCdm(mojo::PendingRemote<mojom::ContentDecryptionModule> remote_cdm,
+MojoCdm::MojoCdm(mojo::Remote<mojom::ContentDecryptionModule> remote_cdm,
+                 int32_t cdm_id,
+                 mojo::PendingRemote<mojom::Decryptor> decryptor_remote,
                  const SessionMessageCB& session_message_cb,
                  const SessionClosedCB& session_closed_cb,
                  const SessionKeysChangeCB& session_keys_change_cb,
                  const SessionExpirationUpdateCB& session_expiration_update_cb)
     : remote_cdm_(std::move(remote_cdm)),
-      cdm_id_(CdmContext::kInvalidCdmId),
+      cdm_id_(cdm_id),
+      decryptor_remote_(std::move(decryptor_remote)),
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
       session_keys_change_cb_(session_keys_change_cb),
       session_expiration_update_cb_(session_expiration_update_cb) {
-  DVLOG(1) << __func__;
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_NE(CdmContext::kInvalidCdmId, cdm_id);
+  DVLOG(2) << __func__ << " cdm_id: " << cdm_id;
   DCHECK(session_message_cb_);
   DCHECK(session_closed_cb_);
   DCHECK(session_keys_change_cb_);
   DCHECK(session_expiration_update_cb_);
 
   remote_cdm_->SetClient(client_receiver_.BindNewEndpointAndPassRemote());
+
+  // Report a false event here as a baseline.
+  RecordConnectionError(false);
+
+  // Otherwise, set an error handler to catch the connection error.
+  remote_cdm_.set_disconnect_with_reason_handler(
+      base::BindOnce(&MojoCdm::OnConnectionError, base::Unretained(this)));
 }
 
 MojoCdm::~MojoCdm() {
@@ -99,34 +90,6 @@ MojoCdm::~MojoCdm() {
 // and if |this| is destroyed, |remote_cdm_| will be destroyed as well. Then the
 // error handler can't be invoked and callbacks won't be dispatched.
 
-void MojoCdm::InitializeCdm(const std::string& key_system,
-                            const CdmConfig& cdm_config,
-                            std::unique_ptr<CdmInitializedPromise> promise) {
-  DVLOG(1) << __func__ << ": " << key_system;
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  // If connection error has happened, fail immediately.
-  if (!remote_cdm_.is_connected()) {
-    LOG(ERROR) << "Remote CDM encountered error.";
-    promise->reject(CdmPromise::Exception::INVALID_STATE_ERROR, 0,
-                    "Mojo CDM creation failed.");
-    return;
-  }
-
-  // Report a false event here as a baseline.
-  RecordConnectionError(false);
-
-  // Otherwise, set an error handler to catch the connection error.
-  remote_cdm_.set_disconnect_with_reason_handler(
-      base::BindOnce(&MojoCdm::OnConnectionError, base::Unretained(this)));
-
-  pending_init_promise_ = std::move(promise);
-
-  remote_cdm_->Initialize(
-      key_system, cdm_config,
-      base::BindOnce(&MojoCdm::OnCdmInitialized, base::Unretained(this)));
-}
-
 void MojoCdm::OnConnectionError(uint32_t custom_reason,
                                 const std::string& description) {
   LOG(ERROR) << "Remote CDM connection error: custom_reason=" << custom_reason
@@ -136,17 +99,6 @@ void MojoCdm::OnConnectionError(uint32_t custom_reason,
   RecordConnectionError(true);
 
   remote_cdm_.reset();
-
-  // Handle initial connection error.
-  if (pending_init_promise_) {
-    DCHECK(!cdm_session_tracker_.HasRemainingSessions());
-    pending_init_promise_->reject(CdmPromise::Exception::INVALID_STATE_ERROR,
-                                  CdmPromise::SystemCode::kConnectionError,
-                                  "Mojo CDM creation failed.");
-    // Dropping the promise could cause |this| to be destructed.
-    pending_init_promise_.reset();
-    return;
-  }
 
   // As communication with the remote CDM is broken, reject any outstanding
   // promises and close all the existing sessions.
@@ -360,32 +312,6 @@ void MojoCdm::OnSessionExpirationUpdate(const std::string& session_id,
 
   session_expiration_update_cb_.Run(
       session_id, base::Time::FromDoubleT(new_expiry_time_sec));
-}
-
-void MojoCdm::OnCdmInitialized(
-    mojom::CdmPromiseResultPtr result,
-    int cdm_id,
-    mojo::PendingRemote<mojom::Decryptor> decryptor) {
-  DVLOG(2) << __func__ << " cdm_id: " << cdm_id;
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(pending_init_promise_);
-
-  if (!result->success) {
-    pending_init_promise_->reject(result->exception, result->system_code,
-                                  result->error_message);
-    pending_init_promise_.reset();
-    return;
-  }
-
-  {
-    base::AutoLock auto_lock(lock_);
-    DCHECK_NE(CdmContext::kInvalidCdmId, cdm_id);
-    cdm_id_ = cdm_id;
-    decryptor_remote_ = std::move(decryptor);
-  }
-
-  pending_init_promise_->resolve();
-  pending_init_promise_.reset();
 }
 
 void MojoCdm::OnKeyAdded() {

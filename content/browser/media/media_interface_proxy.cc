@@ -412,9 +412,9 @@ void MediaInterfaceProxy::CreateMediaPlayerRenderer(
 }
 #endif
 
-void MediaInterfaceProxy::CreateCdm(
-    const std::string& key_system,
-    mojo::PendingReceiver<media::mojom::ContentDecryptionModule> receiver) {
+void MediaInterfaceProxy::CreateCdm(const std::string& key_system,
+                                    const media::CdmConfig& cdm_config,
+                                    CreateCdmCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   auto* factory = GetCdmFactory(key_system);
@@ -430,7 +430,7 @@ void MediaInterfaceProxy::CreateCdm(
 #endif
 
   if (factory)
-    factory->CreateCdm(key_system, std::move(receiver));
+    factory->CreateCdm(key_system, cdm_config, std::move(callback));
 }
 
 mojo::PendingRemote<media::mojom::FrameInterfaceFactory>

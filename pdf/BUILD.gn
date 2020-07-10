@@ -27,28 +27,6 @@ if (enable_pdf) {
   }
 
   static_library("pdf") {
-    configs += [ ":pdf_common_config" ]
-    deps = [
-      ":features",
-      "//base",
-      "//base:i18n",
-      "//net",
-      "//ppapi/cpp:objects",
-      "//ppapi/cpp/private:internal_module",
-      "//ui/base",
-      "//ui/gfx/range",
-    ]
-
-    public = [
-      "pdf.h",
-      "pdf_ppapi.h",
-    ]
-
-    friend = [
-      ":pdf_unittests",
-      ":pdf_test_utils",
-    ]
-
     sources = [
       "accessibility.cc",
       "accessibility.h",
@@ -92,14 +70,30 @@ if (enable_pdf) {
       "url_loader_wrapper_impl.h",
     ]
 
-    if (pdf_engine == 0) {
-      deps += [
-        "//gin",
-        "//pdf/pdfium/fuzzers",
-        "//printing",
-        "//third_party/pdfium",
-      ]
+    configs += [ ":pdf_common_config" ]
 
+    public = [
+      "pdf.h",
+      "pdf_ppapi.h",
+    ]
+
+    friend = [
+      ":pdf_unittests",
+      ":pdf_test_utils",
+    ]
+
+    deps = [
+      ":features",
+      "//base",
+      "//base:i18n",
+      "//net",
+      "//ppapi/cpp:objects",
+      "//ppapi/cpp/private:internal_module",
+      "//ui/base",
+      "//ui/gfx/range",
+    ]
+
+    if (pdf_engine == 0) {
       sources += [
         "pdfium/pdfium_api_string_buffer_adapter.cc",
         "pdfium/pdfium_api_string_buffer_adapter.h",
@@ -128,6 +122,13 @@ if (enable_pdf) {
         "pdfium/pdfium_unsupported_features.h",
       ]
 
+      deps += [
+        "//gin",
+        "//pdf/pdfium/fuzzers",
+        "//printing",
+        "//third_party/pdfium",
+      ]
+
       if (is_linux) {
         sources += [
           "pdfium/pdfium_font_linux.cc",
@@ -138,17 +139,20 @@ if (enable_pdf) {
   }
 
   source_set("features") {
+    sources = [ "pdf_features.cc" ]
+
     configs += [ ":pdf_common_config" ]
-    deps = [ "//base" ]
 
     public = [ "pdf_features.h" ]
 
-    sources = [ "pdf_features.cc" ]
+    deps = [ "//base" ]
   }
 
   source_set("pdf_test_utils") {
     visibility = [ ":*" ]
+
     testonly = true
+
     sources = [
       "test/test_client.cc",
       "test/test_client.h",
@@ -171,7 +175,7 @@ if (enable_pdf) {
 
   test("pdf_unittests") {
     testonly = true
-    configs += [ ":pdf_common_config" ]
+
     sources = [
       "chunk_stream_unittest.cc",
       "document_layout_unittest.cc",
@@ -182,6 +186,10 @@ if (enable_pdf) {
       "pdf_transform_unittest.cc",
       "range_set_unittest.cc",
     ]
+
+    configs += [ ":pdf_common_config" ]
+
+    data = [ "test/data/" ]
 
     deps = [
       ":features",
@@ -199,14 +207,7 @@ if (enable_pdf) {
       "//ui/gfx/range",
     ]
 
-    data = [ "test/data/" ]
-
     if (pdf_engine == 0) {
-      configs += [ "//v8:external_startup_data" ]
-      deps += [
-        "//gin",
-        "//third_party/pdfium",
-      ]
       sources += [
         "pdfium/accessibility_unittest.cc",
         "pdfium/findtext_unittest.cc",
@@ -218,6 +219,13 @@ if (enable_pdf) {
         "pdfium/pdfium_print_unittest.cc",
         "pdfium/pdfium_test_base.cc",
         "pdfium/pdfium_test_base.h",
+      ]
+
+      configs += [ "//v8:external_startup_data" ]
+
+      deps += [
+        "//gin",
+        "//third_party/pdfium",
       ]
 
       if (v8_use_external_startup_data) {

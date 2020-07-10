@@ -5,9 +5,9 @@
 GEN_INCLUDE(['assert_additions.js', 'callback_helper.js', 'doc_utils.js']);
 
 /**
- * Base test fixture for end to end tests of accessibility component extensions.
- * These tests are intended to run inside of the extension's background page
- * context.
+ * Base test fixture for end to end tests (tests that need a full extension
+ * renderer) for accessibility component extensions. These tests run inside of
+ * the extension's background page context.
  */
 E2ETestBase = class extends testing.Test {
   constructor() {
@@ -72,7 +72,7 @@ E2ETestBase = class extends testing.Test {
    * Gets the desktop from the automation API and Launches a new tab with
    * the given document, and runs |callback| when a load complete fires.
    * Arranges to call |testDone()| after |callback| returns.
-   * NOTE: Callbacks creatd instide |opt_callback| must be wrapped with
+   * NOTE: Callbacks created inside |opt_callback| must be wrapped with
    * |this.newCallback| if passed to asynchronous calls.  Otherwise, the test
    * will be finished prematurely.
    * @param {string|function(): string} doc An HTML snippet, optionally wrapped

@@ -73,8 +73,8 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
           renderer_extension_request) final;
 #endif  // defined(OS_ANDROID)
   void CreateCdm(const std::string& key_system,
-                 mojo::PendingReceiver<media::mojom::ContentDecryptionModule>
-                     receiver) final;
+                 const media::CdmConfig& cdm_config,
+                 CreateCdmCallback callback) final;
 
  private:
   // Gets services provided by the browser (at RenderFrameHost level) to the

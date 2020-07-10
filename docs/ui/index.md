@@ -9,7 +9,7 @@ contact the Views team? You've reached the right place.
 
 Recipes to help you work with Chrome UI.
 
-* [Coming Soon]
+* [Examples](/docs/ui/create/index.md)
 
 ### **[Learn](/docs/ui/learn/index.md)**
 

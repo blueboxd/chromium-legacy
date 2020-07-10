@@ -119,7 +119,7 @@ TEST_F(MoveToAccountStoreBubbleControllerTest, ProvidesProfileIcon) {
   signin::SimulateAccountImageFetch(
       identity_manager, info.account_id, "https://todd.tester.com/avatar.png",
       gfx::Image(gfx::test::CreateImageSkia(96, 96)));
-  EXPECT_FALSE(controller()->GetProfileIcon().IsEmpty());
+  EXPECT_FALSE(controller()->GetProfileIcon(/*size=*/48).IsEmpty());
 }
 
 }  // namespace

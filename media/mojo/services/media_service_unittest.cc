@@ -116,32 +116,15 @@ class MediaServiceTest : public testing::Test {
         std::move(frame_interfaces));
   }
 
-  MOCK_METHOD3(OnCdmInitialized,
-               void(mojom::CdmPromiseResultPtr result,
-                    int cdm_id,
-                    mojo::PendingRemote<mojom::Decryptor> decryptor));
   MOCK_METHOD0(OnCdmConnectionError, void());
 
-  // Returns the CDM ID associated with the CDM.
-  int InitializeCdm(const std::string& key_system, bool expected_result) {
-    base::RunLoop run_loop;
-    interface_factory_->CreateCdm(key_system,
-                                  cdm_.BindNewPipeAndPassReceiver());
-    cdm_.set_disconnect_handler(base::BindOnce(
-        &MediaServiceTest::OnCdmConnectionError, base::Unretained(this)));
-
-    int cdm_id = CdmContext::kInvalidCdmId;
-
-    // The last parameter mojo::PendingRemote<mojom::Decryptor> is move-only and
-    // not supported by DoAll. Hence use WithArg to only extract the "int
-    // cdm_id" out and then call DoAll.
-    EXPECT_CALL(*this, OnCdmInitialized(MatchesResult(expected_result), _, _))
-        .WillOnce(WithArg<1>(DoAll(SaveArg<0>(&cdm_id), QuitLoop(&run_loop))));
-    cdm_->Initialize(key_system, CdmConfig(),
-                     base::BindOnce(&MediaServiceTest::OnCdmInitialized,
-                                    base::Unretained(this)));
-    run_loop.Run();
-    return cdm_id;
+  void InitializeCdm(const std::string& key_system, bool expected_result) {
+    interface_factory_->CreateCdm(
+        key_system, CdmConfig(),
+        base::BindOnce(&MediaServiceTest::OnCdmCreated, base::Unretained(this),
+                       expected_result));
+    // Run this to idle to complete the CreateCdm call.
+    task_environment_.RunUntilIdle();
   }
 
   MOCK_METHOD1(OnRendererInitialized, void(bool));
@@ -177,6 +160,24 @@ class MediaServiceTest : public testing::Test {
   MOCK_METHOD0(OnMediaServiceIdle, void());
 
  protected:
+  void OnCdmCreated(bool expected_result,
+                    mojo::PendingRemote<mojom::ContentDecryptionModule> remote,
+                    int32_t cdm_id,
+                    mojo::PendingRemote<mojom::Decryptor> decryptor,
+                    const std::string& error_message) {
+    if (!expected_result) {
+      EXPECT_FALSE(remote);
+      EXPECT_FALSE(decryptor);
+      EXPECT_TRUE(!error_message.empty());
+      EXPECT_EQ(cdm_id, CdmContext::kInvalidCdmId);
+      return;
+    }
+    EXPECT_TRUE(remote);
+    EXPECT_TRUE(error_message.empty());
+    cdm_.Bind(std::move(remote));
+    cdm_.set_disconnect_handler(base::BindOnce(
+        &MediaServiceTest::OnCdmConnectionError, base::Unretained(this)));
+  }
   base::test::TaskEnvironment task_environment_;
 
   mojo::Remote<mojom::MediaService> media_service_;

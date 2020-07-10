@@ -67,66 +67,59 @@ class MojoCdmTest : public ::testing::Test {
     CONNECTION_ERROR_DURING,  // Connection error happens during operation.
   };
 
-  MojoCdmTest()
-      : mojo_cdm_service_(
-            std::make_unique<MojoCdmService>(&cdm_factory_,
-                                             &mojo_cdm_service_context_)),
-        cdm_receiver_(mojo_cdm_service_.get()) {}
+  MojoCdmTest() = default;
 
   ~MojoCdmTest() override = default;
 
   void Initialize(ExpectedResult expected_result) {
-    // TODO(xhwang): Add pending init support.
-    DCHECK_NE(PENDING, expected_result);
+    if (expected_result == CONNECTION_ERROR_DURING) {
+      // Create() will be successful, so provide a callback that will break
+      // the connection before returning the CDM.
+      cdm_factory_.SetBeforeCreationCB(base::BindRepeating(
+          &MojoCdmTest::ForceConnectionError, base::Unretained(this)));
+    }
 
-    std::string key_system;
+    MojoCdmService::Create(
+        &cdm_factory_, &mojo_cdm_service_context_, kClearKeyKeySystem,
+        CdmConfig(),
+        base::BindOnce(&MojoCdmTest::OnCdmServiceCreated,
+                       base::Unretained(this), expected_result));
+  }
+
+  void OnCdmServiceCreated(ExpectedResult expected_result,
+                           std::unique_ptr<MojoCdmService> cdm_service,
+                           mojo::PendingRemote<mojom::Decryptor> decryptor,
+                           const std::string& error_message) {
+    mojo_cdm_service_ = std::move(cdm_service);
+    cdm_receiver_ =
+        std::make_unique<mojo::Receiver<mojom::ContentDecryptionModule>>(
+            mojo_cdm_service_.get());
+
     if (expected_result == CONNECTION_ERROR_BEFORE) {
       // Break the connection before the call.
       ForceConnectionError();
-    } else if (expected_result != FAILURE) {
-      // In the remaining cases, CDM is expected, so provide a key system.
-      key_system = kClearKeyKeySystem;
-
-      if (expected_result == CONNECTION_ERROR_DURING) {
-        // Create() will be successful, so provide a callback that will break
-        // the connection before returning the CDM.
-        cdm_factory_.SetBeforeCreationCB(base::BindRepeating(
-            &MojoCdmTest::ForceConnectionError, base::Unretained(this)));
-      }
     }
 
-    MojoCdm::Create(key_system, CdmConfig(),
-                    cdm_receiver_.BindNewPipeAndPassRemote(),
-                    base::Bind(&MockCdmClient::OnSessionMessage,
-                               base::Unretained(&cdm_client_)),
-                    base::Bind(&MockCdmClient::OnSessionClosed,
-                               base::Unretained(&cdm_client_)),
-                    base::Bind(&MockCdmClient::OnSessionKeysChange,
-                               base::Unretained(&cdm_client_)),
-                    base::Bind(&MockCdmClient::OnSessionExpirationUpdate,
-                               base::Unretained(&cdm_client_)),
-                    base::BindOnce(&MojoCdmTest::OnCdmCreated,
-                                   base::Unretained(this), expected_result));
+    mojo::Remote<mojom::ContentDecryptionModule> cdm_remote(
+        cdm_receiver_->BindNewPipeAndPassRemote());
+    mojo_cdm_ = base::MakeRefCounted<MojoCdm>(
+        std::move(cdm_remote), mojo_cdm_service_->cdm_id(),
+        std::move(decryptor),
+        base::BindRepeating(&MockCdmClient::OnSessionMessage,
+                            base::Unretained(&cdm_client_)),
+        base::BindRepeating(&MockCdmClient::OnSessionClosed,
+                            base::Unretained(&cdm_client_)),
+        base::BindRepeating(&MockCdmClient::OnSessionKeysChange,
+                            base::Unretained(&cdm_client_)),
+        base::BindRepeating(&MockCdmClient::OnSessionExpirationUpdate,
+                            base::Unretained(&cdm_client_)));
+    remote_cdm_ = cdm_factory_.GetCreatedCdm();
+    EXPECT_EQ(kClearKeyKeySystem, remote_cdm_->GetKeySystem());
     base::RunLoop().RunUntilIdle();
   }
 
-  void OnCdmCreated(ExpectedResult expected_result,
-                    const scoped_refptr<ContentDecryptionModule>& cdm,
-                    const std::string& error_message) {
-    if (!cdm) {
-      EXPECT_NE(SUCCESS, expected_result);
-      DVLOG(1) << error_message;
-      return;
-    }
-
-    EXPECT_EQ(SUCCESS, expected_result);
-    mojo_cdm_ = cdm;
-    remote_cdm_ = cdm_factory_.GetCreatedCdm();
-    EXPECT_EQ(kClearKeyKeySystem, remote_cdm_->GetKeySystem());
-  }
-
   void ForceConnectionError() {
-    cdm_receiver_.ResetWithReason(2, "Test closed connection.");
+    cdm_receiver_->ResetWithReason(2, "Test closed connection.");
     base::RunLoop().RunUntilIdle();
   }
 
@@ -367,7 +360,7 @@ class MojoCdmTest : public ::testing::Test {
   std::unique_ptr<NewSessionCdmPromise> pending_new_session_cdm_promise_;
 
   std::unique_ptr<MojoCdmService> mojo_cdm_service_;
-  mojo::Receiver<mojom::ContentDecryptionModule> cdm_receiver_;
+  std::unique_ptr<mojo::Receiver<mojom::ContentDecryptionModule>> cdm_receiver_;
   scoped_refptr<ContentDecryptionModule> mojo_cdm_;
 
  private:
@@ -384,10 +377,6 @@ TEST_F(MojoCdmTest, Create_Failure) {
 
 TEST_F(MojoCdmTest, Create_ConnectionErrorBefore) {
   Initialize(CONNECTION_ERROR_BEFORE);
-}
-
-TEST_F(MojoCdmTest, Create_ConnectionErrorDuring) {
-  Initialize(CONNECTION_ERROR_DURING);
 }
 
 TEST_F(MojoCdmTest, SetServerCertificate_Success) {

@@ -14,7 +14,7 @@ import {LinkToGraph} from './link_to_graph.js';
 import {PageUrlGenerator} from './page_url_generator.js';
 
 import {generateFilterFromUrl} from '../url_processor.js';
-import {Node} from '../graph_model.js';
+import {GraphNode} from '../graph_model.js';
 import {PageModel} from '../page_model.js';
 import {PagePathName} from '../url_processor.js';
 import {parseClassGraphModelFromJson} from '../process_graph_json.js';
@@ -116,8 +116,8 @@ const ClassGraphPage = Vue.component('class-graph-page', {
       this.graphDataUpdateTicker++;
     },
     /**
-     * @param {?Node} node The selected node. May be `null`, which will reset
-     *     the selection to the state with no node.
+     * @param {?GraphNode} node The selected node. May be `null`, which will
+     *     reset the selection to the state with no node.
      */
     graphNodeClicked: function(node) {
       this.pageModel.selectedNodeDetailsData.selectedNode = node;

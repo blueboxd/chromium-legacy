@@ -691,6 +691,31 @@ Response InspectorOverlayAgent::highlightNode(
   return Response::Success();
 }
 
+Response InspectorOverlayAgent::setShowGridOverlays(
+    std::unique_ptr<protocol::Array<protocol::Overlay::GridNodeHighlightConfig>>
+        grid_node_highlight_configs) {
+  if (grid_node_highlight_configs->size() == 0) {
+    PickTheRightTool();
+    return Response::Success();
+  }
+
+  GridHighlightTool* grid_highlight_tool =
+      MakeGarbageCollected<GridHighlightTool>();
+  for (size_t i = 0; i < grid_node_highlight_configs->size(); ++i) {
+    protocol::Overlay::GridNodeHighlightConfig* config =
+        (*grid_node_highlight_configs)[i].get();
+    Node* node = nullptr;
+    Response response = dom_agent_->AssertNode(config->getNodeId(), node);
+    if (!response.IsSuccess())
+      return response;
+    grid_highlight_tool->AddGridConfig(
+        node, InspectorOverlayAgent::ToGridHighlightConfig(
+                  config->getGridHighlightConfig()));
+  };
+  SetInspectTool(grid_highlight_tool);
+  return Response::Success();
+}
+
 Response InspectorOverlayAgent::highlightFrame(
     const String& frame_id,
     Maybe<protocol::DOM::RGBA> color,
@@ -753,6 +778,23 @@ Response InspectorOverlayAgent::getHighlightObjectForTest(
   NodeHighlightTool tool(node, "" /* selector_list */, std::move(config));
   *result = tool.GetNodeInspectorHighlightAsJson(
       true /* append_element_info */, include_distance.fromMaybe(false));
+  return Response::Success();
+}
+
+Response InspectorOverlayAgent::getGridHighlightObjectsForTest(
+    std::unique_ptr<protocol::Array<int>> node_ids,
+    std::unique_ptr<protocol::DictionaryValue>* highlights) {
+  GridHighlightTool grid_highlight_tool;
+  for (const int node_id : *node_ids) {
+    Node* node = nullptr;
+    Response response = dom_agent_->AssertNode(node_id, node);
+    if (!response.IsSuccess())
+      return response;
+    grid_highlight_tool.AddGridConfig(
+        node, std::make_unique<InspectorGridHighlightConfig>(
+                  InspectorHighlight::DefaultGridConfig()));
+  }
+  *highlights = grid_highlight_tool.GetGridInspectorHighlightsAsJson();
   return Response::Success();
 }
 

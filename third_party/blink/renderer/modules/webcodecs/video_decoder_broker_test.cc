@@ -141,8 +141,12 @@ class FakeInterfaceFactory : public media::mojom::InterfaceFactory {
       mojo::PendingReceiver<media::mojom::Renderer> receiver) override {}
 #endif  // defined(OS_ANDROID
   void CreateCdm(const std::string& key_system,
-                 mojo::PendingReceiver<media::mojom::ContentDecryptionModule>
-                     receiver) override {}
+                 const media::CdmConfig& cdm_config,
+                 CreateCdmCallback callback) override {
+    std::move(callback).Run(mojo::NullRemote(),
+                            media::CdmContext::kInvalidCdmId,
+                            mojo::NullRemote(), "CDM creation not supported");
+  }
 
  private:
   media::MojoCdmServiceContext cdm_service_context_;

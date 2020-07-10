@@ -96,6 +96,30 @@ class NodeHighlightTool : public InspectTool {
 
 // -----------------------------------------------------------------------------
 
+class GridHighlightTool : public InspectTool {
+ public:
+  GridHighlightTool() = default;
+  void AddGridConfig(
+      Node* node,
+      std::unique_ptr<InspectorGridHighlightConfig> grid_highlight_config);
+
+  std::unique_ptr<protocol::DictionaryValue> GetGridInspectorHighlightsAsJson()
+      const;
+
+ private:
+  int GetDataResourceId() override;
+  bool ForwardEventsToOverlay() override;
+  bool HideOnMouseMove() override;
+  bool HideOnHideHighlight() override;
+  void Draw(float scale) override;
+
+  Vector<std::pair<Member<Node>, std::unique_ptr<InspectorGridHighlightConfig>>>
+      grid_node_highlights_;
+  DISALLOW_COPY_AND_ASSIGN(GridHighlightTool);
+};
+
+// -----------------------------------------------------------------------------
+
 class NearbyDistanceTool : public InspectTool {
  public:
   NearbyDistanceTool() = default;

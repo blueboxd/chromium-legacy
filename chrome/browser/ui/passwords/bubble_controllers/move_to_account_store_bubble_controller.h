@@ -5,11 +5,16 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_BUBBLE_CONTROLLERS_MOVE_TO_ACCOUNT_STORE_BUBBLE_CONTROLLER_H_
 #define CHROME_BROWSER_UI_PASSWORDS_BUBBLE_CONTROLLERS_MOVE_TO_ACCOUNT_STORE_BUBBLE_CONTROLLER_H_
 
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/ui/passwords/bubble_controllers/password_bubble_controller_base.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "ui/gfx/image/image.h"
 
 class PasswordsModelDelegate;
+
+namespace favicon_base {
+struct FaviconImageResult;
+}
 
 // This controller manages the bubble asking the user to move a profile
 // credential to their account store.
@@ -25,13 +30,28 @@ class MoveToAccountStoreBubbleController : public PasswordBubbleControllerBase {
   // Called by the view when the user clicks the "No, thanks" button.
   void RejectMove();
 
-  // Returns either a large site icon or a fallback icon.
-  gfx::Image GetProfileIcon();
+  // Returns either a an account avatar or a fallback icon of |size|.
+  gfx::Image GetProfileIcon(int size);
+
+  // Makes a request to the favicon service for the icon of origin url against
+  // which the passwords have been submitted.. The request to the favicon store
+  // is canceled on destruction of the controller.
+  void RequestFavicon(
+      base::OnceCallback<void(const gfx::Image&)> favicon_ready_callback);
 
  private:
+  // Called when the favicon was retrieved. It invokes |favicon_ready_callback|
+  // passing the retrieved favicon.
+  void OnFaviconReady(
+      base::OnceCallback<void(const gfx::Image&)> favicon_ready_callback,
+      const favicon_base::FaviconImageResult& result);
+
   // PasswordBubbleControllerBase:
   base::string16 GetTitle() const override;
   void ReportInteractions() override;
+
+  // Used to track a requested favicon.
+  base::CancelableTaskTracker favicon_tracker_;
 
   password_manager::metrics_util::UIDismissalReason dismissal_reason_ =
       password_manager::metrics_util::NO_DIRECT_INTERACTION;

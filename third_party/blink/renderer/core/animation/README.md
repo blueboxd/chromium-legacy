@@ -2,20 +2,197 @@
 
 This directory contains the main thread animation engine. This implements the
 Web Animations timing model that drives CSS Animations, Transitions and exposes
-the Web Animations API (`element.animate()`) to Javascript.
+the Web Animations API (e.g. `element.animate()`) to Javascript.
 
 ## Contacts
 
-As of 2018 Blink animations is maintained by the
-[cc/ team](https://cs.chromium.org/chromium/src/cc/OWNERS).
+* [Animations OWNERS](
+https://cs.chromium.org/search?&q=file:blink/renderer/core/animation/OWNERS)
+* [Chromium #animations channel on Slack](
+https://chromium.slack.com#animations)
 
-## Specifications Implemented
+## Specifications implemented
 
-*   [CSS Animations Level 1](https://www.w3.org/TR/css-animations-1/)
-*   [CSS Transitions](https://www.w3.org/TR/css-transitions-1/)
-*   [Web Animations](https://www.w3.org/TR/web-animations-1/)
-*   [CSS Properties and Values API Level 1 - Animation Behavior of Custom Properties](https://www.w3.org/TR/css-properties-values-api-1/#animation-behavior-of-custom-properties)
-*   Individual CSS property animation behaviour [e.g. transform interolation](https://www.w3.org/TR/css-transforms-1/#interpolation-of-transforms).
+*   [CSS Animations Level 1](https://drafts.csswg.org/css-animations-1/)
+*   [CSS Animations Level 2](https://drafts.csswg.org/css-animations-2/)
+*   [CSS Transitions Level 1](https://drafts.csswg.org/css-transitions-1/)
+*   [CSS Transitions Level 2](https://drafts.csswg.org/css-transitions-2/)
+*   [Web Animations Level 1](https://drafts.csswg.org/web-animations-1/)
+*   [CSS Properties and Values API Level 1 - Animation Behavior of Custom Properties](
+https://www.w3.org/TR/css-properties-values-api-1/#animation-behavior-of-custom-properties)
+*   Individual CSS property animation behaviour [e.g. transform interolation](
+https://www.w3.org/TR/css-transforms-1/#interpolation-of-transforms).
+
+## Types of animations
+
+There are 3 main types of animations that are supported in this directory
+subtree: CSS animations, CSS transitions, and web animations. These animation
+types are largely differentiated by their creation mechanism, but also have
+differences in behavior such as rules for composite ordering. Nonetheless, all
+three animation types share a common base class ([Animation](
+https://cs.chromium.org/search/?q=class:blink::Animation$)) with the majority
+of the code being common to all three animation types.
+
+### CSS animations
+
+CSS animations are created via CSS rules, whereby an animation-name property
+(or animation shorthand property) refers to one or more keyframes rules.
+Keyframes specify property values at various positions along the animation
+curve. For example:
+
+```css
+@keyframes fade {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes redshift {
+  to { color: red; }
+}
+.fade-out {
+  animation: fade 1s linear, redshift 400ms ease-in-out;
+}
+```
+
+The labels 'from' and 'to' are aliases for '0%' and '100%', respectively.
+Keyframes may specify different property values, and the set of keyframes is not
+required to specify values at 0% or 100% (partial keyframes).  If missing
+starting or ending values for a property, a neutral property values is used
+based on the underlying value. In the above example, the redshift animation will
+animate from the current color to red.
+
+This example illustrates just a few of the options for generating keyframes.
+A more detailed explanation can be found on the [MDN @keyframes](
+https://developer.mozilla.org/en-US/docs/Web/CSS/@keyframes) page. A more
+detailed explanation of the animation shorthand property and its longhand
+counterparts can be found on the [MDN > CSS > animation](
+https://developer.mozilla.org/en-US/docs/Web/CSS/animation) page.
+
+[CSS Animations](https://cs.chromium.org/search?&q=class:blink::CSSAnimation$)
+are created during style update in a multi-stage process. Keyframe models for
+pending animations are created in [CalculateAnimationUpdate](
+https://cs.chromium.org/search?lang=cc&q=function:CSSAnimations::CalculateAnimationUpdate
+), which in turn calls [CreateKeyframeEffectModel](
+https://cs.chromium.org/search?lang=cc&q=function:CreateKeyframeEffectModel%20file:css_animations.cc
+). The algorithm for constructing keyframes for a CSS animation is outlined in
+[css-animations-2/#keyframes](https://drafts.csswg.org/css-animations-2/#keyframes).
+New animations are constructed for the pending animations in
+[MaybeApplyPendingUpdate](
+https://cs.chromium.org/search?lang=cc&q=function:CSSAnimations::MaybeApplyPendingUpdate
+). This method also handles updating the timing model of existing CSS animations
+or canceling CSS animations.
+
+Changes to the [phase](
+https://www.w3.org/TR/web-animations-1/#animation-effect-phases-and-states)
+ of a CSS animation may result in firing one or more [AnimationEvent](
+https://developer.mozilla.org/en-US/docs/Web/API/AnimationEvent)s.  Each CSS
+animation has an associated [AnimationEventDelegate](
+https://cs.chromium.org/search?lang=cc&q=class:AnimationEventDelegate) with an
+[OnEventCondition](
+https://cs.chromium.org/search?lang=cc&q=function:AnimationEventDelegate::OnEventCondition) method,
+which handles dispatching of these events.
+
+The [CSSAnimation interface](
+https://cs.chromium.org/search?q=file:css_animation.idl) extends the
+[Animation interface](https://cs.chromium.org/search?q=file:animation.idl) to
+include an animationName property, which indicated the name of the keyframes
+rule associated with the animation.  Note that this association may be broken
+by interacting with the animation via the web-animation API.
+
+
+### CSS transition
+
+Like CSS animations, CSS transitions are triggered by style rules in CSS;
+however, unlike CSS animations, the keyframes are inferred. For example:
+
+```css
+button {
+  background: blue;
+  transition: background-color 150ms ease-in;
+}
+
+button:hover {
+  background: #05f
+}
+```
+
+In this example, hovering over a button changes the background color. A
+transition animation is created from the previous background color to the new
+background color. A more detailed description of the transition property and its
+longhand counterparts can be found on the [MDN > CSS > Transitions](
+https://developer.mozilla.org/en-US/docs/Web/CSS/transition) page.
+
+[CSS Transitions](https://cs.chromium.org/search?&q=class:blink::CSSTransition$)
+are created during style update in a multi-stage process. Keyframe models for
+pending animations are created in [CalculateTransitionUpdate](
+https://cs.chromium.org/search?lang=cc&q=function:CSSAnimations::CalculateTransitionUpdate$), which
+iterates over names in transition-property calling
+[CalculateTransitionUpdateForProperty](https://cs.chromium.org/search?lang=cc&q=function:CSSAnimations::CalculateTransitionUpdateForProperty)
+for each property. If there is already an active transition for the property
+and the value of the property changes, the transition is retargeted to the new
+end point.  When retargeting an animation, the current position is used as a
+starting point, which is calculated by applying active animations with an
+updated timestamp to the underlying style in [CalculateBeforeChangeStyle](
+https://cs.chromium.org/search?lang=cc&q=function:CSSAnimations::CalculateBeforeChangeStyle
+). The before-change style is lazy evaluated to avoid unnecessary work when no
+transition updates are required, and is computed at most once per element per
+non-animation style update. New transitions are constructed for the pending
+transitions in [MaybeApplyPendingUpdate](
+https://cs.chromium.org/search?lang=cc&q=function:CSSAnimations::MaybeApplyPendingUpdate
+). This method handles constructing new transitions, retargeting active
+transitions, and canceling finished transitions.
+
+Changes to the [phase](
+https://www.w3.org/TR/web-animations-1/#animation-effect-phases-and-states)
+of a CSS transition may result in firing one or more [TransitionEvent](
+https://developer.mozilla.org/en-US/docs/Web/API/TransitionEvent)s.  Each CSS
+transition has an associated [TransitionEventDelegate](
+https://cs.chromium.org/search?lang=cc&q=class:TransitionEventDelegate) with an
+[OnEventCondition](
+https://cs.chromium.org/search?lang=cc&q=function:TransitionEventDelegate::OnEventCondition) method,
+which handles dispatching of these events.
+
+The [CSSTransition interface](
+https://cs.chromium.org/search?q=file:css_transition.idl) extends the
+[Animation interface](https://cs.chromium.org/search?q=file:animation.idl) to
+include an transitionProperty property, which indicated the name of the property
+being transitioned. Note that this association may be broken by interacting with
+the transition via the web-animation API.
+
+### Web Animation
+
+Web animations are programmatically created in JavaScript via calls to
+[Element.animate](
+https://cs.chromium.org/search?q=function:Animatable::Animate). Similar to
+CSS animations, web-animations require a set of keyframes; however, the
+representation of the keyframes is expressed as a list or object in JavaScript.
+For example:
+
+```javascript
+const slideAnimation = element.animate(
+  [ { offset: 1, transform: 'translateX(200px)', easing: 'linear' } ],
+  { duration: 1000,  easing: linear });
+const gravityAnimation = element.animate(
+  { transform: ['none', 'translateY(400px' ] },
+  { duration: 1000, easing: 'ease-in', composite: 'add' });
+```
+
+This example illustrates two formats for expressing the list of keyframes.
+The keyframes argument to animate may be a list of keyframes with optional
+offsets. If offsets are not specified, then equal spacing is assumed. The first
+of the two animations illustrates the use of partial keyframes. For this
+animation, a neutral keyframe is inferred at offset 0.
+
+If animating a single property, they keyframes may be expressed as a object with
+the property name as a key and a list of string/numeric values for the property.
+In this case, equally spaced keyframes are implied. This example also
+illustrates the use of composite modes to combine multiple effects on a single
+property. Since the easing functions are different for the two animations, they
+cannot be combined into a single animation to achieve the desired results.
+
+A more detailed description of the animate method can be found on the
+[MDN Element.animate](
+https://developer.mozilla.org/en-US/docs/Web/API/Element/animate) page.
+
 
 ## Integration with Chromium
 
@@ -120,16 +297,6 @@ The Blink animation engine interacts with Blink/Chrome in the following ways:
     contains the helper functions that are used to
     [process a keyframe argument](https://drafts.csswg.org/web-animations/#processing-a-keyframes-argument)
     which can take an argument of either object or array form.
-
-    [PlayStateUpdateScope](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/animation/animation.h?l=323):
-    whenever there is a mutation to the animation engine from JS level, this
-    gets created and the destructor has the logic that handles everything. It
-    keeps the old and new state of the animation, checks the difference and
-    mutate the properties of the animation, at the end it calls
-    SetOutdatedAnimation() to inform the animation timeline that the time state
-    of this animation is dirtied.
-
-    There are a couple of other integration points that are less critical to everyday browsing:
 
 *   ### DevTools
 

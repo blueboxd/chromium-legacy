@@ -1385,6 +1385,11 @@ void MenuController::SetSelection(MenuItemView* menu_item,
        menu_item->GetType() != MenuItemView::Type::kSubMenu ||
        (menu_item->GetType() == MenuItemView::Type::kActionableSubMenu &&
         (selection_types & SELECTION_OPEN_SUBMENU) == 0))) {
+    // Before firing the selection event, ensure that focus appears to be
+    // within the popup. This is helpful for ATs on some platforms,
+    // specifically on Windows, where selection events in a list are mapped
+    // to focus events. Without this call, the focus appears to be elsewhere.
+    menu_item->GetViewAccessibility().SetPopupFocusOverride();
     menu_item->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
     // Notify an accessibility selected children changed event on the parent
     // submenu.

@@ -704,14 +704,18 @@ void WebFrameTestProxy::CheckIfAudioSinkExistsAndIsAuthorized(
 }
 
 void WebFrameTestProxy::DidClearWindowObject() {
-  // These calls will install the various JS bindings for web tests into the
-  // frame before JS has a chance to run.
-  GCController::Install(GetWebFrame());
-  test_runner()->Install(this, spell_check_.get());
-  web_view_test_proxy_->Install(GetWebFrame());
-  GetLocalRootWebWidgetTestProxy()->Install(GetWebFrame());
-  blink::WebTestingSupport::InjectInternalsObject(GetWebFrame());
-
+  // Avoid installing bindings on the about:blank in between tests. This is
+  // especially problematic for web platform tests that would inject javascript
+  // into the page when installing bindings.
+  if (test_runner()->TestIsRunning()) {
+    // These calls will install the various JS bindings for web tests into the
+    // frame before JS has a chance to run.
+    GCController::Install(GetWebFrame());
+    test_runner()->Install(this, spell_check_.get());
+    web_view_test_proxy_->Install(GetWebFrame());
+    GetLocalRootWebWidgetTestProxy()->Install(GetWebFrame());
+    blink::WebTestingSupport::InjectInternalsObject(GetWebFrame());
+  }
   RenderFrameImpl::DidClearWindowObject();
 }
 

@@ -21,6 +21,7 @@
 #include "skia/ext/skia_utils_base.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_constants.h"
+#include "ui/base/clipboard/clipboard_data.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/clipboard/clipboard_metrics.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
@@ -33,126 +34,6 @@ namespace ui {
 namespace {
 
 const size_t kMaxClipboardSize = 1;
-
-// Clipboard data format used by ClipboardInternal.
-enum class ClipboardInternalFormat {
-  kText = 1 << 0,
-  kHtml = 1 << 1,
-  kRtf = 1 << 2,
-  kBookmark = 1 << 3,
-  kBitmap = 1 << 4,
-  kCustom = 1 << 5,
-  kWeb = 1 << 6,
-};
-
-// ClipboardData contains data copied to the Clipboard for a variety of formats.
-// It mostly just provides APIs to cleanly access and manipulate this data.
-class ClipboardData {
- public:
-  ClipboardData() : web_smart_paste_(false), format_(0) {}
-
-  virtual ~ClipboardData() = default;
-
-  // Bitmask of ClipboardInternalFormat types.
-  int format() const { return format_; }
-
-  const std::string& text() const { return text_; }
-  void set_text(const std::string& text) {
-    text_ = text;
-    format_ |= static_cast<int>(ClipboardInternalFormat::kText);
-  }
-
-  const std::string& markup_data() const { return markup_data_; }
-  void set_markup_data(const std::string& markup_data) {
-    markup_data_ = markup_data;
-    format_ |= static_cast<int>(ClipboardInternalFormat::kHtml);
-  }
-
-  const std::string& rtf_data() const { return rtf_data_; }
-  void SetRTFData(const std::string& rtf_data) {
-    rtf_data_ = rtf_data;
-    format_ |= static_cast<int>(ClipboardInternalFormat::kRtf);
-  }
-
-  const std::string& url() const { return url_; }
-  void set_url(const std::string& url) {
-    url_ = url;
-    format_ |= static_cast<int>(ClipboardInternalFormat::kHtml);
-  }
-
-  const std::string& bookmark_title() const { return bookmark_title_; }
-  void set_bookmark_title(const std::string& bookmark_title) {
-    bookmark_title_ = bookmark_title;
-    format_ |= static_cast<int>(ClipboardInternalFormat::kBookmark);
-  }
-
-  const std::string& bookmark_url() const { return bookmark_url_; }
-  void set_bookmark_url(const std::string& bookmark_url) {
-    bookmark_url_ = bookmark_url;
-    format_ |= static_cast<int>(ClipboardInternalFormat::kBookmark);
-  }
-
-  const SkBitmap& bitmap() const { return bitmap_; }
-  void SetBitmapData(const SkBitmap& bitmap) {
-    if (!skia::SkBitmapToN32OpaqueOrPremul(bitmap, &bitmap_)) {
-      NOTREACHED() << "Unable to convert bitmap for clipboard";
-      return;
-    }
-    format_ |= static_cast<int>(ClipboardInternalFormat::kBitmap);
-  }
-
-  const std::string& custom_data_format() const { return custom_data_format_; }
-  const std::string& custom_data_data() const { return custom_data_data_; }
-  void SetCustomData(const std::string& data_format,
-                     const std::string& data_data) {
-    if (data_data.size() == 0) {
-      custom_data_data_.clear();
-      custom_data_format_.clear();
-      return;
-    }
-    custom_data_data_ = data_data;
-    custom_data_format_ = data_format;
-    format_ |= static_cast<int>(ClipboardInternalFormat::kCustom);
-  }
-
-  bool web_smart_paste() const { return web_smart_paste_; }
-  void set_web_smart_paste(bool web_smart_paste) {
-    web_smart_paste_ = web_smart_paste;
-    format_ |= static_cast<int>(ClipboardInternalFormat::kWeb);
-  }
-
- private:
-  // Plain text in UTF8 format.
-  std::string text_;
-
-  // HTML markup data in UTF8 format.
-  std::string markup_data_;
-  std::string url_;
-
-  // RTF data.
-  std::string rtf_data_;
-
-  // Bookmark title in UTF8 format.
-  std::string bookmark_title_;
-  std::string bookmark_url_;
-
-  // Filenames.
-  std::vector<std::string> files_;
-
-  // Bitmap images.
-  SkBitmap bitmap_;
-
-  // Data with custom format.
-  std::string custom_data_format_;
-  std::string custom_data_data_;
-
-  // WebKit smart paste data.
-  bool web_smart_paste_;
-
-  int format_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClipboardData);
-};
 
 }  // namespace
 

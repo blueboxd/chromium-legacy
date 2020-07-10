@@ -55,10 +55,21 @@ interface InterfaceFactory {
       pending_remote<FlingingRendererClientExtension> client_extension,
       pending_receiver<Renderer> renderer);
 
-  // Creates a CDM based on the |key_system| provided. A |key_system| is a
-  // generic term for a decryption mechanism and/or content protection provider.
-  // It should be a reverse domain name, e.g. "com.example.somesystem". However,
-  // this call may be initiated by an untrusted process (e.g. renderer), so the
-  // implementation must fully validate |key_system| before creating the CDM.
-  CreateCdm(string key_system, pending_receiver<ContentDecryptionModule> cdm);
+  // Creates a CDM based on the |key_system| and |cdm_config| provided. A
+  // |key_system| is a generic term for a decryption mechanism and/or content
+  // protection provider. It should be a reverse domain name,
+  // e.g. "com.example.somesystem". However, this call may be initiated by an
+  // untrusted process (e.g. renderer), so the implementation must fully
+  // validate |key_system| before creating the CDM. |cdm_config| specifies other
+  // properties of the CDM which may influence creation. Upon failure, the
+  // returned |cdm| and |decryptor| will be null, |cdm_id| will be zero and
+  // |error_message| will specify the error reason. Upon success, |cdm| will be
+  // valid, |cdm_id| will be non-zero and will later be used to locate the CDM
+  // at the remote side and |error_message| will be empty. |decryptor| will be
+  // the remote Decryptor if the CDM implementation provides one.
+  CreateCdm(string key_system, CdmConfig cdm_config) =>
+            (pending_remote<ContentDecryptionModule>? cdm,
+             int32 cdm_id,
+             pending_remote<Decryptor>? decryptor,
+             string error_message);
 };

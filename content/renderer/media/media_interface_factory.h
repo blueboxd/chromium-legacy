@@ -63,8 +63,8 @@ class CONTENT_EXPORT MediaInterfaceFactory
           renderer_extension_receiver) final;
 #endif  // defined(OS_ANDROID)
   void CreateCdm(const std::string& key_system,
-                 mojo::PendingReceiver<media::mojom::ContentDecryptionModule>
-                     receiver) final;
+                 const media::CdmConfig& cdm_config,
+                 CreateCdmCallback callback) final;
 
  private:
   media::mojom::InterfaceFactory* GetMediaInterfaceFactory();

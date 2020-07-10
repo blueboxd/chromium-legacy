@@ -515,7 +515,7 @@ std::unique_ptr<protocol::DictionaryValue> BuildAreaNamePaths(
 std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
     LocalFrameView* containing_view,
     LayoutGrid* layout_grid,
-    const InspectorHighlightConfig& highlight_config,
+    const InspectorGridHighlightConfig& grid_highlight_config,
     float scale,
     bool isPrimary) {
   std::unique_ptr<protocol::DictionaryValue> grid_info =
@@ -587,8 +587,7 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
   grid_info->setValue("columnGaps", column_gap_builder.Release());
 
   // Positive Row and column Line offsets
-  if (highlight_config.grid_highlight_config &&
-      highlight_config.grid_highlight_config->show_positive_line_numbers) {
+  if (grid_highlight_config.show_positive_line_numbers) {
     grid_info->setValue("positiveRowLineNumberOffsets",
                         BuildGridPositiveLineNumberOffsets(
                             layout_grid, rows, row_gap, kForRows, scale));
@@ -599,8 +598,7 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
   }
 
   // Negative Row and column Line offsets
-  if (highlight_config.grid_highlight_config &&
-      highlight_config.grid_highlight_config->show_negative_line_numbers) {
+  if (grid_highlight_config.show_negative_line_numbers) {
     grid_info->setValue("negativeRowLineNumberOffsets",
                         BuildGridNegativeLineNumberOffsets(
                             layout_grid, rows, row_gap, kForRows, scale));
@@ -611,8 +609,7 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
   }
 
   // Area names
-  if (highlight_config.grid_highlight_config &&
-      highlight_config.grid_highlight_config->show_area_names) {
+  if (grid_highlight_config.show_area_names) {
     grid_info->setValue("areaNames", BuildAreaNamePaths(layout_grid, scale));
   }
 
@@ -626,22 +623,32 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
   grid_border_builder.AppendPath(QuadToPath(grid_quad), scale);
   grid_info->setValue("gridBorder", grid_border_builder.Release());
 
-  if (highlight_config.css_grid != Color::kTransparent) {
-    // Legacy support for highlight_config.css_grid
-    std::unique_ptr<protocol::DictionaryValue> grid_config_info =
-        protocol::DictionaryValue::create();
-    grid_config_info->setString("cellBorderColor",
-                                highlight_config.css_grid.Serialized());
-    grid_config_info->setBoolean("cellBorderDash", true);
-    grid_info->setValue("gridHighlightConfig", grid_config_info->clone());
-  } else {
-    grid_info->setValue(
-        "gridHighlightConfig",
-        BuildGridHighlightConfigInfo(*highlight_config.grid_highlight_config));
-  }
+  grid_info->setValue("gridHighlightConfig",
+                      BuildGridHighlightConfigInfo(grid_highlight_config));
 
   grid_info->setBoolean("isPrimaryGrid", isPrimary);
   return grid_info;
+}
+
+std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
+    LocalFrameView* containing_view,
+    LayoutGrid* layout_grid,
+    const InspectorHighlightConfig& highlight_config,
+    float scale,
+    bool isPrimary) {
+  // Legacy support for highlight_config.css_grid
+  if (highlight_config.css_grid != Color::kTransparent) {
+    std::unique_ptr<InspectorGridHighlightConfig> grid_config =
+        std::make_unique<InspectorGridHighlightConfig>();
+    grid_config->cell_color = highlight_config.css_grid;
+    grid_config->cell_border_dash = true;
+    return BuildGridInfo(containing_view, layout_grid, *grid_config, scale,
+                         isPrimary);
+  }
+
+  return BuildGridInfo(containing_view, layout_grid,
+                       *(highlight_config.grid_highlight_config), scale,
+                       isPrimary);
 }
 
 void CollectQuadsRecursive(Node* node, Vector<FloatQuad>& out_quads) {
@@ -1214,6 +1221,30 @@ bool InspectorHighlight::BuildNodeQuads(Node* node,
   FrameQuadToViewport(containing_view, *margin);
 
   return true;
+}
+
+std::unique_ptr<protocol::DictionaryValue> InspectorGridHighlight(
+    Node* node,
+    const InspectorGridHighlightConfig& config) {
+  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*node)) {
+    // Skip if node is part of display locked tree.
+    return nullptr;
+  }
+
+  LocalFrameView* frame_view = node->GetDocument().View();
+  if (!frame_view)
+    return nullptr;
+
+  float scale = 1.f / frame_view->GetChromeClient()->WindowToViewportScalar(
+                          &frame_view->GetFrame(), 1.f);
+  LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object || !layout_object->IsLayoutGrid())
+    return nullptr;
+
+  std::unique_ptr<protocol::DictionaryValue> grid_info =
+      BuildGridInfo(node->GetDocument().View(), ToLayoutGrid(layout_object),
+                    config, scale, true);
+  return grid_info;
 }
 
 // static

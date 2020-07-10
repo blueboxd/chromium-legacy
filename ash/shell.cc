@@ -23,6 +23,7 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller_impl.h"
 #include "ash/autoclick/autoclick_controller.h"
+#include "ash/clipboard/multipaste_controller.h"
 #include "ash/dbus/ash_dbus_services.h"
 #include "ash/detachable_base/detachable_base_handler.h"
 #include "ash/detachable_base/detachable_base_notification_controller.h"
@@ -987,7 +988,10 @@ void Shell::Init(
       display::Screen::GetScreen()->GetPrimaryDisplay());
 
   accelerator_controller_ = std::make_unique<AcceleratorControllerImpl>();
-
+  if (chromeos::features::IsMultipasteEnabled()) {
+    multipaste_controller_ = std::make_unique<MultipasteController>();
+    multipaste_controller_->Init();
+  }
   shelf_config_ = std::make_unique<ShelfConfig>();
   shelf_controller_ = std::make_unique<ShelfController>();
 

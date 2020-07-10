@@ -11,6 +11,8 @@
 
 // Bubble asking the user to move a profile credential to their account store.
 class MoveToAccountStoreBubbleView : public PasswordBubbleViewBase {
+  class MovingBannerView;
+
  public:
   explicit MoveToAccountStoreBubbleView(content::WebContents* web_contents,
                                         views::View* anchor_view);
@@ -24,6 +26,14 @@ class MoveToAccountStoreBubbleView : public PasswordBubbleViewBase {
   bool ShouldShowCloseButton() const override;
   MoveToAccountStoreBubbleController* GetController() override;
   const MoveToAccountStoreBubbleController* GetController() const override;
+
+  // Called when the favicon is loaded. If |favicon| isn't empty, it updates
+  // |favicon| in |moving_banner_|
+  void OnFaviconReady(const gfx::Image& favicon);
+
+  // Holds a pointer to the banner illustarting that a password is being moved
+  // from the device to the account.
+  MovingBannerView* moving_banner_;
 
   MoveToAccountStoreBubbleController controller_;
 };

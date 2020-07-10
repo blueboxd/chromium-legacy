@@ -376,7 +376,8 @@ const autofill::PasswordForm& ManagePasswordsUIController::GetPendingPassword()
 
   DCHECK(GetState() == password_manager::ui::PENDING_PASSWORD_STATE ||
          GetState() == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
-         GetState() == password_manager::ui::CONFIRMATION_STATE)
+         GetState() == password_manager::ui::CONFIRMATION_STATE ||
+         GetState() == password_manager::ui::CAN_MOVE_PASSWORD_TO_ACCOUNT_STATE)
       << GetState();
   password_manager::PasswordFormManagerForUI* form_manager =
       passwords_data_.form_manager();

@@ -154,6 +154,13 @@ void ViewAXPlatformNodeDelegate::EndPopupFocusOverride() {
   ui::AXPlatformNode::SetPopupFocusOverride(nullptr);
 }
 
+bool ViewAXPlatformNodeDelegate::IsFocusedForTesting() {
+  if (ui::AXPlatformNode::GetPopupFocusOverride())
+    return ui::AXPlatformNode::GetPopupFocusOverride() == GetNativeObject();
+
+  return ViewAccessibility::IsFocusedForTesting();
+}
+
 void ViewAXPlatformNodeDelegate::NotifyAccessibilityEvent(
     ax::mojom::Event event_type) {
   DCHECK(ax_platform_node_);
@@ -166,13 +173,19 @@ void ViewAXPlatformNodeDelegate::NotifyAccessibilityEvent(
 
   // Some events have special handling.
   switch (event_type) {
+    case ax::mojom::Event::kFocusAfterMenuClose: {
+      DCHECK(!ui::AXPlatformNode::GetPopupFocusOverride())
+          << "Must call ViewAccessibility::EndPopupFocusOverride() as menu "
+             "closes.";
+      break;
+    }
     case ax::mojom::Event::kFocus: {
       if (ui::AXPlatformNode::GetPopupFocusOverride()) {
         DCHECK_EQ(ui::AXPlatformNode::GetPopupFocusOverride(),
                   GetNativeObject())
             << "If the popup focus override is on, then the kFocus event must "
                "match it. Most likely the popup has closed, but did not call "
-               "ViewAccessibility::FireFocusAfterMenuClose(), and focus has "
+               "ViewAccessibility::EndPopupFocusOverride(), and focus has "
                "now moved on.";
       }
       break;

@@ -2085,6 +2085,9 @@ extern const char kEnableBackgroundBlurDescription[];
 extern const char kDragToSnapInClamshellModeName[];
 extern const char kDragToSnapInClamshellModeDescription[];
 
+extern const char kEnhancedClipboardName[];
+extern const char kEnhancedClipboardDescription[];
+
 extern const char kMultiDisplayOverviewAndSplitViewName[];
 extern const char kMultiDisplayOverviewAndSplitViewDescription[];
 

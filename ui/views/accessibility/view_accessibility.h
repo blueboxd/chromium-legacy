@@ -153,6 +153,9 @@ class VIEWS_EXPORT ViewAccessibility {
   // Call when popup closes, if it used SetPopupFocusOverride().
   virtual void EndPopupFocusOverride();
 
+  // Return true if this view is considered focused.
+  virtual bool IsFocusedForTesting();
+
   // Call when a menu closes, to restore focus to where it was previously.
   virtual void FireFocusAfterMenuClose();
 

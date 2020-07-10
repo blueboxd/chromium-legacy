@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "content/public/browser/media_service.h"
+#include "media/base/cdm_context.h"
 #include "media/mojo/mojom/media_service.mojom.h"
 #include "media/mojo/mojom/renderer_extensions.mojom.h"
 
@@ -66,9 +67,12 @@ void VideoDecoderProxy::CreateMediaPlayerRenderer(
         renderer_extension_receiver) {}
 #endif  // defined(OS_ANDROID)
 
-void VideoDecoderProxy::CreateCdm(
-    const std::string& key_system,
-    mojo::PendingReceiver<media::mojom::ContentDecryptionModule> receiver) {}
+void VideoDecoderProxy::CreateCdm(const std::string& key_system,
+                                  const media::CdmConfig& cdm_config,
+                                  CreateCdmCallback callback) {
+  std::move(callback).Run(mojo::NullRemote(), media::CdmContext::kInvalidCdmId,
+                          mojo::NullRemote(), "CDM creation not supported");
+}
 
 media::mojom::InterfaceFactory* VideoDecoderProxy::GetMediaInterfaceFactory() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

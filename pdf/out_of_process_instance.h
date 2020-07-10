@@ -168,8 +168,8 @@ class OutOfProcessInstance : public pp::Instance,
   void HandleGetPasswordCompleteMessage(const pp::VarDictionary& dict);
   void HandleGetSelectedTextMessage(const pp::VarDictionary& dict);
   void HandleLoadPreviewPageMessage(const pp::VarDictionary& dict);
-  void HandlePrintMessage(const pp::VarDictionary& dict);
   void HandleResetPrintPreviewModeMessage(const pp::VarDictionary& dict);
+  void HandleSaveMessage(const pp::VarDictionary& dict);
   void HandleSetTwoUpViewMessage(const pp::VarDictionary& dict);
   void HandleViewportMessage(const pp::VarDictionary& dict);
 

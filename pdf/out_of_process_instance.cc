@@ -565,7 +565,7 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
   } else if (type == kJSPrintType) {
     Print();
   } else if (type == kJSSaveType) {
-    HandlePrintMessage(dict);
+    HandleSaveMessage(dict);
   } else if (type == kJSRotateClockwiseType) {
     RotateClockwise();
   } else if (type == kJSRotateCounterclockwiseType) {
@@ -1595,32 +1595,6 @@ void OutOfProcessInstance::HandleLoadPreviewPageMessage(
   ProcessPreviewPageInfo(url, dict.Get(pp::Var(kJSPreviewPageIndex)).AsInt());
 }
 
-void OutOfProcessInstance::HandlePrintMessage(const pp::VarDictionary& dict) {
-  if (!(dict.Get(pp::Var(kJSToken)).is_string() &&
-        dict.Get(pp::Var(kJSSaveRequestType)).is_int())) {
-    NOTREACHED();
-    return;
-  }
-  const SaveRequestType request_type = static_cast<SaveRequestType>(
-      dict.Get(pp::Var(kJSSaveRequestType)).AsInt());
-  switch (request_type) {
-    case SaveRequestType::kAnnotation:
-      // In annotation mode, assume the user will make edits and prefer saving
-      // using the plugin data.
-      pp::PDF::SetPluginCanSave(this, true);
-      SaveToBuffer(dict.Get(pp::Var(kJSToken)).AsString());
-      break;
-    case SaveRequestType::kOriginal:
-      pp::PDF::SetPluginCanSave(this, false);
-      SaveToFile(dict.Get(pp::Var(kJSToken)).AsString());
-      pp::PDF::SetPluginCanSave(this, CanSaveEdits());
-      break;
-    case SaveRequestType::kEdited:
-      SaveToBuffer(dict.Get(pp::Var(kJSToken)).AsString());
-      break;
-  }
-}
-
 void OutOfProcessInstance::HandleResetPrintPreviewModeMessage(
     const pp::VarDictionary& dict) {
   if (!(dict.Get(pp::Var(kJSPrintPreviewUrl)).is_string() &&
@@ -1668,6 +1642,32 @@ void OutOfProcessInstance::HandleResetPrintPreviewModeMessage(
   engine_->New(url_.c_str(), /*headers=*/nullptr);
 
   paint_manager_.InvalidateRect(pp::Rect(pp::Point(), plugin_size_));
+}
+
+void OutOfProcessInstance::HandleSaveMessage(const pp::VarDictionary& dict) {
+  if (!(dict.Get(pp::Var(kJSToken)).is_string() &&
+        dict.Get(pp::Var(kJSSaveRequestType)).is_int())) {
+    NOTREACHED();
+    return;
+  }
+  const SaveRequestType request_type = static_cast<SaveRequestType>(
+      dict.Get(pp::Var(kJSSaveRequestType)).AsInt());
+  switch (request_type) {
+    case SaveRequestType::kAnnotation:
+      // In annotation mode, assume the user will make edits and prefer saving
+      // using the plugin data.
+      pp::PDF::SetPluginCanSave(this, true);
+      SaveToBuffer(dict.Get(pp::Var(kJSToken)).AsString());
+      break;
+    case SaveRequestType::kOriginal:
+      pp::PDF::SetPluginCanSave(this, false);
+      SaveToFile(dict.Get(pp::Var(kJSToken)).AsString());
+      pp::PDF::SetPluginCanSave(this, CanSaveEdits());
+      break;
+    case SaveRequestType::kEdited:
+      SaveToBuffer(dict.Get(pp::Var(kJSToken)).AsString());
+      break;
+  }
 }
 
 void OutOfProcessInstance::HandleSetTwoUpViewMessage(

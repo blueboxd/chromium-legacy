@@ -280,7 +280,11 @@ bool ResourceCache::DeleteCacheFile(const base::FilePath& path,
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(cache_dir_.IsParent(path));
   int64_t size = GetCacheDirectoryOrFileSize(path);
-  bool success = base::DeleteFile(path, recursive);
+  bool success;
+  if (recursive)
+    success = base::DeletePathRecursively(path);
+  else
+    success = base::DeleteFile(path);
   if (success && max_cache_size_.has_value())
     current_cache_size_ -= size;
   return success;

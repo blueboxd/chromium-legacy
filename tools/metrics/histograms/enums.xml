@@ -39568,6 +39568,7 @@ from previous Chrome versions.
   <int value="-2044001553"
       label="disable-experimental-accessibility-chromevox-language-switching"/>
   <int value="-2043128632" label="enable-tab-switcher-in-document-mode"/>
+  <int value="-2041281386" label="MultiPaste:disabled"/>
   <int value="-2040471724" label="CrOSComponent:disabled"/>
   <int value="-2040115518" label="load-media-router-component-extension"/>
   <int value="-2039439354"
@@ -42067,6 +42068,7 @@ from previous Chrome versions.
   <int value="659086147" label="OverlayScrollbarFlashWhenMouseEnter:enabled"/>
   <int value="661020875" label="AutofillSaveCardShowNoThanks:disabled"/>
   <int value="662331859" label="ConversionMeasurement:enabled"/>
+  <int value="662935193" label="MultiPaste:enabled"/>
   <int value="663027937" label="NewTabPageCustomLinks:enabled"/>
   <int value="663069508" label="TabToGTSAnimation:enabled"/>
   <int value="663294302" label="ForceUseAPDownloadProtection:disabled"/>

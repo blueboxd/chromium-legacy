@@ -355,6 +355,60 @@ NodeHighlightTool::GetNodeInspectorHighlightAsJson(
   return highlight.AsProtocolValue();
 }
 
+// GridHighlightTool -----------------------------------------------------------
+
+int GridHighlightTool::GetDataResourceId() {
+  return IDR_INSPECT_TOOL_HIGHLIGHT_GRID_JS;
+}
+
+void GridHighlightTool::AddGridConfig(
+    Node* node,
+    std::unique_ptr<InspectorGridHighlightConfig> grid_highlight_config) {
+  grid_node_highlights_.emplace_back(
+      std::make_pair(node, std::move(grid_highlight_config)));
+}
+
+bool GridHighlightTool::ForwardEventsToOverlay() {
+  return false;
+}
+
+bool GridHighlightTool::HideOnHideHighlight() {
+  return false;
+}
+
+bool GridHighlightTool::HideOnMouseMove() {
+  return false;
+}
+
+void GridHighlightTool::Draw(float scale) {
+  for (auto& entry : grid_node_highlights_) {
+    std::unique_ptr<protocol::Value> highlight =
+        InspectorGridHighlight(entry.first.Get(), *(entry.second));
+    if (!highlight)
+      continue;
+    overlay_->EvaluateInOverlay("drawGridHighlight", std::move(highlight));
+  }
+}
+
+std::unique_ptr<protocol::DictionaryValue>
+GridHighlightTool::GetGridInspectorHighlightsAsJson() const {
+  std::unique_ptr<protocol::ListValue> highlights =
+      protocol::ListValue::create();
+  for (auto& entry : grid_node_highlights_) {
+    std::unique_ptr<protocol::Value> highlight =
+        InspectorGridHighlight(entry.first.Get(), *(entry.second));
+    if (!highlight)
+      continue;
+    highlights->pushValue(std::move(highlight));
+  }
+  std::unique_ptr<protocol::DictionaryValue> result =
+      protocol::DictionaryValue::create();
+  if (highlights->size() > 0) {
+    result->setValue("gridHighlights", std::move(highlights));
+  }
+  return result;
+}
+
 // NearbyDistanceTool ----------------------------------------------------------
 
 int NearbyDistanceTool::GetDataResourceId() {

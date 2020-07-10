@@ -38,35 +38,4 @@ ChromeVoxE2ETest = class extends E2ETestBase {
     WaitForExtension(extension_misc::kChromeVoxExtensionId, load_cb);
       `);
   }
-
-  /**
-   * Launch a new tab, wait until tab status complete, then run callback.
-   * @param {function() : void} doc Snippet wrapped inside of a function.
-   * @param {function()} callback Called once the document is ready.
-   */
-  runWithLoadedTab(doc, callback) {
-    this.launchNewTabWithDoc(doc, function(tab) {
-      chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
-        if (tabId == tab.id && changeInfo.status == 'complete') {
-          callback(tabId);
-        }
-      });
-    });
-  }
-
-  /**
-   * Launches the given document in a new tab.
-   * @param {function() : void} doc Snippet wrapped inside of a function.
-   * @param {function(url: string)} opt_callback Called once the
-   *     document is created.
-   */
-  runWithTab(doc, opt_callback) {
-    const url = DocUtils.createUrlForDoc(doc);
-    const createParams = {active: true, url};
-    chrome.tabs.create(createParams, function(tab) {
-      if (opt_callback) {
-        opt_callback(tab.url);
-      }
-    });
-  }
 };

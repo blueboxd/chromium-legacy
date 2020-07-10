@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Node, PackageNode, ClassNode, GraphModel} from './graph_model.js';
+import {GraphNode, PackageNode, ClassNode, GraphModel} from './graph_model.js';
 import {shortenPackageName, shortenClassName} from './chrome_hooks.js';
 
 /**
@@ -13,10 +13,10 @@ import {shortenPackageName, shortenClassName} from './chrome_hooks.js';
  */
 
 /**
- * A function that creates a Node object from node JSON data.
+ * A function that creates a GraphNode object from node JSON data.
  * @callback MakeNodeFunction
  * @param {Object} node The node JSON data.
- * @return {!Node} The constructed Node.
+ * @return {!GraphNode} The constructed GraphNode.
  */
 
 /**
@@ -33,9 +33,9 @@ function parseGraphModelFromJson(jsonGraph, makeNode) {
     graph.addNodeIfNew(makeNode(nodeData));
   }
   for (const edgeData of jsonGraph.edges) {
-    // Assuming correctness of the JSON, we can assert non-null Nodes here.
-    const /** !Node */ beginNode = graph.getNodeById(edgeData.begin);
-    const /** !Node */ endNode = graph.getNodeById(edgeData.end);
+    // Assuming correctness of the JSON, we can assert non-null GraphNodes here.
+    const /** !GraphNode */ beginNode = graph.getNodeById(edgeData.begin);
+    const /** !GraphNode */ endNode = graph.getNodeById(edgeData.end);
     graph.addEdgeIfNew(beginNode, endNode);
   }
   return graph;

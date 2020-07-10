@@ -62,11 +62,6 @@ void ReportDeletePageHistograms(
   }
 }
 
-bool DeleteArchiveSync(const base::FilePath& file_path) {
-  // Delete the file only, |false| for recursive.
-  return base::DeleteFile(file_path, false);
-}
-
 // Deletes pages. This will return a DeletePageTaskResult which contains the
 // deleted pages (which are successfully deleted from the disk and the store)
 // and a DeletePageResult. For each page to be deleted, the deletion will delete
@@ -87,7 +82,7 @@ DeletePageTaskResult DeletePagesSync(
 
   bool any_archive_deleted = false;
   for (auto& item : pages_to_delete) {
-    if (DeleteArchiveSync(item.file_path)) {
+    if (base::DeleteFile(item.file_path)) {
       any_archive_deleted = true;
       if (DeletePageTask::DeletePageFromDbSync(item.offline_id, db))
         deleted_pages.push_back(std::move(item));

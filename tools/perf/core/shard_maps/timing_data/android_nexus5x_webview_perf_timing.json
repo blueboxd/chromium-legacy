@@ -237,14 +237,6 @@
     },
     {
         "duration": "0.0",
-        "name": "blink_perf.canvas/getImageDataColorManaged.html"
-    },
-    {
-        "duration": "0.0",
-        "name": "blink_perf.canvas/getImageDataColorManaged_RAF.html?RAF"
-    },
-    {
-        "duration": "0.0",
         "name": "blink_perf.canvas/gpu-bound-shader.html"
     },
     {

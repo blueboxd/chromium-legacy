@@ -204,7 +204,6 @@ void BlinkTestRunner::ApplyTestConfiguration(
   test_config_ = params.Clone();
 
   is_main_window_ = true;
-  // TODO(danakj): These should not differ, so we should SetDelegate() here.
   test_runner->SetMainView(web_view_test_proxy_->GetWebView());
   test_runner->SetTestIsRunning(true);
 

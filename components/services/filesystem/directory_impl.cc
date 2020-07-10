@@ -218,8 +218,12 @@ void DirectoryImpl::Delete(const std::string& raw_path,
     return;
   }
 
-  bool recursive = delete_flags & mojom::kDeleteFlagRecursive;
-  if (!base::DeleteFile(path, recursive)) {
+  bool success;
+  if (delete_flags & mojom::kDeleteFlagRecursive)
+    success = base::DeletePathRecursively(path);
+  else
+    success = base::DeleteFile(path);
+  if (!success) {
     std::move(callback).Run(base::File::Error::FILE_ERROR_FAILED);
     return;
   }

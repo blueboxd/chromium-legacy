@@ -496,6 +496,22 @@ const FeaturePolicyParserTestCase FeaturePolicyParserParsingTest::kCases[] = {
             },
         },
     },
+    {
+        /* test_name */ "PolicyWithEmptyOriginString",
+        /* feature_policy_string */ NOT_APPLICABLE,
+        /* permissions_policy_string */ "geolocation=\"\"",
+        /* self_origin */ ORIGIN_A,
+        /* src_origin */ nullptr,
+        /* expected_parse_result */
+        {
+            {
+                mojom::blink::FeaturePolicyFeature::kGeolocation,
+                /* matches_all_origins */ false,
+                /* matches_opaque_src */ false,
+                {},
+            },
+        },
+    },
 };
 
 INSTANTIATE_TEST_SUITE_P(

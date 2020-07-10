@@ -454,7 +454,8 @@ internal::FeaturePolicyNode ParsingContext::ParsePermissionsPolicyToIR(
                            feature_name));
         continue;
       }
-      allowlist.push_back(allowlist_item);
+      if (!allowlist_item.IsEmpty())
+        allowlist.push_back(allowlist_item);
     }
 
     if (allowlist.IsEmpty())

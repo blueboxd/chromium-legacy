@@ -53,7 +53,6 @@
       "drawimage-not-pixelaligned.html",
       "drawimage.html",
       "getImageData-cpu.html",
-      "getImageDataColorManaged.html",
       "repeated-draw-cpu.html",
       "repeated-draw-gpu.html",
       "repeated-getImageData-cpu.html",

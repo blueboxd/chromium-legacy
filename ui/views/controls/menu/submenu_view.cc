@@ -16,6 +16,7 @@
 #include "ui/compositor/paint_recorder.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_host.h"
@@ -428,6 +429,7 @@ void SubmenuView::Hide() {
     if (!GetMenuItem()->GetParentMenuItem()) {
       GetScrollViewContainer()->NotifyAccessibilityEvent(
           ax::mojom::Event::kMenuEnd, true);
+      GetViewAccessibility().EndPopupFocusOverride();
     }
     // Fire these kMenuPopupEnd for each menu/submenu that closes/hides.
     if (host_->IsVisible())

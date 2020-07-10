@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "media/base/media_util.h"
@@ -66,9 +67,9 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
           client_extension,
       mojo::PendingReceiver<mojom::Renderer> receiver) final;
 #endif  // defined(OS_ANDROID)
-  void CreateCdm(
-      const std::string& key_system,
-      mojo::PendingReceiver<mojom::ContentDecryptionModule> receiver) final;
+  void CreateCdm(const std::string& key_system,
+                 const CdmConfig& cdm_config,
+                 CreateCdmCallback callback) final;
 
   // DeferredDestroy<mojom::InterfaceFactory> implemenation.
   void OnDestroyPending(base::OnceClosure destroy_cb) final;
@@ -83,6 +84,10 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
 
 #if BUILDFLAG(ENABLE_MOJO_CDM)
   CdmFactory* GetCdmFactory();
+  void OnCdmServiceCreated(CreateCdmCallback callback,
+                           std::unique_ptr<MojoCdmService> cdm_service,
+                           mojo::PendingRemote<mojom::Decryptor> decryptor,
+                           const std::string& error_message);
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
   // Must be declared before the receivers below because the bound objects might
@@ -115,6 +120,9 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
 
   MojoMediaClient* mojo_media_client_;
   base::OnceClosure destroy_cb_;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<InterfaceFactoryImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InterfaceFactoryImpl);
 };

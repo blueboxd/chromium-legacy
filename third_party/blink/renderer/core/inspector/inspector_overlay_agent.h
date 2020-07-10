@@ -186,8 +186,15 @@ class CORE_EXPORT InspectorOverlayAgent final
       protocol::Maybe<String> color_format,
       protocol::Maybe<bool> show_accessibility_info,
       std::unique_ptr<protocol::DictionaryValue>* highlight) override;
+  protocol::Response getGridHighlightObjectsForTest(
+      std::unique_ptr<protocol::Array<int>> node_ids,
+      std::unique_ptr<protocol::DictionaryValue>* highlights) override;
   protocol::Response setShowHinge(
       protocol::Maybe<protocol::Overlay::HingeConfig> hinge_config) override;
+  protocol::Response setShowGridOverlays(
+      std::unique_ptr<
+          protocol::Array<protocol::Overlay::GridNodeHighlightConfig>>
+          grid_node_highlight_configs) override;
 
   // InspectorBaseAgent overrides.
   void Restore() override;

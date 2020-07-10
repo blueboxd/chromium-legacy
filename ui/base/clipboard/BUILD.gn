@@ -143,6 +143,8 @@ jumbo_component("clipboard") {
       # linux-chromeos uses non-backed clipboard by default, but supports ozone
       # x11 with flag --use-system-clipbboard.
       sources += [
+        "clipboard_data.cc",
+        "clipboard_data.h",
         "clipboard_non_backed.cc",
         "clipboard_non_backed.h",
         "clipboard_ozone.cc",
@@ -152,6 +154,8 @@ jumbo_component("clipboard") {
     } else if (!is_win) {
       # This file is used for all builds not backed by an underlying platform.
       sources += [
+        "clipboard_data.cc",
+        "clipboard_data.h",
         "clipboard_non_backed.cc",
         "clipboard_non_backed.h",
       ]

@@ -5633,6 +5633,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMultiDisplayOverviewAndSplitViewName,
      flag_descriptions::kMultiDisplayOverviewAndSplitViewDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kMultiDisplayOverviewAndSplitView)},
+    {"enhanced_clipboard", flag_descriptions::kEnhancedClipboardName,
+     flag_descriptions::kEnhancedClipboardDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kMultipaste)},
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)

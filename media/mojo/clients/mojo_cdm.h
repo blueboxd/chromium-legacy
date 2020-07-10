@@ -42,15 +42,13 @@ class MojoCdm : public ContentDecryptionModule,
  public:
   using MessageType = CdmMessageType;
 
-  static void Create(
-      const std::string& key_system,
-      const CdmConfig& cdm_config,
-      mojo::PendingRemote<mojom::ContentDecryptionModule> remote_cdm,
-      const SessionMessageCB& session_message_cb,
-      const SessionClosedCB& session_closed_cb,
-      const SessionKeysChangeCB& session_keys_change_cb,
-      const SessionExpirationUpdateCB& session_expiration_update_cb,
-      CdmCreatedCB cdm_created_cb);
+  MojoCdm(mojo::Remote<mojom::ContentDecryptionModule> remote_cdm,
+          int32_t cdm_id,
+          mojo::PendingRemote<mojom::Decryptor> decryptor_remote,
+          const SessionMessageCB& session_message_cb,
+          const SessionClosedCB& session_closed_cb,
+          const SessionKeysChangeCB& session_keys_change_cb,
+          const SessionExpirationUpdateCB& session_expiration_update_cb);
 
   // ContentDecryptionModule implementation.
   void SetServerCertificate(const std::vector<uint8_t>& certificate,
@@ -80,17 +78,7 @@ class MojoCdm : public ContentDecryptionModule,
   int GetCdmId() const final;
 
  private:
-  MojoCdm(mojo::PendingRemote<mojom::ContentDecryptionModule> remote_cdm,
-          const SessionMessageCB& session_message_cb,
-          const SessionClosedCB& session_closed_cb,
-          const SessionKeysChangeCB& session_keys_change_cb,
-          const SessionExpirationUpdateCB& session_expiration_update_cb);
-
   ~MojoCdm() final;
-
-  void InitializeCdm(const std::string& key_system,
-                     const CdmConfig& cdm_config,
-                     std::unique_ptr<CdmInitializedPromise> promise);
 
   void OnConnectionError(uint32_t custom_reason,
                          const std::string& description);
@@ -106,11 +94,6 @@ class MojoCdm : public ContentDecryptionModule,
       std::vector<std::unique_ptr<CdmKeyInformation>> keys_info) final;
   void OnSessionExpirationUpdate(const std::string& session_id,
                                  double new_expiry_time_sec) final;
-
-  // Callback for InitializeCdm.
-  void OnCdmInitialized(mojom::CdmPromiseResultPtr result,
-                        int cdm_id,
-                        mojo::PendingRemote<mojom::Decryptor> decryptor);
 
   // Callback when new decryption key is available.
   void OnKeyAdded();
@@ -157,9 +140,6 @@ class MojoCdm : public ContentDecryptionModule,
   SessionClosedCB session_closed_cb_;
   SessionKeysChangeCB session_keys_change_cb_;
   SessionExpirationUpdateCB session_expiration_update_cb_;
-
-  // Pending promise for InitializeCdm().
-  std::unique_ptr<CdmInitializedPromise> pending_init_promise_;
 
   // Keep track of current sessions.
   CdmSessionTracker cdm_session_tracker_;

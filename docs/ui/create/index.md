@@ -1,4 +1,5 @@
 # Creating with Chromium UI
 
-# Recipes
-Coming soon.
+# Examples
+
+* [Example: Theme-Aware UI](examples/theme_aware.md)

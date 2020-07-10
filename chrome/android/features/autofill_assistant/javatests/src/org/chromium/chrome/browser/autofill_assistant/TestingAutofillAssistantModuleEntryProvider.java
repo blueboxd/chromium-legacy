@@ -11,8 +11,8 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
@@ -40,10 +40,10 @@ class TestingAutofillAssistantModuleEntryProvider extends AutofillAssistantModul
     static class MockAutofillAssistantActionHandler extends AutofillAssistantActionHandlerImpl {
         public MockAutofillAssistantActionHandler(Context context,
                 BottomSheetController bottomSheetController,
-                ChromeFullscreenManager fullscreenManager,
+                BrowserControlsStateProvider browserControls,
                 CompositorViewHolder compositorViewHolder, ActivityTabProvider activityTabProvider,
                 ScrimView scrimView) {
-            super(context, bottomSheetController, fullscreenManager, compositorViewHolder,
+            super(context, bottomSheetController, browserControls, compositorViewHolder,
                     activityTabProvider, scrimView);
         }
 
@@ -64,7 +64,7 @@ class TestingAutofillAssistantModuleEntryProvider extends AutofillAssistantModul
     static class MockAutofillAssistantModuleEntry implements AutofillAssistantModuleEntry {
         @Override
         public void start(BottomSheetController bottomSheetController,
-                ChromeFullscreenManager fullscreenManager,
+                BrowserControlsStateProvider browserControls,
                 CompositorViewHolder compositorViewHolder, ScrimView scrimView, Context context,
                 @NonNull WebContents webContents, boolean skipOnboarding, boolean isChromeCustomTab,
                 @NonNull String initialUrl, Map<String, String> parameters, String experimentIds,
@@ -73,11 +73,11 @@ class TestingAutofillAssistantModuleEntryProvider extends AutofillAssistantModul
         @Override
         public AutofillAssistantActionHandler createActionHandler(Context context,
                 BottomSheetController bottomSheetController,
-                ChromeFullscreenManager fullscreenManager,
+                BrowserControlsStateProvider browserControls,
                 CompositorViewHolder compositorViewHolder, ActivityTabProvider activityTabProvider,
                 ScrimView scrimView) {
             return new MockAutofillAssistantActionHandler(context, bottomSheetController,
-                    fullscreenManager, compositorViewHolder, activityTabProvider, scrimView);
+                    browserControls, compositorViewHolder, activityTabProvider, scrimView);
         }
     }
 

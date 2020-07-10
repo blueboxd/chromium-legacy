@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/local_search_service/local_search_service_factory.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -53,13 +54,23 @@ OsSettingsManagerFactory::~OsSettingsManagerFactory() = default;
 KeyedService* OsSettingsManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
+
+  // Edge case: KerberosCredentialsManagerFactory::Get(profile) returns the
+  // instance associated with the primary profile, even if |profile| is not the
+  // primary profile, which can cause issues in multi-profile environments.
+  // Only call Get() if the profile is primary; see https://crbug.com/1103140.
+  KerberosCredentialsManager* kerberos_credentials_manager =
+      ProfileHelper::IsPrimaryProfile(profile)
+          ? KerberosCredentialsManagerFactory::Get(profile)
+          : nullptr;
+
   return new OsSettingsManager(
       profile,
       local_search_service::LocalSearchServiceFactory::GetForProfile(profile),
       multidevice_setup::MultiDeviceSetupClientFactory::GetForProfile(profile),
       ProfileSyncServiceFactory::GetForProfile(profile),
       SupervisedUserServiceFactory::GetForProfile(profile),
-      KerberosCredentialsManagerFactory::Get(profile),
+      kerberos_credentials_manager,
       ArcAppListPrefsFactory::GetForBrowserContext(profile),
       IdentityManagerFactory::GetForProfile(profile),
       android_sms::AndroidSmsServiceFactory::GetForBrowserContext(profile),

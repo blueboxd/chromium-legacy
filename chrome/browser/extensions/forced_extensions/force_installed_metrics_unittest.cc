@@ -99,7 +99,7 @@ constexpr char kManifestUpdateCheckStatus[] =
     "Extensions.ForceInstalledFailureUpdateCheckStatus";
 constexpr char kDisableReason[] =
     "Extensions.ForceInstalledNotLoadedDisableReason";
-constexpr char kBlacklisted[] = "Extensions.ForceInstalledAndBlackListed";
+constexpr char kBlocklisted[] = "Extensions.ForceInstalledAndBlackListed";
 constexpr char kExtensionManifestInvalid[] =
     "Extensions.ForceInstalledFailureManifestInvalidErrorDetail";
 constexpr char kManifestNoUpdatesInfo[] =
@@ -361,7 +361,7 @@ TEST_F(ForceInstalledMetricsTest,
       kDisableReason, disable_reason::DisableReason::DISABLE_NONE, 1);
 }
 
-TEST_F(ForceInstalledMetricsTest, ExtensionForceInstalledAndBlacklisted) {
+TEST_F(ForceInstalledMetricsTest, ExtensionForceInstalledAndBlocklisted) {
   SetupForceList();
   auto ext1 = ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
   registry_->AddBlocklisted(ext1.get());
@@ -372,7 +372,7 @@ TEST_F(ForceInstalledMetricsTest, ExtensionForceInstalledAndBlacklisted) {
   // installed but not loaded.
   EXPECT_TRUE(fake_timer_->IsRunning());
   fake_timer_->Fire();
-  histogram_tester_.ExpectUniqueSample(kBlacklisted, 1, 1);
+  histogram_tester_.ExpectUniqueSample(kBlocklisted, 1, 1);
 }
 
 TEST_F(ForceInstalledMetricsTest, ExtensionsInstallationCancelled) {

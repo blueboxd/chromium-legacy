@@ -90,8 +90,8 @@ public class AutofillAssistantOverlayUiTest {
         return runOnUiThreadBlocking(
                 ()
                         -> new AssistantOverlayCoordinator(activity,
-                                activity.getFullscreenManager(), activity.getCompositorViewHolder(),
-                                activity.getScrim(), model,
+                                activity.getBrowserControlsManager(),
+                                activity.getCompositorViewHolder(), activity.getScrim(), model,
                                 new AutofillAssistantUiTestUtil.MockImageFetcher(
                                         overlayImage, null)));
     }

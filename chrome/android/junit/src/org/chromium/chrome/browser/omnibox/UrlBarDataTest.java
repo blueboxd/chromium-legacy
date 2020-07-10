@@ -88,6 +88,11 @@ public class UrlBarDataTest {
                 "javascript:window.alert('hello');", null, "javascript:window.alert('hello');");
         verifyOriginSpan("data:text/html;charset=utf-8,Page%201", null,
                 "data:text/html;charset=utf-8,Page%201");
+
+        // crbug.com/1080395
+        verifyOriginSpan("blob:https://origin", "/GUID", "blob:https://origin/GUID");
+        verifyOriginSpan("blob:http://origin", "/GUID", "blob:http://origin/GUID");
+        verifyOriginSpan("blob:google.com", "/GUID", "blob:google.com/GUID");
     }
 
     private void verifyOriginSpan(

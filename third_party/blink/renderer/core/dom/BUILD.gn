@@ -2,7 +2,43 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/compiler/compiler.gni")
 import("//third_party/blink/renderer/core/core.gni")
+
+# This target always builds with -O2. Hot path functions that are sensitive
+# to the difference between optimiation profiles should be placed here.
+#
+# Some functions are extremely sensitive to the optimizer profile setting on
+# architectures like ARM32. For example, in ARM32 using -Oz instead of -O2
+# results in different choices for inlining, loop vectorization, and register
+# spilling that can yield 10%-15% regressions in blink_perf benchmarks.
+#
+# In element.cc, the regressions are caused by just a small set of hot path
+# functions.
+#
+# Unfortunately selective annotation of optimizations (eg ALWAYS_INLINE, or
+# #prgama clang loop) have been unsuccessful at bridging the performance gap
+# and applying -O2 wholesale to all of element.o creates a very large binary
+# size increase (83k) without additional performance gains over just building
+# a small set of hotpath functions with -O2.
+#
+# If adding more translations units, the convention is, for a given foo.cc
+# file, create a foo-hot.cc file which can hold any functions that require
+# -O2 optimiziation. If there is common inlined implementations, put this in
+# foo-inl.h and include that in both foo.cc and foo-hot.cc.
+blink_core_sources("dom_hotpath") {
+  sources = [
+    "element-hot.cc",
+    "element-inl.h",
+  ]
+
+  # TODO(ajwong) this is of mirror https://source.chromium.org/chromium/chromium/src/+/master:third_party/blink/renderer/core/core.gni;l=26
+  # to undo the configs which is fragile. Find a better way.
+  if (is_android && !is_debug) {
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
+}
 
 blink_core_sources("dom") {
   sources = [
@@ -48,6 +84,7 @@ blink_core_sources("dom") {
     "document.cc",
     "document.h",
     "document_and_element_event_handlers.h",
+    "document_data.h",
     "document_encoding_data.cc",
     "document_encoding_data.h",
     "document_fragment.cc",
@@ -280,6 +317,7 @@ blink_core_sources("dom") {
   ]
 
   deps = [
+    ":dom_hotpath",
     "//services/metrics/public/cpp:metrics_cpp",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/metrics/public/mojom",

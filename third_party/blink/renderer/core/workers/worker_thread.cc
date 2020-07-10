@@ -30,6 +30,7 @@
 #include <memory>
 #include <utility>
 
+#include "third_party/blink/public/common/loader/worker_main_script_load_parameters.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
@@ -211,6 +212,8 @@ void WorkerThread::EvaluateClassicScript(
 
 void WorkerThread::FetchAndRunClassicScript(
     const KURL& script_url,
+    std::unique_ptr<WorkerMainScriptLoadParameters>
+        worker_main_script_load_params,
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
         outside_settings_object_data,
     WorkerResourceTimingNotifier* outside_resource_timing_notifier,
@@ -221,6 +224,7 @@ void WorkerThread::FetchAndRunClassicScript(
       CrossThreadBindOnce(
           &WorkerThread::FetchAndRunClassicScriptOnWorkerThread,
           CrossThreadUnretained(this), script_url,
+          WTF::Passed(std::move(worker_main_script_load_params)),
           WTF::Passed(std::move(outside_settings_object_data)),
           WrapCrossThreadPersistent(outside_resource_timing_notifier),
           stack_id));
@@ -228,6 +232,8 @@ void WorkerThread::FetchAndRunClassicScript(
 
 void WorkerThread::FetchAndRunModuleScript(
     const KURL& script_url,
+    std::unique_ptr<WorkerMainScriptLoadParameters>
+        worker_main_script_load_params,
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
         outside_settings_object_data,
     WorkerResourceTimingNotifier* outside_resource_timing_notifier,
@@ -239,6 +245,7 @@ void WorkerThread::FetchAndRunModuleScript(
       CrossThreadBindOnce(
           &WorkerThread::FetchAndRunModuleScriptOnWorkerThread,
           CrossThreadUnretained(this), script_url,
+          WTF::Passed(std::move(worker_main_script_load_params)),
           WTF::Passed(std::move(outside_settings_object_data)),
           WrapCrossThreadPersistent(outside_resource_timing_notifier),
           credentials_mode, reject_coep_unsafe_none.value()));
@@ -628,6 +635,8 @@ void WorkerThread::EvaluateClassicScriptOnWorkerThread(
 
 void WorkerThread::FetchAndRunClassicScriptOnWorkerThread(
     const KURL& script_url,
+    std::unique_ptr<WorkerMainScriptLoadParameters>
+        worker_main_script_load_params,
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
         outside_settings_object,
     WorkerResourceTimingNotifier* outside_resource_timing_notifier,
@@ -636,9 +645,10 @@ void WorkerThread::FetchAndRunClassicScriptOnWorkerThread(
     outside_resource_timing_notifier =
         MakeGarbageCollected<NullWorkerResourceTimingNotifier>();
   }
+
   To<WorkerGlobalScope>(GlobalScope())
       ->FetchAndRunClassicScript(
-          script_url,
+          script_url, std::move(worker_main_script_load_params),
           *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
               std::move(outside_settings_object)),
           *outside_resource_timing_notifier, stack_id);
@@ -646,6 +656,8 @@ void WorkerThread::FetchAndRunClassicScriptOnWorkerThread(
 
 void WorkerThread::FetchAndRunModuleScriptOnWorkerThread(
     const KURL& script_url,
+    std::unique_ptr<WorkerMainScriptLoadParameters>
+        worker_main_script_load_params,
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
         outside_settings_object,
     WorkerResourceTimingNotifier* outside_resource_timing_notifier,
@@ -660,7 +672,7 @@ void WorkerThread::FetchAndRunModuleScriptOnWorkerThread(
   // Worklets.
   To<WorkerGlobalScope>(GlobalScope())
       ->FetchAndRunModuleScript(
-          script_url,
+          script_url, std::move(worker_main_script_load_params),
           *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
               std::move(outside_settings_object)),
           *outside_resource_timing_notifier, credentials_mode,

@@ -153,30 +153,26 @@ TEST_F(SharingUtilsTest, GetDevicePlatform) {
                 sync_pb::SyncEnums_DeviceType_TYPE_WIN)),
             SharingDevicePlatform::kWindows);
 
-  EXPECT_EQ(GetDevicePlatform(*CreateFakeDeviceInfo(
-                kDeviceGuid, kDeviceName, /*sharing_info=*/base::nullopt,
-                sync_pb::SyncEnums_DeviceType_TYPE_PHONE,
-                base::SysInfo::HardwareInfo(
-                    {"Apple Inc.", "iPhone 50", "serial_no"}))),
-            SharingDevicePlatform::kIOS);
   EXPECT_EQ(
       GetDevicePlatform(*CreateFakeDeviceInfo(
           kDeviceGuid, kDeviceName, /*sharing_info=*/base::nullopt,
-          sync_pb::SyncEnums_DeviceType_TYPE_TABLET,
-          base::SysInfo::HardwareInfo({"Apple Inc.", "iPad 99", "serial_no"}))),
+          sync_pb::SyncEnums_DeviceType_TYPE_PHONE, "Apple Inc.", "iPhone 50")),
+      SharingDevicePlatform::kIOS);
+  EXPECT_EQ(
+      GetDevicePlatform(*CreateFakeDeviceInfo(
+          kDeviceGuid, kDeviceName, /*sharing_info=*/base::nullopt,
+          sync_pb::SyncEnums_DeviceType_TYPE_TABLET, "Apple Inc.", "iPad 99")),
       SharingDevicePlatform::kIOS);
 
   EXPECT_EQ(
       GetDevicePlatform(*CreateFakeDeviceInfo(
           kDeviceGuid, kDeviceName, /*sharing_info=*/base::nullopt,
-          sync_pb::SyncEnums_DeviceType_TYPE_PHONE,
-          base::SysInfo::HardwareInfo({"Google", "Pixel 777", "serial_no"}))),
+          sync_pb::SyncEnums_DeviceType_TYPE_PHONE, "Google", "Pixel 777")),
       SharingDevicePlatform::kAndroid);
   EXPECT_EQ(
       GetDevicePlatform(*CreateFakeDeviceInfo(
           kDeviceGuid, kDeviceName, /*sharing_info=*/base::nullopt,
-          sync_pb::SyncEnums_DeviceType_TYPE_TABLET,
-          base::SysInfo::HardwareInfo({"Google", "Pixel Z", "serial_no"}))),
+          sync_pb::SyncEnums_DeviceType_TYPE_TABLET, "Google", "Pixel Z")),
       SharingDevicePlatform::kAndroid);
 
   EXPECT_EQ(GetDevicePlatform(*CreateFakeDeviceInfo(

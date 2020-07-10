@@ -387,7 +387,7 @@ bool NeedsWhitespaceLayoutObject(const ComputedStyle& style) {
 
 void Text::RecalcTextStyle(const StyleRecalcChange change) {
   scoped_refptr<const ComputedStyle> new_style =
-      GetDocument().EnsureStyleResolver().StyleForText(this);
+      GetDocument().GetStyleResolver().StyleForText(this);
   if (LayoutText* layout_text = GetLayoutObject()) {
     const ComputedStyle* layout_parent_style =
         GetLayoutObject()->Parent()->Style();

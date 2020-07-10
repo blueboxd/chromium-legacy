@@ -39,7 +39,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
@@ -231,12 +230,12 @@ public class WebXrVrTransitionTest {
         // to propagate. In the worst case this test will erroneously pass, but should never
         // erroneously fail, and should only be flaky if omnibox showing is broken.
         Thread.sleep(100);
-        CriteriaHelper.pollUiThread(
-                ()
-                        -> {
-                    ChromeActivity activity = framework.getRule().getActivity();
-                    return activity.getFullscreenManager().getBrowserControlHiddenRatio() == 0.0;
-                },
+        CriteriaHelper.pollUiThread(()
+                                            -> framework.getRule()
+                                                       .getActivity()
+                                                       .getBrowserControlsManager()
+                                                       .getBrowserControlHiddenRatio()
+                        == 0.0,
                 "Browser controls did not unhide after exiting VR", POLL_TIMEOUT_SHORT_MS,
                 POLL_CHECK_INTERVAL_SHORT_MS);
         framework.assertNoJavaScriptErrors();

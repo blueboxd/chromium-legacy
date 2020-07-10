@@ -13,14 +13,14 @@
 
 namespace extensions {
 
-// A wrapper for extensions::BlacklistStateFetcher, emulating server responses.
-class TestBlacklistStateFetcher {
+// A wrapper for extensions::BlocklistStateFetcher, emulating server responses.
+class TestBlocklistStateFetcher {
  public:
-  explicit TestBlacklistStateFetcher(BlacklistStateFetcher* fetcher);
+  explicit TestBlocklistStateFetcher(BlocklistStateFetcher* fetcher);
 
-  ~TestBlacklistStateFetcher();
+  ~TestBlocklistStateFetcher();
 
-  void SetBlacklistVerdict(const std::string& id,
+  void SetBlocklistVerdict(const std::string& id,
                            ClientCRXListInfoResponse_Verdict state);
 
   // Send the appropriate response for the request for extension with id |id|.
@@ -29,14 +29,14 @@ class TestBlacklistStateFetcher {
   bool HandleFetcher(const std::string& id);
 
  private:
-  BlacklistStateFetcher* fetcher_;
+  BlocklistStateFetcher* fetcher_;
 
   std::map<std::string, ClientCRXListInfoResponse_Verdict> verdicts_;
 
   // Dummy URLLoaderFactory not used for responses but avoids crashes.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestBlacklistStateFetcher);
+  DISALLOW_COPY_AND_ASSIGN(TestBlocklistStateFetcher);
 };
 
 }  // namespace extensions

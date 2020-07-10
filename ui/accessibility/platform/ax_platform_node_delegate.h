@@ -142,6 +142,11 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // layer.
   virtual bool IsLeaf() const = 0;
 
+  // Returns true if this is a top-level browser window that doesn't have a
+  // parent accessible node, or its parent is the application accessible node on
+  // platforms that have one.
+  virtual bool IsToplevelBrowserWindow() = 0;
+
   // If this object is exposed to the platform's accessibility layer, returns
   // this object. Otherwise, returns the platform leaf under which this object
   // is found.

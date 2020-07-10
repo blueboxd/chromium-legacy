@@ -6710,6 +6710,7 @@ crbug.com/v8/10556 external/wpt/wasm/jsapi/instance/constructor-caching.any.work
 crbug.com/1011811 http/tests/devtools/network/network-xhr-data-received-async-response-type-blob.js [ Pass Failure ]
 crbug.com/1011811 http/tests/devtools/network/download.js [ Pass Failure ]
 crbug.com/1011811 http/tests/devtools/sxg/sxg-disable-cache.js [ Pass Failure ]
+crbug.com/1093247 http/tests/devtools/resource-tree/resource-tree-frame-in-crafted-frame.js [ Failure Pass ]
 
 crbug.com/1080609 virtual/threaded/external/wpt/scroll-animations/element-based-offset.html [ Pass Failure ]
 crbug.com/1080609 virtual/threaded/external/wpt/scroll-animations/element-based-offset-clamp.html [ Pass Failure ]
@@ -6878,3 +6879,14 @@ crbug.com/1083302 media/controls/volumechange-muted-attribute.html [ Pass Failur
 
 # Sheriff 2020-07-09
 crbug.com/1103701 [ Win7 ] fast/forms/month/month-picker-appearance-zoom150.html [ Pass Failure ]
+
+# Sheriff 2020-07-10
+crbug.com/1104118 [ Win ] fast/forms/color/color-suggestion-picker-appearance-value-attribute.html [ Pass Failure ]
+crbug.com/1104125 [ Mac ] external/wpt/clipboard-apis/feature-policy/clipboard-read/clipboard-read-enabled-on-self-origin-by-feature-policy.tentative.https.sub.html [ Pass Failure ]
+crbug.com/1104134 [ Mac10.14 ] virtual/controls-refresh-hc/fast/forms/color-scheme/range/range-pressed-state.html [ Pass Failure ]
+
+crbug.com/1102167 external/wpt/fetch/redirect-navigate/preserve-fragment.html [ Timeout Pass ]
+crbug.com/1102167 virtual/cors/external/wpt/fetch/redirect-navigate/preserve-fragment.html [ Timeout Pass ]
+crbug.com/1102167 virtual/omt-worker-fetch/external/wpt/fetch/redirect-navigate/preserve-fragment.html [ Timeout Pass ]
+
+crbug.com/1104186 [ Win ] fast/forms/color-scheme/suggestion-picker/time-suggestion-picker-appearance.html [ Pass Failure ]

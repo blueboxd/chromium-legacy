@@ -13,13 +13,17 @@
 #include "chrome/browser/chromeos/input_method/suggestion_handler_interface.h"
 #include "chrome/browser/chromeos/input_method/ui/assistive_delegate.h"
 
+class Profile;
+
 namespace chromeos {
+
+constexpr int kEmojiSuggesterShowSettingMaxCount = 10;
 
 // An agent to suggest emoji when the user types, and adopt or
 // dismiss the suggestion according to the user action.
 class EmojiSuggester : public Suggester {
  public:
-  explicit EmojiSuggester(SuggestionHandlerInterface* engine);
+  explicit EmojiSuggester(SuggestionHandlerInterface* engine, Profile* profile);
   ~EmojiSuggester() override;
 
   // Suggester overrides:
@@ -48,7 +52,15 @@ class EmojiSuggester : public Suggester {
   void SetCandidateButtonHighlighted(bool highlighted);
   void SetLearnMoreButtonHighlighted(bool highlighted);
 
+  int GetPrefValue(const std::string& pref_name);
+
+  // Increment int value for the given pref_name by 1 every time the function is
+  // called. The function has no effect after the int value becomes equal to the
+  // max_value.
+  void IncrementPrefValueTilCapped(const std::string& pref_name, int max_value);
+
   SuggestionHandlerInterface* const engine_;
+  Profile* profile_;
 
   // ID of the focused text field, 0 if none is focused.
   int context_id_ = -1;

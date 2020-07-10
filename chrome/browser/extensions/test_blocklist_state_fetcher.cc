@@ -54,8 +54,8 @@ class DummySharedURLLoaderFactory : public network::SharedURLLoaderFactory {
 
 }  // namespace
 
-TestBlacklistStateFetcher::TestBlacklistStateFetcher(
-    BlacklistStateFetcher* fetcher)
+TestBlocklistStateFetcher::TestBlocklistStateFetcher(
+    BlocklistStateFetcher* fetcher)
     : fetcher_(fetcher) {
   fetcher_->SetSafeBrowsingConfig(safe_browsing::GetTestV4ProtocolConfig());
 
@@ -63,15 +63,15 @@ TestBlacklistStateFetcher::TestBlacklistStateFetcher(
   fetcher_->url_loader_factory_ = url_loader_factory_.get();
 }
 
-TestBlacklistStateFetcher::~TestBlacklistStateFetcher() {}
+TestBlocklistStateFetcher::~TestBlocklistStateFetcher() {}
 
-void TestBlacklistStateFetcher::SetBlacklistVerdict(
+void TestBlocklistStateFetcher::SetBlocklistVerdict(
     const std::string& id,
     ClientCRXListInfoResponse_Verdict state) {
   verdicts_[id] = state;
 }
 
-bool TestBlacklistStateFetcher::HandleFetcher(const std::string& id) {
+bool TestBlocklistStateFetcher::HandleFetcher(const std::string& id) {
   network::SimpleURLLoader* url_loader = nullptr;
   for (auto& it : fetcher_->requests_) {
     if (it.second.second == id) {

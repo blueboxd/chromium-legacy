@@ -183,6 +183,7 @@ Polymer({
 
     this.creditCard.expirationYear = this.expirationYear_;
     this.creditCard.expirationMonth = this.expirationMonth_;
+    this.trimCreditCard_();
     this.fire('save-credit-card', this.creditCard);
     this.close();
   },
@@ -246,5 +247,21 @@ Polymer({
    */
   getAriaHidden_() {
     return this.expired_ ? 'false' : 'true';
+  },
+
+  /**
+   * Trim credit card's name, cardNumber and nickname if exist.
+   * @private
+   */
+  trimCreditCard_() {
+    if (this.creditCard.name) {
+      this.creditCard.name = this.creditCard.name.trim();
+    }
+    if (this.creditCard.cardNumber) {
+      this.creditCard.cardNumber = this.creditCard.cardNumber.trim();
+    }
+    if (this.creditCard.nickname) {
+      this.creditCard.nickname = this.creditCard.nickname.trim();
+    }
   },
 });

@@ -467,6 +467,12 @@ class BASE_EXPORT ScaledLinearHistogram {
                         uint32_t bucket_count,
                         int32_t scale,
                         int32_t flags);
+  ScaledLinearHistogram(const std::string& name,
+                        Sample minimum,
+                        Sample maximum,
+                        uint32_t bucket_count,
+                        int32_t scale,
+                        int32_t flags);
 
   ~ScaledLinearHistogram();
 

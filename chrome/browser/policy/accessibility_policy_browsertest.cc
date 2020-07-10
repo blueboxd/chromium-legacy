@@ -31,8 +31,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, LargeCursorEnabled) {
   // Verify that policy overrides the manual setting.
   PolicyMap policies;
   policies.Set(key::kLargeCursorEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(accessibility_manager->IsLargeCursorEnabled());
 
@@ -54,8 +54,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, SpokenFeedbackEnabled) {
   // Verify that policy overrides the manual setting.
   PolicyMap policies;
   policies.Set(key::kSpokenFeedbackEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(accessibility_manager->IsSpokenFeedbackEnabled());
 
@@ -77,8 +77,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, HighContrastEnabled) {
   // Verify that policy overrides the manual setting.
   PolicyMap policies;
   policies.Set(key::kHighContrastEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(accessibility_manager->IsHighContrastEnabled());
 
@@ -99,8 +99,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, ScreenMagnifierTypeNone) {
   // Verify that policy overrides the manual setting.
   PolicyMap policies;
   policies.Set(key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(0), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(0), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(magnification_manager->IsMagnifierEnabled());
 
@@ -124,8 +123,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, ScreenMagnifierTypeFull) {
   PolicyMap policies;
   policies.Set(key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(chromeos::MAGNIFIER_FULL),
-               nullptr);
+               base::Value(chromeos::MAGNIFIER_FULL), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(magnification_manager->IsMagnifierEnabled());
 
@@ -147,8 +145,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, ScreenMagnifierTypeDocked) {
   PolicyMap policies;
   policies.Set(key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(chromeos::MAGNIFIER_DOCKED),
-               nullptr);
+               base::Value(chromeos::MAGNIFIER_DOCKED), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(magnification_manager->IsDockedMagnifierEnabled());
 
@@ -171,8 +168,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest,
   // Verify that policy overrides the manual setting.
   PolicyMap policies;
   policies.Set(key::kVirtualKeyboardEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(accessibility_manager->IsVirtualKeyboardEnabled());
 
@@ -197,8 +194,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, StickyKeysEnabled) {
   // Verify that policy overrides the manual setting.
   PolicyMap policies;
   policies.Set(key::kStickyKeysEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(accessibility_manager->IsStickyKeysEnabled());
 
@@ -224,8 +221,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, VirtualKeyboardEnabled) {
   // cannot disable the keyboard..
   PolicyMap policies;
   policies.Set(key::kTouchVirtualKeyboardEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(true), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(true),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(keyboard_client->is_keyboard_enabled());
   ClearEnableFlag(keyboard::KeyboardEnableFlag::kTouchEnabled);
@@ -234,8 +231,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, VirtualKeyboardEnabled) {
   // Verify that disabling the policy takes effect immediately and that the user
   // cannot enable the keyboard.
   policies.Set(key::kTouchVirtualKeyboardEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(keyboard_client->is_keyboard_enabled());
   SetEnableFlag(keyboard::KeyboardEnableFlag::kTouchEnabled);
@@ -258,8 +255,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, SelectToSpeakEnabled) {
   // Verify that policy overrides the manual setting.
   PolicyMap policies;
   policies.Set(key::kSelectToSpeakEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(accessibility_manager->IsSelectToSpeakEnabled());
 
@@ -285,8 +282,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, DictationEnabled) {
   // Verify that policy overrides the manual setting.
   PolicyMap policies;
   policies.Set(key::kDictationEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(accessibility_manager->IsDictationEnabled());
 
@@ -311,8 +308,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, KeyboardFocusHighlightEnabled) {
   // Verify that policy overrides the manual setting.
   PolicyMap policies;
   policies.Set(key::kKeyboardFocusHighlightEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(accessibility_manager->IsFocusHighlightEnabled());
 
@@ -338,8 +335,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, CursorHighlightEnabled) {
   // Verify that policy overrides the manual setting.
   PolicyMap policies;
   policies.Set(key::kCursorHighlightEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(accessibility_manager->IsCursorHighlightEnabled());
 
@@ -364,8 +361,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, CaretHighlightEnabled) {
   // Verify that policy overrides the manual setting.
   PolicyMap policies;
   policies.Set(key::kCaretHighlightEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(accessibility_manager->IsCaretHighlightEnabled());
 
@@ -374,8 +371,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, CaretHighlightEnabled) {
   EXPECT_FALSE(accessibility_manager->IsCaretHighlightEnabled());
 
   policies.Set(key::kCaretHighlightEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(true), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(true),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(accessibility_manager->IsCaretHighlightEnabled());
 
@@ -401,8 +398,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, MonoAudioEnabled) {
   // Verify that policy overrides the manual setting.
   PolicyMap policies;
   policies.Set(key::kMonoAudioEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(accessibility_manager->IsMonoAudioEnabled());
 
@@ -411,8 +408,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, MonoAudioEnabled) {
   EXPECT_FALSE(accessibility_manager->IsMonoAudioEnabled());
 
   policies.Set(key::kMonoAudioEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(true), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(true),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(accessibility_manager->IsMonoAudioEnabled());
 
@@ -438,8 +435,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, AutoclickEnabled) {
   // Verify that policy overrides the manual setting.
   PolicyMap policies;
   policies.Set(key::kAutoclickEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(accessibility_manager->IsAutoclickEnabled());
 
@@ -448,8 +445,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, AutoclickEnabled) {
   EXPECT_FALSE(accessibility_manager->IsAutoclickEnabled());
 
   policies.Set(key::kAutoclickEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(true), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(true),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(accessibility_manager->IsAutoclickEnabled());
 

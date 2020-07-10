@@ -193,7 +193,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // |can_use_backdrop_filter_cache| flag on all RenderPassDrawQuads(RPDQ).
   // The function returns the damage rect of the render pass in its own content
   // space.
-  //  - |render_pass_id| specifies the id of the render pass.
+  //  - |render_pass_entry| specifies the render pass in the entry map to be
+  //  prewalked
   //  - |surface| is the surface containing the render pass.
   //  - |render_pass_map| is a map that contains all render passes and their
   //    entry data.
@@ -201,20 +202,24 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   //    frame and might be drawn (based on damage/occlusion/etc.) if it is set
   //    to true. Or the surface isn't in the aggregated frame and is only
   //    needed for CopyOutputRequests if set to false.
-  //  - |transform_to_root_target| is the accumulated transform of all render
-  //    passes in the containing surface along the way to the current render
-  //    pass.
-  //  - |pixel_moving_backdrop_filters_rects| is a vector of bounds of render
-  //    passes that have a pixel moving backdrop filter.
+  //  - |damage_from_parent| is the damage rect passed along from parent or
+  //    a chain of ancestor render passes, transformed into the local space of
+  //    the current render pass. This happens when the root render
+  //    pass of |surface| is merged to its parent render pass (and so on).
+  //    |damage_from_parent| represents the current effective accumulated damage
+  //    from the parent render pass into which the surface quad containing the
+  //    |surface| is being merged. This includes the damage from quads under
+  //    the surface quad in the render pass merged to, plus its |damage_rect|
+  //    and damage passed onto it by its parent if any.
+  //    If there's no merging of |surface|, |accummulated_damage| is empty.
   //  - |result| is the result of a prewalk of the surface that contains the
   //    render pass.
   gfx::Rect PrewalkRenderPass(
-      RenderPassId render_pass_id,
+      RenderPassMapEntry* render_pass_entry,
       const Surface* surface,
       base::flat_map<RenderPassId, RenderPassMapEntry>* render_pass_map,
       bool will_draw,
-      const gfx::Transform& transform_to_root_target,
-      std::vector<gfx::Rect>* pixel_moving_backdrop_filters_rects,
+      const gfx::Rect& damage_from_parent,
       PrewalkResult* result);
 
   // Walk the Surface tree from |surface|. Validate the resources of the
@@ -224,6 +229,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
                            bool in_moved_pixel_surface,
                            int parent_pass,
                            bool will_draw,
+                           const gfx::Rect& damage_from_parent,
                            PrewalkResult* result);
   void CopyUndrawnSurfaces(PrewalkResult* prewalk);
   void CopyPasses(const CompositorFrame& frame, Surface* surface);
@@ -273,6 +279,10 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   void TransformAndStoreDelegatedInkMetadata(
       const gfx::Transform& parent_quad_to_root_target_transform,
       DelegatedInkMetadata* metadata);
+
+  // Preliminary check to see if a surface contained in |surface_quad| can
+  // potentially merge its root render pass. If so, returns true.
+  static bool CanPotentiallyMergePass(const SurfaceDrawQuad& surface_quad);
 
   // De-Jelly Effect:
   // HandleDeJelly applies a de-jelly transform to quads in the root render

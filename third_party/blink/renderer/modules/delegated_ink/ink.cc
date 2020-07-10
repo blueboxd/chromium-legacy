@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/delegated_ink/ink.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 

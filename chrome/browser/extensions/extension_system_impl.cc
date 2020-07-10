@@ -214,7 +214,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   extension_service_.reset(new ExtensionService(
       profile_, base::CommandLine::ForCurrentProcess(),
       profile_->GetPath().AppendASCII(extensions::kInstallDirectoryName),
-      ExtensionPrefs::Get(profile_), Blacklist::Get(profile_),
+      ExtensionPrefs::Get(profile_), Blocklist::Get(profile_),
       autoupdate_enabled, extensions_enabled, &ready_));
 
   uninstall_ping_sender_.reset(new UninstallPingSender(

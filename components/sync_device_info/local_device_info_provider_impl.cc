@@ -54,7 +54,8 @@ LocalDeviceInfoProviderImpl::RegisterOnInitializedCallback(
 void LocalDeviceInfoProviderImpl::Initialize(
     const std::string& cache_guid,
     const std::string& client_name,
-    const base::SysInfo::HardwareInfo& hardware_info) {
+    const std::string& manufacturer_name,
+    const std::string& model_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!cache_guid.empty());
 
@@ -63,7 +64,7 @@ void LocalDeviceInfoProviderImpl::Initialize(
   local_device_info_ = std::make_unique<DeviceInfo>(
       cache_guid, client_name, version_, MakeUserAgentForSync(channel_),
       GetLocalDeviceType(), sync_client_->GetSigninScopedDeviceId(),
-      hardware_info,
+      manufacturer_name, model_name,
       /*last_updated_timestamp=*/base::Time(),
       DeviceInfoUtil::GetPulseInterval(),
       sync_client_->GetSendTabToSelfReceivingEnabled(),

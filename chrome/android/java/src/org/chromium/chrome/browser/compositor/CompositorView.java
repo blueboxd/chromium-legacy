@@ -519,9 +519,8 @@ public class CompositorView
 
         CompositorViewJni.get().setLayoutBounds(mNativeCompositorView, CompositorView.this);
 
-        SceneLayer sceneLayer =
-                provider.getUpdatedActiveSceneLayer(mLayerTitleCache, mTabContentManager,
-                mResourceManager, provider.getFullscreenManager());
+        SceneLayer sceneLayer = provider.getUpdatedActiveSceneLayer(mLayerTitleCache,
+                mTabContentManager, mResourceManager, provider.getBrowserControlsManager());
 
         CompositorViewJni.get().setSceneLayer(
                 mNativeCompositorView, CompositorView.this, sceneLayer);

@@ -136,7 +136,7 @@ TEST(OSMetricsTest, GivesNonZeroResults) {
   dump.platform_private_footprint = mojom::PlatformPrivateFootprint::New();
   EXPECT_TRUE(OSMetrics::FillOSMemoryDump(pid, &dump));
   EXPECT_TRUE(dump.platform_private_footprint);
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
   EXPECT_GT(dump.platform_private_footprint->rss_anon_bytes, 0u);
 #elif defined(OS_WIN)
   EXPECT_GT(dump.platform_private_footprint->private_bytes, 0u);

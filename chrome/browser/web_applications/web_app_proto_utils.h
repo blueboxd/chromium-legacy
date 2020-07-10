@@ -20,8 +20,14 @@ base::Optional<std::vector<WebApplicationIconInfo>> ParseWebAppIconInfos(
     const char* container_name_for_logging,
     RepeatedIconInfosProto icon_infos_proto);
 
+// Use the given |app| to populate a |WebAppSpecifics| sync proto.
+sync_pb::WebAppSpecifics WebAppToSyncProto(const WebApp& app);
+
 base::Optional<WebApp::SyncFallbackData> ParseSyncFallbackDataStruct(
     const sync_pb::WebAppSpecifics& sync_proto);
+
+::sync_pb::WebAppSpecifics::UserDisplayMode ToWebAppSpecificsUserDisplayMode(
+    DisplayMode user_display_mode);
 
 }  // namespace web_app
 

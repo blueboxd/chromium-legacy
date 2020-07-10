@@ -36,6 +36,7 @@
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "third_party/blink/public/common/loader/worker_main_script_load_parameters.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom-blink.h"
@@ -183,7 +184,9 @@ void WebSharedWorkerImpl::StartWorkerContext(
         mojom::blink::WorkerContentSettingsProxyInterfaceBase> content_settings,
     CrossVariantMojoRemote<mojom::blink::BrowserInterfaceBrokerInterfaceBase>
         browser_interface_broker,
-    bool pause_worker_context_on_start) {
+    bool pause_worker_context_on_start,
+    std::unique_ptr<WorkerMainScriptLoadParameters>
+        worker_main_script_load_params) {
   DCHECK(IsMainThread());
   CHECK(constructor_origin.Get()->CanAccessSharedWorkers());
 
@@ -271,13 +274,15 @@ void WebSharedWorkerImpl::StartWorkerContext(
   switch (script_type) {
     case mojom::ScriptType::kClassic:
       GetWorkerThread()->FetchAndRunClassicScript(
-          script_request_url, outside_settings_object->CopyData(),
+          script_request_url, std::move(worker_main_script_load_params),
+          outside_settings_object->CopyData(),
           nullptr /* outside_resource_timing_notifier */,
           v8_inspector::V8StackTraceId());
       break;
     case mojom::ScriptType::kModule:
       GetWorkerThread()->FetchAndRunModuleScript(
-          script_request_url, outside_settings_object->CopyData(),
+          script_request_url, std::move(worker_main_script_load_params),
+          outside_settings_object->CopyData(),
           nullptr /* outside_resource_timing_notifier */, credentials_mode);
       break;
   }

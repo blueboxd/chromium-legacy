@@ -89,6 +89,8 @@
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info_notifier.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom.h"
@@ -168,6 +170,7 @@ struct FrameReplicationState;
 class CONTENT_EXPORT RenderFrameImpl
     : public RenderFrame,
       blink::mojom::AutoplayConfigurationClient,
+      blink::mojom::ResourceLoadInfoNotifier,
       mojom::Frame,
       mojom::FrameNavigationControl,
       mojom::FullscreenVideoElementHandler,
@@ -485,6 +488,25 @@ class CONTENT_EXPORT RenderFrameImpl
   // blink::mojom::AutoplayConfigurationClient implementation:
   void AddAutoplayFlags(const url::Origin& origin,
                         const int32_t flags) override;
+
+  // These are called for dedicated workers only when
+  // IsLoadMainScriptForPlzDedicatedWorkerByParamsEnabled() is true.
+  // blink::mojom::ResourceLoadInfoNotifier implementation:
+  void NotifyResourceRedirectReceived(
+      const net::RedirectInfo& redirect_info,
+      network::mojom::URLResponseHeadPtr redirect_response) override;
+  void NotifyResourceResponseReceived(
+      blink::mojom::ResourceLoadInfoPtr resource_load_info,
+      network::mojom::URLResponseHeadPtr head,
+      int32_t previews_state) override;
+  void NotifyResourceTransferSizeUpdated(int32_t request_id,
+                                         int32_t transfer_size_diff) override;
+  void NotifyResourceLoadCompleted(
+      blink::mojom::ResourceLoadInfoPtr resource_load_info,
+      const ::network::URLLoaderCompletionStatus& status) override;
+  void NotifyResourceLoadCanceled(int32_t request_id) override;
+  void Clone(mojo::PendingReceiver<blink::mojom::ResourceLoadInfoNotifier>
+                 pending_resource_load_info_notifier) override;
 
   // mojom::Frame implementation:
   void GetInterfaceProvider(
@@ -1413,6 +1435,9 @@ class CONTENT_EXPORT RenderFrameImpl
   mojo::AssociatedRemote<mojom::FrameHost> frame_host_remote_;
   mojo::ReceiverSet<service_manager::mojom::InterfaceProvider>
       interface_provider_receivers_;
+
+  mojo::ReceiverSet<blink::mojom::ResourceLoadInfoNotifier>
+      resource_load_info_notifier_receivers_;
 
   // URLLoaderFactory instances used for subresource loading.
   // Depending on how the frame was created, |loader_factories_| could be:

@@ -6,14 +6,17 @@
 
 #include <dirent.h>
 #include <fcntl.h>
+#include <inttypes.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+
 #include <utility>
 
+#include "base/containers/flat_set.h"
 #include "base/files/dir_reader_posix.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -26,6 +29,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
+#include "base/system/sys_info.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 
@@ -185,6 +190,42 @@ void ReadChromeOSGraphicsMemory(SystemMemoryInfoKB* meminfo) {
 }
 #endif  // defined(OS_CHROMEOS)
 
+// Executes the lambda for every task in the process's /proc/<pid>/task
+// directory. The thread id and file path of the task directory are provided as
+// arguments to the lambda.
+template <typename Lambda>
+void ForEachProcessTask(base::ProcessHandle process, Lambda&& lambda) {
+  // Iterate through the different threads tracked in /proc/<pid>/task.
+  FilePath fd_path = internal::GetProcPidDir(process).Append("task");
+
+  DirReaderPosix dir_reader(fd_path.value().c_str());
+  if (!dir_reader.IsValid())
+    return;
+
+  for (; dir_reader.Next();) {
+    const char* tid_str = dir_reader.name();
+    if (strcmp(tid_str, ".") == 0 || strcmp(tid_str, "..") == 0)
+      continue;
+
+    PlatformThreadId tid;
+    if (!StringToInt(tid_str, &tid))
+      continue;
+
+    FilePath task_path = fd_path.Append(tid_str);
+    lambda(tid, task_path);
+  }
+}
+
+bool SupportsPerTaskTimeInState() {
+  FilePath time_in_state_path = internal::GetProcPidDir(GetCurrentProcId())
+                                    .Append("task")
+                                    .Append(NumberToString(GetCurrentProcId()))
+                                    .Append("time_in_state");
+  std::string contents;
+  return internal::ReadProcFile(time_in_state_path, &contents) &&
+         StartsWith(contents, "cpu", CompareCase::SENSITIVE);
+}
+
 }  // namespace
 
 // static
@@ -206,37 +247,51 @@ bool ProcessMetrics::GetCumulativeCPUUsagePerThread(
     CPUUsagePerThread& cpu_per_thread) {
   cpu_per_thread.clear();
 
-  // Iterate through the different threads tracked in /proc/<pid>/task.
-  FilePath fd_path = internal::GetProcPidDir(process_).Append("task");
-
-  DirReaderPosix dir_reader(fd_path.value().c_str());
-  if (!dir_reader.IsValid())
-    return false;
-
-  for (; dir_reader.Next();) {
-    const char* tid_str = dir_reader.name();
-    if (strcmp(tid_str, ".") == 0 || strcmp(tid_str, "..") == 0)
-      continue;
-
-    PlatformThreadId tid;
-    if (!StringToInt(tid_str, &tid))
-      continue;
-
-    FilePath thread_stat_path = fd_path.Append(tid_str).Append("stat");
+  ForEachProcessTask(process_, [&cpu_per_thread](PlatformThreadId tid,
+                                                 const FilePath& task_path) {
+    FilePath thread_stat_path = task_path.Append("stat");
 
     std::string buffer;
     std::vector<std::string> proc_stats;
     if (!internal::ReadProcFile(thread_stat_path, &buffer) ||
         !internal::ParseProcStats(buffer, &proc_stats)) {
-      continue;
+      return;
     }
 
     TimeDelta thread_time =
         internal::ClockTicksToTimeDelta(ParseTotalCPUTimeFromStats(proc_stats));
     cpu_per_thread.emplace_back(tid, thread_time);
-  }
+  });
 
   return !cpu_per_thread.empty();
+}
+
+bool ProcessMetrics::GetPerThreadCumulativeCPUTimeInState(
+    TimeInStatePerThread& time_in_state_per_thread) {
+  time_in_state_per_thread.clear();
+
+  // Check for per-pid/tid time_in_state support. If the current process's
+  // time_in_state file doesn't exist or conform to the expected format, there's
+  // no need to iterate the threads. This shouldn't change over the lifetime of
+  // the current process, so we cache it into a static constant.
+  static const bool kSupportsPerPidTimeInState = SupportsPerTaskTimeInState();
+  if (!kSupportsPerPidTimeInState)
+    return false;
+
+  bool success = false;
+  ForEachProcessTask(
+      process_, [&time_in_state_per_thread, &success, this](
+                    PlatformThreadId tid, const FilePath& task_path) {
+        FilePath time_in_state_path = task_path.Append("time_in_state");
+
+        std::string buffer;
+        if (!internal::ReadProcFile(time_in_state_path, &buffer))
+          return;
+
+        success |= ParseProcTimeInState(buffer, tid, time_in_state_per_thread);
+      });
+
+  return success;
 }
 
 // For the /proc/self/io file to exist, the Linux kernel must have
@@ -386,6 +441,147 @@ int ParseProcStatCPU(StringPiece input) {
 int GetNumberOfThreads(ProcessHandle process) {
   return internal::ReadProcStatsAndGetFieldAsInt64(process,
                                                    internal::VM_NUMTHREADS);
+}
+
+bool ProcessMetrics::ParseProcTimeInState(
+    const std::string& content,
+    PlatformThreadId tid,
+    TimeInStatePerThread& time_in_state_per_thread) {
+  uint32_t current_core_index = 0;
+  CoreType current_core_type = CoreType::kOther;
+  bool header_seen = false;
+
+  const char* begin = content.data();
+  size_t max_pos = content.size() - 1;
+
+  // Example time_in_state content:
+  // ---
+  // cpu0
+  // 300000 1
+  // 403200 0
+  // 499200 15
+  // cpu4
+  // 710400 13
+  // 825600 5
+  // 940800 550
+  // ---
+
+  // Iterate over the individual lines.
+  for (size_t pos = 0; pos <= max_pos;) {
+    const char next_char = content[pos];
+    int num_chars = 0;
+    if (!isdigit(next_char)) {
+      // Header line, which we expect to contain "cpu" followed by the number
+      // of the CPU, e.g. "cpu0" or "cpu24".
+      int matches = sscanf(begin + pos, "cpu%" PRIu32 "\n%n",
+                           &current_core_index, &num_chars);
+      if (matches != 1)
+        return false;
+      current_core_type = GetCoreType(current_core_index);
+      header_seen = true;
+    } else if (header_seen) {
+      // Data line with two integer fields, frequency (kHz) and time (in
+      // jiffies), separated by a space, e.g. "2419200 132".
+      uint64_t frequency;
+      uint64_t time;
+      int matches = sscanf(begin + pos, "%" PRIu64 " %" PRIu64 "\n%n",
+                           &frequency, &time, &num_chars);
+      if (matches != 2)
+        return false;
+
+      // Skip zero-valued entries in the output list (no time spent at this
+      // frequency).
+      if (time > 0) {
+        time_in_state_per_thread.push_back(
+            {tid, current_core_type, current_core_index, frequency,
+             internal::ClockTicksToTimeDelta(time)});
+      }
+    } else {
+      // Data without a header is not supported.
+      return false;
+    }
+
+    // Advance line.
+    DCHECK_GT(num_chars, 0);
+    pos += num_chars;
+  }
+
+  return true;
+}
+
+ProcessMetrics::CoreType ProcessMetrics::GetCoreType(int core_index) {
+  if (!core_index_to_type_)
+    GuessCoreTypes();
+
+  if (static_cast<size_t>(core_index) >= core_index_to_type_->size())
+    return CoreType::kUnknown;
+
+  return core_index_to_type_->at(static_cast<size_t>(core_index));
+}
+
+void ProcessMetrics::GuessCoreTypes() {
+  // Try to guess the CPU architecture and cores of each cluster by comparing
+  // the maximum frequencies of the available (online and offline) cores.
+  const char kCPUMaxFreqPath[] =
+      "/sys/devices/system/cpu/cpu%d/cpufreq/cpuinfo_max_freq";
+  int num_cpus = base::SysInfo::NumberOfProcessors();
+  core_index_to_type_ = std::vector<CoreType>(num_cpus, CoreType::kUnknown);
+
+  std::vector<uint32_t> max_core_frequencies_mhz(num_cpus, 0);
+  base::flat_set<uint32_t> frequencies_mhz;
+
+  {
+    // Reading from cpuinfo_max_freq doesn't block (it amounts to reading a
+    // struct field from the cpufreq kernel driver).
+    ThreadRestrictions::ScopedAllowIO allow_io;
+    for (int core_index = 0; core_index < num_cpus; ++core_index) {
+      std::string content;
+      uint32_t frequency_khz = 0;
+      auto path = base::StringPrintf(kCPUMaxFreqPath, core_index);
+      if (ReadFileToString(base::FilePath(path), &content))
+        base::StringToUint(content, &frequency_khz);
+      uint32_t frequency_mhz = frequency_khz / 1000;
+      max_core_frequencies_mhz[core_index] = frequency_mhz;
+      if (frequency_mhz > 0)
+        frequencies_mhz.insert(frequency_mhz);
+    }
+  }
+
+  size_t num_frequencies = frequencies_mhz.size();
+
+  for (int core_index = 0; core_index < num_cpus; ++core_index) {
+    uint32_t core_frequency_mhz = max_core_frequencies_mhz[core_index];
+
+    CoreType core_type = CoreType::kOther;
+    if (num_frequencies == 1u) {
+      core_type = CoreType::kSymmetric;
+    } else if (num_frequencies == 2u || num_frequencies == 3u) {
+      auto it = frequencies_mhz.find(core_frequency_mhz);
+      if (it != frequencies_mhz.end()) {
+        // base::flat_set is sorted.
+        size_t frequency_index = it - frequencies_mhz.begin();
+        switch (frequency_index) {
+          case 0:
+            core_type = num_frequencies == 2u
+                            ? CoreType::kBigLittle_Little
+                            : CoreType::kBigLittleBigger_Little;
+            break;
+          case 1:
+            core_type = num_frequencies == 2u ? CoreType::kBigLittle_Big
+                                              : CoreType::kBigLittleBigger_Big;
+            break;
+          case 2:
+            DCHECK_EQ(num_frequencies, 3u);
+            core_type = CoreType::kBigLittleBigger_Bigger;
+            break;
+          default:
+            NOTREACHED();
+            break;
+        }
+      }
+    }
+    (*core_index_to_type_)[core_index] = core_type;
+  }
 }
 
 const char kProcSelfExe[] = "/proc/self/exe";

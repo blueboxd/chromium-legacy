@@ -382,6 +382,8 @@ class Generator(generator.Generator):
         self._GetCppWrapperCallType,
         "cpp_wrapper_param_type":
         self._GetCppWrapperParamType,
+        "write_input_param_for_tracing":
+        self._WriteInputParamForTracing,
         "cpp_wrapper_param_type_new":
         self._GetCppWrapperParamTypeNew,
         "cpp_wrapper_type":
@@ -667,6 +669,65 @@ class Generator(generator.Generator):
     return "constexpr %s %s = %s" % (
         GetCppPodType(constant.kind), constant.name,
         self._ConstantValue(constant))
+
+  def _WriteInputParamForTracing(self, kind, mojo_prefix, parameter_name,
+                                 value):
+    """Generates lines of C++ to log parameter |parameter_name| into TracedValue
+    |value|.
+
+    Args:
+      kind: {Kind} The kind of the parameter (corresponds to its C++ type).
+      mojo_prefix: {string} The prefix of the auto-generated parameter.
+      parameter_name: {string} The mojom parameter name to be logged
+        (auto-generated C++ parameter name is |mojo_prefix+parameter_name|).
+      value: {string} The C++ TracedValue* variable name to be logged into.
+
+    Yields:
+      {string} C++ lines of code that trace |parameter_name| into |value|.
+    """
+    cpp_parameter_name = mojo_prefix + parameter_name
+    value_name_cppname = (value, parameter_name, cpp_parameter_name)
+    # TODO(crbug.com/1103623): Support more involved types.
+    if mojom.IsEnumKind(kind):
+      # TODO(crbug.com/1103623): Pretty-print enums.
+      yield '%s->SetInteger("%s", static_cast<int>(%s));' % value_name_cppname
+      return
+    if mojom.IsStringKind(kind):
+      if self.for_blink:
+        # WTF::String is nullable on its own.
+        yield '%s->SetString("%s", %s.Utf8());' % value_name_cppname
+        return
+      if mojom.IsNullableKind(kind):
+        # base::Optional<std::string>
+        yield 'if (%s.has_value()) {' % cpp_parameter_name
+        yield '  %s->SetString("%s", %s.value());' % value_name_cppname
+        yield '} else {'
+        yield '  %s->SetString("%s", "base::nullopt");' % (value,
+                                                           parameter_name)
+        yield '}'
+        return
+      else:
+        yield '%s->SetString("%s", %s);' % value_name_cppname
+        return
+    if kind == mojom.BOOL:
+      yield '%s->SetBoolean("%s", %s);' % value_name_cppname
+      return
+    # TODO(crbug.com/1103623): Make TracedValue support int64_t, then move to
+    # mojom.IsIntegralKind.
+    if kind in [
+        mojom.INT8, mojom.UINT8, mojom.INT16, mojom.UINT16, mojom.INT32
+    ]:
+      # Parameter is representable as 32bit int.
+      yield '%s->SetInteger("%s", %s);' % value_name_cppname
+      return
+    if kind in [mojom.UINT32, mojom.INT64, mojom.UINT64]:
+      yield '%s->SetString("%s", std::to_string(%s));' % value_name_cppname
+      return
+    if mojom.IsFloatKind(kind) or mojom.IsDoubleKind(kind):
+      yield '%s->SetDouble("%s", %s);' % value_name_cppname
+      return
+    yield '%s->SetString("%s", "<value of type %s>");' % (
+        value, parameter_name, self._GetCppWrapperParamType(kind))
 
   def _GetCppWrapperType(self,
                          kind,

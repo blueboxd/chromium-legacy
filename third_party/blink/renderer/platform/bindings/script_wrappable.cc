@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -14,8 +15,7 @@ struct SameSizeAsScriptWrappable {
   v8::Persistent<v8::Object> main_world_wrapper_;
 };
 
-static_assert(sizeof(ScriptWrappable) <= sizeof(SameSizeAsScriptWrappable),
-              "ScriptWrappable should stay small");
+ASSERT_SIZE(ScriptWrappable, SameSizeAsScriptWrappable);
 
 v8::Local<v8::Value> ScriptWrappable::Wrap(
     v8::Isolate* isolate,

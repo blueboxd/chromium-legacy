@@ -63,8 +63,7 @@ TEST_F(SafeBrowsingPolicyHandlerTest, OnlyNewPolicySet) {
     policy::PolicyMap policy;
     policy.Set(policy::key::kSafeBrowsingProtectionLevel,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(level), nullptr);
+               policy::POLICY_SOURCE_CLOUD, base::Value(level), nullptr);
     UpdateProviderPolicy(policy);
 
     const base::Value* value = nullptr;
@@ -86,8 +85,7 @@ TEST_F(SafeBrowsingPolicyHandlerTest, OnlyLegacyPolicySet) {
     policy::PolicyMap policy;
     policy.Set(policy::key::kSafeBrowsingEnabled,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(enabled), nullptr);
+               policy::POLICY_SOURCE_CLOUD, base::Value(enabled), nullptr);
     UpdateProviderPolicy(policy);
 
     const base::Value* value = nullptr;
@@ -108,12 +106,10 @@ TEST_F(SafeBrowsingPolicyHandlerTest, NewPolicyOverridesLegacyPolicy) {
       policy::PolicyMap policy;
       policy.Set(policy::key::kSafeBrowsingProtectionLevel,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                 policy::POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(level), nullptr);
+                 policy::POLICY_SOURCE_CLOUD, base::Value(level), nullptr);
       policy.Set(policy::key::kSafeBrowsingEnabled,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                 policy::POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(enabled), nullptr);
+                 policy::POLICY_SOURCE_CLOUD, base::Value(enabled), nullptr);
       UpdateProviderPolicy(policy);
 
       const base::Value* value = nullptr;
@@ -136,12 +132,11 @@ TEST_F(SafeBrowsingPolicyHandlerTest, LegacyPolicyAppliesIfNewPolicyInvalid) {
     policy::PolicyMap policy;
     policy.Set(policy::key::kSafeBrowsingProtectionLevel,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(5 /* out of range */), nullptr);
+               policy::POLICY_SOURCE_CLOUD, base::Value(5 /* out of range */),
+               nullptr);
     policy.Set(policy::key::kSafeBrowsingEnabled,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(enabled), nullptr);
+               policy::POLICY_SOURCE_CLOUD, base::Value(enabled), nullptr);
     UpdateProviderPolicy(policy);
 
     const base::Value* value = nullptr;
@@ -161,12 +156,11 @@ TEST_F(SafeBrowsingPolicyHandlerTest, NewPolicyAppliesIfLegacyPolicyInvalid) {
     policy::PolicyMap policy;
     policy.Set(policy::key::kSafeBrowsingProtectionLevel,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(level), nullptr);
+               policy::POLICY_SOURCE_CLOUD, base::Value(level), nullptr);
     policy.Set(policy::key::kSafeBrowsingEnabled,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(4 /* wrong type */), nullptr);
+               policy::POLICY_SOURCE_CLOUD, base::Value(4 /* wrong type */),
+               nullptr);
     UpdateProviderPolicy(policy);
 
     const base::Value* value = nullptr;

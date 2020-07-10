@@ -28,6 +28,6 @@ public class AndroidSyncSettingsTestUtils {
     @VisibleForTesting
     public static void setUpAndroidSyncSettingsForTesting(SyncContentResolverDelegate delegate) {
         delegate.setMasterSyncAutomatically(true);
-        AndroidSyncSettings.overrideForTests(delegate, null);
+        AndroidSyncSettings.overrideForTests(new AndroidSyncSettings(delegate));
     }
 }

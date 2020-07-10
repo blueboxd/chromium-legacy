@@ -32,6 +32,7 @@
 
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -43,8 +44,7 @@ struct SameSizeAsElementData final
   void* pointers[2];
 };
 
-static_assert(sizeof(ElementData) == sizeof(SameSizeAsElementData),
-              "ElementData should stay small");
+ASSERT_SIZE(ElementData, SameSizeAsElementData);
 
 static AdditionalBytes AdditionalBytesForShareableElementDataWithAttributeCount(
     unsigned count) {

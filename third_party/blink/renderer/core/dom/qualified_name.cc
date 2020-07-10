@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/xmlns_names.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/static_constructors.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
@@ -38,9 +39,7 @@ struct SameSizeAsQualifiedNameImpl
   void* pointers[4];
 };
 
-static_assert(sizeof(QualifiedName::QualifiedNameImpl) ==
-                  sizeof(SameSizeAsQualifiedNameImpl),
-              "QualifiedNameImpl should stay small");
+ASSERT_SIZE(QualifiedName::QualifiedNameImpl, SameSizeAsQualifiedNameImpl);
 
 using QualifiedNameCache =
     HashSet<QualifiedName::QualifiedNameImpl*, QualifiedNameHash>;

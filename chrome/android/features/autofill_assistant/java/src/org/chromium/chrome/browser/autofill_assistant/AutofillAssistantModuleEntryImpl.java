@@ -12,8 +12,8 @@ import androidx.annotation.Nullable;
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.autofill_assistant.metrics.OnBoarding;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.WebContents;
@@ -28,7 +28,7 @@ import java.util.Map;
 public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModuleEntry {
     @Override
     public void start(BottomSheetController bottomSheetController,
-            ChromeFullscreenManager fullscreenManager, CompositorViewHolder compositorViewHolder,
+            BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
             ScrimView scrimView, Context context, @NonNull WebContents webContents,
             boolean skipOnboarding, boolean isChromeCustomTab, @NonNull String initialUrl,
             Map<String, String> parameters, String experimentIds, @Nullable String callerAccount,
@@ -44,7 +44,7 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
 
         AssistantOnboardingCoordinator onboardingCoordinator =
                 new AssistantOnboardingCoordinator(experimentIds, parameters, context,
-                        bottomSheetController, fullscreenManager, compositorViewHolder, scrimView);
+                        bottomSheetController, browserControls, compositorViewHolder, scrimView);
         onboardingCoordinator.show(accepted -> {
             if (!accepted) return;
 
@@ -56,10 +56,10 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
 
     @Override
     public AutofillAssistantActionHandler createActionHandler(Context context,
-            BottomSheetController bottomSheetController, ChromeFullscreenManager fullscreenManager,
-            CompositorViewHolder compositorViewHolder, ActivityTabProvider activityTabProvider,
-            ScrimView scrimView) {
+            BottomSheetController bottomSheetController,
+            BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
+            ActivityTabProvider activityTabProvider, ScrimView scrimView) {
         return new AutofillAssistantActionHandlerImpl(context, bottomSheetController,
-                fullscreenManager, compositorViewHolder, activityTabProvider, scrimView);
+                browserControls, compositorViewHolder, activityTabProvider, scrimView);
     }
 }

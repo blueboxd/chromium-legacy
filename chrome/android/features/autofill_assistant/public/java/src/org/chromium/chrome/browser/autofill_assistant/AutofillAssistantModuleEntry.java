@@ -10,8 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.module_installer.builder.ModuleInterface;
@@ -33,7 +33,7 @@ interface AutofillAssistantModuleEntry {
      * disappears.
      */
     void start(BottomSheetController bottomSheetController,
-            ChromeFullscreenManager fullscreenManager, CompositorViewHolder compositorViewHolder,
+            BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
             ScrimView scrimView, Context context, @NonNull WebContents webContents,
             boolean skipOnboarding, boolean isChromeCustomTab, @NonNull String initialUrl,
             Map<String, String> parameters, String experimentIds, @Nullable String callerAccount,
@@ -44,13 +44,13 @@ interface AutofillAssistantModuleEntry {
      *
      * @param context activity context
      * @param bottomSheetController bottom sheet controller instance of the activity
-     * @param fullscreenManager fullscreen manager of the activity
+     * @param browserControls provider of browser controls state
      * @param compositorViewHolder compositor view holder of the activity
      * @param activityTabProvider activity tab provider
      * @param scrimView scrim view of the activity
      */
     AutofillAssistantActionHandler createActionHandler(Context context,
-            BottomSheetController bottomSheetController, ChromeFullscreenManager fullscreenManager,
-            CompositorViewHolder compositorViewHolder, ActivityTabProvider activityTabProvider,
-            ScrimView scrimView);
+            BottomSheetController bottomSheetController,
+            BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
+            ActivityTabProvider activityTabProvider, ScrimView scrimView);
 }

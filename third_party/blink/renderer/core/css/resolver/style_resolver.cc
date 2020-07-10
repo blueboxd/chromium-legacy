@@ -761,10 +761,9 @@ void StyleResolver::CollectTreeBoundaryCrossingRulesV0CascadeOrder(
   }
 }
 
-scoped_refptr<ComputedStyle> StyleResolver::StyleForViewport(
-    Document& document) {
+scoped_refptr<ComputedStyle> StyleResolver::StyleForViewport() {
   scoped_refptr<ComputedStyle> viewport_style =
-      InitialStyleForElement(document);
+      InitialStyleForElement(GetDocument());
 
   viewport_style->SetZIndex(0);
   viewport_style->SetIsStackingContextWithoutContainment(true);
@@ -777,7 +776,7 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForViewport(
   viewport_style->SetOverflowX(EOverflow::kAuto);
   viewport_style->SetOverflowY(EOverflow::kAuto);
 
-  document.GetStyleEngine().ApplyVisionDeficiencyStyle(viewport_style);
+  GetDocument().GetStyleEngine().ApplyVisionDeficiencyStyle(viewport_style);
 
   return viewport_style;
 }

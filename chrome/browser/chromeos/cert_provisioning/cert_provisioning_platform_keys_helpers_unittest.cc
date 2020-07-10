@@ -132,11 +132,8 @@ TEST_F(CertProvisioningCertsWithIdsGetterTest, ManyCertificatesWithId) {
 TEST_F(CertProvisioningCertsWithIdsGetterTest, ManyCertificatesWithoutId) {
   CertScope cert_scope = CertScope::kDevice;
   size_t cert_count = 4;
-  std::vector<std::string> ids{"cert_profile_id_0", "cert_profile_id_1",
-                               "cert_profile_id_2"};
   for (size_t i = 0; i < cert_count; ++i) {
-    certificate_helper_.AddCert(cert_scope, /*cert_profile_id=*/"",
-                                /*error_message=*/"no id");
+    certificate_helper_.AddCert(cert_scope, /*cert_profile_id=*/base::nullopt);
   }
 
   CertProvisioningCertsWithIdsGetter cert_getter;
@@ -155,8 +152,7 @@ TEST_F(CertProvisioningCertsWithIdsGetterTest, CertificatesWithAndWithoutIds) {
 
   size_t cert_without_id_count = 4;
   for (size_t i = 0; i < cert_without_id_count; ++i) {
-    certificate_helper_.AddCert(cert_scope, /*cert_profile_id=*/"",
-                                /*error_message=*/"no id");
+    certificate_helper_.AddCert(cert_scope, /*cert_profile_id=*/base::nullopt);
   }
 
   std::vector<std::string> ids{"cert_profile_id_0", "cert_profile_id_1",
@@ -174,6 +170,28 @@ TEST_F(CertProvisioningCertsWithIdsGetterTest, CertificatesWithAndWithoutIds) {
 
   EXPECT_THAT(GetKeys(callback_observer.GetMap()), ElementsAreArray(ids));
   EXPECT_TRUE(callback_observer.GetError().empty());
+}
+
+TEST_F(CertProvisioningCertsWithIdsGetterTest, CertificateWithError) {
+  CertScope cert_scope = CertScope::kDevice;
+  const char kError[] = "test error";
+
+  certificate_helper_.AddCert(cert_scope, /*cert_profile_id=*/"id1");
+  certificate_helper_.AddCert(cert_scope, /*cert_profile_id=*/"id2");
+  certificate_helper_.AddCert(cert_scope, /*cert_profile_id=*/base::nullopt,
+                              /*error_message=*/kError);
+  certificate_helper_.AddCert(cert_scope, /*cert_profile_id=*/"id3");
+  certificate_helper_.AddCert(cert_scope, /*cert_profile_id=*/"id4");
+
+  CertProvisioningCertsWithIdsGetter cert_getter;
+
+  CallbackObserver callback_observer;
+  cert_getter.GetCertsWithIds(cert_scope, &platform_keys_service_,
+                              callback_observer.GetCallback());
+  callback_observer.WaitForCallback();
+
+  EXPECT_TRUE(callback_observer.GetMap().empty());
+  EXPECT_EQ(callback_observer.GetError(), kError);
 }
 
 }  // namespace

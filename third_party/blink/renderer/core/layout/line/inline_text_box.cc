@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -51,8 +52,7 @@ struct SameSizeAsInlineTextBox : public InlineBox {
   void* pointers[2];
 };
 
-static_assert(sizeof(InlineTextBox) == sizeof(SameSizeAsInlineTextBox),
-              "InlineTextBox should stay small");
+ASSERT_SIZE(InlineTextBox, SameSizeAsInlineTextBox);
 
 typedef WTF::HashMap<const InlineTextBox*, LayoutRect> InlineTextBoxOverflowMap;
 static InlineTextBoxOverflowMap* g_text_boxes_with_overflow;

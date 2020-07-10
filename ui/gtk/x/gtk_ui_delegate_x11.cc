@@ -12,6 +12,8 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gtk/x/gtk_event_loop_x11.h"
+#include "ui/platform_window/x11/x11_window.h"
+#include "ui/platform_window/x11/x11_window_manager.h"
 
 namespace ui {
 
@@ -47,7 +49,19 @@ bool GtkUiDelegateX11::SetGdkWindowTransientFor(GdkWindow* window,
                                                 gfx::AcceleratedWidget parent) {
   XSetTransientForHint(xdisplay_, GDK_WINDOW_XID(window),
                        static_cast<uint32_t>(parent));
+
+  ui::X11Window* parent_window =
+      ui::X11WindowManager::GetInstance()->GetWindow(parent);
+  parent_window->SetTransientWindow(
+      static_cast<x11::Window>(gdk_x11_window_get_xid(window)));
+
   return true;
+}
+
+void GtkUiDelegateX11::ClearTransientFor(gfx::AcceleratedWidget parent) {
+  ui::X11Window* parent_window =
+      ui::X11WindowManager::GetInstance()->GetWindow(parent);
+  parent_window->SetTransientWindow(x11::Window::None);
 }
 
 GdkDisplay* GtkUiDelegateX11::GetGdkDisplay() {

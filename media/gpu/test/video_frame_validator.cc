@@ -261,10 +261,10 @@ struct RawVideoFrameValidator::RawMismatchedFrameInfo
 // static
 std::unique_ptr<RawVideoFrameValidator> RawVideoFrameValidator::Create(
     const GetModelFrameCB& get_model_frame_cb,
-    uint8_t tolerance,
-    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor) {
+    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor,
+    uint8_t tolerance) {
   auto video_frame_validator = base::WrapUnique(new RawVideoFrameValidator(
-      get_model_frame_cb, tolerance, std::move(corrupt_frame_processor)));
+      get_model_frame_cb, std::move(corrupt_frame_processor), tolerance));
   if (!video_frame_validator->Initialize()) {
     LOG(ERROR) << "Failed to initialize RawVideoFrameValidator.";
     return nullptr;
@@ -275,8 +275,8 @@ std::unique_ptr<RawVideoFrameValidator> RawVideoFrameValidator::Create(
 
 RawVideoFrameValidator::RawVideoFrameValidator(
     const GetModelFrameCB& get_model_frame_cb,
-    uint8_t tolerance,
-    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor)
+    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor,
+    uint8_t tolerance)
     : VideoFrameValidator(std::move(corrupt_frame_processor)),
       get_model_frame_cb_(get_model_frame_cb),
       tolerance_(tolerance) {}
@@ -311,10 +311,10 @@ struct PSNRVideoFrameValidator::PSNRMismatchedFrameInfo
 // static
 std::unique_ptr<PSNRVideoFrameValidator> PSNRVideoFrameValidator::Create(
     const GetModelFrameCB& get_model_frame_cb,
-    double tolerance,
-    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor) {
+    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor,
+    double tolerance) {
   auto video_frame_validator = base::WrapUnique(new PSNRVideoFrameValidator(
-      get_model_frame_cb, tolerance, std::move(corrupt_frame_processor)));
+      get_model_frame_cb, std::move(corrupt_frame_processor), tolerance));
   if (!video_frame_validator->Initialize()) {
     LOG(ERROR) << "Failed to initialize PSNRVideoFrameValidator.";
     return nullptr;
@@ -325,8 +325,8 @@ std::unique_ptr<PSNRVideoFrameValidator> PSNRVideoFrameValidator::Create(
 
 PSNRVideoFrameValidator::PSNRVideoFrameValidator(
     const GetModelFrameCB& get_model_frame_cb,
-    double tolerance,
-    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor)
+    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor,
+    double tolerance)
     : VideoFrameValidator(std::move(corrupt_frame_processor)),
       get_model_frame_cb_(get_model_frame_cb),
       tolerance_(tolerance) {}
@@ -362,10 +362,10 @@ struct SSIMVideoFrameValidator::SSIMMismatchedFrameInfo
 // static
 std::unique_ptr<SSIMVideoFrameValidator> SSIMVideoFrameValidator::Create(
     const GetModelFrameCB& get_model_frame_cb,
-    double tolerance,
-    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor) {
+    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor,
+    double tolerance) {
   auto video_frame_validator = base::WrapUnique(new SSIMVideoFrameValidator(
-      get_model_frame_cb, tolerance, std::move(corrupt_frame_processor)));
+      get_model_frame_cb, std::move(corrupt_frame_processor), tolerance));
   if (!video_frame_validator->Initialize()) {
     LOG(ERROR) << "Failed to initialize SSIMVideoFrameValidator.";
     return nullptr;
@@ -376,8 +376,8 @@ std::unique_ptr<SSIMVideoFrameValidator> SSIMVideoFrameValidator::Create(
 
 SSIMVideoFrameValidator::SSIMVideoFrameValidator(
     const GetModelFrameCB& get_model_frame_cb,
-    double tolerance,
-    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor)
+    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor,
+    double tolerance)
     : VideoFrameValidator(std::move(corrupt_frame_processor)),
       get_model_frame_cb_(get_model_frame_cb),
       tolerance_(tolerance) {}

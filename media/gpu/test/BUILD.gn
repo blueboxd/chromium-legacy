@@ -16,8 +16,6 @@ source_set("helpers") {
     "video.h",
     "video_frame_helpers.cc",
     "video_frame_helpers.h",
-    "video_test_environment.cc",
-    "video_test_environment.h",
   ]
   deps = [
     "//base:base",
@@ -26,15 +24,10 @@ source_set("helpers") {
     "//gpu/ipc/common",
     "//media:test_support",
     "//media/gpu",
-    "//mojo/core/embedder:embedder",
     "//third_party/ffmpeg",
     "//third_party/libyuv",
   ]
   public_deps = [ "//testing/gtest" ]
-
-  if (use_ozone) {
-    deps += [ "//ui/ozone" ]
-  }
 }
 
 source_set("frame_validator") {
@@ -122,6 +115,31 @@ static_library("video_player") {
   ]
 }
 
+static_library("video_test_environment") {
+  testonly = true
+  sources = [
+    "video_test_environment.cc",
+    "video_test_environment.h",
+  ]
+
+  deps = [
+    ":helpers",
+    "//base:base",
+    "//base/test:test_support",
+    "//media:test_support",
+    "//media/gpu",
+    "//mojo/core/embedder:embedder",
+  ]
+
+  public_deps = [
+    ":frame_file_writer",
+    "//testing/gtest",
+  ]
+  if (use_ozone) {
+    public_deps += [ "//ui/ozone" ]
+  }
+}
+
 static_library("video_player_test_environment") {
   testonly = true
   sources = [
@@ -133,6 +151,7 @@ static_library("video_player_test_environment") {
     ":frame_file_writer",
     ":helpers",
     ":video_player",
+    ":video_test_environment",
     "//media/gpu",
   ]
 }
@@ -168,10 +187,11 @@ static_library("video_encoder_test_environment") {
     "video_encoder/video_encoder_test_environment.h",
   ]
   data = [ "//media/test/data/" ]
-  deps = [
+  public_deps = [
     ":helpers",
-    "//media/gpu",
+    ":video_test_environment",
   ]
+  deps = [ "//media/gpu" ]
 }
 
 if (use_vaapi || use_v4l2_codec) {

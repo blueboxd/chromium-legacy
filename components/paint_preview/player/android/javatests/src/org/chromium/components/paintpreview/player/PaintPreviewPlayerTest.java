@@ -160,7 +160,7 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
                     () -> { Assert.fail("Unexpected overscroll refresh attempted."); },
                     () -> {
                         Assert.fail("View Ready callback occurred, but expected a failure.");
-                    },
+                    }, null,
                     0xffffffff, () -> { compositorErrorCallback.notifyCalled(); }, false);
         });
         compositorErrorCallback.waitForFirst();
@@ -216,7 +216,7 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
             mPlayerManager = new PlayerManager(new GURL(TEST_URL), getActivity(), service,
                     TEST_DIRECTORY_KEY, mLinkClickHandler,
                     () -> { mRefreshedCallback.notifyCalled(); },
-                    () -> { viewReady.notifyCalled(); },
+                    () -> { viewReady.notifyCalled(); }, null,
                     0xffffffff, () -> { Assert.fail("Compositor initialization failed."); },
                     false);
             getActivity().setContentView(mPlayerManager.getView());

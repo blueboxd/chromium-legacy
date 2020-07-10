@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -33,8 +34,7 @@ struct SameSizeAsCSSPropertyValue {
   Member<void*> value;
 };
 
-static_assert(sizeof(CSSPropertyValue) == sizeof(SameSizeAsCSSPropertyValue),
-              "CSSPropertyValue should stay small");
+ASSERT_SIZE(CSSPropertyValue, SameSizeAsCSSPropertyValue);
 
 CSSPropertyID CSSPropertyValueMetadata::ShorthandID() const {
   if (!is_set_from_shorthand_)

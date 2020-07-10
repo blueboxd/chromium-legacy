@@ -119,7 +119,10 @@ class {{class_name}}_{{method.name}}_ForwardToCallback
 bool {{proxy_name}}::{{method.name}}(
     {{interface_macros.declare_sync_method_params("param_", method)}}) {
 #if BUILDFLAG(MOJO_TRACE_ENABLED)
-  TRACE_EVENT0("mojom", "{{namespace_as_string}}::{{class_name}}::{{method.name}}");
+{%-     set qualified_method_name = "%s::%s::%s" % (namespace_as_string,
+                                                    class_name, method_name) %}
+  {{interface_macros.trace_event("param_", method.parameters,
+                                 qualified_method_name)}}
 #endif
   const bool kExpectsResponse = true;
   const bool kIsSync = true;
@@ -151,6 +154,7 @@ bool {{proxy_name}}::{{method.name}}(
           , out_param_{{param.name}}
 {%-     endfor %}));
   ignore_result(receiver_->AcceptWithResponder(&message, std::move(responder)));
+  // TODO(karelkral) Trace the out_ parameters here
   return result;
 }
 {%-   endif %}
@@ -158,7 +162,10 @@ bool {{proxy_name}}::{{method.name}}(
 void {{proxy_name}}::{{method.name}}(
     {{interface_macros.declare_request_params("in_", method)}}) {
 #if BUILDFLAG(MOJO_TRACE_ENABLED)
-  TRACE_EVENT0("mojom", "{{namespace_as_string}}::{{class_name}}::{{method.name}}");
+{%- set qualified_method_name = "%s::%s::%s" % (namespace_as_string, class_name,
+                                                method_name) %}
+  {{interface_macros.trace_event("in_", method.parameters,
+                                 qualified_method_name)}}
 #endif
 {%- if method.response_parameters != None %}
   const bool kExpectsResponse = true;

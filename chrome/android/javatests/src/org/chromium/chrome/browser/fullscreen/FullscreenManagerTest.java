@@ -199,9 +199,9 @@ public class FullscreenManagerTest {
         FullscreenManagerTestUtils.disableBrowserOverrides();
         mActivityTestRule.startMainActivityWithURL(LONG_FULLSCREEN_API_HTML_TEST_PAGE);
 
-        ChromeFullscreenManager fullscreenManager =
-                mActivityTestRule.getActivity().getFullscreenManager();
-        int browserControlsHeight = fullscreenManager.getTopControlsHeight();
+        BrowserControlsManager browserControlManager =
+                mActivityTestRule.getActivity().getBrowserControlsManager();
+        int browserControlsHeight = browserControlManager.getTopControlsHeight();
 
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         View view = tab.getView();
@@ -230,10 +230,10 @@ public class FullscreenManagerTest {
         FullscreenManagerTestUtils.disableBrowserOverrides();
         mActivityTestRule.startMainActivityWithURL(LONG_HTML_TEST_PAGE);
 
-        final ChromeFullscreenManager fullscreenManager =
-                mActivityTestRule.getActivity().getFullscreenManager();
+        final BrowserControlsManager browserControlsManager =
+                mActivityTestRule.getActivity().getBrowserControlsManager();
 
-        Assert.assertEquals(fullscreenManager.getTopControlOffset(), 0f, 0);
+        Assert.assertEquals(browserControlsManager.getTopControlOffset(), 0f, 0);
 
         FullscreenManagerTestUtils.waitForBrowserControlsToBeMoveable(
                 mActivityTestRule, mActivityTestRule.getActivity().getActivityTab());
@@ -248,7 +248,7 @@ public class FullscreenManagerTest {
     @DisabledTest(message = "crbug.com/901280")
     public void testHideBrowserControlsAfterFlingBoosting() {
         // Test that fling boosting doesn't break the scroll state management
-        // that's used by the FullscreenManager to dispatch URL bar based
+        // that's used by the BrowserControlsManager to dispatch URL bar based
         // resizes to the renderer.
         FullscreenManagerTestUtils.disableBrowserOverrides();
         mActivityTestRule.startMainActivityWithURL(LONG_HTML_TEST_PAGE);
@@ -327,10 +327,10 @@ public class FullscreenManagerTest {
         FullscreenManagerTestUtils.disableBrowserOverrides();
         mActivityTestRule.startMainActivityWithURL(LONG_HTML_TEST_PAGE);
 
-        final ChromeFullscreenManager fullscreenManager =
-                mActivityTestRule.getActivity().getFullscreenManager();
+        final BrowserControlsManager browserControlsManager =
+                mActivityTestRule.getActivity().getBrowserControlsManager();
 
-        Assert.assertEquals(fullscreenManager.getTopControlOffset(), 0f, 0);
+        Assert.assertEquals(browserControlsManager.getTopControlOffset(), 0f, 0);
 
         // Detect layouts. Note this doesn't actually need to be atomic (just final).
         final AtomicInteger layoutCount = new AtomicInteger();
@@ -380,11 +380,11 @@ public class FullscreenManagerTest {
         // manual fullscreen if it were supported.
         mActivityTestRule.startMainActivityWithURL("chrome://credits");
 
-        final ChromeFullscreenManager fullscreenManager =
-                mActivityTestRule.getActivity().getFullscreenManager();
-        int browserControlsHeight = fullscreenManager.getTopControlsHeight();
+        final BrowserControlsManager browserControlsManager =
+                mActivityTestRule.getActivity().getBrowserControlsManager();
+        int browserControlsHeight = browserControlsManager.getTopControlsHeight();
 
-        Assert.assertEquals(fullscreenManager.getTopControlOffset(), 0f, 0);
+        Assert.assertEquals(browserControlsManager.getTopControlOffset(), 0f, 0);
 
         float dragX = 50f;
         float dragStartY = browserControlsHeight * 2;
@@ -406,9 +406,9 @@ public class FullscreenManagerTest {
         FullscreenManagerTestUtils.disableBrowserOverrides();
         mActivityTestRule.startMainActivityWithURL(LONG_HTML_TEST_PAGE);
 
-        ChromeFullscreenManager fullscreenManager =
-                mActivityTestRule.getActivity().getFullscreenManager();
-        Assert.assertEquals(fullscreenManager.getTopControlOffset(), 0f, 0);
+        BrowserControlsManager browserControlsManager =
+                mActivityTestRule.getActivity().getBrowserControlsManager();
+        Assert.assertEquals(browserControlsManager.getTopControlOffset(), 0f, 0);
 
         FullscreenManagerTestUtils.scrollBrowserControls(mActivityTestRule, false);
 
@@ -432,9 +432,9 @@ public class FullscreenManagerTest {
         FullscreenManagerTestUtils.disableBrowserOverrides();
         mActivityTestRule.startMainActivityWithURL(LONG_HTML_TEST_PAGE);
 
-        ChromeFullscreenManager fullscreenManager =
-                mActivityTestRule.getActivity().getFullscreenManager();
-        Assert.assertEquals(fullscreenManager.getTopControlOffset(), 0f, 0);
+        BrowserControlsManager browserControlsManager =
+                mActivityTestRule.getActivity().getBrowserControlsManager();
+        Assert.assertEquals(browserControlsManager.getTopControlOffset(), 0f, 0);
 
         FullscreenManagerTestUtils.scrollBrowserControls(mActivityTestRule, false);
 
@@ -458,9 +458,9 @@ public class FullscreenManagerTest {
 
         // Tests entering fullscreen when browser controls are visible. The request goes through
         // after the controls are hidden.
-        ChromeFullscreenManager fullscreenManager =
-                mActivityTestRule.getActivity().getFullscreenManager();
-        Assert.assertEquals(0f, fullscreenManager.getTopControlOffset(), 0);
+        BrowserControlsManager browserControlsManager =
+                mActivityTestRule.getActivity().getBrowserControlsManager();
+        Assert.assertEquals(0f, browserControlsManager.getTopControlOffset(), 0);
 
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         TouchCommon.singleClickView(tab.getView());
@@ -477,11 +477,11 @@ public class FullscreenManagerTest {
         FullscreenManagerTestUtils.disableBrowserOverrides();
         mActivityTestRule.startMainActivityWithURL(LONG_HTML_WITH_AUTO_FOCUS_INPUT_TEST_PAGE);
 
-        ChromeFullscreenManager fullscreenManager =
-                mActivityTestRule.getActivity().getFullscreenManager();
-        Assert.assertEquals(fullscreenManager.getTopControlOffset(), 0f, 0);
+        BrowserControlsManager browserControlsManager =
+                mActivityTestRule.getActivity().getBrowserControlsManager();
+        Assert.assertEquals(browserControlsManager.getTopControlOffset(), 0f, 0);
 
-        int browserControlsHeight = fullscreenManager.getTopControlsHeight();
+        int browserControlsHeight = browserControlsManager.getTopControlsHeight();
         float dragX = 50f;
         float dragStartY = browserControlsHeight * 3;
         float dragEndY = dragStartY - browserControlsHeight * 2;
@@ -490,7 +490,7 @@ public class FullscreenManagerTest {
         TouchCommon.dragTo(
                 mActivityTestRule.getActivity(), dragX, dragX, dragStartY, dragEndY, 100, downTime);
         TouchCommon.dragEnd(mActivityTestRule.getActivity(), dragX, dragEndY, downTime);
-        Assert.assertEquals(fullscreenManager.getTopControlOffset(), 0f, 0);
+        Assert.assertEquals(browserControlsManager.getTopControlOffset(), 0f, 0);
 
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         TouchCommon.singleClickView(tab.getView());
@@ -511,9 +511,9 @@ public class FullscreenManagerTest {
         FullscreenManagerTestUtils.disableBrowserOverrides();
         mActivityTestRule.startMainActivityWithURL(LONG_FULLSCREEN_API_HTML_WITH_OPTIONS_TEST_PAGE);
 
-        ChromeFullscreenManager fullscreenManager =
-                mActivityTestRule.getActivity().getFullscreenManager();
-        int browserControlsHeight = fullscreenManager.getTopControlsHeight();
+        BrowserControlsManager browserControlsManager =
+                mActivityTestRule.getActivity().getBrowserControlsManager();
+        int browserControlsHeight = browserControlsManager.getTopControlsHeight();
 
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         View view = tab.getView();

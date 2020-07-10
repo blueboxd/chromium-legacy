@@ -59,8 +59,8 @@ public class TopSnackbarView extends SnackbarView {
 
         ChromeActivity chromeActivity = (ChromeActivity) mActivity;
 
-        if (chromeActivity.getFullscreenManager().getContentOffset() == 0) return 0;
+        if (chromeActivity.getBrowserControlsManager().getContentOffset() == 0) return 0;
 
-        return chromeActivity.getFullscreenManager().getTopControlsHeight();
+        return chromeActivity.getBrowserControlsManager().getTopControlsHeight();
     }
 }

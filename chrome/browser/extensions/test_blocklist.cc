@@ -24,11 +24,11 @@ void Assign(BlocklistState* out, BlocklistState in) {
 
 }  // namespace
 
-BlacklistStateFetcherMock::BlacklistStateFetcherMock() : request_count_(0) {}
+BlocklistStateFetcherMock::BlocklistStateFetcherMock() : request_count_(0) {}
 
-BlacklistStateFetcherMock::~BlacklistStateFetcherMock() {}
+BlocklistStateFetcherMock::~BlocklistStateFetcherMock() {}
 
-void BlacklistStateFetcherMock::Request(const std::string& id,
+void BlocklistStateFetcherMock::Request(const std::string& id,
                                         const RequestCallback& callback) {
   ++request_count_;
 
@@ -40,59 +40,59 @@ void BlacklistStateFetcherMock::Request(const std::string& id,
       FROM_HERE, base::BindOnce(callback, result));
 }
 
-void BlacklistStateFetcherMock::SetState(const std::string& id,
+void BlocklistStateFetcherMock::SetState(const std::string& id,
                                          BlocklistState state) {
   states_[id] = state;
 }
 
-void BlacklistStateFetcherMock::Clear() {
+void BlocklistStateFetcherMock::Clear() {
   states_.clear();
 }
 
-TestBlacklist::TestBlacklist()
-    : blacklist_(nullptr),
-      blacklist_db_(new FakeSafeBrowsingDatabaseManager(true)),
-      scoped_blacklist_db_(blacklist_db_) {}
+TestBlocklist::TestBlocklist()
+    : blocklist_(nullptr),
+      blocklist_db_(new FakeSafeBrowsingDatabaseManager(true)),
+      scoped_blocklist_db_(blocklist_db_) {}
 
-TestBlacklist::TestBlacklist(Blacklist* blacklist)
-    : blacklist_(nullptr),
-      blacklist_db_(new FakeSafeBrowsingDatabaseManager(true)),
-      scoped_blacklist_db_(blacklist_db_) {
-  Attach(blacklist);
+TestBlocklist::TestBlocklist(Blocklist* blocklist)
+    : blocklist_(nullptr),
+      blocklist_db_(new FakeSafeBrowsingDatabaseManager(true)),
+      scoped_blocklist_db_(blocklist_db_) {
+  Attach(blocklist);
 }
 
-TestBlacklist::~TestBlacklist() {
+TestBlocklist::~TestBlocklist() {
   Detach();
 }
 
-void TestBlacklist::Attach(Blacklist* blacklist) {
-  if (blacklist_)
+void TestBlocklist::Attach(Blocklist* blocklist) {
+  if (blocklist_)
     Detach();
 
-  blacklist_ = blacklist;
-  blacklist_->SetBlacklistStateFetcherForTest(&state_fetcher_mock_);
+  blocklist_ = blocklist;
+  blocklist_->SetBlocklistStateFetcherForTest(&state_fetcher_mock_);
 }
 
-void TestBlacklist::Detach() {
-  blacklist_->ResetBlacklistStateFetcherForTest();
-  blacklist_->ResetDatabaseUpdatedListenerForTest();
+void TestBlocklist::Detach() {
+  blocklist_->ResetBlocklistStateFetcherForTest();
+  blocklist_->ResetDatabaseUpdatedListenerForTest();
 }
 
-void TestBlacklist::SetBlacklistState(const std::string& extension_id,
+void TestBlocklist::SetBlocklistState(const std::string& extension_id,
                                       BlocklistState state,
                                       bool notify) {
   state_fetcher_mock_.SetState(extension_id, state);
 
   switch (state) {
     case NOT_BLOCKLISTED:
-      blacklist_db_->RemoveUnsafe(extension_id);
+      blocklist_db_->RemoveUnsafe(extension_id);
       break;
 
     case BLOCKLISTED_MALWARE:
     case BLOCKLISTED_SECURITY_VULNERABILITY:
     case BLOCKLISTED_CWS_POLICY_VIOLATION:
     case BLOCKLISTED_POTENTIALLY_UNWANTED:
-      blacklist_db_->AddUnsafe(extension_id);
+      blocklist_db_->AddUnsafe(extension_id);
       break;
 
     default:
@@ -100,35 +100,35 @@ void TestBlacklist::SetBlacklistState(const std::string& extension_id,
   }
 
   if (notify)
-    blacklist_db_->NotifyUpdate();
+    blocklist_db_->NotifyUpdate();
 }
 
-void TestBlacklist::Clear(bool notify) {
+void TestBlocklist::Clear(bool notify) {
   state_fetcher_mock_.Clear();
-  blacklist_db_->ClearUnsafe();
+  blocklist_db_->ClearUnsafe();
   if (notify)
-    blacklist_db_->NotifyUpdate();
+    blocklist_db_->NotifyUpdate();
 }
 
-BlocklistState TestBlacklist::GetBlacklistState(
+BlocklistState TestBlocklist::GetBlocklistState(
     const std::string& extension_id) {
-  BlocklistState blacklist_state;
-  blacklist_->IsBlacklisted(extension_id,
-                            base::Bind(&Assign, &blacklist_state));
+  BlocklistState blocklist_state;
+  blocklist_->IsBlocklisted(extension_id,
+                            base::Bind(&Assign, &blocklist_state));
   base::RunLoop().RunUntilIdle();
-  return blacklist_state;
+  return blocklist_state;
 }
 
-void TestBlacklist::DisableSafeBrowsing() {
-  blacklist_db_->Disable();
+void TestBlocklist::DisableSafeBrowsing() {
+  blocklist_db_->Disable();
 }
 
-void TestBlacklist::EnableSafeBrowsing() {
-  blacklist_db_->Enable();
+void TestBlocklist::EnableSafeBrowsing() {
+  blocklist_db_->Enable();
 }
 
-void TestBlacklist::NotifyUpdate() {
-  blacklist_db_->NotifyUpdate();
+void TestBlocklist::NotifyUpdate() {
+  blocklist_db_->NotifyUpdate();
 }
 
 }  // namespace extensions

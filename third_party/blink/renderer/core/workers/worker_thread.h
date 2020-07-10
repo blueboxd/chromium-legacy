@@ -67,6 +67,7 @@ class WorkerResourceTimingNotifier;
 struct CrossThreadFetchClientSettingsObjectData;
 struct GlobalScopeCreationParams;
 struct WorkerDevToolsParams;
+struct WorkerMainScriptLoadParameters;
 
 // WorkerThread is a kind of WorkerBackingThread client. Each worker mechanism
 // can access the lower thread infrastructure via an implementation of this
@@ -118,6 +119,8 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // thread. Called on the main thread after Start().
   void FetchAndRunClassicScript(
       const KURL& script_url,
+      std::unique_ptr<WorkerMainScriptLoadParameters>
+          worker_main_script_load_params,
       std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
           outside_settings_object_data,
       WorkerResourceTimingNotifier* outside_resource_timing_notifier,
@@ -127,6 +130,8 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // thread. Called on the main thread after Start().
   void FetchAndRunModuleScript(
       const KURL& script_url,
+      std::unique_ptr<WorkerMainScriptLoadParameters>
+          worker_main_script_load_params,
       std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
           outside_settings_object_data,
       WorkerResourceTimingNotifier* outside_resource_timing_notifier,
@@ -339,12 +344,16 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
       const v8_inspector::V8StackTraceId& stack_id);
   void FetchAndRunClassicScriptOnWorkerThread(
       const KURL& script_url,
+      std::unique_ptr<WorkerMainScriptLoadParameters>
+          worker_main_script_load_params,
       std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
           outside_settings_object,
       WorkerResourceTimingNotifier* outside_resource_timing_notifier,
       const v8_inspector::V8StackTraceId& stack_id);
   void FetchAndRunModuleScriptOnWorkerThread(
       const KURL& script_url,
+      std::unique_ptr<WorkerMainScriptLoadParameters>
+          worker_main_script_load_params,
       std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
           outside_settings_object,
       WorkerResourceTimingNotifier* outside_resource_timing_notifier,

@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_inline_headers.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -60,9 +61,7 @@ struct SameSizeAsHarfBuzzRunGlyphData {
   float advance;
 };
 
-static_assert(sizeof(HarfBuzzRunGlyphData) ==
-                  sizeof(SameSizeAsHarfBuzzRunGlyphData),
-              "HarfBuzzRunGlyphData should stay small");
+ASSERT_SIZE(HarfBuzzRunGlyphData, SameSizeAsHarfBuzzRunGlyphData);
 
 unsigned ShapeResult::RunInfo::NextSafeToBreakOffset(unsigned offset) const {
   DCHECK_LE(offset, num_characters_);

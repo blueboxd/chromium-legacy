@@ -9,6 +9,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
 #include "net/cert/x509_certificate.h"
 
@@ -52,7 +53,7 @@ class CertProvisioningCertsWithIdsGetter {
       const std::string& error_message);
 
   void CollectOneResult(scoped_refptr<net::X509Certificate> cert,
-                        const CertProfileId& cert_id,
+                        const base::Optional<CertProfileId>& cert_id,
                         const std::string& error_message);
 
   CertScope cert_scope_ = CertScope::kDevice;

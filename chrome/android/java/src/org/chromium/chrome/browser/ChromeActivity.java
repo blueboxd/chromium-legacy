@@ -84,7 +84,8 @@ import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSessionState;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.gsa.ContextReporter;
 import org.chromium.chrome.browser.gsa.GSAAccountChangeListener;
 import org.chromium.chrome.browser.gsa.GSAState;
@@ -248,7 +249,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private ProfileSyncService.SyncStateChangedListener mSyncStateChangedListener;
 
     @Nullable
-    private ChromeFullscreenManager mFullscreenManager;
+    private BrowserControlsManager mBrowserControlsManager;
 
     // The PictureInPictureController is initialized lazily https://crbug.com/729738.
     private PictureInPictureController mPictureInPictureController;
@@ -437,16 +438,16 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     !SysUtils.isLowEndDevice(),
                     mTabModelSelector != null ? mTabModelSelector::getTabById : null));
 
-            if (!isFinishing() && getFullscreenManager() != null) {
-                getFullscreenManager().initialize(
+            if (!isFinishing()) {
+                getBrowserControlsManager().initialize(
                         (ControlContainer) findViewById(R.id.control_container),
                         getActivityTabProvider(), getTabModelSelector(),
                         getControlContainerHeightResource());
             }
 
             BottomContainer bottomContainer = (BottomContainer) findViewById(R.id.bottom_container);
-            bottomContainer.initialize(
-                    mFullscreenManager, getWindowAndroid().getApplicationBottomInsetProvider());
+            bottomContainer.initialize(getBrowserControlsManager(),
+                    getWindowAndroid().getApplicationBottomInsetProvider());
             getLifecycleDispatcher().register(bottomContainer);
 
             // Should be called after TabModels are initialized.
@@ -1253,9 +1254,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mActivityTabStartupMetricsTracker = null;
         }
 
-        if (mFullscreenManager != null) {
-            mFullscreenManager.destroy();
-            mFullscreenManager = null;
+        if (mBrowserControlsManager != null) {
+            mBrowserControlsManager.destroy();
+            mBrowserControlsManager = null;
         }
 
         if (mTabModelsInitialized) {
@@ -1619,20 +1620,28 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
-     * Gets the full screen manager, creates it unless already created.
+     * Gets the browser controls manager, creates it unless already created.
      */
     @NonNull
-    public ChromeFullscreenManager getFullscreenManager() {
-        if (mFullscreenManager == null) {
-            // When finish()ing, getFullscreenManager() is required to perform cleanup logic.
+    public BrowserControlsManager getBrowserControlsManager() {
+        if (mBrowserControlsManager == null) {
+            // When finish()ing, getBrowserControlsManager() is required to perform cleanup logic.
             // It should never be called when it results in creating a new manager though.
             if (isActivityFinishingOrDestroyed()) {
                 throw new IllegalStateException();
             }
-            mFullscreenManager = createFullscreenManager();
-            assert mFullscreenManager != null;
+            mBrowserControlsManager = createBrowserControlsManager();
+            assert mBrowserControlsManager != null;
         }
-        return mFullscreenManager;
+        return mBrowserControlsManager;
+    }
+
+    /**
+     * @return Fullscreen manager object.
+     */
+    @NonNull
+    public FullscreenManager getFullscreenManager() {
+        return getBrowserControlsManager().getFullscreenManager();
     }
 
     /**
@@ -1659,13 +1668,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
-     * Create a full-screen manager to be used by this activity.
+     * Create a browser controls manager to be used by this activity.
      * Note: This may be called before native code is initialized.
-     * @return A {@link ChromeFullscreenManager} instance that's been created.
+     * @return A {@link BrowserControlsManager} instance that's been created.
      */
     @NonNull
-    protected ChromeFullscreenManager createFullscreenManager() {
-        return new ChromeFullscreenManager(this, ChromeFullscreenManager.ControlsPosition.TOP);
+    protected BrowserControlsManager createBrowserControlsManager() {
+        return new BrowserControlsManager(this, BrowserControlsManager.ControlsPosition.TOP);
     }
 
     /**
@@ -1673,7 +1682,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * @return Whether the fullscreen mode is currently showing.
      */
     protected boolean exitFullscreenIfShowing() {
-        ChromeFullscreenManager fullscreenManager = getFullscreenManager();
+        FullscreenManager fullscreenManager = getFullscreenManager();
         if (fullscreenManager.getPersistentFullscreenMode()) {
             fullscreenManager.exitPersistentFullscreenMode();
             return true;
@@ -1706,7 +1715,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         mCompositorViewHolder.setLayoutManager(layoutManager);
         mCompositorViewHolder.setFocusable(false);
         mCompositorViewHolder.setControlContainer(controlContainer);
-        mCompositorViewHolder.setFullscreenHandler(getFullscreenManager());
+        mCompositorViewHolder.setBrowserControlsManager(getBrowserControlsManager());
         mCompositorViewHolder.setUrlBar(urlBar);
         mCompositorViewHolder.setInsetObserverView(getInsetObserverView());
         mCompositorViewHolder.onFinishNativeInitialization(getTabModelSelector(), this,

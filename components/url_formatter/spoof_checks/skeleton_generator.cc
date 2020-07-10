@@ -129,24 +129,7 @@ Skeletons SkeletonGenerator::GetSkeletons(base::StringPiece16 hostname) {
 
   // Map U+04CF (ӏ) to lowercase L in addition to what uspoof_getSkeleton does
   // (mapping it to lowercase I).
-  int32_t u04cf_pos;
-  if ((u04cf_pos = host.indexOf(0x4CF)) != -1) {
-    icu::UnicodeString host_alt(host);
-    size_t length = host_alt.length();
-    char16_t* buffer = host_alt.getBuffer(-1);
-    for (char16_t* uc = buffer + u04cf_pos; uc < buffer + length; ++uc) {
-      if (*uc == 0x4CF)
-        *uc = 0x6C;  // Lowercase L
-    }
-    host_alt.releaseBuffer(length);
-    uspoof_getSkeletonUnicodeString(checker_, 0, host_alt, ustr_skeleton,
-                                    &status);
-    if (U_SUCCESS(status)) {
-      std::string skeleton;
-      ustr_skeleton.toUTF8String(skeleton);
-      skeletons.insert(skeleton);
-    }
-  }
+  AddSkeletonMapping(host, 0x4CF /* ӏ */, 0x6C /* lowercase L */, &skeletons);
 
   uspoof_getSkeletonUnicodeString(checker_, 0, host, ustr_skeleton, &status);
   if (U_SUCCESS(status)) {
@@ -155,4 +138,31 @@ Skeletons SkeletonGenerator::GetSkeletons(base::StringPiece16 hostname) {
     skeletons.insert(skeleton);
   }
   return skeletons;
+}
+
+void SkeletonGenerator::AddSkeletonMapping(const icu::UnicodeString& host,
+                                           int32_t src_char,
+                                           int32_t mapped_char,
+                                           Skeletons* skeletons) {
+  int32_t src_pos = host.indexOf(src_char);
+  if (src_pos == -1) {
+    return;
+  }
+  icu::UnicodeString host_alt(host);
+  size_t length = host_alt.length();
+  char16_t* buffer = host_alt.getBuffer(-1);
+  for (char16_t* uc = buffer + src_pos; uc < buffer + length; ++uc) {
+    if (*uc == src_char)
+      *uc = mapped_char;
+  }
+  host_alt.releaseBuffer(length);
+  UErrorCode status = U_ZERO_ERROR;
+  icu::UnicodeString ustr_skeleton;
+  uspoof_getSkeletonUnicodeString(checker_, 0, host_alt, ustr_skeleton,
+                                  &status);
+  if (U_SUCCESS(status)) {
+    std::string skeleton;
+    ustr_skeleton.toUTF8String(skeleton);
+    skeletons->insert(skeleton);
+  }
 }

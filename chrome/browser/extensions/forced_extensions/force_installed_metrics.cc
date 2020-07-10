@@ -179,16 +179,16 @@ void ForceInstalledMetrics::ReportMetrics() {
   InstallStageTracker* install_stage_tracker =
       InstallStageTracker::Get(profile_);
   size_t enabled_missing_count = missing_forced_extensions.size();
-  size_t blacklisted_count = 0;
+  size_t blocklisted_count = 0;
   auto installed_extensions = registry_->GenerateInstalledExtensionsSet();
-  auto blacklisted_extensions = registry_->GenerateInstalledExtensionsSet(
+  auto blocklisted_extensions = registry_->GenerateInstalledExtensionsSet(
       ExtensionRegistry::IncludeFlag::BLOCKLISTED);
   for (const auto& entry : *installed_extensions) {
     if (missing_forced_extensions.count(entry->id())) {
       missing_forced_extensions.erase(entry->id());
       ReportDisableReason(entry->id());
-      if (blacklisted_extensions->Contains(entry->id()))
-        blacklisted_count++;
+      if (blocklisted_extensions->Contains(entry->id()))
+        blocklisted_count++;
     }
   }
   size_t misconfigured_extensions = 0;
@@ -200,7 +200,7 @@ void ForceInstalledMetrics::ReportMetrics() {
       "Extensions.ForceInstalledTimedOutAndNotInstalledCount",
       installed_missing_count);
   base::UmaHistogramCounts100("Extensions.ForceInstalledAndBlackListed",
-                              blacklisted_count);
+                              blocklisted_count);
   VLOG(2) << "Failed to install " << installed_missing_count
           << " forced extensions.";
   for (const auto& extension_id : missing_forced_extensions) {

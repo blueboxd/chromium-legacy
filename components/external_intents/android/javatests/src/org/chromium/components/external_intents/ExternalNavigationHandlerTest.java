@@ -5,7 +5,6 @@
 package org.chromium.components.external_intents;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -2054,7 +2053,7 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public Activity getActivityContext() {
+        public Context getContext() {
             return null;
         }
 

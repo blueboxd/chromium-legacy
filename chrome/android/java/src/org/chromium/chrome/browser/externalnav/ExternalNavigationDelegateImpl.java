@@ -75,13 +75,21 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public Activity getActivityContext() {
+    public Context getContext() {
         if (mTab.getWindowAndroid() == null) return null;
-        return ContextUtils.activityFromContext(mTab.getWindowAndroid().getContext().get());
+        return mTab.getWindowAndroid().getContext().get();
     }
 
+    /**
+     * Gets the {@link Activity} linked to this instance if it is available. At times this object
+     * might not have an associated Activity, in which case the ApplicationContext is returned.
+     * @return The activity {@link Context} if it can be reached.
+     *         Application {@link Context} if not.
+     */
     protected final Context getAvailableContext() {
-        return ExternalNavigationHandler.getAvailableContext(this);
+        Activity activityContext = ContextUtils.activityFromContext(getContext());
+        if (activityContext == null) return ContextUtils.getApplicationContext();
+        return activityContext;
     }
 
     /**
@@ -175,10 +183,9 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             final String fallbackUrl, final boolean needsToCloseTab, final boolean proxy) {
         if (!hasValidTab()) return false;
         Context context = mTab.getWindowAndroid().getContext().get();
-        if (!(context instanceof Activity)) return false;
+        if (ContextUtils.activityFromContext(context) == null) return false;
 
-        Activity activity = (Activity) context;
-        new UiUtils.CompatibleAlertDialogBuilder(activity, R.style.Theme_Chromium_AlertDialog)
+        new UiUtils.CompatibleAlertDialogBuilder(context, R.style.Theme_Chromium_AlertDialog)
                 .setTitle(R.string.external_app_leave_incognito_warning_title)
                 .setMessage(R.string.external_app_leave_incognito_warning)
                 .setPositiveButton(R.string.external_app_leave_incognito_leave,

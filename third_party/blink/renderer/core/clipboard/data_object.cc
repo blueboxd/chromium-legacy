@@ -333,7 +333,6 @@ DataObject* DataObject::Create(WebDragData data) {
 
 WebDragData DataObject::ToWebDragData() {
   WebDragData data;
-  data.SetModifierKeyState(modifiers_);
   WebVector<WebDragData::Item> item_list(length());
 
   for (wtf_size_t i = 0; i < length(); ++i) {

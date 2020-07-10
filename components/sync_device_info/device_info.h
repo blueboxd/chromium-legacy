@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -69,7 +68,8 @@ class DeviceInfo {
              const std::string& sync_user_agent,
              const sync_pb::SyncEnums::DeviceType device_type,
              const std::string& signin_scoped_device_id,
-             const base::SysInfo::HardwareInfo& hardware_info,
+             const std::string& manufacturer_name,
+             const std::string& model_name,
              base::Time last_updated_timestamp,
              base::TimeDelta pulse_interval,
              bool send_tab_to_self_receiving_enabled,
@@ -103,7 +103,11 @@ class DeviceInfo {
   // annotating login scoped refresh token.
   const std::string& signin_scoped_device_id() const;
 
-  const base::SysInfo::HardwareInfo& hardware_info() const;
+  // The device manufacturer name.
+  const std::string& manufacturer_name() const;
+
+  // The device model name.
+  const std::string& model_name() const;
 
   // Returns the time at which this device was last updated to the sync servers.
   base::Time last_updated_timestamp() const;
@@ -142,7 +146,7 @@ class DeviceInfo {
 
   // Converts the |DeviceInfo| values to a JS friendly DictionaryValue,
   // which extension APIs can expose to third party apps.
-  std::unique_ptr<base::DictionaryValue> ToValue();
+  std::unique_ptr<base::DictionaryValue> ToValue() const;
 
  private:
   const std::string guid_;
@@ -155,7 +159,7 @@ class DeviceInfo {
 
   const sync_pb::SyncEnums::DeviceType device_type_;
 
-  std::string signin_scoped_device_id_;
+  const std::string signin_scoped_device_id_;
 
   // Exposing |guid| would lead to a stable unique id for a device which
   // can potentially be used for tracking. Public ids are privacy safe
@@ -163,7 +167,9 @@ class DeviceInfo {
   // and they are also reset when app/extension is uninstalled.
   std::string public_id_;
 
-  base::SysInfo::HardwareInfo hardware_info_;
+  const std::string manufacturer_name_;
+
+  const std::string model_name_;
 
   const base::Time last_updated_timestamp_;
 

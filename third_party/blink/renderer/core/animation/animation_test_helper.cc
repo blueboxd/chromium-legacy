@@ -65,8 +65,8 @@ void EnsureInterpolatedValueCached(const ActiveInterpolations& interpolations,
                                    Document& document,
                                    Element* element) {
   // TODO(smcgruer): We should be able to use a saner API approach like
-  // document.EnsureStyleResolver().StyleForElement(element). However that would
-  // require our callers to propertly register every animation they pass in
+  // document.GetStyleResolver().StyleForElement(element). However that would
+  // require our callers to properly register every animation they pass in
   // here, which the current tests do not do.
   auto style = ComputedStyle::Create();
   StyleResolverState state(document, *element, style.get(), style.get());

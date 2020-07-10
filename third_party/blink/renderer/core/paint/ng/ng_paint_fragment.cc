@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment_traversal.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -43,8 +44,7 @@ struct SameSizeAsNGPaintFragment : public RefCounted<NGPaintFragment>,
   unsigned flags;
 };
 
-static_assert(sizeof(NGPaintFragment) == sizeof(SameSizeAsNGPaintFragment),
-              "NGPaintFragment should stay small.");
+ASSERT_SIZE(NGPaintFragment, SameSizeAsNGPaintFragment);
 
 LogicalRect ExpandedSelectionRectForSoftLineBreakIfNeeded(
     const LogicalRect& rect,
@@ -857,25 +857,6 @@ PositionWithAffinity NGPaintFragment::PositionForPointInInlineLevelBox(
       return child_position.value();
   }
 
-  if (PhysicalFragment().IsLineBox()) {
-    // There are no inline items to hit in this line box, e.g. <span> with
-    // size and border. We try in lines before |this| line in the block.
-    // See editing/selection/last-empty-inline.html
-    NGInlineCursor cursor(*Parent());
-    cursor.MoveTo(*this);
-    const PhysicalOffset point_in_line = point - OffsetInContainerBlock();
-    for (;;) {
-      cursor.MoveToPreviousLine();
-      if (!cursor)
-        break;
-      const NGPaintFragment& line = *cursor.CurrentPaintFragment();
-      const PhysicalOffset adjusted_point =
-          point_in_line + line.OffsetInContainerBlock();
-      if (auto position = line.PositionForPointInInlineLevelBox(adjusted_point))
-        return position;
-    }
-  }
-
   return PositionWithAffinity();
 }
 
@@ -978,6 +959,8 @@ PositionWithAffinity NGPaintFragment::PositionForPointInInlineFormattingContext(
         return PositionWithAffinity(last_position.GetPosition());
     } else if (auto child_position =
                    PositionForPointInChild(*closest_line_below, point)) {
+      // Test[1] reaches here.
+      // [1] editing/selection/last-empty-inline.html
       return child_position.value();
     }
   }

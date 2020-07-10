@@ -51,7 +51,7 @@
 #error "Extensions must be enabled"
 #endif
 
-class BlacklistedExtensionSyncServiceTest;
+class BlocklistedExtensionSyncServiceTest;
 class HostContentSettingsMap;
 class Profile;
 
@@ -60,8 +60,8 @@ class CommandLine;
 class OneShotEvent;
 }  // namespace base
 
-FORWARD_DECLARE_TEST(BlacklistedExtensionSyncServiceTest,
-                     SyncBlacklistedExtension);
+FORWARD_DECLARE_TEST(BlocklistedExtensionSyncServiceTest,
+                     SyncBlocklistedExtension);
 
 namespace extensions {
 class ComponentLoader;
@@ -125,13 +125,13 @@ class ExtensionServiceInterface
   // This will only return a valid answer for installed extensions (regardless
   // of whether it is currently loaded or not).  Loaded extensions return true
   // if they are currently loaded or terminated.  Unloaded extensions will
-  // return true if they are not blocked, disabled, blacklisted or uninstalled
+  // return true if they are not blocked, disabled, blocklisted or uninstalled
   // (for external extensions).
   virtual bool IsExtensionEnabled(const std::string& extension_id) const = 0;
 
   // Go through each extension and unload those that are not allowed to run by
   // management policy providers (ie. network admin and Google-managed
-  // blacklist).
+  // blocklist).
   virtual void CheckManagementPolicy() = 0;
 
   // Safe to call multiple times in a row.
@@ -166,7 +166,7 @@ class ExtensionServiceInterface
 class ExtensionService : public ExtensionServiceInterface,
                          public ExternalProviderInterface::VisitorInterface,
                          public content::NotificationObserver,
-                         public Blacklist::Observer,
+                         public Blocklist::Observer,
                          public ExtensionManagement::Observer,
                          public UpgradeObserver,
                          public ExtensionRegistrar::Delegate,
@@ -178,7 +178,7 @@ class ExtensionService : public ExtensionServiceInterface,
                    const base::CommandLine* command_line,
                    const base::FilePath& install_directory,
                    ExtensionPrefs* extension_prefs,
-                   Blacklist* blacklist,
+                   Blocklist* blocklist,
                    bool autoupdate_enabled,
                    bool extensions_enabled,
                    base::OneShotEvent* ready);
@@ -457,8 +457,8 @@ class ExtensionService : public ExtensionServiceInterface,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // Blacklist::Observer implementation.
-  void OnBlacklistUpdated() override;
+  // Blocklist::Observer implementation.
+  void OnBlocklistUpdated() override;
 
   // UpgradeObserver implementation.
   void OnUpgradeRecommended() override;
@@ -557,19 +557,19 @@ class ExtensionService : public ExtensionServiceInterface,
       bool install_immediately,
       ExtensionPrefs::DelayReason* reason) const;
 
-  // Manages the blacklisted extensions, intended as callback from
-  // Blacklist::GetBlacklistedIDs.
-  void ManageBlacklist(const Blacklist::BlacklistStateMap& blacklisted_ids);
+  // Manages the blocklisted extensions, intended as callback from
+  // Blocklist::GetBlocklistedIDs.
+  void ManageBlocklist(const Blocklist::BlocklistStateMap& blocklisted_ids);
 
-  // Add extensions in |blacklisted| to blacklisted_extensions, remove
-  // extensions that are neither in |blacklisted|, nor in |unchanged|.
-  void UpdateBlacklistedExtensions(const ExtensionIdSet& to_blacklist,
+  // Add extensions in |blocklisted| to blocklisted_extensions, remove
+  // extensions that are neither in |blocklisted|, nor in |unchanged|.
+  void UpdateBlocklistedExtensions(const ExtensionIdSet& to_blocklist,
                                    const ExtensionIdSet& unchanged);
 
   void UpdateGreylistedExtensions(
       const ExtensionIdSet& greylist,
       const ExtensionIdSet& unchanged,
-      const Blacklist::BlacklistStateMap& state_map);
+      const Blocklist::BlocklistStateMap& state_map);
 
   // Used only by test code.
   void UnloadAllExtensionsInternal();
@@ -603,15 +603,15 @@ class ExtensionService : public ExtensionServiceInterface,
   // Preferences for the owning profile.
   ExtensionPrefs* extension_prefs_ = nullptr;
 
-  // Blacklist for the owning profile.
-  Blacklist* blacklist_ = nullptr;
+  // Blocklist for the owning profile.
+  Blocklist* blocklist_ = nullptr;
 
-  // Sets of enabled/disabled/terminated/blacklisted extensions. Not owned.
+  // Sets of enabled/disabled/terminated/blocklisted extensions. Not owned.
   ExtensionRegistry* registry_ = nullptr;
 
   // Set of greylisted extensions. These extensions are disabled if they are
   // already installed in Chromium at the time when they are added to
-  // the greylist. Unlike blacklisted extensions, greylisted ones are visible
+  // the greylist. Unlike blocklisted extensions, greylisted ones are visible
   // to the user and if user re-enables such an extension, they remain enabled.
   //
   // These extensions should appear in registry_.
@@ -681,7 +681,7 @@ class ExtensionService : public ExtensionServiceInterface,
   // Set to true if extensions are all to be blocked.
   bool block_extensions_ = false;
 
-  // The controller for the UI that alerts the user about any blacklisted
+  // The controller for the UI that alerts the user about any blocklisted
   // extensions.
   std::unique_ptr<ExtensionErrorController> error_controller_;
 
@@ -715,16 +715,16 @@ class ExtensionService : public ExtensionServiceInterface,
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            DestroyingProfileClearsExtensions);
-  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, SetUnsetBlacklistInPrefs);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, SetUnsetBlocklistInPrefs);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
-                           BlacklistedExtensionWillNotInstall);
+                           BlocklistedExtensionWillNotInstall);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
-                           UnloadBlacklistedExtensionPolicy);
+                           UnloadBlocklistedExtensionPolicy);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
-                           WillNotLoadBlacklistedExtensionsFromDirectory);
-  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, ReloadBlacklistedExtension);
-  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, RemoveExtensionFromBlacklist);
-  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, BlacklistedInPrefsFromStartup);
+                           WillNotLoadBlocklistedExtensionsFromDirectory);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, ReloadBlocklistedExtension);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, RemoveExtensionFromBlocklist);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, BlocklistedInPrefsFromStartup);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, GreylistedExtensionDisabled);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            GreylistDontEnableManuallyDisabled);
@@ -732,10 +732,10 @@ class ExtensionService : public ExtensionServiceInterface,
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            ManagementPolicyProhibitsEnableOnInstalled);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
-                           BlockAndUnblockBlacklistedExtension);
-  FRIEND_TEST_ALL_PREFIXES(::BlacklistedExtensionSyncServiceTest,
-                           SyncBlacklistedExtension);
-  friend class ::BlacklistedExtensionSyncServiceTest;
+                           BlockAndUnblockBlocklistedExtension);
+  FRIEND_TEST_ALL_PREFIXES(::BlocklistedExtensionSyncServiceTest,
+                           SyncBlocklistedExtension);
+  friend class ::BlocklistedExtensionSyncServiceTest;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionService);
 };

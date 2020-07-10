@@ -11,18 +11,18 @@
 
 namespace extensions {
 
-class Blacklist;
+class Blocklist;
 
-class BlacklistFactory : public BrowserContextKeyedServiceFactory {
+class BlocklistFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static Blacklist* GetForBrowserContext(content::BrowserContext* context);
-  static BlacklistFactory* GetInstance();
+  static Blocklist* GetForBrowserContext(content::BrowserContext* context);
+  static BlocklistFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<BlacklistFactory>;
+  friend struct base::DefaultSingletonTraits<BlocklistFactory>;
 
-  BlacklistFactory();
-  ~BlacklistFactory() override;
+  BlocklistFactory();
+  ~BlocklistFactory() override;
 
   // BrowserContextKeyedServiceFactory
   KeyedService* BuildServiceInstanceFor(
@@ -30,7 +30,7 @@ class BlacklistFactory : public BrowserContextKeyedServiceFactory {
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 
-  DISALLOW_COPY_AND_ASSIGN(BlacklistFactory);
+  DISALLOW_COPY_AND_ASSIGN(BlocklistFactory);
 };
 
 }  // namespace extensions

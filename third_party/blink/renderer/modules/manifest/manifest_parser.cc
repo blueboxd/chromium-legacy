@@ -683,7 +683,7 @@ ManifestParser::ParseShareTarget(const JSONObject* object) {
 
   auto share_target = mojom::blink::ManifestShareTarget::New();
   share_target->action = ParseURL(share_target_object, "action", manifest_url_,
-                                  ParseURLRestrictions::kSameOriginOnly);
+                                  ParseURLRestrictions::kWithinScope);
   if (!share_target->action.IsValid()) {
     AddErrorInfo(
         "property 'share_target' ignored. Property 'action' is "
@@ -785,7 +785,7 @@ ManifestParser::ParseFileHandler(const JSONObject* file_handler) {
   mojom::blink::ManifestFileHandlerPtr entry =
       mojom::blink::ManifestFileHandler::New();
   entry->action = ParseURL(file_handler, "action", manifest_url_,
-                           ParseURLRestrictions::kSameOriginOnly);
+                           ParseURLRestrictions::kWithinScope);
   if (!entry->action.IsValid()) {
     AddErrorInfo("FileHandler ignored. Property 'action' is invalid.");
     return base::nullopt;
@@ -930,7 +930,7 @@ ManifestParser::ParseProtocolHandler(const JSONObject* object) {
     return base::nullopt;
   }
   protocol_handler->url = ParseURL(object, "url", manifest_url_,
-                                   ParseURLRestrictions::kSameOriginOnly);
+                                   ParseURLRestrictions::kWithinScope);
   bool is_valid_url = protocol_handler->url.IsValid();
   if (is_valid_url) {
     const char kToken[] = "%s";

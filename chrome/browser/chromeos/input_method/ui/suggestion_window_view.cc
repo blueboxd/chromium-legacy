@@ -125,7 +125,7 @@ void SuggestionWindowView::ShowMultipleCandidates(
       candidate->SetView({.text = candidates[i]});
   }
 
-  learn_more_button_->SetVisible(true);
+  learn_more_button_->SetVisible(properties.show_setting_link);
 
   MakeVisible();
 }

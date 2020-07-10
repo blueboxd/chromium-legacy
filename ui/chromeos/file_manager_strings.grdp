@@ -604,14 +604,11 @@
   <message name="IDS_FILE_BROWSER_MANAGE_PLUGIN_VM_SHARING_BUTTON_LABEL" desc="Label for menu that will take users to the settings page where they can manage which files and folders are shared with Parallels.">
     Manage Parallels Desktop sharing
   </message>
-  <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_WITH_PLUGIN_VM_TITLE" desc="Title of the dialog shown to users when they try to open a file with Plugin VM from a directory that hasn't been shared into the VM.">
-    Unable to open with <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph>
-  </message>
   <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_WITH_PLUGIN_VM_DIRECTORY_NOT_SHARED_MESSAGE" desc="Body of the dialog shown to users when they try to open a file with an application in a virtual machine, but the file is not in a directory shared into the VM.">
-    To open files with <ph name="APP_NAME">$1<ex>Libre Office</ex></ph> (<ph name="VM_SOFTWARE_NAME">$2<ex>Plugin VM</ex></ph>), first move them to the <ph name="FOLDER_NAME">$3<ex>Shared Files</ex></ph> folder.
+    To open files with <ph name="APP_NAME">$1<ex>Paint (Windows)</ex></ph>, first move them to the Windows files folder.
   </message>
   <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_WITH_PLUGIN_VM_EXTERNAL_DRIVE_MESSAGE" desc="Body of the dialog shown to users when they try to open a file with an application in a virtual machine, but the file is on an external drive so isn't accessile from with the VM.">
-    To open files with <ph name="APP_NAME">$1<ex>Libre Office</ex></ph> (<ph name="VM_SOFTWARE_NAME">$2<ex>Plugin VM</ex></ph>), first copy them to the <ph name="FOLDER_NAME">$3<ex>Shared Files</ex></ph> folder.
+    To open files with <ph name="APP_NAME">$1<ex>Paint (Windows)</ex></ph>, first copy them to the Windows files folder.
   </message>
   <message name="IDS_FILE_BROWSER_TOGGLE_HIDDEN_FILES_COMMAND_LABEL" desc="Label for menu or button with checkmark that toggles visibility of hidden files.">
     Show hidden files

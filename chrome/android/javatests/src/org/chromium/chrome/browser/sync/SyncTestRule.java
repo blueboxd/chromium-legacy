@@ -302,9 +302,11 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
         final Statement base = super.apply(new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                mSyncContentResolver = new MockSyncContentResolverDelegate();
-                AndroidSyncSettingsTestUtils.setUpAndroidSyncSettingsForTesting(
-                        mSyncContentResolver);
+                TestThreadUtils.runOnUiThreadBlocking(() -> {
+                    mSyncContentResolver = new MockSyncContentResolverDelegate();
+                    AndroidSyncSettingsTestUtils.setUpAndroidSyncSettingsForTesting(
+                            mSyncContentResolver);
+                });
 
                 TrustedVaultClient.setInstanceForTesting(
                         new TrustedVaultClient(FakeTrustedVaultClientBackend.get()));

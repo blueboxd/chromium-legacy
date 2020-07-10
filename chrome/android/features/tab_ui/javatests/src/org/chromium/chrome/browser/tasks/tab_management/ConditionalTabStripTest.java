@@ -663,7 +663,7 @@ public class ConditionalTabStripTest {
         // Wait for bottom controls to stabilize.
         CriteriaHelper.pollUiThread(()
                                             -> mActivityTestRule.getActivity()
-                                                       .getFullscreenManager()
+                                                       .getBrowserControlsManager()
                                                        .getBottomControlOffset()
                         == 0);
         return mActivityTestRule.getActivity();

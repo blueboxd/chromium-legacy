@@ -18,40 +18,40 @@
 namespace extensions {
 namespace {
 
-class BlacklistCheckTest : public testing::Test {
+class BlocklistCheckTest : public testing::Test {
  public:
-  BlacklistCheckTest()
+  BlocklistCheckTest()
       : test_prefs_(base::ThreadTaskRunnerHandle::Get()),
-        blacklist_(test_prefs_.prefs()) {}
+        blocklist_(test_prefs_.prefs()) {}
 
  protected:
   void SetUp() override {
-    test_blacklist_.Attach(&blacklist_);
+    test_blocklist_.Attach(&blocklist_);
     extension_ = test_prefs_.AddExtension("foo");
   }
 
-  void SetBlacklistState(BlocklistState state) {
-    test_blacklist_.SetBlacklistState(extension_->id(), state, /*notify=*/true);
+  void SetBlocklistState(BlocklistState state) {
+    test_blocklist_.SetBlocklistState(extension_->id(), state, /*notify=*/true);
   }
 
-  Blacklist* blacklist() { return &blacklist_; }
+  Blocklist* blocklist() { return &blocklist_; }
   scoped_refptr<Extension> extension_;
   PreloadCheckRunner runner_;
 
  private:
   content::BrowserTaskEnvironment task_environment_;
   TestExtensionPrefs test_prefs_;
-  Blacklist blacklist_;
-  TestBlacklist test_blacklist_;
+  Blocklist blocklist_;
+  TestBlocklist test_blocklist_;
 };
 
 }  // namespace
 
-// Tests that the blacklist check identifies a blacklisted extension.
-TEST_F(BlacklistCheckTest, BlacklistedMalware) {
-  SetBlacklistState(BLOCKLISTED_MALWARE);
+// Tests that the blocklist check identifies a blocklisted extension.
+TEST_F(BlocklistCheckTest, BlocklistedMalware) {
+  SetBlocklistState(BLOCKLISTED_MALWARE);
 
-  BlacklistCheck check(blacklist(), extension_);
+  BlocklistCheck check(blocklist(), extension_);
   runner_.RunUntilComplete(&check);
 
   EXPECT_THAT(runner_.errors(),
@@ -59,11 +59,11 @@ TEST_F(BlacklistCheckTest, BlacklistedMalware) {
   EXPECT_TRUE(check.GetErrorMessage().empty());
 }
 
-// Tests that the blacklist check ignores a non-blacklisted extension.
-TEST_F(BlacklistCheckTest, Pass) {
-  SetBlacklistState(NOT_BLOCKLISTED);
+// Tests that the blocklist check ignores a non-blocklisted extension.
+TEST_F(BlocklistCheckTest, Pass) {
+  SetBlocklistState(NOT_BLOCKLISTED);
 
-  BlacklistCheck check(blacklist(), extension_);
+  BlocklistCheck check(blocklist(), extension_);
   runner_.RunUntilComplete(&check);
 
   EXPECT_EQ(0u, runner_.errors().size());
@@ -71,11 +71,11 @@ TEST_F(BlacklistCheckTest, Pass) {
 }
 
 // Tests that destroying the check after starting it does not cause errors.
-TEST_F(BlacklistCheckTest, ResetCheck) {
-  SetBlacklistState(BLOCKLISTED_MALWARE);
+TEST_F(BlocklistCheckTest, ResetCheck) {
+  SetBlocklistState(BLOCKLISTED_MALWARE);
 
   {
-    BlacklistCheck check(blacklist(), extension_);
+    BlocklistCheck check(blocklist(), extension_);
     runner_.Run(&check);
   }
 

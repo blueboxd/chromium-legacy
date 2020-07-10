@@ -7,9 +7,25 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "components/sync/protocol/sync_enums.pb.h"
 
 namespace syncer {
+
+// Contains device specific names to be used by DeviceInfo. These are specific
+// to the local device only. DeviceInfoSyncBridge uses either |model_name| or
+// |personalizable_name| for the |client_name| depending on the current
+// SyncMode. Only fully synced clients will use the personalizable name.
+struct LocalDeviceNameInfo {
+  // Manufacturer name retrieved from SysInfo::GetHardwareInfo() - e.g. LENOVO.
+  std::string manufacturer_name;
+  // Model name retrieved from SysInfo::GetHardwareInfo() on non CrOS platforms.
+  // On CrOS this will be set to GetChromeOSDeviceNameFromType() instead.
+  std::string model_name;
+  // Personalizable device name from GetPersonalizableDeviceNameBlocking(). See
+  // documentation below for more information.
+  std::string personalizable_name;
+};
 
 sync_pb::SyncEnums::DeviceType GetLocalDeviceType();
 
@@ -20,6 +36,9 @@ std::string GetChromeOSDeviceNameFromType();
 // Returns the personalizable device name. This may contain
 // personally-identifiable information - e.g. Alex's MacbookPro.
 std::string GetPersonalizableDeviceNameBlocking();
+
+void GetLocalDeviceNameInfo(
+    base::OnceCallback<void(LocalDeviceNameInfo)> callback);
 
 }  // namespace syncer
 

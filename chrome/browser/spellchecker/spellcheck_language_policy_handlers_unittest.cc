@@ -133,18 +133,17 @@ TEST_P(SpellcheckLanguagePolicyHandlersTest, ApplyPolicySettings) {
   policy.Set(policy::key::kSpellcheckLanguageBlacklist,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
              policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
-             base::Value::ToUniquePtrValue(std::move(blocked_languages_list)),
-             nullptr);
+             std::move(blocked_languages_list), nullptr);
 
-  policy.Set(
-      policy::key::kSpellcheckLanguage, policy::POLICY_LEVEL_MANDATORY,
-      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
-      base::Value::ToUniquePtrValue(std::move(forced_languages_list)), nullptr);
+  policy.Set(policy::key::kSpellcheckLanguage, policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_USER,
+             policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
+             std::move(forced_languages_list), nullptr);
 
-  policy.Set(
-      policy::key::kSpellcheckEnabled, policy::POLICY_LEVEL_MANDATORY,
-      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
-      std::make_unique<base::Value>(GetParam().spellcheck_enabled), nullptr);
+  policy.Set(policy::key::kSpellcheckEnabled, policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_USER,
+             policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
+             base::Value(GetParam().spellcheck_enabled), nullptr);
 
   // Apply policy to the forced languages handler.
   SpellcheckLanguagePolicyHandler forced_languages_handler;

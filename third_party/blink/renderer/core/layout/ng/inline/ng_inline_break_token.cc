@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -15,9 +16,7 @@ struct SameSizeAsNGInlineBreakToken : NGBreakToken {
   unsigned numbers[2];
 };
 
-static_assert(sizeof(NGInlineBreakToken) ==
-                  sizeof(SameSizeAsNGInlineBreakToken),
-              "NGInlineBreakToken should stay small");
+ASSERT_SIZE(NGInlineBreakToken, SameSizeAsNGInlineBreakToken);
 
 }  // namespace
 

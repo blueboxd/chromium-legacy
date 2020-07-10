@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -28,10 +29,13 @@
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permission_request_manager.h"
 #include "components/permissions/permission_uma_util.h"
+#include "components/permissions/permissions_client.h"
 #include "components/permissions/test/mock_permission_prompt_factory.h"
 #include "components/permissions/test/mock_permission_request.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/ukm/content/source_url_recorder.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -300,6 +304,155 @@ TEST_F(ChromePermissionRequestManagerTest, UMAForIgnores) {
   NavigateAndCommit(GURL("http://www.google.com/"));
   histograms.ExpectUniqueSample("Permissions.Engagement.Ignored.Geolocation", 0,
                                 1);
+}
+
+TEST_F(ChromePermissionRequestManagerTest,
+       NotificationsAdaptiveActivationQuietUIDryRunUKM) {
+  ASSERT_FALSE(
+      QuietNotificationPermissionUiConfig::IsAdaptiveActivationDryRunEnabled());
+  ASSERT_FALSE(permissions::PermissionsClient::Get()
+                   ->HadThreeConsecutiveNotificationPermissionDenies(profile())
+                   .has_value());
+
+  ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {{features::kQuietNotificationPrompts,
+        {{QuietNotificationPermissionUiConfig::kEnableAdaptiveActivation,
+          "true"},
+         {QuietNotificationPermissionUiConfig::kEnableAdaptiveActivationDryRun,
+          "true"}}}},
+      {});
+
+  ASSERT_TRUE(
+      QuietNotificationPermissionUiConfig::IsAdaptiveActivationDryRunEnabled());
+  base::Optional<bool> has_three_consecutive_denies =
+      permissions::PermissionsClient::Get()
+          ->HadThreeConsecutiveNotificationPermissionDenies(profile());
+  ASSERT_TRUE(has_three_consecutive_denies.has_value());
+  EXPECT_FALSE(has_three_consecutive_denies.value());
+
+  for (const char* origin_spec :
+       {"https://a.com", "https://b.com", "https://c.com"}) {
+    GURL requesting_origin(origin_spec);
+    NavigateAndCommit(requesting_origin);
+    permissions::MockPermissionRequest notification_request(
+        "request", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
+        requesting_origin);
+    manager_->AddRequest(&notification_request);
+    WaitForBubbleToBeShown();
+    EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());
+    Deny();
+  }
+
+  //  It verifies that the transition from FALSE->TRUE indeed happens after the
+  //  third deny, so there aren't off-by-one errors.
+  has_three_consecutive_denies =
+      permissions::PermissionsClient::Get()
+          ->HadThreeConsecutiveNotificationPermissionDenies(profile());
+  ASSERT_TRUE(has_three_consecutive_denies.has_value());
+  EXPECT_TRUE(has_three_consecutive_denies.value());
+  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
+      prefs::kEnableQuietNotificationPermissionUi));
+
+  {
+    GURL requesting_origin("http://www.notification.com/");
+    NavigateAndCommit(requesting_origin);
+    permissions::MockPermissionRequest notification_request(
+        "request", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
+        requesting_origin);
+    manager_->AddRequest(&notification_request);
+    WaitForBubbleToBeShown();
+    // Only show quiet UI after 3 consecutive denies of the permission prompt.
+    EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
+    Deny();
+  }
+  auto entries = ukm_recorder.GetEntriesByName("Permission");
+  ASSERT_EQ(4u, entries.size());
+  auto* entry = entries.back();
+  EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "SatisfiedAdaptiveTriggers"),
+            1);
+
+  GURL requesting_origin("http://www.notification2.com/");
+  NavigateAndCommit(requesting_origin);
+  permissions::MockPermissionRequest notification_request(
+      "request2", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
+      requesting_origin);
+  manager_->AddRequest(&notification_request);
+  WaitForBubbleToBeShown();
+  EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
+  Accept();
+
+  // Verify that an "ALLOW" response does not reset the state.
+  has_three_consecutive_denies =
+      permissions::PermissionsClient::Get()
+          ->HadThreeConsecutiveNotificationPermissionDenies(profile());
+  ASSERT_TRUE(has_three_consecutive_denies.has_value());
+  EXPECT_TRUE(has_three_consecutive_denies.value());
+  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
+      prefs::kEnableQuietNotificationPermissionUi));
+}
+
+TEST_F(ChromePermissionRequestManagerTest,
+       NotificationsAdaptiveActivationQuietUIWindowSize) {
+  EXPECT_EQ(
+      base::TimeDelta::FromDays(90),  // Default value.
+      QuietNotificationPermissionUiConfig::GetAdaptiveActivationWindowSize());
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {{features::kQuietNotificationPrompts,
+        {{QuietNotificationPermissionUiConfig::kEnableAdaptiveActivation,
+          "true"},
+         {QuietNotificationPermissionUiConfig::
+              kAdaptiveActivationActionWindowSizeInDays,
+          "7"}}}},
+      {});
+
+  ASSERT_EQ(
+      base::TimeDelta::FromDays(7),
+      QuietNotificationPermissionUiConfig::GetAdaptiveActivationWindowSize());
+
+  auto* permission_ui_enabler =
+      AdaptiveQuietNotificationPermissionUiEnabler::GetForProfile(profile());
+
+  base::SimpleTestClock clock_;
+  clock_.SetNow(base::Time::Now());
+  permission_ui_enabler->set_clock_for_testing(&clock_);
+
+  const char* origin_spec[]{"https://a.com", "https://b.com", "https://c.com",
+                            "https://d.com"};
+  for (int i = 0; i < 4; ++i) {
+    GURL requesting_origin(origin_spec[i]);
+    NavigateAndCommit(requesting_origin);
+    permissions::MockPermissionRequest notification_request(
+        "request", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
+        requesting_origin);
+    manager_->AddRequest(&notification_request);
+    WaitForBubbleToBeShown();
+    EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());
+    Deny();
+
+    if (i == 0) {
+      // The history window size is 7 days. That will ignore previous denied
+      // permission request as obsolete.
+      clock_.Advance(base::TimeDelta::FromDays(10));
+    }
+  }
+
+  GURL requesting_origin("http://www.notification.com/");
+  NavigateAndCommit(requesting_origin);
+  permissions::MockPermissionRequest notification_request(
+      "request", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
+      requesting_origin);
+  manager_->AddRequest(&notification_request);
+  WaitForBubbleToBeShown();
+  EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
+  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
+      prefs::kEnableQuietNotificationPermissionUi));
+  Deny();
 }
 
 TEST_F(ChromePermissionRequestManagerTest,

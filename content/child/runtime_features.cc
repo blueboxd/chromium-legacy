@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "cc/base/features.h"
@@ -461,7 +462,6 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
       {wrf::EnableAutomationControlled, switches::kEnableAutomation, true},
       {wrf::EnableAutomationControlled, switches::kHeadless, true},
       {wrf::EnableAutomationControlled, switches::kRemoteDebuggingPipe, true},
-      {wrf::EnableAutomationControlled, switches::kRemoteDebuggingPort, true},
       {wrf::ForceOverlayFullscreenVideo, switches::kForceOverlayFullscreenVideo,
        true},
       {wrf::EnablePreciseMemoryInfo, switches::kEnablePreciseMemoryInfo, true},
@@ -484,6 +484,23 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
   for (const auto& mapping : switchToFeatureMapping) {
     if (command_line.HasSwitch(mapping.switch_name))
       mapping.feature_enabler(mapping.target_enabled_state);
+  }
+
+  // Set EnableAutomationControlled if the caller passes
+  // --remote-debugging-port=0 on the command line. This means
+  // the caller has requested an ephemeral port which is how ChromeDriver
+  // launches the browser by default.
+  // If the caller provides a specific port number, this is
+  // more likely for attaching a debugger, so we should leave
+  // EnableAutomationControlled unset to ensure the browser behaves as it does
+  // when not under automation control.
+  if (command_line.HasSwitch(switches::kRemoteDebuggingPort)) {
+    std::string port_str =
+        command_line.GetSwitchValueASCII(::switches::kRemoteDebuggingPort);
+    int port;
+    if (base::StringToInt(port_str, &port) && port == 0) {
+      WebRuntimeFeatures::EnableAutomationControlled(true);
+    }
   }
 }
 

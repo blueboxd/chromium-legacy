@@ -12,7 +12,7 @@ import android.view.View;
 
 import androidx.annotation.IntDef;
 
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -41,7 +41,7 @@ class AssistantOverlayEventFilter extends GestureDetector {
     }
 
     private AssistantOverlayDelegate mDelegate;
-    private ChromeFullscreenManager mFullscreenManager;
+    private BrowserControlsStateProvider mBrowserControls;
     private View mCompositorView;
 
     /**
@@ -106,10 +106,10 @@ class AssistantOverlayEventFilter extends GestureDetector {
     private final List<Long> mUnexpectedTapTimes = new ArrayList<>();
 
     AssistantOverlayEventFilter(
-            Context context, ChromeFullscreenManager fullscreenManager, View compositorView) {
+            Context context, BrowserControlsStateProvider browserControls, View compositorView) {
         super(context, new SimpleOnGestureListener());
 
-        mFullscreenManager = fullscreenManager;
+        mBrowserControls = browserControls;
         mCompositorView = compositorView;
 
         mTapDetector = new GestureDetector(context, new SimpleOnGestureListener() {
@@ -327,7 +327,7 @@ class AssistantOverlayEventFilter extends GestureDetector {
      * or the top/bottom bar.
      */
     private boolean shouldLetEventThrough(MotionEvent event) {
-        int yTop = (int) mFullscreenManager.getContentOffset();
+        int yTop = (int) mBrowserControls.getContentOffset();
         int height = mCompositorView.getHeight() - getBottomBarHeight() - yTop;
         return isInTouchableArea(event.getX(), event.getY() - yTop);
     }
@@ -373,7 +373,7 @@ class AssistantOverlayEventFilter extends GestureDetector {
 
     /** Gets the current height of the bottom bar. */
     private int getBottomBarHeight() {
-        return (int) (mFullscreenManager.getBottomControlsHeight()
-                - mFullscreenManager.getBottomControlOffset());
+        return (int) (mBrowserControls.getBottomControlsHeight()
+                - mBrowserControls.getBottomControlOffset());
     }
 }

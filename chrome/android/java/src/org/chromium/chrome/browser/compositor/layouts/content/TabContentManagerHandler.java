@@ -18,7 +18,7 @@ public final class TabContentManagerHandler extends TabModelSelectorTabObserver 
     private final TabContentManager mTabContentManager;
 
     private final FullscreenManager mFullscreenManager;
-    private final FullscreenManager.Observer mFullscreenObserver;
+    private final Observer mFullscreenObserver;
 
     // Indicates that thumbnail cache should be removed when tab becomes interactive.
     // Used when a request is made while a tab is not in interactive state so

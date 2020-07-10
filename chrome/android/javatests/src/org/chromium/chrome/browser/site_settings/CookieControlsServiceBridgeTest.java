@@ -19,7 +19,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -28,6 +28,8 @@ import org.chromium.components.content_settings.ContentSettingsFeatureList;
 import org.chromium.components.content_settings.CookieControlsEnforcement;
 import org.chromium.components.content_settings.CookieControlsMode;
 import org.chromium.components.content_settings.PrefNames;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -80,8 +82,9 @@ public class CookieControlsServiceBridgeTest {
 
     private void setCookieControlsMode(@CookieControlsMode int mode) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PrefServiceBridge.getInstance().setInteger(PrefNames.COOKIE_CONTROLS_MODE, mode);
-            PrefServiceBridge.getInstance().setBoolean(PrefNames.BLOCK_THIRD_PARTY_COOKIES,
+            PrefService prefService = UserPrefs.get(Profile.getLastUsedRegularProfile());
+            prefService.setInteger(PrefNames.COOKIE_CONTROLS_MODE, mode);
+            prefService.setBoolean(PrefNames.BLOCK_THIRD_PARTY_COOKIES,
                     mode == CookieControlsMode.BLOCK_THIRD_PARTY);
         });
     }
@@ -154,7 +157,8 @@ public class CookieControlsServiceBridgeTest {
             mCookieControlsServiceBridge.handleCookieControlsToggleChanged(true);
 
             Assert.assertEquals("CookieControlsMode should be incognito_only",
-                    PrefServiceBridge.getInstance().getInteger(PrefNames.COOKIE_CONTROLS_MODE),
+                    UserPrefs.get(Profile.getLastUsedRegularProfile())
+                            .getInteger(PrefNames.COOKIE_CONTROLS_MODE),
                     CookieControlsMode.INCOGNITO_ONLY);
         });
         // One initial callback after creation, then another after the toggle change.

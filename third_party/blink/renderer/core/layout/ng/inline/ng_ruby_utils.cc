@@ -31,7 +31,8 @@ std::tuple<LayoutUnit, LayoutUnit> AdjustTextOverUnderOffsetsForEmHeight(
       primary_font_data->GetFontMetrics().FixedAscent(font_baseline);
   const LayoutUnit primary_descent = line_height - primary_ascent;
 
-  Vector<ShapeResult::RunFontData> run_fonts;
+  DCHECK(IsMainThread());
+  DEFINE_STATIC_LOCAL(Vector<ShapeResult::RunFontData>, run_fonts, ());
   // We don't use ShapeResultView::FallbackFonts() because we can't know if the
   // primary font is actually used with FallbackFonts().
   shape_view.GetRunFontData(&run_fonts);
@@ -53,6 +54,7 @@ std::tuple<LayoutUnit, LayoutUnit> AdjustTextOverUnderOffsetsForEmHeight(
     over_diff = std::min(over_diff, current_over_diff);
     under_diff = std::min(under_diff, current_under_diff);
   }
+  run_fonts.resize(0);
   if (over_diff == kNoDiff)
     over_diff = LayoutUnit();
   if (under_diff == kNoDiff)
@@ -239,64 +241,64 @@ NGAnnotationMetrics ComputeAnnotationOverflow(
   bool has_over_emphasis = false;
   bool has_under_emphasis = false;
   for (const NGLogicalLineItem& item : logical_line) {
-    if (item.HasInFlowFragment()) {
-      if (!item.IsControl()) {
-        LayoutUnit item_over = item.BlockOffset();
-        LayoutUnit item_under = item.BlockEndOffset();
-        if (item.fragment || item.shape_result) {
-          if (const auto* style = item.Style()) {
-            std::tie(item_over, item_under) =
-                AdjustTextOverUnderOffsetsForEmHeight(
-                    item_over, item_under, *style,
-                    item.fragment ? *item.fragment->TextShapeResult()
-                                  : *item.shape_result);
-          }
-        } else {
-          const auto* fragment = item.PhysicalFragment();
-          if (fragment && fragment->IsRubyRun()) {
-            PhysicalRect rect =
-                To<NGPhysicalBoxFragment>(fragment)->ScrollableOverflow(
-                    NGPhysicalFragment::kEmHeight);
-            LayoutUnit block_size;
-            if (IsHorizontalWritingMode(line_style.GetWritingMode())) {
-              item_under = item_over + rect.Bottom();
-              item_over += rect.offset.top;
-              block_size = fragment->Size().height;
-            } else {
-              block_size = fragment->Size().width;
-              // We assume 'over' is always on right in vertical writing modes.
-              // TODO(layout-dev): sideways-lr support.
-              DCHECK(line_style.IsFlippedBlocksWritingMode() ||
-                     line_style.IsFlippedLinesWritingMode());
-              item_under = item_over + block_size;
-              item_over = item_under - rect.Right();
-              item_under -= rect.offset.left;
-            }
-
-            // Check if we really have an annotation.
-            if (const auto* layout_result = item.layout_result.get()) {
-              LayoutUnit overflow = layout_result->AnnotationOverflow();
-              if (IsFlippedLinesWritingMode(line_style.GetWritingMode()))
-                overflow = -overflow;
-              if (overflow < LayoutUnit())
-                has_over_annotation = true;
-              else if (overflow > LayoutUnit())
-                has_under_annotation = true;
-            }
-          } else if (item.IsInlineBox()) {
-            continue;
-          }
-        }
-        content_over = std::min(content_over, item_over);
-        content_under = std::max(content_under, item_under);
-      }
+    if (!item.HasInFlowFragment())
+      continue;
+    if (item.IsControl())
+      continue;
+    LayoutUnit item_over = item.BlockOffset();
+    LayoutUnit item_under = item.BlockEndOffset();
+    if (item.fragment || item.shape_result) {
       if (const auto* style = item.Style()) {
-        if (style->GetTextEmphasisMark() != TextEmphasisMark::kNone) {
-          if (style->GetTextEmphasisLineLogicalSide() == LineLogicalSide::kOver)
-            has_over_emphasis = true;
-          else
-            has_under_emphasis = true;
+        std::tie(item_over, item_under) = AdjustTextOverUnderOffsetsForEmHeight(
+            item_over, item_under, *style,
+            item.fragment ? *item.fragment->TextShapeResult()
+                          : *item.shape_result);
+      }
+    } else {
+      const auto* fragment = item.PhysicalFragment();
+      if (fragment && fragment->IsRubyRun()) {
+        PhysicalRect rect =
+            To<NGPhysicalBoxFragment>(fragment)->ScrollableOverflow(
+                NGPhysicalFragment::kEmHeight);
+        LayoutUnit block_size;
+        if (IsHorizontalWritingMode(line_style.GetWritingMode())) {
+          item_under = item_over + rect.Bottom();
+          item_over += rect.offset.top;
+          block_size = fragment->Size().height;
+        } else {
+          block_size = fragment->Size().width;
+          // We assume 'over' is always on right in vertical writing modes.
+          // TODO(layout-dev): sideways-lr support.
+          DCHECK(line_style.IsFlippedBlocksWritingMode() ||
+                 line_style.IsFlippedLinesWritingMode());
+          item_under = item_over + block_size;
+          item_over = item_under - rect.Right();
+          item_under -= rect.offset.left;
         }
+
+        // Check if we really have an annotation.
+        if (const auto* layout_result = item.layout_result.get()) {
+          LayoutUnit overflow = layout_result->AnnotationOverflow();
+          if (IsFlippedLinesWritingMode(line_style.GetWritingMode()))
+            overflow = -overflow;
+          if (overflow < LayoutUnit())
+            has_over_annotation = true;
+          else if (overflow > LayoutUnit())
+            has_under_annotation = true;
+        }
+      } else if (item.IsInlineBox()) {
+        continue;
+      }
+    }
+    content_over = std::min(content_over, item_over);
+    content_under = std::max(content_under, item_under);
+
+    if (const auto* style = item.Style()) {
+      if (style->GetTextEmphasisMark() != TextEmphasisMark::kNone) {
+        if (style->GetTextEmphasisLineLogicalSide() == LineLogicalSide::kOver)
+          has_over_emphasis = true;
+        else
+          has_under_emphasis = true;
       }
     }
   }

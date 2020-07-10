@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/geometry/region.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -86,8 +87,7 @@ struct SameSizeAsLayoutInline : public LayoutBoxModelObject {
   LineBoxList line_boxes_;
 };
 
-static_assert(sizeof(LayoutInline) == sizeof(SameSizeAsLayoutInline),
-              "LayoutInline should stay small");
+ASSERT_SIZE(LayoutInline, SameSizeAsLayoutInline);
 
 LayoutInline::LayoutInline(Element* element)
     : LayoutBoxModelObject(element), line_boxes_() {

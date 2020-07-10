@@ -49,7 +49,7 @@ namespace extensions {
 
 namespace {
 
-const char kUnpackedExtensionsBlacklistedError[] =
+const char kUnpackedExtensionsBlocklistedError[] =
     "Loading of unpacked extensions is disabled by the administrator.";
 
 const char kImportMinVersionNewer[] =
@@ -114,7 +114,7 @@ bool UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
       base::MakeAbsoluteFilePath(path_util::ResolveHomeDirectory(path_in));
 
   if (!IsLoadingUnpackedAllowed()) {
-    ReportExtensionLoadError(kUnpackedExtensionsBlacklistedError);
+    ReportExtensionLoadError(kUnpackedExtensionsBlocklistedError);
     return false;
   }
 
@@ -310,7 +310,7 @@ void UnpackedInstaller::CheckExtensionFileAccess() {
     return;
 
   if (!IsLoadingUnpackedAllowed()) {
-    ReportExtensionLoadError(kUnpackedExtensionsBlacklistedError);
+    ReportExtensionLoadError(kUnpackedExtensionsBlocklistedError);
     return;
   }
 

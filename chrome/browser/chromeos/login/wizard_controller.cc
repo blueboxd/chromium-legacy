@@ -856,6 +856,10 @@ void WizardController::OnWelcomeScreenExit(WelcomeScreen::Result result) {
     LoginDisplayHost::default_host()->StartDemoAppLaunch();
     return;
   }
+  if (result == WelcomeScreen::Result::SETUP_DEMO) {
+    StartDemoModeSetup();
+    return;
+  }
 
   ShowNetworkScreen();
 }
@@ -1624,6 +1628,14 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
                      weak_factory_.GetWeakPtr()));
     }
   }
+}
+
+bool WizardController::HandleAccelerator(ash::LoginAcceleratorAction action) {
+  if (current_screen_) {
+    if (current_screen_->HandleAccelerator(action))
+      return true;
+  }
+  return false;
 }
 
 void WizardController::StartDemoModeSetup() {

@@ -57,6 +57,10 @@ class PLATFORM_EXPORT WorkerMainScriptLoader final
           resource_load_info_notifier,
       WorkerMainScriptLoaderClient* client);
 
+  // This will immediately cancel the ongoing loading of the main script and any
+  // method of the WorkerMainScriptLoaderClient will not be invoked.
+  void Cancel();
+
   // Implements network::mojom::URLLoaderClient.
   void OnReceiveResponse(
       network::mojom::URLResponseHeadPtr response_head) override;
@@ -114,6 +118,8 @@ class PLATFORM_EXPORT WorkerMainScriptLoader final
   bool has_received_completion_ = false;
   // Whether we got all the body data.
   bool has_seen_end_of_data_ = false;
+  // Whether we need to cancel the loading of the main script.
+  bool has_cancelled_ = false;
 
   mojo::Remote<network::mojom::URLLoader> url_loader_remote_;
   mojo::Receiver<network::mojom::URLLoaderClient> receiver_{this};

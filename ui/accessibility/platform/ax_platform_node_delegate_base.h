@@ -70,6 +70,7 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   bool IsChildOfLeaf() const override;
   bool IsChildOfPlainTextField() const override;
   bool IsLeaf() const override;
+  bool IsToplevelBrowserWindow() override;
   gfx::NativeViewAccessible GetClosestPlatformObject() const override;
 
   class ChildIteratorBase : public ChildIterator {

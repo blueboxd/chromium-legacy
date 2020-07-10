@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/system/sys_info.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/local_device_info_provider.h"
 #include "components/version_info/version_info.h"
@@ -31,7 +30,8 @@ class LocalDeviceInfoProviderImpl : public MutableLocalDeviceInfoProvider {
   // MutableLocalDeviceInfoProvider implementation.
   void Initialize(const std::string& cache_guid,
                   const std::string& client_name,
-                  const base::SysInfo::HardwareInfo& hardware_info) override;
+                  const std::string& manufacturer_name,
+                  const std::string& model_name) override;
   void Clear() override;
   void UpdateClientName(const std::string& client_name) override;
   version_info::Channel GetChannel() const override;

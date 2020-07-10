@@ -9,7 +9,7 @@ import android.graphics.RectF;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.ui.resources.ResourceManager;
 
 /**
@@ -31,22 +31,22 @@ public interface LayoutProvider {
     void getViewportPixel(RectF rect);
 
     /**
-     * @return The manager in charge of handling fullscreen changes.
+     * @return The manager of browser controls.
      */
-    ChromeFullscreenManager getFullscreenManager();
+    BrowserControlsManager getBrowserControlsManager();
 
-   /**
+    /**
      * Build a {@link SceneLayer} for the active layout if it hasn't already been built, and update
      * it and return it.
      *
      * @param layerTitleCache   A layer title cache.
      * @param tabContentManager A tab content manager.
      * @param resourceManager   A resource manager.
-     * @param fullscreenManager A fullscreen manager.
+     * @param browserControlsManager A browser controls manager.
      * @return                  A {@link SceneLayer} that represents the content for this
      *                          {@link Layout}.
      */
     SceneLayer getUpdatedActiveSceneLayer(LayerTitleCache layerTitleCache,
             TabContentManager tabContentManager, ResourceManager resourceManager,
-            ChromeFullscreenManager fullscreenManager);
+            BrowserControlsManager browserControlsManager);
 }

@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -44,8 +45,7 @@ struct SameSizeAsFloatingObject {
   uint32_t bitfields : 8;
 };
 
-static_assert(sizeof(FloatingObject) == sizeof(SameSizeAsFloatingObject),
-              "FloatingObject should stay small");
+ASSERT_SIZE(FloatingObject, SameSizeAsFloatingObject);
 
 FloatingObject::FloatingObject(PassKey key, LayoutBox* layout_object, Type type)
     : layout_object_(layout_object),

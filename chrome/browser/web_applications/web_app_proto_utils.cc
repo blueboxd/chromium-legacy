@@ -32,6 +32,33 @@ base::Optional<std::vector<WebApplicationIconInfo>> ParseWebAppIconInfos(
   return icon_infos;
 }
 
+sync_pb::WebAppSpecifics WebAppToSyncProto(const WebApp& app) {
+  sync_pb::WebAppSpecifics sync_proto;
+  sync_proto.set_launch_url(app.launch_url().spec());
+  sync_proto.set_user_display_mode(
+      ToWebAppSpecificsUserDisplayMode(app.user_display_mode()));
+  sync_proto.set_name(app.sync_fallback_data().name);
+  if (app.sync_fallback_data().theme_color.has_value())
+    sync_proto.set_theme_color(app.sync_fallback_data().theme_color.value());
+  if (app.user_page_ordinal().IsValid()) {
+    sync_proto.set_user_page_ordinal(app.user_page_ordinal().ToInternalValue());
+  }
+  if (app.user_launch_ordinal().IsValid()) {
+    sync_proto.set_user_launch_ordinal(
+        app.user_launch_ordinal().ToInternalValue());
+  }
+  if (app.sync_fallback_data().scope.is_valid())
+    sync_proto.set_scope(app.sync_fallback_data().scope.spec());
+  for (const WebApplicationIconInfo& icon_info :
+       app.sync_fallback_data().icon_infos) {
+    sync_pb::WebAppIconInfo* icon_info_proto = sync_proto.add_icon_infos();
+    icon_info_proto->set_url(icon_info.url.spec());
+    if (icon_info.square_size_px.has_value())
+      icon_info_proto->set_size_in_px(icon_info.square_size_px.value());
+  }
+  return sync_proto;
+}
+
 base::Optional<WebApp::SyncFallbackData> ParseSyncFallbackDataStruct(
     const sync_pb::WebAppSpecifics& sync_proto) {
   WebApp::SyncFallbackData parsed_sync_fallback_data;
@@ -58,6 +85,21 @@ base::Optional<WebApp::SyncFallbackData> ParseSyncFallbackDataStruct(
   parsed_sync_fallback_data.icon_infos = std::move(parsed_icon_infos.value());
 
   return parsed_sync_fallback_data;
+}
+
+::sync_pb::WebAppSpecifics::UserDisplayMode ToWebAppSpecificsUserDisplayMode(
+    DisplayMode user_display_mode) {
+  switch (user_display_mode) {
+    case DisplayMode::kBrowser:
+      return ::sync_pb::WebAppSpecifics::BROWSER;
+    case DisplayMode::kUndefined:
+    case DisplayMode::kMinimalUi:
+    case DisplayMode::kFullscreen:
+      NOTREACHED();
+      FALLTHROUGH;
+    case DisplayMode::kStandalone:
+      return ::sync_pb::WebAppSpecifics::STANDALONE;
+  }
 }
 
 }  // namespace web_app

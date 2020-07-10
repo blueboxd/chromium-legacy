@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/root_inline_box_painter.h"
 #include "third_party/blink/renderer/platform/text/bidi_resolver.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 namespace blink {
@@ -43,8 +44,7 @@ struct SameSizeAsRootInlineBox : public InlineFlowBox {
   LayoutUnit layout_variables[6];
 };
 
-static_assert(sizeof(RootInlineBox) == sizeof(SameSizeAsRootInlineBox),
-              "RootInlineBox should stay small");
+ASSERT_SIZE(RootInlineBox, SameSizeAsRootInlineBox);
 
 typedef WTF::HashMap<const RootInlineBox*, EllipsisBox*> EllipsisBoxMap;
 static EllipsisBoxMap* g_ellipsis_box_map = nullptr;

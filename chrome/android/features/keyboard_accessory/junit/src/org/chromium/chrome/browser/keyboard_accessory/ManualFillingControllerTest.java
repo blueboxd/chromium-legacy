@@ -62,7 +62,8 @@ import org.chromium.chrome.browser.ChromeKeyboardVisibilityDelegate;
 import org.chromium.chrome.browser.ChromeWindow;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
@@ -120,6 +121,8 @@ public class ManualFillingControllerTest {
     private CompositorViewHolder mMockCompositorViewHolder;
     @Mock
     private BottomSheetController mMockBottomSheetController;
+    @Mock
+    private FullscreenManager mMockFullscreenManager;
     @Mock
     private ApplicationViewportInsetSupplier mApplicationViewportInsetSupplier;
 
@@ -293,19 +296,17 @@ public class ManualFillingControllerTest {
         when(mMockKeyboard.calculateKeyboardHeight(any())).thenReturn(0);
         when(mMockActivity.getTabModelSelector()).thenReturn(mMockTabModelSelector);
         when(mMockActivity.getActivityTabProvider()).thenReturn(mActivityTabProvider);
-        ChromeFullscreenManager fullscreenManager = new ChromeFullscreenManager(mMockActivity, 0) {
+        BrowserControlsManager browserControlsManager = new BrowserControlsManager(
+                mMockActivity, 0) {
             @Override
             protected boolean isInVr() {
                 return false;
             }
             @Override
-            protected boolean bootsToVr() {
-                return false;
-            }
-            @Override
             protected void rawTopContentOffsetChangedForVr() {}
         };
-        when(mMockActivity.getFullscreenManager()).thenReturn(fullscreenManager);
+        when(mMockActivity.getBrowserControlsManager()).thenReturn(browserControlsManager);
+        when(mMockActivity.getFullscreenManager()).thenReturn(mMockFullscreenManager);
         when(mMockActivity.getCompositorViewHolder()).thenReturn(mMockCompositorViewHolder);
         when(mMockActivity.getResources()).thenReturn(mMockResources);
         when(mMockActivity.getPackageManager())

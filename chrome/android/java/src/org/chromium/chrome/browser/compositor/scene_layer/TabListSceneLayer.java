@@ -13,12 +13,12 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.components.browser_ui.styles.ChromeColors;
@@ -52,7 +52,7 @@ public class TabListSceneLayer extends SceneLayer {
      * @param layerTitleCache An object for accessing tab layer titles.
      * @param tabContentManager An object for accessing tab content.
      * @param resourceManager An object for accessing static and dynamic resources.
-     * @param fullscreenManager The fullscreen manager for browser controls information.
+     * @param browserControls The provider for browser controls state.
      * @param backgroundResourceId The resource ID for background. {@link #INVALID_RESOURCE_ID} if
      *                             none. Only used in GridTabSwitcher.
      * @param backgroundAlpha The alpha of the background. Only used in GridTabSwitcher.
@@ -61,7 +61,7 @@ public class TabListSceneLayer extends SceneLayer {
      */
     public void pushLayers(Context context, RectF viewport, RectF contentViewport, Layout layout,
             LayerTitleCache layerTitleCache, TabContentManager tabContentManager,
-            ResourceManager resourceManager, ChromeFullscreenManager fullscreenManager,
+            ResourceManager resourceManager, BrowserControlsStateProvider browserControls,
             int backgroundResourceId, float backgroundAlpha, int backgroundTopOffset) {
         if (mNativePtr == 0) return;
 
@@ -135,8 +135,8 @@ public class TabListSceneLayer extends SceneLayer {
                     t.getBrightness(), t.showToolbar(), defaultThemeColor,
                     t.getToolbarBackgroundColor(), closeButtonColor, t.anonymizeToolbar(),
                     t.isTitleNeeded(), urlBarBackgroundId, t.getTextBoxBackgroundColor(),
-                    t.getToolbarAlpha(), fullscreenManager.getContentOffset(),
-                    t.getSideBorderScale(), t.insetBorderVertical());
+                    t.getToolbarAlpha(), browserControls.getContentOffset(), t.getSideBorderScale(),
+                    t.insetBorderVertical());
         }
         TabListSceneLayerJni.get().finishBuildingFrame(mNativePtr, TabListSceneLayer.this);
     }

@@ -22,15 +22,15 @@ class SimpleURLLoader;
 }  // namespace network
 
 namespace extensions {
-class TestBlacklistStateFetcher;
+class TestBlocklistStateFetcher;
 
-class BlacklistStateFetcher {
+class BlocklistStateFetcher {
  public:
   typedef base::Callback<void(BlocklistState)> RequestCallback;
 
-  BlacklistStateFetcher();
+  BlocklistStateFetcher();
 
-  virtual ~BlacklistStateFetcher();
+  virtual ~BlocklistStateFetcher();
 
   virtual void Request(const std::string& id, const RequestCallback& callback);
 
@@ -47,7 +47,7 @@ class BlacklistStateFetcher {
                                    int net_error);
 
  private:
-  friend class TestBlacklistStateFetcher;
+  friend class TestBlocklistStateFetcher;
   typedef std::multimap<std::string, RequestCallback> CallbackMultiMap;
 
   GURL RequestUrl() const;
@@ -65,9 +65,9 @@ class BlacklistStateFetcher {
   // Callbacks by extension ID.
   CallbackMultiMap callbacks_;
 
-  base::WeakPtrFactory<BlacklistStateFetcher> weak_ptr_factory_{this};
+  base::WeakPtrFactory<BlocklistStateFetcher> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(BlacklistStateFetcher);
+  DISALLOW_COPY_AND_ASSIGN(BlocklistStateFetcher);
 };
 
 }  // namespace extensions

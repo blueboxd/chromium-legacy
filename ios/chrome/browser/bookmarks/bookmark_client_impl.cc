@@ -35,7 +35,7 @@ void BookmarkClientImpl::Init(bookmarks::BookmarkModel* model) {
 }
 
 bool BookmarkClientImpl::PreferTouchIcon() {
-  return true;
+  return false;
 }
 
 base::CancelableTaskTracker::TaskId

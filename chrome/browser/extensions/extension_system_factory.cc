@@ -50,7 +50,7 @@ ExtensionSystemSharedFactory::ExtensionSystemSharedFactory()
   DependsOn(InstallVerifierFactory::GetInstance());
   DependsOn(ProcessManagerFactory::GetInstance());
   DependsOn(RendererStartupHelperFactory::GetInstance());
-  DependsOn(BlacklistFactory::GetInstance());
+  DependsOn(BlocklistFactory::GetInstance());
   DependsOn(DeclarativeUserScriptManagerFactory::GetInstance());
   DependsOn(EventRouterFactory::GetInstance());
   // This depends on ExtensionDownloader, which depends on

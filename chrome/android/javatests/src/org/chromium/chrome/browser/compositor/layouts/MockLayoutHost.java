@@ -10,7 +10,8 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 
 import org.chromium.chrome.browser.compositor.TitleCache;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.resources.ResourceManager;
 
@@ -133,7 +134,12 @@ class MockLayoutHost implements LayoutManagerHost, LayoutRenderHost {
     }
 
     @Override
-    public ChromeFullscreenManager getFullscreenManager() {
+    public BrowserControlsManager getBrowserControlsManager() {
+        return null;
+    }
+
+    @Override
+    public FullscreenManager getFullscreenManager() {
         return null;
     }
 

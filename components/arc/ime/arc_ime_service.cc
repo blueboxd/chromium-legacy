@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -629,6 +630,8 @@ bool ArcImeService::SetCompositionFromExistingText(
 
 bool ArcImeService::SetAutocorrectRange(const base::string16& autocorrect_text,
                                         const gfx::Range& range) {
+  base::UmaHistogramEnumeration("InputMethod.Assistive.Autocorrect.Count",
+                                TextInputClient::SubClass::kArcImeService);
   // TODO(https:://crbug.com/1091088): Implement this method.
   NOTIMPLEMENTED_LOG_ONCE();
   return false;

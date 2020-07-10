@@ -21,9 +21,10 @@ class SaveUnsyncedCredentialsLocallyBubbleController
       base::WeakPtr<PasswordsModelDelegate> delegate);
   ~SaveUnsyncedCredentialsLocallyBubbleController() override;
 
-  // Called by the view code when the save button is clicked by the user.
-  // Saves the uncommitted credentials to the password store.
-  void OnSaveClicked();
+  // Called by the view code when the save button is clicked by the user. Saves
+  // the credentials whose corresponding position in |was_credential_selected|
+  // holds true.
+  void OnSaveClicked(const std::vector<bool>& was_credential_selected);
 
   // Called by the view code when the cancel button is clicked by the user.
   // Drops the unsynced credentials.

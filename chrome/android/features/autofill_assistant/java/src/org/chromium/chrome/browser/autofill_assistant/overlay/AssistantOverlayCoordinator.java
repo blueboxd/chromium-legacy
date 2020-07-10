@@ -10,8 +10,8 @@ import android.graphics.RectF;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
@@ -29,30 +29,28 @@ public class AssistantOverlayCoordinator {
     private final AssistantOverlayModel mModel;
     private final AssistantOverlayEventFilter mEventFilter;
     private final AssistantOverlayDrawable mDrawable;
-    private final ChromeFullscreenManager mFullscreenManager;
     private final CompositorViewHolder mCompositorViewHolder;
     private final ScrimView mScrim;
     private final ImageFetcher mImageFetcher;
     private boolean mScrimEnabled;
 
-    public AssistantOverlayCoordinator(Context context, ChromeFullscreenManager fullscreenManager,
-            CompositorViewHolder compositorViewHolder, ScrimView scrim,
-            AssistantOverlayModel model) {
-        this(context, fullscreenManager, compositorViewHolder, scrim, model,
+    public AssistantOverlayCoordinator(Context context,
+            BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
+            ScrimView scrim, AssistantOverlayModel model) {
+        this(context, browserControls, compositorViewHolder, scrim, model,
                 ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.DISK_CACHE_ONLY));
     }
 
-    public AssistantOverlayCoordinator(Context context, ChromeFullscreenManager fullscreenManager,
-            CompositorViewHolder compositorViewHolder, ScrimView scrim, AssistantOverlayModel model,
-            ImageFetcher imageFetcher) {
+    public AssistantOverlayCoordinator(Context context,
+            BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
+            ScrimView scrim, AssistantOverlayModel model, ImageFetcher imageFetcher) {
         mModel = model;
         mImageFetcher = imageFetcher;
-        mFullscreenManager = fullscreenManager;
         mCompositorViewHolder = compositorViewHolder;
         mScrim = scrim;
         mEventFilter =
-                new AssistantOverlayEventFilter(context, fullscreenManager, compositorViewHolder);
-        mDrawable = new AssistantOverlayDrawable(context, fullscreenManager);
+                new AssistantOverlayEventFilter(context, browserControls, compositorViewHolder);
+        mDrawable = new AssistantOverlayDrawable(context, browserControls);
 
         // Listen for changes in the state.
         // TODO(crbug.com/806868): Bind model to view through a ViewBinder instead.

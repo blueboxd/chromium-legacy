@@ -146,8 +146,10 @@ public class PasswordAccessoryIntegrationTest {
 
     @Test
     @SmallTest
-    @EnableFeatures(ChromeFeatureList.RECOVER_FROM_NEVER_SAVE_ANDROID)
-    public void testEnablesUnblacklistingToggle() throws TimeoutException {
+    @EnableFeatures({ChromeFeatureList.RECOVER_FROM_NEVER_SAVE_ANDROID,
+            ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
+    public void
+    testEnablesUnblacklistingToggle() throws TimeoutException {
         mHelper.loadTestPage(false);
         mHelper.cacheCredentials(new String[0], new String[0], true);
 

@@ -12,7 +12,9 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.Collections;
@@ -28,6 +30,8 @@ class AccountPickerBottomSheetMediator implements AccountPickerCoordinator.Liste
 
     private final ProfileDataCache.Observer mProfileDataSourceObserver =
             this::updateSelectedAccountData;
+    private final AccountManagerFacade mAccountManagerFacade;
+    private final AccountsChangeObserver mAccountsChangeObserver = this::onAccountListUpdated;
     private @Nullable String mSelectedAccountName = null;
 
     AccountPickerBottomSheetMediator(Context context, AccountPickerDelegate accountPickerDelegate) {
@@ -38,13 +42,10 @@ class AccountPickerBottomSheetMediator implements AccountPickerCoordinator.Liste
         mModel = AccountPickerBottomSheetProperties.createModel(
                 this::onSelectedAccountClicked, this::onContinueAsClicked);
         mProfileDataCache.addObserver(mProfileDataSourceObserver);
-        // TODO(https://crbug.com/1096977): Add an observer to listen to accounts
-        // change in AccountManagerFacade, in case from zero to more accounts or
-        // the selected account disappeared.
-        List<Account> accounts = AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts();
-        if (!accounts.isEmpty()) {
-            setSelectedAccountName(accounts.get(0).name);
-        }
+
+        mAccountManagerFacade = AccountManagerFacadeProvider.getInstance();
+        mAccountManagerFacade.addObserver(mAccountsChangeObserver);
+        onAccountListUpdated();
     }
 
     /**
@@ -75,6 +76,31 @@ class AccountPickerBottomSheetMediator implements AccountPickerCoordinator.Liste
 
     void destroy() {
         mProfileDataCache.removeObserver(mProfileDataSourceObserver);
+        mAccountManagerFacade.removeObserver(mAccountsChangeObserver);
+    }
+
+    /**
+     * Updates the collapsed account list when account list changes.
+     *
+     * Implements {@link AccountsChangeObserver}.
+     */
+    private void onAccountListUpdated() {
+        List<Account> accounts = mAccountManagerFacade.tryGetGoogleAccounts();
+        if (accounts.isEmpty()) {
+            // If all accounts disappeared when the account list is collapsed, we will
+            // go to the zero account screen. If the account list is expanded, we will
+            // first set the account list state to collapsed then move to the zero
+            // account collapsed screen.
+            mModel.set(AccountPickerBottomSheetProperties.IS_ACCOUNT_LIST_EXPANDED, false);
+            mSelectedAccountName = null;
+            mModel.set(AccountPickerBottomSheetProperties.SELECTED_ACCOUNT_DATA, null);
+        } else {
+            // TODO(https://crbug.com/1096977): Test and handle the scenario when
+            // the existing account list changes to a different list, we need to
+            // separate the two cases when the current selected account name is in the
+            // new list and not in the new list.
+            setSelectedAccountName(accounts.get(0).name);
+        }
     }
 
     private void setSelectedAccountName(String accountName) {

@@ -19,6 +19,7 @@ struct AssistiveWindowProperties {
   std::string announce_string;
   std::vector<base::string16> candidates;
   bool show_indices = false;
+  bool show_setting_link = false;
 };
 
 }  // namespace chromeos

@@ -20,16 +20,16 @@ void Assign(BlocklistState* to, BlocklistState from) {
 
 }  // namespace
 
-class BlacklistStateFetcherTest : public testing::Test {
+class BlocklistStateFetcherTest : public testing::Test {
  private:
   content::BrowserTaskEnvironment task_environment_;
 };
 
-TEST_F(BlacklistStateFetcherTest, RequestBlacklistState) {
-  BlacklistStateFetcher fetcher;
-  TestBlacklistStateFetcher tester(&fetcher);
+TEST_F(BlocklistStateFetcherTest, RequestBlocklistState) {
+  BlocklistStateFetcher fetcher;
+  TestBlocklistStateFetcher tester(&fetcher);
 
-  tester.SetBlacklistVerdict(
+  tester.SetBlocklistVerdict(
       "a", ClientCRXListInfoResponse_Verdict_SECURITY_VULNERABILITY);
 
   BlocklistState result;
@@ -39,18 +39,18 @@ TEST_F(BlacklistStateFetcherTest, RequestBlacklistState) {
   EXPECT_EQ(BLOCKLISTED_SECURITY_VULNERABILITY, result);
 }
 
-TEST_F(BlacklistStateFetcherTest, RequestMultipleBlacklistStates) {
-  BlacklistStateFetcher fetcher;
-  TestBlacklistStateFetcher tester(&fetcher);
+TEST_F(BlocklistStateFetcherTest, RequestMultipleBlocklistStates) {
+  BlocklistStateFetcher fetcher;
+  TestBlocklistStateFetcher tester(&fetcher);
 
-  tester.SetBlacklistVerdict(
+  tester.SetBlocklistVerdict(
       "a", ClientCRXListInfoResponse_Verdict_NOT_IN_BLACKLIST);
-  tester.SetBlacklistVerdict("b", ClientCRXListInfoResponse_Verdict_MALWARE);
-  tester.SetBlacklistVerdict(
+  tester.SetBlocklistVerdict("b", ClientCRXListInfoResponse_Verdict_MALWARE);
+  tester.SetBlocklistVerdict(
       "c", ClientCRXListInfoResponse_Verdict_SECURITY_VULNERABILITY);
-  tester.SetBlacklistVerdict(
+  tester.SetBlocklistVerdict(
       "d", ClientCRXListInfoResponse_Verdict_CWS_POLICY_VIOLATION);
-  tester.SetBlacklistVerdict(
+  tester.SetBlocklistVerdict(
       "e", ClientCRXListInfoResponse_Verdict_POTENTIALLY_UNWANTED);
 
   BlocklistState result[9];

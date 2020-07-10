@@ -1553,6 +1553,12 @@ const char kNaviOnboardGroup[] = "browser.navi_onboard_group";
 const char kEnableQuietNotificationPermissionUi[] =
     "profile.content_settings.enable_quiet_permission_ui.notifications";
 
+// Boolean indicating whether, as part of the adaptive activation quiet UI dry
+// run experiment, the user has accumulated three notification permission
+// request denies in a row.
+const char kHadThreeConsecutiveNotificationPermissionDenies[] =
+    "profile.content_settings.had_three_consecutive_denies.notifications";
+
 // Boolean indicating whether to show a promo for the quiet notification
 // permission UI.
 const char kQuietNotificationPermissionShouldShowPromo[] =

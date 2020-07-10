@@ -12,8 +12,8 @@ import androidx.annotation.Nullable;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
@@ -29,17 +29,17 @@ import java.util.Map;
 class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandler {
     private final Context mContext;
     private final BottomSheetController mBottomSheetController;
-    private final ChromeFullscreenManager mFullscreenManager;
+    private final BrowserControlsStateProvider mBrowserControls;
     private final CompositorViewHolder mCompositorViewHolder;
     private final ActivityTabProvider mActivityTabProvider;
     private final ScrimView mScrimView;
 
     AutofillAssistantActionHandlerImpl(Context context, BottomSheetController bottomSheetController,
-            ChromeFullscreenManager fullscreenManager, CompositorViewHolder compositorViewHolder,
+            BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
             ActivityTabProvider activityTabProvider, ScrimView scrimView) {
         mContext = context;
         mBottomSheetController = bottomSheetController;
-        mFullscreenManager = fullscreenManager;
+        mBrowserControls = browserControls;
         mCompositorViewHolder = compositorViewHolder;
         mActivityTabProvider = activityTabProvider;
         mScrimView = scrimView;
@@ -83,7 +83,7 @@ class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandl
             String experimentIds, Bundle arguments, Callback<Boolean> callback) {
         Map<String, String> parameters = toArgumentMap(arguments);
         AssistantOnboardingCoordinator coordinator = new AssistantOnboardingCoordinator(
-                experimentIds, parameters, mContext, mBottomSheetController, mFullscreenManager,
+                experimentIds, parameters, mContext, mBottomSheetController, mBrowserControls,
                 mCompositorViewHolder, mScrimView);
         coordinator.show(accepted -> {
             coordinator.hide();
@@ -108,8 +108,8 @@ class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandl
 
         if (!AutofillAssistantPreferencesUtil.isAutofillOnboardingAccepted()) {
             AssistantOnboardingCoordinator coordinator = new AssistantOnboardingCoordinator(
-                    experimentIds, argumentMap, mContext, mBottomSheetController,
-                    mFullscreenManager, mCompositorViewHolder, mScrimView);
+                    experimentIds, argumentMap, mContext, mBottomSheetController, mBrowserControls,
+                    mCompositorViewHolder, mScrimView);
             coordinator.show(accepted -> {
                 if (!accepted) {
                     coordinator.hide();

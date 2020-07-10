@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "media/base/media_util.h"
 #include "media/base/test_data_util.h"
 #include "media/base/video_bitrate_allocation.h"
@@ -19,8 +20,10 @@
 #include "media/gpu/test/video_encoder/video_encoder.h"
 #include "media/gpu/test/video_encoder/video_encoder_client.h"
 #include "media/gpu/test/video_encoder/video_encoder_test_environment.h"
+#include "media/gpu/test/video_frame_file_writer.h"
 #include "media/gpu/test/video_frame_helpers.h"
 #include "media/gpu/test/video_frame_validator.h"
+#include "media/gpu/test/video_test_environment.h"
 #include "media/gpu/test/video_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,7 +38,8 @@ namespace {
 constexpr const char* usage_msg =
     "usage: video_encode_accelerator_tests\n"
     "           [--codec=<codec>] [--disable_validator]\n"
-    "           [--output_bitstream] [--output_folder=<filepath>]\n"
+    "           [--output_bitstream] [--output_images=(all|corrupt)]\n"
+    "           [--output_format=(png|yuv)] [--output_folder=<filepath>]\n"
     "           [-v=<level>] [--vmodule=<config>] [--gtest_help] [--help]\n"
     "           [<video path>] [<video metadata path>]\n";
 
@@ -54,10 +58,16 @@ constexpr const char* help_msg =
     "  --disable_validator  disable validation of encoded bitstream.\n\n"
     "  --output_bitstream   save the output bitstream in either H264 AnnexB\n"
     "                       format (for H264) or IVF format (for vp8 and vp9)\n"
-    "                       to <output_folder>/<testname>/<filename> +\n"
-    "                       .(h264|ivf).\n"
-    "  --output_folder      set the basic folder used to store the output\n"
-    "                       stream. The default is the current directory.\n"
+    "                       to <output_folder>/<testname>."
+    "  --output_images      in addition to saving the full encoded bitstream,\n"
+    "                       it's also possible to dump individual frames to\n"
+    "                       <output_folder>/<testname>, possible values\n"
+    "                       are \"all|corrupt\"\n"
+    "  --output_format      set the format of images saved to disk, supported\n"
+    "                       formats are \"png\" (default) and \"yuv\".\n"
+    "  --output_limit       limit the number of images saved to disk.\n"
+    "  --output_folder      set the basic folder used to store test artifacts\n"
+    "                       The default is the current directory.\n"
     "   -v                  enable verbose mode, e.g. -v=2.\n"
     "  --vmodule            enable verbose mode for the specified module,\n"
     "                       e.g. --vmodule=*media/gpu*=2.\n\n"
@@ -104,7 +114,8 @@ class VideoEncoderTest : public ::testing::Test {
     }
 
     const gfx::Rect visible_rect(video->Resolution());
-    VideoCodec codec = VideoCodecProfileToVideoCodec(config.output_profile);
+    const VideoCodec codec =
+        VideoCodecProfileToVideoCodec(config.output_profile);
     switch (codec) {
       case kCodecH264:
         bitstream_processors.emplace_back(
@@ -132,18 +143,41 @@ class VideoEncoderTest : public ::testing::Test {
         VideoColorSpace(), kNoTransformation, visible_rect.size(), visible_rect,
         visible_rect.size(), EmptyExtraData(), EncryptionScheme::kUnencrypted);
     std::vector<std::unique_ptr<VideoFrameProcessor>> video_frame_processors;
-
     raw_data_helper_ = RawDataHelper::Create(video);
     if (!raw_data_helper_) {
       LOG(ERROR) << "Failed to create raw data helper";
       return bitstream_processors;
     }
 
-    // TODO(hiroh): Add corrupt frame processors.
     VideoFrameValidator::GetModelFrameCB get_model_frame_cb =
         base::BindRepeating(&VideoEncoderTest::GetModelFrame,
                             base::Unretained(this));
-    auto psnr_validator = PSNRVideoFrameValidator::Create(get_model_frame_cb);
+
+    // Attach a video frame writer to store individual frames to disk if
+    // requested.
+    std::unique_ptr<VideoFrameProcessor> image_writer;
+    auto frame_output_config = g_env->ImageOutputConfig();
+    base::FilePath output_folder = base::FilePath(g_env->OutputFolder())
+                                       .Append(g_env->GetTestOutputFilePath());
+    std::unique_ptr<PSNRVideoFrameValidator> psnr_validator;
+    if (frame_output_config.output_mode == FrameOutputMode::kCorrupt) {
+      image_writer = VideoFrameFileWriter::Create(
+          output_folder, frame_output_config.output_format,
+          frame_output_config.output_limit);
+      LOG_ASSERT(image_writer);
+      psnr_validator = PSNRVideoFrameValidator::Create(get_model_frame_cb,
+                                                       std::move(image_writer));
+    } else {
+      if (frame_output_config.output_mode == FrameOutputMode::kAll) {
+        image_writer = VideoFrameFileWriter::Create(
+            output_folder, frame_output_config.output_format,
+            frame_output_config.output_limit);
+        LOG_ASSERT(image_writer);
+        video_frame_processors.push_back(std::move(image_writer));
+      }
+      psnr_validator =
+          PSNRVideoFrameValidator::Create(get_model_frame_cb, nullptr);
+    }
     auto ssim_validator = SSIMVideoFrameValidator::Create(get_model_frame_cb);
     video_frame_processors.push_back(std::move(psnr_validator));
     video_frame_processors.push_back(std::move(ssim_validator));
@@ -153,10 +187,16 @@ class VideoEncoderTest : public ::testing::Test {
     LOG_ASSERT(bitstream_validator);
     bitstream_processors.emplace_back(std::move(bitstream_validator));
 
-    auto output_bitstream_filepath = g_env->OutputBitstreamFilePath();
-    if (output_bitstream_filepath) {
+    if (g_env->SaveOutputBitstream()) {
+      base::FilePath::StringPieceType extension =
+          codec == VideoCodec::kCodecH264 ? FILE_PATH_LITERAL("h264")
+                                          : FILE_PATH_LITERAL("ivf");
+      auto output_bitstream_filepath =
+          g_env->OutputFolder()
+              .Append(g_env->GetTestOutputFilePath())
+              .Append(video->FilePath().BaseName().ReplaceExtension(extension));
       auto bitstream_writer = BitstreamFileWriter::Create(
-          *output_bitstream_filepath, codec, visible_rect.size(),
+          output_bitstream_filepath, codec, visible_rect.size(),
           config.framerate, config.num_frames_to_encode);
       LOG_ASSERT(bitstream_writer);
       bitstream_processors.emplace_back(std::move(bitstream_writer));
@@ -335,6 +375,7 @@ int main(int argc, char** argv) {
       (args.size() >= 2) ? base::FilePath(args[1]) : base::FilePath();
   std::string codec = "h264";
   bool output_bitstream = false;
+  media::test::FrameOutputConfig frame_output_config;
   base::FilePath output_folder =
       base::FilePath(base::FilePath::kCurrentDirectory);
 
@@ -354,6 +395,35 @@ int main(int argc, char** argv) {
       enable_bitstream_validator = false;
     } else if (it->first == "output_bitstream") {
       output_bitstream = true;
+    } else if (it->first == "output_images") {
+      if (it->second == "all") {
+        frame_output_config.output_mode = media::test::FrameOutputMode::kAll;
+      } else if (it->second == "corrupt") {
+        frame_output_config.output_mode =
+            media::test::FrameOutputMode::kCorrupt;
+      } else {
+        std::cout << "unknown image output mode \"" << it->second
+                  << "\", possible values are \"all|corrupt\"\n";
+        return EXIT_FAILURE;
+      }
+    } else if (it->first == "output_format") {
+      if (it->second == "png") {
+        frame_output_config.output_format =
+            media::test::VideoFrameFileWriter::OutputFormat::kPNG;
+      } else if (it->second == "yuv") {
+        frame_output_config.output_format =
+            media::test::VideoFrameFileWriter::OutputFormat::kYUV;
+      } else {
+        std::cout << "unknown frame output format \"" << it->second
+                  << "\", possible values are \"png|yuv\"\n";
+        return EXIT_FAILURE;
+      }
+    } else if (it->first == "output_limit") {
+      if (!base::StringToUint64(it->second,
+                                &frame_output_config.output_limit)) {
+        std::cout << "invalid number \"" << it->second << "\n";
+        return EXIT_FAILURE;
+      }
     } else if (it->first == "output_folder") {
       output_folder = base::FilePath(it->second);
     } else {
@@ -369,7 +439,8 @@ int main(int argc, char** argv) {
   media::test::VideoEncoderTestEnvironment* test_environment =
       media::test::VideoEncoderTestEnvironment::Create(
           video_path, video_metadata_path, enable_bitstream_validator,
-          output_folder, codec, output_bitstream);
+          output_folder, codec, output_bitstream, frame_output_config);
+
   if (!test_environment)
     return EXIT_FAILURE;
 

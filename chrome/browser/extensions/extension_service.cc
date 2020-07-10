@@ -215,7 +215,7 @@ void ExtensionService::BlocklistExtensionForTest(
   blocklisted.insert(extension_id);
   // Don't change existing blocklisted extensions.
   ExtensionIdSet unchanged = registry_->blocklisted_extensions().GetIDs();
-  UpdateBlacklistedExtensions(blocklisted, unchanged);
+  UpdateBlocklistedExtensions(blocklisted, unchanged);
 }
 
 bool ExtensionService::OnExternalExtensionUpdateUrlFound(
@@ -359,16 +359,16 @@ ExtensionService::ExtensionService(Profile* profile,
                                    const base::CommandLine* command_line,
                                    const base::FilePath& install_directory,
                                    ExtensionPrefs* extension_prefs,
-                                   Blacklist* blacklist,
+                                   Blocklist* blocklist,
                                    bool autoupdate_enabled,
                                    bool extensions_enabled,
                                    base::OneShotEvent* ready)
-    : Blacklist::Observer(blacklist),
+    : Blocklist::Observer(blocklist),
       command_line_(command_line),
       profile_(profile),
       system_(ExtensionSystem::Get(profile)),
       extension_prefs_(extension_prefs),
-      blacklist_(blacklist),
+      blocklist_(blocklist),
       registry_(ExtensionRegistry::Get(profile)),
       pending_extension_manager_(profile),
       install_directory_(install_directory),
@@ -869,12 +869,12 @@ void ExtensionService::PerformActionBasedOnOmahaAttributes(
       extension_registrar_.IsExtensionEnabled(extension_id),
       ExtensionUpdateCheckDataKey::kMalware);
 
-  // Add the extension to the blacklisted extensions set.
-  UpdateBlacklistedExtensions({extension_id},
+  // Add the extension to the blocklisted extensions set.
+  UpdateBlocklistedExtensions({extension_id},
                               registry_->blocklisted_extensions().GetIDs());
   extension_prefs_->AddDisableReason(
       extension_id, disable_reason::DISABLE_REMOTELY_FOR_MALWARE);
-  // Show an error for the newly blacklisted extension.
+  // Show an error for the newly blocklisted extension.
   error_controller_->ShowErrorIfNeeded();
 }
 
@@ -891,8 +891,8 @@ void ExtensionService::MaybeEnableRemotelyDisabledExtension(
   ExtensionIdSet unchanged = registry_->blocklisted_extensions().GetIDs();
   DCHECK(base::Contains(unchanged, extension_id));
   unchanged.erase(extension_id);
-  // Remove the extension from the blacklist.
-  UpdateBlacklistedExtensions({}, unchanged);
+  // Remove the extension from the blocklist.
+  UpdateBlocklistedExtensions({}, unchanged);
   ReportReenableExtensionFromMalware();
 }
 
@@ -954,14 +954,14 @@ void ExtensionService::DisableUserExtensionsExcept(
 }
 
 // Extensions that are not locked, components or forced by policy should be
-// locked. Extensions are no longer considered enabled or disabled. Blacklisted
-// extensions are now considered both blacklisted and locked.
+// locked. Extensions are no longer considered enabled or disabled. Blocklisted
+// extensions are now considered both blocklisted and locked.
 void ExtensionService::BlockAllExtensions() {
   if (block_extensions_)
     return;
   block_extensions_ = true;
 
-  // Blacklisted extensions are already unloaded, need not be blocked.
+  // Blocklisted extensions are already unloaded, need not be blocked.
   std::unique_ptr<ExtensionSet> extensions =
       registry_->GenerateInstalledExtensionsSet(ExtensionRegistry::ENABLED |
                                                 ExtensionRegistry::DISABLED |
@@ -1596,10 +1596,10 @@ void ExtensionService::OnExtensionInstalled(
   }
 
   if (install_flags & kInstallFlagIsBlocklistedForMalware) {
-    // Installation of a blacklisted extension can happen from sync, policy,
+    // Installation of a blocklisted extension can happen from sync, policy,
     // etc, where to maintain consistency we need to install it, just never
     // load it (see AddExtension). Usually it should be the job of callers to
-    // intercept blacklisted extensions earlier (e.g. CrxInstaller, before even
+    // intercept blocklisted extensions earlier (e.g. CrxInstaller, before even
     // showing the install dialogue).
     extension_prefs_->AcknowledgeBlocklistedExtension(id);
     UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.SilentInstall",
@@ -2065,10 +2065,10 @@ void ExtensionService::MaybeFinishDelayedInstallations() {
   }
 }
 
-void ExtensionService::OnBlacklistUpdated() {
-  blacklist_->GetBlacklistedIDs(
+void ExtensionService::OnBlocklistUpdated() {
+  blocklist_->GetBlocklistedIDs(
       registry_->GenerateInstalledExtensionsSet()->GetIDs(),
-      base::Bind(&ExtensionService::ManageBlacklist, AsWeakPtr()));
+      base::Bind(&ExtensionService::ManageBlocklist, AsWeakPtr()));
 }
 
 void ExtensionService::OnUpgradeRecommended() {
@@ -2131,17 +2131,17 @@ void ExtensionService::OnProfileMarkedForPermanentDeletion(Profile* profile) {
     UnloadExtension(*it, UnloadedExtensionReason::PROFILE_SHUTDOWN);
 }
 
-void ExtensionService::ManageBlacklist(
-    const Blacklist::BlacklistStateMap& state_map) {
+void ExtensionService::ManageBlocklist(
+    const Blocklist::BlocklistStateMap& state_map) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  std::set<std::string> blacklisted;
+  std::set<std::string> blocklisted;
   ExtensionIdSet greylist;
   ExtensionIdSet unchanged;
   for (const auto& it : state_map) {
     // If it was previously disabled remotely for malware, do not remove from
-    // the blacklisted_extensions set. The disable reason should be removed
-    // first before updating its blacklist state.
+    // the blocklisted_extensions set. The disable reason should be removed
+    // first before updating its blocklist state.
     if (extension_prefs_->HasDisableReason(
             it.first, disable_reason::DISABLE_REMOTELY_FOR_MALWARE)) {
       unchanged.insert(it.first);
@@ -2153,7 +2153,7 @@ void ExtensionService::ManageBlacklist(
         break;
 
       case BLOCKLISTED_MALWARE:
-        blacklisted.insert(it.first);
+        blocklisted.insert(it.first);
         break;
 
       case BLOCKLISTED_SECURITY_VULNERABILITY:
@@ -2168,7 +2168,7 @@ void ExtensionService::ManageBlacklist(
     }
   }
 
-  UpdateBlacklistedExtensions(blacklisted, unchanged);
+  UpdateBlocklistedExtensions(blocklisted, unchanged);
   UpdateGreylistedExtensions(greylist, unchanged, state_map);
 
   error_controller_->ShowErrorIfNeeded();
@@ -2186,11 +2186,11 @@ void Partition(const ExtensionIdSet& before,
 }
 }  // namespace
 
-void ExtensionService::UpdateBlacklistedExtensions(
-    const ExtensionIdSet& blacklisted,
+void ExtensionService::UpdateBlocklistedExtensions(
+    const ExtensionIdSet& blocklisted,
     const ExtensionIdSet& unchanged) {
   ExtensionIdSet not_yet_blocked, no_longer_blocked;
-  Partition(registry_->blocklisted_extensions().GetIDs(), blacklisted,
+  Partition(registry_->blocklisted_extensions().GetIDs(), blocklisted,
             unchanged, &no_longer_blocked, &not_yet_blocked);
 
   for (auto it = no_longer_blocked.begin(); it != no_longer_blocked.end();
@@ -2198,8 +2198,8 @@ void ExtensionService::UpdateBlacklistedExtensions(
     scoped_refptr<const Extension> extension =
         registry_->blocklisted_extensions().GetByID(*it);
     if (!extension.get()) {
-      NOTREACHED() << "Extension " << *it << " no longer blacklisted, "
-                   << "but it was never blacklisted.";
+      NOTREACHED() << "Extension " << *it << " no longer blocklisted, "
+                   << "but it was never blocklisted.";
       continue;
     }
     registry_->RemoveBlocklisted(*it);
@@ -2215,7 +2215,7 @@ void ExtensionService::UpdateBlacklistedExtensions(
         registry_->GetInstalledExtension(*it);
     if (!extension.get()) {
       NOTREACHED() << "Extension " << *it << " needs to be "
-                   << "blacklisted, but it's not installed.";
+                   << "blocklisted, but it's not installed.";
       continue;
     }
     registry_->AddBlocklisted(extension);
@@ -2231,7 +2231,7 @@ void ExtensionService::UpdateBlacklistedExtensions(
 void ExtensionService::UpdateGreylistedExtensions(
     const ExtensionIdSet& greylist,
     const ExtensionIdSet& unchanged,
-    const Blacklist::BlacklistStateMap& state_map) {
+    const Blocklist::BlocklistStateMap& state_map) {
   ExtensionIdSet not_yet_greylisted, no_longer_greylisted;
   Partition(greylist_.GetIDs(), greylist, unchanged, &no_longer_greylisted,
             &not_yet_greylisted);
@@ -2329,7 +2329,7 @@ void ExtensionService::OnInstalledExtensionsLoaded() {
     EnableExtension(extension->id());
   }
 
-  OnBlacklistUpdated();
+  OnBlocklistUpdated();
 }
 
 void ExtensionService::UninstallMigratedExtensions() {

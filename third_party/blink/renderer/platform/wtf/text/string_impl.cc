@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/dynamic_annotations.h"
 #include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/static_constructors.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -43,16 +44,18 @@ using std::numeric_limits;
 
 namespace WTF {
 
-// As of Jan 2017, StringImpl needs 2 * sizeof(int) + 29 bits of data, and
-// sizeof(ThreadRestrictionVerifier) is 16 bytes. Thus, in DCHECK mode the
-// class may be padded to 32 bytes.
+namespace {
+
+struct SameSizeAsStringImpl {
 #if DCHECK_IS_ON()
-static_assert(sizeof(StringImpl) <= 8 * sizeof(int),
-              "StringImpl should stay small");
-#else
-static_assert(sizeof(StringImpl) <= 3 * sizeof(int),
-              "StringImpl should stay small");
+  ThreadRestrictionVerifier verifier;
 #endif
+  int fields[3];
+};
+
+ASSERT_SIZE(StringImpl, SameSizeAsStringImpl);
+
+}  // anonymous namespace
 
 void* StringImpl::operator new(size_t size) {
   DCHECK_EQ(size, sizeof(StringImpl));

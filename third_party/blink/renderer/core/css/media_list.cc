@@ -174,7 +174,7 @@ void MediaList::setMediaText(const ExecutionContext* execution_context,
   media_queries_->Set(value, execution_context);
 
   if (parent_style_sheet_)
-    parent_style_sheet_->DidMutate();
+    parent_style_sheet_->DidMutate(CSSStyleSheet::Mutation::kSheet);
 }
 
 String MediaList::item(unsigned index) const {
@@ -197,7 +197,7 @@ void MediaList::deleteMedium(const ExecutionContext* execution_context,
     return;
   }
   if (parent_style_sheet_)
-    parent_style_sheet_->DidMutate();
+    parent_style_sheet_->DidMutate(CSSStyleSheet::Mutation::kSheet);
 }
 
 void MediaList::appendMedium(const ExecutionContext* execution_context,
@@ -209,7 +209,7 @@ void MediaList::appendMedium(const ExecutionContext* execution_context,
     return;
 
   if (parent_style_sheet_)
-    parent_style_sheet_->DidMutate();
+    parent_style_sheet_->DidMutate(CSSStyleSheet::Mutation::kSheet);
 }
 
 void MediaList::Reattach(scoped_refptr<MediaQuerySet> media_queries) {

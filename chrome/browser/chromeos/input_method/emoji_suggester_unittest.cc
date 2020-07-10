@@ -5,9 +5,10 @@
 #include "chrome/browser/chromeos/input_method/emoji_suggester.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/task_environment.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -46,6 +47,7 @@ class TestSuggestionHandler : public SuggestionHandlerInterface {
       candidate_highlighted_.push_back(0);
     }
     show_indices_ = assistive_window.show_indices;
+    show_setting_link_ = assistive_window.show_setting_link;
     return true;
   }
 
@@ -60,6 +62,10 @@ class TestSuggestionHandler : public SuggestionHandlerInterface {
   void VerifyCandidateHighlighted(const int index, const bool highlighted) {
     int expect = highlighted ? 1 : 0;
     EXPECT_EQ(candidate_highlighted_[index], expect);
+  }
+
+  void VerifyShowSettingLink(const bool show_setting_link) {
+    EXPECT_EQ(show_setting_link_, show_setting_link);
   }
 
   bool DismissSuggestion(int context_id, std::string* error) override {
@@ -95,6 +101,7 @@ class TestSuggestionHandler : public SuggestionHandlerInterface {
 
  private:
   bool show_indices_ = false;
+  bool show_setting_link_ = false;
   bool learn_more_button_highlighted_ = false;
   std::vector<int> candidate_highlighted_;
   size_t currently_highlighted_index_ = INT_MAX;
@@ -104,7 +111,9 @@ class EmojiSuggesterTest : public testing::Test {
  protected:
   void SetUp() override {
     engine_ = std::make_unique<TestSuggestionHandler>();
-    emoji_suggester_ = std::make_unique<EmojiSuggester>(engine_.get());
+    profile_ = std::make_unique<TestingProfile>();
+    emoji_suggester_ =
+        std::make_unique<EmojiSuggester>(engine_.get(), profile_.get());
     emoji_suggester_->LoadEmojiMapForTesting(kEmojiData);
     chrome_keyboard_controller_client_ =
         ChromeKeyboardControllerClient::CreateForTest();
@@ -117,9 +126,10 @@ class EmojiSuggesterTest : public testing::Test {
     return emoji_suggester_->HandleKeyEvent(event);
   }
 
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmojiSuggester> emoji_suggester_;
   std::unique_ptr<TestSuggestionHandler> engine_;
-  base::test::TaskEnvironment task_environment_;
+  std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<ChromeKeyboardControllerClient>
       chrome_keyboard_controller_client_;
 };
@@ -350,6 +360,17 @@ TEST_F(EmojiSuggesterTest,
   EXPECT_TRUE(emoji_suggester_->Suggest(base::UTF8ToUTF16("happy ")));
 
   engine_->VerifyShowIndices(false);
+}
+
+TEST_F(EmojiSuggesterTest, ShowSettingLinkCorrectly) {
+  for (int i = 0; i < kEmojiSuggesterShowSettingMaxCount; i++) {
+    emoji_suggester_->Suggest(base::UTF8ToUTF16("happy "));
+    // Dismiss suggestion.
+    Press("Esc");
+    engine_->VerifyShowSettingLink(true);
+  }
+  emoji_suggester_->Suggest(base::UTF8ToUTF16("happy "));
+  engine_->VerifyShowSettingLink(false);
 }
 
 }  // namespace chromeos

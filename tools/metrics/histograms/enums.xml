@@ -35325,6 +35325,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   </int>
 </enum>
 
+<enum name="IMETextInputClient">
+  <int value="0" label="RenderWidgetHostViewAura"/>
+  <int value="1" label="ArcImeService"/>
+  <int value="2" label="Textfield"/>
+</enum>
+
 <enum name="IMEVKLayout">
   <int value="0" label="Compact"/>
   <int value="1" label="CompactSymbol"/>

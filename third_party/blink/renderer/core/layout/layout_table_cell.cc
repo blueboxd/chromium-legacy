@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/paint/table_cell_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/table_cell_painter.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -50,10 +51,13 @@ struct SameSizeAsLayoutTableCell : public LayoutBlockFlow,
   void* pointer1;
 };
 
-static_assert(sizeof(LayoutTableCell) == sizeof(SameSizeAsLayoutTableCell),
-              "LayoutTableCell should stay small");
-static_assert(sizeof(CollapsedBorderValue) == 8,
-              "CollapsedBorderValue should stay small");
+struct SameSizeAsCollapsedBorderValue {
+  Color color;
+  unsigned bitfields;
+};
+
+ASSERT_SIZE(LayoutTableCell, SameSizeAsLayoutTableCell);
+ASSERT_SIZE(CollapsedBorderValue, SameSizeAsCollapsedBorderValue);
 
 LayoutTableCell::LayoutTableCell(Element* element)
     : LayoutBlockFlow(element),

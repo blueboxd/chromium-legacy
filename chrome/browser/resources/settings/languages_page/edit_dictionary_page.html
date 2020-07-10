@@ -37,7 +37,7 @@
     <div class="list-frame">
       <template is="dom-if" if="[[hasWords_]]">
         <iron-list id="list" items="[[words_]]" preserve-focus
-            scroll-target="[[subpageScrollTarget]]">
+            scroll-target="[[subpageScrollTarget]]" risk-selection>
           <template>
             <div class="list-item">
               <div id$="word[[index]]" class="word text-elide">[[item]]</div>

@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -29,8 +30,8 @@ struct SameSizeAsNGFragmentItem {
   unsigned flags;
 };
 
-static_assert(sizeof(NGFragmentItem) == sizeof(SameSizeAsNGFragmentItem),
-              "NGFragmentItem should stay small");
+ASSERT_SIZE(NGFragmentItem, SameSizeAsNGFragmentItem);
+
 }  // namespace
 
 NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)

@@ -14,31 +14,31 @@ using content::BrowserContext;
 namespace extensions {
 
 // static
-Blacklist* BlacklistFactory::GetForBrowserContext(BrowserContext* context) {
-  return static_cast<Blacklist*>(
+Blocklist* BlocklistFactory::GetForBrowserContext(BrowserContext* context) {
+  return static_cast<Blocklist*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 // static
-BlacklistFactory* BlacklistFactory::GetInstance() {
-  return base::Singleton<BlacklistFactory>::get();
+BlocklistFactory* BlocklistFactory::GetInstance() {
+  return base::Singleton<BlocklistFactory>::get();
 }
 
-BlacklistFactory::BlacklistFactory()
+BlocklistFactory::BlocklistFactory()
     : BrowserContextKeyedServiceFactory(
-          "Blacklist",
+          "Blocklist",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(extensions::ExtensionPrefsFactory::GetInstance());
 }
 
-BlacklistFactory::~BlacklistFactory() {}
+BlocklistFactory::~BlocklistFactory() {}
 
-KeyedService* BlacklistFactory::BuildServiceInstanceFor(
+KeyedService* BlocklistFactory::BuildServiceInstanceFor(
     BrowserContext* context) const {
-  return new Blacklist(ExtensionPrefs::Get(context));
+  return new Blocklist(ExtensionPrefs::Get(context));
 }
 
-BrowserContext* BlacklistFactory::GetBrowserContextToUse(
+BrowserContext* BlocklistFactory::GetBrowserContextToUse(
     BrowserContext* context) const {
   // Redirected in incognito.
   return ExtensionsBrowserClient::Get()->GetOriginalContext(context);

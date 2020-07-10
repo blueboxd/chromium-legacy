@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/multi_user_window_manager_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -84,7 +83,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void ShowGaiaDialog(const AccountId& prefilled_account) override;
   void HideOobeDialog() override;
   void UpdateOobeDialogState(ash::OobeDialogState state) override;
-  bool HandleAccelerator(ash::LoginAcceleratorAction action) override;
   void HandleDisplayCaptivePortal() override;
   void UpdateAddUserButtonStatus() override;
   void RequestSystemInfoUpdate() override;

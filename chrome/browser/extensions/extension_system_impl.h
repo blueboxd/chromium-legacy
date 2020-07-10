@@ -137,7 +137,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     // manifests. This region is shared between all extensions.
     std::unique_ptr<SharedUserScriptManager> shared_user_script_manager_;
     std::unique_ptr<RuntimeData> runtime_data_;
-    // ExtensionService depends on StateStore, Blacklist and RuntimeData.
+    // ExtensionService depends on StateStore, Blocklist and RuntimeData.
     std::unique_ptr<ExtensionService> extension_service_;
     std::unique_ptr<ManagementPolicy> management_policy_;
     // extension_info_map_ needs to outlive process_manager_.

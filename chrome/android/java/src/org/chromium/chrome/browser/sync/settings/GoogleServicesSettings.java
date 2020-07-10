@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.password_manager.settings.PasswordUIView;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -34,6 +33,8 @@ import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
@@ -52,7 +53,7 @@ public class GoogleServicesSettings
     private static final String PREF_CONTEXTUAL_SEARCH = "contextual_search";
     private static final String PREF_AUTOFILL_ASSISTANT = "autofill_assistant";
 
-    private final PrefServiceBridge mPrefServiceBridge = PrefServiceBridge.getInstance();
+    private final PrefService mPrefService = UserPrefs.get(Profile.getLastUsedRegularProfile());
     private final PrivacyPreferencesManager mPrivacyPrefManager =
             PrivacyPreferencesManager.getInstance();
     private final ManagedPreferenceDelegate mManagedPreferenceDelegate =
@@ -173,22 +174,22 @@ public class GoogleServicesSettings
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         String key = preference.getKey();
         if (PREF_SEARCH_SUGGESTIONS.equals(key)) {
-            mPrefServiceBridge.setBoolean(Pref.SEARCH_SUGGEST_ENABLED, (boolean) newValue);
+            mPrefService.setBoolean(Pref.SEARCH_SUGGEST_ENABLED, (boolean) newValue);
         } else if (PREF_SAFE_BROWSING.equals(key)) {
             assert !mIsSecurityPreferenceRemoved;
-            mPrefServiceBridge.setBoolean(Pref.SAFE_BROWSING_ENABLED, (boolean) newValue);
+            mPrefService.setBoolean(Pref.SAFE_BROWSING_ENABLED, (boolean) newValue);
             // Toggling the safe browsing preference impacts the leak detection and the
             // safe browsing reporting preferences as well.
             PostTask.postTask(UiThreadTaskTraits.DEFAULT,
                     this::updateLeakDetectionAndSafeBrowsingReportingPreferences);
         } else if (PREF_PASSWORD_LEAK_DETECTION.equals(key)) {
             assert !mIsSecurityPreferenceRemoved;
-            mPrefServiceBridge.setBoolean(Pref.PASSWORD_LEAK_DETECTION_ENABLED, (boolean) newValue);
+            mPrefService.setBoolean(Pref.PASSWORD_LEAK_DETECTION_ENABLED, (boolean) newValue);
         } else if (PREF_SAFE_BROWSING_SCOUT_REPORTING.equals(key)) {
             assert !mIsSecurityPreferenceRemoved;
             SafeBrowsingBridge.setSafeBrowsingExtendedReportingEnabled((boolean) newValue);
         } else if (PREF_NAVIGATION_ERROR.equals(key)) {
-            mPrefServiceBridge.setBoolean(Pref.ALTERNATE_ERROR_PAGES_ENABLED, (boolean) newValue);
+            mPrefService.setBoolean(Pref.ALTERNATE_ERROR_PAGES_ENABLED, (boolean) newValue);
         } else if (PREF_USAGE_AND_CRASH_REPORTING.equals(key)) {
             UmaSessionStats.changeMetricsReportingConsent((boolean) newValue);
         } else if (PREF_URL_KEYED_ANONYMIZED_DATA.equals(key)) {
@@ -206,11 +207,10 @@ public class GoogleServicesSettings
     }
 
     private void updatePreferences() {
-        mSearchSuggestions.setChecked(mPrefServiceBridge.getBoolean(Pref.SEARCH_SUGGEST_ENABLED));
-        mNavigationError.setChecked(
-                mPrefServiceBridge.getBoolean(Pref.ALTERNATE_ERROR_PAGES_ENABLED));
+        mSearchSuggestions.setChecked(mPrefService.getBoolean(Pref.SEARCH_SUGGEST_ENABLED));
+        mNavigationError.setChecked(mPrefService.getBoolean(Pref.ALTERNATE_ERROR_PAGES_ENABLED));
         if (!mIsSecurityPreferenceRemoved) {
-            mSafeBrowsing.setChecked(mPrefServiceBridge.getBoolean(Pref.SAFE_BROWSING_ENABLED));
+            mSafeBrowsing.setChecked(mPrefService.getBoolean(Pref.SAFE_BROWSING_ENABLED));
             updateLeakDetectionAndSafeBrowsingReportingPreferences();
         }
 
@@ -237,14 +237,14 @@ public class GoogleServicesSettings
      */
     private void updateLeakDetectionAndSafeBrowsingReportingPreferences() {
         assert !mIsSecurityPreferenceRemoved;
-        boolean safe_browsing_enabled = mPrefServiceBridge.getBoolean(Pref.SAFE_BROWSING_ENABLED);
+        boolean safe_browsing_enabled = mPrefService.getBoolean(Pref.SAFE_BROWSING_ENABLED);
         mSafeBrowsingReporting.setEnabled(safe_browsing_enabled);
         mSafeBrowsingReporting.setChecked(safe_browsing_enabled
                 && SafeBrowsingBridge.isSafeBrowsingExtendedReportingEnabled());
 
         boolean has_token_for_leak_check = PasswordUIView.hasAccountForLeakCheckRequest();
         boolean leak_detection_enabled =
-                mPrefServiceBridge.getBoolean(Pref.PASSWORD_LEAK_DETECTION_ENABLED);
+                mPrefService.getBoolean(Pref.PASSWORD_LEAK_DETECTION_ENABLED);
         boolean toggle_enabled = safe_browsing_enabled && has_token_for_leak_check;
 
         mPasswordLeakDetection.setEnabled(toggle_enabled);
@@ -262,19 +262,19 @@ public class GoogleServicesSettings
         return preference -> {
             String key = preference.getKey();
             if (PREF_NAVIGATION_ERROR.equals(key)) {
-                return mPrefServiceBridge.isManagedPreference(Pref.ALTERNATE_ERROR_PAGES_ENABLED);
+                return mPrefService.isManagedPreference(Pref.ALTERNATE_ERROR_PAGES_ENABLED);
             }
             if (PREF_SEARCH_SUGGESTIONS.equals(key)) {
-                return mPrefServiceBridge.isManagedPreference(Pref.SEARCH_SUGGEST_ENABLED);
+                return mPrefService.isManagedPreference(Pref.SEARCH_SUGGEST_ENABLED);
             }
             if (PREF_SAFE_BROWSING_SCOUT_REPORTING.equals(key)) {
                 return SafeBrowsingBridge.isSafeBrowsingExtendedReportingManaged();
             }
             if (PREF_SAFE_BROWSING.equals(key)) {
-                return mPrefServiceBridge.isManagedPreference(Pref.SAFE_BROWSING_ENABLED);
+                return mPrefService.isManagedPreference(Pref.SAFE_BROWSING_ENABLED);
             }
             if (PREF_PASSWORD_LEAK_DETECTION.equals(key)) {
-                return mPrefServiceBridge.isManagedPreference(Pref.PASSWORD_LEAK_DETECTION_ENABLED);
+                return mPrefService.isManagedPreference(Pref.PASSWORD_LEAK_DETECTION_ENABLED);
             }
             if (PREF_USAGE_AND_CRASH_REPORTING.equals(key)) {
                 return PrivacyPreferencesManager.getInstance().isMetricsReportingManaged();

@@ -100,6 +100,7 @@
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -123,8 +124,7 @@ struct SameSizeAsLayoutBox : public LayoutBoxModelObject {
   Vector<scoped_refptr<const NGLayoutResult>, 1> layout_results;
 };
 
-static_assert(sizeof(LayoutBox) == sizeof(SameSizeAsLayoutBox),
-              "LayoutBox should stay small");
+ASSERT_SIZE(LayoutBox, SameSizeAsLayoutBox);
 
 namespace {
 
@@ -4325,9 +4325,12 @@ bool LayoutBox::LogicalHeightComputesAsNone(SizeType size_type) const {
     return true;
 
   if (logical_height.IsPercentOrCalc() &&
-      HasOverrideContainingBlockContentLogicalHeight() &&
-      OverrideContainingBlockContentLogicalHeight() == kIndefiniteSize)
-    return true;
+      HasOverrideContainingBlockContentLogicalHeight()) {
+    if (OverrideContainingBlockContentLogicalHeight() == kIndefiniteSize)
+      return true;
+    else if (!GetDocument().InQuirksMode())
+      return false;
+  }
 
   // CustomLayout items can resolve their percentages against an available or
   // percentage size override.

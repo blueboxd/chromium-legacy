@@ -240,7 +240,7 @@ ExtensionSyncData ExtensionSyncService::CreateSyncData(
   if (extension_prefs->GetExtensionBlocklistState(extension.id()) ==
       extensions::BLOCKLISTED_MALWARE) {
     enabled = false;
-    NOTREACHED() << "Blacklisted extensions should not be getting synced.";
+    NOTREACHED() << "Blocklisted extensions should not be getting synced.";
   }
 
   bool incognito_enabled = extensions::util::IsIncognitoEnabled(id, profile_);
@@ -371,7 +371,7 @@ void ExtensionSyncService::ApplySyncData(
   if (!!incoming_disable_reasons == extension_sync_data.enabled()) {
     // The enabled flag disagrees with the presence of disable reasons. This
     // must either come from an old (<M45) client which doesn't sync disable
-    // reasons, or the extension is blacklisted (which doesn't have a
+    // reasons, or the extension is blocklisted (which doesn't have a
     // corresponding disable reason).
     // Update |disable_reasons| based on the enabled flag.
     if (extension_sync_data.enabled())
@@ -642,7 +642,7 @@ std::vector<ExtensionSyncData> ExtensionSyncService::GetLocalSyncDataList(
   // Collect the local state.
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
   std::vector<ExtensionSyncData> data;
-  // Note: Maybe we should include blacklisted/blocked extensions here, i.e.
+  // Note: Maybe we should include blocklisted/blocked extensions here, i.e.
   // just call registry->GeneratedInstalledExtensionsSet().
   // It would be more consistent, but the danger is that the black/blocklist
   // hasn't been updated on all clients by the time sync has kicked in -

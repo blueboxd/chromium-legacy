@@ -71,6 +71,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -82,16 +83,9 @@ struct SameSizeAsLayoutBlockFlow : public LayoutBlock {
   Persistent<void*> persistent[1];
 };
 
-static_assert(sizeof(LayoutBlockFlow) == sizeof(SameSizeAsLayoutBlockFlow),
-              "LayoutBlockFlow should stay small");
+ASSERT_SIZE(LayoutBlockFlow, SameSizeAsLayoutBlockFlow);
 
-struct SameSizeAsMarginInfo {
-  uint16_t bitfields;
-  LayoutUnit margins[2];
-};
-
-static_assert(sizeof(LayoutBlockFlow::MarginValues) == sizeof(LayoutUnit[4]),
-              "MarginValues should stay small");
+ASSERT_SIZE(LayoutBlockFlow::MarginValues, LayoutUnit[4]);
 
 typedef HashMap<LayoutBlockFlow*, int> LayoutPassCountMap;
 static LayoutPassCountMap& GetLayoutPassCountMap() {
@@ -215,6 +209,13 @@ class MarginInfo {
   }
 };
 
+struct SameSizeAsMarginInfo {
+  uint16_t bitfields;
+  LayoutUnit margins[2];
+};
+
+ASSERT_SIZE(MarginInfo, SameSizeAsMarginInfo);
+
 // Some features, such as floats, margin collapsing and fragmentation, require
 // some knowledge about things that happened when laying out previous block
 // child siblings. Only looking at the object currently being laid out isn't
@@ -270,8 +271,6 @@ class BlockChildrenLayoutInfo {
 };
 
 LayoutBlockFlow::LayoutBlockFlow(ContainerNode* node) : LayoutBlock(node) {
-  static_assert(sizeof(MarginInfo) == sizeof(SameSizeAsMarginInfo),
-                "MarginInfo should stay small");
   SetChildrenInline(true);
 }
 

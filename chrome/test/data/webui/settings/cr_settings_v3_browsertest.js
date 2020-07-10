@@ -539,7 +539,6 @@ TEST_F('CrSettingsAdvancedPageV3Test', 'MAYBE_Load', function() {
  ['SearchEngines', 'search_engines_page_test.js'],
  ['SearchPage', 'search_page_test.js'],
  ['Search', 'search_settings_test.js'],
- ['SecurityKeysSubpage', 'security_keys_subpage_test.js'],
  ['SecureDns', 'secure_dns_test.js'],
  // Copied from P2 test: Disabled for flakiness, see https://crbug.com/1061249
  ['SiteData', 'site_data_test.js', 'DISABLED_All'],
@@ -590,6 +589,11 @@ GEN('#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(OS_CHROMEOS)');
 registerTest('MetricsReporting', 'metrics_reporting_tests.js');
 GEN('#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(OS_CHROMEOS)');
+
+// Flaky on Windows: https://crbug.com/1104105
+GEN('#if !defined(OS_WIN)');
+registerTest('SecurityKeysSubpage', 'security_keys_subpage_test.js');
+GEN('#endif  //!defined(OS_WIN)');
 
 function registerTest(testName, module, caseName) {
   const className = `CrSettings${testName}V3Test`;

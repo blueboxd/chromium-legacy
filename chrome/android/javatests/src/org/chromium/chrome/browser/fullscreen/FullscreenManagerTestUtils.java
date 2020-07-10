@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Utility methods for testing the {@link ChromeFullscreenManager}.
+ * Utility methods for testing the {@link BrowserControlsManager}.
  */
 public class FullscreenManagerTestUtils {
     /**
@@ -40,7 +40,7 @@ public class FullscreenManagerTestUtils {
      */
     public static void scrollBrowserControls(ChromeActivityTestRule testRule, boolean show) {
         BrowserControlsStateProvider browserControlsStateProvider =
-                testRule.getActivity().getFullscreenManager();
+                testRule.getActivity().getBrowserControlsManager();
         int browserControlsHeight = browserControlsStateProvider.getTopControlsHeight();
 
         waitForPageToBeScrollable(testRule.getActivity().getActivityTab());
@@ -73,7 +73,7 @@ public class FullscreenManagerTestUtils {
     public static void waitForBrowserControlsPosition(
             ChromeActivityTestRule testRule, int position) {
         final BrowserControlsStateProvider browserControlsStateProvider =
-                testRule.getActivity().getFullscreenManager();
+                testRule.getActivity().getBrowserControlsManager();
         CriteriaHelper.pollUiThread(() -> {
             Criteria.checkThat(
                     browserControlsStateProvider.getTopControlOffset(), Matchers.is(position));
@@ -108,7 +108,7 @@ public class FullscreenManagerTestUtils {
 
         final CallbackHelper contentMovedCallback = new CallbackHelper();
         final BrowserControlsStateProvider browserControlsStateProvider =
-                testRule.getActivity().getFullscreenManager();
+                testRule.getActivity().getBrowserControlsManager();
         final float initialVisibleContentOffset =
                 browserControlsStateProvider.getTopVisibleContentOffset();
 

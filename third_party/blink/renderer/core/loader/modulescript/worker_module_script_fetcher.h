@@ -6,6 +6,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MODULESCRIPT_WORKER_MODULE_SCRIPT_FETCHER_H_
 
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/worker_main_script_loader.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/worker_main_script_loader_client.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -18,7 +21,8 @@ class WorkerGlobalScope;
 // https://html.spec.whatwg.org/C/#worker-processing-model
 class CORE_EXPORT WorkerModuleScriptFetcher final
     : public GarbageCollected<WorkerModuleScriptFetcher>,
-      public ModuleScriptFetcher {
+      public ModuleScriptFetcher,
+      public WorkerMainScriptLoaderClient {
   USING_GARBAGE_COLLECTED_MIXIN(WorkerModuleScriptFetcher);
 
  public:
@@ -31,6 +35,13 @@ class CORE_EXPORT WorkerModuleScriptFetcher final
              ModuleGraphLevel,
              ModuleScriptFetcher::Client*) override;
 
+  // Implements WorkerMainScriptLoaderClient, and these will be called only when
+  // features::kLoadMainScriptForPlzDedicatedWorkerByParams is enabled.
+  void DidReceiveData(base::span<const char> span) override;
+  void OnStartLoadingBody(const ResourceResponse& resource_response) override;
+  void OnFinishedLoadingWorkerMainScript() override;
+  void OnFailedLoadingWorkerMainScript() override;
+
   void Trace(Visitor*) const override;
 
  private:
@@ -38,7 +49,20 @@ class CORE_EXPORT WorkerModuleScriptFetcher final
   void NotifyFinished(Resource*) override;
   String DebugName() const override { return "WorkerModuleScriptFetcher"; }
 
+  void NotifyClient(const KURL& request_url,
+                    ModuleScriptCreationParams::ModuleType module_type,
+                    const network::mojom::CredentialsMode credentials_mode,
+                    const ParkableString& source_text,
+                    const ResourceResponse& response,
+                    SingleCachedMetadataHandler* cache_handler);
+
   const Member<WorkerGlobalScope> global_scope_;
+
+  // These are used only when
+  // features::kLoadMainScriptForPlzDedicatedWorkerByParams is enabled.
+  Member<WorkerMainScriptLoader> worker_main_script_loader_;
+  std::unique_ptr<TextResourceDecoder> decoder_;
+  StringBuilder source_text_;
 
   Member<ResourceFetcher> fetch_client_settings_object_fetcher_;
   Member<Client> client_;

@@ -16,10 +16,13 @@ import android.view.View;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsSizer;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsVisibilityManager;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
@@ -71,7 +74,22 @@ public class ChromeActivityCommonsModule {
     }
 
     @Provides
-    public ChromeFullscreenManager provideChromeFullscreenManager() {
+    public BrowserControlsManager provideBrowserControlsManager() {
+        return mActivity.getBrowserControlsManager();
+    }
+
+    @Provides
+    public BrowserControlsVisibilityManager provideBrowserControlsVisibilityManager() {
+        return mActivity.getBrowserControlsManager();
+    }
+
+    @Provides
+    public BrowserControlsSizer provideBrowserControlsSizer() {
+        return mActivity.getBrowserControlsManager();
+    }
+
+    @Provides
+    public FullscreenManager provideFullscreenManager() {
         return mActivity.getFullscreenManager();
     }
 

@@ -128,7 +128,8 @@ static jlong JNI_CompositorNavigationGlow_Init(
     const jfloat dip_scale,
     const JavaParamRef<jobject>& jweb_contents) {
   auto* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
-  DCHECK(web_contents);
+  if (web_contents == nullptr)
+    return 0;
   return reinterpret_cast<intptr_t>(
       new NavigationGlow(dip_scale, web_contents));
 }

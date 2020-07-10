@@ -24,7 +24,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ActivityState;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.R;
@@ -246,7 +245,7 @@ public class SwitchToTabTest {
     @Test
     @MediumTest
     @EnableFeatures("OmniboxTabSwitchSuggestions")
-    public void testSwitchToTabInSearchActivity() throws InterruptedException {
+    public void testSwitchToTabInSearchActiviy() throws InterruptedException {
         mTestServer = EmbeddedTestServer.createAndStartHTTPSServer(
                 InstrumentationRegistry.getInstrumentation().getContext(),
                 ServerCertificate.CERT_OK);
@@ -258,13 +257,6 @@ public class SwitchToTabTest {
         mActivityTestRule.loadUrlInNewTab(testHttpsUrl3);
 
         final SearchActivity searchActivity = startSearchActivity();
-        CriteriaHelper.pollUiThread(() -> {
-            Tab tab = mActivityTestRule.getActivity().getActivityTab();
-            Criteria.checkThat(tab, Matchers.notNullValue());
-            // Make sure chrome fully in background.
-            Criteria.checkThat(tab.getWindowAndroid().getActivityState(),
-                    Matchers.isOneOf(ActivityState.STOPPED, ActivityState.DESTROYED));
-        });
 
         final LocationBarLayout locationBarLayout =
                 (LocationBarLayout) searchActivity.findViewById(R.id.search_location_bar);
@@ -284,11 +276,11 @@ public class SwitchToTabTest {
 
         CriteriaHelper.pollUiThread(() -> {
             Tab tab = mActivityTestRule.getActivity().getActivityTab();
-            Criteria.checkThat(tab, Matchers.notNullValue());
-            Criteria.checkThat(tab.getUrlString(), Matchers.is(testHttpsUrl1));
-            // Make sure tab is loaded and in foreground.
-            Criteria.checkThat(
-                    tab.getWindowAndroid().getActivityState(), Matchers.is(ActivityState.RESUMED));
+            if (tab == null) return false;
+            // Make sure tab is in either upload page or result page. cannot only verify one of
+            // them since on fast device tab jump to result page really quick but on slow device
+            // may stay on upload page for a really long time.
+            return tab.getUrlString().equals(testHttpsUrl1);
         });
     }
 }

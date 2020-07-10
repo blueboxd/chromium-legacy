@@ -30,17 +30,17 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/paint/svg_inline_text_box_painter.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
-struct ExpectedSVGInlineTextBoxSize : public InlineTextBox {
+struct SameSizeAsSVGInlineTextBox : public InlineTextBox {
   LayoutUnit float1;
   uint32_t bitfields : 1;
   Vector<SVGTextFragment> vector;
 };
 
-static_assert(sizeof(SVGInlineTextBox) == sizeof(ExpectedSVGInlineTextBoxSize),
-              "SVGInlineTextBox has an unexpected size");
+ASSERT_SIZE(SVGInlineTextBox, SameSizeAsSVGInlineTextBox);
 
 SVGInlineTextBox::SVGInlineTextBox(LineLayoutItem item,
                                    int start,

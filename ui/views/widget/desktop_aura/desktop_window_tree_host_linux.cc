@@ -272,8 +272,9 @@ const ui::X11Extension* DesktopWindowTreeHostLinux::GetX11Extension() const {
 }
 
 #if BUILDFLAG(USE_ATK)
-bool DesktopWindowTreeHostLinux::OnAtkKeyEvent(AtkKeyEventStruct* atk_event) {
-  if (!IsActive() && !HasCapture())
+bool DesktopWindowTreeHostLinux::OnAtkKeyEvent(AtkKeyEventStruct* atk_event,
+                                               bool transient) {
+  if (!transient && !IsActive() && !HasCapture())
     return false;
   return ui::AtkUtilAuraLinux::HandleAtkKeyEvent(atk_event) ==
          ui::DiscardAtkKeyEvent::Discard;

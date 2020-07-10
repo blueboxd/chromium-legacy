@@ -16,8 +16,8 @@ PASS Adding non-constructed stylesheet to AdoptedStyleSheets is not allowed when
 PASS Adding non-constructed stylesheet to AdoptedStyleSheets is not allowed when the owner document of the stylesheet and the AdoptedStyleSheets are in different document trees
 PASS CSSStyleSheet.replaceSync replaces stylesheet text synchronously
 PASS CSSStyleSheet.replaceSync correctly updates the style of its adopters synchronously
-FAIL Adopted sheets are ordered after non-adopted sheets in the shadow root assert_equals: with the adopted sheet disabled, the non-adopted style should take effect expected "rgb(255, 255, 255)" but got "rgb(255, 0, 0)"
-FAIL Adopted sheets are ordered after non-adopted sheets in the document assert_equals: with the adopted sheet disabled, the non-adopted style should take effect expected "rgb(255, 255, 255)" but got "rgb(255, 0, 0)"
+PASS Adopted sheets are ordered after non-adopted sheets in the shadow root
+PASS Adopted sheets are ordered after non-adopted sheets in the document
 PASS Inserting an @import rule through insertRule on a constructed stylesheet throws an exception
 PASS CSSStyleSheet.replaceSync should not trigger any loads from @import rules
 PASS CSSStyleSheet.replace allows, but ignores, import rule inside

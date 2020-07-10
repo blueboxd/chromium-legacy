@@ -138,11 +138,6 @@ TimeDelta ProcessMetrics::GetCumulativeCPUUsage() {
   return TimeDelta::FromMicroseconds(TimeValToMicroseconds(task_timeval));
 }
 
-bool ProcessMetrics::GetCumulativeCPUUsagePerThread(CPUUsagePerThread&) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 int ProcessMetrics::GetPackageIdleWakeupsPerSecond() {
   mach_port_t task = TaskForPid(process_);
   task_power_info power_info_data;

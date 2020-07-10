@@ -59,6 +59,7 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -760,6 +761,22 @@ Profile* ProfileManager::GetProfileByPath(const base::FilePath& path) const {
   ProfileInfo* profile_info = GetProfileInfoByPath(path);
   return (profile_info && profile_info->created) ? profile_info->profile.get()
                                                  : nullptr;
+}
+
+// static
+Profile* ProfileManager::GetProfileFromProfileKey(ProfileKey* profile_key) {
+  Profile* profile = g_browser_process->profile_manager()->GetProfileByPath(
+      profile_key->GetPath());
+  if (profile->GetProfileKey() == profile_key)
+    return profile;
+
+  for (Profile* otr : profile->GetAllOffTheRecordProfiles()) {
+    if (otr->GetProfileKey() == profile_key)
+      return otr;
+  }
+
+  NOTREACHED() << "An invalid profile key is passed.";
+  return nullptr;
 }
 
 // static

@@ -115,7 +115,7 @@ public class StartSurfaceCoordinator implements StartSurface {
                 mSurfaceMode == SurfaceMode.SINGLE_PANE ? this::initializeSecondaryTasksSurface
                                                         : null,
                 mSurfaceMode, mActivity.getNightModeStateProvider(),
-                mActivity.getFullscreenManager(), this::isActivityFinishingOrDestroyed,
+                mActivity.getBrowserControlsManager(), this::isActivityFinishingOrDestroyed,
                 excludeMVTiles,
                 StartSurfaceConfiguration.START_SURFACE_SHOW_STACK_TAB_SWITCHER.getValue());
 

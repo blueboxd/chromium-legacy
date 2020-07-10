@@ -61,6 +61,7 @@
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params_mojom_traits.h"
 #include "content/common/navigation_params_utils.h"
+#include "content/common/net/record_load_histograms.h"
 #include "content/common/page_messages.h"
 #include "content/common/render_accessibility.mojom.h"
 #include "content/common/renderer_host.mojom.h"
@@ -168,6 +169,7 @@
 #include "third_party/blink/public/mojom/input/focus_type.mojom.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-shared.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom.h"
 #include "third_party/blink/public/mojom/referrer.mojom.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
@@ -2974,6 +2976,53 @@ void RenderFrameImpl::AddAutoplayFlags(const url::Origin& origin,
   }
 }
 
+// blink::mojom::ResourceLoadInfoNotifier implementation
+// --------------------------
+
+void RenderFrameImpl::NotifyResourceRedirectReceived(
+    const net::RedirectInfo& redirect_info,
+    network::mojom::URLResponseHeadPtr redirect_response) {}
+
+void RenderFrameImpl::NotifyResourceResponseReceived(
+    blink::mojom::ResourceLoadInfoPtr resource_load_info,
+    network::mojom::URLResponseHeadPtr response_head,
+    int32_t previews_state) {
+  DCHECK_NE(resource_load_info->request_destination,
+            network::mojom::RequestDestination::kDocument);
+  if (response_head->network_accessed) {
+    UMA_HISTOGRAM_ENUMERATION("Net.ConnectionInfo.SubResource",
+                              response_head->connection_info,
+                              net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS);
+  }
+}
+
+void RenderFrameImpl::NotifyResourceTransferSizeUpdated(
+    int32_t request_id,
+    int32_t transfer_size_diff) {
+  DidReceiveTransferSizeUpdate(request_id, transfer_size_diff);
+}
+
+void RenderFrameImpl::NotifyResourceLoadCompleted(
+    blink::mojom::ResourceLoadInfoPtr resource_load_info,
+    const network::URLLoaderCompletionStatus& status) {
+  RecordLoadHistograms(url::Origin::Create(resource_load_info->final_url),
+                       resource_load_info->request_destination,
+                       status.error_code);
+  DidCompleteResponse(resource_load_info->request_id, status);
+  GetFrameHost()->ResourceLoadComplete(std::move(resource_load_info));
+}
+
+void RenderFrameImpl::NotifyResourceLoadCanceled(int32_t request_id) {
+  DidCancelResponse(request_id);
+}
+
+void RenderFrameImpl::Clone(
+    mojo::PendingReceiver<blink::mojom::ResourceLoadInfoNotifier>
+        pending_resource_load_info_notifier) {
+  resource_load_info_notifier_receivers_.Add(
+      this, std::move(pending_resource_load_info_notifier));
+}
+
 // mojom::Frame implementation -------------------------------------------------
 
 void RenderFrameImpl::GetInterfaceProvider(
@@ -3703,8 +3752,9 @@ RenderFrameImpl::CreateWorkerFetchContext() {
       watcher_receiver = watcher.InitWithNewPipeAndPassReceiver();
   render_view()->RegisterRendererPreferenceWatcher(std::move(watcher));
 
-  // |pending_subresource_loader_updater| is not used for non-PlzDedicatedWorker
-  // and worklets.
+  // |pending_subresource_loader_updater| and
+  // |pending_resource_load_info_notifier| are not used for
+  // non-PlzDedicatedWorker and worklets.
   scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
       WebWorkerFetchContextImpl::Create(
           provider->context(), render_view_->renderer_preferences(),
@@ -3713,7 +3763,8 @@ RenderFrameImpl::CreateWorkerFetchContext() {
           /*pending_subresource_loader_updater=*/mojo::NullReceiver(),
           RenderThreadImpl::current()
               ->resource_dispatcher()
-              ->cors_exempt_header_list());
+              ->cors_exempt_header_list(),
+          /*pending_resource_load_info_notifier=*/mojo::NullRemote());
 
   worker_fetch_context->set_ancestor_frame_id(routing_id_);
   worker_fetch_context->set_frame_request_blocker(frame_request_blocker_);
@@ -3738,10 +3789,17 @@ RenderFrameImpl::CreateWorkerFetchContextForPlzDedicatedWorker(
       watcher_receiver = watcher.InitWithNewPipeAndPassReceiver();
   render_view()->RegisterRendererPreferenceWatcher(std::move(watcher));
 
+  mojo::PendingRemote<blink::mojom::ResourceLoadInfoNotifier>
+      pending_resource_load_info_notifier;
+  resource_load_info_notifier_receivers_.Add(
+      this,
+      pending_resource_load_info_notifier.InitWithNewPipeAndPassReceiver());
+
   scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
       static_cast<DedicatedWorkerHostFactoryClient*>(factory_client)
-          ->CreateWorkerFetchContext(render_view_->renderer_preferences(),
-                                     std::move(watcher_receiver));
+          ->CreateWorkerFetchContext(
+              render_view_->renderer_preferences(), std::move(watcher_receiver),
+              std::move(pending_resource_load_info_notifier));
 
   worker_fetch_context->set_ancestor_frame_id(routing_id_);
   worker_fetch_context->set_frame_request_blocker(frame_request_blocker_);

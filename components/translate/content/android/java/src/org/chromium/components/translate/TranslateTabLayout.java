@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 
 import com.google.android.material.tabs.TabLayout;
 
+import org.chromium.base.StrictModeContext;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
 
 /**
@@ -74,9 +75,12 @@ public class TranslateTabLayout extends TabLayout {
      * @param tabTitle Title string of the new tab.
      */
     public void addTabWithTitle(CharSequence tabTitle) {
-        TranslateTabContent tabContent =
-                (TranslateTabContent) LayoutInflater.from(getContext())
-                        .inflate(R.layout.infobar_translate_tab_content, this, false);
+        TranslateTabContent tabContent;
+        // LayoutInflater may trigger accessing the disk.
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            tabContent = (TranslateTabContent) LayoutInflater.from(getContext())
+                                 .inflate(R.layout.infobar_translate_tab_content, this, false);
+        }
         // Set text color using tabLayout's ColorStateList.  So that the title text will change
         // color when selected and unselected.
         tabContent.setTextColor(getTabTextColors());

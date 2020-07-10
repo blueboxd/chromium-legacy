@@ -81,7 +81,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.gesturenav.NavigationSheet;
 import org.chromium.chrome.browser.gesturenav.TabbedSheetDelegate;
 import org.chromium.chrome.browser.history.HistoryManagerUtils;
@@ -2297,11 +2297,11 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     }
 
     @Override
-    protected ChromeFullscreenManager createFullscreenManager() {
-        ChromeFullscreenManager fullscreenManager = super.createFullscreenManager();
+    protected BrowserControlsManager createBrowserControlsManager() {
+        BrowserControlsManager manager = super.createBrowserControlsManager();
         getAppBrowserControlsVisibilityDelegate().addDelegate(
-                fullscreenManager.getBrowserVisibilityDelegate());
-        return fullscreenManager;
+                manager.getBrowserVisibilityDelegate());
+        return manager;
     }
 
     @Override

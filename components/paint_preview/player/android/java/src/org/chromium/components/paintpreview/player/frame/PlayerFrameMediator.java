@@ -23,6 +23,8 @@ import org.chromium.ui.modelutil.PropertyModel;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 /**
  * Handles the business logic for the player frame component. Concretely, this class is responsible
  * for:
@@ -91,9 +93,13 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     private boolean mIsOverscrolling = false;
     private float mOverscrollAmount = 0f;
 
+    /** Called when the user interacts with this frame. */
+    private Runnable mUserInteractionCallback;
+
     PlayerFrameMediator(PropertyModel model, PlayerCompositorDelegate compositorDelegate,
-            OverScroller scroller, UnguessableToken frameGuid, int contentWidth, int contentHeight,
-            int initialScrollX, int initialScrollY) {
+            OverScroller scroller, @Nullable Runnable userInteractionCallback,
+            UnguessableToken frameGuid, int contentWidth, int contentHeight, int initialScrollX,
+            int initialScrollY) {
         mModel = model;
         mModel.set(PlayerFrameProperties.SCALE_MATRIX, mBitmapScaleMatrix);
 
@@ -104,6 +110,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
         mScrollerHandler = new Handler();
         mViewport.offset(initialScrollX, initialScrollY);
         mViewport.setScale(0f);
+        mUserInteractionCallback = userInteractionCallback;
     }
 
     /**
@@ -428,6 +435,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
         }
 
         moveViewport(validDistanceX, validDistanceY, false);
+        if (mUserInteractionCallback != null) mUserInteractionCallback.run();
         return true;
     }
 
@@ -517,7 +525,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
             mBitmapScaleMatrix.setValues(bitmapScaleMatrixValues);
         }
         setBitmapScaleMatrixInternal(mBitmapScaleMatrix, mUncommittedScaleFactor);
-
+        if (mUserInteractionCallback != null) mUserInteractionCallback.run();
         return true;
     }
 

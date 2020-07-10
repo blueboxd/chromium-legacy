@@ -1,6 +1,7 @@
 Tests V8 code cache for javascript resources
 
 --- Trace events related to code caches ------
+Load [A] 1st time. Produce timestamp. -->
 v8.compile Properties:
 {
     data : {
@@ -15,6 +16,7 @@ v8.compile Properties:
     type : "v8.compile"
 }
 Text details for v8.compile: v8-cache-script.cgi:1
+Load [A] 2nd time. Produce code cache. -->
 v8.compile Properties:
 {
     data : {
@@ -44,6 +46,7 @@ v8.compile Properties:
     type : "v8.compile"
 }
 Text details for v8.compile: v8-cache-script.cgi:1
+Load [A] 3rd time. Consume code cache. -->
 v8.compile Properties:
 {
     data : {
@@ -61,6 +64,7 @@ v8.compile Properties:
     type : "v8.compile"
 }
 Text details for v8.compile: v8-cache-script.cgi:1
+Load [B]. Should not use the cached code. -->
 v8.compile Properties:
 {
     data : {
@@ -75,6 +79,7 @@ v8.compile Properties:
     type : "v8.compile"
 }
 Text details for v8.compile: v8-cache-script.cgi:1
+Load [A] again from MemoryCache. Should use the cached code. -->
 v8.compile Properties:
 {
     data : {
@@ -92,6 +97,8 @@ v8.compile Properties:
     type : "v8.compile"
 }
 Text details for v8.compile: v8-cache-script.cgi:1
+Clear [A] from MemoryCache. -->
+Load [A] from Disk Cache. -->
 v8.compile Properties:
 {
     data : {

@@ -23,6 +23,9 @@ void QuietNotificationPermissionUiState::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kQuietNotificationPermissionPromoWasShown,
       false /* default_value */);
+  registry->RegisterBooleanPref(
+      prefs::kHadThreeConsecutiveNotificationPermissionDenies,
+      false /* default_value */);
 }
 
 // static

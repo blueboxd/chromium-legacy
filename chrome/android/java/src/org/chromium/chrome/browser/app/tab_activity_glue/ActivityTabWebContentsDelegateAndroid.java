@@ -29,7 +29,6 @@ import org.chromium.chrome.browser.SwipeRefreshHandler;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.document.ChromeIntentUtil;
 import org.chromium.chrome.browser.document.DocumentWebContentsDelegate;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.media.PictureInPicture;
@@ -87,7 +86,13 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
         return mActivity != null ? mActivity.getTabCreator(mTab.isIncognito()) : null;
     }
 
-    private ChromeFullscreenManager getFullscreenManager() {
+    private BrowserControlsStateProvider getBrowserControlsStateProvider() {
+        return mActivity != null && !mActivity.isActivityFinishingOrDestroyed()
+                ? mActivity.getBrowserControlsManager()
+                : null;
+    }
+
+    private FullscreenManager getFullscreenManager() {
         return mActivity != null && !mActivity.isActivityFinishingOrDestroyed()
                 ? mActivity.getFullscreenManager()
                 : null;
@@ -307,31 +312,31 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
 
     @Override
     public int getTopControlsHeight() {
-        BrowserControlsStateProvider provider = getFullscreenManager();
+        BrowserControlsStateProvider provider = getBrowserControlsStateProvider();
         return provider != null ? provider.getTopControlsHeight() : 0;
     }
 
     @Override
     public int getTopControlsMinHeight() {
-        BrowserControlsStateProvider provider = getFullscreenManager();
+        BrowserControlsStateProvider provider = getBrowserControlsStateProvider();
         return provider != null ? provider.getTopControlsMinHeight() : 0;
     }
 
     @Override
     public int getBottomControlsHeight() {
-        BrowserControlsStateProvider provider = getFullscreenManager();
+        BrowserControlsStateProvider provider = getBrowserControlsStateProvider();
         return provider != null ? provider.getBottomControlsHeight() : 0;
     }
 
     @Override
     public int getBottomControlsMinHeight() {
-        BrowserControlsStateProvider provider = getFullscreenManager();
+        BrowserControlsStateProvider provider = getBrowserControlsStateProvider();
         return provider != null ? provider.getBottomControlsMinHeight() : 0;
     }
 
     @Override
     public boolean shouldAnimateBrowserControlsHeightChanges() {
-        BrowserControlsStateProvider provider = getFullscreenManager();
+        BrowserControlsStateProvider provider = getBrowserControlsStateProvider();
         return provider != null && provider.shouldAnimateBrowserControlsHeightChanges();
     }
 

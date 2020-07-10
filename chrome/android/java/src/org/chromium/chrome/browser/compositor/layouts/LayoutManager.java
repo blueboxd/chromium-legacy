@@ -35,7 +35,7 @@ import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.ToolbarSceneLayer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
@@ -391,7 +391,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             DynamicResourceLoader dynamicResourceLoader) {
         LayoutRenderHost renderHost = mHost.getLayoutRenderHost();
         mToolbarOverlay = new ToolbarSceneLayer(mContext, this, renderHost, controlContainer,
-                () -> mCurrentTab, getFullscreenManager(),
+                () -> mCurrentTab, getBrowserControlsManager(),
                 () -> getActiveLayout() != null
                         ? getActiveLayout().getViewportMode()
                         : Layout.ViewportMode.USE_PREVIOUS_BROWSER_CONTROLS_STATE);
@@ -514,23 +514,24 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     @Override
     public SceneLayer getUpdatedActiveSceneLayer(LayerTitleCache layerTitleCache,
             TabContentManager tabContentManager, ResourceManager resourceManager,
-            ChromeFullscreenManager fullscreenManager) {
-        updateControlsHidingState(fullscreenManager);
+            BrowserControlsManager browserControlsManager) {
+        updateControlsHidingState(browserControlsManager);
         getViewportPixel(mCachedVisibleViewport);
         mHost.getWindowViewport(mCachedWindowViewport);
         return mActiveLayout.getUpdatedSceneLayer(mCachedWindowViewport, mCachedVisibleViewport,
-                layerTitleCache, tabContentManager, resourceManager, fullscreenManager);
+                layerTitleCache, tabContentManager, resourceManager, browserControlsManager);
     }
 
-    private void updateControlsHidingState(ChromeFullscreenManager fullscreenManager) {
-        if (fullscreenManager == null) {
+    private void updateControlsHidingState(
+            BrowserControlsVisibilityManager controlsVisibilityManager) {
+        if (controlsVisibilityManager == null) {
             return;
         }
         if (mActiveLayout.forceHideBrowserControlsAndroidView()) {
-            mControlsHidingToken =
-                    fullscreenManager.hideAndroidControlsAndClearOldToken(mControlsHidingToken);
+            mControlsHidingToken = controlsVisibilityManager.hideAndroidControlsAndClearOldToken(
+                    mControlsHidingToken);
         } else {
-            fullscreenManager.releaseAndroidControlsHidingToken(mControlsHidingToken);
+            controlsVisibilityManager.releaseAndroidControlsHidingToken(mControlsHidingToken);
         }
     }
 
@@ -764,8 +765,8 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     }
 
     @Override
-    public ChromeFullscreenManager getFullscreenManager() {
-        return mHost != null ? mHost.getFullscreenManager() : null;
+    public BrowserControlsManager getBrowserControlsManager() {
+        return mHost != null ? mHost.getBrowserControlsManager() : null;
     }
 
     @Override
@@ -832,7 +833,8 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             mActiveLayout = layout;
         }
 
-        BrowserControlsVisibilityManager controlsVisibilityManager = mHost.getFullscreenManager();
+        BrowserControlsVisibilityManager controlsVisibilityManager =
+                mHost.getBrowserControlsManager();
         if (controlsVisibilityManager != null) {
             mPreviousLayoutShowingToolbar =
                     !BrowserControlsUtils.areBrowserControlsOffScreen(controlsVisibilityManager);

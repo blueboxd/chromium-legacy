@@ -37,13 +37,13 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/timer/elapsed_timer.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/network/public/mojom/trust_tokens.mojom-blink.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
+#include "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions/permission.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink-forward.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/media_value_change.h"
@@ -61,7 +61,6 @@
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
 #include "third_party/blink/renderer/core/dom/user_action_element_set.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
-#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/loader/font_preload_manager.h"
@@ -69,7 +68,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap_observer_list.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
-#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -110,6 +108,7 @@ class Comment;
 class CompositorAnimationTimeline;
 class ComputedAccessibleNode;
 class DisplayLockDocumentState;
+class DocumentData;
 class ElementIntersectionObserverData;
 class ComputedStyle;
 class ConsoleMessage;
@@ -493,8 +492,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsSrcdocDocument() const { return is_srcdoc_document_; }
   bool IsMobileDocument() const { return is_mobile_document_; }
 
-  StyleResolver* GetStyleResolver() const;
-  StyleResolver& EnsureStyleResolver() const;
+  StyleResolver& GetStyleResolver() const;
 
   bool IsViewSource() const { return is_view_source_; }
   void SetIsViewSource(bool);
@@ -1755,9 +1753,6 @@ class CORE_EXPORT Document : public ContainerNode,
   const AtomicString& BodyAttributeValue(const QualifiedName&) const;
   void SetBodyAttribute(const QualifiedName&, const AtomicString&);
 
-  const ParsedFeaturePolicy GetOwnerContainerPolicy() const;
-  const FeaturePolicy* GetParentFeaturePolicy() const;
-
   // Returns true if use of |method_name| for markup insertion is allowed by
   // feature policy; otherwise returns false and throws a DOM exception.
   bool AllowedToUseDynamicMarkUpInsertion(const char* method_name,
@@ -2163,32 +2158,27 @@ class CORE_EXPORT Document : public ContainerNode,
   // call or potential user prompt.
   bool expressly_denied_storage_access_ = false;
 
-  // Mojo remote used to determine if the document has permission to access
-  // storage or not.
-  HeapMojoRemote<mojom::blink::PermissionService> permission_service_;
-
-  // Mojo remote used to answer API calls asking whether the user has trust
-  // tokens (https://github.com/wicg/trust-token-api). The other endpoint
-  // is in the network service, which may crash and restart. To handle this:
-  //   1. |pending_has_trust_tokens_resolvers_| keeps track of promises
-  // depending on |has_trust_tokens_answerer_|'s answers;
-  //   2. |HasTrustTokensAnswererConnectionError| handles connection errors by
-  // rejecting all pending promises and clearing the pending set.
-  HeapMojoRemote<network::mojom::blink::HasTrustTokensAnswerer>
-      has_trust_tokens_answerer_;
-
-  // In order to be able to answer promises when the Mojo remote disconnects,
-  // maintain all pending promises here, deleting them on successful completion
-  // or on connection error, whichever comes first.
-  HeapHashSet<Member<ScriptPromiseResolver>>
-      pending_has_trust_tokens_resolvers_;
-
   FontPreloadManager font_preload_manager_;
 
   int async_script_count_ = 0;
   bool first_paint_recorded_ = false;
 
   WeakMember<Node> find_in_page_active_match_node_;
+
+  Member<DocumentData> data_;
+
+  // If you want to add new data members to blink::Document, please reconsider
+  // if the members really should be in blink::Document.  document.h is a very
+  // popular header, and the size of document.h affects build time
+  // significantly.
+  //
+  // If a new data member doesn't make sense in inactive documents, such as
+  // documents created by DOMImplementation/DOMParser, the member should not be
+  // in blink::Document.  It should be in a per-Frame class like
+  // blink::LocalDOMWindow and blink::LocalFrame.
+  //
+  // If you need to add new data members to blink::Document and it requires new
+  // #includes, add them to blink::DocumentData instead.
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

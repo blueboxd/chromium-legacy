@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-shared.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info_notifier.mojom-shared.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-shared.h"
 #include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-shared.h"
 #include "third_party/blink/public/platform/code_cache_loader.h"
@@ -161,6 +162,15 @@ class WebWorkerFetchContext : public base::RefCounted<WebWorkerFetchContext> {
   // This flag is set to disallow all network accesses in the context. Used for
   // offline capability detection in service workers.
   virtual void SetIsOfflineMode(bool is_offline_mode) = 0;
+
+  // Clones a valid notifier held by this context which is used to notify
+  // loading status only when
+  // IsLoadMainScriptForPlzDedicatedWorkerByParamsEnabled() is true.
+  virtual CrossVariantMojoRemote<mojom::ResourceLoadInfoNotifierInterfaceBase>
+  CloneResourceLoadInfoNotifier() {
+    return CrossVariantMojoRemote<mojom::ResourceLoadInfoNotifierInterfaceBase>(
+        mojo::NullRemote());
+  }
 };
 
 }  // namespace blink

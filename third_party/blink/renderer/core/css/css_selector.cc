@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -54,8 +55,7 @@ struct SameSizeAsCSSSelector {
   void* pointers[1];
 };
 
-static_assert(sizeof(CSSSelector) == sizeof(SameSizeAsCSSSelector),
-              "CSSSelector should stay small");
+ASSERT_SIZE(CSSSelector, SameSizeAsCSSSelector);
 
 void CSSSelector::CreateRareData() {
   DCHECK_NE(Match(), kTag);

@@ -35,7 +35,12 @@ class COMPONENT_EXPORT(EXTENSIONS) X11ExtensionDelegate {
   virtual void GetWindowMask(const gfx::Size& size, SkPath* window_mask) = 0;
 
 #if BUILDFLAG(USE_ATK)
-  virtual bool OnAtkKeyEvent(AtkKeyEventStruct* atk_key_event) = 0;
+  // Notifies an ATK key event to be processed. The transient parameter will be
+  // true if the event target is a transient window (e.g. a modal dialog)
+  // "hanging" from our window. Return true to stop propagation of the original
+  // key event.
+  virtual bool OnAtkKeyEvent(AtkKeyEventStruct* atk_key_event,
+                             bool transient) = 0;
 #endif
 
   // Returns true if this window should be in a forced override-redirect state

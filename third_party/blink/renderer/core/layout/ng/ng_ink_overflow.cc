@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
 #include "third_party/blink/renderer/core/layout/line/line_orientation_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -20,8 +21,7 @@ struct SameSizeAsNGInkOverflow {
 #endif
 };
 
-static_assert(sizeof(NGInkOverflow) == sizeof(SameSizeAsNGInkOverflow),
-              "NGInkOverflow should stay small");
+ASSERT_SIZE(NGInkOverflow, SameSizeAsNGInkOverflow);
 
 inline bool HasOverflow(const PhysicalRect& rect, const PhysicalSize& size) {
   return rect.X() < 0 || rect.Y() < 0 || rect.Right() > size.width ||

@@ -24,7 +24,6 @@ namespace content {
 // static
 DropData DropDataBuilder::Build(const WebDragData& drag_data) {
   DropData result;
-  result.key_modifiers = drag_data.ModifierKeyState();
   result.referrer_policy = network::mojom::ReferrerPolicy::kDefault;
 
   for (const WebDragData::Item& item : drag_data.Items()) {

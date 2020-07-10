@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -25,9 +26,7 @@ struct SameSizeAsNGPhysicalTextFragment : NGPhysicalFragment {
   unsigned offsets[2];
 };
 
-static_assert(sizeof(NGPhysicalTextFragment) ==
-                  sizeof(SameSizeAsNGPhysicalTextFragment),
-              "NGPhysicalTextFragment should stay small");
+ASSERT_SIZE(NGPhysicalTextFragment, SameSizeAsNGPhysicalTextFragment);
 
 }  // anonymous namespace
 

@@ -221,11 +221,11 @@ class CORE_EXPORT WebFrameWidgetBase
                                        const gfx::PointF& point_in_viewport,
                                        const gfx::PointF& screen_point,
                                        WebDragOperationsMask operations_allowed,
-                                       int modifiers) override;
+                                       uint32_t key_modifiers) override;
   void DragTargetDrop(const WebDragData&,
                       const gfx::PointF& point_in_viewport,
                       const gfx::PointF& screen_point,
-                      int modifiers) override;
+                      uint32_t key_modifiers) override;
   void SendOverscrollEventFromImplSide(
       const gfx::Vector2dF& overscroll_delta,
       cc::ElementId scroll_latched_element_id) override;
@@ -341,7 +341,7 @@ class CORE_EXPORT WebFrameWidgetBase
   void DragTargetDragOver(const gfx::PointF& point_in_viewport,
                           const gfx::PointF& screen_point,
                           WebDragOperationsMask operations_allowed,
-                          uint32_t modifiers,
+                          uint32_t key_modifiers,
                           DragTargetDragOverCallback callback) override;
   void DragTargetDragLeave(const gfx::PointF& point_in_viewport,
                            const gfx::PointF& screen_point) override;
@@ -483,7 +483,7 @@ class CORE_EXPORT WebFrameWidgetBase
       const gfx::PointF& point_in_viewport,
       const gfx::PointF& screen_point,
       DragAction,
-      int modifiers);
+      uint32_t key_modifiers);
 
   // Helper function to call VisualViewport::viewportToRootFrame().
   gfx::PointF ViewportToRootFrame(const gfx::PointF& point_in_viewport) const;

@@ -468,14 +468,14 @@ class SystemWebAppManagerLaunchDirectoryBrowserTest
 
     // Check we can read and write to a different file inside the directory.
     // Note, this also checks we can read the launch directory, using
-    // directory_handle.getFile().
+    // directory_handle.getFileHandle().
     base::FilePath non_launch_file_path;
     ASSERT_TRUE(
         base::CreateTemporaryFileInDir(base_dir, &non_launch_file_path));
     ASSERT_TRUE(base::WriteFile(non_launch_file_path, "test2"));
 
     std::string non_launch_file_js_handle =
-        content::JsReplace("window.launchParams.files[0].getFile($1)",
+        content::JsReplace("window.launchParams.files[0].getFileHandle($1)",
                            non_launch_file_path.BaseName().AsUTF8Unsafe());
     EXPECT_EQ("test2", ReadContentFromJsFileHandle(web_contents,
                                                    non_launch_file_js_handle));
@@ -498,7 +498,7 @@ class SystemWebAppManagerLaunchDirectoryBrowserTest
 
     // Check a file can be created.
     std::string new_file_js_handle = content::JsReplace(
-        "window.launchParams.files[0].getFile($1, {create:true})", "new_file");
+        "window.launchParams.files[0].getFileHandle($1, {create:true})", "new_file");
     EXPECT_TRUE(WriteContentToJsFileHandle(web_contents, new_file_js_handle,
                                            "js_new_file"));
     EXPECT_EQ("js_new_file", ReadFileContent(base_dir.AppendASCII("new_file")));
@@ -823,7 +823,7 @@ IN_PROC_BROWSER_TEST_P(
   // Verify we can read a file (other than launch file) inside the directory.
   EXPECT_TRUE(CheckFileIsPng(
       web_contents,
-      content::JsReplace("window.launchParams.files[0].getFile($1).then("
+      content::JsReplace("window.launchParams.files[0].getFileHandle($1).then("
                          "  fileHandle => fileHandle.getFile())",
                          kTestPngFile)));
 }

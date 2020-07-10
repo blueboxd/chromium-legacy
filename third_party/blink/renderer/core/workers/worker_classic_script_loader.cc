@@ -30,6 +30,7 @@
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
@@ -135,6 +136,10 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
     ExecutionContext& execution_context,
     ResourceFetcher* fetch_client_settings_object_fetcher,
     const KURL& url,
+    std::unique_ptr<WorkerMainScriptLoadParameters>
+        worker_main_script_load_params,
+    CrossVariantMojoRemote<mojom::ResourceLoadInfoNotifierInterfaceBase>
+        resource_load_info_notifier,
     mojom::RequestContextType request_context,
     network::mojom::RequestDestination destination,
     network::mojom::RequestMode request_mode,
@@ -151,6 +156,21 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
   url_ = url;
   fetch_client_settings_object_fetcher_ = fetch_client_settings_object_fetcher;
   is_top_level_script_ = true;
+  ResourceLoaderOptions resource_loader_options;
+
+  // Use WorkerMainScriptLoader to load the main script for dedicated workers
+  // (PlzDedicatedWorker) and shared workers.
+  if (worker_main_script_load_params) {
+    DCHECK(base::FeatureList::IsEnabled(
+        features::kLoadMainScriptForPlzDedicatedWorkerByParams));
+    worker_main_script_loader_ = MakeGarbageCollected<WorkerMainScriptLoader>();
+    worker_main_script_loader_->Start(
+        url, std::move(worker_main_script_load_params), resource_loader_options,
+        request_context, destination,
+        &fetch_client_settings_object_fetcher_->Context(),
+        std::move(resource_load_info_notifier), this);
+    return;
+  }
 
   ResourceRequest request(url);
   request.SetHttpMethod(http_names::kGET);
@@ -164,7 +184,6 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
   request.SetCredentialsMode(credentials_mode);
 
   need_to_cancel_ = true;
-  ResourceLoaderOptions resource_loader_options;
   resource_loader_options.reject_coep_unsafe_none = reject_coep_unsafe_none;
   if (blob_url_loader_factory) {
     resource_loader_options.url_loader_factory =
@@ -277,8 +296,39 @@ void WorkerClassicScriptLoader::DidFailRedirectCheck() {
   NotifyError();
 }
 
+void WorkerClassicScriptLoader::DidReceiveData(base::span<const char> span) {
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kLoadMainScriptForPlzDedicatedWorkerByParams));
+  if (!decoder_) {
+    decoder_ = std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
+        TextResourceDecoderOptions::kPlainTextContent,
+        worker_main_script_loader_->GetScriptEncoding()));
+  }
+  if (!span.size())
+    return;
+  source_text_.Append(decoder_->Decode(span.data(), span.size()));
+}
+
+void WorkerClassicScriptLoader::OnFinishedLoadingWorkerMainScript() {
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kLoadMainScriptForPlzDedicatedWorkerByParams));
+  DidReceiveResponse(0 /*identifier*/,
+                     worker_main_script_loader_->GetResponse());
+  if (decoder_)
+    source_text_.Append(decoder_->Flush());
+  NotifyFinished();
+}
+
+void WorkerClassicScriptLoader::OnFailedLoadingWorkerMainScript() {
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kLoadMainScriptForPlzDedicatedWorkerByParams));
+  failed_ = true;
+  NotifyFinished();
+}
+
 void WorkerClassicScriptLoader::Trace(Visitor* visitor) const {
   visitor->Trace(threadable_loader_);
+  visitor->Trace(worker_main_script_loader_);
   visitor->Trace(content_security_policy_);
   visitor->Trace(fetch_client_settings_object_fetcher_);
   ThreadableLoaderClient::Trace(visitor);

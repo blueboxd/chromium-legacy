@@ -15,6 +15,7 @@
 #endif
 
 #include "base/command_line.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -1827,6 +1828,8 @@ bool Textfield::SetCompositionFromExistingText(
 #if defined(OS_CHROMEOS)
 bool Textfield::SetAutocorrectRange(const base::string16& autocorrect_text,
                                     const gfx::Range& range) {
+  base::UmaHistogramEnumeration("InputMethod.Assistive.Autocorrect.Count",
+                                TextInputClient::SubClass::kTextField);
   // TODO(crbug.com/1091088) Implement autocorrect range textfield handling.
   return false;
 }

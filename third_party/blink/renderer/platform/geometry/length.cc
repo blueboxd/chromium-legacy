@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/platform/geometry/blend.h"
 #include "third_party/blink/renderer/platform/geometry/calculation_value.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -192,7 +193,6 @@ struct SameSizeAsLength {
   int32_t value;
   int32_t meta_data;
 };
-static_assert(sizeof(Length) == sizeof(SameSizeAsLength),
-              "length should stay small");
+ASSERT_SIZE(Length, SameSizeAsLength);
 
 }  // namespace blink

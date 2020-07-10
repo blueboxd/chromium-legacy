@@ -22,6 +22,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-forward.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info_notifier.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
@@ -86,7 +87,9 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
           pending_fallback_factory,
       mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
           pending_subresource_loader_updater,
-      const std::vector<std::string>& cors_exempt_header_list);
+      const std::vector<std::string>& cors_exempt_header_list,
+      mojo::PendingRemote<blink::mojom::ResourceLoadInfoNotifier>
+          pending_resource_load_info_notifier);
 
   // Clones this fetch context for a nested worker.
   // For non-PlzDedicatedWorker. This will be removed once PlzDedicatedWorker is
@@ -186,6 +189,10 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
       int request_id,
       mojo::PendingReceiver<blink::mojom::WorkerTimingContainer> receiver);
 
+  blink::CrossVariantMojoRemote<
+      blink::mojom::ResourceLoadInfoNotifierInterfaceBase>
+  CloneResourceLoadInfoNotifier() override;
+
  private:
   class Factory;
   using WorkerTimingContainerReceiverMap =
@@ -220,7 +227,9 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
           websocket_handshake_throttle_provider,
       ThreadSafeSender* thread_safe_sender,
       mojo::SharedRemote<mojom::ChildProcessHost> process_host,
-      const std::vector<std::string>& cors_exempt_header_list);
+      const std::vector<std::string>& cors_exempt_header_list,
+      mojo::PendingRemote<blink::mojom::ResourceLoadInfoNotifier>
+          pending_resource_load_info_notifier);
 
   ~WebWorkerFetchContextImpl() override;
 
@@ -367,6 +376,15 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   std::vector<std::string> cors_exempt_header_list_;
 
   std::unique_ptr<NavigationResponseOverrideParameters> response_override_;
+
+  mojo::PendingRemote<blink::mojom::ResourceLoadInfoNotifier>
+      pending_resource_load_info_notifier_;
+
+  // Used to send the ResourceLoadInfo of the main script for dedicated
+  // workers only when
+  // IsLoadMainScriptForPlzDedicatedWorkerByParamsEnabled() is true.
+  mojo::Remote<blink::mojom::ResourceLoadInfoNotifier>
+      resource_load_info_notifier_;
 
   blink::AcceptLanguagesWatcher* accept_languages_watcher_ = nullptr;
 

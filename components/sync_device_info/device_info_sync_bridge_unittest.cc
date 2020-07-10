@@ -91,8 +91,6 @@ MATCHER_P(ModelEqualsSpecifics, expected_specifics, "") {
     }
   }
 
-  base::SysInfo::HardwareInfo hardware_info = arg.hardware_info();
-
   // Note that we ignore the device name here to avoid having to inject the
   // local device's.
   return expected_specifics.cache_guid() == arg.guid() &&
@@ -101,8 +99,8 @@ MATCHER_P(ModelEqualsSpecifics, expected_specifics, "") {
          expected_specifics.chrome_version() == arg.chrome_version() &&
          expected_specifics.signin_scoped_device_id() ==
              arg.signin_scoped_device_id() &&
-         expected_specifics.model() == hardware_info.model &&
-         expected_specifics.manufacturer() == hardware_info.manufacturer &&
+         expected_specifics.model() == arg.model_name() &&
+         expected_specifics.manufacturer() == arg.manufacturer_name() &&
          expected_specifics.feature_fields()
                  .send_tab_to_self_receiving_enabled() ==
              arg.send_tab_to_self_receiving_enabled();
@@ -151,17 +149,12 @@ std::string SigninScopedDeviceIdForSuffix(int suffix) {
   return base::StringPrintf("signin scoped device id %d", suffix);
 }
 
-base::SysInfo::HardwareInfo GetLocalHardwareInfoBlocking() {
+LocalDeviceNameInfo GetLocalDeviceNameInfoBlocking() {
   base::RunLoop run_loop;
-  base::SysInfo::HardwareInfo info;
-  base::SysInfo::GetHardwareInfo(base::BindLambdaForTesting(
-      [&](base::SysInfo::HardwareInfo hardware_info) {
-        info = std::move(hardware_info);
-#if defined(OS_CHROMEOS)
-        // For ChromeOS the returned model values are product code names like
-        // Eve. We want to use generic names like Chromebook.
-        info.model = GetChromeOSDeviceNameFromType();
-#endif
+  LocalDeviceNameInfo info;
+  GetLocalDeviceNameInfo(base::BindLambdaForTesting(
+      [&](LocalDeviceNameInfo local_device_name_info) {
+        info = std::move(local_device_name_info);
         run_loop.Quit();
       }));
   run_loop.Run();
@@ -295,15 +288,16 @@ class TestLocalDeviceInfoProvider : public MutableLocalDeviceInfoProvider {
   // MutableLocalDeviceInfoProvider implementation.
   void Initialize(const std::string& cache_guid,
                   const std::string& session_name,
-                  const base::SysInfo::HardwareInfo& hardware_info) override {
+                  const std::string& manufacturer_name,
+                  const std::string& model_name) override {
     std::set<sync_pb::SharingSpecificFields::EnabledFeatures>
         sharing_enabled_features{SharingEnabledFeaturesForSuffix(kLocalSuffix)};
     local_device_info_ = std::make_unique<DeviceInfo>(
         cache_guid, session_name, ChromeVersionForSuffix(kLocalSuffix),
         SyncUserAgentForSuffix(kLocalSuffix),
         sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-        SigninScopedDeviceIdForSuffix(kLocalSuffix), hardware_info,
-        base::Time(), DeviceInfoUtil::GetPulseInterval(),
+        SigninScopedDeviceIdForSuffix(kLocalSuffix), manufacturer_name,
+        model_name, base::Time(), DeviceInfoUtil::GetPulseInterval(),
         /*send_tab_to_self_receiving_enabled=*/true,
         DeviceInfo::SharingInfo(
             {SharingVapidFcmTokenForSuffix(kLocalSuffix),
@@ -347,7 +341,7 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
  protected:
   DeviceInfoSyncBridgeTest()
       : store_(ModelTypeStoreTestUtil::CreateInMemoryStoreForTest()),
-        local_hardware_info_(GetLocalHardwareInfoBlocking()) {
+        local_device_name_info_(GetLocalDeviceNameInfoBlocking()) {
     DeviceInfoPrefs::RegisterProfilePrefs(pref_service_.registry());
 
     // By default, mimic a real processor's behavior for IsTrackingMetadata().
@@ -371,8 +365,8 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
   DeviceInfoSpecifics CreateLocalDeviceSpecifics(
       const base::Time last_updated = base::Time::Now()) {
     DeviceInfoSpecifics specifics = CreateSpecifics(kLocalSuffix, last_updated);
-    specifics.set_model(local_hardware_info_.model);
-    specifics.set_manufacturer(local_hardware_info_.manufacturer);
+    specifics.set_model(local_device_name_info_.model_name);
+    specifics.set_manufacturer(local_device_name_info_.manufacturer_name);
     return specifics;
   }
 
@@ -539,6 +533,14 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
     return DataBatchToSpecificsMap(std::move(batch));
   }
 
+  const std::string& local_personalizable_name() const {
+    return local_device_name_info_.personalizable_name;
+  }
+
+  const std::string& local_device_model_name() const {
+    return local_device_name_info_.model_name;
+  }
+
  private:
   base::SimpleTestClock clock_;
 
@@ -552,8 +554,8 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
   // Holds the store.
   const std::unique_ptr<ModelTypeStore> store_;
 
-  // Stores the local device's hardware information.
-  const base::SysInfo::HardwareInfo local_hardware_info_;
+  // Stores the local device's name information.
+  const LocalDeviceNameInfo local_device_name_info_;
 
   TestingPrefServiceSimple pref_service_;
   // Not initialized immediately (upon test's constructor). This allows each
@@ -1149,7 +1151,7 @@ TEST_F(DeviceInfoSyncBridgeTest, DeviceNameForTransportOnlySyncMode) {
   ASSERT_EQ(1, change_count());
   ASSERT_TRUE(local_device()->GetLocalDeviceInfo());
 
-  EXPECT_EQ(GetLocalHardwareInfoBlocking().model,
+  EXPECT_EQ(local_device_model_name(),
             local_device()->GetLocalDeviceInfo()->client_name());
 }
 
@@ -1158,7 +1160,7 @@ TEST_F(DeviceInfoSyncBridgeTest, DeviceNameForFullSyncMode) {
   ASSERT_EQ(1, change_count());
   ASSERT_TRUE(local_device()->GetLocalDeviceInfo());
 
-  EXPECT_EQ(GetPersonalizableDeviceNameBlocking(),
+  EXPECT_EQ(local_personalizable_name(),
             local_device()->GetLocalDeviceInfo()->client_name());
 }
 
@@ -1167,7 +1169,7 @@ TEST_F(DeviceInfoSyncBridgeTest, DeviceNameForFullSyncMode) {
 // persisted.
 TEST_F(DeviceInfoSyncBridgeTest,
        DeviceNameForTransportOnlySyncMode_RestartBridge) {
-  std::string expected_device_name = GetLocalHardwareInfoBlocking().model;
+  std::string expected_device_name = local_device_model_name();
   InitializeAndMergeInitialData(SyncMode::kTransportOnly);
 
   ASSERT_TRUE(local_device()->GetLocalDeviceInfo());
@@ -1186,7 +1188,7 @@ TEST_F(DeviceInfoSyncBridgeTest,
 // Tests local client name when device is initially synced with full sync mode,
 // but the sync mode is not available after restart since it is not persisted.
 TEST_F(DeviceInfoSyncBridgeTest, DeviceNameForFullSyncMode_RestartBridge) {
-  std::string expected_device_name = GetPersonalizableDeviceNameBlocking();
+  std::string expected_device_name = local_personalizable_name();
   InitializeAndMergeInitialData(SyncMode::kFull);
 
   ASSERT_TRUE(local_device()->GetLocalDeviceInfo());
@@ -1203,10 +1205,8 @@ TEST_F(DeviceInfoSyncBridgeTest, DeviceNameForFullSyncMode_RestartBridge) {
 }
 
 TEST_F(DeviceInfoSyncBridgeTest, RefreshLocalDeviceNameForSyncModeToggle) {
-  std::string expected_device_name_full_sync =
-      GetPersonalizableDeviceNameBlocking();
-  std::string expected_device_name_transport_only =
-      GetLocalHardwareInfoBlocking().model;
+  std::string expected_device_name_full_sync = local_personalizable_name();
+  std::string expected_device_name_transport_only = local_device_model_name();
 
   // Initialize with full sync mode.
   InitializeAndMergeInitialData(SyncMode::kFull);

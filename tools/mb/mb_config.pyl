@@ -195,7 +195,7 @@
     },
 
     'chromium.devtools-frontend': {
-      'DevTools Linux (chromium)': 'release_trybot',
+      'DevTools Linux (chromium)': 'release_trybot_blink',
     },
 
     'chromium.fuzz': {
@@ -569,7 +569,7 @@
     },
 
     'client.devtools-frontend.integration': {
-      'DevTools Linux': 'release_trybot',
+      'DevTools Linux': 'release_trybot_blink',
     },
 
     'client.openscreen.chromium': {
@@ -591,17 +591,13 @@
       'Linux V8 FYI Release - pointer compression (NVIDIA)': 'gpu_tests_release_trybot_ptr_comp',
       'Mac V8 FYI Release (Intel)': 'gpu_tests_release_trybot',
       'V8 Android GN (dbg)': 'android_debug_bot',
-      'V8 Blink Linux': 'release_bot',
-      'V8 Blink Linux Debug': 'release_bot_v8_debug',
-      'V8 Blink Linux Future': 'release_bot',
-      'V8 Blink Linux Layout NG': 'release_bot',
-      'V8 Blink Mac': 'release_bot',
-      'V8 Blink Win': 'release_bot',
+      'V8 Blink Linux': 'release_bot_blink',
+      'V8 Blink Linux Debug': 'release_bot_blink_v8_debug',
+      'V8 Blink Linux Future': 'release_bot_blink',
+      'V8 Blink Linux Layout NG': 'release_bot_blink',
+      'V8 Blink Mac': 'release_bot_blink',
+      'V8 Blink Win': 'release_bot_blink',
       'V8 Linux GN': 'release_bot',
-      'V8-Blink Linux 64': 'release_bot',
-      'V8-Blink Linux 64 (dbg)': 'release_bot_v8_debug',
-      'V8-Blink Mac': 'release_bot',
-      'V8-Blink Win': 'release_bot_x86_minimal_symbols',
       'Win V8 FYI Release (NVIDIA)': 'gpu_tests_release_trybot_x86_resource_whitelisting',
     },
 
@@ -1032,12 +1028,12 @@
 
     'tryserver.devtools-frontend': {
       # Align devtools blink builders with chromium linux-rel
-      'devtools_frontend_linux_blink_light_rel': 'release_trybot',
-      'devtools_frontend_linux_blink_rel': 'release_trybot',
+      'devtools_frontend_linux_blink_light_rel': 'release_trybot_blink',
+      'devtools_frontend_linux_blink_rel': 'release_trybot_blink',
     },
 
     'tryserver.v8': {
-      'v8_linux_blink_rel': 'release_trybot',
+      'v8_linux_blink_rel': 'release_trybot_blink',
       'v8_linux_chromium_gn_rel': 'release_trybot',
     },
 
@@ -2195,6 +2191,10 @@
       'release_bot_blink', 'x86', 'minimal_symbols',
     ],
 
+    'release_bot_blink_v8_debug': [
+      'release_bot_blink', 'v8_enable_debugging_features',
+    ],
+
     'release_bot_enable_blink_heap_verification_dcheck_always_on': [
       'release_bot_blink', 'enable_blink_heap_verification', 'dcheck_always_on',
     ],
@@ -2227,10 +2227,6 @@
       'release_bot', 'minimal_symbols',
     ],
 
-    'release_bot_v8_debug': [
-      'release_bot', 'v8_enable_debugging_features',
-    ],
-
     'release_bot_x86': [
       'release_bot', 'x86',
     ],
@@ -2253,6 +2249,10 @@
 
     'release_trybot': [
       'release_trybot',
+    ],
+
+    'release_trybot_blink': [
+      'release_trybot_blink',
     ],
 
     'release_trybot_dcheck_off': [

@@ -503,7 +503,7 @@ public class RootUiCoordinator
                     bottomToolbarVisibilitySupplier, mActivity.getLifecycleDispatcher());
             mButtonDataProviders = Arrays.asList(mIdentityDiscController, shareButtonController);
             mActionModeControllerCallback = new ToolbarActionModeCallback();
-            mToolbarManager = new ToolbarManager(mActivity, mActivity.getFullscreenManager(),
+            mToolbarManager = new ToolbarManager(mActivity, mActivity.getBrowserControlsManager(),
                     mActivity.getFullscreenManager(), toolbarContainer,
                     mActivity.getCompositorViewHolder().getInvalidator(), urlFocusChangedCallback,
                     mTabThemeColorProvider, mTabObscuringHandler, mShareDelegateSupplier,
@@ -644,7 +644,7 @@ public class RootUiCoordinator
                 () -> mActivity.findViewById(R.id.coordinator));
 
         mBottomSheetManager = new BottomSheetManager(mBottomSheetController, mActivityTabProvider,
-                mActivity.getFullscreenManager(), mActivity.getFullscreenManager(),
+                mActivity.getBrowserControlsManager(), mActivity.getFullscreenManager(),
                 mActivity::getModalDialogManager, this::getBottomSheetSnackbarManager,
                 mTabObscuringHandler, mOmniboxFocusStateSupplier, panelManagerSupplier);
     }
@@ -686,7 +686,7 @@ public class RootUiCoordinator
         TabModelSelector tabModelSelector = mActivity.getTabModelSelector();
         mDirectActionInitializer = new DirectActionInitializer(mActivity, activityType, mActivity,
                 mActivity::onBackPressed, tabModelSelector, mFindToolbarManager,
-                mActivity.getBottomSheetController(), mActivity.getFullscreenManager(),
+                mActivity.getBottomSheetController(), mActivity.getBrowserControlsManager(),
                 mActivity.getCompositorViewHolder(), mActivity.getActivityTabProvider(),
                 mScrimView);
         mActivity.getLifecycleDispatcher().register(mDirectActionInitializer);

@@ -84,6 +84,7 @@ jumbo_source_set("common") {
     "input/web_mouse_wheel_event.cc",
     "input/web_pointer_event.cc",
     "input/web_touch_event.cc",
+    "loader/feature_utils.cc",
     "loader/mime_sniffing_throttle.cc",
     "loader/mime_sniffing_url_loader.cc",
     "loader/network_utils.cc",

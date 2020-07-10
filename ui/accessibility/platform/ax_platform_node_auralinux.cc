@@ -2072,7 +2072,6 @@ const gchar* GetName(AtkObject* atk_object) {
 
 const gchar* AtkGetName(AtkObject* atk_object) {
   RecordAccessibilityAtkApi(UmaAtkApi::kGetName);
-  AXPlatformNodeAuraLinux::EnableAXMode();
   return GetName(atk_object);
 }
 
@@ -2090,7 +2089,6 @@ const gchar* GetDescription(AtkObject* atk_object) {
 
 const gchar* AtkGetDescription(AtkObject* atk_object) {
   RecordAccessibilityAtkApi(UmaAtkApi::kGetDescription);
-  AXPlatformNodeAuraLinux::EnableAXMode();
   return GetDescription(atk_object);
 }
 
@@ -2107,7 +2105,6 @@ gint GetNChildren(AtkObject* atk_object) {
 
 gint AtkGetNChildren(AtkObject* atk_object) {
   RecordAccessibilityAtkApi(UmaAtkApi::kGetNChildren);
-  AXPlatformNodeAuraLinux::EnableAXMode();
   return GetNChildren(atk_object);
 }
 
@@ -2130,7 +2127,6 @@ AtkObject* RefChild(AtkObject* atk_object, gint index) {
 
 AtkObject* AtkRefChild(AtkObject* atk_object, gint index) {
   RecordAccessibilityAtkApi(UmaAtkApi::kRefChild);
-  AXPlatformNodeAuraLinux::EnableAXMode();
   return RefChild(atk_object, index);
 }
 
@@ -2147,7 +2143,6 @@ gint GetIndexInParent(AtkObject* atk_object) {
 
 gint AtkGetIndexInParent(AtkObject* atk_object) {
   RecordAccessibilityAtkApi(UmaAtkApi::kGetIndexInParent);
-  AXPlatformNodeAuraLinux::EnableAXMode();
   return GetIndexInParent(atk_object);
 }
 
@@ -2164,7 +2159,6 @@ AtkObject* GetParent(AtkObject* atk_object) {
 
 AtkObject* AtkGetParent(AtkObject* atk_object) {
   RecordAccessibilityAtkApi(UmaAtkApi::kGetParent);
-  AXPlatformNodeAuraLinux::EnableAXMode();
   return GetParent(atk_object);
 }
 
@@ -2180,6 +2174,9 @@ AtkRelationSet* RefRelationSet(AtkObject* atk_object) {
 
 AtkRelationSet* AtkRefRelationSet(AtkObject* atk_object) {
   RecordAccessibilityAtkApi(UmaAtkApi::kRefRelationSet);
+  // Enables AX mode. Most AT does not call AtkRefRelationSet, but Orca does,
+  // which is why it's a good signal to enable accessibility for Orca users
+  // without too many false positives.
   AXPlatformNodeAuraLinux::EnableAXMode();
   return RefRelationSet(atk_object);
 }
@@ -2197,6 +2194,9 @@ AtkAttributeSet* GetAttributes(AtkObject* atk_object) {
 
 AtkAttributeSet* AtkGetAttributes(AtkObject* atk_object) {
   RecordAccessibilityAtkApi(UmaAtkApi::kGetAttributes);
+  // Enables AX mode. Most AT does not call AtkGetAttributes, but Orca does,
+  // which is why it's a good signal to enable accessibility for Orca users
+  // without too many false positives.
   AXPlatformNodeAuraLinux::EnableAXMode();
   return GetAttributes(atk_object);
 }
@@ -2213,7 +2213,6 @@ AtkRole GetRole(AtkObject* atk_object) {
 
 AtkRole AtkGetRole(AtkObject* atk_object) {
   RecordAccessibilityAtkApi(UmaAtkApi::kGetRole);
-  AXPlatformNodeAuraLinux::EnableAXMode();
   return GetRole(atk_object);
 }
 
@@ -2236,7 +2235,6 @@ AtkStateSet* RefStateSet(AtkObject* atk_object) {
 
 AtkStateSet* AtkRefStateSet(AtkObject* atk_object) {
   RecordAccessibilityAtkApi(UmaAtkApi::kRefStateSet);
-  AXPlatformNodeAuraLinux::EnableAXMode();
   return RefStateSet(atk_object);
 }
 
@@ -2519,6 +2517,7 @@ AtkObject* AXPlatformNodeAuraLinux::FindFirstWebContentDocument() {
 
 AtkObject* AXPlatformNodeAuraLinux::CreateAtkObject() {
   if (GetData().role != ax::mojom::Role::kApplication &&
+      !GetDelegate()->IsToplevelBrowserWindow() &&
       !GetAccessibilityMode().has_mode(AXMode::kNativeAPIs))
     return nullptr;
   if (GetDelegate()->IsChildOfLeaf())
@@ -2606,10 +2605,7 @@ void AXPlatformNodeAuraLinux::StaticInitialize() {
 
 // static
 void AXPlatformNodeAuraLinux::EnableAXMode() {
-  // TODO(https://crbug.com/1086506): After figuring out what API calls are
-  // giving us false positives, enable it again. For now, don't activate AX
-  // through ATK calls.
-  // AXPlatformNode::NotifyAddAXModeFlags(kAXModeComplete);
+  AXPlatformNode::NotifyAddAXModeFlags(kAXModeComplete);
 }
 
 AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {

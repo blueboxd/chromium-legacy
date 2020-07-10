@@ -1005,15 +1005,6 @@ void LoginDisplayHostWebUI::UpdateOobeDialogState(ash::OobeDialogState state) {
   ash::LoginScreen::Get()->GetModel()->NotifyOobeDialogState(state);
 }
 
-bool LoginDisplayHostWebUI::HandleAccelerator(
-    ash::LoginAcceleratorAction action) {
-  auto* oobe_ui = GetOobeUI();
-  if (!oobe_ui)
-    return false;
-  oobe_ui->ForwardAccelerator(MapToWebUIAccelerator(action));
-  return true;
-}
-
 void LoginDisplayHostWebUI::HandleDisplayCaptivePortal() {
   GetOobeUI()->GetErrorScreen()->FixCaptivePortal();
 }

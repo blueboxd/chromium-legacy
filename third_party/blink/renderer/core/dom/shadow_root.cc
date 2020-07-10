@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -59,8 +60,7 @@ struct SameSizeAsShadowRoot : public DocumentFragment, public TreeScope {
   unsigned flags[1];
 };
 
-static_assert(sizeof(ShadowRoot) == sizeof(SameSizeAsShadowRoot),
-              "ShadowRoot should stay small");
+ASSERT_SIZE(ShadowRoot, SameSizeAsShadowRoot);
 
 ShadowRoot::ShadowRoot(Document& document, ShadowRootType type)
     : DocumentFragment(nullptr, kCreateShadowRoot),

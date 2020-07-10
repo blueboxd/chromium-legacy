@@ -53,6 +53,7 @@ class WebString;
 class WebSharedWorkerClient;
 class WebURL;
 struct WebFetchClientSettingsObject;
+struct WorkerMainScriptLoadParameters;
 
 // This is the interface to a SharedWorker thread.
 class BLINK_EXPORT WebSharedWorker {
@@ -81,7 +82,9 @@ class BLINK_EXPORT WebSharedWorker {
           content_settings,
       CrossVariantMojoRemote<mojom::BrowserInterfaceBrokerInterfaceBase>
           browser_interface_broker,
-      bool pause_worker_context_on_start) = 0;
+      bool pause_worker_context_on_start,
+      std::unique_ptr<blink::WorkerMainScriptLoadParameters>
+          worker_main_script_load_params) = 0;
 
   // Sends a connect event to the SharedWorker context.
   virtual void Connect(MessagePortChannel) = 0;

@@ -6,10 +6,10 @@ package org.chromium.chrome.browser.compositor.scene_layer;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 
 /**
  * A SceneLayer to render a static tab.
@@ -27,18 +27,17 @@ public class StaticTabSceneLayer extends SceneLayer {
      * @param contentViewport   The viewport of the content.
      * @param layerTitleCache   The LayerTitleCache.
      * @param tabContentManager The TabContentManager.
-     * @param fullscreenManager The FullscreenManager.
+     * @param browserControls   The BrowserControlsStateProvider.
      * @param layoutTab         The LayoutTab.
      */
     public void update(float dpToPx, LayerTitleCache layerTitleCache,
-            TabContentManager tabContentManager, ChromeFullscreenManager fullscreenManager,
+            TabContentManager tabContentManager, BrowserControlsStateProvider browserControls,
             LayoutTab layoutTab) {
         if (layoutTab == null) {
             return;
         }
 
-        float contentOffset =
-                fullscreenManager != null ? fullscreenManager.getContentOffset() : 0.f;
+        float contentOffset = browserControls != null ? browserControls.getContentOffset() : 0.f;
         float x = layoutTab.getRenderX() * dpToPx;
         float y = contentOffset + layoutTab.getRenderY() * dpToPx;
 

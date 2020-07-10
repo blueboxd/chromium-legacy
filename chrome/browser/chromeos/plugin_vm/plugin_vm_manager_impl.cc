@@ -91,6 +91,34 @@ PluginVmManagerImpl::~PluginVmManagerImpl() {
       ->RemoveObserver(this);
 }
 
+void PluginVmManagerImpl::OnPrimaryUserProfilePrepared() {
+  vm_tools::plugin_dispatcher::ListVmRequest request;
+  request.set_owner_id(owner_id_);
+  request.set_vm_name_uuid(kPluginVmName);
+
+  // Probe the dispatcher.
+  chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient()->ListVms(
+      std::move(request),
+      base::BindOnce(
+          [](base::Optional<vm_tools::plugin_dispatcher::ListVmResponse>
+                 reply) {
+            // If the dispatcher is already running here, Chrome probably
+            // crashed. Restart it so it can bind to the new wayland socket.
+            // TODO(b/149180115): Fix this properly.
+            if (reply.has_value()) {
+              LOG(ERROR) << "New session has dispatcher unexpected already "
+                            "running. Perhaps Chrome crashed?";
+              chromeos::DBusThreadManager::Get()
+                  ->GetDebugDaemonClient()
+                  ->StopPluginVmDispatcher(base::BindOnce([](bool success) {
+                    if (!success) {
+                      LOG(ERROR) << "Failed to stop the dispatcher";
+                    }
+                  }));
+            }
+          }));
+}
+
 void PluginVmManagerImpl::LaunchPluginVm(LaunchPluginVmCallback callback) {
   const bool launch_in_progress = !launch_vm_callbacks_.empty();
   launch_vm_callbacks_.push_back(std::move(callback));

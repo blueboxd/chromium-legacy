@@ -57,6 +57,7 @@ class SharedWorkerThread;
 class WebSharedWorkerClient;
 class WebString;
 class WebURL;
+struct WorkerMainScriptLoadParameters;
 
 // This class is used by the worker process code to talk to the SharedWorker
 // implementation. This is basically accessed on the main thread, but some
@@ -91,7 +92,9 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
           ontent_settings,
       CrossVariantMojoRemote<mojom::blink::BrowserInterfaceBrokerInterfaceBase>
           browser_interface_broker,
-      bool pause_worker_context_on_start) override;
+      bool pause_worker_context_on_start,
+      std::unique_ptr<WorkerMainScriptLoadParameters>
+          worker_main_script_load_params) override;
   void Connect(MessagePortChannel) override;
   void TerminateWorkerContext() override;
 

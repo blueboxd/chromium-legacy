@@ -79,6 +79,12 @@ void PermissionsClient::OnPromptResolved(
     PermissionRequestType request_type,
     PermissionAction action) {}
 
+base::Optional<bool>
+PermissionsClient::HadThreeConsecutiveNotificationPermissionDenies(
+    content::BrowserContext* browser_context) {
+  return base::nullopt;
+}
+
 base::Optional<url::Origin> PermissionsClient::GetAutoApprovalOrigin() {
   return base::nullopt;
 }

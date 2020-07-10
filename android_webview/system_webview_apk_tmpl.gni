@@ -66,7 +66,6 @@ template("system_webview_apk_or_module_tmpl") {
       }
     }
 
-    target_sdk_version = android_sdk_version
     product_config_java_packages = [ webview_product_config_java_package ]
 
     if (webview_includes_weblayer) {

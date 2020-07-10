@@ -86,7 +86,7 @@ public class RecentTabsPage
         mView.addOnAttachStateChangeListener(this);
 
         if (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity)) {
-            mBrowserControlsStateProvider = activity.getFullscreenManager();
+            mBrowserControlsStateProvider = activity.getBrowserControlsManager();
             mBrowserControlsStateProvider.addObserver(this);
             onBottomControlsHeightChanged(mBrowserControlsStateProvider.getBottomControlsHeight(),
                     mBrowserControlsStateProvider.getBottomControlsMinHeight());

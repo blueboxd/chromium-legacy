@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/cpp/login_accelerators.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -86,7 +85,6 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void HideOobeDialog() override;
   void UpdateOobeDialogState(ash::OobeDialogState state) override;
   void OnCancelPasswordChangedFlow() override;
-  bool HandleAccelerator(ash::LoginAcceleratorAction action) override;
   void HandleDisplayCaptivePortal() override;
   void UpdateAddUserButtonStatus() override;
   void RequestSystemInfoUpdate() override;

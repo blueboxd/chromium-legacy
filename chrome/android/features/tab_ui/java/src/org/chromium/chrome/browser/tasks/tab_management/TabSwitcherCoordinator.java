@@ -20,10 +20,10 @@ import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
@@ -136,7 +136,7 @@ public class TabSwitcherCoordinator
 
     public TabSwitcherCoordinator(Context context, ActivityLifecycleDispatcher lifecycleDispatcher,
             TabModelSelector tabModelSelector, TabContentManager tabContentManager,
-            ChromeFullscreenManager fullscreenManager, TabCreatorManager tabCreatorManager,
+            BrowserControlsStateProvider browserControls, TabCreatorManager tabCreatorManager,
             MenuOrKeyboardActionController menuOrKeyboardActionController, ViewGroup container,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier,
             MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
@@ -149,9 +149,9 @@ public class TabSwitcherCoordinator
 
         PropertyModel containerViewModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
 
-        mMediator = new TabSwitcherMediator(this, containerViewModel, tabModelSelector,
-                fullscreenManager, container, tabContentManager, this,
-                multiWindowModeStateDispatcher, mode);
+        mMediator =
+                new TabSwitcherMediator(this, containerViewModel, tabModelSelector, browserControls,
+                        container, tabContentManager, this, multiWindowModeStateDispatcher, mode);
 
         mMultiThumbnailCardProvider =
                 new MultiThumbnailCardProvider(context, tabContentManager, tabModelSelector);

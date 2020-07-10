@@ -34,6 +34,8 @@ class PluginVmManager : public KeyedService {
 
   ~PluginVmManager() override;
 
+  virtual void OnPrimaryUserProfilePrepared() = 0;
+
   virtual void LaunchPluginVm(LaunchPluginVmCallback callback) = 0;
   virtual void RelaunchPluginVm() = 0;
   virtual void StopPluginVm(const std::string& name, bool force) = 0;

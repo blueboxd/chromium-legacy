@@ -69,12 +69,19 @@ public class UrlBarData {
             if (UNSUPPORTED_SCHEMES_TO_SPLIT.contains(scheme)) {
                 return create(url, displayText, 0, displayText.length(), editingText);
             }
-            if (ACCEPTED_SCHEMES.contains(scheme)) {
-                for (pathSearchOffset = scheme.length(); pathSearchOffset < displayText.length();
-                        pathSearchOffset++) {
-                    char c = displayText.charAt(pathSearchOffset);
-                    if (c != ':' && c != '/') break;
+            if (UrlConstants.BLOB_SCHEME.equals(scheme)) {
+                int innerSchemeSearchOffset =
+                        findFirstIndexAfterSchemeSeparator(displayText, scheme.length());
+                Uri innerUri = Uri.parse(displayTextStr.substring(innerSchemeSearchOffset));
+                String innerScheme = innerUri.getScheme();
+                // Substitute the scheme to allow for proper display of end of inner origin.
+                if (!TextUtils.isEmpty(innerScheme)) {
+                    scheme = innerScheme;
                 }
+            }
+            if (ACCEPTED_SCHEMES.contains(scheme)) {
+                pathSearchOffset = findFirstIndexAfterSchemeSeparator(
+                        displayText, displayTextStr.indexOf(scheme) + scheme.length());
             }
         }
         int pathOffset = -1;
@@ -86,8 +93,8 @@ public class UrlBarData {
         // If the '/' is the last character and the beginning of the path, then just drop
         // the path entirely.
         if (pathOffset == displayText.length() - 1) {
-            String prePathText = displayTextStr.substring(0, pathOffset);
-            return create(url, prePathText, 0, prePathText.length(), editingText);
+            return create(
+                    url, displayTextStr.subSequence(0, pathOffset), 0, pathOffset, editingText);
         }
 
         return create(url, displayText, 0, pathOffset, editingText);
@@ -96,6 +103,15 @@ public class UrlBarData {
     public static UrlBarData create(@Nullable String url, CharSequence displayText,
             int originStartIndex, int originEndIndex, @Nullable String editingText) {
         return new UrlBarData(url, displayText, originStartIndex, originEndIndex, editingText);
+    }
+
+    private static int findFirstIndexAfterSchemeSeparator(
+            CharSequence input, int searchStartIndex) {
+        for (int index = searchStartIndex; index < input.length(); index++) {
+            char c = input.charAt(index);
+            if (c != ':' && c != '/') return index;
+        }
+        return input.length();
     }
 
     /**

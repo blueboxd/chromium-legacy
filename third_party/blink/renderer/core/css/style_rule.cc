@@ -36,16 +36,16 @@
 #include "third_party/blink/renderer/core/css/style_rule_import.h"
 #include "third_party/blink/renderer/core/css/style_rule_keyframe.h"
 #include "third_party/blink/renderer/core/css/style_rule_namespace.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
 struct SameSizeAsStyleRuleBase final
     : public GarbageCollected<SameSizeAsStyleRuleBase> {
-  unsigned bitfields;
+  uint8_t field;
 };
 
-static_assert(sizeof(StyleRuleBase) <= sizeof(SameSizeAsStyleRuleBase),
-              "StyleRuleBase should stay small");
+ASSERT_SIZE(StyleRuleBase, SameSizeAsStyleRuleBase);
 
 CSSRule* StyleRuleBase::CreateCSSOMWrapper(CSSStyleSheet* parent_sheet) const {
   return CreateCSSOMWrapper(parent_sheet, nullptr);

@@ -164,6 +164,7 @@ test("image_processor_test") {
     "//media/gpu/test:frame_validator",
     "//media/gpu/test:helpers",
     "//media/gpu/test:image_processor",
+    "//media/gpu/test:video_test_environment",
     "//mojo/core/embedder",
     "//testing/gtest",
   ]

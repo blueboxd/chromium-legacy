@@ -28,6 +28,12 @@
  */
 
 #include "third_party/blink/renderer/core/dom/document.h"
+// document.h is a widely included header and its size impacts build time
+// significantly. If you run into this limit, try using forward declarations
+// instead of including more headers. If that is infeasible, adjust the limit.
+// For more info, see
+// https://chromium.googlesource.com/chromium/src/+/HEAD/docs/wmax_tokens.md
+#pragma clang max_tokens_here 900000
 
 #include <memory>
 #include <utility>
@@ -110,6 +116,7 @@
 #include "third_party/blink/renderer/core/dom/cdata_section.h"
 #include "third_party/blink/renderer/core/dom/comment.h"
 #include "third_party/blink/renderer/core/dom/context_features.h"
+#include "third_party/blink/renderer/core/dom/document_data.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/dom/document_parser_timing.h"
@@ -780,9 +787,8 @@ Document::Document(const DocumentInit& initializer,
       is_for_external_handler_(initializer.IsForExternalHandler()),
       display_lock_document_state_(
           MakeGarbageCollected<DisplayLockDocumentState>(this)),
-      permission_service_(GetExecutionContext()),
-      has_trust_tokens_answerer_(GetExecutionContext()),
-      font_preload_manager_(*this) {
+      font_preload_manager_(*this),
+      data_(MakeGarbageCollected<DocumentData>(GetExecutionContext())) {
   if (GetFrame()) {
     DCHECK(GetFrame()->GetPage());
     ProvideContextFeaturesToDocumentFrom(*this, *GetFrame()->GetPage());
@@ -2492,7 +2498,6 @@ void Document::UpdateStyle() {
   // SetNeedsStyleRecalc should only happen on Element and Text nodes.
   DCHECK(!NeedsStyleRecalc());
 
-  StyleResolver& resolver = EnsureStyleResolver();
   bool should_record_stats;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED("blink,blink_style", &should_record_stats);
   GetStyleEngine().SetStatsEnabled(should_record_stats);
@@ -2511,7 +2516,6 @@ void Document::UpdateStyle() {
   DCHECK(!NeedsReattachLayoutTree());
   DCHECK(!ChildNeedsReattachLayoutTree());
   DCHECK(InStyleRecalc());
-  DCHECK_EQ(GetStyleResolver(), &resolver);
   lifecycle_.AdvanceTo(DocumentLifecycle::kStyleClean);
   if (should_record_stats) {
     TRACE_EVENT_END2(
@@ -2855,7 +2859,9 @@ scoped_refptr<const ComputedStyle> Document::StyleForPage(int page_index) {
       page_name = mapper->NamedPageAtIndex(page_index);
   }
 
-  return EnsureStyleResolver().StyleForPage(page_index, page_name);
+  UpdateActiveStyle();
+  return GetStyleEngine().GetStyleResolver().StyleForPage(page_index,
+                                                          page_name);
 }
 
 void Document::EnsurePaintLocationDataValidForNode(
@@ -3007,12 +3013,8 @@ void Document::UpdateUseShadowTreesIfNeeded() {
   }
 }
 
-StyleResolver* Document::GetStyleResolver() const {
-  return style_engine_->Resolver();
-}
-
-StyleResolver& Document::EnsureStyleResolver() const {
-  return style_engine_->EnsureResolver();
+StyleResolver& Document::GetStyleResolver() const {
+  return style_engine_->GetStyleResolver();
 }
 
 void Document::Initialize() {
@@ -3022,7 +3024,7 @@ void Document::Initialize() {
   layout_view_ = new LayoutView(this);
   SetLayoutObject(layout_view_);
 
-  layout_view_->SetStyle(StyleResolver::StyleForViewport(*this));
+  layout_view_->SetStyle(GetStyleResolver().StyleForViewport());
 
   AttachContext context;
   AttachLayoutTree(context);
@@ -4923,12 +4925,12 @@ void Document::SetResizedForViewportUnits() {
     media_query_matcher_->ViewportChanged();
   if (!HasViewportUnits())
     return;
-  EnsureStyleResolver().SetResizedForViewportUnits();
+  GetStyleResolver().SetResizedForViewportUnits();
   SetNeedsStyleRecalcForViewportUnits();
 }
 
 void Document::ClearResizedForViewportUnits() {
-  EnsureStyleResolver().ClearResizedForViewportUnits();
+  GetStyleResolver().ClearResizedForViewportUnits();
 }
 
 void Document::SetHoverElement(Element* new_hover_element) {
@@ -5994,18 +5996,18 @@ net::SiteForCookies Document::SiteForCookies() const {
 
 mojom::blink::PermissionService* Document::GetPermissionService(
     ExecutionContext* execution_context) {
-  if (!permission_service_.is_bound()) {
+  if (!data_->permission_service_.is_bound()) {
     execution_context->GetBrowserInterfaceBroker().GetInterface(
-        permission_service_.BindNewPipeAndPassReceiver(
+        data_->permission_service_.BindNewPipeAndPassReceiver(
             execution_context->GetTaskRunner(TaskType::kPermission)));
-    permission_service_.set_disconnect_handler(WTF::Bind(
+    data_->permission_service_.set_disconnect_handler(WTF::Bind(
         &Document::PermissionServiceConnectionError, WrapWeakPersistent(this)));
   }
-  return permission_service_.get();
+  return data_->permission_service_.get();
 }
 
 void Document::PermissionServiceConnectionError() {
-  permission_service_.reset();
+  data_->permission_service_.reset();
 }
 
 ScriptPromise Document::hasStorageAccess(ScriptState* script_state) {
@@ -6183,18 +6185,18 @@ ScriptPromise Document::hasTrustToken(ScriptState* script_state,
     return promise;
   }
 
-  if (!has_trust_tokens_answerer_.is_bound()) {
+  if (!data_->has_trust_tokens_answerer_.is_bound()) {
     GetFrame()->GetBrowserInterfaceBroker().GetInterface(
-        has_trust_tokens_answerer_.BindNewPipeAndPassReceiver(
+        data_->has_trust_tokens_answerer_.BindNewPipeAndPassReceiver(
             GetExecutionContext()->GetTaskRunner(TaskType::kInternalDefault)));
-    has_trust_tokens_answerer_.set_disconnect_handler(
+    data_->has_trust_tokens_answerer_.set_disconnect_handler(
         WTF::Bind(&Document::HasTrustTokensAnswererConnectionError,
                   WrapWeakPersistent(this)));
   }
 
-  pending_has_trust_tokens_resolvers_.insert(resolver);
+  data_->pending_has_trust_tokens_resolvers_.insert(resolver);
 
-  has_trust_tokens_answerer_->HasTrustTokens(
+  data_->has_trust_tokens_answerer_->HasTrustTokens(
       issuer_origin,
       WTF::Bind(
           [](WeakPersistent<ScriptPromiseResolver> resolver,
@@ -6202,8 +6204,9 @@ ScriptPromise Document::hasTrustToken(ScriptState* script_state,
              network::mojom::blink::HasTrustTokensResultPtr result) {
             // If there was a Mojo connection error, the promise was already
             // resolved and deleted.
-            if (!base::Contains(document->pending_has_trust_tokens_resolvers_,
-                                resolver)) {
+            if (!base::Contains(
+                    document->data_->pending_has_trust_tokens_resolvers_,
+                    resolver)) {
               return;
             }
 
@@ -6220,7 +6223,8 @@ ScriptPromise Document::hasTrustToken(ScriptState* script_state,
                   "have exceeded its number-of-issuers limit?)"));
             }
 
-            document->pending_has_trust_tokens_resolvers_.erase(resolver);
+            document->data_->pending_has_trust_tokens_resolvers_.erase(
+                resolver);
           },
           WrapWeakPersistent(resolver), WrapWeakPersistent(this)));
 
@@ -6228,15 +6232,15 @@ ScriptPromise Document::hasTrustToken(ScriptState* script_state,
 }
 
 void Document::HasTrustTokensAnswererConnectionError() {
-  has_trust_tokens_answerer_.reset();
-  for (const auto& resolver : pending_has_trust_tokens_resolvers_) {
+  data_->has_trust_tokens_answerer_.reset();
+  for (const auto& resolver : data_->pending_has_trust_tokens_resolvers_) {
     ScriptState* state = resolver->GetScriptState();
     ScriptState::Scope scope(state);
     resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
         state->GetIsolate(), DOMExceptionCode::kOperationError,
         "Internal error retrieving hasTrustToken response."));
   }
-  pending_has_trust_tokens_resolvers_.clear();
+  data_->pending_has_trust_tokens_resolvers_.clear();
 }
 
 static bool IsValidNameNonASCII(const LChar* characters, unsigned length) {
@@ -7005,27 +7009,6 @@ void Document::PoliciesInitialized(const DocumentInit& document_initializer) {
       RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
       !dom_window_->IsFeatureEnabled(
           mojom::blink::FeaturePolicyFeature::kVerticalScroll);
-}
-
-const ParsedFeaturePolicy Document::GetOwnerContainerPolicy() const {
-  // If this frame is not the main frame, then get the container policy from its
-  // owner.
-  if (GetFrame() && GetFrame()->Owner())
-    return GetFrame()->Owner()->GetFramePolicy().container_policy;
-  return ParsedFeaturePolicy();
-}
-
-const FeaturePolicy* Document::GetParentFeaturePolicy() const {
-  // If this frame is not the main frame, then get the feature policy from its
-  // parent.
-  if (GetFrame() && !GetFrame()->IsMainFrame()) {
-    return GetFrame()
-        ->Tree()
-        .Parent()
-        ->GetSecurityContext()
-        ->GetFeaturePolicy();
-  }
-  return nullptr;
 }
 
 bool Document::AllowedToUseDynamicMarkUpInsertion(
@@ -8105,11 +8088,9 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(synchronous_mutation_observer_list_);
   visitor->Trace(element_explicitly_set_attr_elements_map_);
   visitor->Trace(display_lock_document_state_);
-  visitor->Trace(permission_service_);
-  visitor->Trace(has_trust_tokens_answerer_);
-  visitor->Trace(pending_has_trust_tokens_resolvers_);
   visitor->Trace(font_preload_manager_);
   visitor->Trace(find_in_page_active_match_node_);
+  visitor->Trace(data_);
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);

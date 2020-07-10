@@ -534,7 +534,7 @@ class AutofillAssistantUiTestUtil {
         int[] compositorLocation = new int[2];
         testRule.getActivity().getCompositorViewHolder().getLocationOnScreen(compositorLocation);
         int offsetY = compositorLocation[1]
-                + testRule.getActivity().getFullscreenManager().getContentOffset();
+                + testRule.getActivity().getBrowserControlsManager().getContentOffset();
         return new Rect((int) ((elementRect.left - viewport.left) * cssToPysicalPixels),
                 (int) ((elementRect.top - viewport.top) * cssToPysicalPixels + offsetY),
                 (int) ((elementRect.right - viewport.left) * cssToPysicalPixels),

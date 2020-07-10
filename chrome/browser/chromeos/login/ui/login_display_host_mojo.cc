@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/ui/login_display_mojo.h"
-#include "chrome/browser/chromeos/login/ui/webui_accelerator_mapping.h"
 #include "chrome/browser/chromeos/login/user_board_view_mojo.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -332,13 +331,6 @@ void LoginDisplayHostMojo::HideOobeDialog() {
 void LoginDisplayHostMojo::UpdateOobeDialogState(ash::OobeDialogState state) {
   if (dialog_)
     dialog_->SetState(state);
-}
-
-bool LoginDisplayHostMojo::HandleAccelerator(
-    ash::LoginAcceleratorAction action) {
-  DCHECK(GetOobeUI());
-  GetOobeUI()->ForwardAccelerator(MapToWebUIAccelerator(action));
-  return true;
 }
 
 void LoginDisplayHostMojo::UpdateAddUserButtonStatus() {

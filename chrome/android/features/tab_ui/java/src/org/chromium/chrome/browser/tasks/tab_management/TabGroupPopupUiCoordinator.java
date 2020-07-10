@@ -50,7 +50,7 @@ public class TabGroupPopupUiCoordinator
         mModelChangeProcessor = PropertyModelChangeProcessor.create(
                 model, mTabGroupPopupUiParent, TabGroupPopupUiViewBinder::bind);
         mMediator = new TabGroupPopupUiMediator(model, activity.getTabModelSelector(),
-                activity.getOverviewModeBehavior(), activity.getFullscreenManager(), this,
+                activity.getOverviewModeBehavior(), activity.getBrowserControlsManager(), this,
                 mTabGroupUiCoordinator, activity.getBottomSheetController());
         mMediator.onAnchorViewChanged(mAnchorView, mAnchorView.getId());
     }

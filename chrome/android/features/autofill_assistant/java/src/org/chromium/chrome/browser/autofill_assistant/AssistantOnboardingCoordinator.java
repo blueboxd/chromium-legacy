@@ -21,9 +21,9 @@ import org.chromium.chrome.browser.autofill_assistant.metrics.OnBoarding;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayModel;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayState;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
@@ -51,7 +51,7 @@ class AssistantOnboardingCoordinator {
     private final Map<String, String> mParameters;
     private final Context mContext;
     private final BottomSheetController mController;
-    private final ChromeFullscreenManager mFullscreenManager;
+    private final BrowserControlsStateProvider mBrowserControls;
     private final CompositorViewHolder mCompositorViewHolder;
     private final ScrimView mScrimView;
 
@@ -66,13 +66,13 @@ class AssistantOnboardingCoordinator {
 
     AssistantOnboardingCoordinator(String experimentIds, Map<String, String> parameters,
             Context context, BottomSheetController controller,
-            ChromeFullscreenManager fullscreenManager, CompositorViewHolder compositorViewHolder,
+            BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
             ScrimView scrimView) {
         mExperimentIds = experimentIds;
         mParameters = parameters;
         mContext = context;
         mController = controller;
-        mFullscreenManager = fullscreenManager;
+        mBrowserControls = browserControls;
         mCompositorViewHolder = compositorViewHolder;
         mScrimView = scrimView;
     }
@@ -94,7 +94,7 @@ class AssistantOnboardingCoordinator {
         // If there's a tab, cover it with an overlay.
         AssistantOverlayModel overlayModel = new AssistantOverlayModel();
         mOverlayCoordinator = new AssistantOverlayCoordinator(
-                mContext, mFullscreenManager, mCompositorViewHolder, mScrimView, overlayModel);
+                mContext, mBrowserControls, mCompositorViewHolder, mScrimView, overlayModel);
         overlayModel.set(AssistantOverlayModel.STATE, AssistantOverlayState.FULL);
 
         mContent = new AssistantBottomSheetContent(mContext, () -> {

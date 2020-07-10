@@ -554,6 +554,15 @@ NOINLINE void WorkerGlobalScope::InitializeURL(const KURL& url) {
   url_ = url;
 }
 
+void WorkerGlobalScope::SetWorkerMainScriptLoadingParametersForModules(
+    std::unique_ptr<WorkerMainScriptLoadParameters>
+        worker_main_script_load_params_for_modules) {
+  DCHECK(worker_main_script_load_params_for_modules);
+  DCHECK(!worker_main_script_load_params_for_modules_);
+  worker_main_script_load_params_for_modules_ =
+      std::move(worker_main_script_load_params_for_modules);
+}
+
 void WorkerGlobalScope::queueMicrotask(V8VoidFunction* callback) {
   GetAgent()->event_loop()->EnqueueMicrotask(
       WTF::Bind(&V8VoidFunction::InvokeAndReportException,
@@ -586,6 +595,11 @@ ukm::UkmRecorder* WorkerGlobalScope::UkmRecorder() {
   ukm_recorder_ = std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
 
   return ukm_recorder_.get();
+}
+
+std::unique_ptr<WorkerMainScriptLoadParameters>
+WorkerGlobalScope::TakeWorkerMainScriptLoadingParametersForModules() {
+  return std::move(worker_main_script_load_params_for_modules_);
 }
 
 void WorkerGlobalScope::Trace(Visitor* visitor) const {

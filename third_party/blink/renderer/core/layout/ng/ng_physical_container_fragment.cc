@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -28,9 +29,7 @@ struct SameSizeAsNGPhysicalContainerFragment : NGPhysicalFragment {
   void* pointer;
 };
 
-static_assert(sizeof(NGPhysicalContainerFragment) ==
-                  sizeof(SameSizeAsNGPhysicalContainerFragment),
-              "NGPhysicalContainerFragment should stay small");
+ASSERT_SIZE(NGPhysicalContainerFragment, SameSizeAsNGPhysicalContainerFragment);
 
 }  // namespace
 

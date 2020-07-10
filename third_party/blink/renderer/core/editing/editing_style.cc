@@ -1436,7 +1436,7 @@ static MutableCSSPropertyValueSet* StyleFromMatchedRulesForElement(
   auto* style =
       MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode);
   StyleRuleList* matched_rules =
-      element->GetDocument().EnsureStyleResolver().StyleRulesForElement(
+      element->GetDocument().GetStyleResolver().StyleRulesForElement(
           element, rules_to_include);
   if (matched_rules) {
     for (unsigned i = 0; i < matched_rules->size(); ++i)

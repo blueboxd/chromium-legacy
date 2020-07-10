@@ -51,6 +51,15 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
     FOCUS_REASON_OTHER,
   };
 
+#if defined(OS_CHROMEOS)
+  enum SubClass {
+    kRenderWidgetHostViewAura = 0,
+    kArcImeService = 1,
+    kTextField = 2,
+    kMaxValue = kTextField,
+  };
+#endif
+
   virtual ~TextInputClient();
 
   // Input method result -------------------------------------------------------

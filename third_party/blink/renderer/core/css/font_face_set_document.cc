@@ -197,9 +197,8 @@ bool FontFaceSetDocument::ResolveFontStyle(const String& font_string,
 
   style->SetFontDescription(default_font_description);
 
-  GetDocument()->UpdateActiveStyle();
-  GetDocument()->EnsureStyleResolver().ComputeFont(
-      *GetDocument()->documentElement(), style.get(), *parsed_style);
+  GetDocument()->GetStyleEngine().ComputeFont(*GetDocument()->documentElement(),
+                                              style.get(), *parsed_style);
 
   font = style->GetFont();
 

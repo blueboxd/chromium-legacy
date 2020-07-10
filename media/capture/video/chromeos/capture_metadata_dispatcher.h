@@ -19,6 +19,7 @@ class CAPTURE_EXPORT CaptureMetadataDispatcher {
    public:
     virtual ~ResultMetadataObserver() {}
     virtual void OnResultMetadataAvailable(
+        uint32_t frame_number,
         const cros::mojom::CameraMetadataPtr&) = 0;
   };
 

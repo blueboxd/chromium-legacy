@@ -76,13 +76,13 @@ class ExtensionPrefsLastPingDay : public ExtensionPrefsTest {
  public:
   ExtensionPrefsLastPingDay()
       : extension_time_(Time::Now() - TimeDelta::FromHours(4)),
-        blacklist_time_(Time::Now() - TimeDelta::FromHours(2)) {}
+        blocklist_time_(Time::Now() - TimeDelta::FromHours(2)) {}
 
   void Initialize() override {
     extension_id_ = prefs_.AddExtensionAndReturnId("last_ping_day");
     EXPECT_TRUE(prefs()->LastPingDay(extension_id_).is_null());
     prefs()->SetLastPingDay(extension_id_, extension_time_);
-    prefs()->SetBlocklistLastPingDay(blacklist_time_);
+    prefs()->SetBlocklistLastPingDay(blocklist_time_);
   }
 
   void Verify() override {
@@ -91,12 +91,12 @@ class ExtensionPrefsLastPingDay : public ExtensionPrefsTest {
     EXPECT_TRUE(result == extension_time_);
     result = prefs()->BlocklistLastPingDay();
     EXPECT_FALSE(result.is_null());
-    EXPECT_TRUE(result == blacklist_time_);
+    EXPECT_TRUE(result == blocklist_time_);
   }
 
  private:
   Time extension_time_;
-  Time blacklist_time_;
+  Time blocklist_time_;
   std::string extension_id_;
 };
 TEST_F(ExtensionPrefsLastPingDay, LastPingDay) {}
@@ -431,15 +431,15 @@ class ExtensionPrefsAcknowledgment : public ExtensionPrefsTest {
         external_id_ = id;
         continue;
       }
-      if (blacklisted_id_.empty()) {
-        blacklisted_id_ = id;
+      if (blocklisted_id_.empty()) {
+        blocklisted_id_ = id;
         continue;
       }
     }
     // For each type of acknowledgment, acknowledge one installed and one
     // not-installed extension id.
     prefs()->AcknowledgeExternalExtension(external_id_);
-    prefs()->AcknowledgeBlocklistedExtension(blacklisted_id_);
+    prefs()->AcknowledgeBlocklistedExtension(blocklisted_id_);
     prefs()->AcknowledgeExternalExtension(not_installed_id_);
     prefs()->AcknowledgeBlocklistedExtension(not_installed_id_);
   }
@@ -453,7 +453,7 @@ class ExtensionPrefsAcknowledgment : public ExtensionPrefsTest {
       } else {
         EXPECT_FALSE(prefs()->IsExternalExtensionAcknowledged(id));
       }
-      if (id == blacklisted_id_) {
+      if (id == blocklisted_id_) {
         EXPECT_TRUE(prefs()->IsBlocklistedExtensionAcknowledged(id));
       } else {
         EXPECT_FALSE(prefs()->IsBlocklistedExtensionAcknowledged(id));
@@ -468,7 +468,7 @@ class ExtensionPrefsAcknowledgment : public ExtensionPrefsTest {
 
   std::string not_installed_id_;
   std::string external_id_;
-  std::string blacklisted_id_;
+  std::string blocklisted_id_;
 };
 TEST_F(ExtensionPrefsAcknowledgment, Acknowledgment) {}
 
@@ -778,10 +778,10 @@ PrefsPrepopulatedTestBase::PrefsPrepopulatedTestBase()
 PrefsPrepopulatedTestBase::~PrefsPrepopulatedTestBase() {
 }
 
-// Tests that blacklist state can be queried.
-class ExtensionPrefsBlacklistedExtensions : public ExtensionPrefsTest {
+// Tests that blocklist state can be queried.
+class ExtensionPrefsBlocklistedExtensions : public ExtensionPrefsTest {
  public:
-  ~ExtensionPrefsBlacklistedExtensions() override {}
+  ~ExtensionPrefsBlocklistedExtensions() override {}
 
   void Initialize() override {
     extension_a_ = prefs_.AddExtension("a");
@@ -827,7 +827,7 @@ class ExtensionPrefsBlacklistedExtensions : public ExtensionPrefsTest {
     }
 
     // The interesting part: make sure that we're cleaning up after ourselves
-    // when we're storing *just* the fact that the extension is blacklisted.
+    // when we're storing *just* the fact that the extension is blocklisted.
     std::string arbitrary_id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
     prefs()->SetExtensionBlocklistState(arbitrary_id, BLOCKLISTED_MALWARE);
@@ -856,14 +856,14 @@ class ExtensionPrefsBlacklistedExtensions : public ExtensionPrefsTest {
   scoped_refptr<const Extension> extension_b_;
   scoped_refptr<const Extension> extension_c_;
 };
-TEST_F(ExtensionPrefsBlacklistedExtensions,
-       ExtensionPrefsBlacklistedExtensions) {}
+TEST_F(ExtensionPrefsBlocklistedExtensions,
+       ExtensionPrefsBlocklistedExtensions) {}
 
-// Tests the blacklist state. Old "blacklist" preference should take precedence
-// over new "blacklist_state".
-class ExtensionPrefsBlacklistState : public ExtensionPrefsTest {
+// Tests the blocklist state. Old "blocklist" preference should take precedence
+// over new "blocklist_state".
+class ExtensionPrefsBlocklistState : public ExtensionPrefsTest {
  public:
-  ~ExtensionPrefsBlacklistState() override {}
+  ~ExtensionPrefsBlocklistState() override {}
 
   void Initialize() override { extension_a_ = prefs_.AddExtension("a"); }
 
@@ -900,7 +900,7 @@ class ExtensionPrefsBlacklistState : public ExtensionPrefsTest {
  private:
   scoped_refptr<const Extension> extension_a_;
 };
-TEST_F(ExtensionPrefsBlacklistState, ExtensionPrefsBlacklistState) {}
+TEST_F(ExtensionPrefsBlocklistState, ExtensionPrefsBlocklistState) {}
 
 // Tests clearing the last launched preference.
 class ExtensionPrefsClearLastLaunched : public ExtensionPrefsTest {

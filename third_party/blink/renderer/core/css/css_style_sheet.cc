@@ -197,46 +197,39 @@ void CSSStyleSheet::WillMutateRules() {
   ReattachChildRuleCSSOMWrappers();
 }
 
-void CSSStyleSheet::DidMutateRules() {
-  DCHECK(contents_->IsMutable());
-  DCHECK_LE(contents_->ClientSize(), 1u);
-
-  Document* owner = OwnerDocument();
-
-  if ((associated_document_ || owner) && !custom_element_tag_names_.IsEmpty()) {
-    Document* document =
-        associated_document_ ? associated_document_.Get() : owner;
+void CSSStyleSheet::DidMutate(Mutation mutation) {
+  if (mutation == Mutation::kRules) {
+    DCHECK(contents_->IsMutable());
+    DCHECK_LE(contents_->ClientSize(), 1u);
+  }
+  Document* document = OwnerDocument();
+  if (!document || !document->IsActive())
+    return;
+  if (!custom_element_tag_names_.IsEmpty()) {
     document->GetStyleEngine().ScheduleCustomElementInvalidations(
         custom_element_tag_names_);
   }
-
-  if (owner && ownerNode() && ownerNode()->isConnected()) {
-    owner->GetStyleEngine().SetNeedsActiveStyleUpdate(
+  bool invalidate_matched_properties_cache = false;
+  if (ownerNode() && ownerNode()->isConnected()) {
+    document->GetStyleEngine().SetNeedsActiveStyleUpdate(
         ownerNode()->GetTreeScope());
-    if (StyleResolver* resolver = owner->GetStyleEngine().Resolver())
-      resolver->InvalidateMatchedPropertiesCache();
+    invalidate_matched_properties_cache = true;
   } else if (!adopted_tree_scopes_.IsEmpty()) {
     for (auto tree_scope : adopted_tree_scopes_) {
+      // It is currently required that adopted sheets can not be moved between
+      // documents.
+      DCHECK(tree_scope->GetDocument() == document);
       if (!tree_scope->RootNode().isConnected())
         continue;
-      tree_scope->GetDocument().GetStyleEngine().SetNeedsActiveStyleUpdate(
-          *tree_scope);
-      if (StyleResolver* resolver =
-              tree_scope->GetDocument().GetStyleEngine().Resolver())
-        resolver->InvalidateMatchedPropertiesCache();
+      document->GetStyleEngine().SetNeedsActiveStyleUpdate(*tree_scope);
+      invalidate_matched_properties_cache = true;
     }
   }
-
-  probe::DidMutateStyleSheet(OwnerDocument(), this);
-}
-
-void CSSStyleSheet::DidMutate() {
-  Document* owner = OwnerDocument();
-  if (!owner)
-    return;
-  if (ownerNode() && ownerNode()->isConnected())
-    owner->GetStyleEngine().SetNeedsActiveStyleUpdate(
-        ownerNode()->GetTreeScope());
+  if (mutation == Mutation::kRules) {
+    if (invalidate_matched_properties_cache)
+      document->GetStyleResolver().InvalidateMatchedPropertiesCache();
+    probe::DidMutateStyleSheet(document, this);
+  }
 }
 
 void CSSStyleSheet::EnableRuleAccessForInspector() {
@@ -269,7 +262,7 @@ void CSSStyleSheet::setDisabled(bool disabled) {
     return;
   is_disabled_ = disabled;
 
-  DidMutate();
+  DidMutate(Mutation::kSheet);
 }
 
 void CSSStyleSheet::SetMediaQueries(
@@ -310,7 +303,7 @@ CSSRule* CSSStyleSheet::item(unsigned index) {
 }
 
 void CSSStyleSheet::ClearOwnerNode() {
-  DidMutate();
+  DidMutate(Mutation::kSheet);
   if (owner_node_)
     contents_->UnregisterClient(this);
   owner_node_ = nullptr;
@@ -495,7 +488,7 @@ void CSSStyleSheet::ResolveReplacePromiseIfNeeded(bool load_error_occured) {
     resolver_->Resolve(this);
   }
   resolver_ = nullptr;
-  DidMutateRules();
+  DidMutate(Mutation::kRules);
 }
 
 CSSRuleList* CSSStyleSheet::cssRules(ExceptionState& exception_state) {
@@ -542,8 +535,12 @@ CSSStyleSheet* CSSStyleSheet::parentStyleSheet() const {
 }
 
 Document* CSSStyleSheet::OwnerDocument() const {
-  if (is_constructed_)
+  if (is_constructed_) {
+    DCHECK(!parentStyleSheet());
+    DCHECK(!ownerNode());
     return associated_document_;
+  }
+  DCHECK(!associated_document_);
   const CSSStyleSheet* root = this;
   while (root->parentStyleSheet())
     root = root->parentStyleSheet();

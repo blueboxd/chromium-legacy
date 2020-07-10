@@ -64,11 +64,6 @@ TimeDelta ProcessMetrics::GetCumulativeCPUUsage() {
   return TimeDelta();
 }
 
-bool ProcessMetrics::GetCumulativeCPUUsagePerThread(CPUUsagePerThread&) {
-  NOTREACHED();
-  return false;
-}
-
 ProcessMetrics::ProcessMetrics(ProcessHandle process)
     : process_(process),
       last_cpu_(0) {}

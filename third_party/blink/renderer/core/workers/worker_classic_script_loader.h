@@ -34,6 +34,8 @@
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info_notifier.mojom-shared.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
@@ -41,6 +43,8 @@
 #include "third_party/blink/renderer/platform/loader/allowed_by_nosniff.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/worker_main_script_loader.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/worker_main_script_loader_client.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -54,10 +58,12 @@ class ResourceRequest;
 class ResourceResponse;
 class ExecutionContext;
 class TextResourceDecoder;
+struct WorkerMainScriptLoadParameters;
 
 class CORE_EXPORT WorkerClassicScriptLoader final
     : public GarbageCollected<WorkerClassicScriptLoader>,
-      public ThreadableLoaderClient {
+      public ThreadableLoaderClient,
+      public WorkerMainScriptLoaderClient {
   USING_GARBAGE_COLLECTED_MIXIN(WorkerClassicScriptLoader);
 
  public:
@@ -77,10 +83,21 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   // ExecutionContext::Fetcher() in off-the-main-thread fetch.
   // TODO(crbug.com/1064920): Remove |reject_coep_unsafe_none| and
   // |blob_url_loader_factory| when PlzDedicatedWorker ships.
+  //
+  // |worker_main_script_load_params| is valid only when
+  // features::kLoadMainScriptForPlzDedicatedWorkerByParams is enabled.
+  //
+  // |resource_load_info_notifier| is valid and used to notify of the loading
+  // status of the top-level script for DedicatedWorker only when
+  // IsLoadMainScriptForPlzDedicatedWorkerByParamsEnabled() is true
   void LoadTopLevelScriptAsynchronously(
       ExecutionContext&,
       ResourceFetcher* fetch_client_settings_object_fetcher,
       const KURL&,
+      std::unique_ptr<WorkerMainScriptLoadParameters>
+          worker_main_script_load_params,
+      CrossVariantMojoRemote<mojom::ResourceLoadInfoNotifierInterfaceBase>
+          resource_load_info_notifier,
       mojom::RequestContextType,
       network::mojom::RequestDestination,
       network::mojom::RequestMode,
@@ -131,6 +148,13 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   void DidFail(const ResourceError&) override;
   void DidFailRedirectCheck() override;
 
+  // WorkerMainScriptLoaderClient
+  // These will be called only when
+  // features::kLoadMainScriptForPlzDedicatedWorkerByParams is enabled.
+  void DidReceiveData(base::span<const char> span) override;
+  void OnFinishedLoadingWorkerMainScript() override;
+  void OnFailedLoadingWorkerMainScript() override;
+
   void Trace(Visitor*) const override;
 
  private:
@@ -144,6 +168,7 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   base::OnceClosure finished_callback_;
 
   Member<ThreadableLoader> threadable_loader_;
+  Member<WorkerMainScriptLoader> worker_main_script_loader_;
   String response_encoding_;
   std::unique_ptr<TextResourceDecoder> decoder_;
   StringBuilder source_text_;

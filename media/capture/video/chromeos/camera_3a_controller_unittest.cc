@@ -321,7 +321,7 @@ TEST_F(Camera3AControllerTest, Stabilize3AForStillCaptureTest) {
   RunOnThreadSync(FROM_HERE,
                   base::BindOnce(&Camera3AController::OnResultMetadataAvailable,
                                  base::Unretained(camera_3a_controller_.get()),
-                                 std::cref(result_metadata)));
+                                 0, std::cref(result_metadata)));
 
   // |camera_3a_controller_| should call the registered callback once 3A are
   // stabilized.
@@ -340,7 +340,7 @@ TEST_F(Camera3AControllerTest, Stabilize3AForStillCaptureTest) {
   RunOnThreadSync(FROM_HERE,
                   base::BindOnce(&Camera3AController::OnResultMetadataAvailable,
                                  base::Unretained(camera_3a_controller_.get()),
-                                 std::cref(result_metadata)));
+                                 0, std::cref(result_metadata)));
   done.Wait();
 }
 

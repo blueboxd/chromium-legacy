@@ -715,6 +715,13 @@ bool LayoutBoxModelObject::HasAutoHeightOrContainingBlockWithAutoHeight(
       if (flex_box.UseOverrideLogicalHeightForPerentageResolution(*this_box))
         return false;
     } else if (this_box->GetCachedLayoutResult()) {
+      // TODO(dgrogan): We won't get here when laying out the FlexNG item and
+      // its descendant(s) for the first time because the item (|this_box|)
+      // doesn't have anything in its cache. That seems bad because this method
+      // returns true even when the item has a fixed definite height. There
+      // doesn't seem to be an easy way to check the flex item's definiteness
+      // here because the flex item's LayoutObject doesn't have a
+      // BoxLayoutExtraInput that we could add a flag to.
       const NGConstraintSpace& space =
           this_box->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
       if (space.IsFixedBlockSize() && !space.IsFixedBlockSizeIndefinite())

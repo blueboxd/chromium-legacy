@@ -125,6 +125,8 @@ void SharedWorkerGlobalScope::Initialize(
 // https://html.spec.whatwg.org/C/#worker-processing-model
 void SharedWorkerGlobalScope::FetchAndRunClassicScript(
     const KURL& script_url,
+    std::unique_ptr<WorkerMainScriptLoadParameters>
+        worker_main_script_load_params,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     const v8_inspector::V8StackTraceId& stack_id) {
@@ -147,7 +149,8 @@ void SharedWorkerGlobalScope::FetchAndRunClassicScript(
       *this,
       CreateOutsideSettingsFetcher(outside_settings_object,
                                    outside_resource_timing_notifier),
-      script_url, context_type, destination,
+      script_url, std::move(worker_main_script_load_params),
+      CloneResourceLoadInfoNotifier(), context_type, destination,
       network::mojom::RequestMode::kSameOrigin,
       network::mojom::CredentialsMode::kSameOrigin,
       WTF::Bind(&SharedWorkerGlobalScope::DidReceiveResponseForClassicScript,
@@ -161,11 +164,18 @@ void SharedWorkerGlobalScope::FetchAndRunClassicScript(
 // https://html.spec.whatwg.org/C/#worker-processing-model
 void SharedWorkerGlobalScope::FetchAndRunModuleScript(
     const KURL& module_url_record,
+    std::unique_ptr<WorkerMainScriptLoadParameters>
+        worker_main_script_load_params,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     network::mojom::CredentialsMode credentials_mode,
     RejectCoepUnsafeNone reject_coep_unsafe_none) {
   DCHECK(!reject_coep_unsafe_none);
+  if (worker_main_script_load_params) {
+    SetWorkerMainScriptLoadingParametersForModules(
+        std::move(worker_main_script_load_params));
+  }
+
   // Step 12: "Let destination be "sharedworker" if is shared is true, and
   // "worker" otherwise."
   auto context_type = mojom::RequestContextType::SHARED_WORKER;

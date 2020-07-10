@@ -104,7 +104,7 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK(config.IsValidConfig());
   DCHECK(state_ == State::kUninitialized || state_ == State::kWaitingForInput);
-  DVLOGF(3);
+  DVLOGF(2) << config.AsHumanReadableString();
 
   // Reinitializing the decoder is allowed if there are no pending decodes.
   if (current_decode_task_ || !decode_task_queue_.empty()) {
@@ -345,7 +345,7 @@ void VaapiVideoDecoder::SurfaceReady(scoped_refptr<VASurface> va_surface,
                                      const VideoColorSpace& color_space) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK_EQ(state_, State::kDecoding);
-  DVLOGF(3);
+  DVLOGF(4);
 
   // Find the timestamp associated with |buffer_id|. It's possible that a
   // surface is output multiple times for different |buffer_id|s (e.g. VP9
@@ -538,7 +538,7 @@ void VaapiVideoDecoder::Reset(base::OnceClosure reset_cb) {
 
 bool VaapiVideoDecoder::CreateAcceleratedVideoDecoder() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DVLOGF(3);
+  DVLOGF(2);
 
   if (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX) {
     auto accelerator =
@@ -580,7 +580,7 @@ void VaapiVideoDecoder::ResetDone(base::OnceClosure reset_cb) {
 
 void VaapiVideoDecoder::SetState(State state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DVLOGF(4) << static_cast<int>(state)
+  DVLOGF(3) << static_cast<int>(state)
             << ", current state: " << static_cast<int>(state_);
 
   // Check whether the state change is valid.

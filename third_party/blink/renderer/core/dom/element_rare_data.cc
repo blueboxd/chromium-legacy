@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/resize_observer/resize_observation.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -114,7 +115,6 @@ void ElementRareData::TraceAfterDispatch(blink::Visitor* visitor) const {
   NodeRareData::TraceAfterDispatch(visitor);
 }
 
-static_assert(sizeof(ElementRareData) == sizeof(SameSizeAsElementRareData),
-              "ElementRareData should stay small");
+ASSERT_SIZE(ElementRareData, SameSizeAsElementRareData);
 
 }  // namespace blink

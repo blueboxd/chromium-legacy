@@ -9,6 +9,7 @@
 // <include src="display_manager_types.js">
 
 // TODO(xiyuan): Find a better to share those constants.
+/** @const */ var SCREEN_WELCOME = 'connect';
 /** @const */ var SCREEN_OOBE_NETWORK = 'network-selection';
 /** @const */ var SCREEN_OOBE_HID_DETECTION = 'hid-detection';
 /** @const */ var SCREEN_OOBE_EULA = 'eula';
@@ -57,7 +58,6 @@
 /** @const */ var ACCELERATOR_APP_LAUNCH_BAILOUT = 'app_launch_bailout';
 /** @const */ var ACCELERATOR_APP_LAUNCH_NETWORK_CONFIG =
     'app_launch_network_config';
-/** @const */ var ACCELERATOR_DEMO_MODE = "demo_mode";
 /** @const */ var ACCELERATOR_SEND_FEEDBACK = "send_feedback";
 
 /* Possible UI states of the error screen. */
@@ -444,8 +444,6 @@ cr.define('cr.ui.login', function() {
       } else if (name == ACCELERATOR_APP_LAUNCH_NETWORK_CONFIG) {
         if (currentStepId == SCREEN_APP_LAUNCH_SPLASH)
           chrome.send('networkConfigRequest');
-      } else if (name == ACCELERATOR_DEMO_MODE) {
-        this.startDemoModeFlow();
       } else if (name == ACCELERATOR_SEND_FEEDBACK) {
         chrome.send('sendFeedback');
       }
@@ -779,7 +777,12 @@ cr.define('cr.ui.login', function() {
     initializeDemoModeMultiTapListener: function() {
       if (this.displayType_ == DISPLAY_TYPE.OOBE) {
         this.demoModeStartListener_ = new MultiTapDetector(
-            $('outer-container'), 10, this.startDemoModeFlow.bind(this));
+            $('outer-container'), 10, () => {
+              let currentScreen = Oobe.getInstance().currentScreen;
+              if (currentScreen.id === SCREEN_WELCOME) {
+                currentScreen.onSetupDemoModeGesture();
+              }
+        });
       }
     },
 
@@ -863,43 +866,6 @@ cr.define('cr.ui.login', function() {
           function() {  // onCancel
             chrome.send('setDeviceRequisition', ['none']);
           });
-    },
-
-    /**
-     * Starts demo mode flow. Shows the enable demo mode dialog if needed.
-     */
-    startDemoModeFlow: function() {
-      var isDemoModeEnabled = loadTimeData.getBoolean('isDemoModeEnabled');
-      if (!isDemoModeEnabled) {
-        console.warn('Cannot setup demo mode, because it is disabled.');
-        return;
-      }
-
-      var currentStepId = this.screens_[this.currentStep_];
-      var attributes = this.screensAttributes_[this.currentStep_] || {};
-      if (!attributes.enterDemoModeAllowed)
-        return;
-
-      if (!this.enableDemoModeDialog_) {
-        this.enableDemoModeDialog_ =
-            new cr.ui.dialogs.ConfirmDialog(document.body);
-        this.enableDemoModeDialog_.setOkLabel(
-            loadTimeData.getString('enableDemoModeDialogConfirm'));
-        this.enableDemoModeDialog_.setCancelLabel(
-            loadTimeData.getString('enableDemoModeDialogCancel'));
-      }
-      var configuration = Oobe.getInstance().getOobeConfiguration();
-      if (configuration && configuration.enableDemoMode) {
-        // Bypass showing dialog.
-        chrome.send('setupDemoMode');
-      } else {
-        this.enableDemoModeDialog_.showWithTitle(
-            loadTimeData.getString('enableDemoModeDialogTitle'),
-            loadTimeData.getString('enableDemoModeDialogText'),
-            function() {  // onOk
-              chrome.send('setupDemoMode');
-            });
-      }
     },
 
     /**

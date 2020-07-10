@@ -141,6 +141,10 @@ bool AXPlatformNodeDelegateBase::IsLeaf() const {
   return !GetChildCount();
 }
 
+bool AXPlatformNodeDelegateBase::IsToplevelBrowserWindow() {
+  return false;
+}
+
 bool AXPlatformNodeDelegateBase::IsChildOfPlainTextField() const {
   return false;
 }

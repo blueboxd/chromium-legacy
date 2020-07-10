@@ -14,6 +14,7 @@
 #include "base/containers/span.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -234,12 +235,12 @@ class SetAttributeForKeyExecutionWaiter : public ExecutionWaiter<> {
 // Supports waiting for the result of the
 // PlatformKeysService::GetAttributeForKey.
 class GetAttributeForKeyExecutionWaiter
-    : public ExecutionWaiter<const std::string&> {
+    : public ExecutionWaiter<const base::Optional<std::string>&> {
  public:
   GetAttributeForKeyExecutionWaiter() = default;
   ~GetAttributeForKeyExecutionWaiter() = default;
 
-  const std::string& attribute_value() const {
+  const base::Optional<std::string>& attribute_value() const {
     return std::get<0>(result_callback_args());
   }
 };
@@ -463,32 +464,14 @@ IN_PROC_BROWSER_TEST_P(PlatformKeysServiceBrowserTest, SetAndGetKeyAttribute) {
     get_attribute_for_key_execution_waiter.Wait();
 
     EXPECT_TRUE(get_attribute_for_key_execution_waiter.error_message().empty());
-    EXPECT_EQ(get_attribute_for_key_execution_waiter.attribute_value(),
+    ASSERT_TRUE(get_attribute_for_key_execution_waiter.attribute_value());
+    EXPECT_EQ(get_attribute_for_key_execution_waiter.attribute_value().value(),
               attribute_value);
   }
 }
 
-IN_PROC_BROWSER_TEST_P(PlatformKeysServiceBrowserTest, GetUnsetKeyAttribute) {
-  const KeyAttributeType kAttributeType =
-      KeyAttributeType::CertificateProvisioningId;
-
-  for (TokenId token_id : GetParam().token_ids) {
-    // Generate key pair.
-    const std::string public_key_spki_der = GenerateKeyPair(token_id);
-    ASSERT_FALSE(public_key_spki_der.empty());
-
-    // Get key attribute.
-    GetAttributeForKeyExecutionWaiter get_attribute_for_key_execution_waiter;
-    platform_keys_service()->GetAttributeForKey(
-        token_id, public_key_spki_der, kAttributeType,
-        get_attribute_for_key_execution_waiter.GetCallback());
-    get_attribute_for_key_execution_waiter.Wait();
-
-    EXPECT_TRUE(get_attribute_for_key_execution_waiter.error_message().empty());
-    EXPECT_TRUE(
-        get_attribute_for_key_execution_waiter.attribute_value().empty());
-  }
-}
+// TODO(https://crbug.com/1073515): Add a test for an unset key attribute when
+// simulating chaps behavior is possible.
 
 IN_PROC_BROWSER_TEST_P(PlatformKeysServiceBrowserTest,
                        GetKeyAttributeForNonExistingKey) {
@@ -506,6 +489,7 @@ IN_PROC_BROWSER_TEST_P(PlatformKeysServiceBrowserTest,
 
     EXPECT_FALSE(
         get_attribute_for_key_execution_waiter.error_message().empty());
+    ASSERT_FALSE(get_attribute_for_key_execution_waiter.attribute_value());
   }
 }
 

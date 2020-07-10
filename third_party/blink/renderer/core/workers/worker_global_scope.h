@@ -31,6 +31,7 @@
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/common/loader/worker_main_script_load_parameters.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -165,6 +166,8 @@ class CORE_EXPORT WorkerGlobalScope
   // Fetches and evaluates the top-level classic script.
   virtual void FetchAndRunClassicScript(
       const KURL& script_url,
+      std::unique_ptr<WorkerMainScriptLoadParameters>
+          worker_main_script_load_params_for_modules,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       const v8_inspector::V8StackTraceId& stack_id) = 0;
@@ -172,6 +175,8 @@ class CORE_EXPORT WorkerGlobalScope
   // Fetches and evaluates the top-level module script.
   virtual void FetchAndRunModuleScript(
       const KURL& module_url_record,
+      std::unique_ptr<WorkerMainScriptLoadParameters>
+          worker_main_script_load_params_for_modules,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       network::mojom::CredentialsMode,
@@ -201,6 +206,11 @@ class CORE_EXPORT WorkerGlobalScope
   // workers support off-the-main-thread script fetch by default.
   virtual bool IsOffMainThreadScriptFetchDisabled() { return false; }
 
+  // Takes the ownership of the parameters used to load the worker main module
+  // script in renderer process.
+  std::unique_ptr<WorkerMainScriptLoadParameters>
+  TakeWorkerMainScriptLoadingParametersForModules();
+
  protected:
   WorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                     WorkerThread*,
@@ -224,6 +234,12 @@ class CORE_EXPORT WorkerGlobalScope
   void InitializeURL(const KURL& url);
 
   mojom::ScriptType GetScriptType() const { return script_type_; }
+
+  // Sets the parameters for the worker main module script loaded by the browser
+  // process.
+  void SetWorkerMainScriptLoadingParametersForModules(
+      std::unique_ptr<WorkerMainScriptLoadParameters>
+          worker_main_script_load_params_for_modules);
 
  private:
   void SetWorkerSettings(std::unique_ptr<WorkerSettings>);
@@ -280,6 +296,12 @@ class CORE_EXPORT WorkerGlobalScope
   HttpsState https_state_;
 
   std::unique_ptr<ukm::UkmRecorder> ukm_recorder_;
+
+  // |worker_main_script_load_params_for_modules_| is used to load a root module
+  // script only for dedicated worker (when PlzDedicatedWorker is enabled) and
+  // shared worker when kLoadMainScriptForPlzDedicatedWorkerByParams is enabled.
+  std::unique_ptr<WorkerMainScriptLoadParameters>
+      worker_main_script_load_params_for_modules_;
 };
 
 template <>

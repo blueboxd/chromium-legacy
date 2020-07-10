@@ -12,6 +12,16 @@ const char QuietNotificationPermissionUiConfig::kEnableAdaptiveActivation[] =
     "enable_adaptive_activation";
 
 // static
+const char
+    QuietNotificationPermissionUiConfig::kEnableAdaptiveActivationDryRun[] =
+        "enable_adaptive_activation_dry_run";
+
+// static
+const char QuietNotificationPermissionUiConfig::
+    kAdaptiveActivationActionWindowSizeInDays[] =
+        "adaptive_activation_windows_size_in_days";
+
+// static
 const char QuietNotificationPermissionUiConfig::kEnableCrowdDenyTriggering[] =
     "enable_crowd_deny_triggering";
 
@@ -50,6 +60,27 @@ bool QuietNotificationPermissionUiConfig::IsAdaptiveActivationEnabled() {
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kQuietNotificationPrompts, kEnableAdaptiveActivation,
       false /* default */);
+}
+
+// static
+bool QuietNotificationPermissionUiConfig::IsAdaptiveActivationDryRunEnabled() {
+  if (!base::FeatureList::IsEnabled(features::kQuietNotificationPrompts))
+    return false;
+
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kQuietNotificationPrompts, kEnableAdaptiveActivationDryRun,
+      false /* default */);
+}
+
+// static
+base::TimeDelta
+QuietNotificationPermissionUiConfig::GetAdaptiveActivationWindowSize() {
+  if (!base::FeatureList::IsEnabled(features::kQuietNotificationPrompts))
+    return base::TimeDelta::FromDays(90);
+
+  return base::TimeDelta::FromDays(base::GetFieldTrialParamByFeatureAsInt(
+      features::kQuietNotificationPrompts,
+      kAdaptiveActivationActionWindowSizeInDays, 90 /* default */));
 }
 
 // static

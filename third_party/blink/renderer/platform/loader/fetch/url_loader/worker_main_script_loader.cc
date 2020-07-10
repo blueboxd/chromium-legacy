@@ -92,7 +92,19 @@ void WorkerMainScriptLoader::Start(
       &WorkerMainScriptLoader::OnConnectionClosed, base::Unretained(this)));
   data_pipe_ = std::move(worker_main_script_load_params->response_body);
 
+  client_->OnStartLoadingBody(resource_response_);
   StartLoadingBody();
+}
+
+void WorkerMainScriptLoader::Cancel() {
+  if (has_cancelled_)
+    return;
+  has_cancelled_ = true;
+  if (watcher_ && watcher_->IsWatching())
+    watcher_->Cancel();
+
+  receiver_.reset();
+  url_loader_remote_.reset();
 }
 
 void WorkerMainScriptLoader::OnReceiveResponse(
@@ -172,6 +184,10 @@ void WorkerMainScriptLoader::Trace(Visitor* visitor) const {
 }
 
 void WorkerMainScriptLoader::StartLoadingBody() {
+  // Loading body may be cancelled before starting by calling |Cancel()|.
+  if (has_cancelled_)
+    return;
+
   watcher_ = std::make_unique<mojo::SimpleWatcher>(
       FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL);
   MojoResult rv =

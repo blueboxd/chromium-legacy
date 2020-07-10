@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/kiosk_launch_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/ui/webui_accelerator_mapping.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -252,6 +253,20 @@ void LoginDisplayHostCommon::MigrateUserData(const std::string& old_password) {
 void LoginDisplayHostCommon::ResyncUserData() {
   if (GetExistingUserController())
     GetExistingUserController()->ResyncUserData();
+}
+
+bool LoginDisplayHostCommon::HandleAccelerator(
+    ash::LoginAcceleratorAction action) {
+  DCHECK(GetOobeUI());
+  if (WizardController::default_controller() &&
+      WizardController::default_controller()->is_initialized()) {
+    if (WizardController::default_controller()->HandleAccelerator(action))
+      return true;
+  }
+  // TODO(crbug.com/1102393): Remove once all accelerators handling is migrated
+  // to browser side.
+  GetOobeUI()->ForwardAccelerator(MapToWebUIAccelerator(action));
+  return true;
 }
 
 void LoginDisplayHostCommon::OnBrowserAdded(Browser* browser) {

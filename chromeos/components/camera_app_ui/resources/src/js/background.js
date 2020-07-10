@@ -77,10 +77,11 @@ let WindowEventCallbacks;  // eslint-disable-line no-unused-vars
 
 /**
  * Callbacks called when specific window events happened in test run.
- * onCreated() is called when AppWindow created with window url. onError() is
- * called with error happening in AppWindow.
+ * onCreated()/onClosed() is called when AppWindow created/closed with window
+ * url. onError() is called with error happening in AppWindow.
  * @typedef {{
  *   onCreated: !function(string),
+ *   onClosed: !function(string),
  *   onError: !TestingErrorCallback,
  * }}
  */
@@ -201,6 +202,9 @@ class CCAWindow {
               this.intent_.cancel();
             }
             this.callbacks_.onClosed(this);
+            if (this.testingCallbacks_ !== null) {
+              this.testingCallbacks_.onClosed(windowUrl);
+            }
           });
           appWindow.contentWindow.backgroundOps = this;
           if (this.testingCallbacks_ !== null) {
@@ -532,34 +536,6 @@ class Background {
 }
 
 /**
- * Handles messages from the test extension used in Tast.
- * @param {*} message The message sent by the calling script.
- * @param {!MessageSender} sender
- * @param {function(string): undefined} sendResponse The callback function which
- *     expects to receive the url of the window when the window is successfully
- *     created.
- * @return {boolean|undefined} True to indicate the response is sent
- *     asynchronously.
- */
-function handleExternalMessageFromTest(message, sender, sendResponse) {
-  if (sender.origin !== TEST_API_ORIGIN) {
-    console.warn(`Unknown sender id: ${sender.id}`);
-    return;
-  }
-  // TODO(crbug/1072700): Cleans up old way of connecting test.
-  switch (message.action) {
-    case 'SET_WINDOW_CREATED_CALLBACK':
-      windowTestEventCallbacks = {
-        onCreated: sendResponse,
-        onError: (errorInfo) => {},
-      };
-      return true;
-    default:
-      console.warn(`Unknown action: ${message.action}`);
-  }
-}
-
-/**
  * Handles connection from the test extension used in Tast.
  * @param {Port} port The port that used to do two-way communication.
  */
@@ -595,6 +571,9 @@ function handleExternalConnectionFromTest(port) {
         onCreated: (windowUrl) => {
           port.postMessage({name: 'connect', windowUrl});
         },
+        onClosed: (windowUrl) => {
+          port.postMessage({name: 'disconnect', windowUrl});
+        },
         onError: (errorInfo) => port.postMessage({name: 'error', errorInfo}),
       };
       return;
@@ -618,7 +597,5 @@ chrome.app.runtime.onLaunched.addListener((launchData) => {
     console.error(e.stack);
   }
 });
-
-browserProxy.addOnMessageExternalListener(handleExternalMessageFromTest);
 
 browserProxy.addOnConnectExternalListener(handleExternalConnectionFromTest);

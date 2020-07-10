@@ -109,7 +109,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override;
   void OnLostMouseGrab() override;
 #if BUILDFLAG(USE_ATK)
-  bool OnAtkKeyEvent(AtkKeyEventStruct* atk_key_event) override;
+  bool OnAtkKeyEvent(AtkKeyEventStruct* atk_key_event, bool transient) override;
 #endif
   bool IsOverrideRedirect(bool is_tiling_wm) const override;
 

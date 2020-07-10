@@ -204,11 +204,11 @@ void WebstoreStandaloneInstaller::OnInstallPromptDone(
     ExtensionService* extension_service =
         ExtensionSystem::Get(profile_)->extension_service();
     if (ExtensionPrefs::Get(profile_)->IsExtensionBlocklisted(id_)) {
-      // Don't install a blacklisted extension.
-      install_result = webstore_install::BLACKLISTED;
-      install_message = webstore_install::kExtensionIsBlacklisted;
+      // Don't install a blocklisted extension.
+      install_result = webstore_install::BLOCKLISTED;
+      install_message = webstore_install::kExtensionIsBlocklisted;
     } else if (!extension_service->IsExtensionEnabled(id_)) {
-      // If the extension is installed but disabled, and not blacklisted,
+      // If the extension is installed but disabled, and not blocklisted,
       // enable it.
       extension_service->EnableExtension(id_);
     }  // else extension is installed and enabled; no work to be done.

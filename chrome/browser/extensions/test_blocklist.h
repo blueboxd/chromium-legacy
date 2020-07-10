@@ -16,12 +16,12 @@ namespace extensions {
 
 class FakeSafeBrowsingDatabaseManager;
 
-// Replace BlacklistStateFetcher for testing of the Blacklist class.
-class BlacklistStateFetcherMock : public BlacklistStateFetcher {
+// Replace BlocklistStateFetcher for testing of the Boacklist class.
+class BlocklistStateFetcherMock : public BlocklistStateFetcher {
  public:
-  BlacklistStateFetcherMock();
+  BlocklistStateFetcherMock();
 
-  ~BlacklistStateFetcherMock() override;
+  ~BlocklistStateFetcherMock() override;
 
   void Request(const std::string& id, const RequestCallback& callback) override;
 
@@ -36,35 +36,35 @@ class BlacklistStateFetcherMock : public BlacklistStateFetcher {
   int request_count_;
 };
 
-// A wrapper for an extensions::Blacklist that provides functionality for
-// testing. It sets up mocks for SafeBrowsing database and BlacklistFetcher,
-// that are used by blacklist to retrieve respectively the set of blacklisted
-// extensions and their blacklist states.
-class TestBlacklist {
+// A wrapper for an extensions::Blocklist that provides functionality for
+// testing. It sets up mocks for SafeBrowsing database and BlocklistFetcher,
+// that are used by blocklist to retrieve respectively the set of blocklisted
+// extensions and their blocklist states.
+class TestBlocklist {
  public:
   // Use this if the SafeBrowsing and/or StateFetcher mocks should be created
-  // before initializing the Blacklist.
-  TestBlacklist();
+  // before initializing the Blocklist.
+  TestBlocklist();
 
-  explicit TestBlacklist(Blacklist* blacklist);
+  explicit TestBlocklist(Blocklist* blocklist);
 
-  ~TestBlacklist();
+  ~TestBlocklist();
 
-  void Attach(Blacklist* blacklist);
+  void Attach(Blocklist* blocklist);
 
-  // Only call this if Blacklist is destroyed before TestBlacklist, otherwise
+  // Only call this if Blocklist is destroyed before TestBlocklist, otherwise
   // it will be performed from the destructor.
   void Detach();
 
-  Blacklist* blacklist() { return blacklist_; }
+  Blocklist* blocklist() { return blocklist_; }
 
   // Set the extension state in SafeBrowsingDatabaseManager and
-  // BlacklistFetcher.
-  void SetBlacklistState(const std::string& extension_id,
+  // BlocklistFetcher.
+  void SetBlocklistState(const std::string& extension_id,
                          BlocklistState state,
                          bool notify);
 
-  BlocklistState GetBlacklistState(const std::string& extension_id);
+  BlocklistState GetBlocklistState(const std::string& extension_id);
 
   void Clear(bool notify);
 
@@ -74,21 +74,21 @@ class TestBlacklist {
 
   void NotifyUpdate();
 
-  const BlacklistStateFetcherMock* fetcher() { return &state_fetcher_mock_; }
+  const BlocklistStateFetcherMock* fetcher() { return &state_fetcher_mock_; }
 
  private:
-  Blacklist* blacklist_;
+  Blocklist* blocklist_;
 
-  // The BlacklistStateFetcher object is normally managed by Blacklist. Because
-  // of this, we need to prevent this object from being deleted with Blacklist.
-  // For this, Detach() should be called before blacklist_ is deleted.
-  BlacklistStateFetcherMock state_fetcher_mock_;
+  // The BlocklistStateFetcher object is normally managed by Blocklist. Because
+  // of this, we need to prevent this object from being deleted with Blocklist.
+  // For this, Detach() should be called before blocklist_ is deleted.
+  BlocklistStateFetcherMock state_fetcher_mock_;
 
-  scoped_refptr<FakeSafeBrowsingDatabaseManager> blacklist_db_;
+  scoped_refptr<FakeSafeBrowsingDatabaseManager> blocklist_db_;
 
-  Blacklist::ScopedDatabaseManagerForTest scoped_blacklist_db_;
+  Blocklist::ScopedDatabaseManagerForTest scoped_blocklist_db_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestBlacklist);
+  DISALLOW_COPY_AND_ASSIGN(TestBlocklist);
 };
 
 }  // namespace extensions

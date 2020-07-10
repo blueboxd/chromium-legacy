@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -28,9 +29,7 @@ struct SameSizeAsNGPhysicalBoxFragment : NGPhysicalContainerFragment {
   NGLink children[];
 };
 
-static_assert(sizeof(NGPhysicalBoxFragment) ==
-                  sizeof(SameSizeAsNGPhysicalBoxFragment),
-              "NGPhysicalBoxFragment should stay small");
+ASSERT_SIZE(NGPhysicalBoxFragment, SameSizeAsNGPhysicalBoxFragment);
 
 bool HasControlClip(const NGPhysicalBoxFragment& self) {
   const LayoutBox* box = ToLayoutBoxOrNull(self.GetLayoutObject());

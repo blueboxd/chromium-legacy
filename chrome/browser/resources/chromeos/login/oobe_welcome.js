@@ -81,6 +81,7 @@ Polymer({
   EXTERNAL_API: [
     'onInputMethodIdSetFromBackend',
     'refreshA11yInfo',
+    'showDemoModeConfirmationDialog',
   ],
 
   /**
@@ -94,7 +95,6 @@ Polymer({
     this.initializeLoginScreen('WelcomeScreen', {
       resetAllowed: true,
       enableDebuggingAllowed: true,
-      enterDemoModeAllowed: true,
       postponeEnrollmentAllowed: true,
     });
     this.updateLocalizedContent();
@@ -184,8 +184,9 @@ Polymer({
     if (configuration.welcomeNext)
       this.onWelcomeNextButtonClicked_();
 
-    if (configuration.enableDemoMode)
-      Oobe.getInstance().startDemoModeFlow();
+    if (configuration.enableDemoMode) {
+      this.userActed('setupDemoModeGesture');
+    }
 
     this.configuration_applied_ = true;
   },
@@ -396,6 +397,29 @@ Polymer({
    */
   refreshA11yInfo(data) {
     this.a11yStatus = data;
+  },
+
+  /**
+   * Shows confirmation dialog for starting Demo mode
+   */
+  showDemoModeConfirmationDialog() {
+    if (!this.enableDemoModeDialog_) {
+      this.enableDemoModeDialog_ =
+          new cr.ui.dialogs.ConfirmDialog(document.body);
+      this.enableDemoModeDialog_.setOkLabel(
+          loadTimeData.getString('enableDemoModeDialogConfirm'));
+      this.enableDemoModeDialog_.setCancelLabel(
+          loadTimeData.getString('enableDemoModeDialogCancel'));
+    }
+    this.enableDemoModeDialog_.showWithTitle(
+        loadTimeData.getString('enableDemoModeDialogTitle'),
+        loadTimeData.getString('enableDemoModeDialogText'), () => {
+          this.userActed('setupDemoMode');
+        });
+  },
+
+  onSetupDemoModeGesture() {
+    this.userActed('setupDemoModeGesture');
   },
 
   onKeyboardsChanged_() {

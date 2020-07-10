@@ -48,31 +48,7 @@ bool AreAppsLocallyInstalledByDefault() {
 std::unique_ptr<syncer::EntityData> CreateSyncEntityData(const WebApp& app) {
   auto entity_data = std::make_unique<syncer::EntityData>();
   entity_data->name = app.name();
-
-  sync_pb::WebAppSpecifics* sync_data =
-      entity_data->specifics.mutable_web_app();
-  sync_data->set_launch_url(app.launch_url().spec());
-  sync_data->set_user_display_mode(
-      ToWebAppSpecificsUserDisplayMode(app.user_display_mode()));
-  sync_data->set_name(app.sync_fallback_data().name);
-  if (app.sync_fallback_data().theme_color.has_value())
-    sync_data->set_theme_color(app.sync_fallback_data().theme_color.value());
-  if (app.user_page_ordinal().IsValid()) {
-    sync_data->set_user_page_ordinal(app.user_page_ordinal().ToInternalValue());
-  }
-  if (app.user_launch_ordinal().IsValid()) {
-    sync_data->set_user_launch_ordinal(
-        app.user_launch_ordinal().ToInternalValue());
-  }
-  if (app.scope().is_valid())
-    sync_data->set_scope(app.scope().spec());
-  for (const WebApplicationIconInfo& icon : app.icon_infos()) {
-    sync_pb::WebAppIconInfo* icon_info_proto = sync_data->add_icon_infos();
-    icon_info_proto->set_url(icon.url.spec());
-    if (icon.square_size_px.has_value())
-      icon_info_proto->set_size_in_px(icon.square_size_px.value());
-  }
-
+  *(entity_data->specifics.mutable_web_app()) = WebAppToSyncProto(app);
   return entity_data;
 }
 

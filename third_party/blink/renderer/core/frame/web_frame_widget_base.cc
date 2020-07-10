@@ -170,26 +170,26 @@ WebDragOperation WebFrameWidgetBase::DragTargetDragEnter(
     const gfx::PointF& point_in_viewport,
     const gfx::PointF& screen_point,
     WebDragOperationsMask operations_allowed,
-    int modifiers) {
+    uint32_t key_modifiers) {
   DCHECK(!current_drag_data_);
 
   current_drag_data_ = DataObject::Create(web_drag_data);
   operations_allowed_ = operations_allowed;
 
   return DragTargetDragEnterOrOver(point_in_viewport, screen_point, kDragEnter,
-                                   modifiers);
+                                   key_modifiers);
 }
 
 void WebFrameWidgetBase::DragTargetDragOver(
     const gfx::PointF& point_in_viewport,
     const gfx::PointF& screen_point,
     WebDragOperationsMask operations_allowed,
-    uint32_t modifiers,
+    uint32_t key_modifiers,
     DragTargetDragOverCallback callback) {
   operations_allowed_ = operations_allowed;
 
   blink::WebDragOperation operation = DragTargetDragEnterOrOver(
-      point_in_viewport, screen_point, kDragOver, modifiers);
+      point_in_viewport, screen_point, kDragOver, key_modifiers);
   std::move(callback).Run(operation);
 }
 
@@ -225,7 +225,7 @@ void WebFrameWidgetBase::DragTargetDragLeave(
 void WebFrameWidgetBase::DragTargetDrop(const WebDragData& web_drag_data,
                                         const gfx::PointF& point_in_viewport,
                                         const gfx::PointF& screen_point,
-                                        int modifiers) {
+                                        uint32_t key_modifiers) {
   gfx::PointF point_in_root_frame(ViewportToRootFrame(point_in_viewport));
 
   DCHECK(current_drag_data_);
@@ -245,7 +245,7 @@ void WebFrameWidgetBase::DragTargetDrop(const WebDragData& web_drag_data,
   }
 
   if (!IgnoreInputEvents()) {
-    current_drag_data_->SetModifiers(modifiers);
+    current_drag_data_->SetModifiers(key_modifiers);
     DragData drag_data(current_drag_data_.Get(),
                        FloatPoint(point_in_root_frame),
                        FloatPoint(screen_point),
@@ -340,7 +340,7 @@ WebDragOperation WebFrameWidgetBase::DragTargetDragEnterOrOver(
     const gfx::PointF& point_in_viewport,
     const gfx::PointF& screen_point,
     DragAction drag_action,
-    int modifiers) {
+    uint32_t key_modifiers) {
   DCHECK(current_drag_data_);
   // TODO(paulmeyer): It shouldn't be possible for |m_currentDragData| to be
   // null here, but this is somehow happening (rarely). This suggests that in
@@ -354,7 +354,7 @@ WebDragOperation WebFrameWidgetBase::DragTargetDragEnterOrOver(
 
   FloatPoint point_in_root_frame(ViewportToRootFrame(point_in_viewport));
 
-  current_drag_data_->SetModifiers(modifiers);
+  current_drag_data_->SetModifiers(key_modifiers);
   DragData drag_data(current_drag_data_.Get(), FloatPoint(point_in_root_frame),
                      FloatPoint(screen_point),
                      static_cast<DragOperation>(operations_allowed_));

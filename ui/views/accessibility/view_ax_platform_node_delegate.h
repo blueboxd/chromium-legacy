@@ -63,6 +63,7 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
   gfx::NativeViewAccessible GetParent() override;
   bool IsChildOfLeaf() const override;
   bool IsLeaf() const override;
+  bool IsToplevelBrowserWindow() override;
   gfx::Rect GetBoundsRect(
       const ui::AXCoordinateSystem coordinate_system,
       const ui::AXClippingBehavior clipping_behavior,

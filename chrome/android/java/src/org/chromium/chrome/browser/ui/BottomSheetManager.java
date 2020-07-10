@@ -47,7 +47,7 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
     /** A {@link VrModeObserver} that observers events of entering and exiting VR mode. */
     private final VrModeObserver mVrModeObserver;
 
-    /** A listener for browser controls offset changes. */
+    /** A listener for fullscreen state changes. */
     private final FullscreenManager.Observer mFullscreenObserver;
 
     /** A listener for browser controls offset changes. */

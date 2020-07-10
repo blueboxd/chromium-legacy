@@ -162,11 +162,6 @@ TimeDelta ProcessMetrics::GetCumulativeCPUUsage() {
          TimeDelta::FromFileTime(user_time);
 }
 
-bool ProcessMetrics::GetCumulativeCPUUsagePerThread(CPUUsagePerThread&) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
   if (!process_.IsValid())
     return false;

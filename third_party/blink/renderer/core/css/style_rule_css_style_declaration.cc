@@ -51,8 +51,10 @@ void StyleRuleCSSStyleDeclaration::WillMutate() {
 void StyleRuleCSSStyleDeclaration::DidMutate(MutationType type) {
   // Style sheet mutation needs to be signaled even if the change failed.
   // willMutateRules/didMutateRules must pair.
-  if (parent_rule_ && parent_rule_->parentStyleSheet())
-    parent_rule_->parentStyleSheet()->DidMutateRules();
+  if (parent_rule_ && parent_rule_->parentStyleSheet()) {
+    parent_rule_->parentStyleSheet()->DidMutate(
+        CSSStyleSheet::Mutation::kRules);
+  }
 }
 
 CSSStyleSheet* StyleRuleCSSStyleDeclaration::ParentStyleSheet() const {

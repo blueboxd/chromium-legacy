@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -33,8 +34,7 @@ struct SameSizeAsNGLayoutResult : public RefCounted<SameSizeAsNGLayoutResult> {
 #endif
 };
 
-static_assert(sizeof(NGLayoutResult) == sizeof(SameSizeAsNGLayoutResult),
-              "NGLayoutResult should stay small.");
+ASSERT_SIZE(NGLayoutResult, SameSizeAsNGLayoutResult);
 
 }  // namespace
 

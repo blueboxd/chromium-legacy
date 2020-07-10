@@ -650,6 +650,8 @@ jumbo_component("platform") {
     "fonts/opentype/open_type_types.h",
     "fonts/opentype/open_type_vertical_data.cc",
     "fonts/opentype/open_type_vertical_data.h",
+    "fonts/opentype/variable_axes_names.cc",
+    "fonts/opentype/variable_axes_names.h",
     "fonts/orientation_iterator.cc",
     "fonts/orientation_iterator.h",
     "fonts/script_run_iterator.cc",
@@ -1881,6 +1883,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "fonts/opentype/font_settings_test.cc",
     "fonts/opentype/open_type_math_support_test.cc",
     "fonts/opentype/open_type_vertical_data_test.cc",
+    "fonts/opentype/variable_axes_names_test.cc",
     "fonts/orientation_iterator_test.cc",
     "fonts/script_run_iterator_test.cc",
     "fonts/shaping/caching_word_shaper_test.cc",
@@ -2212,6 +2215,9 @@ group("blink_platform_unittests_data") {
 
     # Required by some font tests.
     "//third_party/blink/web_tests/external/wpt/fonts/",
+
+    # Required by some font tests.
+    "//third_party/blink/web_tests/third_party/",
   ]
 }
 

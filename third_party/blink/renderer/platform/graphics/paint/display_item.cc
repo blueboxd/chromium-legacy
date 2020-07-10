@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 
-#include "cc/paint/display_item_list.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -16,8 +16,7 @@ struct SameSizeAsDisplayItem {
   uint32_t i1;
   uint32_t i2;
 };
-static_assert(sizeof(DisplayItem) == sizeof(SameSizeAsDisplayItem),
-              "DisplayItem should stay small");
+ASSERT_SIZE(DisplayItem, SameSizeAsDisplayItem);
 
 #if DCHECK_IS_ON()
 

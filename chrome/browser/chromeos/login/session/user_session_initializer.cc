@@ -19,6 +19,8 @@
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/chromeos/policy/app_install_event_log_manager_wrapper.h"
 #include "chrome/browser/chromeos/policy/extension_install_event_log_manager_wrapper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -184,6 +186,11 @@ void UserSessionInitializer::InitializePrimaryProfileServices(
   }
 
   arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile);
+
+  plugin_vm::PluginVmManager* plugin_vm_manager =
+      plugin_vm::PluginVmManagerFactory::GetForProfile(profile);
+  if (plugin_vm_manager)
+    plugin_vm_manager->OnPrimaryUserProfilePrepared();
 
   crostini::CrostiniManager* crostini_manager =
       crostini::CrostiniManager::GetForProfile(profile);

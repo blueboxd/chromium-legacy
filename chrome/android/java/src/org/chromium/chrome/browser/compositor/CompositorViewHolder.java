@@ -52,7 +52,8 @@ import org.chromium.chrome.browser.compositor.layouts.content.ContentOffsetProvi
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
@@ -142,7 +143,7 @@ public class CompositorViewHolder extends FrameLayout
     private Runnable mPostHideKeyboardTask;
 
     private TabModelSelector mTabModelSelector;
-    private @Nullable ChromeFullscreenManager mFullscreenManager;
+    private @Nullable BrowserControlsManager mBrowserControlsManager;
     private View mAccessibilityView;
     private CompositorAccessibilityProvider mNodeProvider;
 
@@ -765,9 +766,9 @@ public class CompositorViewHolder extends FrameLayout
         // The view size takes into account of the browser controls whose height
         // should be subtracted from the view if they are visible, therefore shrink
         // Blink-side view size.
-        final int totalMinHeight = mFullscreenManager != null
-                ? mFullscreenManager.getTopControlsMinHeight()
-                        + mFullscreenManager.getBottomControlsMinHeight()
+        final int totalMinHeight = mBrowserControlsManager != null
+                ? mBrowserControlsManager.getTopControlsMinHeight()
+                        + mBrowserControlsManager.getBottomControlsMinHeight()
                 : 0;
         int controlsHeight = mControlsResizeView
                 ? getTopControlsHeightPixels() + getBottomControlsHeightPixels()
@@ -803,7 +804,7 @@ public class CompositorViewHolder extends FrameLayout
      * Called whenever the host activity is started.
      */
     public void onStart() {
-        if (mFullscreenManager != null) mFullscreenManager.addObserver(this);
+        if (mBrowserControlsManager != null) mBrowserControlsManager.addObserver(this);
         requestRender();
     }
 
@@ -811,7 +812,7 @@ public class CompositorViewHolder extends FrameLayout
      * Called whenever the host activity is stopped.
      */
     public void onStop() {
-        if (mFullscreenManager != null) mFullscreenManager.removeObserver(this);
+        if (mBrowserControlsManager != null) mBrowserControlsManager.removeObserver(this);
     }
 
     @Override
@@ -859,12 +860,12 @@ public class CompositorViewHolder extends FrameLayout
     private void updateViewportSize() {
         if (mInGesture || mContentViewScrolling) return;
 
-        if (mFullscreenManager != null) {
+        if (mBrowserControlsManager != null) {
             // Update content viewport size only if the browser controls are not moving, i.e. not
             // scrolling or animating.
-            if (!BrowserControlsUtils.areBrowserControlsIdle(mFullscreenManager)) return;
+            if (!BrowserControlsUtils.areBrowserControlsIdle(mBrowserControlsManager)) return;
 
-            mControlsResizeView = BrowserControlsUtils.controlsResizeView(mFullscreenManager);
+            mControlsResizeView = BrowserControlsUtils.controlsResizeView(mBrowserControlsManager);
         }
         // Reflect the changes that may have happened in in view/control size.
         Point viewportSize = getViewportSize();
@@ -887,9 +888,10 @@ public class CompositorViewHolder extends FrameLayout
         TraceEvent.begin("CompositorViewHolder:updateContentViewChildrenDimension");
         ViewGroup view = getContentView();
         if (view != null) {
-            assert mFullscreenManager != null;
+            assert mBrowserControlsManager != null;
             float topViewsTranslation = getOverlayTranslateY();
-            float bottomMargin = BrowserControlsUtils.getBottomContentOffset(mFullscreenManager);
+            float bottomMargin =
+                    BrowserControlsUtils.getBottomContentOffset(mBrowserControlsManager);
             applyTranslationToTopChildViews(view, topViewsTranslation);
             applyMarginToFullscreenChildViews(view, topViewsTranslation, bottomMargin);
             updateViewportSize();
@@ -971,10 +973,10 @@ public class CompositorViewHolder extends FrameLayout
         getWindowViewport(outRect);
 
         float bottomControlOffset = 0;
-        if (mFullscreenManager != null) {
+        if (mBrowserControlsManager != null) {
             // All of these values are in pixels.
-            outRect.top += mFullscreenManager.getTopVisibleContentOffset();
-            bottomControlOffset = mFullscreenManager.getBottomControlOffset();
+            outRect.top += mBrowserControlsManager.getTopVisibleContentOffset();
+            bottomControlOffset = mBrowserControlsManager.getBottomControlOffset();
         }
         outRect.bottom -= (getBottomControlsHeightPixels() - bottomControlOffset);
     }
@@ -983,10 +985,10 @@ public class CompositorViewHolder extends FrameLayout
     public void getViewportFullControls(RectF outRect) {
         getWindowViewport(outRect);
 
-        if (mFullscreenManager != null) {
+        if (mBrowserControlsManager != null) {
             // All of these values are in pixels.
-            outRect.top += mFullscreenManager.getTopControlsHeight();
-            outRect.bottom -= mFullscreenManager.getBottomControlsHeight();
+            outRect.top += mBrowserControlsManager.getTopControlsHeight();
+            outRect.bottom -= mBrowserControlsManager.getBottomControlsHeight();
         }
     }
 
@@ -1099,17 +1101,22 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     @Override
-    public ChromeFullscreenManager getFullscreenManager() {
-        return mFullscreenManager;
+    public BrowserControlsManager getBrowserControlsManager() {
+        return mBrowserControlsManager;
+    }
+
+    @Override
+    public FullscreenManager getFullscreenManager() {
+        return mBrowserControlsManager.getFullscreenManager();
     }
 
     /**
-     * Sets a fullscreen handler.
-     * @param fullscreen A fullscreen handler.
+     * Sets a browser controls manager.
+     * @param manager A browser controls manager.
      */
-    public void setFullscreenHandler(ChromeFullscreenManager fullscreen) {
-        mFullscreenManager = fullscreen;
-        mFullscreenManager.addObserver(this);
+    public void setBrowserControlsManager(BrowserControlsManager manager) {
+        mBrowserControlsManager = manager;
+        mBrowserControlsManager.addObserver(this);
         onViewportChanged();
     }
 
@@ -1122,12 +1129,13 @@ public class CompositorViewHolder extends FrameLayout
 
     @Override
     public int getTopControlsHeightPixels() {
-        return mFullscreenManager != null ? mFullscreenManager.getTopControlsHeight() : 0;
+        return mBrowserControlsManager != null ? mBrowserControlsManager.getTopControlsHeight() : 0;
     }
 
     @Override
     public int getBottomControlsHeightPixels() {
-        return mFullscreenManager != null ? mFullscreenManager.getBottomControlsHeight() : 0;
+        return mBrowserControlsManager != null ? mBrowserControlsManager.getBottomControlsHeight()
+                                               : 0;
     }
 
     /**
@@ -1139,7 +1147,7 @@ public class CompositorViewHolder extends FrameLayout
 
     @Override
     public float getOverlayTranslateY() {
-        return mFullscreenManager.getTopVisibleContentOffset();
+        return mBrowserControlsManager.getTopVisibleContentOffset();
     }
 
     /**

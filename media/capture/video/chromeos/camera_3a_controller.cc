@@ -220,6 +220,7 @@ void Camera3AController::Stabilize3AForStillCapture(
 }
 
 void Camera3AController::OnResultMetadataAvailable(
+    uint32_t frame_number,
     const cros::mojom::CameraMetadataPtr& result_metadata) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 

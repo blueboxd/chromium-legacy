@@ -48,7 +48,7 @@ void SetGtkTransientForAura(GtkWidget* dialog, aura::Window* parent);
 aura::Window* GetAuraTransientParent(GtkWidget* dialog);
 
 // Clears the transient parent for |dialog|.
-void ClearAuraTransientParent(GtkWidget* dialog);
+void ClearAuraTransientParent(GtkWidget* dialog, aura::Window* parent);
 
 // Parses |button_string| into |leading_buttons| and
 // |trailing_buttons|.  The string is of the format

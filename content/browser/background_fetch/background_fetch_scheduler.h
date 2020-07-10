@@ -171,14 +171,23 @@ class CONTENT_EXPORT BackgroundFetchScheduler
   // The current fetch job controllers that are being processed.
   base::circular_deque<BackgroundFetchJobController*> active_controllers_;
 
-  // Map from |unique_id|s to {|registration_id|, |registration|}.
+  struct RegistrationData {
+    RegistrationData(
+        const BackgroundFetchRegistrationId& registration_id,
+        blink::mojom::BackgroundFetchRegistrationDataPtr registration);
+    ~RegistrationData();
+
+    BackgroundFetchRegistrationId registration_id;
+    blink::mojom::BackgroundFetchRegistrationDataPtr registration;
+    // Wheter all processing is completed and this data is safe to erase now.
+    bool processing_completed = false;
+  };
+
+  // Map from |unique_id|s to the registration data.
   // An entry in here means the fetch has completed. This information is needed
   // after the fetch has completed to dispatch the backgroundfetchclick event.
   // TODO(crbug.com/857122): Clean this up when the UI is no longer showing.
-  std::map<std::string,
-           std::pair<BackgroundFetchRegistrationId,
-                     blink::mojom::BackgroundFetchRegistrationDataPtr>>
-      completed_fetches_;
+  std::map<std::string, std::unique_ptr<RegistrationData>> completed_fetches_;
 
   // Scheduling params - Finch configurable.
   int max_running_downloads_;

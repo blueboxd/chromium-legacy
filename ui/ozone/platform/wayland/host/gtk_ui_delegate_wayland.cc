@@ -43,6 +43,10 @@ bool GtkUiDelegateWayland::SetGdkWindowTransientFor(
   return false;
 }
 
+void GtkUiDelegateWayland::ClearTransientFor(gfx::AcceleratedWidget parent) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
 void GtkUiDelegateWayland::ShowGtkWindow(GtkWindow* window) {
   // TODO(crbug.com/1008755): Check if gtk_window_present_with_time is needed
   // here as well, similarly to what is done in X11 impl.

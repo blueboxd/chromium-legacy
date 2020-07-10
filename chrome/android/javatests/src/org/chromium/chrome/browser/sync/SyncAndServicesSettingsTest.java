@@ -69,13 +69,13 @@ public class SyncAndServicesSettingsTest {
         final ChromeSwitchPreference syncSwitch = getSyncSwitch(fragment);
 
         Assert.assertTrue(syncSwitch.isChecked());
-        Assert.assertTrue(AndroidSyncSettings.get().isChromeSyncEnabled());
+        Assert.assertTrue(getAndroidSyncSettings().isChromeSyncEnabled());
         mSyncTestRule.togglePreference(syncSwitch);
         Assert.assertFalse(syncSwitch.isChecked());
-        Assert.assertFalse(AndroidSyncSettings.get().isChromeSyncEnabled());
+        Assert.assertFalse(getAndroidSyncSettings().isChromeSyncEnabled());
         mSyncTestRule.togglePreference(syncSwitch);
         Assert.assertTrue(syncSwitch.isChecked());
-        Assert.assertTrue(AndroidSyncSettings.get().isChromeSyncEnabled());
+        Assert.assertTrue(getAndroidSyncSettings().isChromeSyncEnabled());
     }
 
     /**
@@ -89,7 +89,7 @@ public class SyncAndServicesSettingsTest {
         mSyncTestRule.stopSync();
         SyncAndServicesSettings fragment = startSyncAndServicesPreferences();
         closeFragment(fragment);
-        Assert.assertFalse(AndroidSyncSettings.get().isChromeSyncEnabled());
+        Assert.assertFalse(getAndroidSyncSettings().isChromeSyncEnabled());
     }
 
     /**
@@ -146,15 +146,15 @@ public class SyncAndServicesSettingsTest {
         Assert.assertTrue(
                 "There should be server cards", mSyncTestRule.hasServerAutofillCreditCards());
 
-        Assert.assertTrue(AndroidSyncSettings.get().isChromeSyncEnabled());
+        Assert.assertTrue(getAndroidSyncSettings().isChromeSyncEnabled());
         SyncAndServicesSettings fragment = startSyncAndServicesPreferences();
         assertSyncOnState(fragment);
         ChromeSwitchPreference syncSwitch = getSyncSwitch(fragment);
         Assert.assertTrue(syncSwitch.isChecked());
-        Assert.assertTrue(AndroidSyncSettings.get().isChromeSyncEnabled());
+        Assert.assertTrue(getAndroidSyncSettings().isChromeSyncEnabled());
         mSyncTestRule.togglePreference(syncSwitch);
         Assert.assertFalse(syncSwitch.isChecked());
-        Assert.assertFalse(AndroidSyncSettings.get().isChromeSyncEnabled());
+        Assert.assertFalse(getAndroidSyncSettings().isChromeSyncEnabled());
 
         closeFragment(fragment);
 
@@ -208,7 +208,7 @@ public class SyncAndServicesSettingsTest {
         fragment = startSyncAndServicesPreferences();
         Assert.assertNull("Sync error card should not be shown", getSyncErrorCard(fragment));
         assertSyncOffState(fragment);
-        Assert.assertFalse(AndroidSyncSettings.get().isChromeSyncEnabled());
+        Assert.assertFalse(getAndroidSyncSettings().isChromeSyncEnabled());
     }
 
     @Test
@@ -226,7 +226,7 @@ public class SyncAndServicesSettingsTest {
         fragment = startSyncAndServicesPreferences();
         Assert.assertNull("Sync error card should not be shown", getSyncErrorCard(fragment));
         assertSyncOffState(fragment);
-        Assert.assertFalse(AndroidSyncSettings.get().isChromeSyncEnabled());
+        Assert.assertFalse(getAndroidSyncSettings().isChromeSyncEnabled());
     }
 
     @Test
@@ -240,7 +240,7 @@ public class SyncAndServicesSettingsTest {
         ChromeSwitchPreference syncSwitch = getSyncSwitch(fragment);
         mSyncTestRule.togglePreference(syncSwitch);
         Assert.assertTrue(syncSwitch.isChecked());
-        Assert.assertTrue(AndroidSyncSettings.get().isChromeSyncEnabled());
+        Assert.assertTrue(getAndroidSyncSettings().isChromeSyncEnabled());
         // FirstSetupComplete should be set.
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { Assert.assertTrue(ProfileSyncService.get().isFirstSetupComplete()); });
@@ -425,5 +425,9 @@ public class SyncAndServicesSettingsTest {
         Assert.assertFalse("The sync switch should be off.", getSyncSwitch(fragment).isChecked());
         Assert.assertTrue(
                 "The sync switch should be enabled.", getSyncSwitch(fragment).isEnabled());
+    }
+
+    private static AndroidSyncSettings getAndroidSyncSettings() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(AndroidSyncSettings::get);
     }
 }

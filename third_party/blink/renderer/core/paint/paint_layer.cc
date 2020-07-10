@@ -99,6 +99,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
@@ -124,8 +125,7 @@ struct SameSizeAsPaintLayer : DisplayItemClient {
   CullRect previous_cull_rect;
 };
 
-static_assert(sizeof(PaintLayer) == sizeof(SameSizeAsPaintLayer),
-              "PaintLayer should stay small");
+ASSERT_SIZE(PaintLayer, SameSizeAsPaintLayer);
 #endif
 
 }  // namespace

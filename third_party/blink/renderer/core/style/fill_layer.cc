@@ -23,6 +23,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/style/data_equivalency.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -40,8 +41,7 @@ struct SameSizeAsFillLayer {
   unsigned bitfields2_;
 };
 
-static_assert(sizeof(FillLayer) == sizeof(SameSizeAsFillLayer),
-              "FillLayer should stay small");
+ASSERT_SIZE(FillLayer, SameSizeAsFillLayer);
 
 FillLayer::FillLayer(EFillLayerType type, bool use_initial_values)
     : next_(nullptr),

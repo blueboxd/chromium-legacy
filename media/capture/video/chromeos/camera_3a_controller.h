@@ -32,6 +32,7 @@ class CAPTURE_EXPORT Camera3AController
 
   // CaptureMetadataDispatcher::ResultMetadataObserver implementation.
   void OnResultMetadataAvailable(
+      uint32_t frame_number,
       const cros::mojom::CameraMetadataPtr& result_metadata) final;
 
   // Enable the auto-focus mode suitable for still capture.

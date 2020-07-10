@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
@@ -282,8 +283,7 @@ class PLATFORM_EXPORT ParkableStringImpl final
 // - vtable (from RefCounted)
 // - string_.Impl()
 // - metadata_
-static_assert(sizeof(ParkableStringImpl) == 3 * sizeof(void*),
-              "ParkableStringImpl should not be too large");
+ASSERT_SIZE(ParkableStringImpl, void* [3]);
 #endif
 
 class PLATFORM_EXPORT ParkableString final {

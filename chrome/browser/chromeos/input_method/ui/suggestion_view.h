@@ -13,6 +13,10 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/view.h"
 
+namespace views {
+class ImageView;
+}  // namespace views
+
 namespace ui {
 namespace ime {
 
@@ -26,7 +30,7 @@ constexpr int kIndexFontSize = 10;
 
 // Style-related constants
 constexpr int kAnnotationBorderThickness = 1;
-constexpr int kAnnotationCornerRadius = 4;
+constexpr int kAnnotationCornerRadius = 2;
 constexpr int kPadding = 8;
 constexpr int kAnnotationPaddingHeight = 6;
 constexpr char kTabKey[] = "tab";
@@ -57,6 +61,9 @@ class UI_CHROMEOS_EXPORT SuggestionView : public views::Button {
   const char* GetClassName() const override;
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
+  void OnThemeChanged() override;
+
+  std::unique_ptr<views::View> CreateAnnotationLabel();
 
   // Views created in the class will be part of tree of |this|, so these
   // child views will be deleted when |this| is deleted.
@@ -67,8 +74,10 @@ class UI_CHROMEOS_EXPORT SuggestionView : public views::Button {
   views::Label* index_label_ = nullptr;
   // The suggestion label renders suggestions.
   views::StyledLabel* suggestion_label_ = nullptr;
-  // The annotation label renders annotations.
-  views::Label* annotation_label_ = nullptr;
+  // The annotation view renders annotations.
+  views::View* annotation_label_ = nullptr;
+  views::ImageView* down_icon_ = nullptr;
+  views::ImageView* arrow_icon_ = nullptr;
 
   int suggestion_width_ = 0;
   int index_width_ = 0;

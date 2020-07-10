@@ -710,7 +710,7 @@ TEST(ComputedStyleTest, ApplyInternalLightDarkColor) {
                            initial, initial);
 
   StyleResolver& resolver =
-      dummy_page_holder_->GetDocument().EnsureStyleResolver();
+      dummy_page_holder_->GetDocument().GetStyleResolver();
 
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   state.SetStyle(style);

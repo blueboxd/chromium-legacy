@@ -41,7 +41,7 @@ class AssistantCoordinator {
         } else {
             mModel = new AssistantModel();
             mOverlayCoordinator = new AssistantOverlayCoordinator(activity,
-                    activity.getFullscreenManager(), activity.getCompositorViewHolder(),
+                    activity.getBrowserControlsManager(), activity.getCompositorViewHolder(),
                     activity.getScrim(), mModel.getOverlayModel());
         }
 

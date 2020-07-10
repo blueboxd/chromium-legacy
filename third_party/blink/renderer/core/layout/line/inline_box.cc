@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/platform/fonts/font_metrics.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -47,8 +48,7 @@ struct SameSizeAsInlineBox : DisplayItemClient {
 #endif
 };
 
-static_assert(sizeof(InlineBox) == sizeof(SameSizeAsInlineBox),
-              "InlineBox should stay small");
+ASSERT_SIZE(InlineBox, SameSizeAsInlineBox);
 
 #if DCHECK_IS_ON()
 InlineBox::~InlineBox() {

@@ -251,7 +251,8 @@ void CameraDeviceDelegate::AllocateAndStart(
     CameraDeviceContext* device_context) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
 
-  got_result_metadata_ = false;
+  result_metadata_frame_number_for_photo_state_ = 0;
+  result_metadata_frame_number_ = 0;
   chrome_capture_params_ = params;
   device_context_ = device_context;
   device_context_->SetState(CameraDeviceContext::State::kStarting);
@@ -347,7 +348,8 @@ void CameraDeviceDelegate::GetPhotoState(
     VideoCaptureDevice::GetPhotoStateCallback callback) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
 
-  if (!got_result_metadata_) {
+  if (result_metadata_frame_number_ <=
+      result_metadata_frame_number_for_photo_state_) {
     get_photo_state_queue_.push_back(
         base::BindOnce(&CameraDeviceDelegate::DoGetPhotoState,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -446,6 +448,7 @@ void CameraDeviceDelegate::SetPhotoOptions(
     set_photo_option_callback_.Reset();
     std::move(callback).Run(true);
   }
+  result_metadata_frame_number_for_photo_state_ = current_request_frame_number_;
 }
 
 void CameraDeviceDelegate::SetRotation(int rotation) {
@@ -1022,6 +1025,7 @@ void CameraDeviceDelegate::ProcessCaptureRequest(
     TRACE_EVENT2("camera", "Capture Request", "frame_number",
                  request->frame_number, "stream_id", output_buffer->stream_id);
   }
+  current_request_frame_number_ = request->frame_number;
 
   if (device_context_->GetState() != CameraDeviceContext::State::kCapturing) {
     DCHECK_EQ(device_context_->GetState(),
@@ -1118,6 +1122,7 @@ mojom::RangePtr CameraDeviceDelegate::GetControlRangeByVendorTagName(
 }
 
 void CameraDeviceDelegate::OnResultMetadataAvailable(
+    uint32_t frame_number,
     const cros::mojom::CameraMetadataPtr& result_metadata) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
 
@@ -1152,11 +1157,13 @@ void CameraDeviceDelegate::OnResultMetadataAvailable(
         gfx::Rect(rect[0], rect[1], rect[2], rect[3]);
   }
 
-  if (!got_result_metadata_) {
+  result_metadata_frame_number_ = frame_number;
+  // We need to wait the new result metadata for new settings.
+  if (result_metadata_frame_number_ >
+      result_metadata_frame_number_for_photo_state_) {
     for (auto& request : get_photo_state_queue_)
       ipc_task_runner_->PostTask(FROM_HERE, std::move(request));
     get_photo_state_queue_.clear();
-    got_result_metadata_ = true;
   }
 }
 

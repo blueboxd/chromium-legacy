@@ -27,24 +27,24 @@ class BrowserContext;
 
 namespace extensions {
 
-class BlacklistStateFetcher;
+class BlocklistStateFetcher;
 class ExtensionPrefs;
 
-// The blacklist of extensions backed by safe browsing.
-class Blacklist : public KeyedService, public base::SupportsWeakPtr<Blacklist> {
+// The blocklist of extensions backed by safe browsing.
+class Blocklist : public KeyedService, public base::SupportsWeakPtr<Blocklist> {
  public:
   class Observer {
    public:
-    // Observes |blacklist| on construction and unobserves on destruction.
-    explicit Observer(Blacklist* blacklist);
+    // Observes |blocklist| on construction and unobserves on destruction.
+    explicit Observer(Blocklist* blocklist);
 
-    virtual void OnBlacklistUpdated() = 0;
+    virtual void OnBlocklistUpdated() = 0;
 
    protected:
     virtual ~Observer();
 
    private:
-    Blacklist* blacklist_;
+    Blocklist* blocklist_;
   };
 
   class ScopedDatabaseManagerForTest {
@@ -61,56 +61,56 @@ class Blacklist : public KeyedService, public base::SupportsWeakPtr<Blacklist> {
     DISALLOW_COPY_AND_ASSIGN(ScopedDatabaseManagerForTest);
   };
 
-  using BlacklistStateMap = std::map<std::string, BlocklistState>;
+  using BlocklistStateMap = std::map<std::string, BlocklistState>;
 
-  using GetBlacklistedIDsCallback =
-      base::Callback<void(const BlacklistStateMap&)>;
+  using GetBlocklistedIDsCallback =
+      base::Callback<void(const BlocklistStateMap&)>;
 
   using GetMalwareIDsCallback =
       base::Callback<void(const std::set<std::string>&)>;
 
-  using IsBlacklistedCallback = base::Callback<void(BlocklistState)>;
+  using IsBlocklistedCallback = base::Callback<void(BlocklistState)>;
 
-  explicit Blacklist(ExtensionPrefs* prefs);
+  explicit Blocklist(ExtensionPrefs* prefs);
 
-  ~Blacklist() override;
+  ~Blocklist() override;
 
-  static Blacklist* Get(content::BrowserContext* context);
+  static Blocklist* Get(content::BrowserContext* context);
 
   // From the set of extension IDs passed in via |ids|, asynchronously checks
-  // which are blacklisted and includes them in the resulting map passed
+  // which are blocklisted and includes them in the resulting map passed
   // via |callback|, which will be sent on the caller's message loop. The values
-  // of the map are the blacklist state for each extension. Extensions with
-  // a BlacklistState of NOT_BLACKLISTED are not included in the result.
+  // of the map are the blocklist state for each extension. Extensions with
+  // a BlocklistState of NOT_BLOCKLISTED are not included in the result.
   //
   // For a synchronous version which ONLY CHECKS CURRENTLY INSTALLED EXTENSIONS
-  // see ExtensionPrefs::IsExtensionBlacklisted.
-  void GetBlacklistedIDs(const std::set<std::string>& ids,
-                         const GetBlacklistedIDsCallback& callback);
+  // see ExtensionPrefs::IsExtensionBlocklisted.
+  void GetBlocklistedIDs(const std::set<std::string>& ids,
+                         const GetBlocklistedIDsCallback& callback);
 
   // From the subset of extension IDs passed in via |ids|, select the ones
-  // marked in the blacklist as BLACKLISTED_MALWARE and asynchronously pass
-  // to |callback|. Basically, will call GetBlacklistedIDs and filter its
+  // marked in the blocklist as BLOCKLISTED_MALWARE and asynchronously pass
+  // to |callback|. Basically, will call GetBlocklistedIDs and filter its
   // results.
   void GetMalwareIDs(const std::set<std::string>& ids,
                      const GetMalwareIDsCallback& callback);
 
-  // More convenient form of GetBlacklistedIDs for checking a single extension.
-  void IsBlacklisted(const std::string& extension_id,
-                     const IsBlacklistedCallback& callback);
+  // More convenient form of GetBlocklistedIDs for checking a single extension.
+  void IsBlocklisted(const std::string& extension_id,
+                     const IsBlocklistedCallback& callback);
 
-  // Used to mock BlacklistStateFetcher in unit tests. Blacklist owns the
+  // Used to mock BlocklistStateFetcher in unit tests. Blocklist owns the
   // |fetcher|.
-  void SetBlacklistStateFetcherForTest(BlacklistStateFetcher* fetcher);
+  void SetBlocklistStateFetcherForTest(BlocklistStateFetcher* fetcher);
 
-  // Reset the owned BlacklistStateFetcher to null and return the current
-  // BlacklistStateFetcher.
-  BlacklistStateFetcher* ResetBlacklistStateFetcherForTest();
+  // Reset the owned BlocklistStateFetcher to null and return the current
+  // BlocklistStateFetcher.
+  BlocklistStateFetcher* ResetBlocklistStateFetcherForTest();
 
   // Reset the listening for an updated database.
   void ResetDatabaseUpdatedListenerForTest();
 
-  // Adds/removes an observer to the blacklist.
+  // Adds/removes an observer to the blocklist.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
@@ -126,16 +126,16 @@ class Blacklist : public KeyedService, public base::SupportsWeakPtr<Blacklist> {
 
   void NotifyObservers();
 
-  void GetBlacklistStateForIDs(const GetBlacklistedIDsCallback& callback,
-                               const std::set<std::string>& blacklisted_ids);
+  void GetBlocklistStateForIDs(const GetBlocklistedIDsCallback& callback,
+                               const std::set<std::string>& blocklisted_ids);
 
-  void RequestExtensionsBlacklistState(const std::set<std::string>& ids,
+  void RequestExtensionsBlocklistState(const std::set<std::string>& ids,
                                        base::OnceClosure callback);
 
-  void OnBlacklistStateReceived(const std::string& id, BlocklistState state);
+  void OnBlocklistStateReceived(const std::string& id, BlocklistState state);
 
-  void ReturnBlacklistStateMap(const GetBlacklistedIDsCallback& callback,
-                               const std::set<std::string>& blacklisted_ids);
+  void ReturnBlocklistStateMap(const GetBlocklistedIDsCallback& callback,
+                               const std::set<std::string>& blocklisted_ids);
 
   base::ObserverList<Observer>::Unchecked observers_;
 
@@ -144,22 +144,22 @@ class Blacklist : public KeyedService, public base::SupportsWeakPtr<Blacklist> {
   std::unique_ptr<base::CallbackList<void()>::Subscription>
       database_changed_subscription_;
 
-  // The cached BlacklistState's, received from BlacklistStateFetcher.
-  BlacklistStateMap blacklist_state_cache_;
+  // The cached BlocklistState's, received from BlocklistStateFetcher.
+  BlocklistStateMap blocklist_state_cache_;
 
-  std::unique_ptr<BlacklistStateFetcher> state_fetcher_;
+  std::unique_ptr<BlocklistStateFetcher> state_fetcher_;
 
-  // The list of ongoing requests for blacklist states that couldn't be
+  // The list of ongoing requests for blocklist states that couldn't be
   // served directly from the cache. A new request is created in
-  // GetBlacklistedIDs and deleted when the callback is called from
-  // OnBlacklistStateReceived.
+  // GetBlocklistedIDs and deleted when the callback is called from
+  // OnBlocklistStateReceived.
   //
   // This is a list of requests. Each item in the list is a request. A request
   // is a pair of [vector of string ids to check, response closure].
   std::list<std::pair<std::vector<std::string>, base::OnceClosure>>
       state_requests_;
 
-  DISALLOW_COPY_AND_ASSIGN(Blacklist);
+  DISALLOW_COPY_AND_ASSIGN(Blocklist);
 };
 
 }  // namespace extensions

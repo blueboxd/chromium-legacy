@@ -93,7 +93,7 @@ testcase.pluginVmDirectoryNotSharedErrorDialog = async () => {
         },
         {
           taskId: 'plugin-vm-app-id|pluginvm|open-with',
-          title: 'Plugin VM App',
+          title: 'App (Windows)',
           verb: 'open_with',
         }
       ]]));
@@ -114,12 +114,12 @@ testcase.pluginVmDirectoryNotSharedErrorDialog = async () => {
   const appOptions = await remoteCall.callRemoteTestUtil(
       'queryAllElements', appId, ['#tasks-menu [tabindex]']);
   chrome.test.assertEq(
-      1, appOptions.filter(el => el.text == 'Open with Plugin VM App').length);
+      1, appOptions.filter(el => el.text == 'Open with App (Windows)').length);
 
   // Click on the Plugin VM app, and wait for error dialog.
   await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [
     `#tasks-menu [tabindex]:nth-of-type(${
-        appOptions.map(el => el.text).indexOf('Open with Plugin VM App') + 1})`
+        appOptions.map(el => el.text).indexOf('Open with App (Windows)') + 1})`
   ]);
   await remoteCall.waitUntilTaskExecutes(
       appId, 'plugin-vm-app-id|pluginvm|open-with',
@@ -135,11 +135,9 @@ testcase.pluginVmDirectoryNotSharedErrorDialog = async () => {
       'queryAllElements', appId,
       ['.cr-dialog-frame:not(#default-task-dialog) .cr-dialog-text']);
 
+  chrome.test.assertEq([''], dialogTitles.map(el => el.text));
   chrome.test.assertEq(
-      ['Unable to open with Parallels Desktop'],
-      dialogTitles.map(el => el.text));
-  chrome.test.assertEq(
-      ['To open files with Plugin VM App (Parallels Desktop), ' +
+      ['To open files with App (Windows), ' +
        'first move them to the Windows files folder.'],
       dialogTexts.map(el => el.text));
 
@@ -161,7 +159,7 @@ testcase.pluginVmFileOnExternalDriveErrorDialog = async () => {
         },
         {
           taskId: 'plugin-vm-app-id|pluginvm|open-with',
-          title: 'Plugin VM App',
+          title: 'App (Windows)',
           verb: 'open_with',
         }
       ]]));
@@ -182,12 +180,12 @@ testcase.pluginVmFileOnExternalDriveErrorDialog = async () => {
   const appOptions = await remoteCall.callRemoteTestUtil(
       'queryAllElements', appId, ['#tasks-menu [tabindex]']);
   chrome.test.assertEq(
-      1, appOptions.filter(el => el.text == 'Open with Plugin VM App').length);
+      1, appOptions.filter(el => el.text == 'Open with App (Windows)').length);
 
   // Click on the Plugin VM app, and wait for error dialog.
   await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [
     `#tasks-menu [tabindex]:nth-of-type(${
-        appOptions.map(el => el.text).indexOf('Open with Plugin VM App') + 1})`
+        appOptions.map(el => el.text).indexOf('Open with App (Windows)') + 1})`
   ]);
   await remoteCall.waitUntilTaskExecutes(
       appId, 'plugin-vm-app-id|pluginvm|open-with',
@@ -203,11 +201,9 @@ testcase.pluginVmFileOnExternalDriveErrorDialog = async () => {
       'queryAllElements', appId,
       ['.cr-dialog-frame:not(#default-task-dialog) .cr-dialog-text']);
 
+  chrome.test.assertEq([''], dialogTitles.map(el => el.text));
   chrome.test.assertEq(
-      ['Unable to open with Parallels Desktop'],
-      dialogTitles.map(el => el.text));
-  chrome.test.assertEq(
-      ['To open files with Plugin VM App (Parallels Desktop), ' +
+      ['To open files with App (Windows), ' +
        'first copy them to the Windows files folder.'],
       dialogTexts.map(el => el.text));
 

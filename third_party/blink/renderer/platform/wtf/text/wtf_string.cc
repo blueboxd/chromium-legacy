@@ -29,6 +29,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/case_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
@@ -38,6 +39,8 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace WTF {
+
+ASSERT_SIZE(String, void*);
 
 // Construct a string with UTF-16 data.
 String::String(const UChar* characters, unsigned length)

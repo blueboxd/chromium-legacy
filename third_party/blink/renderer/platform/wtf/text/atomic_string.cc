@@ -24,14 +24,14 @@
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 #include "third_party/blink/renderer/platform/wtf/dtoa.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_table.h"
 #include "third_party/blink/renderer/platform/wtf/text/case_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 
 namespace WTF {
 
-static_assert(sizeof(AtomicString) == sizeof(String),
-              "AtomicString and String must be same size");
+ASSERT_SIZE(AtomicString, String);
 
 #if defined(ARCH_CPU_64_BITS)
 AtomicString::AtomicString(const LChar* chars, size_t length)

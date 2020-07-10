@@ -1553,6 +1553,7 @@ void VaapiWrapper::DestroyContextAndSurfaces(
 }
 
 bool VaapiWrapper::CreateContext(const gfx::Size& size) {
+  DVLOG(2) << "Creating context";
   base::AutoLock auto_lock(*va_lock_);
 
   // vaCreateContext() doesn't really need an array of VASurfaceIDs (see
@@ -1630,7 +1631,7 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
         &va_attribs[0], va_attribs.size());
     VA_SUCCESS_OR_RETURN(va_res, "vaCreateSurfaces (import mode)", nullptr);
   }
-
+  DVLOG(2) << __func__ << " " << va_surface_id;
   // VASurface shares an ownership of the buffer referred by the passed file
   // descriptor. We can release |pixmap| here.
   return new VASurface(va_surface_id, size, va_format,
@@ -2425,6 +2426,7 @@ void VaapiWrapper::DestroySurfaces(std::vector<VASurfaceID> va_surfaces) {
 void VaapiWrapper::DestroySurface(VASurfaceID va_surface_id) {
   if (va_surface_id == VA_INVALID_SURFACE)
     return;
+  DVLOG(2) << __func__ << " " << va_surface_id;
   base::AutoLock auto_lock(*va_lock_);
   const VAStatus va_res = vaDestroySurfaces(va_display_, &va_surface_id, 1);
   VA_LOG_ON_ERROR(va_res, "vaDestroySurfaces");

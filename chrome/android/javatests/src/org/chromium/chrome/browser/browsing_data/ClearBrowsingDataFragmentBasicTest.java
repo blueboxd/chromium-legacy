@@ -83,16 +83,16 @@ public class ClearBrowsingDataFragmentBasicTest {
     }
 
     private void setSyncable(final boolean syncable) {
-        MockSyncContentResolverDelegate delegate = new MockSyncContentResolverDelegate();
-        delegate.setMasterSyncAutomatically(syncable);
-        AndroidSyncSettings.overrideForTests(delegate, null);
-        if (syncable) {
-            AndroidSyncSettings.get().enableChromeSync();
-        } else {
-            AndroidSyncSettings.get().disableChromeSync();
-        }
-
         TestThreadUtils.runOnUiThreadBlocking(() -> {
+            MockSyncContentResolverDelegate delegate = new MockSyncContentResolverDelegate();
+            delegate.setMasterSyncAutomatically(syncable);
+            AndroidSyncSettings.overrideForTests(new AndroidSyncSettings(delegate));
+            if (syncable) {
+                AndroidSyncSettings.get().enableChromeSync();
+            } else {
+                AndroidSyncSettings.get().disableChromeSync();
+            }
+
             ProfileSyncService.overrideForTests(new StubProfileSyncService(syncable));
         });
     }

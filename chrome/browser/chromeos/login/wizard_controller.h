@@ -109,6 +109,10 @@ class WizardController {
   // Advances to screen defined by |screen| and shows it.
   void AdvanceToScreen(OobeScreenId screen_id);
 
+  // Returns |true| if accelerator |action| was handled by current screen
+  // or WizardController itself.
+  bool HandleAccelerator(ash::LoginAcceleratorAction action);
+
   // Starts Demo Mode setup flow. The flow starts from network screen and reuses
   // some of regular OOBE screens. It consists of the following screens:
   //    chromeos::DemoPreferencesScreenView::kScreenId

@@ -34,7 +34,7 @@ namespace extensions {
 namespace {
 
 // The safe browsing database manager to use. Make this a global/static variable
-// rather than a member of Blacklist because Blacklist accesses the real
+// rather than a member of Blocklist because Blocklist accesses the real
 // database manager before it has a chance to get a fake one.
 class LazySafeBrowsingDatabaseManager {
  public:
@@ -78,7 +78,7 @@ class SafeBrowsingClientImpl
   using OnResultCallback = base::Callback<void(const std::set<std::string>&)>;
 
   // Constructs a client to query the database manager for |extension_ids| and
-  // run |callback| with the IDs of those which have been blacklisted.
+  // run |callback| with the IDs of those which have been blocklisted.
   static void Start(const std::set<std::string>& extension_ids,
                     const OnResultCallback& callback) {
     auto safe_browsing_client = base::WrapRefCounted(
@@ -106,12 +106,12 @@ class SafeBrowsingClientImpl
                   const std::set<std::string>& extension_ids) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     if (database_manager->CheckExtensionIDs(extension_ids, this)) {
-      // Definitely not blacklisted. Callback immediately.
+      // Definitely not blocklisted. Callback immediately.
       callback_task_runner_->PostTask(
           FROM_HERE, base::BindOnce(callback_, std::set<std::string>()));
       return;
     }
-    // Something might be blacklisted, response will come in
+    // Something might be blocklisted, response will come in
     // OnCheckExtensionsResult.
     AddRef();  // Balanced in OnCheckExtensionsResult
   }
@@ -128,19 +128,19 @@ class SafeBrowsingClientImpl
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingClientImpl);
 };
 
-void CheckOneExtensionState(const Blacklist::IsBlacklistedCallback& callback,
-                            const Blacklist::BlacklistStateMap& state_map) {
+void CheckOneExtensionState(const Blocklist::IsBlocklistedCallback& callback,
+                            const Blocklist::BlocklistStateMap& state_map) {
   callback.Run(state_map.empty() ? NOT_BLOCKLISTED : state_map.begin()->second);
 }
 
-void GetMalwareFromBlacklistStateMap(
-    const Blacklist::GetMalwareIDsCallback& callback,
-    const Blacklist::BlacklistStateMap& state_map) {
+void GetMalwareFromBlocklistStateMap(
+    const Blocklist::GetMalwareIDsCallback& callback,
+    const Blocklist::BlocklistStateMap& state_map) {
   std::set<std::string> malware;
   for (const auto& state_pair : state_map) {
     // TODO(oleg): UNKNOWN is treated as MALWARE for backwards compatibility.
     // In future GetMalwareIDs will be removed and the caller will have to
-    // deal with BLACKLISTED_UNKNOWN state returned from GetBlacklistedIDs.
+    // deal with BLOCKLISTED_UNKNOWN state returned from GetBlocklistedIDs.
     if (state_pair.second == BLOCKLISTED_MALWARE ||
         state_pair.second == BLOCKLISTED_UNKNOWN) {
       malware.insert(state_pair.first);
@@ -151,115 +151,115 @@ void GetMalwareFromBlacklistStateMap(
 
 }  // namespace
 
-Blacklist::Observer::Observer(Blacklist* blacklist) : blacklist_(blacklist) {
-  blacklist_->AddObserver(this);
+Blocklist::Observer::Observer(Blocklist* blocklist) : blocklist_(blocklist) {
+  blocklist_->AddObserver(this);
 }
 
-Blacklist::Observer::~Observer() {
-  blacklist_->RemoveObserver(this);
+Blocklist::Observer::~Observer() {
+  blocklist_->RemoveObserver(this);
 }
 
-Blacklist::ScopedDatabaseManagerForTest::ScopedDatabaseManagerForTest(
+Blocklist::ScopedDatabaseManagerForTest::ScopedDatabaseManagerForTest(
     scoped_refptr<SafeBrowsingDatabaseManager> database_manager)
     : original_(GetDatabaseManager()) {
   SetDatabaseManager(database_manager);
 }
 
-Blacklist::ScopedDatabaseManagerForTest::~ScopedDatabaseManagerForTest() {
+Blocklist::ScopedDatabaseManagerForTest::~ScopedDatabaseManagerForTest() {
   SetDatabaseManager(original_);
 }
 
-Blacklist::Blacklist(ExtensionPrefs* prefs) {
+Blocklist::Blocklist(ExtensionPrefs* prefs) {
   auto& lazy_database_manager = g_database_manager.Get();
   // Using base::Unretained is safe because when this object goes away, the
   // subscription will automatically be destroyed.
   database_changed_subscription_ =
       lazy_database_manager.RegisterDatabaseChangedCallback(base::BindRepeating(
-          &Blacklist::ObserveNewDatabase, base::Unretained(this)));
+          &Blocklist::ObserveNewDatabase, base::Unretained(this)));
 
   ObserveNewDatabase();
 }
 
-Blacklist::~Blacklist() {}
+Blocklist::~Blocklist() {}
 
 // static
-Blacklist* Blacklist::Get(content::BrowserContext* context) {
-  return BlacklistFactory::GetForBrowserContext(context);
+Blocklist* Blocklist::Get(content::BrowserContext* context) {
+  return BlocklistFactory::GetForBrowserContext(context);
 }
 
-void Blacklist::GetBlacklistedIDs(const std::set<std::string>& ids,
-                                  const GetBlacklistedIDsCallback& callback) {
+void Blocklist::GetBlocklistedIDs(const std::set<std::string>& ids,
+                                  const GetBlocklistedIDsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (ids.empty() || !GetDatabaseManager().get()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, BlacklistStateMap()));
+        FROM_HERE, base::BindOnce(callback, BlocklistStateMap()));
     return;
   }
 
   // Constructing the SafeBrowsingClientImpl begins the process of asking
-  // safebrowsing for the blacklisted extensions. The set of blacklisted
+  // safebrowsing for the blocklisted extensions. The set of blocklisted
   // extensions returned by SafeBrowsing will then be passed to
-  // GetBlacklistStateIDs to get the particular BlacklistState for each id.
+  // GetBlocklistStateIDs to get the particular BlocklistState for each id.
   SafeBrowsingClientImpl::Start(
       ids,
-      base::Bind(&Blacklist::GetBlacklistStateForIDs, AsWeakPtr(), callback));
+      base::Bind(&Blocklist::GetBlocklistStateForIDs, AsWeakPtr(), callback));
 }
 
-void Blacklist::GetMalwareIDs(const std::set<std::string>& ids,
+void Blocklist::GetMalwareIDs(const std::set<std::string>& ids,
                               const GetMalwareIDsCallback& callback) {
-  GetBlacklistedIDs(ids,
-                    base::Bind(&GetMalwareFromBlacklistStateMap, callback));
+  GetBlocklistedIDs(ids,
+                    base::Bind(&GetMalwareFromBlocklistStateMap, callback));
 }
 
-void Blacklist::IsBlacklisted(const std::string& extension_id,
-                              const IsBlacklistedCallback& callback) {
+void Blocklist::IsBlocklisted(const std::string& extension_id,
+                              const IsBlocklistedCallback& callback) {
   std::set<std::string> check;
   check.insert(extension_id);
-  GetBlacklistedIDs(check, base::Bind(&CheckOneExtensionState, callback));
+  GetBlocklistedIDs(check, base::Bind(&CheckOneExtensionState, callback));
 }
 
-void Blacklist::GetBlacklistStateForIDs(
-    const GetBlacklistedIDsCallback& callback,
-    const std::set<std::string>& blacklisted_ids) {
+void Blocklist::GetBlocklistStateForIDs(
+    const GetBlocklistedIDsCallback& callback,
+    const std::set<std::string>& blocklisted_ids) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::set<std::string> ids_unknown_state;
-  BlacklistStateMap extensions_state;
-  for (const auto& blacklisted_id : blacklisted_ids) {
-    auto cache_it = blacklist_state_cache_.find(blacklisted_id);
-    if (cache_it == blacklist_state_cache_.end() ||
+  BlocklistStateMap extensions_state;
+  for (const auto& blocklisted_id : blocklisted_ids) {
+    auto cache_it = blocklist_state_cache_.find(blocklisted_id);
+    if (cache_it == blocklist_state_cache_.end() ||
         cache_it->second ==
             BLOCKLISTED_UNKNOWN) {  // Do not return UNKNOWN
                                     // from cache, retry request.
-      ids_unknown_state.insert(blacklisted_id);
+      ids_unknown_state.insert(blocklisted_id);
     } else {
-      extensions_state[blacklisted_id] = cache_it->second;
+      extensions_state[blocklisted_id] = cache_it->second;
     }
   }
 
   if (ids_unknown_state.empty()) {
     callback.Run(extensions_state);
   } else {
-    // After the extension blacklist states have been downloaded, call this
+    // After the extension blocklist states have been downloaded, call this
     // functions again, but prevent infinite cycle in case server is offline
-    // or some other reason prevents us from receiving the blacklist state for
+    // or some other reason prevents us from receiving the blocklist state for
     // these extensions.
-    RequestExtensionsBlacklistState(
+    RequestExtensionsBlocklistState(
         ids_unknown_state,
-        base::BindOnce(&Blacklist::ReturnBlacklistStateMap, AsWeakPtr(),
-                       callback, blacklisted_ids));
+        base::BindOnce(&Blocklist::ReturnBlocklistStateMap, AsWeakPtr(),
+                       callback, blocklisted_ids));
   }
 }
 
-void Blacklist::ReturnBlacklistStateMap(
-    const GetBlacklistedIDsCallback& callback,
-    const std::set<std::string>& blacklisted_ids) {
-  BlacklistStateMap extensions_state;
-  for (const auto& blacklisted_id : blacklisted_ids) {
-    auto cache_it = blacklist_state_cache_.find(blacklisted_id);
-    if (cache_it != blacklist_state_cache_.end())
-      extensions_state[blacklisted_id] = cache_it->second;
+void Blocklist::ReturnBlocklistStateMap(
+    const GetBlocklistedIDsCallback& callback,
+    const std::set<std::string>& blocklisted_ids) {
+  BlocklistStateMap extensions_state;
+  for (const auto& blocklisted_id : blocklisted_ids) {
+    auto cache_it = blocklist_state_cache_.find(blocklisted_id);
+    if (cache_it != blocklist_state_cache_.end())
+      extensions_state[blocklisted_id] = cache_it->second;
     // If for some reason we still haven't cached the state of this extension,
     // we silently skip it.
   }
@@ -267,35 +267,35 @@ void Blacklist::ReturnBlacklistStateMap(
   callback.Run(extensions_state);
 }
 
-void Blacklist::RequestExtensionsBlacklistState(
+void Blocklist::RequestExtensionsBlocklistState(
     const std::set<std::string>& ids,
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!state_fetcher_)
-    state_fetcher_.reset(new BlacklistStateFetcher());
+    state_fetcher_.reset(new BlocklistStateFetcher());
 
   state_requests_.emplace_back(std::vector<std::string>(ids.begin(), ids.end()),
                                std::move(callback));
   for (const auto& id : ids) {
     state_fetcher_->Request(
-        id, base::Bind(&Blacklist::OnBlacklistStateReceived, AsWeakPtr(), id));
+        id, base::Bind(&Blocklist::OnBlocklistStateReceived, AsWeakPtr(), id));
   }
 }
 
-void Blacklist::OnBlacklistStateReceived(const std::string& id,
+void Blocklist::OnBlocklistStateReceived(const std::string& id,
                                          BlocklistState state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  blacklist_state_cache_[id] = state;
+  blocklist_state_cache_[id] = state;
 
   // Go through the opened requests and call the callbacks for those requests
-  // for which we already got all the required blacklist states.
+  // for which we already got all the required blocklist states.
   auto requests_it = state_requests_.begin();
   while (requests_it != state_requests_.end()) {
     const std::vector<std::string>& ids = requests_it->first;
 
     bool have_all_in_cache = true;
     for (const auto& id : ids) {
-      if (!base::Contains(blacklist_state_cache_, id)) {
+      if (!base::Contains(blocklist_state_cache_, id)) {
         have_all_in_cache = false;
         break;
       }
@@ -310,57 +310,57 @@ void Blacklist::OnBlacklistStateReceived(const std::string& id,
   }
 }
 
-void Blacklist::SetBlacklistStateFetcherForTest(
-    BlacklistStateFetcher* fetcher) {
+void Blocklist::SetBlocklistStateFetcherForTest(
+    BlocklistStateFetcher* fetcher) {
   state_fetcher_.reset(fetcher);
 }
 
-BlacklistStateFetcher* Blacklist::ResetBlacklistStateFetcherForTest() {
+BlocklistStateFetcher* Blocklist::ResetBlocklistStateFetcherForTest() {
   return state_fetcher_.release();
 }
 
-void Blacklist::ResetDatabaseUpdatedListenerForTest() {
+void Blocklist::ResetDatabaseUpdatedListenerForTest() {
   database_updated_subscription_.reset();
 }
 
-void Blacklist::AddObserver(Observer* observer) {
+void Blocklist::AddObserver(Observer* observer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observers_.AddObserver(observer);
 }
 
-void Blacklist::RemoveObserver(Observer* observer) {
+void Blocklist::RemoveObserver(Observer* observer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observers_.RemoveObserver(observer);
 }
 
 // static
-void Blacklist::SetDatabaseManager(
+void Blocklist::SetDatabaseManager(
     scoped_refptr<SafeBrowsingDatabaseManager> database_manager) {
   g_database_manager.Get().set(database_manager);
 }
 
 // static
-scoped_refptr<SafeBrowsingDatabaseManager> Blacklist::GetDatabaseManager() {
+scoped_refptr<SafeBrowsingDatabaseManager> Blocklist::GetDatabaseManager() {
   return g_database_manager.Get().get();
 }
 
-void Blacklist::ObserveNewDatabase() {
+void Blocklist::ObserveNewDatabase() {
   auto database_manager = GetDatabaseManager();
   if (database_manager.get()) {
     // Using base::Unretained is safe because when this object goes away, the
     // subscription to the callback list will automatically be destroyed.
     database_updated_subscription_ =
         database_manager.get()->RegisterDatabaseUpdatedCallback(
-            base::BindRepeating(&Blacklist::NotifyObservers,
+            base::BindRepeating(&Blocklist::NotifyObservers,
                                 base::Unretained(this)));
   } else {
     database_updated_subscription_.reset();
   }
 }
 
-void Blacklist::NotifyObservers() {
+void Blocklist::NotifyObservers() {
   for (auto& observer : observers_)
-    observer.OnBlacklistUpdated();
+    observer.OnBlocklistUpdated();
 }
 
 }  // namespace extensions

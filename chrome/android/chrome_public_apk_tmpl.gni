@@ -148,7 +148,6 @@ template("chrome_public_common_apk_or_module_tmpl") {
     } else {
       min_sdk_version = 21
     }
-    target_sdk_version = android_sdk_version
 
     resource_exclusion_regex = common_resource_exclusion_regex
     resource_exclusion_exceptions = common_resource_exclusion_exceptions

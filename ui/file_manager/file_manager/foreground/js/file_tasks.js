@@ -687,14 +687,8 @@ class FileTasks {
               ];
           const dialog = new FilesConfirmDialog(this.ui_.element);
           dialog.setOkLabel(strf(buttonId));
-          dialog.showHtml(
-              strf(
-                  'UNABLE_TO_OPEN_WITH_PLUGIN_VM_TITLE',
-                  strf('PLUGIN_VM_APP_NAME')),
-              strf(
-                  messageId, task.title, strf('PLUGIN_VM_APP_NAME'),
-                  strf('PLUGIN_VM_DIRECTORY_LABEL')),
-              async () => {
+          dialog.show(
+              strf(messageId, task.title), async () => {
                 if (!this.fileTransferController_) {
                   console.error('FileTransferController not set');
                   return;

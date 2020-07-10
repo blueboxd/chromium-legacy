@@ -25,8 +25,6 @@ def xcrun(command, developer_dir):
       arg = os.path.abspath(arg)
     processed_args.append(arg)
 
-  print('DEVELOPER_DIR=%r' % (environ.get('DEVELOPER_DIR', '')))
-  print('command=%r' % ' '.join(processed_args))
   process = subprocess.Popen(processed_args,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE,

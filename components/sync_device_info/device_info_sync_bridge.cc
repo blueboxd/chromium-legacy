@@ -24,7 +24,6 @@
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync_device_info/device_info_prefs.h"
 #include "components/sync_device_info/device_info_util.h"
-#include "components/sync_device_info/local_device_info_util.h"
 
 namespace syncer {
 
@@ -88,15 +87,12 @@ base::Optional<DeviceInfo::SharingInfo> SpecificsToSharingInfo(
 // Converts DeviceInfoSpecifics into a freshly allocated DeviceInfo.
 std::unique_ptr<DeviceInfo> SpecificsToModel(
     const DeviceInfoSpecifics& specifics) {
-  base::SysInfo::HardwareInfo hardware_info;
-  hardware_info.model = specifics.model();
-  hardware_info.manufacturer = specifics.manufacturer();
-
   return std::make_unique<DeviceInfo>(
       specifics.cache_guid(), specifics.client_name(),
       specifics.chrome_version(), specifics.sync_user_agent(),
       specifics.device_type(), specifics.signin_scoped_device_id(),
-      hardware_info, ProtoTimeToTime(specifics.last_updated_timestamp()),
+      specifics.manufacturer(), specifics.model(),
+      ProtoTimeToTime(specifics.last_updated_timestamp()),
       GetPulseIntervalFromSpecifics(specifics),
       specifics.feature_fields().send_tab_to_self_receiving_enabled(),
       SpecificsToSharingInfo(specifics));
@@ -114,7 +110,6 @@ std::unique_ptr<EntityData> CopyToEntityData(
 // Converts a local DeviceInfo into a freshly allocated DeviceInfoSpecifics.
 std::unique_ptr<DeviceInfoSpecifics> MakeLocalDeviceSpecifics(
     const DeviceInfo& info) {
-  auto hardware_info = info.hardware_info();
   auto specifics = std::make_unique<DeviceInfoSpecifics>();
   specifics->set_cache_guid(info.guid());
   specifics->set_client_name(info.client_name());
@@ -122,8 +117,8 @@ std::unique_ptr<DeviceInfoSpecifics> MakeLocalDeviceSpecifics(
   specifics->set_sync_user_agent(info.sync_user_agent());
   specifics->set_device_type(info.device_type());
   specifics->set_signin_scoped_device_id(info.signin_scoped_device_id());
-  specifics->set_model(hardware_info.model);
-  specifics->set_manufacturer(hardware_info.manufacturer);
+  specifics->set_manufacturer(info.manufacturer_name());
+  specifics->set_model(info.model_name());
   // The local device should have not been updated yet. Set the last updated
   // timestamp to now.
   DCHECK(info.last_updated_timestamp() == base::Time());
@@ -162,17 +157,10 @@ std::unique_ptr<DeviceInfoSpecifics> MakeLocalDeviceSpecifics(
 // parameter is first for binding purposes.
 base::Optional<ModelError> ParseSpecificsOnBackendSequence(
     ClientIdToSpecifics* all_data,
-    std::string* local_personalizable_device_name,
     std::unique_ptr<ModelTypeStore::RecordList> record_list) {
   DCHECK(all_data);
   DCHECK(all_data->empty());
-  DCHECK(local_personalizable_device_name);
   DCHECK(record_list);
-
-  // For convenience, we get the user personalized local device name here,
-  // since we're running on the backend sequence, because the function is
-  // blocking.
-  *local_personalizable_device_name = GetPersonalizableDeviceNameBlocking();
 
   for (const Record& r : *record_list) {
     std::unique_ptr<DeviceInfoSpecifics> specifics =
@@ -253,7 +241,9 @@ base::Optional<ModelError> DeviceInfoSyncBridge::MergeSyncData(
   DCHECK(!local_cache_guid_.empty());
 
   local_device_info_provider_->Initialize(
-      local_cache_guid_, GetLocalClientName(), local_hardware_info_);
+      local_cache_guid_, GetLocalClientName(),
+      local_device_name_info_.manufacturer_name,
+      local_device_name_info_.model_name);
 
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   for (const auto& change : entity_data) {
@@ -436,16 +426,13 @@ std::string DeviceInfoSyncBridge::GetLocalClientName() const {
   // |sync_mode_| may not be ready when this function is called.
   if (!sync_mode_) {
     auto device_it = all_data_.find(local_cache_guid_);
-    if (device_it != all_data_.end()) {
+    if (device_it != all_data_.end())
       return device_it->second->client_name();
-    }
   }
 
-  if (sync_mode_ == SyncMode::kFull) {
-    return local_personalizable_device_name_;
-  }
-
-  return local_hardware_info_.model;
+  return sync_mode_ == SyncMode::kFull
+             ? local_device_name_info_.personalizable_name
+             : local_device_name_info_.model_name;
 }
 
 void DeviceInfoSyncBridge::OnStoreCreated(
@@ -458,43 +445,29 @@ void DeviceInfoSyncBridge::OnStoreCreated(
 
   store_ = std::move(store);
 
-  base::SysInfo::GetHardwareInfo(
-      base::BindOnce(&DeviceInfoSyncBridge::OnHardwareInfoRetrieved,
+  GetLocalDeviceNameInfo(
+      base::BindOnce(&DeviceInfoSyncBridge::OnLocalDeviceNameInfoRetrieved,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void DeviceInfoSyncBridge::OnHardwareInfoRetrieved(
-    base::SysInfo::HardwareInfo hardware_info) {
-  local_hardware_info_ = std::move(hardware_info);
-
-#if defined(OS_CHROMEOS)
-  // For ChromeOS the returned model values are product code names like Eve. We
-  // want to use generic names like Chromebook.
-  local_hardware_info_.model = GetChromeOSDeviceNameFromType();
-#endif
+void DeviceInfoSyncBridge::OnLocalDeviceNameInfoRetrieved(
+    LocalDeviceNameInfo local_device_name_info) {
+  local_device_name_info_ = std::move(local_device_name_info);
 
   auto all_data = std::make_unique<ClientIdToSpecifics>();
   ClientIdToSpecifics* all_data_copy = all_data.get();
 
-  auto local_personalizable_device_name = std::make_unique<std::string>();
-  std::string* local_personalizable_device_name_copy =
-      local_personalizable_device_name.get();
-
   store_->ReadAllDataAndPreprocess(
       base::BindOnce(&ParseSpecificsOnBackendSequence,
-                     base::Unretained(all_data_copy),
-                     base::Unretained(local_personalizable_device_name_copy)),
+                     base::Unretained(all_data_copy)),
       base::BindOnce(&DeviceInfoSyncBridge::OnReadAllData,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(all_data),
-                     std::move(local_personalizable_device_name)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(all_data)));
 }
 
 void DeviceInfoSyncBridge::OnReadAllData(
     std::unique_ptr<ClientIdToSpecifics> all_data,
-    std::unique_ptr<std::string> local_personalizable_device_name,
     const base::Optional<syncer::ModelError>& error) {
   DCHECK(all_data);
-  DCHECK(local_personalizable_device_name);
 
   if (error) {
     change_processor()->ReportError(*error);
@@ -502,9 +475,6 @@ void DeviceInfoSyncBridge::OnReadAllData(
   }
 
   all_data_ = std::move(*all_data);
-
-  local_personalizable_device_name_ =
-      std::move(*local_personalizable_device_name);
 
   store_->ReadAllMetadata(
       base::BindOnce(&DeviceInfoSyncBridge::OnReadAllMetadata,
@@ -560,7 +530,9 @@ void DeviceInfoSyncBridge::OnReadAllMetadata(
   // initialize the provider immediately.
   local_cache_guid_ = local_cache_guid_in_metadata;
   local_device_info_provider_->Initialize(
-      local_cache_guid_, GetLocalClientName(), local_hardware_info_);
+      local_cache_guid_, GetLocalClientName(),
+      local_device_name_info_.manufacturer_name,
+      local_device_name_info_.model_name);
 
   // This probably isn't strictly needed, but in case the cache_guid has changed
   // we save the new one to prefs.

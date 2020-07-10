@@ -787,6 +787,8 @@ PositionWithAffinity NGInlineCursor::PositionForPointInInlineFormattingContext(
         return PositionWithAffinity(last_position.GetPosition());
     } else if (const PositionWithAffinity child_position =
                    PositionForPointInInlineBox(point)) {
+      // Test[1] reaches here.
+      // [1] editing/selection/last-empty-inline.html
       return child_position;
     }
   }
@@ -891,25 +893,6 @@ PositionWithAffinity NGInlineCursor::PositionForPointInInlineBox(
       if (const PositionWithAffinity child_position =
               descendants.PositionForPointInInlineBox(point))
         return child_position;
-    }
-  }
-
-  if (container->Type() == NGFragmentItem::kLine) {
-    // There are no inline items to hit in this line box, e.g. <span> with
-    // size and border. We try in lines before |this| line in the block.
-    // See editing/selection/last-empty-inline.html
-    NGInlineCursor cursor;
-    cursor.MoveTo(*this);
-    const PhysicalOffset point_in_line =
-        point - Current().OffsetInContainerBlock();
-    for (;;) {
-      cursor.MoveToPreviousLine();
-      if (!cursor)
-        break;
-      const PhysicalOffset adjusted_point =
-          point_in_line + cursor.Current().OffsetInContainerBlock();
-      if (auto position = cursor.PositionForPointInInlineBox(adjusted_point))
-        return position;
     }
   }
 

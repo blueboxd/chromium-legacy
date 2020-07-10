@@ -36,7 +36,7 @@ void AnimationUtils::ForEachInterpolatedPropertyValue(
   if (!target)
     return;
 
-  StyleResolver& resolver = target->GetDocument().EnsureStyleResolver();
+  StyleResolver& resolver = target->GetDocument().GetStyleResolver();
   scoped_refptr<ComputedStyle> style =
       resolver.StyleForInterpolations(*target, interpolations);
 

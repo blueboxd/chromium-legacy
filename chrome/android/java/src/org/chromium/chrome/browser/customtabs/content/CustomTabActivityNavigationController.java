@@ -31,7 +31,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabObserver;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
@@ -89,7 +89,7 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
     private final CloseButtonNavigator mCloseButtonNavigator;
     private final ChromeBrowserInitializer mChromeBrowserInitializer;
     private final Activity mActivity;
-    private final Lazy<ChromeFullscreenManager> mFullscreenManager;
+    private final Lazy<FullscreenManager> mFullscreenManager;
 
     @Nullable
     private ToolbarManager mToolbarManager;
@@ -117,7 +117,7 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
             Lazy<CustomTabObserver> customTabObserver, CloseButtonNavigator closeButtonNavigator,
             ChromeBrowserInitializer chromeBrowserInitializer, ChromeActivity<?> activity,
             ActivityLifecycleDispatcher lifecycleDispatcher,
-            Lazy<ChromeFullscreenManager> fullscreenManager) {
+            Lazy<FullscreenManager> fullscreenManager) {
         mTabController = tabController;
         mTabProvider = tabProvider;
         mIntentDataProvider = intentDataProvider;

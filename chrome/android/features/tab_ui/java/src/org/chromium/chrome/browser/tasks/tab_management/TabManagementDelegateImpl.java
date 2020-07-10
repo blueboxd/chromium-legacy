@@ -55,7 +55,7 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
 
         return new TabSwitcherCoordinator(activity, activity.getLifecycleDispatcher(),
                 activity.getTabModelSelector(), activity.getTabContentManager(),
-                activity.getFullscreenManager(), activity,
+                activity.getBrowserControlsManager(), activity,
                 activity.getMenuOrKeyboardActionController(), containerView,
                 activity.getShareDelegateSupplier(), activity.getMultiWindowModeStateDispatcher(),
                 scrimCoordinator,
@@ -70,7 +70,7 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
             ChromeActivity activity, ViewGroup containerView, ScrimCoordinator scrimCoordinator) {
         return new TabSwitcherCoordinator(activity, activity.getLifecycleDispatcher(),
                 activity.getTabModelSelector(), activity.getTabContentManager(),
-                activity.getFullscreenManager(), activity,
+                activity.getBrowserControlsManager(), activity,
                 activity.getMenuOrKeyboardActionController(), containerView,
                 activity.getShareDelegateSupplier(), activity.getMultiWindowModeStateDispatcher(),
                 scrimCoordinator, TabListCoordinator.TabListMode.CAROUSEL);

@@ -18,6 +18,8 @@
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
+#include "chrome/browser/chromeos/login/configuration_keys.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
@@ -65,6 +67,8 @@ constexpr const char kUserActionEnableVirtualKeyboard[] =
     "accessibility-virtual-keyboard-enable";
 constexpr const char kUserActionDisableVirtualKeyboard[] =
     "accessibility-virtual-keyboard-disable";
+constexpr const char kUserActionSetupDemoMode[] = "setupDemoMode";
+constexpr const char kUserActionSetupDemoModeGesture[] = "setupDemoModeGesture";
 
 struct WelcomeScreenA11yUserAction {
   const char* name_;
@@ -134,6 +138,8 @@ std::string WelcomeScreen::GetResultString(Result result) {
       return "Next";
     case Result::START_DEMO:
       return "StartDemo";
+    case Result::SETUP_DEMO:
+      return "SetupDemo";
   }
 }
 
@@ -306,6 +312,14 @@ void WelcomeScreen::OnUserAction(const std::string& action_id) {
     OnContinueButtonPressed();
     return;
   }
+  if (action_id == kUserActionSetupDemoMode) {
+    OnSetupDemoMode();
+    return;
+  }
+  if (action_id == kUserActionSetupDemoModeGesture) {
+    HandleAccelerator(ash::LoginAcceleratorAction::kStartDemoMode);
+    return;
+  }
   if (IsA11yUserAction(action_id)) {
     RecordA11yUserAction(action_id);
     if (action_id == kUserActionEnableSpokenFeedback) {
@@ -346,6 +360,26 @@ void WelcomeScreen::OnUserAction(const std::string& action_id) {
   }
 }
 
+bool WelcomeScreen::HandleAccelerator(ash::LoginAcceleratorAction action) {
+  if (action == ash::LoginAcceleratorAction::kStartDemoMode) {
+    if (!DemoSetupController::IsDemoModeAllowed())
+      return true;
+    if (!view_)
+      return true;
+    const auto* key = context()->configuration.FindKeyOfType(
+        configuration::kEnableDemoMode, base::Value::Type::BOOLEAN);
+    const bool value = key && key->GetBool();
+    if (value) {
+      OnSetupDemoMode();
+      return true;
+    }
+
+    view_->ShowDemoModeConfirmationDialog();
+    return true;
+  }
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WelcomeScreen, InputMethodManager::Observer implementation:
 
@@ -370,6 +404,11 @@ void WelcomeScreen::OnContinueButtonPressed() {
 void WelcomeScreen::OnShouldStartDemoMode() {
   demo_mode_detector_.reset();
   exit_callback_.Run(Result::START_DEMO);
+}
+
+void WelcomeScreen::OnSetupDemoMode() {
+  demo_mode_detector_.reset();
+  exit_callback_.Run(Result::SETUP_DEMO);
 }
 
 void WelcomeScreen::OnLanguageChangedCallback(

@@ -55,6 +55,8 @@ public class PlayerFrameMediatorTest {
     private PropertyModel mModel;
     private TestPlayerCompositorDelegate mCompositorDelegate;
     private OverScroller mScroller;
+    private boolean mHasUserInteraction;
+    private Runnable mUserInteractionCallback;
     private PlayerFrameMediator mMediator;
 
     /**
@@ -189,8 +191,9 @@ public class PlayerFrameMediatorTest {
         mModel = new PropertyModel.Builder(PlayerFrameProperties.ALL_KEYS).build();
         mCompositorDelegate = new TestPlayerCompositorDelegate();
         mScroller = new OverScroller(ContextUtils.getApplicationContext());
-        mMediator = new PlayerFrameMediator(mModel, mCompositorDelegate, mScroller, mFrameGuid,
-                CONTENT_WIDTH, CONTENT_HEIGHT, 0, 0);
+        mUserInteractionCallback = () -> mHasUserInteraction = true;
+        mMediator = new PlayerFrameMediator(mModel, mCompositorDelegate, mScroller,
+                mUserInteractionCallback, mFrameGuid, CONTENT_WIDTH, CONTENT_HEIGHT, 0, 0);
     }
 
     private static Rect getRectForTile(int tileWidth, int tileHeight, int row, int col) {
@@ -1316,5 +1319,25 @@ public class PlayerFrameMediatorTest {
         verify(subFrameMediator).resetScaleFactor();
         mMediator.forceRedraw();
         verify(subFrameMediator).forceRedraw();
+    }
+    /**
+     * Tests that {@link PlayerFrameMediator} calls the user interaction callback.
+     */
+    @Test
+    public void testUserInteractionCallback() {
+        mMediator.updateViewportSize(100, 200, 1f);
+
+        Assert.assertFalse(
+                "User interaction callback shouldn't have been called", mHasUserInteraction);
+        mMediator.scrollBy(0, 10);
+        Assert.assertTrue("User interaction callback should have been called", mHasUserInteraction);
+
+        mHasUserInteraction = false;
+        mMediator.onFling(0, 10);
+        Assert.assertTrue("User interaction callback should have been called", mHasUserInteraction);
+
+        mHasUserInteraction = false;
+        mMediator.scaleBy(1.5f, 20, 30);
+        Assert.assertTrue("User interaction callback should have been called", mHasUserInteraction);
     }
 }

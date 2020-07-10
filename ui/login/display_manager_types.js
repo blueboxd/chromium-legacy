@@ -10,7 +10,6 @@
 /**
  * @typedef {{
  *   enableDebuggingAllowed: (boolean|undefined),
- *   enterDemoModeAllowed: (boolean|undefined),
  *   postponeEnrollmentAllowed: (boolean|undefined),
  *   resetAllowed: (boolean|undefined),
  *   startEnrollmentAllowed: (boolean|undefined),
@@ -25,12 +24,6 @@ var DisplayManagerScreenAttributes = {};
  * @type {boolean|undefined}
  */
 DisplayManagerScreenAttributes.enableDebuggingAllowed;
-
-/**
- * True if enabling demo mode is allowed for the screen.
- * @type {boolean|undefined}
- */
-DisplayManagerScreenAttributes.enterDemoModeAllowed;
 
 /**
  * True if enrollment accelerator should schedule postponed enrollment.

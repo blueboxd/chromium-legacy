@@ -154,11 +154,14 @@ const ui::TemplateReplacements* TerminalSource::GetReplacements() {
 
 std::string TerminalSource::GetContentSecurityPolicy(
     network::mojom::CSPDirectiveName directive) {
-  if (directive == network::mojom::CSPDirectiveName::ImgSrc) {
-    return "img-src * data:;";
-  } else if (directive == network::mojom::CSPDirectiveName::StyleSrc) {
-    return "style-src * 'unsafe-inline'; font-src *;";
+  switch (directive) {
+    case network::mojom::CSPDirectiveName::ImgSrc:
+      return "img-src * data: blob:;";
+    case network::mojom::CSPDirectiveName::MediaSrc:
+      return "media-src data:;";
+    case network::mojom::CSPDirectiveName::StyleSrc:
+      return "style-src * 'unsafe-inline'; font-src *;";
+    default:
+      return content::URLDataSource::GetContentSecurityPolicy(directive);
   }
-
-  return content::URLDataSource::GetContentSecurityPolicy(directive);
 }

@@ -201,6 +201,7 @@ class CAPTURE_EXPORT CameraDeviceDelegate final
 
   // CaptureMetadataDispatcher::ResultMetadataObserver implementation.
   void OnResultMetadataAvailable(
+      uint32_t frame_number,
       const cros::mojom::CameraMetadataPtr& result_metadata) final;
 
   void DoGetPhotoState(VideoCaptureDevice::GetPhotoStateCallback callback);
@@ -238,10 +239,16 @@ class CAPTURE_EXPORT CameraDeviceDelegate final
 
   CameraAppDeviceImpl* camera_app_device_;  // Weak.
 
-  // GetPhotoState requests waiting for |got_result_metadata_| to be served.
   std::vector<base::OnceClosure> get_photo_state_queue_;
-  bool got_result_metadata_;
   bool use_digital_zoom_;
+  // We reply GetPhotoState when |result_metadata_frame_number_| >
+  // |result_metadata_frame_number_for_photo_state_|. Otherwise javascript API
+  // getSettings() will get non-updated settings.
+  // They call GetPhotoState after SetPhotoOptions, we don't have the related
+  // result metadata that time.
+  uint32_t current_request_frame_number_;
+  uint32_t result_metadata_frame_number_for_photo_state_;
+  uint32_t result_metadata_frame_number_;
   ResultMetadata result_metadata_;
   gfx::Rect active_array_size_;
 

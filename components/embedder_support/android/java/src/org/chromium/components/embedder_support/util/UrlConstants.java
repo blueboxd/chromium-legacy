@@ -8,6 +8,7 @@ package org.chromium.components.embedder_support.util;
  * Java side version of chrome/common/url_constants.cc
  */
 public class UrlConstants {
+    public static final String BLOB_SCHEME = "blob";
     public static final String CHROME_SCHEME = "chrome";
     public static final String CHROME_NATIVE_SCHEME = "chrome-native";
     public static final String CONTENT_SCHEME = "content";

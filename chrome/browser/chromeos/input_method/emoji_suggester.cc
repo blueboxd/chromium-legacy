@@ -14,8 +14,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
+#include "chromeos/constants/chromeos_pref_names.h"
 #include "chromeos/services/ime/constants.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -23,6 +26,8 @@ namespace chromeos {
 
 namespace {
 
+constexpr char kEmojiSuggesterShowSettingCount[] =
+    "emoji_suggester.show_setting_count";
 const int kMaxCandidateSize = 5;
 const char kSpaceChar = ' ';
 const base::FilePath::CharType kEmojiMapFilePath[] =
@@ -71,8 +76,9 @@ std::string GetLastWord(const std::string& str) {
 
 }  // namespace
 
-EmojiSuggester::EmojiSuggester(SuggestionHandlerInterface* engine)
-    : engine_(engine) {
+EmojiSuggester::EmojiSuggester(SuggestionHandlerInterface* engine,
+                               Profile* profile)
+    : engine_(engine), profile_(profile) {
   LoadEmojiMap();
   properties_.type = ui::ime::AssistiveWindowType::kEmojiSuggestion;
   current_candidate_.id = ui::ime::ButtonId::kSuggestion;
@@ -219,6 +225,11 @@ void EmojiSuggester::ShowSuggestion(const std::string& text) {
   properties_.visible = true;
   properties_.candidates = candidates_;
   properties_.announce_string = kShowEmojiSuggestionMessage;
+  properties_.show_setting_link =
+      GetPrefValue(kEmojiSuggesterShowSettingCount) <
+      kEmojiSuggesterShowSettingMaxCount;
+  IncrementPrefValueTilCapped(kEmojiSuggesterShowSettingCount,
+                              kEmojiSuggesterShowSettingMaxCount);
   ShowSuggestionWindowWithIndices(false);
 }
 
@@ -303,6 +314,27 @@ void EmojiSuggester::SetLearnMoreButtonHighlighted(bool highlighted) {
     is_learn_more_button_chosen_ = highlighted;
     if (highlighted)
       current_candidate_.index = INT_MAX;
+  }
+}
+
+int EmojiSuggester::GetPrefValue(const std::string& pref_name) {
+  DictionaryPrefUpdate update(profile_->GetPrefs(),
+                              prefs::kAssistiveInputFeatureSettings);
+  auto value = update->FindIntKey(pref_name);
+  if (!value.has_value()) {
+    update->SetIntKey(pref_name, 0);
+    return 0;
+  }
+  return *value;
+}
+
+void EmojiSuggester::IncrementPrefValueTilCapped(const std::string& pref_name,
+                                                 int max_value) {
+  int value = GetPrefValue(pref_name);
+  if (value < max_value) {
+    DictionaryPrefUpdate update(profile_->GetPrefs(),
+                                prefs::kAssistiveInputFeatureSettings);
+    update->SetIntKey(pref_name, value + 1);
   }
 }
 

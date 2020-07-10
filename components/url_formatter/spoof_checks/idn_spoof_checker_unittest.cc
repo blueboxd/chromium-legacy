@@ -1509,4 +1509,14 @@ TEST(IDNSpoofCheckerNoFixtureTest, Skeletons) {
   }
 }
 
+TEST(IDNSpoofCheckerNoFixtureTest, MultipleSkeletons) {
+  IDNSpoofChecker checker;
+  // apple with U+04CF (ӏ)
+  const GURL url("http://appӏe.com");
+  const url_formatter::IDNConversionResult result =
+      UnsafeIDNToUnicodeWithDetails(url.host());
+  Skeletons skeletons = checker.GetSkeletons(result.result);
+  EXPECT_EQ(Skeletons({"apple.corn", "appie.corn"}), skeletons);
+}
+
 }  // namespace url_formatter

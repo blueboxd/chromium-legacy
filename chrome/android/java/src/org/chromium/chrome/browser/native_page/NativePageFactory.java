@@ -82,7 +82,7 @@ public class NativePageFactory {
             NativePageHost nativePageHost = new TabShim(tab, mActivity);
             if (tab.isIncognito()) return new IncognitoNewTabPage(mActivity, nativePageHost);
 
-            return new NewTabPage(mActivity, mActivity.getFullscreenManager(),
+            return new NewTabPage(mActivity, mActivity.getBrowserControlsManager(),
                     mActivity.getActivityTabProvider(), mActivity.getOverviewModeBehavior(),
                     mActivity.getSnackbarManager(), mActivity.getLifecycleDispatcher(),
                     mActivity.getTabModelSelector(), mActivity.isTablet(), mUma.get(),
@@ -237,7 +237,7 @@ public class NativePageFactory {
 
         public TabShim(Tab tab, ChromeActivity activity) {
             mTab = tab;
-            mBrowserControlsStateProvider = activity.getFullscreenManager();
+            mBrowserControlsStateProvider = activity.getBrowserControlsManager();
             mTabModelSelector = activity.getTabModelSelector();
         }
 

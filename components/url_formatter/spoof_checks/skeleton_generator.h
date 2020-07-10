@@ -42,6 +42,15 @@ class SkeletonGenerator {
   Skeletons GetSkeletons(base::StringPiece16 hostname);
 
  private:
+  // Adds an additional mapping from |src_char| to |mapped_char| when generating
+  // skeletons: If |host| contains |src_char|, |skeletons| will contain a new
+  // skeleton where all occurances of |src_char| are replaced with
+  // |mapped_char|.
+  void AddSkeletonMapping(const icu::UnicodeString& host,
+                          int32_t src_char,
+                          int32_t mapped_char,
+                          Skeletons* skeletons);
+
   icu::UnicodeSet lgc_letters_n_ascii_;
 
   std::unique_ptr<icu::Transliterator> diacritic_remover_;

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CERT_PROVISIONING_CERT_PROVISIONING_TEST_HELPERS_H_
 #define CHROME_BROWSER_CHROMEOS_CERT_PROVISIONING_CERT_PROVISIONING_TEST_HELPERS_H_
 
+#include "base/optional.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/platform_keys/mock_platform_keys_service.h"
@@ -26,9 +27,10 @@ struct CertificateHelperForTesting {
       platform_keys::MockPlatformKeysService* platform_keys_service);
   ~CertificateHelperForTesting();
 
-  void AddCert(CertScope cert_scope, const CertProfileId& cert_profile_id);
   void AddCert(CertScope cert_scope,
-               const CertProfileId& cert_profile_id,
+               const base::Optional<CertProfileId>& cert_profile_id);
+  void AddCert(CertScope cert_scope,
+               const base::Optional<CertProfileId>& cert_profile_id,
                const std::string& error_message);
   void ClearCerts();
   const net::CertificateList& GetCerts() const;

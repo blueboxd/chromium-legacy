@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitio
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.permissions.PermissionTestRule;
 import org.chromium.chrome.browser.permissions.PermissionTestRule.PermissionUpdateWaiter;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
@@ -65,6 +64,7 @@ import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.permissions.nfc.NfcSystemLevelSetting;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.device.geolocation.LocationProviderOverrider;
@@ -243,7 +243,9 @@ public class SiteSettingsTest {
             websitePreferences.onPreferenceChange(thirdPartyCookies, enabled);
             Assert.assertEquals(
                     "Third-party cookies should be " + (enabled ? "allowed" : "blocked"),
-                    PrefServiceBridge.getInstance().getBoolean(BLOCK_THIRD_PARTY_COOKIES), enabled);
+                    UserPrefs.get(Profile.getLastUsedRegularProfile())
+                            .getBoolean(BLOCK_THIRD_PARTY_COOKIES),
+                    enabled);
         });
     }
 
@@ -307,7 +309,8 @@ public class SiteSettingsTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(
                     "Third Party Cookie Blocking should be " + (expected ? "managed" : "unmanaged"),
-                    PrefServiceBridge.getInstance().isManagedPreference(BLOCK_THIRD_PARTY_COOKIES),
+                    UserPrefs.get(Profile.getLastUsedRegularProfile())
+                            .isManagedPreference(BLOCK_THIRD_PARTY_COOKIES),
                     expected);
         });
     }

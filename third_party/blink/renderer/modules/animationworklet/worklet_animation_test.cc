@@ -133,7 +133,7 @@ TEST_F(WorkletAnimationTest, WorkletAnimationInElementAnimations) {
 
 TEST_F(WorkletAnimationTest, StyleHasCurrentAnimation) {
   scoped_refptr<ComputedStyle> style =
-      GetDocument().EnsureStyleResolver().StyleForElement(element_).get();
+      GetDocument().GetStyleResolver().StyleForElement(element_).get();
   EXPECT_EQ(false, style->HasCurrentOpacityAnimation());
   worklet_animation_->play(ASSERT_NO_EXCEPTION);
   element_->EnsureElementAnimations().UpdateAnimationFlags(*style);

@@ -115,29 +115,41 @@ void RecordEngagementMetric(const std::vector<PermissionRequest*>& requests,
   base::UmaHistogramPercentage(name, engagement_score);
 }
 
-void RecordPermissionActionUkm(PermissionAction action,
-                               PermissionRequestGestureType gesture_type,
-                               ContentSettingsType permission,
-                               int dismiss_count,
-                               int ignore_count,
-                               PermissionSourceUI source_ui,
-                               PermissionPromptDisposition ui_disposition,
-                               base::Optional<ukm::SourceId> source_id) {
+void RecordPermissionActionUkm(
+    PermissionAction action,
+    PermissionRequestGestureType gesture_type,
+    ContentSettingsType permission,
+    int dismiss_count,
+    int ignore_count,
+    PermissionSourceUI source_ui,
+    PermissionPromptDisposition ui_disposition,
+    base::Optional<bool> has_three_consecutive_denies,
+    base::Optional<ukm::SourceId> source_id) {
   // Only record the permission change if the origin is in the history.
   if (!source_id.has_value())
     return;
 
   size_t num_values = 0;
-  ukm::builders::Permission(source_id.value())
-      .SetAction(static_cast<int64_t>(action))
+
+  ukm::builders::Permission builder(source_id.value());
+  builder.SetAction(static_cast<int64_t>(action))
       .SetGesture(static_cast<int64_t>(gesture_type))
       .SetPermissionType(static_cast<int64_t>(
           ContentSettingTypeToHistogramValue(permission, &num_values)))
       .SetPriorDismissals(std::min(kPriorCountCap, dismiss_count))
       .SetPriorIgnores(std::min(kPriorCountCap, ignore_count))
       .SetSource(static_cast<int64_t>(source_ui))
-      .SetPromptDisposition(static_cast<int64_t>(ui_disposition))
-      .Record(ukm::UkmRecorder::Get());
+      .SetPromptDisposition(static_cast<int64_t>(ui_disposition));
+
+  if (has_three_consecutive_denies.has_value()) {
+    int64_t satisfied_adaptive_triggers = 0;
+    if (has_three_consecutive_denies.value())
+      satisfied_adaptive_triggers |=
+          static_cast<int64_t>(AdaptiveTriggers::THREE_CONSECUTIVE_DENIES);
+    builder.SetSatisfiedAdaptiveTriggers(satisfied_adaptive_triggers);
+  }
+
+  builder.Record(ukm::UkmRecorder::Get());
 }
 
 std::string GetPromptDispositionString(
@@ -477,9 +489,14 @@ void PermissionUmaUtil::RecordPermissionAction(
 
   PermissionsClient::Get()->GetUkmSourceId(
       browser_context, web_contents, requesting_origin,
-      base::BindOnce(&RecordPermissionActionUkm, action, gesture_type,
-                     permission, dismiss_count, ignore_count, source_ui,
-                     ui_disposition));
+      base::BindOnce(
+          &RecordPermissionActionUkm, action, gesture_type, permission,
+          dismiss_count, ignore_count, source_ui, ui_disposition,
+          permission == ContentSettingsType::NOTIFICATIONS
+              ? PermissionsClient::Get()
+                    ->HadThreeConsecutiveNotificationPermissionDenies(
+                        browser_context)
+              : base::nullopt));
 
   switch (permission) {
     case ContentSettingsType::GEOLOCATION:

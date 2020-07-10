@@ -102,9 +102,6 @@ DisplayMode ToMojomDisplayMode(
 
 WebAppProto::DisplayMode ToWebAppProtoDisplayMode(DisplayMode display_mode);
 
-::sync_pb::WebAppSpecifics::UserDisplayMode ToWebAppSpecificsUserDisplayMode(
-    DisplayMode user_display_mode);
-
 }  // namespace web_app
 
 #endif  // CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_DATABASE_H_

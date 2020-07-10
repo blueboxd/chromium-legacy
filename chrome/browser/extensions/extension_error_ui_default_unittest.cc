@@ -22,7 +22,7 @@ class TestErrorUIDelegate : public extensions::ExtensionErrorUI::Delegate {
  public:
   // extensions::ExtensionErrorUI::Delegate:
   content::BrowserContext* GetContext() override { return &profile_; }
-  const extensions::ExtensionSet& GetBlacklistedExtensions() override {
+  const extensions::ExtensionSet& GetBlocklistedExtensions() override {
     return forbidden_;
   }
   void OnAlertDetails() override {}

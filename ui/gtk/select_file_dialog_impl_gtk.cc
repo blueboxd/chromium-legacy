@@ -117,7 +117,7 @@ void SelectFileDialogImplGTK::OnWindowDestroying(aura::Window* window) {
        it != dialogs_.end(); ++it) {
     aura::Window* parent = GetAuraTransientParent(*it);
     if (parent == window)
-      ClearAuraTransientParent(*it);
+      ClearAuraTransientParent(*it, parent);
   }
 
   std::set<aura::Window*>::iterator iter = parents_.find(window);
@@ -548,6 +548,7 @@ void SelectFileDialogImplGTK::OnFileChooserDestroy(GtkWidget* dialog) {
   aura::Window* parent = GetAuraTransientParent(dialog);
   if (!parent)
     return;
+  ClearAuraTransientParent(dialog, parent);
   std::set<aura::Window*>::iterator iter = parents_.find(parent);
   if (iter != parents_.end()) {
     (*iter)->RemoveObserver(this);

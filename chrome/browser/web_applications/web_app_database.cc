@@ -97,21 +97,10 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   DCHECK(!web_app.app_id().empty());
   DCHECK_EQ(web_app.app_id(), GenerateAppIdFromURL(launch_url));
 
-  sync_pb::WebAppSpecifics* sync_data = local_data->mutable_sync_data();
-
-  sync_data->set_launch_url(launch_url.spec());
+  // Set sync data to sync proto.
+  *(local_data->mutable_sync_data()) = WebAppToSyncProto(web_app);
 
   local_data->set_name(web_app.name());
-
-  sync_data->set_user_display_mode(
-      ToWebAppSpecificsUserDisplayMode(web_app.user_display_mode()));
-
-  if (web_app.user_page_ordinal().IsValid())
-    sync_data->set_user_page_ordinal(
-        web_app.user_page_ordinal().ToInternalValue());
-  if (web_app.user_launch_ordinal().IsValid())
-    sync_data->set_user_launch_ordinal(
-        web_app.user_launch_ordinal().ToInternalValue());
 
   DCHECK(web_app.sources_.any());
   local_data->mutable_sources()->set_system(web_app.sources_[Source::kSystem]);
@@ -154,22 +143,6 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   }
 
   local_data->set_is_in_sync_install(web_app.is_in_sync_install());
-
-  // Set sync_data to sync proto.
-  sync_data->set_name(web_app.sync_fallback_data().name);
-  if (web_app.sync_fallback_data().theme_color.has_value())
-    sync_data->set_theme_color(
-        web_app.sync_fallback_data().theme_color.value());
-  if (web_app.sync_fallback_data().scope.is_valid())
-    sync_data->set_scope(web_app.sync_fallback_data().scope.spec());
-  for (const WebApplicationIconInfo& icon_info :
-       web_app.sync_fallback_data().icon_infos) {
-    sync_pb::WebAppIconInfo* icon_info_proto = sync_data->add_icon_infos();
-    if (icon_info.square_size_px)
-      icon_info_proto->set_size_in_px(*icon_info.square_size_px);
-    DCHECK(!icon_info.url.is_empty());
-    icon_info_proto->set_url(icon_info.url.spec());
-  }
 
   for (const WebApplicationIconInfo& icon_info : web_app.icon_infos()) {
     sync_pb::WebAppIconInfo* icon_info_proto = local_data->add_icon_infos();
@@ -613,21 +586,6 @@ WebAppProto::DisplayMode ToWebAppProtoDisplayMode(DisplayMode display_mode) {
       return WebAppProto::STANDALONE;
     case DisplayMode::kFullscreen:
       return WebAppProto::FULLSCREEN;
-  }
-}
-
-::sync_pb::WebAppSpecifics::UserDisplayMode ToWebAppSpecificsUserDisplayMode(
-    DisplayMode user_display_mode) {
-  switch (user_display_mode) {
-    case DisplayMode::kBrowser:
-      return ::sync_pb::WebAppSpecifics::BROWSER;
-    case DisplayMode::kUndefined:
-    case DisplayMode::kMinimalUi:
-    case DisplayMode::kFullscreen:
-      NOTREACHED();
-      FALLTHROUGH;
-    case DisplayMode::kStandalone:
-      return ::sync_pb::WebAppSpecifics::STANDALONE;
   }
 }
 

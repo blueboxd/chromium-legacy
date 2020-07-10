@@ -241,7 +241,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
             return;
         }
 
-        final BrowserControlsSizer browserControlsSizer = mActivity.getFullscreenManager();
+        final BrowserControlsSizer browserControlsSizer = mActivity.getBrowserControlsManager();
         mStatusIndicatorCoordinator = new StatusIndicatorCoordinator(mActivity,
                 mActivity.getCompositorViewHolder().getResourceManager(), browserControlsSizer,
                 mActivity.getStatusBarColorController()::getStatusBarColorWithoutStatusIndicator,

@@ -704,13 +704,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
 }
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, Blacklist) {
-  scoped_refptr<FakeSafeBrowsingDatabaseManager> blacklist_db(
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, Blocklist) {
+  scoped_refptr<FakeSafeBrowsingDatabaseManager> blocklist_db(
       new FakeSafeBrowsingDatabaseManager(true));
-  Blacklist::ScopedDatabaseManagerForTest scoped_blacklist_db(blacklist_db);
+  Blocklist::ScopedDatabaseManagerForTest scoped_blocklist_db(blocklist_db);
 
   const std::string extension_id = "gllekhaobjnhgeagipipnkpmmmpchacm";
-  blacklist_db->SetUnsafe(extension_id);
+  blocklist_db->SetUnsafe(extension_id);
 
   base::FilePath crx_path = test_data_dir_.AppendASCII("theme_hidpi_crx")
                                           .AppendASCII("theme_hidpi.crx");

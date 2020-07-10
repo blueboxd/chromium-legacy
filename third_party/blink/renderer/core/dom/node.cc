@@ -133,6 +133,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_visitor.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -178,12 +179,12 @@ struct SameSizeAsNode : EventTarget {
   Member<void*> willbe_member_[4];
   Member<NodeData> member_;
 #if !DCHECK_IS_ON()
-  static_assert(sizeof(Member<NodeData>) == sizeof(void*),
-                "Increasing size of Member increases size of Node");
+  // Increasing size of Member increases size of Node.
+  ASSERT_SIZE(Member<NodeData>, void*);
 #endif  // !DCHECK_IS_ON()
 };
 
-static_assert(sizeof(Node) <= sizeof(SameSizeAsNode), "Node should stay small");
+ASSERT_SIZE(Node, SameSizeAsNode);
 
 #if DUMP_NODE_STATISTICS
 using WeakNodeSet = HeapHashSet<WeakMember<Node>>;

@@ -87,7 +87,7 @@ public class AssistantOnboardingCoordinatorTest {
     private AssistantOnboardingCoordinator createCoordinator(Tab tab) {
         AssistantOnboardingCoordinator coordinator =
                 new AssistantOnboardingCoordinator("", new HashMap<String, String>(), mActivity,
-                        mBottomSheetController, mActivity.getFullscreenManager(),
+                        mBottomSheetController, mActivity.getBrowserControlsManager(),
                         mActivity.getCompositorViewHolder(), mActivity.getScrim());
         coordinator.disableAnimationForTesting();
         return coordinator;
@@ -174,9 +174,10 @@ public class AssistantOnboardingCoordinatorTest {
 
         HashMap<String, String> parameters = new HashMap();
         parameters.put("INTENT", "RENT_CAR");
-        AssistantOnboardingCoordinator coordinator = new AssistantOnboardingCoordinator("",
-                parameters, mActivity, mBottomSheetController, mActivity.getFullscreenManager(),
-                mActivity.getCompositorViewHolder(), mActivity.getScrim());
+        AssistantOnboardingCoordinator coordinator =
+                new AssistantOnboardingCoordinator("", parameters, mActivity,
+                        mBottomSheetController, mActivity.getBrowserControlsManager(),
+                        mActivity.getCompositorViewHolder(), mActivity.getScrim());
         coordinator.disableAnimationForTesting();
         showOnboardingAndWait(coordinator, mCallback);
 
@@ -197,9 +198,10 @@ public class AssistantOnboardingCoordinatorTest {
 
         HashMap<String, String> parameters = new HashMap();
         parameters.put("INTENT", "BUY_MOVIE_TICKET");
-        AssistantOnboardingCoordinator coordinator = new AssistantOnboardingCoordinator("4363482",
-                parameters, mActivity, mBottomSheetController, mActivity.getFullscreenManager(),
-                mActivity.getCompositorViewHolder(), mActivity.getScrim());
+        AssistantOnboardingCoordinator coordinator =
+                new AssistantOnboardingCoordinator("4363482", parameters, mActivity,
+                        mBottomSheetController, mActivity.getBrowserControlsManager(),
+                        mActivity.getCompositorViewHolder(), mActivity.getScrim());
         coordinator.disableAnimationForTesting();
         showOnboardingAndWait(coordinator, mCallback);
 
@@ -219,9 +221,10 @@ public class AssistantOnboardingCoordinatorTest {
         AutofillAssistantPreferencesUtil.setInitialPreferences(true);
 
         HashMap<String, String> parameters = new HashMap();
-        AssistantOnboardingCoordinator coordinator = new AssistantOnboardingCoordinator("",
-                parameters, mActivity, mBottomSheetController, mActivity.getFullscreenManager(),
-                mActivity.getCompositorViewHolder(), mActivity.getScrim());
+        AssistantOnboardingCoordinator coordinator =
+                new AssistantOnboardingCoordinator("", parameters, mActivity,
+                        mBottomSheetController, mActivity.getBrowserControlsManager(),
+                        mActivity.getCompositorViewHolder(), mActivity.getScrim());
         coordinator.disableAnimationForTesting();
         showOnboardingAndWait(coordinator, mCallback);
 

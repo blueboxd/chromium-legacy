@@ -17,6 +17,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
+#include "third_party/blink/public/common/loader/worker_main_script_load_parameters.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/messaging/message_port_descriptor.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom.h"
@@ -63,18 +64,38 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   DCHECK(main_script_load_params);
   DCHECK(pending_subresource_loader_factory_bundle);
 
-  // Initialize the response override for the main worker script loaded by the
-  // browser process.
-  response_override_ = std::make_unique<NavigationResponseOverrideParameters>();
-  response_override_->url_loader_client_endpoints =
-      std::move(main_script_load_params->url_loader_client_endpoints);
-  response_override_->response_head =
-      std::move(main_script_load_params->response_head);
-  response_override_->response_body =
-      std::move(main_script_load_params->response_body);
-  response_override_->redirect_responses =
-      std::move(main_script_load_params->redirect_response_heads);
-  response_override_->redirect_infos = main_script_load_params->redirect_infos;
+  // Initialize the loading parameters for the main worker script loaded by
+  // the browser process.
+  std::unique_ptr<blink::WorkerMainScriptLoadParameters>
+      worker_main_script_load_params;
+  if (base::FeatureList::IsEnabled(
+          blink::features::kLoadMainScriptForPlzDedicatedWorkerByParams)) {
+    worker_main_script_load_params =
+        std::make_unique<blink::WorkerMainScriptLoadParameters>();
+    worker_main_script_load_params->response_head =
+        std::move(main_script_load_params->response_head);
+    worker_main_script_load_params->response_body =
+        std::move(main_script_load_params->response_body);
+    worker_main_script_load_params->redirect_responses =
+        std::move(main_script_load_params->redirect_response_heads);
+    worker_main_script_load_params->redirect_infos =
+        main_script_load_params->redirect_infos;
+    worker_main_script_load_params->url_loader_client_endpoints =
+        std::move(main_script_load_params->url_loader_client_endpoints);
+  } else {
+    response_override_ =
+        std::make_unique<NavigationResponseOverrideParameters>();
+    response_override_->url_loader_client_endpoints =
+        std::move(main_script_load_params->url_loader_client_endpoints);
+    response_override_->response_head =
+        std::move(main_script_load_params->response_head);
+    response_override_->response_body =
+        std::move(main_script_load_params->response_body);
+    response_override_->redirect_responses =
+        std::move(main_script_load_params->redirect_response_heads);
+    response_override_->redirect_infos =
+        main_script_load_params->redirect_infos;
+  }
 
   // If the network service crashes, then self-destruct so clients don't get
   // stuck with a worker with a broken loader. Self-destruction is effectively
@@ -117,7 +138,8 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       FetchClientSettingsObjectFromMojomToWeb(
           info->outside_fetch_client_settings_object),
       appcache_host_id, devtools_worker_token, std::move(content_settings),
-      std::move(browser_interface_broker), pause_on_start);
+      std::move(browser_interface_broker), pause_on_start,
+      std::move(worker_main_script_load_params));
 
   // If the host drops its connection, then self-destruct.
   receiver_.set_disconnect_handler(base::BindOnce(
@@ -173,7 +195,8 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext() {
   std::unique_ptr<network::PendingSharedURLLoaderFactory> fallback_factory =
       subresource_loader_factory_bundle_->CloneWithoutAppCacheFactory();
 
-  // |pending_subresource_loader_updater| is not used for shared workers.
+  // |pending_subresource_loader_updater| and
+  // |pending_resource_load_info_notifier| are not used for shared workers.
   scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
       WebWorkerFetchContextImpl::Create(
           service_worker_provider_context_.get(),
@@ -181,8 +204,9 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext() {
           std::move(preference_watcher_receiver_),
           subresource_loader_factory_bundle_->Clone(),
           std::move(fallback_factory),
-          /*pending_subresource_loader_updater*/ mojo::NullReceiver(),
-          cors_exempt_header_list_);
+          /*pending_subresource_loader_updater=*/mojo::NullReceiver(),
+          cors_exempt_header_list_,
+          /*pending_resource_load_info_notifier=*/mojo::NullRemote());
 
   // TODO(horo): To get the correct first_party_to_cookies for the shared
   // worker, we need to check the all documents bounded by the shared worker.
@@ -191,9 +215,12 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext() {
   worker_fetch_context->set_site_for_cookies(
       net::SiteForCookies::FromUrl(url_));
 
-  DCHECK(response_override_);
-  worker_fetch_context->SetResponseOverrideForMainScript(
-      std::move(response_override_));
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kLoadMainScriptForPlzDedicatedWorkerByParams)) {
+    DCHECK(response_override_);
+    worker_fetch_context->SetResponseOverrideForMainScript(
+        std::move(response_override_));
+  }
 
   return worker_fetch_context;
 }

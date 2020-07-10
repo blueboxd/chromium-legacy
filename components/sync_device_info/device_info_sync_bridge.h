@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
-#include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/sync/base/sync_mode.h"
@@ -23,6 +22,7 @@
 #include "components/sync/model/model_type_sync_bridge.h"
 #include "components/sync_device_info/device_info_tracker.h"
 #include "components/sync_device_info/local_device_info_provider.h"
+#include "components/sync_device_info/local_device_info_util.h"
 
 namespace sync_pb {
 class DeviceInfoSpecifics;
@@ -108,9 +108,9 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   // Methods used as callbacks given to DataTypeStore.
   void OnStoreCreated(const base::Optional<syncer::ModelError>& error,
                       std::unique_ptr<ModelTypeStore> store);
-  void OnHardwareInfoRetrieved(base::SysInfo::HardwareInfo hardware_info);
+  void OnLocalDeviceNameInfoRetrieved(
+      LocalDeviceNameInfo local_device_name_info);
   void OnReadAllData(std::unique_ptr<ClientIdToSpecifics> all_data,
-                     std::unique_ptr<std::string> session_name,
                      const base::Optional<syncer::ModelError>& error);
   void OnReadAllMetadata(const base::Optional<syncer::ModelError>& error,
                          std::unique_ptr<MetadataBatch> metadata_batch);
@@ -148,11 +148,9 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
       local_device_info_provider_;
 
   std::string local_cache_guid_;
-  std::string local_personalizable_device_name_;
   ClientIdToSpecifics all_data_;
 
-  // TODO(crbug.com/1019689): Replace hardware info with a custom data type.
-  base::SysInfo::HardwareInfo local_hardware_info_;
+  LocalDeviceNameInfo local_device_name_info_;
 
   base::Optional<SyncMode> sync_mode_;
 

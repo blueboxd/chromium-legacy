@@ -1076,6 +1076,14 @@ bool XWindow::IsTargetedBy(const x11::Event& x11_event) const {
   return x11_event.window() == xwindow_;
 }
 
+bool XWindow::IsTransientWindowTargetedBy(const x11::Event& x11_event) const {
+  return x11_event.window() == transient_window_;
+}
+
+void XWindow::SetTransientWindow(x11::Window window) {
+  transient_window_ = window;
+}
+
 void XWindow::WmMoveResize(int hittest, const gfx::Point& location) const {
   int direction = HitTestToWmMoveResizeDirection(hittest);
   if (direction == -1)

@@ -30,7 +30,7 @@ public class AssistantRootViewContainer
         super(context, attrs);
         assert context instanceof ChromeActivity;
         mActivity = (ChromeActivity) context;
-        mBrowserControlsStateProvider = mActivity.getFullscreenManager();
+        mBrowserControlsStateProvider = mActivity.getBrowserControlsManager();
         mBrowserControlsStateProvider.addObserver(this);
     }
 

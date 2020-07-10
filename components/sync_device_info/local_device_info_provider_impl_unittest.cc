@@ -16,6 +16,8 @@ namespace {
 
 const char kLocalDeviceGuid[] = "foo";
 const char kLocalDeviceClientName[] = "bar";
+const char kLocalDeviceManufacturerName[] = "manufacturer";
+const char kLocalDeviceModelName[] = "model";
 
 const char kSharingVapidFCMToken[] = "test_vapid_fcm_token";
 const char kSharingVapidP256dh[] = "test_vapid_p256_dh";
@@ -63,7 +65,7 @@ class LocalDeviceInfoProviderImplTest : public testing::Test {
 
   void InitializeProvider(const std::string& guid) {
     provider_->Initialize(guid, kLocalDeviceClientName,
-                          base::SysInfo::HardwareInfo());
+                          kLocalDeviceManufacturerName, kLocalDeviceModelName);
   }
 
   testing::NiceMock<MockDeviceInfoSyncClient> device_info_sync_client_;
@@ -79,6 +81,9 @@ TEST_F(LocalDeviceInfoProviderImplTest, GetLocalDeviceInfo) {
   ASSERT_NE(nullptr, local_device_info);
   EXPECT_EQ(std::string(kLocalDeviceGuid), local_device_info->guid());
   EXPECT_EQ(kLocalDeviceClientName, local_device_info->client_name());
+  EXPECT_EQ(kLocalDeviceManufacturerName,
+            local_device_info->manufacturer_name());
+  EXPECT_EQ(kLocalDeviceModelName, local_device_info->model_name());
   EXPECT_EQ(MakeUserAgentForSync(provider_->GetChannel()),
             local_device_info->sync_user_agent());
 

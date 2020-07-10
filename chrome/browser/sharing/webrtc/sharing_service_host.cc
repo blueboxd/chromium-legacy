@@ -107,7 +107,8 @@ std::unique_ptr<syncer::DeviceInfo> CreateDeviceInfo(
         /*chrome_version=*/std::string(), /*sync_user_agent=*/std::string(),
         /*device_type=*/sync_pb::SyncEnums::TYPE_UNSET,
         /*signin_scoped_device_id=*/std::string(),
-        /*hardware_info=*/base::SysInfo::HardwareInfo(),
+        /*manufacturer_name=*/std::string(),
+        /*model_name=*/std::string(),
         /*last_updated_timestamp=*/base::Time(),
         /*pulse_interval=*/base::TimeDelta(),
         /*send_tab_to_self_receiving_enabled=*/true, std::move(sharing_info));

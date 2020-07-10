@@ -5,17 +5,30 @@
 #include "chrome/browser/chromeos/input_method/ui/suggestion_view.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/input_method/ui/suggestion_details.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
 namespace ui {
 namespace ime {
 
 namespace {
+
+// TODO(crbug/1094843): Use localised strings.
+const char kEnter[] = "Enter";
+
+const int kAnnotationLabelChildSpacing = 6;
+const int kArrowIconSize = 16;
+const int kDownIconHorizontalPadding = 4;
+const int kDownIconSize = 18;
+const int kEnterKeyHorizontalPadding = 4;
 
 // Creates the index label, and returns it (never returns nullptr).
 // The label text is not set in this function.
@@ -46,26 +59,33 @@ std::unique_ptr<views::StyledLabel> CreateSuggestionLabel() {
   return suggestion_label;
 }
 
-// Creates the "tab" annotation label, and return it (never returns nullptr).
-std::unique_ptr<views::Label> CreateAnnotationLabel() {
-  std::unique_ptr<views::Label> annotation_label =
-      std::make_unique<views::Label>();
-  annotation_label->SetFontList(gfx::FontList({kFontStyle}, gfx::Font::NORMAL,
-                                              kAnnotationFontSize,
-                                              gfx::Font::Weight::NORMAL));
-  annotation_label->SetEnabledColor(kSuggestionColor);
-  annotation_label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+std::unique_ptr<views::ImageView> CreateDownIcon() {
+  auto icon = std::make_unique<views::ImageView>();
+  icon->SetBorder(views::CreateEmptyBorder(gfx::Insets(
+      0, kDownIconHorizontalPadding, 0, kDownIconHorizontalPadding)));
+  return icon;
+}
 
-  // Set insets.
-  const gfx::Insets insets(0, 0, 0, kPadding / 2);
-  annotation_label->SetBorder(views::CreateRoundedRectBorder(
-      kAnnotationBorderThickness, kAnnotationCornerRadius, insets,
+std::unique_ptr<views::Label> CreateEnterLabel() {
+  auto label = std::make_unique<views::Label>();
+  label->SetEnabledColor(kSuggestionColor);
+  label->SetText(base::UTF8ToUTF16(kEnter));
+  label->SetFontList(gfx::FontList({kFontStyle}, gfx::Font::NORMAL,
+                                   kAnnotationFontSize,
+                                   gfx::Font::Weight::MEDIUM));
+  label->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(0, kEnterKeyHorizontalPadding)));
+  return label;
+}
+
+std::unique_ptr<views::View> CreateKeyContainer() {
+  auto container = std::make_unique<views::View>();
+  container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal));
+  container->SetBorder(views::CreateRoundedRectBorder(
+      kAnnotationBorderThickness, kAnnotationCornerRadius, gfx::Insets(),
       kSuggestionColor));
-
-  // Set text.
-  annotation_label->SetText(base::UTF8ToUTF16(kTabKey));
-
-  return annotation_label;
+  return container;
 }
 
 }  // namespace
@@ -80,6 +100,20 @@ SuggestionView::SuggestionView(views::ButtonListener* listener)
 }
 
 SuggestionView::~SuggestionView() = default;
+
+std::unique_ptr<views::View> SuggestionView::CreateAnnotationLabel() {
+  auto label = std::make_unique<views::View>();
+  label->SetBorder(views::CreateEmptyBorder(gfx::Insets(0, kPadding, 0, 0)));
+  label
+      ->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kHorizontal))
+      ->set_between_child_spacing(kAnnotationLabelChildSpacing);
+  down_icon_ =
+      label->AddChildView(CreateKeyContainer())->AddChildView(CreateDownIcon());
+  arrow_icon_ = label->AddChildView(std::make_unique<views::ImageView>());
+  label->AddChildView(CreateKeyContainer())->AddChildView(CreateEnterLabel());
+  return label;
+}
 
 void SuggestionView::SetView(const SuggestionDetails& details) {
   SetSuggestionText(details.text, details.confirmed_length);
@@ -139,6 +173,18 @@ void SuggestionView::SetHighlighted(bool highlighted) {
     SetBackground(nullptr);
   }
   SchedulePaint();
+}
+
+void SuggestionView::OnThemeChanged() {
+  down_icon_->SetImage(
+      gfx::CreateVectorIcon(kKeyboardArrowDownIcon, kDownIconSize,
+                            GetNativeTheme()->GetSystemColor(
+                                ui::NativeTheme::kColorId_DefaultIconColor)));
+  arrow_icon_->SetImage(
+      gfx::CreateVectorIcon(kForwardArrowTouchIcon, kArrowIconSize,
+                            GetNativeTheme()->GetSystemColor(
+                                ui::NativeTheme::kColorId_DefaultIconColor)));
+  views::View::OnThemeChanged();
 }
 
 const char* SuggestionView::GetClassName() const {

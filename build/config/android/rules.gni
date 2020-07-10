@@ -1374,7 +1374,7 @@ if (enable_java_templates) {
       }
       arsc_output = _resource_arsc_output
       min_sdk_version = default_min_sdk_version
-      target_sdk_version = 23
+      target_sdk_version = android_sdk_version
     }
 
     _jni_srcjar_target = "${target_name}__final_jni"
@@ -2108,7 +2108,7 @@ if (enable_java_templates) {
   #   min_sdk_version: The minimum Android SDK version this target supports.
   #     Optional, default $default_min_sdk_version.
   #   target_sdk_version: The target Android SDK version for this target.
-  #     Optional, default 23.
+  #     Optional, default to android_sdk_version.
   #   max_sdk_version: The maximum Android SDK version this target supports.
   #     Optional, default not set.
   #   require_native_mocks: Enforce that any native calls using
@@ -2142,7 +2142,7 @@ if (enable_java_templates) {
     _build_config_target = "$target_name$build_config_target_suffix"
 
     _min_sdk_version = default_min_sdk_version
-    _target_sdk_version = 23
+    _target_sdk_version = android_sdk_version
     if (defined(invoker.min_sdk_version)) {
       _min_sdk_version = invoker.min_sdk_version
     }
@@ -3904,6 +3904,12 @@ if (enable_java_templates) {
       testonly = true
       create_apk_script = false
       enable_native_mocks = true
+
+      # TODO(crbug.com/1099849): Figure out why angle tests fail to launch
+      #     with newer target_sdk_version.
+      if (!defined(invoker.target_sdk_version) && _use_native_activity) {
+        target_sdk_version = 24
+      }
 
       assert(!defined(invoker.proguard_enabled) || !invoker.proguard_enabled ||
              invoker.proguard_configs != [])

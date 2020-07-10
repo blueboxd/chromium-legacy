@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/cpp/login_accelerators.h"
 #include "chrome/browser/chromeos/login/ui/kiosk_app_menu_controller.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -54,6 +55,7 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   void CancelPasswordChangedFlow() final;
   void MigrateUserData(const std::string& old_password) final;
   void ResyncUserData() final;
+  bool HandleAccelerator(ash::LoginAcceleratorAction action) final;
 
   // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;

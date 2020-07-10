@@ -227,7 +227,9 @@ void DedicatedWorker::OnHostCreated(
     classic_script_loader_ = MakeGarbageCollected<WorkerClassicScriptLoader>();
     classic_script_loader_->LoadTopLevelScriptAsynchronously(
         *GetExecutionContext(), GetExecutionContext()->Fetcher(),
-        script_request_url_, mojom::RequestContextType::WORKER,
+        script_request_url_, nullptr /* worker_main_script_load_params */,
+        mojo::NullRemote() /* resource_load_info_notifier */,
+        mojom::RequestContextType::WORKER,
         network::mojom::RequestDestination::kWorker,
         network::mojom::RequestMode::kSameOrigin,
         network::mojom::CredentialsMode::kSameOrigin,
@@ -239,7 +241,9 @@ void DedicatedWorker::OnHostCreated(
   if (options_->type() == "module") {
     // Specify empty source code here because scripts will be fetched on the
     // worker thread.
-    ContinueStart(script_request_url_, network::mojom::ReferrerPolicy::kDefault,
+    ContinueStart(script_request_url_,
+                  nullptr /* worker_main_script_load_params */,
+                  network::mojom::ReferrerPolicy::kDefault,
                   base::nullopt /* response_address_space */,
                   String() /* source_code */, reject_coep_unsafe_none);
     return;
@@ -295,11 +299,14 @@ void DedicatedWorker::OnWorkerHostCreated(
   browser_interface_broker_ = std::move(browser_interface_broker);
 }
 
-void DedicatedWorker::OnScriptLoadStarted() {
+void DedicatedWorker::OnScriptLoadStarted(
+    std::unique_ptr<WorkerMainScriptLoadParameters>
+        worker_main_script_load_params) {
   DCHECK(base::FeatureList::IsEnabled(features::kPlzDedicatedWorker));
   // Specify empty source code here because scripts will be fetched on the
   // worker thread.
-  ContinueStart(script_request_url_, network::mojom::ReferrerPolicy::kDefault,
+  ContinueStart(script_request_url_, std::move(worker_main_script_load_params),
+                network::mojom::ReferrerPolicy::kDefault,
                 base::nullopt /* response_address_space */,
                 String() /* source_code */, RejectCoepUnsafeNone(false));
 }
@@ -354,10 +361,10 @@ void DedicatedWorker::OnFinished() {
     DCHECK(script_request_url_ == script_response_url ||
            SecurityOrigin::AreSameOrigin(script_request_url_,
                                          script_response_url));
-    ContinueStart(script_response_url, referrer_policy,
-                  classic_script_loader_->ResponseAddressSpace(),
-                  classic_script_loader_->SourceText(),
-                  RejectCoepUnsafeNone(false));
+    ContinueStart(
+        script_response_url, nullptr /* worker_main_script_load_params */,
+        referrer_policy, classic_script_loader_->ResponseAddressSpace(),
+        classic_script_loader_->SourceText(), RejectCoepUnsafeNone(false));
     probe::ScriptImported(GetExecutionContext(),
                           classic_script_loader_->Identifier(),
                           classic_script_loader_->SourceText());
@@ -367,6 +374,8 @@ void DedicatedWorker::OnFinished() {
 
 void DedicatedWorker::ContinueStart(
     const KURL& script_url,
+    std::unique_ptr<WorkerMainScriptLoadParameters>
+        worker_main_script_load_params,
     network::mojom::ReferrerPolicy referrer_policy,
     base::Optional<network::mojom::IPAddressSpace> response_address_space,
     const String& source_code,
@@ -374,8 +383,9 @@ void DedicatedWorker::ContinueStart(
   context_proxy_->StartWorkerGlobalScope(
       CreateGlobalScopeCreationParams(script_url, referrer_policy,
                                       response_address_space),
-      options_, script_url, *outside_fetch_client_settings_object_,
-      v8_stack_trace_id_, source_code, reject_coep_unsafe_none);
+      std::move(worker_main_script_load_params), options_, script_url,
+      *outside_fetch_client_settings_object_, v8_stack_trace_id_, source_code,
+      reject_coep_unsafe_none);
 }
 
 std::unique_ptr<GlobalScopeCreationParams>

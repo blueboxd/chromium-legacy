@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
 
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -21,8 +22,7 @@ struct SameSizeAsPaintChunk {
   void* pointers[1];  // hit_test_data
 };
 
-static_assert(sizeof(PaintChunk) == sizeof(SameSizeAsPaintChunk),
-              "PaintChunk should stay small");
+ASSERT_SIZE(PaintChunk, SameSizeAsPaintChunk);
 
 bool PaintChunk::EqualsForUnderInvalidationChecking(
     const PaintChunk& other) const {

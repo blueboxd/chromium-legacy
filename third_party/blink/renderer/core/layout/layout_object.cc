@@ -112,6 +112,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -181,8 +182,7 @@ struct SameSizeAsLayoutObject : ImageResourceObserver, DisplayItemClient {
   std::unique_ptr<int> rare_data_;
 };
 
-static_assert(sizeof(LayoutObject) == sizeof(SameSizeAsLayoutObject),
-              "LayoutObject should stay small");
+ASSERT_SIZE(LayoutObject, SameSizeAsLayoutObject);
 
 bool LayoutObject::affects_parent_block_ = false;
 

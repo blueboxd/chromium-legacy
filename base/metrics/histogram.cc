@@ -1058,6 +1058,19 @@ ScaledLinearHistogram::ScaledLinearHistogram(const char* name,
                                              uint32_t bucket_count,
                                              int32_t scale,
                                              int32_t flags)
+    : ScaledLinearHistogram(std::string(name),
+                            minimum,
+                            maximum,
+                            bucket_count,
+                            scale,
+                            flags) {}
+
+ScaledLinearHistogram::ScaledLinearHistogram(const std::string& name,
+                                             Sample minimum,
+                                             Sample maximum,
+                                             uint32_t bucket_count,
+                                             int32_t scale,
+                                             int32_t flags)
     : histogram_(static_cast<LinearHistogram*>(
           LinearHistogram::FactoryGet(name,
                                       minimum,

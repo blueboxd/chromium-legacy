@@ -19,6 +19,7 @@
 #include "base/base_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/process/process_handle.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -121,16 +122,52 @@ class BASE_EXPORT ProcessMetrics {
   // will result in a time delta of 2 seconds/per 1 wall-clock second.
   TimeDelta GetCumulativeCPUUsage();
 
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_AIX)
   // Emits the cumulative CPU usage for all currently active threads since they
   // were started into the output parameter (replacing its current contents).
   // Threads that have already terminated will not be reported. Thus, the sum of
   // these times may not equal the value returned by GetCumulativeCPUUsage().
   // Returns false on failure. We return the usage via an output parameter to
   // allow reuse of CPUUsagePerThread's std::vector by the caller, e.g. to avoid
-  // allocations between repeated calls to method.
+  // allocations between repeated calls to this method.
   // NOTE: Currently only supported on Linux/Android.
   using CPUUsagePerThread = std::vector<std::pair<PlatformThreadId, TimeDelta>>;
   bool GetCumulativeCPUUsagePerThread(CPUUsagePerThread&);
+
+  // Similar to GetCumulativeCPUUsagePerThread, but also splits the cumulative
+  // CPU usage by CPU cluster frequency states. One entry in the output
+  // parameter is added for each thread + cluster core index + frequency state
+  // combination with a non-zero CPU time value.
+  // NOTE: Currently only supported on Linux/Android, and only on devices that
+  // expose per-pid/tid time_in_state files in /proc.
+  enum class CoreType {
+    kUnknown = 0,
+    kOther,
+    kSymmetric,
+    kBigLittle_Little,
+    kBigLittle_Big,
+    kBigLittleBigger_Little,
+    kBigLittleBigger_Big,
+    kBigLittleBigger_Bigger,
+    kMaxValue = kBigLittleBigger_Bigger
+  };
+  struct ThreadTimeInState {
+    PlatformThreadId thread_id;
+    CoreType core_type;           // type of the cores in this cluster.
+    uint32_t cluster_core_index;  // index of the first core in the cluster.
+    uint64_t core_frequency_khz;
+    TimeDelta cumulative_cpu_time;
+  };
+  using TimeInStatePerThread = std::vector<ThreadTimeInState>;
+  bool GetPerThreadCumulativeCPUTimeInState(TimeInStatePerThread&);
+
+  // Parse the data found in /proc/<pid>/task/<tid>/time_in_state into
+  // TimeInStatePerThread (adding to existing entries). Returns false on error.
+  // Exposed for testing.
+  bool ParseProcTimeInState(const std::string& content,
+                            PlatformThreadId tid,
+                            TimeInStatePerThread& time_in_state_per_thread);
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_AIX)
 
   // Returns the number of average idle cpu wakeups per second since the last
   // call.
@@ -214,6 +251,14 @@ class BASE_EXPORT ProcessMetrics {
   int CalculatePackageIdleWakeupsPerSecond(
       uint64_t absolute_package_idle_wakeups);
 #endif
+
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_AIX)
+  CoreType GetCoreType(int core_index);
+  void GuessCoreTypes();
+
+  // Initialized on the first call to GetCoreType().
+  base::Optional<std::vector<CoreType>> core_index_to_type_;
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_AIX)
 
 #if defined(OS_WIN)
   win::ScopedHandle process_;
@@ -445,7 +490,7 @@ BASE_EXPORT bool GetSystemDiskInfo(SystemDiskInfo* diskinfo);
 // Returns the amount of time spent in user space since boot across all CPUs.
 BASE_EXPORT TimeDelta GetUserCpuTimeSinceBoot();
 
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_AIX)
 
 #if defined(OS_CHROMEOS)
 // Data from files in directory /sys/block/zram0 about ZRAM usage.

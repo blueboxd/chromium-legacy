@@ -42,11 +42,6 @@ TimeDelta ProcessMetrics::GetCumulativeCPUUsage() {
   return TimeDelta();
 }
 
-bool ProcessMetrics::GetCumulativeCPUUsagePerThread(CPUUsagePerThread&) {
-  NOTREACHED();
-  return false;
-}
-
 bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
   return false;
 }

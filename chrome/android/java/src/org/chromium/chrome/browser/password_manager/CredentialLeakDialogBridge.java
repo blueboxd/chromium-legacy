@@ -27,7 +27,7 @@ public class CredentialLeakDialogBridge {
         mActivity = new WeakReference<>(activity);
         mCredentialLeakDialog = new PasswordManagerDialogCoordinator(
                 activity.getModalDialogManager(), activity.findViewById(android.R.id.content),
-                activity.getFullscreenManager(), activity.getControlContainerHeightResource());
+                activity.getBrowserControlsManager(), activity.getControlContainerHeightResource());
     }
 
     @CalledByNative

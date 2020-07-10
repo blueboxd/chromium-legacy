@@ -393,6 +393,52 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteAllProfiles) {
 }
 #endif  // !defined(OS_CHROMEOS)
 
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, ProfileFromProfileKey) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  Profile* profile1 = browser()->profile();
+
+  // Create an additional profile.
+  base::FilePath new_path = profile_manager->GenerateNextProfileDirectoryPath();
+  base::RunLoop run_loop;
+  profile_manager->CreateProfileAsync(
+      new_path, base::Bind(&OnUnblockOnProfileCreation, &run_loop),
+      base::string16(), std::string());
+
+  // Run the message loop to allow profile creation to take place; the loop is
+  // terminated by OnUnblockOnProfileCreation when the profile is created.
+  run_loop.Run();
+
+  Profile* profile2 = profile_manager->GetProfile(new_path);
+
+  EXPECT_NE(profile1, profile2);
+  EXPECT_NE(profile1->GetProfileKey(), profile2->GetProfileKey());
+  EXPECT_EQ(profile1, profile_manager->GetProfileFromProfileKey(
+                          profile1->GetProfileKey()));
+  EXPECT_EQ(profile2, profile_manager->GetProfileFromProfileKey(
+                          profile2->GetProfileKey()));
+
+  // Create off-the-record profiles.
+  Profile* otr_1a = profile1->GetPrimaryOTRProfile();
+  Profile* otr_1b =
+      profile1->GetOffTheRecordProfile(Profile::OTRProfileID("profile::otr1"));
+  Profile* otr_1c =
+      profile1->GetOffTheRecordProfile(Profile::OTRProfileID("profile::otr2"));
+  Profile* otr_2a = profile2->GetPrimaryOTRProfile();
+  Profile* otr_2b =
+      profile2->GetOffTheRecordProfile(Profile::OTRProfileID("profile::otr1"));
+
+  EXPECT_EQ(otr_1a,
+            profile_manager->GetProfileFromProfileKey(otr_1a->GetProfileKey()));
+  EXPECT_EQ(otr_1b,
+            profile_manager->GetProfileFromProfileKey(otr_1b->GetProfileKey()));
+  EXPECT_EQ(otr_1c,
+            profile_manager->GetProfileFromProfileKey(otr_1c->GetProfileKey()));
+  EXPECT_EQ(otr_2a,
+            profile_manager->GetProfileFromProfileKey(otr_2a->GetProfileKey()));
+  EXPECT_EQ(otr_2b,
+            profile_manager->GetProfileFromProfileKey(otr_2b->GetProfileKey()));
+}
+
 #if defined(OS_CHROMEOS)
 
 class ProfileManagerCrOSBrowserTest : public ProfileManagerBrowserTest {

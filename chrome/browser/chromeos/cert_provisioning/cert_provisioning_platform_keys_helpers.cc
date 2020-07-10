@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/containers/flat_set.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
@@ -76,7 +77,7 @@ void CertProvisioningCertsWithIdsGetter::OnGetCertificatesDone(
 
 void CertProvisioningCertsWithIdsGetter::CollectOneResult(
     scoped_refptr<net::X509Certificate> cert,
-    const CertProfileId& cert_id,
+    const base::Optional<CertProfileId>& cert_id,
     const std::string& error_message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(wait_counter_ > 0);
@@ -87,10 +88,18 @@ void CertProvisioningCertsWithIdsGetter::CollectOneResult(
     return;
   }
 
-  if (error_message.empty()) {
-    // TODO(crbug.com/1101103): Currently results with errors are just ignored.
-    // Fix when PlatformKeysService API is changed.
-    certs_with_ids_[cert_id] = cert;
+  // TODO(crbug.com/1073512): Currently if GetAttributeForKey fails to get the
+  // attribute (because it was not set or any other reason), it will return
+  // nullopt for cert_id and empty error message. When PlatformKeysService
+  // switches to error codes, a code for such situation should not be returned
+  // via callback and cert collection can be continued.
+  if (!error_message.empty()) {
+    std::move(callback_).Run(/*existing_cert_ids=*/{}, error_message);
+    return;
+  }
+
+  if (cert_id) {
+    certs_with_ids_[cert_id.value()] = cert;
   }
 
   --wait_counter_;

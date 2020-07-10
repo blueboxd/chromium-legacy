@@ -63,7 +63,7 @@ class WelcomeScreen : public BaseScreen,
     virtual void OnLanguageListReloaded() = 0;
   };
 
-  enum class Result { NEXT, START_DEMO };
+  enum class Result { NEXT, START_DEMO, SETUP_DEMO };
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
 
@@ -113,6 +113,7 @@ class WelcomeScreen : public BaseScreen,
   void ShowImpl() override;
   void HideImpl() override;
   void OnUserAction(const std::string& action_id) override;
+  bool HandleAccelerator(ash::LoginAcceleratorAction action) override;
 
   // DemoModeDetector::Observer:
   void OnShouldStartDemoMode() override;
@@ -122,8 +123,11 @@ class WelcomeScreen : public BaseScreen,
                           Profile* profile,
                           bool show_message) override;
 
-  // Called when continue button is pressed.
+  // Handlers for various user actions:
+  // Proceed with common user flow.
   void OnContinueButtonPressed();
+  // Proceed with Demo mode setup.
+  void OnSetupDemoMode();
 
   // Async callback after ReloadResourceBundle(locale) completed.
   void OnLanguageChangedCallback(

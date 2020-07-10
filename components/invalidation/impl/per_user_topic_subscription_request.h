@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -21,6 +22,9 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace syncer {
+
+constexpr base::Feature kInvalidationsSkipUnsubscription{
+    "InvalidationsSkipUnsubscription", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // A single request to subscribe to a topic on the per-user-topic service.
 class PerUserTopicSubscriptionRequest {

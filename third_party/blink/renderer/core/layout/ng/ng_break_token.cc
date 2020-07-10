@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -17,8 +18,7 @@ struct SameSizeAsNGBreakToken : RefCounted<NGBreakToken> {
   unsigned flags;
 };
 
-static_assert(sizeof(NGBreakToken) == sizeof(SameSizeAsNGBreakToken),
-              "NGBreakToken should stay small");
+ASSERT_SIZE(NGBreakToken, SameSizeAsNGBreakToken);
 
 }  // namespace
 

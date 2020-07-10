@@ -228,18 +228,19 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   }
   void ResetAuthorStyle(TreeScope&);
 
-  StyleResolver* Resolver() const { return resolver_; }
-
-  void SetRuleUsageTracker(StyleRuleUsageTracker*);
-
-  StyleResolver& EnsureResolver() {
-    UpdateActiveStyle();
-    if (!resolver_)
-      CreateResolver();
+  StyleResolver& GetStyleResolver() const {
+    DCHECK(resolver_);
     return *resolver_;
   }
 
-  bool HasResolver() const { return resolver_; }
+  void SetRuleUsageTracker(StyleRuleUsageTracker*);
+
+  void ComputeFont(Element& element,
+                   ComputedStyle* font_style,
+                   const CSSPropertyValueSet& font_properties) {
+    UpdateActiveStyle();
+    GetStyleResolver().ComputeFont(element, font_style, font_properties);
+  }
 
   PendingInvalidations& GetPendingNodeInvalidations() {
     return pending_invalidations_;
@@ -449,7 +450,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
     return global_rule_set_->GetRuleFeatureSet();
   }
 
-  void CreateResolver();
   void ClearResolvers();
 
   void CollectUserStyleFeaturesTo(RuleFeatureSet&) const;

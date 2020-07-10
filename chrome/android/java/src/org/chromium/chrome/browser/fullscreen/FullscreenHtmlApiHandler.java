@@ -27,7 +27,6 @@ import org.chromium.base.ApplicationStatus.WindowFocusChangedListener;
 import org.chromium.base.ObserverList;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
-import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
@@ -40,6 +39,7 @@ import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
+import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.NavigationHandle;
@@ -71,7 +71,6 @@ public class FullscreenHtmlApiHandler implements ActivityStateListener, WindowFo
     private final Handler mHandler;
     private final ObservableSupplierImpl<Boolean> mPersistentModeSupplier;
     private final ObservableSupplier<Boolean> mAreControlsHidden;
-    private final Supplier<Boolean> mShowToast;
     private final boolean mExitFullscreenOnStop;
     private final ObserverList<FullscreenManager.Observer> mObservers = new ObserverList<>();
 
@@ -185,17 +184,14 @@ public class FullscreenHtmlApiHandler implements ActivityStateListener, WindowFo
      *
      * @param activity The activity that supports fullscreen.
      * @param areControlsHidden Supplier of a flag indicating if browser controls are hidden.
-     * @param showToast Supplier of a flag indicating if toast message should be shown.
      * @param exitFullscreenOnStop Whether fullscreen mode should exit on stop - should be
      *                             true for Activities that are not always fullscreen.
      */
     public FullscreenHtmlApiHandler(Activity activity,
-            ObservableSupplier<Boolean> areControlsHidden, Supplier<Boolean> showToast,
-            boolean exitFullscreenOnStop) {
+            ObservableSupplier<Boolean> areControlsHidden, boolean exitFullscreenOnStop) {
         mActivity = activity;
         mAreControlsHidden = areControlsHidden;
         mAreControlsHidden.addObserver(this::maybeEnterFullscreenFromPendingState);
-        mShowToast = showToast;
         mHandler = new FullscreenHandler(this);
 
         mPersistentModeSupplier = new ObservableSupplierImpl<>();
@@ -482,7 +478,7 @@ public class FullscreenHtmlApiHandler implements ActivityStateListener, WindowFo
                 // The toast tells user how to leave fullscreen by touching the screen. Currently
                 // we do not show the toast when we're browsing in VR, since VR doesn't have
                 // touchscreen and the toast doesn't have any useful information.
-                if (mShowToast.get()) showNotificationToast();
+                if (shouldShowToast()) showNotificationToast();
                 contentView.removeOnLayoutChangeListener(this);
             }
         };
@@ -496,6 +492,14 @@ public class FullscreenHtmlApiHandler implements ActivityStateListener, WindowFo
         mWebContentsInFullscreen = webContents;
         mContentViewInFullscreen = contentView;
         mTabInFullscreen = tab;
+    }
+
+    /**
+     * Whether we show a toast message when entering fullscreen.
+     */
+    private boolean shouldShowToast() {
+        return !(VrModuleProvider.getDelegate().isInVr()
+                || VrModuleProvider.getDelegate().bootsToVr());
     }
 
     /**

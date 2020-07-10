@@ -538,7 +538,7 @@ void X11Window::SetX11ExtensionDelegate(X11ExtensionDelegate* delegate) {
   x11_extension_delegate_ = delegate;
 }
 
-bool X11Window::HandleAsAtkEvent(x11::Event* x11_event) {
+bool X11Window::HandleAsAtkEvent(x11::Event* x11_event, bool transient) {
 #if !BUILDFLAG(USE_ATK)
   // TODO(crbug.com/1014934): Support ATK in Ozone/X11.
   NOTREACHED();
@@ -551,7 +551,7 @@ bool X11Window::HandleAsAtkEvent(x11::Event* x11_event) {
     return false;
   }
   auto atk_key_event = AtkKeyEventFromXEvent(x11_event);
-  return x11_extension_delegate_->OnAtkKeyEvent(atk_key_event.get());
+  return x11_extension_delegate_->OnAtkKeyEvent(atk_key_event.get(), transient);
 #endif
 }
 
@@ -562,11 +562,19 @@ bool X11Window::HandleAsAtkEvent(x11::Event* x11_event) {
 void X11Window::CheckCanDispatchNextPlatformEvent(x11::Event* xev) {
   if (is_shutting_down_)
     return;
-  current_xevent_ = XWindow::IsTargetedBy(*xev) ? xev : nullptr;
+  if (XWindow::IsTargetedBy(*xev)) {
+    current_xevent_ = xev;
+    return;
+  }
+  if (XWindow::IsTransientWindowTargetedBy(*xev)) {
+    current_xevent_ = xev;
+    current_xevent_target_transient_ = true;
+  }
 }
 
 void X11Window::PlatformEventDispatchFinished() {
   current_xevent_ = nullptr;
+  current_xevent_target_transient_ = false;
 }
 
 PlatformEventDispatcher* X11Window::GetPlatformEventDispatcher() {
@@ -606,7 +614,7 @@ uint32_t X11Window::DispatchEvent(const PlatformEvent& event) {
     X11WindowManager::GetInstance()->MouseOnWindow(this);
 #if BUILDFLAG(USE_ATK)
   // TODO(crbug.com/1014934): Support ATK in Ozone/X11.
-  if (HandleAsAtkEvent(current_xevent_))
+  if (HandleAsAtkEvent(current_xevent_, current_xevent_target_transient_))
     return POST_DISPATCH_STOP_PROPAGATION;
 #endif
 

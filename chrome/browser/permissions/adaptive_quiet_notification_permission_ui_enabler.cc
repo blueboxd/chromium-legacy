@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/containers/adapters.h"
@@ -57,6 +58,51 @@ constexpr char kIsQuietUiEnabledInPrefs[] =
     "Permissions.QuietNotificationPrompts.IsEnabledInPrefs";
 constexpr char kQuietUiEnabledStateInPrefsChangedTo[] =
     "Permissions.QuietNotificationPrompts.EnabledStateInPrefsChangedTo";
+
+bool DidDenyLastThreeTimes(base::Value::ConstListView permission_actions,
+                           base::Clock* clock_) {
+  // Limit how old actions are to be taken into consideration. Default 90 days
+  // old. The value could be changed based on Finch experiment but specifying >
+  // 90 days is meaningless, as only 90 days worth of history is stored.
+  const base::Time cutoff =
+      clock_->Now() -
+      QuietNotificationPermissionUiConfig::GetAdaptiveActivationWindowSize();
+  size_t rolling_denies_in_a_row = 0u;
+  for (const auto& action : base::Reversed(permission_actions)) {
+    const base::Optional<base::Time> timestamp =
+        util::ValueToTime(action.FindKey(kPermissionActionEntryTimestampKey));
+
+    if (!timestamp || *timestamp < cutoff)
+      return false;
+
+    const base::Optional<int> past_action_as_int =
+        action.FindIntKey(kPermissionActionEntryActionKey);
+    DCHECK(past_action_as_int);
+
+    const permissions::PermissionAction past_action =
+        static_cast<permissions::PermissionAction>(*past_action_as_int);
+
+    switch (past_action) {
+      case permissions::PermissionAction::DENIED:
+        ++rolling_denies_in_a_row;
+        break;
+      case permissions::PermissionAction::GRANTED:
+        return false;  // Does not satisfy adaptive quiet UI activation
+                       // condition.
+      case permissions::PermissionAction::DISMISSED:
+      case permissions::PermissionAction::IGNORED:
+      case permissions::PermissionAction::REVOKED:
+      default:
+        // Ignored.
+        break;
+    }
+
+    if (rolling_denies_in_a_row >= kConsecutiveDeniesThresholdForActivation) {
+      return true;
+    }
+  }
+  return false;
+}
 
 }  // namespace
 
@@ -128,58 +174,28 @@ void AdaptiveQuietNotificationPermissionUiEnabler::
                                   static_cast<int>(action));
   update->Append(std::move(new_action_attributes));
 
-  // If adaptive activation is disabled, or if the quiet UI is already active,
-  // nothing else to do.
-  if (!QuietNotificationPermissionUiConfig::IsAdaptiveActivationEnabled() ||
-      profile_->GetPrefs()->GetBoolean(
-          prefs::kEnableQuietNotificationPermissionUi)) {
+  if (!DidDenyLastThreeTimes(update->GetList(), clock_)) {
     return;
   }
 
-  // Otherwise, turn on quiet UI if the last three permission decision (ignoring
-  // dismisses and ignores) were all denies.
-  size_t rolling_denies_in_a_row = 0u;
-  bool recently_accepted_prompt = false;
+  if (QuietNotificationPermissionUiConfig::
+          IsAdaptiveActivationDryRunEnabled()) {
+    profile_->GetPrefs()->SetBoolean(
+        prefs::kHadThreeConsecutiveNotificationPermissionDenies,
+        true /* value */);
+  }
 
-  base::Value::ConstListView permission_actions = update->GetList();
-  for (const auto& action : base::Reversed(permission_actions)) {
-    const base::Optional<int> past_action_as_int =
-        action.FindIntKey(kPermissionActionEntryActionKey);
-    DCHECK(past_action_as_int);
-
-    const permissions::PermissionAction past_action =
-        static_cast<permissions::PermissionAction>(*past_action_as_int);
-
-    switch (past_action) {
-      case permissions::PermissionAction::DENIED:
-        ++rolling_denies_in_a_row;
-        break;
-      case permissions::PermissionAction::GRANTED:
-        recently_accepted_prompt = true;
-        break;
-      case permissions::PermissionAction::DISMISSED:
-      case permissions::PermissionAction::IGNORED:
-      case permissions::PermissionAction::REVOKED:
-      default:
-        // Ignored.
-        break;
-    }
-
-    if (rolling_denies_in_a_row >= kConsecutiveDeniesThresholdForActivation) {
-      // Set |is_enabling_adaptively_| for the duration of the pref update to
-      // inform OnQuietUiStateChanged() that the quiet UI is being enabled
-      // adaptively, so that it can record the correct metrics.
-      is_enabling_adaptively_ = true;
-      profile_->GetPrefs()->SetBoolean(
-          prefs::kEnableQuietNotificationPermissionUi, true /* value */);
-      profile_->GetPrefs()->SetBoolean(
-          prefs::kQuietNotificationPermissionShouldShowPromo, true /* value */);
-      is_enabling_adaptively_ = false;
-      break;
-    }
-
-    if (recently_accepted_prompt)
-      break;
+  if (QuietNotificationPermissionUiConfig::IsAdaptiveActivationEnabled() &&
+      !profile_->GetPrefs()->GetBoolean(
+          prefs::kEnableQuietNotificationPermissionUi)) {
+    // Set |is_enabling_adaptively_| for the duration of the pref update to
+    // inform OnQuietUiStateChanged() that the quiet UI is being enabled
+    // adaptively, so that it can record the correct metrics.
+    base::AutoReset<bool> enabling_adaptively(&is_enabling_adaptively_, true);
+    profile_->GetPrefs()->SetBoolean(
+        prefs::kEnableQuietNotificationPermissionUi, true /* value */);
+    profile_->GetPrefs()->SetBoolean(
+        prefs::kQuietNotificationPermissionShouldShowPromo, true /* value */);
   }
 }
 

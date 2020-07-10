@@ -41,6 +41,10 @@ void BaseScreen::HandleUserAction(const std::string& action_id) {
   OnUserAction(action_id);
 }
 
+bool BaseScreen::HandleAccelerator(ash::LoginAcceleratorAction action) {
+  return false;
+}
+
 void BaseScreen::OnUserAction(const std::string& action_id) {
   LOG(WARNING) << "Unhandled user action: action_id=" << action_id;
 }

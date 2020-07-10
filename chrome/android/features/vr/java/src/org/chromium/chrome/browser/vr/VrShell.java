@@ -400,7 +400,7 @@ public class VrShell extends GvrLayout
 
         // Start with content rendering paused if the renderer-drawn controls are visible, as this
         // would cause the in-content omnibox to be shown to users.
-        boolean pauseContent = mActivity.getFullscreenManager().getContentOffset() > 0;
+        boolean pauseContent = mActivity.getBrowserControlsManager().getContentOffset() > 0;
 
         // Get physical and pixel size of the display, which is needed by native
         // to dynamically calculate the content's resolution and window size.

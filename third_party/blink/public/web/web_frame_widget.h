@@ -99,19 +99,19 @@ class WebFrameWidget : public WebWidget {
       const gfx::PointF& point_in_viewport,
       const gfx::PointF& screen_point,
       WebDragOperationsMask operations_allowed,
-      int modifiers) = 0;
+      uint32_t key_modifiers) = 0;
   virtual void DragTargetDragOver(
       const gfx::PointF& point_in_viewport,
       const gfx::PointF& screen_point,
       WebDragOperationsMask operations_allowed,
-      uint32_t modifiers,
+      uint32_t key_modifiers,
       base::OnceCallback<void(blink::WebDragOperation)> callback) = 0;
   virtual void DragTargetDragLeave(const gfx::PointF& point_in_viewport,
                                    const gfx::PointF& screen_point) = 0;
   virtual void DragTargetDrop(const WebDragData&,
                               const gfx::PointF& point_in_viewport,
                               const gfx::PointF& screen_point,
-                              int modifiers) = 0;
+                              uint32_t key_modifiers) = 0;
 
   // Notifies the WebFrameWidget that a drag has terminated.
   virtual void DragSourceEndedAt(const gfx::PointF& point_in_viewport,

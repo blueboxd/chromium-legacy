@@ -108,10 +108,12 @@ class WinParentalControlsValue {
     if (!web_filter_key.Valid())
       return;
 
-    // Web filtering is in use if the key contains any "Filter On" value.
+    // Web filtering is in use if the key contains any non-zero "Filter On"
+    // value.
     DWORD filter_on_value;
     if (web_filter_key.ReadValueDW(L"Filter On", &filter_on_value) ==
-        ERROR_SUCCESS) {
+            ERROR_SUCCESS &&
+        filter_on_value) {
       controls->any_restrictions = true;
       controls->web_filter = true;
     }

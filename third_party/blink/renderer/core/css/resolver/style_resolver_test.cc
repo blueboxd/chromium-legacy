@@ -30,9 +30,7 @@ class StyleResolverTest : public PageTestBase {
  public:
   scoped_refptr<ComputedStyle> StyleForId(AtomicString id) {
     Element* element = GetDocument().getElementById(id);
-    StyleResolver* resolver = GetStyleEngine().Resolver();
-    DCHECK(resolver);
-    auto style = resolver->StyleForElement(element);
+    auto style = GetStyleEngine().GetStyleResolver().StyleForElement(element);
     DCHECK(style);
     return style;
   }
@@ -60,7 +58,7 @@ TEST_F(StyleResolverTest, StyleForTextInDisplayNone) {
   ASSERT_TRUE(GetDocument().body()->GetComputedStyle());
   EXPECT_TRUE(
       GetDocument().body()->GetComputedStyle()->IsEnsuredInDisplayNone());
-  EXPECT_FALSE(GetStyleEngine().Resolver()->StyleForText(
+  EXPECT_FALSE(GetStyleEngine().GetStyleResolver().StyleForText(
       To<Text>(GetDocument().body()->firstChild())));
 }
 
@@ -77,13 +75,12 @@ TEST_F(StyleResolverTest, AnimationBaseComputedStyle) {
   UpdateAllLifecyclePhasesForTest();
 
   Element* div = GetDocument().getElementById("div");
-  StyleResolver* resolver = GetStyleEngine().Resolver();
-  ASSERT_TRUE(resolver);
   ElementAnimations& animations = div->EnsureElementAnimations();
   animations.SetAnimationStyleChange(true);
 
-  ASSERT_TRUE(resolver->StyleForElement(div));
-  EXPECT_EQ(20, resolver->StyleForElement(div)->FontSize());
+  StyleResolver& resolver = GetStyleEngine().GetStyleResolver();
+  ASSERT_TRUE(resolver.StyleForElement(div));
+  EXPECT_EQ(20, resolver.StyleForElement(div)->FontSize());
   ASSERT_TRUE(animations.BaseComputedStyle());
   EXPECT_EQ(20, animations.BaseComputedStyle()->FontSize());
 
@@ -93,10 +90,10 @@ TEST_F(StyleResolverTest, AnimationBaseComputedStyle) {
       GetDocument().documentElement()->GetComputedStyle();
   EXPECT_EQ(
       10,
-      resolver->StyleForElement(div, parent_style, parent_style)->FontSize());
+      resolver.StyleForElement(div, parent_style, parent_style)->FontSize());
   ASSERT_TRUE(animations.BaseComputedStyle());
   EXPECT_EQ(20, animations.BaseComputedStyle()->FontSize());
-  EXPECT_EQ(20, resolver->StyleForElement(div)->FontSize());
+  EXPECT_EQ(20, resolver.StyleForElement(div)->FontSize());
 }
 
 TEST_F(StyleResolverTest, ShadowDOMV0Crash) {
@@ -537,8 +534,9 @@ TEST_F(StyleResolverTest, NoFetchForAtPage) {
     </style>
   )HTML");
 
+  GetDocument().UpdateActiveStyle();
   scoped_refptr<const ComputedStyle> page_style =
-      GetDocument().EnsureStyleResolver().StyleForPage(0, "");
+      GetDocument().GetStyleResolver().StyleForPage(0, "");
   ASSERT_TRUE(page_style);
   const CSSValue* computed_value = ComputedStyleUtils::ComputedPropertyValue(
       GetCSSPropertyBackgroundImage(), *page_style);

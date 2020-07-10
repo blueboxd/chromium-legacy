@@ -93,7 +93,7 @@ public class StatusIndicatorTest {
                 mActivityTestRule.getActivity().findViewById(R.id.control_container);
         mControlContainerLayoutParams =
                 (ViewGroup.MarginLayoutParams) controlContainer.getLayoutParams();
-        mBrowserControlsStateProvider = mActivityTestRule.getActivity().getFullscreenManager();
+        mBrowserControlsStateProvider = mActivityTestRule.getActivity().getBrowserControlsManager();
     }
 
     @After
@@ -104,8 +104,6 @@ public class StatusIndicatorTest {
     @Test
     @MediumTest
     public void testShowAndHide() {
-        final BrowserControlsStateProvider browserControlsStateProvider =
-                mActivityTestRule.getActivity().getFullscreenManager();
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         Assert.assertEquals("Wrong initial Android view visibility.", View.GONE,
@@ -124,7 +122,7 @@ public class StatusIndicatorTest {
 
         // Wait until the status indicator finishes animating, or becomes fully visible.
         CriteriaHelper.pollUiThread(() -> {
-            Criteria.checkThat(browserControlsStateProvider.getTopControlsMinHeightOffset(),
+            Criteria.checkThat(mBrowserControlsStateProvider.getTopControlsMinHeightOffset(),
                     Matchers.is(mStatusIndicatorContainer.getHeight()));
         });
 
@@ -150,7 +148,7 @@ public class StatusIndicatorTest {
         // Wait until the status indicator finishes animating, or becomes fully hidden.
         CriteriaHelper.pollUiThread(() -> {
             Criteria.checkThat(
-                    browserControlsStateProvider.getTopControlsMinHeightOffset(), Matchers.is(0));
+                    mBrowserControlsStateProvider.getTopControlsMinHeightOffset(), Matchers.is(0));
         });
 
         // The Android view visibility should be {@link View.GONE} after #hide().

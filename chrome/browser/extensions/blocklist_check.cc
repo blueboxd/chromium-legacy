@@ -10,22 +10,22 @@
 
 namespace extensions {
 
-BlacklistCheck::BlacklistCheck(Blacklist* blacklist,
+BlocklistCheck::BlocklistCheck(Blocklist* blocklist,
                                scoped_refptr<const Extension> extension)
-    : PreloadCheck(extension), blacklist_(blacklist) {}
+    : PreloadCheck(extension), blocklist_(blocklist) {}
 
-BlacklistCheck::~BlacklistCheck() {}
+BlocklistCheck::~BlocklistCheck() {}
 
-void BlacklistCheck::Start(ResultCallback callback) {
+void BlocklistCheck::Start(ResultCallback callback) {
   callback_ = std::move(callback);
 
-  blacklist_->IsBlacklisted(
+  blocklist_->IsBlocklisted(
       extension()->id(),
-      base::Bind(&BlacklistCheck::OnBlacklistedStateRetrieved,
+      base::Bind(&BlocklistCheck::OnBlocklistedStateRetrieved,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void BlacklistCheck::OnBlacklistedStateRetrieved(
+void BlocklistCheck::OnBlocklistedStateRetrieved(
     BlocklistState blocklist_state) {
   Errors errors;
   if (blocklist_state == BlocklistState::BLOCKLISTED_MALWARE)

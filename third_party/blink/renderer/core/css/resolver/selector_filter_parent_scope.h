@@ -79,7 +79,7 @@ inline SelectorFilterParentScope::SelectorFilterParentScope(
          &parent_->GetDocument() != &previous_->parent_->GetDocument());
   if (parent) {
     DCHECK(parent->GetDocument().InStyleRecalc());
-    resolver_ = parent->GetDocument().GetStyleResolver();
+    resolver_ = &parent->GetDocument().GetStyleResolver();
   }
   current_scope_ = this;
 }

@@ -103,6 +103,9 @@ class ProfileManager : public content::NotificationObserver,
   // make this method private.
   Profile* GetProfile(const base::FilePath& profile_dir);
 
+  // Returns regular or off-the-record profile given its profile key.
+  static Profile* GetProfileFromProfileKey(ProfileKey* profile_key);
+
   // Returns total number of profiles available on this machine.
   size_t GetNumberOfProfiles();
 

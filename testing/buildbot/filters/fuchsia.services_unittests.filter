@@ -5,9 +5,6 @@
 -NetworkContextTest.PreconnectFour
 -NetworkContextTest.PreconnectTwo
 
-# https://crbug.com/925652 - Fails FillOSMemoryDump().
--OSMetricsTest.GivesNonZeroResults
-
 # https://crbug.com/925653 - IsTracingEnabled() expectations not met.
 -TracingConsumerTest.NotifiesOnTracingEnabledWaitsFor*
 

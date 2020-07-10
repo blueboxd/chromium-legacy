@@ -94,6 +94,15 @@ enum class PermissionPromptDisposition {
   MINI_INFOBAR = 5,
 };
 
+enum class AdaptiveTriggers {
+  // None of the adaptive triggers were met. Currently this means two or less
+  // consecutive denies in a row.
+  NONE = 0,
+
+  // User denied permission prompt 3 or more times.
+  THREE_CONSECUTIVE_DENIES = 0x01,
+};
+
 // Provides a convenient way of logging UMA for permission related operations.
 class PermissionUmaUtil {
  public:

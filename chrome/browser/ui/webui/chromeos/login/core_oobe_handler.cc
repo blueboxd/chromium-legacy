@@ -111,13 +111,6 @@ void CoreOobeHandler::DeclareLocalizedValues(
   builder->Add("deviceRequisitionSharkPromptText",
                IDS_ENTERPRISE_DEVICE_REQUISITION_SHARK_PROMPT_TEXT);
 
-  // Strings for enable demo mode dialog.
-  builder->Add("enableDemoModeDialogTitle", IDS_ENABLE_DEMO_MODE_DIALOG_TITLE);
-  builder->Add("enableDemoModeDialogText", IDS_ENABLE_DEMO_MODE_DIALOG_TEXT);
-  builder->Add("enableDemoModeDialogConfirm",
-               IDS_ENABLE_DEMO_MODE_DIALOG_CONFIRM);
-  builder->Add("enableDemoModeDialogCancel",
-               IDS_ENABLE_DEMO_MODE_DIALOG_CANCEL);
 
   // Strings for Asset Identifier shown in version string.
   builder->Add("assetIdLabel", IDS_OOBE_ASSET_ID_LABEL);
@@ -169,7 +162,6 @@ void CoreOobeHandler::RegisterMessages() {
   // https://crbug.com/858958.
   AddRawCallback("getPrimaryDisplayNameForTesting",
                  &CoreOobeHandler::HandleGetPrimaryDisplayNameForTesting);
-  AddCallback("setupDemoMode", &CoreOobeHandler::HandleSetupDemoMode);
   AddCallback("startDemoModeSetupForTesting",
               &CoreOobeHandler::HandleStartDemoModeSetupForTesting);
 
@@ -487,13 +479,6 @@ void CoreOobeHandler::GetPrimaryDisplayNameCallback(
   }
   DCHECK(!display_name.empty());
   ResolveJavascriptCallback(callback_id, base::Value(display_name));
-}
-
-void CoreOobeHandler::HandleSetupDemoMode() {
-  WizardController* wizard_controller = WizardController::default_controller();
-  if (wizard_controller && !wizard_controller->login_screen_started()) {
-    wizard_controller->StartDemoModeSetup();
-  }
 }
 
 void CoreOobeHandler::HandleStartDemoModeSetupForTesting(

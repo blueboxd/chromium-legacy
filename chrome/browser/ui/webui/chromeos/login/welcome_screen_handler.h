@@ -45,6 +45,9 @@ class WelcomeView {
 
   // Change the current input method.
   virtual void SetInputMethodId(const std::string& input_method_id) = 0;
+
+  // Shows dialog to confirm starting Demo mode.
+  virtual void ShowDemoModeConfirmationDialog() = 0;
 };
 
 // WebUI implementation of WelcomeScreenView. It is used to interact with
@@ -64,6 +67,7 @@ class WelcomeScreenHandler : public WelcomeView, public BaseScreenHandler {
   void Unbind() override;
   void ReloadLocalizedContent() override;
   void SetInputMethodId(const std::string& input_method_id) override;
+  void ShowDemoModeConfirmationDialog() override;
 
   // BaseScreenHandler:
   void DeclareLocalizedValues(

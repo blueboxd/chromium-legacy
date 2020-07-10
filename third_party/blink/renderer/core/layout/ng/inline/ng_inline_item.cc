@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 namespace {
@@ -18,8 +19,7 @@ struct SameSizeAsNGInlineItem {
   unsigned bit_fields : 32;
 };
 
-static_assert(sizeof(NGInlineItem) == sizeof(SameSizeAsNGInlineItem),
-              "NGInlineItem should stay small");
+ASSERT_SIZE(NGInlineItem, SameSizeAsNGInlineItem);
 
 const char* kNGInlineItemTypeStrings[] = {
     "Text",     "Control",  "AtomicInline",        "OpenTag",

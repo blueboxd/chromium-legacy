@@ -115,8 +115,10 @@ StyleEngine::StyleEngine(Document& document)
   if (document.GetFrame()) {
     // We don't need to create CSSFontSelector for imported document or
     // HTMLTemplateElement's document, because those documents have no frame.
+    // Likewise for the StyleResolver.
     font_selector_ = CreateCSSFontSelectorFor(document);
     font_selector_->RegisterForInvalidationCallbacks(this);
+    resolver_ = MakeGarbageCollected<StyleResolver>(document);
   }
   if (document.IsInMainFrame())
     viewport_resolver_ = MakeGarbageCollected<ViewportStyleResolver>(document);
@@ -679,11 +681,6 @@ RuleSet* StyleEngine::RuleSetForSheet(CSSStyleSheet& sheet) {
   }
   return &sheet.Contents()->EnsureRuleSet(*media_query_evaluator_,
                                           add_rule_flags);
-}
-
-void StyleEngine::CreateResolver() {
-  resolver_ = MakeGarbageCollected<StyleResolver>(*document_);
-  resolver_->SetRuleUsageTracker(tracker_);
 }
 
 void StyleEngine::ClearResolvers() {
@@ -1761,11 +1758,10 @@ bool StyleEngine::UpdateRemUnits(const ComputedStyle* old_root_style,
     return false;
   if (!old_root_style || old_root_style->SpecifiedFontSize() !=
                              new_root_style->SpecifiedFontSize()) {
-    DCHECK(Resolver());
     // Resolved rem units are stored in the matched properties cache so we need
     // to make sure to invalidate the cache if the documentElement font size
     // changes.
-    Resolver()->InvalidateMatchedPropertiesCache();
+    GetStyleResolver().InvalidateMatchedPropertiesCache();
     return true;
   }
   return false;
@@ -2217,14 +2213,7 @@ void StyleEngine::UpdateViewportStyle() {
 
   viewport_style_dirty_ = false;
 
-  // TODO(futhark@chromium.org): Cannot access the EnsureStyleResolver()
-  // before calling StyleForViewport() below because apparently the
-  // StyleResolver's constructor has side effects. We should fix it. See
-  // printing/setPrinting.html, printing/width-overflow.html though they only
-  // fail on mac when accessing the resolver by what appears to be a viewport
-  // size difference.
-  scoped_refptr<ComputedStyle> viewport_style =
-      StyleResolver::StyleForViewport(GetDocument());
+  scoped_refptr<ComputedStyle> viewport_style = resolver_->StyleForViewport();
   if (ComputedStyle::ComputeDifference(
           viewport_style.get(), GetDocument().GetLayoutView()->Style()) !=
       ComputedStyle::Difference::kEqual) {

@@ -17,14 +17,17 @@
 #include "chrome/browser/permissions/contextual_notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
+#include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/google/core/common/google_util.h"
 #include "components/permissions/features.h"
+#include "components/prefs/pref_service.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "extensions/common/constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -196,6 +199,16 @@ void ChromePermissionsClient::OnPromptResolved(
         Profile::FromBrowserContext(browser_context))
         ->RecordPermissionPromptOutcome(action);
   }
+}
+
+base::Optional<bool>
+ChromePermissionsClient::HadThreeConsecutiveNotificationPermissionDenies(
+    content::BrowserContext* browser_context) {
+  if (!QuietNotificationPermissionUiConfig::IsAdaptiveActivationDryRunEnabled())
+    return base::nullopt;
+  return Profile::FromBrowserContext(browser_context)
+      ->GetPrefs()
+      ->GetBoolean(prefs::kHadThreeConsecutiveNotificationPermissionDenies);
 }
 
 base::Optional<url::Origin> ChromePermissionsClient::GetAutoApprovalOrigin() {

@@ -36,7 +36,7 @@ const ComputedStyle* SVGElementRareData::OverrideComputedStyle(
     // induced rules - this is needed to compute the "base value" for the SMIL
     // animation sandwhich model.
     override_computed_style_ =
-        element->GetDocument().EnsureStyleResolver().StyleForElement(
+        element->GetDocument().GetStyleResolver().StyleForElement(
             element, parent_style, parent_style, kMatchAllRulesExcludingSMIL);
     needs_override_computed_style_update_ = false;
   }

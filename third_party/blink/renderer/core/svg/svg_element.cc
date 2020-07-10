@@ -964,14 +964,14 @@ void SVGElement::CollectStyleForAnimatedPresentationAttributes(
 scoped_refptr<ComputedStyle> SVGElement::CustomStyleForLayoutObject() {
   SVGElement* corresponding_element = CorrespondingElement();
   if (!corresponding_element)
-    return GetDocument().EnsureStyleResolver().StyleForElement(this);
+    return GetDocument().GetStyleResolver().StyleForElement(this);
 
   const ComputedStyle* style = nullptr;
   if (Element* parent = ParentOrShadowHostElement())
     style = parent->GetComputedStyle();
 
-  return GetDocument().EnsureStyleResolver().StyleForElement(
-      corresponding_element, style, style);
+  return GetDocument().GetStyleResolver().StyleForElement(corresponding_element,
+                                                          style, style);
 }
 
 bool SVGElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {

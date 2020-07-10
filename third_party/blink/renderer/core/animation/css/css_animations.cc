@@ -1262,8 +1262,7 @@ scoped_refptr<const ComputedStyle> CSSAnimations::CalculateBeforeChangeStyle(
     }
   }
 
-  StyleResolver& resolver =
-      animating_element->GetDocument().EnsureStyleResolver();
+  StyleResolver& resolver = animating_element->GetDocument().GetStyleResolver();
   return resolver.BeforeChangeStyleForTransitionUpdate(
       *animating_element, base_style, interpolations_map);
 }

@@ -91,8 +91,7 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
       int page_index,
       const AtomicString& page_name);
   scoped_refptr<const ComputedStyle> StyleForText(Text*);
-
-  static scoped_refptr<ComputedStyle> StyleForViewport(Document&);
+  scoped_refptr<ComputedStyle> StyleForViewport();
 
   // TODO(esprehn): StyleResolver should probably not contain tree walking
   // state, instead we should pass a context object during recalcStyle.

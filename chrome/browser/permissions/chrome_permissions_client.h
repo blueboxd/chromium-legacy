@@ -46,6 +46,8 @@ class ChromePermissionsClient : public permissions::PermissionsClient {
   void OnPromptResolved(content::BrowserContext* browser_context,
                         permissions::PermissionRequestType request_type,
                         permissions::PermissionAction action) override;
+  base::Optional<bool> HadThreeConsecutiveNotificationPermissionDenies(
+      content::BrowserContext* browser_context) override;
   base::Optional<url::Origin> GetAutoApprovalOrigin() override;
   bool CanBypassEmbeddingOriginCheck(const GURL& requesting_origin,
                                      const GURL& embedding_origin) override;

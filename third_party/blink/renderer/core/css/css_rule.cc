@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -33,13 +34,12 @@ struct SameSizeAsCSSRule : public GarbageCollected<SameSizeAsCSSRule>,
   unsigned char bitfields;
   Member<ScriptWrappable> member;
 #if !DCHECK_IS_ON()
-  static_assert(sizeof(Member<ScriptWrappable>) == sizeof(void*),
-                "Increasing size of Member increases size of CSSRule");
+  // Increasing size of Member increases size of CSSRule.
+  ASSERT_SIZE(Member<ScriptWrappable>, void*);
 #endif  // DCHECK_IS_ON()
 };
 
-static_assert(sizeof(CSSRule) == sizeof(SameSizeAsCSSRule),
-              "CSSRule should stay small");
+ASSERT_SIZE(CSSRule, SameSizeAsCSSRule);
 
 CSSRule::CSSRule(CSSStyleSheet* parent)
     : has_cached_selector_text_(false),

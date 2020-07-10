@@ -14,6 +14,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -1466,6 +1467,10 @@ bool RenderWidgetHostViewAura::SetCompositionFromExistingText(
 bool RenderWidgetHostViewAura::SetAutocorrectRange(
     const base::string16& autocorrect_text,
     const gfx::Range& range) {
+  base::UmaHistogramEnumeration(
+      "InputMethod.Assistive.Autocorrect.Count",
+      TextInputClient::SubClass::kRenderWidgetHostViewAura);
+
   auto* input_handler = GetFrameWidgetInputHandlerForFocusedWidget();
   if (!input_handler)
     return false;

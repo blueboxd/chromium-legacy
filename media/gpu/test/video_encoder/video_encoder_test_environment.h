@@ -32,7 +32,9 @@ class VideoEncoderTestEnvironment : public VideoTestEnvironment {
       bool enable_bitstream_validator,
       const base::FilePath& output_folder,
       const std::string& codec,
-      bool output_bitstream);
+      bool output_bitstream,
+      const FrameOutputConfig& frame_output_config = FrameOutputConfig());
+
   ~VideoEncoderTestEnvironment() override;
 
   // Get the video the tests will be ran on.
@@ -43,9 +45,11 @@ class VideoEncoderTestEnvironment : public VideoTestEnvironment {
   const base::FilePath& OutputFolder() const;
   // Get the output codec profile.
   VideoCodecProfile Profile() const;
-  // Get the file path the output bitstream file is saved. If output bitstream
-  // is not saved, returns base::nullopt.
+  // Whether the encoded bitstream is saved to disk.
+  bool SaveOutputBitstream() const;
   base::Optional<base::FilePath> OutputBitstreamFilePath() const;
+  // Gets the frame output configuration.
+  const FrameOutputConfig& ImageOutputConfig() const;
 
   // Get the GpuMemoryBufferFactory for doing buffer allocations. This needs to
   // survive as long as the process is alive just like in production which is
@@ -54,12 +58,12 @@ class VideoEncoderTestEnvironment : public VideoTestEnvironment {
   gpu::GpuMemoryBufferFactory* GetGpuMemoryBufferFactory() const;
 
  private:
-  VideoEncoderTestEnvironment(
-      std::unique_ptr<media::test::Video> video,
-      bool enable_bitstream_validator,
-      const base::FilePath& output_folder,
-      VideoCodecProfile profile,
-      const base::Optional<base::FilePath>& output_bitstream_filepath);
+  VideoEncoderTestEnvironment(std::unique_ptr<media::test::Video> video,
+                              bool enable_bitstream_validator,
+                              const base::FilePath& output_folder,
+                              VideoCodecProfile profile,
+                              bool save_output_bitstream,
+                              const FrameOutputConfig& frame_output_config);
 
   // Video file to be used for testing.
   const std::unique_ptr<media::test::Video> video_;
@@ -69,8 +73,13 @@ class VideoEncoderTestEnvironment : public VideoTestEnvironment {
   const base::FilePath output_folder_;
   // VideoCodecProfile to be produced by VideoEncoder.
   const VideoCodecProfile profile_;
-  // File name to be used to save bitstream encoded by VideoEncoder.
-  const base::Optional<base::FilePath> bitstream_filename_;
+  // Whether the bitstream produced by VideoEncoder is saved to disk.
+  const bool save_output_bitstream_;
+  // The configuration about saving decoded images of bitstream encoded by
+  // VideoEncoder.
+  // The configuration used when saving the decoded images of bitstream encoded
+  // by VideoEncoder to disk.
+  const FrameOutputConfig frame_output_config_;
 
   std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 };

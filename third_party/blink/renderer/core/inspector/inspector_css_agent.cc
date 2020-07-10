@@ -776,6 +776,21 @@ void InspectorCSSAgent::FontsUpdated(
     return;
   }
 
+  Vector<VariationAxis> variation_axis =
+      fontCustomPlatformData->GetVariationAxes();
+
+  auto variation_axes =
+      std::make_unique<protocol::Array<protocol::CSS::FontVariationAxis>>();
+  for (const VariationAxis& axis : variation_axis) {
+    variation_axes->push_back(protocol::CSS::FontVariationAxis::create()
+                                  .setMinValue(axis.minValue)
+                                  .setMaxValue(axis.maxValue)
+                                  .setDefaultValue(axis.defaultValue)
+                                  .setName(axis.name)
+                                  .setTag(axis.tag)
+                                  .build());
+  }
+
   // blink::FontFace returns sane property defaults per the web fonts spec,
   // so we don't perform null checks here.
   std::unique_ptr<protocol::CSS::FontFace> font_face =
@@ -789,6 +804,8 @@ void InspectorCSSAgent::FontsUpdated(
           .setSrc(src)
           .setPlatformFontFamily(
               fontCustomPlatformData->FamilyNameForInspector())
+          .setFontVariationAxes(
+              variation_axes->size() ? std::move(variation_axes) : nullptr)
           .build();
   GetFrontend()->fontsUpdated(std::move(font_face));
 }
@@ -814,9 +831,19 @@ void InspectorCSSAgent::SetActiveStyleSheets(
     document_to_css_style_sheets_.Set(document, document_css_style_sheets);
   }
 
+  // Style engine sometimes returns the same stylesheet multiple
+  // times, probably, because it's used in multiple places.
+  // We need to deduplicate because the frontend does not expect
+  // duplicate styleSheetAdded events.
+  HeapHashSet<Member<CSSStyleSheet>> unique_sheets;
+  for (CSSStyleSheet* css_style_sheet : all_sheets_vector) {
+    if (!unique_sheets.Contains(css_style_sheet))
+      unique_sheets.insert(css_style_sheet);
+  }
+
   HeapHashSet<Member<CSSStyleSheet>> removed_sheets(*document_css_style_sheets);
   HeapVector<Member<CSSStyleSheet>> added_sheets;
-  for (CSSStyleSheet* css_style_sheet : all_sheets_vector) {
+  for (CSSStyleSheet* css_style_sheet : unique_sheets) {
     if (removed_sheets.Contains(css_style_sheet)) {
       removed_sheets.erase(css_style_sheet);
     } else {
@@ -978,7 +1005,7 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
   // FIXME: It's really gross for the inspector to reach in and access
   // StyleResolver directly here. We need to provide the Inspector better APIs
   // to get this information without grabbing at internal style classes!
-  StyleResolver& style_resolver = document.EnsureStyleResolver();
+  StyleResolver& style_resolver = document.GetStyleResolver();
 
   // Matched rules.
   RuleIndexList* matched_rules = style_resolver.PseudoCSSRulesForElement(
@@ -1079,7 +1106,7 @@ InspectorCSSAgent::AnimationsForNode(Element* element) {
   if (!style)
     return css_keyframes_rules;
   const CSSAnimationData* animation_data = style->Animations();
-  StyleResolver& style_resolver = document.EnsureStyleResolver();
+  StyleResolver& style_resolver = document.GetStyleResolver();
   for (wtf_size_t i = 0;
        animation_data && i < animation_data->NameList().size(); ++i) {
     AtomicString animation_name(animation_data->NameList()[i]);
@@ -2267,7 +2294,7 @@ HeapVector<Member<CSSStyleDeclaration>> InspectorCSSAgent::MatchingStyles(
   PseudoId pseudo_id = element->GetPseudoId();
   if (pseudo_id)
     element = element->parentElement();
-  StyleResolver& style_resolver = element->GetDocument().EnsureStyleResolver();
+  StyleResolver& style_resolver = element->GetDocument().GetStyleResolver();
 
   element->UpdateDistributionForUnknownReasons();
 

@@ -313,6 +313,24 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_UPGRADE_AVAILABLE" desc="Text to inform the user of the presence of a new version of the application">
         Chromium just got better! A new version is available.
       </message>
+      <message name="IDS_IOS_PASSWORD_CHECK_ERROR" desc="Description of the password check cell, explaining that Password Check failed. [iOS only]" meaning="Password Check failed due to some error.">
+        Chromium can't check your passwords
+      </message>
+      <message name="IDS_IOS_PASSWORD_CHECK_ERROR_OFFLINE" desc="Text inside popover which is shown when the user wants to see detailed information about the error. [iOS only]" meaning="The user has no internet connection and can't check passwords.">
+        Chromium couldn't check your passwords. Try checking your internet connection.
+      </message>
+      <message name="IDS_IOS_PASSWORD_CHECK_ERROR_SIGNED_OUT" desc="Text inside popover which is shown when the user wants to see detailed information about the error. [iOS only]" meaning="The user is not signed in and can't check passwords.">
+        Chromium can check your passwords when you sign in with your Google Account.
+      </message>
+      <message name="IDS_IOS_PASSWORD_CHECK_ERROR_QUOTA_LIMIT" desc="Text inside popover which is shown when the user wants to see detailed information about the error. [iOS only]" meaning="The user has more passwords than allowed for check.">
+        Chromium couldn't check all passwords. Try again tomorrow.
+      </message>
+      <message name="IDS_IOS_PASSWORD_CHECK_ERROR_QUOTA_LIMIT_VISIT_GOOGLE" desc="Text with link inside popover which is shown when the user wants to see detailed information about the error. [iOS only]" meaning="The user has more passwords than allowed for check but he can check in Google Account.">
+        Chromium couldn't check all passwords. Try again tomorrow or <ph name="BEGIN_LINK">BEGIN_LINK</ph>check passwords in your Google Account.<ph name="END_LINK">END_LINK</ph>
+      </message>
+      <message name="IDS_IOS_PASSWORD_CHECK_ERROR_OTHER" desc="Text inside popover which is shown when the user wants to see detailed information about the error. [iOS only]" meaning="Password check failed due to specific reason (out of memory).">
+        Chromium couldn't check all passwords. Try again.
+      </message>
     </messages>
   </release>
 </grit>

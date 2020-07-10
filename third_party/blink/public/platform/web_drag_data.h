@@ -90,7 +90,7 @@ class WebDragData {
     WebString file_system_id;
   };
 
-  WebDragData() : modifier_key_state_(0) {}
+  WebDragData() = default;
 
   WebDragData(const WebDragData& object) = default;
 
@@ -114,13 +114,8 @@ class WebDragData {
     filesystem_id_ = filesystem_id;
   }
 
-  int ModifierKeyState() const { return modifier_key_state_; }
-
-  void SetModifierKeyState(int state) { modifier_key_state_ = state; }
-
  private:
   WebVector<Item> item_list_;
-  int modifier_key_state_;  // State of Shift/Ctrl/Alt/Meta keys.
   WebString filesystem_id_;
 };
 

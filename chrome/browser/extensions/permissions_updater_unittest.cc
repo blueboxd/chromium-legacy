@@ -410,7 +410,7 @@ TEST_F(PermissionsUpdaterTest, RevokingPermissions) {
     // Block google.com for the Individual scope.
     // Whitelist example.google.com for the Indiviaul scope.
     // Leave google.com and example.google.com off both the whitelist and
-    // blacklist for Default scope.
+    // blocklist for Default scope.
     AddPattern(&policy_blocked_hosts, "*://*.google.com/*");
     AddPattern(&policy_allowed_hosts, "*://example.google.com/*");
     updater.SetPolicyHostRestrictions(extension.get(), policy_blocked_hosts,

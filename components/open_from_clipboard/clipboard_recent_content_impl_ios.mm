@@ -40,6 +40,16 @@ NSString* const kPasteboardChangeDateKey = @"PasteboardChangeDate";
 // Maximum age of clipboard in seconds.
 @property(nonatomic, readonly) NSTimeInterval maximumAgeOfClipboard;
 
+// A cached version of an already-retrieved URL. This prevents subsequent URL
+// requests from triggering the iOS 14 pasteboard notification.
+@property(nonatomic, strong) NSURL* cachedURL;
+// A cached version of an already-retrieved string. This prevents subsequent
+// string requests from triggering the iOS 14 pasteboard notification.
+@property(nonatomic, copy) NSString* cachedText;
+// A cached version of an already-retrieved image. This prevents subsequent
+// image requests from triggering the iOS 14 pasteboard notification.
+@property(nonatomic, strong) UIImage* cachedImage;
+
 // If the content of the pasteboard has changed, updates the change count
 // and change date.
 - (void)updateIfNeeded;
@@ -117,7 +127,10 @@ NSString* const kPasteboardChangeDateKey = @"PasteboardChangeDate";
   if (![self shouldReturnValueOfClipboard])
     return nil;
 
-  return [self URLFromPasteboard];
+  if (!self.cachedURL) {
+    self.cachedURL = [self URLFromPasteboard];
+  }
+  return self.cachedURL;
 }
 
 - (NSString*)recentTextFromClipboard {
@@ -126,7 +139,10 @@ NSString* const kPasteboardChangeDateKey = @"PasteboardChangeDate";
   if (![self shouldReturnValueOfClipboard])
     return nil;
 
-  return [UIPasteboard generalPasteboard].string;
+  if (!self.cachedText) {
+    self.cachedText = UIPasteboard.generalPasteboard.string;
+  }
+  return self.cachedText;
 }
 
 - (UIImage*)recentImageFromClipboard {
@@ -135,7 +151,11 @@ NSString* const kPasteboardChangeDateKey = @"PasteboardChangeDate";
   if (![self shouldReturnValueOfClipboard])
     return nil;
 
-  return [UIPasteboard generalPasteboard].image;
+  if (!self.cachedImage) {
+    self.cachedImage = UIPasteboard.generalPasteboard.image;
+  }
+
+  return self.cachedImage;
 }
 
 - (NSTimeInterval)clipboardContentAge {
@@ -171,10 +191,15 @@ NSString* const kPasteboardChangeDateKey = @"PasteboardChangeDate";
     return;
   }
 
-  [self.delegate onClipboardChanged];
-
   self.lastPasteboardChangeDate = [NSDate date];
   self.lastPasteboardChangeCount = [UIPasteboard generalPasteboard].changeCount;
+
+  // Clear the cache because the pasteboard data has changed.
+  self.cachedURL = nil;
+  self.cachedText = nil;
+  self.cachedImage = nil;
+
+  [self.delegate onClipboardChanged];
 
   [self saveToUserDefaults];
 }

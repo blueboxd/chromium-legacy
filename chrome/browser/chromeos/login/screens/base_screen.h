@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "ash/public/cpp/login_accelerators.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -43,6 +44,9 @@ class BaseScreen {
 
   // Forwards user action if screen is shown.
   void HandleUserAction(const std::string& action_id);
+
+  // Returns |true| if |action| was handled by the screen.
+  virtual bool HandleAccelerator(ash::LoginAcceleratorAction action);
 
   // Returns the identifier of the screen.
   OobeScreenId screen_id() const { return screen_id_; }

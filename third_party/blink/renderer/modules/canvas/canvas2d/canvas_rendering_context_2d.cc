@@ -545,7 +545,7 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
           element_font_description.SpecifiedSize());
 
       font_style->SetFontDescription(element_font_description);
-      canvas()->GetDocument().EnsureStyleResolver().ComputeFont(
+      canvas()->GetDocument().GetStyleEngine().ComputeFont(
           *canvas(), font_style.get(), *parsed_style);
 
       // We need to reset Computed and Adjusted size so we skip zoom and

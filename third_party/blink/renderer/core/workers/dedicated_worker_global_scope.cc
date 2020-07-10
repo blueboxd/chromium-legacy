@@ -33,6 +33,7 @@
 #include <memory>
 #include "base/feature_list.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/worker_main_script_load_parameters.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
@@ -168,6 +169,8 @@ void DedicatedWorkerGlobalScope::Initialize(
 // https://html.spec.whatwg.org/C/#worker-processing-model
 void DedicatedWorkerGlobalScope::FetchAndRunClassicScript(
     const KURL& script_url,
+    std::unique_ptr<WorkerMainScriptLoadParameters>
+        worker_main_script_load_params,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     const v8_inspector::V8StackTraceId& stack_id) {
@@ -191,7 +194,8 @@ void DedicatedWorkerGlobalScope::FetchAndRunClassicScript(
       *this,
       CreateOutsideSettingsFetcher(outside_settings_object,
                                    outside_resource_timing_notifier),
-      script_url, context_type, destination,
+      script_url, std::move(worker_main_script_load_params),
+      CloneResourceLoadInfoNotifier(), context_type, destination,
       network::mojom::RequestMode::kSameOrigin,
       network::mojom::CredentialsMode::kSameOrigin,
       WTF::Bind(&DedicatedWorkerGlobalScope::DidReceiveResponseForClassicScript,
@@ -205,11 +209,19 @@ void DedicatedWorkerGlobalScope::FetchAndRunClassicScript(
 // https://html.spec.whatwg.org/C/#worker-processing-model
 void DedicatedWorkerGlobalScope::FetchAndRunModuleScript(
     const KURL& module_url_record,
+    std::unique_ptr<WorkerMainScriptLoadParameters>
+        worker_main_script_load_params,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     network::mojom::CredentialsMode credentials_mode,
     RejectCoepUnsafeNone reject_coep_unsafe_none) {
   reject_coep_unsafe_none_ = reject_coep_unsafe_none;
+
+  if (worker_main_script_load_params) {
+    SetWorkerMainScriptLoadingParametersForModules(
+        std::move(worker_main_script_load_params));
+  }
+
   // Step 12: "Let destination be "sharedworker" if is shared is true, and
   // "worker" otherwise."
   mojom::RequestContextType context_type = mojom::RequestContextType::WORKER;

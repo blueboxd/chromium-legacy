@@ -19,27 +19,6 @@ namespace test {
 
 class Video;
 
-// The frame output mode allows controlling which video frames are written to
-// disk. Writing frames will greatly slow down the test and generate a lot of
-// test artifacts, so be careful when configuring other modes than kNone in
-// automated testing.
-enum class FrameOutputMode {
-  kNone,     // Don't output any frames.
-  kCorrupt,  // Only output corrupt frames.
-  kAll       // Output all frames.
-};
-
-// Frame output configuration.
-struct FrameOutputConfig {
-  // The frame output mode controls which frames will be output.
-  FrameOutputMode output_mode = FrameOutputMode::kNone;
-  // The maximum number of frames that will be output.
-  uint64_t output_limit = std::numeric_limits<uint64_t>::max();
-  // The format of frames that are output.
-  VideoFrameFileWriter::OutputFormat output_format =
-      VideoFrameFileWriter::OutputFormat::kPNG;
-};
-
 // Test environment for video decode tests. Performs setup and teardown once for
 // the entire test run.
 class VideoPlayerTestEnvironment : public VideoTestEnvironment {

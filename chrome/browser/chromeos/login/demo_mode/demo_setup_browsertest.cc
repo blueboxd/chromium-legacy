@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/public/cpp/login_accelerators.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
@@ -238,7 +239,8 @@ class DemoSetupTestBase : public OobeBaseTest {
   }
 
   void InvokeDemoModeWithAccelerator() {
-    test::ExecuteOobeJS("cr.ui.Oobe.handleAccelerator('demo_mode');");
+    WizardController::default_controller()->HandleAccelerator(
+        ash::LoginAcceleratorAction::kStartDemoMode);
   }
 
   void InvokeDemoModeWithTaps() {

@@ -14,6 +14,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/cert/x509_certificate.h"
 
@@ -174,7 +175,7 @@ using SetAttributeForKeyCallback =
 // If an error occurs, |attribute_value| will be empty and |error_message| will
 // be set to the error message.
 using GetAttributeForKeyCallback =
-    base::OnceCallback<void(const std::string& attribute_value,
+    base::OnceCallback<void(const base::Optional<std::string>& attribute_value,
                             const std::string& error_message)>;
 
 // Functions of this class shouldn't be called directly from the context of
@@ -306,9 +307,10 @@ class PlatformKeysService : public KeyedService {
                                   SetAttributeForKeyCallback callback) = 0;
 
   // Gets |attribute_type| for the private key corresponding to
-  // |public_key_spki_der| only if the key is in |token_id|.
-  // |callback| will be invoked on the UI thread when getting the attribute
-  // is done, possibly with an error message.
+  // |public_key_spki_der| only if the key is in |token_id|. |callback| will be
+  // invoked on the UI thread when getting the attribute is done, possibly with
+  // an error message. In case no value was set for |attribute_type|, an empty
+  // |error_message| and base::nullopt |attribute_value| will be returned.
   virtual void GetAttributeForKey(TokenId token_id,
                                   const std::string& public_key_spki_der,
                                   KeyAttributeType attribute_type,

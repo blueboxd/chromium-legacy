@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_optical_sizing.h"
 #include "third_party/blink/renderer/platform/fonts/font_orientation.h"
 #include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
+#include "third_party/blink/renderer/platform/fonts/opentype/variable_axes_names.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -70,6 +71,8 @@ class PLATFORM_EXPORT FontCustomPlatformData
       const FontVariationSettings* = nullptr);
 
   String FamilyNameForInspector() const;
+
+  Vector<VariationAxis> GetVariationAxes() const;
 
   size_t DataSize() const { return data_size_; }
   static bool SupportsFormat(const String&);

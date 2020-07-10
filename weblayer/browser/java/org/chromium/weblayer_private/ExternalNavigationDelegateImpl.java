@@ -4,7 +4,7 @@
 
 package org.chromium.weblayer_private;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 
@@ -43,8 +43,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public Activity getActivityContext() {
-        return ContextUtils.activityFromContext(mTab.getBrowser().getContext());
+    public Context getContext() {
+        return mTab.getBrowser().getContext();
     }
 
     @Override

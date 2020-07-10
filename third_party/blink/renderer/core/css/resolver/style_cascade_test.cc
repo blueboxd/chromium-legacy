@@ -175,7 +175,7 @@ class TestCascade {
     CSSAnimations::CalculateAnimationUpdate(
         state_.AnimationUpdate(), &state_.GetElement(), state_.GetElement(),
         *state_.Style(), state_.ParentStyle(),
-        &GetDocument().EnsureStyleResolver());
+        &GetDocument().GetStyleResolver());
     AddAnimations();
   }
 

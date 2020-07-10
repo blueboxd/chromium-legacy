@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_test_helpers.h"
 
+#include "base/optional.h"
 #include "base/test/gmock_callback_support.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -64,13 +65,14 @@ void CertificateHelperForTesting::GetCertificates(
 
 void CertificateHelperForTesting::AddCert(
     CertScope cert_scope,
-    const CertProfileId& cert_profile_id) {
+    const base::Optional<CertProfileId>& cert_profile_id) {
   AddCert(cert_scope, cert_profile_id, /*error_message=*/"");
 }
 
-void CertificateHelperForTesting::AddCert(CertScope cert_scope,
-                                          const CertProfileId& cert_profile_id,
-                                          const std::string& error_message) {
+void CertificateHelperForTesting::AddCert(
+    CertScope cert_scope,
+    const base::Optional<CertProfileId>& cert_profile_id,
+    const std::string& error_message) {
   net::CertBuilder cert_builder(template_cert_->cert_buffer(),
                                 /*issuer=*/nullptr);
   auto cert = cert_builder.GetX509Certificate();

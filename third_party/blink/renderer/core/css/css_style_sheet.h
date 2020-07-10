@@ -168,8 +168,14 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   };
 
   void WillMutateRules();
-  void DidMutateRules();
-  void DidMutate();
+
+  enum class Mutation {
+    // Properties on the CSSStyleSheet object changed.
+    kSheet,
+    // Rules in the CSSStyleSheet changed.
+    kRules,
+  };
+  void DidMutate(Mutation mutation);
 
   class InspectorMutationScope {
     STACK_ALLOCATED();
@@ -283,7 +289,7 @@ inline CSSStyleSheet::RuleMutationScope::RuleMutationScope(CSSRule* rule)
 
 inline CSSStyleSheet::RuleMutationScope::~RuleMutationScope() {
   if (style_sheet_)
-    style_sheet_->DidMutateRules();
+    style_sheet_->DidMutate(Mutation::kRules);
 }
 
 template <>

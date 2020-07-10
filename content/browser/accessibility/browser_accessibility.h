@@ -441,6 +441,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool IsChildOfLeaf() const override;
   bool IsChildOfPlainTextField() const override;
   bool IsLeaf() const override;
+  bool IsToplevelBrowserWindow() override;
   gfx::NativeViewAccessible GetClosestPlatformObject() const override;
 
   std::unique_ptr<ChildIterator> ChildrenBegin() override;

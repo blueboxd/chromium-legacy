@@ -22,13 +22,13 @@ using content::BrowserThread;
 
 namespace extensions {
 
-BlacklistStateFetcher::BlacklistStateFetcher() {}
+BlocklistStateFetcher::BlocklistStateFetcher() {}
 
-BlacklistStateFetcher::~BlacklistStateFetcher() {
+BlocklistStateFetcher::~BlocklistStateFetcher() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-void BlacklistStateFetcher::Request(const std::string& id,
+void BlocklistStateFetcher::Request(const std::string& id,
                                     const RequestCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!safe_browsing_config_) {
@@ -55,7 +55,7 @@ void BlacklistStateFetcher::Request(const std::string& id,
   SendRequest(id);
 }
 
-void BlacklistStateFetcher::SendRequest(const std::string& id) {
+void BlocklistStateFetcher::SendRequest(const std::string& id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ClientCRXListInfoRequest request;
@@ -107,17 +107,17 @@ void BlacklistStateFetcher::SendRequest(const std::string& id) {
   requests_[fetcher] = {std::move(fetcher_ptr), id};
   fetcher->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
-      base::BindOnce(&BlacklistStateFetcher::OnURLLoaderComplete,
+      base::BindOnce(&BlocklistStateFetcher::OnURLLoaderComplete,
                      base::Unretained(this), fetcher));
 }
 
-void BlacklistStateFetcher::SetSafeBrowsingConfig(
+void BlocklistStateFetcher::SetSafeBrowsingConfig(
     const safe_browsing::V4ProtocolConfig& config) {
   safe_browsing_config_ =
       std::make_unique<safe_browsing::V4ProtocolConfig>(config);
 }
 
-void BlacklistStateFetcher::OnURLLoaderComplete(
+void BlocklistStateFetcher::OnURLLoaderComplete(
     network::SimpleURLLoader* url_loader,
     std::unique_ptr<std::string> response_body) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -134,7 +134,7 @@ void BlacklistStateFetcher::OnURLLoaderComplete(
                               url_loader->NetError());
 }
 
-void BlacklistStateFetcher::OnURLLoaderCompleteInternal(
+void BlocklistStateFetcher::OnURLLoaderCompleteInternal(
     network::SimpleURLLoader* url_loader,
     const std::string& response_body,
     int response_code,
@@ -160,10 +160,10 @@ void BlacklistStateFetcher::OnURLLoaderCompleteInternal(
     }
   } else {
     if (net_error != net::OK) {
-      VLOG(1) << "Blacklist request for: " << id
+      VLOG(1) << "Blocklist request for: " << id
               << " failed with error: " << net_error;
     } else {
-      VLOG(1) << "Blacklist request for: " << id
+      VLOG(1) << "Blocklist request for: " << id
               << " failed with error: " << response_code;
     }
 

@@ -381,7 +381,7 @@ void ViewportStyleResolver::UpdateViewport(
     return;
   }
   if (!initial_style_)
-    initial_style_ = StyleResolver::StyleForViewport(*document_);
+    initial_style_ = document_->GetStyleResolver().StyleForViewport();
   if (needs_update_ == kCollectRules) {
     Reset();
     CollectViewportRulesFromUASheets();

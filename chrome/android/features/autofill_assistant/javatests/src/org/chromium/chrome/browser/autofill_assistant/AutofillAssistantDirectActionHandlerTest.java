@@ -70,7 +70,7 @@ public class AutofillAssistantDirectActionHandlerTest {
         mModuleEntryProvider.setCannotInstall();
 
         mHandler = new AutofillAssistantDirectActionHandler(mActivity, mBottomSheetController,
-                mActivity.getFullscreenManager(), mActivity.getCompositorViewHolder(),
+                mActivity.getBrowserControlsManager(), mActivity.getCompositorViewHolder(),
                 mActivity.getActivityTabProvider(), mActivity.getScrim(), mModuleEntryProvider);
 
         mSharedPreferencesManager.removeKey(

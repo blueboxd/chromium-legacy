@@ -113,6 +113,10 @@ void WelcomeScreenHandler::SetInputMethodId(
   CallJS("login.WelcomeScreen.onInputMethodIdSetFromBackend", input_method_id);
 }
 
+void WelcomeScreenHandler::ShowDemoModeConfirmationDialog() {
+  CallJS("login.WelcomeScreen.showDemoModeConfirmationDialog");
+}
+
 // WelcomeScreenHandler, BaseScreenHandler implementation: --------------------
 
 void WelcomeScreenHandler::DeclareLocalizedValues(
@@ -167,6 +171,14 @@ void WelcomeScreenHandler::DeclareLocalizedValues(
 
   builder->Add("timezoneDropdownTitle", IDS_TIMEZONE_DROPDOWN_TITLE);
   builder->Add("timezoneButtonText", IDS_TIMEZONE_BUTTON_TEXT);
+
+  // Strings for enable demo mode dialog.
+  builder->Add("enableDemoModeDialogTitle", IDS_ENABLE_DEMO_MODE_DIALOG_TITLE);
+  builder->Add("enableDemoModeDialogText", IDS_ENABLE_DEMO_MODE_DIALOG_TEXT);
+  builder->Add("enableDemoModeDialogConfirm",
+               IDS_ENABLE_DEMO_MODE_DIALOG_CONFIRM);
+  builder->Add("enableDemoModeDialogCancel",
+               IDS_ENABLE_DEMO_MODE_DIALOG_CANCEL);
 }
 
 void WelcomeScreenHandler::DeclareJSCallbacks() {

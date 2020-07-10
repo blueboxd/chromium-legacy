@@ -107,6 +107,7 @@ source_set("headers") {
     "input/web_pointer_properties.h",
     "input/web_touch_event.h",
     "input/web_touch_point.h",
+    "loader/feature_utils.h",
     "loader/loading_behavior_flag.h",
     "loader/mime_sniffing_throttle.h",
     "loader/mime_sniffing_url_loader.h",

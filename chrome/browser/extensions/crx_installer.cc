@@ -634,17 +634,17 @@ void CrxInstaller::CheckInstall() {
     return;
   }
 
-  // Run the policy, requirements and blacklist checks in parallel.
+  // Run the policy, requirements and blocklist checks in parallel.
   check_group_ = std::make_unique<PreloadCheckGroup>();
 
   policy_check_ = std::make_unique<PolicyCheck>(profile_, extension());
   requirements_check_ = std::make_unique<RequirementsChecker>(extension());
-  blacklist_check_ =
-      std::make_unique<BlacklistCheck>(Blacklist::Get(profile_), extension_);
+  blocklist_check_ =
+      std::make_unique<BlocklistCheck>(Blocklist::Get(profile_), extension_);
 
   check_group_->AddCheck(policy_check_.get());
   check_group_->AddCheck(requirements_check_.get());
-  check_group_->AddCheck(blacklist_check_.get());
+  check_group_->AddCheck(blocklist_check_.get());
 
   check_group_->Start(
       base::BindOnce(&CrxInstaller::OnInstallChecksComplete, this));
@@ -672,17 +672,17 @@ void CrxInstaller::OnInstallChecksComplete(const PreloadCheck::Errors& errors) {
     install_flags_ |= kInstallFlagHasRequirementErrors;
   }
 
-  // Check the blacklist state.
+  // Check the blocklist state.
   if (errors.count(PreloadCheck::BLOCKLISTED_ID) ||
       errors.count(PreloadCheck::BLOCKLISTED_UNKNOWN)) {
     if (allow_silent_install_) {
-      // NOTE: extension may still be blacklisted, but we're forced to silently
+      // NOTE: extension may still be blocklisted, but we're forced to silently
       // install it. In this case, ExtensionService::OnExtensionInstalled needs
       // to deal with it.
       if (errors.count(PreloadCheck::BLOCKLISTED_ID))
         install_flags_ |= kInstallFlagIsBlocklistedForMalware;
     } else {
-      // User tried to install a blacklisted extension. Show an error and
+      // User tried to install a blocklisted extension. Show an error and
       // refuse to install it.
       ReportFailureFromUIThread(CrxInstallError(
           CrxInstallErrorType::DECLINED,

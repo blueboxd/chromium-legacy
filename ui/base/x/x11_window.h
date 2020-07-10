@@ -115,6 +115,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   void StackXWindowAbove(x11::Window window);
   void StackXWindowAtTop();
   bool IsTargetedBy(const x11::Event& xev) const;
+  bool IsTransientWindowTargetedBy(const x11::Event& x11_event) const;
+  void SetTransientWindow(x11::Window window);
   void WmMoveResize(int hittest, const gfx::Point& location) const;
   void ProcessEvent(x11::Event* xev);
 
@@ -261,6 +263,9 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   x11::Connection* const connection_;
   x11::Window xwindow_ = x11::Window::None;
   x11::Window x_root_window_ = x11::Window::None;
+
+  // Any native, modal dialog hanging from this window.
+  x11::Window transient_window_ = x11::Window::None;
 
   // Events selected on |xwindow_|.
   std::unique_ptr<ui::XScopedEventSelector> xwindow_events_;

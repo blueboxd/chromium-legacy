@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import org.chromium.base.UserData;
 import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabService;
 import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabServiceFactory;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabViewProvider;
 import org.chromium.components.browser_ui.styles.ChromeColors;
@@ -31,6 +32,8 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
     private PlayerManager mPlayerManager;
     private Runnable mOnDismissed;
     private Boolean mInitializing;
+    private boolean mHasUserInteraction;
+    private EmptyTabObserver mTabObserver;
 
     public static TabbedPaintPreviewPlayer get(Tab tab) {
         if (tab.getUserDataHost().getUserData(USER_DATA_KEY) == null) {
@@ -42,6 +45,16 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
     private TabbedPaintPreviewPlayer(Tab tab) {
         mTab = tab;
         mPaintPreviewTabService = PaintPreviewTabServiceFactory.getServiceInstance();
+        mTabObserver = new EmptyTabObserver() {
+            @Override
+            public void didFirstVisuallyNonEmptyPaint(Tab tab) {
+                if (mTab.getTabViewManager().isShowing(TabbedPaintPreviewPlayer.this)
+                        && !mHasUserInteraction) {
+                    removePaintPreview();
+                }
+            }
+        };
+        mTab.addObserver(mTabObserver);
     }
 
     /**
@@ -62,10 +75,13 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
 
         mPlayerManager = new PlayerManager(mTab.getUrl(), mTab.getContext(),
                 mPaintPreviewTabService, String.valueOf(mTab.getId()), this::onLinkClicked,
-                this::removePaintPreview, () -> {
+                this::removePaintPreview,
+                () -> {
                     mInitializing = false;
                     onShown.run();
-                }, ChromeColors.getPrimaryBackgroundColor(mTab.getContext().getResources(), false),
+                },
+                () -> mHasUserInteraction = true,
+                ChromeColors.getPrimaryBackgroundColor(mTab.getContext().getResources(), false),
                 this::removePaintPreview, /*ignoreInitialScrollOffset=*/false);
         mOnDismissed = onDismissed;
         mTab.getTabViewManager().addTabViewProvider(this);
@@ -115,6 +131,7 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
     @Override
     public void destroy() {
         removePaintPreview();
+        mTab.removeObserver(mTabObserver);
         mTab = null;
     }
 }

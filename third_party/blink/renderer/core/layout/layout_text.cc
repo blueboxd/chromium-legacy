@@ -74,6 +74,7 @@
 #include "third_party/blink/renderer/platform/text/hyphenation.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
 #include "third_party/blink/renderer/platform/text/text_run_iterator.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -87,8 +88,7 @@ struct SameSizeAsLayoutText : public LayoutObject {
   DOMNodeId node_id;
 };
 
-static_assert(sizeof(LayoutText) == sizeof(SameSizeAsLayoutText),
-              "LayoutText should stay small");
+ASSERT_SIZE(LayoutText, SameSizeAsLayoutText);
 
 class SecureTextTimer;
 typedef HashMap<LayoutText*, SecureTextTimer*> SecureTextTimerMap;

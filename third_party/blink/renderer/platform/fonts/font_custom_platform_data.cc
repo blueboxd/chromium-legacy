@@ -37,10 +37,10 @@
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
 #include "third_party/blink/renderer/platform/fonts/opentype/font_format_check.h"
 #include "third_party/blink/renderer/platform/fonts/opentype/font_settings.h"
+#include "third_party/blink/renderer/platform/fonts/opentype/variable_axes_names.h"
 #include "third_party/blink/renderer/platform/fonts/web_font_decoder.h"
 #include "third_party/blink/renderer/platform/fonts/web_font_typeface_factory.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
-#include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 
 namespace blink {
@@ -136,6 +136,10 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
   return FontPlatformData(std::move(return_typeface), std::string(), size,
                           bold && !base_typeface_->isBold(),
                           italic && !base_typeface_->isItalic(), orientation);
+}
+
+Vector<VariationAxis> FontCustomPlatformData::GetVariationAxes() const {
+  return VariableAxesNames::GetVariationAxes(base_typeface_);
 }
 
 String FontCustomPlatformData::FamilyNameForInspector() const {

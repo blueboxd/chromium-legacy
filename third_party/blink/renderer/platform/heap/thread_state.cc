@@ -1598,7 +1598,7 @@ bool ThreadState::MarkPhaseAdvanceMarking(
     base::TimeDelta deadline,
     EphemeronProcessing ephemeron_processing) {
   MarkingVisitor* visitor = current_gc_data_.visitor.get();
-  ThreadHeapStatsCollector::Scope deadline_scope(
+  ThreadHeapStatsCollector::EnabledScope deadline_scope(
       Heap().stats_collector(),
       ThreadHeapStatsCollector::kIncrementalMarkingWithDeadline, "deadline_ms",
       deadline.InMillisecondsF());

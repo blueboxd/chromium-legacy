@@ -95,11 +95,11 @@ class ExtensionGlobalError : public GlobalErrorWithStandardBubble {
   void ExecuteMenuItem(Browser* browser) override { NOTREACHED(); }
 
   base::string16 GetBubbleViewTitle() override {
-    return GenerateTitle(delegate_->GetBlacklistedExtensions());
+    return GenerateTitle(delegate_->GetBlocklistedExtensions());
   }
 
   std::vector<base::string16> GetBubbleViewMessages() override {
-    return GenerateMessage(delegate_->GetBlacklistedExtensions(),
+    return GenerateMessage(delegate_->GetBlocklistedExtensions(),
                            delegate_->GetContext());
   }
 

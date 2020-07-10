@@ -562,6 +562,7 @@ if (use_v4l2_codec || use_vaapi) {
     data = [ "//media/test/data/" ]
     deps = [
       ":buildflags",
+      "test:frame_file_writer",
       "test:frame_validator",
       "test:helpers",
       "test:test_helpers",

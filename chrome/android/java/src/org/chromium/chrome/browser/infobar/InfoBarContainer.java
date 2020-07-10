@@ -448,7 +448,7 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener, I
                 != null
             : "ChromeActivity should not be null when initializing InfoBarContainerView";
         mInfoBarContainerView = new InfoBarContainerView(chromeActivity, mContainerViewObserver,
-                chromeActivity.getFullscreenManager(), chromeActivity.isTablet());
+                chromeActivity.getBrowserControlsManager(), chromeActivity.isTablet());
 
         mInfoBarContainerView.addOnAttachStateChangeListener(
                 new View.OnAttachStateChangeListener() {

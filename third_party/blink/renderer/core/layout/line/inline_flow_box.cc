@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/paint/inline_flow_box_painter.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -48,8 +49,7 @@ struct SameSizeAsInlineFlowBox : public InlineBox {
   uint32_t bitfields : 23;
 };
 
-static_assert(sizeof(InlineFlowBox) == sizeof(SameSizeAsInlineFlowBox),
-              "InlineFlowBox should stay small");
+ASSERT_SIZE(InlineFlowBox, SameSizeAsInlineFlowBox);
 
 #if DCHECK_IS_ON()
 InlineFlowBox::~InlineFlowBox() {

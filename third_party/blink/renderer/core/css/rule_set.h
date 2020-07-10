@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_linked_stack.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -168,8 +169,7 @@ struct SameSizeAsRuleData {
   unsigned d[4];
 };
 
-static_assert(sizeof(RuleData) == sizeof(SameSizeAsRuleData),
-              "RuleData should stay small");
+ASSERT_SIZE(RuleData, SameSizeAsRuleData);
 
 // Holds RuleData objects. It partitions them into various indexed groups,
 // e.g. it stores separately rules that match against id, class, tag, shadow

@@ -210,7 +210,7 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
 #endif  // defined(USE_OZONE)
 
   // Handles |xevent| as a Atk Key Event
-  bool HandleAsAtkEvent(x11::Event* xevent);
+  bool HandleAsAtkEvent(x11::Event* xevent, bool transient);
 
   // Adjusts |requested_size_in_pixels| to avoid the WM "feature" where setting
   // the window size to the monitor size causes the WM to set the EWMH for
@@ -249,6 +249,10 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   // previous check in ::CheckCanDispatchNextPlatformEvent based on a
   // x11::Window target.
   x11::Event* current_xevent_ = nullptr;
+
+  // True if the current_xevent_ target is not this window but a transient
+  // window that hangs from this one.
+  bool current_xevent_target_transient_ = false;
 
   std::unique_ptr<X11DesktopWindowMoveClient> x11_window_move_client_;
 

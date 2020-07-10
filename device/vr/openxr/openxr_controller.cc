@@ -138,12 +138,12 @@ XrResult OpenXrController::SuggestBindings(
   for (auto interaction_profile : kOpenXrControllerInteractionProfiles) {
     XrPath interaction_profile_path =
         path_helper_->GetInteractionProfileXrPath(interaction_profile.type);
-    RETURN_IF_XR_FAILED(SuggestActionBinding(bindings, interaction_profile_path,
-                                             grip_pose_action_,
-                                             binding_prefix + "/input/grip"));
-    RETURN_IF_XR_FAILED(SuggestActionBinding(bindings, interaction_profile_path,
-                                             pointer_pose_action_,
-                                             binding_prefix + "/input/aim"));
+    RETURN_IF_XR_FAILED(SuggestActionBinding(
+        bindings, interaction_profile_path, grip_pose_action_,
+        binding_prefix + "/input/grip/pose"));
+    RETURN_IF_XR_FAILED(SuggestActionBinding(
+        bindings, interaction_profile_path, pointer_pose_action_,
+        binding_prefix + "/input/aim/pose"));
 
     const OpenXrButtonPathMap* button_maps;
     size_t button_map_size;

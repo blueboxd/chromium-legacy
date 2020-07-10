@@ -128,6 +128,13 @@ class PermissionsClient {
                                 PermissionRequestType request_type,
                                 PermissionAction action);
 
+  // Returns true if user has 3 consecutive notifications permission denies,
+  // returns false otherwise.
+  // Returns base::nullopt if the user is not in the adoptive activation quiet
+  // ui dry run experiment group.
+  virtual base::Optional<bool> HadThreeConsecutiveNotificationPermissionDenies(
+      content::BrowserContext* browser_context);
+
   // If the embedder returns an origin here, any requests matching that origin
   // will be approved. Requests that do not match the returned origin will
   // immediately be finished without granting/denying the permission.

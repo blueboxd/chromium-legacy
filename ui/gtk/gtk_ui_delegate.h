@@ -50,6 +50,7 @@ class COMPONENT_EXPORT(GTK) GtkUiDelegate {
   // function abstracts away such functionality.
   virtual bool SetGdkWindowTransientFor(GdkWindow* window,
                                         gfx::AcceleratedWidget parent) = 0;
+  virtual void ClearTransientFor(gfx::AcceleratedWidget parent) = 0;
 
   // Presents |window|, doing all the necessary platform-specific operations
   // needed, if any.

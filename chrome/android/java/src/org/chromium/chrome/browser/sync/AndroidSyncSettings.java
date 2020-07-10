@@ -11,6 +11,7 @@ import android.content.SyncStatusObserver;
 import android.os.Bundle;
 import android.os.StrictMode;
 
+import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -24,27 +25,14 @@ import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.SyncContentResolverDelegate;
 import org.chromium.components.sync.SystemSyncContentResolverDelegate;
 
-import javax.annotation.concurrent.ThreadSafe;
-
 /**
  * A helper class to handle the current status of sync for Chrome in Android settings.
- *
  * It also provides an observer to be used whenever Android sync settings change.
  *
- * This class is a collection of static methods so that no references to its object can be
- * stored. This is important because tests need to be able to overwrite the object with a
- * mock content resolver and know that no references to the old one are cached.
- *
- * This class must be initialized via updateAccount() on startup if the user is signed in.
+ * {@link #updateAccount(Account)} should be invoked whenever sync account is changed.
  */
-@ThreadSafe
 public class AndroidSyncSettings {
     public static final String TAG = "AndroidSyncSettings";
-
-    /**
-     * Lock for ensuring singleton instantiation across threads.
-     */
-    private static final Object CLASS_LOCK = new Object();
 
     @SuppressLint("StaticFieldLeak")
     private static AndroidSyncSettings sInstance;
@@ -75,29 +63,31 @@ public class AndroidSyncSettings {
     /**
       Singleton instance getter. Will initialize the singleton if it hasn't been initialized before.
      */
+    @MainThread
     public static AndroidSyncSettings get() {
-        synchronized (CLASS_LOCK) {
-            if (sInstance == null) {
-                SyncContentResolverDelegate contentResolver =
-                        new SystemSyncContentResolverDelegate();
-                sInstance = new AndroidSyncSettings(contentResolver);
-            }
-            return sInstance;
+        ThreadUtils.assertOnUiThread();
+        if (sInstance == null) {
+            SyncContentResolverDelegate contentResolver = new SystemSyncContentResolverDelegate();
+            sInstance = new AndroidSyncSettings(contentResolver);
         }
+        return sInstance;
     }
 
+    /**
+     * Overrides AndroidSyncSettings instance for tests.
+     */
+    @MainThread
     @VisibleForTesting
-    public static void overrideForTests(
-            SyncContentResolverDelegate contentResolver, @Nullable Callback<Boolean> callback) {
-        synchronized (CLASS_LOCK) {
-            sInstance = new AndroidSyncSettings(contentResolver, callback);
-        }
+    public static void overrideForTests(AndroidSyncSettings instance) {
+        ThreadUtils.assertOnUiThread();
+        sInstance = instance;
     }
 
     /**
      * @param syncContentResolverDelegate an implementation of {@link SyncContentResolverDelegate}.
      */
-    private AndroidSyncSettings(SyncContentResolverDelegate syncContentResolverDelegate) {
+    @VisibleForTesting
+    public AndroidSyncSettings(SyncContentResolverDelegate syncContentResolverDelegate) {
         this(syncContentResolverDelegate, null);
     }
 
@@ -106,7 +96,8 @@ public class AndroidSyncSettings {
      * @param callback Callback that will be called after updating account is finished. Boolean
      *                 passed to the callback indicates whether syncability was changed.
      */
-    private AndroidSyncSettings(SyncContentResolverDelegate syncContentResolverDelegate,
+    @VisibleForTesting
+    public AndroidSyncSettings(SyncContentResolverDelegate syncContentResolverDelegate,
             @Nullable Callback<Boolean> callback) {
         mContractAuthority = ContextUtils.getApplicationContext().getPackageName();
         mSyncContentResolverDelegate = syncContentResolverDelegate;

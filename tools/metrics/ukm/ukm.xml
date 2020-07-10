@@ -9481,6 +9481,14 @@ be describing additional metrics about the same event.
       permission prompt, if any.
     </summary>
   </metric>
+  <metric name="SatisfiedAdaptiveTriggers">
+    <summary>
+      A bitmask consisting of flags defined in enum type AdaptiveTriggers. A bit
+      is set if the corresponding adaptive triggering condition has been
+      satisfied at least once in the past for the user. This metric is not
+      recorded for users who don't have the activation dry run enabled.
+    </summary>
+  </metric>
   <metric name="Source">
     <summary>
       An enum of type PermissionSourceUI. The UI surface for this action.

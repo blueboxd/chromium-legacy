@@ -4,7 +4,7 @@
 
 package org.chromium.components.external_intents;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 
 import androidx.annotation.IntDef;
@@ -25,10 +25,15 @@ import java.lang.annotation.RetentionPolicy;
  */
 public interface ExternalNavigationDelegate {
     /**
-     * Returns the Activity with which this delegate is associated, or null if there
-     * is no such Activity at the time of invocation.
+     * Returns the Context with which this delegate is associated, or null if there is no such
+     * Context at the time of invocation. The returned Context may or may not be a wrapper around an
+     * Activity with which the delegate is associated. Note that when obtaining resources, however,
+     * the handler should do so directly via the returned Context (i.e., not via the Activity that
+     * it is wrapping, even if it is in fact wrapping one). The reason is that some embedders handle
+     * resource fetching via special logic in the ContextWrapper object that is wrapping the
+     * Activity.
      */
-    Activity getActivityContext();
+    Context getContext();
 
     /**
      * Determine if this app is the default or only handler for a given intent. If true, this app

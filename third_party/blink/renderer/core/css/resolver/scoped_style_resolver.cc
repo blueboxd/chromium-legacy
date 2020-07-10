@@ -79,8 +79,8 @@ void ScopedStyleResolver::AddFontFaceRules(const RuleSet& rule_set) {
     if (FontFace* font_face = FontFace::Create(&document, font_face_rule))
       css_font_selector->GetFontFaceCache()->Add(font_face_rule, font_face);
   }
-  if (font_face_rules.size() && document.GetStyleResolver())
-    document.GetStyleResolver()->InvalidateMatchedPropertiesCache();
+  if (font_face_rules.size())
+    document.GetStyleResolver().InvalidateMatchedPropertiesCache();
 }
 
 void ScopedStyleResolver::AppendActiveStyleSheets(

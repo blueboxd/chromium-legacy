@@ -754,7 +754,7 @@ void RequestManager::SubmitCaptureResult(
   DVLOG(2) << "Submit capture result of frame " << frame_number
            << " for stream " << static_cast<int>(stream_type);
   for (auto* observer : result_metadata_observers_) {
-    observer->OnResultMetadataAvailable(pending_result.metadata);
+    observer->OnResultMetadataAvailable(frame_number, pending_result.metadata);
   }
 
   if (camera_app_device_) {

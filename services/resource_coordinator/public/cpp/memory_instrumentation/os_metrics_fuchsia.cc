@@ -4,6 +4,15 @@
 
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/os_metrics.h"
 
+#include "base/process/process.h"
+#include "base/process/process_handle.h"
+
+#include <lib/zx/job.h>
+#include <lib/zx/object.h>
+#include <lib/zx/process.h>
+#include <zircon/limits.h>
+#include <zircon/status.h>
+#include <zircon/syscalls.h>
 #include <vector>
 
 namespace memory_instrumentation {
@@ -11,9 +20,23 @@ namespace memory_instrumentation {
 // static
 bool OSMetrics::FillOSMemoryDump(base::ProcessId pid,
                                  mojom::RawOSMemDump* dump) {
-  // TODO(fuchsia): Implement this. See crbug.com/750948
-  NOTIMPLEMENTED();
-  return false;
+  base::Process process = pid == base::kNullProcessId
+                              ? base::Process::Current()
+                              : base::Process::Open(pid);
+  zx::unowned<zx::process> zx_process(process.Handle());
+  zx_info_task_stats_t info;
+  zx_status_t status = zx_process->get_info(ZX_INFO_TASK_STATS, &info,
+                                            sizeof(info), nullptr, nullptr);
+  if (status != ZX_OK) {
+    return false;
+  }
+
+  size_t rss_bytes = info.mem_private_bytes + info.mem_shared_bytes;
+  size_t rss_anon_bytes = info.mem_private_bytes;
+
+  dump->resident_set_kb = rss_bytes / 1024;
+  dump->platform_private_footprint->rss_anon_bytes = rss_anon_bytes;
+  return true;
 }
 
 // static

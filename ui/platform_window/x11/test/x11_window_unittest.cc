@@ -100,7 +100,8 @@ class ShapedX11ExtensionDelegate : public X11ExtensionDelegate {
     window_mask->close();
   }
 #if BUILDFLAG(USE_ATK)
-  bool OnAtkKeyEvent(AtkKeyEventStruct* atk_key_event) override {
+  bool OnAtkKeyEvent(AtkKeyEventStruct* atk_key_event,
+                     bool transient) override {
     return false;
   }
 #endif

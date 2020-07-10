@@ -88,7 +88,7 @@ public class TopSnackbarManager implements OnClickListener, ApplicationStatus.Ac
 
         if (activity instanceof ChromeActivity) {
             ChromeActivity chromeActivity = (ChromeActivity) activity;
-            chromeActivity.getFullscreenManager().addObserver(this);
+            chromeActivity.getBrowserControlsManager().addObserver(this);
         }
 
         ApplicationStatus.registerStateListenerForActivity(this, activity);
@@ -114,7 +114,7 @@ public class TopSnackbarManager implements OnClickListener, ApplicationStatus.Ac
 
         if (mActivity instanceof ChromeActivity) {
             ChromeActivity chromeActivity = (ChromeActivity) mActivity;
-            chromeActivity.getFullscreenManager().removeObserver(this);
+            chromeActivity.getBrowserControlsManager().removeObserver(this);
         }
 
         mDismissSnackbarHandler.removeCallbacks(mDismissSnackbarRunnable);

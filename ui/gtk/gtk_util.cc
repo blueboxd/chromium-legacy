@@ -156,8 +156,10 @@ aura::Window* GetAuraTransientParent(GtkWidget* dialog) {
       g_object_get_data(G_OBJECT(dialog), kAuraTransientParent));
 }
 
-void ClearAuraTransientParent(GtkWidget* dialog) {
+void ClearAuraTransientParent(GtkWidget* dialog, aura::Window* parent) {
   g_object_set_data(G_OBJECT(dialog), kAuraTransientParent, nullptr);
+  GtkUi::GetDelegate()->ClearTransientFor(
+      parent->GetHost()->GetAcceleratedWidget());
 }
 
 void ParseButtonLayout(const std::string& button_string,

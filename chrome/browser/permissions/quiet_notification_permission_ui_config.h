@@ -7,7 +7,11 @@
 
 #include "build/build_config.h"
 
-// Field trial configuration for the quiet notificaiton permission request UI.
+namespace base {
+class TimeDelta;
+}
+
+// Field trial configuration for the quiet notification permission request UI.
 class QuietNotificationPermissionUiConfig {
  public:
   enum class InfobarLinkTextVariation { kDetails = 0, kManage = 1 };
@@ -16,6 +20,14 @@ class QuietNotificationPermissionUiConfig {
   // notification permission prompt UI should be enabled adaptively after three
   // consecutive prompt denies.
   static const char kEnableAdaptiveActivation[];
+
+  // Name of the boolean variation parameter that determines if the adaptive
+  // activation quiet UI dry run study is enabled.
+  static const char kEnableAdaptiveActivationDryRun[];
+
+  // Name of the integer variation parameter that determines history windows
+  // size in days in which 3 consecutive denies should be monitored.
+  static const char kAdaptiveActivationActionWindowSizeInDays[];
 
   // Name of the boolean variation parameter that determines if the quiet
   // notification permission prompt UI should be enabled as a one-off based on
@@ -60,6 +72,16 @@ class QuietNotificationPermissionUiConfig {
   // that quiet notifications permission prompts will be turned on after three
   // consecutive prompt denies.
   static bool IsAdaptiveActivationEnabled();
+
+  // Whether or not adaptive activation dry run is enabled. Adaptive activation
+  // dry run means that UKM `Permission` events will be annotated with the
+  // `SatisfiedAdaptiveTriggers` metric indicating whether the user had three
+  // consecutive prompt denies.
+  static bool IsAdaptiveActivationDryRunEnabled();
+
+  // How long the window extends into the past, in which the user needs to make
+  // 3 consecutive permission denies.
+  static base::TimeDelta GetAdaptiveActivationWindowSize();
 
   // Whether or not triggering via crowd deny is enabled. This means that on
   // sites with a low notification permission grant rate, the quiet UI will be

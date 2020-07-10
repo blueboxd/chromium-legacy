@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -22,9 +23,7 @@ struct SameSizeAsNGPhysicalLineBoxFragment : NGPhysicalContainerFragment {
   NGLineHeightMetrics metrics;
 };
 
-static_assert(sizeof(NGPhysicalLineBoxFragment) ==
-                  sizeof(SameSizeAsNGPhysicalLineBoxFragment),
-              "NGPhysicalLineBoxFragment should stay small");
+ASSERT_SIZE(NGPhysicalLineBoxFragment, SameSizeAsNGPhysicalLineBoxFragment);
 
 }  // namespace
 

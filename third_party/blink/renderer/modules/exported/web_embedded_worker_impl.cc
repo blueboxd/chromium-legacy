@@ -266,6 +266,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread(
     case mojom::ScriptType::kClassic:
       worker_thread_->FetchAndRunClassicScript(
           worker_start_data->script_url,
+          nullptr /* worker_main_script_load_params */,
           std::move(fetch_client_setting_object_data),
           nullptr /* outside_resource_timing_notifier */,
           v8_inspector::V8StackTraceId());
@@ -277,6 +278,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread(
     case mojom::ScriptType::kModule:
       worker_thread_->FetchAndRunModuleScript(
           worker_start_data->script_url,
+          nullptr /* worker_main_script_load_params */,
           std::move(fetch_client_setting_object_data),
           nullptr /* outside_resource_timing_notifier */,
           network::mojom::CredentialsMode::kOmit);

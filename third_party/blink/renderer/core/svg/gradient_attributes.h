@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/svg/svg_gradient_element.h"
 #include "third_party/blink/renderer/core/svg/svg_unit_types.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -92,9 +93,7 @@ struct SameSizeAsGradientAttributes {
   unsigned c : 8;
 };
 
-static_assert(sizeof(GradientAttributes) ==
-                  sizeof(SameSizeAsGradientAttributes),
-              "GradientAttributes should stay small");
+ASSERT_SIZE(GradientAttributes, SameSizeAsGradientAttributes);
 
 }  // namespace blink
 

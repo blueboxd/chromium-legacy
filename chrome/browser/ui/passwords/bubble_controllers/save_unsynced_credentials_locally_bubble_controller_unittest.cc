@@ -43,13 +43,16 @@ TEST_F(SaveUnsyncedCredentialsLocallyBubbleControllerTest,
 }
 
 TEST_F(SaveUnsyncedCredentialsLocallyBubbleControllerTest,
-       ShouldSaveCredentialsInProfileStoreOnSaveButtonClicked) {
+       ShouldSaveSelectedCredentialsInProfileStoreOnSaveButtonClicked) {
   EXPECT_CALL(model_delegate_mock_, GetUnsyncedCredentials())
       .WillOnce(ReturnRef(unsynced_credentials_));
   SaveUnsyncedCredentialsLocallyBubbleController controller(
       model_delegate_mock_.AsWeakPtr());
-  EXPECT_CALL(model_delegate_mock_, SaveUnsyncedCredentialsInProfileStore);
-  controller.OnSaveClicked();
+  EXPECT_CALL(
+      model_delegate_mock_,
+      SaveUnsyncedCredentialsInProfileStore(
+          std::vector<autofill::PasswordForm>{unsynced_credentials_[1]}));
+  controller.OnSaveClicked({false, true});
 }
 
 TEST_F(SaveUnsyncedCredentialsLocallyBubbleControllerTest,

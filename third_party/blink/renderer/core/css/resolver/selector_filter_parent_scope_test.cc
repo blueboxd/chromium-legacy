@@ -29,8 +29,7 @@ class SelectorFilterParentScopeTest : public testing::Test {
 TEST_F(SelectorFilterParentScopeTest, ParentScope) {
   GetDocument().body()->setAttribute(html_names::kClassAttr, "match");
   GetDocument().documentElement()->SetIdAttribute("myId");
-  SelectorFilter& filter =
-      GetDocument().EnsureStyleResolver().GetSelectorFilter();
+  SelectorFilter& filter = GetDocument().GetStyleResolver().GetSelectorFilter();
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
 
   SelectorFilterRootScope root_scope(nullptr);
@@ -61,8 +60,7 @@ TEST_F(SelectorFilterParentScopeTest, RootScope) {
       <span id=y></span>
     </div>
   )HTML");
-  SelectorFilter& filter =
-      GetDocument().EnsureStyleResolver().GetSelectorFilter();
+  SelectorFilter& filter = GetDocument().GetStyleResolver().GetSelectorFilter();
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
 
   SelectorFilterRootScope span_scope(GetDocument().getElementById("y"));

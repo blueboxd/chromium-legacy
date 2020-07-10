@@ -47,7 +47,8 @@ public class HistoryNavigationLayout
             if (mJavaGlowEffect == null) mJavaGlowEffect = new AndroidUiNavigationGlow(this);
             return mJavaGlowEffect;
         } else {
-            if (mCompositorGlowEffect == null) {
+            // TODO(crbug.com/1102275): Investigate when this is called with nulled mWebContents.
+            if (mCompositorGlowEffect == null && mWebContents != null) {
                 mCompositorGlowEffect = new CompositorNavigationGlow(this, mWebContents);
             }
             return mCompositorGlowEffect;

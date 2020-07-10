@@ -12,6 +12,7 @@
 #include <pk11pub.h>
 #include <pkcs11t.h>
 #include <secder.h>
+#include <secerr.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -584,11 +585,11 @@ class GetAttributeForKeyState : public NSSOperationState {
 
   void OnError(const base::Location& from,
                const std::string& error_message) override {
-    CallBack(from, std::string() /* no attribute value */, error_message);
+    CallBack(from, /*attribute_value=*/base::nullopt, error_message);
   }
 
   void CallBack(const base::Location& from,
-                const std::string& attribute_value,
+                const base::Optional<std::string>& attribute_value,
                 const std::string& error_message) {
     auto bound_callback =
         base::BindOnce(std::move(callback_), attribute_value, error_message);
@@ -1386,6 +1387,18 @@ void GetAttributeForKeyWithDb(std::unique_ptr<GetAttributeForKeyState> state,
   if (PK11_ReadRawAttribute(
           /*objType=*/PK11_TypePrivKey, private_key.get(),
           state->attribute_type_, attribute_value.get()) != SECSuccess) {
+    // CKR_ATTRIBUTE_TYPE_INVALID is a cryptoki function return value which is
+    // returned by Chaps if the attribute was not set before for the key. NSS
+    // maps this error to SEC_ERROR_BAD_DATA. This error is captured here so as
+    // not to return an |error_message| in cases of retrieving unset key
+    // attributes and to return nullopt |attribute_value| instead.
+    int error = PORT_GetError();
+    if (error == SEC_ERROR_BAD_DATA) {
+      state->CallBack(FROM_HERE, /*attribute_value=*/base::nullopt,
+                      /*error_message=*/std::string());
+      return;
+    }
+
     state->OnError(FROM_HERE, kErrorInternal);
     return;
   }
@@ -1396,7 +1409,8 @@ void GetAttributeForKeyWithDb(std::unique_ptr<GetAttributeForKeyState> state,
                                attribute_value->data + attribute_value->len);
   }
 
-  state->CallBack(FROM_HERE, attribute_value_str, std::string() /* no error */);
+  state->CallBack(FROM_HERE, attribute_value_str,
+                  /*error_message=*/std::string());
 }
 
 }  // namespace

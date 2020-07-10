@@ -9,6 +9,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
+#include "third_party/blink/public/common/loader/worker_main_script_load_parameters.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_dedicated_worker.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
@@ -88,7 +89,8 @@ class CORE_EXPORT DedicatedWorker final
   void OnWorkerHostCreated(
       CrossVariantMojoRemote<mojom::blink::BrowserInterfaceBrokerInterfaceBase>
           browser_interface_broker) override;
-  void OnScriptLoadStarted() override;
+  void OnScriptLoadStarted(std::unique_ptr<WorkerMainScriptLoadParameters>
+                               worker_main_script_load_params) override;
   void OnScriptLoadStartFailed() override;
 
   void DispatchErrorEventForScriptFetchFailure();
@@ -103,6 +105,8 @@ class CORE_EXPORT DedicatedWorker final
   void Start();
   void ContinueStart(
       const KURL& script_url,
+      std::unique_ptr<WorkerMainScriptLoadParameters>
+          worker_main_script_load_params,
       network::mojom::ReferrerPolicy,
       base::Optional<network::mojom::IPAddressSpace> response_address_space,
       const String& source_code,

@@ -527,6 +527,11 @@ int WorkerOrWorkletGlobalScope::GetOutstandingThrottledLimit() const {
   return 2;
 }
 
+CrossVariantMojoRemote<mojom::ResourceLoadInfoNotifierInterfaceBase>
+WorkerOrWorkletGlobalScope::CloneResourceLoadInfoNotifier() {
+  return web_worker_fetch_context_->CloneResourceLoadInfoNotifier();
+}
+
 void WorkerOrWorkletGlobalScope::Trace(Visitor* visitor) const {
   visitor->Trace(inside_settings_resource_fetcher_);
   visitor->Trace(resource_fetchers_);

@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.RectF;
 import android.os.Handler;
 
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
@@ -16,7 +17,6 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.StaticTabSceneLayer;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelImpl;
@@ -239,9 +239,9 @@ public class StaticLayout extends Layout {
     @Override
     protected void updateSceneLayer(RectF viewport, RectF contentViewport,
             LayerTitleCache layerTitleCache, TabContentManager tabContentManager,
-            ResourceManager resourceManager, ChromeFullscreenManager fullscreenManager) {
+            ResourceManager resourceManager, BrowserControlsStateProvider browserControls) {
         super.updateSceneLayer(viewport, contentViewport, layerTitleCache, tabContentManager,
-                resourceManager, fullscreenManager);
+                resourceManager, browserControls);
         assert mSceneLayer != null;
 
         final LayoutTab[] tabs = getLayoutTabsToRender();
@@ -251,8 +251,7 @@ public class StaticLayout extends Layout {
         LayoutTab layoutTab = tabs[0];
         final float dpToPx = getContext().getResources().getDisplayMetrics().density;
 
-        mSceneLayer.update(
-                dpToPx, layerTitleCache, tabContentManager, fullscreenManager, layoutTab);
+        mSceneLayer.update(dpToPx, layerTitleCache, tabContentManager, browserControls, layoutTab);
 
         // TODO(dtrainor): Find the best way to properly track this metric for cold starts.
         // We should probably erase the thumbnail when we select a tab that we need to restore.

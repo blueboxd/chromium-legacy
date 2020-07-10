@@ -12,27 +12,27 @@
 
 namespace extensions {
 
-class Blacklist;
+class Blocklist;
 class Extension;
 
-// Asynchronously checks whether the extension is blacklisted.
-class BlacklistCheck : public PreloadCheck {
+// Asynchronously checks whether the extension is blocklisted.
+class BlocklistCheck : public PreloadCheck {
  public:
-  BlacklistCheck(Blacklist* blacklist,
+  BlocklistCheck(Blocklist* blocklist,
                  scoped_refptr<const Extension> extension);
-  ~BlacklistCheck() override;
+  ~BlocklistCheck() override;
 
   // PreloadCheck:
   void Start(ResultCallback callback) override;
 
  private:
-  void OnBlacklistedStateRetrieved(BlocklistState blacklist_state);
+  void OnBlocklistedStateRetrieved(BlocklistState blocklist_state);
 
-  Blacklist* blacklist_;
+  Blocklist* blocklist_;
   ResultCallback callback_;
-  base::WeakPtrFactory<BlacklistCheck> weak_ptr_factory_{this};
+  base::WeakPtrFactory<BlocklistCheck> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(BlacklistCheck);
+  DISALLOW_COPY_AND_ASSIGN(BlocklistCheck);
 };
 
 }  // namespace extensions

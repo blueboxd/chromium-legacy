@@ -1395,19 +1395,6 @@ public class ExternalNavigationHandler {
     }
 
     /**
-     * Get a {@link Context} linked to this instance with preference to the delegate's {@link
-     * Activity}. At times the delegate might not have an associated Activity, in which case the
-     * ApplicationContext is returned.
-     * @return The activity {@link Context} if it can be reached.
-     *         Application {@link Context} if not.
-     */
-    public static Context getAvailableContext(ExternalNavigationDelegate delegate) {
-        Activity activityContext = delegate.getActivityContext();
-        if (activityContext == null) return ContextUtils.getApplicationContext();
-        return activityContext;
-    }
-
-    /**
      * Retrieve the best activity for the given intent. If a default activity is provided,
      * choose the default one. Otherwise, return the Intent picker if there are more than one
      * capable activities. If the intent is pdf type, return the platform pdf viewer if
@@ -1467,8 +1454,13 @@ public class ExternalNavigationHandler {
             if (proxy) {
                 delegate.dispatchAuthenticatedIntent(intent);
             } else {
-                Context context = getAvailableContext(delegate);
-                if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                // Start the activity via the current activity if possible, and otherwise as a new
+                // task from the application context.
+                Context context = ContextUtils.activityFromContext(delegate.getContext());
+                if (context == null) {
+                    context = ContextUtils.getApplicationContext();
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                }
                 context.startActivity(intent);
             }
             recordExternalNavigationDispatched(intent);
@@ -1519,9 +1511,9 @@ public class ExternalNavigationHandler {
                 mDelegate.dispatchAuthenticatedIntent(intent);
                 activityWasLaunched = true;
             } else {
-                Context context = getAvailableContext(mDelegate);
-                if (context instanceof Activity) {
-                    activityWasLaunched = ((Activity) context).startActivityIfNeeded(intent, -1);
+                Activity activity = ContextUtils.activityFromContext(mDelegate.getContext());
+                if (activity != null) {
+                    activityWasLaunched = activity.startActivityIfNeeded(intent, -1);
                 } else {
                     activityWasLaunched = false;
                 }

@@ -62,6 +62,7 @@
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 #include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
@@ -160,14 +161,16 @@ class KeyWithCopyingMoveConstructor final {
 };
 
 struct SameSizeAsPersistent {
-  void* pointer_[4];
+  void* pointers[2];
+#if DCHECK_IS_ON()
+  void* pointers_dcheck_[2];
+#endif
 #if BUILDFLAG(RAW_HEAP_SNAPSHOTS)
   PersistentLocation location;
 #endif  // BUILDFLAG(RAW_HEAP_SNAPSHOTS)
 };
 
-static_assert(sizeof(Persistent<IntWrapper>) <= sizeof(SameSizeAsPersistent),
-              "Persistent handle should stay small");
+ASSERT_SIZE(Persistent<IntWrapper>, SameSizeAsPersistent);
 
 class ThreadMarker {
   DISALLOW_NEW();

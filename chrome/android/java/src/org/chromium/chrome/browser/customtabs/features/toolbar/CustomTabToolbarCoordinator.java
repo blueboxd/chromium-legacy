@@ -22,6 +22,7 @@ import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsVisibilityManager;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.customtabs.CloseButtonVisibilityManager;
@@ -32,7 +33,6 @@ import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigatio
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -45,7 +45,7 @@ import dagger.Lazy;
 
 /**
  * Works with the toolbar in a Custom Tab. Encapsulates interactions with Chrome's toolbar-related
- * classes such as {@link ToolbarManager} and {@link ChromeFullscreenManager}.
+ * classes such as {@link ToolbarManager} and {@link BrowserControlsVisibilityManager}.
  *
  * TODO(pshmakov):
  * 1. Reduce the coupling between Custom Tab toolbar and Chrome's common code. In particular,
@@ -64,7 +64,7 @@ public class CustomTabToolbarCoordinator {
     private final ChromeActivity<?> mActivity;
     private final Context mAppContext;
     private final CustomTabActivityTabController mTabController;
-    private final Lazy<ChromeFullscreenManager> mFullscreenManager;
+    private final Lazy<BrowserControlsVisibilityManager> mBrowserControlsVisibilityManager;
     private final CustomTabActivityNavigationController mNavigationController;
     private final CloseButtonVisibilityManager mCloseButtonVisibilityManager;
     private final CustomTabBrowserControlsVisibilityDelegate mVisibilityDelegate;
@@ -84,7 +84,7 @@ public class CustomTabToolbarCoordinator {
             CustomTabActivityTabProvider tabProvider, CustomTabsConnection connection,
             ChromeActivity<?> activity, @Named(APP_CONTEXT) Context appContext,
             CustomTabActivityTabController tabController,
-            Lazy<ChromeFullscreenManager> fullscreenManager,
+            Lazy<BrowserControlsVisibilityManager> controlsVisiblityManager,
             CustomTabActivityNavigationController navigationController,
             CloseButtonVisibilityManager closeButtonVisibilityManager,
             CustomTabBrowserControlsVisibilityDelegate visibilityDelegate,
@@ -96,7 +96,7 @@ public class CustomTabToolbarCoordinator {
         mActivity = activity;
         mAppContext = appContext;
         mTabController = tabController;
-        mFullscreenManager = fullscreenManager;
+        mBrowserControlsVisibilityManager = controlsVisiblityManager;
         mNavigationController = navigationController;
         mCloseButtonVisibilityManager = closeButtonVisibilityManager;
         mVisibilityDelegate = visibilityDelegate;
@@ -190,10 +190,12 @@ public class CustomTabToolbarCoordinator {
     public void setBrowserControlsState(@BrowserControlsState int controlsState) {
         mVisibilityDelegate.setControlsState(controlsState);
         if (controlsState == BrowserControlsState.HIDDEN) {
-            mControlsHidingToken = mFullscreenManager.get()
-                    .hideAndroidControlsAndClearOldToken(mControlsHidingToken);
+            mControlsHidingToken =
+                    mBrowserControlsVisibilityManager.get().hideAndroidControlsAndClearOldToken(
+                            mControlsHidingToken);
         } else {
-            mFullscreenManager.get().releaseAndroidControlsHidingToken(mControlsHidingToken);
+            mBrowserControlsVisibilityManager.get().releaseAndroidControlsHidingToken(
+                    mControlsHidingToken);
         }
     }
 
@@ -201,7 +203,9 @@ public class CustomTabToolbarCoordinator {
      * Shows toolbar temporarily, for a few seconds.
      */
     public void showToolbarTemporarily() {
-        mFullscreenManager.get().getBrowserVisibilityDelegate().showControlsTransient();
+        mBrowserControlsVisibilityManager.get()
+                .getBrowserVisibilityDelegate()
+                .showControlsTransient();
     }
 
     /**

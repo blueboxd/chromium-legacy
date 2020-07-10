@@ -5,8 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_STREAM_TEXTURE_SHARED_IMAGE_INTERFACE_H_
 #define GPU_COMMAND_BUFFER_SERVICE_STREAM_TEXTURE_SHARED_IMAGE_INTERFACE_H_
 
-#include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/gpu_gles2_export.h"
+#include "ui/gl/gl_image.h"
 
 namespace gpu {
 class TextureOwner;
@@ -14,8 +14,7 @@ class TextureBase;
 
 // This class is a specialized GLImage that lets SharedImageVideo draw video
 // frames.
-class GPU_GLES2_EXPORT StreamTextureSharedImageInterface
-    : public gles2::GLStreamTextureImage {
+class GPU_GLES2_EXPORT StreamTextureSharedImageInterface : public gl::GLImage {
  public:
   enum class BindingsMode {
     // Ensures that the TextureOwner's texture is bound to the latest image, if

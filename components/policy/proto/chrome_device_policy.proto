@@ -1290,6 +1290,34 @@ message DeviceNativePrintersWhitelistProto {
   repeated string whitelist = 1;
 }
 
+// A collection of ids for the list of print servers which are accessible.
+// The policy which determines the type of access restriction that is applied to
+// the devicel-level printers list.
+message DevicePrintersAccessModeProto {
+  enum AccessMode {
+    ACCESS_MODE_BLOCKLIST = 0;  // Use DevicePrintersBlocklistProto.
+    ACCESS_MODE_ALLOWLIST = 1;  // Use DevicePrintersAllowlistProto.
+    ACCESS_MODE_ALL = 2;        // Allow access to all specified printers.
+  }
+
+  // The type of access which is applied to the device-level printer list.
+  optional AccessMode access_mode = 1;
+}
+
+// A collection of ids defining the printers which are explicitly disallowed for
+// the device.
+message DevicePrintersBlocklistProto {
+  // A collection of ids for which are explicitly disallowed.
+  repeated string blocklist = 1;
+}
+
+// A collection of ids defining the printers which are explicitly allowed for
+// the device.
+message DevicePrintersAllowlistProto {
+  // A collection of ids for the list of printers which are accessible.
+  repeated string allowlist = 1;
+}
+
 // The url and hash specified in JSON format that can be used to retrieve
 // the device-level external print servers configuration file.
 message DeviceExternalPrintServersProto {
@@ -1767,4 +1795,7 @@ message ChromeDeviceSettingsProto {
   optional DeviceExternalPrintServersProto external_print_servers = 105;
   optional DeviceExternalPrintServersAllowlistProto
       external_print_servers_allowlist = 106;
+  optional DevicePrintersAccessModeProto device_printers_access_mode = 107;
+  optional DevicePrintersBlocklistProto device_printers_blocklist = 108;
+  optional DevicePrintersAllowlistProto device_printers_allowlist = 109;
 }

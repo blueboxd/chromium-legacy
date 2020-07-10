@@ -486,10 +486,6 @@ ScopedJavaLocalRef<jobject> WebContentsState::RestoreContentsFromByteBuffer(
   void* data = env->GetDirectBufferAddress(state);
   int size = env->GetDirectBufferCapacity(state);
 
-  // If the ByteBuffer is invalid for some reason, early out.
-  if (!data || size <= 0)
-    return ScopedJavaLocalRef<jobject>();
-
   WebContents* web_contents = ::RestoreContentsFromByteBuffer(
       browser_context, otr_browser_context, data, size, saved_state_version,
       initially_hidden);
@@ -569,11 +565,6 @@ JNI_WebContentsStateBridge_DeleteNavigationEntries(
     jlong predicate_ptr) {
   void* data = env->GetDirectBufferAddress(state);
   int size = env->GetDirectBufferCapacity(state);
-
-  // If the ByteBuffer is invalid for some reason, early out.
-  if (!data || size <= 0)
-    return ScopedJavaLocalRef<jobject>();
-
   const auto* predicate =
       reinterpret_cast<WebContentsState::DeletionPredicate*>(predicate_ptr);
 
@@ -605,10 +596,6 @@ JNI_WebContentsStateBridge_GetDisplayTitleFromByteBuffer(
   void* data = env->GetDirectBufferAddress(state);
   int size = env->GetDirectBufferCapacity(state);
 
-  // If the ByteBuffer is invalid for some reason, early out.
-  if (!data || size <= 0)
-    return ScopedJavaLocalRef<jstring>();
-
   ScopedJavaLocalRef<jstring> result =
       WebContentsState::GetDisplayTitleFromByteBuffer(env, data, size,
                                                       saved_state_version);
@@ -622,11 +609,6 @@ JNI_WebContentsStateBridge_GetVirtualUrlFromByteBuffer(
     jint saved_state_version) {
   void* data = env->GetDirectBufferAddress(state);
   int size = env->GetDirectBufferCapacity(state);
-
-  // If the ByteBuffer is invalid for some reason, early out.
-  if (!data || size <= 0)
-    return ScopedJavaLocalRef<jstring>();
-
   ScopedJavaLocalRef<jstring> result =
       WebContentsState::GetVirtualUrlFromByteBuffer(env, data, size,
                                                     saved_state_version);

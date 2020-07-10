@@ -74,20 +74,15 @@ class CONTENT_EXPORT MediaSessionControllersManager {
  private:
   using ControllersMap =
       std::map<MediaPlayerId, std::unique_ptr<MediaSessionController>>;
-  using PositionMap = std::map<MediaPlayerId, media_session::MediaPosition>;
-  using PipAvailabilityMap = std::map<MediaPlayerId, bool>;
+
+  // Returns the controller for the player identified by |id|, creating a new
+  // one and placing it in |controllers_map_| if necessary.
+  MediaSessionController* FindOrCreateController(const MediaPlayerId& id);
 
   // Weak pointer because |this| is owned by |media_web_contents_observer_|.
   MediaWebContentsObserver* const media_web_contents_observer_;
 
   ControllersMap controllers_map_;
-
-  // Stores the last position for each player. This is because a controller
-  // may be created after we have already received the position state.
-  PositionMap position_map_;
-
-  // Stores picture-in-picture availability for each player.
-  PipAvailabilityMap pip_availability_map_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionControllersManager);
 };

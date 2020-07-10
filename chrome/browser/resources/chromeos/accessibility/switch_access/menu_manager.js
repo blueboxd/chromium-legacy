@@ -32,8 +32,11 @@ class MenuManager {
     this.menuAutomationNode_;
   }
 
-  static initialize() {
-    MenuManager.instance = new MenuManager();
+  static get instance() {
+    if (!MenuManager.instance_) {
+      MenuManager.instance_ = new MenuManager();
+    }
+    return MenuManager.instance_;
   }
 
   // ================= Static Methods ==================
@@ -44,7 +47,7 @@ class MenuManager {
    */
   static enter() {
     const node = NavigationManager.currentNode;
-    if (!MenuManager.instance || node.actions.length <= 1 || !node.location) {
+    if (node.actions.length <= 1 || !node.location) {
       node.doDefaultAction();
       return;
     }
@@ -55,28 +58,27 @@ class MenuManager {
 
   /** Exits the menu. */
   static exit() {
-    if (MenuManager.instance) {
-      if (MenuManager.instance.inTextNavigation_) {
-        // If we're exiting the text navigation menu, we simply return to the
-        // main menu.
-        MenuManager.instance.openMainMenu_();
-        return;
-      }
-
-      MenuManager.instance.isMenuOpen_ = false;
-      MenuManager.instance.actionNode_ = null;
-      MenuManager.instance.displayedActions_ = null;
-      MenuManager.instance.displayedLocation_ = null;
-      NavigationManager.exitIfInGroup(MenuManager.instance.menuAutomationNode_);
-      MenuManager.instance.menuAutomationNode_ = null;
+    if (MenuManager.instance.inTextNavigation_) {
+      // If we're exiting the text navigation menu, we simply return to the
+      // main menu.
+      MenuManager.instance.openMainMenu_();
+      return;
     }
+
+    MenuManager.instance.isMenuOpen_ = false;
+    MenuManager.instance.actionNode_ = null;
+    MenuManager.instance.displayedActions_ = null;
+    MenuManager.instance.displayedLocation_ = null;
+    NavigationManager.exitIfInGroup(MenuManager.instance.menuAutomationNode_);
+    MenuManager.instance.menuAutomationNode_ = null;
+
     chrome.accessibilityPrivate.updateSwitchAccessBubble(
         chrome.accessibilityPrivate.SwitchAccessBubble.MENU, false /* show */);
   }
 
   /** @return {boolean} */
   static isMenuOpen() {
-    return MenuManager.instance && MenuManager.instance.isMenuOpen_;
+    return MenuManager.instance.isMenuOpen_;
   }
 
   /** @param {!SAChildNode} node */

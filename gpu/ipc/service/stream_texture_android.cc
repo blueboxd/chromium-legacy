@@ -366,14 +366,6 @@ bool StreamTexture::ScheduleOverlayPlane(
   return false;
 }
 
-void StreamTexture::NotifyPromotionHint(bool promotion_hint,
-                                        int display_x,
-                                        int display_y,
-                                        int display_width,
-                                        int display_height) {
-  NOTREACHED();
-}
-
 void StreamTexture::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                                  uint64_t process_tracing_id,
                                  const std::string& dump_name) {

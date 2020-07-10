@@ -1018,6 +1018,9 @@
         'DeviceNativePrintersAccessMode',
         'DeviceNativePrintersBlacklist',
         'DeviceNativePrintersWhitelist',
+        'DevicePrintersAccessMode',
+        'DevicePrintersBlocklist',
+        'DevicePrintersAllowlist',
         'PrintPreviewUseSystemDefaultPrinter',
         'UserNativePrintersAllowed',
         'ExternalPrintServers',
@@ -14482,7 +14485,7 @@
 
       The file is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
 
-      If this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will download the file for printer configurations and make printers available in accordance with <ph name="DEVICE_PRINTERS_ACCESS_MODE">DeviceNativePrintersAccessMode</ph>, <ph name="DEVICE_PRINTERS_WHITELIST">DeviceNativePrintersWhitelist</ph>, and <ph name="DEVICE_PRINTERS_BLACKLIST">DeviceNativePrintersBlacklist</ph>.
+      If this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will download the file for printer configurations and make printers available in accordance with <ph name="DEVICE_PRINTERS_ACCESS_MODE">DeviceNativePrintersAccessMode</ph>, <ph name="DEVICE_PRINTERS_ALLOWLIST">DevicePrintersAllowlist</ph>, and <ph name="DEVICE_PRINTERS_BLOCKLIST">DevicePrintersBlocklist</ph>.
 
       This policy has no effect on whether users can configure printers on individual devices.  It is intended to be supplementary to the configuration of printers by individual users.
 
@@ -14523,14 +14526,17 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'deprecated': True,
       'example_value': 1,
       'caption': '''Device printers configuration access policy.''',
       'tags': [],
       'desc': '''Controls which printers from the <ph name="DEVICE_PRINTERS_POLICY">DeviceNativePrinters</ph> are available to users.
 
-      Designates which access policy is used for bulk printer configuration. If <ph name="PRINTERS_ALLOW_ALL">AllowAll</ph> is selected, all printers are shown. If <ph name="PRINTERS_BLACKLIST">BlacklistRestriction</ph> is selected, <ph name="DEVICE_PRINTERS_BLACKLIST">DeviceNativePrintersBlacklist</ph> is used to restrict access to the specified printers.  If <ph name="PRINTERS_WHITELIST">WhitelistPrintersOnly</ph> is selected, <ph name="DEVICE_PRINTERS_WHITELIST">DeviceNativePrintersWhitelist</ph> designates only those printers which are selectable.
+      Designates which access policy is used for bulk printer configuration. If <ph name="PRINTERS_ALLOW_ALL">AllowAll</ph> is selected, all printers are shown. If <ph name="PRINTERS_BLACKLIST">BlacklistRestriction</ph> is selected, <ph name="DEVICE_NATIVE_PRINTERS_BLACKLIST">DeviceNativePrintersBlacklist</ph> is used to restrict access to the specified printers.  If <ph name="PRINTERS_WHITELIST">WhitelistPrintersOnly</ph> is selected, <ph name="DEVICE_NATIVE_PRINTERS_WHITELIST">DevicePrintersWhitelist</ph> designates only those printers which are selectable.
 
       If this policy is not set, <ph name="PRINTERS_ALLOW_ALL">AllowAll</ph> is assumed.
+
+      This policy is deprecated, please use <ph name="DEVICE_PRINTERS_ACCESS_MODE">DevicePrintersAccessMode</ph> instead.
       ''',
     },
     {
@@ -14547,14 +14553,17 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'deprecated': True,
       'example_value':  ["id1", "id2", "id3"],
       'caption': '''Disabled enterprise device printers''',
       'tags': [],
       'desc': '''Specifies the printers which a user cannot use.
 
-      This policy is only used if <ph name="PRINTERS_BLACKLIST">BlacklistRestriction</ph> is chosen for <ph name="DEVICE_PRINTERS_ACCESS_MODE">DeviceNativePrintersAccessMode</ph>.
+      This policy is only used if <ph name="PRINTERS_BLACKLIST">BlacklistRestriction</ph> is chosen for <ph name="DEVICE_NATIVE_PRINTERS_ACCESS_MODE">DeviceNativePrintersAccessMode</ph>.
 
       If this policy is used, all printers are provided to the user except for the ids listed in this policy. The ids must correspond to the "id" or "guid" fields in the file specified in <ph name="DEVICE_PRINTERS_POLICY">DeviceNativePrinters</ph>.
+
+      This policy is deprecated, please use <ph name="DEVICE_PRINTERS_BLOCKLIST">DevicePrintersBlocklist</ph> instead.
       ''',
     },
     {
@@ -14563,6 +14572,100 @@
       'supported_on': ['chrome_os:73-'],
       'device_only': True,
       'id': 389,
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'deprecated': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value':  ["id1", "id2", "id3"],
+      'caption': '''Enabled enterprise device printers''',
+      'tags': [],
+      'desc': '''Specifies the printers which a user can use.
+
+      This policy is only used if <ph name="PRINTERS_WHITELIST">WhitelistPrintersOnly</ph> is chosen for <ph name="DEVICE_NATIVE_PRINTERS_ACCESS_MODE">DeviceNativePrintersAccessMode</ph>
+
+      If this policy is used, only the printers with ids matching the values in this policy are available to the user. The ids must correspond to the "id" or "guid" fields in the file specified in <ph name="DEVICE_PRINTERS_POLICY">DeviceNativePrinters</ph>.
+
+      This policy is deprecated, please use <ph name="DEVICE_PRINTERS_ALLOWLIST">DevicePrintersAllowlist</ph> instead.
+      ''',
+    },
+    {
+      'name': 'DevicePrintersAccessMode',
+      'owners': ['skau@chromium.org', 'nikitapodguzov@chromium.org'],
+      'id': 733,
+      'device_only': True,
+      'supported_on': ['chrome_os:86-'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2 ],
+      },
+      'items': [
+        {
+          'name': 'BlocklistRestriction',
+          'value': 0,
+          'caption': '''All printers are shown except those in the blocklist.''',
+        },
+        {
+          'name': 'AllowlistPrintersOnly',
+          'value': 1,
+          'caption': '''Only printers in the allowlist are shown to users''',
+        },
+        {
+          'name': 'AllowAll',
+          'value': 2,
+          'caption': '''Allow all printers from the configuration file.''',
+        },
+      ],
+      'features' : {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': 1,
+      'caption': '''Device printers configuration access policy.''',
+      'tags': [],
+      'desc': '''Controls which printers from the <ph name="DEVICE_PRINTERS_POLICY">DeviceNativePrinters</ph> are available to users.
+
+      Designates which access policy is used for bulk printer configuration. If <ph name="PRINTERS_ALLOW_ALL">AllowAll</ph> is selected, all printers are shown. If <ph name="PRINTERS_BLOCKLIST">BlocklistRestriction</ph> is selected, <ph name="DEVICE_PRINTERS_BLOCKLIST">DevicePrintersBlocklist</ph> is used to restrict access to the specified printers.  If <ph name="PRINTERS_ALLOWLIST">AllowlistPrintersOnly</ph> is selected, <ph name="DEVICE_PRINTERS_ALLOWLIST">DevicePrintersAllowlist</ph> designates only those printers which are selectable.
+
+      If this policy is not set, <ph name="PRINTERS_ALLOW_ALL">AllowAll</ph> is assumed.
+      ''',
+    },
+    {
+      'name': 'DevicePrintersBlocklist',
+      'owners': ['skau@chromium.org', 'nikitapodguzov@chromium.org', 'bmalcolm@chromium.org'],
+      'supported_on': ['chrome_os:86-'],
+      'device_only': True,
+      'id': 734,
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value':  ["id1", "id2", "id3"],
+      'caption': '''Disabled enterprise device printers''',
+      'tags': [],
+      'desc': '''Specifies the printers which a user cannot use.
+
+      This policy is only used if <ph name="PRINTERS_BLOCKLIST">BlocklistRestriction</ph> is chosen for <ph name="DEVICE_PRINTERS_ACCESS_MODE">DevicePrintersAccessMode</ph>.
+
+      If this policy is used, all printers are provided to the user except for the ids listed in this policy. The ids must correspond to the "id" or "guid" fields in the file specified in <ph name="DEVICE_PRINTERS_POLICY">DeviceNativePrinters</ph>.
+      ''',
+    },
+    {
+      'name': 'DevicePrintersAllowlist',
+      'owners': ['skau@chromium.org', 'nikitapodguzov@chromium.org', 'bmalcolm@chromium.org'],
+      'supported_on': ['chrome_os:86-'],
+      'device_only': True,
+      'id': 735,
       'type': 'list',
       'schema': {
         'type': 'array',
@@ -14577,7 +14680,7 @@
       'tags': [],
       'desc': '''Specifies the printers which a user can use.
 
-      This policy is only used if <ph name="PRINTERS_WHITELIST">WhitelistPrintersOnly</ph> is chosen for <ph name="DEVICE_PRINTERS_ACCESS_MODE">DeviceNativePrintersAccessMode</ph>
+      This policy is only used if <ph name="PRINTERS_ALLOWLIST">AllowlistPrintersOnly</ph> is chosen for <ph name="DEVICE_PRINTERS_ACCESS_MODE">DevicePrintersAccessMode</ph>
 
       If this policy is used, only the printers with ids matching the values in this policy are available to the user. The ids must correspond to the "id" or "guid" fields in the file specified in <ph name="DEVICE_PRINTERS_POLICY">DeviceNativePrinters</ph>.
       ''',
@@ -22106,6 +22209,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceSecondFactorAuthentication': 'device_second_factor_authentication.mode',
     'CastReceiverName': 'cast_receiver_name.name',
     'DeviceNativePrintersAccessMode': 'native_device_printers_access_mode.access_mode',
+    'DevicePrintersAccessMode': 'device_printers_access_mode.access_mode',
     'MinimumRequiredChromeVersion': 'minimum_required_version.chrome_version',
     'DeviceUserPolicyLoopbackProcessingMode': 'device_user_policy_loopback_processing_mode.mode',
     'DeviceLoginScreenIsolateOrigins': 'device_login_screen_isolate_origins.isolate_origins',
@@ -22113,6 +22217,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceMachinePasswordChangeRate': 'device_machine_password_change_rate.rate_days',
     'DeviceNativePrintersBlacklist': 'native_device_printers_blacklist.blacklist',
     'DeviceNativePrintersWhitelist': 'native_device_printers_whitelist.whitelist',
+    'DevicePrintersBlocklist': 'device_printers_blocklist.blocklist',
+    'DevicePrintersAllowlist': 'device_printers_allowlist.allowlist',
     'HeartbeatEnabled': 'device_heartbeat_settings.heartbeat_enabled',
     'HeartbeatFrequency': 'device_heartbeat_settings.heartbeat_frequency',
     'ChromeOsReleaseChannel': 'release_channel.release_channel',
@@ -22693,6 +22799,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 732,
+  'highest_id_currently_used': 735,
   'highest_atomic_group_id_currently_used': 38
 }

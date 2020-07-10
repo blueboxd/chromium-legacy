@@ -734,7 +734,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // A completion callback invoked when a read completes.
   void OnReadComplete(int result);
 
-  void CloseAllStreams(int net_error);
+  void NotifyAllStreamsOfError(int net_error);
   void CloseAllHandles(int net_error);
   void CancelAllRequests(int net_error);
   void NotifyRequestsOfConfirmation(int net_error);

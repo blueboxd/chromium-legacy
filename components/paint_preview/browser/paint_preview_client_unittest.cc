@@ -17,6 +17,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -108,6 +109,8 @@ class PaintPreviewClientRenderViewHostTest
     RenderViewHostTestHarness::SetUp();
     content::RenderFrameHostTester::For(main_rfh())
         ->InitializeRenderFrameIfNeeded();
+    content::NavigationSimulator::NavigateAndCommitFromBrowser(
+        web_contents(), GURL("https://www.chromium.org"));
   }
 
   void OverrideInterface(MockPaintPreviewRecorder* service) {

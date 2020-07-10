@@ -528,15 +528,15 @@ void WebMediaPlayerMS::OnSurfaceIdUpdated(viz::SurfaceId surface_id) {
     client_->OnPictureInPictureStateChange();
 }
 
-void WebMediaPlayerMS::TrackAdded(const WebMediaStreamTrack& track) {
+void WebMediaPlayerMS::TrackAdded(const WebString& track_id) {
   SendLogMessage(
-      String::Format("%s({track_id=%s})", __func__, track.Id().Utf8().c_str()));
+      String::Format("%s({track_id=%s})", __func__, track_id.Utf8().c_str()));
   Reload();
 }
 
-void WebMediaPlayerMS::TrackRemoved(const WebMediaStreamTrack& track) {
+void WebMediaPlayerMS::TrackRemoved(const WebString& track_id) {
   SendLogMessage(
-      String::Format("%s({track_id=%s})", __func__, track.Id().Utf8().c_str()));
+      String::Format("%s({track_id=%s})", __func__, track_id.Utf8().c_str()));
   Reload();
 }
 

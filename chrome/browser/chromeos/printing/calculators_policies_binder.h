@@ -41,13 +41,13 @@ class CalculatorsPoliciesBinder {
   virtual ~CalculatorsPoliciesBinder();
 
  protected:
-  // |access_mode_name| is the name of the access mode policy.  |blacklist_name|
-  // is the name of the blacklist policy.  |whitelist_name| is the name of the
-  // whitelist policy.  |calculator| will receive updates from the bound
+  // |access_mode_name| is the name of the access mode policy.  |blocklist_name|
+  // is the name of the blocklist policy.  |allowlist_name| is the name of the
+  // allowlist policy.  |calculator| will receive updates from the bound
   // policies.
   CalculatorsPoliciesBinder(const char* access_mode_name,
-                            const char* blacklist_name,
-                            const char* whitelist_name,
+                            const char* blocklist_name,
+                            const char* allowlist_name,
                             base::WeakPtr<BulkPrintersCalculator> calculator);
 
   // Returns a WeakPtr to the Derived class.
@@ -69,12 +69,12 @@ class CalculatorsPoliciesBinder {
   void Init();
 
   void UpdateAccessMode();
-  void UpdateWhitelist();
-  void UpdateBlacklist();
+  void UpdateAllowlist();
+  void UpdateBlocklist();
 
   const char* access_mode_name_;
-  const char* blacklist_name_;
-  const char* whitelist_name_;
+  const char* blocklist_name_;
+  const char* allowlist_name_;
   base::WeakPtr<BulkPrintersCalculator> calculator_;
   base::WeakPtrFactory<CalculatorsPoliciesBinder> weak_ptr_factory_{this};
 

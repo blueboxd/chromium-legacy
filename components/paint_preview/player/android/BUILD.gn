@@ -60,6 +60,7 @@ android_library("java") {
     "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameMediator.java",
     "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameMediatorDelegate.java",
     "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameProperties.java",
+    "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameScaleController.java",
     "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameScrollController.java",
     "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameView.java",
     "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameViewBinder.java",

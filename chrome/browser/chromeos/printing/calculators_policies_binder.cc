@@ -27,7 +27,7 @@ namespace chromeos {
 namespace {
 
 BulkPrintersCalculator::AccessMode ConvertToAccessMode(int mode_val) {
-  if (mode_val >= BulkPrintersCalculator::BLACKLIST_ONLY &&
+  if (mode_val >= BulkPrintersCalculator::BLOCKLIST_ONLY &&
       mode_val <= BulkPrintersCalculator::ALL_ACCESS) {
     return static_cast<BulkPrintersCalculator::AccessMode>(mode_val);
   }
@@ -85,9 +85,9 @@ class SettingsBinder : public CalculatorsPoliciesBinder {
  public:
   SettingsBinder(CrosSettings* settings,
                  base::WeakPtr<BulkPrintersCalculator> calculator)
-      : CalculatorsPoliciesBinder(kDeviceNativePrintersAccessMode,
-                                  kDeviceNativePrintersBlacklist,
-                                  kDeviceNativePrintersWhitelist,
+      : CalculatorsPoliciesBinder(kDevicePrintersAccessMode,
+                                  kDevicePrintersBlocklist,
+                                  kDevicePrintersAllowlist,
                                   calculator),
         settings_(settings) {}
 
@@ -100,7 +100,7 @@ class SettingsBinder : public CalculatorsPoliciesBinder {
 
   int GetAccessMode(const char* name) const override {
     int mode_val;
-    if (!settings_->GetInteger(kDeviceNativePrintersAccessMode, &mode_val)) {
+    if (!settings_->GetInteger(name, &mode_val)) {
       mode_val = BulkPrintersCalculator::AccessMode::UNSET;
     }
     DVLOG(1) << "Device access mode: " << mode_val;
@@ -154,16 +154,16 @@ CalculatorsPoliciesBinder::UserBinder(
 
 CalculatorsPoliciesBinder::CalculatorsPoliciesBinder(
     const char* access_mode_name,
-    const char* blacklist_name,
-    const char* whitelist_name,
+    const char* blocklist_name,
+    const char* allowlist_name,
     base::WeakPtr<BulkPrintersCalculator> calculator)
     : access_mode_name_(access_mode_name),
-      blacklist_name_(blacklist_name),
-      whitelist_name_(whitelist_name),
+      blocklist_name_(blocklist_name),
+      allowlist_name_(allowlist_name),
       calculator_(calculator) {
   DCHECK(access_mode_name);
-  DCHECK(blacklist_name);
-  DCHECK(whitelist_name);
+  DCHECK(blocklist_name);
+  DCHECK(allowlist_name);
   DCHECK(calculator);
 }
 
@@ -179,17 +179,17 @@ void CalculatorsPoliciesBinder::Init() {
   Bind(access_mode_name_,
        base::BindRepeating(&CalculatorsPoliciesBinder::UpdateAccessMode,
                            GetWeakPtr()));
-  Bind(blacklist_name_,
-       base::BindRepeating(&CalculatorsPoliciesBinder::UpdateBlacklist,
+  Bind(blocklist_name_,
+       base::BindRepeating(&CalculatorsPoliciesBinder::UpdateBlocklist,
                            GetWeakPtr()));
-  Bind(whitelist_name_,
-       base::BindRepeating(&CalculatorsPoliciesBinder::UpdateWhitelist,
+  Bind(allowlist_name_,
+       base::BindRepeating(&CalculatorsPoliciesBinder::UpdateAllowlist,
                            GetWeakPtr()));
 
   // Retrieve initial values for all policy fields.
   UpdateAccessMode();
-  UpdateBlacklist();
-  UpdateWhitelist();
+  UpdateBlocklist();
+  UpdateAllowlist();
 }
 
 void CalculatorsPoliciesBinder::UpdateAccessMode() {
@@ -200,15 +200,15 @@ void CalculatorsPoliciesBinder::UpdateAccessMode() {
   }
 }
 
-void CalculatorsPoliciesBinder::UpdateWhitelist() {
+void CalculatorsPoliciesBinder::UpdateAllowlist() {
   if (calculator_) {
-    calculator_->SetWhitelist(GetStringList(whitelist_name_));
+    calculator_->SetAllowlist(GetStringList(allowlist_name_));
   }
 }
 
-void CalculatorsPoliciesBinder::UpdateBlacklist() {
+void CalculatorsPoliciesBinder::UpdateBlocklist() {
   if (calculator_) {
-    calculator_->SetBlacklist(GetStringList(blacklist_name_));
+    calculator_->SetBlocklist(GetStringList(blocklist_name_));
   }
 }
 

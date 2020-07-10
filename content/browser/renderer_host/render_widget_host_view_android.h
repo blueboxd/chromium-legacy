@@ -441,8 +441,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   void OnUpdateScopedSelectionHandles();
 
-  bool UseOldContentForFallback();
-
   bool is_showing_;
 
   // Window-specific bits that affect widget visibility.

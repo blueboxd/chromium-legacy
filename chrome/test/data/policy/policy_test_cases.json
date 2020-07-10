@@ -5601,6 +5601,42 @@
     ]
   },
 
+  "DevicePrintersAccessMode": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "DevicePrintersAccessMode": 1
+        },
+        "prefs": { "cros.device.native_printers_access_mode": {} }
+      }
+    ]
+  },
+
+  "DevicePrintersBlocklist": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "DevicePrintersBlocklist": ["id4", "id7", "id10"]
+        },
+        "prefs": { "cros.device.native_printers_blacklist": {} }
+      }
+    ]
+  },
+
+  "DevicePrintersAllowlist": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "DevicePrintersAllowlist": ["id4", "id7", "id10"]
+        },
+        "prefs": { "cros.device.native_printers_whitelist": {} }
+      }
+    ]
+  },
+
   "TPMFirmwareUpdateSettings": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [

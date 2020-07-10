@@ -260,7 +260,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       delegated_frame_host_->WasShown(
           local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
               .local_surface_id(),
-          GetCompositorViewportPixelSize(), UseOldContentForFallback());
+          GetCompositorViewportPixelSize(), host()->delegate()->IsFullscreen());
     }
 
     // Let the page-level input event router know about our frame sink ID
@@ -350,7 +350,7 @@ bool RenderWidgetHostViewAndroid::SynchronizeVisualProperties(
         local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
             .local_surface_id(),
         GetCompositorViewportPixelSize(), deadline_policy,
-        UseOldContentForFallback());
+        host()->delegate()->IsFullscreen());
   }
 
   return host()->SynchronizeVisualProperties();
@@ -1446,7 +1446,7 @@ void RenderWidgetHostViewAndroid::ShowInternal() {
     delegated_frame_host_->WasShown(
         local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
             .local_surface_id(),
-        GetCompositorViewportPixelSize(), UseOldContentForFallback());
+        GetCompositorViewportPixelSize(), host()->delegate()->IsFullscreen());
   }
 
   if (view_.parent() && view_.GetWindowAndroid()) {
@@ -2383,12 +2383,6 @@ void RenderWidgetHostViewAndroid::SetWebContentsAccessibility(
 void RenderWidgetHostViewAndroid::SetNeedsBeginFrameForFlingProgress() {
   if (sync_compositor_)
     sync_compositor_->RequestOneBeginFrame();
-}
-
-bool RenderWidgetHostViewAndroid::UseOldContentForFallback() {
-  // When we're in a fullscreen and and doing a resize we show black instead of
-  // the incorrectly-sized frame.
-  return !host()->delegate()->IsFullscreen();
 }
 
 }  // namespace content

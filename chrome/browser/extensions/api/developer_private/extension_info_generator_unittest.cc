@@ -34,9 +34,12 @@
 #include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/common/api/extension_action/action_info.h"
+#include "extensions/common/api/extension_action/action_info_test_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -821,6 +824,47 @@ TEST_F(ExtensionInfoGeneratorUnitTest, Blocklisted) {
   ASSERT_NE(nullptr, info2);
   EXPECT_EQ(developer::EXTENSION_STATE_BLACKLISTED, info1->state);
   EXPECT_EQ(developer::EXTENSION_STATE_ENABLED, info2->state);
+}
+
+// Test generating extension action commands properly.
+TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionActionCommands) {
+  auto channel_override =
+      GetOverrideChannelForActionType(ActionInfo::TYPE_ACTION);
+  struct {
+    const char* name;
+    const char* command_key;
+    ExtensionBuilder::ActionType action_type;
+  } test_cases[] = {
+      {"browser action", "_execute_browser_action",
+       ExtensionBuilder::ActionType::BROWSER_ACTION},
+      {"page action", "_execute_page_action",
+       ExtensionBuilder::ActionType::PAGE_ACTION},
+      {"action", "_execute_action", ExtensionBuilder::ActionType::ACTION},
+  };
+
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(test_case.name);
+    std::unique_ptr<base::Value> command_dict =
+        DictionaryBuilder()
+            .Set("suggested_key",
+                 DictionaryBuilder().Set("default", "Ctrl+Shift+P").Build())
+            .Set("description", "Execute!")
+            .Build();
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder(test_case.name)
+            .SetAction(test_case.action_type)
+            .SetManifestKey("commands", DictionaryBuilder()
+                                            .Set(test_case.command_key,
+                                                 std::move(command_dict))
+                                            .Build())
+            .Build();
+    service()->AddExtension(extension.get());
+    auto info = GenerateExtensionInfo(extension->id());
+    ASSERT_TRUE(info);
+    ASSERT_EQ(1u, info->commands.size());
+    EXPECT_EQ(test_case.command_key, info->commands[0].name);
+    EXPECT_TRUE(info->commands[0].is_extension_action);
+  }
 }
 
 // Tests that the parent_disabled_permissions disable reason is never set for

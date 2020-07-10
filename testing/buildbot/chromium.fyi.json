@@ -49661,7 +49661,8 @@
       {
         "args": [
           "--additional-driver-flag=--force-device-scale-factor=1.5",
-          "--num-retries=3"
+          "--num-retries=3",
+          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/force-device-scale-factor=1.5"
         ],
         "experiment_percentage": 100,
         "isolate_name": "blink_web_tests",

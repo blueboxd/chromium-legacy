@@ -18,7 +18,7 @@ namespace chromeos {
 class Printer;
 
 // Calculates a list of available printers from four policies: Data (json with
-// all printers), AccessMode (see below), Whitelist and Blacklist (lists with
+// all printers), AccessMode (see below), Allowlist and Blocklist (lists with
 // ids). All methods must be called from the same sequence and all observers'
 // notifications will be called from this sequence. Resultant list of available
 // printers are calculated asynchronously on a dedicated internal sequence.
@@ -29,10 +29,10 @@ class BulkPrintersCalculator
   // of the "Data" policy.
   enum AccessMode {
     UNSET = -1,
-    // Printers in the blacklist are disallowed.  Others are allowed.
-    BLACKLIST_ONLY = 0,
-    // Only printers in the whitelist are allowed.
-    WHITELIST_ONLY = 1,
+    // Printers in the blocklist are disallowed.  Others are allowed.
+    BLOCKLIST_ONLY = 0,
+    // Only printers in the allowlist are allowed.
+    ALLOWLIST_ONLY = 1,
     // All printers in the "Data" policy are allowed.
     ALL_ACCESS = 2
   };
@@ -61,10 +61,10 @@ class BulkPrintersCalculator
 
   // Sets the "AccessMode" policy. See description of the AccessMode enum.
   virtual void SetAccessMode(AccessMode mode) = 0;
-  // Sets the "Blacklist" policy. |blacklist| is a list of printers ids.
-  virtual void SetBlacklist(const std::vector<std::string>& blacklist) = 0;
-  // Sets the "Whitelist" policy. |whitelist| is a list of printers ids.
-  virtual void SetWhitelist(const std::vector<std::string>& whitelist) = 0;
+  // Sets the "Blocklist" policy. |blocklist| is a list of printers ids.
+  virtual void SetBlocklist(const std::vector<std::string>& blocklist) = 0;
+  // Sets the "Allowlist" policy. |allowlist| is a list of printers ids.
+  virtual void SetAllowlist(const std::vector<std::string>& allowlist) = 0;
 
   // ========================= Methods returning the state of the object
   // Methods returning the three parameters defining the state of the object.

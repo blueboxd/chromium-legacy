@@ -1177,7 +1177,7 @@ public class PlayerFrameMediatorTest {
         Matrix expectedMatrix = new Matrix();
         expectedMatrix.setScale(2f, 2f);
         verify(subFrame1Mediator)
-                .setBitmapScaleMatrix(argThat(new MatrixMatcher(expectedMatrix)), eq(2f));
+                .setBitmapScaleMatrixOfSubframe(argThat(new MatrixMatcher(expectedMatrix)), eq(2f));
 
         Assert.assertTrue(mMediator.scaleFinished(1f, 0f, 0f));
         Assert.assertEquals(expectedViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
@@ -1186,7 +1186,7 @@ public class PlayerFrameMediatorTest {
                 getVisibilities(mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS)));
         expectedMatrix.reset();
         verify(subFrame1Mediator)
-                .setBitmapScaleMatrix(argThat(new MatrixMatcher(expectedMatrix)), eq(1f));
+                .setBitmapScaleMatrixOfSubframe(argThat(new MatrixMatcher(expectedMatrix)), eq(1f));
         verify(subFrame1Mediator).forceRedraw();
         verify(subFrame1Mediator).resetScaleFactor();
 
@@ -1214,9 +1214,11 @@ public class PlayerFrameMediatorTest {
                 getVisibilities(mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS)));
         expectedMatrix.setScale(0.75f, 0.75f);
         verify(subFrame1Mediator)
-                .setBitmapScaleMatrix(argThat(new MatrixMatcher(expectedMatrix)), eq(1.5f));
+                .setBitmapScaleMatrixOfSubframe(
+                        argThat(new MatrixMatcher(expectedMatrix)), eq(1.5f));
         verify(subFrame2Mediator)
-                .setBitmapScaleMatrix(argThat(new MatrixMatcher(expectedMatrix)), eq(1.5f));
+                .setBitmapScaleMatrixOfSubframe(
+                        argThat(new MatrixMatcher(expectedMatrix)), eq(1.5f));
     }
 
     /**
@@ -1316,11 +1318,11 @@ public class PlayerFrameMediatorTest {
         // Scale by a factor of two via the parent.
         Matrix scaleMatrix = new Matrix();
         scaleMatrix.setScale(2f, 2f);
-        mMediator.setBitmapScaleMatrix(scaleMatrix, 2f);
+        mMediator.setBitmapScaleMatrixOfSubframe(scaleMatrix, 2f);
         Assert.assertEquals(expectedVisibleViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
         Assert.assertEquals(expectedVisibleRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
         verify(subFrameMediator)
-                .setBitmapScaleMatrix(argThat(new MatrixMatcher(scaleMatrix)), eq(2f));
+                .setBitmapScaleMatrixOfSubframe(argThat(new MatrixMatcher(scaleMatrix)), eq(2f));
 
         expectedVisibleViews.clear();
         expectedVisibleRects.clear();
@@ -1329,11 +1331,11 @@ public class PlayerFrameMediatorTest {
 
         // Zoom out by a factor of 0.75, note the scale factor argument is compounded.
         scaleMatrix.setScale(0.75f, 0.75f);
-        mMediator.setBitmapScaleMatrix(scaleMatrix, 1.5f);
+        mMediator.setBitmapScaleMatrixOfSubframe(scaleMatrix, 1.5f);
         Assert.assertEquals(expectedVisibleViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
         Assert.assertEquals(expectedVisibleRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
         verify(subFrameMediator)
-                .setBitmapScaleMatrix(argThat(new MatrixMatcher(scaleMatrix)), eq(1.5f));
+                .setBitmapScaleMatrixOfSubframe(argThat(new MatrixMatcher(scaleMatrix)), eq(1.5f));
 
         // Simulate scaleFinished() by force a scale factor clear and redraw.
         mMediator.resetScaleFactor();

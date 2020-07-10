@@ -54,9 +54,6 @@ public class MediaSessionTest {
     private static final String LONG_VIDEO_SILENT = "long-video-silent";
     private static final int AUDIO_FOCUS_CHANGE_TIMEOUT = 500;  // ms
 
-    // The MediaSessionObserver will always flush the default state first.
-    private static final StateRecord DEFAULT_STATE = new StateRecord(false, true);
-
     private AudioManager getAudioManager() {
         return (AudioManager) mActivityTestRule.getActivity()
                 .getApplicationContext()
@@ -484,7 +481,6 @@ public class MediaSessionTest {
     @Feature({"MediaSession"})
     public void testSessionSuspendedAfterFocusLossWhenPlaying() throws Exception {
         ArrayList<StateRecord> expectedStates = new ArrayList<StateRecord>();
-        expectedStates.add(DEFAULT_STATE);
         expectedStates.add(new StateRecord(true, false));
         expectedStates.add(new StateRecord(true, true));
 
@@ -514,7 +510,6 @@ public class MediaSessionTest {
     @Feature({"MediaSession"})
     public void testSessionSuspendedAfterFocusLossWhenPaused() throws Exception {
         ArrayList<StateRecord> expectedStates = new ArrayList<StateRecord>();
-        expectedStates.add(DEFAULT_STATE);
         expectedStates.add(new StateRecord(true, false));
         expectedStates.add(new StateRecord(true, true));
 

@@ -232,8 +232,8 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
                     bool premultiply_alpha) override;
 
   // WebMediaStreamObserver implementation
-  void TrackAdded(const WebMediaStreamTrack& track) override;
-  void TrackRemoved(const WebMediaStreamTrack& track) override;
+  void TrackAdded(const WebString& track_id) override;
+  void TrackRemoved(const WebString& track_id) override;
   void ActiveStateChanged(bool is_active) override;
   int GetDelegateId() override;
   base::Optional<viz::SurfaceId> GetSurfaceId() override;

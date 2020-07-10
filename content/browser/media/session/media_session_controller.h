@@ -30,18 +30,16 @@ class CONTENT_EXPORT MediaSessionController
                          MediaWebContentsObserver* media_web_contents_observer);
   ~MediaSessionController() override;
 
-  // Clients must call this after construction and destroy the controller if it
-  // returns false.  May be called more than once; does nothing if none of the
-  // input parameters have changed since the last call.
-  bool Initialize(bool has_audio,
-                  media::MediaContentType media_content_type,
-                  media_session::MediaPosition* position,
-                  bool is_pip_available,
-                  bool has_video);
+  // Must be called when playback starts. May be called more than once; does
+  // nothing if none of the input parameters have changed since the last call.
+  // Returns false if a media session cannot be created.
+  bool OnPlaybackStarted(bool has_audio,
+                         bool has_video,
+                         media::MediaContentType media_content_type);
 
   // Must be called when a pause occurs on the renderer side media player; keeps
   // the MediaSession instance in sync with renderer side behavior.
-  void OnPlaybackPaused();
+  void OnPlaybackPaused(bool reached_end_of_stream);
 
   // MediaSessionObserver implementation.
   void OnSuspend(int player_id) override;
@@ -81,8 +79,6 @@ class CONTENT_EXPORT MediaSessionController
   void AddOrRemovePlayer();
 
  private:
-  friend class MediaSessionControllerTest;
-
   const MediaPlayerId id_;
 
   // Non-owned pointer; |media_web_contents_observer_| is the owner of |this|.
@@ -95,6 +91,8 @@ class CONTENT_EXPORT MediaSessionController
 
   int player_id_ = 0;
   bool has_session_ = false;
+  // Playing or paused, but not ended.
+  bool is_playback_in_progress_ = false;
   bool has_audio_ = false;
   bool has_video_ = false;
   bool is_picture_in_picture_available_ = false;

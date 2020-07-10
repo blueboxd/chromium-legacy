@@ -101,8 +101,8 @@ class GenericScopedHandle {
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ScopedHandleTest, ActiveVerifierWrongOwner);
-  FRIEND_TEST_ALL_PREFIXES(ScopedHandleTest, ActiveVerifierUntrackedHandle);
+  FRIEND_TEST_ALL_PREFIXES(ScopedHandleTest, HandleVerifierWrongOwner);
+  FRIEND_TEST_ALL_PREFIXES(ScopedHandleTest, HandleVerifierUntrackedHandle);
   Handle handle_;
 
   DISALLOW_COPY_AND_ASSIGN(GenericScopedHandle);

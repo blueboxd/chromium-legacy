@@ -8,6 +8,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.password_manager.PasswordManagerDialogContents;
 import org.chromium.chrome.browser.password_manager.PasswordManagerDialogCoordinator;
 import org.chromium.ui.base.WindowAndroid;
@@ -47,12 +48,22 @@ public class SafeBrowsingPasswordReuseDialogBridge {
             int[] boldStartRanges, int[] boldEndRanges) {
         if (mActivity.get() == null) return;
 
-        PasswordManagerDialogContents contents = new PasswordManagerDialogContents(dialogTitle,
-                dialogDetails, R.drawable.password_check_warning, buttonText, null, this::onClick);
+        PasswordManagerDialogContents contents =
+                createDialogContents(dialogTitle, dialogDetails, buttonText);
         contents.setBoldRanges(boldStartRanges, boldEndRanges);
 
         mDialogCoordinator.initialize(mActivity.get(), contents);
         mDialogCoordinator.showDialog();
+    }
+
+    private PasswordManagerDialogContents createDialogContents(
+            String credentialLeakTitle, String credentialLeakDetails, String positiveButton) {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORD_CHECK)) {
+            return new PasswordManagerDialogContents(credentialLeakTitle, credentialLeakDetails,
+                    R.drawable.password_check_warning, positiveButton, null, this::onClick);
+        }
+        return new PasswordManagerDialogContents(credentialLeakTitle, credentialLeakDetails,
+                R.drawable.password_checkup_warning, positiveButton, null, this::onClick);
     }
 
     @CalledByNative

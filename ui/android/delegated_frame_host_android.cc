@@ -63,7 +63,6 @@ scoped_refptr<cc::SurfaceLayer> CreateSurfaceLayer(
   layer->SetIsDrawable(true);
   layer->SetContentsOpaque(surface_opaque);
   layer->SetSurfaceHitTestable(true);
-  layer->SetBackgroundColor(SK_ColorBLACK);
 
   return layer;
 }
@@ -228,20 +227,20 @@ void DelegatedFrameHostAndroid::WasHidden() {
 void DelegatedFrameHostAndroid::WasShown(
     const viz::LocalSurfaceId& new_local_surface_id,
     const gfx::Size& new_size_in_pixels,
-    bool use_old_content_for_fallback) {
+    bool is_fullscreen) {
   frame_evictor_->SetVisible(true);
 
   EmbedSurface(
       new_local_surface_id, new_size_in_pixels,
       cc::DeadlinePolicy::UseSpecifiedDeadline(FirstFrameTimeoutFrames()),
-      use_old_content_for_fallback);
+      is_fullscreen);
 }
 
 void DelegatedFrameHostAndroid::EmbedSurface(
     const viz::LocalSurfaceId& new_local_surface_id,
     const gfx::Size& new_size_in_pixels,
     cc::DeadlinePolicy deadline_policy,
-    bool use_old_content_for_fallback) {
+    bool is_fullscreen) {
   // We should never attempt to embed an invalid surface. Catch this here to
   // track down the root cause. Otherwise we will have vague crashes later on
   // at serialization time.
@@ -253,15 +252,19 @@ void DelegatedFrameHostAndroid::EmbedSurface(
   viz::SurfaceId current_primary_surface_id = content_layer_->surface_id();
   viz::SurfaceId new_primary_surface_id(frame_sink_id_, local_surface_id_);
 
-  if (!frame_evictor_->visible() || !use_old_content_for_fallback) {
-    // If |use_old_content_for_fallback|=false (fullscree case) or tab is hidden
-    // we don't want to display old sized content. So we advance the fallback
-    // forcing viz to fallback to blank screen if renderer won't submit frame in
-    // time. See https://crbug.com/1088369 and  https://crbug.com/813157
+  if (!frame_evictor_->visible() || is_fullscreen) {
+    // For fullscreen or when tab is hidden  we don't want to display old sized
+    // content. So we advance the fallback forcing viz to fallback to blank
+    // screen if renderer won't submit frame in time. See
+    // https://crbug.com/1088369 and  https://crbug.com/813157
     if (surface_size_in_pixels_ != content_layer_->bounds() &&
         content_layer_->oldest_acceptable_fallback() &&
         content_layer_->oldest_acceptable_fallback()->is_valid()) {
       content_layer_->SetOldestAcceptableFallback(new_primary_surface_id);
+
+      // We default to black background for fullscreen case.
+      content_layer_->SetBackgroundColor(is_fullscreen ? SK_ColorBLACK
+                                                       : SK_ColorTRANSPARENT);
     }
   }
 

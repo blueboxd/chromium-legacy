@@ -86,7 +86,10 @@ android_library("test_java") {
   ]
 }
 android_resources("java_resources") {
-  sources = []
+  sources = [
+    "java/res/drawable-night/password_checkup_warning.xml",
+    "java/res/drawable/password_checkup_warning.xml",
+  ]
   deps = [ "//chrome/browser/ui/android/strings:ui_strings_grd" ]
   custom_package = "org.chromium.chrome.browser.password_check"
 }

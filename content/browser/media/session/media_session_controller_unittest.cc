@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <tuple>
 
 #include "content/browser/media/media_web_contents_observer.h"
@@ -33,8 +34,8 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
 
  protected:
   std::unique_ptr<MediaSessionController> CreateController() {
-    return std::unique_ptr<MediaSessionController>(new MediaSessionController(
-        id_, contents()->media_web_contents_observer()));
+    return std::make_unique<MediaSessionController>(
+        id_, contents()->media_web_contents_observer());
   }
 
   MediaSessionImpl* media_session() {
@@ -65,8 +66,6 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
     controller_->OnSetVolumeMultiplier(controller_->get_player_id_for_testing(),
                                        multiplier);
   }
-
-  void ResetHasSessionBit() { controller_->has_session_ = false; }
 
   template <typename T>
   bool ReceivedMessagePlay() {
@@ -146,22 +145,22 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
 };
 
 TEST_F(MediaSessionControllerTest, NoAudioNoSession) {
-  ASSERT_TRUE(controller_->Initialize(
-      false, media::MediaContentType::Persistent, nullptr, false, false));
+  ASSERT_TRUE(controller_->OnPlaybackStarted(
+      false, false, media::MediaContentType::Persistent));
   EXPECT_FALSE(media_session()->IsActive());
   EXPECT_FALSE(media_session()->IsControllable());
 }
 
 TEST_F(MediaSessionControllerTest, TransientNoControllableSession) {
-  ASSERT_TRUE(controller_->Initialize(true, media::MediaContentType::Transient,
-                                      nullptr, false, false));
+  ASSERT_TRUE(controller_->OnPlaybackStarted(
+      true, false, media::MediaContentType::Transient));
   EXPECT_TRUE(media_session()->IsActive());
   EXPECT_FALSE(media_session()->IsControllable());
 }
 
 TEST_F(MediaSessionControllerTest, BasicControls) {
-  ASSERT_TRUE(controller_->Initialize(true, media::MediaContentType::Persistent,
-                                      nullptr, false, false));
+  ASSERT_TRUE(controller_->OnPlaybackStarted(
+      true, false, media::MediaContentType::Persistent));
   EXPECT_TRUE(media_session()->IsActive());
   EXPECT_TRUE(media_session()->IsControllable());
 
@@ -191,8 +190,8 @@ TEST_F(MediaSessionControllerTest, BasicControls) {
 }
 
 TEST_F(MediaSessionControllerTest, VolumeMultiplier) {
-  ASSERT_TRUE(controller_->Initialize(true, media::MediaContentType::Persistent,
-                                      nullptr, false, false));
+  ASSERT_TRUE(controller_->OnPlaybackStarted(
+      true, false, media::MediaContentType::Persistent));
   EXPECT_TRUE(media_session()->IsActive());
   EXPECT_TRUE(media_session()->IsControllable());
 
@@ -208,39 +207,39 @@ TEST_F(MediaSessionControllerTest, VolumeMultiplier) {
 }
 
 TEST_F(MediaSessionControllerTest, ControllerSidePause) {
-  ASSERT_TRUE(controller_->Initialize(true, media::MediaContentType::Persistent,
-                                      nullptr, false, false));
+  ASSERT_TRUE(controller_->OnPlaybackStarted(
+      true, false, media::MediaContentType::Persistent));
   EXPECT_TRUE(media_session()->IsActive());
   EXPECT_TRUE(media_session()->IsControllable());
 
   // Verify pause behavior.
-  controller_->OnPlaybackPaused();
+  controller_->OnPlaybackPaused(false);
   EXPECT_FALSE(media_session()->IsActive());
   EXPECT_TRUE(media_session()->IsControllable());
 
-  // Verify the next Initialize() call restores the session.
-  ASSERT_TRUE(controller_->Initialize(true, media::MediaContentType::Persistent,
-                                      nullptr, false, false));
+  // Verify the next OnPlaybackStarted() call restores the session.
+  ASSERT_TRUE(controller_->OnPlaybackStarted(
+      true, false, media::MediaContentType::Persistent));
   EXPECT_TRUE(media_session()->IsActive());
   EXPECT_TRUE(media_session()->IsControllable());
 }
 
 TEST_F(MediaSessionControllerTest, Reinitialize) {
-  ASSERT_TRUE(controller_->Initialize(
-      false, media::MediaContentType::Persistent, nullptr, false, false));
+  ASSERT_TRUE(controller_->OnPlaybackStarted(
+      false, false, media::MediaContentType::Persistent));
   EXPECT_FALSE(media_session()->IsActive());
   EXPECT_FALSE(media_session()->IsControllable());
 
   // Create a transient type session.
-  ASSERT_TRUE(controller_->Initialize(true, media::MediaContentType::Transient,
-                                      nullptr, false, false));
+  ASSERT_TRUE(controller_->OnPlaybackStarted(
+      true, false, media::MediaContentType::Transient));
   EXPECT_TRUE(media_session()->IsActive());
   EXPECT_FALSE(media_session()->IsControllable());
   const int current_player_id = controller_->get_player_id_for_testing();
 
   // Reinitialize the session as a content type.
-  ASSERT_TRUE(controller_->Initialize(true, media::MediaContentType::Persistent,
-                                      nullptr, false, false));
+  ASSERT_TRUE(controller_->OnPlaybackStarted(
+      true, false, media::MediaContentType::Persistent));
   EXPECT_TRUE(media_session()->IsActive());
   EXPECT_TRUE(media_session()->IsControllable());
   // Player id should not change when there's an active session.
@@ -257,35 +256,18 @@ TEST_F(MediaSessionControllerTest, Reinitialize) {
 }
 
 TEST_F(MediaSessionControllerTest, PositionState) {
-  {
-    media_session::MediaPosition expected_position(1.0, base::TimeDelta(),
-                                                   base::TimeDelta());
+  media_session::MediaPosition expected_position(
+      0.0, base::TimeDelta::FromSeconds(10), base::TimeDelta());
 
-    ASSERT_TRUE(controller_->Initialize(true,
-                                        media::MediaContentType::Persistent,
-                                        &expected_position, false, false));
+  controller_->OnMediaPositionStateChanged(expected_position);
 
-    EXPECT_EQ(expected_position, controller_->GetPosition(
-                                     controller_->get_player_id_for_testing()));
-  }
-
-  {
-    media_session::MediaPosition expected_position(
-        0.0, base::TimeDelta::FromSeconds(10), base::TimeDelta());
-
-    controller_->OnMediaPositionStateChanged(expected_position);
-
-    EXPECT_EQ(expected_position, controller_->GetPosition(
-                                     controller_->get_player_id_for_testing()));
-  }
+  EXPECT_EQ(expected_position,
+            controller_->GetPosition(controller_->get_player_id_for_testing()));
 }
 
 TEST_F(MediaSessionControllerTest, RemovePlayerIfSessionReset) {
-  ASSERT_TRUE(controller_->Initialize(true, media::MediaContentType::Persistent,
-                                      nullptr, false, false));
-  EXPECT_TRUE(media_session()->IsActive());
-
-  ResetHasSessionBit();
+  ASSERT_TRUE(controller_->OnPlaybackStarted(
+      true, false, media::MediaContentType::Persistent));
   EXPECT_TRUE(media_session()->IsActive());
 
   controller_.reset();
@@ -293,8 +275,6 @@ TEST_F(MediaSessionControllerTest, RemovePlayerIfSessionReset) {
 }
 
 TEST_F(MediaSessionControllerTest, PictureInPictureAvailability) {
-  ASSERT_TRUE(controller_->Initialize(true, media::MediaContentType::Persistent,
-                                      nullptr, false, false));
   EXPECT_FALSE(controller_->IsPictureInPictureAvailable(
       controller_->get_player_id_for_testing()));
 
@@ -306,9 +286,9 @@ TEST_F(MediaSessionControllerTest, PictureInPictureAvailability) {
 TEST_F(MediaSessionControllerTest, AddPlayerWhenUnmuted) {
   contents()->SetAudioMuted(true);
 
-  ASSERT_TRUE(controller_->Initialize(
-      /* has_audio = */ true, media::MediaContentType::Persistent, nullptr,
-      /* is_pip_available = */ true, /* has_video = */ false));
+  ASSERT_TRUE(controller_->OnPlaybackStarted(
+      /* has_audio = */ true, /* has_video = */ false,
+      media::MediaContentType::Persistent));
   ASSERT_FALSE(media_session()->IsActive());
 
   contents()->SetAudioMuted(false);
@@ -317,9 +297,9 @@ TEST_F(MediaSessionControllerTest, AddPlayerWhenUnmuted) {
 }
 
 TEST_F(MediaSessionControllerTest, RemovePlayerWhenMuted) {
-  ASSERT_TRUE(controller_->Initialize(
-      /* has_audio = */ true, media::MediaContentType::Persistent, nullptr,
-      /* is_pip_available = */ true, /* has_video = */ false));
+  ASSERT_TRUE(controller_->OnPlaybackStarted(
+      /* has_audio = */ true, /* has_video = */ false,
+      media::MediaContentType::Persistent));
   ASSERT_TRUE(media_session()->IsActive());
 
   contents()->SetAudioMuted(true);
@@ -330,9 +310,9 @@ TEST_F(MediaSessionControllerTest, RemovePlayerWhenMuted) {
 TEST_F(MediaSessionControllerTest, EnterLeavePictureInPictureMuted) {
   contents()->SetAudioMuted(true);
 
-  ASSERT_TRUE(controller_->Initialize(
-      /* has_audio = */ true, media::MediaContentType::Persistent, nullptr,
-      /* is_pip_available = */ true, /* has_video = */ false));
+  ASSERT_TRUE(controller_->OnPlaybackStarted(
+      /* has_audio = */ true, /* has_video = */ false,
+      media::MediaContentType::Persistent));
   ASSERT_FALSE(media_session()->IsActive());
 
   // Entering PictureInPicture means the user expects to control the media, so
@@ -347,9 +327,9 @@ TEST_F(MediaSessionControllerTest, EnterLeavePictureInPictureMuted) {
 }
 
 TEST_F(MediaSessionControllerTest, MuteWithPictureInPicture) {
-  ASSERT_TRUE(controller_->Initialize(
-      /* has_audio = */ true, media::MediaContentType::Persistent, nullptr,
-      /* is_pip_available = */ true, /* has_video = */ false));
+  ASSERT_TRUE(controller_->OnPlaybackStarted(
+      /* has_audio = */ true, /* has_video = */ false,
+      media::MediaContentType::Persistent));
   contents()->SetHasPictureInPictureVideo(true);
   controller_->PictureInPictureStateChanged(true);
   ASSERT_TRUE(media_session()->IsActive());
@@ -362,9 +342,9 @@ TEST_F(MediaSessionControllerTest, MuteWithPictureInPicture) {
 TEST_F(MediaSessionControllerTest, LeavePictureInPictureUnmuted) {
   contents()->SetAudioMuted(true);
 
-  ASSERT_TRUE(controller_->Initialize(
-      /* has_audio = */ true, media::MediaContentType::Persistent, nullptr,
-      /* is_pip_available = */ true, /* has_video = */ false));
+  ASSERT_TRUE(controller_->OnPlaybackStarted(
+      /* has_audio = */ true, /* has_video = */ false,
+      media::MediaContentType::Persistent));
   ASSERT_FALSE(media_session()->IsActive());
 
   contents()->SetAudioMuted(false);
@@ -380,22 +360,22 @@ TEST_F(MediaSessionControllerTest, LeavePictureInPictureUnmuted) {
 }
 
 TEST_F(MediaSessionControllerTest, AddPlayerWhenAddingAudio) {
-  ASSERT_TRUE(controller_->Initialize(
-      /* has_audio = */ false, media::MediaContentType::Persistent, nullptr,
-      /* is_pip_available = */ true, /* has_video = */ false));
+  ASSERT_TRUE(controller_->OnPlaybackStarted(
+      /* has_audio = */ false, /* has_video = */ false,
+      media::MediaContentType::Persistent));
   ASSERT_FALSE(media_session()->IsActive());
 
-  EXPECT_TRUE(controller_->Initialize(
-      /* has_audio = */ true, media::MediaContentType::Persistent, nullptr,
-      /* is_pip_available = */ true, /* has_video = */ false));
+  EXPECT_TRUE(controller_->OnPlaybackStarted(
+      /* has_audio = */ true, /* has_video = */ false,
+      media::MediaContentType::Persistent));
   EXPECT_TRUE(media_session()->IsActive());
 }
 
 TEST_F(MediaSessionControllerTest,
        AddPlayerWhenEnteringPictureInPictureWithNoAudio) {
-  ASSERT_TRUE(controller_->Initialize(
-      /* has_audio = */ false, media::MediaContentType::Persistent, nullptr,
-      /* is_pip_available = */ true, /* has_video = */ false));
+  ASSERT_TRUE(controller_->OnPlaybackStarted(
+      /* has_audio = */ false, /* has_video = */ false,
+      media::MediaContentType::Persistent));
   ASSERT_FALSE(media_session()->IsActive());
 
   contents()->SetHasPictureInPictureVideo(true);
@@ -407,9 +387,9 @@ TEST_F(MediaSessionControllerTest,
        AddPlayerInitiallyPictureInPictureWithNoAudio) {
   contents()->SetHasPictureInPictureVideo(true);
 
-  ASSERT_TRUE(controller_->Initialize(
-      /* has_audio = */ false, media::MediaContentType::Persistent, nullptr,
-      /* is_pip_available = */ true, /* has_video = */ false));
+  ASSERT_TRUE(controller_->OnPlaybackStarted(
+      /* has_audio = */ false, /* has_video = */ false,
+      media::MediaContentType::Persistent));
   EXPECT_TRUE(media_session()->IsActive());
 
   contents()->SetHasPictureInPictureVideo(false);
@@ -419,16 +399,16 @@ TEST_F(MediaSessionControllerTest,
 }
 
 TEST_F(MediaSessionControllerTest, HasVideo_True) {
-  ASSERT_TRUE(controller_->Initialize(
-      /* has_audio = */ true, media::MediaContentType::Persistent, nullptr,
-      /* is_pip_available = */ true, /* has_video = */ true));
+  ASSERT_TRUE(controller_->OnPlaybackStarted(
+      /* has_audio = */ true, /* has_video = */ true,
+      media::MediaContentType::Persistent));
   EXPECT_TRUE(controller_->HasVideo(controller_->get_player_id_for_testing()));
 }
 
 TEST_F(MediaSessionControllerTest, HasVideo_False) {
-  ASSERT_TRUE(controller_->Initialize(
-      /* has_audio = */ false, media::MediaContentType::Persistent, nullptr,
-      /* is_pip_available = */ true, /* has_video = */ false));
+  ASSERT_TRUE(controller_->OnPlaybackStarted(
+      /* has_audio = */ false, /* has_video = */ false,
+      media::MediaContentType::Persistent));
   EXPECT_FALSE(controller_->HasVideo(controller_->get_player_id_for_testing()));
 }
 

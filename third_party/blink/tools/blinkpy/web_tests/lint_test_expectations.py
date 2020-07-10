@@ -45,30 +45,6 @@ from blinkpy.web_tests.port.factory import platform_options
 _log = logging.getLogger(__name__)
 
 
-def PresubmitCheckTestExpectations(input_api, output_api):
-    os_path = input_api.os_path
-    lint_path = os_path.join(
-        os_path.dirname(os_path.abspath(__file__)), '..', '..',
-        'lint_test_expectations.py')
-    _, errs = input_api.subprocess.Popen(
-        [
-            input_api.python_executable, lint_path,
-            '--no-check-redundant-virtual-expectations'
-        ],
-        stdout=input_api.subprocess.PIPE,
-        stderr=input_api.subprocess.PIPE).communicate()
-    if not errs:
-        return [
-            output_api.PresubmitError("lint_test_expectations.py failed "
-                                      "to produce output; check by hand. ")
-        ]
-    if errs.strip() == 'Lint succeeded.':
-        return []
-    if errs.rstrip().endswith('Lint succeeded with warnings.'):
-        return [output_api.PresubmitPromptWarning(errs)]
-    return [output_api.PresubmitError(errs)]
-
-
 def lint(host, options):
     port = host.port_factory.get(options.platform)
     wpt_tests = set(port.tests([host.filesystem.join('external', 'wpt')]))

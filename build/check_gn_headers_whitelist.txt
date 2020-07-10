@@ -113,7 +113,6 @@ gpu/command_buffer/common/command_buffer_shared.h
 gpu/command_buffer/common/gles2_cmd_utils_autogen.h
 gpu/command_buffer/common/gles2_cmd_utils_implementation_autogen.h
 gpu/command_buffer/common/gpu_memory_allocation.h
-gpu/command_buffer/service/gl_stream_texture_image.h
 gpu/command_buffer/service/gles2_cmd_decoder_unittest_extensions_autogen.h
 gpu/command_buffer/service/memory_tracking.h
 gpu/config/gpu_lists_version.h

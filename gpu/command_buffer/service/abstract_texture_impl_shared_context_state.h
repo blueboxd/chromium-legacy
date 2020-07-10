@@ -38,8 +38,7 @@ class GPU_GLES2_EXPORT AbstractTextureImplOnSharedContext
   // AbstractTexture implementation.
   TextureBase* GetTextureBase() const override;
   void SetParameteri(GLenum pname, GLint param) override;
-  void BindStreamTextureImage(GLStreamTextureImage* image,
-                              GLuint service_id) override;
+  void BindStreamTextureImage(gl::GLImage* image, GLuint service_id) override;
   void BindImage(gl::GLImage* image, bool client_managed) override;
   gl::GLImage* GetImage() const override;
   void SetCleared() override;
@@ -68,8 +67,7 @@ class GPU_GLES2_EXPORT AbstractTextureImplOnSharedContextPassthrough
   // AbstractTexture implementation.
   TextureBase* GetTextureBase() const override;
   void SetParameteri(GLenum pname, GLint param) override;
-  void BindStreamTextureImage(GLStreamTextureImage* image,
-                              GLuint service_id) override;
+  void BindStreamTextureImage(gl::GLImage* image, GLuint service_id) override;
   void BindImage(gl::GLImage* image, bool client_managed) override;
   gl::GLImage* GetImage() const override;
   void SetCleared() override;

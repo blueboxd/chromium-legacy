@@ -126,8 +126,8 @@ TEST_F(BulkPrintersCalculatorTest, DestructionIsSafe) {
   {
     std::unique_ptr<BulkPrintersCalculator> printers =
         BulkPrintersCalculator::Create();
-    printers->SetAccessMode(BulkPrintersCalculator::BLACKLIST_ONLY);
-    printers->SetBlacklist({"Third"});
+    printers->SetAccessMode(BulkPrintersCalculator::BLOCKLIST_ONLY);
+    printers->SetBlocklist({"Third"});
     printers->SetData(std::make_unique<std::string>(kBulkPolicyContentsJson));
     // Data is valid.  Computation is proceeding.
   }
@@ -181,16 +181,16 @@ TEST_F(BulkPrintersCalculatorTest, PolicyClearedNowUnset) {
   EXPECT_TRUE(external_printers_->GetPrinters().empty());
 }
 
-// Verify that the blacklist policy is applied correctly.  Printers in the
-// blacklist policy should not be available.  Printers not in the blackslist
+// Verify that the blocklist policy is applied correctly.  Printers in the
+// blocklist policy should not be available.  Printers not in the blackslist
 // should be available.
-TEST_F(BulkPrintersCalculatorTest, BlacklistPolicySet) {
+TEST_F(BulkPrintersCalculatorTest, BlocklistPolicySet) {
   auto data = std::make_unique<std::string>(kBulkPolicyContentsJson);
   external_printers_->ClearData();
   external_printers_->SetData(std::move(data));
-  external_printers_->SetAccessMode(BulkPrintersCalculator::BLACKLIST_ONLY);
+  external_printers_->SetAccessMode(BulkPrintersCalculator::BLOCKLIST_ONLY);
   task_environment_.RunUntilIdle();
-  external_printers_->SetBlacklist({"Second", "Third"});
+  external_printers_->SetBlocklist({"Second", "Third"});
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(external_printers_->IsComplete());
 
@@ -200,15 +200,15 @@ TEST_F(BulkPrintersCalculatorTest, BlacklistPolicySet) {
   EXPECT_EQ("LexaPrint", printers.at("First").display_name());
 }
 
-// Verify that the whitelist policy is correctly applied.  Only printers
-// available in the whitelist are available.
-TEST_F(BulkPrintersCalculatorTest, WhitelistPolicySet) {
+// Verify that the allowlist policy is correctly applied.  Only printers
+// available in the allowlist are available.
+TEST_F(BulkPrintersCalculatorTest, AllowlistPolicySet) {
   auto data = std::make_unique<std::string>(kBulkPolicyContentsJson);
   external_printers_->ClearData();
   external_printers_->SetData(std::move(data));
-  external_printers_->SetAccessMode(BulkPrintersCalculator::WHITELIST_ONLY);
+  external_printers_->SetAccessMode(BulkPrintersCalculator::ALLOWLIST_ONLY);
   task_environment_.RunUntilIdle();
-  external_printers_->SetWhitelist({"First"});
+  external_printers_->SetAllowlist({"First"});
 
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(external_printers_->IsComplete());
@@ -217,14 +217,14 @@ TEST_F(BulkPrintersCalculatorTest, WhitelistPolicySet) {
   EXPECT_EQ("LexaPrint", printers.at("First").display_name());
 }
 
-// Verify that an empty blacklist results in no printer limits.
-TEST_F(BulkPrintersCalculatorTest, EmptyBlacklistAllPrinters) {
+// Verify that an empty blocklist results in no printer limits.
+TEST_F(BulkPrintersCalculatorTest, EmptyBlocklistAllPrinters) {
   auto data = std::make_unique<std::string>(kBulkPolicyContentsJson);
   external_printers_->ClearData();
   external_printers_->SetData(std::move(data));
-  external_printers_->SetAccessMode(BulkPrintersCalculator::BLACKLIST_ONLY);
+  external_printers_->SetAccessMode(BulkPrintersCalculator::BLOCKLIST_ONLY);
   task_environment_.RunUntilIdle();
-  external_printers_->SetBlacklist({});
+  external_printers_->SetBlocklist({});
 
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(external_printers_->IsComplete());
@@ -232,14 +232,14 @@ TEST_F(BulkPrintersCalculatorTest, EmptyBlacklistAllPrinters) {
   EXPECT_EQ(kNumPrinters, printers.size());
 }
 
-// Verify that an empty whitelist results in no printers.
-TEST_F(BulkPrintersCalculatorTest, EmptyWhitelistNoPrinters) {
+// Verify that an empty allowlist results in no printers.
+TEST_F(BulkPrintersCalculatorTest, EmptyAllowlistNoPrinters) {
   auto data = std::make_unique<std::string>(kBulkPolicyContentsJson);
   external_printers_->ClearData();
   external_printers_->SetData(std::move(data));
-  external_printers_->SetAccessMode(BulkPrintersCalculator::WHITELIST_ONLY);
+  external_printers_->SetAccessMode(BulkPrintersCalculator::ALLOWLIST_ONLY);
   task_environment_.RunUntilIdle();
-  external_printers_->SetWhitelist({});
+  external_printers_->SetAllowlist({});
 
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(external_printers_->IsComplete());
@@ -247,18 +247,18 @@ TEST_F(BulkPrintersCalculatorTest, EmptyWhitelistNoPrinters) {
   EXPECT_EQ(0U, printers.size());
 }
 
-// Verify that switching from whitelist to blacklist behaves correctly.
-TEST_F(BulkPrintersCalculatorTest, BlacklistToWhitelistSwap) {
+// Verify that switching from allowlist to blocklist behaves correctly.
+TEST_F(BulkPrintersCalculatorTest, BlocklistToAllowlistSwap) {
   auto data = std::make_unique<std::string>(kBulkPolicyContentsJson);
   external_printers_->ClearData();
   external_printers_->SetData(std::move(data));
-  external_printers_->SetAccessMode(BulkPrintersCalculator::BLACKLIST_ONLY);
-  external_printers_->SetWhitelist({"First"});
-  external_printers_->SetBlacklist({"First"});
+  external_printers_->SetAccessMode(BulkPrintersCalculator::BLOCKLIST_ONLY);
+  external_printers_->SetAllowlist({"First"});
+  external_printers_->SetBlocklist({"First"});
 
   // This should result in 2 printers.  But we're switching the mode anyway.
 
-  external_printers_->SetAccessMode(BulkPrintersCalculator::WHITELIST_ONLY);
+  external_printers_->SetAccessMode(BulkPrintersCalculator::ALLOWLIST_ONLY);
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(external_printers_->IsComplete());
   const auto& printers = external_printers_->GetPrinters();
@@ -289,8 +289,8 @@ TEST_F(BulkPrintersCalculatorTest, ObserverTest) {
   external_printers_->AddObserver(&obs);
 
   external_printers_->SetAccessMode(BulkPrintersCalculator::ALL_ACCESS);
-  external_printers_->SetWhitelist(std::vector<std::string>());
-  external_printers_->SetBlacklist(std::vector<std::string>());
+  external_printers_->SetAllowlist(std::vector<std::string>());
+  external_printers_->SetBlocklist(std::vector<std::string>());
   external_printers_->ClearData();
   task_environment_.RunUntilIdle();
   EXPECT_EQ(1, obs.called);
@@ -305,12 +305,12 @@ TEST_F(BulkPrintersCalculatorTest, ObserverTest) {
   // Printer list is correct after notification.
   EXPECT_EQ(kNumPrinters, external_printers_->GetPrinters().size());
 
-  external_printers_->SetAccessMode(BulkPrintersCalculator::WHITELIST_ONLY);
+  external_printers_->SetAccessMode(BulkPrintersCalculator::ALLOWLIST_ONLY);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(3, obs.called);  // effective list changed.  Notified.
   EXPECT_TRUE(obs.last_valid);
 
-  external_printers_->SetAccessMode(BulkPrintersCalculator::BLACKLIST_ONLY);
+  external_printers_->SetAccessMode(BulkPrintersCalculator::BLOCKLIST_ONLY);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(4, obs.called);  // effective list changed.  Notified.
   EXPECT_TRUE(obs.last_valid);

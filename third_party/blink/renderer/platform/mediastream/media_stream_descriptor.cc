@@ -63,7 +63,7 @@ void MediaStreamDescriptor::AddComponent(MediaStreamComponent* component) {
   // Iterate over a copy of |observers_| to avoid re-entrancy issues.
   Vector<WebMediaStreamObserver*> observers = observers_;
   for (auto*& observer : observers)
-    observer->TrackAdded(WebMediaStreamTrack(component));
+    observer->TrackAdded(component->Id());
 }
 
 void MediaStreamDescriptor::RemoveComponent(MediaStreamComponent* component) {
@@ -84,7 +84,7 @@ void MediaStreamDescriptor::RemoveComponent(MediaStreamComponent* component) {
   // Iterate over a copy of |observers_| to avoid re-entrancy issues.
   Vector<WebMediaStreamObserver*> observers = observers_;
   for (auto*& observer : observers)
-    observer->TrackRemoved(WebMediaStreamTrack(component));
+    observer->TrackRemoved(component->Id());
 }
 
 void MediaStreamDescriptor::AddRemoteTrack(MediaStreamComponent* component) {

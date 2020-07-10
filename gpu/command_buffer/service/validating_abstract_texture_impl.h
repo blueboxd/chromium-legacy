@@ -17,7 +17,6 @@ namespace gles2 {
 
 class ContextGroup;
 class ErrorState;
-class GLStreamTextureImage;
 class TextureManager;
 class TextureRef;
 
@@ -35,8 +34,7 @@ class GPU_GLES2_EXPORT ValidatingAbstractTextureImpl : public AbstractTexture {
   // AbstractTexture
   TextureBase* GetTextureBase() const override;
   void SetParameteri(GLenum pname, GLint param) override;
-  void BindStreamTextureImage(GLStreamTextureImage* image,
-                              GLuint service_id) override;
+  void BindStreamTextureImage(gl::GLImage* image, GLuint service_id) override;
   void BindImage(gl::GLImage* image, bool client_managed) override;
   gl::GLImage* GetImage() const override;
   void SetCleared() override;

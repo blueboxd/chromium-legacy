@@ -1606,12 +1606,12 @@
   {
     "name": "enable-experimental-accessibility-switch-access",
     "owners": [ "anastasi@google.com", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 86
   },
   {
     "name": "enable-experimental-accessibility-switch-access-text",
     "owners": [ "anastasi@google.com", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 87
   },
   {
     "name": "enable-experimental-cookie-features",

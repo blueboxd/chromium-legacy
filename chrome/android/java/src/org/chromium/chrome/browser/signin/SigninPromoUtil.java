@@ -15,10 +15,11 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.util.Collections;
@@ -39,8 +40,9 @@ public class SigninPromoUtil {
     public static boolean launchSigninPromoIfNeeded(final Activity activity) {
         SigninPreferencesManager preferencesManager = SigninPreferencesManager.getInstance();
         int currentMajorVersion = ChromeVersionInfo.getProductMajorVersion();
-        boolean wasSignedIn = TextUtils.isEmpty(
-                PrefServiceBridge.getInstance().getString(Pref.GOOGLE_SERVICES_LAST_USERNAME));
+        boolean wasSignedIn =
+                TextUtils.isEmpty(UserPrefs.get(Profile.getLastUsedRegularProfile())
+                                          .getString(Pref.GOOGLE_SERVICES_LAST_USERNAME));
         List<String> accountNames = AccountUtils.toAccountNames(
                 AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts());
         Supplier<Set<String>> accountNamesSupplier = () -> new ArraySet<>(accountNames);

@@ -45,8 +45,11 @@ class TextNavigationManager {
     }
   }
 
-  static initialize() {
-    TextNavigationManager.instance = new TextNavigationManager();
+  static get instance() {
+    if (!TextNavigationManager.instance_) {
+      TextNavigationManager.instance_ = new TextNavigationManager();
+    }
+    return TextNavigationManager.instance_;
   }
 
   // =============== Static Methods ==============

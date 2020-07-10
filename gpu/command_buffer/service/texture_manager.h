@@ -38,7 +38,6 @@ class DecoderContext;
 class ServiceDiscardableManager;
 
 namespace gles2 {
-class GLStreamTextureImage;
 struct ContextState;
 struct DecoderFramebufferState;
 class ErrorState;
@@ -80,9 +79,8 @@ class GPU_GLES2_EXPORT TexturePassthrough final
 
   void SetStreamLevelImage(GLenum target,
                            GLint level,
-                           GLStreamTextureImage* stream_texture_image,
+                           gl::GLImage* stream_texture_image,
                            GLuint service_id);
-  GLStreamTextureImage* GetStreamLevelImage(GLenum target, GLint level) const;
 
   // Return true if and only if the decoder should BindTexImage / CopyTexImage
   // us before sampling.
@@ -103,8 +101,8 @@ class GPU_GLES2_EXPORT TexturePassthrough final
   void SetLevelImageInternal(GLenum target,
                              GLint level,
                              gl::GLImage* image,
-                             GLStreamTextureImage* stream_texture_image,
                              GLuint service_id);
+  void UpdateStreamTextureServiceId(GLenum target, GLint level);
 
   friend class base::RefCounted<TexturePassthrough>;
 
@@ -130,7 +128,6 @@ class GPU_GLES2_EXPORT TexturePassthrough final
     GLenum type = 0;
 
     scoped_refptr<gl::GLImage> image;
-    scoped_refptr<GLStreamTextureImage> stream_texture_image;
   };
 
   LevelInfo* GetLevelInfo(GLenum target, GLint level);
@@ -186,7 +183,6 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
     GLenum format = 0;
     GLenum type = 0;
     scoped_refptr<gl::GLImage> image;
-    scoped_refptr<GLStreamTextureImage> stream_texture_image;
     ImageState image_state = UNBOUND;
     uint32_t estimated_size = 0;
     bool internal_workaround = false;
@@ -307,23 +303,22 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   bool GetLevelType(
       GLint target, GLint level, GLenum* type, GLenum* internal_format) const;
 
-  // Set the image for a particular level. If a GLStreamTextureImage was
-  // previously set with SetLevelStreamTextureImage(), this will reset
-  // |service_id_| back to |owned_service_id_|, removing the service id override
-  // set by the GLStreamTextureImage.
+  // Set the image for a particular level. If a GLImage was previously set with
+  // SetLevelStreamTextureImage(), this will reset |service_id_| back to
+  // |owned_service_id_|, removing the service id override set by the
+  // SetLevelStreamTextureImage.
   void SetLevelImage(GLenum target,
                      GLint level,
                      gl::GLImage* image,
                      ImageState state);
 
-  // Set the GLStreamTextureImage for a particular level.  This is like
-  // SetLevelImage, but it also makes it optional to override |service_id_| with
-  // a texture bound to the stream texture, and permits
-  // GetLevelStreamTextureImage to return the image. See
-  // SetStreamTextureServiceId() for the details of how |service_id| is used.
+  // Set the GLImage for a particular level.  This is like SetLevelImage, but it
+  // also makes it optional to override |service_id_| with a texture bound to
+  // the stream texture. See SetStreamTextureServiceId() for the details of how
+  // |service_id| is used.
   void SetLevelStreamTextureImage(GLenum target,
                                   GLint level,
-                                  GLStreamTextureImage* image,
+                                  gl::GLImage* image,
                                   ImageState state,
                                   GLuint service_id);
 
@@ -340,11 +335,6 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
                              GLint level,
                              ImageState* state) const;
   gl::GLImage* GetLevelImage(GLint target, GLint level) const;
-
-  // Like GetLevelImage, but will return NULL if the image wasn't set via
-  // a call to SetLevelStreamTextureImage.
-  GLStreamTextureImage* GetLevelStreamTextureImage(GLint target,
-                                                   GLint level) const;
 
   bool HasImages() const {
     return has_images_;
@@ -519,11 +509,10 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
     std::vector<LevelInfo> level_infos;
   };
 
-  // Helper for SetLevel*Image.  |stream_texture_image| may be null.
+  // Helper for SetLevel*Image.
   void SetLevelImageInternal(GLenum target,
                              GLint level,
                              gl::GLImage* image,
-                             GLStreamTextureImage* stream_texture_image,
                              ImageState state);
 
   // Returns NULL if the base level is not defined.
@@ -681,8 +670,8 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   TextureRef* memory_tracking_ref_ = nullptr;
 
   // The id of the texture that we are responsible for deleting.  Normally, this
-  // is the same as |service_id_|, unless a GLStreamTextureImage with its own
-  // service id is bound. In that case the GLStreamTextureImage service id is
+  // is the same as |service_id_|, unless a StreamTexture Image with its own
+  // service id is bound. In that case the StreamTexture service id is
   // stored in |service_id_| and overrides the owned service id for all purposes
   // except deleting the texture name.
   GLuint owned_service_id_;
@@ -1116,7 +1105,7 @@ class GPU_GLES2_EXPORT TextureManager
   void SetLevelStreamTextureImage(TextureRef* ref,
                                   GLenum target,
                                   GLint level,
-                                  GLStreamTextureImage* image,
+                                  gl::GLImage* image,
                                   Texture::ImageState state,
                                   GLuint service_id);
 

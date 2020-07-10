@@ -21,7 +21,6 @@ class GLImage;
 
 namespace gpu {
 namespace gles2 {
-class GLStreamTextureImage;
 
 // An AbstractTexture enables access to GL textures from the GPU process, for
 // things that set up textures using some client's decoder.  Creating an
@@ -64,7 +63,7 @@ class GPU_GLES2_EXPORT AbstractTexture {
   // It is not required to SetCleared() if one binds an image.
   //
   // The context must be current.
-  virtual void BindStreamTextureImage(GLStreamTextureImage* image,
+  virtual void BindStreamTextureImage(gl::GLImage* image,
                                       GLuint service_id) = 0;
 
   // Attaches |image| to the AbstractTexture.  If |client_managed| is true, then

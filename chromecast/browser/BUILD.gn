@@ -368,7 +368,6 @@ cast_source_set("browser") {
       "extensions/cast_kiosk_delegate.h",
       "extensions/cast_prefs.cc",
       "extensions/cast_prefs.h",
-      "extensions/stub_storage_monitor.cc",
     ]
     if (use_aura) {
       sources += [

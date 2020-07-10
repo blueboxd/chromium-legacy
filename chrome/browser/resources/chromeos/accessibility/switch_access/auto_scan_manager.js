@@ -41,8 +41,11 @@ class AutoScanManager {
 
   // ============== Static Methods ================
 
-  static initialize() {
-    AutoScanManager.instance = new AutoScanManager();
+  static get instance() {
+    if (!AutoScanManager.instance_) {
+      AutoScanManager.instance_ = new AutoScanManager();
+    }
+    return AutoScanManager.instance_;
   }
 
   /**

@@ -901,17 +901,13 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
   if (!going_away_)
     RecordUnexpectedNotGoingAway(DESTRUCTOR);
 
-  while (HasActiveRequestStreams() || !handles_.empty() ||
-         !stream_requests_.empty()) {
+  DCHECK(!HasActiveRequestStreams());
+  DCHECK(handles_.empty());
+  if (!stream_requests_.empty()) {
     // The session must be closed before it is destroyed.
-    DCHECK(!HasActiveRequestStreams());
-    CloseAllStreams(ERR_UNEXPECTED);
-    DCHECK(handles_.empty());
-    CloseAllHandles(ERR_UNEXPECTED);
     CancelAllRequests(ERR_UNEXPECTED);
-
-    connection()->set_debug_visitor(nullptr);
   }
+  connection()->set_debug_visitor(nullptr);
 
   if (connection()->connected()) {
     // Ensure that the connection is closed by the time the session is
@@ -1784,7 +1780,6 @@ void QuicChromiumClientSession::OnConnectionClosed(
     socket->Close();
   }
   DCHECK(!HasActiveRequestStreams());
-  CloseAllStreams(ERR_UNEXPECTED);
   CloseAllHandles(ERR_UNEXPECTED);
   CancelAllRequests(ERR_CONNECTION_CLOSED);
   NotifyRequestsOfConfirmation(ERR_CONNECTION_CLOSED);
@@ -2421,7 +2416,7 @@ void QuicChromiumClientSession::CloseSessionOnError(
     std::move(callback_).Run(net_error);
   }
 
-  CloseAllStreams(net_error);
+  NotifyAllStreamsOfError(net_error);
 
   net_log_.AddEventWithIntParams(NetLogEventType::QUIC_SESSION_CLOSE_ON_ERROR,
                                  "net_error", net_error);
@@ -2443,7 +2438,7 @@ void QuicChromiumClientSession::CloseSessionOnErrorLater(
   if (!callback_.is_null()) {
     std::move(callback_).Run(net_error);
   }
-  CloseAllStreams(net_error);
+  NotifyAllStreamsOfError(net_error);
   CloseAllHandles(net_error);
   net_log_.AddEventWithIntParams(NetLogEventType::QUIC_SESSION_CLOSE_ON_ERROR,
                                  "net_error", net_error);
@@ -2455,19 +2450,13 @@ void QuicChromiumClientSession::CloseSessionOnErrorLater(
   NotifyFactoryOfSessionClosedLater();
 }
 
-void QuicChromiumClientSession::CloseAllStreams(int net_error) {
-    quic::QuicSmallMap<quic::QuicStreamId, quic::QuicStream*, 10>
-        non_static_streams;
-    for (const auto& stream : stream_map()) {
-      if (!stream.second->is_static()) {
-        non_static_streams[stream.first] = stream.second.get();
-      }
+void QuicChromiumClientSession::NotifyAllStreamsOfError(int net_error) {
+  for (const auto& stream : stream_map()) {
+    if (!stream.second->is_static()) {
+      static_cast<QuicChromiumClientStream*>(stream.second.get())
+          ->OnError(net_error);
     }
-    for (const auto& stream : non_static_streams) {
-      quic::QuicStreamId id = stream.first;
-      static_cast<QuicChromiumClientStream*>(stream.second)->OnError(net_error);
-      CloseStream(id);
-    }
+  }
 }
 
 void QuicChromiumClientSession::CloseAllHandles(int net_error) {

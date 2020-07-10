@@ -78,8 +78,12 @@ def _CheckTestExpectations(input_api, output_api):
     results = []
     os_path = input_api.os_path
     sys.path.append(
-        os_path.join(os_path.dirname(os_path.abspath(inspect.getfile(_CheckTestExpectations))), '..', 'tools'))
-    from blinkpy.web_tests.lint_test_expectations import PresubmitCheckTestExpectations
+        os_path.join(
+            os_path.dirname(
+                os_path.abspath(inspect.getfile(_CheckTestExpectations))),
+                '..', 'tools'))
+    from blinkpy.web_tests.lint_test_expectations_presubmit import (
+        PresubmitCheckTestExpectations)
     results.extend(PresubmitCheckTestExpectations(input_api, output_api))
     return results
 

@@ -16,8 +16,6 @@
 #include "gpu/command_buffer/service/error_state_mock.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
-#include "gpu/command_buffer/service/gl_stream_texture_image.h"
-#include "gpu/command_buffer/service/gl_stream_texture_image_stub.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
@@ -1679,7 +1677,6 @@ TEST_F(TextureTest, GetLevelImage) {
   manager_->SetLevelImage(texture_ref_.get(), GL_TEXTURE_2D, 1, image.get(),
                           Texture::BOUND);
   EXPECT_FALSE(texture->GetLevelImage(GL_TEXTURE_2D, 1) == nullptr);
-  EXPECT_TRUE(texture->GetLevelStreamTextureImage(GL_TEXTURE_2D, 1) == nullptr);
   // Remove it.
   manager_->SetLevelImage(texture_ref_.get(), GL_TEXTURE_2D, 1, nullptr,
                           Texture::UNBOUND);
@@ -1690,43 +1687,6 @@ TEST_F(TextureTest, GetLevelImage) {
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1, GL_RGBA, 2, 2, 1,
                          0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(2, 2));
   EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 1) == nullptr);
-  EXPECT_TRUE(texture->GetLevelStreamTextureImage(GL_TEXTURE_2D, 1) == nullptr);
-}
-
-TEST_F(TextureTest, GetLevelStreamTextureImage) {
-  manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_EXTERNAL_OES);
-  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_EXTERNAL_OES, 0,
-                         GL_RGBA, 2, 2, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                         gfx::Rect(2, 2));
-  Texture* texture = texture_ref_->texture();
-
-  // Set image.
-  scoped_refptr<GLStreamTextureImage> image(new GLStreamTextureImageStub);
-  manager_->SetLevelStreamTextureImage(texture_ref_.get(),
-                                       GL_TEXTURE_EXTERNAL_OES, 0, image.get(),
-                                       Texture::BOUND, 0);
-  EXPECT_FALSE(texture->GetLevelImage(GL_TEXTURE_EXTERNAL_OES, 0) == nullptr);
-  EXPECT_FALSE(texture->GetLevelStreamTextureImage(GL_TEXTURE_EXTERNAL_OES,
-                                                   0) == nullptr);
-
-  // Replace it as a normal image.
-  scoped_refptr<gl::GLImage> image2(new gl::GLImageStub);
-  manager_->SetLevelImage(texture_ref_.get(), GL_TEXTURE_EXTERNAL_OES, 0,
-                          image2.get(), Texture::BOUND);
-  EXPECT_FALSE(texture->GetLevelImage(GL_TEXTURE_EXTERNAL_OES, 0) == nullptr);
-  EXPECT_TRUE(texture->GetLevelStreamTextureImage(GL_TEXTURE_EXTERNAL_OES, 0) ==
-              nullptr);
-
-  // Image should be reset when SetLevelInfo is called.
-  manager_->SetLevelStreamTextureImage(texture_ref_.get(),
-                                       GL_TEXTURE_EXTERNAL_OES, 0, image.get(),
-                                       Texture::UNBOUND, 0);
-  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_EXTERNAL_OES, 0,
-                         GL_RGBA, 2, 2, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                         gfx::Rect(2, 2));
-  EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_EXTERNAL_OES, 0) == nullptr);
-  EXPECT_TRUE(texture->GetLevelStreamTextureImage(GL_TEXTURE_EXTERNAL_OES, 0) ==
-              nullptr);
 }
 
 TEST_F(TextureTest, SetLevelImageState) {
@@ -1761,7 +1721,7 @@ TEST_F(TextureTest, SetStreamTextureImageServiceID) {
 
   // Override the service_id.
   GLuint stream_texture_service_id = service_id + 1;
-  scoped_refptr<GLStreamTextureImage> image(new GLStreamTextureImageStub);
+  scoped_refptr<gl::GLImage> image(new gl::GLImageStub);
   manager_->SetLevelStreamTextureImage(
       texture_ref_.get(), GL_TEXTURE_EXTERNAL_OES, 0, image.get(),
       Texture::BOUND, stream_texture_service_id);

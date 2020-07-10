@@ -2154,9 +2154,6 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
   }
   socket_data.AddWrite(
       SYNCHRONOUS,
-      ConstructClientRstPacket(packet_num++, quic::QUIC_RST_ACKNOWLEDGEMENT));
-  socket_data.AddWrite(
-      SYNCHRONOUS,
       client_maker_.MakeConnectionClosePacket(
           packet_num++, true, quic::QUIC_PEER_GOING_AWAY, "net error"));
   socket_data.AddSocketDataToFactory(socket_factory_.get());
@@ -2367,9 +2364,6 @@ TEST_P(QuicStreamFactoryTest, CloseSessionsOnIPAddressChanged) {
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
-  socket_data.AddWrite(
-      SYNCHRONOUS,
-      ConstructClientRstPacket(packet_num++, quic::QUIC_RST_ACKNOWLEDGEMENT));
   socket_data.AddWrite(
       SYNCHRONOUS,
       client_maker_.MakeConnectionClosePacket(
@@ -3453,11 +3447,6 @@ TEST_P(QuicStreamFactoryTest,
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
   }
-  socket_data.AddWrite(
-      SYNCHRONOUS,
-      client_maker_.MakeRstPacket(packet_num++, true,
-                                  GetNthClientInitiatedBidirectionalStreamId(0),
-                                  quic::QUIC_RST_ACKNOWLEDGEMENT));
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
   // Create request and QuicHttpStream.
@@ -3490,9 +3479,7 @@ TEST_P(QuicStreamFactoryTest,
       session->config());
   EXPECT_TRUE(session->config()->DisableConnectionMigration());
 
-  // Trigger connection migration. Since there is a non-migratable stream,
-  // this should cause a RST_STREAM frame to be emitted with
-  // quic::QUIC_RST_ACKNOWLEDGEMENT error code, and the session will be closed.
+  // Trigger connection migration.
   scoped_mock_network_change_notifier_->mock_network_change_notifier()
       ->NotifyNetworkDisconnected(kDefaultNetworkForTests);
 

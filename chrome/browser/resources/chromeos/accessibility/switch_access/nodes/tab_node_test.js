@@ -5,12 +5,7 @@
 GEN_INCLUDE(['../switch_access_e2e_test_base.js']);
 
 /** Test fixture for the tab node type. */
-SwitchAccessTabNodeTest = class extends SwitchAccessE2ETest {
-  /** @override */
-  setUp() {
-    MenuManager.initialize();
-  }
-};
+SwitchAccessTabNodeTest = class extends SwitchAccessE2ETest {};
 
 TEST_F('SwitchAccessTabNodeTest', 'FindCloseButton', function() {
   this.runWithLoadedTree('', (desktop) => {

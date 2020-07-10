@@ -368,11 +368,14 @@ WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
 // static
 MediaStreamVideoTrack* MediaStreamVideoTrack::GetVideoTrack(
     const WebMediaStreamTrack& track) {
-  if (track.IsNull() ||
-      track.Source().GetType() != WebMediaStreamSource::kTypeVideo) {
+  if (track.IsNull())
     return nullptr;
-  }
-  return static_cast<MediaStreamVideoTrack*>(track.GetPlatformTrack());
+
+  MediaStreamComponent& component = *track;
+  if (component.Source()->GetType() != MediaStreamSource::kTypeVideo)
+    return nullptr;
+
+  return static_cast<MediaStreamVideoTrack*>(component.GetPlatformTrack());
 }
 
 MediaStreamVideoTrack::MediaStreamVideoTrack(

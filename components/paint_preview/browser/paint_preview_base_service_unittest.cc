@@ -13,6 +13,7 @@
 #include "components/paint_preview/common/mojom/paint_preview_recorder.mojom.h"
 #include "components/paint_preview/common/test_utils.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -141,6 +142,8 @@ class PaintPreviewBaseServiceTest : public content::RenderViewHostTestHarness {
     PaintPreviewBaseServiceTestFactory::GetInstance()->SetTestingFactory(
         rejection_policy_key_.get(),
         base::BindRepeating(&BuildServiceWithRejectionPolicy));
+    content::NavigationSimulator::NavigateAndCommitFromBrowser(
+        web_contents(), GURL("https://www.chromium.org"));
   }
 
   void OverrideInterface(MockPaintPreviewRecorder* service) {

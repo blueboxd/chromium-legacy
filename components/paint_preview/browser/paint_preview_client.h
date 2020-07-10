@@ -124,6 +124,9 @@ class PaintPreviewClient
     // All the render frames that have finished.
     base::flat_set<base::UnguessableToken> finished_subframes;
 
+    // All the render frames that are allowed to be captured.
+    base::flat_set<base::UnguessableToken> accepted_tokens;
+
     // Data proto that is returned via callback.
     std::unique_ptr<PaintPreviewProto> proto;
 
@@ -205,10 +208,6 @@ class PaintPreviewClient
   void OnFinished(base::UnguessableToken guid, PaintPreviewData* document_data);
 
   // Storage ------------------------------------------------------------------
-
-  // Mapping of Process ID || Routing ID to unguessable tokens for the main
-  // frame.
-  base::flat_map<uint64_t, base::UnguessableToken> main_frame_guids_;
 
   // Maps a RenderFrameHost and document to a remote interface.
   base::flat_map<base::UnguessableToken,

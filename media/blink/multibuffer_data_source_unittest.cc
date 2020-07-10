@@ -59,8 +59,8 @@ class TestMultiBufferDataProvider : public ResourceMultiBufferDataProvider {
   // ResourceMultiBufferDataProvider overrides.
   void Start() override {
     ResourceMultiBufferDataProvider::Start();
-    if (!on_start_.is_null())
-      on_start_.Run();
+    if (on_start_)
+      std::move(on_start_).Run();
   }
   void SetDeferred(bool defer) override {
     deferred_ = defer;
@@ -69,11 +69,11 @@ class TestMultiBufferDataProvider : public ResourceMultiBufferDataProvider {
 
   bool loading() const { return !!active_loader_; }
   bool deferred() const { return deferred_; }
-  void RunOnStart(base::Closure cb) { on_start_ = cb; }
+  void RunOnStart(base::OnceClosure cb) { on_start_ = std::move(cb); }
 
  private:
   bool deferred_ = false;
-  base::Closure on_start_;
+  base::OnceClosure on_start_;
 };
 
 class TestUrlData;

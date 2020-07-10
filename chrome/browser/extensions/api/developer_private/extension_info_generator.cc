@@ -193,20 +193,15 @@ void ConstructCommands(CommandService* command_service,
   // TODO(https://crbug.com/1067130): Extensions shouldn't be able to specify
   // commands for actions they don't have, so we should just be able to query
   // for a single action type.
-  bool active = false;
-  Command browser_action;
-  if (command_service->GetExtensionActionCommand(
-          extension_id, ActionInfo::TYPE_BROWSER, CommandService::ALL,
-          &browser_action, &active)) {
-    commands->push_back(construct_command(browser_action, active, true));
-  }
-
-  Command page_action;
-  active = false;
-  if (command_service->GetExtensionActionCommand(
-          extension_id, ActionInfo::TYPE_PAGE, CommandService::ALL,
-          &page_action, &active)) {
-    commands->push_back(construct_command(page_action, active, true));
+  for (auto action_type : {ActionInfo::TYPE_BROWSER, ActionInfo::TYPE_PAGE,
+                           ActionInfo::TYPE_ACTION}) {
+    bool active = false;
+    Command action_command;
+    if (command_service->GetExtensionActionCommand(extension_id, action_type,
+                                                   CommandService::ALL,
+                                                   &action_command, &active)) {
+      commands->push_back(construct_command(action_command, active, true));
+    }
   }
 
   CommandMap named_commands;

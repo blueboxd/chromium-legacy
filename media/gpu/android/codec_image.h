@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
-#include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/command_buffer/service/stream_texture_shared_image_interface.h"
 #include "media/gpu/android/codec_output_buffer_renderer.h"
 #include "media/gpu/android/promotion_hint_aggregator.h"
@@ -88,14 +87,7 @@ class MEDIA_GPU_EXPORT CodecImage
                     const std::string& dump_name) override;
   std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
   GetAHardwareBuffer() override;
-  // gpu::gles2::GLStreamTextureMatrix implementation
-  // Currently this API is implemented by the NotifyOverlayPromotion, since this
-  // API is expected to be removed.
-  void NotifyPromotionHint(bool promotion_hint,
-                           int display_x,
-                           int display_y,
-                           int display_width,
-                           int display_height) override;
+
   // If we re-use one CodecImage with different output buffers, then we must
   // not claim to have mutable state.  Otherwise, CopyTexImage is only called
   // once.  For pooled shared images, this must return false.  For single-use

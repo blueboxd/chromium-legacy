@@ -26,21 +26,16 @@ MediaSessionController::~MediaSessionController() {
   media_session_->RemovePlayer(this, player_id_);
 }
 
-bool MediaSessionController::Initialize(
+bool MediaSessionController::OnPlaybackStarted(
     bool has_audio,
-    media::MediaContentType media_content_type,
-    media_session::MediaPosition* position,
-    bool is_pip_available,
-    bool has_video) {
+    bool has_video,
+    media::MediaContentType media_content_type) {
+  is_playback_in_progress_ = true;
+
   // Store these as we will need them later.
   has_audio_ = has_audio;
   has_video_ = has_video;
   media_content_type_ = media_content_type;
-
-  if (position)
-    position_ = *position;
-
-  is_picture_in_picture_available_ = is_pip_available;
 
   // Don't generate a new id if one has already been set.
   if (!has_session_) {
@@ -134,7 +129,12 @@ bool MediaSessionController::IsPictureInPictureAvailable(int player_id) const {
   return is_picture_in_picture_available_;
 }
 
-void MediaSessionController::OnPlaybackPaused() {
+void MediaSessionController::OnPlaybackPaused(bool reached_end_of_stream) {
+  if (reached_end_of_stream) {
+    is_playback_in_progress_ = false;
+    AddOrRemovePlayer();
+  }
+
   // We check for suspension here since the renderer may issue its own pause
   // in response to or while a pause from the browser is in flight.
   if (media_session_->IsActive())
@@ -163,6 +163,9 @@ void MediaSessionController::OnPictureInPictureAvailabilityChanged(
 }
 
 bool MediaSessionController::IsMediaSessionNeeded() const {
+  if (!is_playback_in_progress_)
+    return false;
+
   // We want to make sure we do not request audio focus on a muted tab as it
   // would break user expectations by pausing/ducking other playbacks.
   const bool has_audio =

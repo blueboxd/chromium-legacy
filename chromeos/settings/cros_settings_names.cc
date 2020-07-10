@@ -363,16 +363,13 @@ const char kFineGrainedTimeZoneResolveEnabled[] =
 const char kDeviceOffHours[] = "cros.device_off_hours";
 
 // An enum specifying the access policy device printers should observe.
-const char kDeviceNativePrintersAccessMode[] =
-    "cros.device.native_printers_access_mode";
+const char kDevicePrintersAccessMode[] = "cros.device.printers_access_mode";
 // A list of strings representing device printer ids for which access is
 // restricted.
-const char kDeviceNativePrintersBlacklist[] =
-    "cros.device.native_printers_blacklist";
+const char kDevicePrintersBlocklist[] = "cros.device.printers_blocklist";
 // A list of strings representing the list of device printer ids which are
 // accessible.
-const char kDeviceNativePrintersWhitelist[] =
-    "cros.device.native_printers_whitelist";
+const char kDevicePrintersAllowlist[] = "cros.device.printers_allowlist";
 
 // List of print servers ids that are allowed. List of strings.
 const char kDeviceExternalPrintServersAllowlist[] =

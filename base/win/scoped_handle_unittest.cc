@@ -49,7 +49,7 @@ TEST(ScopedHandleTest, ScopedHandle) {
   EXPECT_EQ(magic_error, ::GetLastError());
 }
 
-TEST(ScopedHandleTest, ActiveVerifierTrackedHasBeenClosed) {
+TEST(ScopedHandleTest, HandleVerifierTrackedHasBeenClosed) {
   HANDLE handle = ::CreateMutex(nullptr, false, nullptr);
   ASSERT_NE(HANDLE(nullptr), handle);
   using NtCloseFunc = decltype(&::NtClose);
@@ -67,7 +67,7 @@ TEST(ScopedHandleTest, ActiveVerifierTrackedHasBeenClosed) {
       "");
 }
 
-TEST(ScopedHandleTest, ActiveVerifierDoubleTracking) {
+TEST(ScopedHandleTest, HandleVerifierDoubleTracking) {
   HANDLE handle = ::CreateMutex(nullptr, false, nullptr);
   ASSERT_NE(HANDLE(nullptr), handle);
 
@@ -76,7 +76,7 @@ TEST(ScopedHandleTest, ActiveVerifierDoubleTracking) {
   ASSERT_DEATH({ base::win::ScopedHandle handle_holder2(handle); }, "");
 }
 
-TEST(ScopedHandleTest, ActiveVerifierWrongOwner) {
+TEST(ScopedHandleTest, HandleVerifierWrongOwner) {
   HANDLE handle = ::CreateMutex(nullptr, false, nullptr);
   ASSERT_NE(HANDLE(nullptr), handle);
 
@@ -91,7 +91,7 @@ TEST(ScopedHandleTest, ActiveVerifierWrongOwner) {
   handle_holder.Close();
 }
 
-TEST(ScopedHandleTest, ActiveVerifierUntrackedHandle) {
+TEST(ScopedHandleTest, HandleVerifierUntrackedHandle) {
   HANDLE handle = ::CreateMutex(nullptr, false, nullptr);
   ASSERT_NE(HANDLE(nullptr), handle);
 
@@ -121,7 +121,7 @@ TEST(ScopedHandleTest, MAYBE_MultiProcess) {
   command_line.AppendSwitch(switches::kTestDoNotInitializeIcu);
 
   base::Process test_child_process = base::SpawnMultiProcessTestChild(
-      "ActiveVerifierChildProcess", command_line, LaunchOptions());
+      "HandleVerifierChildProcess", command_line, LaunchOptions());
 
   int rv = -1;
   ASSERT_TRUE(test_child_process.WaitForExitWithTimeout(
@@ -129,7 +129,7 @@ TEST(ScopedHandleTest, MAYBE_MultiProcess) {
   EXPECT_EQ(0, rv);
 }
 
-MULTIPROCESS_TEST_MAIN(ActiveVerifierChildProcess) {
+MULTIPROCESS_TEST_MAIN(HandleVerifierChildProcess) {
   ScopedNativeLibrary module(
       FilePath(FILE_PATH_LITERAL("scoped_handle_test_dll.dll")));
 

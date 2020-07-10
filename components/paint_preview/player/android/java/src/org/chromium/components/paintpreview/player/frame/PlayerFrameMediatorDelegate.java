@@ -4,6 +4,9 @@
 
 package org.chromium.components.paintpreview.player.frame;
 
+import android.graphics.Matrix;
+import android.graphics.Rect;
+
 /**
  * API of the PlayerFrameMediator to helper classes.
  */
@@ -15,4 +18,32 @@ public interface PlayerFrameMediatorDelegate {
      *     discarded.
      */
     void updateVisuals(boolean scaleChanged);
+
+    /**
+     * Updates the visibility and size of subframes.
+     * @param viewportRect The viewport rect to use for computing visibility.
+     * @param scaleFactor The scale factor at which to compute visibility.
+     */
+    void updateSubframes(Rect viewportRect, float scaleFactor);
+
+    /**
+     * Sets the bitmap scale matrix and recursively sets the bitmap scale matrix of children
+     * ignoring the translation portion of the transform. Also updates subframe visibility of
+     * nested subframes.
+     * @param bitmapScaleMatrix The bitmap scale matrix to use for the currently loaded bitmaps.
+     * @param scaleFactor The scale factor to use when computing nested subframe visibility.
+     */
+    void setBitmapScaleMatrix(Matrix bitmapScaleMatrix, float scaleFactor);
+
+    /**
+     * Resets the scale factor of subframes. This allows a new initial scale factor to be used for
+     * subframes when fetching bitmaps at the new scale.
+     */
+    void resetScaleFactorOfAllSubframes();
+
+    /**
+     * Forcibly redraws the currently visible subframes. This prevents issues where a subframe won't
+     * redraw when scaling is finished if its layout size didn't change.
+     */
+    void forceRedrawVisibleSubframes();
 }

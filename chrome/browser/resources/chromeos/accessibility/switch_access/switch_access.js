@@ -14,15 +14,11 @@ class SwitchAccess {
         chrome.virtualKeyboardPrivate.KeyboardState.ENABLED);
 
     chrome.automation.getDesktop((desktop) => {
-      // These two must be initialized before the others.
-      AutoScanManager.initialize();
+      // NavigationManager must be initialized first.
       NavigationManager.initialize(desktop);
 
       Commands.initialize();
-      FocusRingManager.initialize();
-      MenuManager.initialize();
       SwitchAccessPreferences.initialize();
-      TextNavigationManager.initialize();
 
       // This can throw an error, so it is done last.
       KeyboardRootNode.startWatchingVisibility();

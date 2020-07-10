@@ -59,54 +59,9 @@ WebMediaStreamTrack::operator MediaStreamComponent*() const {
   return private_.Get();
 }
 
-bool WebMediaStreamTrack::IsEnabled() const {
-  DCHECK(!private_.IsNull());
-  return private_->Enabled();
-}
-
-bool WebMediaStreamTrack::IsMuted() const {
-  DCHECK(!private_.IsNull());
-  return private_->Muted();
-}
-
-WebMediaStreamTrack::ContentHintType WebMediaStreamTrack::ContentHint() const {
-  DCHECK(!private_.IsNull());
-  return private_->ContentHint();
-}
-
-MediaConstraints WebMediaStreamTrack::Constraints() const {
-  DCHECK(!private_.IsNull());
-  return private_->Constraints();
-}
-
-void WebMediaStreamTrack::SetConstraints(const MediaConstraints& constraints) {
-  DCHECK(!private_.IsNull());
-  return private_->SetConstraints(constraints);
-}
-
-WebString WebMediaStreamTrack::Id() const {
-  DCHECK(!private_.IsNull());
-  return private_->Id();
-}
-
-int WebMediaStreamTrack::UniqueId() const {
-  DCHECK(!private_.IsNull());
-  return private_->UniqueId();
-}
-
 WebMediaStreamSource WebMediaStreamTrack::Source() const {
   DCHECK(!private_.IsNull());
   return WebMediaStreamSource(private_->Source());
-}
-
-WebPlatformMediaStreamTrack* WebMediaStreamTrack::GetPlatformTrack() const {
-  return private_->GetPlatformTrack();
-}
-
-void WebMediaStreamTrack::SetPlatformTrack(
-    std::unique_ptr<WebPlatformMediaStreamTrack> platform_track) {
-  DCHECK(!private_.IsNull());
-  private_->SetPlatformTrack(std::move(platform_track));
 }
 
 void WebMediaStreamTrack::SetSourceProvider(WebAudioSourceProvider* provider) {

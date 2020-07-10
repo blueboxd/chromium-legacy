@@ -194,11 +194,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '082323b57da7c15e9d43ea3b68d2e6907e9b8139',
+  'skia_revision': '73923522fd679a4f001d2ff63b476e38b6a58ff1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '13128e29b8081032f01889ed6c84d7cca6915188',
+  'v8_revision': 'ca0adda2bede75c6f88a62670a7724c1a7af5cbf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -780,7 +780,7 @@ deps = {
     Var('chromium_git') + '/angle/angle.git' + '@' +  Var('angle_revision'),
 
   'src/third_party/dav1d/libdav1d':
-    Var('chromium_git') + '/external/github.com/videolan/dav1d.git' + '@' + '5fe20ec7dd89c88453a61cd47d5d01e49d6cc6c2',
+    Var('chromium_git') + '/external/github.com/videolan/dav1d.git' + '@' + 'ebc8e4d9fb942e7479ecf41fe17e361286e1af29',
 
   'src/third_party/dawn':
     Var('dawn_git') + '/dawn.git' + '@' +  Var('dawn_revision'),
@@ -1224,7 +1224,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + 'a5473711f3e20c6bd1c33d81b6c7b9a0618aa18f',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + '09cdba8cd4a66eb6bf8f9b7123f2b4be8b327cd8',
+    Var('chromium_git') + '/openscreen' + '@' + 'b0b5891ddfacb9033d24b18e7495f5f0b664c863',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '9e97b73e7dd2bfc07745489d728f6a36665c648f',

@@ -28,19 +28,6 @@ namespace paint_preview {
 
 namespace {
 
-// Creates an old style id of Process ID || Routing ID. This should only be used
-// for looking up the main frame's filler GUID in cases where only the
-// RenderFrameHost is available (such as in RenderFrameDeleted()).
-uint64_t MakeOldStyleId(content::RenderFrameHost* render_frame_host) {
-  return (static_cast<uint64_t>(render_frame_host->GetProcess()->GetID())
-          << 32) |
-         render_frame_host->GetRoutingID();
-}
-
-uint64_t MakeOldStyleId(const content::GlobalFrameRoutingId& id) {
-  return (static_cast<uint64_t>(id.child_id) << 32) | id.frame_routing_id;
-}
-
 // Converts gfx::Rect to its RectProto form.
 void RectToRectProto(const gfx::Rect& rect, RectProto* proto) {
   proto->set_x(rect.x());
@@ -95,6 +82,19 @@ void RecordUkmCaptureData(ukm::SourceId source_id,
       .Record(ukm::UkmRecorder::Get());
 }
 
+base::flat_set<base::UnguessableToken> CreateAcceptedTokenList(
+    content::RenderFrameHost* render_frame_host) {
+  auto rfhs = render_frame_host->GetFramesInSubtree();
+  std::vector<base::UnguessableToken> tokens;
+  tokens.reserve(rfhs.size());
+  for (content::RenderFrameHost* rfh : rfhs) {
+    auto maybe_token = rfh->GetEmbeddingToken();
+    if (maybe_token.has_value())
+      tokens.push_back(maybe_token.value());
+  }
+  return base::flat_set<base::UnguessableToken>(std::move(tokens));
+}
+
 }  // namespace
 
 PaintPreviewClient::PaintPreviewParams::PaintPreviewParams()
@@ -144,6 +144,7 @@ void PaintPreviewClient::CapturePaintPreview(
   document_data.root_url = render_frame_host->GetLastCommittedURL();
   document_data.source_id =
       ukm::GetSourceIdForWebContentsDocument(web_contents());
+  document_data.accepted_tokens = CreateAcceptedTokenList(render_frame_host);
   all_document_data_.insert({params.document_guid, std::move(document_data)});
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
       "paint_preview", "PaintPreviewClient::CapturePaintPreview",
@@ -167,15 +168,7 @@ void PaintPreviewClient::RenderFrameDeleted(
   // TODO(crbug/1044983): Investigate possible issues with cleanup if just
   // a single subframe gets deleted.
   auto maybe_token = render_frame_host->GetEmbeddingToken();
-  bool is_main_frame = false;
-  if (!maybe_token.has_value()) {
-    uint64_t old_style_id = MakeOldStyleId(render_frame_host);
-    auto it = main_frame_guids_.find(old_style_id);
-    if (it == main_frame_guids_.end())
-      return;
-    maybe_token = it->second;
-    is_main_frame = true;
-  }
+  bool is_main_frame = render_frame_host->GetParent() == nullptr;
   base::UnguessableToken frame_guid = maybe_token.value();
   auto it = pending_previews_on_subframe_.find(frame_guid);
   if (it == pending_previews_on_subframe_.end())
@@ -231,18 +224,12 @@ void PaintPreviewClient::CapturePaintPreviewInternal(
     const PaintPreviewParams& params,
     content::RenderFrameHost* render_frame_host) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // Use a frame's embedding token as its GUID. Note that we create a GUID for
-  // the main frame so that we can treat it the same as other frames.
+  // Use a frame's embedding token as its GUID.
   auto token = render_frame_host->GetEmbeddingToken();
-  if (params.is_main_frame && !token.has_value()) {
-    token = base::UnguessableToken::Create();
-    main_frame_guids_.insert(
-        {MakeOldStyleId(render_frame_host), token.value()});
-  }
 
   // This should be impossible, but if it happens in a release build just abort.
   if (!token.has_value()) {
-    DVLOG(1) << "Error: Attempted to capture a non-main frame without an "
+    DVLOG(1) << "Error: Attempted to capture a frame without an "
                 "embedding token.";
     NOTREACHED();
     return;
@@ -253,7 +240,13 @@ void PaintPreviewClient::CapturePaintPreviewInternal(
     return;
   auto* document_data = &it->second;
 
+  // The embedding token should be in the list of tokens in the tree when
+  // capture was started. If this is not the case then the frame may have
+  // navigated. This is unsafe to capture.
   base::UnguessableToken frame_guid = token.value();
+  if (!base::Contains(document_data->accepted_tokens, frame_guid))
+    return;
+
   if (params.is_main_frame)
     document_data->root_frame_token = frame_guid;
   // Deduplicate data if a subframe is required multiple times.
@@ -294,8 +287,11 @@ void PaintPreviewClient::RequestCaptureOnUIThread(
     return;
   }
 
+  // If the render frame host navigated or is no longer around treat this as a
+  // failure as a navigation occurring during capture is bad.
   auto* render_frame_host = content::RenderFrameHost::FromID(render_frame_id);
-  if (!render_frame_host) {
+  if (!render_frame_host || render_frame_host->GetEmbeddingToken().value_or(
+                                base::UnguessableToken::Null()) != frame_guid) {
     std::move(document_data->callback)
         .Run(params.document_guid, mojom::PaintPreviewStatus::kCaptureFailed,
              nullptr);
@@ -341,7 +337,8 @@ void PaintPreviewClient::OnPaintPreviewCapturedCallback(
   if (status == mojom::PaintPreviewStatus::kOk) {
     status = RecordFrame(guid, frame_guid, is_main_frame, filename,
                          render_frame_id, std::move(response));
-  } else {
+  }
+  if (status != mojom::PaintPreviewStatus::kOk) {
     // If the capture failed then cleanup the file.
     base::ThreadPool::PostTask(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
@@ -387,9 +384,18 @@ mojom::PaintPreviewStatus PaintPreviewClient::RecordFrame(
     const base::FilePath& filename,
     const content::GlobalFrameRoutingId& render_frame_id,
     mojom::PaintPreviewCaptureResponsePtr response) {
+  // If the render frame host navigated or is no longer around treat this as a
+  // failure as a navigation occurring during capture is bad.
+  auto* render_frame_host = content::RenderFrameHost::FromID(render_frame_id);
+  if (!render_frame_host || render_frame_host->GetEmbeddingToken().value_or(
+                                base::UnguessableToken::Null()) != frame_guid) {
+    return mojom::PaintPreviewStatus::kCaptureFailed;
+  }
+
   auto it = all_document_data_.find(guid);
   if (it == all_document_data_.end())
     return mojom::PaintPreviewStatus::kCaptureFailed;
+
   auto* document_data = &it->second;
   if (!document_data->proto) {
     document_data->proto = std::make_unique<PaintPreviewProto>();
@@ -405,8 +411,6 @@ mojom::PaintPreviewStatus PaintPreviewClient::RecordFrame(
         response->blink_recording_time;
     frame_proto = proto_ptr->mutable_root_frame();
     frame_proto->set_is_main_frame(true);
-    uint64_t old_style_id = MakeOldStyleId(render_frame_id);
-    main_frame_guids_.erase(old_style_id);
   } else {
     frame_proto = proto_ptr->add_subframes();
     frame_proto->set_is_main_frame(false);
@@ -419,8 +423,12 @@ mojom::PaintPreviewStatus PaintPreviewClient::RecordFrame(
           std::move(response), frame_guid, frame_proto);
 
   for (const auto& remote_frame_guid : remote_frame_guids) {
-    if (!base::Contains(document_data->finished_subframes, remote_frame_guid))
+    // Don't wait again for a frame that was already captured. Also don't wait
+    // on frames that navigated during capture and have new embedding tokens.
+    if (!base::Contains(document_data->finished_subframes, remote_frame_guid) &&
+        base::Contains(document_data->accepted_tokens, remote_frame_guid)) {
       document_data->awaiting_subframes.insert(remote_frame_guid);
+    }
   }
   return mojom::PaintPreviewStatus::kOk;
 }

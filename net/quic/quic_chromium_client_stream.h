@@ -253,6 +253,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
   // Clears |handle_| from this stream.
   void ClearHandle();
 
+  // Notifies the stream handle of error, but doesn't close the stream.
   void OnError(int error);
 
   // Reads at most |buf_len| bytes into |buf|. Returns the number of bytes read.

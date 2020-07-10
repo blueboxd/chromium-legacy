@@ -32,12 +32,11 @@ void MediaSessionControllersManager::RenderFrameDeleted(
   if (!IsMediaSessionEnabled())
     return;
 
-  for (auto it = controllers_map_.begin(); it != controllers_map_.end();) {
-    if (it->first.render_frame_host == render_frame_host)
-      it = controllers_map_.erase(it);
-    else
-      ++it;
-  }
+  base::EraseIf(
+      controllers_map_,
+      [render_frame_host](const ControllersMap::value_type& id_and_controller) {
+        return render_frame_host == id_and_controller.first.render_frame_host;
+      });
 }
 
 bool MediaSessionControllersManager::RequestPlay(
@@ -48,61 +47,32 @@ bool MediaSessionControllersManager::RequestPlay(
   if (!IsMediaSessionEnabled())
     return true;
 
-  // If we have previously received the position for this player then we should
-  // initialize the controller with it.
-  media_session::MediaPosition* position = nullptr;
-  auto position_it = position_map_.find(id);
-  if (position_it != position_map_.end())
-    position = &position_it->second;
-
-  bool is_pip_available = false;
-  auto pip_it = pip_availability_map_.find(id);
-  if (pip_it != pip_availability_map_.end())
-    is_pip_available = pip_it->second;
-
   // Since we don't remove session instances on pause, there may be an existing
-  // instance for this playback attempt.
-  //
-  // In this case, try to reinitialize it with the new settings.  If they are
-  // the same, this is a no-op.  If the reinitialize fails, destroy the
-  // controller. A later playback attempt will create a new controller.
-  auto it = controllers_map_.find(id);
-  if (it != controllers_map_.end()) {
-    if (it->second->Initialize(has_audio, media_content_type, position,
-                               is_pip_available, has_video)) {
-      return true;
-    }
-
-    controllers_map_.erase(it);
-    return false;
-  }
-  std::unique_ptr<MediaSessionController> controller(
-      new MediaSessionController(id, media_web_contents_observer_));
-
-  if (!controller->Initialize(has_audio, media_content_type, position,
-                              is_pip_available, has_video)) {
-    return false;
-  }
-
-  controllers_map_[id] = std::move(controller);
-  return true;
+  // instance for this playback attempt.  In this case, try to reinitialize it
+  // with the new settings.  If they are the same, this is a no-op.
+  MediaSessionController* const controller = FindOrCreateController(id);
+  return controller->OnPlaybackStarted(has_audio, has_video,
+                                       media_content_type);
 }
 
 void MediaSessionControllersManager::OnPause(const MediaPlayerId& id) {
   if (!IsMediaSessionEnabled())
     return;
 
-  auto it = controllers_map_.find(id);
-  if (it == controllers_map_.end())
-    return;
-
-  it->second->OnPlaybackPaused();
+  MediaSessionController* const controller = FindOrCreateController(id);
+  controller->OnPlaybackPaused(false);
 }
 
 void MediaSessionControllersManager::OnEnd(const MediaPlayerId& id) {
   if (!IsMediaSessionEnabled())
     return;
-  controllers_map_.erase(id);
+
+  // TODO(wdzierzanowski): OnEnd() currently doubles as signal that playback
+  // has ended and that the player has been destroyed.  Replace the following
+  // call with removing the controller from the map once OnEnd() is only issued
+  // on player destruction.  https://crbug.com/1091203
+  MediaSessionController* const controller = FindOrCreateController(id);
+  controller->OnPlaybackPaused(true);
 }
 
 void MediaSessionControllersManager::OnMediaPositionStateChanged(
@@ -111,13 +81,8 @@ void MediaSessionControllersManager::OnMediaPositionStateChanged(
   if (!IsMediaSessionEnabled())
     return;
 
-  base::InsertOrAssign(position_map_, id, position);
-
-  auto it = controllers_map_.find(id);
-  if (it == controllers_map_.end())
-    return;
-
-  it->second->OnMediaPositionStateChanged(position);
+  MediaSessionController* const controller = FindOrCreateController(id);
+  controller->OnMediaPositionStateChanged(position);
 }
 
 void MediaSessionControllersManager::PictureInPictureStateChanged(
@@ -143,13 +108,20 @@ void MediaSessionControllersManager::OnPictureInPictureAvailabilityChanged(
   if (!IsMediaSessionEnabled())
     return;
 
-  base::InsertOrAssign(pip_availability_map_, id, available);
+  MediaSessionController* const controller = FindOrCreateController(id);
+  controller->OnPictureInPictureAvailabilityChanged(available);
+}
 
+MediaSessionController* MediaSessionControllersManager::FindOrCreateController(
+    const MediaPlayerId& id) {
   auto it = controllers_map_.find(id);
-  if (it == controllers_map_.end())
-    return;
-
-  it->second->OnPictureInPictureAvailabilityChanged(available);
+  if (it == controllers_map_.end()) {
+    it = controllers_map_
+             .emplace(id, std::make_unique<MediaSessionController>(
+                              id, media_web_contents_observer_))
+             .first;
+  }
+  return it->second.get();
 }
 
 }  // namespace content

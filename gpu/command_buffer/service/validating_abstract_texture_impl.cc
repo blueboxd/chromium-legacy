@@ -78,9 +78,8 @@ void ValidatingAbstractTextureImpl::BindImage(gl::GLImage* image,
                                        image);
 }
 
-void ValidatingAbstractTextureImpl::BindStreamTextureImage(
-    GLStreamTextureImage* image,
-    GLuint service_id) {
+void ValidatingAbstractTextureImpl::BindStreamTextureImage(gl::GLImage* image,
+                                                           GLuint service_id) {
   DCHECK(image);
   DCHECK(!decoder_managed_image_);
 

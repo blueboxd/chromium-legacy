@@ -103,11 +103,11 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   void WasHidden();
   void WasShown(const viz::LocalSurfaceId& local_surface_id,
                 const gfx::Size& size_in_pixels,
-                bool use_old_content_for_fallback);
+                bool is_fullscreen);
   void EmbedSurface(const viz::LocalSurfaceId& new_local_surface_id,
                     const gfx::Size& new_size_in_pixels,
                     cc::DeadlinePolicy deadline_policy,
-                    bool use_old_content_for_fallback);
+                    bool is_fullscreen);
 
   // Returns the ID for the current Surface. Returns an invalid ID if no
   // surface exists (!HasDelegatedContent()).

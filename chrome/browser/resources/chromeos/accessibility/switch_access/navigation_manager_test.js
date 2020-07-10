@@ -11,7 +11,6 @@ SwitchAccessNavigationManagerTest = class extends SwitchAccessE2ETest {
     this.navigator = NavigationManager.instance;
     BackButtonNode
         .locationForTesting = {top: 10, left: 10, width: 20, height: 20};
-    MenuManager.initialize();
   }
 
   moveToPageContents(pageContents) {

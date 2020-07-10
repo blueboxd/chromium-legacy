@@ -1476,7 +1476,7 @@ config("default_warnings") {
       # which we no longer use. Check if it makes sense to remove
       # this as well. http://crbug.com/316352
       "-Wno-unneeded-internal-declaration",
-	  "-Wno-logical-op-parentheses",
+      "-Wno-logical-op-parentheses",
     ]
 
     # use_xcode_clang only refers to the iOS toolchain, host binaries use

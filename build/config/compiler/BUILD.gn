@@ -260,7 +260,7 @@ config("compiler") {
     ":clang_revision",
     ":compiler_cpu_abi",
     ":compiler_codegen",
-    ":compiler_deterministic",
+#   ":compiler_deterministic",
   ]
 
   # In general, Windows is totally different, but all the other builds share
@@ -1078,7 +1078,7 @@ config("compiler_deterministic") {
 
   # Eliminate build metadata (__DATE__, __TIME__ and __TIMESTAMP__) for
   # deterministic build.  See https://crbug.com/314403
-  if (!is_official_build && false) {
+  if (!is_official_build) {
     if (is_win && !is_clang) {
       cflags += [
         "/wd4117",  # Trying to define or undefine a predefined macro.
@@ -1088,10 +1088,10 @@ config("compiler_deterministic") {
       ]
     } else {
       cflags += [
-        "-Wno-builtin-macro-redefined",
-        "-D__DATE__=",
-        "-D__TIME__=",
-        "-D__TIMESTAMP__=",
+         "-Wno-builtin-macro-redefined",
+         "-D__DATE__=",
+         "-D__TIME__=",
+         "-D__TIMESTAMP__=",
       ]
     }
   }
@@ -1476,6 +1476,7 @@ config("default_warnings") {
       # which we no longer use. Check if it makes sense to remove
       # this as well. http://crbug.com/316352
       "-Wno-unneeded-internal-declaration",
+	  "-Wno-logical-op-parentheses",
     ]
 
     # use_xcode_clang only refers to the iOS toolchain, host binaries use

@@ -103,8 +103,7 @@ CSSStyleSheet* CSSStyleSheet::Create(Document& document,
   // https://wicg.github.io/construct-stylesheets/#dom-cssstylesheet-cssstylesheet
   auto* contents = MakeGarbageCollected<StyleSheetContents>(parser_context);
   CSSStyleSheet* sheet = MakeGarbageCollected<CSSStyleSheet>(contents, nullptr);
-  sheet->SetAssociatedDocument(&document);
-  sheet->SetIsConstructed(true);
+  sheet->SetConstructorDocument(document);
   sheet->SetTitle(options->title());
   sheet->ClearOwnerNode();
   sheet->ClearOwnerRule();
@@ -326,7 +325,7 @@ unsigned CSSStyleSheet::insertRule(const String& rule_string,
     return 0;
   }
 
-  if (is_constructed_ && resolver_) {
+  if (IsConstructed() && resolver_) {
     // We can't access rules on a constructed stylesheet if it's still waiting
     // for some imports to load (|resolver_| is still set).
     exception_state.ThrowDOMException(
@@ -357,7 +356,7 @@ unsigned CSSStyleSheet::insertRule(const String& rule_string,
     return 0;
   }
   RuleMutationScope mutation_scope(this);
-  if (rule->IsImportRule() && is_constructed_) {
+  if (rule->IsImportRule() && IsConstructed()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,
         "Can't insert @import rules into a constructed stylesheet.");
@@ -388,7 +387,7 @@ void CSSStyleSheet::deleteRule(unsigned index,
     return;
   }
 
-  if (is_constructed_ && resolver_) {
+  if (IsConstructed() && resolver_) {
     // We can't access rules on a constructed stylesheet if it's still waiting
     // for some imports to load (|resolver_| is still set).
     exception_state.ThrowDOMException(
@@ -454,7 +453,7 @@ int CSSStyleSheet::addRule(const String& selector,
 
 ScriptPromise CSSStyleSheet::replace(ScriptState* script_state,
                                      const String& text) {
-  if (!is_constructed_) {
+  if (!IsConstructed()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         MakeGarbageCollected<DOMException>(
@@ -470,7 +469,7 @@ ScriptPromise CSSStyleSheet::replace(ScriptState* script_state,
 
 void CSSStyleSheet::replaceSync(const String& text,
                                 ExceptionState& exception_state) {
-  if (!is_constructed_) {
+  if (!IsConstructed()) {
     return exception_state.ThrowDOMException(
         DOMExceptionCode::kNotAllowedError,
         "Can't call replaceSync on non-constructed CSSStyleSheets.");
@@ -535,16 +534,13 @@ CSSStyleSheet* CSSStyleSheet::parentStyleSheet() const {
 }
 
 Document* CSSStyleSheet::OwnerDocument() const {
-  if (is_constructed_) {
-    DCHECK(!parentStyleSheet());
+  if (CSSStyleSheet* parent = parentStyleSheet())
+    return parent->OwnerDocument();
+  if (IsConstructed()) {
     DCHECK(!ownerNode());
-    return associated_document_;
+    return ConstructorDocument();
   }
-  DCHECK(!associated_document_);
-  const CSSStyleSheet* root = this;
-  while (root->parentStyleSheet())
-    root = root->parentStyleSheet();
-  return root->ownerNode() ? &root->ownerNode()->GetDocument() : nullptr;
+  return ownerNode() ? &ownerNode()->GetDocument() : nullptr;
 }
 
 bool CSSStyleSheet::SheetLoaded() {
@@ -639,7 +635,7 @@ void CSSStyleSheet::Trace(Visitor* visitor) const {
   visitor->Trace(child_rule_cssom_wrappers_);
   visitor->Trace(rule_list_cssom_wrapper_);
   visitor->Trace(adopted_tree_scopes_);
-  visitor->Trace(associated_document_);
+  visitor->Trace(constructor_document_);
   visitor->Trace(resolver_);
   StyleSheet::Trace(visitor);
 }

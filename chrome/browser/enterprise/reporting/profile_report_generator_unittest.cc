@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/util/values/values_util.h"
+#include "chrome/browser/enterprise/reporting/profile_report_generator_desktop.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -53,7 +54,8 @@ constexpr char kBlockedExtensionSettings[] = R"({
 class ProfileReportGeneratorTest : public ::testing::Test {
  public:
   ProfileReportGeneratorTest()
-      : profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+      : generator_(std::make_unique<ProfileReportGeneratorDesktop>()),
+        profile_manager_(TestingBrowserProcess::GetGlobal()) {}
   ~ProfileReportGeneratorTest() override = default;
 
   void SetUp() override {

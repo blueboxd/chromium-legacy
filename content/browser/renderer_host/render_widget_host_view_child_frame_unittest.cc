@@ -62,14 +62,12 @@ class MockFrameConnectorDelegate : public FrameConnectorDelegate {
     last_surface_info_ = surface_info;
   }
 
-  void SetViewportIntersection(
-      const blink::WebRect& viewport_intersection,
-      const blink::WebRect& main_frame_document_intersection,
-      const blink::WebRect& compositor_visible_rect,
-      blink::FrameOcclusionState occlusion_state) {
+  void SetViewportIntersection(const blink::WebRect& viewport_intersection,
+                               const blink::WebRect& main_frame_intersection,
+                               const blink::WebRect& compositor_visible_rect,
+                               blink::FrameOcclusionState occlusion_state) {
     intersection_state_.viewport_intersection = viewport_intersection;
-    intersection_state_.main_frame_document_intersection =
-        main_frame_document_intersection;
+    intersection_state_.main_frame_intersection = main_frame_intersection;
     intersection_state_.compositor_visible_rect = compositor_visible_rect;
     intersection_state_.occlusion_state = occlusion_state;
   }
@@ -213,11 +211,11 @@ TEST_F(RenderWidgetHostViewChildFrameTest, VisibilityTest) {
 // whenever screen rects are updated.
 TEST_F(RenderWidgetHostViewChildFrameTest, ViewportIntersectionUpdated) {
   blink::WebRect intersection_rect(5, 5, 100, 80);
-  blink::WebRect main_frame_document_intersection(5, 10, 200, 200);
+  blink::WebRect main_frame_intersection(5, 10, 200, 200);
   blink::FrameOcclusionState occlusion_state =
       blink::FrameOcclusionState::kPossiblyOccluded;
   test_frame_connector_->SetViewportIntersection(
-      intersection_rect, main_frame_document_intersection, intersection_rect,
+      intersection_rect, main_frame_intersection, intersection_rect,
       occlusion_state);
 
   MockRenderProcessHost* process =
@@ -236,8 +234,8 @@ TEST_F(RenderWidgetHostViewChildFrameTest, ViewportIntersectionUpdated) {
                                           &intersection_state);
   EXPECT_EQ(intersection_rect,
             std::get<0>(intersection_state).viewport_intersection);
-  EXPECT_EQ(main_frame_document_intersection,
-            std::get<0>(intersection_state).main_frame_document_intersection);
+  EXPECT_EQ(main_frame_intersection,
+            std::get<0>(intersection_state).main_frame_intersection);
   EXPECT_EQ(intersection_rect,
             std::get<0>(intersection_state).compositor_visible_rect);
   EXPECT_EQ(occlusion_state, std::get<0>(intersection_state).occlusion_state);

@@ -3443,7 +3443,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kRendererWaitForJavaDebugger,
 #endif
 #if defined(OS_WIN)
-    sandbox::policy::switches::kDisableWin32kLockDown,
     switches::kDisableHighResTimer,
     switches::kEnableWin7WebRtcHWH264Decoding,
     switches::kTrySupportedChannelLayouts,

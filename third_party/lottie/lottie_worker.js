@@ -12226,12 +12226,11 @@ sendInitializedEvent = function() {
  *     animation.
  */
 initAnimation = function(animationData, initParams, canvas) {
-  if (!animationData || !initParams) {
+  if (currentAnimation || !animationData || !initParams) {
     return;
   }
 
   var ctx = canvas.getContext("2d");
-
   currentAnimation = lottiejs.loadAnimation({
     renderer: 'canvas',
     loop: initParams.loop,
@@ -12308,13 +12307,6 @@ onmessage = function(evt) {
     canvas = evt.data.canvas;
   } else {
     return;
-  }
-
-  // Stop and clear the current animation to initialize a new one with the
-  // provided animation data.
-  if (currentAnimation && evt.data.animationData) {
-    currentAnimation.stop();
-    currentAnimation = null;
   }
 
   updateCanvasSize(canvas, evt.data.drawSize);

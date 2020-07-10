@@ -18,13 +18,13 @@ CredentialManagerPendingPreventSilentAccessTask::
 
 void CredentialManagerPendingPreventSilentAccessTask::AddOrigin(
     const PasswordStore::FormDigest& form_digest) {
-  delegate_->GetPasswordStore()->GetLogins(form_digest, this);
+  delegate_->GetProfilePasswordStore()->GetLogins(form_digest, this);
   pending_requests_++;
 }
 
 void CredentialManagerPendingPreventSilentAccessTask::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
-  PasswordStore* store = delegate_->GetPasswordStore();
+  PasswordStore* store = delegate_->GetProfilePasswordStore();
   for (const auto& form : results) {
     if (!form->skip_zero_click) {
       form->skip_zero_click = true;

@@ -113,6 +113,9 @@ std::string ConvertInitialEnrollmentMode(
     case em::DeviceInitialEnrollmentStateResponse::
         INITIAL_ENROLLMENT_MODE_ZERO_TOUCH_ENFORCED:
       return kDeviceStateInitialModeEnrollmentZeroTouch;
+    case em::DeviceInitialEnrollmentStateResponse::
+        INITIAL_ENROLLMENT_MODE_DISABLED:
+      return kDeviceStateRestoreModeDisabled;
   }
 }
 
@@ -279,8 +282,10 @@ class StateDownloadMessageProcessorInitialEnrollment
           state_response.is_license_packaged_with_device();
     }
 
-    // Device disabling is not supported in initial forced enrollment.
-    parsed_response.disabled_message.reset();
+    if (state_response.has_disabled_state()) {
+      parsed_response.disabled_message =
+          state_response.disabled_state().message();
+    }
 
     // Logging as "WARNING" to make sure it's preserved in the logs.
     LOG(WARNING) << "Received initial_enrollment_mode="

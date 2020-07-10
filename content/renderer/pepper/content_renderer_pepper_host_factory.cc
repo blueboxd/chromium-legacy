@@ -37,7 +37,6 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/shared_impl/ppb_image_data_shared.h"
-#include "sandbox/policy/switches.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
@@ -126,14 +125,11 @@ ContentRendererPepperHostFactory::CreateResourceHost(
       ppapi::PPB_ImageData_Shared::ImageDataType image_type =
           ppapi::PPB_ImageData_Shared::PLATFORM;
 #if defined(OS_WIN)
-      // If Win32K lockdown mitigations are enabled for Windows 8 and beyond
-      // we use the SIMPLE image data type as the PLATFORM image data type
+      // Win32K lockdown mitigations are enabled for Windows 8 and beyond.
+      // We use the SIMPLE image data type as the PLATFORM image data type
       // calls GDI functions to create DIB sections etc which fail in Win32K
       // lockdown mode.
-      // TODO(ananta)
-      // Look into whether this causes a loss of functionality. From cursory
-      // testing things seem to work well.
-      if (sandbox::policy::IsWin32kLockdownEnabled())
+      if (base::win::GetVersion() >= base::win::Version::WIN8)
         image_type = ppapi::PPB_ImageData_Shared::SIMPLE;
 #endif
       scoped_refptr<PPB_ImageData_Impl> image_data(new PPB_ImageData_Impl(

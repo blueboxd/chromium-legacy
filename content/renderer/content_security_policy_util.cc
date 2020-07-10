@@ -26,8 +26,10 @@ network::mojom::CSPSourceListPtr BuildCSPSourceList(
     sources.push_back(BuildCSPSource(source));
 
   return network::mojom::CSPSourceList::New(
-      std::move(sources), source_list.allow_self, source_list.allow_star,
-      source_list.allow_redirects);
+      std::move(sources), std::vector<std::string>(),
+      std::vector<network::mojom::CSPHashSourcePtr>(), source_list.allow_self,
+      source_list.allow_star, source_list.allow_redirects, false, false, false,
+      false, false, false);
 }
 
 network::mojom::ContentSecurityPolicyPtr BuildContentSecurityPolicy(

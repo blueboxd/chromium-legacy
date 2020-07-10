@@ -666,7 +666,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawFrameThroughputDisplay(
 
   // Draw the frame rendering stats.
   const std::string title("Frames");
-  const std::string value_text = base::StringPrintf("%d %%", throughput_value_);
+  const std::string value_text = base::StringPrintf("%d%%", throughput_value_);
   const std::string dropped_frames_text =
       base::StringPrintf("%zu (%zu m) dropped of %zu",
                          dropped_frame_counter->total_compositor_dropped(),
@@ -732,7 +732,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawMemoryDisplay(PaintCanvas* canvas,
   const int left = 0;
   const SkRect area = SkRect::MakeXYWH(left, top, width, height);
 
-  const double kMegabyte = 1024.0 * 1024.0;
+  const double kMegabyte = 1000.0 * 1000.0;
 
   PaintFlags flags;
   DrawGraphBackground(canvas, &flags, area);
@@ -745,7 +745,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawMemoryDisplay(PaintCanvas* canvas,
                                     top + 2 * kPadding + 3 * kFontHeight);
 
   flags.setColor(DebugColors::HUDTitleColor());
-  DrawText(canvas, flags, "GPU Memory", TextAlign::kLeft, kTitleFontHeight,
+  DrawText(canvas, flags, "GPU memory", TextAlign::kLeft, kTitleFontHeight,
            title_pos);
 
   flags.setColor(DebugColors::MemoryDisplayTextColor());
@@ -839,7 +839,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawGpuRasterizationStatus(PaintCanvas* canvas,
   SkPoint gpu_status_pos = SkPoint::Make(left + width - kPadding,
                                          top + 2 * kFontHeight + 2 * kPadding);
   flags.setColor(DebugColors::HUDTitleColor());
-  DrawText(canvas, flags, "GPU Raster", TextAlign::kLeft, kTitleFontHeight,
+  DrawText(canvas, flags, "GPU raster", TextAlign::kLeft, kTitleFontHeight,
            left + kPadding, top + kFontHeight + kPadding);
   flags.setColor(color);
   DrawText(canvas, flags, status, TextAlign::kRight, kFontHeight,

@@ -225,6 +225,12 @@
         "load:media:dailymotion:2019": {
             "DEFAULT": "system_health_mobile_eb4a1d8292.wprgo"
         },
+        "load:media:facebook_feed:mobile:2020": {
+            "DEFAULT": "system_health_mobile_b419f6ee29.wprgo"
+        },
+        "load:media:facebook_photos:mobile:2020": {
+            "DEFAULT": "system_health_mobile_93a1b4b4b9.wprgo"
+        },
         "load:media:facebook_photos": {
             "DEFAULT": "system_health_mobile_040.wprgo"
         },

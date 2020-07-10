@@ -215,7 +215,7 @@ ScrollTimelineOffset::ToStringOrScrollTimelineElementBasedOffset() const {
   return result;
 }
 
-ScrollTimelineOffset::ScrollTimelineOffset(CSSPrimitiveValue* offset)
+ScrollTimelineOffset::ScrollTimelineOffset(const CSSPrimitiveValue* offset)
     : length_based_offset_(offset), element_based_offset_(nullptr) {}
 
 ScrollTimelineOffset::ScrollTimelineOffset(

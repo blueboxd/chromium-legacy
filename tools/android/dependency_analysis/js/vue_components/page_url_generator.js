@@ -5,7 +5,7 @@
 import {generateUrlFromFilter} from '../url_processor.js';
 
 const PageUrlGenerator = {
-  props: ['nodeFilterData'],
+  props: ['pagePathName', 'nodeFilterData'],
   data: function() {
     return this.nodeFilterData;
   },
@@ -15,7 +15,8 @@ const PageUrlGenerator = {
      * querystring, then copies the URL to the input elem and highlights it.
      */
     generateUrl: function() {
-      const pageUrl = generateUrlFromFilter(this.nodeList, document.URL);
+      const pageUrl = generateUrlFromFilter(
+          document.URL, this.pagePathName, this.nodeList);
       this.$refs.input.value = pageUrl;
       this.$refs.input.select();
     },

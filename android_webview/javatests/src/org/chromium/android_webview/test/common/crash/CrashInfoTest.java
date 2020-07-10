@@ -125,20 +125,4 @@ public class CrashInfoTest {
                 createCrashInfo("123456abc", 1234567890, null, -1, "org.test.package", null);
         Assert.assertThat(parsed, equalsTo(expected));
     }
-
-    /**
-     * Test compitability with old JSON format.
-     */
-    @Test
-    @SmallTest
-    public void testReadFromJsonString_oldJsonFormat() throws Throwable {
-        final String oldJsonObjectString =
-                "{'crash-local-id':'123456abc','crash-capture-time':1234567890,"
-                + "'app-package-name':'org.test.package'}";
-
-        CrashInfo parsed = CrashInfo.readFromJsonString(oldJsonObjectString);
-        CrashInfo expected =
-                createCrashInfo("123456abc", 1234567890, null, -1, "org.test.package", null);
-        Assert.assertThat(parsed, equalsTo(expected));
-    }
 }

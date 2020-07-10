@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.CheckDiscard;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.cookies.CookiesFetcher;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
@@ -17,6 +18,8 @@ import org.chromium.content_public.browser.WebContents;
  * Wrapper that allows passing a Profile reference around in the Java layer.
  */
 public class Profile implements BrowserContextHandle {
+    private static Profile sLastUsedProfileForTesting;
+
     /** Holds OTRProfileID for OffTheRecord profiles. Is null for regular profiles. */
     @Nullable
     private final OTRProfileID mOTRProfileID;
@@ -40,6 +43,10 @@ public class Profile implements BrowserContextHandle {
      * profile_manager.cc which supports multiple regular profiles.
      */
     public static Profile getLastUsedRegularProfile() {
+        if (sLastUsedProfileForTesting != null) {
+            return sLastUsedProfileForTesting;
+        }
+
         // TODO(crbug.com/704025): turn this into an assert once the bug is fixed
         if (!ProfileManager.isInitialized()) {
             throw new IllegalStateException("Browser hasn't finished initialization yet!");
@@ -188,6 +195,15 @@ public class Profile implements BrowserContextHandle {
     @CalledByNative
     private long getNativePointer() {
         return mNativeProfileAndroid;
+    }
+
+    /**
+     * Sets for testing the profile to be returned by {@link #getLastUsedRegularProfile()}.
+     */
+    @CheckDiscard("Test-only setter.")
+    @VisibleForTesting
+    public static void setLastUsedProfileForTesting(Profile profile) {
+        sLastUsedProfileForTesting = profile;
     }
 
     @NativeMethods

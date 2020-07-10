@@ -531,7 +531,9 @@ class PaintPreviewContext : public PrintContext {
   PaintPreviewContext(LocalFrame* frame) : PrintContext(frame, false) {}
   ~PaintPreviewContext() override = default;
 
-  bool Capture(cc::PaintCanvas* canvas, FloatSize size) {
+  bool Capture(cc::PaintCanvas* canvas,
+               FloatSize size,
+               bool include_linked_destinations) {
     // This code is based on ChromePrintContext::SpoolSinglePage()/SpoolPage().
     // It differs in that it:
     //   1. Uses a different set of flags for painting and the graphics context.
@@ -557,12 +559,14 @@ class PaintPreviewContext : public PrintContext {
 
     // This calls BeginRecording on |builder| with dimensions specified by the
     // CullRect.
+    GlobalPaintFlags flags =
+        kGlobalPaintNormalPhase | kGlobalPaintFlattenCompositingLayers;
+    if (include_linked_destinations)
+      flags |= kGlobalPaintAddUrlMetadata;
+
     frame_view->PaintContentsOutsideOfLifecycle(
-        builder.Context(),
-        kGlobalPaintNormalPhase | kGlobalPaintFlattenCompositingLayers |
-            kGlobalPaintAddUrlMetadata,
-        CullRect(RoundedIntRect(bounds)));
-    {
+        builder.Context(), flags, CullRect(RoundedIntRect(bounds)));
+    if (include_linked_destinations) {
       // Add anchors.
       ScopedPaintChunkProperties scoped_paint_chunk_properties(
           builder.Context().GetPaintController(), property_tree_state, builder,
@@ -1655,7 +1659,8 @@ bool WebLocalFrameImpl::GetPrintPresetOptionsForPlugin(
 }
 
 bool WebLocalFrameImpl::CapturePaintPreview(const WebRect& bounds,
-                                            cc::PaintCanvas* canvas) {
+                                            cc::PaintCanvas* canvas,
+                                            bool include_linked_destinations) {
   FloatSize float_bounds(bounds.width, bounds.height);
   GetFrame()->GetDocument()->SetIsPaintingPreview(true);
   ResourceCacheValidationSuppressor validation_suppressor(
@@ -1663,7 +1668,8 @@ bool WebLocalFrameImpl::CapturePaintPreview(const WebRect& bounds,
   GetFrame()->View()->ForceLayoutForPagination(float_bounds, float_bounds, 1);
   PaintPreviewContext* paint_preview_context =
       MakeGarbageCollected<PaintPreviewContext>(GetFrame());
-  bool success = paint_preview_context->Capture(canvas, float_bounds);
+  bool success = paint_preview_context->Capture(canvas, float_bounds,
+                                                include_linked_destinations);
   GetFrame()->GetDocument()->SetIsPaintingPreview(false);
   GetFrame()->EndPrinting();
   return success;

@@ -94,8 +94,7 @@ class PpapiPluginSandboxedProcessLauncherDelegate
 
 #if !defined(NACL_WIN64)
     // We don't support PPAPI win32k lockdown prior to Windows 10.
-    if (base::win::GetVersion() >= base::win::Version::WIN10 &&
-        sandbox::policy::IsWin32kLockdownEnabled()) {
+    if (base::win::GetVersion() >= base::win::Version::WIN10) {
       result =
           sandbox::policy::SandboxWin::AddWin32kLockdownPolicy(policy, true);
       if (result != sandbox::SBOX_ALL_OK)

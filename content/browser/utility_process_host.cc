@@ -205,16 +205,14 @@ class UtilitySandboxedProcessLauncherDelegate
     }
 
     if (sandbox_type_ == sandbox::policy::SandboxType::kSharingService) {
-      if (sandbox::policy::IsWin32kLockdownEnabled()) {
-        auto result =
-            sandbox::policy::SandboxWin::AddWin32kLockdownPolicy(policy, false);
-        if (result != sandbox::SBOX_ALL_OK)
-          return false;
-      }
+      auto result =
+          sandbox::policy::SandboxWin::AddWin32kLockdownPolicy(policy, false);
+      if (result != sandbox::SBOX_ALL_OK)
+        return false;
 
       auto delayed_flags = policy->GetDelayedProcessMitigations();
       delayed_flags |= sandbox::MITIGATION_DYNAMIC_CODE_DISABLE;
-      auto result = policy->SetDelayedProcessMitigations(delayed_flags);
+      result = policy->SetDelayedProcessMitigations(delayed_flags);
       if (result != sandbox::SBOX_ALL_OK)
         return false;
     }

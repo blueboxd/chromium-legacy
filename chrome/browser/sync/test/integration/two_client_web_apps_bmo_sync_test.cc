@@ -404,7 +404,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest,
   // Install a 'dummy' app & wait for installation to ensure sync has processed
   // the initial apps.
   InstallDummyAppAndWaitForSync(GURL("http://www.seconddummy.org/"),
-                                GetProfile(0), GetProfile(1));
+                                GetProfile(1), GetProfile(0));
 
   // The policy app should remain on profile 0.
   EXPECT_FALSE(AllProfilesHaveSameWebAppIds());

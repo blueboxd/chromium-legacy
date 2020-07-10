@@ -88,6 +88,11 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
     VALUE_MAX_CHANGED,
     VALUE_MIN_CHANGED,
     VALUE_STEP_CHANGED,
+
+    // This event is for the exact set of attributes that affect
+    // the MSAA/IAccessible state on Windows. Not needed on other platforms,
+    // but very natural to compute here.
+    WIN_IACCESSIBLE_STATE_CHANGED,
   };
 
   struct EventParams {

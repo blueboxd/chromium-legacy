@@ -87,7 +87,8 @@ class CORE_EXPORT WebRemoteFrameImpl final
       bool is_potentially_trustworthy_opaque_origin) override;
   void SetReplicatedSandboxFlags(
       network::mojom::blink::WebSandboxFlags) override;
-  void SetReplicatedName(const WebString&) override;
+  void SetReplicatedName(const WebString& name,
+                         const WebString& unique_name) override;
   void SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
       const ParsedFeaturePolicy& parsed_header,
       const FeaturePolicy::FeatureState&) override;
@@ -108,6 +109,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void SetHadStickyUserActivationBeforeNavigation(bool value) override;
   v8::Local<v8::Object> GlobalProxy() const override;
   WebRect GetCompositingRect() override;
+  WebString UniqueName() const override;
 
   void InitializeCoreFrame(Page&,
                            FrameOwner*,

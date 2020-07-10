@@ -282,7 +282,7 @@ class MediaDevicesDispatcherHostTest
           enumerated_devices_[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT].empty());
 
     EXPECT_FALSE(DoesContainRawIds(enumerated_devices_));
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
     EXPECT_TRUE(DoesEveryDeviceMapToRawId(enumerated_devices_, origin_));
 #else
     EXPECT_EQ(DoesEveryDeviceMapToRawId(enumerated_devices_, origin_),

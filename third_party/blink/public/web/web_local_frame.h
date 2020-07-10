@@ -713,9 +713,12 @@ class WebLocalFrame : public WebFrame {
 
   // Paint Preview ------------------------------------------------------------
 
-  // Captures a full frame paint preview of the WebFrame including subframes.
+  // Captures a full frame paint preview of the WebFrame including subframes. If
+  // |include_linked_destinations| is true, the capture will include annotations
+  // about linked destinations within the document.
   virtual bool CapturePaintPreview(const WebRect& bounds,
-                                   cc::PaintCanvas* canvas) = 0;
+                                   cc::PaintCanvas* canvas,
+                                   bool include_linked_destinations) = 0;
 
   // Focus --------------------------------------------------------------
 

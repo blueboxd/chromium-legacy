@@ -1290,7 +1290,7 @@ void HandleChromeDebugURL(const GURL& url) {
 #endif  // ADDRESS_SANITIZER
 }
 
-const std::string& UniqueNameForWebFrame(blink::WebFrame* frame) {
+std::string UniqueNameForWebFrame(blink::WebFrame* frame) {
   return frame->IsWebLocalFrame()
              ? RenderFrameImpl::FromWebFrame(frame)->unique_name()
              : RenderFrameProxy::FromWebFrame(frame->ToWebRemoteFrame())
@@ -1341,11 +1341,11 @@ int RenderFrameImpl::UniqueNameFrameAdapter::GetChildCount() const {
   return child_count;
 }
 
-std::vector<base::StringPiece>
+std::vector<std::string>
 RenderFrameImpl::UniqueNameFrameAdapter::CollectAncestorNames(
     BeginPoint begin_point,
     bool (*should_stop)(base::StringPiece)) const {
-  std::vector<base::StringPiece> result;
+  std::vector<std::string> result;
   for (blink::WebFrame* frame = begin_point == BeginPoint::kParentFrame
                                     ? GetWebFrame()->Parent()
                                     : GetWebFrame();
@@ -4563,16 +4563,13 @@ void RenderFrameImpl::FrameRectsChanged(const blink::WebRect& frame_rect) {
   }
 }
 
-void RenderFrameImpl::OnMainFrameDocumentIntersectionChanged(
-    const blink::WebRect& mainframe_document_intersection_rect) {
-  if (!mainframe_document_intersection_rect_ ||
-      mainframe_document_intersection_rect !=
-          mainframe_document_intersection_rect_) {
-    mainframe_document_intersection_rect_ =
-        mainframe_document_intersection_rect;
+void RenderFrameImpl::OnMainFrameIntersectionChanged(
+    const blink::WebRect& mainframe_intersection_rect) {
+  if (!mainframe_intersection_rect_ ||
+      mainframe_intersection_rect != mainframe_intersection_rect_) {
+    mainframe_intersection_rect_ = mainframe_intersection_rect;
     for (auto& observer : observers_) {
-      observer.OnMainFrameDocumentIntersectionChanged(
-          mainframe_document_intersection_rect);
+      observer.OnMainFrameIntersectionChanged(mainframe_intersection_rect);
     }
   }
 }
@@ -5268,7 +5265,7 @@ void RenderFrameImpl::DidCommitNavigationInternal(
   // Ensure we will propagate frame intersections when the main frame commits
   // even if the intersection does not change across navigations.
   if (IsMainFrame()) {
-    mainframe_document_intersection_rect_.reset();
+    mainframe_intersection_rect_.reset();
   }
 }
 
@@ -5338,7 +5335,7 @@ blink::mojom::CommitResult RenderFrameImpl::PrepareForHistoryNavigationCommit(
   return blink::mojom::CommitResult::Ok;
 }
 
-const std::string& RenderFrameImpl::GetPreviousFrameUniqueName() {
+std::string RenderFrameImpl::GetPreviousFrameUniqueName() {
   DCHECK(!in_frame_tree_);
 
   RenderFrameProxy* previous_proxy =

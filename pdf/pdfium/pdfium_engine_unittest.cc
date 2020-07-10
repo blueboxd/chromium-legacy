@@ -200,6 +200,7 @@ TEST_F(PDFiumEngineTest, GetDocumentAttachmentInfo) {
   {
     const DocumentAttachmentInfo& attachment = attachments[0];
     EXPECT_EQ("1.txt", base::UTF16ToUTF8(attachment.name));
+    EXPECT_TRUE(attachment.is_readable);
     EXPECT_EQ(4u, attachment.size_bytes);
     EXPECT_EQ("D:20170712214438-07'00'",
               base::UTF16ToUTF8(attachment.creation_date));
@@ -209,6 +210,7 @@ TEST_F(PDFiumEngineTest, GetDocumentAttachmentInfo) {
   {
     const DocumentAttachmentInfo& attachment = attachments[1];
     EXPECT_EQ("attached.pdf", base::UTF16ToUTF8(attachment.name));
+    EXPECT_TRUE(attachment.is_readable);
     EXPECT_EQ(5869u, attachment.size_bytes);
     EXPECT_EQ("D:20170712214443-07'00'",
               base::UTF16ToUTF8(attachment.creation_date));
@@ -219,10 +221,31 @@ TEST_F(PDFiumEngineTest, GetDocumentAttachmentInfo) {
     // Test attachments with no creation date or last modified date.
     const DocumentAttachmentInfo& attachment = attachments[2];
     EXPECT_EQ("附錄.txt", base::UTF16ToUTF8(attachment.name));
+    EXPECT_TRUE(attachment.is_readable);
     EXPECT_EQ(5u, attachment.size_bytes);
     EXPECT_THAT(attachment.creation_date, IsEmpty());
     EXPECT_THAT(attachment.modified_date, IsEmpty());
   }
+}
+
+TEST_F(PDFiumEngineTest, DocumentWithInvalidAttachment) {
+  NiceMock<MockTestClient> client;
+  std::unique_ptr<PDFiumEngine> engine = InitializeEngine(
+      &client, FILE_PATH_LITERAL("embedded_attachments_invalid_data.pdf"));
+  ASSERT_TRUE(engine);
+
+  const std::vector<DocumentAttachmentInfo>& attachments =
+      engine->GetDocumentAttachmentInfoList();
+  ASSERT_EQ(1u, attachments.size());
+
+  // Test on an attachment which FPDFAttachment_GetFile() fails to retrieve data
+  // from.
+  const DocumentAttachmentInfo& attachment = attachments[0];
+  EXPECT_EQ("1.txt", base::UTF16ToUTF8(attachment.name));
+  EXPECT_FALSE(attachment.is_readable);
+  EXPECT_EQ(0u, attachment.size_bytes);
+  EXPECT_THAT(attachment.creation_date, IsEmpty());
+  EXPECT_THAT(attachment.modified_date, IsEmpty());
 }
 
 TEST_F(PDFiumEngineTest, NoDocumentAttachmentInfo) {

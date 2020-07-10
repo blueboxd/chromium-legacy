@@ -19,6 +19,10 @@ class UpdateNotificationServiceImplTest : public testing::Test {
  public:
   UpdateNotificationServiceImplTest() : bridge_(nullptr), config_(nullptr) {}
   ~UpdateNotificationServiceImplTest() override = default;
+  UpdateNotificationServiceImplTest(
+      const UpdateNotificationServiceImplTest& other) = delete;
+  UpdateNotificationServiceImplTest& operator=(
+      const UpdateNotificationServiceImplTest& other) = delete;
 
   void SetUp() override {
     scheduler_ = std::make_unique<
@@ -49,7 +53,6 @@ class UpdateNotificationServiceImplTest : public testing::Test {
   UpdateNotificationConfig* config_;
 
   std::unique_ptr<UpdateNotificationService> service_;
-  DISALLOW_COPY_AND_ASSIGN(UpdateNotificationServiceImplTest);
 };
 
 }  // namespace

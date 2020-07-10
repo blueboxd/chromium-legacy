@@ -64,6 +64,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_receiver.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_unique_receiver_set.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
@@ -73,6 +74,7 @@
 #if defined(OS_MACOSX)
 #include "third_party/blink/public/mojom/input/text_input_host.mojom-blink.h"
 #endif
+#include "ui/gfx/transform.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -407,8 +409,11 @@ class CORE_EXPORT LocalFrame final
   IntRect RemoteViewportIntersection() const {
     return intersection_state_.viewport_intersection;
   }
-  IntRect RemoteMainFrameDocumentIntersection() const {
-    return intersection_state_.main_frame_document_intersection;
+  IntRect RemoteMainFrameIntersection() const {
+    return intersection_state_.main_frame_intersection;
+  }
+  gfx::Transform RemoteMainFrameTransform() const {
+    return intersection_state_.main_frame_transform;
   }
 
   FrameOcclusionState GetOcclusionState() const;
@@ -818,9 +823,11 @@ class CORE_EXPORT LocalFrame final
                              LocalFrame,
                              HeapMojoWrapperMode::kWithoutContextObserver>
       main_frame_receiver_{this, nullptr};
-
-  mojo::Receiver<mojom::blink::HighPriorityLocalFrame>
-      high_priority_frame_receiver_{this};
+  // LocalFrame can be reused by multiple ExecutionContext.
+  HeapMojoReceiver<mojom::blink::HighPriorityLocalFrame,
+                   LocalFrame,
+                   HeapMojoWrapperMode::kWithoutContextObserver>
+      high_priority_frame_receiver_{this, nullptr};
 
   // Variable to control burst of download requests.
   int num_burst_download_requests_ = 0;

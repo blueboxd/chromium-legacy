@@ -80,7 +80,6 @@ class SelectFileDialogExtension
       const base::FilePath& default_path,
       const FileTypeInfo* file_types,
       int file_type_index,
-      const base::FilePath::StringType& default_extension,
       aura::Window* owning_window,
       void* params,
       int owner_android_task_id,

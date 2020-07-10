@@ -165,7 +165,8 @@ TEST_P(VideoPaintPreviewTest, URLIsRecordedWhenPaintingPreview) {
   canvas->SetPaintPreviewTracker(&tracker);
 
   EXPECT_EQ(0lu, tracker.GetLinks().size());
-  GetLocalMainFrame().CapturePaintPreview(WebRect(bounds()), canvas);
+  GetLocalMainFrame().CapturePaintPreview(WebRect(bounds()), canvas,
+                                          /*include_linked_destinations=*/true);
 
   ASSERT_EQ(1lu, tracker.GetLinks().size());
   EXPECT_EQ("http://test.com/", tracker.GetLinks()[0]->url);

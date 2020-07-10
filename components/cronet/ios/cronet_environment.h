@@ -150,7 +150,7 @@ class CronetEnvironment {
 
   // Runs a closure on the network thread.
   void PostToNetworkThread(const base::Location& from_here,
-                           const base::Closure& task);
+                           base::OnceClosure task);
 
   // Helper methods that start/stop net logging on the network thread.
   void StartNetLogOnNetworkThread(const base::FilePath&, bool log_bytes);

@@ -37,14 +37,16 @@ namespace blink {
 InertEffect::InertEffect(KeyframeEffectModelBase* model,
                          const Timing& timing,
                          bool paused,
-                         base::Optional<double> inherited_time)
+                         base::Optional<double> inherited_time,
+                         base::Optional<TimelinePhase> inherited_phase)
     : AnimationEffect(timing),
       model_(model),
       paused_(paused),
-      inherited_time_(inherited_time) {}
+      inherited_time_(inherited_time),
+      inherited_phase_(inherited_phase) {}
 
 void InertEffect::Sample(HeapVector<Member<Interpolation>>& result) const {
-  UpdateInheritedTime(inherited_time_, base::nullopt, kTimingUpdateOnDemand);
+  UpdateInheritedTime(inherited_time_, inherited_phase_, kTimingUpdateOnDemand);
   if (!IsInEffect()) {
     result.clear();
     return;

@@ -744,6 +744,10 @@ interface RemoteFrame {
   // be an ad frame.
   SetReplicatedAdFrameType(blink.mojom.AdFrameType ad_frame_type);
 
+  // Sets the replicated name and unique name for the frame. Used when the
+  // name of a frame changes.
+  SetReplicatedName(string name, string unique_name);
+
   // Sent to dispatch a load event in the frame's owner element.
   // (eg. the iframe, portal, or object element).
   DispatchLoadEventForFrameOwner();

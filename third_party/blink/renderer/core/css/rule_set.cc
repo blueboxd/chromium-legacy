@@ -293,6 +293,11 @@ void RuleSet::AddPropertyRule(StyleRuleProperty* rule) {
   property_rules_.push_back(rule);
 }
 
+void RuleSet::AddScrollTimelineRule(StyleRuleScrollTimeline* rule) {
+  EnsurePendingRules();  // So that property_rules_.ShrinkToFit() gets called.
+  scroll_timeline_rules_.push_back(rule);
+}
+
 void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
                             const MediaQueryEvaluator& medium,
                             AddRuleFlags add_rule_flags) {
@@ -328,6 +333,9 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
       AddKeyframesRule(keyframes_rule);
     } else if (auto* property_rule = DynamicTo<StyleRuleProperty>(rule)) {
       AddPropertyRule(property_rule);
+    } else if (auto* scroll_timeline_rule =
+                   DynamicTo<StyleRuleScrollTimeline>(rule)) {
+      AddScrollTimelineRule(scroll_timeline_rule);
     } else if (auto* supports_rule = DynamicTo<StyleRuleSupports>(rule)) {
       if (supports_rule->ConditionIsSupported())
         AddChildRules(supports_rule->ChildRules(), medium, add_rule_flags);
@@ -459,6 +467,7 @@ void RuleSet::Trace(Visitor* visitor) const {
   visitor->Trace(font_face_rules_);
   visitor->Trace(keyframes_rules_);
   visitor->Trace(property_rules_);
+  visitor->Trace(scroll_timeline_rules_);
   visitor->Trace(deep_combinator_or_shadow_pseudo_rules_);
   visitor->Trace(part_pseudo_rules_);
   visitor->Trace(content_pseudo_element_rules_);

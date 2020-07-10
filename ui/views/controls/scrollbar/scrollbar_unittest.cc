@@ -6,12 +6,14 @@
 
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/controls/scrollbar/base_scroll_bar_thumb.h"
 #include "ui/views/controls/scrollbar/scroll_bar.h"
 #include "ui/views/controls/scrollbar/scroll_bar_views.h"
+#include "ui/views/test/view_metadata_test_utils.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/unique_widget_ptr.h"
 #include "ui/views/widget/widget.h"
@@ -111,6 +113,11 @@ class ScrollBarViewsTest : public ViewsTestBase {
   std::unique_ptr<TestScrollBarController> controller_;
 };
 
+// Verify properties are accessible via metadata.
+TEST_F(ScrollBarViewsTest, MetaDataTest) {
+  test::TestViewMetadata(scrollbar_);
+}
+
 TEST_F(ScrollBarViewsTest, Scrolling) {
   EXPECT_EQ(0, scrollbar_->GetPosition());
   EXPECT_EQ(900, scrollbar_->GetMaxPosition());
@@ -204,7 +211,28 @@ TEST_F(ScrollBarViewsTest, ThumbFullLengthOfTrack) {
   EXPECT_EQ(0, scrollbar_->GetPosition());
 }
 
+TEST_F(ScrollBarViewsTest, RightClickOpensMenu) {
+  EXPECT_EQ(nullptr, scrollbar_->menu_model_);
+  EXPECT_EQ(nullptr, scrollbar_->menu_runner_);
+  scrollbar_->set_context_menu_controller(scrollbar_);
+  scrollbar_->ShowContextMenu(scrollbar_->GetBoundsInScreen().CenterPoint(),
+                              ui::MENU_SOURCE_MOUSE);
+  EXPECT_NE(nullptr, scrollbar_->menu_model_);
+  EXPECT_NE(nullptr, scrollbar_->menu_runner_);
+}
+
 #if !defined(OS_MACOSX)
+TEST_F(ScrollBarViewsTest, TestPageScrollingByPress) {
+  ui::test::EventGenerator generator(GetRootWindow(widget_.get()));
+  EXPECT_EQ(0, scrollbar_->GetPosition());
+  generator.MoveMouseTo(
+      scrollbar_->GetThumb()->GetBoundsInScreen().right_center() +
+      gfx::Vector2d(4, 0));
+  generator.ClickLeftButton();
+  generator.ClickLeftButton();
+  EXPECT_GT(scrollbar_->GetPosition(), 0);
+}
+
 TEST_F(ScrollBarViewsTest, DragThumbScrollsContent) {
   ui::test::EventGenerator generator(GetRootWindow(widget_.get()));
   EXPECT_EQ(0, scrollbar_->GetPosition());

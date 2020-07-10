@@ -247,14 +247,10 @@ Polymer({
    * @private
    */
   animateScanComplete_() {
-    this.$.scanningAnimation.singleLoop = true;
-    this.$.scanningAnimation.classList.remove('translucent');
-    this.$.scanningAnimation.animationUrl =
-        'chrome://theme/IDR_FINGERPRINT_COMPLETE_TICK';
-    this.resizeCheckMark_(
-        /** @type {!HTMLElement} */ (this.$.scanningAnimation));
-
+    this.$.checkmarkDiv.hidden = false;
     this.$.enrollmentDone.hidden = false;
+    this.$.scanningAnimation.hidden = true;
+    this.$.enrollmentDone.style.opacity = 1;
   },
 
   /**
@@ -263,8 +259,12 @@ Polymer({
    */
   animateScanProgress_() {
     this.$.enrollmentDone.hidden = false;
+    this.$.enrollmentDone.style.opacity = 0.3;
+    this.$.scanningAnimation.hidden = true;
     this.updateTimerId_ = window.setTimeout(() => {
       this.$.enrollmentDone.hidden = true;
+      this.$.enrollmentDone.style.opacity = 1;
+      this.$.scanningAnimation.hidden = false;
     }, FINGERPRINT_SCAN_SUCCESS_MS);
   },
 
@@ -287,14 +287,8 @@ Polymer({
     this.isComplete_ = false;
     this.drawBackgroundCircle();
     this.$.enrollmentDone.hidden = true;
-
-    this.$.scanningAnimation.singleLoop = false;
-    this.$.scanningAnimation.classList.add('translucent');
-    this.$.scanningAnimation.animationUrl =
-        'chrome://theme/IDR_FINGERPRINT_ICON_ANIMATION';
-    this.resizeAndCenterIcon_(
-        /** @type {!HTMLElement} */ (this.$.scanningAnimation));
     this.$.scanningAnimation.hidden = false;
+    this.$.checkmarkDiv.hidden = true;
   },
 
   /**
@@ -306,6 +300,8 @@ Polymer({
         /** @type {!HTMLElement} */ (this.$.scanningAnimation));
     this.resizeAndCenterIcon_(
         /** @type {!HTMLElement} */ (this.$.enrollmentDone));
+    this.resizeCheckMark_(
+        /** @type {!HTMLElement} */ (this.$.checkmarkAnimation));
   },
 
   /**
@@ -321,7 +317,7 @@ Polymer({
 
     // Place in the center of the canvas.
     const left = this.$.canvas.width / 2 - ICON_WIDTH * this.scale_ / 2;
-    const top = this.$.canvas.height / 2 - ICON_HEIGHT * this.scale_ / 2;
+    const top = 0 - ICON_HEIGHT * this.scale_ / 2 - this.$.canvas.height / 2;
     target.style.left = left + 'px';
     target.style.top = top + 'px';
   },
@@ -338,8 +334,9 @@ Polymer({
     target.style.height = CHECK_MARK_SIZE * this.scale_ + 'px';
 
     // Place it in the left bottom corner of fingerprint progress circle.
-    const top = this.$.canvas.height / 2 + this.circleRadius -
-        CHECK_MARK_SIZE * this.scale_;
+    const top = 0 -
+        (CHECK_MARK_SIZE * this.scale_ + this.$.canvas.height / 2 -
+         this.circleRadius);
     const left = this.$.canvas.width / 2 + this.circleRadius -
         CHECK_MARK_SIZE * this.scale_;
     target.style.left = left + 'px';

@@ -2764,10 +2764,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PreCommitWebFeature) {
       static_cast<int32_t>(WebFeature::kSecureContextCheckFailed), 0);
 }
 
-// TODO(https://crbug/1085175): Main frame document intersections need to be
-// transformed into the main frame documents coordinate system.
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
-                       DISABLED_MainFrameDocumentIntersectionsMainFrame) {
+                       MainFrameIntersectionsMainFrame) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsTestWaiter();
@@ -2783,7 +2781,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
 
   // Expectation is before NavigateToUrl for this test as the expectation can be
   // met after NavigateToUrl and before the Wait.
-  waiter->AddMainFrameDocumentIntersectionExpectation(
+  waiter->AddMainFrameIntersectionExpectation(
       gfx::Rect(0, 0, document_width,
                 document_height));  // Initial main frame rect.
 
@@ -2795,7 +2793,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
 
   // Create a |document_width|x|document_height| frame at 100,100, increasing
   // the page width and height by 100.
-  waiter->AddMainFrameDocumentIntersectionExpectation(
+  waiter->AddMainFrameIntersectionExpectation(
       gfx::Rect(0, 0, document_width + 100, document_height + 100));
   EXPECT_TRUE(ExecJs(
       web_contents,
@@ -2809,7 +2807,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
 // TODO(https://crbug/1085175): Main frame document intersections need to be
 // transformed into the main frame documents coordinate system.
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
-                       DISABLED_MainFrameDocumentIntersectionSingleFrame) {
+                       MainFrameIntersectionSingleFrame) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsTestWaiter();
@@ -2820,8 +2818,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  waiter->AddMainFrameDocumentIntersectionExpectation(
-      gfx::Rect(100, 100, 200, 200));
+  waiter->AddMainFrameIntersectionExpectation(gfx::Rect(100, 100, 200, 200));
 
   // Create a 200x200 iframe at 100,100.
   EXPECT_TRUE(ExecJs(web_contents,
@@ -2832,10 +2829,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
 
 // Creates a set of nested frames within the main frame and verifies
 // their intersections with the main frame.
-// TODO(https://crbug/1085175): Main frame document intersections need to be
-// transformed into the main frame documents coordinate system.
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
-                       DISABLED_MainFrameDocumentIntersectionSameOrigin) {
+                       MainFrameIntersectionSameOrigin) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsTestWaiter();
@@ -2846,8 +2841,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  waiter->AddMainFrameDocumentIntersectionExpectation(
-      gfx::Rect(100, 100, 200, 200));
+  waiter->AddMainFrameIntersectionExpectation(gfx::Rect(100, 100, 200, 200));
 
   // Create a 200x200 iframe at 100,100.
   EXPECT_TRUE(ExecJs(web_contents,
@@ -2863,8 +2857,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   // dimensions 300x300. This frame is clipped by 110 pixels in the bottom and
   // right. This translates to an intersection of 110, 110, 190, 190 with the
   // main frame.
-  waiter->AddMainFrameDocumentIntersectionExpectation(
-      gfx::Rect(110, 110, 190, 190));
+  waiter->AddMainFrameIntersectionExpectation(gfx::Rect(110, 110, 190, 190));
   content::RenderFrameHost* child_frame =
       content::ChildFrameAt(web_contents->GetMainFrame(), 0);
   EXPECT_TRUE(
@@ -2875,10 +2868,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
 
 // Creates a set of nested frames, with a cross origin subframe, within the
 // main frame and verifies their intersections with the main frame.
-// TODO(https://crbug/1085175): Main frame document intersections need to be
-// transformed into the main frame documents coordinate system.
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
-                       DISABLED_MainFrameDocumentIntersectionCrossOrigin) {
+                       MainFrameIntersectionCrossOrigin) {
   EXPECT_TRUE(embedded_test_server()->Start());
   auto waiter = CreatePageLoadMetricsTestWaiter();
   ui_test_utils::NavigateToURL(
@@ -2888,8 +2879,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  waiter->AddMainFrameDocumentIntersectionExpectation(
-      gfx::Rect(100, 100, 200, 200));
+  waiter->AddMainFrameIntersectionExpectation(gfx::Rect(100, 100, 200, 200));
 
   // Create a 200x200 iframe at 100,100.
   EXPECT_TRUE(ExecJs(web_contents,
@@ -2909,8 +2899,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   // code path as the previous wait can flakily pass due to receiving the
   // correct intersection before the frame transitions to cross-origin without
   // checking that the final computation is consistent.
-  waiter->AddMainFrameDocumentIntersectionExpectation(
-      gfx::Rect(100, 100, 150, 150));
+  waiter->AddMainFrameIntersectionExpectation(gfx::Rect(100, 100, 150, 150));
   EXPECT_TRUE(ExecJs(web_contents,
                      "let frame = document.getElementById('test'); "
                      "frame.width = 150; "
@@ -2921,8 +2910,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   // dimensions 300x300. This frame is clipped by 110 pixels in the bottom and
   // right. This translates to an intersection of 110, 110, 190, 190 with the
   // main frame.
-  waiter->AddMainFrameDocumentIntersectionExpectation(
-      gfx::Rect(110, 110, 140, 140));
+  waiter->AddMainFrameIntersectionExpectation(gfx::Rect(110, 110, 140, 140));
   content::RenderFrameHost* child_frame =
       content::ChildFrameAt(web_contents->GetMainFrame(), 0);
   EXPECT_TRUE(
@@ -2934,11 +2922,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
 // Creates a set of nested frames, with a cross origin subframe that is out of
 // view within the main frame and verifies their intersections with the main
 // frame.
-// TODO(https://crbug/1085175): Main frame document intersections need to be
-// transformed into the main frame documents coordinate system.
-IN_PROC_BROWSER_TEST_F(
-    PageLoadMetricsBrowserTest,
-    DISABLED_MainFrameDocumentIntersectionCrossOriginOutOfView) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       MainFrameIntersectionCrossOriginOutOfView) {
   EXPECT_TRUE(embedded_test_server()->Start());
   auto waiter = CreatePageLoadMetricsTestWaiter();
   ui_test_utils::NavigateToURL(
@@ -2948,8 +2933,7 @@ IN_PROC_BROWSER_TEST_F(
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  waiter->AddMainFrameDocumentIntersectionExpectation(
-      gfx::Rect(100, 100, 200, 200));
+  waiter->AddMainFrameIntersectionExpectation(gfx::Rect(100, 100, 200, 200));
 
   // Create a 200x200 iframe at 100,100.
   EXPECT_TRUE(ExecJs(web_contents,
@@ -2967,7 +2951,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Creates the grandchild iframe within the child frame outside the parent
   // frame's viewport.
-  waiter->AddMainFrameDocumentIntersectionExpectation(gfx::Rect(0, 0, 0, 0));
+  waiter->AddMainFrameIntersectionExpectation(gfx::Rect(0, 0, 0, 0));
   content::RenderFrameHost* child_frame =
       content::ChildFrameAt(web_contents->GetMainFrame(), 0);
   EXPECT_TRUE(ExecJs(child_frame,
@@ -2980,11 +2964,8 @@ IN_PROC_BROWSER_TEST_F(
 // view within the main frame and verifies their intersections with the main
 // frame. The out of view frame is then scrolled back into view and the
 // intersection is verified.
-// TODO(https://crbug/1085175): Main frame document intersections need to be
-// transformed into the main frame documents coordinate system.
-IN_PROC_BROWSER_TEST_F(
-    PageLoadMetricsBrowserTest,
-    DISABLED_MainFrameDocumentIntersectionCrossOriginScrolled) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       MainFrameIntersectionCrossOriginScrolled) {
   EXPECT_TRUE(embedded_test_server()->Start());
   auto waiter = CreatePageLoadMetricsTestWaiter();
   ui_test_utils::NavigateToURL(
@@ -2994,8 +2975,7 @@ IN_PROC_BROWSER_TEST_F(
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  waiter->AddMainFrameDocumentIntersectionExpectation(
-      gfx::Rect(100, 100, 200, 200));
+  waiter->AddMainFrameIntersectionExpectation(gfx::Rect(100, 100, 200, 200));
 
   // Create a 200x200 iframe at 100,100.
   EXPECT_TRUE(ExecJs(web_contents,
@@ -3013,7 +2993,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Creates the grandchild iframe within the child frame outside the parent
   // frame's viewport.
-  waiter->AddMainFrameDocumentIntersectionExpectation(gfx::Rect(0, 0, 0, 0));
+  waiter->AddMainFrameIntersectionExpectation(gfx::Rect(0, 0, 0, 0));
   content::RenderFrameHost* child_frame =
       content::ChildFrameAt(web_contents->GetMainFrame(), 0);
   EXPECT_TRUE(ExecJs(child_frame,
@@ -3025,8 +3005,7 @@ IN_PROC_BROWSER_TEST_F(
   // child frame after scrolling is positioned at 100,100 within the parent
   // frame and is clipped to 100x100. The grand child's main frame document
   // position is then 200,200 after the child frame is scrolled.
-  waiter->AddMainFrameDocumentIntersectionExpectation(
-      gfx::Rect(200, 200, 100, 100));
+  waiter->AddMainFrameIntersectionExpectation(gfx::Rect(200, 200, 100, 100));
 
   EXPECT_TRUE(ExecJs(child_frame, "window.scroll(4900, 4900); "));
 

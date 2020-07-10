@@ -37,6 +37,7 @@ bool IsWebUiHostInDevUiDfm(const std::string& host) {
          host == chrome::kChromeUIDomainReliabilityInternalsHost ||
          host == chrome::kChromeUIDownloadInternalsHost ||
          host == chrome::kChromeUIGCMInternalsHost ||
+         host == chrome::kChromeUIInternalsHost ||
          host == chrome::kChromeUIInterstitialHost ||
          host == chrome::kChromeUIInterventionsInternalsHost ||
          host == chrome::kChromeUIInvalidationsHost ||
@@ -46,7 +47,6 @@ bool IsWebUiHostInDevUiDfm(const std::string& host) {
          host == chrome::kChromeUINTPTilesInternalsHost ||
          host == chrome::kChromeUINetExportHost ||
          host == chrome::kChromeUINetInternalsHost ||
-         host == chrome::kChromeUINotificationsInternalsHost ||
          host == chrome::kChromeUIOmniboxHost ||
          host == chrome::kChromeUIPasswordManagerInternalsHost ||
          host == chrome::kChromeUIPolicyHost ||

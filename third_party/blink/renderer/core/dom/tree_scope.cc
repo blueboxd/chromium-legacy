@@ -347,8 +347,8 @@ void TreeScope::SetAdoptedStyleSheets(
           "Can't adopt non-constructed stylesheets.");
       return;
     }
-    Document* associated_document = sheet->AssociatedDocument();
-    if (associated_document && *associated_document != GetDocument()) {
+    Document* document = sheet->ConstructorDocument();
+    if (document && *document != GetDocument()) {
       exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
                                         "Sharing constructed stylesheets in "
                                         "multiple documents is not allowed");

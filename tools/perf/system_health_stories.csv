@@ -67,9 +67,11 @@ load:games:spychase:2018,,"desktop,mobile",2018
 load:media:9gag,,desktop,2016
 load:media:dailymotion:2019,,"desktop,mobile",2019
 load:media:facebook_feed:desktop:2020,Load facebook main page,desktop,2020
+load:media:facebook_feed:mobile:2020,Load a page of national park,mobile,2020
 load:media:facebook_photos:2018,Load a page of rihanna's facebook with a photo.,desktop,2018
 load:media:facebook_photos:2019,Load a page of rihanna's facebook with a photo.,mobile,"2019,emerging_market"
 load:media:facebook_photos:desktop:2020,Load a page of rihanna's facebook with a photo.,desktop,2020
+load:media:facebook_photos:mobile:2020,Load a page of rihanna's facebook with a photo.,mobile,2020
 load:media:flickr:2018,,"desktop,mobile",2018
 load:media:google_images:2018,,"desktop,mobile",2018
 load:media:imgur:2018,,"desktop,mobile",2018

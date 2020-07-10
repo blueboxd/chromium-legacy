@@ -1456,3 +1456,30 @@ TEST_F('ChromeVoxEditingTest', 'SelectAllBareTextContent', function() {
         input.focus();
       });
 });
+
+TEST_F('ChromeVoxEditingTest', 'NonBreakingSpaceNewLine', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+      `
+    <div contenteditable role="textbox">&nbsp</div>
+  `,
+      function(root) {
+        const input = root.find({role: RoleType.TEXT_FIELD});
+        this.listenOnce(input, 'focus', function() {
+          mockFeedback
+              .call(() => {
+                const node = root.find({role: RoleType.INLINE_TEXT_BOX});
+                const line = new editing.EditableLine(node, 0, node, 0);
+                const prev =
+                    new editing.EditableLine(node.root, 1, node.root, 1);
+                const editableHandler = DesktopAutomationHandler.instance
+                                            .textEditHandler_.editableText_;
+                editableHandler.handleSpeech_(
+                    line, prev, line, line, prev, prev, true, []);
+              })
+              .expectSpeech('\n')
+              .replay();
+        });
+        input.focus();
+      });
+});

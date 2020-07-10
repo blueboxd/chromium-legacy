@@ -108,6 +108,8 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void SetInsecureRequestPolicy(mojom::blink::InsecureRequestPolicy);
   void SetInsecureNavigationsSet(const WebVector<unsigned>&);
 
+  const String& UniqueName() const { return unique_name_; }
+
   // blink::mojom::RemoteFrame overrides:
   void WillEnterFullscreen() override;
   void AddReplicatedContentSecurityPolicies(
@@ -124,6 +126,8 @@ class CORE_EXPORT RemoteFrame final : public Frame,
       bool is_potentially_trustworthy_unique_origin) override;
   void SetReplicatedAdFrameType(
       mojom::blink::AdFrameType ad_frame_type) override;
+  void SetReplicatedName(const String& name,
+                         const String& unique_name) override;
   void DispatchLoadEventForFrameOwner() override;
   void Collapse(bool collapsed) final;
   void Focus() override;
@@ -187,6 +191,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   bool prevent_contents_opaque_changes_ = false;
   bool is_surface_layer_ = false;
   ParsedFeaturePolicy feature_policy_header_;
+  String unique_name_;
 
   mojo::AssociatedRemote<mojom::blink::RemoteFrameHost>
       remote_frame_host_remote_;

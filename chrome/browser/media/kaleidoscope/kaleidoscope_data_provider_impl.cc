@@ -120,6 +120,17 @@ void KaleidoscopeDataProviderImpl::GetMediaFeedContents(
       std::move(callback));
 }
 
+void KaleidoscopeDataProviderImpl::GetContinueWatchingMediaFeedItems(
+    GetContinueWatchingMediaFeedItemsCallback callback) {
+  GetMediaHistoryService()->GetMediaFeedItems(
+      media_history::MediaHistoryKeyedService::GetMediaFeedItemsRequest::
+          CreateItemsForContinueWatching(
+              kMediaFeedsItemsMaxCount,
+              // Require Safe Search checking if the integration is enabled.
+              base::FeatureList::IsEnabled(media::kMediaFeedsSafeSearch)),
+      std::move(callback));
+}
+
 media_history::MediaHistoryKeyedService*
 KaleidoscopeDataProviderImpl::GetMediaHistoryService() {
   return media_history::MediaHistoryKeyedServiceFactory::GetForProfile(

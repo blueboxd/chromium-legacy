@@ -8,17 +8,17 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
-#include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "components/policy/core/browser/policy_conversions_client.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
 namespace base {
 class FilePath;
 }
 
-class Profile;
+namespace policy {
+class MachineLevelUserCloudPolicyManager;
+}
 
 namespace enterprise_reporting {
 
@@ -28,30 +28,61 @@ namespace enterprise_reporting {
  */
 class ProfileReportGenerator {
  public:
-  ProfileReportGenerator();
+  class Delegate {
+   public:
+    Delegate() = default;
+    Delegate(const Delegate&) = delete;
+    Delegate& operator=(const Delegate&) = delete;
+    virtual ~Delegate() = default;
+
+    // Fetch the profile for the given path, and store it for report generation.
+    // Returns false if the profile can't be retrieved.
+    virtual bool Init(const base::FilePath& path) = 0;
+
+    // Sets sign-in information in the report, including email and gaia id.
+    virtual void GetSigninUserInfo(
+        enterprise_management::ChromeUserProfileInfo* report) = 0;
+    // Sets intalled extension information in the report.
+    virtual void GetExtensionInfo(
+        enterprise_management::ChromeUserProfileInfo* report) = 0;
+    // Sets extension requests information in the report.
+    virtual void GetExtensionRequest(
+        enterprise_management::ChromeUserProfileInfo* report) = 0;
+
+    // Returns a new platform-specific policy conversions client.
+    virtual std::unique_ptr<policy::PolicyConversionsClient>
+    MakePolicyConversionsClient() = 0;
+    // Get a pointer to the current platform's cloud policy manager.
+    virtual policy::MachineLevelUserCloudPolicyManager*
+    GetCloudPolicyManager() = 0;
+  };
+
+  // TODO(crbug/1091916): When this class is moved to components, it should use
+  // the reporting delegate factory to get its delegate instead of requiring it
+  // in the constructor.
+  explicit ProfileReportGenerator(
+      std::unique_ptr<ProfileReportGenerator::Delegate> delegate);
+  ProfileReportGenerator(const ProfileReportGenerator&) = delete;
+  ProfileReportGenerator& operator=(const ProfileReportGenerator&) = delete;
   ~ProfileReportGenerator();
 
   void set_extensions_enabled(bool enabled);
   void set_policies_enabled(bool enabled);
 
-  // Generates report for Profile if it's activated. Returns the report with
-  // |callback| once it's ready. The report is null if it can't be generated.
+  // Generates a report for the profile associated with |path| and |name| if
+  // it's activated, and returns the report. The report is null if it can't be
+  // generated.
   std::unique_ptr<enterprise_management::ChromeUserProfileInfo> MaybeGenerate(
       const base::FilePath& path,
       const std::string& name);
 
  protected:
-  // Get Signin information includes email and gaia id.
-  virtual void GetSigninUserInfo();
-
-  void GetExtensionInfo();
   void GetChromePolicyInfo();
   void GetExtensionPolicyInfo();
   void GetPolicyFetchTimestampInfo();
-  void GetExtensionRequest();
 
  private:
-  Profile* profile_;
+  std::unique_ptr<Delegate> delegate_;
   base::Value policies_;
 
   bool extensions_enabled_ = true;
@@ -59,10 +90,6 @@ class ProfileReportGenerator {
 
   std::unique_ptr<enterprise_management::ChromeUserProfileInfo> report_ =
       nullptr;
-
-  base::WeakPtrFactory<ProfileReportGenerator> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileReportGenerator);
 };
 
 }  // namespace enterprise_reporting

@@ -178,8 +178,10 @@ void AXEventGenerator::OnStateChanged(AXTree* tree,
                                       bool new_value) {
   DCHECK_EQ(tree_, tree);
 
-  if (state != ax::mojom::State::kIgnored)
+  if (state != ax::mojom::State::kIgnored) {
     AddEvent(node, Event::STATE_CHANGED);
+    AddEvent(node, Event::WIN_IACCESSIBLE_STATE_CHANGED);
+  }
 
   switch (state) {
     case ax::mojom::State::kExpanded:
@@ -306,12 +308,14 @@ void AXEventGenerator::OnIntAttributeChanged(AXTree* tree,
       break;
     case ax::mojom::IntAttribute::kCheckedState:
       AddEvent(node, Event::CHECKED_STATE_CHANGED);
+      AddEvent(node, Event::WIN_IACCESSIBLE_STATE_CHANGED);
       break;
     case ax::mojom::IntAttribute::kDropeffect:
       AddEvent(node, Event::DROPEFFECT_CHANGED);
       break;
     case ax::mojom::IntAttribute::kHasPopup:
       AddEvent(node, Event::HASPOPUP_CHANGED);
+      AddEvent(node, Event::WIN_IACCESSIBLE_STATE_CHANGED);
       break;
     case ax::mojom::IntAttribute::kHierarchicalLevel:
       AddEvent(node, Event::HIERARCHICAL_LEVEL_CHANGED);
@@ -332,10 +336,14 @@ void AXEventGenerator::OnIntAttributeChanged(AXTree* tree,
       GetRestrictionStates(static_cast<ax::mojom::Restriction>(new_value),
                            &is_enabled, &is_readonly);
 
-      if (was_enabled != is_enabled)
+      if (was_enabled != is_enabled) {
         AddEvent(node, Event::ENABLED_CHANGED);
-      if (was_readonly != is_readonly)
+        AddEvent(node, Event::WIN_IACCESSIBLE_STATE_CHANGED);
+      }
+      if (was_readonly != is_readonly) {
         AddEvent(node, Event::READONLY_CHANGED);
+        AddEvent(node, Event::WIN_IACCESSIBLE_STATE_CHANGED);
+      }
       break;
     }
     case ax::mojom::IntAttribute::kScrollX:
@@ -398,6 +406,7 @@ void AXEventGenerator::OnBoolAttributeChanged(AXTree* tree,
   switch (attr) {
     case ax::mojom::BoolAttribute::kBusy:
       AddEvent(node, Event::BUSY_CHANGED);
+      AddEvent(node, Event::WIN_IACCESSIBLE_STATE_CHANGED);
       // Fire an 'invalidated' event when aria-busy becomes false
       if (!new_value)
         AddEvent(node, Event::LAYOUT_INVALIDATED);
@@ -410,6 +419,7 @@ void AXEventGenerator::OnBoolAttributeChanged(AXTree* tree,
       break;
     case ax::mojom::BoolAttribute::kSelected: {
       AddEvent(node, Event::SELECTED_CHANGED);
+      AddEvent(node, Event::WIN_IACCESSIBLE_STATE_CHANGED);
       AXNode* container = node;
       while (container &&
              !IsContainerWithSelectableChildren(container->data().role))
@@ -833,6 +843,8 @@ const char* ToString(AXEventGenerator::Event event) {
       return "FOCUS_CHANGED";
     case AXEventGenerator::Event::SORT_CHANGED:
       return "SORT_CHANGED";
+    case AXEventGenerator::Event::WIN_IACCESSIBLE_STATE_CHANGED:
+      return "WIN_IACCESSIBLE_STATE_CHANGED";
   }
   NOTREACHED();
 }

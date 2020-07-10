@@ -26,6 +26,10 @@ interface KaleidoscopeDataProvider {
   // show.
   GetMediaFeedContents(int64 feed_id) => (array<media_feeds.mojom.MediaFeedItem> items);
 
+  // Returns all the items from the Media Feeds Store that can be displayed for
+  // continue watching.
+  GetContinueWatchingMediaFeedItems() => (array<media_feeds.mojom.MediaFeedItem> items);
+
   // Retrieves the current credentials.
   GetCredentials() => (Credentials credentials);
 

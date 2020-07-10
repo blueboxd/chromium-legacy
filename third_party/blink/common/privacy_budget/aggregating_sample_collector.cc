@@ -68,6 +68,40 @@ void AggregatingSampleCollector::Flush(ukm::UkmRecorder* recorder) {
   }
 }
 
+void AggregatingSampleCollector::FlushSource(ukm::UkmRecorder* recorder,
+                                             ukm::SourceId source) {
+  std::vector<UkmMetricsContainerType> metric_sets;
+
+  {
+    base::AutoLock l(lock_);
+    if (unsent_sample_count_ == 0)
+      return;
+
+    if (unsent_metrics_.count(source) == 0)
+      return;
+
+    const auto bucket = unsent_metrics_.bucket(source);
+    for (auto it = unsent_metrics_.begin(bucket);
+         it != unsent_metrics_.end(bucket); ++it) {
+      if (it->first != source)
+        continue;
+
+      DCHECK_GE(unsent_sample_count_, it->second.size());
+      unsent_sample_count_ -= it->second.size();
+      metric_sets.emplace_back(std::move(it->second));
+    }
+
+    unsent_metrics_.erase(source);
+  }
+
+  for (auto& metric : metric_sets) {
+    auto entry = ukm::mojom::UkmEntry::New(
+        source, ukm::builders::Identifiability::kEntryNameHash,
+        std::move(metric));
+    recorder->AddEntry(std::move(entry));
+  }
+}
+
 void AggregatingSampleCollector::ResetForTesting() {
   base::AutoLock l(lock_);
 

@@ -33,7 +33,7 @@ class CORE_EXPORT FrameClient : public GarbageCollected<FrameClient> {
 
   virtual unsigned BackForwardLength() = 0;
 
-  virtual void OnMainFrameDocumentIntersectionChanged(
+  virtual void OnMainFrameIntersectionChanged(
       const IntRect& intersection_rect) {}
 
   virtual base::UnguessableToken GetDevToolsFrameToken() const = 0;

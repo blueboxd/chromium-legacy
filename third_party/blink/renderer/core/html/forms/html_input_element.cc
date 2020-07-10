@@ -1036,6 +1036,9 @@ void HTMLInputElement::setIndeterminate(bool new_value) {
 
   if (LayoutObject* o = GetLayoutObject())
     o->InvalidateIfControlStateChanged(kCheckedControlState);
+
+  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
+    cache->CheckedStateChanged(this);
 }
 
 unsigned HTMLInputElement::size() const {

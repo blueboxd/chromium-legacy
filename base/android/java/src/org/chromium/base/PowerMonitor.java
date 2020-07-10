@@ -4,13 +4,11 @@
 
 package org.chromium.base;
 
-import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.BatteryManager;
-import android.os.Build;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -20,7 +18,7 @@ import org.chromium.base.annotations.NativeMethods;
  * Integrates native PowerMonitor with the java side.
  */
 @JNINamespace("base::android")
-public class PowerMonitor {
+public class PowerMonitor  {
     private static PowerMonitor sInstance;
 
     private boolean mIsBatteryPower;
@@ -77,26 +75,6 @@ public class PowerMonitor {
         if (sInstance == null) create();
 
         return sInstance.mIsBatteryPower;
-    }
-
-    @CalledByNative
-    private static int getRemainingBatteryCapacity() {
-        // BatteryManager's property for charge level is only supported since Lollipop.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return 0;
-
-        // Creation of the PowerMonitor can be deferred based on the browser startup path.  If the
-        // battery power is requested prior to the browser triggering the creation, force it to be
-        // created now.
-        if (sInstance == null) create();
-
-        return getRemainingBatteryCapacityImpl();
-    }
-
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private static int getRemainingBatteryCapacityImpl() {
-        return ((BatteryManager) ContextUtils.getApplicationContext().getSystemService(
-                        Context.BATTERY_SERVICE))
-                .getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER);
     }
 
     @NativeMethods

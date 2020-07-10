@@ -70,9 +70,6 @@ const char kDisableSeccompFilterSandbox[] = "disable-seccomp-filter-sandbox";
 // Disable the setuid sandbox (Linux only).
 const char kDisableSetuidSandbox[] = "disable-setuid-sandbox";
 
-// Disables the Win32K process mitigation policy for child processes.
-const char kDisableWin32kLockDown[] = "disable-win32k-lockdown";
-
 // Command line flag to enable the audio service sandbox.
 const char kEnableAudioServiceSandbox[] = "enable-audio-service-sandbox";
 
@@ -126,16 +123,5 @@ const char kCloudPrintServiceProcess[] = "service";
 const char kZygoteProcessType[] = "zygote";
 
 }  // namespace switches
-
-#if defined(OS_WIN)
-
-bool IsWin32kLockdownEnabled() {
-  return base::win::GetVersion() >= base::win::Version::WIN8 &&
-         !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kDisableWin32kLockDown);
-}
-
-#endif
-
 }  // namespace policy
 }  // namespace sandbox

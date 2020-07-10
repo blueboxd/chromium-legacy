@@ -30,8 +30,8 @@ class UrlInterceptorJobFactoryHandle {
       : jcontext_adapter_(jcontext_adapter) {
     TestUtil::RunAfterContextInit(
         jcontext_adapter,
-        base::Bind(&UrlInterceptorJobFactoryHandle::InitOnNetworkThread,
-                   base::Unretained(this)));
+        base::BindOnce(&UrlInterceptorJobFactoryHandle::InitOnNetworkThread,
+                       base::Unretained(this)));
   }
   // Should only be called on network thread; other threads should use
   // ShutDown().
@@ -45,8 +45,8 @@ class UrlInterceptorJobFactoryHandle {
   void ShutDown() {
     TestUtil::RunAfterContextInit(
         jcontext_adapter_,
-        base::Bind(&UrlInterceptorJobFactoryHandle::ShutdownOnNetworkThread,
-                   base::Unretained(this)));
+        base::BindOnce(&UrlInterceptorJobFactoryHandle::ShutdownOnNetworkThread,
+                       base::Unretained(this)));
   }
 
  private:

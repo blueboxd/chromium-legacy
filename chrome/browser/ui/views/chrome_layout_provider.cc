@@ -70,6 +70,9 @@ gfx::Insets ChromeLayoutProvider::GetInsetsMetric(int metric) const {
       return touch_ui ? gfx::Insets(8, 10) : gfx::Insets(6);
     case INSETS_TOAST:
       return gfx::Insets(0, kHarmonyLayoutUnit);
+    case INSETS_OMNIBOX_PILL_BUTTON:
+      return touch_ui ? gfx::Insets(kHarmonyLayoutUnit / 2, kHarmonyLayoutUnit)
+                      : gfx::Insets(5, 12);
     default:
       return LayoutProvider::GetInsetsMetric(metric);
   }
@@ -166,6 +169,10 @@ int ChromeLayoutProvider::GetDistanceMetric(int metric) const {
       return kLargeSnapPoint;
     case DISTANCE_BETWEEN_PRIMARY_AND_SECONDARY_LABELS_HORIZONTAL:
       return 24;
+    case DISTANCE_OMNIBOX_CELL_VERTICAL_PADDING:
+      return 8;
+    case DISTANCE_OMNIBOX_TWO_LINE_CELL_VERTICAL_PADDING:
+      return 4;
     default:
       return LayoutProvider::GetDistanceMetric(metric);
   }

@@ -33,6 +33,7 @@
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "url/gurl.h"
 
 namespace safe_browsing {
@@ -167,8 +168,8 @@ void PhishingClassifier::ExtractVisualFeatures() {
   base::TimeTicks start_time = base::TimeTicks::Now();
 
   blink::WebLocalFrame* frame = render_frame_->GetWebFrame();
-  gfx::Rect bounds = gfx::Rect(0, 0, frame->DocumentSize().width,
-                               frame->DocumentSize().height);
+  gfx::SizeF viewport_size = frame->View()->VisualViewportSize();
+  gfx::Rect bounds = ToEnclosingRect(gfx::RectF(viewport_size));
   bitmap_ = std::make_unique<SkBitmap>();
   // Use the Rec. 2020 color space, in case the user input is wide-gamut.
   sk_sp<SkColorSpace> rec2020 = SkColorSpace::MakeRGB(
@@ -185,8 +186,8 @@ void PhishingClassifier::ExtractVisualFeatures() {
       base::UnguessableToken::Create(), frame->GetEmbeddingToken(),
       /*is_main_frame=*/true);
   cc_canvas.SetPaintPreviewTracker(tracker.get());
-  VisualExtractionFinished(frame->CapturePaintPreview(bounds, &cc_canvas));
-
+  VisualExtractionFinished(frame->CapturePaintPreview(
+      bounds, &cc_canvas, /*include_linked_destinations=*/false));
   base::UmaHistogramTimes("SBClientPhishing.VisualFeatureTime",
                           base::TimeTicks::Now() - start_time);
 }

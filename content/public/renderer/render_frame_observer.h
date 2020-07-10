@@ -256,8 +256,8 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // Called when a worker fetch context will be created.
   virtual void WillCreateWorkerFetchContext(blink::WebWorkerFetchContext*) {}
 
-  // Called when a frame's intersection with the root frame changes.
-  virtual void OnMainFrameDocumentIntersectionChanged(
+  // Called when a frame's intersection with the main frame changes.
+  virtual void OnMainFrameIntersectionChanged(
       const blink::WebRect& intersect_rect) {}
 
   // Called to give the embedder an opportunity to bind an interface request

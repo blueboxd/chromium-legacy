@@ -177,7 +177,8 @@ void PaintPreviewRecorderImpl::CapturePaintPreviewInternal(
   //    slow).
   base::TimeTicks start_time = base::TimeTicks::Now();
   TRACE_EVENT_BEGIN0("paint_preview", "WebLocalFrame::CapturePaintPreview");
-  bool success = frame->CapturePaintPreview(bounds, canvas);
+  bool success = frame->CapturePaintPreview(
+      bounds, canvas, /*include_linked_destinations=*/true);
   TRACE_EVENT_END0("paint_preview", "WebLocalFrame::CapturePaintPreview");
   base::TimeDelta capture_time = base::TimeTicks::Now() - start_time;
   response->blink_recording_time = capture_time;

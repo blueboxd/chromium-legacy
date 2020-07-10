@@ -54,6 +54,9 @@ class WebFrameTestProxy : public RenderFrameImpl,
 
   // Returns the test-subclass of RenderWidget for the local root of this frame.
   WebWidgetTestProxy* GetLocalRootWebWidgetTestProxy();
+  // Returns the test-subclass of RenderViewImpl that is hosting this frame's
+  // frame tree fragment.
+  WebViewTestProxy* GetWebViewTestProxy();
 
   // WebLocalFrameClient implementation.
   blink::WebPlugin* CreatePlugin(const blink::WebPluginParams& params) override;

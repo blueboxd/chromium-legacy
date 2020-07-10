@@ -21,7 +21,6 @@ virtual/exotic-color-space/images/* [ Skip ]
 virtual/gpu-rasterization/images/* [ Skip ]
 virtual/threaded/printing/* [ Skip ]
 virtual/threaded/http/tests/devtools/tracing/* [ Skip ]
-virtual/controls-refresh/* [ Skip ]
 virtual/controls-refresh-hc/* [ Skip ]
 virtual/web-components-v0-disabled/* [ Skip ]
 

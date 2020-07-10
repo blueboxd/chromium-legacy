@@ -57,7 +57,6 @@
 #include "chrome/browser/ui/webui/nearby_internals/nearby_internals_ui.h"
 #include "chrome/browser/ui/webui/net_export_ui.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
-#include "chrome/browser/ui/webui/notifications_internals/notifications_internals_ui.h"
 #include "chrome/browser/ui/webui/ntp_tiles_internals_ui.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
 #include "chrome/browser/ui/webui/policy_ui.h"
@@ -471,8 +470,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<NetExportUI>;
   if (url.host_piece() == chrome::kChromeUINetInternalsHost)
     return &NewWebUI<NetInternalsUI>;
-  if (url.host_piece() == chrome::kChromeUINotificationsInternalsHost)
-    return &NewWebUI<NotificationsInternalsUI>;
   if (url.host_piece() == chrome::kChromeUINTPTilesInternalsHost)
     return &NewWebUI<NTPTilesInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIOmniboxHost)
@@ -710,7 +707,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
   if (url.host_piece() == chrome::kChromeUIWebApksHost)
     return &NewWebUI<WebApksUI>;
-#else   // !defined(OS_ANDROID)
+#else  // !defined(OS_ANDROID)
   if (url.SchemeIs(content::kChromeDevToolsScheme)) {
     if (!DevToolsUIBindings::IsValidFrontendURL(url))
       return nullptr;

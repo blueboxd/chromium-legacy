@@ -252,6 +252,10 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
   const HeapVector<Member<StyleRuleProperty>>& PropertyRules() const {
     return property_rules_;
   }
+  const HeapVector<Member<StyleRuleScrollTimeline>>& ScrollTimelineRules()
+      const {
+    return scroll_timeline_rules_;
+  }
   const HeapVector<MinimalRuleData>& DeepCombinatorOrShadowPseudoRules() const {
     return deep_combinator_or_shadow_pseudo_rules_;
   }
@@ -305,6 +309,7 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
   void AddFontFaceRule(StyleRuleFontFace*);
   void AddKeyframesRule(StyleRuleKeyframes*);
   void AddPropertyRule(StyleRuleProperty*);
+  void AddScrollTimelineRule(StyleRuleScrollTimeline*);
 
   bool MatchMediaForAddRules(const MediaQueryEvaluator& evaluator,
                              const MediaQuerySet* media_queries);
@@ -350,6 +355,7 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
   HeapVector<Member<StyleRuleFontFace>> font_face_rules_;
   HeapVector<Member<StyleRuleKeyframes>> keyframes_rules_;
   HeapVector<Member<StyleRuleProperty>> property_rules_;
+  HeapVector<Member<StyleRuleScrollTimeline>> scroll_timeline_rules_;
   HeapVector<MinimalRuleData> deep_combinator_or_shadow_pseudo_rules_;
   HeapVector<MinimalRuleData> content_pseudo_element_rules_;
   HeapVector<MinimalRuleData> slotted_pseudo_element_rules_;

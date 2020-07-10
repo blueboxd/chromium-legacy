@@ -392,8 +392,7 @@ bool SelectFileDialogHolder::SelectFile(
   select_file_dialog_->SelectFileWithFileManagerParams(
       type,
       /*title=*/base::string16(), default_path, file_types,
-      /*file_type_index=*/0,
-      /*default_extension=*/base::FilePath::StringType(), owner_window,
+      /*file_type_index=*/0, owner_window,
       /*params=*/nullptr, task_id, show_android_picker_apps);
   return true;
 }

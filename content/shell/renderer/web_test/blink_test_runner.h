@@ -69,6 +69,10 @@ class BlinkTestRunner {
   void OnResetRendererAfterWebTest();
   void OnFinishTestInMainWindow();
 
+  // True if the RenderView is hosting a frame tree fragment that is part of the
+  // web test harness' main window.
+  bool is_main_window() const { return is_main_window_; }
+
  private:
   // Helper reused by OnSetTestConfiguration and OnReplicateTestConfiguration.
   void ApplyTestConfiguration(mojom::WebTestRunTestConfigurationPtr params);

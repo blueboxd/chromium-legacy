@@ -28,6 +28,7 @@ PASS CSSScrollTimelineRule.source  selector(#foo)
 PASS CSSScrollTimelineRule.source none
 PASS CSSScrollTimelineRule.source  none 
 PASS CSSScrollTimelineRule.source selector(#a\9 b)
+PASS CSSScrollTimelineRule.source auto
 PASS CSSScrollTimelineRule.source #foo
 PASS CSSScrollTimelineRule.source 
 PASS CSSScrollTimelineRule.source element(#foo)

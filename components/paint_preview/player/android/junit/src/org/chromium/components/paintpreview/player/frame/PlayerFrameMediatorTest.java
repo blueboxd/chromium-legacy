@@ -57,6 +57,7 @@ public class PlayerFrameMediatorTest {
     private OverScroller mScroller;
     private boolean mHasUserInteraction;
     private Runnable mUserInteractionCallback;
+    private PlayerFrameViewport mViewport;
     private PlayerFrameMediator mMediator;
 
     /**
@@ -192,7 +193,8 @@ public class PlayerFrameMediatorTest {
         mCompositorDelegate = new TestPlayerCompositorDelegate();
         mScroller = new OverScroller(ContextUtils.getApplicationContext());
         mUserInteractionCallback = () -> mHasUserInteraction = true;
-        mMediator = new PlayerFrameMediator(mModel, mCompositorDelegate, mScroller,
+        mViewport = new PlayerFrameViewport();
+        mMediator = new PlayerFrameMediator(mModel, mCompositorDelegate, mViewport, mScroller,
                 mUserInteractionCallback, mFrameGuid, CONTENT_WIDTH, CONTENT_HEIGHT, 0, 0);
     }
 
@@ -208,6 +210,25 @@ public class PlayerFrameMediatorTest {
             visibilities.add(view.getVisibility() == View.VISIBLE);
         }
         return visibilities;
+    }
+
+    private static void assertViewportStateIs(Matrix matrix, PlayerFrameViewport viewport) {
+        float matrixValues[] = new float[9];
+        matrix.getValues(matrixValues);
+        assert matrixValues[Matrix.MSCALE_X] == matrixValues[Matrix.MSCALE_Y];
+        assertViewportStateIs(matrixValues[Matrix.MSCALE_X], matrixValues[Matrix.MTRANS_X],
+                matrixValues[Matrix.MTRANS_Y], viewport);
+    }
+
+    /**
+     * Asserts that the viewport's transformation state matches.
+     */
+    private static void assertViewportStateIs(float expectedScaleFactor, float expectedX,
+            float expectedY, PlayerFrameViewport viewport) {
+        final float tolerance = 0.01f;
+        Assert.assertEquals(expectedScaleFactor, viewport.getScale(), tolerance);
+        Assert.assertEquals(expectedX, viewport.getTransX(), tolerance);
+        Assert.assertEquals(expectedY, viewport.getTransY(), tolerance);
     }
 
     /**
@@ -886,7 +907,7 @@ public class PlayerFrameMediatorTest {
                 new RequestedBitmap(mFrameGuid, getRectForTile(100, 200, 0, 1), 1f));
 
         // Both matricies should be identity to start.
-        Assert.assertTrue(mMediator.mViewport.mViewportTransform.isIdentity());
+        assertViewportStateIs(1f, 0f, 0f, mViewport);
         Assert.assertTrue(mModel.get(PlayerFrameProperties.SCALE_MATRIX).isIdentity());
         // Ensure the correct bitmaps are required and requested.
         Assert.assertTrue(Arrays.deepEquals(expectedRequiredBitmaps, mMediator.mRequiredBitmaps));
@@ -934,7 +955,7 @@ public class PlayerFrameMediatorTest {
         expectedViewportMatrixValues[Matrix.MTRANS_Y] = 15;
         expectedViewportMatrix.setValues(expectedViewportMatrixValues);
 
-        Assert.assertEquals(expectedViewportMatrix, mMediator.mViewport.mViewportTransform);
+        assertViewportStateIs(expectedViewportMatrix, mViewport);
         Assert.assertTrue(mModel.get(PlayerFrameProperties.SCALE_MATRIX).isIdentity());
 
         // STEP 3: Now a scale factor of 2 will be applied. This will happen at a focal point of 50,
@@ -945,7 +966,7 @@ public class PlayerFrameMediatorTest {
         expectedViewportMatrix.postScale(2f, 2f, -50f, -100f);
         Matrix expectedBitmapMatrix = new Matrix();
         expectedBitmapMatrix.postScale(2f, 2f, 50f, 100f);
-        Assert.assertEquals(expectedViewportMatrix, mMediator.mViewport.mViewportTransform);
+        assertViewportStateIs(expectedViewportMatrix, mViewport);
         Assert.assertEquals(expectedBitmapMatrix, mModel.get(PlayerFrameProperties.SCALE_MATRIX));
 
         // Bitmaps should be the same as before scaling until scaling is finished.
@@ -995,7 +1016,7 @@ public class PlayerFrameMediatorTest {
         // Ensure the matricies are correct mid-scale.
         expectedViewportMatrix.postScale(0.5f, 0.5f, -50f, -100f);
         expectedBitmapMatrix.postScale(0.5f, 0.5f, 50f, 100f);
-        Assert.assertEquals(expectedViewportMatrix, mMediator.mViewport.mViewportTransform);
+        assertViewportStateIs(expectedViewportMatrix, mViewport);
         Assert.assertEquals(expectedBitmapMatrix, mModel.get(PlayerFrameProperties.SCALE_MATRIX));
 
         // Bitmaps should be the same as before scaling until scaling is finished.
@@ -1055,7 +1076,7 @@ public class PlayerFrameMediatorTest {
 
         expectedViewportMatrix.postScale(2f, 2f, -100f, -200f);
         expectedBitmapMatrix.postScale(2f, 2f, 100f, 200f);
-        Assert.assertEquals(expectedViewportMatrix, mMediator.mViewport.mViewportTransform);
+        assertViewportStateIs(expectedViewportMatrix, mViewport);
         Assert.assertEquals(expectedBitmapMatrix, mModel.get(PlayerFrameProperties.SCALE_MATRIX));
 
         Assert.assertEquals(expectedRequestedBitmaps, mCompositorDelegate.mRequestedBitmap);
@@ -1235,7 +1256,7 @@ public class PlayerFrameMediatorTest {
         Matrix expectedBitmapMatrix = new Matrix();
         expectedViewportMatrix.postScale(2f, 2f, 0f, 0f);
         expectedBitmapMatrix.postScale(2f, 2f, 0f, 0f);
-        Assert.assertEquals(expectedViewportMatrix, mMediator.mViewport.mViewportTransform);
+        assertViewportStateIs(expectedViewportMatrix, mViewport);
         Assert.assertEquals(expectedBitmapMatrix, mModel.get(PlayerFrameProperties.SCALE_MATRIX));
 
         Assert.assertTrue(mMediator.scaleFinished(1f, 0, 0));
@@ -1252,7 +1273,7 @@ public class PlayerFrameMediatorTest {
         expectedViewportMatrix.postScale(0.5f, 0.5f, 0f, 0f);
         expectedBitmapMatrix.reset();
         expectedBitmapMatrix.postScale(0.5f, 0.5f, 0f, 0f);
-        Assert.assertEquals(expectedViewportMatrix, mMediator.mViewport.mViewportTransform);
+        assertViewportStateIs(expectedViewportMatrix, mViewport);
         Assert.assertEquals(expectedBitmapMatrix, mModel.get(PlayerFrameProperties.SCALE_MATRIX));
 
         Assert.assertTrue(mMediator.scaleFinished(1f, -50f, -50f));

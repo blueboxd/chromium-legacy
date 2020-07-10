@@ -42,6 +42,9 @@ void FakeRemoteFrame::SetReplicatedOrigin(
 void FakeRemoteFrame::SetReplicatedAdFrameType(
     blink::mojom::AdFrameType ad_frame_type) {}
 
+void FakeRemoteFrame::SetReplicatedName(const std::string& name,
+                                        const std::string& unique_name) {}
+
 void FakeRemoteFrame::DispatchLoadEventForFrameOwner() {}
 
 void FakeRemoteFrame::Collapse(bool collapsed) {}

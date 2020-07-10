@@ -34,6 +34,7 @@ class COMPONENT_EXPORT(PRIVACY_BUDGET_TEST_SUPPORT)
               ukm::SourceId source,
               std::vector<IdentifiableSample> metrics) override;
   void Flush(ukm::UkmRecorder* recorder) override;
+  void FlushSource(ukm::UkmRecorder* recorder, ukm::SourceId source) override;
 
   // Each call to `Record()` results in one of these being added to `entries()`
   // in order of occurrence that faithfully records the arguments to `Record()`.

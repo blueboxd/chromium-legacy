@@ -13,6 +13,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/test_timeouts.h"
+#include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -475,7 +476,13 @@ TEST_F(ThreadPoolJobTaskSourceTest, InvalidDidProcessTask) {
   EXPECT_DCHECK_DEATH(registered_task_source.DidProcessTask());
 }
 
-TEST_F(ThreadPoolJobTaskSourceTest, AcquireTaskId) {
+// Disabled on Android, see https://crbug.com/1104240.
+#if defined(OS_ANDROID)
+#define MAYBE_AcquireTaskId DISABLED_AcquireTaskId
+#else
+#define MAYBE_AcquireTaskId AcquireTaskId
+#endif
+TEST_F(ThreadPoolJobTaskSourceTest, MAYBE_AcquireTaskId) {
   auto job_task =
       base::MakeRefCounted<test::MockJobTask>(DoNothing(),
                                               /* num_tasks_to_run */ 4);

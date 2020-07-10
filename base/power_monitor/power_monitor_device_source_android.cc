@@ -34,9 +34,4 @@ bool PowerMonitorDeviceSource::IsOnBatteryPowerImpl() {
   return base::android::Java_PowerMonitor_isBatteryPower(env);
 }
 
-int PowerMonitorDeviceSource::GetRemainingBatteryCapacity() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  return base::android::Java_PowerMonitor_getRemainingBatteryCapacity(env);
-}
-
 }  // namespace base

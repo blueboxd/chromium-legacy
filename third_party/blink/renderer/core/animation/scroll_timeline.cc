@@ -123,7 +123,7 @@ ScrollTimeline* ScrollTimeline::Create(Document& document,
     return nullptr;
   }
 
-  // TODO(smcgruer): Support 'auto' value.
+  // TODO(crbug.com/1097041): Support 'auto' value.
   if (options->timeRange().IsScrollTimelineAutoKeyword()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,

@@ -301,8 +301,12 @@ class TestRunner {
 
   // By default, tests end when page load is complete. These methods are used
   // to delay the completion of the test until NotifyDone is called.
-  void NotifyDone();
   void WaitUntilDone();
+  void NotifyDone();
+
+  // When there are no conditions left to wait for, this is called to cause the
+  // test to end, collect results, and inform the browser.
+  void FinishTest();
 
   // Methods for adding actions to the work queue. Used in conjunction with
   // WaitUntilDone/NotifyDone above.
@@ -562,11 +566,14 @@ class TestRunner {
 
   // This is non empty when a load is in progress.
   std::vector<blink::WebFrame*> loading_frames_;
+  // We do not want the test to end until the main frame finishes loading. This
+  // starts as true at the beginning of the test, and will be set to false once
+  // we run out of frames to load at any time.
+  bool main_frame_loaded_ = false;
   // When a loading task is started, this bool is set until all loading_frames_
   // are completed and removed. This bool becomes true earlier than
-  // loading_frames_ becomes non-empty. Starts as true for the initial load
-  // which does not come from the WorkQueue.
-  bool running_load_ = true;
+  // loading_frames_ becomes non-empty.
+  bool frame_will_start_load_ = true;
   // When NotifyDone() occurs, if loading is still working, it is delayed, and
   // this bool tracks that NotifyDone() was called. This differentiates from a
   // test that was not waiting for NotifyDone() at all.

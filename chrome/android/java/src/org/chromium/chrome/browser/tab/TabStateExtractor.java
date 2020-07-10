@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tab;
 
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
@@ -60,7 +61,8 @@ public class TabStateExtractor {
         } else {
             Referrer referrer = pendingLoadParams.getReferrer();
             return WebContentsStateBridge.createSingleNavigationStateAsByteBuffer(
-                    pendingLoadParams.getUrl(), referrer != null ? referrer.getUrl() : null,
+                    Profile.getLastUsedRegularProfile(), pendingLoadParams.getUrl(),
+                    referrer != null ? referrer.getUrl() : null,
                     // Policy will be ignored for null referrer url, 0 is just a placeholder.
                     referrer != null ? referrer.getPolicy() : 0,
                     pendingLoadParams.getInitiatorOrigin(), tab.isIncognito());

@@ -292,11 +292,11 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   bool ShouldUsePrintingLayout() const;
 
- private:
   void MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                           TransformState&,
                           MapCoordinatesFlags) const override;
 
+ private:
   const LayoutObject* PushMappingToContainer(
       const LayoutBoxModelObject* ancestor_to_stop_at,
       LayoutGeometryMap&) const override;

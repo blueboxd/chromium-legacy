@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/animation/inert_effect.h"
 #include "third_party/blink/renderer/core/animation/interpolation.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
+#include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
 #include "third_party/blink/renderer/core/css/css_property_equality.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -32,6 +33,7 @@ class NewCSSAnimation {
                   const InertEffect& effect,
                   Timing timing,
                   StyleRuleKeyframes* style_rule,
+                  ScrollTimeline* scroll_timeline,
                   const Vector<EAnimPlayState>& play_state_list)
       : name(name),
         name_index(name_index),
@@ -40,11 +42,13 @@ class NewCSSAnimation {
         timing(timing),
         style_rule(style_rule),
         style_rule_version(this->style_rule->Version()),
+        scroll_timeline(scroll_timeline),
         play_state_list(play_state_list) {}
 
   void Trace(Visitor* visitor) const {
     visitor->Trace(effect);
     visitor->Trace(style_rule);
+    visitor->Trace(scroll_timeline);
   }
 
   AtomicString name;
@@ -54,6 +58,7 @@ class NewCSSAnimation {
   Timing timing;
   Member<StyleRuleKeyframes> style_rule;
   unsigned style_rule_version;
+  Member<ScrollTimeline> scroll_timeline;
   Vector<EAnimPlayState> play_state_list;
 };
 
@@ -116,10 +121,11 @@ class CORE_EXPORT CSSAnimationUpdate final {
                       const InertEffect& effect,
                       const Timing& timing,
                       StyleRuleKeyframes* style_rule,
+                      ScrollTimeline* scroll_timeline,
                       const Vector<EAnimPlayState>& play_state_list) {
-    new_animations_.push_back(NewCSSAnimation(animation_name, name_index,
-                                              position_index, effect, timing,
-                                              style_rule, play_state_list));
+    new_animations_.push_back(
+        NewCSSAnimation(animation_name, name_index, position_index, effect,
+                        timing, style_rule, scroll_timeline, play_state_list));
   }
   void CancelAnimation(wtf_size_t index, const Animation& animation) {
     cancelled_animation_indices_.push_back(index);

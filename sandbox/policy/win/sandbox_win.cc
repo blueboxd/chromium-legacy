@@ -748,7 +748,8 @@ ResultCode SandboxWin::AddAppContainerPolicy(TargetPolicy* policy,
 ResultCode SandboxWin::AddWin32kLockdownPolicy(TargetPolicy* policy,
                                                bool enable_opm) {
 #if !defined(NACL_WIN64)
-  if (!IsWin32kLockdownEnabled())
+  // Win32k Lockdown is supported on Windows 8+.
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return SBOX_ALL_OK;
 
   MitigationFlags flags = policy->GetProcessMitigations();
@@ -932,13 +933,11 @@ ResultCode SandboxWin::StartSandboxedProcess(
   if (result != SBOX_ALL_OK)
     return result;
 
-#if !defined(NACL_WIN64)
-  if (process_type == switches::kRendererProcess && IsWin32kLockdownEnabled()) {
+  if (process_type == switches::kRendererProcess) {
     result = SandboxWin::AddWin32kLockdownPolicy(policy.get(), false);
     if (result != SBOX_ALL_OK)
       return result;
   }
-#endif
 
   // Post-startup mitigations.
   mitigations = MITIGATION_DLL_SEARCH_ORDER;

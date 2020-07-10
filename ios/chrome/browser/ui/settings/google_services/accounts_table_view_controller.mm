@@ -110,6 +110,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Modal alert for confirming account removal.
 @property(nonatomic, strong) AlertCoordinator* removeAccountCoordinator;
 
+// If YES, the UI elements are disabled.
+@property(nonatomic, assign) BOOL uiDisabled;
+
 // Stops observing browser state services. This is required during the shutdown
 // phase to avoid observing services for a browser state that is being killed.
 - (void)stopBrowserStateServiceObservers;
@@ -337,6 +340,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  // If there is an operation in process that does not allow selecting a cell
+  // exit without performing the selection.
+  if (self.uiDisabled) {
+    return;
+  }
+
   [super tableView:tableView didSelectRowAtIndexPath:indexPath];
 
   NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
@@ -347,6 +356,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
           base::mac::ObjCCastStrict<TableViewAccountItem>(
               [self.tableViewModel itemAtIndexPath:indexPath]);
       DCHECK(item.chromeIdentity);
+
       UIView* itemView =
           [[tableView cellForRowAtIndexPath:indexPath] contentView];
       [self showAccountDetails:item.chromeIdentity itemView:itemView];
@@ -463,9 +473,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
                         addItemWithTitle:l10n_util::GetNSString(
                                              IDS_IOS_REMOVE_ACCOUNT_LABEL)
                                   action:^{
+                                    weakSelf.uiDisabled = YES;
                                     ios::GetChromeBrowserProvider()
                                         ->GetChromeIdentityService()
-                                        ->ForgetIdentity(identity, nil);
+                                        ->ForgetIdentity(
+                                            identity, ^(NSError* error) {
+                                              weakSelf.uiDisabled = NO;
+                                            });
                                   }
                                    style:UIAlertActionStyleDestructive];
 

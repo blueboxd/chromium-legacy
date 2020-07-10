@@ -155,7 +155,6 @@ class CoreOobeHandler : public BaseWebUIHandler,
   // Handlers for JS WebUI messages.
   void HandleHideOobeDialog();
   void HandleInitialized();
-  void HandleSkipUpdateEnrollAfterEula();
   void HandleUpdateCurrentScreen(const std::string& screen);
   void HandleSetDeviceRequisition(const std::string& requisition);
   void HandleSkipToLoginForTesting();

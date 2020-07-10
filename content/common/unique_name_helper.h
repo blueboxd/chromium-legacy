@@ -96,7 +96,7 @@ class CONTENT_EXPORT UniqueNameHelper {
     // the chain from this frame to the root frame. |begin_point| indicates the
     // reference point for starting the collection. |should_stop| is a
     // boolean predicate that indicates when to stop collection of names.
-    virtual std::vector<base::StringPiece> CollectAncestorNames(
+    virtual std::vector<std::string> CollectAncestorNames(
         BeginPoint begin_point,
         bool (*should_stop)(base::StringPiece)) const = 0;
     // Returns a vector of ints representing the child index of each frame in

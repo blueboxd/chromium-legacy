@@ -144,10 +144,13 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
     adopted_tree_scopes_.erase(&tree_scope);
   }
 
-  Document* AssociatedDocument() { return associated_document_; }
+  // Associated document for constructed stylesheet. Always non-null for
+  // constructed stylesheets, always null otherwise.
+  Document* ConstructorDocument() const { return constructor_document_; }
 
-  void SetAssociatedDocument(Document* document) {
-    associated_document_ = document;
+  // Set constructor document for constructed stylesheet.
+  void SetConstructorDocument(Document& document) {
+    constructor_document_ = &document;
   }
 
   void AddToCustomElementTagNames(const AtomicString& local_tag_name) {
@@ -204,12 +207,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   void SetMedia(MediaList*);
   void SetAlternateFromConstructor(bool);
   bool CanBeActivated(const String& current_preferrable_name) const;
-
-  void SetIsConstructed(bool is_constructed) {
-    is_constructed_ = is_constructed;
-  }
-
-  bool IsConstructed() { return is_constructed_; }
+  bool IsConstructed() const { return ConstructorDocument(); }
 
   void Trace(Visitor*) const override;
 
@@ -255,8 +253,6 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   bool alternate_from_constructor_ = false;
   bool enable_rule_access_for_inspector_ = false;
 
-  bool is_constructed_ = false;
-
   String title_;
   scoped_refptr<MediaQuerySet> media_queries_;
   MediaQueryResultList viewport_dependent_media_query_results_;
@@ -265,7 +261,9 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   Member<Node> owner_node_;
   Member<CSSRule> owner_rule_;
   HeapHashSet<WeakMember<TreeScope>> adopted_tree_scopes_;
-  Member<Document> associated_document_;
+  // The Document this stylesheet was constructed for. Always non-null for
+  // constructed stylesheets. Always null for other sheets.
+  Member<Document> constructor_document_;
   HashSet<AtomicString> custom_element_tag_names_;
   Member<ScriptPromiseResolver> resolver_;
 

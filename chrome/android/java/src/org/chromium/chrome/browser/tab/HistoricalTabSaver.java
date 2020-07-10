@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tab;
 
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -14,12 +15,12 @@ public class HistoricalTabSaver {
     /**
      * Creates a historical tab from a tab being closed.
      */
-    public static void createHistoricalTab(Tab tab) {
+    public static void createHistoricalTab(Tab tab, Profile profile) {
         if (tab.isFrozen()) {
             WebContentsState state = ((TabImpl) tab).getFrozenContentsState();
             if (state != null) {
                 WebContents webContents =
-                        WebContentsStateBridge.restoreContentsFromByteBuffer(state, true);
+                        WebContentsStateBridge.restoreContentsFromByteBuffer(state, profile, true);
                 if (webContents != null) {
                     createHistoricalTabFromContents(webContents);
                     webContents.destroy();

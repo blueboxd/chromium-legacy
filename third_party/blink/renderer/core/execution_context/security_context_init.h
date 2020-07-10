@@ -7,7 +7,11 @@
 
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink-forward.h"
+#include "third_party/blink/public/web/web_origin_policy.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/feature_policy/policy_helper.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -22,6 +26,7 @@ class DocumentInit;
 class Frame;
 class LocalFrame;
 class OriginTrialContext;
+class ResourceResponse;
 class SecurityOrigin;
 
 class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
@@ -30,6 +35,18 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
  public:
   SecurityContextInit(scoped_refptr<SecurityOrigin>, OriginTrialContext*);
   explicit SecurityContextInit(const DocumentInit&);
+
+  void CalculateSecureContextMode(LocalFrame* frame);
+  void InitializeOriginTrials(const String& origin_trials_header);
+  void CalculateFeaturePolicy(
+      LocalFrame* frame,
+      bool is_view_source,
+      const ResourceResponse& response,
+      const base::Optional<WebOriginPolicy>& origin_policy,
+      const FramePolicy& frame_policy);
+  void CalculateDocumentPolicy(
+      const DocumentPolicy::ParsedDocumentPolicy& document_policy,
+      const String& report_only_document_policy_header);
 
   const scoped_refptr<SecurityOrigin>& GetSecurityOrigin() const {
     return security_origin_;
@@ -70,11 +87,6 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   bool FeatureEnabled(OriginTrialFeature feature) const override;
 
  private:
-  void InitializeDocumentPolicy(const DocumentInit&);
-  void InitializeFeaturePolicy(const DocumentInit&);
-  void InitializeSecureContextMode(const DocumentInit&);
-  void InitializeOriginTrials(const DocumentInit&);
-
   ExecutionContext* execution_context_ = nullptr;
   ContentSecurityPolicy* csp_ = nullptr;
   network::mojom::blink::WebSandboxFlags sandbox_flags_ =

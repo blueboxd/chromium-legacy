@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_text_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -166,8 +167,7 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
   is_search_type_ = AutocompleteMatch::IsSearchType(match.type);
 
   // Decide layout style once before Layout, while match data is available.
-  const bool two_line =
-      is_rich_suggestion_ || match.ShouldShowTabMatchButton() || match.pedal;
+  const bool two_line = is_rich_suggestion_;
   layout_style_ = two_line ? LayoutStyle::TWO_LINE_SUGGESTION
                            : LayoutStyle::ONE_LINE_SUGGESTION;
 
@@ -263,7 +263,9 @@ const char* OmniboxMatchCellView::GetClassName() const {
 
 gfx::Insets OmniboxMatchCellView::GetInsets() const {
   const bool single_line = layout_style_ == LayoutStyle::ONE_LINE_SUGGESTION;
-  const int vertical_margin = single_line ? 8 : 4;
+  const int vertical_margin = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      single_line ? DISTANCE_OMNIBOX_CELL_VERTICAL_PADDING
+                  : DISTANCE_OMNIBOX_TWO_LINE_CELL_VERTICAL_PADDING);
   return gfx::Insets(vertical_margin, OmniboxMatchCellView::kMarginLeft,
                      vertical_margin, OmniboxMatchCellView::kMarginRight);
 }

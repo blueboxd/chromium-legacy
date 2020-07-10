@@ -65,14 +65,31 @@ blink::CSPSourcePtr ConvertToBlink(CSPSourcePtr source) {
       source->is_port_wildcard);
 }
 
+blink::CSPHashSourcePtr ConvertToBlink(CSPHashSourcePtr hash) {
+  return blink::CSPHashSource::New(hash->algorithm,
+                                   String::FromUTF8(hash->value));
+}
+
 blink::CSPSourceListPtr ConvertToBlink(CSPSourceListPtr source_list) {
   WTF::Vector<blink::CSPSourcePtr> sources;
   for (auto& it : source_list->sources)
     sources.push_back(ConvertToBlink(std::move(it)));
 
-  return blink::CSPSourceList::New(std::move(sources), source_list->allow_self,
-                                   source_list->allow_star,
-                                   source_list->allow_response_redirects);
+  WTF::Vector<String> nonces;
+  for (const auto& nonce : source_list->nonces)
+    nonces.push_back(String::FromUTF8(std::move(nonce)));
+
+  WTF::Vector<blink::CSPHashSourcePtr> hashes;
+  for (auto& it : source_list->hashes)
+    hashes.push_back(ConvertToBlink(std::move(it)));
+
+  return blink::CSPSourceList::New(
+      std::move(sources), std::move(nonces), std::move(hashes),
+      source_list->allow_self, source_list->allow_star,
+      source_list->allow_response_redirects, source_list->allow_inline,
+      source_list->allow_eval, source_list->allow_wasm_eval,
+      source_list->allow_dynamic, source_list->allow_unsafe_hashes,
+      source_list->report_sample);
 }
 
 blink::CSPDirectiveName ConvertToBlink(CSPDirectiveName name) {

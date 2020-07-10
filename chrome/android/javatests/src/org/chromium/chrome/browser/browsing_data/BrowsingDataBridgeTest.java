@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tab.TabStateExtractor;
@@ -244,7 +245,8 @@ public class BrowsingDataBridgeTest {
             frozen[0] = mActivityTestRule.getActivity().getCurrentTabCreator().createFrozenTab(
                     state, tab.getId(), 1);
             restored[0] = WebContentsStateBridge.restoreContentsFromByteBuffer(
-                    TabStateExtractor.from(frozen[0]).contentsState, false);
+                    TabStateExtractor.from(frozen[0]).contentsState,
+                    Profile.getLastUsedRegularProfile(), false);
         });
 
         // Check content of frozen state.
@@ -266,7 +268,8 @@ public class BrowsingDataBridgeTest {
         // Check that frozen state was cleaned up.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             restored[0] = WebContentsStateBridge.restoreContentsFromByteBuffer(
-                    TabStateExtractor.from(frozen[0]).contentsState, false);
+                    TabStateExtractor.from(frozen[0]).contentsState,
+                    Profile.getLastUsedRegularProfile(), false);
         });
 
         controller = restored[0].getNavigationController();

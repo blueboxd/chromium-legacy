@@ -10,7 +10,6 @@
 /**
  * @typedef {{
  *   enableDebuggingAllowed: (boolean|undefined),
- *   postponeEnrollmentAllowed: (boolean|undefined),
  *   resetAllowed: (boolean|undefined),
  *   startEnrollmentAllowed: (boolean|undefined),
  *   toggleKioskAllowed: (boolean|undefined),
@@ -24,12 +23,6 @@ var DisplayManagerScreenAttributes = {};
  * @type {boolean|undefined}
  */
 DisplayManagerScreenAttributes.enableDebuggingAllowed;
-
-/**
- * True if enrollment accelerator should schedule postponed enrollment.
- * @type {boolean|undefined}
- */
-DisplayManagerScreenAttributes.postponeEnrollmentAllowed;
 
 /**
  * True if device reset is allowed on the screen.

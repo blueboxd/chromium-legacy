@@ -438,6 +438,7 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::VALUE_MAX_CHANGED:
     case ui::AXEventGenerator::Event::VALUE_MIN_CHANGED:
     case ui::AXEventGenerator::Event::VALUE_STEP_CHANGED:
+    case ui::AXEventGenerator::Event::WIN_IACCESSIBLE_STATE_CHANGED:
       // There are some notifications that aren't meaningful on Mac.
       // It's okay to skip them.
       return;

@@ -61,6 +61,8 @@
 #include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_sample_collector.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom-blink.h"
@@ -841,7 +843,12 @@ Document::Document(const DocumentInit& initializer,
   cookie_url_ = initializer.HasSecurityContext() ? initializer.GetCookieUrl()
                                                  : KURL(g_empty_string);
 
-  PoliciesInitialized(initializer);
+  is_vertical_scroll_enforced_ =
+      GetFrame() && !GetFrame()->IsMainFrame() &&
+      RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
+      !dom_window_->IsFeatureEnabled(
+          mojom::blink::FeaturePolicyFeature::kVerticalScroll);
+
   InitDNSPrefetch();
 
   InstanceCounters::IncrementCounter(InstanceCounters::kDocumentCounter);
@@ -3198,6 +3205,12 @@ void Document::Shutdown() {
   if (needs_to_record_ukm_outlive_time_) {
     // Ensure |ukm_recorder_| and |ukm_source_id_|.
     UkmRecorder();
+  }
+
+  // Don't create a |ukm_recorder_| and |ukm_source_id_| unless necessary.
+  if (IdentifiabilityStudySettings::Get()->IsActive()) {
+    IdentifiabilitySampleCollector::Get()->FlushSource(UkmRecorder(),
+                                                       UkmSourceID());
   }
 
   mime_handler_view_before_unload_event_listener_ = nullptr;
@@ -6996,19 +7009,6 @@ HTMLLinkElement* Document::LinkCanonical() const {
   return GetLinkElement(this, [](HTMLLinkElement& link_element) {
     return link_element.RelAttribute().IsCanonical();
   });
-}
-
-void Document::PoliciesInitialized(const DocumentInit& document_initializer) {
-  // Processing of the feature policy header is done before the SecurityContext
-  // is initialized. This method just records the usage.
-  if (!document_initializer.FeaturePolicyHeader().IsEmpty())
-    UseCounter::Count(*this, WebFeature::kFeaturePolicyHeader);
-
-  is_vertical_scroll_enforced_ =
-      GetFrame() && !GetFrame()->IsMainFrame() &&
-      RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-      !dom_window_->IsFeatureEnabled(
-          mojom::blink::FeaturePolicyFeature::kVerticalScroll);
 }
 
 bool Document::AllowedToUseDynamicMarkUpInsertion(

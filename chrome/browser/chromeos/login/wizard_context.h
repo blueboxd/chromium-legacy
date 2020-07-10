@@ -24,6 +24,13 @@ class WizardContext {
   // Set by WizardController.
   // Used by multiple screens.
   base::Value configuration{base::Value::Type::DICTIONARY};
+
+  // Indicates that enterprise enrollment was triggered early in the OOBE
+  // process, so Update screen should be skipped and Enrollment start right
+  // after EULA screen.
+  // Set by Welcome, Network and EULA screens.
+  // Used by Update screen and WizardController.
+  bool enrollment_triggered_early = false;
 };
 
 }  // namespace chromeos

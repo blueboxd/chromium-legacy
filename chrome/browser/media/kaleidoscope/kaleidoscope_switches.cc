@@ -51,6 +51,5 @@ GURL GetGoogleAPIBaseURL(const base::CommandLine& command_line) {
     }
   }
 
-  // TODO(beccahughes): Update this when prod is live.
-  return GURL(switches::kKaleidoscopeBackendUrlStagingUrl);
+  return GURL(switches::kKaleidoscopeBackendUrlProdUrl);
 }

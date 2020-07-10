@@ -135,8 +135,8 @@ base::SingleThreadTaskRunner* CronetEnvironment::GetNetworkThreadTaskRunner()
 }
 
 void CronetEnvironment::PostToNetworkThread(const base::Location& from_here,
-                                            const base::Closure& task) {
-  GetNetworkThreadTaskRunner()->PostTask(from_here, task);
+                                            base::OnceClosure task) {
+  GetNetworkThreadTaskRunner()->PostTask(from_here, std::move(task));
 }
 
 net::URLRequestContext* CronetEnvironment::GetURLRequestContext() const {
@@ -161,9 +161,9 @@ bool CronetEnvironment::StartNetLog(base::FilePath::StringType file_name,
   }
 
   LOG(WARNING) << "Starting NetLog to " << path.value();
-  PostToNetworkThread(FROM_HERE,
-                      base::Bind(&CronetEnvironment::StartNetLogOnNetworkThread,
-                                 base::Unretained(this), path, log_bytes));
+  PostToNetworkThread(
+      FROM_HERE, base::BindOnce(&CronetEnvironment::StartNetLogOnNetworkThread,
+                                base::Unretained(this), path, log_bytes));
 
   return true;
 }
@@ -190,9 +190,9 @@ void CronetEnvironment::StopNetLog() {
   base::WaitableEvent log_stopped_event(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
-  PostToNetworkThread(FROM_HERE,
-                      base::Bind(&CronetEnvironment::StopNetLogOnNetworkThread,
-                                 base::Unretained(this), &log_stopped_event));
+  PostToNetworkThread(
+      FROM_HERE, base::BindOnce(&CronetEnvironment::StopNetLogOnNetworkThread,
+                                base::Unretained(this), &log_stopped_event));
   log_stopped_event.Wait();
 }
 
@@ -268,9 +268,9 @@ void CronetEnvironment::Start() {
   main_context_getter_ = new CronetURLRequestContextGetter(
       this, CronetEnvironment::GetNetworkThreadTaskRunner());
   std::atomic_thread_fence(std::memory_order_seq_cst);
-  PostToNetworkThread(FROM_HERE,
-                      base::Bind(&CronetEnvironment::InitializeOnNetworkThread,
-                                 base::Unretained(this)));
+  PostToNetworkThread(
+      FROM_HERE, base::BindOnce(&CronetEnvironment::InitializeOnNetworkThread,
+                                base::Unretained(this)));
 }
 
 void CronetEnvironment::CleanUpOnNetworkThread() {
@@ -457,8 +457,8 @@ void CronetEnvironment::SetHostResolverRules(const std::string& rules) {
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   PostToNetworkThread(
       FROM_HERE,
-      base::Bind(&CronetEnvironment::SetHostResolverRulesOnNetworkThread,
-                 base::Unretained(this), rules, &event));
+      base::BindOnce(&CronetEnvironment::SetHostResolverRulesOnNetworkThread,
+                     base::Unretained(this), rules, &event));
   event.Wait();
 }
 

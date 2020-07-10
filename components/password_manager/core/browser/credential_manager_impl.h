@@ -70,7 +70,8 @@ class CredentialManagerImpl
   PasswordManagerClient* client() const override;
 
   // CredentialManagerPendingPreventSilentAccessTaskDelegate:
-  PasswordStore* GetPasswordStore() override;
+  PasswordStore* GetProfilePasswordStore() override;
+  PasswordStore* GetAccountPasswordStore() override;
   void DoneRequiringUserMediation() override;
 
   // CredentialManagerPasswordFormManagerDelegate:

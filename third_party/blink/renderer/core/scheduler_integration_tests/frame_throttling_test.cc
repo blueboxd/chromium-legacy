@@ -1528,7 +1528,7 @@ TEST_P(FrameThrottlingTest, NestedFramesInRemoteFrameHiddenAndShown) {
   child_frame_resource.Complete("");
 
   ViewportIntersectionState intersection;
-  intersection.main_frame_document_intersection = WebRect(0, 0, 100, 100);
+  intersection.main_frame_intersection = WebRect(0, 0, 100, 100);
   intersection.main_frame_viewport_size = WebSize(100, 100);
   intersection.viewport_intersection = WebRect(0, 0, 100, 100);
   LocalFrameRoot().FrameWidget()->Resize(WebSize(300, 200));

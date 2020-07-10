@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
+#include "chrome/browser/chromeos/login/wizard_context.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/grit/chromium_strings.h"
@@ -105,6 +106,14 @@ void NetworkScreen::OnUserAction(const std::string& action_id) {
   } else {
     BaseScreen::OnUserAction(action_id);
   }
+}
+
+bool NetworkScreen::HandleAccelerator(ash::LoginAcceleratorAction action) {
+  if (action == ash::LoginAcceleratorAction::kStartEnrollment) {
+    context()->enrollment_triggered_early = true;
+    return true;
+  }
+  return false;
 }
 
 void NetworkScreen::NetworkConnectionStateChanged(const NetworkState* network) {

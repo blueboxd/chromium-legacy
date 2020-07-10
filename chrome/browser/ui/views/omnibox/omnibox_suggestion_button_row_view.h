@@ -34,6 +34,7 @@ class OmniboxSuggestionButtonRowView : public views::View,
 
   // views::View:
   void Layout() override;
+  void OnThemeChanged() override;
 
  private:
   // Get the popup model from the view.
@@ -41,6 +42,9 @@ class OmniboxSuggestionButtonRowView : public views::View,
 
   // Digs into the model with index to get the match for owning result view.
   const AutocompleteMatch& match() const;
+
+  void SetPillButtonVisibility(views::MdTextButton* button,
+                               OmniboxPopupModel::LineState state);
 
   OmniboxPopupContentsView* const popup_contents_view_;
   size_t const model_index_;

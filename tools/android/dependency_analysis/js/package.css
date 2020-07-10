@@ -1,0 +1,14 @@
+/* Copyright 2020 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+#node-details-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.package-details-panel {
+  max-height: 400px;
+  overflow: hidden;
+  overflow-y: scroll;
+}

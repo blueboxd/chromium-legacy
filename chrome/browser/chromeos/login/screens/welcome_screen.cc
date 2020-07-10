@@ -376,6 +376,9 @@ bool WelcomeScreen::HandleAccelerator(ash::LoginAcceleratorAction action) {
 
     view_->ShowDemoModeConfirmationDialog();
     return true;
+  } else if (action == ash::LoginAcceleratorAction::kStartEnrollment) {
+    context()->enrollment_triggered_early = true;
+    return true;
   }
   return false;
 }

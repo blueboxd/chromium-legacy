@@ -374,6 +374,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   StyleRuleKeyframes* KeyframeStylesForAnimation(
       const AtomicString& animation_name);
+  StyleRuleScrollTimeline* FindScrollTimelineRule(const AtomicString& name);
 
   DocumentStyleEnvironmentVariables& EnsureEnvironmentVariables();
 
@@ -510,6 +511,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void AddUserKeyframeRules(const RuleSet&);
   void AddUserKeyframeStyle(StyleRuleKeyframes*);
   void AddPropertyRules(const RuleSet&);
+  void AddScrollTimelineRules(const RuleSet&);
 
   void UpdateColorScheme();
   bool SupportsDarkColorScheme();
@@ -619,6 +621,9 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   using KeyframesRuleMap =
       HeapHashMap<AtomicString, Member<StyleRuleKeyframes>>;
   KeyframesRuleMap keyframes_rule_map_;
+
+  HeapHashMap<AtomicString, Member<StyleRuleScrollTimeline>>
+      scroll_timeline_map_;
 
   scoped_refptr<DocumentStyleEnvironmentVariables> environment_variables_;
 

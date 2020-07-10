@@ -316,10 +316,14 @@ public final class AwBrowserProcess {
             intent.setClassName(getWebViewPackageName(), ServiceNames.CRASH_RECEIVER_SERVICE);
 
             ServiceConnection connection = new ServiceConnection() {
+                private boolean mHasConnected = false;
+
                 @Override
                 public void onServiceConnected(ComponentName className, IBinder service) {
-                    // onServiceConnected is called on the UI thread, so punt this back to the
-                    // background thread.
+                    if (mHasConnected) return;
+                    mHasConnected = true;
+                    // onServiceConnected is called on the UI thread, so punt this back to
+                    // the background thread.
                     sSequencedTaskRunner.postTask(() -> {
                         transmitMinidumps(minidumpFiles, crashesInfoMap,
                                 ICrashReceiverService.Stub.asInterface(service));
@@ -389,8 +393,12 @@ public final class AwBrowserProcess {
         intent.setClassName(getWebViewPackageName(), ServiceNames.METRICS_BRIDGE_SERVICE);
 
         ServiceConnection connection = new ServiceConnection() {
+            private boolean mHasConnected = false;
+
             @Override
             public void onServiceConnected(ComponentName className, IBinder service) {
+                if (mHasConnected) return;
+                mHasConnected = true;
                 // onServiceConnected is called on the UI thread, so punt this back to the
                 // background thread.
                 PostTask.postTask(TaskTraits.THREAD_POOL_BEST_EFFORT, () -> {

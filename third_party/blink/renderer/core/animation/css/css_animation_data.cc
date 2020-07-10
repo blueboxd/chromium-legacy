@@ -51,4 +51,9 @@ Timing CSSAnimationData::ConvertToTiming(size_t index) const {
   return timing;
 }
 
+const StyleNameOrKeyword& CSSAnimationData::GetTimeline(size_t index) const {
+  DCHECK_LT(index, name_list_.size());
+  return GetRepeated(timeline_list_, index);
+}
+
 }  // namespace blink

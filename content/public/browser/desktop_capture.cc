@@ -46,6 +46,7 @@ webrtc::DesktopCaptureOptions CreateDesktopCaptureOptions() {
 std::unique_ptr<webrtc::DesktopCapturer> CreateScreenCapturer() {
 #if BUILDFLAG(IS_LACROS)
   return std::make_unique<DesktopCapturerLacros>(
+      DesktopCapturerLacros::CaptureType::kScreen,
       webrtc::DesktopCaptureOptions());
 #else
   return webrtc::DesktopCapturer::CreateScreenCapturer(
@@ -54,9 +55,14 @@ std::unique_ptr<webrtc::DesktopCapturer> CreateScreenCapturer() {
 }
 
 std::unique_ptr<webrtc::DesktopCapturer> CreateWindowCapturer() {
-  // TODO(https://crbug.com/1094460): Implement window capture.
+#if BUILDFLAG(IS_LACROS)
+  return std::make_unique<DesktopCapturerLacros>(
+      DesktopCapturerLacros::CaptureType::kWindow,
+      webrtc::DesktopCaptureOptions());
+#else
   return webrtc::DesktopCapturer::CreateWindowCapturer(
       CreateDesktopCaptureOptions());
+#endif
 }
 
 }  // namespace desktop_capture

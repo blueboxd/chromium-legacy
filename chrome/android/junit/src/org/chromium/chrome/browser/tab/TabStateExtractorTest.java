@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tab;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 
@@ -21,6 +22,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
@@ -51,11 +53,15 @@ public class TabStateExtractorTest {
     private ByteBuffer mByteBufferMock;
     @Mock
     private Origin mMockOrigin;
+    @Mock
+    private Profile mProfileMock;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mocker.mock(WebContentsStateBridgeJni.TEST_HOOKS, mWebContentsBridgeJni);
+
+        Profile.setLastUsedProfileForTesting(mProfileMock);
     }
 
     @Test
@@ -84,8 +90,8 @@ public class TabStateExtractorTest {
         doReturn(true).when(mTabMock).isIncognito();
         doReturn(mByteBufferMock)
                 .when(mWebContentsBridgeJni)
-                .createSingleNavigationStateAsByteBuffer(
-                        eq(URL), eq(REFERRER_URL), eq(REFERRER_POLICY), eq(mMockOrigin), eq(true));
+                .createSingleNavigationStateAsByteBuffer(any(), eq(URL), eq(REFERRER_URL),
+                        eq(REFERRER_POLICY), eq(mMockOrigin), eq(true));
 
         WebContentsState result = TabStateExtractor.getWebContentsState(mTabMock);
 

@@ -67,8 +67,9 @@ constexpr char kA11ySettingsButtonDescText[] =
 
 // Grant-Consent button.
 constexpr SkColor kConsentButtonTextColor = gfx::kGoogleGrey200;
-constexpr char kA11yConsentButtonDescTemplate[] =
-    "%s. Click to see the information for the current selection now.";
+constexpr char kA11yConsentButtonDescText[] =
+    "Let Assistant show info such as definition or unit conversion for your "
+    "selection.";
 
 // Dogfood button.
 constexpr int kDogfoodButtonMarginDip = 4;
@@ -78,12 +79,9 @@ constexpr SkColor kDogfoodButtonColor = gfx::kGoogleGrey500;
 // Accessibility.
 // TODO(siabhijeet): Move to grd after finalizing with UX.
 constexpr char kA11yInfoAlertText[] =
-    "New feature: %s. Use Up or Down arrow keys to navigate to the feature "
-    "from within the menu.";
+    "New feature available, use Up arrow key to learn more.";
 constexpr char kA11yInfoDescTemplate[] =
-    "%s To manage these settings or to start using the feature, use Left/Right "
-    "arrow keys to navigate to the buttons that say 'Manage Settings' or 'Got "
-    "it'.";
+    "%s Use Left or Right arrow keys to manage this feature.";
 
 // Create and return a simple label with provided specs.
 std::unique_ptr<views::Label> CreateLabel(const base::string16& text,
@@ -163,9 +161,7 @@ UserConsentView::UserConsentView(const gfx::Rect& anchor_view_bounds,
       reinterpret_cast<void*>(views::MenuConfig::kMenuControllerGroupingId));
 
   // Read out user-consent notice if screen-reader is active.
-  auto announcement =
-      base::StringPrintf(kA11yInfoAlertText, base::UTF16ToUTF8(title_).c_str());
-  GetViewAccessibility().AnnounceText(base::UTF8ToUTF16(announcement));
+  GetViewAccessibility().AnnounceText(base::UTF8ToUTF16(kA11yInfoAlertText));
 }
 
 UserConsentView::~UserConsentView() = default;
@@ -175,8 +171,13 @@ const char* UserConsentView::GetClassName() const {
 }
 
 gfx::Size UserConsentView::CalculatePreferredSize() const {
-  // View should match width of the anchor.
-  auto width = anchor_view_bounds_.width();
+  // Minimum width needs to be constrained to reasonable bounds since preferred
+  // size could be arbitrarily wide for some elements.
+  auto min_width = std::min(main_view_->GetPreferredSize().width(),
+                            2 * anchor_view_bounds_.width());
+  // View should match width of the anchor, but should prioritize not clipping
+  // the text from the title or the buttons.
+  auto width = std::max(anchor_view_bounds_.width(), min_width);
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
@@ -327,10 +328,7 @@ void UserConsentView::InitButtonBar() {
       kConsentButtonTextColor);
   consent_button->SetProminent(true);
   consent_button->GetViewAccessibility().OverrideDescription(
-      base::StringPrintf(kA11yConsentButtonDescTemplate,
-                         l10n_util::GetStringUTF8(
-                             IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_TITLE_TEXT)
-                             .c_str()));
+      kA11yConsentButtonDescText);
   consent_button_ = button_bar->AddChildView(std::move(consent_button));
 }
 

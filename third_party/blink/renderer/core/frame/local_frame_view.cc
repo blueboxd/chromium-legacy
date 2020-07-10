@@ -1117,7 +1117,7 @@ void LocalFrameView::RunIntersectionObserverSteps() {
     LayoutObject* layout_object = GetLayoutView();
     IntRect main_frame_dimensions =
         ToLayoutBox(layout_object)->PixelSnappedLayoutOverflowRect();
-    GetFrame().Client()->OnMainFrameDocumentIntersectionChanged(WebRect(
+    GetFrame().Client()->OnMainFrameIntersectionChanged(WebRect(
         0, 0, main_frame_dimensions.Width(), main_frame_dimensions.Height()));
   }
 
@@ -4493,6 +4493,8 @@ String LocalFrameView::MainThreadScrollingReasonsAsText() {
   return String(cc::MainThreadScrollingReason::AsText(reasons).c_str());
 }
 
+// TODO(https://crbug/1088483): Replace viewport offset usage with main frame
+// transform and remove viewport_offset field from intersection state.
 bool LocalFrameView::MapToVisualRectInRemoteRootFrame(
     PhysicalRect& rect,
     bool apply_overflow_clip) {
@@ -4502,7 +4504,7 @@ bool LocalFrameView::MapToVisualRectInRemoteRootFrame(
     return true;
   bool result = rect.InclusiveIntersect(PhysicalRect(
       apply_overflow_clip ? frame_->RemoteViewportIntersection()
-                          : frame_->RemoteMainFrameDocumentIntersection()));
+                          : frame_->RemoteMainFrameIntersection()));
   if (result)
     rect.Move(PhysicalOffset(GetFrame().RemoteViewportOffset()));
   return result;
@@ -4514,7 +4516,18 @@ void LocalFrameView::MapLocalToRemoteRootFrame(
   // This is the top-level frame, so no mapping necessary.
   if (frame_->IsMainFrame())
     return;
-  transform_state.Move(PhysicalOffset(frame_->RemoteViewportOffset()));
+  transform_state.Move(PhysicalOffset(GetFrame().RemoteViewportOffset()));
+}
+
+void LocalFrameView::MapLocalToRemoteMainFrame(
+    TransformState& transform_state) {
+  DCHECK(frame_->IsLocalRoot());
+  // This is the top-level frame, so no mapping necessary.
+  if (frame_->IsMainFrame())
+    return;
+  transform_state.ApplyTransform(
+      TransformationMatrix(GetFrame().RemoteMainFrameTransform().matrix()),
+      TransformState::kAccumulateTransform);
 }
 
 LayoutUnit LocalFrameView::CaretWidth() const {

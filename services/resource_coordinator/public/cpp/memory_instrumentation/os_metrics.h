@@ -19,9 +19,23 @@ FORWARD_DECLARE_TEST(ProfilingJsonExporterTest, MemoryMaps);
 
 namespace memory_instrumentation {
 
+// This class provides synchronous access to memory metrics for a process with a
+// given |pid|. These interfaces have platform-specific restrictrions:
+//  * On Android, due to sandboxing restrictions, processes can only access
+//    memory metrics for themselves. Thus |pid| must be equal to getpid().
+//  * On Linux, due to sandboxing restrictions, only the privileged browser
+//    process has access to memory metrics for sandboxed child processes.
+//
+// These restrictions mean that any code that wishes to be cross-platform
+// compatible cannot synchronously obtain memory metrics for a |pid|. Instead,
+// it must use the async MemoryInstrumentation methods.
 class COMPONENT_EXPORT(
     RESOURCE_COORDINATOR_PUBLIC_MEMORY_INSTRUMENTATION) OSMetrics {
  public:
+  // Fills |dump| with memory information about |pid|. See class comments for
+  // restrictions on |pid|. |dump.platform_private_footprint| must be allocated
+  // before calling this function. If |pid| is null, the pid of the current
+  // process is used
   static bool FillOSMemoryDump(base::ProcessId pid, mojom::RawOSMemDump* dump);
   static bool FillProcessMemoryMaps(base::ProcessId,
                                     mojom::MemoryMapOption,

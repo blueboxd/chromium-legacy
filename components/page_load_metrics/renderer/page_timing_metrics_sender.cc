@@ -217,10 +217,10 @@ void PageTimingMetricsSender::DidLoadResourceFromMemoryCache(
   modified_resources_.insert(resource_it.first->second.get());
 }
 
-void PageTimingMetricsSender::OnMainFrameDocumentIntersectionChanged(
-    const blink::WebRect& main_frame_document_intersection) {
-  metadata_->intersection_update = mojom::FrameIntersectionUpdate::New(
-      gfx::Rect(main_frame_document_intersection));
+void PageTimingMetricsSender::OnMainFrameIntersectionChanged(
+    const blink::WebRect& main_frame_intersection) {
+  metadata_->intersection_update =
+      mojom::FrameIntersectionUpdate::New(gfx::Rect(main_frame_intersection));
   EnsureSendTimer();
 }
 

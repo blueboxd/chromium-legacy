@@ -1490,24 +1490,6 @@ void DocumentLoader::DidCommitNavigation() {
   }
 }
 
-// Helper function: Merge the feature policy strings from HTTP headers and the
-// origin policy (if any).
-// Headers go first, which means that the per-page headers override the
-// origin policy features.
-//
-// TODO(domenic): we want to treat origin policy feature policy as a single
-// feature policy, not a header serialization, so it should be processed
-// differently.
-void MergeFeaturesFromOriginPolicy(WTF::StringBuilder& feature_policy,
-                                   const WebOriginPolicy& origin_policy) {
-  if (!origin_policy.feature_policy.IsNull()) {
-    if (!feature_policy.IsEmpty()) {
-      feature_policy.Append(',');
-    }
-    feature_policy.Append(origin_policy.feature_policy);
-  }
-}
-
 void DocumentLoader::CommitNavigation() {
   CHECK_GE(state_, kCommitted);
   DCHECK(frame_->GetPage());
@@ -1528,15 +1510,6 @@ void DocumentLoader::CommitNavigation() {
       owner_document = owner_local_frame->GetDocument();
   }
 
-  // FeaturePolicy is reset in the browser process on commit, so this needs to
-  // be initialized and replicated to the browser process after commit messages
-  // are sent in didCommitNavigation().
-  WTF::StringBuilder feature_policy;
-  feature_policy.Append(response_.HttpHeaderField(http_names::kFeaturePolicy));
-  if (origin_policy_.has_value()) {
-    MergeFeaturesFromOriginPolicy(feature_policy, origin_policy_.value());
-  }
-
   // Re-validate Document Policy feature before installing the new document.
   if (!RuntimeEnabledFeatures::DocumentPolicyEnabled(
           owner_document ? owner_document->GetExecutionContext() : nullptr)) {
@@ -1550,6 +1523,11 @@ void DocumentLoader::CommitNavigation() {
             .feature_state[mojom::blink::DocumentPolicyFeature::kForceLoadAtTop]
             .BoolValue());
   }
+
+  // Make the snapshot value of sandbox flags from the beginning of navigation
+  // available in frame loader, so that the value could be further used to
+  // initialize sandbox flags in security context. crbug.com/1026627
+  GetFrameLoader().SetFrameOwnerSandboxFlags(frame_policy_.sandbox_flags);
 
   DocumentInit init =
       DocumentInit::Create()
@@ -1567,28 +1545,7 @@ void DocumentLoader::CommitNavigation() {
           .WithOriginToCommit(origin_to_commit_)
           .WithSrcdocDocument(loading_srcdoc_)
           .WithGrantLoadLocalResources(grant_load_local_resources_)
-          .WithFramePolicy(frame_policy_)
           .WithNewRegistrationContext()
-          .WithFeaturePolicyHeader(feature_policy.ToString())
-          // TODO(iclelland): Add Feature-Policy-Report-Only to Origin Policy.
-          .WithReportOnlyFeaturePolicyHeader(
-              response_.HttpHeaderField(http_names::kFeaturePolicyReportOnly))
-          .WithPermissionsPolicyHeader(
-              response_.HttpHeaderField(http_names::kPermissionsPolicy))
-          .WithReportOnlyPermissionsPolicyHeader(response_.HttpHeaderField(
-              http_names::kPermissionsPolicyReportOnly))
-          .WithDocumentPolicy(document_policy_)
-          // |document_policy_| is parsed in document loader because it is
-          // compared with |frame_policy.required_document_policy| to decide
-          // whether to block the document load or not.
-          // |report_only_document_policy| does not block the page load. Its
-          // initialization is delayed to
-          // SecurityContextInit::InitializeDocumentPolicy(), similar to
-          // |report_only_feature_policy|.
-          .WithReportOnlyDocumentPolicyHeader(
-              response_.HttpHeaderField(http_names::kDocumentPolicyReportOnly))
-          .WithOriginTrialsHeader(
-              response_.HttpHeaderField(http_names::kOriginTrial))
           .WithWebBundleClaimedUrl(web_bundle_claimed_url_);
 
   if (archive_) {
@@ -1658,18 +1615,36 @@ void DocumentLoader::CommitNavigation() {
   }
 
   SecurityContextInit security_init(init);
+  security_init.CalculateSecureContextMode(frame_.Get());
+  security_init.InitializeOriginTrials(
+      response_.HttpHeaderField(http_names::kOriginTrial));
+  // TODO(iclelland): Add Feature-Policy-Report-Only to Origin Policy.
+  security_init.CalculateFeaturePolicy(
+      frame_.Get(), init.GetType() == DocumentInit::Type::kViewSource,
+      response_, origin_policy_, frame_policy_);
+  // |document_policy_| is parsed in document loader because it is
+  // compared with |frame_policy.required_document_policy| to decide
+  // whether to block the document load or not.
+  // |report_only_document_policy| does not block the page load. Its
+  // initialization is delayed to
+  // SecurityContextInit::InitializeDocumentPolicy(), similar to
+  // |report_only_feature_policy|.
+  security_init.CalculateDocumentPolicy(
+      document_policy_,
+      response_.HttpHeaderField(http_names::kDocumentPolicyReportOnly));
+
   frame_->DomWindow()->Initialize(security_init);
 
   frame_->DomWindow()->SetOriginIsolationRestricted(
       origin_isolation_restricted_);
 
-  frame_->DomWindow()->GetSecurityContext().SetInsecureRequestPolicy(
-      init.GetInsecureRequestPolicy());
-  if (init.InsecureNavigationsToUpgrade()) {
-    for (auto to_upgrade : *init.InsecureNavigationsToUpgrade()) {
-      frame_->DomWindow()->GetSecurityContext().AddInsecureNavigationUpgrade(
-          to_upgrade);
-    };
+  if (auto* parent = frame_->Tree().Parent()) {
+    SecurityContext& this_context = frame_->DomWindow()->GetSecurityContext();
+    const SecurityContext* parent_context = parent->GetSecurityContext();
+    this_context.SetInsecureRequestPolicy(
+        parent_context->GetInsecureRequestPolicy());
+    for (auto to_upgrade : parent_context->InsecureNavigationsToUpgrade())
+      this_context.AddInsecureNavigationUpgrade(to_upgrade);
   }
   frame_->DomWindow()->SetAddressSpace(ip_address_space_);
 
@@ -1811,8 +1786,7 @@ void DocumentLoader::CommitNavigation() {
   // are sent.
   GetLocalFrameClient().DidSetFramePolicyHeaders(
       frame_->DomWindow()->GetSandboxFlags(),
-      security_init.FeaturePolicyHeader(),
-      init.GetDocumentPolicy().feature_state);
+      security_init.FeaturePolicyHeader(), document_policy_.feature_state);
 
   // Load the document if needed.
   StartLoadingResponse();

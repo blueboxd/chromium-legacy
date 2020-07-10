@@ -338,7 +338,12 @@ class LinkedHashSet {
 
   template <typename VisitorDispatcher>
   void Trace(VisitorDispatcher visitor) const {
-    if (!NodeHashTraits::kCanTraceConcurrently) {
+    // Should the underlying table be moved by GC, register a callback
+    // that fixes up the interior pointers that the (Heap)LinkedHashSet keeps.
+    const auto* table =
+        AsAtomicPtr(&impl_.table_)->load(std::memory_order_relaxed);
+
+    if (!NodeHashTraits::kCanTraceConcurrently && table) {
       if (visitor->DeferredTraceIfConcurrent(
               {this, [](blink::Visitor* visitor, const void* object) {
                  reinterpret_cast<const LinkedHashSet<ValueArg, HashFunctions,
@@ -349,11 +354,7 @@ class LinkedHashSet {
         return;
     }
 
-    impl_.Trace(visitor);
-    // Should the underlying table be moved by GC, register a callback
-    // that fixes up the interior pointers that the (Heap)LinkedHashSet keeps.
-    const auto* table =
-        AsAtomicPtr(&impl_.table_)->load(std::memory_order_relaxed);
+    impl_.TraceTable(visitor, table);
     if (table) {
       Allocator::RegisterBackingStoreCallback(
           visitor, table,

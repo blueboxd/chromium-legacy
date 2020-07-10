@@ -140,4 +140,12 @@ blink_modules_sources("webaudio") {
     # Result of 32-bit shift implicitly converted to 64 bits.
     cflags = [ "/wd4334" ]
   }
+
+  if (current_cpu == "x86" || current_cpu == "x64") {
+    sources += [ "cpu/x86/oscillator_kernel_sse2.cc" ]
+  }
+
+  if (current_cpu == "arm64" || (current_cpu == "arm" && arm_use_neon)) {
+    sources += [ "cpu/arm/oscillator_kernel_neon.cc" ]
+  }
 }

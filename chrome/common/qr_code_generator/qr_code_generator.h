@@ -11,105 +11,13 @@
 #include "base/containers/span.h"
 #include "base/optional.h"
 
+struct QRVersionInfo;
+
 // QRCodeGenerator generates class M QR codes of various versions.
 // References in the following comments refer to ISO 18004 (3rd edition).
 // Supports versions up to 26 by adding constants.
 class QRCodeGenerator {
  public:
-  // A structure containing QR version-specific constants and data.
-  // All versions currently use error correction at level M.
-  struct QRVersionInfo {
-    constexpr QRVersionInfo(const int version,
-                            const int size,
-                            const size_t group_bytes,
-                            const size_t num_segments,
-                            const size_t segment_data_bytes,
-                            const size_t group_bytes_1,
-                            const size_t num_segments_1,
-                            const size_t segment_data_bytes_1)
-        : version(version),
-          size(size),
-          group_bytes(group_bytes),
-          num_segments(num_segments),
-          segment_data_bytes(segment_data_bytes),
-          group_bytes_1(group_bytes_1),
-          num_segments_1(num_segments_1),
-          segment_data_bytes_1(segment_data_bytes_1) {
-      if (version < 1 || version > 40 || size < 0 || num_segments == 0 ||
-          group_bytes % num_segments != 0 || segment_data_bytes == 0 ||
-          segment_data_bytes * num_segments > group_bytes ||
-          (group_bytes - segment_data_bytes * num_segments) % num_segments !=
-              0 ||
-          (num_segments_1 != 0 &&
-           (group_bytes_1 % num_segments_1 != 0 || segment_data_bytes_1 == 0 ||
-            segment_data_bytes_1 * num_segments_1 > group_bytes_1 ||
-            (group_bytes_1 - segment_data_bytes_1 * num_segments_1) %
-                    num_segments_1 !=
-                0))) {
-        __builtin_unreachable();
-      }
-    }
-
-    // The version of the QR code.
-    const int version;
-
-    // The number of "tiles" in each dimension for a QR code of |version|. See
-    // table 1. (The colored squares in in QR codes are called tiles in the
-    // spec.)
-    const int size;
-
-    // Values taken from Table 9, page 38, for a QR code of version |version|.
-    const size_t group_bytes;
-    const size_t num_segments;
-    const size_t segment_data_bytes;
-    const size_t group_bytes_1;
-    const size_t num_segments_1;
-    const size_t segment_data_bytes_1;
-
-    // Total number of tiles for the QR code, size*size.
-    constexpr int total_size() const { return size * size; }
-
-    constexpr size_t total_bytes() const { return group_bytes + group_bytes_1; }
-
-    constexpr size_t segment_bytes() const {
-      return group_bytes / num_segments;
-    }
-
-    constexpr size_t segment_ec_bytes() const {
-      return segment_bytes() - segment_data_bytes;
-    }
-
-    constexpr size_t data_bytes() const {
-      return segment_data_bytes * num_segments;
-    }
-
-    constexpr size_t segment_bytes_1() const {
-      if (num_segments_1 == 0)
-        return 0;
-      return group_bytes_1 / num_segments_1;
-    }
-
-    constexpr size_t segment_ec_bytes_1() const {
-      return segment_bytes_1() - segment_data_bytes_1;
-    }
-
-    constexpr size_t data_bytes_1() const {
-      return segment_data_bytes_1 * num_segments_1;
-    }
-
-    // Two bytes of overhead are needed for QR framing.
-    // If extending beyond version 26, framing would need to be updated.
-    constexpr size_t input_bytes() const {
-      if (version <= 9) {
-        return data_bytes() + data_bytes_1() - 2;
-      } else {
-        return data_bytes() + data_bytes_1() - 3;
-      }
-    }
-
-    DISALLOW_COPY_AND_ASSIGN(QRVersionInfo);
-  };
-
   // Contains output data for Generate().
   // The default state contains no data.
   struct GeneratedCode {
@@ -170,6 +78,10 @@ class QRCodeGenerator {
   // for the location of the format bits.
   void PutFormatBits(const uint16_t format);
 
+  // PutVersionBlocks writes the two blocks of version information for QR
+  // versions seven and above.
+  void PutVersionBlocks(const uint32_t encoded_version);
+
   // PutBits writes the given data into the QR code in correct order, avoiding
   // structural elements that must have already been painted. See section 7.7.3
   // about the placement algorithm.
@@ -196,14 +108,14 @@ class QRCodeGenerator {
 
   // AddErrorCorrection writes the Reed-Solomon expanded version of |in| to
   // |out|.
-  // |out| should have length segment_bytes for the code's version.
-  // |in| should have length segment_data_bytes for the code's version.
-  // |segment_bytes| and |segment_ec_bytes| must be provided for the current
+  // |out| should have length block_bytes for the code's version.
+  // |in| should have length block_data_bytes for the code's version.
+  // |block_bytes| and |block_ec_bytes| must be provided for the current
   // version/level/group.
   void AddErrorCorrection(uint8_t out[],
                           const uint8_t in[],
-                          size_t segment_bytes,
-                          size_t segment_ec_bytes);
+                          size_t block_bytes,
+                          size_t block_ec_bytes);
 
   // Parameters for the currently-selected version of the QR code.
   // Generate() will pick a version that can contain enough data.

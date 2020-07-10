@@ -153,7 +153,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   int routing_id() { return routing_id_; }
   RenderViewImpl* render_view() { return render_view_; }
   blink::WebRemoteFrame* web_frame() { return web_frame_; }
-  const std::string& unique_name() const { return unique_name_; }
+  std::string unique_name() const;
 
   void set_provisional_frame_routing_id(int routing_id) {
     provisional_frame_routing_id_ = routing_id;
@@ -225,7 +225,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // IPC handlers
   void OnDeleteProxy();
   void OnCompositorFrameSwapped(const IPC::Message& message);
-  void OnDidUpdateName(const std::string& name, const std::string& unique_name);
   void OnEnforceInsecureRequestPolicy(
       blink::mojom::InsecureRequestPolicy policy);
 
@@ -256,7 +255,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   // Stores the WebRemoteFrame we are associated with.
   blink::WebRemoteFrame* web_frame_ = nullptr;
-  std::string unique_name_;
 
   // Provides the mojo interface to this RenderFrameProxy's
   // RenderFrameProxyHost.

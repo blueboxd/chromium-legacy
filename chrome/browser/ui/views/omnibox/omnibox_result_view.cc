@@ -476,8 +476,8 @@ gfx::Size OmniboxResultView::CalculatePreferredSize() const {
     size.SetToMax(keyword_view_->GetPreferredSize());
   if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled() &&
       button_row_->GetVisible()) {
-    // Double our height for buttons.
-    size.set_height(size.height() * 2);
+    // Add height of button row.
+    size.set_height(size.height() + button_row_->GetPreferredSize().height());
   }
   return size;
 }

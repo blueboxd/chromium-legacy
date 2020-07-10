@@ -1490,6 +1490,7 @@ enum RuleSetFlags {
   kKeyframesRules = 1 << 1,
   kFullRecalcRules = 1 << 2,
   kPropertyRules = 1 << 3,
+  kScrollTimelineRules = 1 << 4,
 };
 
 unsigned GetRuleSetFlags(const HeapHashSet<Member<RuleSet>> rule_sets) {
@@ -1504,6 +1505,8 @@ unsigned GetRuleSetFlags(const HeapHashSet<Member<RuleSet>> rule_sets) {
       flags |= kFullRecalcRules;
     if (!rule_set->PropertyRules().IsEmpty())
       flags |= kPropertyRules;
+    if (!rule_set->ScrollTimelineRules().IsEmpty())
+      flags |= kScrollTimelineRules;
   }
   return flags;
 }
@@ -1651,6 +1654,20 @@ void StyleEngine::ApplyRuleSetChanges(
       ClearPropertyRules();
       AddPropertyRulesFromSheets(active_user_style_sheets_);
       AddPropertyRulesFromSheets(new_style_sheets);
+    }
+  }
+
+  // TODO(crbug.com/1097055): Support user origin rules.
+  if (changed_rule_flags & kScrollTimelineRules) {
+    // @scroll-timeline rules are currently not allowed in shadow trees.
+    // https://drafts.csswg.org/scroll-animations-1/#scroll-timeline-at-rule
+    if (tree_scope.RootNode().IsDocumentNode()) {
+      scroll_timeline_map_.clear();
+
+      for (const ActiveStyleSheet& active_sheet : new_style_sheets) {
+        if (RuleSet* rule_set = active_sheet.second)
+          AddScrollTimelineRules(*rule_set);
+      }
     }
   }
 
@@ -1918,6 +1935,13 @@ void StyleEngine::AddPropertyRules(const RuleSet& rule_set) {
   }
 }
 
+void StyleEngine::AddScrollTimelineRules(const RuleSet& rule_set) {
+  const HeapVector<Member<StyleRuleScrollTimeline>> scroll_timeline_rules =
+      rule_set.ScrollTimelineRules();
+  for (const auto& rule : scroll_timeline_rules)
+    scroll_timeline_map_.Set(AtomicString(rule->GetName()), rule);
+}
+
 StyleRuleKeyframes* StyleEngine::KeyframeStylesForAnimation(
     const AtomicString& animation_name) {
   if (keyframes_rule_map_.IsEmpty())
@@ -1928,6 +1952,11 @@ StyleRuleKeyframes* StyleEngine::KeyframeStylesForAnimation(
     return nullptr;
 
   return it->value.Get();
+}
+
+StyleRuleScrollTimeline* StyleEngine::FindScrollTimelineRule(
+    const AtomicString& name) {
+  return scroll_timeline_map_.at(name);
 }
 
 DocumentStyleEnvironmentVariables& StyleEngine::EnsureEnvironmentVariables() {
@@ -2239,6 +2268,7 @@ void StyleEngine::Trace(Visitor* visitor) const {
   visitor->Trace(active_user_style_sheets_);
   visitor->Trace(custom_element_default_style_sheets_);
   visitor->Trace(keyframes_rule_map_);
+  visitor->Trace(scroll_timeline_map_);
   visitor->Trace(inspector_style_sheet_);
   visitor->Trace(document_style_sheet_collection_);
   visitor->Trace(style_sheet_collection_map_);

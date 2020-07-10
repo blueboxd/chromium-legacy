@@ -7,7 +7,6 @@ package org.chromium.components.paintpreview.player.frame;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.Rect;
-import android.os.Handler;
 import android.util.Size;
 import android.view.View;
 import android.widget.OverScroller;
@@ -39,7 +38,7 @@ import javax.annotation.Nullable;
  * <li>Determining which sub-frames are visible given the current viewport and showing them.<li/>
  * </ul>
  */
-class PlayerFrameMediator implements PlayerFrameViewDelegate {
+class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediatorDelegate {
     private static final float MAX_SCALE_FACTOR = 5f;
 
     /** The GUID associated with the frame that this class is representing. */
@@ -65,11 +64,8 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
 
     private final PropertyModel mModel;
     private final PlayerCompositorDelegate mCompositorDelegate;
-    private final OverScroller mScroller;
-    private final Handler mScrollerHandler;
     /** The viewport of this frame. */
-    @VisibleForTesting
-    final PlayerFrameViewport mViewport = new PlayerFrameViewport(new Size(0, 0), new Matrix());
+    private final PlayerFrameViewport mViewport;
     /** Dimension of tiles. */
     private int[] mTileDimensions;
     /** Bitmaps that make up the content of this frame. */
@@ -88,26 +84,25 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     private float mInitialScaleFactor;
     private float mUncommittedScaleFactor = 0f;
 
-    /** For swipe-to-refresh logic */
-    private OverscrollHandler mOverscrollHandler;
-    private boolean mIsOverscrolling = false;
-    private float mOverscrollAmount = 0f;
+    /** Handles scrolling. */
+    private final PlayerFrameScrollController mScrollController;
 
     /** Called when the user interacts with this frame. */
     private Runnable mUserInteractionCallback;
 
     PlayerFrameMediator(PropertyModel model, PlayerCompositorDelegate compositorDelegate,
-            OverScroller scroller, @Nullable Runnable userInteractionCallback,
-            UnguessableToken frameGuid, int contentWidth, int contentHeight, int initialScrollX,
-            int initialScrollY) {
+            PlayerFrameViewport viewport, OverScroller scroller,
+            @Nullable Runnable userInteractionCallback, UnguessableToken frameGuid,
+            int contentWidth, int contentHeight, int initialScrollX, int initialScrollY) {
         mModel = model;
         mModel.set(PlayerFrameProperties.SCALE_MATRIX, mBitmapScaleMatrix);
 
         mCompositorDelegate = compositorDelegate;
-        mScroller = scroller;
+        mViewport = viewport;
         mGuid = frameGuid;
         mContentSize = new Size(contentWidth, contentHeight);
-        mScrollerHandler = new Handler();
+        mScrollController = new PlayerFrameScrollController(
+                scroller, mViewport, mContentSize, this, userInteractionCallback);
         mViewport.offset(initialScrollX, initialScrollY);
         mViewport.setScale(0f);
         mUserInteractionCallback = userInteractionCallback;
@@ -182,7 +177,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
         mInitialScaleFactor = ((float) mViewport.getWidth()) / ((float) mContentSize.getWidth());
         final float scaleFactor = mViewport.getScale();
         mViewport.setScale((scaleFactor == 0f) ? mInitialScaleFactor : scaleFactor);
-        moveViewport(0, 0, true);
+        updateVisuals(true);
         for (int i = 0; i < mSubFrameViews.size(); i++) {
             if (mSubFrameViews.get(i).getVisibility() != View.VISIBLE) continue;
 
@@ -204,17 +199,16 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
         mViewport.setSize(width, height);
         final float oldScaleFactor = mViewport.getScale();
         mViewport.setScale(scaleFactor);
-        moveViewport(0, 0, oldScaleFactor != scaleFactor);
+        updateVisuals(oldScaleFactor != scaleFactor);
     }
 
     /**
-     * Called when the view port is moved or the scale factor is changed. Updates the view port
+     * Called when the viewport is moved or the scale factor is changed. Updates the viewport
      * and requests bitmap tiles for portion of the view port that don't have bitmap tiles.
-     * @param distanceX    The horizontal distance that the view port should be moved by.
-     * @param distanceY    The vertical distance that the view port should be moved by.
      * @param scaleUpdated Whether the scale was updated.
      */
-    private void moveViewport(int distanceX, int distanceY, boolean scaleUpdated) {
+    @Override
+    public void updateVisuals(boolean scaleUpdated) {
         final float scaleFactor = mViewport.getScale();
         if (scaleUpdated || mBitmapMatrix == null) {
             // Each tile is as big as the initial view port. Here we determine the number of
@@ -229,11 +223,10 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
             mRequiredBitmaps = new boolean[rows][cols];
         }
 
-        // Update mViewport and let the view know. PropertyModelChangeProcessor is smart about
-        // this and will only update the view if mViewport's rect is actually changed.
-        mViewport.offset(distanceX, distanceY);
         Rect viewportRect = mViewport.asRect();
         updateSubFrames(viewportRect, mViewport.getScale());
+        // Let the view know |mViewport| changed. PropertyModelChangeProcessor is smart about
+        // this and will only update the view if |mViewport|'s rect is actually changed.
         mModel.set(PlayerFrameProperties.TILE_DIMENSIONS, mTileDimensions);
         mModel.set(PlayerFrameProperties.VIEWPORT, mViewport.asRect());
 
@@ -361,82 +354,27 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     }
 
     /**
-     * Called on scroll events from the user. Checks if scrolling is possible, and if so, calls
-     * {@link #moveViewport}.
-     * @param distanceX Horizontal scroll distance in pixels.
-     * @param distanceY Vertical scroll distance in pixels.
-     * @return Whether the scrolling was possible and view port was updated.
+     * Sets the overscroll-to-refresh handler on the {@link mScrollController}. This cannot be
+     * created at construction of this object as it needs to be created on top of the view
+     * hierarchy to show the animation.
      */
+    public void setOverscrollHandler(OverscrollHandler overscrollHandler) {
+        mScrollController.setOverscrollHandler(overscrollHandler);
+    }
+
     @Override
     public boolean scrollBy(float distanceX, float distanceY) {
-        mScroller.forceFinished(true);
+        return mScrollController.scrollBy(distanceX, distanceY);
+    }
 
-        return scrollByInternal(distanceX, distanceY);
+    @Override
+    public boolean onFling(float velocityX, float velocityY) {
+        return mScrollController.onFling(velocityX, velocityY);
     }
 
     @Override
     public void onRelease() {
-        if (mOverscrollHandler == null || !mIsOverscrolling) return;
-
-        mOverscrollHandler.release();
-        mIsOverscrolling = false;
-        mOverscrollAmount = 0.0f;
-    }
-
-    private boolean maybeHandleOverscroll(float distanceY) {
-        if (mOverscrollHandler == null || mViewport.getTransY() != 0f) return false;
-
-        // Ignore if there is no active overscroll and the direction is down.
-        if (!mIsOverscrolling && distanceY <= 0) return false;
-
-        // TODO(crbug/1100338): Propagate this state to child mediators to
-        // support easing.
-        mOverscrollAmount += distanceY;
-
-        // If the overscroll is completely eased off the cancel the event.
-        if (mOverscrollAmount <= 0) {
-            mIsOverscrolling = false;
-            mOverscrollHandler.reset();
-            return false;
-        }
-
-        // Start the overscroll event if the scroll direction is correct and one isn't active.
-        if (!mIsOverscrolling && distanceY > 0) {
-            mOverscrollAmount = distanceY;
-            mIsOverscrolling = mOverscrollHandler.start();
-        }
-        mOverscrollHandler.pull(distanceY);
-        return mIsOverscrolling;
-    }
-
-    private boolean scrollByInternal(float distanceX, float distanceY) {
-        if (maybeHandleOverscroll(-distanceY)) return true;
-
-        int validDistanceX = 0;
-        int validDistanceY = 0;
-        final float scaleFactor = mViewport.getScale();
-        float scaledContentWidth = mContentSize.getWidth() * scaleFactor;
-        float scaledContentHeight = mContentSize.getHeight() * scaleFactor;
-
-        Rect viewportRect = mViewport.asRect();
-        if (viewportRect.left > 0 && distanceX < 0) {
-            validDistanceX = (int) Math.max(distanceX, -1f * viewportRect.left);
-        } else if (viewportRect.right < scaledContentWidth && distanceX > 0) {
-            validDistanceX = (int) Math.min(distanceX, scaledContentWidth - viewportRect.right);
-        }
-        if (viewportRect.top > 0 && distanceY < 0) {
-            validDistanceY = (int) Math.max(distanceY, -1f * viewportRect.top);
-        } else if (viewportRect.bottom < scaledContentHeight && distanceY > 0) {
-            validDistanceY = (int) Math.min(distanceY, scaledContentHeight - viewportRect.bottom);
-        }
-
-        if (validDistanceX == 0 && validDistanceY == 0) {
-            return false;
-        }
-
-        moveViewport(validDistanceX, validDistanceY, false);
-        if (mUserInteractionCallback != null) mUserInteractionCallback.run();
-        return true;
+        mScrollController.onRelease();
     }
 
     /**
@@ -466,7 +404,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
      * The final translation is applied to the viewport. The transform for the bitmaps (that is
      * |mBitmapScaleMatrix|) is cancelled.
      *
-     * During {@link #moveViewport()} new bitmaps are requested for the main frame and subframes
+     * During {@link #updateVisuals()} new bitmaps are requested for the main frame and subframes
      * to improve quality.
      */
     @Override
@@ -552,7 +490,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
         for (int i = 0; i < mSubFrameViews.size(); i++) {
             mSubFrameMediators.get(i).resetScaleFactor();
         }
-        moveViewport(0, 0, true);
+        updateVisuals(true);
         for (int i = 0; i < mSubFrameViews.size(); i++) {
             if (mSubFrameViews.get(i).getVisibility() != View.VISIBLE) continue;
 
@@ -570,41 +508,6 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
         mCompositorDelegate.onClick(mGuid,
                 Math.round((float) (mViewport.getTransX() + x) / scaleFactor),
                 Math.round((float) (mViewport.getTransY() + y) / scaleFactor));
-    }
-
-    @Override
-    public boolean onFling(float velocityX, float velocityY) {
-        final float scaleFactor = mViewport.getScale();
-        int scaledContentWidth = (int) (mContentSize.getWidth() * scaleFactor);
-        int scaledContentHeight = (int) (mContentSize.getHeight() * scaleFactor);
-        mScroller.forceFinished(true);
-        Rect viewportRect = mViewport.asRect();
-        mScroller.fling(viewportRect.left, viewportRect.top, (int) -velocityX, (int) -velocityY, 0,
-                scaledContentWidth - viewportRect.width(), 0,
-                scaledContentHeight - viewportRect.height());
-
-        mScrollerHandler.post(this::handleFling);
-        return true;
-    }
-
-    public void setOverscrollHandler(OverscrollHandler overscrollHandler) {
-        mOverscrollHandler = overscrollHandler;
-    }
-
-    /**
-     * Handles a fling update by computing the next scroll offset and programmatically scrolling.
-     */
-    private void handleFling() {
-        if (mScroller.isFinished()) return;
-
-        boolean shouldContinue = mScroller.computeScrollOffset();
-        int deltaX = mScroller.getCurrX() - Math.round(mViewport.getTransX());
-        int deltaY = mScroller.getCurrY() - Math.round(mViewport.getTransY());
-        scrollByInternal(deltaX, deltaY);
-
-        if (shouldContinue) {
-            mScrollerHandler.post(this::handleFling);
-        }
     }
 
     /**

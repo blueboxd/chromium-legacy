@@ -204,13 +204,18 @@ TEST(AXEventGeneratorTest, ExpandedAndRowCount) {
   update.nodes[3].state = 0;
 
   ASSERT_TRUE(tree.Unserialize(update));
-  EXPECT_THAT(event_generator,
-              UnorderedElementsAre(
-                  HasEventAtNode(AXEventGenerator::Event::COLLAPSED, 4),
-                  HasEventAtNode(AXEventGenerator::Event::EXPANDED, 3),
-                  HasEventAtNode(AXEventGenerator::Event::ROW_COUNT_CHANGED, 2),
-                  HasEventAtNode(AXEventGenerator::Event::STATE_CHANGED, 3),
-                  HasEventAtNode(AXEventGenerator::Event::STATE_CHANGED, 4)));
+  EXPECT_THAT(
+      event_generator,
+      UnorderedElementsAre(
+          HasEventAtNode(AXEventGenerator::Event::COLLAPSED, 4),
+          HasEventAtNode(AXEventGenerator::Event::EXPANDED, 3),
+          HasEventAtNode(AXEventGenerator::Event::ROW_COUNT_CHANGED, 2),
+          HasEventAtNode(AXEventGenerator::Event::STATE_CHANGED, 3),
+          HasEventAtNode(AXEventGenerator::Event::WIN_IACCESSIBLE_STATE_CHANGED,
+                         3),
+          HasEventAtNode(AXEventGenerator::Event::STATE_CHANGED, 4),
+          HasEventAtNode(AXEventGenerator::Event::WIN_IACCESSIBLE_STATE_CHANGED,
+                         4)));
 }
 
 TEST(AXEventGeneratorTest, SelectedAndSelectedChildren) {
@@ -247,7 +252,11 @@ TEST(AXEventGeneratorTest, SelectedAndSelectedChildren) {
       UnorderedElementsAre(
           HasEventAtNode(AXEventGenerator::Event::SELECTED_CHILDREN_CHANGED, 2),
           HasEventAtNode(AXEventGenerator::Event::SELECTED_CHANGED, 3),
-          HasEventAtNode(AXEventGenerator::Event::SELECTED_CHANGED, 4)));
+          HasEventAtNode(AXEventGenerator::Event::WIN_IACCESSIBLE_STATE_CHANGED,
+                         3),
+          HasEventAtNode(AXEventGenerator::Event::SELECTED_CHANGED, 4),
+          HasEventAtNode(AXEventGenerator::Event::WIN_IACCESSIBLE_STATE_CHANGED,
+                         4)));
 }
 
 TEST(AXEventGeneratorTest, StringValueChanged) {
@@ -359,9 +368,12 @@ TEST(AXEventGeneratorTest, CheckedStateChanged) {
   AXTreeUpdate update = initial_state;
   update.nodes[0].SetCheckedState(ax::mojom::CheckedState::kTrue);
   ASSERT_TRUE(tree.Unserialize(update));
-  EXPECT_THAT(event_generator,
-              UnorderedElementsAre(HasEventAtNode(
-                  AXEventGenerator::Event::CHECKED_STATE_CHANGED, 1)));
+  EXPECT_THAT(
+      event_generator,
+      UnorderedElementsAre(
+          HasEventAtNode(AXEventGenerator::Event::CHECKED_STATE_CHANGED, 1),
+          HasEventAtNode(AXEventGenerator::Event::WIN_IACCESSIBLE_STATE_CHANGED,
+                         1)));
 }
 
 TEST(AXEventGeneratorTest, ActiveDescendantChanged) {
@@ -521,6 +533,8 @@ TEST(AXEventGeneratorTest, LiveRegionOnlyTextChanges) {
       event_generator,
       UnorderedElementsAre(
           HasEventAtNode(AXEventGenerator::Event::CHECKED_STATE_CHANGED, 3),
+          HasEventAtNode(AXEventGenerator::Event::WIN_IACCESSIBLE_STATE_CHANGED,
+                         3),
           HasEventAtNode(AXEventGenerator::Event::DESCRIPTION_CHANGED, 2)));
 }
 
@@ -1244,7 +1258,9 @@ TEST(AXEventGeneratorTest, AriaBusyChanged) {
       event_generator,
       UnorderedElementsAre(
           HasEventAtNode(AXEventGenerator::Event::BUSY_CHANGED, 1),
-          HasEventAtNode(AXEventGenerator::Event::LAYOUT_INVALIDATED, 1)));
+          HasEventAtNode(AXEventGenerator::Event::LAYOUT_INVALIDATED, 1),
+          HasEventAtNode(AXEventGenerator::Event::WIN_IACCESSIBLE_STATE_CHANGED,
+                         1)));
 }
 
 TEST(AXEventGeneratorTest, MultiselectableStateChanged) {
@@ -1265,7 +1281,9 @@ TEST(AXEventGeneratorTest, MultiselectableStateChanged) {
       UnorderedElementsAre(
           HasEventAtNode(AXEventGenerator::Event::MULTISELECTABLE_STATE_CHANGED,
                          1),
-          HasEventAtNode(AXEventGenerator::Event::STATE_CHANGED, 1)));
+          HasEventAtNode(AXEventGenerator::Event::STATE_CHANGED, 1),
+          HasEventAtNode(AXEventGenerator::Event::WIN_IACCESSIBLE_STATE_CHANGED,
+                         1)));
 }
 
 TEST(AXEventGeneratorTest, RequiredStateChanged) {
@@ -1285,7 +1303,9 @@ TEST(AXEventGeneratorTest, RequiredStateChanged) {
       event_generator,
       UnorderedElementsAre(
           HasEventAtNode(AXEventGenerator::Event::REQUIRED_STATE_CHANGED, 1),
-          HasEventAtNode(AXEventGenerator::Event::STATE_CHANGED, 1)));
+          HasEventAtNode(AXEventGenerator::Event::STATE_CHANGED, 1),
+          HasEventAtNode(AXEventGenerator::Event::WIN_IACCESSIBLE_STATE_CHANGED,
+                         1)));
 }
 
 TEST(AXEventGeneratorTest, FlowToChanged) {
@@ -1412,9 +1432,12 @@ TEST(AXEventGeneratorTest, HasPopupChanged) {
 
   update.nodes[0].SetHasPopup(ax::mojom::HasPopup::kTrue);
   EXPECT_TRUE(tree.Unserialize(update));
-  EXPECT_THAT(event_generator,
-              UnorderedElementsAre(HasEventAtNode(
-                  AXEventGenerator::Event::HASPOPUP_CHANGED, 1)));
+  EXPECT_THAT(
+      event_generator,
+      UnorderedElementsAre(
+          HasEventAtNode(AXEventGenerator::Event::HASPOPUP_CHANGED, 1),
+          HasEventAtNode(AXEventGenerator::Event::WIN_IACCESSIBLE_STATE_CHANGED,
+                         1)));
 }
 
 TEST(AXEventGeneratorTest, LiveRelevantChanged) {
@@ -1451,7 +1474,9 @@ TEST(AXEventGeneratorTest, MultilineStateChanged) {
       event_generator,
       UnorderedElementsAre(
           HasEventAtNode(AXEventGenerator::Event::MULTILINE_STATE_CHANGED, 1),
-          HasEventAtNode(AXEventGenerator::Event::STATE_CHANGED, 1)));
+          HasEventAtNode(AXEventGenerator::Event::STATE_CHANGED, 1),
+          HasEventAtNode(AXEventGenerator::Event::WIN_IACCESSIBLE_STATE_CHANGED,
+                         1)));
 }
 
 }  // namespace ui

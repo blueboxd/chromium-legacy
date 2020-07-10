@@ -518,6 +518,7 @@ std::unique_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
       // TODO(https://crbug.com/1094460): Handle options.
       std::unique_ptr<webrtc::DesktopCapturer> screen_capturer =
           std::make_unique<DesktopCapturerLacros>(
+              DesktopCapturerLacros::CaptureType::kScreen,
               webrtc::DesktopCaptureOptions());
 #else
       std::unique_ptr<webrtc::DesktopCapturer> screen_capturer(
@@ -535,9 +536,14 @@ std::unique_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
     }
 
     case DesktopMediaID::TYPE_WINDOW: {
-      // TODO(https://crbug.com/1094460): Implement window capture for Lacros.
+#if BUILDFLAG(IS_LACROS)
+      std::unique_ptr<webrtc::DesktopCapturer> window_capturer(
+          new DesktopCapturerLacros(DesktopCapturerLacros::CaptureType::kWindow,
+                                    webrtc::DesktopCaptureOptions()));
+#else
       std::unique_ptr<webrtc::DesktopCapturer> window_capturer =
           webrtc::CroppingWindowCapturer::CreateCapturer(options);
+#endif
       if (window_capturer && window_capturer->SelectSource(source.id)) {
         window_capturer->FocusOnSelectedSource();
         capturer.reset(new webrtc::DesktopAndCursorComposer(

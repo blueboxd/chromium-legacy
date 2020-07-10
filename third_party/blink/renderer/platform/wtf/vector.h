@@ -2129,6 +2129,20 @@ template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 template <typename VisitorDispatcher, typename A>
 std::enable_if_t<A::kIsGarbageCollected>
 Vector<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) const {
+  static_assert(Allocator::kIsGarbageCollected,
+                "Garbage collector must be enabled.");
+  static_assert(IsTraceableInCollectionTrait<VectorTraits<T>>::value,
+                "Type must be traceable in collection");
+
+  const T* buffer = BufferSafe();
+
+  if (!buffer) {
+    // Register the slot for heap compaction.
+    Allocator::TraceVectorBacking(visitor, static_cast<T*>(nullptr),
+                                  Base::BufferSlot());
+    return;
+  }
+
   // Bail out for concurrent marking.
   if (!VectorTraits<T>::kCanTraceConcurrently) {
     if (visitor->DeferredTraceIfConcurrent(
@@ -2140,12 +2154,6 @@ Vector<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) const {
       return;
   }
 
-  static_assert(Allocator::kIsGarbageCollected,
-                "Garbage collector must be enabled.");
-  static_assert(IsTraceableInCollectionTrait<VectorTraits<T>>::value,
-                "Type must be traceable in collection");
-
-  const T* buffer = BufferSafe();
   if (Base::IsOutOfLineBuffer(buffer)) {
     Allocator::TraceVectorBacking(visitor, buffer, Base::BufferSlot());
   } else {
@@ -2153,8 +2161,7 @@ Vector<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) const {
     // slot for heap compaction. So, we pass nullptr to this method.
     Allocator::TraceVectorBacking(visitor, static_cast<T*>(nullptr),
                                   Base::BufferSlot());
-    if (!buffer)
-      return;
+
     // Inline buffer requires tracing immediately.
     const T* buffer_begin = buffer;
     const T* buffer_end = buffer + inlineCapacity;

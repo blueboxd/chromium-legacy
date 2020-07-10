@@ -178,6 +178,9 @@
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/transform.h"
 
 #if defined(OS_MACOSX)
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
@@ -437,6 +440,7 @@ void LocalFrame::Trace(Visitor* visitor) const {
   visitor->Trace(local_frame_host_remote_);
   visitor->Trace(receiver_);
   visitor->Trace(main_frame_receiver_);
+  visitor->Trace(high_priority_frame_receiver_);
   Frame::Trace(visitor);
   Supplementable<LocalFrame>::Trace(visitor);
 }
@@ -581,6 +585,7 @@ void LocalFrame::DetachImpl(FrameDetachType type) {
   frame_scheduler_.reset();
   receiver_.reset();
   main_frame_receiver_.reset();
+  high_priority_frame_receiver_.reset();
   WeakIdentifierMap<LocalFrame>::NotifyObjectDestroyed(this);
 }
 
@@ -1715,8 +1720,22 @@ bool LocalFrame::ClipsContent() const {
 void LocalFrame::SetViewportIntersectionFromParent(
     const ViewportIntersectionState& intersection_state) {
   DCHECK(IsLocalRoot());
-  // TODO(https://crbug/1085175): Re-enable main frame document intersections
-  // here once intersections are in the root document coordinate system.
+  // Notify the render frame observers when the main frame intersection changes.
+  if (intersection_state_.main_frame_intersection !=
+      intersection_state.main_frame_intersection) {
+    gfx::RectF transform_rect =
+        gfx::RectF(gfx::Rect(intersection_state.main_frame_intersection));
+
+    intersection_state.main_frame_transform.TransformRect(&transform_rect);
+    IntRect rect = EnclosingIntRect(
+        FloatRect(transform_rect.x(), transform_rect.y(),
+                  transform_rect.width(), transform_rect.height()));
+
+    // Return <0, 0, 0, 0> if there is no area.
+    if (rect.IsEmpty())
+      rect.SetLocation(IntPoint(0, 0));
+    Client()->OnMainFrameIntersectionChanged(rect);
+  }
 
   // We only schedule an update if the viewport intersection or occlusion state
   // has changed; neither the viewport offset nor the compositing bounds will

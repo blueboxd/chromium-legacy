@@ -13362,11 +13362,9 @@ TEST_F(WebFrameTest, RemoteViewportAndMainframeIntersections) {
   ASSERT_TRUE(widget);
   gfx::Point viewport_offset(7, -11);
   WebRect viewport_intersection(0, 11, 200, 89);
-  // TODO(https://crbug/1084786): Mainframe document intersections need to be
-  // transformed into the coordinate system of the main frame from the child
-  // frame's.
   WebRect mainframe_intersection(0, 0, 200, 140);
   FrameOcclusionState occlusion_state = FrameOcclusionState::kUnknown;
+
   widget->SetRemoteViewportIntersection(
       {viewport_offset, viewport_intersection, mainframe_intersection,
        viewport_intersection, occlusion_state});

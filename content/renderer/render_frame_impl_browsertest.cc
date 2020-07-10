@@ -182,7 +182,7 @@ class RenderFrameTestObserver : public RenderFrameObserver {
   void WasShown() override { visible_ = true; }
   void WasHidden() override { visible_ = false; }
   void OnDestruct() override { delete this; }
-  void OnMainFrameDocumentIntersectionChanged(
+  void OnMainFrameIntersectionChanged(
       const blink::WebRect& intersection_rect) override {
     last_intersection_rect_ = intersection_rect;
   }
@@ -464,10 +464,7 @@ TEST_F(RenderFrameImplTest, FileUrlPathAlias) {
   }
 }
 
-// TODO(https://crbug/1085175): Mainframe document intersections need to be
-// transformed into the main frame document's coordinate system from the
-// child frame's.
-TEST_F(RenderFrameImplTest, DISABLED_MainFrameDocumentIntersectionRecorded) {
+TEST_F(RenderFrameImplTest, MainFrameIntersectionRecorded) {
   RenderFrameTestObserver observer(frame());
   gfx::Point viewport_offset(7, -11);
   blink::WebRect viewport_intersection(0, 11, 200, 89);
@@ -475,13 +472,18 @@ TEST_F(RenderFrameImplTest, DISABLED_MainFrameDocumentIntersectionRecorded) {
   blink::WebRect mainframe_intersection(0, 0, 200, 140);
   blink::FrameOcclusionState occlusion_state =
       blink::FrameOcclusionState::kUnknown;
+  gfx::Transform transform;
+  transform.Translate(100, 100);
+
   WidgetMsg_SetViewportIntersection set_viewport_intersection_message(
       0, {viewport_offset, viewport_intersection, mainframe_intersection,
-          blink::WebRect(), occlusion_state});
+          blink::WebRect(), occlusion_state, blink::WebSize(), gfx::Point(),
+          transform});
   frame_widget()->OnMessageReceived(set_viewport_intersection_message);
   // Setting a new frame intersection in a local frame triggers the render frame
   // observer call.
-  EXPECT_EQ(observer.last_intersection_rect(), blink::WebRect(0, 0, 200, 140));
+  EXPECT_EQ(observer.last_intersection_rect(),
+            blink::WebRect(100, 100, 200, 140));
 }
 
 // Used to annotate the source of an interface request.

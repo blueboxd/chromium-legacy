@@ -711,7 +711,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const base::Optional<gfx::Point>& host_context_menu_location) override;
   void FrameRectsChanged(const blink::WebRect& frame_rect) override;
   void FocusedElementChanged(const blink::WebElement& element) override;
-  void OnMainFrameDocumentIntersectionChanged(
+  void OnMainFrameIntersectionChanged(
       const blink::WebRect& intersect_rect) override;
   void WillSendRequest(blink::WebURLRequest& request) override;
   void DidLoadResourceFromMemoryCache(
@@ -894,7 +894,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // Gets the unique_name() of the frame being replaced by this frame, when
   // it is a provisional frame. Invalid to call on frames that are already
   // attached to the frame tree.
-  const std::string& GetPreviousFrameUniqueName();
+  std::string GetPreviousFrameUniqueName();
 
  private:
   friend class RenderFrameImplTest;
@@ -1257,7 +1257,7 @@ class CONTENT_EXPORT RenderFrameImpl
     bool IsCandidateUnique(base::StringPiece name) const override;
     int GetSiblingCount() const override;
     int GetChildCount() const override;
-    std::vector<base::StringPiece> CollectAncestorNames(
+    std::vector<std::string> CollectAncestorNames(
         BeginPoint begin_point,
         bool (*should_stop)(base::StringPiece)) const override;
     std::vector<int> GetFramePosition(BeginPoint begin_point) const override;
@@ -1483,7 +1483,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Used for tracking a frame's main frame document intersection and
   // and replicating it to the browser when it changes.
-  base::Optional<blink::WebRect> mainframe_document_intersection_rect_;
+  base::Optional<blink::WebRect> mainframe_intersection_rect_;
 
   std::unique_ptr<WebSocketHandshakeThrottleProvider>
       websocket_handshake_throttle_provider_;

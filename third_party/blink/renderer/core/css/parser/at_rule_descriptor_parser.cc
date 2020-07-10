@@ -156,7 +156,8 @@ CSSValue* ConsumeScrollTimelineSource(CSSParserTokenRange& range) {
     }
     return nullptr;
   }
-  return css_parsing_utils::ConsumeIdent<CSSValueID::kNone>(range);
+  return css_parsing_utils::ConsumeIdent<CSSValueID::kAuto, CSSValueID::kNone>(
+      range);
 }
 
 CSSValue* ConsumeScrollTimelineOrientation(CSSParserTokenRange& range) {

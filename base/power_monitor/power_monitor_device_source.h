@@ -87,10 +87,6 @@ class BASE_EXPORT PowerMonitorDeviceSource : public PowerMonitorSource {
   // false otherwise.
   bool IsOnBatteryPowerImpl() override;
 
-#if defined(OS_ANDROID)
-  int GetRemainingBatteryCapacity() override;
-#endif  // defined(OS_ANDROID)
-
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // PowerMonitorSource:
   PowerObserver::DeviceThermalState GetCurrentThermalState() override;

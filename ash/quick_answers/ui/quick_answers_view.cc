@@ -74,12 +74,11 @@ constexpr SkColor kDogfoodButtonColor = gfx::kGoogleGrey500;
 // Accessibility.
 // TODO(siabhijeet): Move to grd (tracked in b/149758492).
 constexpr char kA11yAlertAnnouncement[] =
-    "Quick Answer available for text-selection. Use Up or Down arrow keys to "
-    "navigate to the feature from within the menu.";
-constexpr char kA11yNameTemplate[] = "Quick Answer: %s";
+    "Info related to your selection available. Use Up arrow key to access.";
+constexpr char kA11yNameText[] = "Info related to your selection";
 constexpr char kA11yDescTemplate[] =
-    "%s; Click the dialog to see the result in Assistant.";
-constexpr char kA11yRetryLabelName[] = "Quick Answers: Retry";
+    "%s; Click the dialog to see result in Assistant.";
+constexpr char kA11yRetryLabelNameTemplate[] = "%s: Retry";
 constexpr char kA11yRetryLabelDesc[] =
     "Cannot connect to the internet. Click to try again.";
 
@@ -199,7 +198,7 @@ void QuickAnswersView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   }
 
   node_data->role = ax::mojom::Role::kDialog;
-  node_data->SetName(base::StringPrintf(kA11yNameTemplate, title_.c_str()));
+  node_data->SetName(kA11yNameText);
 }
 
 std::vector<views::View*> QuickAnswersView::GetFocusableViews() {
@@ -297,7 +296,8 @@ void QuickAnswersView::ShowRetryView() {
   retry_label_->SetFocusForPlatform();
   retry_label_->set_request_focus_on_press(true);
   SetButtonNotifyActionToOnPress(retry_label_);
-  retry_label_->SetAccessibleName(base::UTF8ToUTF16(kA11yRetryLabelName));
+  retry_label_->SetAccessibleName(base::UTF8ToUTF16(
+      base::StringPrintf(kA11yRetryLabelNameTemplate, kA11yNameText)));
   retry_label_->GetViewAccessibility().OverrideDescription(kA11yRetryLabelDesc);
 }
 

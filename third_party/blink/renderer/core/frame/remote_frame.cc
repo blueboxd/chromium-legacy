@@ -473,6 +473,12 @@ void RemoteFrame::SetReplicatedAdFrameType(
   }
 }
 
+void RemoteFrame::SetReplicatedName(const String& name,
+                                    const String& unique_name) {
+  Tree().SetName(AtomicString(name));
+  unique_name_ = unique_name;
+}
+
 void RemoteFrame::DispatchLoadEventForFrameOwner() {
   DCHECK(Owner()->IsLocal());
   Owner()->DispatchLoad();

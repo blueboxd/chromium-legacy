@@ -470,6 +470,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("checked-state-changed.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsCheckedMixedChanged) {
+  RunEventTest(FILE_PATH_LITERAL("checked-mixed-changed.html"));
+}
+
 // http:/crbug.com/889013
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        DISABLED_AccessibilityEventsCaretHide) {

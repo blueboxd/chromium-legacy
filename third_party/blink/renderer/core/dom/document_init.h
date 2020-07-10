@@ -31,9 +31,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_INIT_H_
 
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
-#include "third_party/blink/public/common/frame/frame_policy.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_registration_context.h"
@@ -108,9 +105,6 @@ class CORE_EXPORT DocumentInit final {
   bool IsSrcdocDocument() const;
   bool ShouldSetURL() const;
   network::mojom::blink::WebSandboxFlags GetSandboxFlags() const;
-  mojom::blink::InsecureRequestPolicy GetInsecureRequestPolicy() const;
-  const SecurityContext::InsecureNavigationsSet* InsecureNavigationsToUpgrade()
-      const;
 
   DocumentInit& WithDocumentLoader(DocumentLoader*, ContentSecurityPolicy*);
   LocalFrame* GetFrame() const;
@@ -166,47 +160,9 @@ class CORE_EXPORT DocumentInit final {
   V0CustomElementRegistrationContext* RegistrationContext(Document*) const;
   DocumentInit& WithNewRegistrationContext();
 
-  DocumentInit& WithFeaturePolicyHeader(const String& header);
-  const String& FeaturePolicyHeader() const { return feature_policy_header_; }
-
-  DocumentInit& WithReportOnlyFeaturePolicyHeader(const String& header);
-  const String& ReportOnlyFeaturePolicyHeader() const {
-    return report_only_feature_policy_header_;
-  }
-
-  DocumentInit& WithPermissionsPolicyHeader(const String& header);
-  const String& PermissionsPolicyHeader() const {
-    return permissions_policy_header_;
-  }
-
-  DocumentInit& WithReportOnlyPermissionsPolicyHeader(const String& header);
-  const String& ReportOnlyPermissionsPolicyHeader() const {
-    return report_only_permissions_policy_header_;
-  }
-
-  DocumentInit& WithOriginTrialsHeader(const String& header);
-  const String& OriginTrialsHeader() const { return origin_trials_header_; }
-
   DocumentInit& WithSandboxFlags(network::mojom::blink::WebSandboxFlags flags);
 
   ContentSecurityPolicy* GetContentSecurityPolicy() const;
-
-  DocumentInit& WithFramePolicy(
-      const base::Optional<FramePolicy>& frame_policy);
-  const base::Optional<FramePolicy>& GetFramePolicy() const {
-    return frame_policy_;
-  }
-
-  DocumentInit& WithDocumentPolicy(
-      const DocumentPolicy::ParsedDocumentPolicy& document_policy);
-  const DocumentPolicy::ParsedDocumentPolicy& GetDocumentPolicy() const {
-    return document_policy_;
-  }
-
-  DocumentInit& WithReportOnlyDocumentPolicyHeader(const String& header);
-  const String& ReportOnlyDocumentPolicyHeader() const {
-    return report_only_document_policy_header_;
-  }
 
   DocumentInit& WithWebBundleClaimedUrl(const KURL& web_bundle_claimed_url);
   const KURL& GetWebBundleClaimedUrl() const { return web_bundle_claimed_url_; }
@@ -271,30 +227,12 @@ class CORE_EXPORT DocumentInit final {
   V0CustomElementRegistrationContext* registration_context_ = nullptr;
   bool create_new_registration_context_ = false;
 
-  // The feature policy set via Feature-Policy response header.
-  String feature_policy_header_;
-  String report_only_feature_policy_header_;
-
-  // The feature policy set via Permissions-Policy response header.
-  String permissions_policy_header_;
-  String report_only_permissions_policy_header_;
-
-  // The origin trial set via response header.
-  String origin_trials_header_;
-
   // Additional sandbox flags
   network::mojom::blink::WebSandboxFlags sandbox_flags_ =
       network::mojom::blink::WebSandboxFlags::kNone;
 
   // Loader's CSP
   ContentSecurityPolicy* content_security_policy_ = nullptr;
-
-  // The frame policy snapshot from the beginning of navigation.
-  base::Optional<FramePolicy> frame_policy_ = base::nullopt;
-
-  // The document policy set via response header.
-  DocumentPolicy::ParsedDocumentPolicy document_policy_;
-  String report_only_document_policy_header_;
 
   // The claimed URL inside Web Bundle file from which the document is loaded.
   // This URL is used for window.location and document.URL and relative path

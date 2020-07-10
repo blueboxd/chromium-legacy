@@ -166,15 +166,12 @@ struct PageLoadTiming {
 // FrameIntersectionUpdate contains a frame's intersections with other elements
 // in a page load.
 struct FrameIntersectionUpdate {
-  // The frame's current intersection rect with the main frame document in the
-  // coordinate system of the main frame's viewport. The intersection rect is
+  // The frame's current intersection rect with the main frame in the main
+  // frame's coordinate system.. The intersection rect is
   // an empty rect when there is no intersection with the main frame and
   // returns the document size of the root document for the main frame. This
   // is only set the first time an intersection changes and is null otherwise.
-  // TODO(https://crbug/1084786): This is not reported in the correct
-  // coordinate system and returns inaccurate rects when style transforms are
-  // applied.
-  gfx.mojom.Rect? main_frame_document_intersection_rect;
+  gfx.mojom.Rect? main_frame_intersection_rect;
 };
 
 struct FrameMetadata {

@@ -93,7 +93,7 @@ void DocumentStyleSheetCollection::CollectStyleSheetsFromCandidates(
         !sheet->CanBeActivated(
             GetDocument().GetStyleEngine().PreferredStylesheetSetName()))
       continue;
-    DCHECK_EQ(GetDocument(), sheet->AssociatedDocument());
+    DCHECK_EQ(GetDocument(), sheet->ConstructorDocument());
     collector.AppendSheetForList(sheet);
     collector.AppendActiveStyleSheet(
         std::make_pair(sheet, engine.RuleSetForSheet(*sheet)));

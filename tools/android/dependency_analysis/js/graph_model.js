@@ -71,6 +71,24 @@ class Node {
   }
 }
 
+class PackageNode extends Node {
+  constructor(id, displayName, classNames) {
+    super(id, displayName);
+
+    /** @public {!Array<string>} */
+    this.classNames = classNames;
+  }
+}
+
+class ClassNode extends Node {
+  constructor(id, displayName, packageName) {
+    super(id, displayName);
+
+    /** @public {string} */
+    this.packageName = packageName;
+  }
+}
+
 /**
  * An edge in a directed graph.
  */
@@ -279,6 +297,8 @@ class GraphModel {
 
 export {
   Node,
+  PackageNode,
+  ClassNode,
   Edge,
   GraphModel,
   D3GraphData,

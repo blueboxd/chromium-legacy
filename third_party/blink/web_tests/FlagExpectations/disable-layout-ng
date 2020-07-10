@@ -425,9 +425,6 @@ crbug.com/874695 http/tests/credentialmanager/credentialscontainer-create-with-v
 ### http/tests/csslayout/
 crbug.com/591099 http/tests/csslayout/* [ Skip ]
 
-### virtual/controls-refresh/
-virtual/controls-refresh/* [ Skip ]
-
 ### virtual/controls-refresh-hc/
 virtual/controls-refresh-hc/* [ Skip ]
 

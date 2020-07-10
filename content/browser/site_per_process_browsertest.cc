@@ -12771,15 +12771,14 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   ASSERT_TRUE(
       ExecJs(child_node->current_frame_host(), "window.scrollTo(0, 5000)"));
   filter->Wait();
-  EXPECT_TRUE(filter->GetIntersectionState()
-                  .main_frame_document_intersection.IsEmpty());
+  EXPECT_TRUE(filter->GetIntersectionState().main_frame_intersection.IsEmpty());
 
   // Scroll the frame back into view.
   ASSERT_TRUE(
       ExecJs(child_node->current_frame_host(), "window.scrollTo(0, 0)"));
   filter->Wait();
-  EXPECT_FALSE(filter->GetIntersectionState()
-                   .main_frame_document_intersection.IsEmpty());
+  EXPECT_FALSE(
+      filter->GetIntersectionState().main_frame_intersection.IsEmpty());
 }
 
 namespace {

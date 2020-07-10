@@ -109,7 +109,7 @@ struct TraceTrait<HeapVectorBacking<T, Traits>> {
   }
 
   static void Trace(Visitor* visitor, const void* self) {
-    if (!Traits::kCanTraceConcurrently) {
+    if (!Traits::kCanTraceConcurrently && self) {
       if (visitor->DeferredTraceIfConcurrent({self, &Trace}))
         return;
     }

@@ -133,24 +133,6 @@ network::mojom::blink::WebSandboxFlags DocumentInit::GetSandboxFlags() const {
   return flags;
 }
 
-mojom::blink::InsecureRequestPolicy DocumentInit::GetInsecureRequestPolicy()
-    const {
-  DCHECK(TreeRootDocumentLoader());
-  Frame* parent_frame = TreeRootDocumentLoader()->GetFrame()->Tree().Parent();
-  if (!parent_frame)
-    return mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone;
-  return parent_frame->GetSecurityContext()->GetInsecureRequestPolicy();
-}
-
-const SecurityContext::InsecureNavigationsSet*
-DocumentInit::InsecureNavigationsToUpgrade() const {
-  DCHECK(TreeRootDocumentLoader());
-  Frame* parent_frame = TreeRootDocumentLoader()->GetFrame()->Tree().Parent();
-  if (!parent_frame)
-    return nullptr;
-  return &parent_frame->GetSecurityContext()->InsecureNavigationsToUpgrade();
-}
-
 DocumentInit& DocumentInit::WithDocumentLoader(DocumentLoader* loader,
                                                ContentSecurityPolicy* policy) {
   DCHECK(!document_loader_);
@@ -439,38 +421,6 @@ ExecutionContext* DocumentInit::GetExecutionContext() const {
   return GetFrame() ? GetFrame()->DomWindow() : nullptr;
 }
 
-DocumentInit& DocumentInit::WithFeaturePolicyHeader(const String& header) {
-  DCHECK(feature_policy_header_.IsEmpty());
-  feature_policy_header_ = header;
-  return *this;
-}
-
-DocumentInit& DocumentInit::WithReportOnlyFeaturePolicyHeader(
-    const String& header) {
-  DCHECK(report_only_feature_policy_header_.IsEmpty());
-  report_only_feature_policy_header_ = header;
-  return *this;
-}
-
-DocumentInit& DocumentInit::WithPermissionsPolicyHeader(const String& header) {
-  DCHECK(permissions_policy_header_.IsEmpty());
-  permissions_policy_header_ = header;
-  return *this;
-}
-
-DocumentInit& DocumentInit::WithReportOnlyPermissionsPolicyHeader(
-    const String& header) {
-  DCHECK(report_only_permissions_policy_header_.IsEmpty());
-  report_only_permissions_policy_header_ = header;
-  return *this;
-}
-
-DocumentInit& DocumentInit::WithOriginTrialsHeader(const String& header) {
-  DCHECK(origin_trials_header_.IsEmpty());
-  origin_trials_header_ = header;
-  return *this;
-}
-
 DocumentInit& DocumentInit::WithSandboxFlags(
     network::mojom::blink::WebSandboxFlags flags) {
   // Only allow adding more sandbox flags.
@@ -480,33 +430,6 @@ DocumentInit& DocumentInit::WithSandboxFlags(
 
 ContentSecurityPolicy* DocumentInit::GetContentSecurityPolicy() const {
   return content_security_policy_;
-}
-
-DocumentInit& DocumentInit::WithFramePolicy(
-    const base::Optional<FramePolicy>& frame_policy) {
-  frame_policy_ = frame_policy;
-  if (frame_policy_.has_value()) {
-    DCHECK(document_loader_);
-    // Make the snapshot value of sandbox flags from the beginning of navigation
-    // available in frame loader, so that the value could be further used to
-    // initialize sandbox flags in security context. crbug.com/1026627
-    document_loader_->GetFrame()->Loader().SetFrameOwnerSandboxFlags(
-        frame_policy_.value().sandbox_flags);
-  }
-  return *this;
-}
-
-DocumentInit& DocumentInit::WithDocumentPolicy(
-    const DocumentPolicy::ParsedDocumentPolicy& document_policy) {
-  document_policy_ = document_policy;
-  return *this;
-}
-
-DocumentInit& DocumentInit::WithReportOnlyDocumentPolicyHeader(
-    const String& header) {
-  DCHECK(report_only_document_policy_header_.IsEmpty());
-  report_only_document_policy_header_ = header;
-  return *this;
 }
 
 DocumentInit& DocumentInit::WithWebBundleClaimedUrl(

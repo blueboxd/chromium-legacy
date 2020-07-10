@@ -72,8 +72,7 @@ class PageTimingMetricsSender {
                                       int request_id,
                                       int64_t encoded_body_length,
                                       const std::string& mime_type);
-  void OnMainFrameDocumentIntersectionChanged(
-      const blink::WebRect& intersect_rect);
+  void OnMainFrameIntersectionChanged(const blink::WebRect& intersect_rect);
 
   void DidObserveInputDelay(base::TimeDelta input_delay);
   // Updates the timing information. Buffers |timing| to be sent over mojo

@@ -1208,7 +1208,10 @@ template <typename T, size_t inlineCapacity, typename U, typename V>
 template <typename VisitorDispatcher, typename A>
 std::enable_if_t<A::kIsGarbageCollected>
 ListHashSet<T, inlineCapacity, U, V>::Trace(VisitorDispatcher visitor) const {
-  if (!NodeTraits::kCanTraceConcurrently) {
+  const auto* table =
+      AsAtomicPtr(&impl_.table_)->load(std::memory_order_relaxed);
+
+  if (!NodeTraits::kCanTraceConcurrently && table) {
     if (visitor->DeferredTraceIfConcurrent(
             {this, [](blink::Visitor* visitor, const void* object) {
                reinterpret_cast<const ListHashSet<T, inlineCapacity, U, V>*>(
@@ -1224,7 +1227,7 @@ ListHashSet<T, inlineCapacity, U, V>::Trace(VisitorDispatcher visitor) const {
   // This marks all the nodes and their contents live that can be accessed
   // through the HashTable. That includes m_head and m_tail so we do not have
   // to explicitly trace them here.
-  impl_.Trace(visitor);
+  impl_.TraceTable(visitor, table);
 }
 
 }  // namespace WTF

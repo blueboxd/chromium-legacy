@@ -273,9 +273,10 @@ void WebRemoteFrameImpl::SetReplicatedSandboxFlags(
   GetFrame()->SetReplicatedSandboxFlags(flags);
 }
 
-void WebRemoteFrameImpl::SetReplicatedName(const WebString& name) {
+void WebRemoteFrameImpl::SetReplicatedName(const WebString& name,
+                                           const WebString& unique_name) {
   DCHECK(GetFrame());
-  GetFrame()->Tree().SetName(name);
+  GetFrame()->SetReplicatedName(name, unique_name);
 }
 
 void WebRemoteFrameImpl::SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
@@ -344,6 +345,10 @@ v8::Local<v8::Object> WebRemoteFrameImpl::GlobalProxy() const {
 
 WebRect WebRemoteFrameImpl::GetCompositingRect() {
   return GetFrame()->View()->GetCompositingRect();
+}
+
+WebString WebRemoteFrameImpl::UniqueName() const {
+  return GetFrame()->UniqueName();
 }
 
 WebRemoteFrameImpl::WebRemoteFrameImpl(

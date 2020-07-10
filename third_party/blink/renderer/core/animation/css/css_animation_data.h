@@ -30,6 +30,7 @@ class CSSAnimationData final : public CSSTimingData {
   }
 
   Timing ConvertToTiming(size_t index) const;
+  const StyleNameOrKeyword& GetTimeline(size_t index) const;
 
   const Vector<AtomicString>& NameList() const { return name_list_; }
   const Vector<StyleNameOrKeyword>& TimelineList() const {

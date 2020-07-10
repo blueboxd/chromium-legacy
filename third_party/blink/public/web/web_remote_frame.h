@@ -107,8 +107,9 @@ class WebRemoteFrame : public WebFrame {
   // Set sandbox flags replicated from another process.
   virtual void SetReplicatedSandboxFlags(network::mojom::WebSandboxFlags) = 0;
 
-  // Set frame |name| replicated from another process.
-  virtual void SetReplicatedName(const WebString&) = 0;
+  // Set frame |name| and |unique_name| replicated from another process.
+  virtual void SetReplicatedName(const WebString& name,
+                                 const WebString& unique_name) = 0;
 
   // Sets the FeaturePolicy header and the FeatureState (from opener) for the
   // main frame. Once a non-empty |opener_feature_state| is set, it can no
@@ -149,6 +150,10 @@ class WebRemoteFrame : public WebFrame {
   virtual void SetHadStickyUserActivationBeforeNavigation(bool value) = 0;
 
   virtual WebRect GetCompositingRect() = 0;
+
+  // Unique name is an opaque identifier for maintaining association with
+  // session restore state for this frame.
+  virtual WebString UniqueName() const = 0;
 
  protected:
   explicit WebRemoteFrame(mojom::TreeScopeType scope,

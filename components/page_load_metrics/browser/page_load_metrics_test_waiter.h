@@ -51,10 +51,10 @@ class PageLoadMetricsTestWaiter
   // size update of |size|.
   void AddFrameSizeExpectation(const gfx::Size& size);
 
-  // Add a main frame document intersection expectation. Expects that a frame
-  // receives an intersection update with a main frame document intersection
+  // Add a main frame intersection expectation. Expects that a frame
+  // receives an intersection update with a main frame intersection
   // of |rect|. Subsequent calls overwrite unmet expectations.
-  void AddMainFrameDocumentIntersectionExpectation(const gfx::Rect& rect);
+  void AddMainFrameIntersectionExpectation(const gfx::Rect& rect);
 
   // Add a single WebFeature expectation.
   void AddWebFeatureExpectation(blink::mojom::WebFeature web_feature);
@@ -261,7 +261,7 @@ class PageLoadMetricsTestWaiter
   std::set<gfx::Size, FrameSizeComparator> expected_frame_sizes_;
   std::set<gfx::Size, FrameSizeComparator> observed_frame_sizes_;
 
-  // Expectation for the main frame document intersection. Has a value when
+  // Expectation for the main frame intersection. Has a value when
   // an expectation has not been met.
   base::Optional<gfx::Rect> expected_main_frame_intersection_;
 

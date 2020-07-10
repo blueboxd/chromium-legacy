@@ -64,11 +64,11 @@ class TestFrameAdapter : public UniqueNameHelper::FrameAdapter {
     return 0;
   }
 
-  std::vector<base::StringPiece> CollectAncestorNames(
+  std::vector<std::string> CollectAncestorNames(
       BeginPoint begin_point,
       bool (*should_stop)(base::StringPiece)) const override {
     EXPECT_EQ(BeginPoint::kParentFrame, begin_point);
-    std::vector<base::StringPiece> result;
+    std::vector<std::string> result;
     for (auto* adapter = parent_; adapter; adapter = adapter->parent_) {
       result.push_back(adapter->GetNameForCurrentMode());
       if (should_stop(result.back()))

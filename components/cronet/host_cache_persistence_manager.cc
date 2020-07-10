@@ -36,8 +36,8 @@ HostCachePersistenceManager::HostCachePersistenceManager(
 
   registrar_.Init(pref_service_);
   registrar_.Add(pref_name_,
-                 base::Bind(&HostCachePersistenceManager::ReadFromDisk,
-                            weak_factory_.GetWeakPtr()));
+                 base::BindRepeating(&HostCachePersistenceManager::ReadFromDisk,
+                                     weak_factory_.GetWeakPtr()));
   cache_->set_persistence_delegate(this);
 }
 

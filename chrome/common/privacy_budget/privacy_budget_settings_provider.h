@@ -53,16 +53,6 @@ class PrivacyBudgetSettingsProvider final
   bool IsSurfaceAllowed(blink::IdentifiableSurface surface) const override;
   bool IsTypeAllowed(blink::IdentifiableSurface::Type type) const override;
 
-  const IdentifiableSurfaceSet& blocked_surfaces() const {
-    return blocked_surfaces_;
-  }
-  const IdentifiableSurfaceTypeSet& blocked_types() const {
-    return blocked_types_;
-  }
-
-  // Useful for passing these around.
-  std::unique_ptr<PrivacyBudgetSettingsProvider> Clone() const;
-
  private:
   // Set of identifiable surfaces for which we will NOT collect metrics. This
   // list is server controlled.

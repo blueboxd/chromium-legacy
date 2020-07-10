@@ -1102,7 +1102,7 @@ std::string GetSignonRealm(const GURL& url) {
   rep.ClearPassword();
   rep.ClearQuery();
   rep.ClearRef();
-  rep.SetPathStr(std::string());
+  rep.SetPathStr("");
   return url.ReplaceComponents(rep).spec();
 }
 

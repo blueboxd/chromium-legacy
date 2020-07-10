@@ -250,7 +250,7 @@ class PageLoadMetricsUpdateDispatcher {
   PageRenderData page_render_data_;
   PageRenderData main_frame_render_data_;
 
-  // The last main frame document intersection dispatched to page load metrics
+  // The last main frame intersection dispatched to page load metrics
   // observers.
   std::map<FrameTreeNodeId, mojom::FrameIntersectionUpdate>
       frame_intersection_updates_;

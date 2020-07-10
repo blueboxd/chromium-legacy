@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -137,20 +138,23 @@ CredentialsItemView::~CredentialsItemView() = default;
 
 void CredentialsItemView::SetStoreIndicatorIcon(
     autofill::PasswordForm::Store store) {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (store == autofill::PasswordForm::Store::kAccountStore &&
       !store_indicator_icon_view_) {
     store_indicator_icon_view_ =
         AddChildView(std::make_unique<views::ImageView>());
     store_indicator_icon_view_->set_can_process_events_within_subtree(false);
-    store_indicator_icon_view_->SetImage(
-        gfx::CreateVectorIcon(kGoogleGLogoIcon, gfx::kPlaceholderColor));
+    store_indicator_icon_view_->SetImage(gfx::CreateVectorIcon(
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+        kGoogleGLogoIcon,
+#else
+        vector_icons::kSyncIcon,
+#endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+        gfx::kPlaceholderColor));
   } else if (store == autofill::PasswordForm::Store::kProfileStore &&
              store_indicator_icon_view_) {
     RemoveChildView(store_indicator_icon_view_);
     store_indicator_icon_view_ = nullptr;
   }
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 void CredentialsItemView::UpdateAvatar(const gfx::ImageSkia& image) {

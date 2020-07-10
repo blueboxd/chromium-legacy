@@ -79,7 +79,6 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
   CHECK_NE(routing_id, MSG_ROUTING_NONE);
 
   std::unique_ptr<RenderFrameProxy> proxy(new RenderFrameProxy(routing_id));
-  proxy->unique_name_ = frame_to_replace->unique_name();
   proxy->devtools_frame_token_ = frame_to_replace->GetDevToolsFrameToken();
 
   // When a RenderFrame is replaced by a RenderProxy, the WebRemoteFrame should
@@ -164,7 +163,6 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
         replicated_state.frame_owner_element_type, proxy.get(),
         proxy->blink_interface_registry_.get(),
         proxy->GetRemoteAssociatedInterfaces(), frame_token, opener);
-    proxy->unique_name_ = replicated_state.unique_name;
     render_view = parent->render_view();
     ancestor_widget = parent->ancestor_render_widget_;
   }
@@ -365,7 +363,8 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
            web_frame_->GetSecurityOrigin());
 #endif
 
-  web_frame_->SetReplicatedName(blink::WebString::FromUTF8(state.name));
+  web_frame_->SetReplicatedName(blink::WebString::FromUTF8(state.name),
+                                blink::WebString::FromUTF8(state.unique_name));
   web_frame_->SetReplicatedInsecureRequestPolicy(state.insecure_request_policy);
   web_frame_->SetReplicatedInsecureNavigationsSet(
       state.insecure_navigations_set);
@@ -390,6 +389,11 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
   }
 }
 
+std::string RenderFrameProxy::unique_name() const {
+  DCHECK(web_frame_);
+  return web_frame_->UniqueName().Utf8();
+}
+
 bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
   // Page IPCs are routed via the main frame (both local and remote) and then
   // forwarded to the RenderView. See comment in
@@ -403,7 +407,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameProxy, msg)
-    IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateName, OnDidUpdateName)
     IPC_MESSAGE_HANDLER(UnfreezableFrameMsg_DeleteProxy, OnDeleteProxy)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -441,12 +444,6 @@ void RenderFrameProxy::ChildProcessGone() {
 
 void RenderFrameProxy::DidStartLoading() {
   web_frame_->DidStartLoading();
-}
-
-void RenderFrameProxy::OnDidUpdateName(const std::string& name,
-                                       const std::string& unique_name) {
-  web_frame_->SetReplicatedName(blink::WebString::FromUTF8(name));
-  unique_name_ = unique_name;
 }
 
 void RenderFrameProxy::DidUpdateVisualProperties(

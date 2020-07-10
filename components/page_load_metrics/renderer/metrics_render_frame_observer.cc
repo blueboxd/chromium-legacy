@@ -352,11 +352,11 @@ void MetricsRenderFrameObserver::OnAdResourceObserved(int request_id) {
   ad_request_ids_.insert(request_id);
 }
 
-void MetricsRenderFrameObserver::OnMainFrameDocumentIntersectionChanged(
-    const blink::WebRect& main_frame_document_intersection) {
+void MetricsRenderFrameObserver::OnMainFrameIntersectionChanged(
+    const blink::WebRect& main_frame_intersection) {
   if (page_timing_metrics_sender_)
-    page_timing_metrics_sender_->OnMainFrameDocumentIntersectionChanged(
-        main_frame_document_intersection);
+    page_timing_metrics_sender_->OnMainFrameIntersectionChanged(
+        main_frame_intersection);
 }
 
 void MetricsRenderFrameObserver::OnThroughputDataAvailable(

@@ -2,19 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("intents") {
-  sources = [
-    "OpenInChromeIntent.h",
-    "OpenInChromeIntent.m",
-    "SearchInChromeIntent.h",
-    "SearchInChromeIntent.m",
-  ]
-  deps = [ ":resources" ]
-  frameworks = [ "Intents.framework" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
+import("//build/ios/intent_definition.gni")
 
-bundle_data("resources") {
-  sources = [ "Intents.intentdefinition" ]
-  outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
+intent_definition("intents") {
+  intent_file = "Intents.intentdefinition"
+  intent_names = [
+    "OpenInChromeIntent",
+    "SearchInChromeIntent",
+  ]
 }

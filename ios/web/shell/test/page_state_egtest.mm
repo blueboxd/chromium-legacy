@@ -132,7 +132,8 @@ void ScrollLongPageToTop(const GURL& url) {
         performAction:grey_scrollInDirection(kGREYDirectionDown, offset)];
     // Add a query parameter so the next load creates another NavigationItem.
     GURL::Replacements replacements;
-    replacements.SetQueryStr(base::NumberToString(i));
+    std::string query_string = base::NumberToString(i);
+    replacements.SetQueryStr(query_string);
     [ShellEarlGrey loadURL:baseURL.ReplaceComponents(replacements)];
     // Wait for the content offset to be set to {0, 0}.
     WaitForOffset(0.0);

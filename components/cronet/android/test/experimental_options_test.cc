@@ -61,8 +61,8 @@ static void JNI_ExperimentalOptionsTest_WriteToHostCache(
     const JavaParamRef<jstring>& jaddress) {
   TestUtil::RunAfterContextInit(
       jcontext_adapter,
-      base::Bind(&WriteToHostCacheOnNetworkThread, jcontext_adapter,
-                 base::android::ConvertJavaStringToUTF8(env, jaddress)));
+      base::BindOnce(&WriteToHostCacheOnNetworkThread, jcontext_adapter,
+                     base::android::ConvertJavaStringToUTF8(env, jaddress)));
 }
 
 }  // namespace cronet

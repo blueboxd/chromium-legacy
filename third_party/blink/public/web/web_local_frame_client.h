@@ -439,9 +439,8 @@ class BLINK_EXPORT WebLocalFrameClient {
   // focused element, |to_element| is the newly focused one. Either can be null.
   virtual void FocusedElementChanged(const WebElement& element) {}
 
-  // Called when a frame's intersection with the main frame's document has
-  // changed.
-  virtual void OnMainFrameDocumentIntersectionChanged(
+  // Called when a frame's intersection with the main frame has changed.
+  virtual void OnMainFrameIntersectionChanged(
       const WebRect& intersection_rect) {}
 
   // Low-level resource notifications ------------------------------------

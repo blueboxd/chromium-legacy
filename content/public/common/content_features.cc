@@ -175,10 +175,10 @@ const base::Feature kEnableNewCanvas2DAPI{"EnableNewCanvas2DAPI",
 // If this feature is enabled and device permission is not granted by the user,
 // media-device enumeration will provide at most one device per type and the
 // device IDs will not be available.
-// TODO(crbug.com/1019176): remove the feature in M82.
+// TODO(crbug.com/1019176): remove the feature in M89.
 const base::Feature kEnumerateDevicesHideDeviceIDs{
   "EnumerateDevicesHideDeviceIDs",
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
       base::FEATURE_DISABLED_BY_DEFAULT
 #else
       base::FEATURE_ENABLED_BY_DEFAULT

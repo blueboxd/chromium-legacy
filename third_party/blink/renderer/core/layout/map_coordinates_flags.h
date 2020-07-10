@@ -26,6 +26,10 @@ enum MapCoordinatesMode {
   // If the local root frame has a remote frame parent, apply the offset from
   // the remote frame parent to the local root.
   kApplyRemoteRootFrameOffset = 1 << 6,
+
+  // If the local root frame has a remote frame parent, apply the transformation
+  // from the remote frame parent to the main frame.
+  kApplyMainFrameTransform = 1 << 7,
 };
 typedef unsigned MapCoordinatesFlags;
 

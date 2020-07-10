@@ -246,8 +246,8 @@ void CustomElementDefinition::AddDefaultStylesTo(Element& element) {
     return;
   const auto& default_styles = DefaultStyleSheets();
   for (CSSStyleSheet* style : default_styles) {
-    Document* associated_document = style->AssociatedDocument();
-    if (associated_document && associated_document != &element.GetDocument()) {
+    Document* document = style->ConstructorDocument();
+    if (document && document != &element.GetDocument()) {
       // No spec yet, but for now we forbid usage of other document's
       // constructed stylesheet.
       return;

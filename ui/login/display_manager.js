@@ -406,12 +406,6 @@ cr.define('cr.ui.login', function() {
             currentStepId == SCREEN_PACKAGED_LICENSE ||
             currentStepId == SCREEN_ACCOUNT_PICKER) {
           chrome.send('toggleEnrollmentScreen');
-        } else if (attributes.postponeEnrollmentAllowed ||
-            currentStepId == SCREEN_OOBE_NETWORK ||
-            currentStepId == SCREEN_OOBE_EULA) {
-          // In this case update check will be skipped and OOBE will
-          // proceed straight to enrollment screen when EULA is accepted.
-          chrome.send('skipUpdateEnrollAfterEula');
         } else {
           console.warn('No action for current step ID: ' + currentStepId);
         }

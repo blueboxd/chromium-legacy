@@ -25,7 +25,9 @@ namespace content {
 //   * Ensure that stored state is accessed safely.
 class DesktopCapturerLacros : public webrtc::DesktopCapturer {
  public:
-  explicit DesktopCapturerLacros(const webrtc::DesktopCaptureOptions& options);
+  enum CaptureType { kScreen, kWindow };
+  DesktopCapturerLacros(CaptureType capture_type,
+                        const webrtc::DesktopCaptureOptions& options);
   DesktopCapturerLacros(const DesktopCapturerLacros&) = delete;
   DesktopCapturerLacros& operator=(const DesktopCapturerLacros&) = delete;
   ~DesktopCapturerLacros() override;
@@ -45,13 +47,19 @@ class DesktopCapturerLacros : public webrtc::DesktopCapturer {
   static void BindReceiverMainThread(
       mojo::PendingReceiver<lacros::mojom::ScreenManager> receiver);
 
-  // Callback for when ash-chrome returns a snapshot of the screen as a
-  // bitmap.
-  void DidTakeScreenSnapshot(const lacros::WindowSnapshot& snapshot);
+  // Callback for when ash-chrome returns a snapshot of the screen or window as
+  // a bitmap.
+  void DidTakeSnapshot(bool success, const lacros::WindowSnapshot& snapshot);
+
+  // Whether this object is capturing screens or windows.
+  const CaptureType capture_type_;
 
   // TODO(https://crbug.com/1094460): The webrtc options for screen/display
   // capture are currently ignored.
   const webrtc::DesktopCaptureOptions options_;
+
+  // For window capture, this is the source that we want to capture.
+  SourceId selected_source_;
 
   // The webrtc::DesktopCapturer interface expects the implementation to hold
   // onto and call a Callback* object. This instance relies on the assumption

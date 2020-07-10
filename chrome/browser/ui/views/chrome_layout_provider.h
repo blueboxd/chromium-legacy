@@ -19,6 +19,8 @@ enum ChromeInsetsMetric {
   INSETS_BOOKMARKS_BAR_BUTTON = views::VIEWS_INSETS_END,
   // Margins used by toasts.
   INSETS_TOAST,
+  // Padding used in an omnibox pill button.
+  INSETS_OMNIBOX_PILL_BUTTON,
 };
 
 enum ChromeDistanceMetric {
@@ -73,7 +75,12 @@ enum ChromeDistanceMetric {
   // instead of being anchored.
   DISTANCE_STANDALONE_BUBBLE_PREFERRED_WIDTH,
   // Horizontal spacing between value and description in the row.
-  DISTANCE_BETWEEN_PRIMARY_AND_SECONDARY_LABELS_HORIZONTAL
+  DISTANCE_BETWEEN_PRIMARY_AND_SECONDARY_LABELS_HORIZONTAL,
+  // Vertical padding at the top and bottom of the an omnibox match row.
+  DISTANCE_OMNIBOX_CELL_VERTICAL_PADDING,
+  // Vertical padding at the top and bottom of the an omnibox match row for two
+  // line layout.
+  DISTANCE_OMNIBOX_TWO_LINE_CELL_VERTICAL_PADDING,
 };
 
 class ChromeLayoutProvider : public views::LayoutProvider {

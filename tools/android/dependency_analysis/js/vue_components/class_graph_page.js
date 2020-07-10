@@ -8,14 +8,16 @@ import {GraphFilterInput} from './graph_filter_input.js';
 import {GraphFilterItems} from './graph_filter_items.js';
 import {GraphInboundInput} from './graph_inbound_input.js';
 import {GraphOutboundInput} from './graph_outbound_input.js';
-import {GraphVisualization} from './graph_visualization.js';
 import {GraphSelectedNodeDetails} from './graph_selected_node_details.js';
+import {GraphVisualization} from './graph_visualization.js';
+import {LinkToGraph} from './link_to_graph.js';
 import {PageUrlGenerator} from './page_url_generator.js';
 
-import {parseClassGraphModelFromJson} from '../process_graph_json.js';
 import {generateFilterFromUrl} from '../url_processor.js';
-import {PageModel} from '../page_model.js';
 import {Node} from '../graph_model.js';
+import {PageModel} from '../page_model.js';
+import {PagePathName} from '../url_processor.js';
+import {parseClassGraphModelFromJson} from '../process_graph_json.js';
 
 const ClassGraphPage = Vue.component('class-graph-page', {
   components: {
@@ -23,23 +25,25 @@ const ClassGraphPage = Vue.component('class-graph-page', {
     'graph-filter-items': GraphFilterItems,
     'graph-inbound-input': GraphInboundInput,
     'graph-outbound-input': GraphOutboundInput,
-    'graph-visualization': GraphVisualization,
     'graph-selected-node-details': GraphSelectedNodeDetails,
+    'graph-visualization': GraphVisualization,
+    'link-to-graph': LinkToGraph,
     'page-url-generator': PageUrlGenerator,
   },
   props: ['graphJson'],
 
   /**
-   * Various references to objects used across the entire page.
-   * @typedef {Object} PageData
+   * Various references to objects used across the entire class page.
+   * @typedef {Object} ClassPageData
    * @property {PageModel} pageModel The data store for the page.
+   * @property {PagePathName} pagePathName The pathname for the page.
    * @property {number} graphDataUpdateTicker Incremented every time we want to
    *     trigger a visualization update. See graph_visualization.js for further
    *     explanation on this variable.
    */
 
   /**
-   * @return {PageData} The objects used throughout the page.
+   * @return {ClassPageData} The objects used throughout the page.
    */
   data: function() {
     const graphModel = parseClassGraphModelFromJson(this.graphJson);
@@ -47,6 +51,7 @@ const ClassGraphPage = Vue.component('class-graph-page', {
 
     return {
       pageModel,
+      pagePathName: PagePathName.CLASS,
       graphDataUpdateTicker: 0,
     };
   },
@@ -144,13 +149,24 @@ const ClassGraphPage = Vue.component('class-graph-page', {
           :page-model="this.pageModel"
           @${CUSTOM_EVENTS.NODE_CLICKED}="graphNodeClicked"
         ></graph-visualization>
-        <graph-selected-node-details
-          :selected-node-details-data="this.pageModel.selectedNodeDetailsData"
-          @${CUSTOM_EVENTS.ADD_TO_FILTER_CLICKED}="addNodeToFilter"
-          @${CUSTOM_EVENTS.REMOVE_FROM_FILTER_CLICKED}="removeNodeFromFilter"
-        ></graph-selected-node-details>
+        <div id="node-details-container">
+          <graph-selected-node-details
+            :selected-node-details-data="this.pageModel.selectedNodeDetailsData"
+            @${CUSTOM_EVENTS.ADD_TO_FILTER_CLICKED}="addNodeToFilter"
+            @${CUSTOM_EVENTS.REMOVE_FROM_FILTER_CLICKED}="removeNodeFromFilter"
+          ></graph-selected-node-details>
+          <link-to-graph
+            v-if="this.pageModel.selectedNodeDetailsData.selectedNode !== null"
+            :filter="
+              [this.pageModel.selectedNodeDetailsData.selectedNode.packageName]"
+            graph-type="${PagePathName.PACKAGE}"
+            :text="'View ' +
+              this.pageModel.selectedNodeDetailsData.selectedNode.packageName"
+          ></link-to-graph>
+        </div>
       </div>
       <page-url-generator
+        :page-path-name="this.pagePathName"
         :node-filter-data="this.pageModel.nodeFilterData"
       ></page-url-generator>
     </div>`,

@@ -231,6 +231,7 @@ api::automation::EventType ToAutomationEvent(
     case ui::AXEventGenerator::Event::VALUE_MAX_CHANGED:
     case ui::AXEventGenerator::Event::VALUE_MIN_CHANGED:
     case ui::AXEventGenerator::Event::VALUE_STEP_CHANGED:
+    case ui::AXEventGenerator::Event::WIN_IACCESSIBLE_STATE_CHANGED:
       return api::automation::EVENT_TYPE_NONE;
   }
 

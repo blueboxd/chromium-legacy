@@ -110,6 +110,7 @@ jumbo_component("views") {
     "controls/button/button.h",
     "controls/button/button_controller.h",
     "controls/button/button_controller_delegate.h",
+    "controls/button/button_observer.h",
     "controls/button/checkbox.h",
     "controls/button/image_button.h",
     "controls/button/image_button_factory.h",

@@ -298,7 +298,6 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
     const base::FilePath& default_path,
     const FileTypeInfo* file_types,
     int file_type_index,
-    const base::FilePath::StringType& default_extension,
     gfx::NativeWindow owner_window,
     void* params,
     int owner_android_task_id,
@@ -388,7 +387,7 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
       file_manager::util::GetFileManagerMainPageUrlWithParams(
           type, title, current_directory_url, selection_url,
           default_path.BaseName().value(), file_types, file_type_index,
-          default_extension, show_android_picker_apps);
+          show_android_picker_apps);
 
   ExtensionDialog::InitParams dialog_params(
       {kFileManagerWidth, kFileManagerHeight});
@@ -431,10 +430,10 @@ void SelectFileDialogExtension::SelectFileImpl(
     const base::FilePath::StringType& default_extension,
     gfx::NativeWindow owner_window,
     void* params) {
-  SelectFileWithFileManagerParams(type, title, default_path, file_types,
-                                  file_type_index, default_extension,
-                                  owner_window, params, kAndroidTaskIdNone,
-                                  false /* show_android_picker_apps */);
+  // |default_extension| is ignored.
+  SelectFileWithFileManagerParams(
+      type, title, default_path, file_types, file_type_index, owner_window,
+      params, kAndroidTaskIdNone, /*show_android_picker_apps=*/false);
 }
 
 bool SelectFileDialogExtension::HasMultipleFileTypeChoicesImpl() {

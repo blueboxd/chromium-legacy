@@ -519,11 +519,6 @@
     "args": ["--enable-features=NativeFileSystemAPI,FileHandlingAPI"]
   },
   {
-    "prefix": "controls-refresh",
-    "bases": [],
-    "args": ["--enable-features=FormControlsRefresh"]
-  },
-  {
     "prefix": "controls-refresh-hc",
     "bases": ["fast/forms/color-scheme"],
     "args": ["--enable-features=ForcedColors",

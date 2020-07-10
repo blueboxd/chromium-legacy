@@ -52,6 +52,24 @@ DocumentPolicy::ParsedDocumentPolicy FilterByOriginTrial(
   return filtered_policy;
 }
 
+// Helper function: Merge the feature policy strings from HTTP headers and the
+// origin policy (if any).
+// Headers go first, which means that the per-page headers override the
+// origin policy features.
+//
+// TODO(domenic): we want to treat origin policy feature policy as a single
+// feature policy, not a header serialization, so it should be processed
+// differently.
+void MergeFeaturesFromOriginPolicy(WTF::StringBuilder& feature_policy,
+                                   const WebOriginPolicy& origin_policy) {
+  if (!origin_policy.feature_policy.IsNull()) {
+    if (!feature_policy.IsEmpty()) {
+      feature_policy.Append(',');
+    }
+    feature_policy.Append(origin_policy.feature_policy);
+  }
+}
+
 }  // namespace
 
 // This constructor is used for non-Document contexts (i.e., workers and tests).
@@ -79,19 +97,6 @@ SecurityContextInit::SecurityContextInit(const DocumentInit& initializer)
     security_origin_ = security_origin_->GetOriginForAgentCluster(
         execution_context_->GetAgent()->cluster_id());
   }
-
-  // The secure context state is based on the origin.
-  InitializeSecureContextMode(initializer);
-
-  // Initialize origin trials, requires the post sandbox flags
-  // security origin and secure context state.
-  InitializeOriginTrials(initializer);
-
-  // Initialize feature policy, depends on origin trials.
-  InitializeFeaturePolicy(initializer);
-
-  // Initialize document policy.
-  InitializeDocumentPolicy(initializer);
 }
 
 void SecurityContextInit::CountFeaturePolicyUsage(
@@ -110,8 +115,10 @@ bool SecurityContextInit::FeatureEnabled(OriginTrialFeature feature) const {
   return origin_trials_->IsFeatureEnabled(feature);
 }
 
-void SecurityContextInit::InitializeDocumentPolicy(
-    const DocumentInit& initializer) {
+void SecurityContextInit::CalculateDocumentPolicy(
+    const DocumentPolicy::ParsedDocumentPolicy& document_policy,
+    const String& report_only_document_policy_header) {
+  DCHECK(origin_trials_);
   if (!RuntimeEnabledFeatures::DocumentPolicyEnabled(this))
     return;
 
@@ -119,7 +126,7 @@ void SecurityContextInit::InitializeDocumentPolicy(
   // when origin trial context is not initialized yet.
   // Needs to filter out features that are not in origin trial after
   // we have origin trial information available.
-  document_policy_ = FilterByOriginTrial(initializer.GetDocumentPolicy(), this);
+  document_policy_ = FilterByOriginTrial(document_policy, this);
   if (!document_policy_.feature_state.empty()) {
     UseCounter::Count(execution_context_, WebFeature::kDocumentPolicyHeader);
     for (const auto& policy_entry : document_policy_.feature_state) {
@@ -138,7 +145,7 @@ void SecurityContextInit::InitializeDocumentPolicy(
   PolicyParserMessageBuffer logger("%s", /* discard_message */ true);
   base::Optional<DocumentPolicy::ParsedDocumentPolicy>
       report_only_parsed_policy = DocumentPolicyParser::Parse(
-          initializer.ReportOnlyDocumentPolicyHeader(), logger);
+          report_only_document_policy_header, logger);
   if (report_only_parsed_policy) {
     report_only_document_policy_ =
         FilterByOriginTrial(*report_only_parsed_policy, this);
@@ -149,27 +156,30 @@ void SecurityContextInit::InitializeDocumentPolicy(
   }
 }
 
-void SecurityContextInit::InitializeFeaturePolicy(
-    const DocumentInit& initializer) {
+void SecurityContextInit::CalculateFeaturePolicy(
+    LocalFrame* frame,
+    bool is_view_source,
+    const ResourceResponse& response,
+    const base::Optional<WebOriginPolicy>& origin_policy,
+    const FramePolicy& frame_policy) {
+  DCHECK(origin_trials_);
   initialized_feature_policy_state_ = true;
   // If we are a HTMLViewSourceDocument we use container, header or
-  // inherited policies. https://crbug.com/898688. Don't set any from the
-  // initializer or frame below.
-  if (initializer.GetType() == DocumentInit::Type::kViewSource)
+  // inherited policies. https://crbug.com/898688.
+  if (is_view_source)
     return;
 
-  auto* frame = initializer.GetFrame();
   // For a main frame, get inherited feature policy from the opener if any.
   if (frame && frame->IsMainFrame() && !frame->OpenerFeatureState().empty())
     frame_for_opener_feature_state_ = frame;
 
   const String& permissions_policy_header =
       RuntimeEnabledFeatures::PermissionsPolicyHeaderEnabled()
-          ? initializer.PermissionsPolicyHeader()
+          ? response.HttpHeaderField(http_names::kPermissionsPolicy)
           : g_empty_string;
   const String& report_only_permissions_policy_header =
       RuntimeEnabledFeatures::PermissionsPolicyHeaderEnabled()
-          ? initializer.ReportOnlyPermissionsPolicyHeader()
+          ? response.HttpHeaderField(http_names::kPermissionsPolicyReportOnly)
           : g_empty_string;
 
   PolicyParserMessageBuffer feature_policy_logger(
@@ -177,12 +187,20 @@ void SecurityContextInit::InitializeFeaturePolicy(
   PolicyParserMessageBuffer report_only_feature_policy_logger(
       "Error with Report-Only-Feature-Policy header: ");
 
+  WTF::StringBuilder feature_policy;
+  feature_policy.Append(response.HttpHeaderField(http_names::kFeaturePolicy));
+  if (origin_policy.has_value())
+    MergeFeaturesFromOriginPolicy(feature_policy, origin_policy.value());
+  String feature_policy_header = feature_policy.ToString();
+  if (!feature_policy_header.IsEmpty())
+    UseCounter::Count(execution_context_, WebFeature::kFeaturePolicyHeader);
+
   feature_policy_header_ = FeaturePolicyParser::ParseHeader(
-      initializer.FeaturePolicyHeader(), permissions_policy_header,
-      security_origin_, feature_policy_logger, this);
+      feature_policy_header, permissions_policy_header, security_origin_,
+      feature_policy_logger, this);
 
   report_only_feature_policy_header_ = FeaturePolicyParser::ParseHeader(
-      initializer.ReportOnlyFeaturePolicyHeader(),
+      response.HttpHeaderField(http_names::kFeaturePolicyReportOnly),
       report_only_permissions_policy_header, security_origin_,
       report_only_feature_policy_logger, this);
 
@@ -217,10 +235,8 @@ void SecurityContextInit::InitializeFeaturePolicy(
                                            feature_policy_header_);
   }
 
-  if (frame && frame->Owner()) {
-    container_policy_ =
-        initializer.GetFramePolicy().value_or(FramePolicy()).container_policy;
-  }
+  if (frame && frame->Owner())
+    container_policy_ = frame_policy.container_policy;
 
   // TODO(icelland): This is problematic querying sandbox flags before
   // feature policy is initialized.
@@ -309,9 +325,7 @@ SecurityContextInit::CreateReportOnlyDocumentPolicy() const {
                    report_only_document_policy_);
 }
 
-void SecurityContextInit::InitializeSecureContextMode(
-    const DocumentInit& initializer) {
-  auto* frame = initializer.GetFrame();
+void SecurityContextInit::CalculateSecureContextMode(LocalFrame* frame) {
   if (!security_origin_->IsPotentiallyTrustworthy()) {
     secure_context_mode_ = SecureContextMode::kInsecureContext;
   } else if (SchemeRegistry::SchemeShouldBypassSecureContextCheck(
@@ -347,16 +361,13 @@ void SecurityContextInit::InitializeSecureContextMode(
 }
 
 void SecurityContextInit::InitializeOriginTrials(
-    const DocumentInit& initializer) {
+    const String& origin_trials_header) {
   DCHECK(secure_context_mode_.has_value());
   origin_trials_ = MakeGarbageCollected<OriginTrialContext>();
-
-  const String& header_value = initializer.OriginTrialsHeader();
-
-  if (header_value.IsEmpty())
+  if (origin_trials_header.IsEmpty())
     return;
   std::unique_ptr<Vector<String>> tokens(
-      OriginTrialContext::ParseHeaderValue(header_value));
+      OriginTrialContext::ParseHeaderValue(origin_trials_header));
   if (!tokens)
     return;
   origin_trials_->AddTokens(

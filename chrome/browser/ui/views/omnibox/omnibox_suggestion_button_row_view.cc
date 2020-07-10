@@ -4,37 +4,41 @@
 
 #include "chrome/browser/ui/views/omnibox/omnibox_suggestion_button_row_view.h"
 
+#include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/omnibox/omnibox_theme.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_match_cell_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_pedal.h"
+#include "components/omnibox/browser/vector_icons.h"
+#include "components/vector_icons/vector_icons.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/view_class_properties.h"
 
 namespace {
 
 views::MdTextButton* CreatePillButton(
     OmniboxSuggestionButtonRowView* button_row,
     const char* message) {
-  views::MdTextButton* button = button_row->AddChildView(
-      views::MdTextButton::Create(button_row, base::ASCIIToUTF16(message)));
-  button->SetCornerRadius(16);
+  views::MdTextButton* button =
+      button_row->AddChildView(views::MdTextButton::Create(
+          button_row, base::ASCIIToUTF16(message), CONTEXT_OMNIBOX_PRIMARY));
   button->SetVisible(false);
+  button->SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
+      DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
+  button->SetCustomPadding(
+      ChromeLayoutProvider::Get()->GetInsetsMetric(INSETS_OMNIBOX_PILL_BUTTON));
+  button->SetCornerRadius(button->GetInsets().height() +
+                          GetLayoutConstant(LOCATION_BAR_ICON_SIZE));
   return button;
-}
-
-size_t LayoutPillButton(views::MdTextButton* button,
-                        size_t button_indent,
-                        size_t suggestion_height) {
-  gfx::Size button_size = button->GetPreferredSize();
-  button->SetBounds(button_indent,
-                    (suggestion_height - button_size.height()) / 2,
-                    button_size.width(), button_size.height());
-  button->SetVisible(true);
-  // TODO(orinj): Determine and use the right gap between buttons.
-  return button_indent + button_size.width() + 10;
 }
 
 }  // namespace
@@ -43,6 +47,19 @@ OmniboxSuggestionButtonRowView::OmniboxSuggestionButtonRowView(
     OmniboxPopupContentsView* popup_contents_view,
     int model_index)
     : popup_contents_view_(popup_contents_view), model_index_(model_index) {
+  SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetCrossAxisAlignment(views::LayoutAlignment::kStart)
+      .SetCollapseMargins(true)
+      .SetInteriorMargin(
+          gfx::Insets(0, OmniboxMatchCellView::GetTextIndent(),
+                      ChromeLayoutProvider::Get()->GetDistanceMetric(
+                          DISTANCE_OMNIBOX_CELL_VERTICAL_PADDING),
+                      0))
+      .SetDefault(
+          views::kMarginsKey,
+          gfx::Insets(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
+                             views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
+
   keyword_button_ = CreatePillButton(this, "Keyword search");
   pedal_button_ = CreatePillButton(this, "Pedal");
   // TODO(orinj): Use the real translated string table values here instead.
@@ -88,6 +105,23 @@ void OmniboxSuggestionButtonRowView::OnStyleRefresh() {
   tab_switch_button_focus_ring_->SchedulePaint();
 }
 
+void OmniboxSuggestionButtonRowView::OnThemeChanged() {
+  View::OnThemeChanged();
+  SkColor color = GetOmniboxColor(GetThemeProvider(), OmniboxPart::RESULTS_ICON,
+                                  OmniboxPartState::NORMAL);
+  const int icon_size = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
+
+  keyword_button_->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(vector_icons::kSearchIcon, icon_size, color));
+  pedal_button_->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(omnibox::kProductIcon, icon_size, color));
+  tab_switch_button_->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(omnibox::kSwitchIcon, icon_size, color));
+}
+
 void OmniboxSuggestionButtonRowView::ButtonPressed(views::Button* button,
                                                    const ui::Event& event) {
   OmniboxPopupModel* popup_model = popup_contents_view_->model();
@@ -126,43 +160,23 @@ void OmniboxSuggestionButtonRowView::ButtonPressed(views::Button* button,
 void OmniboxSuggestionButtonRowView::Layout() {
   views::View::Layout();
 
-  // TODO(orinj): Rework layout with a layout manager. For now this depends
-  // on bounds already being set by parent.
-  const int suggestion_height = height();
+  SetPillButtonVisibility(keyword_button_,
+                          OmniboxPopupModel::FOCUSED_BUTTON_KEYWORD);
+  SetPillButtonVisibility(pedal_button_,
+                          OmniboxPopupModel::FOCUSED_BUTTON_PEDAL);
+  SetPillButtonVisibility(tab_switch_button_,
+                          OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH);
 
-  const auto check_state = [=](auto state) {
-    return model()->IsControlPresentOnMatch(
-        OmniboxPopupModel::Selection(model_index_, state));
-  };
-  int start_indent = OmniboxMatchCellView::GetTextIndent();
-  // This button_indent strictly increases with each button added.
-  int button_indent = start_indent;
-  if (check_state(OmniboxPopupModel::FOCUSED_BUTTON_KEYWORD)) {
-    button_indent =
-        LayoutPillButton(keyword_button_, button_indent, suggestion_height);
-  } else if (keyword_button_->GetVisible()) {
-    // Setting visibility does lots of work, even if not changing.
-    keyword_button_->SetVisible(false);
-  }
-  if (check_state(OmniboxPopupModel::FOCUSED_BUTTON_PEDAL)) {
+  if (pedal_button_->GetVisible()) {
     pedal_button_->SetText(match().pedal->GetLabelStrings().hint);
-    button_indent =
-        LayoutPillButton(pedal_button_, button_indent, suggestion_height);
-  } else if (pedal_button_->GetVisible()) {
-    pedal_button_->SetVisible(false);
-  }
-  if (check_state(OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH)) {
-    button_indent =
-        LayoutPillButton(tab_switch_button_, button_indent, suggestion_height);
-  } else if (tab_switch_button_->GetVisible()) {
-    tab_switch_button_->SetVisible(false);
+    pedal_button_->SetTooltipText(
+        match().pedal->GetLabelStrings().suggestion_contents);
   }
 
-  if (button_indent != start_indent) {
-    SetVisible(true);
-  } else if (GetVisible()) {
-    SetVisible(false);
-  }
+  bool is_any_button_visible = keyword_button_->GetVisible() ||
+                               pedal_button_->GetVisible() ||
+                               tab_switch_button_->GetVisible();
+  SetVisible(is_any_button_visible);
 
   // TODO(orinj): Migrate to BoxLayout or FlexLayout. Ideally we don't do any
   // more layouts ourselves. Also, check visibility management in result view.
@@ -174,4 +188,11 @@ const OmniboxPopupModel* OmniboxSuggestionButtonRowView::model() const {
 
 const AutocompleteMatch& OmniboxSuggestionButtonRowView::match() const {
   return model()->result().match_at(model_index_);
+}
+
+void OmniboxSuggestionButtonRowView::SetPillButtonVisibility(
+    views::MdTextButton* button,
+    OmniboxPopupModel::LineState state) {
+  button->SetVisible(model()->IsControlPresentOnMatch(
+      OmniboxPopupModel::Selection(model_index_, state)));
 }

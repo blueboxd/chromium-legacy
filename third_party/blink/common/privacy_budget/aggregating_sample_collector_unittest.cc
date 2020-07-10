@@ -26,6 +26,8 @@ constexpr ukm::SourceId kTestSource1 = 1;
 constexpr ukm::SourceId kTestSource2 = 2;
 constexpr IdentifiableSurface kTestSurface1 =
     IdentifiableSurface::FromMetricHash(1 << 8);
+constexpr IdentifiableSurface kTestSurface2 =
+    IdentifiableSurface::FromMetricHash(2 << 8);
 constexpr IdentifiableToken kTestValue1 = 1;
 }  // namespace
 
@@ -213,6 +215,21 @@ TEST_F(AggregatingSampleCollectorTest, UnsentMetricsAreTooOld) {
       AggregatingSampleCollector::kMaxUnsentSampleAge);
   collector()->Record(recorder(), kTestSource1, {{kTestSurface1, 2}});
   EXPECT_NE(0u, recorder()->entries_count());
+}
+
+TEST_F(AggregatingSampleCollectorTest, FlushSource) {
+  collector()->Record(recorder(), kTestSource1, {{kTestSurface1, 1}});
+  collector()->Record(recorder(), kTestSource2, {{kTestSurface2, 1}});
+  collector()->FlushSource(recorder(), kTestSource1);
+
+  EXPECT_EQ(1u, recorder()->entries_count());
+  EXPECT_EQ(kTestSource1, recorder()->entries().front()->source_id);
+
+  recorder()->Purge();
+
+  collector()->Flush(recorder());
+  EXPECT_EQ(1u, recorder()->entries_count());
+  EXPECT_EQ(kTestSource2, recorder()->entries().front()->source_id);
 }
 
 // This test exercises the global instance. The goal is to make sure that the

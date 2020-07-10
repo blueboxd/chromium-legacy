@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/wizard_context.h"
+#include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 #include "chromeos/network/network_state.h"
 
@@ -119,12 +120,24 @@ void UpdateScreen::OnViewDestroyed(UpdateView* view) {
 }
 
 bool UpdateScreen::MaybeSkip(WizardContext* context) {
+  if (context->enrollment_triggered_early) {
+    LOG(WARNING) << "Skip OOBE Update because of enrollment request.";
+    exit_callback_.Run(VersionUpdater::Result::UPDATE_SKIPPED);
+    return true;
+  }
+
+  if (policy::EnrollmentRequisitionManager::IsRemoraRequisition()) {
+    LOG(WARNING) << "Skip OOBE Update for remora devices.";
+    exit_callback_.Run(VersionUpdater::Result::UPDATE_SKIPPED);
+    return true;
+  }
+
   const auto* skip_screen_key = context->configuration.FindKeyOfType(
       configuration::kUpdateSkipUpdate, base::Value::Type::BOOLEAN);
   const bool skip_screen = skip_screen_key && skip_screen_key->GetBool();
 
   if (skip_screen) {
-    VLOG(1) << "Skip OOBE Update because of configuration.";
+    LOG(WARNING) << "Skip OOBE Update because of configuration.";
     exit_callback_.Run(VersionUpdater::Result::UPDATE_SKIPPED);
     return true;
   }

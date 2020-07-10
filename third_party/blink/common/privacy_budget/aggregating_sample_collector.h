@@ -90,6 +90,8 @@ class BLINK_COMMON_EXPORT_PRIVATE AggregatingSampleCollector
               std::vector<IdentifiableSample> metrics) override
       LOCKS_EXCLUDED(lock_);
   void Flush(ukm::UkmRecorder* recorder) override LOCKS_EXCLUDED(lock_);
+  void FlushSource(ukm::UkmRecorder* recorder, ukm::SourceId source) override
+      LOCKS_EXCLUDED(lock_);
 
   // Only for testing.
   void ResetForTesting() LOCKS_EXCLUDED(lock_);

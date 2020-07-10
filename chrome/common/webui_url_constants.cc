@@ -111,7 +111,6 @@ const char kChromeUINewTabIconHost[] = "ntpicon";
 const char kChromeUINewTabPageHost[] = "new-tab-page";
 const char kChromeUINewTabPageURL[] = "chrome://new-tab-page";
 const char kChromeUINewTabURL[] = "chrome://newtab/";
-const char kChromeUINotificationsInternalsHost[] = "notifications-internals";
 const char kChromeUIOmniboxHost[] = "omnibox";
 const char kChromeUIOmniboxURL[] = "chrome://omnibox/";
 const char kChromeUIPasswordManagerInternalsHost[] =

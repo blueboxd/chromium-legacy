@@ -377,10 +377,6 @@ class WizardController {
   // Value of the screen name that WizardController was started with.
   OobeScreenId first_screen_ = OobeScreen::SCREEN_UNKNOWN;
 
-  // If true then update check is cancelled and enrollment is started after
-  // EULA is accepted.
-  bool skip_update_enroll_after_eula_ = false;
-
   // The prescribed enrollment configuration for the device.
   policy::EnrollmentConfig prescribed_enrollment_config_;
 
@@ -402,6 +398,8 @@ class WizardController {
 
   FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenTest, TestCancel);
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, Accelerators);
+  FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest,
+                           ControlFlowSkipUpdateEnroll);
   FRIEND_TEST_ALL_PREFIXES(WizardControllerDeviceStateTest,
                            ControlFlowNoForcedReEnrollmentOnFirstBoot);
 

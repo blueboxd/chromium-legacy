@@ -48,8 +48,3 @@ bool PrivacyBudgetSettingsProvider::IsTypeAllowed(
     blink::IdentifiableSurface::Type type) const {
   return !base::Contains(blocked_types_, type);
 }
-
-std::unique_ptr<PrivacyBudgetSettingsProvider>
-PrivacyBudgetSettingsProvider::Clone() const {
-  return std::make_unique<PrivacyBudgetSettingsProvider>(*this);
-}

@@ -95,7 +95,6 @@ Polymer({
     this.initializeLoginScreen('WelcomeScreen', {
       resetAllowed: true,
       enableDebuggingAllowed: true,
-      postponeEnrollmentAllowed: true,
     });
     this.updateLocalizedContent();
   },

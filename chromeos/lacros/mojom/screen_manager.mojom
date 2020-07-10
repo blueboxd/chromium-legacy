@@ -4,6 +4,15 @@
 
 module lacros.mojom;
 
+// A unique identifier and title for a window.
+struct WindowDetails {
+  // Guaranteed to be unique and never reused.
+  uint64 id;
+
+  // The title of the window in UTF-8 encoding.
+  string title;
+};
+
 // A bitmap representation of the current contents of a window or screen. Each
 // pixel is represented by 4 bytes [RGBA].
 struct WindowSnapshot {
@@ -37,5 +46,16 @@ interface ScreenManager {
   // provides a synchronous method to take a snapshot of the screen.
   [Sync]
   TakeScreenSnapshot@0() => (WindowSnapshot snapshot);
+
+  // Synchronously returns a list of visible, focusable windows. This method
+  // needs to be synchronous to support cross-platform code that relies on the
+  // assumption that every OS provides a similar synchronous IPC.
+  [Sync]
+  ListWindows@1() => (array<WindowDetails> windows);
+
+  // Take a screenshot of a window with an id from ListWindows. If |success|
+  // is false, then the window no longer exists.
+  [Sync]
+  TakeWindowSnapshot@2(uint64 id) => (bool success, WindowSnapshot snapshot);
 };
 

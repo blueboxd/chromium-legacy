@@ -92,6 +92,8 @@ class MEDIA_MOJO_EXPORT MojoDecryptorService : public mojom::Decryptor {
   // Returns audio/video buffer reader according to the |stream_type|.
   MojoDecoderBufferReader* GetBufferReader(StreamType stream_type) const;
 
+  bool has_initialize_been_called_ = false;
+
   // Helper classes to receive encrypted DecoderBuffer from the client.
   std::unique_ptr<MojoDecoderBufferReader> audio_buffer_reader_;
   std::unique_ptr<MojoDecoderBufferReader> video_buffer_reader_;

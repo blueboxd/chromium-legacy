@@ -12,7 +12,7 @@
 namespace {
 
 const char kDefaultUrl[] =
-    "https://staging-chromemediarecommendations-pa.sandbox.googleapis.com";
+    "https://chromemediarecommendations-pa.googleapis.com";
 
 }  // namespace
 

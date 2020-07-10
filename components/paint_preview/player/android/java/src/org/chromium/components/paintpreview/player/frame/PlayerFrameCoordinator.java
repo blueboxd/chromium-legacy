@@ -37,9 +37,9 @@ public class PlayerFrameCoordinator {
         PropertyModel model = new PropertyModel.Builder(PlayerFrameProperties.ALL_KEYS).build();
         OverScroller scroller = new OverScroller(context);
         scroller.setFriction(ViewConfiguration.getScrollFriction() / 2);
-        mMediator = new PlayerFrameMediator(model, compositorDelegate, scroller,
-                userInteractionCallback, frameGuid, contentWidth, contentHeight, initialScrollX,
-                initialScrollY);
+        mMediator = new PlayerFrameMediator(model, compositorDelegate, new PlayerFrameViewport(),
+                scroller, userInteractionCallback, frameGuid, contentWidth, contentHeight,
+                initialScrollX, initialScrollY);
         mView = new PlayerFrameView(context, canDetectZoom, mMediator);
         if (overscrollHandler != null) {
             mMediator.setOverscrollHandler(overscrollHandler);

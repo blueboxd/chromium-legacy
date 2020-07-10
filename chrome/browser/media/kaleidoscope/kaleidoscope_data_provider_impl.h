@@ -40,6 +40,8 @@ class KaleidoscopeDataProviderImpl
   void GetTopMediaFeeds(GetTopMediaFeedsCallback callback) override;
   void GetMediaFeedContents(int64_t feed_id,
                             GetMediaFeedContentsCallback callback) override;
+  void GetContinueWatchingMediaFeedItems(
+      GetContinueWatchingMediaFeedItemsCallback callback) override;
   void GetCredentials(GetCredentialsCallback cb) override;
   void GetHighWatchTimeOrigins(GetHighWatchTimeOriginsCallback cb) override;
 

@@ -250,7 +250,7 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
 
   void FocusedElementChanged(Element* element) override;
 
-  void OnMainFrameDocumentIntersectionChanged(
+  void OnMainFrameIntersectionChanged(
       const IntRect& intersection_rect) override;
 
   bool IsPluginHandledExternally(HTMLPlugInElement&,

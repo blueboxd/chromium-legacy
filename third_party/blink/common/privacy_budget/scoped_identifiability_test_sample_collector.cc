@@ -41,6 +41,10 @@ void ScopedIdentifiabilityTestSampleCollector::Record(
 void ScopedIdentifiabilityTestSampleCollector::Flush(
     ukm::UkmRecorder* recorder) {}
 
+void ScopedIdentifiabilityTestSampleCollector::FlushSource(
+    ukm::UkmRecorder* recorder,
+    ukm::SourceId source) {}
+
 void ScopedIdentifiabilityTestSampleCollector::ClearEntries() {
   entries_.clear();
 }

@@ -802,8 +802,14 @@ SourceListDirective::ExposeForNavigationalChecks() const {
   for (const auto& source : list_)
     sources.push_back(source->ExposeForNavigationalChecks());
 
+  // We do not need nonces and hashes for navigational checks
+  WTF::Vector<WTF::String> nonces;
+  WTF::Vector<network::mojom::blink::CSPHashSourcePtr> hashes;
+
   return network::mojom::blink::CSPSourceList::New(
-      std::move(sources), allow_self_, allow_star_, allow_redirects_);
+      std::move(sources), std::move(nonces), std::move(hashes), allow_self_,
+      allow_star_, allow_redirects_, allow_inline_, allow_eval_,
+      allow_wasm_eval_, allow_dynamic_, allow_unsafe_hashes_, report_sample_);
 }
 
 bool SourceListDirective::SubsumesNoncesAndHashes(

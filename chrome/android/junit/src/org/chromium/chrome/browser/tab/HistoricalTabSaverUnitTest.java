@@ -20,6 +20,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.WebContents;
 
 import java.nio.ByteBuffer;
@@ -41,6 +42,10 @@ public class HistoricalTabSaverUnitTest {
     @Mock
     public TabImpl mTabImplMock;
     @Mock
+    public Profile mProfileMock;
+    @Mock
+    public Profile mOffTheRecordProfileMock;
+    @Mock
     public WebContents mWebContentsMock;
 
     @Before
@@ -55,7 +60,7 @@ public class HistoricalTabSaverUnitTest {
         doReturn(false).when(mTabImplMock).isFrozen();
         doReturn(mWebContentsMock).when(mTabImplMock).getWebContents();
 
-        HistoricalTabSaver.createHistoricalTab(mTabImplMock);
+        HistoricalTabSaver.createHistoricalTab(mTabImplMock, mProfileMock);
 
         verify(mHistoricalTabSaverJni).createHistoricalTabFromContents(eq(mWebContentsMock));
     }
@@ -65,7 +70,7 @@ public class HistoricalTabSaverUnitTest {
         doReturn(true).when(mTabImplMock).isFrozen();
         doReturn(null).when(mTabImplMock).getFrozenContentsState();
 
-        HistoricalTabSaver.createHistoricalTab(mTabImplMock);
+        HistoricalTabSaver.createHistoricalTab(mTabImplMock, mProfileMock);
 
         verify(mHistoricalTabSaverJni, never()).createHistoricalTabFromContents(any());
     }
@@ -78,11 +83,13 @@ public class HistoricalTabSaverUnitTest {
 
         doReturn(true).when(mTabImplMock).isFrozen();
         doReturn(webContentsState).when(mTabImplMock).getFrozenContentsState();
+        doReturn(mOffTheRecordProfileMock).when(mProfileMock).getPrimaryOTRProfile();
         doReturn(null)
                 .when(mWebContentsStateBridgeJni)
-                .restoreContentsFromByteBuffer(eq(buffer), eq(123), eq(true));
+                .restoreContentsFromByteBuffer(eq(mProfileMock), eq(mOffTheRecordProfileMock),
+                        eq(buffer), eq(123), eq(true));
 
-        HistoricalTabSaver.createHistoricalTab(mTabImplMock);
+        HistoricalTabSaver.createHistoricalTab(mTabImplMock, mProfileMock);
 
         verify(mHistoricalTabSaverJni, never()).createHistoricalTabFromContents(any());
     }
@@ -95,11 +102,13 @@ public class HistoricalTabSaverUnitTest {
 
         doReturn(true).when(mTabImplMock).isFrozen();
         doReturn(webContentsState).when(mTabImplMock).getFrozenContentsState();
+        doReturn(mOffTheRecordProfileMock).when(mProfileMock).getPrimaryOTRProfile();
         doReturn(mWebContentsMock)
                 .when(mWebContentsStateBridgeJni)
-                .restoreContentsFromByteBuffer(eq(buffer), eq(123), eq(true));
+                .restoreContentsFromByteBuffer(eq(mProfileMock), eq(mOffTheRecordProfileMock),
+                        eq(buffer), eq(123), eq(true));
 
-        HistoricalTabSaver.createHistoricalTab(mTabImplMock);
+        HistoricalTabSaver.createHistoricalTab(mTabImplMock, mProfileMock);
 
         verify(mHistoricalTabSaverJni).createHistoricalTabFromContents(eq(mWebContentsMock));
     }

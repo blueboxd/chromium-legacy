@@ -884,7 +884,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowSkipUpdateEnroll) {
   CheckCurrentScreen(EulaView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
   EXPECT_CALL(*mock_update_screen_, ShowImpl()).Times(0);
-  WizardController::default_controller()->SkipUpdateEnrollAfterEula();
+  WizardController::default_controller()
+      ->wizard_context_->enrollment_triggered_early = true;
   EXPECT_CALL(*mock_enrollment_screen_view_,
               SetEnrollmentConfig(
                   mock_enrollment_screen_,

@@ -810,10 +810,6 @@ void WizardController::SkipToUpdateForTesting() {
   InitiateOOBEUpdate();
 }
 
-void WizardController::SkipUpdateEnrollAfterEula() {
-  skip_update_enroll_after_eula_ = true;
-}
-
 void WizardController::OnScreenExit(OobeScreenId screen,
                                     const std::string& exit_reason) {
   VLOG(1) << "Wizard screen " << screen
@@ -964,11 +960,7 @@ void WizardController::OnEulaAccepted(bool usage_statistics_reporting_enabled) {
     ShowDemoModeSetupScreen();
   }
 
-  if (skip_update_enroll_after_eula_) {
-    ShowAutoEnrollmentCheckScreen();
-  } else {
-    InitiateOOBEUpdate();
-  }
+  InitiateOOBEUpdate();
 }
 
 void WizardController::OnUpdateScreenExit(UpdateScreen::Result result) {
@@ -1335,18 +1327,18 @@ void WizardController::OnDeviceDisabledChecked(bool device_disabled) {
     ShowDeviceDisabledScreen();
   } else if (demo_setup_controller_) {
     ShowDemoModeSetupScreen();
-  } else if (skip_update_enroll_after_eula_ ||
+  } else if (wizard_context_->enrollment_triggered_early ||
              prescribed_enrollment_config_.should_enroll() ||
              configuration_forced_enrollment) {
     VLOG(1) << "StartEnrollment from OnDeviceDisabledChecked(device_disabled="
             << device_disabled << ") "
             << "skip_update_enroll_after_eula_="
-            << skip_update_enroll_after_eula_
+            << wizard_context_->enrollment_triggered_early
             << ", prescribed_enrollment_config_.should_enroll()="
             << prescribed_enrollment_config_.should_enroll()
             << ", configuration_forced_enrollment="
             << configuration_forced_enrollment;
-    StartEnrollmentScreen(skip_update_enroll_after_eula_);
+    StartEnrollmentScreen(wizard_context_->enrollment_triggered_early);
   } else {
     PerformOOBECompletedActions();
     ShowPackagedLicenseScreen();
@@ -1354,12 +1346,6 @@ void WizardController::OnDeviceDisabledChecked(bool device_disabled) {
 }
 
 void WizardController::InitiateOOBEUpdate() {
-  if (policy::EnrollmentRequisitionManager::IsRemoraRequisition()) {
-    VLOG(1) << "Skip OOBE Update for remora.";
-    OnUpdateCompleted();
-    return;
-  }
-
   // If this is a Cellular First device, instruct UpdateEngine to allow
   // updates over cellular data connections.
   if (chromeos::switches::IsCellularFirstDevice()) {

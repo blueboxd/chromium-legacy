@@ -11,6 +11,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/ui/webui/internals/notifications/notifications_internals_ui_message_handler.h"
 #include "chrome/browser/ui/webui/internals/query_tiles/query_tiles_internals_ui_message_handler.h"
 #else
 #include "chrome/browser/ui/webui/internals/web_app/web_app_internals_page_handler_impl.h"
@@ -25,6 +26,7 @@ InternalsUI::InternalsUI(content::WebUI* web_ui)
   // Add your sub-URL internals WebUI here.
 #if defined(OS_ANDROID)
   // chrome://internals/query-tiles
+  AddNotificationsInternals(web_ui);
   AddQueryTilesInternals(web_ui);
 #else
   // chrome://internals/web-app
@@ -37,6 +39,17 @@ InternalsUI::InternalsUI(content::WebUI* web_ui)
 InternalsUI::~InternalsUI() = default;
 
 #if defined(OS_ANDROID)
+void InternalsUI::AddNotificationsInternals(content::WebUI* web_ui) {
+  source_->AddResourcePath("notifications_internals.js",
+                           IDR_NOTIFICATIONS_INTERNALS_JS);
+  source_->AddResourcePath("notifications_internals_browser_proxy.js",
+                           IDR_NOTIFICATIONS_INTERNALS_BROWSER_PROXY_JS);
+  source_->AddResourcePath("notifications", IDR_NOTIFICATIONS_INTERNALS_HTML);
+
+  web_ui->AddMessageHandler(
+      std::make_unique<NotificationsInternalsUIMessageHandler>(profile_));
+}
+
 void InternalsUI::AddQueryTilesInternals(content::WebUI* web_ui) {
   source_->AddResourcePath("query_tiles_internals.js",
                            IDR_QUERY_TILES_INTERNALS_JS);

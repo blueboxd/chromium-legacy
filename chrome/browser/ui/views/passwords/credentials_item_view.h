@@ -22,12 +22,12 @@ namespace network {
 namespace mojom {
 class URLLoaderFactory;
 }
-}
+}  // namespace network
 
 namespace views {
 class ImageView;
 class Label;
-}
+}  // namespace views
 
 // CredentialsItemView represents a credential view in the account chooser
 // bubble.
@@ -62,11 +62,9 @@ class CredentialsItemView : public AccountAvatarFetcherDelegate,
 
   views::ImageView* image_view_;
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Optional right-aligned icon to distinguish account store credentials and
   // profile store ones.
   views::ImageView* store_indicator_icon_view_ = nullptr;
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   views::Label* upper_label_ = nullptr;
   views::Label* lower_label_ = nullptr;

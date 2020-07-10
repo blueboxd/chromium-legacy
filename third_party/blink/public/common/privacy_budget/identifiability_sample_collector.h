@@ -44,6 +44,10 @@ class BLINK_COMMON_EXPORT IdentifiabilitySampleCollector {
 
   // Unconditionally write out all pending metrics via `recorder`.
   virtual void Flush(ukm::UkmRecorder* recorder) = 0;
+
+  // Unconditionally write out all pending metrics from `source` via `recorder`.
+  virtual void FlushSource(ukm::UkmRecorder* recorder,
+                           ukm::SourceId source) = 0;
 };
 
 }  // namespace blink

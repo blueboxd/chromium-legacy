@@ -225,11 +225,12 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(blink::ViewportIntersectionState)
   IPC_STRUCT_TRAITS_MEMBER(viewport_offset)
   IPC_STRUCT_TRAITS_MEMBER(viewport_intersection)
-  IPC_STRUCT_TRAITS_MEMBER(main_frame_document_intersection)
+  IPC_STRUCT_TRAITS_MEMBER(main_frame_intersection)
   IPC_STRUCT_TRAITS_MEMBER(compositor_visible_rect)
   IPC_STRUCT_TRAITS_MEMBER(occlusion_state)
   IPC_STRUCT_TRAITS_MEMBER(main_frame_viewport_size)
   IPC_STRUCT_TRAITS_MEMBER(main_frame_scroll_offset)
+  IPC_STRUCT_TRAITS_MEMBER(main_frame_transform)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::FrameNavigateParams)
@@ -429,12 +430,6 @@ IPC_MESSAGE_ROUTED2(FrameMsg_CustomContextMenuAction,
 // Requests that the RenderFrame send back a response after waiting for the
 // commit, activation and frame swap of the current DOM tree in blink.
 IPC_MESSAGE_ROUTED1(FrameMsg_VisualStateRequest, uint64_t /* id */)
-
-// Update a proxy's window.name property.  Used when the frame's name is
-// changed in another process.
-IPC_MESSAGE_ROUTED2(FrameMsg_DidUpdateName,
-                    std::string /* name */,
-                    std::string /* unique_name */)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Notifies the renderer of updates to the Plugin Power Saver origin allowlist.

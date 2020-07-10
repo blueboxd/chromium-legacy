@@ -213,13 +213,6 @@ public class CrashInfo {
                 String key = keyIterator.next();
                 crashInfo.mCrashKeys.put(key, crashKeysObj.getString(key));
             }
-        } else {
-            // TODO(https://crbug.com/1082707) remove old format compitability.
-            // For old json format compitability.
-            if (jsonObj.has(APP_PACKAGE_NAME_KEY)) {
-                crashInfo.mCrashKeys.put(
-                        APP_PACKAGE_NAME_KEY, jsonObj.getString(APP_PACKAGE_NAME_KEY));
-            }
         }
 
         return crashInfo;

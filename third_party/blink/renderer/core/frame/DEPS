@@ -2,8 +2,17 @@ specific_include_rules = {
   "ad_tracker_test.cc": [
     "+base/run_loop.h",
   ],
+  "frame_view.cc": [
+    "+ui/gfx/transform.h"
+  ],
   "local_frame_back_forward_cache_test.cc": [
     "+base/run_loop.h",
+  ],
+  "local_frame.h": [
+    "+ui/gfx/transform.h"
+  ],
+  "local_frame.cc": [
+    "+ui/gfx/transform.h"
   ],
   "local_frame_view.cc": [
     "+cc/tiles/frame_viewer_instrumentation.h",

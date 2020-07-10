@@ -142,8 +142,6 @@ void CoreOobeHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
 
 void CoreOobeHandler::RegisterMessages() {
   AddCallback("screenStateInitialize", &CoreOobeHandler::HandleInitialized);
-  AddCallback("skipUpdateEnrollAfterEula",
-              &CoreOobeHandler::HandleSkipUpdateEnrollAfterEula);
   AddCallback("updateCurrentScreen",
               &CoreOobeHandler::HandleUpdateCurrentScreen);
   AddCallback("setDeviceRequisition",
@@ -242,13 +240,6 @@ void CoreOobeHandler::HandleInitialized() {
 
   GetOobeUI()->InitializeHandlers();
   AllowJavascript();
-}
-
-void CoreOobeHandler::HandleSkipUpdateEnrollAfterEula() {
-  WizardController* controller = WizardController::default_controller();
-  DCHECK(controller);
-  if (controller)
-    controller->SkipUpdateEnrollAfterEula();
 }
 
 void CoreOobeHandler::HandleUpdateCurrentScreen(

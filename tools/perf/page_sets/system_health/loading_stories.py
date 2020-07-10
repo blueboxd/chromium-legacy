@@ -425,6 +425,30 @@ class LoadFacebookFeedDesktopStory2020(_FacebookDesktopStory):
     facebook_login.LoginWithDesktopSite(action_runner, 'facebook4')
 
 
+class LoadFacebookPhotosMobileStory2020(_LoadingStory):
+  """Load a page of rihanna's facebook with a photo."""
+  NAME = 'load:media:facebook_photos:mobile:2020'
+  URL = (
+      'https://m.facebook.com/rihanna/photos/pb.10092511675.-2207520000.1541795576./10155941787036676/'
+  )
+  TAGS = [story_tags.YEAR_2020]
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+
+  def _Login(self, action_runner):
+    facebook_login.LoginWithMobileSite(action_runner, 'facebook4')
+
+
+class LoadFacebookFeedMobileStory2020(_LoadingStory):
+  """Load a page of national park"""
+  NAME = 'load:media:facebook_feed:mobile:2020'
+  URL = ('https://www.facebook.com/')
+  TAGS = [story_tags.YEAR_2020]
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+
+  def _Login(self, action_runner):
+    facebook_login.LoginWithMobileSite(action_runner, 'facebook4')
+
+
 ################################################################################
 # Online tools (documents, emails, storage, ...).
 ################################################################################

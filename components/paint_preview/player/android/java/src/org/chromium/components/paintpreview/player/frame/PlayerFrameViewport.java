@@ -8,8 +8,6 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.util.Size;
 
-import androidx.annotation.VisibleForTesting;
-
 /**
  * Used to represent the viewport for a frame in the paint preview player. There should be one of
  * these objects per player frame and it should be shared between various classes that manipulated
@@ -17,18 +15,12 @@ import androidx.annotation.VisibleForTesting;
  */
 public class PlayerFrameViewport {
     /** The size of the viewport. */
-    private Size mViewportSize;
+    private Size mViewportSize = new Size(0, 0);
     /** A 3x3 affine transformation matrix to track scale and translation. */
-    @VisibleForTesting
-    final Matrix mViewportTransform;
+    private final Matrix mViewportTransform = new Matrix();
     /** Transient storage objects to avoid allocations. */
     private final Rect mViewportRect = new Rect();
     private final float[] mMatrixValues = new float[9];
-
-    PlayerFrameViewport(Size size, Matrix matrix) {
-        mViewportSize = size;
-        mViewportTransform = matrix;
-    }
 
     /**
      * @return the width of the viewport.
@@ -42,15 +34,6 @@ public class PlayerFrameViewport {
      */
     int getHeight() {
         return mViewportSize.getHeight();
-    }
-
-    /**
-     * Returns the size of the viewport. Use with caution as the values of the returned object are
-     * not updated.
-     * @return the size of the viewport.
-     */
-    Size getSize() {
-        return mViewportSize;
     }
 
     /**

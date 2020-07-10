@@ -11,6 +11,7 @@
 #include "base/notreached.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
+#include "chrome/browser/chromeos/login/wizard_context.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
@@ -155,6 +156,14 @@ void EulaScreen::OnUserAction(const std::string& action_id) {
   } else if (action_id == kUserActionBackButtonClicked) {
     exit_callback_.Run(Result::BACK);
   }
+}
+
+bool EulaScreen::HandleAccelerator(ash::LoginAcceleratorAction action) {
+  if (action == ash::LoginAcceleratorAction::kStartEnrollment) {
+    context()->enrollment_triggered_early = true;
+    return true;
+  }
+  return false;
 }
 
 void EulaScreen::OnPasswordFetched(const std::string& tpm_password) {

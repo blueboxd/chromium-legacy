@@ -93,8 +93,8 @@ class MetricsRenderFrameObserver
   void OnAdResourceTrackerGoingAway() override;
   void OnAdResourceObserved(int request_id) override;
 
-  void OnMainFrameDocumentIntersectionChanged(
-      const blink::WebRect& main_frame_document_intersection) override;
+  void OnMainFrameIntersectionChanged(
+      const blink::WebRect& main_frame_intersection) override;
 
   void OnThroughputDataAvailable(ukm::SourceId source_id,
                                  int aggregated_percent,

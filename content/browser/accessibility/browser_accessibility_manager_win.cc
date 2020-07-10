@@ -151,6 +151,8 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       FireUiaAccessibilityEvent(UIA_SystemAlertEventId, node);
       break;
     case ui::AXEventGenerator::Event::ATOMIC_CHANGED:
+      aria_properties_events_.insert(node);
+      break;
     case ui::AXEventGenerator::Event::BUSY_CHANGED:
       aria_properties_events_.insert(node);
       break;
@@ -214,6 +216,8 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       break;
     // aria-grabbed is deprecated in WAI-ARIA 1.1.
     case ui::AXEventGenerator::Event::GRABBED_CHANGED:
+      aria_properties_events_.insert(node);
+      break;
     case ui::AXEventGenerator::Event::HASPOPUP_CHANGED:
       aria_properties_events_.insert(node);
       break;
@@ -373,6 +377,9 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
         FireUiaPropertyChangedEvent(UIA_RangeValueSmallChangePropertyId, node);
         FireUiaPropertyChangedEvent(UIA_RangeValueLargeChangePropertyId, node);
       }
+      break;
+    case ui::AXEventGenerator::Event::WIN_IACCESSIBLE_STATE_CHANGED:
+      FireWinAccessibilityEvent(EVENT_OBJECT_STATECHANGE, node);
       break;
     case ui::AXEventGenerator::Event::AUTO_COMPLETE_CHANGED:
     case ui::AXEventGenerator::Event::DOCUMENT_TITLE_CHANGED:

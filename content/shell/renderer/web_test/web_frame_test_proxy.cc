@@ -719,6 +719,10 @@ WebWidgetTestProxy* WebFrameTestProxy::GetLocalRootWebWidgetTestProxy() {
   return static_cast<WebWidgetTestProxy*>(GetLocalRootRenderWidget());
 }
 
+WebViewTestProxy* WebFrameTestProxy::GetWebViewTestProxy() {
+  return web_view_test_proxy_;
+}
+
 void WebFrameTestProxy::SynchronouslyCompositeAfterTest(
     SynchronouslyCompositeAfterTestCallback callback) {
   // When the TestFinished() occurred, if the browser is capturing pixels, it

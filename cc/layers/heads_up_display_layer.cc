@@ -17,7 +17,7 @@ scoped_refptr<HeadsUpDisplayLayer> HeadsUpDisplayLayer::Create() {
 }
 
 HeadsUpDisplayLayer::HeadsUpDisplayLayer()
-    : typeface_(SkTypeface::MakeFromName("times new roman", SkFontStyle())) {
+    : typeface_(SkTypeface::MakeFromName("Arial", SkFontStyle())) {
   if (!typeface_) {
     typeface_ = SkTypeface::MakeFromName("monospace", SkFontStyle::Bold());
   }

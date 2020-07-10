@@ -8,6 +8,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.url.Origin;
 
@@ -19,13 +21,17 @@ import java.nio.ByteBuffer;
 public class WebContentsStateBridge {
     /**
      * Creates a WebContents from the buffer.
+     *
+     * @param webContentsState state to restore.
+     * @param profile regular Profile to create the WebContents.
      * @param isHidden Whether or not the tab initially starts hidden.
      * @return Pointer A WebContents object.
      */
     public static WebContents restoreContentsFromByteBuffer(
-            WebContentsState webContentsState, boolean isHidden) {
-        return WebContentsStateBridgeJni.get().restoreContentsFromByteBuffer(
-                webContentsState.buffer(), webContentsState.version(), isHidden);
+            WebContentsState webContentsState, Profile profile, boolean isHidden) {
+        return WebContentsStateBridgeJni.get().restoreContentsFromByteBuffer(profile,
+                profile.getPrimaryOTRProfile(), webContentsState.buffer(),
+                webContentsState.version(), isHidden);
     }
 
     /**
@@ -47,6 +53,7 @@ public class WebContentsStateBridge {
 
     /**
      * Creates a WebContentsState for a tab that will be loaded lazily.
+     * @param profile regular Profile to create the WebContents.
      * @param url URL that is pending.
      * @param referrerUrl URL for the referrer.
      * @param referrerPolicy Policy for the referrer.
@@ -54,10 +61,11 @@ public class WebContentsStateBridge {
      * @param isIncognito Whether or not the state is meant to be incognito (e.g. encrypted).
      * @return ByteBuffer that represents a state representing a single pending URL.
      */
-    public static ByteBuffer createSingleNavigationStateAsByteBuffer(String url, String referrerUrl,
-            int referrerPolicy, @Nullable Origin initiatorOrigin, boolean isIncognito) {
+    public static ByteBuffer createSingleNavigationStateAsByteBuffer(Profile profile, String url,
+            String referrerUrl, int referrerPolicy, @Nullable Origin initiatorOrigin,
+            boolean isIncognito) {
         return WebContentsStateBridgeJni.get().createSingleNavigationStateAsByteBuffer(
-                url, referrerUrl, referrerPolicy, initiatorOrigin, isIncognito);
+                profile, url, referrerUrl, referrerPolicy, initiatorOrigin, isIncognito);
     }
 
     /**
@@ -84,12 +92,14 @@ public class WebContentsStateBridge {
     @NativeMethods
     @VisibleForTesting
     public interface Natives {
-        WebContents restoreContentsFromByteBuffer(
-                ByteBuffer buffer, int savedStateVersion, boolean initiallyHidden);
+        WebContents restoreContentsFromByteBuffer(BrowserContextHandle browserContext,
+                BrowserContextHandle otrBrowserContext, ByteBuffer buffer, int savedStateVersion,
+                boolean initiallyHidden);
         ByteBuffer getContentsStateAsByteBuffer(WebContents webcontents);
         ByteBuffer deleteNavigationEntries(ByteBuffer state, int saveStateVersion, long predicate);
-        ByteBuffer createSingleNavigationStateAsByteBuffer(String url, String referrerUrl,
-                int referrerPolicy, Origin initiatorOrigin, boolean isIncognito);
+        ByteBuffer createSingleNavigationStateAsByteBuffer(BrowserContextHandle browserContext,
+                String url, String referrerUrl, int referrerPolicy, Origin initiatorOrigin,
+                boolean isIncognito);
         String getDisplayTitleFromByteBuffer(ByteBuffer state, int savedStateVersion);
         String getVirtualUrlFromByteBuffer(ByteBuffer state, int savedStateVersion);
     }

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 82 tests; 13 PASS, 69 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 83 tests; 13 PASS, 70 FAIL, 0 TIMEOUT, 0 NOTRUN.
 FAIL Empty block assert_equals: expected 1 but got 0
 FAIL EOF ends block assert_equals: expected 1 but got 0
 FAIL Timeline name can be a <string> assert_equals: expected 1 but got 0
@@ -29,6 +29,7 @@ FAIL CSSScrollTimelineRule.source  selector(#foo)  assert_equals: expected 1 but
 FAIL CSSScrollTimelineRule.source none assert_equals: expected 1 but got 0
 FAIL CSSScrollTimelineRule.source  none  assert_equals: expected 1 but got 0
 FAIL CSSScrollTimelineRule.source selector(#a\9 b) assert_equals: expected 1 but got 0
+FAIL CSSScrollTimelineRule.source auto assert_equals: expected 1 but got 0
 FAIL CSSScrollTimelineRule.source #foo assert_equals: expected 1 but got 0
 FAIL CSSScrollTimelineRule.source  assert_equals: expected 1 but got 0
 FAIL CSSScrollTimelineRule.source element(#foo) assert_equals: expected 1 but got 0

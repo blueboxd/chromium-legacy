@@ -31,6 +31,8 @@ using NewSessionMojoCdmPromise =
     MojoCdmPromise<void(mojom::CdmPromiseResultPtr, const std::string&),
                    std::string>;
 
+const char kInvalidStateMessage[] = "MojoCdmService - invalid state";
+
 MojoCdmService::MojoCdmService(CdmFactory* cdm_factory,
                                MojoCdmServiceContext* context)
     : cdm_factory_(cdm_factory),
@@ -61,7 +63,11 @@ void MojoCdmService::Initialize(const std::string& key_system,
                                 InitializeCallback callback) {
   DVLOG(1) << __func__ << ": " << key_system;
 
-  CHECK(!has_initialize_been_called_) << "Initialize should only happen once";
+  if (has_initialize_been_called_) {
+    mojo::ReportBadMessage(kInvalidStateMessage);
+    return;
+  }
+
   has_initialize_been_called_ = true;
 
   auto weak_this = weak_factory_.GetWeakPtr();
@@ -79,6 +85,12 @@ void MojoCdmService::SetServerCertificate(
     const std::vector<uint8_t>& certificate_data,
     SetServerCertificateCallback callback) {
   DVLOG(2) << __func__;
+
+  if (!cdm_) {
+    mojo::ReportBadMessage(kInvalidStateMessage);
+    return;
+  }
+
   cdm_->SetServerCertificate(
       certificate_data,
       std::make_unique<SimpleMojoCdmPromise>(std::move(callback)));
@@ -87,6 +99,12 @@ void MojoCdmService::SetServerCertificate(
 void MojoCdmService::GetStatusForPolicy(HdcpVersion min_hdcp_version,
                                         GetStatusForPolicyCallback callback) {
   DVLOG(2) << __func__;
+
+  if (!cdm_) {
+    mojo::ReportBadMessage(kInvalidStateMessage);
+    return;
+  }
+
   cdm_->GetStatusForPolicy(
       min_hdcp_version,
       std::make_unique<KeyStatusMojoCdmPromise>(std::move(callback)));
@@ -98,6 +116,12 @@ void MojoCdmService::CreateSessionAndGenerateRequest(
     const std::vector<uint8_t>& init_data,
     CreateSessionAndGenerateRequestCallback callback) {
   DVLOG(2) << __func__;
+
+  if (!cdm_) {
+    mojo::ReportBadMessage(kInvalidStateMessage);
+    return;
+  }
+
   cdm_->CreateSessionAndGenerateRequest(
       session_type, init_data_type, init_data,
       std::make_unique<NewSessionMojoCdmPromise>(std::move(callback)));
@@ -107,6 +131,12 @@ void MojoCdmService::LoadSession(CdmSessionType session_type,
                                  const std::string& session_id,
                                  LoadSessionCallback callback) {
   DVLOG(2) << __func__;
+
+  if (!cdm_) {
+    mojo::ReportBadMessage(kInvalidStateMessage);
+    return;
+  }
+
   cdm_->LoadSession(
       session_type, session_id,
       std::make_unique<NewSessionMojoCdmPromise>(std::move(callback)));
@@ -116,14 +146,26 @@ void MojoCdmService::UpdateSession(const std::string& session_id,
                                    const std::vector<uint8_t>& response,
                                    UpdateSessionCallback callback) {
   DVLOG(2) << __func__;
-  cdm_->UpdateSession(session_id, response,
-                      std::unique_ptr<SimpleCdmPromise>(
-                          new SimpleMojoCdmPromise(std::move(callback))));
+
+  if (!cdm_) {
+    mojo::ReportBadMessage(kInvalidStateMessage);
+    return;
+  }
+
+  cdm_->UpdateSession(
+      session_id, response,
+      std::make_unique<SimpleMojoCdmPromise>(std::move(callback)));
 }
 
 void MojoCdmService::CloseSession(const std::string& session_id,
                                   CloseSessionCallback callback) {
   DVLOG(2) << __func__;
+
+  if (!cdm_) {
+    mojo::ReportBadMessage(kInvalidStateMessage);
+    return;
+  }
+
   cdm_->CloseSession(
       session_id, std::make_unique<SimpleMojoCdmPromise>(std::move(callback)));
 }
@@ -131,6 +173,12 @@ void MojoCdmService::CloseSession(const std::string& session_id,
 void MojoCdmService::RemoveSession(const std::string& session_id,
                                    RemoveSessionCallback callback) {
   DVLOG(2) << __func__;
+
+  if (!cdm_) {
+    mojo::ReportBadMessage(kInvalidStateMessage);
+    return;
+  }
+
   cdm_->RemoveSession(
       session_id, std::make_unique<SimpleMojoCdmPromise>(std::move(callback)));
 }
@@ -195,7 +243,9 @@ void MojoCdmService::OnSessionMessage(const std::string& session_id,
                                       ::media::CdmMessageType message_type,
                                       const std::vector<uint8_t>& message) {
   DVLOG(2) << __func__;
-  client_->OnSessionMessage(session_id, message_type, message);
+  if (client_) {
+    client_->OnSessionMessage(session_id, message_type, message);
+  }
 }
 
 void MojoCdmService::OnSessionKeysChange(const std::string& session_id,
@@ -203,21 +253,26 @@ void MojoCdmService::OnSessionKeysChange(const std::string& session_id,
                                          CdmKeysInfo keys_info) {
   DVLOG(2) << __func__
            << " has_additional_usable_key = " << has_additional_usable_key;
-
-  client_->OnSessionKeysChange(session_id, has_additional_usable_key,
-                               std::move(keys_info));
+  if (client_) {
+    client_->OnSessionKeysChange(session_id, has_additional_usable_key,
+                                 std::move(keys_info));
+  }
 }
 
 void MojoCdmService::OnSessionExpirationUpdate(const std::string& session_id,
                                                base::Time new_expiry_time_sec) {
   DVLOG(2) << __func__ << " expiry = " << new_expiry_time_sec;
-  client_->OnSessionExpirationUpdate(session_id,
-                                     new_expiry_time_sec.ToDoubleT());
+  if (client_) {
+    client_->OnSessionExpirationUpdate(session_id,
+                                       new_expiry_time_sec.ToDoubleT());
+  }
 }
 
 void MojoCdmService::OnSessionClosed(const std::string& session_id) {
   DVLOG(2) << __func__;
-  client_->OnSessionClosed(session_id);
+  if (client_) {
+    client_->OnSessionClosed(session_id);
+  }
 }
 
 void MojoCdmService::OnDecryptorConnectionError() {

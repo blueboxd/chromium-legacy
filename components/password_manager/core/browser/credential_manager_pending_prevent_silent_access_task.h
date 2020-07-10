@@ -16,8 +16,10 @@ class CredentialManagerPendingPreventSilentAccessTaskDelegate {
  public:
   virtual ~CredentialManagerPendingPreventSilentAccessTaskDelegate() {}
 
-  // Retrieves the PasswordStore.
-  virtual PasswordStore* GetPasswordStore() = 0;
+  // Retrieves the profile PasswordStore.
+  virtual PasswordStore* GetProfilePasswordStore() = 0;
+  // Retrieves the account PasswordStore.
+  virtual PasswordStore* GetAccountPasswordStore() = 0;
 
   // Finishes mediation tasks.
   virtual void DoneRequiringUserMediation() = 0;

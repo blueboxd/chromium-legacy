@@ -397,6 +397,8 @@ void LayoutView::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
       DCHECK(!ancestor);
       if (mode & kApplyRemoteRootFrameOffset)
         GetFrameView()->MapLocalToRemoteRootFrame(transform_state);
+      else if (mode & kApplyMainFrameTransform)
+        GetFrameView()->MapLocalToRemoteMainFrame(transform_state);
     }
   }
 }
@@ -449,6 +451,8 @@ void LayoutView::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
       // transform_state will be set to kUnapplyInverseTransformDirection.
       if (mode & kApplyRemoteRootFrameOffset)
         GetFrameView()->MapLocalToRemoteRootFrame(transform_state);
+      else if (mode & kApplyMainFrameTransform)
+        GetFrameView()->MapLocalToRemoteMainFrame(transform_state);
     }
   } else {
     DCHECK(this == ancestor || !ancestor);

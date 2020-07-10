@@ -28,8 +28,8 @@ const test::UIPath kFingerprintPositionPage = {"fingerprint-setup",
 const test::UIPath kProgressPage = {"fingerprint-setup",
                                     "startFingerprintEnroll"};
 const test::UIPath kFingerprintArc = {"fingerprint-setup", "arc"};
-const test::UIPath kScanningAnimation = {"fingerprint-setup", "arc",
-                                         "scanningAnimation"};
+const test::UIPath kCheckmarkAnimation = {"fingerprint-setup", "arc",
+                                          "checkmarkAnimation"};
 const test::UIPath kDoneButton = {"fingerprint-setup", "done"};
 const test::UIPath kDoItLaterButton = {"fingerprint-setup", "setupLater"};
 const test::UIPath kNextButtonOnStart = {"fingerprint-setup", "next"};
@@ -40,9 +40,6 @@ const test::UIPath kAddAnotherFingerButton = {"fingerprint-setup",
                                               "addAnotherFinger"};
 
 constexpr char kTestFingerprintDataString[] = "testFinger";
-constexpr char kAnimationUrlAttribute[] = "animationUrl";
-constexpr char kCheckmarkAnimationUrl[] =
-    "chrome://theme/IDR_FINGERPRINT_COMPLETE_TICK";
 
 int kMaxAllowedFingerprints = 3;
 
@@ -107,9 +104,7 @@ class FingerprintSetupTest : public OobeBaseTest {
     test::OobeJS().ExpectVisiblePath(kFingerprintArc);
     test::OobeJS().CreateVisibilityWaiter(true, kDoneButton)->Wait();
     test::OobeJS().ExpectHiddenPath(kSkipButtonOnProgress);
-    test::OobeJS().ExpectVisiblePath(kScanningAnimation);
-    test::OobeJS().ExpectAttributeEQ(kAnimationUrlAttribute, kScanningAnimation,
-                                     std::string(kCheckmarkAnimationUrl));
+    test::OobeJS().ExpectVisiblePath(kCheckmarkAnimation);
     test::OobeJS().ExpectVisiblePath(kAddAnotherFingerButton);
   }
 

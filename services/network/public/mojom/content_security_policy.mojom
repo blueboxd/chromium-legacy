@@ -63,32 +63,64 @@ struct CSPSource {
   bool is_port_wildcard = false;
 };
 
+enum CSPHashAlgorithm {
+  SHA256,
+  SHA384,
+  SHA512,
+};
+
+struct CSPHashSource {
+  CSPHashAlgorithm algorithm;
+  string value;
+};
+
 struct CSPSourceList {
   array<CSPSource> sources;
+  array<string> nonces;
+  array<CSPHashSource> hashes;
 
   // Wildcard hosts and 'self' aren't stored in |sources|, but as attributes
   // on the source list itself.
   bool allow_self = false;
   bool allow_star = false;
   bool allow_response_redirects = false;
+  bool allow_inline = false;
+  bool allow_eval = false;
+  bool allow_wasm_eval = false;
+  bool allow_dynamic = false;
+  bool allow_unsafe_hashes = false;
+  bool report_sample = false;
 };
 
 enum CSPDirectiveName {
   Unknown,
 
-  DefaultSrc,
+  BaseURI,
   ChildSrc,
-  FrameSrc,
+  ConnectSrc,
+  DefaultSrc,
+  FontSrc,
   FormAction,
-  NavigateTo,
   FrameAncestors,
+  FrameSrc,
   ImgSrc,
+  ManifestSrc,
   MediaSrc,
+  NavigateTo,
   ObjectSrc,
+  PrefetchSrc,
+  ReportTo,
+  ReportURI,
+  Sandbox,
   ScriptSrc,
+  ScriptSrcAttr,
+  ScriptSrcElem,
   StyleSrc,
+  StyleSrcAttr,
+  StyleSrcElem,
+  TreatAsPublicAddress,
+  UpgradeInsecureRequests,
   WorkerSrc,
-  ConnectSrc
 };
 
 struct ContentSecurityPolicy {

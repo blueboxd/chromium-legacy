@@ -35,7 +35,7 @@ void PageLoadMetricsTestWaiter::AddFrameSizeExpectation(const gfx::Size& size) {
   expected_frame_sizes_.insert(size);
 }
 
-void PageLoadMetricsTestWaiter::AddMainFrameDocumentIntersectionExpectation(
+void PageLoadMetricsTestWaiter::AddMainFrameIntersectionExpectation(
     const gfx::Rect& rect) {
   expected_main_frame_intersection_ = rect;
 }
@@ -194,7 +194,7 @@ void PageLoadMetricsTestWaiter::OnFrameIntersectionUpdate(
         frame_intersection_update) {
   if (expected_main_frame_intersection_ &&
       expected_main_frame_intersection_ ==
-          frame_intersection_update.main_frame_document_intersection_rect) {
+          frame_intersection_update.main_frame_intersection_rect) {
     expected_main_frame_intersection_.reset();
   }
   if (ExpectationsSatisfied() && run_loop_)

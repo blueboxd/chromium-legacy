@@ -36,7 +36,12 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
     def generate_sharding_args(self, total_shards, shard_index):
         return ['--total-chunks=%d' % total_shards,
                 # shard_index is 0-based but WPT's this-chunk to be 1-based
-                '--this-chunk=%d' % (shard_index + 1)]
+                '--this-chunk=%d' % (shard_index + 1),
+                # The default sharding strategy is to shard by directory. But
+                # we want to hash each test to determine which shard runs it.
+                # This allows running individual directories that have few
+                # tests across many shards.
+                '--chunk-type=hash']
 
     def do_post_test_run_tasks(self):
         # Move json results into layout-test-results directory

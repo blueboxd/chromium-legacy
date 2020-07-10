@@ -299,7 +299,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   bool GetPrintPresetOptionsForPlugin(const WebNode&,
                                       WebPrintPresetOptions*) override;
   bool CapturePaintPreview(const WebRect& bounds,
-                           cc::PaintCanvas* canvas) override;
+                           cc::PaintCanvas* canvas,
+                           bool include_linked_destinations) override;
   bool ShouldSuppressKeyboardForFocusedElement() override;
   WebPerformance Performance() const override;
   bool IsAdSubframe() const override;

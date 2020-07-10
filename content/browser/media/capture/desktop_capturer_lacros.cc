@@ -15,8 +15,9 @@
 namespace content {
 
 DesktopCapturerLacros::DesktopCapturerLacros(
+    CaptureType capture_type,
     const webrtc::DesktopCaptureOptions& options)
-    : options_(options) {
+    : capture_type_(capture_type), options_(options) {
   mojo::PendingRemote<lacros::mojom::ScreenManager> pending_screen_manager;
   mojo::PendingReceiver<lacros::mojom::ScreenManager> pending_receiver =
       pending_screen_manager.InitWithNewPipeAndPassReceiver();
@@ -34,14 +35,32 @@ DesktopCapturerLacros::DesktopCapturerLacros(
 DesktopCapturerLacros::~DesktopCapturerLacros() = default;
 
 bool DesktopCapturerLacros::GetSourceList(SourceList* sources) {
-  // TODO(https://crbug.com/1094460): Implement this source list appropriately.
-  Source w;
-  w.id = 1;
-  sources->push_back(w);
+  if (capture_type_ == kScreen) {
+    // TODO(https://crbug.com/1094460): Implement this source list
+    // appropriately.
+    Source w;
+    w.id = 1;
+    sources->push_back(w);
+    return true;
+  }
+
+  std::vector<lacros::mojom::WindowDetailsPtr> windows;
+  {
+    mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
+    screen_manager_->ListWindows(&windows);
+  }
+
+  for (auto& window : windows) {
+    Source w;
+    w.id = window->id;
+    w.title = window->title;
+    sources->push_back(w);
+  }
   return true;
 }
 
 bool DesktopCapturerLacros::SelectSource(SourceId id) {
+  selected_source_ = id;
   return true;
 }
 
@@ -54,13 +73,25 @@ void DesktopCapturerLacros::Start(Callback* callback) {
 }
 
 void DesktopCapturerLacros::CaptureFrame() {
-  lacros::WindowSnapshot snapshot;
-  {
-    // lacros-chrome is allowed to make sync calls to ash-chrome.
-    mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
-    screen_manager_->TakeScreenSnapshot(&snapshot);
+  if (capture_type_ == kScreen) {
+    lacros::WindowSnapshot snapshot;
+    {
+      // lacros-chrome is allowed to make sync calls to ash-chrome.
+      mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
+      screen_manager_->TakeScreenSnapshot(&snapshot);
+    }
+    DidTakeSnapshot(/*success=*/true, snapshot);
+  } else {
+    bool success;
+    lacros::WindowSnapshot snapshot;
+    {
+      // lacros-chrome is allowed to make sync calls to ash-chrome.
+      mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
+      screen_manager_->TakeWindowSnapshot(selected_source_, &success,
+                                          &snapshot);
+    }
+    DidTakeSnapshot(success, snapshot);
   }
-  DidTakeScreenSnapshot(snapshot);
 }
 
 bool DesktopCapturerLacros::IsOccluded(const webrtc::DesktopVector& pos) {
@@ -85,8 +116,15 @@ void DesktopCapturerLacros::BindReceiverMainThread(
   lacros_chrome_service->BindScreenManagerReceiver(std::move(receiver));
 }
 
-void DesktopCapturerLacros::DidTakeScreenSnapshot(
+void DesktopCapturerLacros::DidTakeSnapshot(
+    bool success,
     const lacros::WindowSnapshot& snapshot) {
+  if (!success) {
+    callback_->OnCaptureResult(Result::ERROR_PERMANENT,
+                               std::unique_ptr<webrtc::DesktopFrame>());
+    return;
+  }
+
   std::unique_ptr<webrtc::DesktopFrame> frame =
       std::make_unique<webrtc::BasicDesktopFrame>(
           webrtc::DesktopSize(snapshot.width, snapshot.height));

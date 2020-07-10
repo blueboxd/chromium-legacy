@@ -192,33 +192,62 @@ WebString ConvertToPublic(
     network::mojom::blink::CSPDirectiveName directive_name) {
   using CSPDirectiveName = network::mojom::blink::CSPDirectiveName;
   switch (directive_name) {
-    case CSPDirectiveName::DefaultSrc:
-      return "default-src";
+    case CSPDirectiveName::BaseURI:
+      return "base-uri";
     case CSPDirectiveName::ChildSrc:
       return "child-src";
-    case CSPDirectiveName::FrameSrc:
-      return "frame-src";
-    case CSPDirectiveName::FormAction:
-      return "form-action";
-    case CSPDirectiveName::NavigateTo:
-      return "navigate-to";
+    case CSPDirectiveName::ConnectSrc:
+      return "connect-src";
+    case CSPDirectiveName::DefaultSrc:
+      return "default-src";
     case CSPDirectiveName::FrameAncestors:
       return "frame-ancestors";
+    case CSPDirectiveName::FrameSrc:
+      return "frame-src";
+    case CSPDirectiveName::FontSrc:
+      return "font-src";
+    case CSPDirectiveName::FormAction:
+      return "form-action";
     case CSPDirectiveName::ImgSrc:
       return "img-src";
+    case CSPDirectiveName::ManifestSrc:
+      return "manifest-src";
     case CSPDirectiveName::MediaSrc:
       return "media-src";
     case CSPDirectiveName::ObjectSrc:
       return "object-src";
+    case CSPDirectiveName::PrefetchSrc:
+      return "prefetch-src";
+    case CSPDirectiveName::ReportURI:
+      return "report-uri";
+    case CSPDirectiveName::Sandbox:
+      return "sandbox";
     case CSPDirectiveName::ScriptSrc:
       return "script-src";
+    case CSPDirectiveName::ScriptSrcAttr:
+      return "script-src-attr";
+    case CSPDirectiveName::ScriptSrcElem:
+      return "script-src-elem";
     case CSPDirectiveName::StyleSrc:
       return "style-src";
+    case CSPDirectiveName::StyleSrcAttr:
+      return "style-src-attr";
+    case CSPDirectiveName::StyleSrcElem:
+      return "style-src-elem";
+    case CSPDirectiveName::UpgradeInsecureRequests:
+      return "upgrade-insecure-requests";
+    case CSPDirectiveName::TreatAsPublicAddress:
+      return "treat-as-public-address";
     case CSPDirectiveName::WorkerSrc:
       return "worker-src";
-    case CSPDirectiveName::ConnectSrc:
-      return "connect-src";
+    case CSPDirectiveName::ReportTo:
+      return "report-to";
+    case CSPDirectiveName::NavigateTo:
+      return "navigate-to";
     case CSPDirectiveName::Unknown:
+      NOTREACHED();
+      return "";
+    default:
       NOTREACHED();
       return "";
   };
@@ -1080,11 +1109,10 @@ void LocalFrameClientImpl::FocusedElementChanged(Element* element) {
   web_frame_->Client()->FocusedElementChanged(element);
 }
 
-void LocalFrameClientImpl::OnMainFrameDocumentIntersectionChanged(
+void LocalFrameClientImpl::OnMainFrameIntersectionChanged(
     const IntRect& intersection_rect) {
   DCHECK(web_frame_->Client());
-  web_frame_->Client()->OnMainFrameDocumentIntersectionChanged(
-      intersection_rect);
+  web_frame_->Client()->OnMainFrameIntersectionChanged(intersection_rect);
 }
 
 bool LocalFrameClientImpl::IsPluginHandledExternally(

@@ -29,6 +29,10 @@ struct DocumentAttachmentInfo {
   // Last modified date of the attachment. It stores the arbitrary string saved
   // in field "ModDate".
   base::string16 modified_date;
+
+  // The flag that indicates whether the attachment can be retrieved
+  // successfully.
+  bool is_readable = false;
 };
 
 }  // namespace chrome_pdf

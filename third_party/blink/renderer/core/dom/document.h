@@ -1648,10 +1648,6 @@ class CORE_EXPORT Document : public ContainerNode,
   FRIEND_TEST_ALL_PREFIXES(DocumentTest, FindInPageUkm);
   class NetworkStateObserver;
 
-  // Post initialization of the object handling of both feature policy and
-  // document policy.
-  void PoliciesInitialized(const DocumentInit& document_initializer);
-
   friend class AXContext;
   void AddAXContext(AXContext*);
   void RemoveAXContext(AXContext*);

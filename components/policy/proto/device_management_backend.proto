@@ -2194,6 +2194,9 @@ message DeviceInitialEnrollmentStateResponse {
     // Zero-Touch (attestation-based) enrollment is enforced and cannot be
     // skipped.
     INITIAL_ENROLLMENT_MODE_ZERO_TOUCH_ENFORCED = 2;
+    // The device has been disabled by its owner. The device will show a warning
+    // screen and prevent the user from proceeding further.
+    INITIAL_ENROLLMENT_MODE_DISABLED = 3;
   }
 
   // The server-indicated initial enrollment mode.
@@ -2205,6 +2208,10 @@ message DeviceInitialEnrollmentStateResponse {
 
   // Whether the device comes packaged with a license or not.
   optional bool is_license_packaged_with_device = 3;
+
+  // State that is relevant only when the |initial_enrollment_mode| is
+  // |INITIAL_ENROLLMENT_MODE_DISABLED|.
+  optional DisabledState disabled_state = 4;
 }
 
 // Sent by the client to the server to pair the Host device with the Controller

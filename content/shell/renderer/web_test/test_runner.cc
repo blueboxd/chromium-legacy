@@ -2168,7 +2168,7 @@ void TestRunner::WorkQueue::ProcessWork() {
       // If a load started, and didn't complete inside of Run(), then mark
       // the load as running.
       if (!finished_loading_)
-        controller_->running_load_ = true;
+        controller_->frame_will_start_load_ = true;
 
       // Quit doing work once a load is in progress.
       //
@@ -2246,9 +2246,8 @@ void TestRunner::Reset(WebFrameTestProxy* main_frame) {
   test_repaint_ = false;
   sweep_horizontally_ = false;
   animation_requires_raster_ = false;
-  // Starts as true for the initial load which does not come from the
-  // WorkQueue.
-  running_load_ = true;
+  main_frame_loaded_ = false;
+  frame_will_start_load_ = false;
   did_notify_done_ = false;
 
   http_headers_to_clear_.clear();
@@ -2479,6 +2478,7 @@ void TestRunner::AddLoadingFrame(blink::WebFrame* frame) {
   }
 
   loading_frames_.push_back(frame);
+  frame_will_start_load_ = false;
 }
 
 void TestRunner::RemoveLoadingFrame(blink::WebFrame* frame) {
@@ -2498,7 +2498,7 @@ void TestRunner::RemoveLoadingFrame(blink::WebFrame* frame) {
   if (!loading_frames_.empty())
     return;
 
-  running_load_ = false;
+  main_frame_loaded_ = true;
   web_test_runtime_flags_.set_have_loading_frame(false);
   OnWebTestRuntimeFlagsChanged();
 
@@ -2508,31 +2508,39 @@ void TestRunner::RemoveLoadingFrame(blink::WebFrame* frame) {
   // still inside ProcessWork().
   work_queue_.set_finished_loading();
 
-  // The test chooses between running queued tasks or waiting for NotifyDone()
-  // but not both.
-  if (!web_test_runtime_flags_.wait_until_done())
+  // testRunner.waitUntilDone() will pause the work queue if it is being used by
+  // the test, until testRunner.notifyDone() is called. However this can only be
+  // done once.
+  if (!web_test_runtime_flags_.wait_until_done() || did_notify_done_)
     work_queue_.ProcessWorkSoon();
 }
 
 void TestRunner::FinishTestIfReady() {
   if (!test_is_running_)
     return;
-  // The test only ends due to no queued tasks when not waiting for
-  // NotifyDone() from the test. The test chooses between these two modes.
-  if (web_test_runtime_flags_.wait_until_done())
-    return;
-  // If the test is running a loading task, we wait for that.
-  if (running_load_)
+
+  // We don't end the test before the main frame has had a chance to load. This
+  // is used to ensure the main frame has had a chance to start loading. If the
+  // test calls testRunner.notifyDone() then we also know it has begun loading.
+  if (!main_frame_loaded_ && !did_notify_done_)
     return;
 
-  // The test may cause loading to occur in ways other than through the
-  // WorkQueue, and we wait for them before finishing the test.
-  if (!loading_frames_.empty())
+  // While loading any frames, we do not end the test.
+  // The |frame_will_start_load_| bool is used for when the work queue has
+  // started a load, but it is not in |loading_frames_| yet as there is some
+  // time between them. We also have to check |loading_frames_| for once the
+  // loading is started, and because the test may start a load in other ways
+  // besides the work queue.
+  if (frame_will_start_load_ || !loading_frames_.empty())
     return;
 
   // If there are tasks in the queue still, we must wait for them before
   // finishing the test.
   if (!work_queue_.is_empty())
+    return;
+
+  // If waiting for testRunner.notifyDone() then we can not end the test.
+  if (web_test_runtime_flags_.wait_until_done() && !did_notify_done_)
     return;
 
   // When there are no more frames loading, and the test hasn't asked to wait
@@ -2548,12 +2556,12 @@ void TestRunner::FinishTestIfReady() {
   // renderers. So in this case the test should finish when frames finish
   // loading in the primary renderer, and we don't finish the test from a
   // secondary renderer unless it is asked for explicitly via NotifyDone.
-  if (!main_view_->MainFrame()->IsWebLocalFrame() && !did_notify_done_)
+  bool has_main_frame =
+      main_view_ && main_view_->MainFrame()->IsWebLocalFrame();
+  if (!has_main_frame && !did_notify_done_)
     return;
 
-  // No tasks left to run, all frames are done loading from previous tasks,
-  // and we're not waiting for NotifyDone(), so the test is done.
-  blink_test_runner_->TestFinished();
+  FinishTest();
 }
 
 void TestRunner::AddMainFrame(WebFrameTestProxy* frame) {
@@ -2578,9 +2586,7 @@ blink::WebFrame* TestRunner::MainFrame() const {
 
 void TestRunner::PolicyDelegateDone() {
   DCHECK(web_test_runtime_flags_.wait_until_done());
-  blink_test_runner_->TestFinished();
-  web_test_runtime_flags_.set_wait_until_done(false);
-  OnWebTestRuntimeFlagsChanged();
+  FinishTest();
 }
 
 bool TestRunner::PolicyDelegateEnabled() const {
@@ -2632,6 +2638,18 @@ class WorkItemBackForward : public TestRunner::WorkItem {
 void TestRunner::WaitUntilDone() {
   web_test_runtime_flags_.set_wait_until_done(true);
   OnWebTestRuntimeFlagsChanged();
+}
+
+void TestRunner::NotifyDone() {
+  if (!web_test_runtime_flags_.wait_until_done())
+    return;
+  if (did_notify_done_)
+    return;
+
+  // Mark that the test has asked the test to end when the rest of our stopping
+  // conditions are met. Then check if we can end the test.
+  did_notify_done_ = true;
+  FinishTestIfReady();
 }
 
 void TestRunner::QueueBackNavigation(int how_far_back) {
@@ -3176,13 +3194,8 @@ void TestRunner::CheckResponseMimeType() {
   OnWebTestRuntimeFlagsChanged();
 }
 
-void TestRunner::NotifyDone() {
-  if (web_test_runtime_flags_.wait_until_done() && loading_frames_.empty() &&
-      work_queue_.is_empty())
-    blink_test_runner_->TestFinished();
-  web_test_runtime_flags_.set_wait_until_done(false);
-  did_notify_done_ = true;
-  OnWebTestRuntimeFlagsChanged();
+void TestRunner::FinishTest() {
+  blink_test_runner_->TestFinished();
 }
 
 mojo::AssociatedRemote<mojom::WebTestControlHost>&

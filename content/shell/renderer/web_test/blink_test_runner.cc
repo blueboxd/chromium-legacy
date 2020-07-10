@@ -45,8 +45,9 @@ blink::WebString BlinkTestRunner::GetAbsoluteWebStringFromUTF8Path(
 void BlinkTestRunner::TestFinished() {
   TestRunner* test_runner = web_view_test_proxy_->GetTestRunner();
 
-  // We might get multiple TestFinished calls, ensure to only process the dump
-  // once.
+  // Avoid a situation where TestFinished is called twice, because
+  // of a racey test where renderers both call notifyDone(), or a test that
+  // calls notifyDone() more than once.
   if (!test_runner->TestIsRunning())
     return;
   test_runner->SetTestIsRunning(false);

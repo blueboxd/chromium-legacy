@@ -66,6 +66,7 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
   void ShowImpl() override;
   void HideImpl() override;
   void OnUserAction(const std::string& action_id) override;
+  bool HandleAccelerator(ash::LoginAcceleratorAction action) override;
 
   // NetworkStateHandlerObserver:
   void NetworkConnectionStateChanged(const NetworkState* network) override;

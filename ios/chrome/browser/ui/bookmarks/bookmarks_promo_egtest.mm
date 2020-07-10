@@ -223,7 +223,7 @@ using chrome_test_util::SecondarySignInButton;
   [[EarlGrey selectElementWithMatcher:BookmarkHomeDoneButton()]
       performAction:grey_tap()];
   [BookmarkEarlGreyUI openBookmarks];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
   // Check that the sign-in promo is not visible anymore.
   [SigninEarlGreyUI checkSigninPromoNotVisible];
 }

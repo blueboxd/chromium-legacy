@@ -15,13 +15,11 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
-#include "net/base/load_flags.h"
+#include "components/image_fetcher/core/request_metadata.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request_status.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -272,7 +270,7 @@ TEST_F(ImageDataFetcherTest, FetchImageData_FailedRequest) {
       ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kTestUmaClientName));
 
   RequestMetadata expected_metadata;
-  expected_metadata.http_response_code = net::URLFetcher::RESPONSE_CODE_INVALID;
+  expected_metadata.http_response_code = RequestMetadata::RESPONSE_CODE_INVALID;
   EXPECT_CALL(
       *this, OnImageDataFetchedFailedRequest(std::string(), expected_metadata));
 
@@ -325,7 +323,7 @@ TEST_F(ImageDataFetcherTest, FetchImageData_CancelFetchIfImageExceedsMaxSize) {
   // There will be exactly one call to OnImageDataFetched containing a response
   // code that would be impossible for a completed fetch.
   RequestMetadata expected_metadata;
-  expected_metadata.http_response_code = net::URLFetcher::RESPONSE_CODE_INVALID;
+  expected_metadata.http_response_code = RequestMetadata::RESPONSE_CODE_INVALID;
   EXPECT_CALL(*this, OnImageDataFetched(std::string(), expected_metadata));
 
   EXPECT_TRUE(test_url_loader_factory_.IsPending(kImageURL));

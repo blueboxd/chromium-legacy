@@ -44,7 +44,6 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.media.MediaViewerUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
@@ -63,6 +62,8 @@ import org.chromium.components.offline_items_collection.OfflineItemSchedule;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.offline_items_collection.PendingState;
 import org.chromium.components.offline_items_collection.UpdateDelta;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.net.ConnectionType;
 import org.chromium.net.NetworkChangeNotifierAutoDetect;
@@ -1455,9 +1456,9 @@ public class DownloadManagerService implements DownloadController.Observer,
      * @param list  List of DownloadItems to check.
      */
     private void maybeShowMissingSdCardError(List<DownloadItem> list) {
-        PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
+        PrefService prefService = UserPrefs.get(Profile.getLastUsedRegularProfile());
         // Only show the missing directory snackbar once.
-        if (!prefServiceBridge.getBoolean(Pref.SHOW_MISSING_SD_CARD_ERROR_ANDROID)) return;
+        if (!prefService.getBoolean(Pref.SHOW_MISSING_SD_CARD_ERROR_ANDROID)) return;
 
         DownloadDirectoryProvider provider = DownloadDirectoryProvider.getInstance();
         provider.getAllDirectoriesOptions((ArrayList<DirectoryOption> dirs) -> {
@@ -1472,7 +1473,7 @@ public class DownloadManagerService implements DownloadController.Observer,
                         // TODO(shaktisahu): Show it on infobar in the right way.
                         mDownloadSnackbarController.onDownloadDirectoryNotFound();
                     });
-                    prefServiceBridge.setBoolean(Pref.SHOW_MISSING_SD_CARD_ERROR_ANDROID, false);
+                    prefService.setBoolean(Pref.SHOW_MISSING_SD_CARD_ERROR_ANDROID, false);
                     break;
                 }
             }

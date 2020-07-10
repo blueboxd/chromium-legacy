@@ -376,7 +376,10 @@ PhysicalRect ScrollableArea::ScrollIntoView(
 
 void ScrollableArea::ScrollOffsetChanged(const ScrollOffset& offset,
                                          mojom::blink::ScrollType scroll_type) {
-  TRACE_EVENT0("blink", "ScrollableArea::scrollOffsetChanged");
+  TRACE_EVENT2("input", "ScrollableArea::scrollOffsetChanged", "x",
+               offset.Width(), "y", offset.Height());
+  TRACE_EVENT_INSTANT1("input", "Type", TRACE_EVENT_SCOPE_THREAD, "type",
+                       scroll_type);
 
   ScrollOffset old_offset = GetScrollOffset();
   ScrollOffset truncated_offset = ShouldUseIntegerScrollOffset()

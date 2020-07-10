@@ -80,7 +80,7 @@ bool CreateWmiClassMethodObject(IWbemServices* wmi_services,
     return false;
   }
 
-  hr = params_def->SpawnInstance(0, class_instance->GetAddressOf());
+  hr = params_def->SpawnInstance(0, &(*class_instance));
   return SUCCEEDED(hr);
 }
 

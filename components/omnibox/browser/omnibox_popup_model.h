@@ -44,10 +44,6 @@ class OmniboxPopupModel {
     // otherwise step by line. Usually used for the Tab and Shift+Tab keys.
     kStateOrLine,
 
-    // Step by a state if another one is available on the current line;
-    // otherwise do not step. Usually used for the Left and Right arrow keys.
-    kStateOrNothing,
-
     // Step across all lines to the first or last line. Usually used for the
     // PgUp and PgDn keys.
     kAllLines

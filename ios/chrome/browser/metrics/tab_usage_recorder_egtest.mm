@@ -857,7 +857,7 @@ void SwitchToNormalMode() {
 
   [ChromeEarlGrey selectTabAtIndex:numberOfTabs];
 
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
   [ChromeEarlGrey waitForWebStateContainingText:"Whee"];
 
   NSError* error = [MetricsAppInterface
@@ -935,7 +935,7 @@ void SwitchToNormalMode() {
     CloseTabAtIndexAndSync(0);
     GREYAssertEqual([ChromeEarlGrey mainTabCount], 1,
                     @"Check number of normal tabs");
-    [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+    [ChromeEarlGreyUI waitForAppToIdle];
   }
   // The deleted tabs are purged during foregrounding and backgrounding.
   [ChromeEarlGrey simulateTabsBackgrounding];

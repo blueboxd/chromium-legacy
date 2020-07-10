@@ -102,25 +102,23 @@ class VaapiVideoDecoder : public DecoderInterface,
   // resetting or destroying the decoder, or encountering an error.
   void ClearDecodeTaskQueue(DecodeStatus status);
 
-  // Release the video frame associated with the specified |surface_id| on the
-  // decoder thread. This is called when the last reference to the associated
-  // VASurface has been released, which happens when the decoder outputted the
-  // video frame, or stopped using it as a reference frame. Note that this
-  // doesn't mean the frame can be reused immediately, as it might still be used
-  // by the client.
-  void ReleaseFrameTask(scoped_refptr<VASurface> va_surface,
-                        VASurfaceID surface_id);
-  // Called when a video frame was returned to the video frame pool on the
-  // decoder thread. This will happen when both the client and decoder
-  // (in ReleaseFrameTask()) released their reference to the video frame.
-  void NotifyFrameAvailableTask();
+  // Releases the local reference to the VideoFrame associated with the
+  // specified |surface_id| on the decoder thread. This is called when the last
+  // reference to the associated VASurface has been released, which happens when
+  // |decoder_| outputted the video frame, or stopped using it as a reference
+  // frame. Note that this doesn't mean the frame can be reused immediately, as
+  // it might still be used by the client.
+  void ReleaseFrame(scoped_refptr<VASurface> va_surface,
+                    VASurfaceID surface_id);
+  // Callback for |frame_pool_| to notify of available resources.
+  void NotifyFrameAvailable();
 
-  // Flush the decoder on the decoder thread, blocks until all pending decode
+  // Flushes |decoder_| on the decoder thread, blocking until all pending decode
   // tasks have been executed and all frames have been output.
-  void FlushTask();
+  void Flush();
 
-  // Called when resetting the decoder is done, executes |reset_cb|.
-  void ResetDoneTask(base::OnceClosure reset_cb);
+  // Called when resetting the decoder is finished, to execute |reset_cb|.
+  void ResetDone(base::OnceClosure reset_cb);
 
   // Create codec-specific AcceleratedVideoDecoder and reset related variables.
   bool CreateAcceleratedVideoDecoder();

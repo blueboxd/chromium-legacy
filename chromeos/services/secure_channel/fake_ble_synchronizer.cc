@@ -71,18 +71,17 @@ FakeBleSynchronizer::TakeStartDiscoveryErrorCallback(size_t index) {
       command_queue()[index]->start_discovery_args->error_callback);
 }
 
-const base::Closure& FakeBleSynchronizer::GetStopDiscoveryCallback(
-    size_t index) {
+base::OnceClosure FakeBleSynchronizer::GetStopDiscoveryCallback(size_t index) {
   DCHECK(command_queue().size() >= index);
   DCHECK(command_queue()[index]->command_type == CommandType::STOP_DISCOVERY);
-  return command_queue()[index]->stop_discovery_args->callback;
+  return std::move(command_queue()[index]->stop_discovery_args->callback);
 }
 
-const device::BluetoothDiscoverySession::ErrorCallback&
+device::BluetoothDiscoverySession::ErrorCallback
 FakeBleSynchronizer::GetStopDiscoveryErrorCallback(size_t index) {
   DCHECK(command_queue().size() >= index);
   DCHECK(command_queue()[index]->command_type == CommandType::STOP_DISCOVERY);
-  return command_queue()[index]->stop_discovery_args->error_callback;
+  return std::move(command_queue()[index]->stop_discovery_args->error_callback);
 }
 
 // Left intentionally blank. The test double does not need to process any queued

@@ -1,5 +1,5 @@
 <?php
-header("Document-Policy: oversized-images;scale=2.0");
+header("Document-Policy: oversized-images=2.0");
 ?>
 <!DOCTYPE html>
 <style>body { margin: 0; }</style>

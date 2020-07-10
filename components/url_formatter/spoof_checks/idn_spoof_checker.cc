@@ -419,8 +419,8 @@ IDNSpoofChecker::Result IDNSpoofChecker::SafeToDisplayAsUnicode(
       kana_letters_exceptions_.containsNone(label_string) &&
       combining_diacritics_exceptions_.containsNone(label_string)) {
     for (auto const& script : wholescriptconfusables_) {
-      if (IsLabelWholeScriptConfusableForScript(*script.get(), label_string) &&
-          !IsWholeScriptConfusableAllowedForTLD(*script.get(), top_level_domain,
+      if (IsLabelWholeScriptConfusableForScript(*script, label_string) &&
+          !IsWholeScriptConfusableAllowedForTLD(*script, top_level_domain,
                                                 top_level_domain_unicode)) {
         return Result::kWholeScriptConfusable;
       }
@@ -561,7 +561,7 @@ TopDomainEntry IDNSpoofChecker::GetSimilarTopDomain(
   return TopDomainEntry();
 }
 
-Skeletons IDNSpoofChecker::GetSkeletons(base::StringPiece16 hostname) {
+Skeletons IDNSpoofChecker::GetSkeletons(base::StringPiece16 hostname) const {
   return skeleton_generator_->GetSkeletons(hostname);
 }
 

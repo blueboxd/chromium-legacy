@@ -124,7 +124,7 @@ void SharedWorkerClientHolder::Connect(
 
   auto info = mojom::blink::SharedWorkerInfo::New(
       url, std::move(options), header, header_type,
-      worker->GetExecutionContext()->GetSecurityContext().AddressSpace(),
+      worker->GetExecutionContext()->AddressSpace(),
       mojom::blink::FetchClientSettingsObject::New(
           outside_fetch_client_settings_object->GetReferrerPolicy(),
           KURL(outside_fetch_client_settings_object->GetOutgoingReferrer()),

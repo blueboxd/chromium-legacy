@@ -114,7 +114,6 @@ import org.chromium.chrome.browser.page_info.ChromePageInfoControllerDelegate;
 import org.chromium.chrome.browser.page_info.ChromePermissionParamsListBuilderDelegate;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
@@ -166,6 +165,7 @@ import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.page_info.PageInfoController;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.components.webapk.lib.client.WebApkValidator;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.SelectionPopupController;
@@ -1995,7 +1995,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         } else if (id == R.id.print_id) {
             PrintingController printingController = PrintingControllerImpl.getInstance();
             if (printingController != null && !printingController.isBusy()
-                    && PrefServiceBridge.getInstance().getBoolean(Pref.PRINTING_ENABLED)) {
+                    && UserPrefs.get(Profile.getLastUsedRegularProfile())
+                               .getBoolean(Pref.PRINTING_ENABLED)) {
                 printingController.startPrint(new TabPrinter(currentTab),
                         new PrintManagerDelegateImpl(this));
                 RecordUserAction.record("MobileMenuPrint");

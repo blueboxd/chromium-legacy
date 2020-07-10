@@ -25,6 +25,7 @@
 <translation id="169515064810179024">Block sites from accessing motion sensors</translation>
 <translation id="1717218214683051432">Motion sensors</translation>
 <translation id="1743802530341753419">Ask before allowing sites to connect to a device (recommended)</translation>
+<translation id="1818308510395330587">To let <ph name="APP_NAME" /> use AR, also turn on camera in <ph name="BEGIN_LINK" />Android settings<ph name="END_LINK" />.</translation>
 <translation id="1887786770086287077">Location access is off for this device. Turn it on in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="1919345977826869612">Ads</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -39,6 +40,7 @@
 <translation id="2148716181193084225">Today</translation>
 <translation id="2182457891543959921">Ask before allowing sites to create a 3D map of your surroundings or track camera position (recommended)</translation>
 <translation id="2212565012507486665">Allow cookies</translation>
+<translation id="2228071138934252756">To let <ph name="APP_NAME" /> access your camera, also turn on camera in <ph name="BEGIN_LINK" />Android settings<ph name="END_LINK" />.</translation>
 <translation id="2289270750774289114">Ask when a site wants to discover nearby Bluetooth devices (recommended)</translation>
 <translation id="2315043854645842844">Client side certificate selection is not supported by the operating system.</translation>
 <translation id="2359808026110333948">Continue</translation>
@@ -69,6 +71,7 @@
 <translation id="3115898365077584848">Show info</translation>
 <translation id="3123473560110926937">Blocked on some sites</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> stored data</translation>
+<translation id="321187648315454507">To let <ph name="APP_NAME" /> send you notifications, also turn on notifications in <ph name="BEGIN_LINK" />Android settings<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Microphone</translation>
 <translation id="3277252321222022663">Allow sites to access sensors (recommended)</translation>
 <translation id="3295602654194328831">Hide info</translation>
@@ -100,6 +103,7 @@
 <translation id="445467742685312942">Allow sites to play protected content</translation>
 <translation id="4468959413250150279">Mute sound for a specific site.</translation>
 <translation id="4479647676395637221">Ask first before allowing sites to use your camera (recommended)</translation>
+<translation id="4534723447064627427">To let <ph name="APP_NAME" /> access your microphone, also turn on microphone in <ph name="BEGIN_LINK" />Android settings<ph name="END_LINK" />.</translation>
 <translation id="4570913071927164677">Details</translation>
 <translation id="4645575059429386691">Managed by your parent</translation>
 <translation id="4670064810192446073">Virtual reality</translation>
@@ -224,6 +228,7 @@
 <translation id="8394832520002899662">Tap to return to the site</translation>
 <translation id="8425213833346101688">Change</translation>
 <translation id="8441146129660941386">Seek backward</translation>
+<translation id="8444433999583714703">To let <ph name="APP_NAME" /> access your location, also turn on location in <ph name="BEGIN_LINK" />Android settings<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Revoke device permission</translation>
 <translation id="8463851957836045671">Site is fast</translation>
 <translation id="851751545965956758">Block sites from connecting to devices</translation>
@@ -231,6 +236,7 @@
 <translation id="8609465669617005112">Move up</translation>
 <translation id="8676374126336081632">Clear input</translation>
 <translation id="8702612070107455751">Any offline data will be cleared.</translation>
+<translation id="8719283222052720129">Turn on permission for <ph name="APP_NAME" /> in <ph name="BEGIN_LINK" />Android settings<ph name="END_LINK" />.</translation>
 <translation id="8725066075913043281">Try again</translation>
 <translation id="8730621377337864115">Done</translation>
 <translation id="8737217482364735741">This will clear all data and cookies stored by <ph name="ORIGIN" />.</translation>
@@ -245,6 +251,7 @@
 <translation id="8959122750345127698">Navigation is unreachable: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Managed by your parents</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
+<translation id="913657688200966289">Turn on permissions for <ph name="APP_NAME" /> in <ph name="BEGIN_LINK" />Android settings<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">Access your microphone</translation>
 <translation id="965817943346481315">Block if site shows intrusive or misleading ads (recommended)</translation>
 </translationbundle>

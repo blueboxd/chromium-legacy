@@ -21,7 +21,6 @@ class QRCodeGenerator {
   struct QRVersionInfo {
     constexpr QRVersionInfo(const int version,
                             const int size,
-                            const size_t total_bytes,
                             const size_t group_bytes,
                             const size_t num_segments,
                             const size_t segment_data_bytes,
@@ -30,13 +29,26 @@ class QRCodeGenerator {
                             const size_t segment_data_bytes_1)
         : version(version),
           size(size),
-          total_bytes(total_bytes),
           group_bytes(group_bytes),
           num_segments(num_segments),
           segment_data_bytes(segment_data_bytes),
           group_bytes_1(group_bytes_1),
           num_segments_1(num_segments_1),
-          segment_data_bytes_1(segment_data_bytes_1) {}
+          segment_data_bytes_1(segment_data_bytes_1) {
+      if (version < 1 || version > 40 || size < 0 || num_segments == 0 ||
+          group_bytes % num_segments != 0 || segment_data_bytes == 0 ||
+          segment_data_bytes * num_segments > group_bytes ||
+          (group_bytes - segment_data_bytes * num_segments) % num_segments !=
+              0 ||
+          (num_segments_1 != 0 &&
+           (group_bytes_1 % num_segments_1 != 0 || segment_data_bytes_1 == 0 ||
+            segment_data_bytes_1 * num_segments_1 > group_bytes_1 ||
+            (group_bytes_1 - segment_data_bytes_1 * num_segments_1) %
+                    num_segments_1 !=
+                0))) {
+        __builtin_unreachable();
+      }
+    }
 
     // The version of the QR code.
     const int version;
@@ -47,7 +59,6 @@ class QRCodeGenerator {
     const int size;
 
     // Values taken from Table 9, page 38, for a QR code of version |version|.
-    const size_t total_bytes;  // Sum of group_bytes for each group.
     const size_t group_bytes;
     const size_t num_segments;
     const size_t segment_data_bytes;
@@ -57,6 +68,8 @@ class QRCodeGenerator {
 
     // Total number of tiles for the QR code, size*size.
     constexpr int total_size() const { return size * size; }
+
+    constexpr size_t total_bytes() const { return group_bytes + group_bytes_1; }
 
     constexpr size_t segment_bytes() const {
       return group_bytes / num_segments;
@@ -86,9 +99,12 @@ class QRCodeGenerator {
 
     // Two bytes of overhead are needed for QR framing.
     // If extending beyond version 26, framing would need to be updated.
-    size_t input_bytes() const {
-      int framing_bytes = version <= 9 ? 2 : 3;
-      return data_bytes() + data_bytes_1() - framing_bytes;
+    constexpr size_t input_bytes() const {
+      if (version <= 9) {
+        return data_bytes() + data_bytes_1() - 2;
+      } else {
+        return data_bytes() + data_bytes_1() - 3;
+      }
     }
 
     DISALLOW_COPY_AND_ASSIGN(QRVersionInfo);
@@ -127,10 +143,6 @@ class QRCodeGenerator {
 
   QRCodeGenerator();
   ~QRCodeGenerator();
-
-  // Returns parameters for different QR code versions, or nullptr if the
-  // version is not supported (you may provide support in the cc file).
-  static const QRVersionInfo* GetVersionInfo(int version);
 
   // Generates a QR code containing the given data.
   // The generator will attempt to choose a version that fits the data. The

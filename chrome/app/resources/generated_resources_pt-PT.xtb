@@ -78,6 +78,7 @@
 <translation id="1093457606523402488">Redes visíveis</translation>
 <translation id="1094607894174825014">Foi solicitada uma operação de leitura ou de escrita com um desvio inválido em: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="109647177154844434">A desinstalação do Parallels Desktop irá eliminar a sua imagem do Windows. Isto inclui as respetivas apps, definições e dados. Tem a certeza de que pretende continuar?</translation>
+<translation id="1097515232094183876">{COUNT,plural, =1{1 link}other{# links}}</translation>
 <translation id="1097658378307015415">Antes de iniciar sessão, entre como Convidado para ativar a rede <ph name="NETWORK_ID" /></translation>
 <translation id="1099962274138857708">Imagem copiada do <ph name="DEVICE_NAME" /></translation>
 <translation id="1102187190604780492">Permita que o Assistente mostre proativamente informações relacionadas com o que está a ser apresentado no ecrã</translation>
@@ -234,6 +235,7 @@
 <translation id="1280965841156951489">Editar ficheiros</translation>
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
 <translation id="1285484354230578868">Armazenar dados na sua conta Google Drive</translation>
+<translation id="1285717512281186441">A impressora está inacessível.</translation>
 <translation id="1288037062697528143">A Luz noturna irá ativar-se automaticamente ao pôr-do-sol.</translation>
 <translation id="1288300545283011870">Propriedades de voz</translation>
 <translation id="1293264513303784526">Dispositivo USB-C (porta esquerda)</translation>
@@ -418,6 +420,7 @@
 <translation id="151501797353681931">Importado do Safari</translation>
 <translation id="1515163294334130951">Iniciar</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> – Anfitrião</translation>
+<translation id="1520689915144573455">{COUNT,plural, =1{1 app}other{# apps}}</translation>
 <translation id="1521442365706402292">Gerir certificados</translation>
 <translation id="1521774566618522728">Ativo hoje</translation>
 <translation id="152234381334907219">Nunca guardado</translation>
@@ -1089,6 +1092,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2340239562261172947">Não é possível transferir o ficheiro <ph name="FILE_NAME" /> em segurança.</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> pretende sincronizar</translation>
+<translation id="2341476639346994688">A impressora está parada.</translation>
 <translation id="2342740338116612727">Marcadores adicionados</translation>
 <translation id="2343747224442182863">Focar este separador</translation>
 <translation id="2344686470986284227">A iniciar o controlador da máquina virtual…</translation>
@@ -1549,6 +1553,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2889064240420137087">Abrir link com...</translation>
 <translation id="2889925978073739256">Continuar a bloquear plug-ins sem isolamento de processos</translation>
 <translation id="2893168226686371498">Navegador predefinido</translation>
+<translation id="2893917546370257247">{COUNT,plural, =1{1 texto}other{# textos}}</translation>
 <translation id="2894757982205307093">Novo separador no grupo</translation>
 <translation id="289644616180464099">O cartão SIM está bloqueado</translation>
 <translation id="289695669188700754">ID da chave: <ph name="KEY_ID" /></translation>
@@ -1934,6 +1939,7 @@ Pretende pará-lo?</translation>
 <translation id="3416468988018290825">Mostrar sempre URLs completos</translation>
 <translation id="3417836307470882032">Formato de 24 horas</translation>
 <translation id="3420501302812554910">É necessário repor a chave de segurança interna</translation>
+<translation id="3421376478111338173">{COUNT,plural, =1{1 imagem}other{# imagens}}</translation>
 <translation id="3421387094817716717">Chave pública curva elíptica</translation>
 <translation id="3422291238483866753">Perguntar quando um site pretender criar um mapa 3D do ambiente à sua volta ou monitorizar a posição da câmara (recomendado)</translation>
 <translation id="3423463006624419153">No "<ph name="PHONE_NAME_1" />" e no "<ph name="PHONE_NAME_2" />":</translation>
@@ -2388,6 +2394,7 @@ Pretende pará-lo?</translation>
 <translation id="3927787410750478258">Este dispositivo <ph name="DEVICE_TYPE" /> será gerido pelo domínio <ph name="DOMAIN" />.</translation>
 <translation id="3927932062596804919">Recusar</translation>
 <translation id="3928570707778085600">Pretende guardar as alterações a <ph name="FILE_OR_FOLDER_NAME" />?</translation>
+<translation id="3928659086758780856">Pouca tinta.</translation>
 <translation id="3929426037718431833">Estas extensões podem ver e alterar as informações neste site.</translation>
 <translation id="3930155420525972941">Mover grupo para nova janela</translation>
 <translation id="3930737994424905957">A procurar dispositivos…</translation>
@@ -2565,6 +2572,7 @@ Pretende pará-lo?</translation>
 <translation id="4142052906269098341">Desbloqueie o dispositivo <ph name="DEVICE_TYPE" /> com o seu telemóvel. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="4142518881503042940">Guarde as impressoras detetadas no seu perfil ou adicione uma nova impressora. <ph name="LINK_BEGIN" />Saber mais<ph name="LINK_END" /></translation>
 <translation id="4144218403971135344">Obtenha uma melhor qualidade de vídeo e poupe autonomia da bateria. O vídeo é reproduzido apenas no seu ecrã compatível com o Cast.</translation>
+<translation id="4144651632048685784">{COUNT,plural, =1{1 número de telefone}other{# números de telefone}}</translation>
 <translation id="4146026355784316281">Abrir sempre com o visualizador do sistema</translation>
 <translation id="4146785383423576110">Repor e limpar</translation>
 <translation id="4147897805161313378">Google Fotos</translation>
@@ -2611,12 +2619,14 @@ Pretende pará-lo?</translation>
 <translation id="4220648711404560261">Ocorreu um erro durante a ativação.</translation>
 <translation id="4222772810963087151">Detalhes da compilação</translation>
 <translation id="4225397296022057997">Em todos os sites</translation>
+<translation id="4231095370974836764">Instale apps e jogos do Google Play no dispositivo <ph name="DEVICE_TYPE" />. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="4232375817808480934">Configure o Kerberos</translation>
 <translation id="4235200303672858594">Ecrã inteiro</translation>
 <translation id="4235965441080806197">Cancelar início de sessão</translation>
 <translation id="4242145785130247982">Não são suportados certificados de vários clientes.</translation>
 <translation id="4242533952199664413">Abrir definições</translation>
 <translation id="4242577469625748426">Falha ao instalar as definições da política no dispositivo: <ph name="VALIDATION_ERROR" />.</translation>
+<translation id="4243504193894350135">A impressora está em pausa.</translation>
 <translation id="4244238649050961491">Encontrar mais aplicações para a caneta stylus</translation>
 <translation id="424726838611654458">Sempre aberto no Adobe Reader</translation>
 <translation id="4247901771970415646">Não é possível sincronizar com <ph name="USERNAME" /></translation>
@@ -3402,6 +3412,7 @@ Pretende pará-lo?</translation>
 <translation id="5283677936944177147">Ups! O sistema não conseguiu determinar o modelo ou o número de série do dispositivo.</translation>
 <translation id="5284445933715251131">Continuar a transferir</translation>
 <translation id="5285635972691565180">Ecrã <ph name="DISPLAY_ID" /></translation>
+<translation id="5286094561505658635">A área de saída está cheia.</translation>
 <translation id="5286194356314741248">A procurar</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">As suas contas</translation>
@@ -3616,6 +3627,7 @@ Pretende pará-lo?</translation>
 <translation id="5553089923092577885">Mapeamentos de políticas de certificados</translation>
 <translation id="5554489410841842733">Este ícone estará visível se for possível utilizar a extensão na página actual.</translation>
 <translation id="5554720593229208774">Autoridade de certificação de e-mails</translation>
+<translation id="5554931805291741487">A área de saída está quase cheia.</translation>
 <translation id="5556459405103347317">Recarregar</translation>
 <translation id="5557991081552967863">Manter Wi-Fi durante a suspensão</translation>
 <translation id="5558125320634132440">Este site está bloqueado porque pode ter conteúdo não apropriado para menores</translation>
@@ -3759,6 +3771,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5732392974455271431">Os teus pais podem desbloquear-te</translation>
 <translation id="5734362860645681824">Comunicações</translation>
 <translation id="5734697361979786483">Adicionar partilha de ficheiros</translation>
+<translation id="5736544606961847675">{COUNT,plural, =1{1 vídeo}other{# vídeos}}</translation>
 <translation id="5736796278325406685">Introduza um nome de utilizador válido</translation>
 <translation id="5739017626473506901">Inicie sessão para ajudar <ph name="USER_NAME" /> a adicionar uma conta escolar.</translation>
 <translation id="5739235828260127894">A aguardar a validação. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
@@ -3879,6 +3892,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5889282057229379085">Número máximo de ACs intermédias:<ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5891688036610113830">Redes Wi-Fi preferidas</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
+<translation id="5895613446346678902">A enviar <ph name="ATTACHMENTS" /> para o dispositivo <ph name="DEVICE_NAME" />…</translation>
 <translation id="5900302528761731119">Fotografia do Perfil do Google</translation>
 <translation id="5900358982890952556">Atualize o Linux (Beta)</translation>
 <translation id="5901494423252125310">Porta da impressora aberta</translation>
@@ -4056,6 +4070,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6103681770816982672">Aviso: Está a mudar para um canal do programador</translation>
 <translation id="6104068876731806426">Contas Google</translation>
 <translation id="6104311680260824317">Não é possível associar o dispositivo ao domínio. O servidor não suporta os tipos de encriptação Kerberos especificados. Selecione "Mais opções" para aceder às definições de encriptação.</translation>
+<translation id="6104796831253957966">A fila da impressora está cheia.</translation>
 <translation id="6105994589138235234">Sincronização do navegador Chrome</translation>
 <translation id="6111972606040028426">Ativar Assistente Google</translation>
 <translation id="6112294629795967147">Tocar para redimensionar</translation>
@@ -4315,6 +4330,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" /> – áudio em reprodução</translation>
 <translation id="6442187272350399447">Fantástico</translation>
 <translation id="6444070574980481588">Definir data e hora</translation>
+<translation id="6444909401984215022"><ph name="WINDOW_TITLE" /> – Procura de Bluetooth ativa</translation>
 <translation id="6445450263907939268">Se não pretendia efetuar estas alterações, pode restaurar as definições anteriores.</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6450876761651513209">Alterar as suas definições relacionadas com privacidade</translation>
@@ -4873,6 +4889,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7152478047064750137">Esta extensão não requer autorizações especiais.</translation>
 <translation id="7154130902455071009">Alterar a página de início para: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Foto existente da câmara ou do ficheiro</translation>
+<translation id="7163766494674803047">Erro de dispositivo da impressora.</translation>
 <translation id="7165320105431587207">Não foi possível configurar a rede</translation>
 <translation id="716640248772308851">A extensão "<ph name="EXTENSION" />" consegue ler imagens, ficheiros de vídeo e de som nas localizações confirmadas.</translation>
 <translation id="7167486101654761064">&amp;Abrir sempre ficheiros deste tipo</translation>
@@ -5229,6 +5246,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7624337243375417909">caps lock desligado</translation>
 <translation id="7625568159987162309">Ver autorizações e dados armazenados em sites</translation>
 <translation id="7628201176665550262">Taxa de atualização</translation>
+<translation id="7629349498667725376">{COUNT,plural, =1{1 ficheiro}other{# ficheiros}}</translation>
 <translation id="7629827748548208700">Separador: <ph name="TAB_NAME" /></translation>
 <translation id="7631014249255418691">Cópia de segurança das aplicações e dos ficheiros do Linux efetuada com êxito</translation>
 <translation id="7631205654593498032">Ao associar os seus dispositivos, concorda que o <ph name="DEVICE_TYPE" /> pode:</translation>
@@ -5888,6 +5906,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8419098111404128271">Resultados da pesquisa para "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="8419368276599091549">Bem-vindo a <ph name="DEVICE_TYPE" />!</translation>
 <translation id="8420308167132684745">Editar entradas do dicionário</translation>
+<translation id="8422787418163030046">Tabuleiro de papel em falta.</translation>
 <translation id="8425213833346101688">Alterar</translation>
 <translation id="8425492902634685834">Afixar na Barra de tarefas</translation>
 <translation id="8425768983279799676">Pode utilizar o PIN para desbloquear o dispositivo.</translation>
@@ -6160,6 +6179,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8756143264090841047">Eliminar CT</translation>
 <translation id="8756969031206844760">Pretende atualizar a palavra-passe?</translation>
 <translation id="8757090071857742562">Não é possível transmitir o ambiente de trabalho. Verifique se confirmou a mensagem para começar a partilhar o seu ecrã.</translation>
+<translation id="8757203080302669031">Este separador está ativamente a procurar dispositivos Bluetooth.</translation>
 <translation id="8757803915342932642">Dispositivo nos dispositivos do Google Cloud</translation>
 <translation id="8758418656925882523">Ativar o ditado (falar para escrever)</translation>
 <translation id="8759408218731716181">Não é possível configurar o início de sessão integrado</translation>
@@ -6350,12 +6370,14 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="897939795688207351">Em <ph name="ORIGIN" /></translation>
 <translation id="8980345560318123814">Relatórios de comentários</translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – falhou</translation>
+<translation id="8981825781894055334">Pouco papel.</translation>
 <translation id="8983632908660087688"><ph name="ORIGIN" /> pode editar <ph name="FILENAME" /></translation>
 <translation id="8985264973231822211">Ativo há <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dia</translation>
 <translation id="8986362086234534611">Esquecer</translation>
 <translation id="8986494364107987395">Enviar automaticamente estatísticas de utilização e relatórios de falhas para a Google</translation>
 <translation id="8987927404178983737">Mês</translation>
 <translation id="8991520179165052608">O site pode utilizar o microfone.</translation>
+<translation id="8992117551007229513">{COUNT,plural, =1{1 item}other{# itens}}</translation>
 <translation id="899384117894244799">Remover utilizador restrito</translation>
 <translation id="899403249577094719">URL base do certificado Netscape</translation>
 <translation id="8995603266996330174">Gerido por <ph name="DOMAIN" /></translation>
@@ -6423,6 +6445,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="9066773882585798925">Ouvir o texto em voz alta</translation>
 <translation id="9066782832737749352">Síntese de voz</translation>
 <translation id="9068849894565669697">Selecionar cor</translation>
+<translation id="9072851933240542161">{COUNT,plural, =1{1 endereço}other{# endereços}}</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9074836595010225693">Rato USB ligado</translation>
@@ -6484,6 +6507,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="91568222606626347">Criar atalho...</translation>
 <translation id="9157096865782046368">0,8 segundos</translation>
 <translation id="9157697743260533322">Falha ao configurar atualizações automáticas para todos os utilizadores (erro de inicialização da verificação prévia: <ph name="ERROR_NUMBER" />)</translation>
+<translation id="9157915340203975005">A porta da impressora está aberta.</translation>
 <translation id="9158715103698450907">Ups! Ocorreu um problema de comunicação com a rede durante a autenticação. Verifique a ligação de rede e tente novamente.</translation>
 <translation id="9159643062839240276">Experimente:
     <ph name="BEGIN_LIST" />

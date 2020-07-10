@@ -42,3 +42,8 @@ void LiteVideoKeyedService::Initialize(const base::FilePath& profile_path) {
   decider_ = std::make_unique<lite_video::LiteVideoDecider>(
       std::move(opt_out_store), base::DefaultClock::GetInstance());
 }
+
+void LiteVideoKeyedService::ClearData(const base::Time& delete_begin,
+                                      const base::Time& delete_end) {
+  decider_->ClearBlocklist(delete_begin, delete_end);
+}

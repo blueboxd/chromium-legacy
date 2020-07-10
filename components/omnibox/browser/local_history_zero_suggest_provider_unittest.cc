@@ -41,9 +41,9 @@ struct TestURLData {
   const TemplateURL* search_provider;
   std::string search_terms;
   std::string other_query_params;
-  int age_in_days;
-  std::string title = "";
+  int age_in_seconds;
   int visit_count = 1;
+  std::string title = "";
   int typed_count = 1;
   bool hidden = false;
 };
@@ -156,7 +156,7 @@ void LocalHistoryZeroSuggestProviderTest::LoadURLs(
                                                             search_terms_data);
     client_->GetHistoryService()->AddPageWithDetails(
         GURL(search_url), base::UTF8ToUTF16(entry.title), entry.visit_count,
-        entry.typed_count, now - TimeDelta::FromDays(entry.age_in_days),
+        entry.typed_count, now - TimeDelta::FromSeconds(entry.age_in_seconds),
         entry.hidden, history::SOURCE_BROWSED);
     client_->GetHistoryService()->SetKeywordSearchTermsForURL(
         GURL(search_url), entry.search_provider->id(),
@@ -221,33 +221,26 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Input) {
   StartProviderAndWaitUntilDone(/*text=*/"blah");
   ExpectMatches({});
 
-  // Following histograms should not be logged if zero-prefix suggestions are
+  // Following histogram should not be logged if zero-prefix suggestions are
   // not allowed.
   histogram_tester.ExpectTotalCount(
-      "Omnibox.LocalHistoryZeroSuggest.SearchTermsSeenCount", 0);
-  histogram_tester.ExpectTotalCount(
-      "Omnibox.LocalHistoryZeroSuggest.MaxMatchesCount", 0);
+      "Omnibox.LocalHistoryZeroSuggest.SearchTermsExtractedCount", 0);
 
   StartProviderAndWaitUntilDone(/*text=*/"", /*from_omnibox_focus=*/false);
   ExpectMatches({});
 
-  // Following histograms should not be logged if zero-prefix suggestions are
+  // Following histogram should not be logged if zero-prefix suggestions are
   // not allowed.
   histogram_tester.ExpectTotalCount(
-      "Omnibox.LocalHistoryZeroSuggest.SearchTermsSeenCount", 0);
-  histogram_tester.ExpectTotalCount(
-      "Omnibox.LocalHistoryZeroSuggest.MaxMatchesCount", 0);
+      "Omnibox.LocalHistoryZeroSuggest.SearchTermsExtractedCount", 0);
 
   StartProviderAndWaitUntilDone();
   ExpectMatches({{"hello world", 500}});
 
-  // Following histograms should be logged when zero-prefix suggestions are
+  // Following histogram should be logged when zero-prefix suggestions are
   // allowed and the keyword search terms database is queried.
   histogram_tester.ExpectUniqueSample(
-      "Omnibox.LocalHistoryZeroSuggest.SearchTermsSeenCount", 1, 1);
-  histogram_tester.ExpectUniqueSample(
-      "Omnibox.LocalHistoryZeroSuggest.MaxMatchesCount",
-      provider_->max_matches_, 1);
+      "Omnibox.LocalHistoryZeroSuggest.SearchTermsExtractedCount", 1, 1);
   // Deletion histograms should not be logged unless a suggestion is deleted.
   histogram_tester.ExpectTotalCount(
       "Omnibox.LocalHistoryZeroSuggest.SyncDeleteTime", 0);
@@ -382,14 +375,14 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, DefaultSearchProvider) {
   ExpectMatches({});
 }
 
-// Tests that search terms are extracted with the correct encoding, whitespaces
-// are collapsed, and are lowercased and deduplicated.
-TEST_F(LocalHistoryZeroSuggestProviderTest, SearchTerms) {
+// Tests that extracted search terms are normalized (their whitespaces are
+// collapsed, are lowercased and deduplicated) without loss of unicode encoding.
+TEST_F(LocalHistoryZeroSuggestProviderTest, Normalization) {
   LoadURLs({
-      {default_search_provider(), "hello world", "&foo=bar", 1},
-      {default_search_provider(), "hello   world", "&foo=bar", 1},
-      {default_search_provider(), "hello   world", "&foo=bar", 1},
-      {default_search_provider(), "hello world", "&foo=bar", 1},
+      {default_search_provider(), "hello world", "&foo=bar", 3},
+      {default_search_provider(), "hello   world", "&foo=bar", 4},
+      {default_search_provider(), "hello   world", "&foo=bar", 5},
+      {default_search_provider(), "hello world", "&foo=bar", 6},
       {default_search_provider(), "HELLO   WORLD  ", "&foo=bar", 1},
       {default_search_provider(), "سلام دنیا", "&foo=bar", 2},
   });
@@ -398,21 +391,44 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, SearchTerms) {
   ExpectMatches({{"hello world", 500}, {"سلام دنیا", 499}});
 }
 
-// Tests that the suggestions are ordered by recency.
-TEST_F(LocalHistoryZeroSuggestProviderTest, Suggestions_Recency) {
+// Tests that the suggestions are ranked correctly.
+TEST_F(LocalHistoryZeroSuggestProviderTest, Ranking) {
   LoadURLs({
-      {default_search_provider(), "less recent search", "&foo=bar", 2},
-      {default_search_provider(), "more recent search", "&foo=bar", 1},
+      {default_search_provider(), "less recent more frequent search",
+       "&foo=bar", /*age_in_seconds=*/2, /*visit_count=*/2},
+      {default_search_provider(), "more recent less frequent search",
+       "&foo=bar", /*age_in_seconds=*/1, /*visit_count=*/1},
   });
 
+  // With frecency ranking disabled, more recent searches are ranked higher.
+  scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list_->InitWithFeatures(
+      {omnibox::kReactiveZeroSuggestionsOnNTPRealbox},
+      {omnibox::kOmniboxLocalZeroSuggestFrecencyRanking});
+
   StartProviderAndWaitUntilDone();
-  ExpectMatches({{"more recent search", 500}, {"less recent search", 499}});
+  ExpectMatches({{"more recent less frequent search", 500},
+                 {"less recent more frequent search", 499}});
+
+  // With frecency ranking enabled, more recent searches are not necessarily
+  // ranked higher.
+  scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list_->InitWithFeatures(
+      {omnibox::kReactiveZeroSuggestionsOnNTPRealbox,
+       omnibox::kOmniboxLocalZeroSuggestFrecencyRanking},
+      {});
+
+  StartProviderAndWaitUntilDone();
+  ExpectMatches({{"less recent more frequent search", 500},
+                 {"more recent less frequent search", 499}});
 }
 
 // Tests that suggestions are created from fresh search histories only.
-TEST_F(LocalHistoryZeroSuggestProviderTest, Suggestions_Freshness) {
-  int fresh = (Time::Now() - history::AutocompleteAgeThreshold()).InDays() - 1;
-  int stale = (Time::Now() - history::AutocompleteAgeThreshold()).InDays() + 1;
+TEST_F(LocalHistoryZeroSuggestProviderTest, Freshness) {
+  int fresh =
+      (Time::Now() - history::AutocompleteAgeThreshold()).InSeconds() - 60;
+  int stale =
+      (Time::Now() - history::AutocompleteAgeThreshold()).InSeconds() + 60;
   LoadURLs({
       {default_search_provider(), "stale search", "&foo=bar", stale},
       {default_search_provider(), "fresh search", "&foo=bar", fresh},
@@ -423,7 +439,7 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Suggestions_Freshness) {
 }
 
 // Tests that the provider supports deletion of matches.
-TEST_F(LocalHistoryZeroSuggestProviderTest, Delete) {
+TEST_F(LocalHistoryZeroSuggestProviderTest, Deletion) {
   base::HistogramTester histogram_tester;
 
   auto* template_url_service = client_->GetTemplateURLService();
@@ -445,7 +461,7 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Delete) {
   // submitted to the default search provider only; which are 2 unique
   // normalized search terms in this case.
   histogram_tester.ExpectUniqueSample(
-      "Omnibox.LocalHistoryZeroSuggest.SearchTermsSeenCount", 2, 1);
+      "Omnibox.LocalHistoryZeroSuggest.SearchTermsExtractedCount", 2, 1);
 
   provider_->DeleteMatch(provider_->matches()[0]);
 

@@ -55,6 +55,7 @@ extern const base::Feature kOmniboxMaxURLMatches;
 extern const base::Feature kDynamicMaxAutocomplete;
 
 // On-Focus Suggestions a.k.a. ZeroSuggest.
+extern const base::Feature kOmniboxLocalZeroSuggestFrecencyRanking;
 extern const base::Feature kOnFocusSuggestions;
 extern const base::Feature kOnFocusSuggestionsContextualWeb;
 extern const base::Feature kOnFocusSuggestionsContextualWebOnContent;
@@ -78,7 +79,6 @@ extern const base::Feature kAdaptiveSuggestionsCount;
 extern const base::Feature kCompactSuggestions;
 extern const base::Feature kDeferredKeyboardPopup;
 extern const base::Feature kRichAutocompletion;
-extern const base::Feature kOmniboxLooseMaxLimitOnDedicatedRows;
 extern const base::Feature kOmniboxSearchReadyIncognito;
 extern const base::Feature kOmniboxSuggestionButtonRow;
 extern const base::Feature kOmniboxSuggestionsRecyclerView;

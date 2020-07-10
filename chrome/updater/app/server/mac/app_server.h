@@ -12,12 +12,17 @@
 #include "base/atomic_ref_count.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "chrome/updater/app/app_server.h"
 #include "chrome/updater/app/server/mac/service_delegate.h"
 #import "chrome/updater/configurator.h"
 #import "chrome/updater/mac/xpc_service_names.h"
 #include "chrome/updater/prefs.h"
 #include "chrome/updater/update_service_in_process.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace updater {
 
@@ -42,12 +47,17 @@ class AppServerMac : public AppServer {
   void MarkTaskStarted();
   void AcknowledgeTaskCompletion();
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
   base::scoped_nsobject<CRUUpdateCheckXPCServiceDelegate>
       update_check_delegate_;
   base::scoped_nsobject<NSXPCListener> update_check_listener_;
   base::scoped_nsobject<CRUAdministrationXPCServiceDelegate>
       administration_delegate_;
   base::scoped_nsobject<NSXPCListener> administration_listener_;
+
+  // Task runner bound to the main sequence and the update service instance.
+  scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
   int tasks_running_ = 0;
 };
 

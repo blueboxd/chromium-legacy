@@ -516,7 +516,8 @@ Response InspectorEmulationAgent::setDeviceMetricsOverride(
     Maybe<int> position_y,
     Maybe<bool> dont_set_visible_size,
     Maybe<protocol::Emulation::ScreenOrientation>,
-    Maybe<protocol::Page::Viewport>) {
+    Maybe<protocol::Page::Viewport>,
+    Maybe<protocol::Emulation::DisplayFeature>) {
   // We don't have to do anything other than reply to the client, as the
   // emulation parameters should have already been updated by the handling of
   // WidgetMsg_EnableDeviceEmulation.

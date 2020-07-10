@@ -45,7 +45,6 @@ enum SkeletonType {
   // Max value used to determine the number of different types. Update this and
   // |kSkeletonTypeBitLength| when new SkeletonTypes are added.
   kMaxValue = kSeparatorsRemoved
-
 };
 
 const uint8_t kSkeletonTypeBitLength = 1;
@@ -140,7 +139,7 @@ class IDNSpoofChecker {
 
   // Returns skeleton strings computed from |hostname|. This function can apply
   // extra mappings to some characters to produce multiple skeletons.
-  Skeletons GetSkeletons(base::StringPiece16 hostname);
+  Skeletons GetSkeletons(base::StringPiece16 hostname) const;
 
   // Returns a top domain from the top 10K list matching the given |skeleton|.
   // If |without_separators| is set, the skeleton will be compared against
@@ -187,7 +186,7 @@ class IDNSpoofChecker {
   // number of domains in |script| (as in, written script). |tld_unicode| can be
   // empty if |tld| is not well formed punycode.
   static bool IsWholeScriptConfusableAllowedForTLD(
-      const WholeScriptConfusable& wsc,
+      const WholeScriptConfusable& script,
       base::StringPiece tld,
       base::StringPiece16 tld_unicode);
 

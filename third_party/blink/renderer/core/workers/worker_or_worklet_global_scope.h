@@ -75,11 +75,6 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   void DisableEval(const String& error_message) final;
   bool CanExecuteScripts(ReasonForCallingCanExecuteScripts) final;
 
-  SecurityContext& GetSecurityContext() final { return security_context_; }
-  const SecurityContext& GetSecurityContext() const final {
-    return security_context_;
-  }
-
   // Returns true when the WorkerOrWorkletGlobalScope is closing (e.g. via
   // WorkerGlobalScope#close() method). If this returns true, the worker is
   // going to be shutdown after the current task execution. Globals that
@@ -209,8 +204,6 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
                                          WorkerResourceTimingNotifier&);
 
   bool web_fetch_context_initialized_ = false;
-
-  SecurityContext security_context_;
 
   const String name_;
   const base::UnguessableToken parent_devtools_token_;

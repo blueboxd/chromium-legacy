@@ -32,9 +32,10 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.historyreport.AppIndexingReporter;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.browser_ui.settings.SpinnerPreference;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.widget.ButtonCompat;
 
 import java.lang.annotation.Retention;
@@ -533,8 +534,8 @@ public abstract class ClearBrowsingDataFragment extends PreferenceFragmentCompat
 
             // It is possible to disable the deletion of browsing history.
             if (option == DialogOption.CLEAR_HISTORY
-                    && !PrefServiceBridge.getInstance().getBoolean(
-                            Pref.ALLOW_DELETING_BROWSER_HISTORY)) {
+                    && !UserPrefs.get(Profile.getLastUsedRegularProfile())
+                                .getBoolean(Pref.ALLOW_DELETING_BROWSER_HISTORY)) {
                 enabled = false;
                 BrowsingDataBridge.getInstance().setBrowsingDataDeletionPreference(
                         getDataType(DialogOption.CLEAR_HISTORY), ClearBrowsingDataTab.BASIC, false);

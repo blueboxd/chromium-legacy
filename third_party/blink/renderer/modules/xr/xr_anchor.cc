@@ -23,9 +23,17 @@ XRAnchor::XRAnchor(uint64_t id,
     : id_(id),
       is_deleted_(false),
       session_(session),
-      mojo_from_anchor_(anchor_data.mojo_from_anchor) {}
+      mojo_from_anchor_(anchor_data.mojo_from_anchor) {
+  DVLOG(3) << __func__ << ": id_=" << id_
+           << ", anchor_data.mojo_from_anchor.has_value()="
+           << anchor_data.mojo_from_anchor.has_value();
+}
 
 void XRAnchor::Update(const device::mojom::blink::XRAnchorData& anchor_data) {
+  DVLOG(3) << __func__ << ": id_=" << id_ << ", is_deleted_=" << is_deleted_
+           << ", anchor_data.mojo_from_anchor.has_value()="
+           << anchor_data.mojo_from_anchor.has_value();
+
   if (is_deleted_) {
     return;
   }
@@ -38,6 +46,9 @@ uint64_t XRAnchor::id() const {
 }
 
 XRSpace* XRAnchor::anchorSpace(ExceptionState& exception_state) const {
+  DVLOG(2) << __func__ << ": id_=" << id_ << ", is_deleted_=" << is_deleted_
+           << " anchor_space_ is valid? " << !!anchor_space_;
+
   if (is_deleted_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kAnchorAlreadyDeleted);
@@ -53,7 +64,10 @@ XRSpace* XRAnchor::anchorSpace(ExceptionState& exception_state) const {
 }
 
 base::Optional<TransformationMatrix> XRAnchor::MojoFromObject() const {
+  DVLOG(3) << __func__ << ": id_=" << id_;
+
   if (!mojo_from_anchor_) {
+    DVLOG(3) << __func__ << ": id_=" << id_ << ", mojo_from_anchor_ is not set";
     return base::nullopt;
   }
 
@@ -61,6 +75,8 @@ base::Optional<TransformationMatrix> XRAnchor::MojoFromObject() const {
 }
 
 void XRAnchor::Delete() {
+  DVLOG(1) << __func__ << ": id_=" << id_ << ", is_deleted_=" << is_deleted_;
+
   if (!is_deleted_) {
     session_->xr()->xrEnvironmentProviderRemote()->DetachAnchor(id_);
     mojo_from_anchor_ = base::nullopt;

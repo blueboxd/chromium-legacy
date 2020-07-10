@@ -104,6 +104,9 @@
 // GREYAssert is induced.
 - (void)waitForToolbarVisible:(BOOL)isVisible;
 
+// Waits for the app to idle.
+- (void)waitForAppToIdle;
+
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_UI_H_

@@ -35,7 +35,6 @@
 
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_vector.h"
 
 #include "third_party/blink/public/platform/web_private_ptr.h"
 #if INSIDE_BLINK
@@ -58,30 +57,6 @@ class WebMediaStreamSource {
     kReadyStateEnded = 2
   };
 
-  enum class EchoCancellationMode { kDisabled, kBrowser, kAec3, kSystem };
-
-  struct Capabilities {
-    // WebVector is used to store an optional range for the below numeric
-    // fields. All of them should have 0 or 2 values representing min/max.
-    WebVector<uint32_t> width;
-    WebVector<uint32_t> height;
-    WebVector<double> aspect_ratio;
-    WebVector<double> frame_rate;
-    WebVector<bool> echo_cancellation;
-    WebVector<WebString> echo_cancellation_type;
-    WebVector<bool> auto_gain_control;
-    WebVector<bool> noise_suppression;
-    WebVector<int32_t> sample_size;
-    WebVector<int32_t> channel_count;
-    WebVector<int32_t> sample_rate;
-    WebVector<double> latency;
-
-    WebMediaStreamTrack::FacingMode facing_mode =
-        WebMediaStreamTrack::FacingMode::kNone;
-    WebString device_id;
-    WebString group_id;
-  };
-
   WebMediaStreamSource() = default;
   WebMediaStreamSource(const WebMediaStreamSource& other) { Assign(other); }
   ~WebMediaStreamSource() { Reset(); }
@@ -102,11 +77,6 @@ class WebMediaStreamSource {
 
   BLINK_PLATFORM_EXPORT WebString Id() const;
   BLINK_PLATFORM_EXPORT Type GetType() const;
-  BLINK_PLATFORM_EXPORT WebString GetName() const;
-  BLINK_PLATFORM_EXPORT bool Remote() const;
-
-  BLINK_PLATFORM_EXPORT void SetGroupId(const WebString& group_id);
-  BLINK_PLATFORM_EXPORT WebString GroupId() const;
 
   BLINK_PLATFORM_EXPORT void SetReadyState(ReadyState);
   BLINK_PLATFORM_EXPORT ReadyState GetReadyState() const;
@@ -115,15 +85,8 @@ class WebMediaStreamSource {
   BLINK_PLATFORM_EXPORT void SetPlatformSource(
       std::unique_ptr<WebPlatformMediaStreamSource>);
 
-  BLINK_PLATFORM_EXPORT void SetAudioProcessingProperties(
-      EchoCancellationMode echo_cancellation_mode,
-      bool auto_gain_control,
-      bool noise_supression);
-
-  BLINK_PLATFORM_EXPORT void SetCapabilities(const Capabilities&);
-
 #if INSIDE_BLINK
-  BLINK_PLATFORM_EXPORT WebMediaStreamSource(MediaStreamSource*);
+  BLINK_PLATFORM_EXPORT explicit WebMediaStreamSource(MediaStreamSource*);
   BLINK_PLATFORM_EXPORT WebMediaStreamSource& operator=(MediaStreamSource*);
   BLINK_PLATFORM_EXPORT operator scoped_refptr<MediaStreamSource>() const;
   BLINK_PLATFORM_EXPORT operator MediaStreamSource*() const;

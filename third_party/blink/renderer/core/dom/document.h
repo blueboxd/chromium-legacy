@@ -191,7 +191,6 @@ class ScriptPromise;
 class ScriptRunner;
 class ScriptableDocumentParser;
 class ScriptedAnimationController;
-class SecurityContextInit;
 class SecurityOrigin;
 class SelectorQueryCache;
 class SerializedScriptValue;
@@ -328,8 +327,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool DocumentPolicyFeatureObserved(
       mojom::blink::DocumentPolicyFeature feature);
-
-  SecurityContext& GetSecurityContext() { return security_context_; }
 
   String addressSpaceForBindings(ScriptState*) const;
 
@@ -1435,9 +1432,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // May return nullptr when PerformanceManager instrumentation is disabled.
   DocumentResourceCoordinator* GetResourceCoordinator();
 
-  // Apply pending feature policy headers and document policy headers.
-  void ApplyPendingFramePolicyHeaders();
-
   const AtomicString& bgColor() const;
   void setBgColor(const AtomicString&);
   const AtomicString& fgColor() const;
@@ -1656,10 +1650,6 @@ class CORE_EXPORT Document : public ContainerNode,
   FRIEND_TEST_ALL_PREFIXES(DocumentTest, FindInPageUkm);
   class NetworkStateObserver;
 
-  Document(const DocumentInit& initization,
-           const SecurityContextInit& init_helper,
-           DocumentClassFlags document_classes);
-
   // Post initialization of the object handling of both feature policy and
   // document policy.
   void PoliciesInitialized(const DocumentInit& document_initializer);
@@ -1676,7 +1666,6 @@ class CORE_EXPORT Document : public ContainerNode,
       delete;  // This will catch anyone doing an unnecessary check.
 
   ScriptedIdleTaskController& EnsureScriptedIdleTaskController();
-  void InitSecurityContext(const DocumentInit&);
 
   bool HasPendingVisualUpdate() const {
     return lifecycle_.GetState() == DocumentLifecycle::kVisualUpdatePending;
@@ -1797,8 +1786,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Member<LocalDOMWindow> dom_window_;
   Member<HTMLImportsController> imports_controller_;
-
-  SecurityContext security_context_;
 
   // Document::CountUse() attributes the feature counts to the DocumentLoader
   // which is returned by Loader(). During construction Loader() returns null,
@@ -2120,17 +2107,6 @@ class CORE_EXPORT Document : public ContainerNode,
 #endif
 
   Member<LazyLoadImageObserver> lazy_load_image_observer_;
-
-  // Pending feature policy headers to send to browser after DidCommitNavigation
-  // IPC.
-  ParsedFeaturePolicy pending_fp_headers_;
-
-  // Pending document policy headers to send to browser after
-  // DidCommitNavigation IPC. Note: pending_dp_headers is the document policy
-  // state used to initialize |document_policy_| in SecurityContext. Verifying
-  // its integrity against required_document_policy has already been done in
-  // DocumentLoader.
-  DocumentPolicy::FeatureState pending_dp_headers_;
 
   // Tracks which feature policies have already been parsed, so as not to count
   // them multiple times.

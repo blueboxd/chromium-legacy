@@ -325,7 +325,7 @@ ci.android_builder(
         short_name = '64',
     ),
     goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
-    execution_timeout = 4 * time.hour,
+    execution_timeout = 5 * time.hour,
 )
 
 ci.android_builder(
@@ -334,7 +334,7 @@ ci.android_builder(
         category = 'builder|x86',
         short_name = '64',
     ),
-    execution_timeout = 4 * time.hour,
+    execution_timeout = 5 * time.hour,
 )
 
 ci.android_builder(
@@ -343,6 +343,7 @@ ci.android_builder(
         category = 'builder|x86',
         short_name = '32',
     ),
+    execution_timeout = 4 * time.hour,
 )
 
 ci.android_builder(

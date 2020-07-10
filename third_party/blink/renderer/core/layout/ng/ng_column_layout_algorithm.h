@@ -45,15 +45,12 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
       NGMarginStrut*);
 
   // Lay out a column spanner. The return value will tell whether to break
-  // before the spanner or not. If we're not to break before the spanner, but
-  // rather inside, |spanner_break_token| will be set, so that we know where to
-  // resume in the next outer fragmentainer. If |NGBreakStatus::kContinue| is
-  // returned, and no break token was set, it means that we can proceed to the
-  // next row of columns.
+  // before the spanner or not. If |NGBreakStatus::kContinue| is returned, and
+  // no break token was set, it means that we can proceed to the next row of
+  // columns.
   NGBreakStatus LayoutSpanner(NGBlockNode spanner_node,
                               const NGBlockBreakToken* break_token,
-                              NGMarginStrut*,
-                              scoped_refptr<const NGBlockBreakToken>*);
+                              NGMarginStrut*);
 
   LayoutUnit CalculateBalancedColumnBlockSize(
       const LogicalSize& column_size,
@@ -68,14 +65,6 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
   LayoutUnit CurrentContentBlockOffset() const {
     return intrinsic_block_size_ - BorderScrollbarPadding().block_start;
   }
-
-  // Finalize layout after breaking before column contents.
-  void FinishAfterBreakBeforeRow(
-      scoped_refptr<const NGBlockBreakToken> next_column_token);
-
-  // Finalize layout after breaking before a spanner.
-  void FinishAfterBreakBeforeSpanner(
-      scoped_refptr<const NGBlockBreakToken> next_column_token);
 
   // Lay out again, this time with a predefined good breakpoint that we
   // discovered in the first pass. This happens when we run out of space in a

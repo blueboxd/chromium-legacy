@@ -373,6 +373,10 @@ Panel = class {
         'developer': null
       };
 
+      // TODO(accessibility): Commands should be based off of CommandStore and
+      // not the keymap. There are commands that don't have a key binding (e.g.
+      // commands for touch).
+
       // Get the key map from the background page.
       const bkgnd = chrome.extension.getBackgroundPage();
       const keymap = bkgnd['KeyMap']['fromCurrentKeyMap']();

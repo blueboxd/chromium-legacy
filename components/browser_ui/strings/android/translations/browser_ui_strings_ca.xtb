@@ -25,6 +25,7 @@
 <translation id="169515064810179024">Impedeix que els llocs web accedeixin als sensors de moviment</translation>
 <translation id="1717218214683051432">Sensors de moviment</translation>
 <translation id="1743802530341753419">Pregunta abans de permetre que els llocs web es connectin a un dispositiu (opció recomanada)</translation>
+<translation id="1818308510395330587">Per permetre que <ph name="APP_NAME" /> utilitzi RA, activa també la càmera a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="1887786770086287077">L'accés a la ubicació està desactivat en aquest dispositiu. Activa'l a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="1919345977826869612">Anuncis</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -39,6 +40,7 @@
 <translation id="2148716181193084225">Avui</translation>
 <translation id="2182457891543959921">Pregunta abans de permetre que els llocs web creïn un mapa en 3D del teu entorn o facin un seguiment de la posició de la càmera (opció recomanada)</translation>
 <translation id="2212565012507486665">Permet les galetes</translation>
+<translation id="2228071138934252756">Perquè <ph name="APP_NAME" /> pugui accedir a la càmera, també has d'activar-la a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="2289270750774289114">Pregunta'm quan un lloc web vulgui descobrir dispositius Bluetooth propers (opció recomanada)</translation>
 <translation id="2315043854645842844">El sistema operatiu no permet seleccionar el certificat del client.</translation>
 <translation id="2359808026110333948">Continua</translation>
@@ -69,6 +71,7 @@
 <translation id="3115898365077584848">Mostra la informació</translation>
 <translation id="3123473560110926937">Bloquejat en alguns llocs web</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de dades desades</translation>
+<translation id="321187648315454507">Perquè <ph name="APP_NAME" /> et pugui enviar notificacions, també has d'activar-les a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Micròfon</translation>
 <translation id="3277252321222022663">Permet que els llocs web accedeixin als sensors (opció recomanada)</translation>
 <translation id="3295602654194328831">Amaga la informació</translation>
@@ -100,6 +103,7 @@
 <translation id="445467742685312942">Permet que els llocs web reprodueixin contingut protegit</translation>
 <translation id="4468959413250150279">Silencia el so d'un lloc web concret.</translation>
 <translation id="4479647676395637221">Pregunta abans de permetre que els llocs web utilitzin la càmera (opció recomanada)</translation>
+<translation id="4534723447064627427">Perquè <ph name="APP_NAME" /> pugui accedir al micròfon, també has d'activar-lo a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="4570913071927164677">Detalls</translation>
 <translation id="4645575059429386691">Gestionat pels pares</translation>
 <translation id="4670064810192446073">Realitat virtual</translation>
@@ -224,6 +228,7 @@
 <translation id="8394832520002899662">Toca per tornar al lloc web</translation>
 <translation id="8425213833346101688">Canvia</translation>
 <translation id="8441146129660941386">Retrocedeix</translation>
+<translation id="8444433999583714703">Perquè <ph name="APP_NAME" /> pugui accedir a la teva ubicació, també has d'activar-la a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Revoca el permís d'accés al dispositiu</translation>
 <translation id="8463851957836045671">El lloc web és ràpid</translation>
 <translation id="851751545965956758">Impedeix que els llocs web es connectin a dispositius</translation>
@@ -231,6 +236,7 @@
 <translation id="8609465669617005112">Desplaça cap amunt</translation>
 <translation id="8676374126336081632">Esborra l'entrada</translation>
 <translation id="8702612070107455751">S'esborraran totes les dades sense connexió.</translation>
+<translation id="8719283222052720129">Activa el permís per a <ph name="APP_NAME" /> a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="8725066075913043281">Torna-ho a provar</translation>
 <translation id="8730621377337864115">Fet</translation>
 <translation id="8737217482364735741">Amb aquesta acció s'esborraran totes les dades i galetes emmagatzemades per <ph name="ORIGIN" />.</translation>
@@ -245,6 +251,7 @@
 <translation id="8959122750345127698">No es pot accedir a la navegació: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Gestionat pels pares</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
+<translation id="913657688200966289">Activa els permisos per a <ph name="APP_NAME" /> a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">Accés al micròfon</translation>
 <translation id="965817943346481315">Bloqueja els anuncis si el lloc web mostra publicitat intrusiva o enganyosa (opció recomanada)</translation>
 </translationbundle>

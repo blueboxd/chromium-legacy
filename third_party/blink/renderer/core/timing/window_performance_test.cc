@@ -163,7 +163,7 @@ TEST(PerformanceLifetimeTest, SurviveContextSwitch) {
   // Emulate a new window inheriting the origin for its initial empty document
   // from its opener. This is necessary to ensure window reuse below, as that
   // only happens when origins match.
-  KURL url("https://example.com");
+  KURL url("http://example.com");
   page_holder->GetFrame()
       .DomWindow()
       ->GetSecurityContext()

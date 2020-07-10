@@ -57,7 +57,7 @@ using web::test::HttpServer;
   // After loading URL, need to do another action before opening a new tab
   // with the icon present.
   [ChromeEarlGrey goBack];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 
   [ChromeEarlGrey openNewTab];
 
@@ -103,7 +103,7 @@ using web::test::HttpServer;
   // After loading URL, need to do another action before opening a new tab
   // with the icon present.
   [ChromeEarlGrey goBack];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 
   [ChromeEarlGrey openNewTab];
 

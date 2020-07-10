@@ -114,6 +114,10 @@ bool GLImage::EmulatingRGB() const {
   return false;
 }
 
+bool GLImage::IsInUseByWindowServer() const {
+  return false;
+}
+
 GLImage::Type GLImage::GetType() const {
   return Type::NONE;
 }
@@ -122,10 +126,6 @@ GLImage::Type GLImage::GetType() const {
 std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
 GLImage::GetAHardwareBuffer() {
   return nullptr;
-}
-
-gfx::Rect GLImage::GetCropRect() {
-  return gfx::Rect();
 }
 #endif
 

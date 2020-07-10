@@ -2810,9 +2810,6 @@ void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
     web_ui()->RenderFrameHostUnloading();
 
   web_bluetooth_services_.clear();
-#if !defined(OS_ANDROID)
-  serial_service_.reset();
-#endif
 
   StartPendingDeletionOnSubtree();
   // Some children with no unload handler may be eligible for deletion. Cut the
@@ -7272,10 +7269,7 @@ void RenderFrameHostImpl::BindSerialService(
     return;
   }
 
-  if (!serial_service_)
-    serial_service_ = std::make_unique<SerialService>(this);
-
-  serial_service_->Bind(std::move(receiver));
+  SerialService::GetOrCreateForCurrentDocument(this)->Bind(std::move(receiver));
 }
 
 void RenderFrameHostImpl::BindAuthenticatorReceiver(

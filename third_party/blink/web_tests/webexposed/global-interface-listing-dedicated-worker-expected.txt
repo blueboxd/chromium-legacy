@@ -512,6 +512,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     getter isDirectory
 [Worker]     getter isFile
+[Worker]     getter kind
 [Worker]     getter name
 [Worker]     method constructor
 [Worker]     method isSameEntry

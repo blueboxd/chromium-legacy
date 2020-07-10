@@ -223,7 +223,7 @@ void BleSynchronizer::OnDiscoverySessionStopped() {
   StopDiscoveryArgs* stop_discovery_args =
       current_command_->stop_discovery_args.get();
   DCHECK(stop_discovery_args);
-  stop_discovery_args->callback.Run();
+  std::move(stop_discovery_args->callback).Run();
 }
 
 void BleSynchronizer::ScheduleCommandCompletion() {

@@ -92,7 +92,7 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
   // If the matcher fails, then the scroll view should be scrolled to the
   // bottom.
   // Once to the bottom, the consent can be confirmed.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
   id<GREYMatcher> confirmationScrollViewMatcher =
       grey_accessibilityID(kUnifiedConsentScrollViewIdentifier);
   NSError* error = nil;
@@ -116,7 +116,7 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
 + (void)tapAddAccountButton {
   id<GREYMatcher> confirmationScrollViewMatcher =
       grey_accessibilityID(kUnifiedConsentScrollViewIdentifier);
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
   NSError* error = nil;
   [[EarlGrey selectElementWithMatcher:confirmationScrollViewMatcher]
       assertWithMatcher:chrome_test_util::ContentViewSmallerThanScrollView()
@@ -141,7 +141,7 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
 
 + (void)checkSigninPromoVisibleWithMode:(SigninPromoViewMode)mode
                             closeButton:(BOOL)closeButton {
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
                                    grey_accessibilityID(kSigninPromoViewId),
@@ -219,7 +219,7 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
                                           grey_not(signOutButtonMatcher), nil)]
       performAction:grey_tap()];
   // Wait until the user is signed out.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
   [SigninEarlGreyUtils checkSignedOut];

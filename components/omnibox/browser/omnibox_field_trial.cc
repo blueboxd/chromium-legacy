@@ -707,11 +707,6 @@ bool OmniboxFieldTrial::IsTabSwitchSuggestionsDedicatedRowEnabled() {
       omnibox::kOmniboxTabSwitchSuggestionsDedicatedRow);
 }
 
-bool OmniboxFieldTrial::IsLooseMaxLimitOnDedicatedRowsEnabled() {
-  return base::FeatureList::IsEnabled(
-      omnibox::kOmniboxLooseMaxLimitOnDedicatedRows);
-}
-
 bool OmniboxFieldTrial::IsPedalSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxPedalSuggestions);
 }

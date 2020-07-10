@@ -222,9 +222,9 @@
 <translation id="1426170570389588560">Establece el período en días para almacenar los metadatos de los trabajos de impresión</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1427655258943162134">Dirección o dirección URL del servidor proxy</translation>
-<translation id="142825088795991909">Si estableces la política, podrás establecer una lista de patrones de URL que especifiquen los sitios que pueden mostrar notificaciones.
+<translation id="142825088795991909">Si estableces la política, podrás especificar una lista de patrones de URL que indiquen los sitios que pueden mostrar notificaciones.
 
-      Si no estableces la política, se aplicará <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" /> (si se establece) para todos los sitios. De lo contrario, se aplicará la configuración personal del usuario.
+      Si no estableces la política, se aplicará <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" /> (si se establece) para todos los sitios. De lo contrario se aplicará la configuración personal del usuario.
 
       Para obtener información detallada sobre los patrones de <ph name="URL_LABEL" /> válidos, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="1435659902881071157">Configuración de red de dispositivo</translation>
@@ -325,15 +325,15 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
 <translation id="1575015449587326319">Política de configuración para el Conector de Chrome Enterprise OnFileDownloaded</translation>
 <translation id="1583248206450240930">Utilizar <ph name="PRODUCT_FRAME_NAME" /> de manera predeterminada</translation>
 <translation id="1588240398285670601">Configuración del navegador</translation>
-<translation id="1588456836529393506">Si estableces la política, podrás crear una lista de patrones de URL que especifiquen los sitios a los cuales se les otorga permiso para acceder a un dispositivo USB con los ID del producto y del proveedor especificados. Para que la política sea válida, cada elemento de la lista debe tener dispositivos y URL. Cada elemento de los dispositivos puede tener un campo de ID del producto y del proveedor. Los ID que omitas se considerarán un comodín con una excepción: no puedes especificar un ID de producto sin especificar el ID de proveedor. De lo contrario, la política no será válida.
+<translation id="1588456836529393506">Si estableces la política, podrás crear una lista de patrones de URL que indiquen los sitios a los cuales se les otorga permiso automáticamente para acceder a un dispositivo USB con los ID del producto y del proveedor especificados. Para que la política sea válida, cada elemento de la lista debe incluir dispositivos y URL. Cada elemento de los dispositivos puede incluir un campo de ID del producto y uno de ID del proveedor. Los ID que omitas se considerarán comodines, con una excepción: no puedes especificar el ID del producto si no especificas también el ID del proveedor. De lo contrario la política no será válida.
 
-      El modelo del permiso para USB utiliza la URL solicitante y la URL de incorporación (del sitio del marco principal) para permitir que la URL solicitante acceda al dispositivo USB. Es posible que la URL solicitante no sea la misma que la de incorporación cuando se carga el sitio solicitante en un iframe. Por lo tanto, el campo "urls" puede incluir hasta 2 strings delimitadas por una coma para especificar estas URL. Si solo especificas una, se otorgará acceso a los dispositivos USB correspondientes cuando la URL del sitio solicitante sea igual a esta URL, más allá del estado de incorporación. Las URL en el campo "urls" deben ser válidas; de lo contrario, se ignorará la política.
+      El modelo de permiso de USB utiliza la URL de solicitud y la URL de incorporación (del sitio de marco de nivel superior) para permitir que la URL de solicitud acceda al dispositivo USB. Es posible que la URL de solicitud difiera de la URL de incorporación cuando el sitio que solicita el permiso se carga en un iframe. Así, el campo "urls" puede incluir hasta 2 strings separadas por coma para especificar ambas URL. Si solo especificas una, se otorgará acceso a los dispositivos USB correspondientes cuando la URL del sitio que solicita el permiso coincida con la URL especificada, independientemente del estado de incorporación. Las URL incluidas en el campo "urls" deben ser válidas; de lo contrario se ignorará la política.
 
-      Si no estableces la política, se aplicará <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" /> (si se establece). De lo contrario, se aplicará la configuración personal del usuario.
+      Si no estableces la política, se aplicará <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" /> (si se establece). De lo contrario se aplicará la configuración personal del usuario.
 
-      Los patrones de URL en esta política no deben entrar en conflicto con los que se configuren a través de <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" />. Si ese es el caso, prevalecerá esta política por sobre <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" /> y <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" />.
+      Los patrones de URL que se especifiquen en esta política no deben entrar en conflicto con los que se configuren a través de <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" />. Si ese es el caso, prevalecerá esta política por sobre <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" /> y <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" />.
 
-      Se unificarán los valores de esta política y la política <ph name="DEVICE_WEB_USB_ALLOW_DEVICES_FOR_URLS_POLICY_NAME" />.</translation>
+      Se unificarán los valores de esta política y de <ph name="DEVICE_WEB_USB_ALLOW_DEVICES_FOR_URLS_POLICY_NAME" />.</translation>
 <translation id="1599424828227887013">Habilitar el aislamiento de sitios para orígenes específicos en dispositivos Android</translation>
 <translation id="159946228300522107">Si estableces la política como verdadera, Chrome maximizará la primera ventana que se muestre en la primera ejecución.
 
@@ -758,9 +758,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="2201555246697292490">Configurar la lista blanca de mensajería nativa</translation>
 <translation id="2204753382813641270">Controlar opción para ocultar archivos automáticamente</translation>
 <translation id="2208976000652006649">Parámetros para URL de búsqueda que utiliza POST</translation>
-<translation id="221019813387144689">Si estableces la política, podrás establecer una lista de patrones de URL que especifiquen los sitios que no pueden mostrar notificaciones.
+<translation id="221019813387144689">Si estableces la política, podrás especificar una lista de patrones de URL que indiquen los sitios que no pueden mostrar notificaciones.
 
-      Si no estableces la política, se aplicará <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" /> (si se establece) para todos los sitios. De lo contrario, se aplicará la configuración personal del usuario.
+      Si no estableces la política, se aplicará <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" /> (si se establece) para todos los sitios. De lo contrario se aplicará la configuración personal del usuario.
 
       Para obtener información detallada sobre los patrones de <ph name="URL_LABEL" /> válidos, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="2215238871726750562">Si estableces la política como verdadera, no se ejecutará la ventana del navegador al inicio de la sesión.
@@ -781,9 +781,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="2223598546285729819">Configuración de notificación predeterminada</translation>
 <translation id="2231817271680715693">Importar historial de navegación del navegador predeterminado en la primera ejecución</translation>
 <translation id="2236488539271255289">No permitir que ningún sitio configure los datos locales.</translation>
-<translation id="2240793533242059248">Si estableces la política, podrás establecer una lista de patrones de URL que especifiquen los sitios que no pueden abrir ventanas emergentes.
+<translation id="2240793533242059248">Si estableces la política, podrás especificar una lista de patrones de URL que indiquen los sitios que no pueden abrir ventanas emergentes.
 
-      Si no estableces la política, se aplicará <ph name="DEFAULT_POPUPS_SETTING_POLICY_NAME" /> (si se establece) para todos los sitios. De lo contrario, se aplicará la configuración personal del usuario.
+      Si no estableces la política, se aplicará <ph name="DEFAULT_POPUPS_SETTING_POLICY_NAME" /> (si se establece) para todos los sitios. De lo contrario se aplicará la configuración personal del usuario.
 
       Para obtener información detallada sobre los patrones de <ph name="URL_LABEL" /> válidos, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="2241498944622759244">La política dejó de estar disponible porque esta función nunca se lanzó. Si la política se establece como verdadera o no se establece, <ph name="PRODUCT_NAME" /> sugerirá páginas relacionadas con la página actual.
@@ -1103,11 +1103,11 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 
       Esta política no afecta la capacidad del usuario para configurar impresoras en dispositivos individuales. Su objetivo es complementar la configuración de impresoras a cargo de usuarios individuales.
       </translation>
-<translation id="2632538643061793322">Si estableces la política, podrás establecer una lista de los patrones de URL que especifiquen los sitios que pueden otorgarles a los usuarios acceso a un dispositivo USB.
+<translation id="2632538643061793322">Si estableces la política, podrás especificar una lista de patrones de URL que indiquen qué sitios pueden pedir a los usuarios permiso para acceder a un dispositivo USB.
 
-      Si no estableces la política, se aplicará <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" /> (si se establece) para todos los sitios. De lo contrario, se aplicará la configuración personal de los usuarios.
+      Si no estableces la política, se aplicará <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" /> (si se establece) para todos los sitios. De lo contrario se aplicará la configuración personal del usuario.
 
-      Los patrones de URL no deben entrar en conflicto con <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" />. No prevalece ninguna política si una URL coincide con ambas.
+      Los patrones de URL no deben entrar en conflicto con <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" />. Si una URL se ajusta a ambas políticas, no prevalece ninguna de las dos.
 
       Para obtener información detallada sobre los patrones de <ph name="URL_LABEL" /> válidos, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="2633084400146331575">Habilitar los comentarios de voz</translation>
@@ -2438,9 +2438,9 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 
       Si no se establece esta política, o está habilitada, se llevarán a cabo las revisiones de intercepción de DNS. Si se inhabilita explícitamente, no se llevarán a cabo.</translation>
 <translation id="4703402283970867140">Habilitar un modelo de atenuación inteligente para extender el tiempo de atenuación de la pantalla</translation>
-<translation id="4715049077430924642">Si estableces la política, podrás establecer una lista de patrones de URL que especifiquen los sitios que no pueden ejecutar JavaScript.
+<translation id="4715049077430924642">Si estableces la política, podrás especificar una lista de patrones de URL que indiquen los sitios que no pueden ejecutar JavaScript.
 
-      Si no estableces la política, se aplicará <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" /> (si se establece) para todos los sitios. De lo contrario, se aplicará la configuración personal del usuario.
+      Si no estableces la política, se aplicará <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" /> (si se establece) para todos los sitios. De lo contrario se aplicará la configuración personal del usuario.
 
       Para obtener información detallada sobre los patrones de <ph name="URL_LABEL" /> válidos, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="4722122254122249791">Permite el aislamiento de sitios específicos</translation>
@@ -2882,11 +2882,11 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="5405289061476885481">Establece los diseños de teclado compatibles con la pantalla de acceso de <ph name="PRODUCT_OS_NAME" />.
 
       Si esta política se establece como una lista de identificadores de método de entrada, estos métodos estarán disponibles en la pantalla de acceso y se preseleccionará el primero de ellos. Cuando se activa un módulo de sesión de usuario en la pantalla de acceso, el último método de entrada que este utilizó estará disponible junto con aquellos que especifica esta política. Si no se establece esta política, los métodos de entrada de la pantalla de acceso se obtendrán a partir de la configuración regional que se muestra en la pantalla de acceso. Se ignorarán los valores que no sean identificadores válidos de métodos de entrada.</translation>
-<translation id="5416064504563346617">Si estableces la política, podrás establecer una lista de los patrones de URL que especifiquen los sitios que no pueden otorgarles a los usuarios acceso a un dispositivo USB.
+<translation id="5416064504563346617">Si estableces la política, podrás especificar una lista de patrones de URL que indiquen qué sitios no pueden pedir a los usuarios permiso para acceder a un dispositivo USB.
 
-      Si no estableces la política, se aplicará <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" /> (si se establece) para todos los sitios. De lo contrario, se aplicará la configuración personal del usuario.
+      Si no estableces la política, se aplicará <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" /> (si se establece) para todos los sitios. De lo contrario se aplicará la configuración personal del usuario.
 
-      Los patrones de URL no pueden entrar en conflicto con <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" />. No prevalece ninguna política si una URL coincide con ambas.
+      Los patrones de URL no pueden entrar en conflicto con <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" />. Si una URL se ajusta a ambas políticas, no prevalece ninguna de las dos.
 
       Para obtener información detallada sobre los patrones de <ph name="URL_LABEL" /> válidos, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="5417906792459853336">Envía información sobre el uso de un dispositivo y su inventario de aplicaciones.
@@ -3007,9 +3007,9 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="554903022911579950">Kerberos</translation>
 <translation id="555022085242359084">Habilita el contraste alto en la pantalla de acceso</translation>
 <translation id="555077880566103058">Permitir que todos los sitios ejecuten el complemento <ph name="FLASH_PLUGIN_NAME" /> de manera automática</translation>
-<translation id="5557502336096594554">Si estableces la política, podrás establecer una lista de patrones de URL que especifiquen los sitios que pueden abrir ventanas emergentes.
+<translation id="5557502336096594554">Si estableces la política, podrás especificar una lista de patrones de URL que indiquen los sitios que pueden abrir ventanas emergentes.
 
-      Si no estableces la política, se aplicará <ph name="DEFAULT_POPUPS_SETTING_POLICY_NAME" /> (si se establece) para todos los sitios. De lo contrario, se aplicará la configuración personal del usuario.
+      Si no estableces la política, se aplicará <ph name="DEFAULT_POPUPS_SETTING_POLICY_NAME" /> (si se establece) para todos los sitios. De lo contrario se aplicará la configuración personal del usuario.
 
       Para obtener información detallada sobre los patrones de <ph name="URL_LABEL" /> válidos, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="5559079916187891399">Esta política no tiene efecto en las apps de Android.</translation>
@@ -3512,7 +3512,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Si se establece esta política, se accederá automáticamente a la sesión especificada después de un período determinado en la pantalla de acceso sin necesidad de que el usuario interactúe. La cuenta local del dispositivo ya debe estar configurada (consulta |DeviceLocalAccounts|).
 
       Si no se establece esta política, no se producirá el acceso automático.</translation>
-<translation id="6366574325767783825">Si estableces la política como verdadera o no la estableces, <ph name="PRODUCT_NAME" /> aceptará los contenidos web presentados como intercambios HTTP firmados.
+<translation id="6366574325767783825">Si estableces la política como verdadera o no la estableces, <ph name="PRODUCT_NAME" /> aceptará contenidos web que se presenten como intercambios HTTP firmados.
 
       Si estableces la política como falsa, no se cargarán los intercambios HTTP firmados.</translation>
 <translation id="6368011194414932347">Configurar la dirección URL de la página principal</translation>
@@ -4028,11 +4028,11 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Si la estableces como falsa, los usuarios, las apps y las extensiones no podrán acceder al modo de pantalla completa.</translation>
 <translation id="718126088895133062">Esta política especifica el ID de usuario de la licencia de <ph name="PLUGIN_VM_NAME" /> para este dispositivo.</translation>
-<translation id="7184811651721788735">Si estableces la política, podrás estableces una lista de patrones de URL que especifiquen los sitios que no pueden ejecutar el complemento <ph name="FLASH_PLUGIN_NAME" />.
+<translation id="7184811651721788735">Si estableces la política, podrás especificar una lista de patrones de URL que indiquen los sitios que no pueden ejecutar el complemento <ph name="FLASH_PLUGIN_NAME" />.
 
-      Si no estableces la política, se aplicará <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> (si se establece) para todos los sitios. De lo contrario, se aplicará la configuración personal del usuario.
+      Si no estableces la política, se aplicará <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> (si se establece) para todos los sitios. De lo contrario se aplicará la configuración personal del usuario.
 
-      Para obtener información detallada sobre los patrones de URL válidos, consulta: https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. Sin embargo, a partir de la versión M85, para esta política ya no serán compatibles los patrones con los comodines "*" y "[*.]" en el host.</translation>
+      Para obtener información detallada sobre los patrones de URL válidos, consulta: https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. Sin embargo, a partir de la versión M85, ya no serán compatibles para esta política los patrones que incluyan comodines "*" y "[*.]" en el host.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="7187447094921703950">Habilita la política de administración energética para el cambio de pico de consumo de energía.
 
@@ -4260,9 +4260,9 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="759957074386651883">Configuración de Navegación segura</translation>
 <translation id="7604169113182304895">Las apps de Android pueden respetar esta lista de forma voluntaria, pero no puedes forzarlas a que lo hagan.</translation>
 <translation id="7612157962821894603">Marcas que se deben aplicar al iniciar <ph name="PRODUCT_NAME" /> en todo el sistema</translation>
-<translation id="7614443356666150520">Si estableces la política, podrás establecer una lista de patrones de URL que especifiquen los sitios que no pueden mostrar imágenes.
+<translation id="7614443356666150520">Si estableces la política, podrás especificar una lista de patrones de URL que indiquen los sitios que no pueden mostrar imágenes.
 
-      Si no estableces la política, se aplicará <ph name="DEFAULT_IMAGE_SETTING_ENABLED_POLICY_NAME" /> (si se establece) para todos los sitios. De lo contrario, se aplicará la configuración personal del usuario.
+      Si no estableces la política, se aplicará <ph name="DEFAULT_IMAGE_SETTING_ENABLED_POLICY_NAME" /> (si se establece) para todos los sitios. De lo contrario se aplicará la configuración personal del usuario.
 
        Para obtener información detallada sobre los patrones de <ph name="URL_LABEL" /> válidos, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.
 
@@ -4682,11 +4682,11 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="8217516105848565518">Esta política es obsoleta. Usa la política RemoteAccessHostDomainList en su lugar.</translation>
 <translation id="8244171102276095471">Habilitar los paquetes de encriptación RC4 en TLS</translation>
 <translation id="8244525275280476362">Demora de recuperación máxima después de invalidar una política</translation>
-<translation id="8251411417369363637">Si estableces la política como verdadera, se ejecutará todo el contenido <ph name="FLASH_PLUGIN_NAME" /> incorporado en los sitios web que permitan <ph name="FLASH_PLUGIN_NAME" />, incluido el contenido pequeño o de otros orígenes.
+<translation id="8251411417369363637">Si estableces la política como verdadera, se ejecutará todo el contenido <ph name="FLASH_PLUGIN_NAME" /> incorporado en sitios web que permitan <ph name="FLASH_PLUGIN_NAME" />, incluido el contenido de otros orígenes o el contenido pequeño.
 
-      Si estableces la política como falsa o no la estableces, podría bloquearse el contenido <ph name="FLASH_PLUGIN_NAME" /> de contenido pequeño o de otro orígenes.
+      Si estableces la política como falsa o no la estableces, podría bloquearse el contenido <ph name="FLASH_PLUGIN_NAME" /> de otros orígenes o pequeño.
 
-      Nota: Para controlar los sitios web que pueden ejecutar <ph name="FLASH_PLUGIN_NAME" />, consulta las siguientes políticas: <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />, <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> y <ph name="PLUGINS_BLOCKED_FOR_URLS_POLICY_NAME" />.</translation>
+      Nota: Para controlar qué sitios web pueden ejecutar <ph name="FLASH_PLUGIN_NAME" />, consulta las siguientes políticas: <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />, <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> y <ph name="PLUGINS_BLOCKED_FOR_URLS_POLICY_NAME" />.</translation>
 <translation id="8256688113167012935">Controla el nombre de cuenta <ph name="PRODUCT_OS_NAME" /> que aparece en la pantalla de acceso de la cuenta local del dispositivo que corresponda.
 
       Si esta política se establece, la pantalla de acceso utilizará la cadena especificada en el selector de acceso basado en imágenes de la cuenta local del dispositivo que corresponda.
@@ -4941,9 +4941,9 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
           Si configuras esta política, los usuarios no podrán cambiarla ni anularla.
 
           De lo contrario las combinaciones de teclas para las funciones de accesibilidad estarán habilitadas de forma predeterminada.</translation>
-<translation id="8520951634679398426">Si estableces la política, podrás establecer una lista de patrones de URL que especifiquen los sitios que pueden ejecutar JavaScript.
+<translation id="8520951634679398426">Si estableces la política, podrás especificar una lista de patrones de URL que indiquen los sitios que pueden ejecutar JavaScript.
 
-      Si no estableces la política, se aplicará <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" /> (si se establece) para todos los sitios. De lo contrario, se aplicará la configuración personal del usuario.
+      Si no estableces la política, se aplicará <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" /> (si se establece) para todos los sitios. De lo contrario se aplicará la configuración personal del usuario.
 
       Para obtener información detallada sobre los patrones de <ph name="URL_LABEL" /> válidos, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="8525526490824335042">Contenedor de Linux</translation>
@@ -5049,7 +5049,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
       Si estableces el valor "True", se enviará información sobre el Bluetooth del dispositivo.</translation>
 <translation id="8703488928438047864">Informar el estado de la placa</translation>
 <translation id="8704831857353097849">Lista de complementos inhabilitados</translation>
-<translation id="8705895771006864851">Si estableces la política como verdadera, los usuarios podrán utilizar la funcionalidad de traducción cuando corresponda. Verán una barra de herramientas integrada de traducción en <ph name="PRODUCT_NAME" /> y se agregará una opción de traducción al menú contextual que aparece cuando hacen clic con el botón derecho. Si estableces la política como falsa, se desactivarán todas las funciones integradas de traducción.
+<translation id="8705895771006864851">Si estableces la política como verdadera, los usuarios podrán utilizar la funcionalidad de traducción cuando corresponda. Verán una barra de herramientas de traducción integrada en <ph name="PRODUCT_NAME" /> y se agregará una opción de traducción al menú contextual que aparece al hacer clic con el botón derecho. Si estableces la política como falsa, se desactivarán todas las funciones de traducción integradas.
 
       Si estableces la política, los usuarios no podrán cambiar esta función. Si no la estableces, los usuarios podrán cambiar la configuración.</translation>
 <translation id="8708284670795912158">Si estableces la política como verdadera, <ph name="PRODUCT_NAME" /> podrá reproducir contenido multimedia de forma automática. Si estableces la política como falsa, <ph name="PRODUCT_NAME" /> dejará de reproducir contenido multimedia de forma automática.
@@ -5288,9 +5288,9 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 
       El valor de la política debe especificarse en segundos.</translation>
 <translation id="9021334785554745279">Patrones de URL en los que es necesario comprobar si las descargas infringen las normas de protección de datos sensibles</translation>
-<translation id="9030094532108679680">Si estableces la política (solo recomendadas), podrás registrar una lista de controladores de protocolo, que se combinan con los que registra el usuario. Ambas configuraciones estarán en uso. Establece la propiedad (el protocolo) conforme al esquema, como mailto, y establece la propiedad (URL) conforme al patrón de URL de la aplicación que controla el esquema. El patrón puede incluir una especificación %s que se reemplazará por la URL controlada.
+<translation id="9030094532108679680">Si estableces la política (solo como recomendada), podrás registrar una lista de controladores de protocolo, que se combinarán con los que registre el usuario; así, ambos conjuntos de controladores estarán en uso. Asigna a la propiedad "protocolo" el esquema –p. ej. mailto– y a la propiedad "URL" el patrón de URL de la aplicación que controla el esquema. El patrón puede incluir el valor "%s", que se reemplazará por la URL controlada.
 
-      Los usuarios no podrán quitar un controlador de protocolo que la política haya registrado. Sin embargo, al instalar un nuevo controlador predeterminado, los usuarios podrán cambiar los controladores de protocolo que la política haya instalado.</translation>
+      Los usuarios no podrán quitar un controlador de protocolo que haya registrado la política. Sin embargo, al instalar un nuevo controlador predeterminado, los usuarios podrán cambiar los controladores de protocolo que haya instalado la política.</translation>
 <translation id="9035086760683255833">Habilita la función de accesibilidad para destacar el cursor del teclado.
 
           Esta función destaca el elemento donde está el cursor del teclado.
@@ -5334,11 +5334,11 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
       Si estableces la política, <ph name="PRODUCT_NAME" /> usará el tamaño del almacenamiento en caché que proporciones, independientemente de que los usuarios hayan especificado o no la función experimental --disk-cache-size. (Los valores expresados en megabytes se redondearán hacia arriba).
 
       Si no estableces la política, <ph name="PRODUCT_NAME" /> usará el tamaño predeterminado. Los usuarios podrán cambiar la configuración mediante la función experimental --disk-cache-size.</translation>
-<translation id="9062348747995618422">Si estableces la política, podrás establecer una lista de patrones de URL que especifiquen los sitios que pueden ejecutar el complemento <ph name="FLASH_PLUGIN_NAME" />.
+<translation id="9062348747995618422">Si estableces la política, podrás especificar una lista de patrones de URL que indiquen los sitios que pueden ejecutar el complemento <ph name="FLASH_PLUGIN_NAME" />.
 
-      Si no estableces la política, se aplicará <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> (si se establece) para todos los sitios. De lo contrario, se aplicará la configuración personal del usuario.
+      Si no estableces la política, se aplicará <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> (si se establece) para todos los sitios. De lo contrario se aplicará la configuración personal del usuario.
 
-      Para obtener información detallada sobre los patrones de URL válidos, consulta: https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. Sin embargo, a partir de la versión M85, para esta política ya no serán compatibles los patrones con los comodines "*" y "[*.]" en el host.</translation>
+      Para obtener información detallada sobre los patrones de URL válidos, consulta: https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. Sin embargo, a partir de la versión M85, ya no serán compatibles para esta política los patrones que incluyan comodines "*" y "[*.]" en el host.</translation>
 <translation id="9077227880520270584">Temporizador para el acceso automático de la cuenta local del dispositivo</translation>
 <translation id="9084985621503260744">Especificar si la actividad de video afecta a la administración de energía</translation>
 <translation id="9088433379343318874">Habilitar el proveedor de contenido de un usuario supervisado</translation>

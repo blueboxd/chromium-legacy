@@ -10,8 +10,9 @@
 
 namespace performance_manager {
 
-// Like the above, but for browser tests. Full process trees and live RFHs, etc,
-// are created. Meant to be used from components_browsertests and browser_tests.
+// Like PerformanceManagerTestHarness, but for browser tests. Full process
+// trees and live RFHs, etc, are created. Meant to be used from
+// components_browsertests and browser_tests.
 class PerformanceManagerBrowserTestHarness
     : public content::ContentBrowserTest {
   using Super = content::ContentBrowserTest;

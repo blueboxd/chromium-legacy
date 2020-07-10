@@ -26,6 +26,9 @@ enum class InstallErrors {
 
   // Failed to find a path to the install executable.
   kExecutableFilePathDoesNotExist = -4,
+
+  // Executable path does not contain an executable file.
+  kExecutablePathNotExecutable = -5
 };
 
 // Mounts the DMG specified by |dmg_file_path|. The install executable located

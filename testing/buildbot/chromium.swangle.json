@@ -31,7 +31,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/webgl_conformance_swangle_passthrough_tests/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
       },
       {
         "args": [
@@ -61,7 +61,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/webgl_conformance_swiftshader_validating_tests/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
       }
     ]
   },
@@ -1345,7 +1345,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/webgl_conformance_swangle_passthrough_tests/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
       },
       {
         "args": [
@@ -1377,7 +1377,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/webgl_conformance_swiftshader_validating_tests/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
       }
     ]
   },
@@ -1411,7 +1411,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/webgl_conformance_swangle_passthrough_tests/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
       },
       {
         "args": [
@@ -1441,7 +1441,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/webgl_conformance_swiftshader_validating_tests/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
       }
     ]
   },

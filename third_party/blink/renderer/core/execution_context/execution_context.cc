@@ -56,8 +56,11 @@
 
 namespace blink {
 
-ExecutionContext::ExecutionContext(v8::Isolate* isolate, Agent* agent)
+ExecutionContext::ExecutionContext(v8::Isolate* isolate,
+                                   Agent* agent,
+                                   SecurityContext::SecurityContextType type)
     : isolate_(isolate),
+      security_context_(type),
       agent_(agent),
       circular_sequential_id_(0),
       in_dispatch_error_event_(false),
@@ -70,6 +73,12 @@ ExecutionContext::ExecutionContext(v8::Isolate* isolate, Agent* agent)
 }
 
 ExecutionContext::~ExecutionContext() = default;
+
+void ExecutionContext::Initialize(const SecurityContextInit& init) {
+  security_context_.Initialize(init);
+  if (GetOriginTrialContext())
+    GetOriginTrialContext()->BindExecutionContext(this);
+}
 
 // static
 ExecutionContext* ExecutionContext::From(const ScriptState* script_state) {
@@ -258,25 +267,25 @@ ContentSecurityPolicy* ExecutionContext::GetContentSecurityPolicyForWorld(
 }
 
 const SecurityOrigin* ExecutionContext::GetSecurityOrigin() const {
-  return GetSecurityContext().GetSecurityOrigin();
+  return security_context_.GetSecurityOrigin();
 }
 
 SecurityOrigin* ExecutionContext::GetMutableSecurityOrigin() {
-  return GetSecurityContext().GetMutableSecurityOrigin();
+  return security_context_.GetMutableSecurityOrigin();
 }
 
 ContentSecurityPolicy* ExecutionContext::GetContentSecurityPolicy() const {
-  return GetSecurityContext().GetContentSecurityPolicy();
+  return security_context_.GetContentSecurityPolicy();
 }
 
 network::mojom::blink::WebSandboxFlags ExecutionContext::GetSandboxFlags()
     const {
-  return GetSecurityContext().GetSandboxFlags();
+  return security_context_.GetSandboxFlags();
 }
 
 bool ExecutionContext::IsSandboxed(
     network::mojom::blink::WebSandboxFlags mask) const {
-  return GetSecurityContext().IsSandboxed(mask);
+  return security_context_.IsSandboxed(mask);
 }
 
 const base::UnguessableToken& ExecutionContext::GetAgentClusterID() const {
@@ -358,6 +367,7 @@ void ExecutionContext::RemoveURLFromMemoryCache(const KURL& url) {
 }
 
 void ExecutionContext::Trace(Visitor* visitor) const {
+  visitor->Trace(security_context_);
   visitor->Trace(agent_);
   visitor->Trace(public_url_manager_);
   visitor->Trace(pending_exceptions_);
@@ -433,12 +443,12 @@ bool ExecutionContext::IsFeatureEnabled(
   }
 
   bool should_report;
-  bool enabled = GetSecurityContext().IsFeatureEnabled(feature, &should_report);
+  bool enabled = security_context_.IsFeatureEnabled(feature, &should_report);
 
   if (enabled) {
     // Report if the proposed header semantics change would have affected the
     // outcome. (https://crbug.com/937131)
-    const FeaturePolicy* policy = GetSecurityContext().GetFeaturePolicy();
+    const FeaturePolicy* policy = security_context_.GetFeaturePolicy();
     url::Origin origin = GetSecurityOrigin()->ToUrlOrigin();
     if (!policy->GetProposedFeatureValueForOrigin(feature, origin)) {
       // Count that there was a change in this page load.
@@ -481,7 +491,7 @@ bool ExecutionContext::IsFeatureEnabled(
     return true;
 
   SecurityContext::FeatureStatus status =
-      GetSecurityContext().IsFeatureEnabled(feature, threshold_value);
+      security_context_.IsFeatureEnabled(feature, threshold_value);
   if (status.should_report &&
       report_option == ReportOptions::kReportOnFailure) {
     // If both |enabled| and |should_report| are true, the usage must have
@@ -497,12 +507,12 @@ bool ExecutionContext::IsFeatureEnabled(
 }
 
 bool ExecutionContext::RequireTrustedTypes() const {
-  return GetSecurityContext().TrustedTypesRequiredByPolicy() &&
+  return security_context_.TrustedTypesRequiredByPolicy() &&
          RuntimeEnabledFeatures::TrustedDOMTypesEnabled(this);
 }
 
 String ExecutionContext::addressSpaceForBindings() const {
-  switch (GetSecurityContext().AddressSpace()) {
+  switch (address_space_) {
     case network::mojom::IPAddressSpace::kPublic:
     case network::mojom::IPAddressSpace::kUnknown:
       return "public";

@@ -72,6 +72,9 @@ class VIZ_SERVICE_EXPORT OutputPresenter {
     ~OverlayData();
     OverlayData& operator=(OverlayData&&);
 
+    const gpu::Mailbox& mailbox() const;
+    bool IsInUseByWindowServer() const;
+
    private:
     std::unique_ptr<gpu::SharedImageRepresentationOverlay> representation_;
     std::unique_ptr<gpu::SharedImageRepresentationOverlay::ScopedReadAccess>

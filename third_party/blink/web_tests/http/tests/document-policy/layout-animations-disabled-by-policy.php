@@ -6,7 +6,7 @@
 // This test ensures that non-composited animations are not interpolated when
 // the 'layout-animations' feature is disabled.
 
-Header("Document-Policy: no-layout-animations");
+Header("Document-Policy: layout-animations=?0");
 ?>
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>

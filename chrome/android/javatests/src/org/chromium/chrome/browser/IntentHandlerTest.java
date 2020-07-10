@@ -15,6 +15,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.annotation.UiThreadTest;
 import android.support.test.rule.UiThreadTestRule;
 
+import androidx.browser.customtabs.CustomTabsSessionToken;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
@@ -29,6 +30,8 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
+import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.test.CommandLineInitRule;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
@@ -273,7 +276,7 @@ public class IntentHandlerTest {
     @SmallTest
     @UiThreadTest
     @Feature({"Android-AppBase"})
-    public void testRefererUrl_extraReferrer() {
+    public void testReferrerUrl_extraReferrer() {
         // Check that EXTRA_REFERRER is not accepted with a random URL.
         Intent foreignIntent = new Intent(Intent.ACTION_VIEW);
         foreignIntent.putExtra(Intent.EXTRA_REFERRER, GOOGLE_URL);
@@ -306,7 +309,7 @@ public class IntentHandlerTest {
     @SmallTest
     @UiThreadTest
     @Feature({"Android-AppBase"})
-    public void testRefererUrl_extraHeadersInclReferer() {
+    public void testReferrerUrl_extraHeadersInclReferer() {
         // Check that invalid header specified in EXTRA_HEADERS isn't used.
         Bundle bundle = new Bundle();
         bundle.putString("Accept", "application/xhtml+xml");
@@ -322,7 +325,7 @@ public class IntentHandlerTest {
     @SmallTest
     @UiThreadTest
     @Feature({"Android-AppBase"})
-    public void testRefererUrl_extraHeadersInclRefererMultiple() {
+    public void testReferrerUrl_extraHeadersInclRefererMultiple() {
         // Check that invalid header specified in EXTRA_HEADERS isn't used.
         Bundle bundle = new Bundle();
         bundle.putString("Accept", "application/xhtml+xml");
@@ -339,7 +342,7 @@ public class IntentHandlerTest {
     @SmallTest
     @UiThreadTest
     @Feature({"Android-AppBase"})
-    public void testRefererUrl_extraHeadersOnlyReferer() {
+    public void testReferrerUrl_extraHeadersOnlyReferer() {
         // Check that invalid header specified in EXTRA_HEADERS isn't used.
         Bundle bundle = new Bundle();
         bundle.putString("Referer", GOOGLE_URL);
@@ -352,7 +355,7 @@ public class IntentHandlerTest {
     @SmallTest
     @UiThreadTest
     @Feature({"Android-AppBase"})
-    public void testRefererUrl_extraHeadersAndExtraReferrer() {
+    public void testReferrerUrl_extraHeadersAndExtraReferrer() {
         String validReferer = "android-app://package/http/url";
         Bundle bundle = new Bundle();
         bundle.putString("Referer", GOOGLE_URL);
@@ -368,7 +371,7 @@ public class IntentHandlerTest {
     @SmallTest
     @UiThreadTest
     @Feature({"Android-AppBase"})
-    public void testRefererUrl_extraHeadersValidReferrer() {
+    public void testReferrerUrl_extraHeadersValidReferrer() {
         String validReferer = "android-app://package/http/url";
         Bundle bundle = new Bundle();
         bundle.putString("Referer", validReferer);
@@ -377,6 +380,20 @@ public class IntentHandlerTest {
         Assert.assertEquals(
                 validReferer, IntentHandler.getReferrerUrlIncludingExtraHeaders(headersIntent));
         Assert.assertNull(IntentHandler.getExtraHeadersFromIntent(headersIntent));
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    @Feature({"Android-AppBase"})
+    public void testReferrerUrl_customTabIntentWithSession() {
+        Context context = InstrumentationRegistry.getTargetContext();
+        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
+                context, "https://www.google.com/");
+        Assert.assertTrue(CustomTabsConnection.getInstance().newSession(
+                CustomTabsSessionToken.getSessionTokenFromIntent(intent)));
+        Assert.assertEquals("android-app://org.chromium.chrome.tests",
+                IntentHandler.getReferrerUrlIncludingExtraHeaders(intent));
     }
 
     @Test

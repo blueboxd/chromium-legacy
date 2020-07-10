@@ -182,6 +182,8 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
 
   bool is_virtual_keyboard_shown() const { return is_virtual_keyboard_shown_; }
 
+  bool in_tablet_mode() const { return in_tablet_mode_; }
+
   // Gets the current color for the shelf control buttons.
   SkColor GetShelfControlButtonColor() const;
 

@@ -1988,74 +1988,74 @@
     ],
 
     'libfuzzer_asan_debug_bot': [
-      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'disable_seed_corpus',
+      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'disable_seed_corpus', 'mojo_fuzzer',
     ],
 
     'libfuzzer_asan_debug_bot_v8_arm64': [
-      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'v8_simulate_arm64', 'disable_seed_corpus',
+      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'v8_simulate_arm64', 'disable_seed_corpus', 'mojo_fuzzer',
     ],
 
     'libfuzzer_asan_debug_bot_x86': [
-      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86', 'x86_host',  'disable_seed_corpus',
+      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86', 'x86_host',  'disable_seed_corpus', 'mojo_fuzzer',
     ],
 
     'libfuzzer_asan_debug_bot_x86_v8_arm': [
-      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86_host', 'v8_simulate_arm',  'disable_seed_corpus',
+      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86_host', 'v8_simulate_arm',  'disable_seed_corpus', 'mojo_fuzzer',
     ],
 
     'libfuzzer_chromeos_asan_release_bot': [
-      'libfuzzer', 'asan', 'shared_release_bot', 'chromeos_with_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'disable_seed_corpus',
+      'libfuzzer', 'asan', 'shared_release_bot', 'chromeos_with_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'disable_seed_corpus', 'mojo_fuzzer',
     ],
 
     'libfuzzer_asan_release_bot': [
-      'libfuzzer', 'asan', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+      'libfuzzer', 'asan', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'mojo_fuzzer',
     ],
 
     'libfuzzer_asan_release_bot_v8_arm64': [
-      'libfuzzer', 'asan', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'v8_simulate_arm64', 'disable_seed_corpus',
+      'libfuzzer', 'asan', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'v8_simulate_arm64', 'disable_seed_corpus', 'mojo_fuzzer',
     ],
 
     'libfuzzer_asan_release_bot_x86': [
-      'libfuzzer', 'asan', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86', 'x86_host', 'disable_seed_corpus',
+      'libfuzzer', 'asan', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86', 'x86_host', 'disable_seed_corpus', 'mojo_fuzzer',
     ],
 
     'libfuzzer_asan_release_bot_x86_v8_arm': [
-      'libfuzzer', 'asan', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86_host', 'v8_simulate_arm', 'disable_seed_corpus',
+      'libfuzzer', 'asan', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86_host', 'v8_simulate_arm', 'disable_seed_corpus', 'mojo_fuzzer',
     ],
 
     'libfuzzer_asan_release_trybot': [
-      'libfuzzer', 'asan', 'shared_release_trybot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+      'libfuzzer', 'asan', 'shared_release_trybot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'mojo_fuzzer',
     ],
 
     'libfuzzer_asan_clang_tot_release': [
-      'libfuzzer', 'asan', 'clang_tot', 'release', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl',
+      'libfuzzer', 'asan', 'clang_tot', 'release', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'mojo_fuzzer',
     ],
 
     'libfuzzer_msan_release_bot': [
-      'libfuzzer', 'msan', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'disable_seed_corpus',
+      'libfuzzer', 'msan', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'disable_seed_corpus', 'mojo_fuzzer',
     ],
 
     'libfuzzer_ubsan_release_bot': [
-      'libfuzzer', 'ubsan_security', 'release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'disable_seed_corpus',
+      'libfuzzer', 'ubsan_security', 'release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'disable_seed_corpus', 'mojo_fuzzer',
     ],
 
     'libfuzzer_mac_asan_shared_release_bot': [
-      'libfuzzer', 'asan', 'shared_release_bot', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+      'libfuzzer', 'asan', 'shared_release_bot', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'mojo_fuzzer',
     ],
 
     # Note that because of optimize_for_fuzzing, Windows cannot share a config
     # with other libFuzzer builds. optimize_for_fuzzing is used by the other
     # libFuzzer build configs but it does not work on Windows.
     'libfuzzer_windows_asan_release_bot': [
-      'libfuzzer', 'asan', 'release_bot', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl', 'minimal_symbols',
+      'libfuzzer', 'asan', 'release_bot', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl', 'minimal_symbols', 'mojo_fuzzer',
     ],
 
     'libfuzzer_windows_asan_clang_tot_release_bot': [
-      'libfuzzer', 'asan', 'clang_tot', 'release', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl', 'minimal_symbols',
+      'libfuzzer', 'asan', 'clang_tot', 'release', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl', 'minimal_symbols', 'mojo_fuzzer',
     ],
 
     'libfuzzer_windows_asan_release_trybot': [
-      'libfuzzer', 'asan', 'release_trybot', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl',
+      'libfuzzer', 'asan', 'release_trybot', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl', 'mojo_fuzzer',
     ],
 
     'mac_arm64_release_bot': [
@@ -2726,6 +2726,10 @@
 
     'ios_use_goma_rbe': {
       'gn_args': 'ios_use_goma_rbe=true'
+    },
+
+    'mojo_fuzzer': {
+      'gn_args': 'enable_mojom_fuzzer=true',
     },
 
     'kevin': {

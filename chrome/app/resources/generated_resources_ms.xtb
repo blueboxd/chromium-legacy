@@ -377,7 +377,7 @@
 <translation id="1468571364034902819">Tidak dapat menggunakan profil ini</translation>
 <translation id="1470084204649225129">{NUM_TABS,plural, =1{Tambahkan Tab pada Kumpulan Baharu}other{Tambahkan Tab pada Kumpulan Baharu}}</translation>
 <translation id="1472675084647422956">Tunjukkan lagi</translation>
-<translation id="1474785664565228650">Perubahan dalam tetapan mikrofon memerlukan Parallels Desktop dilancarkan semula. Lancarkan semula Desktop Parallels untuk meneruskan.</translation>
+<translation id="1474785664565228650">Perubahan dalam tetapan mikrofon memerlukan Desktop Parallels dilancarkan semula. Lancarkan semula Desktop Parallels untuk meneruskan.</translation>
 <translation id="1475502736924165259">Anda mempunyai sijil pada fail yang tidak sepadan dengan mana-mana kategori lain</translation>
 <translation id="1476088332184200792">Salin ke Peranti Anda</translation>
 <translation id="1476607407192946488">&amp;Tetapan Bahasa</translation>
@@ -2317,7 +2317,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="3839516600093027468">Sentiasa sekat <ph name="HOST" /> daripada melihat papan keratan</translation>
 <translation id="3841964634449506551">Kata laluan tidak sah</translation>
 <translation id="3842552989725514455">Fon Serif</translation>
-<translation id="3843464315703645664">Senarai dibenarkan secara dalaman</translation>
+<translation id="3843464315703645664">Senarai izin dalaman</translation>
 <translation id="3846116211488856547">Dapatkan alatan untuk membangunkan tapak web, apl Android dan pelbagai lagi. Pemasangan Linux akan memuat turun <ph name="DOWNLOAD_SIZE" /> data.</translation>
 <translation id="3847319713229060696">Bantu tingkatkan keselamatan di web untuk semua orang</translation>
 <translation id="385051799172605136">Kembali</translation>

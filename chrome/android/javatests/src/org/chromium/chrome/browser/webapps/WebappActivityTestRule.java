@@ -88,6 +88,7 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
     public Intent createIntent() {
         Intent intent =
                 new Intent(InstrumentationRegistry.getTargetContext(), WebappActivity.class);
+        intent.setAction(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(WebappActivity.WEBAPP_SCHEME + "://" + WEBAPP_ID));
         intent.putExtra(ShortcutHelper.EXTRA_ID, WEBAPP_ID);
         intent.putExtra(ShortcutHelper.EXTRA_URL, "about:blank");

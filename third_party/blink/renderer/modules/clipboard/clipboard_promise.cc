@@ -433,15 +433,21 @@ void ClipboardPromise::RequestPermission(
     return;
   }
 
-  if (!window.IsFeatureEnabled(
-          mojom::blink::FeaturePolicyFeature::kClipboard,
-          ReportOptions::kReportOnFailure,
-          "The Clipboard API has been blocked because of a Feature Policy "
-          "applied to the current document. See https://goo.gl/EuHzyv for more "
-          "details.")) {
+  constexpr char kFeaturePolicyMessage[] =
+      "The Clipboard API has been blocked because of a Feature Policy applied "
+      "to the current document. See https://goo.gl/EuHzyv for more details.";
+
+  if ((permission == mojom::blink::PermissionName::CLIPBOARD_READ &&
+       !window.IsFeatureEnabled(
+           mojom::blink::FeaturePolicyFeature::kClipboardRead,
+           ReportOptions::kReportOnFailure, kFeaturePolicyMessage)) ||
+      (permission == mojom::blink::PermissionName::CLIPBOARD_WRITE &&
+       !window.IsFeatureEnabled(
+           mojom::blink::FeaturePolicyFeature::kClipboardWrite,
+           ReportOptions::kReportOnFailure, kFeaturePolicyMessage))) {
     script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError,
-        "Disabled in this document by Feature Policy."));
+        kFeaturePolicyMessage));
     return;
   }
 

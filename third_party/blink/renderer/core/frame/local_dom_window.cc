@@ -71,7 +71,6 @@
 #include "third_party/blink/renderer/core/events/pop_state_event.h"
 #include "third_party/blink/renderer/core/execution_context/agent_metrics_collector.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
-#include "third_party/blink/renderer/core/execution_context/security_context_init.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
 #include "third_party/blink/renderer/core/frame/bar_prop.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -231,7 +230,9 @@ static void UntrackAllBeforeUnloadEventListeners(LocalDOMWindow* dom_window) {
 
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame, WindowAgent* agent)
     : DOMWindow(frame),
-      ExecutionContext(V8PerIsolateData::MainThreadIsolate(), agent),
+      ExecutionContext(V8PerIsolateData::MainThreadIsolate(),
+                       agent,
+                       SecurityContext::kWindow),
       visualViewport_(MakeGarbageCollected<DOMVisualViewport>(this)),
       should_print_when_finished_loading_(false),
       input_method_controller_(
@@ -367,14 +368,6 @@ HttpsState LocalDOMWindow::GetHttpsState() const {
 
 ResourceFetcher* LocalDOMWindow::Fetcher() const {
   return document()->Fetcher();
-}
-
-SecurityContext& LocalDOMWindow::GetSecurityContext() {
-  return document()->GetSecurityContext();
-}
-
-const SecurityContext& LocalDOMWindow::GetSecurityContext() const {
-  return document()->GetSecurityContext();
 }
 
 bool LocalDOMWindow::CanExecuteScripts(

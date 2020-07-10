@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -196,8 +197,7 @@ class AutoEnrollmentClientImplTest
       bool is_license_packaged_with_device) {
     if (GetParam() == AutoEnrollmentProtocol::kFRE) {
       ServerWillSendStateForFRE(management_domain, restore_mode,
-                                device_disabled_message,
-                                is_license_packaged_with_device);
+                                device_disabled_message, base::nullopt);
     } else {
       ServerWillSendStateForInitialEnrollment(
           management_domain, is_license_packaged_with_device,
@@ -218,7 +218,8 @@ class AutoEnrollmentClientImplTest
       const std::string& management_domain,
       em::DeviceStateRetrievalResponse::RestoreMode restore_mode,
       const std::string& device_disabled_message,
-      bool is_license_packaged_with_device) {
+      base::Optional<em::DeviceInitialEnrollmentStateResponse>
+          initial_state_response) {
     em::DeviceManagementResponse response;
     em::DeviceStateRetrievalResponse* state_response =
         response.mutable_device_state_retrieval_response();
@@ -228,12 +229,12 @@ class AutoEnrollmentClientImplTest
     state_response->mutable_disabled_state()->set_message(
         device_disabled_message);
 
-    // Include an initial state response indicating a license.
-    if (is_license_packaged_with_device &&
-        restore_mode == em::DeviceStateRetrievalResponse::RESTORE_MODE_NONE) {
-      state_response->mutable_initial_state_response()
-          ->set_is_license_packaged_with_device(
-              is_license_packaged_with_device);
+    ASSERT_TRUE(!initial_state_response ||
+                restore_mode ==
+                    em::DeviceStateRetrievalResponse::RESTORE_MODE_NONE);
+    if (initial_state_response) {
+      state_response->mutable_initial_state_response()->MergeFrom(
+          *initial_state_response);
     }
 
     EXPECT_CALL(*service_, StartJob(_))
@@ -385,9 +386,12 @@ class AutoEnrollmentClientImplTest
     base::Optional<bool> actual_is_license_packaged_with_device;
     actual_is_license_packaged_with_device =
         state_dict->FindBoolPath(kDeviceStatePackagedLicense);
-    EXPECT_TRUE(actual_is_license_packaged_with_device.has_value());
-    EXPECT_EQ(expected_is_license_packaged_with_device,
-              actual_is_license_packaged_with_device.value());
+    if (actual_is_license_packaged_with_device) {
+      EXPECT_EQ(expected_is_license_packaged_with_device,
+                actual_is_license_packaged_with_device.value());
+    } else {
+      EXPECT_FALSE(expected_is_license_packaged_with_device);
+    }
   }
 
   const em::DeviceAutoEnrollmentRequest& auto_enrollment_request() {
@@ -750,29 +754,6 @@ TEST_P(AutoEnrollmentClientImplTest, NoReEnrollment) {
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_NO_ENROLLMENT, state_);
 }
 
-TEST_P(AutoEnrollmentClientImplTest, NoReEnrollmentWithInitialState) {
-  InSequence sequence;
-  ServerWillReply(-1, true, true);
-  ServerWillSendState(std::string(),
-                      em::DeviceStateRetrievalResponse::RESTORE_MODE_NONE,
-                      std::string(), kWithLicense);
-  client()->Start();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_AUTO_ENROLLMENT,
-            auto_enrollment_job_type_);
-  EXPECT_EQ(GetExpectedStateRetrievalJobType(), state_retrieval_job_type_);
-  EXPECT_EQ(AUTO_ENROLLMENT_STATE_NO_ENROLLMENT, state_);
-  VerifyCachedResult(true, 8);
-  VerifyServerBackedStateForInitialEnrollment(std::string(), std::string(),
-                                              kWithLicense);
-
-  // Network changes don't trigger retries after obtaining a response from
-  // the server.
-  client()->OnConnectionChanged(
-      network::mojom::ConnectionType::CONNECTION_ETHERNET);
-  EXPECT_EQ(AUTO_ENROLLMENT_STATE_NO_ENROLLMENT, state_);
-}
-
 TEST_P(AutoEnrollmentClientImplTest, NoBitsUploaded) {
   CreateClient(0, 0);
   ServerWillReply(-1, false, false);
@@ -1090,6 +1071,105 @@ INSTANTIATE_TEST_SUITE_P(
     InitialEnrollment,
     AutoEnrollmentClientImplTest,
     testing::Values(AutoEnrollmentProtocol::kInitialEnrollment));
+
+class AutoEnrollmentClientImplFREToInitialEnrollmentTest
+    : public AutoEnrollmentClientImplTest {};
+
+TEST_P(AutoEnrollmentClientImplFREToInitialEnrollmentTest,
+       NoReEnrollmentInitialEnrollmentLicensePackaging) {
+  InSequence sequence;
+  ServerWillReply(-1, true, true);
+  em::DeviceInitialEnrollmentStateResponse initial_state_response;
+  initial_state_response.set_is_license_packaged_with_device(kWithLicense);
+  ServerWillSendStateForFRE(
+      std::string(), em::DeviceStateRetrievalResponse::RESTORE_MODE_NONE,
+      std::string(),
+      base::Optional<em::DeviceInitialEnrollmentStateResponse>(
+          initial_state_response));
+  client()->Start();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_AUTO_ENROLLMENT,
+            auto_enrollment_job_type_);
+  EXPECT_EQ(GetExpectedStateRetrievalJobType(), state_retrieval_job_type_);
+  EXPECT_EQ(AUTO_ENROLLMENT_STATE_NO_ENROLLMENT, state_);
+  VerifyCachedResult(true, 8);
+  VerifyServerBackedStateForInitialEnrollment(std::string(), std::string(),
+                                              kWithLicense);
+
+  // Network changes don't trigger retries after obtaining a response from
+  // the server.
+  client()->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_ETHERNET);
+  EXPECT_EQ(AUTO_ENROLLMENT_STATE_NO_ENROLLMENT, state_);
+}
+
+TEST_P(AutoEnrollmentClientImplFREToInitialEnrollmentTest,
+       NoReEnrollmentInitialEnrollmentZeroTouch) {
+  InSequence sequence;
+  ServerWillReply(-1, true, true);
+  em::DeviceInitialEnrollmentStateResponse initial_state_response;
+  initial_state_response.set_initial_enrollment_mode(
+      em::DeviceInitialEnrollmentStateResponse::
+          INITIAL_ENROLLMENT_MODE_ZERO_TOUCH_ENFORCED);
+  initial_state_response.set_management_domain("example.com");
+  ServerWillSendStateForFRE(
+      std::string(), em::DeviceStateRetrievalResponse::RESTORE_MODE_NONE,
+      std::string(),
+      base::Optional<em::DeviceInitialEnrollmentStateResponse>(
+          initial_state_response));
+  client()->Start();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_AUTO_ENROLLMENT,
+            auto_enrollment_job_type_);
+  EXPECT_EQ(GetExpectedStateRetrievalJobType(), state_retrieval_job_type_);
+  EXPECT_EQ(AUTO_ENROLLMENT_STATE_TRIGGER_ZERO_TOUCH, state_);
+  VerifyCachedResult(true, 8);
+  VerifyServerBackedStateForInitialEnrollment(
+      "example.com", kDeviceStateInitialModeEnrollmentZeroTouch,
+      kNotWithLicense);
+
+  // Network changes don't trigger retries after obtaining a response from
+  // the server.
+  client()->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_ETHERNET);
+  EXPECT_EQ(AUTO_ENROLLMENT_STATE_TRIGGER_ZERO_TOUCH, state_);
+}
+
+TEST_P(AutoEnrollmentClientImplFREToInitialEnrollmentTest,
+       NoReEnrollmentInitialEnrollmentGuaranteed) {
+  InSequence sequence;
+  ServerWillReply(-1, true, true);
+  em::DeviceInitialEnrollmentStateResponse initial_state_response;
+  initial_state_response.set_initial_enrollment_mode(
+      em::DeviceInitialEnrollmentStateResponse::
+          INITIAL_ENROLLMENT_MODE_ENROLLMENT_ENFORCED);
+  initial_state_response.set_management_domain("example.com");
+  ServerWillSendStateForFRE(
+      std::string(), em::DeviceStateRetrievalResponse::RESTORE_MODE_NONE,
+      std::string(),
+      base::Optional<em::DeviceInitialEnrollmentStateResponse>(
+          initial_state_response));
+  client()->Start();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_AUTO_ENROLLMENT,
+            auto_enrollment_job_type_);
+  EXPECT_EQ(GetExpectedStateRetrievalJobType(), state_retrieval_job_type_);
+  EXPECT_EQ(AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT, state_);
+  VerifyCachedResult(true, 8);
+  VerifyServerBackedStateForInitialEnrollment(
+      "example.com", kDeviceStateInitialModeEnrollmentEnforced,
+      kNotWithLicense);
+
+  // Network changes don't trigger retries after obtaining a response from
+  // the server.
+  client()->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_ETHERNET);
+  EXPECT_EQ(AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT, state_);
+}
+
+INSTANTIATE_TEST_SUITE_P(FREToInitialEnrollment,
+                         AutoEnrollmentClientImplFREToInitialEnrollmentTest,
+                         testing::Values(AutoEnrollmentProtocol::kFRE));
 
 }  // namespace
 }  // namespace policy

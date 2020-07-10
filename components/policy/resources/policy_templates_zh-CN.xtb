@@ -212,7 +212,7 @@
 
       如果您不设置此政策，系统会为所有网站应用 <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" />（若已设置）。否则，系统会应用用户的个人设置。
 
-      如需详细了解有效的<ph name="URL_LABEL" />格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
+      如需详细了解有效的 <ph name="URL_LABEL" /> 格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="1435659902881071157">设备级网络配置</translation>
 <translation id="1438739959477268107">默认的密钥生成设置</translation>
 <translation id="1449083855104537880">如果此政策设为 True，无障碍选项将会显示在系统任务栏菜单中。如果此政策设为 False，这些选项就不会显示在菜单中。
@@ -302,11 +302,11 @@
 <translation id="1588240398285670601">浏览器设置</translation>
 <translation id="1588456836529393506">通过设置此政策，您可以创建一个网址格式列表，从而指定自动授权哪些网站访问具有给定供应商 ID 和产品 ID 的 USB 设备。每个列表项都必须包含设备和网址，此政策才会有效。设备部分中的每项都可包含供应商 ID 和产品 ID 字段。被省略的任何 ID 都会被视为通配符，但例外情况是：如果未指定供应商 ID，便无法指定产品 ID。否则，此政策将会无效。
 
-      USB 权限模型会使用请求网址（发出请求的网站的网址）和嵌入网址（顶级框架网站的网址）来授权请求网址访问相应 USB 设备。如果发出请求的网站是在 iframe 中加载的，请求网址可能会与嵌入网址不同。因此，“urls”字段最多可包含 2 个以英文逗号分隔的字符串，以分别指定请求网址和嵌入网址。如果仅指定了 1 个网址，系统将会在请求网址与这个网址相符（无论嵌入网址的状态为何）时授权该网站访问相应 USB 设备。“urls”字段中的网址必须是有效网址，否则系统会忽略此政策。
+      USB 权限模型会使用请求网址（发出请求的网站的网址）和嵌入网址（顶级框架网站的网址）来授权请求网址访问相应 USB 设备。如果发出请求的网站是在 iframe 中加载的，请求网址可能会与嵌入网址不同。因此，“urls”字段最多可包含 2 个以英文逗号分隔的字符串，以分别指定请求网址和嵌入网址。如果仅指定了 1 个网址，那么无论嵌入网址的状态为何，系统将会在请求网站的网址与这个网址相符时授权该网站访问相应 USB 设备。“urls”字段中的网址必须是有效网址，否则系统会忽略此政策。
 
       如果您不设置此政策，系统会应用 <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" />（若已设置）。否则，系统会应用用户的个人设置。
 
-      此政策中的网址格式不应与通过 <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" /> 配置的网址格式冲突。如果它们存在冲突，此政策优先于 <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" /> 和 <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" />。
+      此政策中的网址格式不应与通过 <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" /> 配置的网址格式冲突。如果它们存在冲突，则此政策优先于 <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" /> 和 <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" />。
 
       此政策的值和 <ph name="DEVICE_WEB_USB_ALLOW_DEVICES_FOR_URLS_POLICY_NAME" /> 的值会合并。</translation>
 <translation id="1599424828227887013">在 Android 设备上为指定的来源启用网站隔离功能</translation>
@@ -724,7 +724,7 @@
 
       如果您不设置此政策，系统会为所有网站应用 <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" />（若已设置）。否则，系统会应用用户的个人设置。
 
-      如需详细了解有效的<ph name="URL_LABEL" />格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
+      如需详细了解有效的 <ph name="URL_LABEL" /> 格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="2215238871726750562">如果此政策设为 True，系统会阻止浏览器窗口在会话开始时启动。
 
       如果此政策设为 False 或未设置，系统会允许窗口启动。
@@ -747,7 +747,7 @@
 
       如果您不设置此政策，系统会为所有网站应用 <ph name="DEFAULT_POPUPS_SETTING_POLICY_NAME" />（若已设置）。否则，系统会应用用户的个人设置。
 
-      如需详细了解有效的<ph name="URL_LABEL" />格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
+      如需详细了解有效的 <ph name="URL_LABEL" /> 格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="2241498944622759244">该功能从未被发布，所以此政策已被弃用。如果此政策设为 true 或未设置，<ph name="PRODUCT_NAME" /> 将会根据当前网页来建议相关网页。
       这些建议是系统从 Google 服务器远程获取的。
 
@@ -1071,7 +1071,7 @@
 
       网址格式不得与 <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" /> 冲突。如果某个网址与这两项政策都相符，系统将不会以任一项政策为准。
 
-      如需详细了解有效的<ph name="URL_LABEL" />格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
+      如需详细了解有效的 <ph name="URL_LABEL" /> 格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="2633084400146331575">启用语音反馈</translation>
 <translation id="2647069081229792812">启用或停用书签修改功能</translation>
 <translation id="2649896281375932517">由用户决定</translation>
@@ -2395,7 +2395,7 @@
 
       如果您不设置此政策，系统会为所有网站应用 <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" />（若已设置）。否则，系统会应用用户的个人设置。
 
-      如需详细了解有效的<ph name="URL_LABEL" />格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
+      如需详细了解有效的 <ph name="URL_LABEL" /> 格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="4722122254122249791">为指定的来源启用网站隔离功能</translation>
 <translation id="4722399051042571387">如果设为 false，用户将无法设置安全系数低且易于猜中的 PIN 码。
 
@@ -2838,7 +2838,7 @@
 
       网址格式不能与 <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" /> 冲突。如果某个网址与这两项政策都相符，系统将不会以任一项政策为准。
 
-      如需详细了解有效的<ph name="URL_LABEL" />格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
+      如需详细了解有效的 <ph name="URL_LABEL" /> 格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="5417906792459853336">此政策旨在报告与设备的应用清单及使用情况有关的信息。
 
       如果此政策设为 false 或未设置，系统将不会报告这些信息。
@@ -2962,7 +2962,7 @@
 
       如果您不设置此政策，系统会为所有网站应用 <ph name="DEFAULT_POPUPS_SETTING_POLICY_NAME" />（若已设置）。否则，系统会应用用户的个人设置。
 
-      如需详细了解有效的<ph name="URL_LABEL" />格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
+      如需详细了解有效的 <ph name="URL_LABEL" /> 格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="5559079916187891399">此政策对 Android 应用没有任何影响。</translation>
 <translation id="5560039246134246593">在提取 <ph name="PRODUCT_NAME" /> 中的变体种子的方法中添加参数。
 
@@ -3437,9 +3437,9 @@
       如果设置了此政策，则只要用户未与登录屏幕互动的持续时间达到了指定的时长，系统就会自动登录指定的自助服务终端。必须已配置设备本地帐号（请参阅 |DeviceLocalAccounts|）。
 
       如果未设置此政策，系统将不会自动登录。</translation>
-<translation id="6366574325767783825">如果此政策设为 True 或未设置，<ph name="PRODUCT_NAME" /> 将会接受作为 Signed HTTP Exchange (SXG) 提供的网络内容。
+<translation id="6366574325767783825">如果此政策设为 True 或未设置，<ph name="PRODUCT_NAME" /> 将会接受通过 Signed HTTP Exchange (SXG) 提供的网络内容。
 
-      如果此政策设为 False，系统会阻止加载 Signed HTTP Exchange (SXG)。</translation>
+      如果此政策设为 False，系统会阻止加载 Signed HTTP Exchange (SXG) 内容。</translation>
 <translation id="6368011194414932347">配置主页网址</translation>
 <translation id="6368403635025849609">在这些网站上允许 JavaScript</translation>
 <translation id="6372105930898423193">允许重新启用 AppCache 功能，即使此功能默认处于关闭状态。</translation>
@@ -3955,7 +3955,7 @@
 
       如果您不设置此政策，系统会为所有网站应用 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />（若已设置）。否则，系统会应用用户的个人设置。
 
-      如需详细了解有效的网址格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。不过，从 M85 开始，此政策已不再支持以下类型的格式：主机名含有“*”/“[*.]”通配符。</translation>
+      如需详细了解有效的网址格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。不过，从 M85 开始，此政策已不再支持主机名中含有“*”或“[*.]”通配符的格式。</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="7187447094921703950">启用用电高峰转移电源管理政策。
 
@@ -4597,7 +4597,7 @@
 <translation id="8244525275280476362">政策失效后的最大提取延迟</translation>
 <translation id="8251411417369363637">如果此政策设为 True，允许运行 <ph name="FLASH_PLUGIN_NAME" /> 的网站中内嵌的所有 <ph name="FLASH_PLUGIN_NAME" /> 内容（包括其他来源的内容或不重要的内容）都会运行。
 
-      如果此政策设为 False 或未设置，系统可能会屏蔽其他来源的 <ph name="FLASH_PLUGIN_NAME" /> 内容或不重要的内容。
+      如果此政策设为 False 或未设置，系统可能会屏蔽其他来源的或不重要的 <ph name="FLASH_PLUGIN_NAME" /> 内容。
 
       请注意：如需控制哪些网站可以运行 <ph name="FLASH_PLUGIN_NAME" />，请参阅 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />、<ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> 和 <ph name="PLUGINS_BLOCKED_FOR_URLS_POLICY_NAME" /> 政策。</translation>
 <translation id="8256688113167012935">控制 <ph name="PRODUCT_OS_NAME" />在登录屏幕上为相应的设备本地帐号显示的帐号名。
@@ -4836,7 +4836,7 @@
 
       如果您不设置此政策，系统会为所有网站应用 <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" />（若已设置）。否则，系统会应用用户的个人设置。
 
-      如需详细了解有效的<ph name="URL_LABEL" />格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
+      如需详细了解有效的 <ph name="URL_LABEL" /> 格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="8525526490824335042">Linux 容器</translation>
 <translation id="8537051350735478658">如果此政策设为 True，系统会在 <ph name="PRODUCT_NAME" /> 地址栏中显示搜索建议。如果此政策设为 False，系统会停用此类搜索建议功能。
 
@@ -4930,7 +4930,7 @@
       如果此政策设为 true，系统将会报告设备的蓝牙信息。</translation>
 <translation id="8703488928438047864">报告主板状态</translation>
 <translation id="8704831857353097849">已停用插件的列表</translation>
-<translation id="8705895771006864851">如果此政策设为 True，<ph name="PRODUCT_NAME" /> 将会显示一个集成式翻译工具栏，并会在一旦用户右键点击鼠标即会出现的上下文菜单中显示一个翻译选项，以便适时地向用户提供翻译功能。将此政策设为 False 会关闭所有内置的翻译功能。
+<translation id="8705895771006864851">如果此政策设为 True，<ph name="PRODUCT_NAME" /> 将会显示一个集成式翻译工具栏，并且在用户点击鼠标右键时，出现的上下文菜单中会显示翻译选项，以便适时地向用户提供翻译功能。将此政策设为 False 会关闭所有内置的翻译功能。
 
       如果您设置了此政策，用户将无法更改这项功能。如果此政策未设置，用户便可以更改此设置。</translation>
 <translation id="8708284670795912158">将此政策设为 True 会允许 <ph name="PRODUCT_NAME" /> 自动播放媒体。将此政策设为 False 会阻止 <ph name="PRODUCT_NAME" /> 自动播放媒体。
@@ -5149,7 +5149,7 @@
 
       此政策的值应以秒为单位。</translation>
 <translation id="9021334785554745279">要针对其检查下载内容是否违反敏感数据保护规则的网址格式</translation>
-<translation id="9030094532108679680">通过设置此政策（仅当建议您这样做时），您可以注册一个协议处理程序列表以与用户注册的协议处理程序列表合并，从而同时使用这两组协议处理程序。“protocol”属性应设为“mailto”之类的协议，“URL”属性应设为处理该协议的应用所采用的网址格式。该格式可以包含 %s（将会替换为被处理的网址）。
+<translation id="9030094532108679680">通过设置此政策（仅为建议性政策），您可以注册一个协议处理程序列表以与用户注册的协议处理程序列表合并，从而同时使用这两组协议处理程序。“protocol”属性应设为“mailto”之类的协议，“URL”属性应设为处理该协议的应用所采用的网址格式。该格式可以包含一个 %s（将会替换为被处理的网址）。
 
       用户无法卸载由政策注册的协议处理程序，但可通过安装新的默认处理程序来更改由政策安装的协议处理程序。</translation>
 <translation id="9035086760683255833">启用“键盘焦点突出显示”无障碍功能。
@@ -5199,7 +5199,7 @@
 
       如果您不设置此政策，系统会为所有网站应用 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />（若已设置）。否则，系统会应用用户的个人设置。
 
-      如需详细了解有效的网址格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。不过，从 M85 开始，此政策已不再支持以下类型的格式：主机名含有“*”/“[*.]”通配符。</translation>
+      如需详细了解有效的网址格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。不过，从 M85 开始，此政策已不再支持主机名中含有“*”或“[*.]”通配符的格式。</translation>
 <translation id="9077227880520270584">设备本地帐号自动登录计时器</translation>
 <translation id="9084985621503260744">指定视频活动是否影响电源管理</translation>
 <translation id="9088433379343318874">启用受监管用户内容提供方</translation>

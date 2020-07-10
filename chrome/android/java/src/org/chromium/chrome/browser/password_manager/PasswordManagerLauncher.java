@@ -14,12 +14,13 @@ import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.password_manager.settings.PasswordSettings;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.sync.ModelType;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -55,8 +56,8 @@ public class PasswordManagerLauncher {
             RecordHistogram.recordEnumeratedHistogram(
                     "PasswordManager.ManagePasswordsReferrerSignedInAndSyncing", referrer,
                     ManagePasswordsReferrer.MAX_VALUE + 1);
-            if (!PrefServiceBridge.getInstance().isManagedPreference(
-                        Pref.CREDENTIALS_ENABLE_SERVICE)) {
+            if (!UserPrefs.get(Profile.getLastUsedRegularProfile())
+                            .isManagedPreference(Pref.CREDENTIALS_ENABLE_SERVICE)) {
                 if (tryShowingTheGooglePasswordManager(activity)) return;
             }
         }

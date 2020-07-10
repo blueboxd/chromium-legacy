@@ -210,7 +210,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SecondarySignInButton()];
   // Waits until the UI is fully presented before opening an URL.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 
   // Open new tab to cancel sign-in.
   [ChromeEarlGrey simulateExternalAppURLOpening];
@@ -458,10 +458,10 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
       break;
   }
   if (tapSettingsLink) {
-    [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+    [ChromeEarlGreyUI waitForAppToIdle];
     [SigninEarlGreyUI tapSettingsLink];
   }
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 }
 
 // Starts the sign-in workflow, and simulates opening an URL from another app.
@@ -503,14 +503,14 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
   // Make sure the SSO view controller is fully removed before ending the test.
   // The tear down needs to remove other view controllers, and it cannot be done
   // during the animation of the SSO view controler.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 }
 
 // Tests the "ADD ACCOUNT" button in the identity chooser view controller.
 - (void)testAddAccountAutomatically {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:PrimarySignInButton()];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
   // Tap on "ADD ACCOUNT".
   [SigninEarlGreyUI tapAddAccountButton];
 
@@ -520,7 +520,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
                  ButtonWithAccessibilityLabelId(
                      IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)]
       performAction:grey_tap()];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 }
 
 // Tests that an add account operation triggered from the web is handled.
@@ -545,7 +545,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 
   // Remove the fake identity.
   [SigninEarlGreyUtils removeFakeIdentity:fakeIdentity];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 
   // Check that the identity has been removed.
   [[EarlGrey selectElementWithMatcher:identityChooserButtonMatcherWithEmail(
@@ -570,7 +570,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
           IDS_IOS_ACCOUNT_IDENTITY_CHOOSER_ADD_ACCOUNT);
   [[EarlGrey selectElementWithMatcher:add_account_matcher]
       performAction:grey_tap()];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 
   // Open new tab to cancel sign-in.
   [ChromeEarlGrey simulateExternalAppURLOpening];

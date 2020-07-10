@@ -105,7 +105,6 @@ class SyntheticGestureController;
 class TimeoutMonitor;
 class TouchEmulator;
 class WebCursor;
-struct DisplayFeature;
 struct VisualProperties;
 struct ScreenInfo;
 
@@ -832,14 +831,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // ---------------------------------------------------------------------------
 
   bool IsMouseLocked() const;
-
-  // Computes logical segments of the |visible_viewport_size|, based on the
-  // optional DisplayFeature. These segments are in DIPs relative to the widget
-  // origin. If a DisplayFeature is not provided, a vector with a single rect,
-  // the size of the visible viewport will be returned.
-  std::vector<gfx::Rect> ComputeRootWindowSegments(
-      const gfx::Size& visible_viewport_size,
-      const DisplayFeature* display_feature) const;
 
   // The View associated with the RenderWidgetHost. The lifetime of this object
   // is associated with the lifetime of the Render process. If the Renderer

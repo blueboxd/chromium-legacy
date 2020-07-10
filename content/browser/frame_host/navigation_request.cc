@@ -277,10 +277,7 @@ void AddAdditionalRequestHeaders(
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
 
-  bool is_reload =
-      navigation_type == mojom::NavigationType::RELOAD ||
-      navigation_type == mojom::NavigationType::RELOAD_BYPASSING_CACHE ||
-      navigation_type == mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL;
+  bool is_reload = NavigationTypeUtils::IsReload(navigation_type);
   blink::mojom::RendererPreferences render_prefs =
       frame_tree_node->render_manager()
           ->current_host()

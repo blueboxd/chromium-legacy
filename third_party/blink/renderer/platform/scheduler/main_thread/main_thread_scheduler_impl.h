@@ -364,8 +364,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   }
 
   // Virtual for test.
-  virtual void OnMainFramePaint(bool force_policy_update);
+  virtual void OnMainFramePaint();
   void OnMainFrameLoad(const FrameSchedulerImpl& frame_scheduler);
+  void OnAgentStrategyUpdated();
 
   void OnShutdownTaskQueue(const scoped_refptr<MainThreadTaskQueue>& queue);
 
@@ -733,12 +734,19 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // Report an intervention to all WebViews in this process.
   void BroadcastIntervention(const String& message);
 
-  void ApplyTaskQueuePolicy(
+  // Trigger an update to all task queues' priorities, throttling, and
+  // enabled/disabled state based on current policy. When triggered from a
+  // policy update, |previous_policy| should be populated with the pre-update
+  // policy.
+  void UpdateStateForAllTaskQueues(base::Optional<Policy> previous_policy);
+
+  void UpdateTaskQueueState(
       MainThreadTaskQueue* task_queue,
       base::sequence_manager::TaskQueue::QueueEnabledVoter*
           task_queue_enabled_voter,
       const TaskQueuePolicy& old_task_queue_policy,
-      const TaskQueuePolicy& new_task_queue_policy) const;
+      const TaskQueuePolicy& new_task_queue_policy,
+      bool should_update_priority) const;
 
   void PauseRendererImpl();
   void ResumeRendererImpl();

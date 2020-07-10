@@ -102,7 +102,7 @@ void FakeBluetoothGattManagerClient::RegisterApplication(
     const dbus::ObjectPath& adapter_object_path,
     const dbus::ObjectPath& application_path,
     const Options& options,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   DVLOG(1) << "Register GATT application: " << application_path.value();
   ApplicationProvider* provider =
@@ -116,14 +116,14 @@ void FakeBluetoothGattManagerClient::RegisterApplication(
     return;
   }
   provider->second = true;
-  callback.Run();
+  std::move(callback).Run();
 }
 
 // BluetoothGattManagerClient overrides.
 void FakeBluetoothGattManagerClient::UnregisterApplication(
     const dbus::ObjectPath& adapter_object_path,
     const dbus::ObjectPath& application_path,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   DVLOG(1) << "Unregister GATT application: " << application_path.value();
   ApplicationProvider* provider =
@@ -133,7 +133,7 @@ void FakeBluetoothGattManagerClient::UnregisterApplication(
     return;
   }
   provider->second = false;
-  callback.Run();
+  std::move(callback).Run();
 }
 
 void FakeBluetoothGattManagerClient::RegisterApplicationServiceProvider(

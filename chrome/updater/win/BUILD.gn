@@ -5,6 +5,7 @@
 import("//build/util/process_version.gni")
 import("//chrome/process_version_rc_template.gni")
 import("//chrome/updater/branding.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
 # This target builds the updater executable, its installer, and unittests.
@@ -160,6 +161,7 @@ source_set("updater_tests") {
   sources = [
     "group_policy_manager_unittest.cc",
     "net/network_unittest.cc",
+    "tag_extractor_unittest.cc",
     "util_unittest.cc",
   ]
 
@@ -167,6 +169,7 @@ source_set("updater_tests") {
     ":app_install",
     ":constants",
     ":lib",
+    ":tag_extractor",
     "//base/test:test_support",
     "//testing/gtest",
   ]
@@ -174,6 +177,13 @@ source_set("updater_tests") {
   data_deps = [
     ":updater_unittests",
     "//chrome/updater/win/installer:installer_unittest",
+  ]
+
+  data = [
+    "../test/data/signed.exe",
+    "../test/data/signed.exe.gz",
+    "../test/data/tagged_encode_utf8.exe",
+    "../test/data/tagged_magic_utf16.exe",
   ]
 }
 
@@ -200,4 +210,31 @@ test("updater_unittests") {
   ]
 
   data = [ "//chrome/updater/test/data/updater.runtime_deps" ]
+}
+
+source_set("tag_extractor") {
+  public = [ "tag_extractor.h" ]
+
+  sources = [
+    "tag_extractor.cc",
+    "tag_extractor_impl.h",
+  ]
+
+  friend = [
+    ":updater_tests",
+    ":updater_fuzzer",
+  ]
+
+  # In the future, we want to rely on the base numerics headers and
+  # PeImageReader directly, but right now that isn't possible due to the
+  # visibility of the lib, so we depend on the entire base temporarily.
+  deps = [ "//base" ]
+}
+
+fuzzer_test("updater_fuzzer") {
+  sources = [ "tag_extractor_fuzzer.cc" ]
+
+  deps = [ ":tag_extractor" ]
+
+  seed_corpus = "../test/data/tag_extractor_corpus/"
 }

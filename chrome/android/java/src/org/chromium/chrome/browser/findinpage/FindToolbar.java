@@ -29,6 +29,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.view.accessibility.AccessibilityEventCompat;
 import androidx.core.view.inputmethod.EditorInfoCompat;
@@ -197,6 +198,13 @@ public class FindToolbar extends LinearLayout {
         super(context, attrs);
 
         mTabObserver = new EmptyTabObserver() {
+            @Override
+            public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
+                if (window == null && getVisibility() == View.VISIBLE) {
+                    deactivate(/* clearSelection= */ true);
+                }
+            }
+
             @Override
             public void onPageLoadStarted(Tab tab, String url) {
                 deactivate();

@@ -163,10 +163,8 @@ ImageTransportSurfaceOverlayMacBase<BaseClass>::SwapBuffersInternal(
       bool in_use = false;
       gl::GLImageIOSurface* io_surface_image =
           gl::GLImageIOSurface::FromGLImage(query.image.get());
-      if (io_surface_image) {
-        in_use = io_surface_image->CanCheckIOSurfaceIsInUse() &&
-                 IOSurfaceIsInUse(io_surface_image->io_surface());
-      }
+      if (io_surface_image)
+        in_use = io_surface_image->IsInUseByWindowServer();
       response.in_use = in_use;
       params.texture_in_use_responses.push_back(std::move(response));
     }

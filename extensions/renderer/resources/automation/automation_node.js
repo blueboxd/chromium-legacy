@@ -939,6 +939,14 @@ AutomationNodeImpl.prototype = {
     this.performAction_('scrollRight', {}, opt_callback);
   },
 
+  scrollToPoint: function(x, y) {
+    this.performAction_('scrollToPoint', {x, y});
+  },
+
+  setScrollOffset: function(x, y) {
+    this.performAction_('setScrollOffset', {x, y});
+  },
+
   setAccessibilityFocus: function() {
     SetAccessibilityFocus(this.treeID, this.id);
   },
@@ -1796,8 +1804,11 @@ function AutomationNode() {
 }
 utils.expose(AutomationNode, AutomationNodeImpl, {
   functions: [
+    'addEventListener',
+    'boundsForRange',
     'createPosition',
     'doDefault',
+    'domQuerySelector',
     'find',
     'findAll',
     'focus',
@@ -1805,19 +1816,23 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
     'getNextTextMatch',
     'hitTest',
     'hitTestWithReply',
+    'languageAnnotationForStringAttribute',
     'makeVisible',
     'matches',
     'performCustomAction',
     'performStandardAction',
+    'removeEventListener',
     'replaceSelectedText',
     'resumeMedia',
     'scrollBackward',
-    'scrollForward',
-    'scrollUp',
     'scrollDown',
+    'scrollForward',
     'scrollLeft',
     'scrollRight',
+    'scrollToPoint',
+    'scrollUp',
     'setAccessibilityFocus',
+    'setScrollOffset',
     'setSelection',
     'setSequentialFocusNavigationStartingPoint',
     'setValue',
@@ -1825,12 +1840,7 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
     'startDuckingMedia',
     'stopDuckingMedia',
     'suspendMedia',
-    'addEventListener',
-    'removeEventListener',
-    'domQuerySelector',
     'toString',
-    'boundsForRange',
-    'languageAnnotationForStringAttribute',
   ],
   readonly: $Array.concat(
       publicAttributes,

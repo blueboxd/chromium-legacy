@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -738,11 +739,10 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewTaskQueue(
   auto insert_result = task_runners_.emplace(task_queue, std::move(voter));
   auto queue_class = task_queue->queue_class();
 
-  ApplyTaskQueuePolicy(
+  UpdateTaskQueueState(
       task_queue.get(), insert_result.first->second.get(), TaskQueuePolicy(),
-      main_thread_only().current_policy.GetQueuePolicy(queue_class));
-
-  task_queue->SetQueuePriority(ComputePriority(task_queue.get()));
+      main_thread_only().current_policy.GetQueuePolicy(queue_class),
+      /*should_update_priority=*/true);
 
   // If this is a timer queue, and virtual time is enabled and paused, it should
   // be suspended by adding a fence to prevent immediate tasks from running when
@@ -1274,12 +1274,7 @@ void MainThreadSchedulerImpl::NotifyAgentSchedulerOnInputEvent() {
   if (agent_scheduling_strategy_->OnInputEvent() ==
           AgentSchedulingStrategy::ShouldUpdatePolicy::kYes &&
       !policy_may_need_update_.IsSet()) {
-    // MaybeUpdatePolicy() triggers a |kMayEarlyOutIfPolicyUnchanged| update,
-    // which may not account for per-agent strategy decisions correctly.
-    // However, if there is already a posted task to update it, it means that
-    // the use-case has changed, so it is OK to not trigger another update from
-    // here.
-    ForceUpdatePolicy();
+    OnAgentStrategyUpdated();
   }
 
   base::AutoLock lock(any_thread_lock_);
@@ -1585,15 +1580,6 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     return;
   }
 
-  for (const auto& pair : task_runners_) {
-    MainThreadTaskQueue::QueueClass queue_class = pair.first->queue_class();
-
-    ApplyTaskQueuePolicy(
-        pair.first.get(), pair.second.get(),
-        main_thread_only().current_policy.GetQueuePolicy(queue_class),
-        new_policy.GetQueuePolicy(queue_class));
-  }
-
   main_thread_only().rail_mode_for_tracing = new_policy.rail_mode();
   if (new_policy.rail_mode() != main_thread_only().current_policy.rail_mode()) {
     if (isolate()) {
@@ -1618,24 +1604,43 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   Policy old_policy = main_thread_only().current_policy;
   main_thread_only().current_policy = new_policy;
 
-  // TODO(talp): Extract the code updating queue policies/priorities to a
-  // separate method that can be called directly without having to recalculate
-  // the policy. Then revert the condition here to only check
-  // ShouldUpdateTaskQueuePriorities.
-  if (update_type == UpdateType::kForceUpdate ||
-      ShouldUpdateTaskQueuePriorities(old_policy)) {
-    for (const auto& pair : task_runners_) {
-      MainThreadTaskQueue* task_queue = pair.first.get();
-      task_queue->SetQueuePriority(ComputePriority(task_queue));
-    }
+  UpdateStateForAllTaskQueues(old_policy);
+}
+
+void MainThreadSchedulerImpl::OnAgentStrategyUpdated() {
+  UpdateStateForAllTaskQueues(base::nullopt);
+}
+
+void MainThreadSchedulerImpl::UpdateStateForAllTaskQueues(
+    base::Optional<Policy> previous_policy) {
+  helper_.CheckOnValidThread();
+
+  const Policy& current_policy = main_thread_only().current_policy;
+  const Policy& old_policy =
+      previous_policy.value_or(main_thread_only().current_policy);
+
+  bool should_update_priorities =
+      !previous_policy.has_value() ||
+      ShouldUpdateTaskQueuePriorities(previous_policy.value());
+  for (const auto& pair : task_runners_) {
+    MainThreadTaskQueue::QueueClass queue_class = pair.first->queue_class();
+
+    UpdateTaskQueueState(pair.first.get(), pair.second.get(),
+                         old_policy.GetQueuePolicy(queue_class),
+                         current_policy.GetQueuePolicy(queue_class),
+                         should_update_priorities);
   }
 }
 
-void MainThreadSchedulerImpl::ApplyTaskQueuePolicy(
+void MainThreadSchedulerImpl::UpdateTaskQueueState(
     MainThreadTaskQueue* task_queue,
     TaskQueue::QueueEnabledVoter* task_queue_enabled_voter,
     const TaskQueuePolicy& old_task_queue_policy,
-    const TaskQueuePolicy& new_task_queue_policy) const {
+    const TaskQueuePolicy& new_task_queue_policy,
+    bool should_update_priority) const {
+  if (should_update_priority)
+    task_queue->SetQueuePriority(ComputePriority(task_queue));
+
   DCHECK(old_task_queue_policy.IsQueueEnabled(task_queue) ||
          task_queue_enabled_voter);
   if (task_queue_enabled_voter) {
@@ -2233,7 +2238,7 @@ void MainThreadSchedulerImpl::DidCommitProvisionalLoad(
   }
 }
 
-void MainThreadSchedulerImpl::OnMainFramePaint(bool force_policy_update) {
+void MainThreadSchedulerImpl::OnMainFramePaint() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "MainThreadSchedulerImpl::OnMainFramePaint");
   base::AutoLock lock(any_thread_lock_);
@@ -2241,9 +2246,7 @@ void MainThreadSchedulerImpl::OnMainFramePaint(bool force_policy_update) {
       IsAnyMainFrameWaitingForFirstContentfulPaint();
   any_thread().waiting_for_any_main_frame_meaningful_paint =
       IsAnyMainFrameWaitingForFirstMeaningfulPaint();
-  UpdatePolicyLocked(force_policy_update
-                         ? UpdateType::kForceUpdate
-                         : UpdateType::kMayEarlyOutIfPolicyUnchanged);
+  UpdatePolicyLocked(UpdateType::kMayEarlyOutIfPolicyUnchanged);
 }
 
 void MainThreadSchedulerImpl::OnMainFrameLoad(
@@ -2251,7 +2254,7 @@ void MainThreadSchedulerImpl::OnMainFrameLoad(
   helper_.CheckOnValidThread();
   if (agent_scheduling_strategy_->OnMainFrameLoad(frame_scheduler) ==
       AgentSchedulingStrategy::ShouldUpdatePolicy::kYes) {
-    ForceUpdatePolicy();
+    OnAgentStrategyUpdated();
   };
 }
 
@@ -2272,7 +2275,7 @@ void MainThreadSchedulerImpl::OnAgentStrategyDelayPassed(
   if (frame_scheduler &&
       agent_scheduling_strategy_->OnDelayPassed(*frame_scheduler) ==
           AgentSchedulingStrategy::ShouldUpdatePolicy::kYes) {
-    ForceUpdatePolicy();
+    OnAgentStrategyUpdated();
   }
 }
 
@@ -2470,7 +2473,7 @@ void MainThreadSchedulerImpl::OnFrameAdded(
     const FrameSchedulerImpl& frame_scheduler) {
   if (agent_scheduling_strategy_->OnFrameAdded(frame_scheduler) ==
       AgentSchedulingStrategy::ShouldUpdatePolicy::kYes) {
-    ForceUpdatePolicy();
+    OnAgentStrategyUpdated();
   }
 }
 
@@ -2478,7 +2481,7 @@ void MainThreadSchedulerImpl::OnFrameRemoved(
     const FrameSchedulerImpl& frame_scheduler) {
   if (agent_scheduling_strategy_->OnFrameRemoved(frame_scheduler) ==
       AgentSchedulingStrategy::ShouldUpdatePolicy::kYes) {
-    ForceUpdatePolicy();
+    OnAgentStrategyUpdated();
   }
 }
 

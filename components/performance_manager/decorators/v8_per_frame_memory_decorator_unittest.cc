@@ -5,10 +5,15 @@
 #include "components/performance_manager/public/decorators/v8_per_frame_memory_decorator.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
+#include "base/time/time.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/graph/process_node_impl.h"
@@ -16,14 +21,18 @@
 #include "components/performance_manager/public/render_process_host_id.h"
 #include "components/performance_manager/public/render_process_host_proxy.h"
 #include "components/performance_manager/test_support/graph_test_harness.h"
-#include "components/performance_manager/test_support/mock_graphs.h"
 #include "components/performance_manager/test_support/performance_manager_test_harness.h"
+#include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/test/navigation_simulator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace performance_manager {
 
-class V8PerFrameMemoryDecoratorTest;
 using testing::_;
 
 constexpr RenderProcessHostId kTestProcessID = RenderProcessHostId(0xFAB);
@@ -81,6 +90,128 @@ class LenientMockMeasurementAvailableObserver
 using MockMeasurementAvailableObserver =
     testing::StrictMock<LenientMockMeasurementAvailableObserver>;
 
+class LenientMockV8PerFrameMemoryObserverAnySeq
+    : public V8PerFrameMemoryObserverAnySeq {
+ public:
+  MOCK_METHOD(void,
+              OnV8MemoryMeasurementAvailable,
+              (RenderProcessHostId render_process_host_id,
+               const V8PerFrameMemoryDecorator::ProcessData& process_data,
+               const V8PerFrameMemoryObserverAnySeq::FrameDataMap& frame_data),
+              (override));
+};
+using MockV8PerFrameMemoryObserverAnySeq =
+    testing::StrictMock<LenientMockV8PerFrameMemoryObserverAnySeq>;
+
+class V8PerFrameMemoryDecoratorTestBase {
+ public:
+  static constexpr base::TimeDelta kMinTimeBetweenRequests =
+      base::TimeDelta::FromSeconds(30);
+
+  V8PerFrameMemoryDecoratorTestBase() {
+    internal::SetBindV8PerFrameMemoryReporterCallbackForTesting(
+        &bind_callback_);
+  }
+
+  virtual ~V8PerFrameMemoryDecoratorTestBase() {
+    internal::SetBindV8PerFrameMemoryReporterCallbackForTesting(nullptr);
+  }
+
+  // Adaptor that calls GetMainThreadTaskRunner for the test harness's task
+  // environment.
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+  GetMainThreadTaskRunner() = 0;
+
+  void ReplyWithData(
+      mojom::PerProcessV8MemoryUsageDataPtr data,
+      MockV8PerFrameMemoryReporter::GetPerFrameV8MemoryUsageDataCallback
+          callback) {
+    std::move(callback).Run(std::move(data));
+  }
+
+  void DelayedReplyWithData(
+      const base::TimeDelta& delay,
+      mojom::PerProcessV8MemoryUsageDataPtr data,
+      MockV8PerFrameMemoryReporter::GetPerFrameV8MemoryUsageDataCallback
+          callback) {
+    GetMainThreadTaskRunner()->PostDelayedTask(
+        FROM_HERE, base::BindOnce(std::move(callback), std::move(data)), delay);
+  }
+
+  void ExpectQuery(
+      MockV8PerFrameMemoryReporter* mock_reporter,
+      base::RepeatingCallback<void(
+          MockV8PerFrameMemoryReporter::GetPerFrameV8MemoryUsageDataCallback
+              callback)> responder) {
+    EXPECT_CALL(*mock_reporter, GetPerFrameV8MemoryUsageData(_))
+        .WillOnce([this, responder](
+                      MockV8PerFrameMemoryReporter::
+                          GetPerFrameV8MemoryUsageDataCallback callback) {
+          this->last_query_time_ = base::TimeTicks::Now();
+          responder.Run(std::move(callback));
+        });
+  }
+
+  void ExpectQueryAndReply(MockV8PerFrameMemoryReporter* mock_reporter,
+                           mojom::PerProcessV8MemoryUsageDataPtr data) {
+    ExpectQuery(
+        mock_reporter,
+        base::BindRepeating(&V8PerFrameMemoryDecoratorTestBase::ReplyWithData,
+                            base::Unretained(this), base::Passed(&data)));
+  }
+
+  void ExpectQueryAndDelayReply(MockV8PerFrameMemoryReporter* mock_reporter,
+                                const base::TimeDelta& delay,
+                                mojom::PerProcessV8MemoryUsageDataPtr data) {
+    ExpectQuery(mock_reporter,
+                base::BindRepeating(
+                    &V8PerFrameMemoryDecoratorTestBase::DelayedReplyWithData,
+                    base::Unretained(this), delay, base::Passed(&data)));
+  }
+
+  void ExpectBindAndRespondToQuery(
+      MockV8PerFrameMemoryReporter* mock_reporter,
+      mojom::PerProcessV8MemoryUsageDataPtr data,
+      RenderProcessHostId expected_process_id = kTestProcessID) {
+    // Wrap the move-only |data| in a callback for the expectation below.
+    ExpectQueryAndReply(mock_reporter, std::move(data));
+
+    EXPECT_CALL(*this, BindReceiverWithProxyHost(_, _))
+        .WillOnce([mock_reporter, expected_process_id](
+                      mojo::PendingReceiver<
+                          performance_manager::mojom::V8PerFrameMemoryReporter>
+                          pending_receiver,
+                      RenderProcessHostProxy proxy) {
+          DCHECK_EQ(expected_process_id, proxy.render_process_host_id());
+          mock_reporter->Bind(std::move(pending_receiver));
+        });
+  }
+
+  MOCK_METHOD(void,
+              BindReceiverWithProxyHost,
+              (mojo::PendingReceiver<
+                   performance_manager::mojom::V8PerFrameMemoryReporter>
+                   pending_receiver,
+               RenderProcessHostProxy proxy),
+              (const));
+
+  // Always bind the receiver callback on the main sequence.
+  internal::BindV8PerFrameMemoryReporterCallback bind_callback_ =
+      base::BindLambdaForTesting(
+          [this](mojo::PendingReceiver<
+                     performance_manager::mojom::V8PerFrameMemoryReporter>
+                     pending_receiver,
+                 RenderProcessHostProxy proxy) {
+            this->GetMainThreadTaskRunner()->PostTask(
+                FROM_HERE, base::BindOnce(&V8PerFrameMemoryDecoratorTestBase::
+                                              BindReceiverWithProxyHost,
+                                          base::Unretained(this),
+                                          std::move(pending_receiver), proxy));
+          });
+
+  base::TimeTicks last_query_time_;
+};
+
 void AddPerFrameIsolateMemoryUsage(FrameToken frame_token,
                                    int64_t world_id,
                                    uint64_t bytes_used,
@@ -109,106 +240,29 @@ void AddPerFrameIsolateMemoryUsage(FrameToken frame_token,
 
 }  // namespace
 
-class V8PerFrameMemoryDecoratorTest : public GraphTestHarness {
+class V8PerFrameMemoryDecoratorTest : public GraphTestHarness,
+                                      public V8PerFrameMemoryDecoratorTestBase {
  public:
-  static constexpr base::TimeDelta kMinTimeBetweenRequests =
-      base::TimeDelta::FromSeconds(30);
-
-  V8PerFrameMemoryDecoratorTest() {
-    internal::SetBindV8PerFrameMemoryReporterCallbackForTesting(
-        &bind_callback_);
+  scoped_refptr<base::SingleThreadTaskRunner> GetMainThreadTaskRunner()
+      override {
+    return task_env().GetMainThreadTaskRunner();
   }
-
-  ~V8PerFrameMemoryDecoratorTest() override {
-    internal::SetBindV8PerFrameMemoryReporterCallbackForTesting(nullptr);
-  }
-
-  void ReplyWithData(
-      mojom::PerProcessV8MemoryUsageDataPtr data,
-      MockV8PerFrameMemoryReporter::GetPerFrameV8MemoryUsageDataCallback
-          callback) {
-    std::move(callback).Run(std::move(data));
-  }
-
-  void DelayedReplyWithData(
-      const base::TimeDelta& delay,
-      mojom::PerProcessV8MemoryUsageDataPtr data,
-      MockV8PerFrameMemoryReporter::GetPerFrameV8MemoryUsageDataCallback
-          callback) {
-    task_env().GetMainThreadTaskRunner()->PostDelayedTask(
-        FROM_HERE, base::BindOnce(std::move(callback), std::move(data)), delay);
-  }
-
-  void ExpectQuery(
-      MockV8PerFrameMemoryReporter* mock_reporter,
-      base::RepeatingCallback<void(
-          MockV8PerFrameMemoryReporter::GetPerFrameV8MemoryUsageDataCallback
-              callback)> responder) {
-    EXPECT_CALL(*mock_reporter, GetPerFrameV8MemoryUsageData(_))
-        .WillOnce([this, responder](
-                      MockV8PerFrameMemoryReporter::
-                          GetPerFrameV8MemoryUsageDataCallback callback) {
-          this->last_query_time_ = this->task_env().NowTicks();
-          responder.Run(std::move(callback));
-        });
-  }
-
-  void ExpectQueryAndReply(MockV8PerFrameMemoryReporter* mock_reporter,
-                           mojom::PerProcessV8MemoryUsageDataPtr data) {
-    ExpectQuery(
-        mock_reporter,
-        base::BindRepeating(&V8PerFrameMemoryDecoratorTest::ReplyWithData,
-                            base::Unretained(this), base::Passed(&data)));
-  }
-
-  void ExpectQueryAndDelayReply(MockV8PerFrameMemoryReporter* mock_reporter,
-                                const base::TimeDelta& delay,
-                                mojom::PerProcessV8MemoryUsageDataPtr data) {
-    ExpectQuery(mock_reporter,
-                base::BindRepeating(
-                    &V8PerFrameMemoryDecoratorTest::DelayedReplyWithData,
-                    base::Unretained(this), delay, base::Passed(&data)));
-  }
-
-  void ExpectBindAndRespondToQuery(MockV8PerFrameMemoryReporter* mock_reporter,
-                                   mojom::PerProcessV8MemoryUsageDataPtr data) {
-    // Wrap the move-only |data| in a callback for the expectation below.
-    ExpectQueryAndReply(mock_reporter, std::move(data));
-
-    EXPECT_CALL(*this, BindReceiverWithProxyHost(_, _))
-        .WillOnce([mock_reporter](
-                      mojo::PendingReceiver<
-                          performance_manager::mojom::V8PerFrameMemoryReporter>
-                          pending_receiver,
-                      RenderProcessHostProxy proxy) {
-          DCHECK_EQ(kTestProcessID, proxy.render_process_host_id());
-          mock_reporter->Bind(std::move(pending_receiver));
-        });
-  }
-
-  MOCK_METHOD(void,
-              BindReceiverWithProxyHost,
-              (mojo::PendingReceiver<
-                   performance_manager::mojom::V8PerFrameMemoryReporter>
-                   pending_receiver,
-               RenderProcessHostProxy proxy),
-              (const));
-
-  internal::BindV8PerFrameMemoryReporterCallback bind_callback_ =
-      base::BindRepeating(
-          &V8PerFrameMemoryDecoratorTest::BindReceiverWithProxyHost,
-          base::Unretained(this));
-
-  base::TimeTicks last_query_time_;
 };
 
-class V8PerFrameMemoryDecoratorDeathTest
-    : public V8PerFrameMemoryDecoratorTest {};
+using V8PerFrameMemoryDecoratorDeathTest = V8PerFrameMemoryDecoratorTest;
 
-class V8PerFrameMemoryRequestTest : public PerformanceManagerTestHarness {};
+class V8PerFrameMemoryRequestAnySeqTest
+    : public PerformanceManagerTestHarness,
+      public V8PerFrameMemoryDecoratorTestBase {
+ public:
+  scoped_refptr<base::SingleThreadTaskRunner> GetMainThreadTaskRunner()
+      override {
+    return task_environment()->GetMainThreadTaskRunner();
+  }
+};
 
 constexpr base::TimeDelta
-    V8PerFrameMemoryDecoratorTest::kMinTimeBetweenRequests;
+    V8PerFrameMemoryDecoratorTestBase::kMinTimeBetweenRequests;
 
 TEST_F(V8PerFrameMemoryDecoratorTest, InstantiateOnEmptyGraph) {
   V8PerFrameMemoryDecorator::MeasurementRequest memory_request(
@@ -1072,21 +1126,44 @@ TEST_F(V8PerFrameMemoryDecoratorDeathTest,
   });
 }
 
-TEST_F(V8PerFrameMemoryRequestTest, RequestIsSequenceSafe) {
-  base::RunLoop run_loop;
-
+TEST_F(V8PerFrameMemoryRequestAnySeqTest, RequestIsSequenceSafe) {
   // Precondition: CallOnGraph must run on a different sequence.  Note that all
   // tasks passed to CallOnGraph will only run when run_loop.Run() is called
   // below.
-  ASSERT_TRUE(task_environment()
-                  ->GetMainThreadTaskRunner()
-                  ->RunsTasksInCurrentSequence());
+  ASSERT_TRUE(GetMainThreadTaskRunner()->RunsTasksInCurrentSequence());
   PerformanceManager::CallOnGraph(
       FROM_HERE, base::BindLambdaForTesting([this] {
-        EXPECT_FALSE(this->task_environment()
-                         ->GetMainThreadTaskRunner()
-                         ->RunsTasksInCurrentSequence());
+        EXPECT_FALSE(
+            this->GetMainThreadTaskRunner()->RunsTasksInCurrentSequence());
       }));
+
+  // Set the active contents and simulate a navigation, which adds nodes to the
+  // graph.
+  SetContents(CreateTestWebContents());
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      web_contents(), GURL("https://www.foo.com/"));
+
+  // Create some test data to return for a measurement request.
+  constexpr uint64_t kAssociatedBytes = 0x123;
+  content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
+  ASSERT_NE(nullptr, main_frame);
+  const RenderProcessHostId process_id(main_frame->GetProcess()->GetID());
+  const FrameToken frame_token(main_frame->GetFrameToken());
+  const content::GlobalFrameRoutingId frame_id(process_id.value(),
+                                               main_frame->GetRoutingID());
+
+  V8PerFrameMemoryDecorator::ProcessData expected_process_data;
+  expected_process_data.set_unassociated_v8_bytes_used(kUnassociatedBytes);
+  V8PerFrameMemoryObserverAnySeq::FrameDataMap expected_frame_data;
+  expected_frame_data[frame_id].set_v8_bytes_used(kAssociatedBytes);
+
+  MockV8PerFrameMemoryReporter reporter;
+  {
+    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    data->unassociated_bytes_used = kUnassociatedBytes;
+    AddPerFrameIsolateMemoryUsage(frame_token, 0, kAssociatedBytes, data.get());
+    ExpectBindAndRespondToQuery(&reporter, std::move(data), process_id);
+  }
 
   // Decorator should not exist before creating a request.
   PerformanceManager::CallOnGraph(
@@ -1097,8 +1174,10 @@ TEST_F(V8PerFrameMemoryRequestTest, RequestIsSequenceSafe) {
   // This object is created on the main sequence but should cause a
   // MeasurementRequest to be created on the graph sequence after the above
   // task.
-  auto request = std::make_unique<V8PerFrameMemoryRequest>(
+  auto request = std::make_unique<V8PerFrameMemoryRequestAnySeq>(
       V8PerFrameMemoryDecoratorTest::kMinTimeBetweenRequests);
+  MockV8PerFrameMemoryObserverAnySeq observer;
+  request->AddObserver(&observer);
 
   // Decorator now exists and has the request frequency set, proving that the
   // MeasurementRequest was created.
@@ -1110,22 +1189,59 @@ TEST_F(V8PerFrameMemoryRequestTest, RequestIsSequenceSafe) {
                   decorator->GetMinTimeBetweenRequestsPerProcess());
       }));
 
-  // Destroying the object on the main sequence should cause the wrapped
-  // MeasurementRequest to be destroyed on the graph sequence after the above
-  // tasks.
-  request.reset();
+  // The observer should be invoked on the main sequence when a measurement is
+  // available. Exit the RunLoop when this happens.
+  base::RunLoop run_loop;
+  EXPECT_CALL(observer,
+              OnV8MemoryMeasurementAvailable(process_id, expected_process_data,
+                                             expected_frame_data))
+      .WillOnce([this, &run_loop, &process_id, &expected_frame_data]() {
+        run_loop.Quit();
+        ASSERT_TRUE(
+            this->GetMainThreadTaskRunner()->RunsTasksInCurrentSequence())
+            << "Observer invoked on wrong sequence";
+        // Verify that the notification parameters can be used to retrieve a
+        // RenderFrameHost and RenderProcessHost. This is safe on the main
+        // thread.
+        EXPECT_NE(nullptr,
+                  content::RenderProcessHost::FromID(process_id.value()));
+        const content::GlobalFrameRoutingId frame_id =
+            expected_frame_data.cbegin()->first;
+        EXPECT_NE(nullptr, content::RenderFrameHost::FromID(frame_id));
+      });
 
-  // Request frequency is reset, proving the MeasurementRequest was destroyed.
+  // Now execute all the above tasks.
+  run_loop.Run();
+  testing::Mock::VerifyAndClearExpectations(this);
+  testing::Mock::VerifyAndClearExpectations(&reporter);
+  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  // Destroying the object on the main sequence should cause the wrapped
+  // MeasurementRequest to be destroyed on the graph sequence after any
+  // scheduled tasks, which resets the request frequency to zero.
   PerformanceManager::CallOnGraph(
       FROM_HERE, base::BindOnce([](Graph* graph) {
-        auto* decorator = V8PerFrameMemoryDecorator::GetFromGraph(graph);
-        ASSERT_TRUE(decorator);
-        EXPECT_TRUE(decorator->GetMinTimeBetweenRequestsPerProcess().is_zero());
+        EXPECT_EQ(V8PerFrameMemoryDecoratorTest::kMinTimeBetweenRequests,
+                  V8PerFrameMemoryDecorator::GetFromGraph(graph)
+                      ->GetMinTimeBetweenRequestsPerProcess());
       }));
 
-  // Now execute all the queued CallOnGraph tasks and exit.
-  PerformanceManager::CallOnGraph(FROM_HERE, run_loop.QuitClosure());
-  run_loop.Run();
+  // Must remove the observer before destroying the request to avoid a DCHECK
+  // from ObserverList.
+  request->RemoveObserver(&observer);
+  request.reset();
+
+  PerformanceManager::CallOnGraph(
+      FROM_HERE, base::BindOnce([](Graph* graph) {
+        EXPECT_TRUE(V8PerFrameMemoryDecorator::GetFromGraph(graph)
+                        ->GetMinTimeBetweenRequestsPerProcess()
+                        .is_zero());
+      }));
+
+  // Execute the above tasks and exit.
+  base::RunLoop run_loop2;
+  PerformanceManager::CallOnGraph(FROM_HERE, run_loop2.QuitClosure());
+  run_loop2.Run();
 }
 
 }  // namespace performance_manager

@@ -69,7 +69,7 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
                   int64_t appcache_id) override {
     InitializeURL(response_url);
     SetReferrerPolicy(response_referrer_policy);
-    GetSecurityContext().SetAddressSpace(response_address_space);
+    SetAddressSpace(response_address_space);
 
     // These should be called after SetAddressSpace() to correctly override the
     // address space by the "treat-as-public-address" CSP directive.

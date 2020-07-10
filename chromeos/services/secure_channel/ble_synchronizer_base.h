@@ -43,8 +43,8 @@ class BleSynchronizerBase {
       device::BluetoothAdapter::ErrorCallback error_callback);
   void StopDiscoverySession(
       base::WeakPtr<device::BluetoothDiscoverySession> discovery_session,
-      const base::Closure& callback,
-      const device::BluetoothDiscoverySession::ErrorCallback& error_callback);
+      base::OnceClosure callback,
+      device::BluetoothDiscoverySession::ErrorCallback error_callback);
 
  protected:
   enum class CommandType {
@@ -92,12 +92,12 @@ class BleSynchronizerBase {
   struct StopDiscoveryArgs {
     StopDiscoveryArgs(
         base::WeakPtr<device::BluetoothDiscoverySession> discovery_session,
-        const base::Closure& callback,
-        const device::BluetoothDiscoverySession::ErrorCallback& error_callback);
+        base::OnceClosure callback,
+        device::BluetoothDiscoverySession::ErrorCallback error_callback);
     virtual ~StopDiscoveryArgs();
 
     base::WeakPtr<device::BluetoothDiscoverySession> discovery_session;
-    base::Closure callback;
+    base::OnceClosure callback;
     device::BluetoothDiscoverySession::ErrorCallback error_callback;
   };
 

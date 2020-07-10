@@ -40,6 +40,7 @@ using google_apis::AuthStatusCallback;
 using google_apis::CancelCallback;
 using google_apis::ChangeList;
 using google_apis::ChangeListCallback;
+using google_apis::ChangeListOnceCallback;
 using google_apis::ChangeResource;
 using google_apis::DRIVE_FILE_ERROR;
 using google_apis::DRIVE_NO_CONNECTION;
@@ -415,7 +416,7 @@ CancelCallback FakeDriveService::GetAllFileList(
                         team_drive_id,
                         0,  // start offset
                         default_max_results_, &file_list_load_count_,
-                        base::Bind(&FileListCallbackAdapter, callback));
+                        base::BindOnce(&FileListCallbackAdapter, callback));
   return CancelCallback();
 }
 
@@ -432,7 +433,7 @@ CancelCallback FakeDriveService::GetFileListInDirectory(
                         std::string(),  // empty team drive id.
                         0,              // start offset
                         default_max_results_, &directory_load_count_,
-                        base::Bind(&FileListCallbackAdapter, callback));
+                        base::BindOnce(&FileListCallbackAdapter, callback));
   return CancelCallback();
 }
 
@@ -449,7 +450,7 @@ CancelCallback FakeDriveService::Search(
                         std::string(),  // empty team drive id.
                         0,              // start offset
                         default_max_results_, nullptr,
-                        base::Bind(&FileListCallbackAdapter, callback));
+                        base::BindOnce(&FileListCallbackAdapter, callback));
   return CancelCallback();
 }
 
@@ -469,7 +470,7 @@ CancelCallback FakeDriveService::SearchByTitle(
                         std::string(),  // empty team drive id.
                         0,              // start offset
                         default_max_results_, nullptr,
-                        base::Bind(&FileListCallbackAdapter, callback));
+                        base::BindOnce(&FileListCallbackAdapter, callback));
   return CancelCallback();
 }
 
@@ -1758,10 +1759,10 @@ void FakeDriveService::GetChangeListInternal(
     int start_offset,
     int max_results,
     int* load_counter,
-    const ChangeListCallback& callback) {
+    ChangeListOnceCallback callback) {
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, DRIVE_NO_CONNECTION,
+        FROM_HERE, base::BindOnce(std::move(callback), DRIVE_NO_CONNECTION,
                                   std::unique_ptr<ChangeList>()));
     return;
   }
@@ -1902,7 +1903,7 @@ void FakeDriveService::GetChangeListInternal(
     *load_counter += 1;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(callback, HTTP_SUCCESS, std::move(change_list)));
+      base::BindOnce(std::move(callback), HTTP_SUCCESS, std::move(change_list)));
 }
 
 GURL FakeDriveService::GetNewUploadSessionUrl() {

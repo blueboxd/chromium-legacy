@@ -136,7 +136,7 @@ void EventSource::Connect() {
                         : network::mojom::CredentialsMode::kSameOrigin);
   request.SetCacheMode(blink::mojom::FetchCacheMode::kNoStore);
   request.SetExternalRequestStateFromRequestorAddressSpace(
-      execution_context.GetSecurityContext().AddressSpace());
+      execution_context.AddressSpace());
   request.SetCorsPreflightPolicy(
       network::mojom::CorsPreflightPolicy::kPreventPreflight);
   if (parser_ && !parser_->LastEventId().IsEmpty()) {

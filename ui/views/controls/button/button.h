@@ -27,7 +27,6 @@ class ButtonTestApi;
 
 class Button;
 class ButtonController;
-class ButtonObserver;
 class Event;
 
 // An interface implemented by an object to let it know that a button was
@@ -179,8 +178,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   // Highlights the ink drop for the button.
   void SetHighlighted(bool bubble_visible);
 
-  void AddButtonObserver(ButtonObserver* observer);
-  void RemoveButtonObserver(ButtonObserver* observer);
   PropertyChangedSubscription AddStateChangedCallback(
       PropertyChangedCallback callback);
 
@@ -358,8 +355,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   PropertyChangedSubscription enabled_changed_subscription_{
       AddEnabledChangedCallback(base::BindRepeating(&Button::OnEnabledChanged,
                                                     base::Unretained(this)))};
-
-  base::ObserverList<ButtonObserver> button_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(Button);
 };

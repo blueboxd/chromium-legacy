@@ -56,7 +56,8 @@ class SHELL_DIALOGS_EXPORT SelectFileDialogLacros : public SelectFileDialog {
 
   // Callback for file selection.
   void OnSelected(lacros::mojom::SelectFileResult result,
-                  std::vector<lacros::mojom::SelectedFileInfoPtr> files);
+                  std::vector<lacros::mojom::SelectedFileInfoPtr> files,
+                  int file_type_index);
 
   // Cached parameters from the call to SelectFileImpl.
   void* params_ = nullptr;

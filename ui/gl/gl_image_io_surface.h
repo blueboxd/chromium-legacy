@@ -69,14 +69,11 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
                     uint64_t process_tracing_id,
                     const std::string& dump_name) override;
   bool EmulatingRGB() const override;
+  bool IsInUseByWindowServer() const override;
 
   gfx::GenericSharedMemoryId io_surface_id() const { return io_surface_id_; }
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface();
   base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer();
-
-  // Whether checking IOSurfaceIsInUse() will actually provide a meaningful
-  // signal about whether the Window Server is still using the IOSurface.
-  bool CanCheckIOSurfaceIsInUse() const;
 
   // For IOSurfaces that need manual conversion to a GL texture before being
   // sampled from, specify the color space in which to do the required YUV to

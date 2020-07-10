@@ -494,8 +494,8 @@ std::string FakeCentral::GetName() const {
 }
 
 void FakeCentral::SetName(const std::string& name,
-                          const base::Closure& callback,
-                          const ErrorCallback& error_callback) {
+                          base::OnceClosure callback,
+                          ErrorOnceCallback error_callback) {
   NOTREACHED();
 }
 
@@ -530,8 +530,8 @@ bool FakeCentral::IsPowered() const {
 }
 
 void FakeCentral::SetPowered(bool powered,
-                             const base::Closure& callback,
-                             const ErrorCallback& error_callback) {
+                             base::OnceClosure callback,
+                             ErrorOnceCallback error_callback) {
   NOTREACHED();
 }
 
@@ -541,8 +541,8 @@ bool FakeCentral::IsDiscoverable() const {
 }
 
 void FakeCentral::SetDiscoverable(bool discoverable,
-                                  const base::Closure& callback,
-                                  const ErrorCallback& error_callback) {
+                                  base::OnceClosure callback,
+                                  ErrorOnceCallback error_callback) {
   NOTREACHED();
 }
 

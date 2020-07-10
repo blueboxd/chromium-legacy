@@ -82,26 +82,6 @@ WebMediaStreamSource::Type WebMediaStreamSource::GetType() const {
   return static_cast<Type>(private_.Get()->GetType());
 }
 
-WebString WebMediaStreamSource::GetName() const {
-  DCHECK(!private_.IsNull());
-  return private_.Get()->GetName();
-}
-
-bool WebMediaStreamSource::Remote() const {
-  DCHECK(!private_.IsNull());
-  return private_.Get()->Remote();
-}
-
-void WebMediaStreamSource::SetGroupId(const blink::WebString& group_id) {
-  DCHECK(!private_.IsNull());
-  private_->SetGroupId(group_id);
-}
-
-WebString WebMediaStreamSource::GroupId() const {
-  DCHECK(!private_.IsNull());
-  return private_->GroupId();
-}
-
 void WebMediaStreamSource::SetReadyState(ReadyState state) {
   DCHECK(!private_.IsNull());
   private_->SetReadyState(static_cast<MediaStreamSource::ReadyState>(state));
@@ -121,23 +101,6 @@ void WebMediaStreamSource::SetPlatformSource(
     std::unique_ptr<WebPlatformMediaStreamSource> platform_source) {
   DCHECK(!private_.IsNull());
   private_->SetPlatformSource(std::move(platform_source));
-}
-
-void WebMediaStreamSource::SetAudioProcessingProperties(
-    EchoCancellationMode echo_cancellation_mode,
-    bool auto_gain_control,
-    bool noise_supression) {
-  DCHECK(!private_.IsNull());
-  private_->SetAudioProcessingProperties(
-      static_cast<MediaStreamSource::EchoCancellationMode>(
-          echo_cancellation_mode),
-      auto_gain_control, noise_supression);
-}
-
-void WebMediaStreamSource::SetCapabilities(
-    const WebMediaStreamSource::Capabilities& capabilities) {
-  DCHECK(!private_.IsNull());
-  private_->SetCapabilities(capabilities);
 }
 
 }  // namespace blink

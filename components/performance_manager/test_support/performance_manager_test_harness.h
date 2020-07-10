@@ -13,15 +13,28 @@ namespace performance_manager {
 // A test harness that initializes PerformanceManagerImpl, plus the entire
 // RenderViewHost harness. Allows for creating full WebContents, and their
 // accompanying structures in the graph. The task environment is accessed
-// via content::RenderViewHostTestHarness::task_environment(). RenderFrameHosts
-// and such are not created, so this is suitable for unit tests but not
+// via content::RenderViewHostTestHarness::task_environment().
+//
+// Meant to be used from components_unittests, but not from unit_tests or
 // browser tests.
 //
-// Meant to be used from components_unittests, but not from unit_tests.
+// To set the active WebContents for the test use:
 //
-// If you just want to test how code interacts with the graph use
-// GraphTestHarness, which has a richer set of methods for creating graph
-// nodes.
+//   SetContents(CreateTestWebContents());
+//
+// This will create a PageNode, but nothing else. To create FrameNodes and
+// ProcessNodes for the test WebContents, simulate a committed navigation with:
+//
+//  content::NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+//      GURL("https://www.foo.com/"));
+//
+// This will create nodes backed by thin test stubs (TestWebContents,
+// TestRenderFrameHost, etc). If you want full process trees and live
+// RenderFrameHosts, use PerformanceManagerBrowserTestHarness.
+//
+// If you just want to test how code interacts with the graph it's better to
+// use GraphTestHarness, which has a rich set of methods for directly creating
+// graph nodes.
 class PerformanceManagerTestHarness
     : public content::RenderViewHostTestHarness {
  public:

@@ -114,8 +114,8 @@ public class HiddenTabHolder {
 
         LoadUrlParams loadParams = new LoadUrlParams(url);
         String referrer = IntentHandler.getReferrerUrlIncludingExtraHeaders(extrasIntent);
-        if (referrer == null && clientManager.getReferrerForSession(session) != null) {
-            referrer = clientManager.getReferrerForSession(session).getUrl();
+        if (referrer == null && clientManager.getDefaultReferrerForSession(session) != null) {
+            referrer = clientManager.getDefaultReferrerForSession(session).getUrl();
         }
         if (referrer == null) referrer = "";
         if (!referrer.isEmpty()) {

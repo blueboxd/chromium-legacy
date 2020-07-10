@@ -12,9 +12,10 @@
 
 ClipboardReadWritePermissionContext::ClipboardReadWritePermissionContext(
     content::BrowserContext* browser_context)
-    : PermissionContextBase(browser_context,
-                            ContentSettingsType::CLIPBOARD_READ_WRITE,
-                            blink::mojom::FeaturePolicyFeature::kClipboard) {}
+    : PermissionContextBase(
+          browser_context,
+          ContentSettingsType::CLIPBOARD_READ_WRITE,
+          blink::mojom::FeaturePolicyFeature::kClipboardRead) {}
 
 ClipboardReadWritePermissionContext::~ClipboardReadWritePermissionContext() {}
 

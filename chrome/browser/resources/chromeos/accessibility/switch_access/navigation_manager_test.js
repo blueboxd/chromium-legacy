@@ -13,29 +13,21 @@ SwitchAccessNavigationManagerTest = class extends SwitchAccessE2ETest {
         .locationForTesting = {top: 10, left: 10, width: 20, height: 20};
     MenuManager.initialize();
   }
+
+  moveToPageContents(pageContents) {
+    if (!SwitchAccessPredicate.isGroup(pageContents)) {
+      pageContents = new AutomationTreeWalker(
+                         pageContents, constants.Dir.FORWARD,
+                         {visit: SwitchAccessPredicate.isGroup})
+                         .next()
+                         .node;
+    }
+    assertNotNullNorUndefined(
+        pageContents, 'Could not find group corresponding to page contents');
+    this.navigator.moveTo_(pageContents);
+    NavigationManager.enterGroup();
+  }
 };
-
-function moveToPageContents() {
-  const navigator = NavigationManager.instance;
-  // Start from the desktop node.
-  navigator.setGroup_(DesktopNode.build(navigator.desktop_));
-
-  // The first item should be the browser window.
-  assertTrue(
-      navigator.node_.isGroup(),
-      'Browser window should be the desktop\'s first child');
-  NavigationManager.enterGroup();
-
-  // Find the page contents in the browser window.
-  // The third item in the browser window is the page contents.
-  // TODO(anastasi): find the browser window dynamically.
-  NavigationManager.moveForward();
-  NavigationManager.moveForward();
-  assertTrue(
-      navigator.node_.isGroup(),
-      'Page contents should be the browser window\'s third child');
-  NavigationManager.enterGroup();
-}
 
 function currentNode() {
   return NavigationManager.instance.node_;
@@ -88,7 +80,7 @@ TEST_F('SwitchAccessNavigationManagerTest', 'MoveTo', function() {
         'Group node was not successfully populated');
     assertTrue(
         this.navigator.history_.peek().group.isEquivalentTo(outerGroup),
-        'Group stack was not built properly');
+        'History was not built properly');
 
     this.navigator.moveTo_(slider);
     assertEquals(
@@ -154,8 +146,8 @@ TEST_F('SwitchAccessNavigationManagerTest', 'SelectButton', function() {
         };
       </script>`;
 
-  this.runWithLoadedTree(website, function(desktop) {
-    moveToPageContents();
+  this.runWithLoadedTree(website, function(pageContents) {
+    this.moveToPageContents(pageContents);
 
     const node = currentNode().automationNode;
     assertNotNullNorUndefined(node, 'Node is invalid');
@@ -170,7 +162,7 @@ TEST_F('SwitchAccessNavigationManagerTest', 'SelectButton', function() {
         }));
 
     NavigationManager.instance.node_.performAction('select');
-  });
+  }, {returnPage: true});
 });
 
 TEST_F('SwitchAccessNavigationManagerTest', 'EnterGroup', function() {
@@ -185,7 +177,7 @@ TEST_F('SwitchAccessNavigationManagerTest', 'EnterGroup', function() {
 
     const originalGroup = this.navigator.group_;
     assertEquals(
-        this.navigator.node_.automationNode.htmlAttributes['id'], 'group',
+        this.navigator.node_.automationNode.htmlAttributes.id, 'group',
         'Did not move to group properly');
 
     NavigationManager.enterGroup();
@@ -203,8 +195,7 @@ TEST_F('SwitchAccessNavigationManagerTest', 'EnterGroup', function() {
   });
 });
 
-// TODO(crbug.com/1045075): Test is flaky.
-TEST_F('SwitchAccessNavigationManagerTest', 'DISABLED_MoveForward', function() {
+TEST_F('SwitchAccessNavigationManagerTest', 'MoveForward', function() {
   const website = `<div>
                      <button id="button1"></button>
                      <button id="button2"></button>
@@ -217,7 +208,7 @@ TEST_F('SwitchAccessNavigationManagerTest', 'DISABLED_MoveForward', function() {
         button1 instanceof BackButtonNode,
         'button1 should not be a BackButtonNode');
     assertEquals(
-        'button1', button1.automationNode.htmlAttributes['id'],
+        'button1', button1.automationNode.htmlAttributes.id,
         'Current node is not button1');
 
     NavigationManager.moveForward();
@@ -229,7 +220,7 @@ TEST_F('SwitchAccessNavigationManagerTest', 'DISABLED_MoveForward', function() {
         button2 instanceof BackButtonNode,
         'button2 should not be a BackButtonNode');
     assertEquals(
-        'button2', button2.automationNode.htmlAttributes['id'],
+        'button2', button2.automationNode.htmlAttributes.id,
         'Current node is not button2');
 
     NavigationManager.moveForward();
@@ -244,7 +235,7 @@ TEST_F('SwitchAccessNavigationManagerTest', 'DISABLED_MoveForward', function() {
         button3 instanceof BackButtonNode,
         'button3 should not be a BackButtonNode');
     assertEquals(
-        'button3', button3.automationNode.htmlAttributes['id'],
+        'button3', button3.automationNode.htmlAttributes.id,
         'Current node is not button3');
 
     NavigationManager.moveForward();
@@ -272,7 +263,7 @@ TEST_F('SwitchAccessNavigationManagerTest', 'MoveBackward', function() {
         button1 instanceof BackButtonNode,
         'button1 should not be a BackButtonNode');
     assertEquals(
-        'button1', button1.automationNode.htmlAttributes['id'],
+        'button1', button1.automationNode.htmlAttributes.id,
         'Current node is not button1');
 
     NavigationManager.moveBackward();
@@ -289,7 +280,7 @@ TEST_F('SwitchAccessNavigationManagerTest', 'MoveBackward', function() {
         button3 instanceof BackButtonNode,
         'button3 should not be a BackButtonNode');
     assertEquals(
-        'button3', button3.automationNode.htmlAttributes['id'],
+        'button3', button3.automationNode.htmlAttributes.id,
         'Current node is not button3');
 
     NavigationManager.moveBackward();
@@ -302,7 +293,7 @@ TEST_F('SwitchAccessNavigationManagerTest', 'MoveBackward', function() {
         button2 instanceof BackButtonNode,
         'button2 should not be a BackButtonNode');
     assertEquals(
-        'button2', button2.automationNode.htmlAttributes['id'],
+        'button2', button2.automationNode.htmlAttributes.id,
         'Current node is not button2');
 
     NavigationManager.moveBackward();

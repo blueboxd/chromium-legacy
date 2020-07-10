@@ -71,6 +71,7 @@ Probajte da dodirnete mikrofon da biste me pitali nešto.</translation>
 <translation id="808894953321890993">Promeni lozinku</translation>
 <translation id="8208861521865154048">Pogodnosti</translation>
 <translation id="8347227221149377169">Zadaci štampanja</translation>
+<translation id="8623849191266582420"><ph name="ENROLLMENT_DOMAIN" /> upravlja ovim <ph name="DEVICE_TYPE" /> uređajem. Administratori mogu da daljinski konfigurišu i prate uređaj.</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> upravlja ovim korisnikom. Može daljinski da upravlja podešavanjima i nadgleda aktivnosti korisnika.</translation>
 <translation id="871560550817059752">Nije uspelo – nema više mastila</translation>
 <translation id="8747900814994928677">Potvrdite promenu</translation>

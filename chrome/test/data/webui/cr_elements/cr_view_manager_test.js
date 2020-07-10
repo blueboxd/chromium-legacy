@@ -6,6 +6,7 @@
 // #import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.m.js';
 // #import {assert} from 'chrome://resources/js/assert.m.js';
 // #import {isChildVisible} from '../test_util.m.js';
+// #import {assertEquals, assertTrue, assertFalse} from '../chai_assert.js';
 // clang-format on
 
 /** @fileoverview Suite of tests for cr-view-manager. */
@@ -16,16 +17,16 @@ cr.define('cr_view_manager_test', function() {
     EventFiring: 'event firing',
   };
 
+  /** @type {!CrViewManagerElement} */
   let viewManager;
+
   let parent;
-  let views;
   const suiteName = 'CrElementsViewManagerTest';
 
   suite(suiteName, function() {
     // Initialize an cr-view-manager inside a parent div before
     // each test.
     setup(function() {
-      PolymerTest.clearBody();
       document.body.innerHTML = `
         <div id="parent">
           <cr-view-manager id="viewManager">
@@ -36,13 +37,14 @@ cr.define('cr_view_manager_test', function() {
         </div>
       `;
       parent = document.body.querySelector('#parent');
-      viewManager = document.body.querySelector('#viewManager');
+      viewManager = /** @type {!CrViewManagerElement} */ (
+          document.body.querySelector('#viewManager'));
     });
 
     test(assert(TestNames.Visibility), function() {
       function assertViewVisible(id, expectIsVisible) {
-        const expectFunc = expectIsVisible ? expectTrue : expectFalse;
-        expectFunc(test_util.isChildVisible(viewManager, '#' + id, true));
+        const assertFunc = expectIsVisible ? assertTrue : assertFalse;
+        assertFunc(test_util.isChildVisible(viewManager, '#' + id, true));
       }
 
       assertViewVisible('viewOne', false);
@@ -86,8 +88,8 @@ cr.define('cr_view_manager_test', function() {
        * @param {boolean} expectFired Whether the event should have fired.
        */
       function verifyEventFiredAndBubbled(eventName, expectFired) {
-        expectEquals(expectFired, fired.has(eventName));
-        expectEquals(expectFired, bubbled.has(eventName));
+        assertEquals(expectFired, fired.has(eventName));
+        assertEquals(expectFired, bubbled.has(eventName));
       }
 
       // Setup the switch promise first.

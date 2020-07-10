@@ -168,10 +168,9 @@ AssistantResponse::GetUiElements() const {
 }
 
 void AssistantResponse::AddSuggestions(
-    std::vector<AssistantSuggestion> suggestions) {
-  for (AssistantSuggestion& suggestion : suggestions)
-    suggestions_.push_back(std::move(suggestion));
-
+    const std::vector<AssistantSuggestion>& suggestions) {
+  for (const auto& suggestion : suggestions)
+    suggestions_.push_back(suggestion);
   NotifySuggestionsAdded(suggestions);
 }
 

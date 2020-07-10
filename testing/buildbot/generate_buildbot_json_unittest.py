@@ -1605,7 +1605,7 @@ GPU_TELEMETRY_TEST_OUTPUT = """\
           ],
           "idempotent": false
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/foo_tests/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
       }
     ]
   }
@@ -1647,7 +1647,7 @@ NVIDIA_GPU_TELEMETRY_TEST_OUTPUT = """\
           ],
           "idempotent": false
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/foo_tests/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
       }
     ]
   }
@@ -1689,7 +1689,7 @@ INTEL_GPU_TELEMETRY_TEST_OUTPUT = """\
           ],
           "idempotent": false
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/foo_tests/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
       }
     ]
   }
@@ -1731,7 +1731,7 @@ INTEL_UHD_GPU_TELEMETRY_TEST_OUTPUT = """\
           ],
           "idempotent": false
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/foo_tests/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
       }
     ]
   }
@@ -1914,7 +1914,7 @@ GPU_DIMENSIONS_WATERFALL_OUTPUT = """\
           "idempotent": false,
           "value": "test"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/foo_test/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
       }
     ]
   }

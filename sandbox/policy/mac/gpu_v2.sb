@@ -79,6 +79,7 @@
 
 (allow sysctl-read
   (sysctl-name "hw.logicalcpu_max")
+  (sysctl-name "hw.memsize")
   (sysctl-name "hw.model")
   (sysctl-name "kern.osvariant_status")
 )

@@ -54,6 +54,7 @@ class LiteVideoDecider
 
   // blocklist::OptOutBlocklistDelegate
   void OnUserBlocklistedStatusChange(bool blocklisted) override;
+  void OnBlocklistCleared(base::Time time) override;
 
   // network::NetworkConnectionTracker::NetworkConnectionObserver:
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
@@ -61,6 +62,11 @@ class LiteVideoDecider
   // network::NetworkQualityTracker::EffectiveConnectionTypeObserver:
   void OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType type) override;
+
+  // Purge all the user browsing data within |user_blocklist_| between
+  // the provided time ranges.
+  void ClearBlocklist(const base::Time& delete_begin,
+                      const base::Time& delete_end);
 
  private:
   // The hint cache that holds LiteVideoHints that specify the parameters

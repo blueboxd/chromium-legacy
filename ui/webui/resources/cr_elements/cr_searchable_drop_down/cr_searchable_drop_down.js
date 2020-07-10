@@ -265,7 +265,7 @@ Polymer({
       if (this.readonly) {
         return;
       }
-      if (event.code === 'Enter') {
+      if (event.key === 'Enter') {
         this.openDropdown_();
         // Stop the default submit action.
         event.preventDefault();
@@ -274,7 +274,7 @@ Polymer({
     }
 
     event.stopPropagation();
-    switch (event.code) {
+    switch (event.key) {
       case 'Tab':
         // Pressing tab will cause the input field to lose focus. Since the
         // dropdown visibility is tied to focus, close the dropdown.
@@ -287,7 +287,7 @@ Polymer({
         if (items.length === 0) {
           break;
         }
-        this.updateSelected_(items, selected, event.code === 'ArrowDown');
+        this.updateSelected_(items, selected, event.key === 'ArrowDown');
         break;
       }
       case 'Enter': {

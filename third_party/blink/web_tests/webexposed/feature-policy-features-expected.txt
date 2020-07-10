@@ -20,6 +20,8 @@ ch-ua-platform
 ch-ua-platform-version
 ch-viewport-width
 ch-width
+clipboard-read
+clipboard-write
 conversion-measurement
 cross-origin-isolated
 document-domain

@@ -34,7 +34,7 @@ namespace device {
 class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoverySession {
  public:
   // The ErrorCallback is used by methods to asynchronously report errors.
-  typedef base::Closure ErrorCallback;
+  using ErrorCallback = base::OnceClosure;
 
   enum SessionStatus {
     // Just added to the adapter.
@@ -66,7 +66,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoverySession {
   // discovery is made, and |error_callback| will be invoked if such a call
   // fails. Typically, users can ignore this and simply destroy the instance
   // instead of calling Stop().
-  virtual void Stop(base::Closure callback = base::DoNothing(),
+  virtual void Stop(base::OnceClosure callback = base::DoNothing(),
                     ErrorCallback error_callback = base::DoNothing());
 
   virtual const BluetoothDiscoveryFilter* GetDiscoveryFilter() const;
@@ -95,12 +95,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoverySession {
   // exists when this callback executes. Always invokes |success_callback|.
   static void OnDiscoverySessionRemoved(
       base::WeakPtr<BluetoothDiscoverySession> session,
-      const base::Closure& deactivate_discovery_session,
-      const base::Closure& success_callback);
+      base::OnceClosure deactivate_discovery_session,
+      base::OnceClosure success_callback);
 
   static void OnDiscoverySessionRemovalFailed(
       base::WeakPtr<BluetoothDiscoverySession> session,
-      const base::Closure& error_callback,
+      base::OnceClosure error_callback,
       UMABluetoothDiscoverySessionOutcome outcome);
 
   // Deactivate discovery session object after

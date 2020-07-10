@@ -120,4 +120,17 @@ OutputPresenter::OverlayData::~OverlayData() = default;
 OutputPresenter::OverlayData& OutputPresenter::OverlayData::operator=(
     OverlayData&&) = default;
 
+const gpu::Mailbox& OutputPresenter::OverlayData::mailbox() const {
+  return representation_->mailbox();
+}
+
+bool OutputPresenter::OverlayData::IsInUseByWindowServer() const {
+  if (!scoped_read_access_)
+    return false;
+  auto* gl_image = scoped_read_access_->gl_image();
+  if (!gl_image)
+    return false;
+  return gl_image->IsInUseByWindowServer();
+}
+
 }  // namespace viz

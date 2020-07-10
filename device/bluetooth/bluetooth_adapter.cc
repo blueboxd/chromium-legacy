@@ -71,29 +71,29 @@ bool BluetoothAdapter::CanPower() const {
 }
 
 void BluetoothAdapter::SetPowered(bool powered,
-                                  const base::Closure& callback,
-                                  const ErrorCallback& error_callback) {
+                                  base::OnceClosure callback,
+                                  ErrorOnceCallback error_callback) {
   if (set_powered_callbacks_) {
     // Only allow one pending callback at a time.
-    ui_task_runner_->PostTask(FROM_HERE, error_callback);
+    ui_task_runner_->PostTask(FROM_HERE, std::move(error_callback));
     return;
   }
 
   if (powered == IsPowered()) {
     // Return early in case no change of power state is needed.
-    ui_task_runner_->PostTask(FROM_HERE, callback);
+    ui_task_runner_->PostTask(FROM_HERE, std::move(callback));
     return;
   }
 
   if (!SetPoweredImpl(powered)) {
-    ui_task_runner_->PostTask(FROM_HERE, error_callback);
+    ui_task_runner_->PostTask(FROM_HERE, std::move(error_callback));
     return;
   }
 
   set_powered_callbacks_ = std::make_unique<SetPoweredCallbacks>();
   set_powered_callbacks_->powered = powered;
-  set_powered_callbacks_->callback = callback;
-  set_powered_callbacks_->error_callback = error_callback;
+  set_powered_callbacks_->callback = std::move(callback);
+  set_powered_callbacks_->error_callback = std::move(error_callback);
 }
 
 bool BluetoothAdapter::IsPeripheralRoleSupported() const {
@@ -454,7 +454,7 @@ BluetoothAdapter::BluetoothAdapter() {}
 BluetoothAdapter::~BluetoothAdapter() {
   // If there's a pending powered request, run its error callback.
   if (set_powered_callbacks_)
-    set_powered_callbacks_->error_callback.Run();
+    std::move(set_powered_callbacks_->error_callback).Run();
 }
 
 void BluetoothAdapter::RunPendingPowerCallbacks() {
@@ -463,8 +463,9 @@ void BluetoothAdapter::RunPendingPowerCallbacks() {
     // scope and to allow scheduling another SetPowered() call in either of the
     // callbacks.
     auto callbacks = std::move(set_powered_callbacks_);
-    callbacks->powered == IsPowered() ? std::move(callbacks->callback).Run()
-                                      : callbacks->error_callback.Run();
+    callbacks->powered == IsPowered()
+        ? std::move(callbacks->callback).Run()
+        : std::move(callbacks->error_callback).Run();
   }
 }
 

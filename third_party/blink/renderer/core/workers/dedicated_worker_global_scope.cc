@@ -144,7 +144,7 @@ void DedicatedWorkerGlobalScope::Initialize(
   SetReferrerPolicy(response_referrer_policy);
 
   // https://wicg.github.io/cors-rfc1918/#integration-html
-  GetSecurityContext().SetAddressSpace(response_address_space);
+  SetAddressSpace(response_address_space);
 
   // Step 12.6. "Execute the Initialize a global object's CSP list algorithm
   // on worker global scope and response. [CSP]"

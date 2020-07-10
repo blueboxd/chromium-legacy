@@ -213,7 +213,7 @@ class ThreadedWorkletMessagingProxyForTest
             GetExecutionContext()->IsSecureContext(),
             GetExecutionContext()->GetHttpsState(), worker_clients,
             nullptr /* content_settings_client */,
-            GetExecutionContext()->GetSecurityContext().AddressSpace(),
+            GetExecutionContext()->AddressSpace(),
             OriginTrialContext::GetTokens(GetExecutionContext()).get(),
             base::UnguessableToken::Create(), std::move(worker_settings),
             kV8CacheOptionsDefault,

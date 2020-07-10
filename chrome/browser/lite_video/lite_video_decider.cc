@@ -197,4 +197,14 @@ void LiteVideoDecider::OnConnectionChanged(
       network::NetworkConnectionTracker::IsConnectionCellular(type);
 }
 
+void LiteVideoDecider::ClearBlocklist(const base::Time& delete_begin,
+                                      const base::Time& delete_end) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  user_blocklist_->ClearBlockList(delete_begin, delete_end);
+}
+
+void LiteVideoDecider::OnBlocklistCleared(base::Time time) {
+  LOCAL_HISTOGRAM_BOOLEAN("LiteVideo.UserBlocklist.ClearBlocklist", true);
+}
+
 }  // namespace lite_video

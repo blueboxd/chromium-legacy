@@ -31,8 +31,6 @@
 #include "device/bluetooth/dbus/bluetooth_gatt_service_client.h"
 #include "device/bluetooth/dbus/bluetooth_input_client.h"
 #include "device/bluetooth/dbus/bluetooth_le_advertising_manager_client.h"
-#include "device/bluetooth/dbus/bluetooth_media_client.h"
-#include "device/bluetooth/dbus/bluetooth_media_transport_client.h"
 #include "device/bluetooth/dbus/bluetooth_profile_manager_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_thread_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -151,17 +149,6 @@ BluetoothInputClient* bluez::BluezDBusManager::GetBluetoothInputClient() {
   return client_bundle_->bluetooth_input_client();
 }
 
-BluetoothMediaClient* bluez::BluezDBusManager::GetBluetoothMediaClient() {
-  DCHECK(object_manager_support_known_);
-  return client_bundle_->bluetooth_media_client();
-}
-
-BluetoothMediaTransportClient*
-bluez::BluezDBusManager::GetBluetoothMediaTransportClient() {
-  DCHECK(object_manager_support_known_);
-  return client_bundle_->bluetooth_media_transport_client();
-}
-
 BluetoothProfileManagerClient*
 bluez::BluezDBusManager::GetBluetoothProfileManagerClient() {
   DCHECK(object_manager_support_known_);
@@ -226,10 +213,6 @@ void BluezDBusManager::InitializeClients() {
   client_bundle_->bluetooth_input_client()->Init(GetSystemBus(),
                                                  bluetooth_service_name);
   client_bundle_->bluetooth_le_advertising_manager_client()->Init(
-      GetSystemBus(), bluetooth_service_name);
-  client_bundle_->bluetooth_media_client()->Init(GetSystemBus(),
-                                                 bluetooth_service_name);
-  client_bundle_->bluetooth_media_transport_client()->Init(
       GetSystemBus(), bluetooth_service_name);
   client_bundle_->bluetooth_profile_manager_client()->Init(
       GetSystemBus(), bluetooth_service_name);
@@ -398,18 +381,6 @@ void BluezDBusManagerSetter::SetBluetoothInputClient(
     std::unique_ptr<BluetoothInputClient> client) {
   bluez::BluezDBusManager::Get()->client_bundle_->bluetooth_input_client_ =
       std::move(client);
-}
-
-void BluezDBusManagerSetter::SetBluetoothMediaClient(
-    std::unique_ptr<BluetoothMediaClient> client) {
-  bluez::BluezDBusManager::Get()->client_bundle_->bluetooth_media_client_ =
-      std::move(client);
-}
-
-void BluezDBusManagerSetter::SetBluetoothMediaTransportClient(
-    std::unique_ptr<BluetoothMediaTransportClient> client) {
-  bluez::BluezDBusManager::Get()
-      ->client_bundle_->bluetooth_media_transport_client_ = std::move(client);
 }
 
 void BluezDBusManagerSetter::SetBluetoothProfileManagerClient(

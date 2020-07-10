@@ -79,6 +79,14 @@ public class DefaultCustomTabIntentHandlingStrategy implements CustomTabIntentHa
             // - CustomActivityTabProvider#getSpeculatedUrl() is not set.
             // - The tab creation mode is only set in CustomTabActivityTabController if the URL
             // being loaded is the one we want.
+
+            if (tab.isLoading()) {
+                // CustomTabObserver and CustomTabActivityNavigationObserver are attached
+                // as observers in CustomTabActivityTabController, not when the navigation is
+                // initiated in HiddenTabHolder or StartupTabPreloader.
+                mCustomTabObserver.get().onPageLoadStarted(tab, url);
+                mNavigationEventObserver.onPageLoadStarted(tab, url);
+            }
             return;
         }
 

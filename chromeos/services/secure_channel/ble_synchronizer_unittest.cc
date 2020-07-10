@@ -77,12 +77,13 @@ struct StartDiscoverySessionArgs {
 
 struct StopDiscoverySessionArgs {
   StopDiscoverySessionArgs(
-      const base::Closure& callback,
-      const device::BluetoothDiscoverySession::ErrorCallback& error_callback)
-      : callback(callback), error_callback(error_callback) {}
+      base::OnceClosure callback,
+      device::BluetoothDiscoverySession::ErrorCallback error_callback)
+      : callback(std::move(callback)),
+        error_callback(std::move(error_callback)) {}
 
-  const base::Closure callback;
-  const device::BluetoothDiscoverySession::ErrorCallback error_callback;
+  base::OnceClosure callback;
+  device::BluetoothDiscoverySession::ErrorCallback error_callback;
 };
 
 class MockBluetoothAdapterWithAdvertisements
@@ -383,7 +384,7 @@ class SecureChannelBleSynchronizerTest : public testing::Test {
       size_t expected_stop_discovery_result_count) {
     EXPECT_TRUE(stop_discovery_args_list_.size() >= stop_arg_index);
 
-    stop_discovery_args_list_[stop_arg_index]->callback.Run();
+    std::move(stop_discovery_args_list_[stop_arg_index]->callback).Run();
 
     histogram_tester_.ExpectUniqueSample(
         "InstantTethering.BluetoothDiscoverySessionStopped", 1,

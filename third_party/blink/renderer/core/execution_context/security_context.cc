@@ -28,13 +28,10 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
-#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
-#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/policy_value.mojom-blink.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/execution_context/security_context_init.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -58,22 +55,34 @@ WTF::Vector<unsigned> SecurityContext::SerializeInsecureNavigationSet(
   return serialized;
 }
 
-SecurityContext::SecurityContext(const SecurityContextInit& init,
-                                 SecurityContextType context_type)
-    : sandbox_flags_(init.GetSandboxFlags()),
-      security_origin_(init.GetSecurityOrigin()),
-      feature_policy_(init.CreateFeaturePolicy()),
-      report_only_feature_policy_(init.CreateReportOnlyFeaturePolicy()),
-      document_policy_(init.CreateDocumentPolicy()),
-      report_only_document_policy_(init.CreateReportOnlyDocumentPolicy()),
-      content_security_policy_(init.GetCSP()),
-      address_space_(network::mojom::IPAddressSpace::kUnknown),
-      insecure_request_policy_(
-          mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone),
-      require_safe_types_(false),
-      context_type_for_asserts_(context_type),
-      secure_context_mode_(init.GetSecureContextMode()),
-      origin_trial_context_(init.GetOriginTrialContext()) {}
+SecurityContext::SecurityContext(SecurityContextType context_type)
+    : context_type_for_asserts_(context_type) {}
+
+void SecurityContext::Initialize(const SecurityContextInit& init) {
+  if (security_origin_) {
+    // If |security_origin_| is non-null, this is a re-initialization. This
+    // should only happen for kWindow, when the window of an initial empty
+    // document is reused.
+    SECURITY_CHECK(context_type_for_asserts_ == kWindow);
+    // Re-initialization should only happen when origins can access each other.
+    SECURITY_CHECK(security_origin_->CanAccess(init.GetSecurityOrigin().get()));
+    // Under normal circumstances, because the origins can access each other,
+    // the SecureContextMode can't change. However, when an an origin is granted
+    // universal access, it can access any other origin, including ones that
+    // result in a different SecureContextMode.
+    SECURITY_CHECK(secure_context_mode_ == init.GetSecureContextMode() ||
+                   security_origin_->IsGrantedUniversalAccess());
+  }
+  security_origin_ = init.GetSecurityOrigin();
+  secure_context_mode_ = init.GetSecureContextMode();
+  ApplySandboxFlags(init.GetSandboxFlags());
+  feature_policy_ = init.CreateFeaturePolicy();
+  report_only_feature_policy_ = init.CreateReportOnlyFeaturePolicy();
+  document_policy_ = init.CreateDocumentPolicy();
+  report_only_document_policy_ = init.CreateReportOnlyDocumentPolicy();
+  SetContentSecurityPolicy(init.GetCSP());
+  origin_trial_context_ = init.GetOriginTrialContext();
+}
 
 void SecurityContext::Trace(Visitor* visitor) const {
   visitor->Trace(content_security_policy_);

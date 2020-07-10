@@ -224,7 +224,7 @@
 <translation id="1427655258943162134">프록시 서버의 주소 또는 URL</translation>
 <translation id="142825088795991909">정책을 설정하면 알림 표시가 가능한 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
-      정책을 설정하지 않은 경우 <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" />이 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않다면 사용자의 개인 설정이 적용됩니다.
+      정책을 설정하지 않은 경우 <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" />이(가) 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않다면 사용자의 개인 설정이 적용됩니다.
 
       유효한 <ph name="URL_LABEL" /> 패턴에 관해 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참고하세요.</translation>
 <translation id="1435659902881071157">기기 수준 네트워크 설정</translation>
@@ -329,9 +329,9 @@
 
       USB 권한 모델은 요청 URL과 삽입 URL(최상위 프레임 사이트)을 사용하여 요청 URL에 USB 기기 액세스 권한을 부여합니다. 요청하는 사이트가 iframe에서 로드되는 경우 요청 URL은 삽입 URL과 다를 수 있습니다. 따라서 'URL' 입력란에는 URL을 지정하기 위해 쉼표로 구분된 문자열을 2개까지 포함할 수 있습니다. URL을 하나만 지정한 경우 삽입 상태와 관계없이 요청하는 사이트의 URL이 지정한 URL과 일치하면 해당 USB 기기에 액세스할 권한이 부여됩니다. 'URL' 입력란의 URL은 반드시 유효한 URL이어야 하며 그렇지 않으면 정책이 무시됩니다.
 
-      정책을 설정하지 않은 경우 <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" />이 설정되어 있으면 적용됩니다. 설정되어 있지 않다면 사용자의 개인 설정이 적용됩니다.
+      정책을 설정하지 않은 경우 <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" />이(가) 설정되어 있으면 적용됩니다. 설정되어 있지 않다면 사용자의 개인 설정이 적용됩니다.
 
-      정책의 URL 패턴은 <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" />를 통해 구성된 패턴과 충돌해서는 안 됩니다. 충돌할 경우 이 정책이 <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" />와 <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" />보다 우선 적용됩니다.
+      정책의 URL 패턴은 <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" />을(를) 통해 구성된 패턴과 충돌해서는 안 됩니다. 충돌할 경우 이 정책이 <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" />과(와) <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" />보다 우선 적용됩니다.
 
       정책과 <ph name="DEVICE_WEB_USB_ALLOW_DEVICES_FOR_URLS_POLICY_NAME" />의 값은 병합됩니다.</translation>
 <translation id="1599424828227887013">Android 기기에서 지정된 출처의 사이트 격리 사용 설정</translation>
@@ -773,7 +773,7 @@
 <translation id="2208976000652006649">POST를 사용하는 검색 URL용 매개변수</translation>
 <translation id="221019813387144689">정책을 설정하면 알림 표시가 불가능한 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
-      정책을 설정하지 않은 경우 <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" />이 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않다면 사용자의 개인 설정이 적용됩니다.
+      정책을 설정하지 않은 경우 <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" />이(가) 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않다면 사용자의 개인 설정이 적용됩니다.
 
       유효한 <ph name="URL_LABEL" /> 패턴에 관해 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참고하세요.</translation>
 <translation id="2215238871726750562">정책을 True로 설정하면 세션을 시작할 때 브라우저 창이 실행되지 않습니다.
@@ -796,7 +796,7 @@
 <translation id="2236488539271255289">모든 사이트에서 로컬 데이터 설정 허용 안함</translation>
 <translation id="2240793533242059248">정책을 설정하면 팝업 열기가 불가능한 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
-      정책을 설정하지 않은 경우 <ph name="DEFAULT_POPUPS_SETTING_POLICY_NAME" />이 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않다면 사용자의 개인 설정이 적용됩니다.
+      정책을 설정하지 않은 경우 <ph name="DEFAULT_POPUPS_SETTING_POLICY_NAME" />이(가) 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않다면 사용자의 개인 설정이 적용됩니다.
 
       유효한 <ph name="URL_LABEL" /> 패턴에 관해 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참고하세요.</translation>
 <translation id="2241498944622759244">이 기능은 출시되지 않았기 때문에 정책이 지원 중단되었습니다. true로 설정하거나 설정하지 않으면 <ph name="PRODUCT_NAME" />에서 현재 페이지와 관련된 페이지를 추천합니다.
@@ -1116,11 +1116,11 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
 
       이 정책은 사용자가 개별 기기에서 프린터를 설정할 수 있는지에 영향을 미치지 않으며, 개별 사용자의 프린터 설정을 보완하기 위한 정책입니다.
       </translation>
-<translation id="2632538643061793322">정책을 설정하면 사용자에게 USB 기기 액세스 요청이 가능한 사이트를 지정하는 URL 패턴 목록을 만들 수 있습니다.
+<translation id="2632538643061793322">정책을 설정하면 사용자에게 USB 기기 액세스를 요청할 수 있는 사이트를 지정하는 URL 패턴 목록을 만들 수 있습니다.
 
-      정책을 설정하지 않은 경우 <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" />이 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않으면 사용자의 개인 설정이 적용됩니다.
+      정책을 설정하지 않은 경우 <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" />이(가) 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않으면 사용자의 개인 설정이 적용됩니다.
 
-      URL 패턴은 <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" />와 충돌하지 않아야 합니다. URL이 모두 일치할 경우 어떠한 정책도 우선 적용되지 않습니다.
+      URL 패턴은 <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" />과(와) 충돌하지 않아야 합니다. URL이 모두 일치할 경우 어떠한 정책도 우선 적용되지 않습니다.
 
       유효한 <ph name="URL_LABEL" /> 패턴에 관해 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참고하세요.</translation>
 <translation id="2633084400146331575">음성 피드백 사용</translation>
@@ -2469,7 +2469,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="4703402283970867140">스마트 밝기 낮추기 모델을 사용하여 화면이 어두워질 때까지의 시간 연장</translation>
 <translation id="4715049077430924642">정책을 설정하면 자바스크립트 실행이 불가능한 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
-      정책을 설정하지 않은 경우 <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" />이 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않다면 사용자의 개인 설정이 적용됩니다.
+      정책을 설정하지 않은 경우 <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" />이(가) 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않다면 사용자의 개인 설정이 적용됩니다.
 
       유효한 <ph name="URL_LABEL" /> 패턴에 관해 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참고하세요.</translation>
 <translation id="4722122254122249791">지정된 출처의 사이트 격리 사용 설정</translation>
@@ -2928,11 +2928,11 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="5405289061476885481"><ph name="PRODUCT_OS_NAME" /> 로그인 화면에서 허용되는 키보드 레이아웃을 구성합니다.
 
       이 정책이 입력 방법 식별자 목록으로 설정되는 경우 주어진 입력 방법을 로그인 화면에서 사용할 수 있습니다. 첫 번째로 주어진 입력 수단이 사전 선택됩니다. 로그인 화면에서는 사용자 포드가 활성화되는데 이때 이 정책에서 주어진 입력 수단과 더불어 사용자가 마지막으로 사용한 입력 수단을 사용할 수 있습니다. 이 정책이 설정되지 않은 경우 로그인 화면의 입력 수단은 로그인 화면이 표시되는 언어에서 가져옵니다. 유효한 입력 수단 식별자가 아닌 값은 무시됩니다.</translation>
-<translation id="5416064504563346617">정책을 설정하면 사용자에게 USB 기기 액세스 요청이 불가능한 사이트를 지정하는 URL 패턴 목록을 만들 수 있습니다.
+<translation id="5416064504563346617">정책을 설정하면 사용자에게 USB 기기 액세스를 요청할 수 없는 사이트를 지정하는 URL 패턴 목록을 만들 수 있습니다.
 
-      정책을 설정하지 않은 경우 <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" />이 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않다면 사용자의 개인 설정이 적용됩니다.
+      정책을 설정하지 않은 경우 <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" />이(가) 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않다면 사용자의 개인 설정이 적용됩니다.
 
-      URL 패턴이 <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" />와 충돌해서는 안 됩니다. URL이 모두 일치할 경우 어떠한 정책도 우선 적용되지 않습니다.
+      URL 패턴이 <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" />과(와) 충돌해서는 안 됩니다. URL이 모두 일치할 경우 어떠한 정책도 우선 적용되지 않습니다.
 
       유효한 <ph name="URL_LABEL" /> 패턴에 관해 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참고하세요.</translation>
 <translation id="5417906792459853336">기기의 애플리케이션 인벤토리 및 사용 정보를 보고합니다.
@@ -3061,7 +3061,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="555077880566103058">모든 사이트에서 <ph name="FLASH_PLUGIN_NAME" /> 플러그인을 자동으로 실행하도록 허용</translation>
 <translation id="5557502336096594554">정책을 설정하면 팝업 열기가 가능한 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
-      정책을 설정하지 않은 경우 <ph name="DEFAULT_POPUPS_SETTING_POLICY_NAME" />이 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않다면 사용자의 개인 설정이 적용됩니다.
+      정책을 설정하지 않은 경우 <ph name="DEFAULT_POPUPS_SETTING_POLICY_NAME" />이(가) 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않다면 사용자의 개인 설정이 적용됩니다.
 
       유효한 <ph name="URL_LABEL" /> 패턴에 관해 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참고하세요.</translation>
 <translation id="5559079916187891399">이 정책은 Android 앱에 아무런 영향을 미치지 않습니다.</translation>
@@ -4097,7 +4097,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="718126088895133062">이 정책은 이 기기의 <ph name="PLUGIN_VM_NAME" /> 라이선스 사용자 ID를 지정합니다.</translation>
 <translation id="7184811651721788735">정책을 설정하면 <ph name="FLASH_PLUGIN_NAME" /> 플러그인 실행이 불가능한 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
-      정책을 설정하지 않은 경우 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />이 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않다면 사용자의 개인 설정이 적용됩니다.
+      정책을 설정하지 않은 경우 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />이(가) 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않다면 사용자의 개인 설정이 적용됩니다.
 
       유효한 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참고하세요. 그러나 M85부터 호스트에 '*' 및 '[*.]' 와일드 카드가 있는 패턴은 이 정책에서 지원되지 않습니다.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
@@ -4332,7 +4332,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="7612157962821894603"><ph name="PRODUCT_NAME" /> 시작 시 시스템 전체 플래그 적용</translation>
 <translation id="7614443356666150520">정책을 설정하면 이미지 표시가 불가능한 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
-      정책을 설정하지 않은 경우 <ph name="DEFAULT_IMAGE_SETTING_ENABLED_POLICY_NAME" />이 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않다면 사용자의 개인 설정이 적용됩니다.
+      정책을 설정하지 않은 경우 <ph name="DEFAULT_IMAGE_SETTING_ENABLED_POLICY_NAME" />이(가) 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않다면 사용자의 개인 설정이 적용됩니다.
 
        유효한 <ph name="URL_LABEL" /> 패턴에 관해 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참고하세요.
 
@@ -4760,9 +4760,9 @@ False로 설정하면 로그인 화면이 표시될 때 개인정보 보호 화�
 <translation id="8217516105848565518">이 정책은 지원이 중단되었습니다. RemoteAccessHostDomainList를 사용하세요.</translation>
 <translation id="8244171102276095471">TLS에서 RC4 암호화 기술을 사용 설정합니다.</translation>
 <translation id="8244525275280476362">정책 무효화 후 최대 가져오기 지연</translation>
-<translation id="8251411417369363637">정책을 True로 설정하면 다른 출처의 콘텐츠나 용량이 작은 콘텐츠를 비롯해 <ph name="FLASH_PLUGIN_NAME" /> 플러그인을 허용하는 웹사이트에 삽입된 <ph name="FLASH_PLUGIN_NAME" /> 콘텐츠가 전부 실행됩니다.
+<translation id="8251411417369363637">정책을 True로 설정하면 다른 출처의 콘텐츠나 크기가 작은 콘텐츠를 비롯해 <ph name="FLASH_PLUGIN_NAME" /> 플러그인을 허용하는 웹사이트에 삽입된 <ph name="FLASH_PLUGIN_NAME" /> 콘텐츠가 전부 실행됩니다.
 
-      정책을 False로 설정하거나 설정하지 않으면 다른 출처의 <ph name="FLASH_PLUGIN_NAME" /> 콘텐츠 또는 용량이 작은 콘텐츠가 차단될 수 있습니다.
+      정책을 False로 설정하거나 설정하지 않으면 다른 출처의 <ph name="FLASH_PLUGIN_NAME" /> 콘텐츠 또는 크기가 작은 콘텐츠가 차단될 수 있습니다.
 
       참고: <ph name="FLASH_PLUGIN_NAME" /> 플러그인을 실행할 수 있는 웹사이트를 제어하려면 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />, <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />, <ph name="PLUGINS_BLOCKED_FOR_URLS_POLICY_NAME" /> 정책을 참고하세요.</translation>
 <translation id="8256688113167012935">계정 이름 <ph name="PRODUCT_OS_NAME" />을(를) 해당 기기 로컬 계정의 로그인 화면에 표시할 것인지 제어합니다.
@@ -5007,7 +5007,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
           설정되지 않으면 접근성 기능 단축키가 기본적으로 사용 설정됩니다.</translation>
 <translation id="8520951634679398426">정책을 설정하면 자바스크립트 실행이 가능한 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
-      정책을 설정하지 않은 경우 <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" />이 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않다면 사용자의 개인 설정이 적용됩니다.
+      정책을 설정하지 않은 경우 <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" />이(가) 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않다면 사용자의 개인 설정이 적용됩니다.
 
       유효한 <ph name="URL_LABEL" /> 패턴에 관해 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참고하세요.</translation>
 <translation id="8525526490824335042">Linux 컨테이너</translation>
@@ -5111,7 +5111,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       True로 설정하면 기기의 블루투스 정보가 보고됩니다.</translation>
 <translation id="8703488928438047864">보드 상태 보고</translation>
 <translation id="8704831857353097849">사용할 수 없는 플러그인 목록</translation>
-<translation id="8705895771006864851">정책을 True로 설정하면 사용자에게 적합한 경우 <ph name="PRODUCT_NAME" />의 통합 번역 툴바와 마우스 오른쪽 버튼 클릭 시 나타나는 컨텍스트 메뉴에 번역 옵션을 표시하여 번역 기능을 제공합니다. 정책을 False로 설정하면 내장된 모든 번역 기능이 꺼집니다.
+<translation id="8705895771006864851">정책을 True로 설정하면 사용자에게 적합한 경우 <ph name="PRODUCT_NAME" />에 통합 번역 툴바를 표시하고 마우스 오른쪽 버튼 클릭 시 나타나는 컨텍스트 메뉴에 번역 옵션을 표시하여 번역 기능을 제공합니다. 정책을 False로 설정하면 내장된 모든 번역 기능이 꺼집니다.
 
       정책을 설정하면 사용자가 이 기능을 변경할 수 없습니다. 설정하지 않으면 사용자가 설정을 변경할 수 있습니다.</translation>
 <translation id="8708284670795912158">정책을 True로 설정하면 <ph name="PRODUCT_NAME" />의 미디어 자동재생이 허용됩니다. 정책을 False로 설정하면 <ph name="PRODUCT_NAME" />의 미디어 자동재생이 중지됩니다.
@@ -5354,7 +5354,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 
       이 정책의 값은 초 단위로 지정해야 합니다.</translation>
 <translation id="9021334785554745279">다운로드한 콘텐츠가 민감한 정보 보호 규칙을 준수하는지 확인할 URL 패턴</translation>
-<translation id="9030094532108679680">정책을 설정하면(추천으로만) 프로토콜 핸들러 목록을 등록할 수 있으며, 여기에는 사용자가 등록한 핸들러가 병합되므로 두 핸들러가 모두 사용됩니다. 속성(프로토콜)은 mailto와 같은 스키마로, 속성(URL)은 스키마를 처리하는 애플리케이션의 URL 패턴으로 설정합니다. 패턴에는 %s가 포함될 수 있으며, 이 부분은 처리된 URL로 대체됩니다.
+<translation id="9030094532108679680">정책을 설정하면(권장되는 방식으로만) 프로토콜 핸들러 목록을 등록할 수 있으며, 여기에는 사용자가 등록한 핸들러가 병합되므로 두 핸들러가 모두 사용됩니다. 속성(프로토콜)은 mailto와 같은 스키마로, 속성(URL)은 스키마를 처리하는 애플리케이션의 URL 패턴으로 설정합니다. 패턴에는 %s가 포함될 수 있으며, 이 부분은 처리된 URL로 대체됩니다.
 
       사용자는 정책으로 등록된 프로토콜 핸들러를 삭제할 수 없습니다. 그러나 새 기본 핸들러를 설치하여 정책에 따라 설치된 프로토콜 핸들러를 변경할 수는 있습니다.</translation>
 <translation id="9035086760683255833">키보드 포커스 강조표시 접근성 기능을 사용합니다.
@@ -5402,7 +5402,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       이 정책이 설정되지 않으면 <ph name="PRODUCT_NAME" />에서 기본 크기를 사용합니다. 사용자는 --disk-cache-size 플래그를 통해 기본 크기를 변경할 수 있습니다.</translation>
 <translation id="9062348747995618422">정책을 설정하면 <ph name="FLASH_PLUGIN_NAME" /> 플러그인 실행이 가능한 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
-      정책을 설정하지 않은 경우 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />이 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않다면 사용자의 개인 설정이 적용됩니다.
+      정책을 설정하지 않은 경우 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />이(가) 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않다면 사용자의 개인 설정이 적용됩니다.
 
       유효한 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참고하세요. 그러나 M85부터 호스트에 '*' 및 '[*.]' 와일드 카드가 있는 패턴은 이 정책에서 지원되지 않습니다.</translation>
 <translation id="9077227880520270584">기기 로컬 계정 자동 로그인 타이머</translation>

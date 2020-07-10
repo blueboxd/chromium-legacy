@@ -25,6 +25,7 @@
 <translation id="169515064810179024">سائٹس کو موشن سینسرز تک رسائی حاصل کرنے سے مسدود کریں</translation>
 <translation id="1717218214683051432">موشن سینسرز</translation>
 <translation id="1743802530341753419">سائٹس کو کسی آلے سے منسلک ہونے کی اجازت دینے سے پہلے پوچھیں (تجویز کردہ)</translation>
+<translation id="1818308510395330587">‏<ph name="APP_NAME" /> کو AR کا استعمال کرنے دینے کے لیے، <ph name="BEGIN_LINK" />Android ترتیبات<ph name="END_LINK" /> میں بھی کیمرا آن کریں۔</translation>
 <translation id="1887786770086287077">‏مقام کی رسائی اس آلہ کے لیے آف ہے۔ <ph name="BEGIN_LINK" />Android کی ترتیبات<ph name="END_LINK" />.میں اسے آن کریں۔</translation>
 <translation id="1919345977826869612">اشتہارات</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -39,6 +40,7 @@
 <translation id="2148716181193084225">آج</translation>
 <translation id="2182457891543959921">‏سائٹس کو اپنے اطراف کا 3D نقشہ تخلیق یا کیمرے کی پوزیشن ٹریک کرنے کی اجازت دینے سے پہلے پوچھیں (تجویز کردہ)</translation>
 <translation id="2212565012507486665">کوکیز کی اجازت دیں</translation>
+<translation id="2228071138934252756">‏<ph name="APP_NAME" /> کو اپنے کیمرے تک رسائی دینے کے لیے، <ph name="BEGIN_LINK" />Android کی ترتیبات<ph name="END_LINK" /> میں بھی کیمرا آن کریں۔</translation>
 <translation id="2289270750774289114">اس وقت پوچھیں جب کسی سائٹ میں قریبی بلوٹوتھ آلات کو دریافت کرنا مقصود ہو (تجویز کردہ)</translation>
 <translation id="2315043854645842844">کلائنٹ سائڈ سرٹیفکیٹ کا انتخاب آپریٹنگ سسٹم کے ذریعہ تعاون یافتہ نہیں ہے۔</translation>
 <translation id="2359808026110333948">جاری رکھیں</translation>
@@ -69,6 +71,7 @@
 <translation id="3115898365077584848">معلومات دکھائیں</translation>
 <translation id="3123473560110926937">بعض سائٹس پر مسدود ہے</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> اسٹور کردہ ڈیٹا</translation>
+<translation id="321187648315454507">‏<ph name="APP_NAME" /> کو آپ کو اطلاعات بھیجنے کی سہولت دینے کے لیے، <ph name="BEGIN_LINK" />Android کی ترتیبات<ph name="END_LINK" /> میں بھی اطلاعات آن کریں۔</translation>
 <translation id="3227137524299004712">مائیکروفون</translation>
 <translation id="3277252321222022663">سائٹس کو سینسرز تک رسائی حاصل کرنے کی اجازت دیں (تجویز کردہ)</translation>
 <translation id="3295602654194328831">معلومات چھپائیں</translation>
@@ -100,6 +103,7 @@
 <translation id="445467742685312942">سائٹس کو محفوظ مواد چلانے کی اجازت دیں</translation>
 <translation id="4468959413250150279">کسی مخصوص سائٹ کیلئے آواز بند کریں۔</translation>
 <translation id="4479647676395637221">سائٹس کو آپ کا کیمرا استعمال کرنے کی اجازت دینے سے پہلے پوچھیں (تجویز کردہ)</translation>
+<translation id="4534723447064627427">‏<ph name="APP_NAME" /> کو اپنے مائیکروفون تک رسائی دینے کے لیے، <ph name="BEGIN_LINK" />Android کی ترتیبات<ph name="END_LINK" /> میں بھی مائیکروفون آن کریں۔</translation>
 <translation id="4570913071927164677">تفاصیل</translation>
 <translation id="4645575059429386691">آپ کے والدین کے زیر انتظام</translation>
 <translation id="4670064810192446073">ورچوئل رئیلٹی</translation>
@@ -224,6 +228,7 @@
 <translation id="8394832520002899662">سائٹ پر واپس جانے کے لیے تھپتھپائیں</translation>
 <translation id="8425213833346101688">تبدیل کریں</translation>
 <translation id="8441146129660941386">پیچھے لے جائیں</translation>
+<translation id="8444433999583714703">‏<ph name="APP_NAME" /> کو اپنے مقام تک رسائی دینے کے لیے، <ph name="BEGIN_LINK" />Android کی ترتیبات<ph name="END_LINK" /> میں بھی مقام آن کریں۔</translation>
 <translation id="8447861592752582886">آلہ کی اجازت کالعدم کریں</translation>
 <translation id="8463851957836045671">سائٹ تیز ہے</translation>
 <translation id="851751545965956758">سائٹس کو آلات سے منسلک ہونے سے مسدود کریں</translation>
@@ -231,6 +236,7 @@
 <translation id="8609465669617005112">اوپر منتقل کریں</translation>
 <translation id="8676374126336081632">ان پٹ صاف کریں</translation>
 <translation id="8702612070107455751">تمام آف لائن ڈیٹا حذف ہو جائے گا۔</translation>
+<translation id="8719283222052720129">‏<ph name="BEGIN_LINK" />Android ترتیبات<ph name="END_LINK" /> میں <ph name="APP_NAME" /> کے لیے اجازت آن کریں۔</translation>
 <translation id="8725066075913043281">دوبارہ کوشش کریں</translation>
 <translation id="8730621377337864115">ہوگیا</translation>
 <translation id="8737217482364735741">اس سے <ph name="ORIGIN" /> کے ذریعے اسٹور کردہ سبھی ڈیٹا اور کوکیز صاف ہو جائیں گی۔</translation>
@@ -245,6 +251,7 @@
 <translation id="8959122750345127698">نیویگیشن ناقابل رسائی ہے: <ph name="URL" /></translation>
 <translation id="9019902583201351841">آپ کے والدین کے زیر انتظام</translation>
 <translation id="9074739597929991885">بلوٹوتھ</translation>
+<translation id="913657688200966289">‏<ph name="BEGIN_LINK" />Android ترتیبات<ph name="END_LINK" /> میں <ph name="APP_NAME" /> کے لیے اجازتیں آن کریں۔</translation>
 <translation id="945632385593298557">اپنے مائیکروفون تک رسائی حاصل کریں</translation>
 <translation id="965817943346481315">اگر سائٹ دخل انداز یا گمراہ کن اشتہارات دکھاتی ہے تو مسدود کریں (تجویز کردہ)</translation>
 </translationbundle>

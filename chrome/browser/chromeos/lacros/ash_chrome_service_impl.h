@@ -12,8 +12,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 
 class ScreenManagerCrosapi;
-
-class SelectFileImpl;
+class SelectFileCrosapi;
 
 // Implementation of AshChromeService. It provides a set of APIs that
 // lacros-chrome can call into.
@@ -33,7 +32,7 @@ class AshChromeServiceImpl : public lacros::mojom::AshChromeService {
   mojo::Receiver<lacros::mojom::AshChromeService> receiver_;
 
   std::unique_ptr<ScreenManagerCrosapi> screen_manager_crosapi_;
-  std::unique_ptr<SelectFileImpl> select_file_impl_;
+  std::unique_ptr<SelectFileCrosapi> select_file_crosapi_;
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_LACROS_ASH_CHROME_SERVICE_IMPL_H_

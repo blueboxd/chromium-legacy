@@ -113,7 +113,10 @@ class MostVisitedElement extends PolymerElement {
       dialogTileTitle_: String,
 
       /** @private */
-      dialogTileUrl_: String,
+      dialogTileUrl_: {
+        type: String,
+        observer: 'onDialogTileUrlChange_',
+      },
 
       /** @private */
       dialogTileUrlInvalid_: {
@@ -538,6 +541,11 @@ class MostVisitedElement extends PolymerElement {
       this.$.addShortcut.focus();
     }
     this.adding_ = false;
+  }
+
+  /** @private */
+  onDialogTileUrlChange_() {
+    this.dialogTileUrlInvalid_ = false;
   }
 
   /**

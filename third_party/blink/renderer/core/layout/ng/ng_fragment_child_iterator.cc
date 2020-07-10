@@ -92,10 +92,19 @@ void NGFragmentChildIterator::UpdateSelfFromFragment(
   if (child_break_token_idx_ < child_break_tokens_.size()) {
     current_.block_break_token_ =
         To<NGBlockBreakToken>(child_break_tokens_[child_break_token_idx_]);
-    DCHECK(!current_.link_.fragment->GetLayoutObject() ||
-           current_.block_break_token_->InputNode().GetLayoutBox() ==
-               current_.link_.fragment->GetLayoutObject());
-    current_.break_token_for_fragmentainer_only_ = false;
+    // TODO(mstensho): Clean up this. What we're trying to do here is to detect
+    // whether the incoming break token matches the current fragment or not.
+    // Figuring out if a fragment is generated from a given node is currently
+    // not possible without checking the LayoutObject associated.
+    const auto* layout_object = current_.link_.fragment->GetLayoutObject();
+    if (layout_object &&
+        layout_object !=
+            current_.block_break_token_->InputNode().GetLayoutBox()) {
+      DCHECK(current_.link_.fragment->IsColumnSpanAll());
+      current_.break_token_for_fragmentainer_only_ = true;
+    } else {
+      current_.break_token_for_fragmentainer_only_ = false;
+    }
   } else if (is_fragmentation_context_root_ && previous_fragment) {
     if (previous_fragment->IsFragmentainerBox()) {
       // The outgoing break token from one fragmentainer is the incoming break
@@ -113,16 +122,9 @@ void NGFragmentChildIterator::UpdateSelfFromFragment(
       // as it will be used as in incoming break token when we get to the next
       // column.
       // TODO(almaher): Remove check for out of flow.
-      DCHECK(
-          previous_fragment->IsRenderedLegend() ||
-          previous_fragment->IsOutOfFlowPositioned() ||
-          NGBlockNode(ToLayoutBox(previous_fragment->GetMutableLayoutObject()))
-              .IsColumnSpanAll());
-
-      // If the previous fragment is a column spanner, it's not expected to have
-      // a break token; if a spanner runs out of space, no columns (or spanners)
-      // would fit after it.
-      DCHECK(!previous_fragment->BreakToken());
+      DCHECK(previous_fragment->IsRenderedLegend() ||
+             previous_fragment->IsOutOfFlowPositioned() ||
+             previous_fragment->IsColumnSpanAll());
     }
   } else {
     current_.block_break_token_ = nullptr;

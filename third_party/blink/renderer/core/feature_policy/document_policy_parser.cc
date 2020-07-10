@@ -12,7 +12,6 @@ namespace {
 
 constexpr const char* kReportTo = "report-to";
 constexpr const char* kNone = "none";
-constexpr const char* kWildCard = "*";
 
 const char* ItemTypeToString(net::structured_headers::Item::ItemType type) {
   switch (type) {
@@ -48,6 +47,8 @@ base::Optional<PolicyValue> ItemToPolicyValue(
     const net::structured_headers::Item& item,
     mojom::blink::PolicyValueType type) {
   switch (type) {
+    case mojom::blink::PolicyValueType::kBool:
+      return PolicyValue(item.GetBoolean());
     case mojom::blink::PolicyValueType::kDecDouble:
       switch (item.Type()) {
         case net::structured_headers::Item::ItemType::kIntegerType:
@@ -73,85 +74,29 @@ struct ParsedFeature {
   mojom::blink::DocumentPolicyFeature feature;
   PolicyValue policy_value;
   base::Optional<std::string> endpoint_group;
-  // Wildcard feature('*') is used to specify default endpoint for features.
-  bool is_wildcard = false;
 };
 
-base::Optional<ParsedFeature> ParseWildcardFeature(
-    const net::structured_headers::ParameterizedMember& directive,
-    PolicyParserMessageBuffer& logger) {
-  base::Optional<std::string> endpoint_group;
-
-  for (const auto& param : directive.params) {
-    if (param.first == kReportTo) {
-      endpoint_group = ItemToString(param.second);
-      if (!endpoint_group) {
-        logger.Warn("\"report-to\" parameter should be a token.");
-        return base::nullopt;
-      }
-    } else {
-      // Unrecognized param.
-      logger.Warn(String::Format("Unrecognized parameter name %s for %s.",
-                                 param.first.c_str(), kWildCard));
-    }
-  }
-
-  return base::make_optional<ParsedFeature>(
-      {mojom::blink::DocumentPolicyFeature::kDefault, PolicyValue(),
-       endpoint_group, true});
-}
-
 base::Optional<ParsedFeature> ParseFeature(
-    const net::structured_headers::ParameterizedMember& directive,
+    const net::structured_headers::DictionaryMember& directive,
     const DocumentPolicyNameFeatureMap& name_feature_map,
     const DocumentPolicyFeatureInfoMap& feature_info_map,
     PolicyParserMessageBuffer& logger) {
   ParsedFeature parsed_feature;
 
-  if (directive.member_is_inner_list) {
-    logger.Warn("Directives must not be inner lists.");
+  const std::string& feature_name = directive.first;
+  if (directive.second.member_is_inner_list) {
+    logger.Warn(
+        String::Format("Parameter for feature %s should be single item, but "
+                       "get list of items(length=%d).",
+                       feature_name.c_str(),
+                       static_cast<uint32_t>(directive.second.member.size())));
     return base::nullopt;
   }
-
-  const net::structured_headers::Item& feature_token =
-      directive.member.front().item;
-
-  if (!feature_token.is_token()) {
-    logger.Warn("The item in directive should be token type.");
-    return base::nullopt;
-  }
-
-  const std::string& feature_name = feature_token.GetString();
-
-  if (feature_name == kWildCard)
-    return ParseWildcardFeature(directive, logger);
-
-  auto feature_iter = name_feature_map.find(feature_name);
 
   // Parse feature_name string to DocumentPolicyFeature.
+  auto feature_iter = name_feature_map.find(feature_name);
   if (feature_iter != name_feature_map.end()) {
-    parsed_feature.feature = feature_iter->second;
-  } else if (feature_name.size() > 3 && feature_name.substr(0, 3) == "no-") {
-    // Handle "no-" prefix.
-    feature_iter = name_feature_map.find(feature_name.substr(3));
-    if (feature_iter != name_feature_map.end()) {
       parsed_feature.feature = feature_iter->second;
-      if (feature_info_map.at(parsed_feature.feature).default_value.Type() !=
-          mojom::blink::PolicyValueType::kBool) {
-        logger.Warn(String::Format(
-            "\"no-\" prefix is exclusively for policy with boolean policy "
-            "value. Feature %s does not support boolean policy value.",
-            feature_name.c_str()));
-        return base::nullopt;
-      }
-
-      parsed_feature.policy_value = PolicyValue(false);
-    } else {
-      logger.Warn(
-          String::Format("Unrecognized document policy feature name %s.",
-                         feature_name.c_str()));
-      return base::nullopt;
-    }
   } else {
     logger.Warn(String::Format("Unrecognized document policy feature name %s.",
                                feature_name.c_str()));
@@ -160,19 +105,20 @@ base::Optional<ParsedFeature> ParseFeature(
 
   auto expected_policy_value_type =
       feature_info_map.at(parsed_feature.feature).default_value.Type();
-  // Handle boolean value.
-  // For document policy that has a boolean policy value, policy value is not
-  // specified as directive param. Instead, the value is expressed using "no-"
-  // prefix, e.g. for feature X, "X" itself in header should be parsed as true,
-  // "no-X" should be parsed as false.
-  if (expected_policy_value_type == mojom::blink::PolicyValueType::kBool &&
-      parsed_feature.policy_value.Type() ==
-          mojom::blink::PolicyValueType::kNull)
-    parsed_feature.policy_value = PolicyValue(true);
+  const net::structured_headers::Item& item =
+      directive.second.member.front().item;
+  base::Optional<PolicyValue> policy_value =
+      ItemToPolicyValue(item, expected_policy_value_type);
+  if (!policy_value) {
+    logger.Warn(String::Format(
+        "Parameter for feature %s should be %s, not %s.", feature_name.c_str(),
+        PolicyValueTypeToString(expected_policy_value_type),
+        ItemTypeToString(item.Type())));
+    return base::nullopt;
+  }
+  parsed_feature.policy_value = *policy_value;
 
-  const std::string& policy_value_param_name =
-      feature_info_map.at(parsed_feature.feature).feature_param_name;
-  for (const auto& param : directive.params) {
+  for (const auto& param : directive.second.params) {
     const std::string& param_name = param.first;
     // Handle "report-to" param. "report-to" is an optional param for
     // Document-Policy header that specifies the endpoint group that the policy
@@ -186,43 +132,12 @@ base::Optional<ParsedFeature> ParseFeature(
             feature_name.c_str()));
         return base::nullopt;
       }
-    } else if (param_name == policy_value_param_name) {
-      // Handle policy value. For all non-boolean policy value types, they
-      // should be specified as FeatureX;f=xxx, with f representing the
-      // |feature_param_name| and xxx representing policy value.
-
-      // |parsed_feature.policy_value| should not be assigned yet.
-      DCHECK(parsed_feature.policy_value.Type() ==
-             mojom::blink::PolicyValueType::kNull);
-
-      base::Optional<PolicyValue> policy_value =
-          ItemToPolicyValue(param.second, expected_policy_value_type);
-      if (!policy_value) {
-        logger.Warn(String::Format(
-            "Parameter %s in feature %s should be %s, but get %s.",
-            policy_value_param_name.c_str(), feature_name.c_str(),
-            PolicyValueTypeToString(expected_policy_value_type),
-            ItemTypeToString(param.second.Type())));
-        return base::nullopt;
-      }
-      parsed_feature.policy_value = *policy_value;
     } else {
       // Unrecognized param.
       logger.Warn(
           String::Format("Unrecognized parameter name %s for feature %s.",
                          param_name.c_str(), feature_name.c_str()));
     }
-  }
-
-  // |parsed_feature.policy_value| should be initialized.
-  if (parsed_feature.policy_value.Type() ==
-      mojom::blink::PolicyValueType::kNull) {
-    logger.Warn(String::Format(
-        "Policy value parameter missing for feature %s. Expected "
-        "something like \"%s;%s=...\".",
-        feature_name.c_str(), feature_name.c_str(),
-        policy_value_param_name.c_str()));
-    return base::nullopt;
   }
 
   return parsed_feature;
@@ -279,7 +194,7 @@ DocumentPolicyParser::ParseInternal(
     const DocumentPolicyFeatureInfoMap& feature_info_map,
     const DocumentPolicyFeatureSet& available_features,
     PolicyParserMessageBuffer& logger) {
-  auto root = net::structured_headers::ParseList(policy_string.Ascii());
+  auto root = net::structured_headers::ParseDictionary(policy_string.Ascii());
   if (!root) {
     logger.Error(
         "Parse of document policy failed because of errors reported by "
@@ -289,7 +204,7 @@ DocumentPolicyParser::ParseInternal(
 
   DocumentPolicy::ParsedDocumentPolicy parse_result;
   std::string default_endpoint = "";
-  for (const net::structured_headers::ParameterizedMember& directive :
+  for (const net::structured_headers::DictionaryMember& directive :
        root.value()) {
     base::Optional<ParsedFeature> parsed_feature_option =
         ParseFeature(directive, name_feature_map, feature_info_map, logger);
@@ -299,7 +214,8 @@ DocumentPolicyParser::ParseInternal(
 
     ParsedFeature parsed_feature = *parsed_feature_option;
 
-    if (parsed_feature.is_wildcard) {
+    if (parsed_feature.feature ==
+        mojom::blink::DocumentPolicyFeature::kDefault) {
       default_endpoint = *parsed_feature.endpoint_group;
       continue;
     }

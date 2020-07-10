@@ -657,6 +657,28 @@ SharedImageBackingGLImage::SharedImageBackingGLImage(
       is_passthrough_(is_passthrough),
       weak_factory_(this) {
   DCHECK(image_);
+
+  // Allocate the GL texture.
+  SharedImageBackingGLCommon::MakeTextureAndSetParameters(
+      gl_params_.target, 0 /* service_id */,
+      gl_params_.framebuffer_attachment_angle,
+      is_passthrough_ ? &passthrough_texture_ : nullptr,
+      is_passthrough_ ? nullptr : &texture_);
+
+  // Set the GLImage to be initially unbound from the GL texture.
+  if (is_passthrough_) {
+    passthrough_texture_->SetEstimatedSize(EstimatedSize(format, size));
+    passthrough_texture_->SetLevelImage(gl_params_.target, 0, image_.get());
+    passthrough_texture_->set_is_bind_pending(true);
+  } else {
+    texture_->SetLevelInfo(
+        gl_params_.target, 0, gl_params_.internal_format, size.width(),
+        size.height(), 1, 0, gl_params_.format, gl_params_.type,
+        gl_params_.is_cleared ? gfx::Rect(size) : gfx::Rect());
+    texture_->SetLevelImage(gl_params_.target, 0, image_.get(),
+                            gles2::Texture::UNBOUND);
+    texture_->SetImmutable(true, false /* has_immutable_storage */);
+  }
 }
 
 SharedImageBackingGLImage::~SharedImageBackingGLImage() {
@@ -893,35 +915,6 @@ bool SharedImageBackingGLImage::OnSkiaBeginReadAccess() {
 
 bool SharedImageBackingGLImage::OnSkiaBeginWriteAccess() {
   return BindOrCopyImageIfNeeded();
-}
-
-bool SharedImageBackingGLImage::InitializeGLTexture() {
-  SharedImageBackingGLCommon::MakeTextureAndSetParameters(
-      gl_params_.target, 0 /* service_id */,
-      gl_params_.framebuffer_attachment_angle,
-      IsPassthrough() ? &passthrough_texture_ : nullptr,
-      IsPassthrough() ? nullptr : &texture_);
-
-  // Set the GLImage to be unbound from the texture.
-  if (IsPassthrough()) {
-    passthrough_texture_->SetEstimatedSize(EstimatedSize(format(), size()));
-    passthrough_texture_->SetLevelImage(gl_params_.target, 0, image_.get());
-    passthrough_texture_->set_is_bind_pending(true);
-  } else {
-    texture_->SetLevelInfo(
-        gl_params_.target, 0, gl_params_.internal_format, size().width(),
-        size().height(), 1, 0, gl_params_.format, gl_params_.type,
-        gl_params_.is_cleared ? gfx::Rect(size()) : gfx::Rect());
-    texture_->SetLevelImage(gl_params_.target, 0, image_.get(),
-                            gles2::Texture::UNBOUND);
-    texture_->SetImmutable(true, false /* has_immutable_storage */);
-  }
-
-  // Historically we have bound GLImages at initialization, rather than waiting
-  // until the bound representation is actually needed.
-  if (image_->ShouldBindOrCopy() == gl::GLImage::BIND)
-    return BindOrCopyImageIfNeeded();
-  return true;
 }
 
 bool SharedImageBackingGLImage::BindOrCopyImageIfNeeded() {
@@ -1227,12 +1220,9 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
   params.is_rgb_emulation = is_rgb_emulation;
   params.framebuffer_attachment_angle =
       for_framebuffer_attachment && texture_usage_angle_;
-  auto result = std::make_unique<SharedImageBackingGLImage>(
+  return std::make_unique<SharedImageBackingGLImage>(
       image, mailbox, format, size, color_space, usage, params, attribs,
       use_passthrough_);
-  if (!result->InitializeGLTexture())
-    return nullptr;
-  return std::move(result);
 }
 
 std::unique_ptr<SharedImageBacking>
@@ -1462,8 +1452,6 @@ SharedImageBackingFactoryGLTexture::CreateSharedImageInternal(
     auto result = std::make_unique<SharedImageBackingGLImage>(
         image, mailbox, format, size, color_space, usage, params, attribs,
         use_passthrough_);
-    if (!result->InitializeGLTexture())
-      return nullptr;
     if (!pixel_data.empty()) {
       result->InitializePixels(format_info.adjusted_format, format_info.gl_type,
                                pixel_data.data());

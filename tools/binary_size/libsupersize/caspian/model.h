@@ -68,6 +68,20 @@ class SymbolFlag {
   static const int32_t kUncompressed = 512;
 };
 
+struct Container {
+  explicit Container(const std::string& name_in);
+  ~Container();
+  // Keep copy constructor but remove assignment operator.
+  Container(const Container& other);
+  Container& operator=(const Container& other) = delete;
+
+  static void AssignShortNames(std::vector<Container>* containers);
+
+  std::string name;
+  std::string short_name;
+  std::vector<const char*> section_names;
+};
+
 class Symbol;
 
 class BaseSymbol {
@@ -86,6 +100,7 @@ class BaseSymbol {
   virtual const std::vector<Symbol*>* Aliases() const = 0;
   virtual SectionId Section() const = 0;
 
+  virtual const char* ContainerName() const = 0;
   virtual const char* ObjectPath() const = 0;
   virtual const char* SourcePath() const = 0;
   virtual const char* SectionName() const = 0;
@@ -173,6 +188,7 @@ class Symbol : public BaseSymbol {
   const std::vector<Symbol*>* Aliases() const override;
   SectionId Section() const override;
 
+  const char* ContainerName() const override;
   const char* ObjectPath() const override;
   const char* SourcePath() const override;
   const char* SectionName() const override;
@@ -200,7 +216,9 @@ class Symbol : public BaseSymbol {
   const char* object_path_ = nullptr;
   const char* source_path_ = nullptr;
   const char* component_ = nullptr;
+
   std::vector<Symbol*>* aliases_ = nullptr;
+  const Container* container_ = nullptr;
 
   // The SizeInfo the symbol was constructed from. Primarily used for
   // allocating commonly-reused strings in a context where they won't outlive
@@ -227,6 +245,7 @@ class DeltaSymbol : public BaseSymbol {
   const std::vector<Symbol*>* Aliases() const override;
   SectionId Section() const override;
 
+  const char* ContainerName() const override;
   const char* ObjectPath() const override;
   const char* SourcePath() const override;
   const char* SectionName() const override;
@@ -263,11 +282,12 @@ struct SizeInfo : BaseSizeInfo {
   SizeInfo& operator=(const SizeInfo& other) = delete;
   bool IsSparse() const override;
 
+  std::vector<Container> containers;
+
   // Entries in |raw_symbols| hold pointers to this data.
   std::vector<const char*> object_paths;
   std::vector<const char*> source_paths;
   std::vector<const char*> components;
-  std::vector<const char*> section_names;
   std::vector<char> raw_decompressed;
 
   std::vector<Symbol> raw_symbols;

@@ -618,18 +618,19 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
       // the spanner as a child.
       DCHECK(!container_builder_.DidBreakSelf());
       DCHECK(!container_builder_.FoundColumnSpanner());
+      DCHECK(!child_break_token);
       container_builder_.SetColumnSpanner(To<NGBlockNode>(child));
       // After the spanner(s), we are going to resume inside this block. If
-      // there's a next sibling, we're resume right in front of that
-      // one. Otherwise we'll just resume after all the children.
-      //
-      // TODO(crbug.com/1066617): If there are two adjacent spanner siblings,
-      // this is going to result in a bad outgoing break token for the column
-      // fragment we're about to produce (we'll point to the second spanner
-      // instead of the column contents that might follow after it).
-      if (NGLayoutInputNode next = child.NextSibling()) {
-        container_builder_.AddBreakBeforeChild(next, kBreakAppealPerfect,
+      // there's a subsequent sibling that's not a spanner, we're resume right
+      // in front of that one. Otherwise we'll just resume after all the
+      // children.
+      for (NGLayoutInputNode sibling = child.NextSibling(); sibling;
+           sibling = sibling.NextSibling()) {
+        if (sibling.IsColumnSpanAll())
+          continue;
+        container_builder_.AddBreakBeforeChild(sibling, kBreakAppealPerfect,
                                                /* is_forced_break */ true);
+        break;
       }
       break;
     } else if (IsRubyText(child)) {

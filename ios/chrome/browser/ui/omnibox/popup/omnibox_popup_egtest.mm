@@ -340,7 +340,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // Try to switch to the first tab.
   [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(URL1)]
       performAction:grey_tap()];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 
   // Check that the URL has been opened in a new foreground tab.
   [ChromeEarlGrey waitForWebStateContainingText:kPage1];

@@ -9,12 +9,12 @@
 
 #include "media/base/video_facing.h"
 #include "media/capture/video_capture_types.h"
-#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_source.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_sets.h"
 #include "third_party/blink/renderer/modules/mediastream/video_track_adapter_settings.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_processor_options.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 
 namespace blink {
 
@@ -334,7 +334,7 @@ double StringConstraintFitnessDistance(
 
 // This method computes capabilities for a video source based on the given
 // |formats|. |facing_mode| is valid only in case of video device capture.
-MODULES_EXPORT blink::WebMediaStreamSource::Capabilities
+MODULES_EXPORT MediaStreamSource::Capabilities
 ComputeCapabilitiesForVideoSource(
     const blink::WebString& device_id,
     const media::VideoCaptureFormats& formats,

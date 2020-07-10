@@ -219,7 +219,7 @@ void VaapiVideoDecoder::HandleDecodeTask() {
 
   // Check whether a flush was requested.
   if (current_decode_task_->buffer_->end_of_stream()) {
-    FlushTask();
+    Flush();
     return;
   }
 
@@ -293,8 +293,8 @@ scoped_refptr<VASurface> VaapiVideoDecoder::CreateSurface() {
   if (!frame) {
     // Ask the video frame pool to notify us when new frames are available, so
     // we can retry the current decode task.
-    frame_pool_->NotifyWhenFrameAvailable(base::BindOnce(
-        &VaapiVideoDecoder::NotifyFrameAvailableTask, weak_this_));
+    frame_pool_->NotifyWhenFrameAvailable(
+        base::BindOnce(&VaapiVideoDecoder::NotifyFrameAvailable, weak_this_));
     return nullptr;
   }
 
@@ -328,11 +328,11 @@ scoped_refptr<VASurface> VaapiVideoDecoder::CreateSurface() {
   // drop its reference to the surface. We can then safely destroy the surface
   // and remove the associated video frame from |output_frames_|. To be notified
   // when this happens we wrap the surface in another surface that calls
-  // ReleaseFrameTask() on destruction. The |va_surface| object is bound to the
+  // ReleaseFrame() on destruction. The |va_surface| object is bound to the
   // destruction callback to keep it alive, since the associated VAAPI surface
   // will be automatically destroyed when we drop the reference.
   VASurface::ReleaseCB release_frame_cb = base::BindOnce(
-      &VaapiVideoDecoder::ReleaseFrameTask, weak_this_, std::move(va_surface));
+      &VaapiVideoDecoder::ReleaseFrame, weak_this_, std::move(va_surface));
 
   return new VASurface(surface_id, frame->layout().coded_size(),
                        GetVaFormatForVideoCodecProfile(profile_),
@@ -445,8 +445,8 @@ void VaapiVideoDecoder::ApplyResolutionChange() {
   }
 }
 
-void VaapiVideoDecoder::ReleaseFrameTask(scoped_refptr<VASurface> va_surface,
-                                         VASurfaceID surface_id) {
+void VaapiVideoDecoder::ReleaseFrame(scoped_refptr<VASurface> va_surface,
+                                     VASurfaceID surface_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK_EQ(va_surface->id(), surface_id);
   DVLOGF(4);
@@ -459,7 +459,7 @@ void VaapiVideoDecoder::ReleaseFrameTask(scoped_refptr<VASurface> va_surface,
   DCHECK_EQ(num_erased, 1u);
 }
 
-void VaapiVideoDecoder::NotifyFrameAvailableTask() {
+void VaapiVideoDecoder::NotifyFrameAvailable() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(4);
 
@@ -473,7 +473,7 @@ void VaapiVideoDecoder::NotifyFrameAvailableTask() {
   }
 }
 
-void VaapiVideoDecoder::FlushTask() {
+void VaapiVideoDecoder::Flush() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK_EQ(state_, State::kDecoding);
   DCHECK(current_decode_task_);
@@ -532,7 +532,7 @@ void VaapiVideoDecoder::Reset(base::OnceClosure reset_cb) {
 
   // Wait until any pending decode task has been aborted.
   decoder_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VaapiVideoDecoder::ResetDoneTask, weak_this_,
+      FROM_HERE, base::BindOnce(&VaapiVideoDecoder::ResetDone, weak_this_,
                                 std::move(reset_cb)));
 }
 
@@ -567,7 +567,7 @@ bool VaapiVideoDecoder::CreateAcceleratedVideoDecoder() {
   return true;
 }
 
-void VaapiVideoDecoder::ResetDoneTask(base::OnceClosure reset_cb) {
+void VaapiVideoDecoder::ResetDone(base::OnceClosure reset_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK_EQ(state_, State::kResetting);
   DCHECK(!current_decode_task_);

@@ -50,7 +50,12 @@ class CORE_EXPORT PrePaintTreeWalk {
               parent_context.inside_blocking_touch_event_handler),
           effective_allowed_touch_action_changed(
               parent_context.effective_allowed_touch_action_changed),
-          clip_changed(parent_context.clip_changed) {
+          clip_changed(parent_context.clip_changed),
+          paint_invalidation_container(
+              parent_context.paint_invalidation_container),
+          paint_invalidation_container_for_stacked_contents(
+              parent_context
+                  .paint_invalidation_container_for_stacked_contents) {
       if (needs_tree_builder_context || DCHECK_IS_ON()) {
         DCHECK(parent_context.tree_builder_context);
         tree_builder_context.emplace(*parent_context.tree_builder_context);
@@ -81,6 +86,10 @@ class CORE_EXPORT PrePaintTreeWalk {
     // true. It will be propagated to descendant contexts even if we don't
     // create tree_builder_context.
     bool clip_changed = false;
+
+    const LayoutBoxModelObject* paint_invalidation_container = nullptr;
+    const LayoutBoxModelObject*
+        paint_invalidation_container_for_stacked_contents = nullptr;
   };
 
   static bool ContextRequiresPrePaint(const PrePaintTreeWalkContext&);
@@ -126,6 +135,11 @@ class CORE_EXPORT PrePaintTreeWalk {
                                     PrePaintTreeWalkContext&);
 
   void ResizeContextStorageIfNeeded();
+
+  void UpdatePaintInvalidationContainer(const LayoutObject& object,
+                                        const PaintLayer* painting_layer,
+                                        PrePaintTreeWalkContext& context,
+                                        bool is_ng_painting);
 
   PaintInvalidator paint_invalidator_;
   Vector<PrePaintTreeWalkContext> context_storage_;

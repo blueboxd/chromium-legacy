@@ -282,13 +282,13 @@ double StringConstraintFitnessDistance(const WebString& value,
   return 1.0;
 }
 
-WebMediaStreamSource::Capabilities ComputeCapabilitiesForVideoSource(
+MediaStreamSource::Capabilities ComputeCapabilitiesForVideoSource(
     const WebString& device_id,
     const media::VideoCaptureFormats& formats,
     media::VideoFacingMode facing_mode,
     bool is_device_capture,
     const base::Optional<std::string>& group_id) {
-  WebMediaStreamSource::Capabilities capabilities;
+  MediaStreamSource::Capabilities capabilities;
   capabilities.device_id = std::move(device_id);
   if (is_device_capture) {
     capabilities.facing_mode = ToWebFacingMode(facing_mode);

@@ -14,7 +14,6 @@ namespace blink {
 
 struct DocumentPolicyFeatureInfo {
   std::string feature_name;
-  std::string feature_param_name;
   PolicyValue default_value;
 };
 

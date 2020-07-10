@@ -58,7 +58,7 @@ class ASH_EXPORT DragHandle : public views::View,
 
   // Immediately begins the animation to return the drag handle back to its
   // original position and hide the tooltip.
-  void HideDragHandleNudge(contextual_tooltip::DismissNudgeReason context);
+  void HideDragHandleNudge(contextual_tooltip::DismissNudgeReason reason);
 
   // Called when the window drag from shelf starts or ends. The drag handle
   // contextual nudge will remain visible while the gesture is in progress.

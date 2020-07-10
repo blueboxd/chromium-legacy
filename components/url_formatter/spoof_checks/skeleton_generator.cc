@@ -50,8 +50,7 @@ SkeletonGenerator::SkeletonGenerator(const USpoofChecker* checker)
   //      U+049F (ҟ), U+04A1(ҡ), U+04C4 (ӄ), U+051F (ԟ)} => k
   //   - {U+014B (ŋ), U+043F (п), U+0525 (ԥ), U+0E01 (ก), U+05D7 (ח)} => n
   //   - U+0153 (œ) => "ce"
-  //     TODO: see https://crbug.com/843352 for further work on
-  //     U+0525 and U+0153.
+  // TODO(crbug/843352): Handle multiple skeletons for U+0525 and U+0153.
   //   - {U+0167 (ŧ), U+0442 (т), U+04AD (ҭ), U+050F (ԏ), U+4E03 (七),
   //     U+4E05 (丅), U+4E06 (丆), U+4E01 (丁)} => t
   //   - {U+0185 (ƅ), U+044C (ь), U+048D (ҍ), U+0432 (в)} => b
@@ -108,7 +107,7 @@ SkeletonGenerator::SkeletonGenerator(const USpoofChecker* checker)
               "[—一―⸺⸻] > \\-;"),
           UTRANS_FORWARD, parse_error, status));
   DCHECK(U_SUCCESS(status))
-      << "Skeleton generator initalization failed due to an error: "
+      << "Skeleton generator initialization failed due to an error: "
       << u_errorName(status);
 }
 

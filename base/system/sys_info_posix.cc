@@ -5,7 +5,6 @@
 #include "base/system/sys_info.h"
 
 #include <errno.h>
-#include <sched.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -57,21 +56,7 @@ int NumberOfProcessors() {
     return 1;
   }
 
-  int num_cpus = static_cast<int>(res);
-
-#ifdef OS_LINUX
-  // Restrict the CPU count based on the process's CPU affinity mask, if
-  // available.
-  cpu_set_t* cpu_set = CPU_ALLOC(num_cpus);
-  size_t cpu_set_size = CPU_ALLOC_SIZE(num_cpus);
-  int ret = sched_getaffinity(0, cpu_set_size, cpu_set);
-  if (ret == 0) {
-    num_cpus = CPU_COUNT_S(cpu_set_size, cpu_set);
-  }
-  CPU_FREE(cpu_set);
-#endif  // OS_LINUX
-
-  return num_cpus;
+  return static_cast<int>(res);
 }
 
 base::LazyInstance<base::internal::LazySysInfoValue<int, NumberOfProcessors>>::

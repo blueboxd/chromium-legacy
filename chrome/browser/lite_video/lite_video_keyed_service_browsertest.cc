@@ -9,10 +9,12 @@
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/lite_video/lite_video_features.h"
 #include "chrome/browser/lite_video/lite_video_hint.h"
 #include "chrome/browser/lite_video/lite_video_keyed_service_factory.h"
 #include "chrome/browser/lite_video/lite_video_switches.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -341,6 +343,83 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
   histogram_tester()->ExpectBucketCount(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
       lite_video::LiteVideoBlocklistReason::kAllowed, 2);
+  histogram_tester()->ExpectTotalCount(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame", 0);
+}
+
+// This test fails on Windows because of the backing store for the blocklist.
+// LiteVideos is an Android only feature so disabling the test permananently
+// for Windows.
+#if defined(OS_WIN)
+#define DISABLE_ON_WIN(x) DISABLED_##x
+#else
+#define DISABLE_ON_WIN(x) x
+#endif
+
+IN_PROC_BROWSER_TEST_F(
+    LiteVideoKeyedServiceBrowserTest,
+    DISABLE_ON_WIN(UserBlocklistClearedOnBrowserHistoryClear)) {
+  WaitForBlocklistToBeLoaded();
+  content::NetworkConnectionChangeSimulator().SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_4G);
+  g_browser_process->network_quality_tracker()
+      ->ReportEffectiveConnectionTypeForTesting(
+          net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G);
+  EXPECT_TRUE(
+      LiteVideoKeyedServiceFactory::GetForProfile(browser()->profile()));
+
+  // Navigate metrics get recorded.
+  GURL url("https://litevideo.com");
+  NavigateParams params(browser(), url, ui::PAGE_TRANSITION_FORWARD_BACK);
+  ui_test_utils::NavigateToURL(&params);
+
+  EXPECT_GT(RetryForHistogramUntilCountReached(
+                *histogram_tester(), "LiteVideo.Navigation.HasHint", 1),
+            0);
+  histogram_tester()->ExpectUniqueSample("LiteVideo.Navigation.HasHint", false,
+                                         1);
+  histogram_tester()->ExpectUniqueSample(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
+      lite_video::LiteVideoBlocklistReason::kNavigationForwardBack, 1);
+  histogram_tester()->ExpectTotalCount(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame", 0);
+
+  // Navigate to confirm that the host is blocklisted.
+  NavigateParams params_blocklisted(browser(), url, ui::PAGE_TRANSITION_TYPED);
+  ui_test_utils::NavigateToURL(&params_blocklisted);
+
+  EXPECT_GT(RetryForHistogramUntilCountReached(
+                *histogram_tester(), "LiteVideo.Navigation.HasHint", 2),
+            0);
+  histogram_tester()->ExpectUniqueSample("LiteVideo.Navigation.HasHint", false,
+                                         2);
+  histogram_tester()->ExpectBucketCount(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
+      lite_video::LiteVideoBlocklistReason::kNavigationBlocklisted, 1);
+  histogram_tester()->ExpectTotalCount(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame", 0);
+
+  // Wipe the browser history, clearing the user blocklist.
+  // This should allow LiteVideos on the next navigation.
+  browser()->profile()->Wipe();
+
+  EXPECT_GT(
+      RetryForHistogramUntilCountReached(
+          *histogram_tester(), "LiteVideo.UserBlocklist.ClearBlocklist", 1),
+      0);
+  histogram_tester()->ExpectUniqueSample(
+      "LiteVideo.UserBlocklist.ClearBlocklist", true, 1);
+
+  ui_test_utils::NavigateToURL(&params_blocklisted);
+
+  EXPECT_GT(RetryForHistogramUntilCountReached(
+                *histogram_tester(), "LiteVideo.Navigation.HasHint", 3),
+            0);
+  histogram_tester()->ExpectBucketCount("LiteVideo.Navigation.HasHint", true,
+                                        1);
+  histogram_tester()->ExpectBucketCount(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
+      lite_video::LiteVideoBlocklistReason::kAllowed, 1);
   histogram_tester()->ExpectTotalCount(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame", 0);
 }

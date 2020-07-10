@@ -5,7 +5,9 @@
 #include "ui/message_center/views/notification_view_md.h"
 
 #include <stddef.h>
+#include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram_macros.h"
@@ -328,6 +330,10 @@ void NotificationMdTextButton::SetText(const base::string16& text) {
 }
 
 void NotificationMdTextButton::UpdateColors() {}
+
+BEGIN_METADATA(NotificationMdTextButton)
+METADATA_PARENT_CLASS(views::MdTextButton)
+END_METADATA()
 
 // NotificationInputContainerMD ////////////////////////////////////////////////
 

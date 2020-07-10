@@ -36,5 +36,6 @@ android_library("support_lib_glue_java") {
     "//android_webview/support_library/callback:callback_java",
     "//base:base_java",
     "//content/public/android:content_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
 }

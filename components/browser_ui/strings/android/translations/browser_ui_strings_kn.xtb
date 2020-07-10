@@ -25,6 +25,7 @@
 <translation id="169515064810179024">ಚಲನಾ ಸೆನ್ಸರ್‌ಗಳನ್ನು ಪ್ರವೇಶಿಸದಂತೆ ಸೈಟ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
 <translation id="1717218214683051432">ಮೋಷನ್ ಸೆನ್ಸಾರ್‌ಗಳು</translation>
 <translation id="1743802530341753419">ಸಾಧನಕ್ಕೆ ಸಂಪರ್ಕಿಸಲು ಸೈಟ್‌ಗಳಿಗೆ ಅನುಮತಿಸುವ ಮೊದಲು ಕೇಳಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
+<translation id="1818308510395330587">AR ಬಳಸಲು <ph name="APP_NAME" /> ಗೆ ಅನುಮತಿ ನೀಡುವುದಕ್ಕಾಗಿ, <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಕ್ಯಾಮರಾವನ್ನು ಆನ್ ಮಾಡಿ.</translation>
 <translation id="1887786770086287077">ಈ ಸಾಧನದ ಸ್ಥಳ ಪ್ರವೇಶ ಆಫ್ ಆಗಿದೆ. ಅದನ್ನು <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಆನ್ ಮಾಡಿ.</translation>
 <translation id="1919345977826869612">ಜಾಹೀರಾತುಗಳು</translation>
 <translation id="1923695749281512248"><ph name="FILE_SIZE_WITH_UNITS" /> ರಲ್ಲಿ <ph name="BYTES_DOWNLOADED_WITH_UNITS" /> ಡೌನ್‌ಲೋಡ್ ಆಗಿದೆ</translation>
@@ -39,6 +40,7 @@
 <translation id="2148716181193084225">ಇಂದು</translation>
 <translation id="2182457891543959921">ನಿಮ್ಮ ಸುತ್ತಮುತ್ತಲಿನ 3D ನಕ್ಷೆಗಳನ್ನು ರಚಿಸಲು ಅಥವಾ ಕ್ಯಾಮರಾ ಸ್ಥಿತಿಯನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಲು ಸೈಟ್‌ಗೆ ಅನುಮತಿಸುವ ಮೊದಲು ಕೇಳಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿರುವುದು)</translation>
 <translation id="2212565012507486665">ಕುಕೀಗಳನ್ನು ಅನುಮತಿಸಿ</translation>
+<translation id="2228071138934252756"><ph name="APP_NAME" /> ನಿಮ್ಮ ಕ್ಯಾಮರಾವನ್ನು ಪ್ರವೇಶಿಸುವುದಕ್ಕೆ ಅನುಮತಿಸಲು, Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="BEGIN_LINK" />ಕ್ಯಾಮರಾವನ್ನು ಸಹ ಆನ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ<ph name="END_LINK" />.</translation>
 <translation id="2289270750774289114">ಸೈಟ್ ಯಾವಾಗ ಸಮೀಪದ ಬ್ಲೂಟೂತ್ ಸಾಧನಗಳನ್ನು ಅನ್ವೇಷಿಸಲು ಬಯಸುತ್ತದೆಯೋ ಆಗ ಕೇಳಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="2315043854645842844">ಕ್ಲೈಂಟ್‌ನ ಪ್ರಮಾಣಪತ್ರ ಆಯ್ಕೆಯನ್ನು ಆಪರೇಟಿಂಗ್ ಸಿಸ್ಟಂನಿಂದ ಬೆಂಬಲಿಸಲಾಗಿಲ್ಲ.</translation>
 <translation id="2359808026110333948">ಮುಂದುವರೆಸಿ</translation>
@@ -69,6 +71,7 @@
 <translation id="3115898365077584848">ಮಾಹಿತಿಯನ್ನು ತೋರಿಸಿ</translation>
 <translation id="3123473560110926937">ಕೆಲವು ಸೈಟ್‌ಗಳಲ್ಲಿ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> ಸಂಗ್ರಹಿಸಿದ ಡೇಟಾ</translation>
+<translation id="321187648315454507"><ph name="APP_NAME" /> ನಿಮಗೆ ಅಧಿಸೂಚನೆಗಳನ್ನು ಕಳುಹಿಸುವುದಕ್ಕೆ ಅನುಮತಿಸಲು, <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಅಧಿಸೂಚನೆಗಳನ್ನು ಸಹ ಆನ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ.</translation>
 <translation id="3227137524299004712">ಮೈಕ್ರೋಫೋನ್</translation>
 <translation id="3277252321222022663">ಸೆನ್ಸರ್‌ಗಳನ್ನು ಪ್ರವೇಶಿಸಲು ಸೈಟ್‌ಗಳಿಗೆ ಅನುಮತಿ ನೀಡಿ (ಶಿಫಾರಸು ಮಾಡಿರುವುದು)</translation>
 <translation id="3295602654194328831">ಮಾಹಿತಿಯನ್ನು ಮರೆಮಾಡಿ</translation>
@@ -100,6 +103,7 @@
 <translation id="445467742685312942">ಸಂರಕ್ಷಿತ ವಿಷಯವನ್ನು ಪ್ಲೇ ಮಾಡಲು ಸೈಟ್‌ಗಳಿಗೆ ಅನುಮತಿ ನೀಡಿ</translation>
 <translation id="4468959413250150279">ನಿರ್ದಿಷ್ಟ ಸೈಟ್‌ನ ಧ್ವನಿಯನ್ನು ಮ್ಯೂಟ್ ಮಾಡಿ</translation>
 <translation id="4479647676395637221">ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಬಳಸಲು ಸೈಟ್‌ಗಳಿಗೆ ಅನುಮತಿಸುವ ಮೊದಲು ಕೇಳಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
+<translation id="4534723447064627427"><ph name="APP_NAME" /> ನಿಮ್ಮ ಮೈಕ್ರೋಫೋನ್‌ಗೆ ಪ್ರವೇಶಿಸುವುದಕ್ಕೆ ಅನುಮತಿಸಲು, <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಮೈಕ್ರೋಫೋನ್ ಅನ್ನು ಸಹ ಆನ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ.</translation>
 <translation id="4570913071927164677">ವಿವರಗಳು</translation>
 <translation id="4645575059429386691">ನಿಮ್ಮ ಪೋಷಕರು ನಿರ್ವಹಿಸುತ್ತಿದ್ದಾರೆ</translation>
 <translation id="4670064810192446073">ವರ್ಚುವಲ್ ರಿಯಾಲಿಟಿ</translation>
@@ -225,6 +229,7 @@
 <translation id="8394832520002899662">ಸೈಟ್‌ಗೆ ಮರಳಲು ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="8425213833346101688">ಬದಲಿಸಿ</translation>
 <translation id="8441146129660941386">ಹಿಂದಕ್ಕೆ ಸೀಕ್ ಮಾಡಿ</translation>
+<translation id="8444433999583714703"><ph name="APP_NAME" /> ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಪ್ರವೇಶಿಸುವುದಕ್ಕೆ ಅನುಮತಿಸಲು, <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಸ್ಥಳವನ್ನು ಸಹ ಆನ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ.</translation>
 <translation id="8447861592752582886">ಸಾಧನ ಅನುಮತಿಯನ್ನು ಹಿಂತೆಗೆದುಕೊಳ್ಳಿ</translation>
 <translation id="8463851957836045671">ಸೈಟ್ ವೇಗವಾಗಿದೆ</translation>
 <translation id="851751545965956758">ಸಾಧನಗಳಿಗೆ ಸಂಪರ್ಕಿಸದಂತೆ, ಸೈಟ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
@@ -232,6 +237,7 @@
 <translation id="8609465669617005112">ಮೇಲೆ ಸರಿಸು</translation>
 <translation id="8676374126336081632">ಇನ್‌ಪುಟ್‌‌ ತೆರವುಗೊಳಿಸು</translation>
 <translation id="8702612070107455751">ಯಾವುದೇ ಆಫ್‌ಲೈನ್ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಲಾಗುತ್ತದೆ.</translation>
+<translation id="8719283222052720129"><ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> <ph name="APP_NAME" /> ನ ಅನುಮತಿಯನ್ನು ಆನ್ ಮಾಡಿ.</translation>
 <translation id="8725066075913043281">ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ</translation>
 <translation id="8730621377337864115">ಮುಗಿದಿದೆ</translation>
 <translation id="8737217482364735741">ಇದು <ph name="ORIGIN" /> ಮೂಲಕ ಸಂಗ್ರಹಣೆ ಮಾಡಲಾದ ಎಲ್ಲಾ ಡೇಟಾ ಮತ್ತು ಕುಕೀಗಳನ್ನು ತೆರವುಗೊಳಿಸುತ್ತದೆ.</translation>
@@ -246,6 +252,7 @@
 <translation id="8959122750345127698">ನ್ಯಾವಿಗೇಶನ್‌ ತಲುಪಲಾಗುವುದಿಲ್ಲ: <ph name="URL" /></translation>
 <translation id="9019902583201351841">ನಿಮ್ಮ ಪೋಷಕರು ನಿರ್ವಹಿಸುತ್ತಿದ್ದಾರೆ</translation>
 <translation id="9074739597929991885">ಬ್ಲೂಟೂತ್‌</translation>
+<translation id="913657688200966289"><ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> <ph name="APP_NAME" /> ನ ಅನುಮತಿಗಳನ್ನು ಆನ್ ಮಾಡಿ.</translation>
 <translation id="945632385593298557">ನಿಮ್ಮ ಮೈಕ್ರೋಫೋನ್ ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="965817943346481315">ಅತಿಕ್ರಮಣಕಾರಿಯಾಗಿರುವ ಅಥವಾ ತಪ್ಪುದಾರಿಗೆಳೆಯುವ ಜಾಹೀರಾತುಗಳನ್ನು ಸೈಟ್ ತೋರಿಸಿದರೆ ಅದನ್ನು ನಿರ್ಬಂಧಿಸಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 </translationbundle>

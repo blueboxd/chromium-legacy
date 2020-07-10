@@ -7475,7 +7475,7 @@ TEST_F(WebFrameTest, IPAddressSpace) {
 
     ExecutionContext* context =
         web_view->MainFrameImpl()->GetFrame()->DomWindow();
-    EXPECT_EQ(value, context->GetSecurityContext().AddressSpace());
+    EXPECT_EQ(value, context->AddressSpace());
   }
 }
 

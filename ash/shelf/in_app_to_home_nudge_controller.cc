@@ -21,9 +21,10 @@ void InAppToHomeNudgeController::SetNudgeAllowedForCurrentShelf(
     bool in_tablet_mode,
     bool in_app_shelf,
     bool shelf_controls_visible) {
-  // If shelf controls are enabled,
-  // HideDragHandleNudge should hide the in app to home nudge.
-  if (shelf_controls_visible) {
+  // HideDragHandleNudge should hide the in app to home nudge if shelf controls
+  // are enabled. We need the in_tablet_mode check to prevent misreporting the
+  // hide cause when exiting tablet mode.
+  if (shelf_controls_visible && in_tablet_mode) {
     shelf_widget_->HideDragHandleNudge(
         contextual_tooltip::DismissNudgeReason::kOther);
     return;

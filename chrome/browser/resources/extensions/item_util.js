@@ -167,7 +167,7 @@ export function getEnableControl(data) {
   if (isTerminated_(data.state)) {
     return EnableControl.RELOAD;
   }
-  if (data.disableReasons.corruptInstall) {
+  if (data.disableReasons.corruptInstall && data.userMayModify) {
     return EnableControl.REPAIR;
   }
   return EnableControl.ENABLE_TOGGLE;

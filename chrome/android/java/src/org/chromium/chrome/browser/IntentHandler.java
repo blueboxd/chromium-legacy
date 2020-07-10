@@ -26,6 +26,7 @@ import android.util.Pair;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.browser.customtabs.CustomTabsSessionToken;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
@@ -34,6 +35,7 @@ import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
@@ -504,7 +506,9 @@ public class IntentHandler {
     private static Uri getReferrer(Intent intent) {
         Uri referrer = IntentUtils.safeGetParcelableExtra(intent, Intent.EXTRA_REFERRER);
         if (referrer != null) {
-            return referrer;
+            String pendingReferrer = IntentHandler.getPendingReferrerUrl(
+                    IntentUtils.safeGetIntExtra(intent, EXTRA_REFERRER_ID, 0));
+            return TextUtils.isEmpty(pendingReferrer) ? referrer : Uri.parse(pendingReferrer);
         }
         String referrerName = IntentUtils.safeGetStringExtra(intent, Intent.EXTRA_REFERRER_NAME);
         if (referrerName != null) {
@@ -521,16 +525,23 @@ public class IntentHandler {
      */
     private static String getReferrerUrl(Intent intent) {
         Uri referrerExtra = getReferrer(intent);
+        CustomTabsSessionToken customTabsSession =
+                CustomTabsSessionToken.getSessionTokenFromIntent(intent);
+        if (referrerExtra == null && customTabsSession != null) {
+            Referrer referrer = CustomTabsConnection.getInstance().getDefaultReferrerForSession(
+                    customTabsSession);
+            if (referrer != null) {
+                referrerExtra = Uri.parse(referrer.getUrl());
+            }
+        }
+
         if (referrerExtra == null) return null;
-        String referrerUrl = IntentHandler.getPendingReferrerUrl(
-                IntentUtils.safeGetIntExtra(intent, EXTRA_REFERRER_ID, 0));
-        if (!TextUtils.isEmpty(referrerUrl)) {
-            return referrerUrl;
-        } else if (isValidReferrerHeader(referrerExtra)) {
+        if (isValidReferrerHeader(referrerExtra)) {
             return referrerExtra.toString();
         } else if (IntentHandler.notSecureIsIntentChromeOrFirstParty(intent)
-                || ChromeApplication.getComponent().resolveSessionDataHolder()
-                        .canActiveHandlerUseReferrer(intent, referrerExtra)) {
+                || ChromeApplication.getComponent()
+                           .resolveSessionDataHolder()
+                           .canActiveHandlerUseReferrer(customTabsSession, referrerExtra)) {
             return referrerExtra.toString();
         }
         return null;

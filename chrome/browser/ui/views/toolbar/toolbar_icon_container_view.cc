@@ -52,7 +52,15 @@ void ToolbarIconContainerView::AddMainButton(views::Button* main_button) {
 }
 
 void ToolbarIconContainerView::ObserveButton(views::Button* button) {
-  button->AddButtonObserver(this);
+  // We don't care about the main button being highlighted.
+  if (button != main_button_) {
+    subscriptions_.push_back(
+        button->AddHighlightedChangedCallback(base::BindRepeating(
+            &ToolbarIconContainerView::OnButtonHighlightedChanged,
+            base::Unretained(this), base::Unretained(button))));
+  }
+  subscriptions_.push_back(button->AddStateChangedCallback(base::BindRepeating(
+      &ToolbarIconContainerView::UpdateHighlight, base::Unretained(this))));
   button->AddObserver(this);
 }
 
@@ -78,27 +86,6 @@ SkColor ToolbarIconContainerView::GetIconColor() const {
 
 bool ToolbarIconContainerView::IsHighlighted() {
   return ShouldDisplayHighlight();
-}
-
-void ToolbarIconContainerView::OnHighlightChanged(
-    views::Button* observed_button,
-    bool highlighted) {
-  // We don't care about the main button being highlighted.
-  if (observed_button == main_button_)
-    return;
-
-  if (highlighted)
-    highlighted_buttons_.insert(observed_button);
-  else
-    highlighted_buttons_.erase(observed_button);
-
-  UpdateHighlight();
-}
-
-void ToolbarIconContainerView::OnStateChanged(
-    views::Button* observed_button,
-    views::Button::ButtonState old_state) {
-  UpdateHighlight();
 }
 
 void ToolbarIconContainerView::OnViewFocused(views::View* observed_view) {
@@ -193,4 +180,13 @@ void ToolbarIconContainerView::SetHighlightBorder() {
   } else {
     SetBorder(nullptr);
   }
+}
+void ToolbarIconContainerView::OnButtonHighlightedChanged(
+    views::Button* button) {
+  if (button->GetHighlighted())
+    highlighted_buttons_.insert(button);
+  else
+    highlighted_buttons_.erase(button);
+
+  UpdateHighlight();
 }

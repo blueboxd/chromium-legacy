@@ -123,9 +123,9 @@ bool GetDeviceDescription(const base::string16& pnp_device_id,
 // application that communicates with the device.
 bool GetClientInformation(
     Microsoft::WRL::ComPtr<IPortableDeviceValues>* client_info) {
-  HRESULT hr = ::CoCreateInstance(__uuidof(PortableDeviceValues), nullptr,
-                                  CLSCTX_INPROC_SERVER,
-                                  IID_PPV_ARGS(client_info->GetAddressOf()));
+  HRESULT hr =
+      ::CoCreateInstance(__uuidof(PortableDeviceValues), nullptr,
+                         CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&(*client_info)));
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to create an instance of IPortableDeviceValues";
     return false;
@@ -152,9 +152,9 @@ bool SetUp(const base::string16& pnp_device_id,
   if (!GetClientInformation(&client_info))
     return false;
 
-  HRESULT hr = ::CoCreateInstance(__uuidof(PortableDevice), nullptr,
-                                  CLSCTX_INPROC_SERVER,
-                                  IID_PPV_ARGS(device->GetAddressOf()));
+  HRESULT hr =
+      ::CoCreateInstance(__uuidof(PortableDevice), nullptr,
+                         CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&(*device)));
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to create an instance of IPortableDevice";
     return false;
@@ -181,9 +181,9 @@ REFPROPERTYKEY GetUniqueIdPropertyKey(const base::string16& object_id) {
 bool PopulatePropertyKeyCollection(
     const base::string16& object_id,
     Microsoft::WRL::ComPtr<IPortableDeviceKeyCollection>* properties_to_read) {
-  HRESULT hr = ::CoCreateInstance(
-      __uuidof(PortableDeviceKeyCollection), nullptr, CLSCTX_INPROC_SERVER,
-      IID_PPV_ARGS(properties_to_read->GetAddressOf()));
+  HRESULT hr = ::CoCreateInstance(__uuidof(PortableDeviceKeyCollection),
+                                  nullptr, CLSCTX_INPROC_SERVER,
+                                  IID_PPV_ARGS(&(*properties_to_read)));
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to create IPortableDeviceKeyCollection instance";
     return false;
@@ -393,9 +393,9 @@ bool GetPortableDeviceManager(
     Microsoft::WRL::ComPtr<IPortableDeviceManager>* portable_device_mgr) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  HRESULT hr = ::CoCreateInstance(
-      __uuidof(PortableDeviceManager), nullptr, CLSCTX_INPROC_SERVER,
-      IID_PPV_ARGS(portable_device_mgr->GetAddressOf()));
+  HRESULT hr = ::CoCreateInstance(__uuidof(PortableDeviceManager), nullptr,
+                                  CLSCTX_INPROC_SERVER,
+                                  IID_PPV_ARGS(&(*portable_device_mgr)));
   if (SUCCEEDED(hr))
     return true;
 

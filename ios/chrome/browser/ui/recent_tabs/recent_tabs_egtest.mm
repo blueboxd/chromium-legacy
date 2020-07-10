@@ -87,7 +87,7 @@ id<GREYMatcher> TitleOfTestPage() {
       grey_accessibilityID(kTableViewNavigationDismissButtonId);
   [[EarlGrey selectElementWithMatcher:exitMatcher] performAction:grey_tap()];
   // Wait until the recent tabs panel is dismissed.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 }
 
 // Tests that a closed tab appears in the Recent Tabs panel, and that tapping

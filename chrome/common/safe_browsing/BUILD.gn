@@ -10,17 +10,6 @@ proto_library("proto") {
   sources = [ "crx_info.proto" ]
 }
 
-if (is_win) {
-  source_set("pe_image_reader") {
-    sources = [
-      "pe_image_reader_win.cc",
-      "pe_image_reader_win.h",
-    ]
-
-    deps = [ "//base" ]
-  }
-}
-
 if (safe_browsing_mode == 1) {
   source_set("archive_analyzer_results") {
     sources = [
@@ -114,10 +103,6 @@ if (safe_browsing_mode == 1) {
       "//components/safe_browsing/core:csd_proto",
       "//crypto",
     ]
-
-    if (is_win) {
-      deps = [ ":pe_image_reader" ]
-    }
   }
 
   source_set("mock_binary_feature_extractor") {

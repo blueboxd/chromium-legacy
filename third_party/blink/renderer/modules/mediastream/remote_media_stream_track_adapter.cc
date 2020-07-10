@@ -52,7 +52,7 @@ void RemoteVideoTrackAdapter::InitializeWebVideoTrack(
   InitializeTrack(MediaStreamSource::kTypeVideo);
   track()->Source()->SetPlatformSource(std::move(video_source_ptr));
 
-  WebMediaStreamSource::Capabilities capabilities;
+  MediaStreamSource::Capabilities capabilities;
   capabilities.device_id = id();
   track()->Source()->SetCapabilities(capabilities);
 
@@ -100,12 +100,11 @@ void RemoteAudioTrackAdapter::InitializeWebAudioTrack(
   auto* source_ptr = source.get();
   track()->Source()->SetPlatformSource(std::move(source));
 
-  WebMediaStreamSource::Capabilities capabilities;
+  MediaStreamSource::Capabilities capabilities;
   capabilities.device_id = id();
-  bool values[] = {false};
-  capabilities.echo_cancellation = WebVector<bool>(values, 1u);
-  capabilities.auto_gain_control = WebVector<bool>(values, 1u);
-  capabilities.noise_suppression = WebVector<bool>(values, 1u);
+  capabilities.echo_cancellation = Vector<bool>({false});
+  capabilities.auto_gain_control = Vector<bool>({false});
+  capabilities.noise_suppression = Vector<bool>({false});
   capabilities.sample_size = {
       media::SampleFormatToBitsPerChannel(media::kSampleFormatS16),  // min
       media::SampleFormatToBitsPerChannel(media::kSampleFormatS16)   // max

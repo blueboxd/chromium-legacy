@@ -46,7 +46,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantSuggestionsModel {
 
   // Sets the cache of onboarding suggestions.
   void SetOnboardingSuggestions(
-      std::vector<AssistantSuggestion> onboarding_suggestions);
+      std::vector<AssistantSuggestion>&& onboarding_suggestions);
 
   // Returns all cached onboarding suggestions.
   const std::vector<AssistantSuggestion>& GetOnboardingSuggestions() const;

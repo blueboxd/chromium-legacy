@@ -13,6 +13,47 @@ E2ETestBase = class extends testing.Test {
   constructor() {
     super();
     this.callbackHelper_ = new CallbackHelper(this);
+    this.desktop_;
+  }
+
+  /**
+   * Listens and waits for the first event on the given node of the given type.
+   * @param {!chrome.automation.AutomationNode} node
+   * @param {!chrome.automation.EventType} eventType
+   * @param {!function()} callback
+   * @param {boolean} capture
+   */
+  listenOnce(node, eventType, callback, capture) {
+    const innerCallback = this.newCallback(function() {
+      node.removeEventListener(eventType, innerCallback, capture);
+      callback.apply(this, arguments);
+    });
+    node.addEventListener(eventType, innerCallback, capture);
+  }
+
+  /**
+   * Listens to and waits for the specified event type on the given node until
+   * |predicate| is satisfied.
+   * @param {!function(): boolean} predicate
+   * @param {!chrome.automation.AutomationNode} node
+   * @param {!chrome.automation.EventType} eventType
+   * @param {!function()} callback
+   * @param {boolean} capture
+   */
+  listenUntil(predicate, node, eventType, callback, capture = false) {
+    callback = this.newCallback(callback);
+    if (predicate()) {
+      callback();
+      return;
+    }
+
+    const listener = () => {
+      if (predicate()) {
+        node.removeEventListener(eventType, listener, capture);
+        callback.apply(this, arguments);
+      }
+    };
+    node.addEventListener(eventType, listener, capture);
   }
 
   /**
@@ -58,12 +99,37 @@ E2ETestBase = class extends testing.Test {
         callback && callback(opt_params.returnPage ? event.target : desktop);
         callback = null;
       };
+      this.desktop_ = desktop;
       desktop.addEventListener('focus', listener, true);
       desktop.addEventListener('loadComplete', listener, true);
 
       const createParams = {active: true, url};
       chrome.tabs.create(createParams);
     });
+  }
+
+  /**
+   * Finds one specific node in the automation tree.
+   * This function is expected to run within a callback passed to
+   *     runWithLoadedTree().
+   * @param {function(chrome.automation.AutomationNode): boolean} predicate A
+   *     predicate that uniquely specifies one automation node.
+   * @param {string=} nodeDescription An optional description of what node was
+   *     being looked for.
+   * @return {!chrome.automation.AutomationNode}
+   */
+  findNodeMatchingPredicate(
+      predicate, nodeDescription = 'node matching the predicate') {
+    assertNotNullNorUndefined(
+        this.desktop_,
+        'findNodeMatchingPredicate called from invalid location.');
+    const treeWalker = new AutomationTreeWalker(
+        this.desktop_, constants.Dir.FORWARD, {visit: predicate});
+    const node = treeWalker.next().node;
+    assertNotNullNorUndefined(node, 'Could not find ' + nodeDescription + '.');
+    assertNullOrUndefined(
+        treeWalker.next().node, 'Found more than one ' + nodeDescription + '.');
+    return node;
   }
 };
 

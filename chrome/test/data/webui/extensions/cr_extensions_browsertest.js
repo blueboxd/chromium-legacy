@@ -186,6 +186,10 @@ TEST_F('CrExtensionsItemsTest', 'HtmlInName', function() {
   this.runMochaTest(extension_item_tests.TestNames.HtmlInName);
 });
 
+TEST_F('CrExtensionsItemsTest', 'RepairButton', function() {
+  this.runMochaTest(extension_item_tests.TestNames.RepairButton);
+});
+
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Activity Log Tests
 

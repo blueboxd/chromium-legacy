@@ -29,7 +29,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -42,6 +41,7 @@ import org.chromium.components.location.LocationUtils;
 import org.chromium.components.page_info.PageInfoController;
 import org.chromium.components.page_info.PageInfoFeatureList;
 import org.chromium.components.page_info.PageInfoView;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServerRule;
@@ -101,7 +101,8 @@ public class PageInfoViewTest {
 
     private void setThirdPartyCookieBlocking(boolean value) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PrefServiceBridge.getInstance().setBoolean(BLOCK_THIRD_PARTY_COOKIES, value);
+            UserPrefs.get(Profile.getLastUsedRegularProfile())
+                    .setBoolean(BLOCK_THIRD_PARTY_COOKIES, value);
         });
     }
 

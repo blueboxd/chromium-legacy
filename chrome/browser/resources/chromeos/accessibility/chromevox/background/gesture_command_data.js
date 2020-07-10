@@ -48,8 +48,8 @@ GestureCommandData.GESTURE_COMMAND_MAP = {
   'swipeDown2': {msgId: 'swipedown2_gesture', command: 'readFromHere'},
   'swipeLeft2': {msgId: 'swipeleft2_gesture', command: 'previousWord'},
   'swipeRight2': {msgId: 'swiperight2_gesture', command: 'nextWord'},
-  'swipeUp3': {msgId: 'swipeup3_gesture', command: 'scrollForward'},
-  'swipeDown3': {msgId: 'swipedown3_gesture', command: 'scrollBackward'},
+  'swipeUp3': {msgId: 'swipeup3_gesture', command: 'nextPage'},
+  'swipeDown3': {msgId: 'swipedown3_gesture', command: 'previousPage'},
   'swipeLeft3': {msgId: 'swipeleft3_gesture', command: 'previousGranularity'},
   'swipeRight3': {msgId: 'swiperight3_gesture', command: 'nextGranularity'},
 

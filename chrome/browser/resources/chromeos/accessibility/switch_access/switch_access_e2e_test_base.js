@@ -38,25 +38,6 @@ SwitchAccessE2ETest = class extends E2ETestBase {
   }
 
   /**
-   * @param {function(AutomationNode): boolean} predicate A predicate that
-   *     uniquely specifies one automation node.
-   * @param {string=} opt_nodeString A string specifying what node was being
-   *     looked for.
-   * @return {!AutomationNode}
-   */
-  findNodeMatchingPredicate(predicate, opt_nodeString) {
-    const nodeString = opt_nodeString || 'node matching the predicate';
-    const treeWalker = new AutomationTreeWalker(
-        NavigationManager.desktopNode, constants.Dir.FORWARD,
-        {visit: predicate});
-    const node = treeWalker.next().node;
-    assertNotNullNorUndefined(node, 'Could not find ' + nodeString + '.');
-    assertNullOrUndefined(
-        treeWalker.next().node, 'Found more than one ' + nodeString + '.');
-    return node;
-  }
-
-  /**
    * @param {string} id The HTML id of an element.
    * @return {!AutomationNode}
    */
@@ -83,18 +64,7 @@ SwitchAccessE2ETest = class extends E2ETestBase {
    * @param {function()} callback
    */
   waitForPredicate(predicate, callback) {
-    if (predicate()) {
-      callback();
-      return;
-    }
-    const listener = () => {
-      if (predicate()) {
-        NavigationManager.desktopNode.removeEventListener(
-            'childrenChanged', listener, false /* capture */);
-        callback();
-      }
-    };
-    NavigationManager.desktopNode.addEventListener(
-        'childrenChanged', listener, false /* capture */);
+    this.listenUntil(
+        predicate, NavigationManager.desktopNode, 'childrenChanged', callback);
   }
 };

@@ -441,6 +441,7 @@ def _RunCompiler(options, javac_cmd, java_files, classpath, jar_path,
   os.makedirs(temp_dir)
   try:
     classes_dir = os.path.join(temp_dir, 'classes')
+    transitive_classes = os.path.join(temp_dir, 'transitive_classes')
 
     if save_outputs:
       input_srcjars_dir = os.path.join(options.generated_dir, 'input_srcjars')
@@ -468,6 +469,21 @@ def _RunCompiler(options, javac_cmd, java_files, classpath, jar_path,
                                              input_srcjars_dir)
       logging.info('Done extracting srcjars')
 
+    if options.header_jar:
+      logging.info('Extracting transitive classes to %s', transitive_classes)
+      # Without the META-INF pattern prefix, it takes more than 4 seconds to
+      # extract all the .class files from chrome_java's header jar. With the
+      # prefix it takes 0.6 seconds.
+      build_utils.ExtractAll(options.header_jar,
+                             no_clobber=True,
+                             path=transitive_classes,
+                             pattern='META-INF*.class')
+      # Specifying the root directory is required, see:
+      # https://docs.oracle.com/javase/8/docs/technotes/tools/findingclasses.html#userclass
+      classpath.append(
+          os.path.join(transitive_classes, 'META-INF', 'TRANSITIVE'))
+      logging.info('Done extracting transitive classes')
+
     if save_outputs and java_files:
       info_file_context.SubmitFiles(java_files)
 
@@ -475,22 +491,24 @@ def _RunCompiler(options, javac_cmd, java_files, classpath, jar_path,
       # Don't include the output directory in the initial set of args since it
       # being in a temp dir makes it unstable (breaks md5 stamping).
       cmd = list(javac_cmd)
+      os.makedirs(classes_dir)
       cmd += ['-d', classes_dir]
-      cmd += ['-s', annotation_processor_outputs_dir]
 
-      # Pass classpath and source paths as response files to avoid extremely
-      # long command lines that are tedius to debug.
+      if options.processors:
+        os.makedirs(annotation_processor_outputs_dir)
+        cmd += ['-s', annotation_processor_outputs_dir]
+
       if classpath:
         cmd += ['-classpath', ':'.join(classpath)]
 
+      # Pass source paths as response files to avoid extremely long command
+      # lines that are tedius to debug.
       java_files_rsp_path = os.path.join(temp_dir, 'files_list.txt')
       with open(java_files_rsp_path, 'w') as f:
         f.write(' '.join(java_files))
       cmd += ['@' + java_files_rsp_path]
 
       logging.debug('Build command %s', cmd)
-      os.makedirs(classes_dir)
-      os.makedirs(annotation_processor_outputs_dir)
       start = time.time()
       build_utils.CheckOutput(
           cmd,
@@ -501,10 +519,11 @@ def _RunCompiler(options, javac_cmd, java_files, classpath, jar_path,
       logging.info('Java compilation took %ss', end)
 
     if save_outputs:
-      annotation_processor_java_files = build_utils.FindInDirectory(
-          annotation_processor_outputs_dir)
-      if annotation_processor_java_files:
-        info_file_context.SubmitFiles(annotation_processor_java_files)
+      if options.processors:
+        annotation_processor_java_files = build_utils.FindInDirectory(
+            annotation_processor_outputs_dir)
+        if annotation_processor_java_files:
+          info_file_context.SubmitFiles(annotation_processor_java_files)
 
       _CreateJarFile(jar_path, options.provider_configurations,
                      options.additional_jar_files, classes_dir)
@@ -599,6 +618,10 @@ def _ParseOptions(argv):
       action='store_true',
       help='Enable generation of Kythe kzip, used for codesearch. Ensure '
       'proper environment variables are set before using this flag.')
+  parser.add_option(
+      '--header-jar',
+      help='This is the header jar for the current target that contains '
+      'META-INF/TRANSITIVE class files to be included on the classpath.')
 
   options, args = parser.parse_args(argv)
   build_utils.CheckOptions(options, parser, required=('jar_path', ))
@@ -709,10 +732,11 @@ def main(argv):
   classpath_inputs = (
       options.bootclasspath + options.classpath + options.processorpath)
 
-  # GN already knows of java_files, so listing them just make things worse when
-  # they change.
-  depfile_deps = classpath_inputs + options.java_srcjars
-  input_paths = depfile_deps + java_files
+  depfile_deps = classpath_inputs
+  # Files that are already inputs in GN should go in input_paths.
+  input_paths = depfile_deps + options.java_srcjars + java_files
+  if options.header_jar:
+    input_paths.append(options.header_jar)
   input_paths += [x[0] for x in options.additional_jar_files]
 
   output_paths = [

@@ -52,12 +52,11 @@ void MediaStreamUtils::CreateNativeAudioMediaStreamTrack(
     source->SetPlatformSource(
         base::WrapUnique(audio_source));  // Takes ownership.
 
-    WebMediaStreamSource::Capabilities capabilities;
+    MediaStreamSource::Capabilities capabilities;
     capabilities.device_id = source->Id();
-    // TODO(crbug.com/704136): Switch away from std::vector.
-    capabilities.echo_cancellation = std::vector<bool>({false});
-    capabilities.auto_gain_control = std::vector<bool>({false});
-    capabilities.noise_suppression = std::vector<bool>({false});
+    capabilities.echo_cancellation = Vector<bool>({false});
+    capabilities.auto_gain_control = Vector<bool>({false});
+    capabilities.noise_suppression = Vector<bool>({false});
     capabilities.sample_size = {
         media::SampleFormatToBitsPerChannel(media::kSampleFormatS16),  // min
         media::SampleFormatToBitsPerChannel(media::kSampleFormatS16)   // max

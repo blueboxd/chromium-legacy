@@ -25,6 +25,7 @@
 <translation id="169515064810179024">Не дозвољавај сајтовима да приступају сензорима за покрет</translation>
 <translation id="1717218214683051432">Сензори покрета</translation>
 <translation id="1743802530341753419">Питај пре него што дозволиш сајтовима да се повезују са уређајем (препоручено)</translation>
+<translation id="1818308510395330587">Да бисте дозволили да <ph name="APP_NAME" /> користи ПР, укључите и камеру у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="1887786770086287077">Приступ локацији је искључен за овај уређај. Укључите га у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="1919345977826869612">Огласи</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -39,6 +40,7 @@
 <translation id="2148716181193084225">Данас</translation>
 <translation id="2182457891543959921">Пре него што дозволите сајтовима да праве 3D мапу окружења или прате положај камере приказује се упит (препоручено)</translation>
 <translation id="2212565012507486665">Дозволи колачиће</translation>
+<translation id="2228071138934252756">Да бисте дозволили да <ph name="APP_NAME" /> приступа камери, укључите камеру и у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="2289270750774289114">Питај када сајт жели да открије Bluetooth уређаје у близини (препоручено)</translation>
 <translation id="2315043854645842844">Оперативни систем не подржава избор сертификата за клијента.</translation>
 <translation id="2359808026110333948">Наставите</translation>
@@ -69,6 +71,7 @@
 <translation id="3115898365077584848">Прикажи информације</translation>
 <translation id="3123473560110926937">Блокирано на неким сајтовима</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> сачуваних података</translation>
+<translation id="321187648315454507">Да бисте дозволили да вам <ph name="APP_NAME" /> шаље обавештења, укључите обавештења и у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3277252321222022663">Дозволи сајтовима да приступају сензорима (препоручено)</translation>
 <translation id="3295602654194328831">Сакриј информације</translation>
@@ -100,6 +103,7 @@
 <translation id="445467742685312942">Дозволите сајтовима да пуштају заштићени садржај</translation>
 <translation id="4468959413250150279">Искључи звук за одређени сајт</translation>
 <translation id="4479647676395637221">Питај пре него што дозволиш сајтовима да користе камеру (препоручено)</translation>
+<translation id="4534723447064627427">Да бисте дозволили да <ph name="APP_NAME" /> приступа микрофону, укључите микрофон и у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="4570913071927164677">Детаљи</translation>
 <translation id="4645575059429386691">Овим управља твој родитељ</translation>
 <translation id="4670064810192446073">Виртуелна реалност</translation>
@@ -224,6 +228,7 @@
 <translation id="8394832520002899662">Додирните да бисте се вратили на сајт</translation>
 <translation id="8425213833346101688">Промени</translation>
 <translation id="8441146129660941386">Премотај уназад</translation>
+<translation id="8444433999583714703">Да бисте дозволили да <ph name="APP_NAME" /> приступа локацији, укључите локацију и у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Опозови дозволу за уређај</translation>
 <translation id="8463851957836045671">Сајт је брз</translation>
 <translation id="851751545965956758">Онемогући сајтовима да се повезују са уређајима</translation>
@@ -231,6 +236,7 @@
 <translation id="8609465669617005112">Премести нагоре</translation>
 <translation id="8676374126336081632">Обриши унос</translation>
 <translation id="8702612070107455751">Бришу се сви офлајн подаци.</translation>
+<translation id="8719283222052720129">Укључите дозволу за апликацију <ph name="APP_NAME" /> у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="8725066075913043281">Пробајте поново</translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8737217482364735741">Овим бришете све податке и колачиће које чува сајт <ph name="ORIGIN" />.</translation>
@@ -245,6 +251,7 @@
 <translation id="8959122750345127698">Навигација је недоступна: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Овим управљају твоји родитељи</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
+<translation id="913657688200966289">Укључите дозволе за апликацију <ph name="APP_NAME" /> у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">Приступ микрофону</translation>
 <translation id="965817943346481315">Блокирај ако сајт приказује огласе који ометају активности или обмањујуће огласе (препоручено)</translation>
 </translationbundle>

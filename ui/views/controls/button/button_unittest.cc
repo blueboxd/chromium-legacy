@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/layout.h"
@@ -26,7 +25,6 @@
 #include "ui/views/animation/test/test_ink_drop_host.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button_controller.h"
-#include "ui/views/controls/button/button_observer.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -137,44 +135,34 @@ class TestButton : public Button, public ButtonListener {
   DISALLOW_COPY_AND_ASSIGN(TestButton);
 };
 
-class TestButtonObserver : public ButtonObserver {
+class TestButtonObserver {
  public:
-  explicit TestButtonObserver(Button* button) { observer_.Add(button); }
-  ~TestButtonObserver() override = default;
-
-  void OnHighlightChanged(views::Button* observed_button,
-                          bool highlighted) override {
-    EXPECT_TRUE(observer_.IsObserving(observed_button));
-    highlighted_changed_ = true;
-    highlighted_ = highlighted;
+  explicit TestButtonObserver(Button* button) {
+    highlighted_changed_subscription_ =
+        button->AddHighlightedChangedCallback(base::BindRepeating(
+            [](TestButtonObserver* obs) { obs->highlighted_changed_ = true; },
+            base::Unretained(this)));
+    state_changed_subscription_ =
+        button->AddStateChangedCallback(base::BindRepeating(
+            [](TestButtonObserver* obs) { obs->state_changed_ = true; },
+            base::Unretained(this)));
   }
-
-  void OnStateChanged(views::Button* observed_button,
-                      views::Button::ButtonState old_state) override {
-    EXPECT_TRUE(observer_.IsObserving(observed_button));
-    state_changed_ = true;
-  }
+  ~TestButtonObserver() = default;
 
   void Reset() {
     highlighted_changed_ = false;
-    highlighted_ = false;
     state_changed_ = false;
   }
 
   bool highlighted_changed() const { return highlighted_changed_; }
-  bool highlighted() const { return highlighted_; }
   bool state_changed() const { return state_changed_; }
 
  private:
   bool highlighted_changed_ = false;
-  bool highlighted_ = false;
   bool state_changed_ = false;
 
-  ScopedObserver<Button,
-                 ButtonObserver,
-                 &Button::AddButtonObserver,
-                 &Button::RemoveButtonObserver>
-      observer_{this};
+  PropertyChangedSubscription highlighted_changed_subscription_;
+  PropertyChangedSubscription state_changed_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(TestButtonObserver);
 };
@@ -215,7 +203,6 @@ class ButtonTest : public ViewsTestBase {
   }
 
   void TearDown() override {
-    button_observer_.reset();
     widget_.reset();
 
     ViewsTestBase::TearDown();
@@ -871,19 +858,16 @@ TEST_F(ButtonTest, CustomActionOnKeyPressedEvent) {
   EXPECT_FALSE(button()->OnKeyReleased(control_release));
 }
 
-// Verifies that ButtonObserver is notified when the button activation highlight
-// state is changed. Also verifies the |observed_button| and |highlighted|
-// passed to observer are correct.
+// Verifies that button activation highlight state changes trigger property
+// change callbacks.
 TEST_F(ButtonTest, ChangingHighlightStateNotifiesListener) {
   CreateButtonWithObserver();
   EXPECT_FALSE(button_observer()->highlighted_changed());
   EXPECT_FALSE(button()->GetHighlighted());
-  EXPECT_FALSE(button_observer()->highlighted());
 
   button()->SetHighlighted(/*bubble_visible=*/true);
   EXPECT_TRUE(button_observer()->highlighted_changed());
   EXPECT_TRUE(button()->GetHighlighted());
-  EXPECT_TRUE(button_observer()->highlighted());
 
   button_observer()->Reset();
   EXPECT_FALSE(button_observer()->highlighted_changed());
@@ -892,10 +876,9 @@ TEST_F(ButtonTest, ChangingHighlightStateNotifiesListener) {
   button()->SetHighlighted(/*bubble_visible=*/false);
   EXPECT_TRUE(button_observer()->highlighted_changed());
   EXPECT_FALSE(button()->GetHighlighted());
-  EXPECT_FALSE(button_observer()->highlighted());
 }
 
-// Verifies that ButtonObserver is notified when the button state is changed.
+// Verifies that button state changes trigger property change callbacks.
 TEST_F(ButtonTest, ClickingButtonNotifiesObserverOfStateChanges) {
   CreateButtonWithObserver();
   EXPECT_FALSE(button_observer()->state_changed());
@@ -915,8 +898,8 @@ TEST_F(ButtonTest, ClickingButtonNotifiesObserverOfStateChanges) {
   EXPECT_EQ(Button::STATE_HOVERED, button()->GetState());
 }
 
-// Verifies the ButtonObserver is notified whenever Button::SetState() is
-// called directly.
+// Verifies that direct calls to Button::SetState() trigger property change
+// callbacks.
 TEST_F(ButtonTest, SetStateNotifiesObserver) {
   CreateButtonWithObserver();
   EXPECT_FALSE(button_observer()->state_changed());

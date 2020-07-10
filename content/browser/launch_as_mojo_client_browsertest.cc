@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/cfi_buildflags.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -141,8 +142,14 @@ IN_PROC_BROWSER_TEST_F(LaunchAsMojoClientBrowserTest, LaunchAndBindInterface) {
 // spurious uninitialized memory reads inside base::PlatformThread due to what
 // appears to be poor interaction among MSan, PlatformThread's thread_local
 // storage, and Mojo's use of dlopen().
-#if defined(OS_LINUX) && !defined(MEMORY_SANITIZER)
-IN_PROC_BROWSER_TEST_F(LaunchAsMojoClientBrowserTest, WithMojoCoreLibrary) {
+#if defined(OS_LINUX)
+#if defined(MEMORY_SANITIZER) || BUILDFLAG(CFI_ICALL_CHECK)
+#define MAYBE_WithMojoCoreLibrary DISABLED_WithMojoCoreLibrary
+#else
+#define MAYBE_WithMojoCoreLibrary WithMojoCoreLibrary
+#endif
+IN_PROC_BROWSER_TEST_F(LaunchAsMojoClientBrowserTest,
+                       MAYBE_WithMojoCoreLibrary) {
   // Instructs a newly launched Content Shell browser to initialize Mojo Core
   // dynamically from a shared library, rather than using the version linked
   // into the Content Shell binary.
@@ -171,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(LaunchAsMojoClientBrowserTest, WithMojoCoreLibrary) {
 
   shell_controller->ShutDown();
 }
-#endif  // defined(OS_LINUX) && !defined(MEMORY_SANITIZER)
+#endif  // defined(OS_LINUX)
 
 }  // namespace
 }  // namespace content

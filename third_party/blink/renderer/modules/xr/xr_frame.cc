@@ -135,6 +135,8 @@ XRLightEstimate* XRFrame::getLightEstimate(
 XRPose* XRFrame::getPose(XRSpace* space,
                          XRSpace* basespace,
                          ExceptionState& exception_state) {
+  DVLOG(2) << __func__;
+
   if (!is_active_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kInactiveFrame);

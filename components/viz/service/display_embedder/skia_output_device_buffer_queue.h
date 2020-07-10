@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/cancelable_callback.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "components/viz/service/display_embedder/output_presenter.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
@@ -62,6 +63,11 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue : public SkiaOutputDevice {
  private:
   friend class SkiaOutputDeviceBufferQueueTest;
 
+  class OverlayDataComparator {
+   public:
+    bool operator()(const OutputPresenter::OverlayData& a,
+                    const OutputPresenter::OverlayData& b) const;
+  };
   using CancelableSwapCompletionCallback =
       base::CancelableOnceCallback<void(gfx::SwapCompletionResult)>;
 
@@ -104,6 +110,10 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue : public SkiaOutputDevice {
   std::vector<OutputPresenter::OverlayData> pending_overlays_;
   // Committed overlays for the last SwapBuffers call.
   std::vector<OutputPresenter::OverlayData> committed_overlays_;
+  // Overlays that have been returned via DoFinishSwapBuffers, but still are
+  // in use by the system's WindowServer. This is only ever non-empty on macOS.
+  base::flat_set<OutputPresenter::OverlayData, OverlayDataComparator>
+      in_use_by_window_server_overlays_;
   // Set to true if no image is to be used for the primary plane of this frame.
   bool current_frame_has_no_primary_plane_ = false;
 };

@@ -585,6 +585,7 @@ android_library("common_variations_java") {
     "//android_webview/proto:aw_variations_seed_proto_java",
     "//base:base_java",
     "//components/variations/android:variations_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
   ]
 }
@@ -630,6 +631,7 @@ android_library("common_crash_java") {
     "//base:jni_java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
     "//components/minidump_uploader:minidump_uploader_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }

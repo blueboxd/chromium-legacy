@@ -396,10 +396,6 @@ bool IsTabSwitchSuggestionsEnabled();
 // Returns true if dedicated rows for tab switch suggestions is enabled.
 bool IsTabSwitchSuggestionsDedicatedRowEnabled();
 
-// Returns true if feature is enabled to not count submatches towards the
-// max suggestion limit.
-bool IsLooseMaxLimitOnDedicatedRowsEnabled();
-
 // Returns true if the #omnibox-pedal-suggestions feature is enabled.
 bool IsPedalSuggestionsEnabled();
 

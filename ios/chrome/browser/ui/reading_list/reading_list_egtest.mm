@@ -183,7 +183,7 @@ void AssertAllEntriesVisible() {
 
 // Asserts that the entry |title| is not visible.
 void AssertEntryNotVisible(NSString* title) {
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
   ScrollToTop();
   NSError* error;
 
@@ -201,7 +201,7 @@ void AssertEntryNotVisible(NSString* title) {
 
 // Asserts |header| is visible.
 void AssertHeaderNotVisible(NSString* header) {
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
   ScrollToTop();
   [[EarlGrey selectElementWithMatcher:
                  chrome_test_util::StaticTextWithAccessibilityLabel(header)]

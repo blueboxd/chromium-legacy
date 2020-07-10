@@ -88,15 +88,28 @@ struct ASH_EXPORT AccessibilityFocusRing {
       const gfx::Rect& bottom_line,
       int margin);
 
+  // Gets the bounds in screen coordinates.
   gfx::Rect GetBounds() const;
+
   static void ClipToBounds(gfx::Rect* rect, const gfx::Rect& bounds);
+
+  // Gets the bounds of the screen which contains |rect|. Returns
+  // |screen_bounds_for_testing_| when that has been set.
   static gfx::Rect GetScreenBoundsForRect(const gfx::Rect& rect);
+
   static void set_screen_bounds_for_testing(const gfx::Rect& bounds) {
     screen_bounds_for_testing_ = bounds;
   }
   static int GetScreenPaddingForTesting();
 
+  // Display coordinates for the focus ring. These are in the coordinate system
+  // of the display on which the ring will be shown.
   gfx::Point points[36];
+
+  // Bounds in screen coordinates for the focus ring.
+  gfx::Rect bounds_in_screen;
+
+  // Returned by GetScreenBoundsForRect.
   static gfx::Rect screen_bounds_for_testing_;
 };
 

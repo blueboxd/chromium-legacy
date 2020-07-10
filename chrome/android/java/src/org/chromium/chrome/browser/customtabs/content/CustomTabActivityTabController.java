@@ -265,8 +265,8 @@ public class CustomTabActivityTabController implements InflationObserver {
         }
 
         LoadUrlParams loadUrlParams = new LoadUrlParams(mIntentDataProvider.getUrlToLoad());
-        String referrer = mConnection.getReferrer(mSession, mIntent);
-        if (referrer != null && !referrer.isEmpty()) {
+        String referrer = IntentHandler.getReferrerUrlIncludingExtraHeaders(mIntent);
+        if (!TextUtils.isEmpty(referrer)) {
             loadUrlParams.setReferrer(new Referrer(referrer, ReferrerPolicy.DEFAULT));
         }
 
@@ -368,7 +368,7 @@ public class CustomTabActivityTabController implements InflationObserver {
     @Nullable
     private Tab getHiddenTab() {
         String url = mIntentDataProvider.getUrlToLoad();
-        String referrerUrl = mConnection.getReferrer(mSession, mIntent);
+        String referrerUrl = IntentHandler.getReferrerUrlIncludingExtraHeaders(mIntent);
         Tab tab = mConnection.takeHiddenTab(mSession, url, referrerUrl);
         if (tab == null) return null;
         RecordHistogram.recordEnumeratedHistogram("CustomTabs.WebContentsStateOnLaunch",

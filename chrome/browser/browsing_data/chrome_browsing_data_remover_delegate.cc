@@ -47,6 +47,8 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
+#include "chrome/browser/lite_video/lite_video_keyed_service.h"
+#include "chrome/browser/lite_video/lite_video_keyed_service_factory.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
 #include "chrome/browser/media/media_device_id_salt.h"
@@ -611,6 +613,11 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       optimization_guide_keyed_service->ClearData();
 
     AvailabilityProber::ClearData(prefs);
+
+    LiteVideoKeyedService* lite_video_keyed_service =
+        LiteVideoKeyedServiceFactory::GetForProfile(profile_);
+    if (lite_video_keyed_service)
+      lite_video_keyed_service->ClearData(delete_begin_, delete_end_);
 
 #if defined(OS_ANDROID)
     OomInterventionDecider* oom_intervention_decider =

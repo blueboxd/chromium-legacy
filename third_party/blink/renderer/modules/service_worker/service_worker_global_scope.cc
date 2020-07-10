@@ -479,7 +479,7 @@ void ServiceWorkerGlobalScope::Initialize(
   SetReferrerPolicy(response_referrer_policy);
 
   // https://wicg.github.io/cors-rfc1918/#integration-html
-  GetSecurityContext().SetAddressSpace(response_address_space);
+  SetAddressSpace(response_address_space);
 
   // This is quoted from the "Content Security Policy" algorithm in the service
   // workers spec:

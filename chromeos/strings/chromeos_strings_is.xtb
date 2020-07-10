@@ -71,6 +71,7 @@ Prófaðu að ýta á hljóðnemann til að spyrja mig að hverju sem er.</trans
 <translation id="808894953321890993">Breyta aðgangsorði</translation>
 <translation id="8208861521865154048">Fríðindi</translation>
 <translation id="8347227221149377169">Prentverk</translation>
+<translation id="8623849191266582420"><ph name="DEVICE_TYPE" /> er stjórnað af <ph name="ENROLLMENT_DOMAIN" />. Kerfisstjórar geta stillt og fylgst með tækinu í gegnum fjartengingu.</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> stjórnar þessum notanda. Það getur valið stillingar og skoðað notandavirkni með fjartengingu.</translation>
 <translation id="871560550817059752">Mistókst – blekið er búið</translation>
 <translation id="8747900814994928677">Staðfesta breytingu</translation>

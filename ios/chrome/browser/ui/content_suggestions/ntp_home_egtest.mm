@@ -236,7 +236,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to device rotation bug.");
   }
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
   UIEdgeInsets safeArea =
       [ContentSuggestionsAppInterface collectionView].safeAreaInsets;
   CGFloat collectionWidth = CGRectGetWidth(UIEdgeInsetsInsetRect(
@@ -255,7 +255,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
                                 error:nil];
 #endif
 
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 
   safeArea = [ContentSuggestionsAppInterface collectionView].safeAreaInsets;
   CGFloat collectionWidthAfterRotation = CGRectGetWidth(UIEdgeInsetsInsetRect(
@@ -277,7 +277,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   if ([ChromeEarlGrey isRegularXRegularSizeClass]) {
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to device rotation bug.");
   }
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
   UIEdgeInsets safeArea =
       [ContentSuggestionsAppInterface collectionView].safeAreaInsets;
   CGFloat collectionWidth = CGRectGetWidth(UIEdgeInsetsInsetRect(
@@ -298,7 +298,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
                                 error:nil];
 #endif
 
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
       performAction:grey_tap()];
@@ -328,7 +328,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
                                           ContentSuggestionCollectionView()]
       performAction:grey_swipeFastInDirection(kGREYDirectionUp)];
 
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
   CGFloat collectionWidth =
       [ContentSuggestionsAppInterface collectionView].bounds.size.width;
   GREYAssertTrue(collectionWidth > 0, @"The collection width is nil.");
@@ -345,7 +345,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
                                 error:nil];
 #endif
 
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
   CGFloat collectionWidthAfterRotation =
       [ContentSuggestionsAppInterface collectionView].bounds.size.width;
   GREYAssertNotEqual(collectionWidth, collectionWidthAfterRotation,

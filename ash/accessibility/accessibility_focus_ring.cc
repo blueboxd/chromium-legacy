@@ -5,10 +5,13 @@
 #include "ash/accessibility/accessibility_focus_ring.h"
 
 #include <stddef.h>
+#include <algorithm>
 
+#include "ash/shell.h"
 #include "base/check.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 namespace {
@@ -90,7 +93,38 @@ AccessibilityFocusRing CreateFromThreeRects(const gfx::Rect& top,
   }
   ring.points[35] = gfx::Point(top.x(), top.bottom());
 
+  int left = std::min(ring.points[1].x(),
+                      std::min(ring.points[31].x(), ring.points[25].x()));
+  int right = std::max(ring.points[6].x(),
+                       std::max(ring.points[12].x(), ring.points[18].x()));
+  ring.bounds_in_screen = gfx::Rect(left, ring.points[3].y(), right - left,
+                                    ring.points[22].y() - ring.points[3].y());
+
+  // Now ensure all the points are on the correct display.
+  gfx::Rect bounds_in_display = gfx::Rect(ring.bounds_in_screen);
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayMatching(bounds_in_display);
+  aura::Window* root_window = Shell::GetRootWindowForDisplayId(display.id());
+  ::wm::ConvertRectFromScreen(root_window, &bounds_in_display);
+
+  if (bounds_in_display != ring.bounds_in_screen) {
+    // If they aren't on the right display, shift them all so they will be
+    // drawn on-screen.
+    for (size_t i = 0; i < 36; i++) {
+      ::wm::ConvertPointFromScreen(root_window, &ring.points[i]);
+    }
+  }
+
   return ring;
+}
+
+int InterpolateInt(int i1, int i2, double fraction) {
+  return i1 * (1 - fraction) + i2 * fraction;
+}
+
+gfx::Point InterpolatePoint(gfx::Point p1, gfx::Point p2, double fraction) {
+  return gfx::Point(InterpolateInt(p1.x(), p2.x(), fraction),
+                    InterpolateInt(p1.y(), p2.y(), fraction));
 }
 
 constexpr int kScreenPaddingDip = 2;
@@ -126,10 +160,15 @@ AccessibilityFocusRing AccessibilityFocusRing::Interpolate(
     double fraction) {
   AccessibilityFocusRing dst;
   for (int i = 0; i < 36; ++i) {
-    dst.points[i] = gfx::Point(
-        r1.points[i].x() * (1 - fraction) + r2.points[i].x() * fraction,
-        r1.points[i].y() * (1 - fraction) + r2.points[i].y() * fraction);
+    dst.points[i] = InterpolatePoint(r1.points[i], r2.points[i], fraction);
   }
+  dst.bounds_in_screen = gfx::Rect(
+      InterpolatePoint(r1.bounds_in_screen.origin(),
+                       r2.bounds_in_screen.origin(), fraction),
+      gfx::Size(InterpolateInt(r1.bounds_in_screen.width(),
+                               r2.bounds_in_screen.width(), fraction),
+                InterpolateInt(r1.bounds_in_screen.height(),
+                               r2.bounds_in_screen.height(), fraction)));
   return dst;
 }
 
@@ -216,14 +255,7 @@ AccessibilityFocusRing AccessibilityFocusRing::CreateWithParagraphShape(
 }
 
 gfx::Rect AccessibilityFocusRing::GetBounds() const {
-  gfx::Point top_left = points[0];
-  gfx::Point bottom_right = points[0];
-  for (size_t i = 1; i < 36; ++i) {
-    top_left.SetToMin(points[i]);
-    bottom_right.SetToMax(points[i]);
-  }
-  return gfx::Rect(top_left, gfx::Size(bottom_right.x() - top_left.x(),
-                                       bottom_right.y() - top_left.y()));
+  return bounds_in_screen;
 }
 
 // static

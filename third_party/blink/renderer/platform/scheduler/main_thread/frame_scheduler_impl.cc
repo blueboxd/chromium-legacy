@@ -884,7 +884,7 @@ SchedulingLifecycleState FrameSchedulerImpl::CalculateLifecycleState(
 void FrameSchedulerImpl::OnFirstContentfulPaint() {
   waiting_for_contentful_paint_ = false;
   if (GetFrameType() == FrameScheduler::FrameType::kMainFrame)
-    main_thread_scheduler_->OnMainFramePaint(/*force_policy_update=*/false);
+    main_thread_scheduler_->OnMainFramePaint();
 }
 
 void FrameSchedulerImpl::OnFirstMeaningfulPaint() {
@@ -893,14 +893,13 @@ void FrameSchedulerImpl::OnFirstMeaningfulPaint() {
   if (GetFrameType() != FrameScheduler::FrameType::kMainFrame)
     return;
 
-  bool force_policy_update = false;
+  main_thread_scheduler_->OnMainFramePaint();
+
   if (main_thread_scheduler_->agent_scheduling_strategy()
           .OnMainFrameFirstMeaningfulPaint(*this) ==
       AgentSchedulingStrategy::ShouldUpdatePolicy::kYes) {
-    force_policy_update = true;
+    main_thread_scheduler_->OnAgentStrategyUpdated();
   }
-
-  main_thread_scheduler_->OnMainFramePaint(force_policy_update);
 }
 
 void FrameSchedulerImpl::OnLoad() {

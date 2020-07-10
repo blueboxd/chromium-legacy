@@ -125,115 +125,152 @@ suite('InternetSubpage', function() {
       });
     });
 
-    test('VPN', function() {
-      const mojom = chromeos.networkConfig.mojom;
-      internetSubpage.vpnProviders = [
-        {
-          type: mojom.VpnType.kExtension,
-          providerId: 'extension_id1',
-          providerName: 'MyExtensionVPN1',
-          appId: 'extension_id1',
-          lastLaunchTime: {internalValue: 0},
-        },
-        {
-          type: mojom.VpnType.kExtension,
-          providerId: 'extension_id2',
-          providerName: 'MyExtensionVPN2',
-          appId: 'extension_id2',
-          lastLaunchTime: {internalValue: 0},
-        },
-        {
-          type: mojom.VpnType.kArc,
-          providerId: 'vpn.app.package1',
-          providerName: 'MyArcVPN1',
-          appId: 'arcid1',
-          lastLaunchTime: {internalValue: 1},
-        },
-      ];
-      setNetworksForTest(mojom.NetworkType.kVPN, [
-        OncMojo.getDefaultNetworkState(mojom.NetworkType.kVPN, 'vpn1'),
-        OncMojo.getDefaultNetworkState(mojom.NetworkType.kVPN, 'vpn2'),
-        {
-          guid: 'extension1_vpn1_guid',
-          name: 'vpn3',
-          type: mojom.NetworkType.kVPN,
-          connectionState: mojom.ConnectionStateType.kNotConnected,
-          typeState: {
-            vpn: {
-              type: mojom.VpnType.kExtension,
-              providerId: 'extension_id1',
-              providerName: 'MyExntensionVPN1',
-            }
-          }
-        },
-        {
-          guid: 'extension1_vpn2_guid',
-          name: 'vpn4',
-          type: mojom.NetworkType.kVPN,
-          connectionState: mojom.ConnectionStateType.kNotConnected,
-          typeState: {
-            vpn: {
-              type: mojom.VpnType.kExtension,
-              providerId: 'extension_id1',
-              providerName: 'MyExntensionVPN1',
-            }
-          }
-        },
-        {
-          guid: 'extension2_vpn1_guid',
-          name: 'vpn5',
-          type: mojom.NetworkType.kVPN,
-          connectionState: mojom.ConnectionStateType.kNotConnected,
-          typeState: {
-            vpn: {
-              type: mojom.VpnType.kExtension,
-              providerId: 'extension_id2',
-              providerName: 'MyExntensionVPN2',
-            }
-          }
-        },
-        {
-          guid: 'arc_vpn1_guid',
-          name: 'vpn6',
-          type: mojom.NetworkType.kVPN,
-          connectionState: mojom.ConnectionStateType.kConnected,
-          typeState: {
-            vpn: {
-              type: mojom.VpnType.kArc,
-              providerId: 'vpn.app.package1',
-              providerName: 'MyArcVPN1',
-            }
-          }
-        },
-        {
-          guid: 'arc_vpn2_guid',
-          name: 'vpn7',
-          type: mojom.NetworkType.kVPN,
-          connectionState: mojom.ConnectionStateType.kNotConnected,
-          typeState: {
-            vpn: {
-              type: mojom.VpnType.kArc,
-              providerId: 'vpn.app.package1',
-              providerName: 'MyArcVPN1',
-            }
-          }
-        },
-      ]);
-      return flushAsync().then(() => {
-        assertEquals(2, internetSubpage.networkStateList_.length);
-        const allNetworkLists =
-            internetSubpage.shadowRoot.querySelectorAll('network-list');
-        // Internal networks + 2 extension ids + 1 arc id (package name) = 4
-        assertEquals(4, allNetworkLists.length);
-        // 2 internal networks
-        assertEquals(2, allNetworkLists[0].networks.length);
-        // 2 networks with extension id 'extension_id1'
-        assertEquals(2, allNetworkLists[1].networks.length);
-        // 1 network with extension id 'extension_id2'
-        assertEquals(1, allNetworkLists[2].networks.length);
-        // 1 connected network with arc id 'vpn.app.package1'
-        assertEquals(1, allNetworkLists[3].networks.length);
+    suite('VPN', function() {
+      setup(function() {
+        addTestVpnProviders();
+        addTestVpnNetworks();
       });
+
+      function addTestVpnProviders() {
+        const mojom = chromeos.networkConfig.mojom;
+        internetSubpage.vpnProviders = [
+          {
+            type: mojom.VpnType.kExtension,
+            providerId: 'extension_id1',
+            providerName: 'MyExtensionVPN1',
+            appId: 'extension_id1',
+            lastLaunchTime: {internalValue: 0},
+          },
+          {
+            type: mojom.VpnType.kExtension,
+            providerId: 'extension_id2',
+            providerName: 'MyExtensionVPN2',
+            appId: 'extension_id2',
+            lastLaunchTime: {internalValue: 0},
+          },
+          {
+            type: mojom.VpnType.kArc,
+            providerId: 'vpn.app.package1',
+            providerName: 'MyArcVPN1',
+            appId: 'arcid1',
+            lastLaunchTime: {internalValue: 1},
+          },
+        ];
+      }
+
+      function addTestVpnNetworks() {
+        const mojom = chromeos.networkConfig.mojom;
+        setNetworksForTest(mojom.NetworkType.kVPN, [
+          OncMojo.getDefaultNetworkState(mojom.NetworkType.kVPN, 'vpn1'),
+          OncMojo.getDefaultNetworkState(mojom.NetworkType.kVPN, 'vpn2'),
+          {
+            guid: 'extension1_vpn1_guid',
+            name: 'vpn3',
+            type: mojom.NetworkType.kVPN,
+            connectionState: mojom.ConnectionStateType.kNotConnected,
+            typeState: {
+              vpn: {
+                type: mojom.VpnType.kExtension,
+                providerId: 'extension_id1',
+                providerName: 'MyExntensionVPN1',
+              }
+            }
+          },
+          {
+            guid: 'extension1_vpn2_guid',
+            name: 'vpn4',
+            type: mojom.NetworkType.kVPN,
+            connectionState: mojom.ConnectionStateType.kNotConnected,
+            typeState: {
+              vpn: {
+                type: mojom.VpnType.kExtension,
+                providerId: 'extension_id1',
+                providerName: 'MyExntensionVPN1',
+              }
+            }
+          },
+          {
+            guid: 'extension2_vpn1_guid',
+            name: 'vpn5',
+            type: mojom.NetworkType.kVPN,
+            connectionState: mojom.ConnectionStateType.kNotConnected,
+            typeState: {
+              vpn: {
+                type: mojom.VpnType.kExtension,
+                providerId: 'extension_id2',
+                providerName: 'MyExntensionVPN2',
+              }
+            }
+          },
+          {
+            guid: 'arc_vpn1_guid',
+            name: 'vpn6',
+            type: mojom.NetworkType.kVPN,
+            connectionState: mojom.ConnectionStateType.kConnected,
+            typeState: {
+              vpn: {
+                type: mojom.VpnType.kArc,
+                providerId: 'vpn.app.package1',
+                providerName: 'MyArcVPN1',
+              }
+            }
+          },
+          {
+            guid: 'arc_vpn2_guid',
+            name: 'vpn7',
+            type: mojom.NetworkType.kVPN,
+            connectionState: mojom.ConnectionStateType.kNotConnected,
+            typeState: {
+              vpn: {
+                type: mojom.VpnType.kArc,
+                providerId: 'vpn.app.package1',
+                providerName: 'MyArcVPN1',
+              }
+            }
+          },
+        ]);
+      }
+
+      test('should update network state list properly', function() {
+        return flushAsync().then(() => {
+          const allNetworkLists =
+              internetSubpage.shadowRoot.querySelectorAll('network-list');
+          // Built-in networks + 2 extension providers + 1 arc provider = 4
+          assertEquals(4, allNetworkLists.length);
+          // 2 built-in networks
+          assertEquals(2, allNetworkLists[0].networks.length);
+          // 2 networks with extension id 'extension_id1'
+          assertEquals(2, allNetworkLists[1].networks.length);
+          // 1 network with extension id 'extension_id2'
+          assertEquals(1, allNetworkLists[2].networks.length);
+          // 1 connected network with arc id 'vpn.app.package1'
+          assertEquals(1, allNetworkLists[3].networks.length);
+        });
+      });
+
+      test(
+          'should not show built-in VPN list when device is disabled',
+          function() {
+            const mojom = chromeos.networkConfig.mojom;
+            internetSubpage.deviceState = {
+              type: mojom.NetworkType.kVPN,
+              deviceState: mojom.DeviceStateType.kProhibited
+            };
+
+            return flushAsync().then(() => {
+              const allNetworkLists =
+                  internetSubpage.shadowRoot.querySelectorAll('network-list');
+              // 2 extension providers + 1 arc provider = 3
+              // No built-in networks.
+              assertEquals(3, allNetworkLists.length);
+              // 2 networks with extension id 'extension_id1'
+              assertEquals(2, allNetworkLists[0].networks.length);
+              // 1 network with extension id 'extension_id2'
+              assertEquals(1, allNetworkLists[1].networks.length);
+              // 1 connected network with arc id 'vpn.app.package1'
+              assertEquals(1, allNetworkLists[2].networks.length);
+            });
+          });
     });
   });
 });

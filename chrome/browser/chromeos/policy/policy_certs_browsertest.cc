@@ -65,6 +65,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/test_extension_registry_observer.h"
+#include "extensions/test/test_background_page_ready_observer.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/cert_database.h"
@@ -167,38 +168,6 @@ class CertDatabaseChangedObserver : public net::CertDatabase::Observer {
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(CertDatabaseChangedObserver);
-};
-
-// Observer that allows waiting until the background page of the specified
-// extension/app loads.
-// TODO(https://crbug.com/991464): Extract this into a more generic helper class
-// for using in other tests.
-class ExtensionBackgroundPageReadyObserver final {
- public:
-  explicit ExtensionBackgroundPageReadyObserver(const std::string& extension_id)
-      : extension_id_(extension_id),
-        notification_observer_(
-            extensions::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
-            base::Bind(
-                &ExtensionBackgroundPageReadyObserver::IsNotificationRelevant,
-                base::Unretained(this))) {}
-
-  void Wait() { notification_observer_.Wait(); }
-
- private:
-  // Callback which is used for |WindowedNotificationObserver| for checking
-  // whether the condition being awaited is met.
-  bool IsNotificationRelevant(
-      const content::NotificationSource& source,
-      const content::NotificationDetails& details) const {
-    return content::Source<const extensions::Extension>(source)->id() ==
-           extension_id_;
-  }
-
-  const std::string extension_id_;
-  content::WindowedNotificationObserver notification_observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionBackgroundPageReadyObserver);
 };
 
 // Retrieves the path to the directory containing certificates designated for
@@ -840,10 +809,10 @@ class PolicyProvidedCertsForSigninExtensionTest
     signin_profile_ = GetInitialProfile();
     ASSERT_TRUE(chromeos::ProfileHelper::IsSigninProfile(signin_profile_));
 
-    ExtensionBackgroundPageReadyObserver extension_1_observer(
-        kSigninScreenExtension1);
-    ExtensionBackgroundPageReadyObserver extension_2_observer(
-        kSigninScreenExtension2);
+    extensions::ExtensionBackgroundPageReadyObserver extension_1_observer(
+        signin_profile_, kSigninScreenExtension1);
+    extensions::ExtensionBackgroundPageReadyObserver extension_2_observer(
+        signin_profile_, kSigninScreenExtension2);
 
     AddExtensionForForceInstallation(kSigninScreenExtension1,
                                      kSigninScreenExtension1UpdateManifestPath);

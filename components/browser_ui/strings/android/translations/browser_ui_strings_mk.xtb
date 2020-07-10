@@ -25,6 +25,7 @@
 <translation id="169515064810179024">Блокирајте го пристапот до сензорите за движење за сајтовите</translation>
 <translation id="1717218214683051432">Сензори за движење</translation>
 <translation id="1743802530341753419">Прашај пред да дозволиш сајтовите да се поврзуваат со уред (се препорачува)</translation>
+<translation id="1818308510395330587">За да овозможите <ph name="APP_NAME" /> да користи AR, вклучете ја дозволата за камерата и во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
 <translation id="1887786770086287077">Пристапот до локацијата е исклучен за уредов. Вклучете го во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
 <translation id="1919345977826869612">Реклами</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -39,6 +40,7 @@
 <translation id="2148716181193084225">Денес</translation>
 <translation id="2182457891543959921">Прашувај пред да им дозволиш на сајтовите да создадат 3D-карта на опкружувањето или да ја следат позицијата на камерата (препорачано)</translation>
 <translation id="2212565012507486665">Дозволи колачиња</translation>
+<translation id="2228071138934252756">За да овозможите <ph name="APP_NAME" /> да пристапува до вашата камера, вклучете ја дозволата за камерата и во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
 <translation id="2289270750774289114">Прашај кога некој сајт сака да открива уреди со Bluetooth во близина (се препорачува)</translation>
 <translation id="2315043854645842844">Оперативниот систем не поддржува избор на сертификат од страна на клиентот.</translation>
 <translation id="2359808026110333948">Продолжи</translation>
@@ -69,6 +71,7 @@
 <translation id="3115898365077584848">Прикажи ги информациите</translation>
 <translation id="3123473560110926937">Блокирано на некои сајтови</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> складирани податоци</translation>
+<translation id="321187648315454507">За да овозможите <ph name="APP_NAME" /> да ви испраќа известувања, вклучете ја дозволата за известувања и во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3277252321222022663">Дозволете сајтовите да пристапуваат до сензорите (препорачано)</translation>
 <translation id="3295602654194328831">Сокриј ги информациите</translation>
@@ -100,6 +103,7 @@
 <translation id="445467742685312942">Дозволи сајтовите да пуштаат заштитени содржини</translation>
 <translation id="4468959413250150279">Исклучете го звукот за одреден сајт.</translation>
 <translation id="4479647676395637221">Прво прашај пред да дозволиш сајтовите да ја користат камерата (се препорачува)</translation>
+<translation id="4534723447064627427">За да овозможите <ph name="APP_NAME" /> да пристапува до вашиот микрофон, вклучете ја дозволата за микрофонот и во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
 <translation id="4570913071927164677">Детали</translation>
 <translation id="4645575059429386691">Управувано од вашиот родител</translation>
 <translation id="4670064810192446073">Виртуелна реалност</translation>
@@ -224,6 +228,7 @@
 <translation id="8394832520002899662">Допрете за да се вратите на сајтот</translation>
 <translation id="8425213833346101688">Промени</translation>
 <translation id="8441146129660941386">Барај поназад</translation>
+<translation id="8444433999583714703">За да овозможите <ph name="APP_NAME" /> да пристапува до вашата локација, вклучете ја дозволата за локацијата и во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Отповикај ја дозволата за пристап до уредот</translation>
 <translation id="8463851957836045671">Сајтот е брз</translation>
 <translation id="851751545965956758">Блокирај ги сајтовите од поврзување со уреди</translation>
@@ -231,6 +236,7 @@
 <translation id="8609465669617005112">Премести нагоре</translation>
 <translation id="8676374126336081632">Јасно внесување</translation>
 <translation id="8702612070107455751">Сите офлајн податоци ќе се избришат.</translation>
+<translation id="8719283222052720129">Вклучете ја дозволата за <ph name="APP_NAME" /> во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
 <translation id="8725066075913043281">Обидете се повторно</translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8737217482364735741">Ова ќе ги избрише сите податоци и колачиња складирани од сајтот <ph name="ORIGIN" />.</translation>
@@ -245,6 +251,7 @@
 <translation id="8959122750345127698">Навигацијата е недостапна: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Управувано од вашите родители</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
+<translation id="913657688200966289">Вклучете ги дозволите за <ph name="APP_NAME" /> во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">Пристапи до микрофонот</translation>
 <translation id="965817943346481315">Блокирај ако сајтот прикажува нападни или лажни реклами (препорачано)</translation>
 </translationbundle>

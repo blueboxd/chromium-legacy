@@ -123,7 +123,7 @@ id<GREYMatcher> BottomToolbar() {
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
   // Wait for UI components to finish loading.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 }
 
 // Test that the page for viewing Autofill credit card details is as expected.

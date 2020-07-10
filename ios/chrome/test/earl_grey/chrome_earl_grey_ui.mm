@@ -226,7 +226,7 @@ class ScopedDisableTimerTracking {
       grey_accessibilityID(kToolsMenuNewTabId);
   [[EarlGrey selectElementWithMatcher:newTabButtonMatcher]
       performAction:grey_tap()];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [self waitForAppToIdle];
 }
 
 - (void)openNewIncognitoTab {
@@ -235,7 +235,7 @@ class ScopedDisableTimerTracking {
       grey_accessibilityID(kToolsMenuNewIncognitoTabId);
   [[EarlGrey selectElementWithMatcher:newIncognitoTabMatcher]
       performAction:grey_tap()];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [self waitForAppToIdle];
 }
 
 - (void)reload {
@@ -267,6 +267,10 @@ class ScopedDisableTimerTracking {
   bool toolbarVisibility = base::test::ios::WaitUntilConditionOrTimeout(
       kWaitForUIElementTimeout, condition);
   EG_TEST_HELPER_ASSERT_TRUE(toolbarVisibility, errorMessage);
+}
+
+- (void)waitForAppToIdle {
+  GREYWaitForAppToIdle(@"App failed to idle");
 }
 
 #pragma mark - Private
@@ -302,7 +306,7 @@ class ScopedDisableTimerTracking {
 
   // Wait until activity indicator modal is cleared, meaning clearing browsing
   // data has been finished.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [self waitForAppToIdle];
 
   // Recheck "Saved Passwords" and "Autofill Data".
   [[EarlGrey selectElementWithMatcher:ClearSavedPasswordsButton()]

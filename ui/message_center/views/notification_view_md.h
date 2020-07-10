@@ -5,6 +5,8 @@
 #ifndef UI_MESSAGE_CENTER_VIEWS_NOTIFICATION_VIEW_MD_H_
 #define UI_MESSAGE_CENTER_VIEWS_NOTIFICATION_VIEW_MD_H_
 
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -17,6 +19,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 
 namespace views {
 class ImageButton;
@@ -24,7 +27,7 @@ class Label;
 class ProgressBar;
 class RadioButton;
 class Textfield;
-}
+}  // namespace views
 
 namespace message_center {
 
@@ -33,8 +36,11 @@ class ProportionalImageView;
 
 // NotificationMdTextButton extends MdText button to allow for placeholder text
 // as well as capitalizing the given label string.
-class NotificationMdTextButton : public views::MdTextButton {
+class MESSAGE_CENTER_EXPORT NotificationMdTextButton
+    : public views::MdTextButton {
  public:
+  METADATA_HEADER(NotificationMdTextButton);
+
   NotificationMdTextButton(views::ButtonListener* listener,
                            const base::string16& label,
                            const base::Optional<base::string16>& placeholder);
@@ -62,7 +68,7 @@ class NotificationMdTextButton : public views::MdTextButton {
 // line. This view is used for NOTIFICATION_TYPE_PROGRESS.
 class CompactTitleMessageView : public views::View {
  public:
-  explicit CompactTitleMessageView();
+  CompactTitleMessageView();
   ~CompactTitleMessageView() override;
 
   const char* GetClassName() const override;
@@ -74,10 +80,10 @@ class CompactTitleMessageView : public views::View {
   void set_message(const base::string16& message);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CompactTitleMessageView);
-
   views::Label* title_ = nullptr;
   views::Label* message_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(CompactTitleMessageView);
 };
 
 class LargeImageView : public views::View {
@@ -110,7 +116,7 @@ class NotificationInputContainerMD : public views::InkDropHostView,
                                      public views::ButtonListener,
                                      public views::TextfieldController {
  public:
-  NotificationInputContainerMD(NotificationInputDelegate* delegate);
+  explicit NotificationInputContainerMD(NotificationInputDelegate* delegate);
   ~NotificationInputContainerMD() override;
 
   void AnimateBackground(const ui::Event& event);

@@ -27,10 +27,7 @@ source_set("module_info") {
     "//content/public/common",
   ]
 
-  deps = [
-    "//base:i18n",
-    "//chrome/common/safe_browsing:pe_image_reader",
-  ]
+  deps = [ "//base:i18n" ]
 
   libs = [ "crypt32.lib" ]
 }
@@ -56,6 +53,7 @@ source_set("unit_tests") {
   deps = [
     ":conflicts_dll",
     ":module_info",
+    "//base",
     "//chrome/browser",
     "//chrome/services/util_win:lib",
     "//chrome/test:test_support",

@@ -119,6 +119,14 @@
       depends_on: ["FeaturePolicyForClientHints"],
     },
     {
+      name: "ClipboardRead",
+      feature_policy_name: "clipboard-read",
+    },
+    {
+      name: "ClipboardWrite",
+      feature_policy_name: "clipboard-write",
+    },
+    {
       name: "ConversionMeasurement",
       feature_policy_name: "conversion-measurement",
       depends_on: ["ConversionMeasurement"],

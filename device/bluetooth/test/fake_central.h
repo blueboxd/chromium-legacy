@@ -145,18 +145,18 @@ class FakeCentral final : public mojom::FakeCentral,
   std::string GetAddress() const override;
   std::string GetName() const override;
   void SetName(const std::string& name,
-               const base::Closure& callback,
-               const ErrorCallback& error_callback) override;
+               base::OnceClosure callback,
+               ErrorOnceCallback error_callback) override;
   bool IsInitialized() const override;
   bool IsPresent() const override;
   bool IsPowered() const override;
   void SetPowered(bool powered,
-                  const base::Closure& callback,
-                  const ErrorCallback& error_callback) override;
+                  base::OnceClosure callback,
+                  ErrorOnceCallback error_callback) override;
   bool IsDiscoverable() const override;
   void SetDiscoverable(bool discoverable,
-                       const base::Closure& callback,
-                       const ErrorCallback& error_callback) override;
+                       base::OnceClosure callback,
+                       ErrorOnceCallback error_callback) override;
   bool IsDiscovering() const override;
   UUIDList GetUUIDs() const override;
   void CreateRfcommService(const device::BluetoothUUID& uuid,

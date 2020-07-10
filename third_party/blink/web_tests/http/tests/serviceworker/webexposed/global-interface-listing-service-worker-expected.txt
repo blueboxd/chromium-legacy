@@ -577,6 +577,7 @@ interface FileSystemHandle
     attribute @@toStringTag
     getter isDirectory
     getter isFile
+    getter kind
     getter name
     method constructor
     method isSameEntry

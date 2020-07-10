@@ -48,8 +48,7 @@ base::Optional<std::string> DocumentPolicy::Serialize(
 base::Optional<std::string> DocumentPolicy::SerializeInternal(
     const FeatureState& policy,
     const DocumentPolicyFeatureInfoMap& feature_info_map) {
-  net::structured_headers::List root;
-  root.reserve(policy.size());
+  net::structured_headers::Dictionary root;
 
   std::vector<std::pair<mojom::DocumentPolicyFeature, PolicyValue>>
       sorted_policy(policy.begin(), policy.end());
@@ -63,28 +62,15 @@ base::Optional<std::string> DocumentPolicy::SerializeInternal(
             });
 
   for (const auto& policy_entry : sorted_policy) {
-    const auto& info = feature_info_map.at(policy_entry.first /* feature */);
-
+    const mojom::DocumentPolicyFeature feature = policy_entry.first;
+    const std::string& feature_name = feature_info_map.at(feature).feature_name;
     const PolicyValue& value = policy_entry.second;
-    if (value.Type() == mojom::PolicyValueType::kBool) {
-      root.push_back(net::structured_headers::ParameterizedMember(
-          net::structured_headers::Item(
-              (value.BoolValue() ? "" : "no-") + info.feature_name,
-              net::structured_headers::Item::ItemType::kTokenType),
-          {}));
-    } else {
-      net::structured_headers::Parameters params;
-      params.push_back(std::pair<std::string, net::structured_headers::Item>{
-          info.feature_param_name, PolicyValueToItem(value)});
-      root.push_back(net::structured_headers::ParameterizedMember(
-          net::structured_headers::Item(
-              info.feature_name,
-              net::structured_headers::Item::ItemType::kTokenType),
-          params));
-    }
+
+    root[feature_name] = net::structured_headers::ParameterizedMember(
+        PolicyValueToItem(value), /* parameters */ {});
   }
 
-  return net::structured_headers::SerializeList(root);
+  return net::structured_headers::SerializeDictionary(root);
 }
 
 // static

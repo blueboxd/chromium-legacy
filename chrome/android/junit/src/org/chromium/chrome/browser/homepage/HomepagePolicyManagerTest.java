@@ -27,11 +27,11 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.components.prefs.PrefService;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
@@ -50,7 +50,7 @@ public class HomepagePolicyManagerTest {
     private HomepagePolicyManager mHomepagePolicyManager;
 
     @Mock
-    private PrefServiceBridge mMockServiceBridge;
+    private PrefService mMockPrefService;
     @Mock
     private PrefChangeRegistrar mMockRegistrar;
     @Mock
@@ -72,7 +72,7 @@ public class HomepagePolicyManagerTest {
         ChromeBrowserInitializer.setForTesting(mChromeBrowserInitializer);
 
         // Disable the policy during setup
-        PrefServiceBridge.setInstanceForTesting(mMockServiceBridge);
+        HomepagePolicyManager.setPrefServiceForTesting(mMockPrefService);
         setupNewHomepagePolicyManagerForTests(false, "", null);
 
         // Verify setup
@@ -81,15 +81,15 @@ public class HomepagePolicyManagerTest {
     }
 
     /**
-     * Set up the homepage location for Mock PrefServiceBridge, and create HomepagePolicyManager
+     * Set up the homepage location for Mock PrefService, and create HomepagePolicyManager
      * instance.
      * @param homepageLocation homepage preference that will be returned by mock pref service
      */
     private void setupNewHomepagePolicyManagerForTests(boolean isPolicyEnabled,
             String homepageLocation, @Nullable HomepagePolicyStateListener listener) {
-        Mockito.when(mMockServiceBridge.isManagedPreference(Pref.HOME_PAGE))
+        Mockito.when(mMockPrefService.isManagedPreference(Pref.HOME_PAGE))
                 .thenReturn(isPolicyEnabled);
-        Mockito.when(mMockServiceBridge.getString(Pref.HOME_PAGE)).thenReturn(homepageLocation);
+        Mockito.when(mMockPrefService.getString(Pref.HOME_PAGE)).thenReturn(homepageLocation);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mHomepagePolicyManager = new HomepagePolicyManager(mMockRegistrar, listener);
@@ -194,8 +194,8 @@ public class HomepagePolicyManagerTest {
 
         // A new policy URL is set, which triggers the refresh of native manager.
         final String newUrl = "https://www.anothertesturl.com";
-        Mockito.when(mMockServiceBridge.isManagedPreference(Pref.HOME_PAGE)).thenReturn(true);
-        Mockito.when(mMockServiceBridge.getString(Pref.HOME_PAGE)).thenReturn(newUrl);
+        Mockito.when(mMockPrefService.isManagedPreference(Pref.HOME_PAGE)).thenReturn(true);
+        Mockito.when(mMockPrefService.getString(Pref.HOME_PAGE)).thenReturn(newUrl);
 
         // Update the preference, so that the policy will be enabled.
         TestThreadUtils.runOnUiThreadBlocking(() -> mHomepagePolicyManager.onPreferenceChange());
@@ -220,8 +220,8 @@ public class HomepagePolicyManagerTest {
                 mHomepagePolicyManager.isHomepageLocationPolicyEnabled());
 
         // Update the preference, so that the policy will be disabled.
-        Mockito.when(mMockServiceBridge.isManagedPreference(Pref.HOME_PAGE)).thenReturn(false);
-        Mockito.when(mMockServiceBridge.getString(Pref.HOME_PAGE)).thenReturn("");
+        Mockito.when(mMockPrefService.isManagedPreference(Pref.HOME_PAGE)).thenReturn(false);
+        Mockito.when(mMockPrefService.getString(Pref.HOME_PAGE)).thenReturn("");
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mHomepagePolicyManager.onPreferenceChange(); });
 
@@ -261,7 +261,7 @@ public class HomepagePolicyManagerTest {
     @DisableFeatures(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY)
     public void testFeatureFlagDisabled() {
         Mockito.reset(mMockRegistrar);
-        Mockito.reset(mMockServiceBridge);
+        Mockito.reset(mMockPrefService);
 
         // 1. Test initialization early finishing
         setupNewHomepagePolicyManagerForTests(true, TEST_URL, null);

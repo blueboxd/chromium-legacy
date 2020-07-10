@@ -277,7 +277,7 @@ void MediaStreamSource::GetSettings(WebMediaStreamTrack::Settings& settings) {
   if (noise_supression_)
     settings.noise_supression = *noise_supression_;
 
-  GetSourceSettings(this, settings);
+  GetSourceSettings(WebMediaStreamSource(this), settings);
 }
 
 void MediaStreamSource::SetAudioFormat(size_t number_of_channels,
@@ -319,24 +319,5 @@ void MediaStreamSource::Dispose() {
   platform_source_.reset();
   constraints_.Reset();
 }
-
-STATIC_ASSERT_ENUM(WebMediaStreamSource::kTypeAudio,
-                   MediaStreamSource::kTypeAudio);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::kTypeVideo,
-                   MediaStreamSource::kTypeVideo);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::kReadyStateLive,
-                   MediaStreamSource::kReadyStateLive);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::kReadyStateMuted,
-                   MediaStreamSource::kReadyStateMuted);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::kReadyStateEnded,
-                   MediaStreamSource::kReadyStateEnded);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::EchoCancellationMode::kDisabled,
-                   MediaStreamSource::EchoCancellationMode::kDisabled);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::EchoCancellationMode::kBrowser,
-                   MediaStreamSource::EchoCancellationMode::kBrowser);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::EchoCancellationMode::kAec3,
-                   MediaStreamSource::EchoCancellationMode::kAec3);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::EchoCancellationMode::kSystem,
-                   MediaStreamSource::EchoCancellationMode::kSystem);
 
 }  // namespace blink

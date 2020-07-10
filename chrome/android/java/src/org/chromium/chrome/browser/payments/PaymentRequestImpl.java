@@ -525,9 +525,6 @@ public class PaymentRequestImpl
      */
     private Map<String, PaymentMethodData> mQueryForQuota;
 
-    /** Aborts should only be recorded if the Payment Request was shown to the user. */
-    private boolean mShouldRecordAbortReason;
-
     /**
      * There are a few situations were the Payment Request can appear, from a code perspective, to
      * be shown more than once. This boolean is used to make sure it is only logged once.
@@ -1102,7 +1099,6 @@ public class PaymentRequestImpl
             PaymentApp selectedApp = (PaymentApp) mPaymentMethodsSection.getSelectedItem();
             dimBackgroundIfNotBottomSheetPaymentHandler(selectedApp);
             mDidRecordShowEvent = true;
-            mShouldRecordAbortReason = true;
             mJourneyLogger.setEventOccurred(Event.SKIPPED_SHOW);
             assert mRawTotal != null;
             // The total amount in details should be finalized at this point. So it is safe to
@@ -1145,7 +1141,6 @@ public class PaymentRequestImpl
                     mUiShoppingCart.getTotal(), this::onMinimalUIReady, this::onMinimalUiConfirmed,
                     this::onMinimalUiDismissed)) {
             mDidRecordShowEvent = true;
-            mShouldRecordAbortReason = true;
             mJourneyLogger.setEventOccurred(Event.SHOWN);
             return;
         }
@@ -1792,7 +1787,6 @@ public class PaymentRequestImpl
 
         if (!mDidRecordShowEvent) {
             mDidRecordShowEvent = true;
-            mShouldRecordAbortReason = true;
             mJourneyLogger.setEventOccurred(Event.SHOWN);
             // Record the triggered transaction amount only when the total amount in details is
             // finalized (i.e. mWaitForUpdatedDetails == false). Otherwise it will get recorded when

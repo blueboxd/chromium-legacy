@@ -141,8 +141,7 @@ const int kMaxQueuedJobs = 10;
 // Retrieves the singleton instance of GIT for this process.
 HRESULT GetGit(ComPtr<IGlobalInterfaceTable>* git) {
   return ::CoCreateInstance(CLSID_StdGlobalInterfaceTable, nullptr,
-                            CLSCTX_INPROC_SERVER,
-                            IID_PPV_ARGS(git->GetAddressOf()));
+                            CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&(*git)));
 }
 
 // Retrieves an interface pointer from the process GIT for a given |cookie|.

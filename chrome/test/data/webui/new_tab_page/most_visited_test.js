@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {BrowserProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import {$$, BrowserProxy} from 'chrome://new-tab-page/new_tab_page.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
 import {assertNotStyle, assertStyle, createTestProxy, keydown} from 'chrome://test/new_tab_page/test_support.js';
 import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
@@ -383,6 +383,28 @@ suite('NewTabPageMostVisitedTest', () => {
       assertTrue(mostVisited.$.toast.open);
     });
 
+    test('toast has undo buttons when action successful', async () => {
+      testProxy.handler.setResultFor('addMostVisitedTile', Promise.resolve({
+        success: true,
+      }));
+      inputUrl.value = 'url';
+      saveButton.click();
+      await testProxy.handler.whenCalled('addMostVisitedTile');
+      await flushTasks();
+      assertFalse($$(mostVisited, '#undo').hidden);
+    });
+
+    test('toast has no undo buttons when action successful', async () => {
+      testProxy.handler.setResultFor('addMostVisitedTile', Promise.resolve({
+        success: false,
+      }));
+      inputUrl.value = 'url';
+      saveButton.click();
+      await testProxy.handler.whenCalled('addMostVisitedTile');
+      await flushTasks();
+      assertFalse(!!$$(mostVisited, '#undo'));
+    });
+
     test('save name and URL', async () => {
       inputName.value = 'name';
       inputUrl.value = 'https://url/';
@@ -427,6 +449,15 @@ suite('NewTabPageMostVisitedTest', () => {
       assertFalse(inputUrl.invalid);
       saveButton.click();
       assertTrue(inputUrl.invalid);
+    });
+
+    test('invalid cleared when text entered', () => {
+      inputUrl.value = '%';
+      assertFalse(inputUrl.invalid);
+      saveButton.click();
+      assertTrue(inputUrl.invalid);
+      inputUrl.value = '';
+      assertFalse(inputUrl.invalid);
     });
   });
 

@@ -107,7 +107,7 @@ class COMPONENT_EXPORT(UI_BASE) DropTargetWin : public IDropTarget {
   // mouse events that are sent to the renderer notifying various drag states.
   HWND hwnd_;
 
-  LONG ref_count_;
+  ULONG ref_count_;
 
   DISALLOW_COPY_AND_ASSIGN(DropTargetWin);
 };

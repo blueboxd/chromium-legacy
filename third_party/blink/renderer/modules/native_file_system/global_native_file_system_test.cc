@@ -126,7 +126,7 @@ TEST_F(GlobalNativeFileSystemTest, UserActivationRequiredOtherwiseDenied) {
         FAIL();
       }));
   GetFrame().GetScriptController().ExecuteScriptInMainWorld(
-      "window.chooseFileSystemEntries({type: 'open-file'});");
+      "window.showOpenFilePicker();");
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(frame->HasStickyUserActivation());
 }
@@ -160,7 +160,7 @@ TEST_F(GlobalNativeFileSystemTest, UserActivationChooseEntriesSuccessful) {
         std::move(callback).Run(std::move(error), std::move(entries));
       }));
   GetFrame().GetScriptController().ExecuteScriptInMainWorld(
-      "window.chooseFileSystemEntries({type: 'open-file'});");
+      "window.showOpenFilePicker();");
   manager_run_loop.Run();
 
   // Mock Manager finished sending data over the mojo pipe.
@@ -208,7 +208,7 @@ TEST_F(GlobalNativeFileSystemTest, UserActivationChooseEntriesErrors) {
         },
         status));
     GetFrame().GetScriptController().ExecuteScriptInMainWorld(
-        "window.chooseFileSystemEntries({type: 'open-file'});");
+        "window.showOpenFilePicker();");
     manager_run_loop.Run();
 
     // Mock Manager finished sending data over the mojo pipe.

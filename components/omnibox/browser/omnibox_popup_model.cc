@@ -353,18 +353,15 @@ OmniboxPopupModel::GetAllAvailableSelectionsSorted(Direction direction,
 
     if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled()) {
       // The button row experiment makes things simple. We no longer access
-      // keyword mode by arrow or tab button in this case.
+      // keyword mode tab button in this case.
       all_states.push_back(FOCUSED_BUTTON_REMOVE_SUGGESTION);
       all_states.push_back(FOCUSED_BUTTON_KEYWORD);
       all_states.push_back(FOCUSED_BUTTON_TAB_SWITCH);
       all_states.push_back(FOCUSED_BUTTON_PEDAL);
     } else {
-      // Keyword mode is only accessible by Tabbing forward. If experimental
-      // keyword mode is enabled, Right arrow also works.
+      // Keyword mode is only accessible by Tabbing forward.
       if (direction == kForward) {
-        if (step == kStateOrLine ||
-            (step == kStateOrNothing &&
-             OmniboxFieldTrial::IsExperimentalKeywordModeEnabled())) {
+        if (step == kStateOrLine) {
           all_states.push_back(KEYWORD);
         }
       }
@@ -386,14 +383,8 @@ OmniboxPopupModel::GetAllAvailableSelectionsSorted(Direction direction,
       }
     };
 
-    if (step == kStateOrNothing) {
-      // Confine kStateOrNothing (right / left arrow) to the current line.
-      add_available_line_states_for_line(selection_.line);
-    } else {
-      // Allow other steps to go to any line.
-      for (size_t line = 0; line < result().size(); ++line) {
-        add_available_line_states_for_line(line);
-      }
+    for (size_t line = 0; line < result().size(); ++line) {
+      add_available_line_states_for_line(line);
     }
   }
   DCHECK(
@@ -430,8 +421,6 @@ OmniboxPopupModel::Selection OmniboxPopupModel::GetNextSelection(
                                  : all_available_selections.front();
   }
 
-  // We don't allow wrapping for kStateOrNothing, it's just a UI choice.
-  bool wrap_allowed = step != kStateOrNothing;
   if (direction == kForward) {
     // To go forward, we want to change to the first selection that's larger
     // than the current |selection_|, and std::upper_bound() does just that.
@@ -439,10 +428,10 @@ OmniboxPopupModel::Selection OmniboxPopupModel::GetNextSelection(
         std::upper_bound(all_available_selections.begin(),
                          all_available_selections.end(), selection_);
 
-    // If we can't find any selections larger than the current |selection_|,
-    // wrap if allowed, otherwise return the current selection.
+    // If we can't find any selections larger than the current |selection_|
+    // wrap.
     if (next == all_available_selections.end())
-      return wrap_allowed ? all_available_selections.front() : selection_;
+      return all_available_selections.front();
 
     // Normal case where we found the next selection.
     return *next;
@@ -455,9 +444,9 @@ OmniboxPopupModel::Selection OmniboxPopupModel::GetNextSelection(
         std::lower_bound(all_available_selections.begin(),
                          all_available_selections.end(), selection_);
 
-    // If the current selection is the first one, wrap if allowed.
+    // If the current selection is the first one, wrap.
     if (current == all_available_selections.begin())
-      return wrap_allowed ? all_available_selections.back() : selection_;
+      return all_available_selections.back();
 
     // Decrement one from the current selection.
     return *(current - 1);

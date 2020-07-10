@@ -561,6 +561,8 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
       0;
   info->disable_reasons.blocked_by_policy =
       (disable_reasons & disable_reason::DISABLE_BLOCKED_BY_POLICY) != 0;
+  info->disable_reasons.reloading =
+      (disable_reasons & disable_reason::DISABLE_RELOAD) != 0;
   bool custodian_approval_required =
       (disable_reasons & disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED) !=
       0;

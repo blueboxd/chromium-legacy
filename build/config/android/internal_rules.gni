@@ -3027,14 +3027,52 @@ if (enable_java_templates) {
         "--generated-dir=$_rebased_generated_dir",
         "--jar-path=$_rebased_output_jar_path",
         "--java-srcjars=$_rebased_java_srcjars",
-        "--classpath=@FileArg($_rebased_build_config:deps_info:javac_full_interface_classpath)",
       ]
+
+      if (defined(invoker.header_jar_path)) {
+        inputs += [ invoker.header_jar_path ]
+        args += [
+          "--header-jar",
+          rebase_path(invoker.header_jar_path, root_build_dir),
+        ]
+      }
+
+      # Temporarily allow a list of directories to bypass direct deps.
+      # TODO(crbug.com/1082904): Remove every entry in this allowlist.
+      _allow_transitive_interfaces =
+          filter_exclude(
+              [ get_label_info(":$target_name", "label_no_toolchain") ],
+              [
+                "//base*",
+                "//chrome*",
+                "//clank*",
+                "//components*",
+                "//content*",
+                "//media*",
+                "//mojo*",
+                "//net*",
+                "//remoting*",
+                "//services*",
+                "//testing*",
+                "//third_party*",
+                "//ui*",
+                "//weblayer*",
+              ]) == []
+
+      if (_allow_transitive_interfaces) {
+        args += [ "--classpath=@FileArg($_rebased_build_config:deps_info:javac_full_interface_classpath)" ]
+      } else {
+        # Prefer direct interface classpath whenever possible.
+        args += [ "--classpath=@FileArg($_rebased_build_config:javac:interface_classpath)" ]
+      }
+
       if (_annotation_processing) {
         args += [
           "--processorpath=@FileArg($_rebased_build_config:javac:processor_classpath)",
           "--processors=@FileArg($_rebased_build_config:javac:processor_classes)",
         ]
       }
+
       if (invoker.use_turbine) {
         _turbine_jar_path = "//third_party/turbine/turbine.jar"
         inputs += [ _turbine_jar_path ]
@@ -3720,6 +3758,7 @@ if (enable_java_templates) {
         forward_variables_from(invoker, _compile_java_forward_variables)
         output_jar_path = _javac_jar_path
         deps = [ ":$_header_target_name" ]
+        header_jar_path = _final_ijar_path
         generated_jar_path = _generated_jar_path
       }
       if (_enable_errorprone) {
@@ -3734,6 +3773,7 @@ if (enable_java_templates) {
             javac_args += invoker.errorprone_args
           }
           deps = [ ":$_header_target_name" ]
+          header_jar_path = _final_ijar_path
           generated_jar_path = _generated_jar_path
           output_jar_path = "$target_out_dir/$target_name.errorprone.stamp"
         }

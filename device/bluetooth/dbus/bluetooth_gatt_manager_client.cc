@@ -30,7 +30,7 @@ class BluetoothGattManagerClientImpl : public BluetoothGattManagerClient {
   void RegisterApplication(const dbus::ObjectPath& adapter_object_path,
                            const dbus::ObjectPath& application_path,
                            const Options& options,
-                           const base::Closure& callback,
+                           base::OnceClosure callback,
                            ErrorCallback error_callback) override {
     dbus::MethodCall method_call(
         bluetooth_gatt_manager::kBluetoothGattManagerInterface,
@@ -53,7 +53,7 @@ class BluetoothGattManagerClientImpl : public BluetoothGattManagerClient {
     object_proxy->CallMethodWithErrorCallback(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&BluetoothGattManagerClientImpl::OnSuccess,
-                       weak_ptr_factory_.GetWeakPtr(), callback),
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
         base::BindOnce(&BluetoothGattManagerClientImpl::OnError,
                        weak_ptr_factory_.GetWeakPtr(),
                        std::move(error_callback)));
@@ -62,7 +62,7 @@ class BluetoothGattManagerClientImpl : public BluetoothGattManagerClient {
   // BluetoothGattManagerClient override.
   void UnregisterApplication(const dbus::ObjectPath& adapter_object_path,
                              const dbus::ObjectPath& application_path,
-                             const base::Closure& callback,
+                             base::OnceClosure callback,
                              ErrorCallback error_callback) override {
     dbus::MethodCall method_call(
         bluetooth_gatt_manager::kBluetoothGattManagerInterface,
@@ -78,7 +78,7 @@ class BluetoothGattManagerClientImpl : public BluetoothGattManagerClient {
     object_proxy->CallMethodWithErrorCallback(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&BluetoothGattManagerClientImpl::OnSuccess,
-                       weak_ptr_factory_.GetWeakPtr(), callback),
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
         base::BindOnce(&BluetoothGattManagerClientImpl::OnError,
                        weak_ptr_factory_.GetWeakPtr(),
                        std::move(error_callback)));
@@ -98,9 +98,9 @@ class BluetoothGattManagerClientImpl : public BluetoothGattManagerClient {
 
  private:
   // Called when a response for a successful method call is received.
-  void OnSuccess(const base::Closure& callback, dbus::Response* response) {
+  void OnSuccess(base::OnceClosure callback, dbus::Response* response) {
     DCHECK(response);
-    callback.Run();
+    std::move(callback).Run();
   }
 
   // Called when a response for a failed method call is received.

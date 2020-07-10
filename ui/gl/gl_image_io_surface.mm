@@ -429,8 +429,13 @@ bool GLImageIOSurface::EmulatingRGB() const {
   return client_internalformat_ == GL_RGB;
 }
 
-bool GLImageIOSurface::CanCheckIOSurfaceIsInUse() const {
-  return !cv_pixel_buffer_;
+bool GLImageIOSurface::IsInUseByWindowServer() const {
+  // IOSurfaceIsInUse() will always return true if the IOSurface is wrapped in
+  // a CVPixelBuffer. Ignore the signal for such IOSurfaces (which are the ones
+  // output by hardware video decode).
+  if (cv_pixel_buffer_)
+    return false;
+  return IOSurfaceIsInUse(io_surface_.get());
 }
 
 void GLImageIOSurface::SetColorSpaceForYUVToRGBConversion(

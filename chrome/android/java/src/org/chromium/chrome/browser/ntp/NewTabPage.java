@@ -392,7 +392,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                 activity.getResources().getDimensionPixelSize(R.dimen.tab_strip_and_toolbar_height);
 
         mNewTabPageUma.recordIsUserOnline();
-        mNewTabPageUma.recordContentSuggestionsDisplayStatus();
+        mNewTabPageUma.recordContentSuggestionsDisplayStatus(profile);
 
         // TODO(twellington): Move this somewhere it can be shared with NewTabPageView?
         Runnable closeContextMenuCallback = activity::closeContextMenu;

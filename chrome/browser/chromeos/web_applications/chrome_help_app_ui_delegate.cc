@@ -16,6 +16,8 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/components/help_app_ui/url_constants.h"
@@ -52,6 +54,8 @@ void ChromeHelpAppUIDelegate::PopulateLoadTimeData(
   // Add strings that can be pulled in.
   source->AddString("boardName", base::SysInfo::GetLsbReleaseBoard());
   source->AddString("chromeOSVersion", base::SysInfo::OperatingSystemVersion());
+  source->AddString("chromeVersion", chrome::kChromeVersion);
+  source->AddInteger("channel", static_cast<int>(chrome::GetChannel()));
   std::string customization_id;
   std::string hwid;
   chromeos::system::StatisticsProvider* provider =

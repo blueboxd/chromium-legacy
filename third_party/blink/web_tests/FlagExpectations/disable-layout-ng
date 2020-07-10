@@ -635,3 +635,16 @@ crbug.com/1074752 external/wpt/css/css-pseudo/active-selection-054.html [ Failur
 
 # Very small layout shift seen, only with LayoutNG disabled.
 crbug.com/1100711 external/wpt/layout-instability/ignore-fixed-and-sticky.html [ Failure ]
+
+# TODO(masonfreed) These were previously skipped by the [Skip] on several virtual suites (e.g. controls-refresh/*).
+crbug.com/1034611 fast/forms/color-scheme/text-selection-outside-control.html [ Skip ]
+crbug.com/1034611 fast/forms/color-scheme/date/date-appearance-basic.html [ Skip ]
+crbug.com/1034611 fast/forms/color-scheme/datetimelocal/datetimelocal-appearance-basic.html [ Skip ]
+crbug.com/1034611 fast/forms/color-scheme/file/file-appearance-basic.html [ Skip ]
+crbug.com/1034611 fast/forms/color-scheme/month/month-appearance-basic.html [ Skip ]
+crbug.com/1034611 fast/forms/color-scheme/select/select-popup-appearance-basic.html [ Skip ]
+crbug.com/1034611 fast/forms/color-scheme/suggestion-picker/datetimelocal-suggestion-picker-appearance.html [ Skip ]
+crbug.com/1034611 fast/forms/color-scheme/suggestion-picker/time-suggestion-picker-appearance.html [ Skip ]
+crbug.com/1034611 fast/forms/color-scheme/time/time-appearance-basic.html [ Skip ]
+crbug.com/1034611 fast/forms/color-scheme/week/week-appearance-basic.html [ Skip ]
+crbug.com/1034611 virtual/use-common-select-popup/fast/forms/color-scheme/select/select-popup-appearance-basic.html [ Skip ]

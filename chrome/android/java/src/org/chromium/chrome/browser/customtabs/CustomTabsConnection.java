@@ -1034,11 +1034,6 @@ public class CustomTabsConnection {
         return mClientManager.isFirstPartyOriginForSession(session, origin);
     }
 
-    /** See {@link ClientManager#getReferrerForSession(CustomTabsSessionToken)} */
-    public Referrer getReferrerForSession(CustomTabsSessionToken session) {
-        return mClientManager.getReferrerForSession(session);
-    }
-
     /** @see ClientManager#shouldHideDomainForSession(CustomTabsSessionToken) */
     public boolean shouldHideDomainForSession(CustomTabsSessionToken session) {
         return mClientManager.shouldHideDomainForSession(session);
@@ -1528,23 +1523,10 @@ public class CustomTabsConnection {
     }
 
     /**
-     * Get any referrer that has been explicitly set.
-     *
-     * Inspects the two possible sources for the referrer:
-     * - A session for which the referrer might have been set.
-     * - An intent for a navigation that contains a referer in the headers.
-     *
-     * @param session session to inspect for referrer settings.
-     * @param intent intent to inspect for referrer header.
-     * @return referrer URL as a string if any was found, empty string otherwise.
+     * @return The referrer that is associated with the client owning the given session.
      */
-    public String getReferrer(CustomTabsSessionToken session, Intent intent) {
-        String referrer = IntentHandler.getReferrerUrlIncludingExtraHeaders(intent);
-        if (referrer == null && getReferrerForSession(session) != null) {
-            referrer = getReferrerForSession(session).getUrl();
-        }
-        if (referrer == null) referrer = "";
-        return referrer;
+    public Referrer getDefaultReferrerForSession(CustomTabsSessionToken session) {
+        return mClientManager.getDefaultReferrerForSession(session);
     }
 
     /**

@@ -27,8 +27,20 @@ Polymer({
     animationUrl: {
       type: String,
       value: '',
+      observer: 'animationUrlChanged_',
     },
+
     autoplay: {
+      type: Boolean,
+      value: false,
+    },
+
+    hidden: {
+      type: Boolean,
+      value: false,
+    },
+
+    singleLoop: {
       type: Boolean,
       value: false,
     },
@@ -37,11 +49,17 @@ Polymer({
   /** @private {?HTMLCanvasElement} */
   canvasElement_: null,
 
-  /** @private {boolean} True if the animation has loaded successfully */
+  /** @private {boolean} Whether the animation has loaded successfully */
   isAnimationLoaded_: false,
 
   /** @private {?OffscreenCanvas} */
   offscreenCanvas_: null,
+
+  /**
+   * @private {boolean} Whether the canvas has been transferred to the worker
+   * thread.
+   */
+  hasTransferredCanvas_: false,
 
   /** @private {?ResizeObserver} */
   resizeObserver_: null,
@@ -105,6 +123,23 @@ Polymer({
     }
 
     // Open animation file and start playing the animation.
+    this.sendXmlHttpRequest_(
+        this.animationUrl, 'json', this.initAnimation_.bind(this));
+  },
+
+  /**
+   * Updates the animation that is being displayed.
+   * @param {string} animationUrl the new animation URL.
+   * @param {string} oldAnimationUrl the previous animation URL.
+   * @private
+   */
+  animationUrlChanged_(animationUrl, oldAnimationUrl) {
+    // Animation changes should be made after the previous animation loaded to
+    // avoid a race condition.
+    if (!oldAnimationUrl || !this.worker_) {
+      return;
+    }
+    this.isAnimationLoaded_ = false;
     this.sendXmlHttpRequest_(
         this.animationUrl, 'json', this.initAnimation_.bind(this));
   },
@@ -181,14 +216,17 @@ Polymer({
    * @private
    */
   initAnimation_(animationData) {
-    this.worker_.postMessage(
-        {
-          canvas: this.offscreenCanvas_,
-          animationData: animationData,
-          drawSize: this.getCanvasDrawBufferSize_(),
-          params: {loop: true, autoplay: this.autoplay}
-        },
-        [this.offscreenCanvas_]);
+    const message = [{
+      animationData,
+      drawSize: this.getCanvasDrawBufferSize_(),
+      params: {loop: !this.singleLoop, autoplay: this.autoplay}
+    }];
+    if (!this.hasTransferredCanvas_) {
+      message[0].canvas = this.offscreenCanvas_;
+      message.push([this.offscreenCanvas_]);
+      this.hasTransferredCanvas_ = true;
+    }
+    this.worker_.postMessage(...message);
   },
 
   /**

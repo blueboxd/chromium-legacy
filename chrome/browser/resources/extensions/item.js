@@ -409,11 +409,18 @@ Polymer({
    */
   computeDevReloadButtonHidden_() {
     // Only display the reload spinner if the extension is unpacked and
-    // enabled. There's no point in reloading a disabled extension, and we'll
-    // show a crashed reload button if it's terminated.
+    // enabled or disabled for reload. If an extension fails to reload (due to
+    // e.g. a parsing error), it will
+    // remain disabled with the "reloading" reason. We show the reload button
+    // when it's disabled for reload to enable developers to reload the fixed
+    // version. (Note that trying to reload an extension that is currently
+    // trying to reload is a no-op.) For other
+    // disableReasons, there's no point in reloading a disabled extension, and
+    // we'll show a crashed reload button if it's terminated.
     const showIcon =
         this.data.location === chrome.developerPrivate.Location.UNPACKED &&
-        this.data.state === chrome.developerPrivate.ExtensionState.ENABLED;
+        (this.data.state === chrome.developerPrivate.ExtensionState.ENABLED ||
+         this.data.disableReasons.reloading);
     return !showIcon;
   },
 

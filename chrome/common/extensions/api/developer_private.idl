@@ -137,6 +137,7 @@ namespace developerPrivate {
     boolean corruptInstall;
     boolean updateRequired;
     boolean blockedByPolicy;
+    boolean reloading;
     boolean custodianApprovalRequired;
     boolean parentDisabledPermissions;
   };

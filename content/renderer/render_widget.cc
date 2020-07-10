@@ -853,6 +853,9 @@ void RenderWidget::OnEnableDeviceEmulation(
         window_screen_rect_);
   }
   device_emulator_->ChangeEmulationParams(params);
+  // TODO: crbug.com/1099026
+  // https://chromium-review.googlesource.com/c/chromium/src/+/2262193/1
+  // Update root_widget_window_segments here.
 }
 
 void RenderWidget::OnDisableDeviceEmulation() {

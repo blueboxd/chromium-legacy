@@ -11,6 +11,7 @@ import './viewer-download-controls.js';
 import './viewer-page-selector.js';
 import './shared-css.js';
 
+import {AnchorAlignment} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {FittingType} from '../constants.js';
@@ -124,6 +125,16 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
   /** @private */
   onFitToButtonClick_() {
     this.fitToggle();
+  }
+
+  /** @private */
+  onMoreClick_() {
+    const menu = this.shadowRoot.querySelector('cr-action-menu');
+    menu.showAt(this.shadowRoot.querySelector('#more'), {
+      anchorAlignmentX: AnchorAlignment.CENTER,
+      anchorAlignmentY: AnchorAlignment.AFTER_END,
+      noOffset: true,
+    });
   }
 }
 

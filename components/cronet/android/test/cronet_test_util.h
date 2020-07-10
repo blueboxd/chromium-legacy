@@ -33,7 +33,7 @@ class TestUtil {
   static net::URLRequestContext* GetURLRequestContext(jlong jcontext_adapter);
   // Run |task| after URLRequestContext is initialized.
   static void RunAfterContextInit(jlong jcontext_adapter,
-                                  const base::Closure& task);
+                                  base::OnceClosure task);
 
   // CronetURLRequestAdapter manipulation:
 
@@ -42,7 +42,7 @@ class TestUtil {
 
  private:
   static void RunAfterContextInitOnNetworkThread(jlong jcontext_adapter,
-                                                 const base::Closure& task);
+                                                 base::OnceClosure task);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(TestUtil);
 };

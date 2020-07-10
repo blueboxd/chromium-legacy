@@ -37,7 +37,7 @@ using chrome_test_util::NavigationBarCancelButton;
   [[EarlGrey selectElementWithMatcher:NavigationBarCancelButton()]
       performAction:grey_tap()];
   // Wait until the settings is fully removed.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 }
 
 @end

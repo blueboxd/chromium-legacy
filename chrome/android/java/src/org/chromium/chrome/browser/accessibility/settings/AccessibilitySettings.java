@@ -16,11 +16,12 @@ import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs.FontSizePrefsObserver;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
+import org.chromium.components.user_prefs.UserPrefs;
 
 /**
  * Fragment to keep track of all the accessibility related preferences.
@@ -72,8 +73,8 @@ public class AccessibilitySettings
 
         ChromeBaseCheckBoxPreference readerForAccessibilityPref =
                 (ChromeBaseCheckBoxPreference) findPreference(PREF_READER_FOR_ACCESSIBILITY);
-        readerForAccessibilityPref.setChecked(
-                PrefServiceBridge.getInstance().getBoolean(Pref.READER_FOR_ACCESSIBILITY));
+        readerForAccessibilityPref.setChecked(UserPrefs.get(Profile.getLastUsedRegularProfile())
+                                                      .getBoolean(Pref.READER_FOR_ACCESSIBILITY));
         readerForAccessibilityPref.setOnPreferenceChangeListener(this);
 
         ChromeBaseCheckBoxPreference mAccessibilityTabSwitcherPref =
@@ -119,8 +120,8 @@ public class AccessibilitySettings
         } else if (PREF_FORCE_ENABLE_ZOOM.equals(preference.getKey())) {
             mFontSizePrefs.setForceEnableZoomFromUser((Boolean) newValue);
         } else if (PREF_READER_FOR_ACCESSIBILITY.equals(preference.getKey())) {
-            PrefServiceBridge.getInstance().setBoolean(
-                    Pref.READER_FOR_ACCESSIBILITY, (Boolean) newValue);
+            UserPrefs.get(Profile.getLastUsedRegularProfile())
+                    .setBoolean(Pref.READER_FOR_ACCESSIBILITY, (Boolean) newValue);
         }
         return true;
     }

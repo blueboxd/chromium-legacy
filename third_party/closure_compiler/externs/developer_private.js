@@ -181,6 +181,7 @@ chrome.developerPrivate.RuntimeError;
  *   corruptInstall: boolean,
  *   updateRequired: boolean,
  *   blockedByPolicy: boolean,
+ *   reloading: boolean,
  *   custodianApprovalRequired: boolean,
  *   parentDisabledPermissions: boolean
  * }}

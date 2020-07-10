@@ -104,10 +104,30 @@ class PLATFORM_EXPORT MediaStreamSource final
 
   void GetSettings(WebMediaStreamTrack::Settings&);
 
-  const WebMediaStreamSource::Capabilities& GetCapabilities() {
-    return capabilities_;
-  }
-  void SetCapabilities(const WebMediaStreamSource::Capabilities& capabilities) {
+  struct Capabilities {
+    // Vector is used to store an optional range for the below numeric
+    // fields. All of them should have 0 or 2 values representing min/max.
+    Vector<uint32_t> width;
+    Vector<uint32_t> height;
+    Vector<double> aspect_ratio;
+    Vector<double> frame_rate;
+    Vector<bool> echo_cancellation;
+    Vector<String> echo_cancellation_type;
+    Vector<bool> auto_gain_control;
+    Vector<bool> noise_suppression;
+    Vector<int32_t> sample_size;
+    Vector<int32_t> channel_count;
+    Vector<int32_t> sample_rate;
+    Vector<double> latency;
+
+    WebMediaStreamTrack::FacingMode facing_mode =
+        WebMediaStreamTrack::FacingMode::kNone;
+    String device_id;
+    String group_id;
+  };
+
+  const Capabilities& GetCapabilities() { return capabilities_; }
+  void SetCapabilities(const Capabilities& capabilities) {
     capabilities_ = capabilities;
   }
 
@@ -142,7 +162,7 @@ class PLATFORM_EXPORT MediaStreamSource final
       GUARDED_BY(audio_consumers_lock_);
   std::unique_ptr<WebPlatformMediaStreamSource> platform_source_;
   MediaConstraints constraints_;
-  WebMediaStreamSource::Capabilities capabilities_;
+  Capabilities capabilities_;
   base::Optional<EchoCancellationMode> echo_cancellation_mode_;
   base::Optional<bool> auto_gain_control_;
   base::Optional<bool> noise_supression_;

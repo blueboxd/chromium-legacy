@@ -390,8 +390,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // Set the human-readable name of the adapter to |name|. On success,
   // |callback| will be called. On failure, |error_callback| will be called.
   virtual void SetName(const std::string& name,
-                       const base::Closure& callback,
-                       const ErrorCallback& error_callback) = 0;
+                       base::OnceClosure callback,
+                       ErrorOnceCallback error_callback) = 0;
 
   // Indicates whether the adapter is initialized and ready to use.
   virtual bool IsInitialized() const = 0;
@@ -426,8 +426,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // SetPowered() don't work correctly when run from a x86 Chrome on a x64 CPU.
   // See https://github.com/Microsoft/cppwinrt/issues/47 for more details.
   virtual void SetPowered(bool powered,
-                          const base::Closure& callback,
-                          const ErrorCallback& error_callback);
+                          base::OnceClosure callback,
+                          ErrorOnceCallback error_callback);
 
   // Indicates whether the adapter support the LowEnergy peripheral role.
   virtual bool IsPeripheralRoleSupported() const;
@@ -440,8 +440,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // devices. On successfully changing the adapter's discoverability, |callback|
   // will be called. On failure, |error_callback| will be called.
   virtual void SetDiscoverable(bool discoverable,
-                               const base::Closure& callback,
-                               const ErrorCallback& error_callback) = 0;
+                               base::OnceClosure callback,
+                               ErrorOnceCallback error_callback) = 0;
 
   // Indicates whether the adapter is currently discovering new devices.
   virtual bool IsDiscovering() const = 0;
@@ -671,7 +671,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
 
     bool powered = false;
     base::OnceClosure callback;
-    ErrorCallback error_callback;
+    ErrorOnceCallback error_callback;
   };
 
   BluetoothAdapter();

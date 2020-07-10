@@ -319,7 +319,7 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 
       Wenn die Richtlinie nicht konfiguriert ist, gilt <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" />, sofern diese Einstellung konfiguriert ist. Falls nicht, wird die persönliche Einstellung des Nutzers verwendet.
 
-      URL-Muster in dieser Richtlinie dürfen nicht im Widerspruch zu den über <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" /> konfigurierten URLs stehen. Andernfalls haben diese Richtlinie Vorrang vor <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" /> und <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" />.
+      URL-Muster in dieser Richtlinie dürfen nicht im Widerspruch zu den über <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" /> konfigurierten URLs stehen. Andernfalls hat diese Richtlinie Vorrang vor <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" /> und <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" />.
 
       Werte für diese Richtlinie und für <ph name="DEVICE_WEB_USB_ALLOW_DEVICES_FOR_URLS_POLICY_NAME" /> werden zusammengeführt.</translation>
 <translation id="1599424828227887013">Website-Isolierung für angegebene Ursprünge auf Android-Geräten aktivieren</translation>
@@ -1093,7 +1093,7 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 
       Wenn die Richtlinie nicht konfiguriert ist, gilt <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" /> für alle Websites, sofern konfiguriert. Falls nicht, werden die persönlichen Einstellungen des Nutzers verwendet.
 
-      URL-Muster dürfen nicht im Konflikt zu <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" /> stehen. Keine Richtlinie hat Vorrang, falls eine URL mit beiden übereinstimmt.
+      URL-Muster dürfen nicht im Konflikt mit <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" /> stehen. Keine Richtlinie hat Vorrang, falls eine URL mit beiden übereinstimmt.
 
       Genaue Informationen zu gültigen <ph name="URL_LABEL" />-Mustern finden Sie unter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="2633084400146331575">Gesprochenes Feedback aktivieren</translation>
@@ -2877,7 +2877,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
       Wenn die Richtlinie nicht konfiguriert ist, gilt <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" /> für alle Websites, sofern konfiguriert. Falls nicht, wird die persönliche Einstellung des Nutzers verwendet.
 
-      URL-Muster dürfen nicht im Konflikt zu <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" /> stehen. Keine Richtlinie hat Vorrang, falls eine URL mit beiden übereinstimmt.
+      URL-Muster dürfen nicht im Konflikt mit <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" /> stehen. Keine Richtlinie hat Vorrang, falls eine URL mit beiden übereinstimmt.
 
       Genaue Informationen zu gültigen <ph name="URL_LABEL" />-Mustern finden Sie unter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="5417906792459853336">Mit dieser Richtlinie wird festgelegt, ob Informationen zum Bestand der Anwendungen und zur Verwendung eines Geräts ausgegeben werden.
@@ -4644,7 +4644,7 @@ Wird diese Richtlinie nicht konfiguriert, ist der Datenschutzbildschirm anfangs 
 <translation id="8217516105848565518">Diese Richtlinie wurde eingestellt. Bitte verwenden Sie stattdessen "RemoteAccessHostDomainList".</translation>
 <translation id="8244171102276095471">RC4-Verschlüsselungssammlungen in TLS aktivieren</translation>
 <translation id="8244525275280476362">Maximale Abrufverzögerung nach der Außerkraftsetzung einer Richtlinie</translation>
-<translation id="8251411417369363637">Wird die Richtlinie auf "True" gesetzt, dann werden alle <ph name="FLASH_PLUGIN_NAME" />-Inhalte ausgeführt, die auf Websites eingebettet sind, die <ph name="FLASH_PLUGIN_NAME" /> zulassen. Hierzu gehören auch Inhalte anderer Herkunft sowie kleine Inhalte.
+<translation id="8251411417369363637">Wird die Richtlinie auf "True" gesetzt, werden alle <ph name="FLASH_PLUGIN_NAME" />-Inhalte ausgeführt, die auf Websites eingebettet sind, die <ph name="FLASH_PLUGIN_NAME" /> zulassen. Hierzu gehören auch Inhalte anderer Herkunft sowie kleine Inhalte.
 
       Wenn die Richtlinie auf "False" gesetzt oder nicht konfiguriert ist, werden <ph name="FLASH_PLUGIN_NAME" />-Inhalte anderer Herkunft oder kleine Inhalte ggf. blockiert.
 
@@ -4979,7 +4979,7 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Ist sie auf "true" gesetzt, werden Informationen zum Bluetooth-Status des Geräts ausgegeben.</translation>
 <translation id="8703488928438047864">Boardstatus melden</translation>
 <translation id="8704831857353097849">Liste der deaktivierten Plug-ins</translation>
-<translation id="8705895771006864851">Wenn Sie diese Richtlinie auf "True" setzen, wird eine Übersetzungsfunktion implementiert, wenn dies für Nutzer angemessen ist. In diesem Fall werden in <ph name="PRODUCT_NAME" /> eine integrierte Übersetzungssymbolleiste sowie eine Übersetzungsfunktion im Kontextmenü angezeigt, das mit einem Rechtsklick geöffnet werden kann. Wird die Richtlinie auf "False" gesetzt, dann werden alle integrierten Übersetzungsfunktionen ausgeschaltet.
+<translation id="8705895771006864851">Wenn Sie diese Richtlinie auf "True" setzen, wird eine Übersetzungsfunktion implementiert, wenn dies für Nutzer angemessen ist. In diesem Fall werden in <ph name="PRODUCT_NAME" /> eine integrierte Übersetzungssymbolleiste sowie eine Übersetzungsfunktion im Kontextmenü angezeigt, das mit einem Rechtsklick geöffnet werden kann. Wird die Richtlinie auf "False" gesetzt, werden alle integrierten Übersetzungsfunktionen ausgeschaltet.
 
       Nach dem Konfigurieren der Richtlinie kann diese Funktion von den Nutzern nicht mehr geändert werden. Ist sie dagegen nicht konfiguriert, kann der Nutzer die Einstellung ändern.</translation>
 <translation id="8708284670795912158">Wenn die Richtlinie auf "True" gesetzt ist, kann <ph name="PRODUCT_NAME" /> Medien automatisch abspielen. Wenn die Richtlinie auf "False" gesetzt ist, kann <ph name="PRODUCT_NAME" /> Medien nicht mehr automatisch abspielen.

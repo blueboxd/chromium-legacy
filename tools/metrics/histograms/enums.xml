@@ -28429,13 +28429,15 @@ Called by update_feature_policy_enum.py.-->
   <int value="65" label="DocumentAccess"/>
   <int value="66" label="WebXr"/>
   <int value="67" label="PublicKeyCredentialsGet"/>
-  <int value="68" label="Clipboard"/>
   <int value="69" label="ClientHintUAMobile"/>
   <int value="70" label="StorageAccessAPI"/>
   <int value="71" label="ClientHintUAFullVersion"/>
   <int value="72" label="TrustTokenRedemption"/>
   <int value="73" label="ConversionMeasurement"/>
   <int value="74" label="ClientHintUAPlatformVersion"/>
+  <int value="75" label="CrossOriginIsolated"/>
+  <int value="76" label="ClipboardRead"/>
+  <int value="77" label="ClipboardWrite"/>
 </enum>
 
 <enum name="FeaturePolicyImageCompressionFormat">

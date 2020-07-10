@@ -31,13 +31,12 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
-#include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/feature_policy/document_policy.h"
 #include "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -78,8 +77,10 @@ class CORE_EXPORT SecurityContext {
   // Used only for safety CHECKs.
   enum SecurityContextType { kWindow, kWorker, kRemoteFrame };
 
-  SecurityContext(const SecurityContextInit&, SecurityContextType context_type);
+  explicit SecurityContext(SecurityContextType context_type);
   virtual ~SecurityContext() = default;
+
+  void Initialize(const SecurityContextInit&);
 
   void Trace(Visitor*) const;
 
@@ -109,11 +110,6 @@ class CORE_EXPORT SecurityContext {
   }
   bool IsSandboxed(network::mojom::blink::WebSandboxFlags mask) const;
   void ApplySandboxFlags(network::mojom::blink::WebSandboxFlags flags);
-
-  void SetAddressSpace(network::mojom::IPAddressSpace space) {
-    address_space_ = space;
-  }
-  network::mojom::IPAddressSpace AddressSpace() const { return address_space_; }
 
   void SetRequireTrustedTypes();
   void SetRequireTrustedTypesForTesting();  // Skips sanity checks.
@@ -198,11 +194,10 @@ class CORE_EXPORT SecurityContext {
 
  private:
   Member<ContentSecurityPolicy> content_security_policy_;
-
-  network::mojom::IPAddressSpace address_space_;
-  mojom::blink::InsecureRequestPolicy insecure_request_policy_;
+  mojom::blink::InsecureRequestPolicy insecure_request_policy_ =
+      mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone;
   InsecureNavigationsSet insecure_navigations_to_upgrade_;
-  bool require_safe_types_;
+  bool require_safe_types_ = false;
   const SecurityContextType context_type_for_asserts_;
   SecureContextMode secure_context_mode_;
   Member<OriginTrialContext> origin_trial_context_;

@@ -158,7 +158,6 @@
 #include "third_party/blink/renderer/core/events/page_transition_event.h"
 #include "third_party/blink/renderer/core/events/visual_viewport_resize_event.h"
 #include "third_party/blink/renderer/core/events/visual_viewport_scroll_event.h"
-#include "third_party/blink/renderer/core/execution_context/security_context_init.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
 #include "third_party/blink/renderer/core/feature_policy/dom_feature_policy.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
@@ -674,13 +673,6 @@ Document* Document::CreateForTest() {
 
 Document::Document(const DocumentInit& initializer,
                    DocumentClassFlags document_classes)
-    : Document(initializer,
-               SecurityContextInit(initializer),
-               document_classes) {}
-
-Document::Document(const DocumentInit& initializer,
-                   const SecurityContextInit& security_initializer,
-                   DocumentClassFlags document_classes)
     : ContainerNode(nullptr, kCreateDocument),
       TreeScope(*this),
       evaluate_media_queries_on_style_recalc_(false),
@@ -688,7 +680,6 @@ Document::Document(const DocumentInit& initializer,
       dom_window_(initializer.GetFrame() ? initializer.GetFrame()->DomWindow()
                                          : nullptr),
       imports_controller_(initializer.ImportsController()),
-      security_context_(security_initializer, SecurityContext::kWindow),
       use_counter_during_construction_(initializer.GetUseCounter()),
       execution_context_(initializer.GetExecutionContext()),
       context_features_(ContextFeatures::DefaultSwitch()),
@@ -792,13 +783,6 @@ Document::Document(const DocumentInit& initializer,
       permission_service_(GetExecutionContext()),
       has_trust_tokens_answerer_(GetExecutionContext()),
       font_preload_manager_(*this) {
-  if (dom_window_) {
-    GetSecurityContext().GetOriginTrialContext()->BindExecutionContext(
-        dom_window_.Get());
-    pending_fp_headers_ = security_initializer.FeaturePolicyHeader();
-    pending_dp_headers_ = initializer.GetDocumentPolicy().feature_state;
-  }
-
   if (GetFrame()) {
     DCHECK(GetFrame()->GetPage());
     ProvideContextFeaturesToDocumentFrom(*this, *GetFrame()->GetPage());
@@ -848,7 +832,9 @@ Document::Document(const DocumentInit& initializer,
     SetBaseURLOverride(initializer.GetWebBundleClaimedUrl());
   }
 
-  InitSecurityContext(initializer);
+  cookie_url_ = initializer.HasSecurityContext() ? initializer.GetCookieUrl()
+                                                 : KURL(g_empty_string);
+
   PoliciesInitialized(initializer);
   InitDNSPrefetch();
 
@@ -5215,8 +5201,12 @@ void Document::NotifyFocusedElementChanged(Element* old_focused_element,
     bool is_editable = false;
     gfx::Rect element_bounds;
     if (new_focused_element) {
-      IntRect rect = new_focused_element->BoundsInViewport();
-      View()->FrameToScreen(rect);
+      // Convert to window coordinate system (this will be in DIPs).
+      WebRect rect = WebRect(new_focused_element->BoundsInViewport());
+      if (GetFrame()->GetWidgetForLocalRoot()) {
+        GetFrame()->GetWidgetForLocalRoot()->Client()->ConvertViewportToWindow(
+            &rect);
+      }
       is_editable = IsEditableElement(*new_focused_element);
       element_bounds = gfx::Rect(rect);
     }
@@ -7010,14 +7000,10 @@ void Document::PoliciesInitialized(const DocumentInit& document_initializer) {
   if (!document_initializer.FeaturePolicyHeader().IsEmpty())
     UseCounter::Count(*this, WebFeature::kFeaturePolicyHeader);
 
-  // At this point, the document will not have been installed in the frame's
-  // LocalDOMWindow, so we cannot call GetFrame()->IsFeatureEnabled. This calls
-  // SecurityContext::IsFeatureEnabled instead, which cannot report, but we
-  // don't need reporting here in any case.
   is_vertical_scroll_enforced_ =
       GetFrame() && !GetFrame()->IsMainFrame() &&
       RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-      !GetSecurityContext().GetFeaturePolicy()->IsFeatureEnabled(
+      !dom_window_->IsFeatureEnabled(
           mojom::blink::FeaturePolicyFeature::kVerticalScroll);
 }
 
@@ -7040,16 +7026,6 @@ const FeaturePolicy* Document::GetParentFeaturePolicy() const {
         ->GetFeaturePolicy();
   }
   return nullptr;
-}
-
-void Document::ApplyPendingFramePolicyHeaders() {
-  if (GetFrame()) {
-    GetFrame()->Client()->DidSetFramePolicyHeaders(
-        dom_window_->GetSandboxFlags(), pending_fp_headers_,
-        pending_dp_headers_);
-  }
-  pending_fp_headers_.clear();
-  pending_dp_headers_.clear();
 }
 
 bool Document::AllowedToUseDynamicMarkUpInsertion(
@@ -7104,32 +7080,6 @@ FontMatchingMetrics* Document::GetFontMatchingMetrics() {
   font_matching_metrics_ = std::make_unique<FontMatchingMetrics>(
       IsInMainFrame(), UkmRecorder(), UkmSourceID());
   return font_matching_metrics_.get();
-}
-
-void Document::InitSecurityContext(const DocumentInit& initializer) {
-  // If the CSP was provided by the DocumentLoader or is from ImportsController
-  // it doesn't need to be bound right now. ImportsController takes a reference
-  // to a tree_root document's CSP which is already bound. Document construction
-  // occurs in the DocumentLoader occurs before the frame reference is bound so
-  // callbacks from binding the CSP delegate immediately would not get called
-  // if it was bound immediately. eg. Callbacks back to browser or console
-  // logging.
-  if (!initializer.HasSecurityContext()) {
-    // No source for a security context.
-    // This can occur via document.implementation.createDocument().
-    cookie_url_ = KURL(g_empty_string);
-    return;
-  }
-  GetSecurityContext().SetInsecureRequestPolicy(
-      initializer.GetInsecureRequestPolicy());
-  if (initializer.InsecureNavigationsToUpgrade()) {
-    for (auto to_upgrade : *initializer.InsecureNavigationsToUpgrade())
-      GetSecurityContext().AddInsecureNavigationUpgrade(to_upgrade);
-  }
-
-  cookie_url_ = initializer.GetCookieUrl();
-
-  GetSecurityContext().SetAddressSpace(initializer.GetIPAddressSpace());
 }
 
 bool Document::AllowInlineEventHandler(Node* node,
@@ -7205,7 +7155,8 @@ void Document::InitDNSPrefetch() {
   have_explicitly_disabled_dns_prefetch_ = false;
   is_dns_prefetch_enabled_ =
       settings && settings->GetDNSPrefetchingEnabled() &&
-      GetSecurityContext().GetSecurityOrigin()->Protocol() == "http";
+      dom_window_->GetSecurityContext().GetSecurityOrigin()->Protocol() ==
+          "http";
 
   // Inherit DNS prefetch opt-out from parent frame
   if (Document* parent = ParentDocument()) {
@@ -8087,7 +8038,6 @@ StylePropertyMapReadOnly* Document::RemoveComputedStyleMapItem(
 }
 
 void Document::Trace(Visitor* visitor) const {
-  visitor->Trace(security_context_);
   visitor->Trace(imports_controller_);
   visitor->Trace(use_counter_during_construction_);
   visitor->Trace(doc_type_);

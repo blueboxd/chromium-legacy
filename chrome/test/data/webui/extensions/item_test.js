@@ -88,6 +88,7 @@ extension_item_tests.TestNames = {
   EnableToggle: 'Enable toggle is disabled when necessary',
   RemoveButton: 'remove button hidden when necessary',
   HtmlInName: 'html in extension name',
+  RepairButton: 'Repair button visibility',
 };
 
 suite(extension_item_tests.suiteName, function() {
@@ -145,6 +146,12 @@ suite(extension_item_tests.suiteName, function() {
         flush();
         testVisible(item, '#dev-reload-button', false);
 
+        item.set('data.disableReasons.reloading', true);
+        flush();
+        testVisible(item, '#dev-reload-button', true);
+
+        item.set('data.disableReasons.reloading', false);
+        flush();
         item.set(
             'data.state', chrome.developerPrivate.ExtensionState.TERMINATED);
         flush();
@@ -388,5 +395,24 @@ suite(extension_item_tests.suiteName, function() {
     // "Related to $1" is IDS_MD_EXTENSIONS_EXTENSION_A11Y_ASSOCIATION.
     assertEquals(
         `Related to ${name}`, item.$.a11yAssociation.textContent.trim());
+  });
+
+  test(assert(extension_item_tests.TestNames.RepairButton), function() {
+    // For most extensions, the "repair" button should be displayed if the
+    // extension is detected as corrupted.
+    testVisible(item, '#repair-button', false);
+    item.set('data.disableReasons.corruptInstall', true);
+    flush();
+    testVisible(item, '#repair-button', true);
+    item.set('data.disableReasons.corruptInstall', false);
+    flush();
+    testVisible(item, '#repair-button', false);
+
+    // However, the user isn't allowed to initiate a repair for extensions they
+    // aren't allowed to modify, so the button shouldn't be visible.
+    item.set('data.userMayModify', false);
+    item.set('data.disableReasons.corruptInstall', true);
+    flush();
+    testVisible(item, '#repair-button', false);
   });
 });

@@ -23,13 +23,10 @@ NullExecutionContext::NullExecutionContext(
     : ExecutionContext(
           v8::Isolate::GetCurrent(),
           MakeGarbageCollected<Agent>(v8::Isolate::GetCurrent(),
-                                      base::UnguessableToken::Null())),
-      security_context_(
-          SecurityContextInit(nullptr /* origin */, origin_trial_context),
+                                      base::UnguessableToken::Null()),
           SecurityContext::kWindow),
       scheduler_(scheduler::CreateDummyFrameScheduler()) {
-  if (origin_trial_context)
-    origin_trial_context->BindExecutionContext(this);
+  Initialize(SecurityContextInit(nullptr /* origin */, origin_trial_context));
 }
 
 NullExecutionContext::~NullExecutionContext() {}
@@ -53,11 +50,6 @@ scoped_refptr<base::SingleThreadTaskRunner> NullExecutionContext::GetTaskRunner(
 
 BrowserInterfaceBrokerProxy& NullExecutionContext::GetBrowserInterfaceBroker() {
   return GetEmptyBrowserInterfaceBroker();
-}
-
-void NullExecutionContext::Trace(Visitor* visitor) const {
-  visitor->Trace(security_context_);
-  ExecutionContext::Trace(visitor);
 }
 
 }  // namespace blink

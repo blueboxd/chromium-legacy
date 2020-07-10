@@ -16,6 +16,7 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
     window.EventType = chrome.automation.EventType;
     window.RoleType = chrome.automation.RoleType;
     window.doCmd = this.doCmd;
+    window.doGesture = this.doGesture;
     window.simulateHitTestResult = this.simulateHitTestResult;
     window.press = this.press;
     window.Mod = constants.ModifierFlag;
@@ -41,6 +42,12 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
   doCmd(cmd) {
     return function() {
       CommandHandler.onCommand(cmd);
+    };
+  }
+
+  doGesture(gesture) {
+    return () => {
+      GestureCommandHandler.onAccessibilityGesture_(gesture);
     };
   }
 
@@ -1739,11 +1746,6 @@ TEST_F('ChromeVoxBackgroundTest', 'GestureGranularity', function() {
     <button>world</button>
   `,
       function(root) {
-        const doGesture = (gesture) => {
-          return () => {
-            GestureCommandHandler.onAccessibilityGesture_(gesture);
-          };
-        };
         mockFeedback.call(doGesture('swipeLeft3'))
             .expectSpeech('Word')
             .call(doGesture('swipeDown1'))
@@ -2707,4 +2709,29 @@ TEST_F('ChromeVoxBackgroundTest', 'TimeDateCommand', function() {
         .expectBraille(/(AM|PM)*(2)/)
         .replay();
   });
+});
+
+TEST_F('ChromeVoxBackgroundTest', 'SwipeToScrollByPage', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+      `
+    <p style="font-size: 200pt">This is a test</p>
+    <p style="font-size: 200pt">This is a test</p>
+    <p style="font-size: 200pt">This is a test</p>
+    <p style="font-size: 200pt">This is a test</p>
+    <p style="font-size: 200pt">This is a test</p>
+    <p style="font-size: 200pt">This is a test</p>
+    <p style="font-size: 200pt">This is a test</p>
+  `,
+      function(root) {
+        mockFeedback.call(doGesture('swipeUp3'))
+            .expectSpeech(/Page 2 of/)
+            .call(doGesture('swipeUp3'))
+            .expectSpeech(/Page 3 of/)
+            .call(doGesture('swipeDown3'))
+            .expectSpeech(/Page 2 of/)
+            .call(doGesture('swipeDown3'))
+            .expectSpeech(/Page 1 of/)
+            .replay();
+      });
 });

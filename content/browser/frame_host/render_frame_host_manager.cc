@@ -44,6 +44,7 @@
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/frame_messages.h"
+#include "content/common/navigation_params_utils.h"
 #include "content/common/page_messages.h"
 #include "content/common/unfreezable_frame_messages.h"
 #include "content/common/view_messages.h"
@@ -2359,12 +2360,8 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
   // Account for renderer-initiated reload as well.
   // Needed as a workaround for https://crbug.com/1045524, remove it when it is
   // fixed.
-  bool is_reload = request->common_params().navigation_type ==
-                       mojom::NavigationType::RELOAD ||
-                   request->common_params().navigation_type ==
-                       mojom::NavigationType::RELOAD_BYPASSING_CACHE ||
-                   request->common_params().navigation_type ==
-                       mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL;
+  bool is_reload =
+      NavigationTypeUtils::IsReload(request->common_params().navigation_type);
 
   scoped_refptr<SiteInstance> dest_site_instance = GetSiteInstanceForNavigation(
       request->common_params().url, request->GetSourceSiteInstance(),

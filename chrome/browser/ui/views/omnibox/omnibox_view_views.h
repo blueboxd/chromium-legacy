@@ -325,13 +325,6 @@ class OmniboxViewViews : public OmniboxView,
   // steady-state elisions).  |gesture| is the user gesture causing unelision.
   bool UnapplySteadyStateElisions(UnelisionGesture gesture);
 
-  // Informs if text and UI direction match (otherwise what "at end" means must
-  // flip.)
-  bool TextAndUIDirectionMatch() const;
-
-  // Like SelectionAtEnd(), but accounts for RTL.
-  bool DirectionAwareSelectionAtEnd() const;
-
 #if defined(OS_MACOSX)
   void AnnounceFriendlySuggestionText();
 #endif

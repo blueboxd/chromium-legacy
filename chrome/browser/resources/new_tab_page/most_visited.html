@@ -236,7 +236,7 @@
 </div>
 <cr-toast id="toast" duration="10000">
   <div>[[toastContent_]]</div>
-  <dom-if if="showToastButtons_">
+  <dom-if if="[[showToastButtons_]]">
     <template>
       <cr-button id="undo" aria-label="$i18n{undoDescription}"
           on-click="onUndoClick_">

@@ -19,8 +19,6 @@
 #include "device/bluetooth/dbus/bluetooth_gatt_service_client.h"
 #include "device/bluetooth/dbus/bluetooth_input_client.h"
 #include "device/bluetooth/dbus/bluetooth_le_advertising_manager_client.h"
-#include "device/bluetooth/dbus/bluetooth_media_client.h"
-#include "device/bluetooth/dbus/bluetooth_media_transport_client.h"
 #include "device/bluetooth/dbus/bluetooth_profile_manager_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_agent_manager_client.h"
@@ -32,8 +30,6 @@
 #include "device/bluetooth/dbus/fake_bluetooth_gatt_service_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_input_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_le_advertising_manager_client.h"
-#include "device/bluetooth/dbus/fake_bluetooth_media_client.h"
-#include "device/bluetooth/dbus/fake_bluetooth_media_transport_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_profile_manager_client.h"
 
 namespace bluez {
@@ -50,9 +46,6 @@ BluetoothDBusClientBundle::BluetoothDBusClientBundle(bool use_fakes)
         BluetoothDebugManagerClient::Create());
     bluetooth_device_client_.reset(BluetoothDeviceClient::Create());
     bluetooth_input_client_.reset(BluetoothInputClient::Create());
-    bluetooth_media_client_.reset(BluetoothMediaClient::Create());
-    bluetooth_media_transport_client_.reset(
-        BluetoothMediaTransportClient::Create());
     bluetooth_profile_manager_client_.reset(
         BluetoothProfileManagerClient::Create());
     bluetooth_gatt_characteristic_client_.reset(
@@ -72,9 +65,6 @@ BluetoothDBusClientBundle::BluetoothDBusClientBundle(bool use_fakes)
     bluetooth_debug_manager_client_.reset(new FakeBluetoothDebugManagerClient);
     bluetooth_device_client_.reset(new FakeBluetoothDeviceClient);
     bluetooth_input_client_.reset(new FakeBluetoothInputClient);
-    bluetooth_media_client_.reset(new FakeBluetoothMediaClient);
-    bluetooth_media_transport_client_.reset(
-        new FakeBluetoothMediaTransportClient);
     bluetooth_profile_manager_client_.reset(
         new FakeBluetoothProfileManagerClient);
     bluetooth_gatt_characteristic_client_.reset(

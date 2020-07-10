@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <iostream>
 #include <list>
+#include <sstream>
 #include <tuple>
 #include <unordered_map>
 
@@ -14,6 +15,21 @@
 #include "tools/binary_size/libsupersize/caspian/function_signature.h"
 
 namespace caspian {
+
+Container::Container(const std::string& name_in) : name(name_in) {}
+Container::~Container() = default;
+Container::Container(const Container& other) = default;
+
+// static
+void Container::AssignShortNames(std::vector<Container>* containers) {
+  for (size_t i = 0; i < containers->size(); ++i) {
+    Container& c = (*containers)[i];
+    std::ostringstream oss;
+    if (!c.name.empty())
+      oss << i;
+    c.short_name = oss.str();
+  }
+}
 
 BaseSymbol::~BaseSymbol() = default;
 
@@ -85,6 +101,9 @@ SectionId Symbol::Section() const {
   return section_id_;
 }
 
+const char* Symbol::ContainerName() const {
+  return container_->name.c_str();
+}
 const char* Symbol::ObjectPath() const {
   return object_path_;
 }
@@ -185,6 +204,10 @@ const std::vector<Symbol*>* DeltaSymbol::Aliases() const {
 
 SectionId DeltaSymbol::Section() const {
   return (after_ ? after_ : before_)->Section();
+}
+
+const char* DeltaSymbol::ContainerName() const {
+  return (after_ ? after_ : before_)->ContainerName();
 }
 
 const char* DeltaSymbol::ObjectPath() const {
@@ -329,6 +352,7 @@ void TreeNode::WriteIntoJson(
     bool method_count_mode,
     Json::Value* out) {
   if (symbol) {
+    (*out)["container"] = std::string(symbol->ContainerName());
     (*out)["helpme"] = std::string(symbol->Name());
     (*out)["idPath"] = std::string(symbol->TemplateName());
     (*out)["fullName"] = std::string(symbol->FullName());
@@ -343,7 +367,6 @@ void TreeNode::WriteIntoJson(
     }
   } else {
     (*out)["idPath"] = id_path.ToString();
-
     if (!is_sparse && !children.empty()) {
       // Add tag to containers in which all child symbols were added/removed.
       DiffStatus diff_status = node_stats.GetGlobalDiffStatus();
@@ -360,7 +383,6 @@ void TreeNode::WriteIntoJson(
   SectionId biggest_section = node_stats.ComputeBiggestSection();
   type += static_cast<char>(biggest_section);
   (*out)["type"] = type;
-
   (*out)["size"] = size;
   (*out)["flags"] = flags;
   node_stats.WriteIntoJson(method_count_mode, &(*out)["childStats"]);
@@ -371,7 +393,6 @@ void TreeNode::WriteIntoJson(
     // sending thousands of children and grandchildren to renderer.
     depth = 0;
   }
-
   if (depth < 0 && children.size() > 1) {
     (*out)["children"] = Json::Value();  // null
   } else {

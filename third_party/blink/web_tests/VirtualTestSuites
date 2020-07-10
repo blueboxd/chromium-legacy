@@ -525,18 +525,18 @@
   },
   {
     "prefix": "controls-refresh-hc",
-    "bases": ["virtual/controls-refresh/color-scheme"],
-    "args": ["--enable-features=FormControlsRefresh,ForcedColors",
+    "bases": ["fast/forms/color-scheme"],
+    "args": ["--enable-features=ForcedColors",
              "--force-high-contrast"]
   },
   {
     "prefix": "eye-dropper",
-    "bases": ["virtual/controls-refresh/color-scheme/color"],
-    "args": ["--enable-features=FormControlsRefresh,EyeDropper"]
+    "bases": ["fast/forms/color-scheme/color"],
+    "args": ["--enable-features=EyeDropper"]
   },
   {
     "prefix": "use-common-select-popup",
-    "bases": ["virtual/controls-refresh/color-scheme/select"],
+    "bases": ["fast/forms/color-scheme/select"],
     "args": ["--enable-features=UseCommonSelectPopup"]
   },
   {

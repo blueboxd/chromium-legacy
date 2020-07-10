@@ -138,6 +138,7 @@ if (is_android) {
     deps = [
       "//base:base_java",
       "//base:jni_java",
+      "//third_party/android_deps:androidx_annotation_annotation_java",
     ]
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   }
@@ -146,6 +147,8 @@ if (is_android) {
     sources = [ "android/java/src/org/chromium/url/Origin.java" ]
     deps = [
       "//base:base_java",
+      "//mojo/public/java:bindings_java",
+      "//mojo/public/mojom/base:base_java",
       "//url/mojom:url_mojom_origin_java",
     ]
   }

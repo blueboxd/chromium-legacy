@@ -15,67 +15,60 @@ using GeneratedCode = QRCodeGenerator::GeneratedCode;
 using QRVersionInfo = QRCodeGenerator::QRVersionInfo;
 
 namespace {
+
 // Default version five QR Code.
 constexpr int kVersionDefault = 5;
 // Extended-length QR code version used by service.
 constexpr int kVersionExtended = 7;
-// Threshold for switching between the two supported versions.
-constexpr int kLargeVersionThresholdLength = 84;
-}  // namespace
 
-// TODO(skare): tracking some items to resolve before submit in this block.
-//  - In the QRVersionInfo comment, "Error correction group" may not be a formal
-//  term in the spec. OK?
-//    if so, change naming: Group 0/1 -> Group 1/2 (1-based indexing).
 constexpr QRCodeGenerator::QRVersionInfo version_infos[] = {
-    // Version data is specified as:
-    //   version, size, total_bytes.
-    // Error correction Group 0 [see Table 9]
-    //   group_bytes, num_segments, segment_data_bytes
-    // Error correction Group 1
-    // [may not apply for all versions, in which case num_segments is 0]
-    //   group_bytes, num_segments, segment_data_bytes
-    // total_bytes for the overall code, and {num_segments, segment_data_bytes}
-    // or each group are available on table 9, page 38 of the spec.
-    // group_bytes may be calculated as num_segments*c from the table.
+    // See table 9 in the spec for the source of these numbers.
 
     // 5-M
     // 134 bytes, as 2 segments of 67.
-    {5, 37, 134, 134, 2, 43, 0, 0, 0},
+    {
+        5,   // version
+        37,  // size (num tiles in each axis)
+
+        // Block group 1:
+        134,  // Total bytes in group
+        2,    // Number of blocks
+        43,   // Data bytes per block
+
+        // Block group 2:
+        0,
+        0,
+        0,
+    },
 
     // 7-M
     // 196 bytes, as 4 segments of 49.
-    {7, 45, 196, 196, 4, 31, 0, 0, 0},
+    {
+        7,   // version
+        45,  // size (num tiles in each axis)
+
+        // Block group 1:
+        196,  // Total bytes in group
+        4,    // Number of blocks
+        31,   // Data bytes per block
+
+        // Block group 2:
+        0,
+        0,
+        0,
+    },
 };
 
-// static
-const QRVersionInfo* QRCodeGenerator::GetVersionInfo(int version) {
-  for (unsigned int i = 0; i < base::size(version_infos); i++) {
-    if (version_infos[i].version == version)
-      return &version_infos[i];
+const QRVersionInfo* GetVersionForDataSize(size_t num_data_bytes) {
+  for (const auto& version : version_infos) {
+    if (version.input_bytes() >= num_data_bytes) {
+      return &version;
+    }
   }
-  NOTREACHED() << "No version info found for v" << version;
   return nullptr;
 }
 
-// Static assertions for constraints for commonly-used versions.
-static_assert(version_infos[0].num_segments != 0 &&
-                  version_infos[0].total_bytes %
-                          version_infos[0].num_segments ==
-                      0,
-              "Invalid configuration, version_infos[0]");
-
-static_assert(
-    version_infos[1].total_bytes ==
-        version_infos[1].group_bytes + version_infos[1].group_bytes_1,
-    "Invalid configuration, version_infos[1]. Groups don't sum to total.");
-static_assert(version_infos[1].group_bytes == version_infos[1].segment_bytes() *
-                                                  version_infos[1].num_segments,
-              "Invalid configuration, version_infos[1], group 0.");
-static_assert(version_infos[1].group_bytes_1 ==
-                  version_infos[1].segment_bytes_1() *
-                      version_infos[1].num_segments_1,
-              "Invalid configuration, version_infos[1], group 1.");
+}  // namespace
 
 QRCodeGenerator::QRCodeGenerator() = default;
 
@@ -91,21 +84,17 @@ base::Optional<GeneratedCode> QRCodeGenerator::Generate(
   // We're currently using a minimal set of versions to shrink test surface.
   // When expanding, take care to validate across different platforms and
   // a selection of QR Scanner apps.
-  const QRVersionInfo* version_info =
-      (in.size() <= kLargeVersionThresholdLength)
-          ? GetVersionInfo(kVersionDefault)
-          : GetVersionInfo(kVersionExtended);
+  const QRVersionInfo* const version_info = GetVersionForDataSize(in.size());
+  if (!version_info) {
+    return base::nullopt;
+  }
+
   if (version_info != version_info_) {
     version_info_ = version_info;
     d_ = std::make_unique<uint8_t[]>(version_info_->total_size());
   }
   // Previous data and "set" bits must be cleared.
   memset(d_.get(), 0, version_info_->total_size());
-
-  // Input data is too long for any supported code.
-  if (in.size() > version_info->input_bytes()) {
-    return base::nullopt;
-  }
 
   PutVerticalTiming(6);
   PutHorizontalTiming(6);
@@ -175,22 +164,22 @@ base::Optional<GeneratedCode> QRCodeGenerator::Generate(
   uint8_t prefixed_data[data_bytes];
   int framing_offset_bytes = 0;
   if (version_info->version <= 9) {
-    DCHECK_LT(in.size(), 256u) << "in.size() too large for 8-bit length";
+    DCHECK_LT(in.size(), 0x100u) << "in.size() too large for 8-bit length";
     const uint8_t len8 = static_cast<uint8_t>(in.size());
     prefixed_data[0] = 0x40 | (len8 >> 4);
-    prefixed_data[1] = (len8 << 4);
+    prefixed_data[1] = len8 << 4;
     if (!in.empty()) {
-      prefixed_data[1] |= (in[0] >> 4);
+      prefixed_data[1] |= in[0] >> 4;
     }
     framing_offset_bytes = 2;
   } else if (version_info->version <= 26) {
     DCHECK_LT(in.size(), 0x10000u) << "in.size() too large for 16-bit length";
     const uint16_t len16 = static_cast<uint16_t>(in.size());
     prefixed_data[0] = 0x40 | (len16 >> 12);
-    prefixed_data[1] = (len16 >> 4);
-    prefixed_data[2] = (len16 << 4);
+    prefixed_data[1] = len16 >> 4;
+    prefixed_data[2] = len16 << 4;
     if (!in.empty()) {
-      prefixed_data[2] |= (in[0] >> 4);
+      prefixed_data[2] |= in[0] >> 4;
     }
     framing_offset_bytes = 3;
   } else {
@@ -248,7 +237,7 @@ base::Optional<GeneratedCode> QRCodeGenerator::Generate(
   }
   */
 
-  size_t total_bytes = version_info_->total_bytes;
+  size_t total_bytes = version_info_->total_bytes();
   uint8_t interleaved_data[total_bytes];
   CHECK(total_bytes ==
         segment_bytes * num_segments + segment_bytes_1 * num_segments_1)

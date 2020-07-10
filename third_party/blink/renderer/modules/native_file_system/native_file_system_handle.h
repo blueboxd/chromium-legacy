@@ -35,6 +35,7 @@ class NativeFileSystemHandle : public ScriptWrappable,
 
   virtual bool isFile() const { return false; }
   virtual bool isDirectory() const { return false; }
+  const char* kind() const { return isFile() ? "file" : "directory"; }
   const String& name() const { return name_; }
 
   ScriptPromise queryPermission(ScriptState*,

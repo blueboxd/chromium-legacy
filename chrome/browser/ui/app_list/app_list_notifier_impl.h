@@ -88,7 +88,8 @@ class OneShotTimer;
 //                     |
 //  kShown -> kShown   | Restart impression timer. Only possible for the app
 //                     | tiles or results list, when the search query is
-//                     | updated.
+//                     | updated. This should not be triggered unless the
+//                     | displayed results change.
 //                     |
 //                     |
 //  kSeen -> kLaunch   | Notify of a launch and immediately set state to kNone,

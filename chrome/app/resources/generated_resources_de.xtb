@@ -316,7 +316,7 @@
 <translation id="1396259464226642517">War dieses Ergebnis unerwartet? <ph name="BEGIN_LINK" />Feedback geben<ph name="END_LINK" /></translation>
 <translation id="1396963298126346194">Der eingegebene Nutzername und das Passwort stimmen nicht überein</translation>
 <translation id="1397500194120344683">Keine geeigneten Geräte vorhanden. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
-<translation id="1398853756734560583">Vergrößern</translation>
+<translation id="1398853756734560583">Maximieren</translation>
 <translation id="139911022479327130">Entsperren Sie Ihr Smartphone, um Ihre Identität zu bestätigen</translation>
 <translation id="1399511500114202393">Kein Nutzerzertifikat</translation>
 <translation id="1401308693935339022">Standort verwenden. Apps und Dienste mit Berechtigung zur Standortermittlung dürfen den Standort dieses Geräts nutzen. Google kann Standortdaten in regelmäßigen Abständen erfassen und diese Daten auf anonyme Weise verwenden, um die Standortgenauigkeit und standortbezogene Dienste zu verbessern.</translation>
@@ -2166,7 +2166,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3688526734140524629">Kanal ändern</translation>
 <translation id="3688578402379768763">Auf dem neusten Stand</translation>
 <translation id="3688794912214798596">Sprachen ändern…</translation>
-<translation id="3690369331356918524">Sie werden gewarnt, wenn Passwörter durch eine Datenpanne preisgegeben werden</translation>
+<translation id="3690369331356918524">Warnt Sie, wenn Passwörter durch eine Datenpanne preisgegeben worden sind</translation>
 <translation id="3691231116639905343">Tastatur-Apps</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> möchte Ihren Bildschirm freigeben</translation>
 <translation id="369135240373237088">Noch einmal mit einem Konto einer Bildungseinrichtung anmelden</translation>
@@ -2580,7 +2580,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4180788401304023883">CA-Zertifikat "<ph name="CERTIFICATE_NAME" />" löschen?</translation>
 <translation id="4181602000363099176">20-fach</translation>
 <translation id="4181841719683918333">Sprachen</translation>
-<translation id="4184885522552335684">Zum Verschieben des Bildschirms ziehen</translation>
+<translation id="4184885522552335684">Ziehen, um einen Bildschirm zu verschieben</translation>
 <translation id="4187424053537113647"><ph name="APP_NAME" /> wird eingerichtet…</translation>
 <translation id="4190828427319282529">Tastaturfokus hervorheben</translation>
 <translation id="4191805472951276951">DLC</translation>
@@ -3217,7 +3217,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5052499409147950210">Website bearbeiten</translation>
 <translation id="5053604404986157245">Das nach dem Zufallsprinzip erzeugte TPM-Passwort ist nicht verfügbar. Dies ist nach einem Powerwash normal.</translation>
 <translation id="5057110919553308744">Wenn die Erweiterung angeklickt wird</translation>
-<translation id="5057403786441168405">Hier können Sie Ihre angemeldeten Konten verwalten. Websites, Apps und Erweiterungen in Chrome und Google Play greifen möglicherweise auf diese Konten zu, um Ihnen – je nach den jeweiligen Berechtigungen – personalisierte Inhalte anzuzeigen. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
+<translation id="5057403786441168405">Hier können Sie Ihre angemeldeten Konten verwalten. Websites, Apps und Erweiterungen in Chrome und Google Play können diese Konten verwenden, um Ihnen – je nach den jeweiligen Berechtigungen – personalisierte Inhalte anzuzeigen. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
 <translation id="5059241099014281248">Anmeldung beschränken</translation>
 <translation id="5060332552815861872">Es ist 1 Drucker verfügbar, der gespeichert werden kann.</translation>
 <translation id="5061347216700970798">{NUM_BOOKMARKS,plural, =1{Dieser Ordner enthält ein Lesezeichen. Möchten Sie ihn wirklich löschen?}other{Dieser Ordner enthält # Lesezeichen. Möchten Sie ihn wirklich löschen?}}</translation>
@@ -3866,7 +3866,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5870155679953074650">Harte Fehler</translation>
 <translation id="5876576639916258720">Wird ausgeführt…</translation>
 <translation id="5876851302954717356">Neuer Tab rechts</translation>
-<translation id="5877064549588274448">Kanal wurde geändert. Starten Sie Ihr Gerät neu, um die Änderungen zu übernehmen.</translation>
+<translation id="5877064549588274448">Kanal geändert. Starten Sie Ihr Gerät neu, um die Änderungen zu übernehmen.</translation>
 <translation id="5877584842898320529">Der ausgewählte Drucker ist entweder nicht verfügbar oder nicht ordnungsgemäß installiert. <ph name="BR" /> Überprüfen Sie den Drucker oder wählen Sie einen anderen Drucker aus.</translation>
 <translation id="5882919346125742463">Bekannte Netzwerke</translation>
 <translation id="5884474295213649357">Dieser Tab ist mit einem USB-Gerät verbunden.</translation>
@@ -3916,7 +3916,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
 <translation id="5941153596444580863">Person hinzufügen...</translation>
 <translation id="5941343993301164315">Melden Sie sich in <ph name="TOKEN_NAME" /> an.</translation>
-<translation id="5941711191222866238">Verkleinern</translation>
+<translation id="5941711191222866238">Minimieren</translation>
 <translation id="5942964813783878922">Ihr <ph name="DEVICE_TYPE" /> wird nach diesem Update neu gestartet. Künftige Software- und Sicherheitsupdates werden automatisch installiert.</translation>
 <translation id="5944869793365969636">QR-Code scannen</translation>
 <translation id="5946591249682680882">Bericht-ID <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
@@ -4071,7 +4071,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6125479973208104919">Sie müssen Ihr Konto dem <ph name="DEVICE_TYPE" /> erneut hinzufügen.</translation>
 <translation id="6129691635767514872">Die ausgewählten Daten wurden aus Chrome und von synchronisierten Geräten entfernt. Ihr Google-Konto weist möglicherweise andere Formen von Browserverläufen wie Suchanfragen und Aktivitäten von anderen Google-Diensten unter <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> auf.</translation>
 <translation id="6129938384427316298">Kommentar zu Netscape-Zertifikaten</translation>
-<translation id="6129953537138746214">Leerzeichen</translation>
+<translation id="6129953537138746214">Leertaste</translation>
 <translation id="6130692320435119637">WLAN hinzufügen</translation>
 <translation id="6136114942382973861">Downloadleiste schließen</translation>
 <translation id="6137767437444130246">Nutzerzertifikat</translation>
@@ -4142,7 +4142,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6231881193380278751">Abfrageparameter in URL zum automatischen Aktualisieren der Seite hinzufügen: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Akku</translation>
 <translation id="6232116551750539448">Verbindung mit <ph name="NAME" /> wurde unterbrochen.</translation>
-<translation id="6233154960150021497">Standardmäßig Sprachsteuerung anstatt Tastatur verwenden</translation>
+<translation id="6233154960150021497">Standardmäßig Spracheingabe anstatt Tastatur verwenden</translation>
 <translation id="6234474535228214774">Installation ausstehend</translation>
 <translation id="6237474966939441970">Notizen-App für Eingabestift</translation>
 <translation id="6237816943013845465">Ermöglicht die Anpassung der Bildschirmauflösung</translation>
@@ -5983,7 +5983,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="85486688517848470">Halten Sie die Suchtaste gedrückt, um die Funktion der Tasten in der obersten Reihe zu ändern</translation>
 <translation id="8551388862522347954">Lizenzen</translation>
 <translation id="8551588720239073785">Datums- und Uhrzeiteinstellungen</translation>
-<translation id="8553342806078037065">Andere Nutzer verwalten</translation>
+<translation id="8553342806078037065">Andere Personen verwalten</translation>
 <translation id="8554899698005018844">Keine Sprache</translation>
 <translation id="8557022314818157177">Berühren Sie mehrmals den Fingerabdrucksensor auf Ihrem Sicherheitsschlüssel, bis der Fingerabdruck gespeichert ist</translation>
 <translation id="855773602626431402">Ein Plug-in ohne Sandbox wurde auf dieser Seite blockiert.</translation>
@@ -6248,7 +6248,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8859174528519900719">Subframe: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8859662783913000679">Elternkonto</translation>
 <translation id="8862003515646449717">Steigen Sie auf einen schnellen Browser um</translation>
-<translation id="8863753581171631212">Link in neuer <ph name="APP" /> öffnen</translation>
+<translation id="8863753581171631212">Link in neuem <ph name="APP" />-Fenster öffnen</translation>
 <translation id="8864055848767439877"><ph name="TAB_NAME" /> wird mit <ph name="APP_NAME" /> geteilt</translation>
 <translation id="8864458770072227512"><ph name="EMAIL" /> wurde von diesem Gerät entfernt</translation>
 <translation id="8867228703146808825">Build-Details in die Zwischenablage kopieren</translation>
@@ -6558,7 +6558,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="964286338916298286">Ihr IT-Administrator hat Chrome-Extras für Ihr Gerät deaktiviert.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Anwendung}other{Anwendungen}}</translation>
 <translation id="964790508619473209">Bildschirmanordnung</translation>
-<translation id="965211523698323809">SMS auf dem <ph name="DEVICE_TYPE" /> senden und empfangen. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
+<translation id="965211523698323809">SMS auf <ph name="DEVICE_TYPE" /> senden und empfangen. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
 <translation id="965237416448221058"><ph name="DOMAIN" /> erfordert, dass Sie ein Backup Ihrer Daten erstellen und dieses Gerät vor Ablauf der Frist zurückgeben.</translation>
 <translation id="967398046773905967">Websites nicht erlauben, auf HID-Geräte zuzugreifen</translation>
 <translation id="967624055006145463">Gespeicherte Daten</translation>

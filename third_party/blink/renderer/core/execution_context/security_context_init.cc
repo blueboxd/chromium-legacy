@@ -54,10 +54,6 @@ DocumentPolicy::ParsedDocumentPolicy FilterByOriginTrial(
 
 }  // namespace
 
-// This is the constructor used by RemoteSecurityContext
-SecurityContextInit::SecurityContextInit()
-    : SecurityContextInit(nullptr, nullptr) {}
-
 // This constructor is used for non-Document contexts (i.e., workers and tests).
 // This does a simpler check than Documents to set secure_context_mode_. This
 // is only sufficient until there are APIs that are available in workers or

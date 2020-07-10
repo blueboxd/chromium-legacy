@@ -224,10 +224,14 @@ std::vector<uint8_t> FastInitiationManager::GenerateFastInitV1Metadata(
                              << 5;
   uint8_t typeConverted = (static_cast<uint8_t>(type) & kTypeBitmask) << 2;
 
+  // Note: We convert this to a positive value before transport to align with
+  // Android's behavior.
+  int8_t powerConverted = -kAdjustedTxPower;
+
   // Note: the last two bits of this first byte correspond to 'uwb_enable' and
   // 'reserved'. The Chrome implementation does not support UWB (Ultra wideband)
   // and the 'reserved' bit is currently unused, so both are left empty.
   metadata.push_back(versionConverted | typeConverted);
-  metadata.push_back(kAdjustedTxPower);
+  metadata.push_back(powerConverted);
   return metadata;
 }

@@ -55,6 +55,24 @@ void AppListNotifierImpl::NotifySearchQueryChanged(
 }
 
 void AppListNotifierImpl::NotifyUIStateChanged(ash::AppListViewState view) {
+  // We should ignore certain view state changes entirely:
+  //
+  //  1. noop transitions from and to the same view. These are caused by some
+  //     UI actions (like dragging the launcher around) that end up back in
+  //     the same location.
+  //
+  //  2. kHalf to kFullscreenSearch. This doesn't change the displayed tile and
+  //     list results.
+  //
+  //  3. kPeeking to kFullscreenAllApps. This doesn't change the displayed
+  //     chip results.
+  if (view_ == view ||
+      (view_ == ash::AppListViewState::kHalf &&
+       view == ash::AppListViewState::kFullscreenSearch) ||
+      (view_ == ash::AppListViewState::kPeeking &&
+       view == ash::AppListViewState::kFullscreenAllApps)) {
+    return;
+  }
   view_ = view;
 
   if (view == ash::AppListViewState::kHalf ||

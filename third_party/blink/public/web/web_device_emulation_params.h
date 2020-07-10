@@ -55,6 +55,9 @@ struct WebDeviceEmulationParams {
   // Screen orientation angle, used together with screenOrientationType.
   int screen_orientation_angle;
 
+  // Screen window segments dimensions.
+  std::vector<gfx::Rect> window_segments;
+
   WebDeviceEmulationParams()
       : screen_position(kDesktop),
         device_scale_factor(0),
@@ -74,7 +77,8 @@ inline bool operator==(const WebDeviceEmulationParams& a,
          a.screen_orientation_type == b.screen_orientation_type &&
          a.screen_orientation_angle == b.screen_orientation_angle &&
          a.viewport_offset == b.viewport_offset &&
-         a.viewport_scale == b.viewport_scale;
+         a.viewport_scale == b.viewport_scale &&
+         a.window_segments == b.window_segments;
 }
 
 inline bool operator!=(const WebDeviceEmulationParams& a,

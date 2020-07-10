@@ -27,10 +27,11 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.sync.SyncTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
@@ -73,8 +74,8 @@ public class OnboardingDialogIntegrationTest {
     public void setUp() {
         mSyncTestRule.setUpAccountAndSignInForTesting();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PrefServiceBridge.getInstance().setInteger(
-                    PASSWORD_MANAGER_ONBOARDING_STATE, SHOULD_SHOW);
+            UserPrefs.get(Profile.getLastUsedRegularProfile())
+                    .setInteger(PASSWORD_MANAGER_ONBOARDING_STATE, SHOULD_SHOW);
         });
         loadTestPage();
     }

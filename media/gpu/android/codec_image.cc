@@ -238,10 +238,6 @@ CodecImage::GetAHardwareBuffer() {
   return output_buffer_renderer_->texture_owner()->GetAHardwareBuffer();
 }
 
-gfx::Rect CodecImage::GetCropRect() {
-  return gfx::Rect();
-}
-
 bool CodecImage::HasMutableState() const {
   return false;
 }

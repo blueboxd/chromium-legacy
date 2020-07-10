@@ -5,6 +5,7 @@
 // clang-format off
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+// #import {assertEquals, assertTrue, assertNotEquals} from '../chai_assert.js';
 // clang-format on
 
 // test-iron-focusable is a native custom element in order to maintain
@@ -42,10 +43,12 @@ customElements.define('test-iron-focusable', class extends HTMLElement {
 
 suite('iron-list-focus-test', function() {
   let testDiv = null;
-  let testIronList = null;
+
+  /** @type {!IronListElement} */
+  let testIronList;
 
   setup(function() {
-    document.body.innerHTML += `
+    document.body.innerHTML = `
       <div id="testDiv">
         <iron-list>
           <template>
@@ -56,19 +59,14 @@ suite('iron-list-focus-test', function() {
       </div>`;
 
     testDiv = document.querySelector('#testDiv');
-    testIronList = document.querySelector('iron-list');
+    testIronList =
+        /** @type {!IronListElement} */ (document.querySelector('iron-list'));
 
     assertTrue(!!testDiv);
     assertTrue(!!testIronList);
 
     testIronList.items = Array(15).fill('item').map((v, i) => `${v}${i}`);
     Polymer.dom.flush();
-  });
-
-  teardown(function() {
-    testDiv.remove();
-    testDiv = null;
-    testIronList = null;
   });
 
   test('test focus is NOT preserved', function() {

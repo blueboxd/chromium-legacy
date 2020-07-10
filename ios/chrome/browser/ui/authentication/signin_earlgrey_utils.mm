@@ -56,7 +56,7 @@
                    return primaryAccountGaiaID.length > 0;
                  }),
              @"Sign in did not complete.");
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  GREYWaitForAppToIdle(@"App failed to idle");
 
   NSString* primaryAccountGaiaID =
       [SigninEarlGreyUtilsAppInterface primaryAccountGaiaID];
@@ -73,7 +73,7 @@
   // Required to avoid any problem since the following test is not dependant to
   // UI, and the previous action has to be totally finished before going through
   // the assert.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  GREYWaitForAppToIdle(@"App failed to idle");
 
   EG_TEST_HELPER_ASSERT_TRUE([SigninEarlGreyUtilsAppInterface isSignedOut],
                              @"Unexpected signed in user");

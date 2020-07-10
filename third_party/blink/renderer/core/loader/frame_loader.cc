@@ -828,7 +828,7 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
   }
 
   const network::mojom::IPAddressSpace initiator_address_space =
-      origin_window ? origin_window->GetSecurityContext().AddressSpace()
+      origin_window ? origin_window->AddressSpace()
                     : network::mojom::IPAddressSpace::kUnknown;
 
   // TODO(crbug.com/896041): Instead of just bypassing the CSP for navigations

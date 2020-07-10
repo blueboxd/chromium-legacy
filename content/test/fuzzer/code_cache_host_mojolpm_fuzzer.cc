@@ -15,9 +15,9 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
-#include "content/browser/code_cache/generated_code_cache_context.h"
-#include "content/browser/renderer_host/code_cache_host_impl.h"
-#include "content/browser/storage_partition_impl_map.h"
+#include "content/browser/code_cache/generated_code_cache_context.h"  // [nogncheck]
+#include "content/browser/renderer_host/code_cache_host_impl.h"  // [nogncheck]
+#include "content/browser/storage_partition_impl_map.h"          // [nogncheck]
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"

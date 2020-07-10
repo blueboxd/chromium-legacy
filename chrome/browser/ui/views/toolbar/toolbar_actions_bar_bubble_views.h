@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/widget/widget_observer.h"
 
 class ToolbarActionsBarBubbleViewsTest;
 
@@ -19,7 +20,8 @@ class Label;
 }
 
 class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
-                                     public views::ButtonListener {
+                                     public views::ButtonListener,
+                                     public views::WidgetObserver {
  public:
   // Creates the bubble anchored to |anchor_view|, which may not be nullptr.
   ToolbarActionsBarBubbleViews(
@@ -31,7 +33,6 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
       delete;
   ~ToolbarActionsBarBubbleViews() override;
 
-  void Show();
   std::string GetAnchorActionId();
 
   const views::Label* body_text() const { return body_text_; }
@@ -49,13 +50,19 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
   // views::BubbleDialogDelegateView:
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
+  void AddedToWidget() override;
+  void RemovedFromWidget() override;
   void Init() override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // views::WidgetObserver:
+  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
+
   std::unique_ptr<ToolbarActionsBarBubbleDelegate> delegate_;
   bool delegate_notified_of_close_ = false;
+  bool observer_notified_of_show_ = false;
   views::Label* body_text_ = nullptr;
   views::Label* item_list_ = nullptr;
   views::ImageButton* learn_more_button_ = nullptr;

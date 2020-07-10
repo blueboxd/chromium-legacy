@@ -4508,7 +4508,7 @@
 <translation id="6706210727756204531">সুযোগ</translation>
 <translation id="6707389671160270963">SSL ক্লায়েন্ট সার্টিফিকেট</translation>
 <translation id="6709002550153567782">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> এবং অন্য ১টি ট্যাব}one{<ph name="PAGE_TITLE" /> এবং অন্য #টি ট্যাব}other{<ph name="PAGE_TITLE" /> এবং অন্য #টি ট্যাব}}</translation>
-<translation id="6709133671862442373">সংবাদ</translation>
+<translation id="6709133671862442373">News</translation>
 <translation id="6709357832553498500"><ph name="EXTENSIONNAME" /> ব্যবহার করে সংযোগ করুন</translation>
 <translation id="6710213216561001401">পূর্ববর্তী</translation>
 <translation id="6715803357256707211">আপনার Linux অ্যাপ ইনস্টল করার সময় কোনও একটি সমস্যা হয়েছে। বিস্তারিত জানতে বিজ্ঞপ্তিতে ক্লিক করুন।</translation>
@@ -5217,7 +5217,7 @@
 <translation id="7609148976235050828">ইন্টারনেটে কানেক্ট করে আবার চেষ্টা করুন।</translation>
 <translation id="7614260613810441905">কোনও সাইট আপনার ডিভাইসে থাকা ফাইল বা ফোল্ডার এডিট করতে চাইলে অনুমতি নিতে বলুন (সাজেস্ট করা হয়েছে)</translation>
 <translation id="761530003705945209">Google Drive-এ ব্যাক-আপ নিন। যেকোনও সময় সহজেই ডেটা রিস্টোর করুন অথবা অন্য ডিভাইস ব্যবহার করুন। আপনার ব্যাক-আপে অ্যাপ ডেটা থাকে। আপনার ব্যাক-আপ ডেটা Google-এ আপলোড করা হয় এবং আপনার Google অ্যাকাউন্টের পাসওয়ার্ড ব্যবহার করে সেগুলিকে এনক্রিপ্ট করা হয়।</translation>
-<translation id="7615365294369022248">অ্যাকাউন্ট যোগ করার সময় সমস্যা হয়েছে</translation>
+<translation id="7615365294369022248">অ্যাকাউন্ট যোগ করার সময় কোনও সমস্যা হয়েছে</translation>
 <translation id="7616214729753637086">ডিভাইস নথিভুক্ত করা হচ্ছে...</translation>
 <translation id="7617263010641145920">Play Store অ্যাপ চালু করুন</translation>
 <translation id="7617366389578322136">"<ph name="DEVICE_NAME" />" এ সংযুক্ত হচ্ছে</translation>
@@ -6483,9 +6483,9 @@
 <translation id="9157096865782046368">০.৮ সেকেন্ড</translation>
 <translation id="9157697743260533322">সকল ব্যবহারকারীর জন্য স্বয়ংক্রিয় আপডেট সেট-আপ পারেনি (প্রিফ্লাইট লঞ্চ ত্রুটি: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">ওহো! যাচাইকরণের সময় একটি নেটওয়ার্ক যোগাযোগ সমস্যা ঘটেছে৷ অনুগ্রহ করে আপনার নেটওয়ার্ক সংযোগ পরীক্ষা করুন এবং আবার চেষ্টা করুন৷</translation>
-<translation id="9159643062839240276">ব্যবহার করে দেখুন:
+<translation id="9159643062839240276">এগুলি করে দেখুন:
     <ph name="BEGIN_LIST" />
-      <ph name="LIST_ITEM" />নেটওয়ার্কের তার, মোডেম, এবং রাউটার পরীক্ষা করুন
+      <ph name="LIST_ITEM" />নেটওয়ার্ক কেবল, মোডেম, এবং রাউটার পরীক্ষা করুন
       <ph name="LIST_ITEM" />ওয়াই-ফাইয়ে আবার কানেক্ট করুন
       <ph name="LIST_ITEM" />Chrome কানেক্টিভিটি ডায়াগনস্টিক চালান
     <ph name="END_LIST" /></translation>

@@ -513,7 +513,7 @@ class ClientManager {
     /**
      * @return The referrer that is associated with the client owning given session.
      */
-    public synchronized Referrer getReferrerForSession(CustomTabsSessionToken session) {
+    public synchronized Referrer getDefaultReferrerForSession(CustomTabsSessionToken session) {
         return IntentHandler.constructValidReferrerForAuthority(
                 getClientPackageNameForSession(session));
     }

@@ -17,6 +17,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/simple_test_clock.h"
@@ -26,14 +27,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "chromeos/constants/chromeos_paths.h"
+#include "chromeos/printing/fake_printer_config_cache.h"
 #include "chromeos/printing/ppd_cache.h"
 #include "chromeos/printing/ppd_metadata_manager.h"
 #include "chromeos/printing/printer_config_cache.h"
 #include "chromeos/printing/printer_configuration.h"
-#include "net/base/net_errors.h"
-#include "net/url_request/url_request_test_util.h"
-#include "services/network/public/cpp/resource_request.h"
-#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -41,9 +39,6 @@ namespace chromeos {
 namespace {
 
 using PrinterDiscoveryType = PrinterSearchData::PrinterDiscoveryType;
-
-// Name of the fake server we're resolving ppds from.
-const char kPpdServer[] = "bogus.google.com";
 
 // A pseudo-ppd that should get cupsFilter lines extracted from it.
 const char kCupsFilterPpdContents[] = R"(
@@ -69,18 +64,24 @@ Yet more randome contents that we don't care about.
 More random contents that we don't care about.
 )";
 
+// Unowned raw pointers to helper classes composed into the
+// PpdProvider at construct time. Used throughout to activate testing
+// codepaths.
+struct PpdProviderComposedMembers {
+  FakePrinterConfigCache* config_cache = nullptr;
+  FakePrinterConfigCache* manager_config_cache = nullptr;
+  PpdMetadataManager* metadata_manager = nullptr;
+};
+
 class PpdProviderTest : public ::testing::Test {
  public:
   PpdProviderTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
-    TurnOffFakePpdServer();
   }
 
   void SetUp() override {
     ASSERT_TRUE(ppd_cache_temp_dir_.CreateUniqueTempDir());
   }
-
-  void TearDown() override { StopFakePpdServer(); }
 
   // Create and return a provider for a test that uses the given |locale|.  If
   // run_cache_on_test_thread is true, we'll run the cache using the
@@ -91,9 +92,6 @@ class PpdProviderTest : public ::testing::Test {
   // and better exercises the code paths under test.
   scoped_refptr<PpdProvider> CreateProvider(const std::string& locale,
                                             bool run_cache_on_test_thread) {
-    auto provider_options = PpdProvider::Options();
-    provider_options.ppd_server_root = std::string("https://") + kPpdServer;
-
     if (run_cache_on_test_thread) {
       ppd_cache_ = PpdCache::CreateForTesting(
           ppd_cache_temp_dir_.GetPath(),
@@ -102,36 +100,28 @@ class PpdProviderTest : public ::testing::Test {
       ppd_cache_ = PpdCache::Create(ppd_cache_temp_dir_.GetPath());
     }
 
-    auto manager_config_cache =
-        PrinterConfigCache::Create(&clock_, base::BindLambdaForTesting([&]() {
-          return reinterpret_cast<network::mojom::URLLoaderFactory*>(
-              &loader_factory_);
-        }));
+    auto manager_config_cache = std::make_unique<FakePrinterConfigCache>();
+    provider_backdoor_.manager_config_cache = manager_config_cache.get();
+
     auto manager = PpdMetadataManager::Create(locale, &clock_,
                                               std::move(manager_config_cache));
-    auto config_cache =
-        PrinterConfigCache::Create(&clock_, base::BindLambdaForTesting([&]() {
-          return reinterpret_cast<network::mojom::URLLoaderFactory*>(
-              &loader_factory_);
-        }));
+    provider_backdoor_.metadata_manager = manager.get();
+
+    auto config_cache = std::make_unique<FakePrinterConfigCache>();
+    provider_backdoor_.config_cache = config_cache.get();
+
     return CreateV3Provider(locale, base::Version("40.8.6753.09"), ppd_cache_,
                             std::move(manager), std::move(config_cache));
   }
 
-  // Fill loader_factory_ with preset contents for test URLs
+  // Fills the fake Chrome OS Printing serving root with content.
+  // Must be called after CreateProvider().
   void StartFakePpdServer() {
-    loader_factory_.ClearResponses();
     for (const auto& entry : server_contents()) {
-      network::URLLoaderCompletionStatus status;
-      if (!entry.second.empty()) {
-        status.decoded_body_length = entry.second.size();
-      } else {
-        status.error_code = net::ERR_ADDRESS_UNREACHABLE;
-      }
-
-      loader_factory_.AddResponse(FileToURL(entry.first),
-                                  network::mojom::URLResponseHead::New(),
-                                  entry.second, status);
+      provider_backdoor_.config_cache->SetFetchResponseForTesting(entry.first,
+                                                                  entry.second);
+      provider_backdoor_.manager_config_cache->SetFetchResponseForTesting(
+          entry.first, entry.second);
     }
   }
 
@@ -143,7 +133,10 @@ class PpdProviderTest : public ::testing::Test {
   //
   // Note this is harmless to call if we haven't started a fake ppd server.
   void StopFakePpdServer() {
-    TurnOffFakePpdServer();
+    for (const auto& entry : server_contents()) {
+      provider_backdoor_.config_cache->Drop(entry.first);
+      provider_backdoor_.manager_config_cache->Drop(entry.first);
+    }
     task_environment_.RunUntilIdle();
   }
 
@@ -192,43 +185,6 @@ class PpdProviderTest : public ::testing::Test {
                          const std::string& contents) {}
 
  protected:
-  // Run a ResolveManufacturers run from the given locale, expect to get
-  // results in expected_used_locale.
-  void RunLocalizationTest(const std::string& browser_locale,
-                           const std::string& expected_used_locale) {
-    captured_resolve_manufacturers_.clear();
-    auto provider = CreateProvider(browser_locale, false);
-    provider->ResolveManufacturers(base::BindOnce(
-        &PpdProviderTest::CaptureResolveManufacturers, base::Unretained(this)));
-    task_environment_.RunUntilIdle();
-    provider = nullptr;
-    ASSERT_EQ(captured_resolve_manufacturers_.size(), 1UL);
-    EXPECT_EQ(captured_resolve_manufacturers_[0].first, PpdProvider::SUCCESS);
-
-    const auto& result_vec = captured_resolve_manufacturers_[0].second;
-
-    // It's sufficient to check for one of the expected locale keys to make sure
-    // we got the right map.
-    EXPECT_TRUE(
-        base::Contains(result_vec, "manufacturer_a_" + expected_used_locale));
-  }
-
-  // Fake server being down, return ERR_ADDRESS_UNREACHABLE for all endpoints
-  void TurnOffFakePpdServer() {
-    loader_factory_.ClearResponses();
-    network::URLLoaderCompletionStatus status(net::ERR_ADDRESS_UNREACHABLE);
-    for (const auto& entry : server_contents()) {
-      loader_factory_.AddResponse(FileToURL(entry.first),
-                                  network::mojom::URLResponseHead::New(), "",
-                                  status);
-    }
-  }
-
-  GURL FileToURL(std::string filename) {
-    return GURL(
-        base::StringPrintf("https://%s/%s", kPpdServer, filename.c_str()));
-  }
-
   // List of relevant endpoint for this FakeServer
   std::vector<std::pair<std::string, std::string>> server_contents() const {
     // Use brace initialization to express the desired server contents as "url",
@@ -370,15 +326,16 @@ class PpdProviderTest : public ::testing::Test {
   // cache-dependent behavior of ppd_provider_.
   scoped_refptr<PpdCache> ppd_cache_;
 
+  PpdProviderComposedMembers provider_backdoor_;
+
   // Misc extra stuff needed for the test environment to function.
   base::SimpleTestClock clock_;
-  network::TestURLLoaderFactory loader_factory_;
 };
 
 // Test that we get back manufacturer maps as expected.
 TEST_F(PpdProviderTest, ManufacturersFetch) {
-  StartFakePpdServer();
   auto provider = CreateProvider("en", false);
+  StartFakePpdServer();
   // Issue two requests at the same time, both should be resolved properly.
   provider->ResolveManufacturers(base::BindOnce(
       &PpdProviderTest::CaptureResolveManufacturers, base::Unretained(this)));
@@ -414,21 +371,11 @@ TEST_F(PpdProviderTest, ManufacturersFetchNoServer) {
   EXPECT_TRUE(captured_resolve_manufacturers_[1].second.empty());
 }
 
-// Test that we get things in the requested locale, and that fallbacks are sane.
-TEST_F(PpdProviderTest, LocalizationAndFallbacks) {
-  StartFakePpdServer();
-  RunLocalizationTest("en-gb", "en-gb");
-  RunLocalizationTest("en-blah", "en");
-  RunLocalizationTest("en-gb-foo", "en-gb");
-  RunLocalizationTest("es", "es-mx");
-  RunLocalizationTest("bogus", "en");
-}
-
 // Tests that mutiples requests for make-and-model resolution can be fulfilled
 // simultaneously.
 TEST_F(PpdProviderTest, RepeatedMakeModel) {
-  StartFakePpdServer();
   auto provider = CreateProvider("en", false);
+  StartFakePpdServer();
 
   PrinterSearchData unrecognized_printer;
   unrecognized_printer.discovery_type = PrinterDiscoveryType::kManual;
@@ -468,8 +415,8 @@ TEST_F(PpdProviderTest, RepeatedMakeModel) {
 
 // Test successful and unsuccessful usb resolutions.
 TEST_F(PpdProviderTest, UsbResolution) {
-  StartFakePpdServer();
   auto provider = CreateProvider("en", false);
+  StartFakePpdServer();
 
   PrinterSearchData search_data;
   search_data.discovery_type = PrinterDiscoveryType::kUsb;
@@ -524,8 +471,8 @@ void ResolveManufacturersNop(PpdProvider::CallbackResultCode code,
 // Test basic ResolvePrinters() functionality.  At the same time, make
 // sure we can get the PpdReference for each of the resolved printers.
 TEST_F(PpdProviderTest, ResolvePrinters) {
-  StartFakePpdServer();
   auto provider = CreateProvider("en", false);
+  StartFakePpdServer();
 
   // Grab the manufacturer list, but don't bother to save it, we know what
   // should be in it and we check that elsewhere.  We just need to run the
@@ -570,8 +517,8 @@ TEST_F(PpdProviderTest, ResolvePrinters) {
 // Test that if we give a bad reference to ResolvePrinters(), we get an
 // INTERNAL_ERROR.
 TEST_F(PpdProviderTest, ResolvePrintersBadReference) {
-  StartFakePpdServer();
   auto provider = CreateProvider("en", false);
+  StartFakePpdServer();
   provider->ResolveManufacturers(base::BindOnce(&ResolveManufacturersNop));
   task_environment_.RunUntilIdle();
 
@@ -586,8 +533,8 @@ TEST_F(PpdProviderTest, ResolvePrintersBadReference) {
 
 // Test that if the server is unavailable, we get SERVER_ERRORs back out.
 TEST_F(PpdProviderTest, ResolvePrintersNoServer) {
-  StartFakePpdServer();
   auto provider = CreateProvider("en", false);
+  StartFakePpdServer();
   provider->ResolveManufacturers(base::BindOnce(&ResolveManufacturersNop));
   task_environment_.RunUntilIdle();
 
@@ -609,8 +556,8 @@ TEST_F(PpdProviderTest, ResolvePrintersNoServer) {
 
 // Test a successful ppd resolution from an effective_make_and_model reference.
 TEST_F(PpdProviderTest, ResolveServerKeyPpd) {
-  StartFakePpdServer();
   auto provider = CreateProvider("en", false);
+  StartFakePpdServer();
   Printer::PpdReference ref;
   ref.effective_make_and_model = "printer_b_ref";
   provider->ResolvePpd(ref, base::BindOnce(&PpdProviderTest::CaptureResolvePpd,
@@ -632,12 +579,12 @@ TEST_F(PpdProviderTest, ResolveServerKeyPpd) {
 // disallowed because we're not sure we completely understand the security
 // implications.
 TEST_F(PpdProviderTest, ResolveUserSuppliedUrlPpdFromNetworkFails) {
-  StartFakePpdServer();
   auto provider = CreateProvider("en", false);
+  StartFakePpdServer();
 
   Printer::PpdReference ref;
-  ref.user_supplied_ppd_url = base::StringPrintf(
-      "https://%s/user_supplied_ppd_directory/user_supplied.ppd", kPpdServer);
+  // TODO(crbug.com/888189): give |ref| a nonempty
+  // |user_supplied_ppd_url|.
   provider->ResolvePpd(ref, base::BindOnce(&PpdProviderTest::CaptureResolvePpd,
                                            base::Unretained(this)));
   task_environment_.RunUntilIdle();
@@ -719,8 +666,8 @@ TEST_F(PpdProviderTest, ResolvedPpdsGetCached) {
 // Test that all entrypoints will correctly work with case-insensitve
 // effective-make-and-model strings.
 TEST_F(PpdProviderTest, CaseInsensitiveMakeAndModel) {
-  StartFakePpdServer();
   auto provider = CreateProvider("en", false);
+  StartFakePpdServer();
   std::string ref = "pRiNteR_A_reF";
 
   Printer::PpdReference ppd_ref;
@@ -760,8 +707,8 @@ TEST_F(PpdProviderTest, CaseInsensitiveMakeAndModel) {
 // determine the name of the PPD license associated with the given effecive make
 // and model (if any).
 TEST_F(PpdProviderTest, ResolvePpdLicense) {
-  StartFakePpdServer();
   auto provider = CreateProvider("en", false);
+  StartFakePpdServer();
 
   // For this effective_make_and_model, we expect that there is associated
   // license.
@@ -789,8 +736,8 @@ TEST_F(PpdProviderTest, ResolvePpdLicense) {
 // Verifies that we can extract the Manufacturer and Model selectison for a
 // given effective make and model.
 TEST_F(PpdProviderTest, ReverseLookup) {
-  StartFakePpdServer();
   auto provider = CreateProvider("en", false);
+  StartFakePpdServer();
   std::string ref = "printer_a_ref";
   provider->ReverseLookup(ref,
                           base::BindOnce(&PpdProviderTest::CaptureReverseLookup,
@@ -843,10 +790,10 @@ TEST_F(PpdProviderTest, FreshCacheHitNoNetworkTraffic) {
 // If we have a stale cache entry and a good network connection, does the cache
 // get refreshed during a resolution?
 TEST_F(PpdProviderTest, StaleCacheGetsRefreshed) {
-  StartFakePpdServer();
   std::string cached_ppd_contents =
       "These cached contents are different from what's being served";
   auto provider = CreateProvider("en", true);
+  StartFakePpdServer();
   // printer_ref_a resolves to kCupsFilterPpdContents on the server.
   std::string expected_ppd = kCupsFilterPpdContents;
   Printer::PpdReference ref;
@@ -928,10 +875,10 @@ TEST_F(PpdProviderTest, StaleCacheGetsUsedIfNetworkFails) {
 // disk if it still exists there.
 TEST_F(PpdProviderTest, UserPpdAlwaysRefreshedIfAvailable) {
   base::ScopedTempDir temp_dir;
-  StartFakePpdServer();
   std::string cached_ppd_contents = "Cached Ppd Contents";
   std::string disk_ppd_contents = "Updated Ppd Contents";
   auto provider = CreateProvider("en", true);
+  StartFakePpdServer();
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath filename = temp_dir.GetPath().Append("my_spiffy.ppd");
 
@@ -971,8 +918,8 @@ TEST_F(PpdProviderTest, UserPpdAlwaysRefreshedIfAvailable) {
 
 // Test resolving usb manufacturer when failed to resolve PpdReference.
 TEST_F(PpdProviderTest, ResolveUsbManufacturer) {
-  StartFakePpdServer();
   auto provider = CreateProvider("en", false);
+  StartFakePpdServer();
 
   PrinterSearchData search_data;
   search_data.discovery_type = PrinterDiscoveryType::kUsb;

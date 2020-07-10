@@ -107,9 +107,6 @@ enum FeaturePolicyFeature {
   // Web Authentication (https://w3c.github.io/webauthn/#sctn-iframe-guidance)
   kPublicKeyCredentialsGet = 67,
 
-  // Controls use of Clipboard API.
-  kClipboard = 68,
-
   //Additional Client Hint
   kClientHintUAMobile = 69,
 
@@ -130,6 +127,12 @@ enum FeaturePolicyFeature {
 
   // cross-origin isolated permission
   kCrossOriginIsolated = 75,
+
+  // Controls use of Clipboard API Read.
+  kClipboardRead = 76,
+
+  // Controls use of Clipboard API Write.
+  kClipboardWrite = 77,
 
   // Don't change assigned numbers of any item, and don't reuse removed slots.
   // Add new features at the end of the enum.

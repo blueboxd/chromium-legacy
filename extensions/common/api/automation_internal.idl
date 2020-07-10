@@ -87,6 +87,19 @@ namespace automationInternal {
     DOMString value;
   };
 
+
+  // Arguments for the scrollToPoint action supplied to performAction.
+  dictionary ScrollToPointParams {
+    long x;
+    long y;
+  };
+
+  // Arguments for the SetScrollOffset action supplied to performAction.
+  dictionary SetScrollOffsetParams {
+    long x;
+    long y;
+  };
+
   // Arguments for the querySelector function.
   dictionary QuerySelectorRequiredParams {
     DOMString treeID;

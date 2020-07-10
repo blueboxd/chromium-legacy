@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "chrome/browser/chromeos/crosapi/select_file_crosapi.h"
 #include "chrome/browser/chromeos/lacros/screen_manager_crosapi.h"
-#include "chrome/browser/chromeos/lacros/select_file_impl.h"
 #include "chromeos/lacros/mojom/screen_manager.mojom.h"
 #include "chromeos/lacros/mojom/select_file.mojom.h"
 
@@ -25,7 +25,8 @@ AshChromeServiceImpl::~AshChromeServiceImpl() = default;
 
 void AshChromeServiceImpl::BindSelectFile(
     mojo::PendingReceiver<lacros::mojom::SelectFile> receiver) {
-  select_file_impl_ = std::make_unique<SelectFileImpl>(std::move(receiver));
+  select_file_crosapi_ =
+      std::make_unique<SelectFileCrosapi>(std::move(receiver));
 }
 
 void AshChromeServiceImpl::BindScreenManager(

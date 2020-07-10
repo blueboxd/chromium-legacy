@@ -41,6 +41,15 @@ blink::WebScreenOrientationType WebScreenOrientationTypeFromString(
   return blink::kWebScreenOrientationUndefined;
 }
 
+base::Optional<content::DisplayFeature::Orientation>
+DisplayFeatureOrientationTypeFromString(const std::string& type) {
+  if (type == Emulation::DisplayFeature::OrientationEnum::Vertical)
+    return content::DisplayFeature::Orientation::kVertical;
+  if (type == Emulation::DisplayFeature::OrientationEnum::Horizontal)
+    return content::DisplayFeature::Orientation::kHorizontal;
+  return base::nullopt;
+}
+
 ui::GestureProviderConfigType TouchEmulationConfigurationToType(
     const std::string& protocol_value) {
   ui::GestureProviderConfigType result =
@@ -182,7 +191,8 @@ Response EmulationHandler::SetDeviceMetricsOverride(
     Maybe<int> position_y,
     Maybe<bool> dont_set_visible_size,
     Maybe<Emulation::ScreenOrientation> screen_orientation,
-    Maybe<protocol::Page::Viewport> viewport) {
+    Maybe<protocol::Page::Viewport> viewport,
+    Maybe<protocol::Emulation::DisplayFeature> displayFeature) {
   const static int max_size = 10000000;
   const static double max_scale = 10;
   const static int max_orientation_angle = 360;
@@ -235,6 +245,41 @@ Response EmulationHandler::SetDeviceMetricsOverride(
     }
   }
 
+  base::Optional<content::DisplayFeature> display_feature = base::nullopt;
+  if (displayFeature.isJust()) {
+    protocol::Emulation::DisplayFeature* emu_display_feature =
+        displayFeature.fromJust();
+    base::Optional<content::DisplayFeature::Orientation> disp_orientation =
+        DisplayFeatureOrientationTypeFromString(
+            emu_display_feature->GetOrientation());
+    if (!disp_orientation) {
+      return Response::InvalidParams(
+          "Invalid display feature orientation type");
+    }
+    content::DisplayFeature::ParamErrorEnum error;
+    display_feature = content::DisplayFeature::Create(
+        *disp_orientation, emu_display_feature->GetOffset(),
+        emu_display_feature->GetMaskLength(), width, height, &error);
+
+    if (!display_feature) {
+      switch (error) {
+        case content::DisplayFeature::ParamErrorEnum::
+            kDisplayFeatureWithZeroScreenSize:
+          return Response::InvalidParams(
+              "Cannot specify a display feature with zero width and height");
+        case content::DisplayFeature::ParamErrorEnum::
+            kNegativeDisplayFeatureParams:
+          return Response::InvalidParams("Negative display feature parameters");
+        case content::DisplayFeature::ParamErrorEnum::kOutsideScreenWidth:
+          return Response::InvalidParams(
+              "Display feature window segments outside screen width");
+        case content::DisplayFeature::ParamErrorEnum::kOutsideScreenHeight:
+          return Response::InvalidParams(
+              "Display feature window segments outside screen height");
+      }
+    }
+  }
+
   blink::WebDeviceEmulationParams params;
   params.screen_position = mobile ? blink::WebDeviceEmulationParams::kMobile
                                   : blink::WebDeviceEmulationParams::kDesktop;
@@ -249,6 +294,11 @@ Response EmulationHandler::SetDeviceMetricsOverride(
   params.scale = scale.fromMaybe(1);
   params.screen_orientation_type = orientationType;
   params.screen_orientation_angle = orientationAngle;
+
+  if (display_feature) {
+    params.window_segments =
+        display_feature->ComputeWindowSegments(params.view_size);
+  }
 
   if (viewport.isJust()) {
     params.viewport_offset.SetPoint(viewport.fromJust()->GetX(),

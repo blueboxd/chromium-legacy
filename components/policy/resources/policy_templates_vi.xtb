@@ -331,7 +331,7 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
 
       Nếu bạn không đặt chính sách này, thì <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" /> (nếu được đặt) sẽ được áp dụng. Nếu không, tùy chọn cài đặt cá nhân của người dùng sẽ được áp dụng.
 
-      Các mẫu URL trong chính sách này không được xung đột với các mẫu URL đã định cấu hình thông qua <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" />. Nếu có sự xung đột, chính sách này sẽ được ưu tiên hơn <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" /> và <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" />.
+      Các mẫu URL trong chính sách này không được xung đột với những mẫu URL đã định cấu hình thông qua <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" />. Nếu có xung đột, chính sách này sẽ được ưu tiên hơn <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" /> và <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" />.
 
       Các giá trị của chính sách này và <ph name="DEVICE_WEB_USB_ALLOW_DEVICES_FOR_URLS_POLICY_NAME" /> sẽ được hợp nhất.</translation>
 <translation id="1599424828227887013">Bật tính năng Cách ly trang web cho nguồn gốc đã chỉ định trên thiết bị Android</translation>

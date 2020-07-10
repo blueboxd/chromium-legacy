@@ -182,7 +182,7 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 
   // Wait for UI to finish loading screen, before programatically verifying
   // accessibility.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 }
 

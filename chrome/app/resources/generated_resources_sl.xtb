@@ -6489,9 +6489,9 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="9158715103698450907">Ojej!  Težava z omrežno komunikacijo med preverjanjem pristnosti.  Preverite omrežno povezavo in poskusite znova.</translation>
 <translation id="9159643062839240276">Poskusite to:
     <ph name="BEGIN_LIST" />
-      <ph name="LIST_ITEM" />Preverite omrežne kable, modem in usmerjevalnik
-      <ph name="LIST_ITEM" />Znova vzpostavite povezavo z omrežjem Wi-Fi
-      <ph name="LIST_ITEM" />Zaženite Chromovo diagnostiko povezav
+      <ph name="LIST_ITEM" />preverite omrežne kable, modem in usmerjevalnik;
+      <ph name="LIST_ITEM" />znova vzpostavite povezavo z omrežjem Wi-Fi;
+      <ph name="LIST_ITEM" />zaženite Chromovo diagnostiko povezav.
     <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Slika v sliki</translation>
 <translation id="9168436347345867845">Pozneje</translation>

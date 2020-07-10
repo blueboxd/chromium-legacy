@@ -1,5 +1,4 @@
 include_rules = [
-  "+components/cryptauth",
   "+components/gcm_driver",
   "+components/proximity_auth/logging",
   "+components/signin/public",

@@ -69,6 +69,7 @@ class GPU_GLES2_EXPORT SharedImageRepresentation {
   const gfx::Size& size() const { return backing_->size(); }
   const gfx::ColorSpace& color_space() const { return backing_->color_space(); }
   uint32_t usage() const { return backing_->usage(); }
+  const gpu::Mailbox& mailbox() const { return backing_->mailbox(); }
   MemoryTypeTracker* tracker() { return tracker_; }
   bool IsCleared() const { return backing_->IsCleared(); }
   void SetCleared() { backing_->SetCleared(); }

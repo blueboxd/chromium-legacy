@@ -18,7 +18,7 @@
 <translation id="1306549533752902673">EMPFOHLENE APPS</translation>
 <translation id="1368832886055348810">Rechtsläufig</translation>
 <translation id="1383876407941801731">Suchen</translation>
-<translation id="1398853756734560583">Vergrößern</translation>
+<translation id="1398853756734560583">Maximieren</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, installierte App</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> kann nicht geteilt werden</translation>
 <translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> und <ph name="SECOND_ITEM_TITLE" /> haben die Plätze getauscht</translation>
@@ -148,13 +148,13 @@
 <translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{in 1 J.}other{in # J.}}</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 Sekunde übrig}other{# Sekunden übrig}}</translation>
-<translation id="5941711191222866238">Verkleinern</translation>
+<translation id="5941711191222866238">Minimieren</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 Stunde}other{# Stunden}}</translation>
 <translation id="6012623610530968780">Seite <ph name="SELECTED_PAGE" /> von <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Text im Suchfeld löschen</translation>
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="6119846243427417423">aktivieren</translation>
-<translation id="6129953537138746214">Leerzeichen</translation>
+<translation id="6129953537138746214">Leertaste</translation>
 <translation id="6134259848159370930">Auf Ihrem Gerät, in Apps, Einstellungen und im Web suchen.</translation>
 <translation id="6135826906199951471">Entf</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> Byte/s</translation>

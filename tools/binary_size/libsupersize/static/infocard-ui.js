@@ -74,37 +74,37 @@ const displayInfocard = (() => {
     }
 
     /**
-     * Updates the path text, which shows the idPath for directory nodes, and
-     * srcPath / component for symbol nodes.
+     * Updates the details text, which shows the idPath for directory nodes, or
+     * {container (if nonempty), srcPath, component, fullName} for symbol nodes.
      * @param {TreeNode} node
      */
-    _updatePaths(node) {
-      let pathFragment;
+    _updateDetails(node) {
+      // List of window.Nodes, but called |elements| to avoid confusion.
+      const elements = [];
+
       // srcPath is set only for leaf nodes.
       if (node.srcPath) {
-        pathFragment = dom.createFragment([
-            dom.textElement('span', 'Path: ', 'symbol-name-info'),
-            document.createTextNode(node.srcPath),
-            document.createElement('br'),
-            dom.textElement('span', 'Component: ', 'symbol-name-info'),
-            document.createTextNode(node.component || '(No component)'),
-            document.createElement('br'),
-            dom.textElement('span', 'Full Name: ', 'symbol-name-info'),
-            document.createTextNode(node.fullName || ''),
-            document.createElement('br'),
-        ]);
+        const add_field = (title, text) => {
+          const div = document.createElement('div');
+          div.appendChild(dom.textElement('span', title, 'symbol-name-info'));
+          div.appendChild(document.createTextNode(text));
+          elements.push(div);
+        };
+        if (node.container !== '') add_field('Container: ', node.container);
+        add_field('Path: ', node.srcPath);
+        add_field('Component: ', node.component || '(No component)');
+        add_field('Full Name: ', node.fullName || '');
+
       } else {
         const path = node.idPath.slice(0, node.shortNameIndex);
+        elements.push(document.createTextNode(path));
         const boldShortName = dom.textElement(
             'span', node.fullName || shortName(node), 'symbol-name-info');
-        pathFragment = dom.createFragment([
-          document.createTextNode(path),
-          boldShortName,
-        ]);
+        elements.push(boldShortName);
       }
 
-      // Update DOM
-      dom.replace(this._pathInfo, pathFragment);
+      // Update DOM.
+      dom.replace(this._pathInfo, dom.createFragment(elements));
     }
 
     /**
@@ -158,7 +158,7 @@ const displayInfocard = (() => {
 
       // Update DOM
       this._updateSize(node);
-      this._updatePaths(node);
+      this._updateDetails(node);
       if (type !== this._lastType) {
         // No need to create a new icon if it is identical.
         const icon = getIconTemplate(type);

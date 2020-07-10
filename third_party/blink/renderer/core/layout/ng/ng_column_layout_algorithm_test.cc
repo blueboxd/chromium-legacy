@@ -4461,8 +4461,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, SpannerWithContent) {
   EXPECT_EQ(expectation, dump);
 }
 
-// TODO(crbug.com/1066617): Fix crash during pre-paint.
-TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_TwoSpannersPercentWidth) {
+TEST_F(NGColumnLayoutAlgorithmTest, TwoSpannersPercentWidth) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -4951,8 +4950,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, MarginAndBorderTopWithSpanner) {
   EXPECT_EQ(expectation, dump);
 }
 
-// TODO(crbug.com/1066617): Fix crash during pre-paint.
-TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_BreakInsideSpannerWithMargins) {
+TEST_F(NGColumnLayoutAlgorithmTest, BreakInsideSpannerWithMargins) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -5419,8 +5417,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, SoftBreakBetweenSpanners2) {
   EXPECT_EQ(expectation, dump);
 }
 
-// TODO(crbug.com/1066617): Fix crash during pre-paint.
-TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_AvoidSoftBreakBetweenSpanners) {
+TEST_F(NGColumnLayoutAlgorithmTest, AvoidSoftBreakBetweenSpanners) {
   // There are three spanners in a nested multicol. The first two could fit in
   // the same outer column, but the third one is too tall, and we also don't
   // want to break before that one.So we should break between the two first
@@ -5456,8 +5453,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_AvoidSoftBreakBetweenSpanners) {
   EXPECT_EQ(expectation, dump);
 }
 
-// TODO(crbug.com/1066617): Fix crash during pre-paint.
-TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_AvoidSoftBreakBetweenSpanners2) {
+TEST_F(NGColumnLayoutAlgorithmTest, AvoidSoftBreakBetweenSpanners2) {
   // There are two spanners in a nested multicol. They won't fit in the same
   // outer column, but we don't want to break inside the second one, and also
   // not between the spanners. The first spanner is breakable, so we should
@@ -5500,8 +5496,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_AvoidSoftBreakBetweenSpanners2) {
   EXPECT_EQ(expectation, dump);
 }
 
-// TODO(crbug.com/1066617): Fix crash during pre-paint.
-TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_AvoidSoftBreakBetweenSpanners3) {
+TEST_F(NGColumnLayoutAlgorithmTest, AvoidSoftBreakBetweenSpanners3) {
   // Violate orphans and widows requests rather than break-between avoidance
   // requests.
   SetBodyInnerHTML(R"HTML(

@@ -182,6 +182,7 @@ export function createExtensionInfo(opt_properties) {
           blockedByPolicy: false,
           custodianApprovalRequired: false,
           parentDisabledPermissions: false,
+          reloading: false,
         },
         homePage: {specified: false, url: ''},
         iconUrl: 'chrome://extension-icon/' + id + '/24/0',

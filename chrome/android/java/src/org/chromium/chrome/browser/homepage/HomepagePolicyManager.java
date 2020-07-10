@@ -18,8 +18,10 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar.PrefObserver;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.user_prefs.UserPrefs;
 
 /**
  * Provides information for the home page related policies.
@@ -38,6 +40,8 @@ public class HomepagePolicyManager implements PrefObserver {
     }
 
     private static HomepagePolicyManager sInstance;
+
+    private static PrefService sPrefServiceForTesting;
 
     private boolean mIsHomepageLocationPolicyEnabled;
     private String mHomepage;
@@ -161,11 +165,11 @@ public class HomepagePolicyManager implements PrefObserver {
 
     private void refresh() {
         assert mIsInitializedWithNative;
-        PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
-        boolean isEnabled = prefServiceBridge.isManagedPreference(Pref.HOME_PAGE);
+        PrefService prefService = getPrefService();
+        boolean isEnabled = prefService.isManagedPreference(Pref.HOME_PAGE);
         String homepage = "";
         if (isEnabled) {
-            homepage = prefServiceBridge.getString(Pref.HOME_PAGE);
+            homepage = prefService.getString(Pref.HOME_PAGE);
             assert homepage != null;
         }
 
@@ -194,6 +198,16 @@ public class HomepagePolicyManager implements PrefObserver {
 
     private static boolean isFeatureFlagEnabled() {
         return CachedFeatureFlags.isEnabled(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY);
+    }
+
+    private PrefService getPrefService() {
+        if (sPrefServiceForTesting != null) return sPrefServiceForTesting;
+        return UserPrefs.get(Profile.getLastUsedRegularProfile());
+    }
+
+    @VisibleForTesting
+    public static void setPrefServiceForTesting(PrefService prefService) {
+        sPrefServiceForTesting = prefService;
     }
 
     @VisibleForTesting

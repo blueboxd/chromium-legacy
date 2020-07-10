@@ -83,8 +83,8 @@ void HTMLLinkElement::ParseAttribute(
         // Show a warning that HTML Imports (<link rel=import>) were detected,
         // but HTML Imports have been disabled. Without this, the failure would
         // be silent.
-        if (auto* context = GetExecutionContext()) {
-          context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        if (LocalDOMWindow* window = GetDocument().ExecutingWindow()) {
+          window->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
               mojom::blink::ConsoleMessageSource::kRendering,
               mojom::blink::ConsoleMessageLevel::kWarning,
               "HTML Imports is deprecated and has now been removed as of "

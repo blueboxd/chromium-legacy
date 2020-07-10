@@ -89,6 +89,7 @@ import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.FinishReason;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.history.BrowsingHistoryBridge;
 import org.chromium.chrome.browser.history.HistoryItem;
@@ -113,6 +114,7 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuTestSupport;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
 import org.chromium.components.embedder_support.util.Origin;
@@ -1176,7 +1178,7 @@ public class CustomTabActivityTest {
         String packageName = context.getPackageName();
         final String referrer =
                 IntentHandler.constructValidReferrerForAuthority(packageName).getUrl();
-        assertEquals(referrer, connection.getReferrerForSession(session).getUrl());
+        assertEquals(referrer, connection.getDefaultReferrerForSession(session).getUrl());
 
         final Tab tab = getActivity().getActivityTab();
         final CallbackHelper pageLoadFinishedHelper = new CallbackHelper();
@@ -1302,6 +1304,7 @@ public class CustomTabActivityTest {
      */
     @Test
     @SmallTest
+    @DisableFeatures({ChromeFeatureList.PRIORITIZE_BOOTSTRAP_TASKS})
     public void testNavigationHistogramsRecorded() throws Exception {
         String startHistogramPrefix = "CustomTabs.IntentToFirstNavigationStartTime";
         String commitHistogramPrefix = "CustomTabs.IntentToFirstCommitNavigationTime3";

@@ -54,6 +54,7 @@ IPC_STRUCT_TRAITS_BEGIN(blink::WebDeviceEmulationParams)
   IPC_STRUCT_TRAITS_MEMBER(viewport_scale)
   IPC_STRUCT_TRAITS_MEMBER(screen_orientation_angle)
   IPC_STRUCT_TRAITS_MEMBER(screen_orientation_type)
+  IPC_STRUCT_TRAITS_MEMBER(window_segments)
 IPC_STRUCT_TRAITS_END()
 
 //

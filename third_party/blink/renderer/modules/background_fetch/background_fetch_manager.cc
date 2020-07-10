@@ -108,7 +108,7 @@ bool ShouldBlockGateWayAttacks(ExecutionContext* execution_context,
                                const KURL& request_url) {
   if (RuntimeEnabledFeatures::CorsRFC1918Enabled()) {
     network::mojom::IPAddressSpace requestor_space =
-        execution_context->GetSecurityContext().AddressSpace();
+        execution_context->AddressSpace();
 
     // TODO(mkwst): This only checks explicit IP addresses. We'll have to move
     // all this up to //net and //content in order to have any real impact on

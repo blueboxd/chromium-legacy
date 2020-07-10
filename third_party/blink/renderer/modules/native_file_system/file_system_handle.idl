@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// https://wicg.github.io/native-file-system/#enumdef-filesystemhandlekind
+enum FileSystemHandleKind {
+  "file",
+  "directory",
+};
+
 // https://wicg.github.io/native-file-system/#filesystemhandle
 [
     Exposed=(Window,Worker),
@@ -13,8 +19,9 @@
     // Brand checking APIs because javascript makes it otherwise really hard to
     // figure out what type an object is when you don't know in which global
     // (i.e. iframe) the object was created.
-    readonly attribute boolean isFile;
-    readonly attribute boolean isDirectory;
+    [RuntimeEnabled=LegacyNativeFileSystem] readonly attribute boolean isFile;
+    [RuntimeEnabled=LegacyNativeFileSystem] readonly attribute boolean isDirectory;
+    readonly attribute FileSystemHandleKind kind;
 
     readonly attribute USVString name;
 

@@ -30,7 +30,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_INIT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_INIT_H_
 
-#include "services/network/public/mojom/ip_address_space.mojom-shared.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
@@ -159,10 +158,6 @@ class CORE_EXPORT DocumentInit final {
 
   DocumentInit& WithOriginToCommit(
       scoped_refptr<SecurityOrigin> origin_to_commit);
-
-  DocumentInit& WithIPAddressSpace(
-      network::mojom::IPAddressSpace ip_address_space);
-  network::mojom::IPAddressSpace GetIPAddressSpace() const;
 
   DocumentInit& WithSrcdocDocument(bool is_srcdoc_document);
   DocumentInit& WithGrantLoadLocalResources(bool grant_load_local_resources);
@@ -293,9 +288,6 @@ class CORE_EXPORT DocumentInit final {
 
   // Loader's CSP
   ContentSecurityPolicy* content_security_policy_ = nullptr;
-
-  network::mojom::IPAddressSpace ip_address_space_ =
-      network::mojom::IPAddressSpace::kUnknown;
 
   // The frame policy snapshot from the beginning of navigation.
   base::Optional<FramePolicy> frame_policy_ = base::nullopt;

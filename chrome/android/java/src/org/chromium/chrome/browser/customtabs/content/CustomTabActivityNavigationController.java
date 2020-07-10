@@ -167,9 +167,6 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
         }
 
         IntentHandler.addReferrerAndHeaders(params, mIntentDataProvider.getIntent());
-        if (params.getReferrer() == null) {
-            params.setReferrer(mConnection.getReferrerForSession(mIntentDataProvider.getSession()));
-        }
 
         // Launching a TWA, WebAPK or a standalone-mode homescreen shortcut counts as a TOPLEVEL
         // transition since it opens up an app-like experience, and should count towards site

@@ -40,11 +40,11 @@ BleSynchronizerBase::StartDiscoveryArgs::~StartDiscoveryArgs() = default;
 
 BleSynchronizerBase::StopDiscoveryArgs::StopDiscoveryArgs(
     base::WeakPtr<device::BluetoothDiscoverySession> discovery_session,
-    const base::Closure& callback,
-    const device::BluetoothDiscoverySession::ErrorCallback& error_callback)
+    base::OnceClosure callback,
+    device::BluetoothDiscoverySession::ErrorCallback error_callback)
     : discovery_session(discovery_session),
-      callback(callback),
-      error_callback(error_callback) {}
+      callback(std::move(callback)),
+      error_callback(std::move(error_callback)) {}
 
 BleSynchronizerBase::StopDiscoveryArgs::~StopDiscoveryArgs() = default;
 
@@ -107,11 +107,11 @@ void BleSynchronizerBase::StartDiscoverySession(
 
 void BleSynchronizerBase::StopDiscoverySession(
     base::WeakPtr<device::BluetoothDiscoverySession> discovery_session,
-    const base::Closure& callback,
-    const device::BluetoothDiscoverySession::ErrorCallback& error_callback) {
+    base::OnceClosure callback,
+    device::BluetoothDiscoverySession::ErrorCallback error_callback) {
   command_queue_.emplace_back(
       std::make_unique<Command>(std::make_unique<StopDiscoveryArgs>(
-          discovery_session, callback, error_callback)));
+          discovery_session, std::move(callback), std::move(error_callback))));
   ProcessQueue();
 }
 

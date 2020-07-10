@@ -762,7 +762,7 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
   request.SetPriority(fetch_request_data_->Priority());
   request.SetUseStreamOnResponse(true);
   request.SetExternalRequestStateFromRequestorAddressSpace(
-      execution_context_->GetSecurityContext().AddressSpace());
+      execution_context_->AddressSpace());
   request.SetReferrerString(fetch_request_data_->ReferrerString());
   request.SetReferrerPolicy(fetch_request_data_->GetReferrerPolicy());
 

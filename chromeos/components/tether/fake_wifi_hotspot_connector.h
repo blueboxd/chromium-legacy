@@ -36,7 +36,7 @@ class FakeWifiHotspotConnector : public WifiHotspotConnector {
       const std::string& ssid,
       const std::string& password,
       const std::string& tether_network_guid,
-      const WifiHotspotConnector::WifiConnectionCallback& callback) override;
+      WifiHotspotConnector::WifiConnectionCallback callback) override;
 
  private:
   std::string most_recent_ssid_;

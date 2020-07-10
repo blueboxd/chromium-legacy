@@ -145,7 +145,7 @@
   [ChromeEarlGrey tapWebStateElementWithID:@"file"];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::CancelButton()]
       performAction:grey_tap()];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 }
 
 #pragma mark - Open URL

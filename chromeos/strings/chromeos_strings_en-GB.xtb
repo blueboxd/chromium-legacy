@@ -71,6 +71,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="808894953321890993">Change password</translation>
 <translation id="8208861521865154048">Perks</translation>
 <translation id="8347227221149377169">Print jobs</translation>
+<translation id="8623849191266582420">This <ph name="DEVICE_TYPE" /> is managed by <ph name="ENROLLMENT_DOMAIN" />. Administrators may remotely configure and monitor the device.</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> manages this user. It may remotely manage settings and monitor user activity.</translation>
 <translation id="871560550817059752">Failed – Out of ink</translation>
 <translation id="8747900814994928677">Confirm change</translation>

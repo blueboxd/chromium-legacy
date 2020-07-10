@@ -455,7 +455,7 @@ id<GREYMatcher> ClearBrowsingDataCell() {
                                        grey_sufficientlyVisible(), nil);
   [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
   // Wait for UI to finish loading the Sign-in screen.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 
   // Verify that the Settings register keyboard commands.
   GREYAssertFalse([SettingsAppInterface settingsRegisteredKeyboardCommands],
@@ -467,7 +467,7 @@ id<GREYMatcher> ClearBrowsingDataCell() {
       performAction:grey_tap()];
 
   // Wait for UI to finish closing the Sign-in screen.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 
   // Verify that the Settings register keyboard commands.
   GREYAssertTrue([SettingsAppInterface settingsRegisteredKeyboardCommands],

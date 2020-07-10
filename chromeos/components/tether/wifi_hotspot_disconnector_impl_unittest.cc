@@ -42,8 +42,9 @@ std::string CreateConnectedWifiConfigurationJsonString(
 
 class TestNetworkConnectionHandler : public NetworkConnectionHandler {
  public:
-  explicit TestNetworkConnectionHandler(base::Closure disconnect_callback)
-      : disconnect_callback_(disconnect_callback) {}
+  explicit TestNetworkConnectionHandler(base::OnceClosure disconnect_callback) {
+    disconnect_callback_ = std::move(disconnect_callback);
+  }
   ~TestNetworkConnectionHandler() override = default;
 
   std::string last_disconnect_service_path() {
@@ -67,7 +68,7 @@ class TestNetworkConnectionHandler : public NetworkConnectionHandler {
     last_disconnect_success_callback_ = std::move(success_callback);
     last_disconnect_error_callback_ = error_callback;
 
-    disconnect_callback_.Run();
+    std::move(disconnect_callback_).Run();
   }
   void ConnectToNetwork(const std::string& service_path,
                         base::OnceClosure success_callback,
@@ -80,7 +81,7 @@ class TestNetworkConnectionHandler : public NetworkConnectionHandler {
                 managed_network_configuration_handler) override {}
 
  private:
-  base::Closure disconnect_callback_;
+  base::OnceClosure disconnect_callback_;
 
   std::string last_disconnect_service_path_;
   base::OnceClosure last_disconnect_success_callback_;
@@ -99,9 +100,9 @@ class WifiHotspotDisconnectorImplTest : public testing::Test {
 
     test_network_connection_handler_ =
         base::WrapUnique(new TestNetworkConnectionHandler(
-            base::Bind(&WifiHotspotDisconnectorImplTest::
-                           OnNetworkConnectionManagerDisconnect,
-                       base::Unretained(this))));
+            base::BindOnce(&WifiHotspotDisconnectorImplTest::
+                               OnNetworkConnectionManagerDisconnect,
+                           base::Unretained(this))));
     fake_configuration_remover_ =
         std::make_unique<FakeNetworkConfigurationRemover>();
     test_pref_service_ =

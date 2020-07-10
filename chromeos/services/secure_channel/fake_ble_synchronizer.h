@@ -39,8 +39,8 @@ class FakeBleSynchronizer : public BleSynchronizerBase {
   device::BluetoothAdapter::ErrorCallback TakeStartDiscoveryErrorCallback(
       size_t index);
 
-  const base::Closure& GetStopDiscoveryCallback(size_t index);
-  const device::BluetoothDiscoverySession::ErrorCallback&
+  base::OnceClosure GetStopDiscoveryCallback(size_t index);
+  device::BluetoothDiscoverySession::ErrorCallback
   GetStopDiscoveryErrorCallback(size_t index);
 
  protected:

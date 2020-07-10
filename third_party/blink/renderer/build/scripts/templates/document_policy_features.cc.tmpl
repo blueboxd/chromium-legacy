@@ -19,7 +19,6 @@ const DocumentPolicyFeatureInfoMap& GetDocumentPolicyFeatureInfoMap() {
         mojom::DocumentPolicyFeature::k{{feature.name}},
         {
           "{{feature.document_policy_name}}",
-          "{{feature.value_name}}",
           {{parse_default_value(feature.default_value, feature.value_type)}}
         }
       },

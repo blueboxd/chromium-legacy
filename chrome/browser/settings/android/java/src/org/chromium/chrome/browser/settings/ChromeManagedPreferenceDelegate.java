@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.settings;
 import androidx.preference.Preference;
 
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
+import org.chromium.components.user_prefs.UserPrefs;
 
 /**
  * A ManagedPreferenceDelegate with Chrome-specific default behavior.
@@ -21,7 +22,7 @@ public interface ChromeManagedPreferenceDelegate extends ManagedPreferenceDelega
 
     @Override
     default boolean doesProfileHaveMultipleCustodians() {
-        return !PrefServiceBridge.getInstance()
+        return !UserPrefs.get(Profile.getLastUsedRegularProfile())
                         .getString(Pref.SUPERVISED_USER_SECOND_CUSTODIAN_NAME)
                         .isEmpty();
     }

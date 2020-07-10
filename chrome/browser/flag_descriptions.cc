@@ -3102,12 +3102,6 @@ const char kOmniboxExperimentalKeywordModeDescription[] =
     "Enables various experimental features related to keyword mode, its "
     "suggestions and layout.";
 
-const char kOmniboxLooseMaxLimitOnDedicatedRowsName[] =
-    "Omnibox Loose Max Limit on Dedicated Rows";
-const char kOmniboxLooseMaxLimitOnDedicatedRowsDescription[] =
-    "Enables not counting submatch suggestions towards total suggestion "
-    "count.";
-
 const char kOmniboxPedalSuggestionsName[] = "Omnibox Pedal suggestions";
 const char kOmniboxPedalSuggestionsDescription[] =
     "Enable omnibox Pedal suggestions to accelerate actions within Chrome by "

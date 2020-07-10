@@ -2546,7 +2546,7 @@ class MockMainThreadScheduler : public MainThreadSchedulerImpl {
                 task_environment.GetMockTickClock()),
             base::nullopt) {}
 
-  MOCK_METHOD(void, OnMainFramePaint, (bool));
+  MOCK_METHOD(void, OnMainFramePaint, ());
 };
 }  // namespace
 

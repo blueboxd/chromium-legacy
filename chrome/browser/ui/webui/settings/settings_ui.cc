@@ -161,6 +161,8 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUISettingsHost);
+  html_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::WorkerSrc, "worker-src blob: 'self';");
 
   AddSettingsPageUIHandler(std::make_unique<AppearanceHandler>(web_ui));
 

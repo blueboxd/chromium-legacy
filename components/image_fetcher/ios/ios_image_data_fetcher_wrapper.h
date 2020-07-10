@@ -36,7 +36,7 @@ class IOSImageDataFetcherWrapper {
   // be called with the downloaded image, or nil if any error happened. If the
   // image is WebP it will be decoded.
   // The |referrer| and |referrer_policy| will be passed on to the underlying
-  // URLFetcher.
+  // URLLoader.
   // |callback| cannot be nil.
   void FetchImageDataWebpDecoded(
       const GURL& image_url,

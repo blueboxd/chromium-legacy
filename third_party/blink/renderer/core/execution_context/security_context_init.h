@@ -28,7 +28,6 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   STACK_ALLOCATED();
 
  public:
-  SecurityContextInit();
   SecurityContextInit(scoped_refptr<SecurityOrigin>, OriginTrialContext*);
   explicit SecurityContextInit(const DocumentInit&);
 

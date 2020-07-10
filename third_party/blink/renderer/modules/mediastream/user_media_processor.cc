@@ -1278,18 +1278,18 @@ MediaStreamSource* UserMediaProcessor::InitializeAudioSourceObject(
   }
 #endif  // DCHECK_IS_ON()
 
-  blink::WebMediaStreamSource::Capabilities capabilities;
+  MediaStreamSource::Capabilities capabilities;
   capabilities.echo_cancellation = {true, false};
-  capabilities.echo_cancellation_type.reserve(3);
+  capabilities.echo_cancellation_type.ReserveCapacity(3);
   capabilities.echo_cancellation_type.emplace_back(
-      blink::WebString::FromASCII(blink::kEchoCancellationTypeBrowser));
+      String::FromUTF8(kEchoCancellationTypeBrowser));
   capabilities.echo_cancellation_type.emplace_back(
-      blink::WebString::FromASCII(blink::kEchoCancellationTypeAec3));
+      String::FromUTF8(kEchoCancellationTypeAec3));
   if (device.input.effects() &
       (media::AudioParameters::ECHO_CANCELLER |
        media::AudioParameters::EXPERIMENTAL_ECHO_CANCELLER)) {
     capabilities.echo_cancellation_type.emplace_back(
-        blink::WebString::FromASCII(blink::kEchoCancellationTypeSystem));
+        String::FromUTF8(kEchoCancellationTypeSystem));
   }
   capabilities.auto_gain_control = {true, false};
   capabilities.noise_suppression = {true, false};

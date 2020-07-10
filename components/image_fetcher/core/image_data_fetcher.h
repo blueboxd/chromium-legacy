@@ -18,6 +18,7 @@
 #include "components/image_fetcher/core/image_fetcher_types.h"
 #include "components/image_fetcher/core/request_metadata.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
 namespace network {

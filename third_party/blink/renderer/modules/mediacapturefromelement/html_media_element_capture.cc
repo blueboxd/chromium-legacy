@@ -116,7 +116,7 @@ void CreateHTMLAudioElementCapturer(
   media_stream_source->SetPlatformSource(
       base::WrapUnique(media_stream_audio_source));
 
-  WebMediaStreamSource::Capabilities capabilities;
+  MediaStreamSource::Capabilities capabilities;
   capabilities.device_id = track_id;
   capabilities.echo_cancellation.emplace_back(false);
   capabilities.auto_gain_control.emplace_back(false);

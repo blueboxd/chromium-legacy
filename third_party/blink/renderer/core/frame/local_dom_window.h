@@ -130,8 +130,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   String UserAgent() const final;
   HttpsState GetHttpsState() const final;
   ResourceFetcher* Fetcher() const final;
-  SecurityContext& GetSecurityContext() final;
-  const SecurityContext& GetSecurityContext() const final;
   bool CanExecuteScripts(ReasonForCallingCanExecuteScripts) final;
   void ExceptionThrown(ErrorEvent*) final;
   void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr) final;

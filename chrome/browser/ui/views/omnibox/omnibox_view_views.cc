@@ -804,32 +804,6 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
   return true;
 }
 
-// The following 2 methods implement the following table, which attempts to
-// handle left and right arrow keys versus LTR/RTL text and UI (which can be
-// different) as expected.
-//
-// LTR UI, LTR text, right arrow, at end (rightmost) - focuses
-// LTR UI, LTR text, left arrow, (regardless) - unfocuses
-// LTR UI, RTL text, right arrow, at beginning (rightmost) - focuses
-// LTR UI, RTL text, left arrow, (regardless) - unfocuses
-//
-// RTL UI, RTL text, left arrow, at end (leftmost) - focuses
-// RTL UI, RTL text, right arrow, (regardless) - unfocuses
-// RTL UI, LTR text, left arrow, at beginning (leftmost) - focuses
-// RTL UI, LTR text, right arrow, (regardless) - unfocuses
-
-bool OmniboxViewViews::TextAndUIDirectionMatch() const {
-  // If text and UI direction are RTL, or both aren't.
-  return (GetRenderText()->GetDisplayTextDirection() ==
-          base::i18n::RIGHT_TO_LEFT) == base::i18n::IsRTL();
-}
-
-bool OmniboxViewViews::DirectionAwareSelectionAtEnd() const {
-  // When text and UI direction match, 'end' is as expected,
-  // otherwise we use beginning.
-  return TextAndUIDirectionMatch() ? SelectionAtEnd() : SelectionAtBeginning();
-}
-
 #if defined(OS_MACOSX)
 void OmniboxViewViews::AnnounceFriendlySuggestionText() {
   GetViewAccessibility().AnnounceText(friendly_suggestion_text_);
@@ -1991,34 +1965,6 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       }
       return true;
 
-    case ui::VKEY_RIGHT:
-    case ui::VKEY_LEFT: {
-      if (control || alt || shift)
-        return false;
-
-      const auto step = [=](auto direction) {
-        if (!model()->popup_model()) {
-          return false;
-        }
-        auto old_selection = model()->popup_model()->selection();
-        return model()->popup_model()->StepSelection(
-                   direction, OmniboxPopupModel::kStateOrNothing) !=
-               old_selection;
-      };
-
-      // If advancing cursor (accounting for UI direction)
-      if (base::i18n::IsRTL() == (event.key_code() == ui::VKEY_LEFT)) {
-        if (!DirectionAwareSelectionAtEnd())
-          return false;
-
-        if (step(OmniboxPopupModel::kForward)) {
-          return true;
-        }
-      } else if (step(OmniboxPopupModel::kBackward)) {
-        return true;
-      }
-      break;
-    }
     case ui::VKEY_V:
       if (control && !alt &&
           IsTextEditCommandEnabled(ui::TextEditCommand::PASTE)) {

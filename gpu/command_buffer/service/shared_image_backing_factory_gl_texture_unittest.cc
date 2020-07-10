@@ -883,14 +883,12 @@ TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
   scoped_refptr<gl::GLImage> image = GetImageFromMailbox(mailbox);
   ASSERT_EQ(image->GetType(), gl::GLImage::Type::NONE);
   auto* stub_image = static_cast<StubImage*>(image.get());
-  EXPECT_TRUE(stub_image->bound());
+  EXPECT_FALSE(stub_image->bound());
   int update_counter = stub_image->update_counter();
   ref->Update(nullptr);
   EXPECT_EQ(stub_image->update_counter(), update_counter);
-  EXPECT_TRUE(stub_image->bound());
+  EXPECT_FALSE(stub_image->bound());
 
-  // TODO(https://crbug.com/1092155): When we lazily bind the GLImage, this
-  // will be needed to trigger binding the GLImage.
   {
     auto skia_representation =
         shared_image_representation_factory_->ProduceSkia(mailbox,

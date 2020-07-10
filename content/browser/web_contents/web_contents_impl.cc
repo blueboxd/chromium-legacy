@@ -6464,8 +6464,8 @@ void WebContentsImpl::OnFocusedElementChangedInFrame(
       static_cast<RenderWidgetHostViewBase*>(GetRenderWidgetHostView());
   if (!root_view || !frame->GetView())
     return;
-
-  // Converting to screen coordinates.
+  // Convert to screen coordinates from window coordinates by adding the
+  // window's origin.
   gfx::Point origin = bounds_in_root_view.origin();
   origin += root_view->GetViewBounds().OffsetFromOrigin();
   gfx::Rect bounds_in_screen(origin, bounds_in_root_view.size());

@@ -40,11 +40,16 @@ typedef base::Callback<void(DriveApiErrorCode error,
                             std::unique_ptr<FileList> entry)>
     FileListCallback;
 
+// DEPRECATED: Please use ChangeListOnceCallback instead
 // Callback used for requests that the server returns ChangeList data
 // formatted into JSON value.
 typedef base::Callback<void(DriveApiErrorCode error,
                             std::unique_ptr<ChangeList> entry)>
     ChangeListCallback;
+
+using ChangeListOnceCallback =
+    base::OnceCallback<void(DriveApiErrorCode error,
+                            std::unique_ptr<ChangeList> entry)>;
 
 // Callback used for requests that the server returns StartToken data
 // formatted into JSON value.

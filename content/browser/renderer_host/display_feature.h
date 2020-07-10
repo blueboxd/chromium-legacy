@@ -5,8 +5,10 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_DISPLAY_FEATURE_H_
 #define CONTENT_BROWSER_RENDERER_HOST_DISPLAY_FEATURE_H_
 
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace content {
 
@@ -33,6 +35,12 @@ namespace content {
 // the screen on which it exists.
 struct CONTENT_EXPORT DisplayFeature {
   enum class Orientation { kVertical, kHorizontal, kMaxValue = kHorizontal };
+  enum class ParamErrorEnum {
+    kDisplayFeatureWithZeroScreenSize = 1,
+    kNegativeDisplayFeatureParams,
+    kOutsideScreenWidth,
+    kOutsideScreenHeight
+  };
 
   // The orientation of the display feature in relation to the screen.
   Orientation orientation = Orientation::kVertical;
@@ -48,6 +56,20 @@ struct CONTENT_EXPORT DisplayFeature {
 
   bool operator==(const DisplayFeature& other) const;
   bool operator!=(const DisplayFeature& other) const;
+
+  // Computes logical segments of the |visible_viewport_size|, based on
+  // this display feature. These segments are in DIPs relative to the widget
+  // origin.
+  std::vector<gfx::Rect> ComputeWindowSegments(
+      const gfx::Size& visible_viewport_size) const;
+
+  static base::Optional<DisplayFeature> Create(
+      Orientation orientation,
+      int offset,
+      int mask_length,
+      int screen_width,
+      int screen_height,
+      DisplayFeature::ParamErrorEnum* error);
 };
 
 }  // namespace content

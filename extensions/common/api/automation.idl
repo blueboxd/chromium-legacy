@@ -524,10 +524,13 @@ enum EventMoveDirectionType {
   [nocompile, noinline_doc] dictionary SetDocumentSelectionParams {
     // The node where the selection begins.
     [instanceOf=AutomationNode] object anchorObject;
+
     // The offset in the anchor node where the selection begins.
     long anchorOffset;
+
     // The node where the selection ends.
     [instanceOf=AutomationNode] object focusObject;
+
     // The offset within the focus node where the selection ends.
     long focusOffset;
   };
@@ -1183,6 +1186,12 @@ enum EventMoveDirectionType {
 
     // Scrolls this scrollable container right.
     static void scrollRight(optional PerformActionCallback callback);
+
+    // Scrolls this scrollable container to the given point.
+    static void scrollToPoint(long x, long y);
+
+    // Sets this scrollable container's scroll offset.
+    static void setScrollOffset(long x, long y);
 
     // Adds a listener for the given event type and event phase.
     static void addEventListener(

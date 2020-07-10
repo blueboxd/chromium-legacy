@@ -1357,6 +1357,32 @@ java_prebuilt("com_google_dagger_dagger_compiler_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+java_prebuilt("com_google_errorprone_error_prone_annotation_java") {
+  jar_path = "libs/com_google_errorprone_error_prone_annotation/error_prone_annotation-2.4.0.jar"
+  output_name = "com_google_errorprone_error_prone_annotation"
+  enable_bytecode_checks = false
+  deps = [ ":com_google_guava_guava_java" ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+java_prebuilt("com_google_errorprone_error_prone_check_api_java") {
+  jar_path = "libs/com_google_errorprone_error_prone_check_api/error_prone_check_api-2.4.0.jar"
+  output_name = "com_google_errorprone_error_prone_check_api"
+  enable_bytecode_checks = false
+  deps = [
+    ":com_github_ben_manes_caffeine_caffeine_java",
+    ":com_github_kevinstern_software_and_algorithms_java",
+    ":com_google_auto_value_auto_value_annotations_java",
+    ":com_google_code_findbugs_jsr305_java",
+    ":com_google_errorprone_error_prone_annotation_java",
+    ":com_google_errorprone_error_prone_annotations_java",
+    ":com_google_errorprone_javac_java",
+    ":com_googlecode_java_diff_utils_diffutils_java",
+    ":org_checkerframework_dataflow_shaded_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_google_errorprone_error_prone_core_java") {
   jar_path =
       "libs/com_google_errorprone_error_prone_core/error_prone_core-2.4.0.jar"
@@ -1379,6 +1405,13 @@ java_prebuilt("com_google_errorprone_error_prone_core_java") {
     ":org_pcollections_pcollections_java",
     ":org_threeten_threeten_extra_java",
   ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+java_prebuilt("com_google_errorprone_javac_java") {
+  jar_path = "libs/com_google_errorprone_javac/javac-9+181-r4173-1.jar"
+  output_name = "com_google_errorprone_javac"
+  enable_bytecode_checks = false
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -2342,18 +2375,6 @@ java_prebuilt("com_google_dagger_dagger_spi_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-java_prebuilt("com_google_errorprone_error_prone_annotation_java") {
-  jar_path = "libs/com_google_errorprone_error_prone_annotation/error_prone_annotation-2.4.0.jar"
-  output_name = "com_google_errorprone_error_prone_annotation"
-  enable_bytecode_checks = false
-
-  # To remove visibility constraint, add this dependency to
-  # //third_party/android_deps/build.gradle.
-  visibility = [ ":*" ]
-  deps = [ ":com_google_guava_guava_java" ]
-}
-
-# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_google_errorprone_error_prone_annotations_java") {
   jar_path = "libs/com_google_errorprone_error_prone_annotations/error_prone_annotations-2.4.0.jar"
   output_name = "com_google_errorprone_error_prone_annotations"
@@ -2365,42 +2386,9 @@ java_prebuilt("com_google_errorprone_error_prone_annotations_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-java_prebuilt("com_google_errorprone_error_prone_check_api_java") {
-  jar_path = "libs/com_google_errorprone_error_prone_check_api/error_prone_check_api-2.4.0.jar"
-  output_name = "com_google_errorprone_error_prone_check_api"
-  enable_bytecode_checks = false
-
-  # To remove visibility constraint, add this dependency to
-  # //third_party/android_deps/build.gradle.
-  visibility = [ ":*" ]
-  deps = [
-    ":com_github_ben_manes_caffeine_caffeine_java",
-    ":com_github_kevinstern_software_and_algorithms_java",
-    ":com_google_auto_value_auto_value_annotations_java",
-    ":com_google_code_findbugs_jsr305_java",
-    ":com_google_errorprone_error_prone_annotation_java",
-    ":com_google_errorprone_error_prone_annotations_java",
-    ":com_google_errorprone_javac_java",
-    ":com_googlecode_java_diff_utils_diffutils_java",
-    ":org_checkerframework_dataflow_shaded_java",
-  ]
-}
-
-# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_google_errorprone_error_prone_type_annotations_java") {
   jar_path = "libs/com_google_errorprone_error_prone_type_annotations/error_prone_type_annotations-2.4.0.jar"
   output_name = "com_google_errorprone_error_prone_type_annotations"
-  enable_bytecode_checks = false
-
-  # To remove visibility constraint, add this dependency to
-  # //third_party/android_deps/build.gradle.
-  visibility = [ ":*" ]
-}
-
-# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-java_prebuilt("com_google_errorprone_javac_java") {
-  jar_path = "libs/com_google_errorprone_javac/javac-9+181-r4173-1.jar"
-  output_name = "com_google_errorprone_javac"
   enable_bytecode_checks = false
 
   # To remove visibility constraint, add this dependency to

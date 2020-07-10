@@ -23,7 +23,8 @@ import java.util.concurrent.TimeoutException;
  * Supported activity types: webapp, WebAPK, CCT, and TWA.
  */
 public class CustomTabActivityTypeTestUtils {
-    public static ChromeActivityTestRule<?> createActivityTestRule(@ActivityType int activityType) {
+    public static ChromeActivityTestRule<? extends BaseCustomTabActivity> createActivityTestRule(
+            @ActivityType int activityType) {
         switch (activityType) {
             case ActivityType.WEBAPP:
                 return new WebappActivityTestRule();

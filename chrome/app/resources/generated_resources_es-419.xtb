@@ -218,7 +218,7 @@
 <translation id="1261380933454402672">Moderada</translation>
 <translation id="126156426083987769">Hubo un problema con las licencias del dispositivo en el modo de demostración.</translation>
 <translation id="1263490604593716556">Cuenta administrada por <ph name="FIRST_PARENT_EMAIL" /> y <ph name="SECOND_PARENT_EMAIL" />. Para salir de la cuenta principal en este dispositivo, haz clic en la hora que se encuentra en la pantalla. En el menú que aparece, haz clic en "Salir".</translation>
-<translation id="1263733306853729545">Utilizar las teclas <ph name="MINUS" /> y <ph name="EQUAL" /> para invocar una lista de candidatos</translation>
+<translation id="1263733306853729545">Utilizar las teclas <ph name="MINUS" /> y <ph name="EQUAL" /> para alternar entre las opciones posibles</translation>
 <translation id="126387934568812801">Incluir esta captura de pantalla y los títulos de las pestañas abiertas</translation>
 <translation id="1264337193001759725">Para ver los registros de IU de la red, consulta: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="126710816202626562">Idioma de traducción:</translation>
@@ -6485,7 +6485,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="9159643062839240276">Prueba lo siguiente:
     <ph name="BEGIN_LIST" />
       <ph name="LIST_ITEM" />Revisa los cables de red, el módem y el router
-      <ph name="LIST_ITEM" />Vuelve a conectarte a la red Wi-Fi
+      <ph name="LIST_ITEM" />Vuelve a conectarte a una red Wi-Fi
       <ph name="LIST_ITEM" />Ejecuta el Diagnóstico de conectividad de Chrome
     <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Pantalla en pantalla</translation>

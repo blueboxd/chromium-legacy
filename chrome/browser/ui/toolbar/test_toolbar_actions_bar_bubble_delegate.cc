@@ -16,7 +16,7 @@ class TestToolbarActionsBarBubbleDelegate::DelegateImpl
   ~DelegateImpl() override {}
 
  private:
-  bool ShouldShow() override { return true; }
+  bool ShouldShow() override { return !parent_->shown_; }
   bool ShouldCloseOnDeactivate() override {
     return parent_->close_on_deactivate_;
   }

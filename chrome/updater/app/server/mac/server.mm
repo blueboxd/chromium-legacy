@@ -25,10 +25,12 @@
 
 namespace updater {
 
-AppServerMac::AppServerMac() = default;
+AppServerMac::AppServerMac()
+    : main_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 AppServerMac::~AppServerMac() = default;
 
 void AppServerMac::Uninitialize() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // These delegates need to have a reference to the AppServer. To break the
   // circular reference, we need to reset them.
   update_check_delegate_.reset();
@@ -38,6 +40,7 @@ void AppServerMac::Uninitialize() {
 }
 
 void AppServerMac::ActiveDuty() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   @autoreleasepool {
     // Sets up a listener and delegate for the CRUUpdateChecking XPC
     // connection
@@ -77,23 +80,25 @@ bool AppServerMac::SwapRPCInterfaces() {
 }
 
 void AppServerMac::TaskStarted() {
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindOnce(&AppServerMac::MarkTaskStarted, this));
+  main_task_runner_->PostTask(FROM_HERE,
+                              BindOnce(&AppServerMac::MarkTaskStarted, this));
 }
 
 void AppServerMac::MarkTaskStarted() {
-  tasks_running_++;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  ++tasks_running_;
 }
 
 void AppServerMac::TaskCompleted() {
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+  main_task_runner_->PostDelayedTask(
       FROM_HERE, base::BindOnce(&AppServerMac::AcknowledgeTaskCompletion, this),
       base::TimeDelta::FromSeconds(10));
 }
 
 void AppServerMac::AcknowledgeTaskCompletion() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (--tasks_running_ < 1) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    main_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&AppServerMac::Shutdown, this, 0));
   }
 }

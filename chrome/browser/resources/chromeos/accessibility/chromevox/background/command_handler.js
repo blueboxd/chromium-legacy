@@ -573,6 +573,16 @@ CommandHandler.onCommand = function(command) {
       skipSync = true;
       pred = AutomationPredicate.group;
       break;
+    case 'previousPage':
+    case 'nextPage':
+      const root = AutomationUtil.getTopLevelRoot(current.start.node);
+      if (root && root.scrollY !== undefined) {
+        let page = Math.ceil(root.scrollY / root.location.height) || 1;
+        page = command == 'nextPage' ? page + 1 : page - 1;
+        ChromeVox.tts.stop();
+        root.setScrollOffset(0, page * root.location.height);
+      }
+      return false;
     case 'previousSimilarItem':
       dir = Dir.BACKWARD;
       // Falls through.
@@ -917,30 +927,6 @@ CommandHandler.onCommand = function(command) {
           AutomationPredicate.leaf);
       if (end) {
         current = cursors.Range.fromNode(end);
-      }
-    } break;
-    case 'scrollBackward': {
-      let node = current.start.node;
-      while (node &&
-             !node.standardActions.includes(
-                 chrome.automation.ActionType.SCROLL_BACKWARD)) {
-        node = node.parent;
-      }
-
-      if (node) {
-        node.scrollBackward();
-      }
-    } break;
-    case 'scrollForward': {
-      let node = current.start.node;
-      while (node &&
-             !node.standardActions.includes(
-                 chrome.automation.ActionType.SCROLL_FORWARD)) {
-        node = node.parent;
-      }
-
-      if (node) {
-        node.scrollForward();
       }
     } break;
 

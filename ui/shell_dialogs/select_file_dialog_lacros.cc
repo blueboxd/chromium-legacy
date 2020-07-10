@@ -11,6 +11,7 @@
 #include "chromeos/lacros/browser/lacros_chrome_service_impl.h"
 #include "chromeos/lacros/mojom/select_file.mojom.h"
 #include "ui/shell_dialogs/select_file_policy.h"
+#include "ui/shell_dialogs/selected_file_info.h"
 
 namespace ui {
 namespace {
@@ -33,6 +34,28 @@ lacros::mojom::SelectFileDialogType GetMojoType(SelectFileDialog::Type type) {
       NOTREACHED();
       return lacros::mojom::SelectFileDialogType::kOpenFile;
   }
+}
+
+lacros::mojom::AllowedPaths GetMojoAllowedPaths(
+    SelectFileDialog::FileTypeInfo::AllowedPaths allowed_paths) {
+  switch (allowed_paths) {
+    case SelectFileDialog::FileTypeInfo::ANY_PATH:
+      return lacros::mojom::AllowedPaths::kAnyPath;
+    case SelectFileDialog::FileTypeInfo::NATIVE_PATH:
+      return lacros::mojom::AllowedPaths::kNativePath;
+    case SelectFileDialog::FileTypeInfo::ANY_PATH_OR_URL:
+      return lacros::mojom::AllowedPaths::kAnyPathOrUrl;
+  }
+}
+
+SelectedFileInfo ConvertSelectedFileInfo(
+    lacros::mojom::SelectedFileInfoPtr mojo_file) {
+  SelectedFileInfo file;
+  file.file_path = std::move(mojo_file->file_path);
+  file.local_path = std::move(mojo_file->local_path);
+  file.display_name = std::move(mojo_file->display_name);
+  file.url = std::move(mojo_file->url);
+  return file;
 }
 
 }  // namespace
@@ -77,6 +100,17 @@ void SelectFileDialogLacros::SelectFileImpl(
   options->type = GetMojoType(type);
   options->title = title;
   options->default_path = default_path;
+  if (file_types) {
+    options->file_types = lacros::mojom::SelectFileTypeInfo::New();
+    options->file_types->extensions = file_types->extensions;
+    options->file_types->extension_description_overrides =
+        file_types->extension_description_overrides;
+    // NOTE: Index is 1-based, 0 means "no selection".
+    options->file_types->default_file_type_index = file_type_index;
+    options->file_types->include_all_files = file_types->include_all_files;
+    options->file_types->allowed_paths =
+        GetMojoAllowedPaths(file_types->allowed_paths);
+  }
 
   // Send request to ash-chrome.
   chromeos::LacrosChromeServiceImpl::Get()->select_file_remote()->Select(
@@ -86,24 +120,24 @@ void SelectFileDialogLacros::SelectFileImpl(
 
 void SelectFileDialogLacros::OnSelected(
     lacros::mojom::SelectFileResult result,
-    std::vector<lacros::mojom::SelectedFileInfoPtr> files) {
+    std::vector<lacros::mojom::SelectedFileInfoPtr> mojo_files,
+    int file_type_index) {
   if (!listener_)
     return;
-  if (files.empty()) {
+  if (mojo_files.empty()) {
     listener_->FileSelectionCanceled(params_);
     return;
   }
-  if (files.size() == 1) {
-    // TODO(jamescook): Support correct file filter |index|.
-    // TODO(jamescook): Use FileSelectedWithExtraInfo instead.
-    listener_->FileSelected(files[0]->file_path, /*index=*/0, params_);
+  if (mojo_files.size() == 1) {
+    SelectedFileInfo file = ConvertSelectedFileInfo(std::move(mojo_files[0]));
+    listener_->FileSelectedWithExtraInfo(file, file_type_index, params_);
     return;
   }
-  std::vector<base::FilePath> paths;
-  for (auto& file : files)
-    paths.push_back(std::move(file->file_path));
-  // TODO(jamescook): Use MultiFilesSelectedWithExtraInfo instead.
-  listener_->MultiFilesSelected(paths, params_);
+  std::vector<SelectedFileInfo> files;
+  for (auto& mojo_file : mojo_files) {
+    files.push_back(ConvertSelectedFileInfo(std::move(mojo_file)));
+  }
+  listener_->MultiFilesSelectedWithExtraInfo(files, params_);
 }
 
 }  // namespace ui

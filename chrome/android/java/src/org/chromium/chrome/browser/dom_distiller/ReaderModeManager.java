@@ -500,9 +500,9 @@ public class ReaderModeManager extends EmptyTabObserver implements UserData {
             // Make sure the page didn't navigate while waiting for a response.
             if (!tab.getUrlString().equals(mDistillerUrl)) return;
 
-            boolean excludedMobileFriendly =
-                    DomDistillerTabUtils.shouldExcludeMobileFriendly() && isMobileOptimized;
-            if (isDistillable && !excludedMobileFriendly) {
+            if (isDistillable
+                    && !(isMobileOptimized
+                            && DomDistillerTabUtils.shouldExcludeMobileFriendly(tabToObserve))) {
                 mDistillationStatus = DistillationStatus.POSSIBLE;
                 tryShowingInfoBar();
             } else {

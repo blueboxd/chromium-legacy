@@ -84,10 +84,10 @@ std::string BluetoothAdapterCast::GetName() const {
 }
 
 void BluetoothAdapterCast::SetName(const std::string& name,
-                                   const base::Closure& callback,
-                                   const ErrorCallback& error_callback) {
+                                   base::OnceClosure callback,
+                                   ErrorOnceCallback error_callback) {
   name_ = name;
-  callback.Run();
+  std::move(callback).Run();
 }
 
 bool BluetoothAdapterCast::IsInitialized() const {
@@ -105,8 +105,8 @@ bool BluetoothAdapterCast::IsPowered() const {
 }
 
 void BluetoothAdapterCast::SetPowered(bool powered,
-                                      const base::Closure& callback,
-                                      const ErrorCallback& error_callback) {
+                                      base::OnceClosure callback,
+                                      ErrorOnceCallback error_callback) {
   // This class cannot actually change the powered state of the BT stack.
   // We simulate these changes for the benefit of testing. However, we may
   // want to actually delegate this call to the bluetooth service, at least
@@ -114,7 +114,7 @@ void BluetoothAdapterCast::SetPowered(bool powered,
   // TODO(slan): Determine whether this would be useful.
   powered_ = powered;
   NotifyAdapterPoweredChanged(powered_);
-  callback.Run();
+  std::move(callback).Run();
 }
 
 bool BluetoothAdapterCast::IsDiscoverable() const {
@@ -122,12 +122,11 @@ bool BluetoothAdapterCast::IsDiscoverable() const {
   return false;
 }
 
-void BluetoothAdapterCast::SetDiscoverable(
-    bool discoverable,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+void BluetoothAdapterCast::SetDiscoverable(bool discoverable,
+                                           base::OnceClosure callback,
+                                           ErrorOnceCallback error_callback) {
   NOTIMPLEMENTED() << __func__ << " GATT server mode not supported";
-  error_callback.Run();
+  std::move(error_callback).Run();
 }
 
 bool BluetoothAdapterCast::IsDiscovering() const {

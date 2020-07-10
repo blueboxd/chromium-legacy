@@ -18,8 +18,9 @@ The columns of the table are as follows:
   * use_counter    : If usage is being measured, this is the UseCounter.
   * secure_context : 'True' if the [SecureContext] extended attribute is
                      present. Empty otherwise.
-  * high_entropy   : 'True' if the [HighEntropy] extended attribute is present.
-                     Empty otherwise.
+  * high_entropy   : Value of [HighEntropy] extended attribute. '(True)' if the
+                     [HighEntropy] attribute is present but isn't assigned a
+                     type.
 """
 
 import optparse
@@ -33,12 +34,12 @@ import web_idl
 
 def parse_options():
     parser = optparse.OptionParser(usage="%prog [options]")
-    parser.add_option(
-        "--web_idl_database",
-        type="string",
-        help="filepath of the input database")
-    parser.add_option(
-        "--output", type="string", help="filepath of output file")
+    parser.add_option("--web_idl_database",
+                      type="string",
+                      help="filepath of the input database")
+    parser.add_option("--output",
+                      type="string",
+                      help="filepath of output file")
     options, args = parser.parse_args()
 
     required_option_names = ("web_idl_database", "output")
@@ -59,6 +60,14 @@ def true_or_nothing(v):
     return 'True' if v else ''
 
 
+def arguments_to_str(args):
+    serialized_args = []
+    for arg in args:
+        type_name, _ = get_idl_type_name(arg.idl_type)
+        serialized_args.append(type_name)
+    return '(' + ','.join(serialized_args) + ')'
+
+
 def record(csv_writer, entity):
     interface = ''
     name = ''
@@ -67,18 +76,37 @@ def record(csv_writer, entity):
     secure_context = ''
     high_entropy = ''
     idl_type = ''
+    arguments = ''
     syntactic_form = ''
+    source_file = ''
+    source_line = ''
 
     secure_context = ('SecureContext' in entity.extended_attributes)
-    high_entropy = ('HighEntropy' in entity.extended_attributes)
+    if 'HighEntropy' in entity.extended_attributes:
+        high_entropy = entity.extended_attributes.value_of('HighEntropy')
+        if not high_entropy:
+            high_entropy = '(True)'
 
     if 'Measure' in entity.extended_attributes:
         use_counter = capitalize(entity.identifier)
         if not isinstance(entity, web_idl.Interface):
-            use_counter = (
-                capitalize(entity.owner.identifier) + '_' + use_counter)
+            use_counter = (capitalize(entity.owner.identifier) + '_' +
+                           use_counter)
     elif 'MeasureAs' in entity.extended_attributes:
         use_counter = entity.extended_attributes.value_of('MeasureAs')
+
+    for location in entity.debug_info.all_locations:
+        if location.line_number:
+            source_file = location.filepath
+            source_line = location.line_number
+            break
+
+    if not source_file:
+        location = entity.debug_info.location
+        source_file = location.filepath
+
+    if isinstance(entity, web_idl.FunctionLike):
+        arguments = arguments_to_str(entity.arguments)
 
     if isinstance(entity, web_idl.Interface):
         interface = entity.identifier
@@ -103,24 +131,28 @@ def record(csv_writer, entity):
         'interface': interface,
         'name': name,
         'entity_type': entity_type,
+        'arguments': arguments,
         'idl_type': idl_type,
         'syntactic_form': syntactic_form,
         'use_counter': use_counter,
         'secure_context': true_or_nothing(secure_context),
-        'high_entropy': true_or_nothing(high_entropy)
+        'high_entropy': high_entropy,
+        'source_file': source_file,
+        'source_line': source_line
     })
 
 
 def main():
     options, _ = parse_options()
     with BytesIO() as out_buffer:
-        csv_writer = DictWriter(
-            out_buffer,
-            fieldnames=[
-                'interface', 'name', 'entity_type', 'idl_type',
-                'syntactic_form', 'use_counter', 'secure_context',
-                'high_entropy'
-            ])
+        csv_writer = DictWriter(out_buffer,
+                                fieldnames=[
+                                    'interface', 'name', 'entity_type',
+                                    'arguments', 'idl_type', 'syntactic_form',
+                                    'use_counter', 'secure_context',
+                                    'high_entropy', 'source_file',
+                                    'source_line'
+                                ])
         csv_writer.writeheader()
 
         web_idl_database = web_idl.Database.read_from_file(

@@ -117,21 +117,21 @@ MediaTrackCapabilities* InputDeviceInfo::getCapabilities() const {
         media::SampleFormatToBitsPerChannel(media::kSampleFormatS16));
     capabilities->setSampleSize(sample_size);
     // Channel count.
-    if (!platform_capabilities_.channel_count.empty()) {
+    if (!platform_capabilities_.channel_count.IsEmpty()) {
       LongRange* channel_count = LongRange::Create();
       channel_count->setMin(platform_capabilities_.channel_count[0]);
       channel_count->setMax(platform_capabilities_.channel_count[1]);
       capabilities->setChannelCount(channel_count);
     }
     // Sample rate.
-    if (!platform_capabilities_.sample_rate.empty()) {
+    if (!platform_capabilities_.sample_rate.IsEmpty()) {
       LongRange* sample_rate = LongRange::Create();
       sample_rate->setMin(platform_capabilities_.sample_rate[0]);
       sample_rate->setMax(platform_capabilities_.sample_rate[1]);
       capabilities->setSampleRate(sample_rate);
     }
     // Latency.
-    if (!platform_capabilities_.latency.empty()) {
+    if (!platform_capabilities_.latency.IsEmpty()) {
       DoubleRange* latency = DoubleRange::Create();
       latency->setMin(platform_capabilities_.latency[0]);
       latency->setMax(platform_capabilities_.latency[1]);
@@ -140,25 +140,25 @@ MediaTrackCapabilities* InputDeviceInfo::getCapabilities() const {
   }
 
   if (DeviceType() == mojom::blink::MediaDeviceType::MEDIA_VIDEO_INPUT) {
-    if (!platform_capabilities_.width.empty()) {
+    if (!platform_capabilities_.width.IsEmpty()) {
       LongRange* width = LongRange::Create();
       width->setMin(platform_capabilities_.width[0]);
       width->setMax(platform_capabilities_.width[1]);
       capabilities->setWidth(width);
     }
-    if (!platform_capabilities_.height.empty()) {
+    if (!platform_capabilities_.height.IsEmpty()) {
       LongRange* height = LongRange::Create();
       height->setMin(platform_capabilities_.height[0]);
       height->setMax(platform_capabilities_.height[1]);
       capabilities->setHeight(height);
     }
-    if (!platform_capabilities_.aspect_ratio.empty()) {
+    if (!platform_capabilities_.aspect_ratio.IsEmpty()) {
       DoubleRange* aspect_ratio = DoubleRange::Create();
       aspect_ratio->setMin(platform_capabilities_.aspect_ratio[0]);
       aspect_ratio->setMax(platform_capabilities_.aspect_ratio[1]);
       capabilities->setAspectRatio(aspect_ratio);
     }
-    if (!platform_capabilities_.frame_rate.empty()) {
+    if (!platform_capabilities_.frame_rate.IsEmpty()) {
       DoubleRange* frame_rate = DoubleRange::Create();
       frame_rate->setMin(platform_capabilities_.frame_rate[0]);
       frame_rate->setMax(platform_capabilities_.frame_rate[1]);

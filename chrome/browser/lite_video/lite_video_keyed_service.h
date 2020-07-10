@@ -7,6 +7,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/time/time.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/lite_video/lite_video_decider.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -35,6 +36,11 @@ class LiteVideoKeyedService : public KeyedService {
   lite_video::LiteVideoDecider* lite_video_decider() { return decider_.get(); }
 
  private:
+  friend class ChromeBrowsingDataRemoverDelegate;
+
+  // Clears data specific to the user between the provided times.
+  void ClearData(const base::Time& delete_begin, const base::Time& delete_end);
+
   // The decider owned by this keyed service capable of determining whether
   // to apply the LiteVideo optimization to a navigation.
   std::unique_ptr<lite_video::LiteVideoDecider> decider_;

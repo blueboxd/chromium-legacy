@@ -330,7 +330,7 @@ void BrowserActionsContainer::ShowToolbarActionBubble(
   active_bubble_ = bubble;
   views::BubbleDialogDelegateView::CreateBubble(bubble);
   bubble->GetWidget()->AddObserver(this);
-  bubble->Show();
+  bubble->GetWidget()->Show();
 }
 
 bool BrowserActionsContainer::CloseOverflowMenuIfOpen() {

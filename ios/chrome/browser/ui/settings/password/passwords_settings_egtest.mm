@@ -579,7 +579,7 @@ void TapEdit() {
       performAction:grey_tap()];
 
   // Wait until the alert and the detail view are dismissed.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 
   // Check that the current view is now the list view, by locating the header
   // of the list of passwords.
@@ -637,7 +637,7 @@ void TapEdit() {
       performAction:grey_tap()];
 
   // Wait until the alert and the detail view are dismissed.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 
   // Check that the current view is now the list view, by locating the header
   // of the list of passwords.
@@ -687,7 +687,7 @@ void TapEdit() {
       performAction:grey_tap()];
 
   // Wait until the alert and the detail view are dismissed.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 
   // Check that the current view is now the list view, by locating the header
   // of the list of passwords.
@@ -1420,7 +1420,7 @@ void TapEdit() {
           IDS_IOS_EXPORT_PASSWORDS)) performAction:grey_tap()];
 
   // Wait until the alerts are dismissed.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 
   // On iOS 13+ phone when building with the iOS 12 SDK, the share sheet is
   // presented fullscreen, so the export button is removed from the view
@@ -1461,7 +1461,7 @@ void TapEdit() {
   }
 
   // Wait until the activity view is dismissed.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 
   // Check that export button is re-enabled.
   [[EarlGrey

@@ -5,6 +5,7 @@
 #include "components/omnibox/browser/local_history_zero_suggest_provider.h"
 
 #include <algorithm>
+#include <cmath>
 #include <set>
 #include <string>
 
@@ -84,6 +85,18 @@ bool AllowLocalHistoryZeroSuggestSuggestions(const AutocompleteInput& input) {
       OmniboxFieldTrial::GetZeroSuggestVariants(current_page_classification),
       LocalHistoryZeroSuggestProvider::kZeroSuggestLocalVariant);
 #endif
+}
+
+// Helper function for calculating frecency of a visit based on this formula:
+// frecency = (frequency ^ 1.15 + 60) / (recency_in_seconds + 60)
+// a frecency score combines frequency and recency of occurrences favoring ones
+// that are more frequent and more recent (see go/local-zps-frecency-ranking).
+double CalculateFrecency(const history::NormalizedKeywordSearchTermVisit& visit,
+                         base::Time now) {
+  double recency_in_secs =
+      base::TimeDelta(now - visit.most_recent_visit_time).InSeconds();
+  double frequency_powered = pow(visit.visits, 1.15);
+  return (frequency_powered + 60) / (recency_in_secs + 60);
 }
 
 }  // namespace
@@ -222,9 +235,15 @@ void LocalHistoryZeroSuggestProvider::QueryURLDatabase(
       template_url_service->GetDefaultSearchProvider()->id(),
       history::AutocompleteAgeThreshold());
 
-  std::sort(results.begin(), results.end(), [](const auto& a, const auto& b) {
-    return a.most_recent_visit_time > b.most_recent_visit_time;
-  });
+  bool frecency_ranking = base::FeatureList::IsEnabled(
+      omnibox::kOmniboxLocalZeroSuggestFrecencyRanking);
+  const base::Time now = base::Time::Now();
+  std::sort(results.begin(), results.end(),
+            [frecency_ranking, now](const auto& a, const auto& b) {
+              return frecency_ranking
+                         ? CalculateFrecency(a, now) > CalculateFrecency(b, now)
+                         : a.most_recent_visit_time > b.most_recent_visit_time;
+            });
 
   int relevance = kLocalHistoryZeroSuggestRelevance;
   for (const auto& result : results) {
@@ -248,10 +267,9 @@ void LocalHistoryZeroSuggestProvider::QueryURLDatabase(
       break;
   }
 
-  UMA_HISTOGRAM_COUNTS_1000(
-      "Omnibox.LocalHistoryZeroSuggest.SearchTermsSeenCount", results.size());
-  UMA_HISTOGRAM_COUNTS_1000("Omnibox.LocalHistoryZeroSuggest.MaxMatchesCount",
-                            max_matches_);
+  UMA_HISTOGRAM_COUNTS_10000(
+      "Omnibox.LocalHistoryZeroSuggest.SearchTermsExtractedCount",
+      results.size());
 
   listener_->OnProviderUpdate(true);
 }

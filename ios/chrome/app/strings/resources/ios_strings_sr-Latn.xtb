@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr-Latn">
 <translation id="1005230401424685968">GGGG</translation>
+<translation id="1013952917065545813">Možete da se vratite ovde da biste ponovo otvorili kartice koje ste nedavno zatvorili</translation>
 <translation id="1016495303386450659">Stavka je ažurirana</translation>
 <translation id="1044891598689252897">Sajtovi će normalno raditi</translation>
 <translation id="1047726139967079566">Obeleži ovu stranicu...</translation>
@@ -31,6 +32,7 @@
 <translation id="1272079795634619415">Zaustavi</translation>
 <translation id="1283524564873030414">Poslednja 24 sata</translation>
 <translation id="1285320974508926690">Nikad ne prevodi ovaj sajt</translation>
+<translation id="1321993286294231467">Došlo je do greške pri čuvanju slike.</translation>
 <translation id="1323735185997015385">Izbriši</translation>
 <translation id="132683371494960526">Dodirnite dvaput da biste promenili nadređeni direktorijum.</translation>
 <translation id="1340643665687018190">Zatvori meni</translation>

@@ -261,35 +261,7 @@ TEST_F(OmniboxPopupModelTest, PopupStepSelection) {
     EXPECT_EQ(selection, model()->popup_model()->selection());
   }
 
-  // Try some kStateOrNothing steps on the keyword line.
-  // Note that keyword mode is specially excepted with this
-  // step behavior.
-  popup_model()->StepSelection(OmniboxPopupModel::kBackward,
-                               OmniboxPopupModel::kStateOrNothing);
-  EXPECT_EQ(Selection(2, OmniboxPopupModel::NORMAL),
-            model()->popup_model()->selection());
-  popup_model()->StepSelection(OmniboxPopupModel::kForward,
-                               OmniboxPopupModel::kStateOrNothing);
-  EXPECT_EQ(Selection(2, OmniboxPopupModel::NORMAL),
-            model()->popup_model()->selection());
-
-  // Try kStateOrNothing on the removable line, specifically, verify that
-  // kStateOrNothing doesn't wrap between button and non-button focus.
-  popup_model()->StepSelection(OmniboxPopupModel::kBackward,
-                               OmniboxPopupModel::kWholeLine);
-  EXPECT_EQ(Selection(1, OmniboxPopupModel::NORMAL),
-            model()->popup_model()->selection());
-  popup_model()->StepSelection(OmniboxPopupModel::kForward,
-                               OmniboxPopupModel::kStateOrNothing);
-  EXPECT_EQ(Selection(1, OmniboxPopupModel::FOCUSED_BUTTON_REMOVE_SUGGESTION),
-            model()->popup_model()->selection());
-  // Verify that another step forward doesn't wrap back to the NORMAL state.
-  popup_model()->StepSelection(OmniboxPopupModel::kForward,
-                               OmniboxPopupModel::kStateOrNothing);
-  EXPECT_EQ(Selection(1, OmniboxPopupModel::FOCUSED_BUTTON_REMOVE_SUGGESTION),
-            model()->popup_model()->selection());
-
-  // Try the kAllLines step behavio.
+  // Try the kAllLines step behavior.
   popup_model()->StepSelection(OmniboxPopupModel::kBackward,
                                OmniboxPopupModel::kAllLines);
   EXPECT_EQ(Selection(0, OmniboxPopupModel::NORMAL),
@@ -350,12 +322,6 @@ TEST_F(OmniboxPopupModelTest, PopupStepSelectionWithHiddenGroupIds) {
                                  OmniboxPopupModel::kStateOrLine);
     EXPECT_EQ(selection, model()->popup_model()->selection());
   }
-
-  // Test the kStateOrNothing case (that it can't go to the header).
-  popup_model()->StepSelection(OmniboxPopupModel::kForward,
-                               OmniboxPopupModel::kStateOrNothing);
-  EXPECT_EQ(Selection(1, OmniboxPopupModel::NORMAL),
-            model()->popup_model()->selection());
 
   // Test the kWholeLine case, forwards and backwards.
   for (auto selection : {

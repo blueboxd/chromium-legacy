@@ -1427,19 +1427,19 @@ class DefaultUseCaseTest : public MainThreadSchedulerImplTest {
 };
 
 TEST_F(DefaultUseCaseTest, InitiallyInEarlyLoadingUseCase) {
-  scheduler_->OnMainFramePaint(/*force_policy_update=*/false);
+  scheduler_->OnMainFramePaint();
 
   // Should be early loading by default.
   EXPECT_EQ(UseCase::kEarlyLoading, ForceUpdatePolicyAndGetCurrentUseCase());
 
   ON_CALL(*page_scheduler_, IsWaitingForMainFrameContentfulPaint)
       .WillByDefault(Return(false));
-  scheduler_->OnMainFramePaint(/*force_policy_update=*/false);
+  scheduler_->OnMainFramePaint();
   EXPECT_EQ(UseCase::kLoading, CurrentUseCase());
 
   ON_CALL(*page_scheduler_, IsWaitingForMainFrameMeaningfulPaint)
       .WillByDefault(Return(false));
-  scheduler_->OnMainFramePaint(/*force_policy_update=*/false);
+  scheduler_->OnMainFramePaint();
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
 }
 
@@ -1476,7 +1476,7 @@ TEST_F(PrioritizeCompositingAndLoadingInUseCaseLoadingTest, LoadingUseCase) {
   // UseCase::kLoading.
   ON_CALL(*page_scheduler_, IsWaitingForMainFrameContentfulPaint)
       .WillByDefault(Return(false));
-  scheduler_->OnMainFramePaint(/*force_policy_update=*/false);
+  scheduler_->OnMainFramePaint();
 
   run_order.clear();
   PostTestTasks(&run_order, "I1 D1 C1 T1 L1 D2 C2 T2 L2");
@@ -1493,7 +1493,7 @@ TEST_F(PrioritizeCompositingAndLoadingInUseCaseLoadingTest, LoadingUseCase) {
   // longer prioritized.
   ON_CALL(*page_scheduler_, IsWaitingForMainFrameMeaningfulPaint)
       .WillByDefault(Return(false));
-  scheduler_->OnMainFramePaint(/*force_policy_update=*/false);
+  scheduler_->OnMainFramePaint();
   test_task_runner_->AdvanceMockTickClock(
       base::TimeDelta::FromMilliseconds(150000));
   run_order.clear();
@@ -2603,7 +2603,7 @@ TEST_F(MainThreadSchedulerImplTest,
       .WillByDefault(Return(false));
   ON_CALL(*page_scheduler_, IsWaitingForMainFrameMeaningfulPaint)
       .WillByDefault(Return(true));
-  scheduler_->OnMainFramePaint(/*force_policy_update=*/false);
+  scheduler_->OnMainFramePaint();
   EXPECT_EQ(UseCase::kLoading, ForceUpdatePolicyAndGetCurrentUseCase());
   EXPECT_EQ(rails_response_time(),
             scheduler_->EstimateLongestJankFreeTaskDuration());
@@ -3012,11 +3012,11 @@ TEST_F(MainThreadSchedulerImplTest, TestLoadRAILMode) {
   EXPECT_EQ(UseCase::kEarlyLoading, ForceUpdatePolicyAndGetCurrentUseCase());
   ON_CALL(*page_scheduler_, IsWaitingForMainFrameContentfulPaint)
       .WillByDefault(Return(false));
-  scheduler_->OnMainFramePaint(/*force_policy_update=*/false);
+  scheduler_->OnMainFramePaint();
   EXPECT_EQ(UseCase::kLoading, ForceUpdatePolicyAndGetCurrentUseCase());
   ON_CALL(*page_scheduler_, IsWaitingForMainFrameMeaningfulPaint)
       .WillByDefault(Return(false));
-  scheduler_->OnMainFramePaint(/*force_policy_update=*/false);
+  scheduler_->OnMainFramePaint();
   EXPECT_EQ(UseCase::kNone, ForceUpdatePolicyAndGetCurrentUseCase());
   EXPECT_EQ(RAILMode::kAnimation, GetRAILMode());
   scheduler_->RemoveRAILModeObserver(&observer);
@@ -3932,9 +3932,7 @@ TEST_F(BestEffortNonMainQueuesUntilOnLoadTest, DeprioritizesAllNonMainQueues) {
   EXPECT_EQ(non_timer_tq->GetQueuePriority(),
             TaskQueue::QueuePriority::kBestEffortPriority);
 
-  ignore_result(scheduler_->agent_scheduling_strategy().OnMainFrameLoad(
-      *main_frame_scheduler_));
-  ForceUpdatePolicyAndGetCurrentUseCase();
+  scheduler_->OnMainFrameLoad(*main_frame_scheduler_);
 
   EXPECT_EQ(non_timer_tq->GetQueuePriority(),
             TaskQueue::QueuePriority::kNormalPriority);

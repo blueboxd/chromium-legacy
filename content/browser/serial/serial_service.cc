@@ -201,4 +201,6 @@ void SerialService::DecrementActiveFrameCount() {
   web_contents_impl->DecrementSerialActiveFrameCount();
 }
 
+RENDER_DOCUMENT_HOST_USER_DATA_KEY_IMPL(SerialService)
+
 }  // namespace content

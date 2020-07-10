@@ -152,7 +152,7 @@ using chrome_test_util::SettingsDoneButton;
                          scrollViewMatcher:manageSyncScrollViewMatcher]
       performAction:grey_tap()];
   // Needs to wait until the sign-in dialog is fully dismissed to continue.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
   [self openGoogleServicesSettings];
   // Verify the sync is not confirmed yet.
   [self assertCellWithTitleID:IDS_IOS_SYNC_SETUP_NOT_CONFIRMED_TITLE
@@ -180,7 +180,7 @@ using chrome_test_util::SettingsDoneButton;
                  ButtonWithAccessibilityLabelId(
                      IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)]
       performAction:grey_tap()];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 }
 
 // Tests that the Safe Browsing toggle reflects the current value of the

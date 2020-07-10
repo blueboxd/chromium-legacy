@@ -472,14 +472,27 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
       action->value = set_value_params.value;
       break;
     }
-    // These actions are currently unused by any existing clients of
-    // automation. They also require additional arguments to be plumbed
-    // through (e.g. setValue takes a string value to be set). Future clients
-    // may wish to extend the api to support these actions.
-    case api::automation::ACTION_TYPE_SCROLLTOPOINT:
-    case api::automation::ACTION_TYPE_SETSCROLLOFFSET:
-      return RespondNow(
-          Error("Unsupported action: " + params->args.action_type));
+    case api::automation::ACTION_TYPE_SCROLLTOPOINT: {
+      api::automation_internal::ScrollToPointParams scroll_to_point_params;
+      EXTENSION_FUNCTION_VALIDATE(
+          api::automation_internal::ScrollToPointParams::Populate(
+              params->opt_args.additional_properties, &scroll_to_point_params));
+      action->action = ax::mojom::Action::kScrollToPoint;
+      action->target_point =
+          gfx::Point(scroll_to_point_params.x, scroll_to_point_params.y);
+      break;
+    }
+    case api::automation::ACTION_TYPE_SETSCROLLOFFSET: {
+      api::automation_internal::SetScrollOffsetParams set_scroll_offset_params;
+      EXTENSION_FUNCTION_VALIDATE(
+          api::automation_internal::SetScrollOffsetParams::Populate(
+              params->opt_args.additional_properties,
+              &set_scroll_offset_params));
+      action->action = ax::mojom::Action::kSetScrollOffset;
+      action->target_point =
+          gfx::Point(set_scroll_offset_params.x, set_scroll_offset_params.y);
+      break;
+    }
     case api::automation::ACTION_TYPE_GETTEXTLOCATION: {
       api::automation_internal::GetTextLocationDataParams
           get_text_location_params;

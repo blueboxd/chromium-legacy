@@ -118,6 +118,8 @@ const base::Version& GetSelfVersion() {
         VLOG(0) << "UpdateAll complete: error = " << static_cast<int>(error);
         if (reply)
           reply(static_cast<int>(error));
+
+        _appServer->TaskCompleted();
       }));
 
   auto sccb = base::BindRepeating(base::RetainBlock(^(
@@ -149,11 +151,9 @@ const base::Version& GetSelfVersion() {
   }));
 
   _appServer->TaskStarted();
-  _callbackRunner->PostTaskAndReply(
-      FROM_HERE,
-      base::BindOnce(&updater::UpdateService::UpdateAll, _service,
-                     std::move(sccb), std::move(cb)),
-      base::BindOnce(&updater::AppServerMac::TaskCompleted, _appServer));
+  _callbackRunner->PostTask(
+      FROM_HERE, base::BindOnce(&updater::UpdateService::UpdateAll, _service,
+                                std::move(sccb), std::move(cb)));
 }
 
 - (void)checkForUpdateWithAppID:(NSString* _Nonnull)appID
@@ -165,6 +165,8 @@ const base::Version& GetSelfVersion() {
         VLOG(0) << "Update complete: error = " << static_cast<int>(error);
         if (reply)
           reply(static_cast<int>(error));
+
+        _appServer->TaskCompleted();
       }));
 
   auto sccb = base::BindRepeating(base::RetainBlock(^(
@@ -196,12 +198,11 @@ const base::Version& GetSelfVersion() {
   }));
 
   _appServer->TaskStarted();
-  _callbackRunner->PostTaskAndReply(
+  _callbackRunner->PostTask(
       FROM_HERE,
       base::BindOnce(&updater::UpdateService::Update, _service,
                      base::SysNSStringToUTF8(appID), [priority priority],
-                     std::move(sccb), std::move(cb)),
-      base::BindOnce(&updater::AppServerMac::TaskCompleted, _appServer));
+                     std::move(sccb), std::move(cb)));
 }
 
 - (void)registerForUpdatesWithAppId:(NSString* _Nullable)appId
@@ -224,14 +225,14 @@ const base::Version& GetSelfVersion() {
                 << response.status_code;
         if (reply)
           reply(response.status_code);
+
+        _appServer->TaskCompleted();
       }));
 
   _appServer->TaskStarted();
-  _callbackRunner->PostTaskAndReply(
-      FROM_HERE,
-      base::BindOnce(&updater::UpdateService::RegisterApp, _service, request,
-                     std::move(cb)),
-      base::BindOnce(&updater::AppServerMac::TaskCompleted, _appServer));
+  _callbackRunner->PostTask(
+      FROM_HERE, base::BindOnce(&updater::UpdateService::RegisterApp, _service,
+                                request, std::move(cb)));
 }
 
 - (void)getUpdaterVersionWithReply:

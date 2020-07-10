@@ -150,7 +150,7 @@ using chrome_test_util::SettingsDoneButton;
   // Open Bookmarks
   [ChromeEarlGreyUI openToolsMenu];
   [ChromeEarlGreyUI tapToolsMenuButton:chrome_test_util::BookmarksMenuButton()];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 
   [self verifyNoKeyboardCommandsAreRegistered];
 
@@ -164,7 +164,7 @@ using chrome_test_util::SettingsDoneButton;
   // Open Recent Tabs
   [ChromeEarlGreyUI openToolsMenu];
   [ChromeEarlGreyUI tapToolsMenuButton:RecentTabsMenuButton()];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
 
   [self verifyNoKeyboardCommandsAreRegistered];
 

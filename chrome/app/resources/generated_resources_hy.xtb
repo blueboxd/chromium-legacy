@@ -6490,7 +6490,7 @@
     <ph name="BEGIN_LIST" />
       <ph name="LIST_ITEM" />Ստուգել ցանցային մալուխը, մոդեմը և երթուղիչը
       <ph name="LIST_ITEM" />Նորից միանալ Wi-Fi-ին
-      <ph name="LIST_ITEM" />Աշխատացնել Chrome-ի կապի ախտորոշումը
+      <ph name="LIST_ITEM" />Գործարկել Chrome-ի կապի ախտորոշումը
     <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Նկար նկարի մեջ</translation>
 <translation id="9168436347345867845">Ավելի ուշ</translation>

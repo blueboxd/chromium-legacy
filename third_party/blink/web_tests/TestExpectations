@@ -211,6 +211,11 @@ crbug.com/974720 [ Mac10.13 ] virtual/text-antialias/firstline/capitalize-transf
 
 # This test depends on synchronous focus() which does not exist (anymore?).
 crbug.com/1074482 external/wpt/html/interaction/focus/the-autofocus-attribute/update-the-rendering.html [ Failure ]
+crbug.com/1074482 external/wpt/clipboard-apis/feature-policy/clipboard-read/clipboard-read-enabled-by-feature-policy-cross-origin-tentative.https.sub.html [ Pass Failure ]
+crbug.com/1074482 external/wpt/clipboard-apis/feature-policy/clipboard-read/clipboard-read-enabled-by-feature-policy-attribute-cross-origin-tentative.https.sub.html [ Pass Failure ]
+crbug.com/1074482 external/wpt/clipboard-apis/feature-policy/clipboard-write/clipboard-write-enabled-by-feature-policy-cross-origin-tentative.https.sub.html [ Pass Failure ]
+crbug.com/1074482 external/wpt/clipboard-apis/feature-policy/clipboard-write/clipboard-write-enabled-by-feature-policy-attribute-cross-origin-tentative.https.sub.html [ Pass Failure ]
+
 # This test has a bug in it that prevents it from being able to deal with order
 # differences it claims to support.
 crbug.com/1076129 external/wpt/service-workers/service-worker/clients-matchall-frozen.https.html [ Pass Failure ]
@@ -990,12 +995,9 @@ crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/mult
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-children-height-007.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-children-height-008.html [ Failure ]
 crbug.com/994172 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-dynamic-add-007.html [ Pass Crash ]
-crbug.com/1066617 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-dynamic-add-008.html [ Failure Crash ]
 crbug.com/924142 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-dynamic-add-010.html [ Crash Pass ]
 crbug.com/874051 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-fieldset-002.html [ Failure Crash ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-list-item-001.html [ Failure ]
-crbug.com/1066617 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-margin-001.xht [ Crash ]
-crbug.com/1066617 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-margin-nested-firstchild-001.xht [ Crash ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-002.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-003.xht [ Crash Failure Timeout ]
@@ -1003,6 +1005,7 @@ crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/mult
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-ch-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-small-001.xht [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/non-adjacent-spanners-000.html [ Pass ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/spanner-fragmentation-001.html [ Pass ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/abspos-after-break-after.html [ Failure ]
 crbug.com/1066616 virtual/layout_ng_block_frag/fast/multicol/abspos-in-overflow-hidden-in-2nd-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/abspos-new-width-rebalance.html [ Crash Failure ]
@@ -1028,7 +1031,6 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/composited-opacity-2
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/composited-with-overflow-in-next-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/doubly-nested-with-top-padding-crossing-row-boundaries.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/change-second-row-height.html [ Failure ]
-crbug.com/1066617 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-spanner-after-spanner-before-content.html [ Crash ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-spanner-into-stf-constrained-width.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-spanner-into-stf-unconstrained-width.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/relpos-becomes-static-has-abspos.html [ Failure ]
@@ -1093,7 +1095,7 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/shadow-breaking.html
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/span/abspos-containing-block-outside-spanner.html [ Crash Failure Timeout ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/span/float.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/span/inside-block-with-fixed-height.html [ Failure ]
-crbug.com/1066617 virtual/layout_ng_block_frag/fast/multicol/span/invalid-spanner-in-transform.html [ Failure Crash ]
+crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/span/invalid-spanner-in-transform.html [ Failure Crash ]
 crbug.com/1040947 virtual/layout_ng_block_frag/fast/multicol/span/list-multi-column-crash.html [ Crash Pass ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/span/outer-column-break-after-inner-spanner-2.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/span/outer-column-break-after-inner-spanner-and-float.html [ Failure ]
@@ -1500,7 +1502,7 @@ crbug.com/1091139 virtual/cors/http/tests/xmlhttprequest/workers/cross-origin-un
 # ====== CORS virtual test failures until here ======
 
 
-crbug.com/1035582 [ Mac10.10 ] virtual/controls-refresh-hc/virtual/controls-refresh/color-scheme/select/select-multiple-hover-focused-unselected.html [ Skip ]
+crbug.com/1035582 [ Mac10.10 ] virtual/controls-refresh-hc/fast/forms/color-scheme/select/select-multiple-hover-focused-unselected.html [ Skip ]
 
 # Bug in FormControlsRefresh <select multiple> tap behavior:
 crbug.com/1045672 fast/forms/select/listbox-tap.html [ Failure ]
@@ -3629,6 +3631,7 @@ crbug.com/792446 external/wpt/css/css-multicol/multicol-span-float-001.xht [ Fai
 crbug.com/964183 external/wpt/css/css-multicol/multicol-width-005.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/nested-with-too-tall-line.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/non-adjacent-spanners-000.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-multicol/spanner-fragmentation-001.html [ Failure ]
 
 crbug.com/1031667 external/wpt/css/css-pseudo/marker-content-007.tentative.html [ Failure ]
 crbug.com/1031667 external/wpt/css/css-pseudo/marker-content-008.tentative.html [ Failure ]
@@ -6244,7 +6247,7 @@ crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/date-suggestion-picker-ap
 crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/week-suggestion-picker-appearance-rtl.html [ Pass Failure ]
 crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/time-suggestion-picker-appearance-with-scroll-bar.html [ Pass Failure ]
 crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/month-suggestion-picker-appearance-rtl.html [ Pass Failure ]
-crbug.com/1044712 [ Win ] virtual/controls-refresh/color-scheme/suggestion-picker/date-suggestion-picker-appearance.html [ Pass Failure ]
+crbug.com/1044712 [ Win ] fast/forms/color-scheme/suggestion-picker/date-suggestion-picker-appearance.html [ Pass Failure ]
 crbug.com/1044715 [ Win ] external/wpt/pointerevents/pointerevent_touch-action-pan-right-css_touch.html [ Pass Timeout ]
 crbug.com/1044715 [ Linux ] external/wpt/pointerevents/pointerevent_touch-action-pan-right-css_touch.html [ Pass Timeout ]
 crbug.com/1044715 [ Win ] external/wpt/pointerevents/pointerevent_touch-action-inherit_parent-none_touch.html [ Pass Timeout ]
@@ -6422,9 +6425,9 @@ crbug.com/1048149 [ Mac ] fast/forms/calendar-picker/calendar-picker-touch-opera
 crbug.com/1048149 [ Mac ] fast/forms/calendar-picker/date-picker-choose-default-value-after-set-value.html [ Pass Crash ]
 crbug.com/1048149 [ Mac ] fast/forms/calendar-picker/month-picker-appearance.html [ Pass Crash ]
 crbug.com/1048149 [ Mac ] fast/forms/calendar-picker/month-picker-appearance-step.html [ Pass Crash ]
-crbug.com/1048149 [ Mac ] virtual/controls-refresh/color/color-picker-appearance-zoom125.html [ Pass Crash ]
-crbug.com/1048149 [ Mac ] virtual/controls-refresh/color/color-picker-top-left-selection-position-after-reopen.html [ Pass Crash ]
-crbug.com/1048149 [ Mac ] virtual/controls-refresh/color/color-picker-zoom150-bottom-edge-no-nan.html [ Pass Crash ]
+crbug.com/1048149 [ Mac ] fast/forms/color/color-picker-appearance-zoom125.html [ Pass Crash ]
+crbug.com/1048149 [ Mac ] fast/forms/color/color-picker-top-left-selection-position-after-reopen.html [ Pass Crash ]
+crbug.com/1048149 [ Mac ] fast/forms/color/color-picker-zoom150-bottom-edge-no-nan.html [ Pass Crash ]
 # This used to be [ Pass Crash ], but as of crbug.com/1050039 it started flaking as well.
 crbug.com/1048149 crbug.com/1050121 [ Mac ] fast/forms/month/month-picker-appearance-zoom150.html [ Pass Failure Crash Failure ]
 

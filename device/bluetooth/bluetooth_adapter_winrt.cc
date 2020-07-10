@@ -483,8 +483,8 @@ std::string BluetoothAdapterWinrt::GetName() const {
 }
 
 void BluetoothAdapterWinrt::SetName(const std::string& name,
-                                    const base::Closure& callback,
-                                    const ErrorCallback& error_callback) {
+                                    base::OnceClosure callback,
+                                    ErrorOnceCallback error_callback) {
   NOTIMPLEMENTED();
 }
 
@@ -529,10 +529,9 @@ bool BluetoothAdapterWinrt::IsDiscoverable() const {
   return false;
 }
 
-void BluetoothAdapterWinrt::SetDiscoverable(
-    bool discoverable,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+void BluetoothAdapterWinrt::SetDiscoverable(bool discoverable,
+                                            base::OnceClosure callback,
+                                            ErrorOnceCallback error_callback) {
   NOTIMPLEMENTED();
 }
 

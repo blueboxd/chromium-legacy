@@ -55,6 +55,11 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
     /** @private {number?} */
     this.delayedAttributeOutputId_;
 
+    /** @private {number} */
+    this.currentPage_ = -1;
+    /** @private {number} */
+    this.totalPages_ = -1;
+
     this.addListener_(EventType.ALERT, this.onAlert);
     this.addListener_(EventType.BLUR, this.onBlur);
     this.addListener_(
@@ -442,6 +447,33 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
     const currentRange = ChromeVoxState.instance.currentRange;
     if (currentRange && currentRange.isValid()) {
       new Output().withLocation(currentRange, null, evt.type).go();
+
+      if (EventSourceState.get() != EventSourceType.TOUCH_GESTURE) {
+        return;
+      }
+
+      const root = AutomationUtil.getTopLevelRoot(currentRange.start.node);
+      if (!root || root.scrollY === undefined) {
+        return;
+      }
+
+      const currentPage = Math.ceil(root.scrollY / root.location.height) || 1;
+      const totalPages =
+          Math.ceil(
+              (root.scrollYMax - root.scrollYMin) / root.location.height) ||
+          1;
+
+      // Ignore announcements if we've already announced something for this page
+      // change. Note that this need not care about the root if it changed as
+      // well.
+      if (this.currentPage_ == currentPage && this.totalPages_ == totalPages) {
+        return;
+      }
+      this.currentPage_ = currentPage;
+      this.totalPages_ = totalPages;
+      ChromeVox.tts.speak(
+          Msgs.getMsg('describe_pos_by_page', [currentPage, totalPages]),
+          QueueMode.QUEUE);
     }
   }
 

@@ -8,8 +8,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeAccessorActivity;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.printing.PrintingController;
 import org.chromium.printing.PrintingControllerImpl;
 
@@ -25,6 +26,7 @@ public class PrintShareActivity extends ChromeAccessorActivity {
     public static boolean featureIsAvailable(Tab currentTab) {
         PrintingController printingController = PrintingControllerImpl.getInstance();
         return !currentTab.isNativePage() && !printingController.isBusy()
-                && PrefServiceBridge.getInstance().getBoolean(Pref.PRINTING_ENABLED);
+                && UserPrefs.get(Profile.getLastUsedRegularProfile())
+                           .getBoolean(Pref.PRINTING_ENABLED);
     }
 }

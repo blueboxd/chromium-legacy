@@ -19,7 +19,7 @@ const methodCountInput = form.elements.namedItem('method_count');
 /** Utilities for working with the DOM */
 const dom = {
   /**
-   * Create a document fragment from the given nodes
+   * Creates a document fragment from the given nodes.
    * @param {Iterable<Node>} nodes
    * @returns {DocumentFragment}
    */
@@ -30,7 +30,7 @@ const dom = {
   },
   /**
    * Removes all the existing children of `parent` and inserts
-   * `newChild` in their place
+   * `newChild` in their place.
    * @param {Node} parent
    * @param {Node | null} newChild
    */

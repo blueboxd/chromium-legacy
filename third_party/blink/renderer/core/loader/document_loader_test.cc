@@ -272,7 +272,7 @@ TEST_F(DocumentLoaderSimTest, DocumentPolicyNoEffectWhenFlagNotSet) {
   blink::ScopedDocumentPolicyForTest sdp(false);
   SimRequest::Params params;
   params.response_http_headers = {
-      {"Document-Policy", "unoptimized-lossless-images;bpp=1.1"}};
+      {"Document-Policy", "unoptimized-lossless-images=1.1"}};
 
   SimRequest main_resource("https://example.com", "text/html");
   SimRequest iframe_resource("https://example.com/foo.html", "text/html",
@@ -282,7 +282,7 @@ TEST_F(DocumentLoaderSimTest, DocumentPolicyNoEffectWhenFlagNotSet) {
   main_resource.Complete(R"(
     <iframe
       src="https://example.com/foo.html"
-      policy="unoptimized-lossless-images;bpp=1.0">
+      policy="unoptimized-lossless-images=1.0">
     </iframe>
   )");
 
@@ -350,7 +350,7 @@ TEST_F(DocumentLoaderSimTest, ReportErrorWhenDocumentPolicyIncompatible) {
   blink::ScopedDocumentPolicyForTest sdp(true);
   SimRequest::Params params;
   params.response_http_headers = {
-      {"Document-Policy", "unoptimized-lossless-images;bpp=1.1"}};
+      {"Document-Policy", "unoptimized-lossless-images=1.1"}};
 
   SimRequest main_resource("https://example.com", "text/html");
   SimRequest iframe_resource("https://example.com/foo.html", "text/html",
@@ -360,7 +360,7 @@ TEST_F(DocumentLoaderSimTest, ReportErrorWhenDocumentPolicyIncompatible) {
   main_resource.Complete(R"(
     <iframe
       src="https://example.com/foo.html"
-      policy="unoptimized-lossless-images;bpp=1.0">
+      policy="unoptimized-lossless-images=1.0">
     </iframe>
   )");
 
@@ -395,8 +395,8 @@ TEST_F(DocumentLoaderSimTest,
   blink::ScopedDocumentPolicyForTest sdp(true);
   SimRequest::Params params;
   params.response_http_headers = {
-      {"Require-Document-Policy", "unoptimized-lossless-images;bpp=1.0"},
-      {"Document-Policy", "unoptimized-lossless-images;bpp=1.1"}};
+      {"Require-Document-Policy", "unoptimized-lossless-images=1.0"},
+      {"Document-Policy", "unoptimized-lossless-images=1.1"}};
 
   SimRequest main_resource("https://example.com", "text/html", params);
   LoadURL("https://example.com");
@@ -412,7 +412,7 @@ TEST_F(DocumentLoaderSimTest, DocumentPolicyHeaderHistogramTest) {
   SimRequest::Params params;
   params.response_http_headers = {
       {"Document-Policy",
-       "font-display-late-swap, unoptimized-lossless-images;bpp=1.1"}};
+       "font-display-late-swap, unoptimized-lossless-images=1.1"}};
 
   SimRequest main_resource("https://example.com", "text/html", params);
   LoadURL("https://example.com");
@@ -437,9 +437,9 @@ TEST_F(DocumentLoaderSimTest, DocumentPolicyPolicyAttributeHistogramTest) {
   // occurrence.
   main_resource.Complete(R"(
     <iframe policy="font-display-late-swap"></iframe>
-    <iframe policy="no-font-display-late-swap"></iframe>
+    <iframe policy="font-display-late-swap=?0"></iframe>
     <iframe
-      policy="font-display-late-swap, unoptimized-lossless-images;bpp=1.1">
+      policy="font-display-late-swap, unoptimized-lossless-images=1.1">
     </iframe>
   )");
 
@@ -527,15 +527,15 @@ TEST_P(DocumentPolicyHeaderUseCounterTest, ShouldObserveUseCounterUpdate) {
   SimRequest::Params params;
   if (has_document_policy_header) {
     params.response_http_headers.insert("Document-Policy",
-                                        "unoptimized-lossless-images;bpp=1.0");
+                                        "unoptimized-lossless-images=1.0");
   }
   if (has_report_only_header) {
     params.response_http_headers.insert("Document-Policy-Report-Only",
-                                        "unoptimized-lossless-images;bpp=1.0");
+                                        "unoptimized-lossless-images=1.0");
   }
   if (has_require_header) {
     params.response_http_headers.insert("Require-Document-Policy",
-                                        "unoptimized-lossless-images;bpp=1.0");
+                                        "unoptimized-lossless-images=1.0");
   }
   SimRequest main_resource("https://example.com", "text/html", params);
   LoadURL("https://example.com");
@@ -564,14 +564,14 @@ TEST_F(DocumentLoaderSimTest,
   SimRequest main_resource("https://example.com", "text/html");
   SimRequest::Params iframe_params;
   iframe_params.response_http_headers = {
-      {"Document-Policy", "unoptimized-lossless-images;bpp=1.0"}};
+      {"Document-Policy", "unoptimized-lossless-images=1.0"}};
   SimRequest iframe_resource("https://example.com/foo.html", "text/html",
                              iframe_params);
   LoadURL("https://example.com");
   main_resource.Complete(R"(
     <iframe
       src="https://example.com/foo.html"
-      policy="unoptimized-lossless-images;bpp=1.0"
+      policy="unoptimized-lossless-images=1.0"
     ></iframe>
   )");
   iframe_resource.Finish();
@@ -595,13 +595,13 @@ TEST_F(DocumentLoaderSimTest, RequiredDocumentPolicyUseCounterTest) {
 
   SimRequest::Params main_frame_params;
   main_frame_params.response_http_headers = {
-      {"Require-Document-Policy", "unoptimized-lossless-images;bpp=1.0"}};
+      {"Require-Document-Policy", "unoptimized-lossless-images=1.0"}};
   SimRequest main_resource("https://example.com", "text/html",
                            main_frame_params);
 
   SimRequest::Params iframe_params;
   iframe_params.response_http_headers = {
-      {"Document-Policy", "unoptimized-lossless-images;bpp=1.0"}};
+      {"Document-Policy", "unoptimized-lossless-images=1.0"}};
   SimRequest iframe_resource("https://example.com/foo.html", "text/html",
                              iframe_params);
 

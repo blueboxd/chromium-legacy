@@ -9,7 +9,6 @@
     // document_policy_name: "FEATURE_NAME" is used to specify the policy name
     // which gets parsed from the header or the policy attribute.
     document_policy_name: {},
-    value_name: {},
     // value type allowed in mojom::PolicyValueType which is defined in
     // third_party/blink/public/mojom/feature_policy/policy_value.mojom.
     value_type: {},
@@ -31,9 +30,15 @@
 
   data: [
     {
+      name: "Default",
+      document_policy_name: "*",
+      value_type: "Bool",
+      default_value: "true",
+      depends_on: []
+    },
+    {
       name: "FontDisplay",
       document_policy_name: "font-display-late-swap",
-      value_name: "",
       value_type: "Bool",
       default_value: "true",
       depends_on: ["ExperimentalProductivityFeatures"],
@@ -41,7 +46,6 @@
     {
       name: "UnoptimizedLosslessImages",
       document_policy_name: "unoptimized-lossless-images",
-      value_name: "bpp",
       value_type: "DecDouble",
       default_value: "max",
       depends_on: ["UnoptimizedImagePolicies"],
@@ -53,14 +57,12 @@
       // Text feature), and scroll restoration.
       name: "ForceLoadAtTop",
       document_policy_name: "force-load-at-top",
-      value_name: "",
       value_type: "Bool",
       default_value: "false",
     },
     {
       name: "UnoptimizedLosslessImagesStrict",
       document_policy_name: "unoptimized-lossless-images-strict",
-      value_name: "bpp",
       value_type: "DecDouble",
       default_value: "max",
       depends_on: ["UnoptimizedImagePolicies"],
@@ -68,7 +70,6 @@
     {
       name: "UnoptimizedLossyImages",
       document_policy_name: "unoptimized-lossy-images",
-      value_name: "bpp",
       value_type: "DecDouble",
       default_value: "max",
       depends_on: ["UnoptimizedImagePolicies"],
@@ -76,7 +77,6 @@
     {
       name: "OversizedImages",
       document_policy_name: "oversized-images",
-      value_name: "scale",
       value_type: "DecDouble",
       default_value: "max",
       depends_on: ["UnoptimizedImagePolicies"],
@@ -84,17 +84,16 @@
     {
       name: "UnsizedMedia",
       document_policy_name: "unsized-media",
-      value_name: "",
       value_type: "Bool",
       default_value: "true",
       depends_on: ["UnsizedMediaPolicy"],
     },
-  {
+    {
       name: "LayoutAnimations",
       document_policy_name: "layout-animations",
-      value_name: "",
       value_type: "Bool",
       default_value: "true",
       depends_on: ["ExperimentalProductivityFeatures"],
-    },],
+    },
+  ],
 }

@@ -96,7 +96,7 @@ import org.chromium.chrome.browser.history.HistoryActivity;
 import org.chromium.chrome.browser.history.HistoryManager;
 import org.chromium.chrome.browser.history.StubbedHistoryProvider;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
@@ -108,7 +108,9 @@ import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
+import org.chromium.components.prefs.PrefService;
 import org.chromium.components.sync.ModelType;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -562,9 +564,8 @@ public class PasswordSettingsTest {
     @SmallTest
     @Feature({"Preferences"})
     public void testSavePasswordsSwitch() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PrefServiceBridge.getInstance().setBoolean(Pref.CREDENTIALS_ENABLE_SERVICE, true);
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { getPrefService().setBoolean(Pref.CREDENTIALS_ENABLE_SERVICE, true); });
 
         final SettingsActivity settingsActivity = mSettingsActivityTestRule.startSettingsActivity();
 
@@ -576,15 +577,13 @@ public class PasswordSettingsTest {
             Assert.assertTrue(onOffSwitch.isChecked());
 
             onOffSwitch.performClick();
-            Assert.assertFalse(
-                    PrefServiceBridge.getInstance().getBoolean(Pref.CREDENTIALS_ENABLE_SERVICE));
+            Assert.assertFalse(getPrefService().getBoolean(Pref.CREDENTIALS_ENABLE_SERVICE));
             onOffSwitch.performClick();
-            Assert.assertTrue(
-                    PrefServiceBridge.getInstance().getBoolean(Pref.CREDENTIALS_ENABLE_SERVICE));
+            Assert.assertTrue(getPrefService().getBoolean(Pref.CREDENTIALS_ENABLE_SERVICE));
 
             settingsActivity.finish();
 
-            PrefServiceBridge.getInstance().setBoolean(Pref.CREDENTIALS_ENABLE_SERVICE, false);
+            getPrefService().setBoolean(Pref.CREDENTIALS_ENABLE_SERVICE, false);
         });
 
         mSettingsActivityTestRule.startSettingsActivity();
@@ -685,9 +684,8 @@ public class PasswordSettingsTest {
     @SmallTest
     @Feature({"Preferences"})
     public void testAutoSignInCheckbox() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PrefServiceBridge.getInstance().setBoolean(Pref.CREDENTIALS_ENABLE_AUTOSIGNIN, true);
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { getPrefService().setBoolean(Pref.CREDENTIALS_ENABLE_AUTOSIGNIN, true); });
 
         final SettingsActivity settingsActivity = mSettingsActivityTestRule.startSettingsActivity();
 
@@ -699,15 +697,13 @@ public class PasswordSettingsTest {
             Assert.assertTrue(onOffSwitch.isChecked());
 
             onOffSwitch.performClick();
-            Assert.assertFalse(
-                    PrefServiceBridge.getInstance().getBoolean(Pref.CREDENTIALS_ENABLE_AUTOSIGNIN));
+            Assert.assertFalse(getPrefService().getBoolean(Pref.CREDENTIALS_ENABLE_AUTOSIGNIN));
             onOffSwitch.performClick();
-            Assert.assertTrue(
-                    PrefServiceBridge.getInstance().getBoolean(Pref.CREDENTIALS_ENABLE_AUTOSIGNIN));
+            Assert.assertTrue(getPrefService().getBoolean(Pref.CREDENTIALS_ENABLE_AUTOSIGNIN));
 
             settingsActivity.finish();
 
-            PrefServiceBridge.getInstance().setBoolean(Pref.CREDENTIALS_ENABLE_AUTOSIGNIN, false);
+            getPrefService().setBoolean(Pref.CREDENTIALS_ENABLE_AUTOSIGNIN, false);
         });
 
         mSettingsActivityTestRule.startSettingsActivity();
@@ -2135,5 +2131,9 @@ public class PasswordSettingsTest {
     PasswordEditingDelegate waitForEvent() {
         return verify(mMockPasswordEditingDelegate,
                 timeout(ScalableTimeout.scaleTimeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL)));
+    }
+
+    PrefService getPrefService() {
+        return UserPrefs.get(Profile.getLastUsedRegularProfile());
     }
 }

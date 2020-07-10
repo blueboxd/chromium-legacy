@@ -248,15 +248,8 @@ bool ClearNV12Padding(const VAImage& image,
   return true;
 }
 
-// Maximum framerate of encoded profile. This value is an arbitrary limit
-// and not taken from HW documentation.
-constexpr int kMaxEncoderFramerate = 30;
-
-// A map between VideoCodecProfile and VAProfile.
-static const struct {
-  VideoCodecProfile profile;
-  VAProfile va_profile;
-} kProfileMap[] = {
+// Map of the supported VaProfiles indexed by media's VideoCodecProfile.
+std::map<VideoCodecProfile, VAProfile> kMediaToVAProfileMap = {
     {H264PROFILE_BASELINE, VAProfileH264Baseline},
     {H264PROFILE_MAIN, VAProfileH264Main},
     // TODO(posciak): See if we can/want to support other variants of
@@ -978,32 +971,30 @@ bool VASupportedProfiles::FillProfileInfo_Locked(
   return is_any_profile_supported;
 }
 
-// Maps VideoCodecProfile enum values to VaProfile values. This function
-// includes a workaround for https://crbug.com/345569: if va_profile is h264
-// baseline and it is not supported, we try constrained baseline.
+// Maps a VideoCodecProfile |profile| to a VAProfile. This function includes a
+// workaround for https://crbug.com/345569: if |va_profile| is h264 baseline and
+// this is not supported, we try constrained baseline.
 VAProfile ProfileToVAProfile(VideoCodecProfile profile,
                              VaapiWrapper::CodecMode mode) {
-  VAProfile va_profile = VAProfileNone;
-  for (size_t i = 0; i < base::size(kProfileMap); ++i) {
-    if (kProfileMap[i].profile == profile) {
-      va_profile = kProfileMap[i].va_profile;
-      break;
-    }
-  }
-  const VASupportedProfiles& supported_profiles = VASupportedProfiles::Get();
-  if (!supported_profiles.IsProfileSupported(mode, va_profile) &&
-      va_profile == VAProfileH264Baseline) {
-    // https://crbug.com/345569: ProfileIDToVideoCodecProfile() currently strips
-    // the information whether the profile is constrained or not, so we have no
-    // way to know here. Try for baseline first, but if it is not supported,
-    // try constrained baseline and hope this is what it actually is
-    // (which in practice is true for a great majority of cases).
-    if (supported_profiles.IsProfileSupported(
+  if (!base::Contains(kMediaToVAProfileMap, profile))
+    return VAProfileNone;
+
+  VAProfile va_profile = kMediaToVAProfileMap[profile];
+
+  // https://crbug.com/345569: VideoCodecProfile has no information whether the
+  // profile is constrained or not, so we have no way to know here. Try for
+  // baseline first, but if it is not supported, try constrained baseline and
+  // hope this is what it actually is (which in practice is true for a great
+  // majority of cases).
+  if (va_profile == VAProfileH264Baseline) {
+    const VASupportedProfiles& supported_profiles = VASupportedProfiles::Get();
+    if (!supported_profiles.IsProfileSupported(mode, VAProfileH264Baseline) &&
+        supported_profiles.IsProfileSupported(
             mode, VAProfileH264ConstrainedBaseline)) {
       va_profile = VAProfileH264ConstrainedBaseline;
-      DVLOG(1) << "Fall back to constrained baseline profile.";
     }
   }
+
   return va_profile;
 }
 
@@ -1203,7 +1194,7 @@ scoped_refptr<VaapiWrapper> VaapiWrapper::CreateForVideoCodec(
     CodecMode mode,
     VideoCodecProfile profile,
     const base::Closure& report_error_to_uma_cb) {
-  VAProfile va_profile = ProfileToVAProfile(profile, mode);
+  const VAProfile va_profile = ProfileToVAProfile(profile, mode);
   return Create(mode, va_profile, report_error_to_uma_cb);
 }
 
@@ -1214,19 +1205,23 @@ VaapiWrapper::GetSupportedEncodeProfiles() {
   const std::vector<VASupportedProfiles::ProfileInfo>& encode_profile_infos =
       VASupportedProfiles::Get().GetSupportedProfileInfosForCodecMode(kEncode);
 
-  for (size_t i = 0; i < base::size(kProfileMap); ++i) {
-    VAProfile va_profile = ProfileToVAProfile(kProfileMap[i].profile, kEncode);
+  for (const auto& media_to_va_profile_map_entry : kMediaToVAProfileMap) {
+    const VideoCodecProfile media_profile = media_to_va_profile_map_entry.first;
+    const VAProfile va_profile = ProfileToVAProfile(media_profile, kEncode);
     if (va_profile == VAProfileNone)
       continue;
     for (const auto& profile_info : encode_profile_infos) {
       if (profile_info.va_profile == va_profile) {
         VideoEncodeAccelerator::SupportedProfile profile;
-        profile.profile = kProfileMap[i].profile;
+        profile.profile = media_profile;
         // Using VA-API for accelerated encoding frames smaller than a certain
         // size is less efficient than using a software encoder.
         const gfx::Size kMinEncodeResolution = gfx::Size(320 + 1, 240 + 1);
         profile.min_resolution = kMinEncodeResolution;
         profile.max_resolution = profile_info.max_resolution;
+        // Maximum framerate of encoded profile. This value is an arbitrary
+        // limit and not taken from HW documentation.
+        constexpr int kMaxEncoderFramerate = 30;
         profile.max_framerate_numerator = kMaxEncoderFramerate;
         profile.max_framerate_denominator = 1;
         profiles.push_back(profile);
@@ -1244,14 +1239,15 @@ VaapiWrapper::GetSupportedDecodeProfiles() {
   const std::vector<VASupportedProfiles::ProfileInfo>& decode_profile_infos =
       VASupportedProfiles::Get().GetSupportedProfileInfosForCodecMode(kDecode);
 
-  for (size_t i = 0; i < base::size(kProfileMap); ++i) {
-    VAProfile va_profile = ProfileToVAProfile(kProfileMap[i].profile, kDecode);
+  for (const auto& media_to_va_profile_map_entry : kMediaToVAProfileMap) {
+    const VideoCodecProfile media_profile = media_to_va_profile_map_entry.first;
+    const VAProfile va_profile = ProfileToVAProfile(media_profile, kDecode);
     if (va_profile == VAProfileNone)
       continue;
     for (const auto& profile_info : decode_profile_infos) {
       if (profile_info.va_profile == va_profile) {
         VideoDecodeAccelerator::SupportedProfile profile;
-        profile.profile = kProfileMap[i].profile;
+        profile.profile = media_profile;
         profile.max_resolution = profile_info.max_resolution;
         profile.min_resolution.SetSize(16, 16);
         profiles.push_back(profile);
@@ -2080,8 +2076,7 @@ bool VaapiWrapper::DownloadFromVABuffer(VABufferID buffer_id,
 
 bool VaapiWrapper::GetVAEncMaxNumOfRefFrames(VideoCodecProfile profile,
                                              size_t* max_ref_frames) {
-  VAProfile va_profile =
-      ProfileToVAProfile(profile, VaapiWrapper::CodecMode::kEncode);
+  const VAProfile va_profile = ProfileToVAProfile(profile, CodecMode::kEncode);
   VAConfigAttrib attrib;
   attrib.type = VAConfigAttribEncMaxRefFrames;
 

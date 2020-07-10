@@ -85,7 +85,7 @@ id<GREYMatcher> NoBookmarksLabel() {
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
 
   // Forget |fakeIdentity|, screens should be popped back to the Main Settings.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
   [SigninEarlGreyUtils forgetFakeIdentity:fakeIdentity];
 
   [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
@@ -109,7 +109,7 @@ id<GREYMatcher> NoBookmarksLabel() {
   [ChromeEarlGreyUI tapAccountsMenuButton:SignOutAccountsButton()];
 
   // Forget |fakeIdentity|, screens should be popped back to the Main Settings.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGreyUI waitForAppToIdle];
   [SigninEarlGreyUtils forgetFakeIdentity:fakeIdentity];
 
   [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]

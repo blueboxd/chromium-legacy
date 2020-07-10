@@ -746,6 +746,24 @@ TEST_F(AssistantPageViewTest,
   EXPECT_TRUE(GetSuggestionChips().empty());
 }
 
+TEST_F(AssistantPageViewTest, ShouldHavePopulatedSuggestionChips) {
+  constexpr char kAnyQuery[] = "<query>";
+  constexpr char kAnyText[] = "<text>";
+  constexpr char kAnyChip[] = "<chip>";
+
+  ShowAssistantUi();
+  MockTextInteraction()
+      .WithQuery(kAnyQuery)
+      .WithTextResponse(kAnyText)
+      .WithSuggestionChip(kAnyChip);
+
+  auto chips = GetSuggestionChips();
+  ASSERT_EQ(chips.size(), 1u);
+  auto* chip = chips.at(0);
+
+  EXPECT_EQ(kAnyChip, base::UTF16ToUTF8(chip->GetText()));
+}
+
 // Tests the |AssistantPageView| with tablet mode enabled.
 class AssistantPageViewTabletModeTest : public AssistantPageViewTest {
  public:

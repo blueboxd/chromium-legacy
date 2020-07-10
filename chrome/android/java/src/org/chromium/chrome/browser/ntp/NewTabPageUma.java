@@ -17,12 +17,13 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.components.embedder_support.util.UrlUtilitiesJni;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
@@ -269,13 +270,13 @@ public class NewTabPageUma {
     /**
      * Records Content Suggestions Display Status when NTPs opened.
      */
-    public void recordContentSuggestionsDisplayStatus() {
+    public void recordContentSuggestionsDisplayStatus(Profile profile) {
         @ContentSuggestionsDisplayStatus
         int status = ContentSuggestionsDisplayStatus.VISIBLE;
-        if (!PrefServiceBridge.getInstance().getBoolean(Pref.ENABLE_SNIPPETS)) {
+        if (!UserPrefs.get(profile).getBoolean(Pref.ENABLE_SNIPPETS)) {
             // Disabled by policy.
             status = ContentSuggestionsDisplayStatus.DISABLED_BY_POLICY;
-        } else if (!PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE)) {
+        } else if (!UserPrefs.get(profile).getBoolean(Pref.ARTICLES_LIST_VISIBLE)) {
             // Articles are collapsed.
             status = ContentSuggestionsDisplayStatus.COLLAPSED;
         }

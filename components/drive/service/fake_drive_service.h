@@ -386,7 +386,7 @@ class FakeDriveService : public DriveServiceInterface {
                              int start_offset,
                              int max_results,
                              int* load_counter,
-                             const google_apis::ChangeListCallback& callback);
+                             google_apis::ChangeListOnceCallback callback);
 
   void GetTeamDriveListInternal(
       int start_offset,

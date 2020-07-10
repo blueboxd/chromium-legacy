@@ -400,7 +400,7 @@
 <translation id="5323213332664049067">Lateinamerikanisch</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="5330145655348521461">Diese Dateien wurden auf einem anderen Desktop geöffnet. Wechseln Sie zu <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />), um sie anzusehen.</translation>
-<translation id="5330512191124428349">Informationen abrufen</translation>
+<translation id="5330512191124428349">Informationen ansehen</translation>
 <translation id="5335458522276292100"><ph name="FILE_COUNT" /> werden auf <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> gesichert</translation>
 <translation id="5358764674931277">Framerate</translation>
 <translation id="5368191757080475556">Ordner für Linux freigeben</translation>
@@ -469,7 +469,7 @@
 <translation id="6096979789310008754">Die Sucheingabe wurde gelöscht. Alle Dateien und Ordner werden angezeigt.</translation>
 <translation id="610101264611565198"><ph name="FILE_NAME" /> wird in den Ordner "<ph name="FOLDER_NAME" />" verschoben</translation>
 <translation id="6111770213269631447">Transliteration (namaskar → নমস্কার)</translation>
-<translation id="6129953537138746214">Leerzeichen</translation>
+<translation id="6129953537138746214">Leertaste</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> wird verschoben...</translation>
 <translation id="6146563240635539929">Videos</translation>
 <translation id="6150853954427645995">Wenn Sie diese Datei zur Offline-Nutzung speichern möchten, gehen Sie online, klicken Sie mit der rechten Maustaste auf die Datei und wählen Sie die Option "<ph name="OFFLINE_CHECKBOX_NAME" />" aus.</translation>

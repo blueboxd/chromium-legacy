@@ -52,36 +52,167 @@ LayoutUnit CalculateColumnContentBlockSize(
   return total_size;
 }
 
-inline bool IsColumnSpanner(NGBlockNode multicol_container,
-                            const NGBlockBreakToken& token) {
-  // A column spanner may also establish a multicol container on its own, so
-  // before returning true here, make sure that the spanner isn't the multicol
-  // container itself.
-  NGLayoutInputNode broken_node = token.InputNode();
-  return broken_node.IsColumnSpanAll() && broken_node != multicol_container;
+// An itinerary of multicol container parts to walk separately for layout. A
+// part is either a chunk of regular column content, or a column spanner.
+class MulticolPartWalker {
+  STACK_ALLOCATED();
+
+ public:
+  // What to lay out or process next.
+  struct Entry {
+    STACK_ALLOCATED();
+
+   public:
+    Entry() = default;
+    Entry(const NGBlockBreakToken* token, NGBlockNode spanner)
+        : break_token(token), spanner(spanner) {}
+
+    // The incoming break token for the content to process, or null if we're at
+    // the start.
+    const NGBlockBreakToken* break_token = nullptr;
+
+    // The column spanner node to process, or null if we're dealing with regular
+    // column content.
+    NGBlockNode spanner = nullptr;
+  };
+
+  MulticolPartWalker(NGBlockNode multicol_container,
+                     const NGBlockBreakToken* break_token)
+      : multicol_container_(multicol_container),
+        parent_break_token_(break_token),
+        child_token_idx_(0) {
+    UpdateCurrent();
+    // The first entry in the first multicol fragment may be empty (that just
+    // means that we haven't started yet), but if this happens anywhere else, it
+    // means that we're finished. Nothing inside this multicol container left to
+    // process.
+    if (IsResumingLayout(parent_break_token_) && !current_.break_token &&
+        parent_break_token_->HasSeenAllChildren())
+      is_finished_ = true;
+  }
+
+  Entry Current() const {
+    DCHECK(!is_finished_);
+    return current_;
+  }
+
+  bool IsFinished() const { return is_finished_; }
+
+  // Move to the next part.
+  void Next();
+
+  // Move over to the specified spanner, and take it from there.
+  void MoveToSpanner(NGBlockNode spanner,
+                     const NGBlockBreakToken* next_column_token);
+
+  // Push a break token for the column content to resume at.
+  void AddNextColumnBreakToken(const NGBlockBreakToken& next_column_token);
+
+ private:
+  void MoveToNext();
+  void UpdateCurrent();
+
+  Entry current_;
+  NGBlockNode spanner_ = nullptr;
+  NGBlockNode multicol_container_;
+  const NGBlockBreakToken* parent_break_token_;
+  scoped_refptr<const NGBlockBreakToken> next_column_token_;
+
+  // An index into parent_break_token_'s ChildBreakTokens() vector. Used for
+  // keeping track of the next child break token to inspect.
+  wtf_size_t child_token_idx_;
+
+  bool is_finished_ = false;
+};
+
+void MulticolPartWalker::Next() {
+  if (is_finished_)
+    return;
+  MoveToNext();
+  if (!is_finished_)
+    UpdateCurrent();
 }
 
-// Add the break token for the column content that comes after a fragmented
-// spanner, if any; otherwise, we're past all children.
-void PushNextColumnBreakToken(
-    scoped_refptr<const NGBlockBreakToken> next_column_token,
-    NGBoxFragmentBuilder* builder) {
-  if (next_column_token)
-    builder->AddBreakToken(std::move(next_column_token));
-  else
-    builder->SetHasSeenAllChildren();
+void MulticolPartWalker::MoveToSpanner(
+    NGBlockNode spanner,
+    const NGBlockBreakToken* next_column_token) {
+  *this = MulticolPartWalker(multicol_container_, nullptr);
+  DCHECK(spanner.IsColumnSpanAll());
+  spanner_ = spanner;
+  next_column_token_ = next_column_token;
+  UpdateCurrent();
 }
 
-// Add the spanner's break token, AND another break token for the column content
-// that comes after. In the next fragment we need to resume layout of the
-// spanner, and then proceed to the column content - if there's room for both.
-// Note that it's possible for the spanner to break again in the next fragment.
-void PushSpannerBreakTokens(
-    scoped_refptr<const NGBlockBreakToken> spanner_break_token,
-    scoped_refptr<const NGBlockBreakToken> next_column_token,
-    NGBoxFragmentBuilder* builder) {
-  builder->AddBreakToken(std::move(spanner_break_token));
-  PushNextColumnBreakToken(std::move(next_column_token), builder);
+void MulticolPartWalker::AddNextColumnBreakToken(
+    const NGBlockBreakToken& next_column_token) {
+  *this = MulticolPartWalker(multicol_container_, nullptr);
+  next_column_token_ = &next_column_token;
+  UpdateCurrent();
+}
+
+void MulticolPartWalker::UpdateCurrent() {
+  DCHECK(!is_finished_);
+  if (parent_break_token_) {
+    const auto& child_break_tokens = parent_break_token_->ChildBreakTokens();
+    if (child_token_idx_ < child_break_tokens.size()) {
+      const auto* child_break_token =
+          To<NGBlockBreakToken>(child_break_tokens[child_token_idx_]);
+      if (child_break_token->InputNode() == multicol_container_) {
+        current_.spanner = nullptr;
+      } else {
+        current_.spanner = To<NGBlockNode>(child_break_token->InputNode());
+        DCHECK(current_.spanner.IsColumnSpanAll());
+      }
+      current_.break_token = child_break_token;
+      return;
+    }
+  }
+
+  if (spanner_) {
+    current_ = Entry(/* break_token */ nullptr, spanner_);
+    return;
+  }
+
+  if (next_column_token_) {
+    current_ = Entry(next_column_token_.get(), /* spanner */ nullptr);
+    return;
+  }
+
+  // The current entry is empty. That's only the case when we're at the very
+  // start of the multicol container, or if we're past all children.
+  DCHECK(!is_finished_);
+  DCHECK(!current_.spanner);
+  DCHECK(!current_.break_token);
+}
+
+void MulticolPartWalker::MoveToNext() {
+  if (parent_break_token_) {
+    const auto& child_break_tokens = parent_break_token_->ChildBreakTokens();
+    if (child_token_idx_ < child_break_tokens.size()) {
+      child_token_idx_++;
+      // If we have more incoming break tokens, we'll use that.
+      if (child_token_idx_ < child_break_tokens.size())
+        return;
+      // We just ran out of break tokens. Fall through.
+    }
+  }
+
+  if (spanner_) {
+    NGLayoutInputNode next = spanner_.NextSibling();
+    // Otherwise, if there's a next spanner, we'll use that.
+    if (next && next.IsColumnSpanAll()) {
+      spanner_ = To<NGBlockNode>(next);
+      return;
+    }
+    spanner_ = nullptr;
+
+    // Otherwise, if we have column content to resume at, use that.
+    if (next_column_token_)
+      return;
+  }
+
+  // Otherwise, we're done.
+  is_finished_ = true;
 }
 
 }  // namespace
@@ -216,155 +347,115 @@ MinMaxSizesResult NGColumnLayoutAlgorithm::ComputeMinMaxSizes(
 
 NGBreakStatus NGColumnLayoutAlgorithm::LayoutChildren() {
   NGMarginStrut margin_strut;
+  MulticolPartWalker walker(Node(), BreakToken());
+  while (!walker.IsFinished()) {
+    auto entry = walker.Current();
+    const auto* child_break_token = To<NGBlockBreakToken>(entry.break_token);
 
-  // First extract incoming child break tokens.
-  scoped_refptr<const NGBlockBreakToken> spanner_break_token;
-  scoped_refptr<const NGBlockBreakToken> next_column_token;
-  if (const auto* token = BreakToken()) {
-    // We're resuming layout of this multicol container after an outer
-    // fragmentation break. Resume at the break token of the last column that we
-    // were able to lay out, or before or inside the spanner that caused an
-    // outer fragmentainer break. Note that in some cases, there may be no child
-    // break tokens. That happens if we weren't able to lay out anything at all
-    // in the previous outer fragmentainer, e.g. due to a forced break before
-    // this multicol container, or e.g. if there was leading unbreakable content
-    // that couldn't fit in the space we were offered back then. In other words,
-    // in that case, we're about to create the first fragment for this multicol
-    // container.
-    const auto child_tokens = token->ChildBreakTokens();
-    if (wtf_size_t break_token_count = child_tokens.size()) {
-      wtf_size_t break_token_idx = 0;
-      scoped_refptr<const NGBlockBreakToken> child_token =
-          To<NGBlockBreakToken>(child_tokens[break_token_idx++]);
-      if (child_token && IsColumnSpanner(Node(), *child_token)) {
-        // We're resuming at a column spanner. Get the next break token after
-        // the spanner, if any. That would be the column content to resume at,
-        // once we're done with the spanner.
-        spanner_break_token = child_token;
-        if (break_token_idx < break_token_count) {
-          next_column_token =
-              To<NGBlockBreakToken>(child_tokens[break_token_idx++]);
+    // If this is regular column content (i.e. not a spanner), or we're at the
+    // very start, perform column layout. If we're at the very start, and even
+    // if the child is a spanner (which means that we won't be able to lay out
+    // any column content at all), we still need to enter here, because that's
+    // how we create a break token for the column content to resume at. With no
+    // break token, we wouldn't be able to resume layout after the any initial
+    // spanners.
+    if (!entry.spanner) {
+      scoped_refptr<const NGLayoutResult> result =
+          LayoutRow(child_break_token, &margin_strut);
+
+      if (!result) {
+        // Not enough outer fragmentainer space to produce any columns at all.
+
+        if (intrinsic_block_size_) {
+          // We have preceding initial border/padding, or a column spanner
+          // (possibly preceded by other spanners or even column content). So we
+          // need to break inside the multicol container. Stop walking the
+          // children, but "continue" layout, so that we produce a
+          // fragment. Note that we normally don't want to break right after
+          // initial border/padding, but will do so as a last resort. It's up to
+          // our containing block to decide what's best. In case there is no
+          // break token inside, we need to manually mark that we broke.
+          container_builder_.SetDidBreakSelf();
+
+          break;
         }
-      } else {
-        next_column_token = child_token;
+        // Otherwise we have nothing here, and need to break before the multicol
+        // container. No fragment will be produced.
+        DCHECK(!BreakToken());
+        return NGBreakStatus::kBrokeBefore;
       }
-      // There shouldn't be any additional break tokens.
-      DCHECK_EQ(break_token_idx, break_token_count);
-    }
 
-    if (token->HasSeenAllChildren())
-      container_builder_.SetHasSeenAllChildren();
-  }
+      walker.Next();
 
-  if (spanner_break_token) {
-    // The multicol container previously broke at a spanner (this may happen if
-    // we're nested inside another fragmentation context), so that's where we'll
-    // resume now.
-    NGBreakStatus break_status = LayoutSpanner(
-        To<NGBlockNode>(spanner_break_token->InputNode()),
-        spanner_break_token.get(), &margin_strut, &spanner_break_token);
+      const auto* next_column_token =
+          To<NGBlockBreakToken>(result->PhysicalFragment().BreakToken());
 
-    if (spanner_break_token) {
-      DCHECK_EQ(break_status, NGBreakStatus::kContinue);
-      if (spanner_break_token) {
-        // We broke at the spanner again!
-        PushSpannerBreakTokens(std::move(spanner_break_token),
-                               std::move(next_column_token),
-                               &container_builder_);
-        return NGBreakStatus::kContinue;
+      if (NGBlockNode spanner_node = result->ColumnSpanner()) {
+        // We found a spanner, and if there's column content to resume at after
+        // it, |next_column_token| will be set. Move the walker to the
+        // spanner. We'll now walk that spanner and any sibling spanners, before
+        // resuming at |next_column_token|.
+        walker.MoveToSpanner(spanner_node, next_column_token);
+        continue;
       }
-    } else {
-      // Breaking before the first element in the fragmentainer isn't allowed,
-      // as that would give no content progress, and we'd be stuck forever.
-      DCHECK_EQ(break_status, NGBreakStatus::kContinue);
-    }
-  }
 
-  if (BreakToken() && BreakToken()->HasSeenAllChildren() && !next_column_token)
-    return NGBreakStatus::kContinue;
+      // If we didn't find a spanner, it either means that we're through
+      // everything, or that column layout needs to continue from the next outer
+      // fragmentainer.
+      if (next_column_token)
+        walker.AddNextColumnBreakToken(*next_column_token);
 
-  // Entering the child main loop. Here we'll alternate between laying out
-  // column content and column spanners, until we're either done, or until
-  // something breaks. Spanners are discovered as part of laying out a row, so
-  // we'll always start with attempting to lay out a row, even if the first
-  // child is a spanner.
-  do {
-    scoped_refptr<const NGLayoutResult> result =
-        LayoutRow(next_column_token.get(), &margin_strut);
-
-    if (!result) {
-      // Not enough outer fragmentainer space to produce any columns at all.
-
-      // TODO(mstensho): Explicitly marking that we broke shouldn't be necessary
-      // here, ideally. But the fragmentation machinery needs this hint in some
-      // cases. There's probably a break token missing.
-      container_builder_.SetDidBreakSelf();
-
-      if (intrinsic_block_size_) {
-        // We have preceding initial border/padding, or a column spanner
-        // (possibly preceded by other spanners or even column content). So we
-        // need to break inside the multicol container. Stop walking the
-        // children, but "continue" layout, so that we produce a fragment. Note
-        // that we normally don't want to break right after initial
-        // border/padding, but will do so as a last resort. It's up to our
-        // containing block to decide what's best.
-        FinishAfterBreakBeforeRow(std::move(next_column_token));
-        return NGBreakStatus::kContinue;
-      }
-      // Otherwise we have nothing here, and need to break before the multicol
-      // container. No fragment will be produced.
-      return NGBreakStatus::kBrokeBefore;
-    }
-
-    next_column_token =
-        To<NGBlockBreakToken>(result->PhysicalFragment().BreakToken());
-
-    // If we didn't find a spanner, it either means that we're through
-    // everything, or that column layout needs to continue from the next outer
-    // fragmentainer.
-    NGBlockNode spanner_node = result->ColumnSpanner();
-    if (!spanner_node)
       break;
+    }
+
+    // Attempt to lay out one column spanner.
+
+    NGBlockNode spanner_node = entry.spanner;
 
     if (early_break_) {
       // If this is the child we had previously determined to break before, do
       // so now and finish layout.
       DCHECK_EQ(early_break_->Type(), NGEarlyBreak::kBlock);
       if (early_break_->IsBreakBefore() &&
-          early_break_->BlockNode() == spanner_node) {
+          early_break_->BlockNode() == spanner_node)
+        break;
+    }
+
+    NGBreakStatus break_status =
+        LayoutSpanner(spanner_node, child_break_token, &margin_strut);
+
+    walker.Next();
+
+    if (break_status == NGBreakStatus::kNeedsEarlierBreak)
+      return break_status;
+    if (break_status == NGBreakStatus::kBrokeBefore ||
+        container_builder_.HasInflowChildBreakInside()) {
+      break;
+    }
+  }
+
+  if (!walker.IsFinished() || container_builder_.HasInflowChildBreakInside()) {
+    // We broke in the main flow. Let this multicol container take up any
+    // remaining space.
+    intrinsic_block_size_ = FragmentainerSpaceAtBfcStart(ConstraintSpace());
+
+    // Go through any remaining parts that we didn't get to, and push them as
+    // break tokens for the next (outer) fragmentainer to handle.
+    for (; !walker.IsFinished(); walker.Next()) {
+      auto entry = walker.Current();
+      if (entry.break_token) {
+        // Copy unhandled incoming break tokens, for the next (outer)
+        // fragmentainer.
+        container_builder_.AddBreakToken(std::move(entry.break_token));
+      } else if (entry.spanner) {
+        // Create break tokens for the spanners that were discovered (but not
+        // handled) while laying out this (outer) fragmentainer, so that they
+        // get resumed in the next one (or pushed again, if it won't fit there
+        // either).
         container_builder_.AddBreakBeforeChild(
-            spanner_node, kBreakAppealPerfect, /* is_forced_break */ false);
-        FinishAfterBreakBeforeSpanner(std::move(next_column_token));
-        return NGBreakStatus::kContinue;
+            entry.spanner, kBreakAppealPerfect, /* is_forced_break */ false);
       }
     }
-
-    // We found a spanner. Lay it out, and then resume column layout.
-    NGBreakStatus break_status = LayoutSpanner(
-        spanner_node, nullptr, &margin_strut, &spanner_break_token);
-    if (break_status == NGBreakStatus::kNeedsEarlierBreak) {
-      return break_status;
-    } else if (break_status == NGBreakStatus::kBrokeBefore) {
-      DCHECK(ConstraintSpace().HasBlockFragmentation());
-      FinishAfterBreakBeforeSpanner(std::move(next_column_token));
-      return NGBreakStatus::kContinue;
-    } else if (spanner_break_token) {
-      DCHECK_EQ(break_status, NGBreakStatus::kContinue);
-      // We broke inside the spanner. This may happen if we're nested inside
-      // another fragmentation context.
-      PushSpannerBreakTokens(std::move(spanner_break_token),
-                             std::move(next_column_token), &container_builder_);
-      return NGBreakStatus::kContinue;
-    }
-  } while (next_column_token);
-
-  // If there's an early break set, we should have found it and returned.
-  DCHECK(!early_break_);
-
-  if (next_column_token) {
-    // We broke inside column content. Add a break token for where to resume
-    // column layout at in the next fragment.
-    container_builder_.AddBreakToken(std::move(next_column_token));
   } else {
     // We've gone through all the content. This doesn't necessarily mean that
     // we're done fragmenting, since the multicol container may be taller than
@@ -648,28 +739,12 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::LayoutRow(
 NGBreakStatus NGColumnLayoutAlgorithm::LayoutSpanner(
     NGBlockNode spanner_node,
     const NGBlockBreakToken* break_token,
-    NGMarginStrut* margin_strut,
-    scoped_refptr<const NGBlockBreakToken>* spanner_break_token) {
-  *spanner_break_token = nullptr;
+    NGMarginStrut* margin_strut) {
   const ComputedStyle& spanner_style = spanner_node.Style();
   NGBoxStrut margins = ComputeMarginsFor(
       spanner_style, ChildAvailableSize().inline_size,
       ConstraintSpace().GetWritingMode(), ConstraintSpace().Direction());
-
-  if (break_token) {
-    // Truncate block-start margins at fragmentainer breaks (except when the
-    // break is forced), and also make sure that we don't repeat them at the
-    // beginning of every fragment generated from the spanner node.
-    if (!break_token->IsBreakBefore() || !break_token->IsForcedBreak())
-      margins.block_start = LayoutUnit();
-
-    if (break_token->IsBreakBefore()) {
-      // TODO(mstensho): Passing a break-before token shouldn't be a problem,
-      // but it would cause problems for the NGPaintFragment code. Just pass
-      // nullptr. Won't make any difference anyway.
-      break_token = nullptr;
-    }
-  }
+  AdjustMarginsForFragmentation(break_token, &margins);
 
   // Collapse the block-start margin of this spanner with the block-end margin
   // of an immediately preceding spanner, if any.
@@ -733,8 +808,6 @@ NGBreakStatus NGColumnLayoutAlgorithm::LayoutSpanner(
       result->FinalBreakAfter(), spanner_node.Style().BreakAfter());
   container_builder_.SetPreviousBreakAfter(break_after);
 
-  *spanner_break_token =
-      To<NGBlockBreakToken>(result->PhysicalFragment().BreakToken());
   return NGBreakStatus::kContinue;
 }
 
@@ -909,34 +982,6 @@ LayoutUnit NGColumnLayoutAlgorithm::ConstrainColumnBlockSize(
   // Constrain and convert the value back to content-box.
   size = std::min(size, max);
   return size - extra;
-}
-
-void NGColumnLayoutAlgorithm::FinishAfterBreakBeforeRow(
-    scoped_refptr<const NGBlockBreakToken> next_column_token) {
-  // We broke before a row for columns. We're done here. Take up the remaining
-  // space in the outer fragmentation context.
-  intrinsic_block_size_ = FragmentainerSpaceAtBfcStart(ConstraintSpace());
-
-  // If we were about to resume column layout after a spanner, add a break token
-  // for this, so that we resume there in the next outer fragmentainer. If
-  // there's no such break token, it means that we're at the start of the
-  // multicol container.
-  if (next_column_token)
-    container_builder_.AddBreakToken(std::move(next_column_token));
-}
-
-void NGColumnLayoutAlgorithm::FinishAfterBreakBeforeSpanner(
-    scoped_refptr<const NGBlockBreakToken> next_column_token) {
-  // We broke before the spanner. We're done here. Take up the remaining space
-  // in the outer fragmentation context.
-  intrinsic_block_size_ = FragmentainerSpaceAtBfcStart(ConstraintSpace());
-
-  // A break token for the spanner has already been inserted, but we also need
-  // to add one for the column contents that follows, so that we know where to
-  // resume, once done with the spanner - or - specify that we're past
-  // everything if there's nothing to resume at (so that we don't restart from
-  // the beginning of the multicol container).
-  PushNextColumnBreakToken(std::move(next_column_token), &container_builder_);
 }
 
 scoped_refptr<const NGLayoutResult>

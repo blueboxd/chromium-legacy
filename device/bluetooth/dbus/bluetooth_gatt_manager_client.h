@@ -49,7 +49,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattManagerClient
   virtual void RegisterApplication(const dbus::ObjectPath& adapter_object_path,
                                    const dbus::ObjectPath& application_path,
                                    const Options& options,
-                                   const base::Closure& callback,
+                                   base::OnceClosure callback,
                                    ErrorCallback error_callback) = 0;
 
   // Unregisters the GATT service with the D-Bus object path |service_path| from
@@ -57,7 +57,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattManagerClient
   virtual void UnregisterApplication(
       const dbus::ObjectPath& adapter_object_path,
       const dbus::ObjectPath& application_path,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       ErrorCallback error_callback) = 0;
 
   // Creates the instance.

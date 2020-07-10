@@ -1292,6 +1292,8 @@ void ScrollTree::OnScrollOffsetAnimated(ElementId id,
   if (!property_trees()->is_active)
     return;
 
+  TRACE_EVENT2("cc", "ScrollTree::OnScrollOffsetAnimated", "x",
+               scroll_offset.x(), "y", scroll_offset.y());
   ScrollNode* scroll_node = Node(scroll_tree_index);
   if (SetScrollOffset(id,
                       ClampScrollOffsetToLimits(scroll_offset, *scroll_node)))
@@ -1589,6 +1591,9 @@ void ScrollTree::SetBaseScrollOffset(ElementId id,
 
 bool ScrollTree::SetScrollOffset(ElementId id,
                                  const gfx::ScrollOffset& scroll_offset) {
+  // TODO(crbug.com/1087088): Remove TRACE_EVENT call when the bug is fixed
+  TRACE_EVENT2("cc", "ScrollTree::SetScrollOffset", "x", scroll_offset.x(), "y",
+               scroll_offset.y());
   if (property_trees()->is_main_thread) {
     if (scroll_offset_map_[id] == scroll_offset)
       return false;

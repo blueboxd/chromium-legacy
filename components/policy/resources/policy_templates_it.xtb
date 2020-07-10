@@ -5210,9 +5210,9 @@ https://www.w3.org/TR/secure-contexts/
 
       Il valore della norma deve essere specificato in secondi.</translation>
 <translation id="9021334785554745279">Pattern URL per il controllo della presenza di violazioni delle regole relative alla protezione dei dati sensibili nei contenuti scaricati</translation>
-<translation id="9030094532108679680">Se il criterio viene configurato (come consigliato), puoi registrare un elenco di gestori di protocolli che vengono uniti a quelli registrati dall'utente e sarà quindi possibile usare entrambi i gruppi. Imposta lo schema della proprietà (protocollo), ad esempio mailto, e il pattern URL dell'applicazione che gestisce lo schema della proprietà (URL). Il pattern può includere %s, che viene sostituito dall'URL gestito.
+<translation id="9030094532108679680">Se il criterio viene configurato (solo come consigliato), puoi registrare un elenco di gestori di protocolli che vengono uniti a quelli registrati dall'utente. Vengono quindi usati entrambi i gruppi. Imposta lo schema per la proprietà "protocollo", ad esempio mailto, e il pattern URL dell'applicazione che gestisce lo schema per la proprietà "URL". Il pattern può includere %s, che viene sostituito dall'URL gestito.
 
-      Gli utenti non possono rimuovere un gestore di protocollo registrato tramite il criterio. Se però installano un nuovo gestore predefinito possono cambiare i gestori di protocolli installati in base al criterio.</translation>
+      Gli utenti non possono rimuovere un gestore di protocollo registrato tramite il criterio. Se però installano un nuovo gestore predefinito, possono cambiare i gestori di protocolli installati in base al criterio.</translation>
 <translation id="9035086760683255833">Consente di attivare la funzione di accessibilità di evidenziazione dell'elemento attivo tramite tastiera.
 
           Questa funzione consente di evidenziare l'elemento attivo impostato tramite tastiera.

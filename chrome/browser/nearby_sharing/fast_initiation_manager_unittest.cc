@@ -30,12 +30,12 @@ const int64_t kDefaultAdvertisingInterval = 0;
 #endif
 
 // Metadata bytes translate to 0b00000000 and 0b10111110, indicating "version
-// 0", "type 0 (notify)", and "transmission power of -66".
-const uint8_t kFastInitMetadataTypeNotify[] = {0x00, 0xBE};
+// 0", "type 0 (notify)", and "transmission power of 66".
+const uint8_t kFastInitMetadataTypeNotify[] = {0x00, 0x42};
 
 // Metadata bytes translate to 0b00000100 and 0b10111110, indicating "version
-// 0", "type 1 (silent)", and "transmission power of -66".
-const uint8_t kFastInitMetadataTypeSilent[] = {0x04, 0xBE};
+// 0", "type 1 (silent)", and "transmission power of 66".
+const uint8_t kFastInitMetadataTypeSilent[] = {0x04, 0x42};
 
 }  // namespace
 

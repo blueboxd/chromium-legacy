@@ -5,17 +5,18 @@
 // clang-format off
 // #import 'chrome://resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.m.js';
 // #import {Polymer, html, flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+// #import {keyDownOn, move} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+// #import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../chai_assert.js';
 // clang-format on
 
 suite('cr-searchable-drop-down', function() {
-  /** @type {CrSearchableDropDownElement} */
+  /** @type {!CrSearchableDropDownElement} */
   let dropDown;
 
-  /** @type {HTMLElement} */
+  /** @type {!HTMLElement} */
   let outsideElement;
 
-  /** @type {CrInputElement} */
+  /** @type {!CrInputElement} */
   let searchInput;
 
   /**
@@ -37,32 +38,34 @@ suite('cr-searchable-drop-down', function() {
    *  the drop down.
    */
   function search(searchTerm) {
-    const input = dropDown.shadowRoot.querySelector('cr-input');
+    const input = /** @type {!CrInputElement} */ (
+        dropDown.shadowRoot.querySelector('cr-input'));
     input.value = searchTerm;
     input.fire('input');
     Polymer.dom.flush();
   }
 
   function blur() {
-    const input = dropDown.shadowRoot.querySelector('cr-input');
+    const input = /** @type {!CrInputElement} */ (
+        dropDown.shadowRoot.querySelector('cr-input'));
     input.fire('blur');
     Polymer.dom.flush();
   }
 
   function down() {
-    MockInteractions.keyDownOn(searchInput, 'ArrowDown', [], 'ArrowDown');
+    MockInteractions.keyDownOn(searchInput, 0, [], 'ArrowDown');
   }
 
   function up() {
-    MockInteractions.keyDownOn(searchInput, 'ArrowUp', [], 'ArrowUp');
+    MockInteractions.keyDownOn(searchInput, 0, [], 'ArrowUp');
   }
 
   function enter() {
-    MockInteractions.keyDownOn(searchInput, 'Enter', [], 'Enter');
+    MockInteractions.keyDownOn(searchInput, 0, [], 'Enter');
   }
 
   function tab() {
-    MockInteractions.keyDownOn(searchInput, 'Tab', [], 'Tab');
+    MockInteractions.keyDownOn(searchInput, 0, [], 'Tab');
   }
 
   function pointerDown(element) {
@@ -79,14 +82,15 @@ suite('cr-searchable-drop-down', function() {
   }
 
   setup(function() {
-    PolymerTest.clearBody();
     document.body.innerHTML = `
       <p id="outside">Nothing to see here</p>
       <cr-searchable-drop-down label="test drop down">
       </cr-searchable-drop-down>
     `;
-    dropDown = document.querySelector('cr-searchable-drop-down');
-    outsideElement = document.querySelector('#outside');
+    dropDown = /** @type {!CrSearchableDropDownElement} */ (
+        document.querySelector('cr-searchable-drop-down'));
+    outsideElement =
+        /** @type {!HTMLElement} */ (document.querySelector('#outside'));
     searchInput = dropDown.$.search;
     Polymer.dom.flush();
   });

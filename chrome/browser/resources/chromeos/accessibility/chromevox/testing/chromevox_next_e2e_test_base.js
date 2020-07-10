@@ -57,14 +57,6 @@ ChromeVoxNextE2ETest = class extends ChromeVoxE2ETest {
     super.runWithLoadedTree(doc, wrappedCallback, opt_params);
   }
 
-  listenOnce(node, eventType, callback, capture) {
-    const innerCallback = this.newCallback(function() {
-      node.removeEventListener(eventType, innerCallback, capture);
-      callback.apply(this, arguments);
-    });
-    node.addEventListener(eventType, innerCallback, capture);
-  }
-
   /**
    * Forces output to place context utterances at the end of output. This eases
    * rebaselining when changing context ordering for a specific role.

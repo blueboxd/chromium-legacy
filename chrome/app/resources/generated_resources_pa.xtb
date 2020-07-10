@@ -377,7 +377,7 @@
 <translation id="1468571364034902819">ਇਸ ਪ੍ਰੋਫਾਈਲ ਦੀ ਵਰਤੋਂ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ</translation>
 <translation id="1470084204649225129">{NUM_TABS,plural, =1{ਟੈਬ ਨੂੰ ਨਵੇਂ ਗਰੁੱਪ ਵਿੱਚ ਸ਼ਾਮਲ ਕਰੋ}one{ਟੈਬ ਨੂੰ ਨਵੇਂ ਗਰੁੱਪ ਵਿੱਚ ਸ਼ਾਮਲ ਕਰੋ}other{ਟੈਬਾਂ ਨੂੰ ਨਵੇਂ ਗਰੁੱਪ ਵਿੱਚ ਸ਼ਾਮਲ ਕਰੋ}}</translation>
 <translation id="1472675084647422956">ਹੋਰ ਦਿਖਾਓ</translation>
-<translation id="1474785664565228650">ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਸੈਟਿੰਗ ਵਿੱਚ ਤਬਦੀਲੀ ਲਈ Parallels Desktop ਦਾ ਮੁੜ-ਲਾਂਚ ਹੋਣਾ ਲੋੜੀਂਦਾ ਹੈ ਜਾਰੀ ਰੱਖਣ ਲਈ Parallels Desktop ਨੂੰ ਮੁੜ-ਲਾਂਚ ਕਰੋ।</translation>
+<translation id="1474785664565228650">ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਸੈਟਿੰਗ ਵਿੱਚ ਤਬਦੀਲੀ ਲਈ Parallels Desktop ਦਾ ਮੁੜ-ਲਾਂਚ ਹੋਣਾ ਲੋੜੀਂਦਾ ਹੈ। ਜਾਰੀ ਰੱਖਣ ਲਈ Parallels Desktop ਨੂੰ ਮੁੜ-ਲਾਂਚ ਕਰੋ।</translation>
 <translation id="1475502736924165259">ਤੁਹਾਡੇ ਕੋਲ ਫ਼ਾਈਲ 'ਤੇ ਅਜਿਹੇ ਪ੍ਰਮਾਣ-ਪੱਤਰ ਹਨ ਜੋ ਹੋਰ ਕਿਸੇ ਵੀ ਸ਼੍ਰੇਣੀ ਦੇ ਅਨੁਕੂਲ ਨਹੀਂ ਹਨ</translation>
 <translation id="1476088332184200792">ਆਪਣੇ ਡੀਵਾਈਸ 'ਤੇ ਕਾਪੀ ਕਰੋ</translation>
 <translation id="1476607407192946488">&amp;ਭਾਸ਼ਾ ਸੈਟਿੰਗਾਂ</translation>
@@ -2315,7 +2315,7 @@
 <translation id="3839516600093027468"><ph name="HOST" /> ਨੂੰ ਕਲਿੱਪਬੋਰਡ ਦੇਖਣ ਤੋਂ ਹਮੇਸ਼ਾਂ ਬਲਾਕ ਕਰੋ</translation>
 <translation id="3841964634449506551">ਅਵੈਧ ਪਾਸਵਰਡ</translation>
 <translation id="3842552989725514455">Serif ਫੌਂਟ</translation>
-<translation id="3843464315703645664">ਅੰਦਰੂਨੀ ਤੌਰ 'ਤੇ ਪ੍ਰਵਾਨਿਤ ਸੂਚੀਬੱਧ</translation>
+<translation id="3843464315703645664">ਅੰਦਰੂਨੀ ਤੌਰ 'ਤੇ ਪ੍ਰਵਾਨਗੀ ਲਈ ਸੂਚੀਬੱਧ</translation>
 <translation id="3846116211488856547">ਵੈੱਬਸਾਈਟਾਂ, Android ਐਪਾਂ ਦਾ ਵਿਕਾਸ ਅਤੇ ਹੋਰ ਬਹੁਤ ਕੁਝ ਕਰਨ ਲਈ ਟੂਲ ਪ੍ਰਾਪਤ ਕਰੋ। Linux ਸਥਾਪਤ ਕਰਨ ਲਈ <ph name="DOWNLOAD_SIZE" /> ਡਾਟਾ ਡਾਊਨਲੋਡ ਕੀਤਾ ਜਾਵੇਗਾ।</translation>
 <translation id="3847319713229060696">ਵੈੱਬ 'ਤੇ ਸੁਰੱਖਿਆ ਨੂੰ ਹਰੇਕ ਲਈ ਬਿਹਤਰ ਬਣਾਉਣ ਵਿੱਚ ਮਦਦ ਕਰੋ</translation>
 <translation id="385051799172605136">ਪਿੱਛੇ</translation>

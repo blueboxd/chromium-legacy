@@ -94,6 +94,15 @@ bool UnmountDMG(const base::FilePath& mounted_dmg_path) {
   return true;
 }
 
+bool IsInstallScriptExecutable(const base::FilePath& script_path) {
+  int permissions = 0;
+  if (!base::GetPosixFilePermissions(script_path, &permissions))
+    return false;
+
+  constexpr int kExecutableMask = base::FILE_PERMISSION_EXECUTE_BY_USER;
+  return (permissions & kExecutableMask) == kExecutableMask;
+}
+
 int RunExecutable(const base::FilePath& mounted_dmg_path,
                   const base::FilePath& existence_checker_path,
                   const base::FilePath::StringPieceType executable_name,
@@ -108,6 +117,12 @@ int RunExecutable(const base::FilePath& mounted_dmg_path,
     DLOG(ERROR) << "Executable file path (" << executable_file_path
                 << ") does not exist.";
     return static_cast<int>(InstallErrors::kExecutableFilePathDoesNotExist);
+  }
+
+  if (!IsInstallScriptExecutable(executable_file_path)) {
+    DLOG(ERROR) << "Executable file path (" << executable_file_path
+                << ") is not executable";
+    return static_cast<int>(InstallErrors::kExecutablePathNotExecutable);
   }
 
   // TODO(copacitt): Improve the way we parse args for CommandLine object.

@@ -10,7 +10,6 @@
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -56,17 +55,8 @@ class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
 
   BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() override;
 
-  SecurityContext& GetSecurityContext() override { return security_context_; }
-  const SecurityContext& GetSecurityContext() const override {
-    return security_context_;
-  }
-
-  void Trace(Visitor*) const override;
-
  private:
   KURL url_;
-
-  SecurityContext security_context_;
 
   // A dummy scheduler to ensure that the callers of
   // ExecutionContext::GetScheduler don't have to check for whether it's null or

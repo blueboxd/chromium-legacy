@@ -170,8 +170,7 @@ public class CustomTabsConnectionTest {
         mCustomTabsConnection.setShouldSpeculateLoadOnCellularForSession(token, true);
         assertWarmupAndMayLaunchUrl(token, URL, true);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            String referrer =
-                    mCustomTabsConnection.getReferrerForSession(token).getUrl();
+            String referrer = mCustomTabsConnection.getDefaultReferrerForSession(token).getUrl();
             Assert.assertFalse(WarmupManager.getInstance().hasSpareWebContents());
         });
     }

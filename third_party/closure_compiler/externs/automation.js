@@ -512,9 +512,9 @@ chrome.automation.FindParams;
 
 /**
  * @typedef {{
- *   anchorObject: AutomationNode,
+ *   anchorObject: chrome.automation.AutomationNode,
  *   anchorOffset: number,
- *   focusObject: AutomationNode,
+ *   focusObject: chrome.automation.AutomationNode,
  *   focusOffset: number
  * }}
  * @see https://developer.chrome.com/extensions/automation#type-SetDocumentSelectionParams
@@ -1765,6 +1765,22 @@ chrome.automation.AutomationNode.prototype.scrollLeft = function(callback) {};
  * @see https://developer.chrome.com/extensions/automation#method-scrollRight
  */
 chrome.automation.AutomationNode.prototype.scrollRight = function(callback) {};
+
+/**
+ * Scrolls this scrollable container to the given point.
+ * @param {number} x
+ * @param {number} y
+ * @see https://developer.chrome.com/extensions/automation#method-scrollToPoint
+ */
+chrome.automation.AutomationNode.prototype.scrollToPoint = function(x, y) {};
+
+/**
+ * Sets this scrollable container's scroll offset.
+ * @param {number} x
+ * @param {number} y
+ * @see https://developer.chrome.com/extensions/automation#method-setScrollOffset
+ */
+chrome.automation.AutomationNode.prototype.setScrollOffset = function(x, y) {};
 
 /**
  * Adds a listener for the given event type and event phase.

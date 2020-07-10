@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
@@ -425,6 +426,65 @@ void PrePaintTreeWalk::CheckTreeBuilderContextState(
   CHECK(false) << "Unknown reason.";
 }
 
+static LayoutBoxModelObject* ContainerForPaintInvalidation(
+    const PaintLayer* painting_layer) {
+  if (!painting_layer)
+    return nullptr;
+  if (auto* containing_paint_layer =
+          painting_layer
+              ->EnclosingLayerForPaintInvalidationCrossingFrameBoundaries())
+    return &containing_paint_layer->GetLayoutObject();
+  return nullptr;
+}
+
+void PrePaintTreeWalk::UpdatePaintInvalidationContainer(
+    const LayoutObject& object,
+    const PaintLayer* painting_layer,
+    PrePaintTreeWalkContext& context,
+    bool is_ng_painting) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  if (object.IsPaintInvalidationContainer()) {
+    context.paint_invalidation_container = ToLayoutBoxModelObject(&object);
+    if (object.IsStackingContext() || object.IsSVGRoot()) {
+      context.paint_invalidation_container_for_stacked_contents =
+          ToLayoutBoxModelObject(&object);
+    }
+  } else if (IsA<LayoutView>(object)) {
+    // paint_invalidation_container_for_stacked_contents is only for stacked
+    // descendants in its own frame, because it doesn't establish stacking
+    // context for stacked contents in sub-frames.
+    // Contents stacked in the root stacking context in this frame should use
+    // this frame's PaintInvalidationContainer.
+    context.paint_invalidation_container_for_stacked_contents =
+        ContainerForPaintInvalidation(painting_layer);
+  } else if (!is_ng_painting &&
+             (object.IsColumnSpanAll() ||
+              object.IsFloatingWithNonContainingBlockParent())) {
+    // In these cases, the object may belong to an ancestor of the current
+    // paint invalidation container, in paint order.
+    // Post LayoutNG the |LayoutObject::IsFloatingWithNonContainingBlockParent|
+    // check can be removed as floats will be painted by the correct layer.
+    context.paint_invalidation_container =
+        ContainerForPaintInvalidation(painting_layer);
+  } else if (object.IsStacked() &&
+             // This is to exclude some objects (e.g. LayoutText) inheriting
+             // stacked style from parent but aren't actually stacked.
+             object.HasLayer() &&
+             !ToLayoutBoxModelObject(object)
+                  .Layer()
+                  ->IsReplacedNormalFlowStacking() &&
+             context.paint_invalidation_container !=
+                 context.paint_invalidation_container_for_stacked_contents) {
+    // The current object is stacked, so we should use
+    // m_paintInvalidationContainerForStackedContents as its paint invalidation
+    // container on which the current object is painted.
+    context.paint_invalidation_container =
+        context.paint_invalidation_container_for_stacked_contents;
+  }
+}
+
 void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
                                     const NGFragmentChildIterator* iterator,
                                     PrePaintTreeWalkContext& context) {
@@ -477,6 +537,10 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
 
   InvalidatePaintForHitTesting(object, context);
 
+  UpdatePaintInvalidationContainer(object,
+                                   paint_invalidator_context.painting_layer,
+                                   context, !!pre_paint_info);
+
   if (context.tree_builder_context) {
     property_changed =
         std::max(property_changed, property_tree_builder->UpdateForChildren());
@@ -493,15 +557,16 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
       }
 
       if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-        if (property_changed >
-            PaintPropertyChangeType::kChangedOnlyCompositedValues) {
-          const auto* directly_composited_layer =
-              paint_invalidator_context.directly_composited_container->Layer();
-          if (!directly_composited_layer->SelfNeedsRepaint()) {
+        if ((property_changed >
+             PaintPropertyChangeType::kChangedOnlyCompositedValues) &&
+            context.paint_invalidation_container) {
+          const auto* paint_invalidation_container =
+              context.paint_invalidation_container->Layer();
+          if (!paint_invalidation_container->SelfNeedsRepaint()) {
             auto* mapping =
-                directly_composited_layer->GetCompositedLayerMapping();
+                paint_invalidation_container->GetCompositedLayerMapping();
             if (!mapping)
-              mapping = directly_composited_layer->GroupedMapping();
+              mapping = paint_invalidation_container->GroupedMapping();
             if (mapping)
               mapping->SetNeedsCheckRasterInvalidation();
           }

@@ -37,6 +37,7 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/switches.h"
+#include "extensions/test/test_background_page_ready_observer.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -128,38 +129,6 @@ class ExtensionInstallErrorObserver final {
   content::WindowedNotificationObserver notification_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallErrorObserver);
-};
-
-// Observer that allows waiting until the background page of the specified
-// extension/app loads.
-// TODO(emaxx): Extract this into a more generic helper class for using in other
-// tests.
-class ExtensionBackgroundPageReadyObserver final {
- public:
-  explicit ExtensionBackgroundPageReadyObserver(const std::string& extension_id)
-      : extension_id_(extension_id),
-        notification_observer_(
-            extensions::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
-            base::Bind(
-                &ExtensionBackgroundPageReadyObserver::IsNotificationRelevant,
-                base::Unretained(this))) {}
-
-  void Wait() { notification_observer_.Wait(); }
-
- private:
-  // Callback which is used for |WindowedNotificationObserver| for checking
-  // whether the condition being awaited is met.
-  bool IsNotificationRelevant(
-      const content::NotificationSource& source,
-      const content::NotificationDetails& details) const {
-    return content::Source<const extensions::Extension>(source)->id() ==
-           extension_id_;
-  }
-
-  const std::string extension_id_;
-  content::WindowedNotificationObserver notification_observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionBackgroundPageReadyObserver);
 };
 
 // Observer that allows waiting until the specified version of the given
@@ -313,7 +282,8 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest, ExtensionsEnabled) {
 IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest, BackgroundPage) {
   EXPECT_FALSE(
       chromeos::ProfileHelper::SigninProfileHasLoginScreenExtensions());
-  ExtensionBackgroundPageReadyObserver page_observer(kWhitelistedAppId);
+  extensions::ExtensionBackgroundPageReadyObserver page_observer(
+      GetInitialProfile(), kWhitelistedAppId);
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
       GetTestDataDir().AppendASCII(kWhitelistedAppCrxPath),
       ExtensionForceInstallMixin::WaitMode::kNone));
@@ -343,9 +313,10 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
                        IsolatedStoragePartition) {
   Profile* profile = GetInitialProfile();
 
-  ExtensionBackgroundPageReadyObserver page_observer_for_app(kWhitelistedAppId);
-  ExtensionBackgroundPageReadyObserver page_observer_for_extension(
-      kWhitelistedExtensionId);
+  extensions::ExtensionBackgroundPageReadyObserver page_observer_for_app(
+      GetInitialProfile(), kWhitelistedAppId);
+  extensions::ExtensionBackgroundPageReadyObserver page_observer_for_extension(
+      GetInitialProfile(), kWhitelistedExtensionId);
 
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
       GetTestDataDir().AppendASCII(kWhitelistedAppCrxPath),

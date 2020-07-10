@@ -616,10 +616,6 @@ size_t AutocompleteResult::CalculateNumMatches(
     const ACMatches& matches,
     const CompareWithDemoteByType<AutocompleteMatch>& comparing_object) {
   // Use alternative CalculateNumMatchesPerUrlCount if applicable.
-  // TODO (manukh): CalculateNumMatchesPerUrlCount doesn't account for
-  // submatches. That's ok since we plan to replace submatches with dedicated
-  // row suggestions. Otherwise, CalculateNumMatchesPerUrlCount should account
-  // for them.
   if (!input_from_omnibox_focus &&
       base::FeatureList::IsEnabled(omnibox::kNewSearchFeatures) &&
       base::FeatureList::IsEnabled(omnibox::kDynamicMaxAutocomplete))
@@ -630,12 +626,6 @@ size_t AutocompleteResult::CalculateNumMatches(
   size_t num_matches = 0;
   while (num_matches < matches.size() &&
          comparing_object.GetDemotedRelevance(matches[num_matches]) > 0) {
-    // If IsLooseMaxLimitOnDedicatedRowsEnabled(), don't count submatches
-    // against configured limit.
-    if (matches[num_matches].IsSubMatch() &&
-        OmniboxFieldTrial::IsLooseMaxLimitOnDedicatedRowsEnabled()) {
-      ++max_matches_by_policy;
-    }
     // Don't increment if at loose limit.
     if (num_matches >= max_matches_by_policy)
       break;

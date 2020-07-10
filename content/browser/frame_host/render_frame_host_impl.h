@@ -2760,11 +2760,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // media::mojom::InterfaceFactory calls to the remote "media" service.
   std::unique_ptr<MediaInterfaceProxy> media_interface_proxy_;
 
-#if !defined(OS_ANDROID)
-  // Hosts blink::mojom::SerialService for the RenderFrame.
-  std::unique_ptr<SerialService> serial_service_;
-#endif
-
   // Hosts blink::mojom::PresentationService for the RenderFrame.
   std::unique_ptr<PresentationServiceImpl> presentation_service_;
 

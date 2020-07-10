@@ -7,7 +7,6 @@ import 'chrome://resources/cr_elements/icons.m.js';
 import './icons.js';
 import './viewer-zoom-button.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {isRTL} from 'chrome://resources/js/util.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -54,13 +53,14 @@ Polymer({
 
   /** @private */
   onFocus_() {
-    // This can only happen when the plugin is shown within Print Preview using
-    // keyboard navigation.
-    if (!this.visible_) {
-      assert(this.isPrintPreview);
-      this.fire('keyboard-navigation-active', true);
-      this.show();
+    if (this.visible_ || !this.isPrintPreview) {
+      return;
     }
+
+    // For Print Preview, ensure the parent element knows that keyboard
+    // navigation is now active and show the toolbar.
+    this.fire('keyboard-navigation-active', true);
+    this.show();
   },
 
   /** @private */

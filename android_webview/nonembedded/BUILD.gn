@@ -30,6 +30,8 @@ android_library("nonembedded_java") {
     "//base:jni_java",
     "//components/about_ui/android:aboutui_java",
     "//components/embedder_support/android:application_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
     "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
     "//ui/android:ui_java",
   ]
@@ -63,8 +65,13 @@ android_library("devui_java") {
     "//base:base_java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/version_info/android:version_constants_java",
+    "//third_party/android_deps:androidx_activity_activity_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/android_deps:androidx_core_core_java",
     "//third_party/android_deps:androidx_fragment_fragment_java",
+    "//third_party/android_deps:androidx_lifecycle_lifecycle_common_java",
+    "//third_party/android_deps:androidx_lifecycle_lifecycle_viewmodel_java",
+    "//third_party/android_deps:androidx_savedstate_savedstate_java",
     "//ui/android:ui_java",
   ]
 }
@@ -94,6 +101,8 @@ android_library("services_java") {
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/variations/android:variations_java",
     "//components/version_info/android:version_constants_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
     "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
   ]
 }

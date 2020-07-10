@@ -322,8 +322,8 @@ class WifiHotspotConnectorTest : public testing::Test {
 TEST_F(WifiHotspotConnectorTest, TestConnect_NetworkDoesNotBecomeConnectable) {
   wifi_hotspot_connector_->ConnectToWifiHotspot(
       std::string(kSsid), std::string(kPassword), kTetherNetworkGuid,
-      base::Bind(&WifiHotspotConnectorTest::WifiConnectionCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&WifiHotspotConnectorTest::WifiConnectionCallback,
+                     base::Unretained(this)));
 
   std::string wifi_guid =
       VerifyLastConfiguration(std::string(kSsid), std::string(kPassword));
@@ -345,8 +345,8 @@ TEST_F(WifiHotspotConnectorTest, TestConnect_NetworkDoesNotBecomeConnectable) {
 TEST_F(WifiHotspotConnectorTest, TestConnect_AnotherNetworkBecomesConnectable) {
   wifi_hotspot_connector_->ConnectToWifiHotspot(
       std::string(kSsid), std::string(kPassword), kTetherNetworkGuid,
-      base::Bind(&WifiHotspotConnectorTest::WifiConnectionCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&WifiHotspotConnectorTest::WifiConnectionCallback,
+                     base::Unretained(this)));
 
   std::string wifi_guid =
       VerifyLastConfiguration(std::string(kSsid), std::string(kPassword));
@@ -375,8 +375,8 @@ TEST_F(WifiHotspotConnectorTest, TestConnect_AnotherNetworkBecomesConnectable) {
 TEST_F(WifiHotspotConnectorTest, TestConnect_CannotConnectToNetwork) {
   wifi_hotspot_connector_->ConnectToWifiHotspot(
       std::string(kSsid), std::string(kPassword), kTetherNetworkGuid,
-      base::Bind(&WifiHotspotConnectorTest::WifiConnectionCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&WifiHotspotConnectorTest::WifiConnectionCallback,
+                     base::Unretained(this)));
 
   std::string wifi_guid =
       VerifyLastConfiguration(std::string(kSsid), std::string(kPassword));
@@ -404,8 +404,8 @@ TEST_F(WifiHotspotConnectorTest, TestConnect_CannotConnectToNetwork) {
 TEST_F(WifiHotspotConnectorTest, TestConnect_DeletedWhileConnectionPending) {
   wifi_hotspot_connector_->ConnectToWifiHotspot(
       std::string(kSsid), std::string(kPassword), kTetherNetworkGuid,
-      base::Bind(&WifiHotspotConnectorTest::WifiConnectionCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&WifiHotspotConnectorTest::WifiConnectionCallback,
+                     base::Unretained(this)));
 
   std::string wifi_guid =
       VerifyLastConfiguration(std::string(kSsid), std::string(kPassword));
@@ -430,8 +430,8 @@ TEST_F(WifiHotspotConnectorTest, TestConnect_DeletedWhileConnectionPending) {
 TEST_F(WifiHotspotConnectorTest, TestConnect_Success) {
   wifi_hotspot_connector_->ConnectToWifiHotspot(
       std::string(kSsid), std::string(kPassword), kTetherNetworkGuid,
-      base::Bind(&WifiHotspotConnectorTest::WifiConnectionCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&WifiHotspotConnectorTest::WifiConnectionCallback,
+                     base::Unretained(this)));
 
   std::string wifi_guid =
       VerifyLastConfiguration(std::string(kSsid), std::string(kPassword));
@@ -459,8 +459,8 @@ TEST_F(WifiHotspotConnectorTest, TestConnect_Success) {
 TEST_F(WifiHotspotConnectorTest, TestConnect_Success_EmptyPassword) {
   wifi_hotspot_connector_->ConnectToWifiHotspot(
       std::string(kSsid), std::string() /* password */, kTetherNetworkGuid,
-      base::Bind(&WifiHotspotConnectorTest::WifiConnectionCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&WifiHotspotConnectorTest::WifiConnectionCallback,
+                     base::Unretained(this)));
 
   std::string wifi_guid = VerifyLastConfiguration(kSsid, std::string());
   EXPECT_FALSE(wifi_guid.empty());
@@ -488,8 +488,8 @@ TEST_F(WifiHotspotConnectorTest,
        TestConnect_SecondConnectionWhileWaitingForFirstToBecomeConnectable) {
   wifi_hotspot_connector_->ConnectToWifiHotspot(
       "ssid1", "password1", "tetherNetworkGuid1",
-      base::Bind(&WifiHotspotConnectorTest::WifiConnectionCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&WifiHotspotConnectorTest::WifiConnectionCallback,
+                     base::Unretained(this)));
 
   std::string wifi_guid1 = VerifyLastConfiguration("ssid1", "password1");
   EXPECT_FALSE(wifi_guid1.empty());
@@ -506,8 +506,8 @@ TEST_F(WifiHotspotConnectorTest,
   EXPECT_EQ(0u, connection_callback_responses_.size());
   wifi_hotspot_connector_->ConnectToWifiHotspot(
       "ssid2", "password2", kTetherNetworkGuid2,
-      base::Bind(&WifiHotspotConnectorTest::WifiConnectionCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&WifiHotspotConnectorTest::WifiConnectionCallback,
+                     base::Unretained(this)));
 
   std::string wifi_guid2 = VerifyLastConfiguration("ssid2", "password2");
   EXPECT_FALSE(wifi_guid2.empty());
@@ -553,8 +553,8 @@ TEST_F(WifiHotspotConnectorTest,
        TestConnect_SecondConnectionWhileWaitingForFirstToConnect) {
   wifi_hotspot_connector_->ConnectToWifiHotspot(
       "ssid1", "password1", kTetherNetworkGuid,
-      base::Bind(&WifiHotspotConnectorTest::WifiConnectionCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&WifiHotspotConnectorTest::WifiConnectionCallback,
+                     base::Unretained(this)));
 
   // Pass some arbitrary time -- this should not affect the
   // recorded duration because the start time should be reset
@@ -576,8 +576,8 @@ TEST_F(WifiHotspotConnectorTest,
   // After network becomes connectable, request a connection to second network.
   wifi_hotspot_connector_->ConnectToWifiHotspot(
       "ssid2", "password2", kTetherNetworkGuid2,
-      base::Bind(&WifiHotspotConnectorTest::WifiConnectionCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&WifiHotspotConnectorTest::WifiConnectionCallback,
+                     base::Unretained(this)));
 
   // The first Tether and Wi-Fi networks should no longer be associated.
   VerifyNetworkNotAssociated(kTetherNetworkGuid);
@@ -628,8 +628,8 @@ TEST_F(WifiHotspotConnectorTest, TestConnect_WifiDisabled_Success) {
 
   wifi_hotspot_connector_->ConnectToWifiHotspot(
       std::string(kSsid), std::string(kPassword), kTetherNetworkGuid,
-      base::Bind(&WifiHotspotConnectorTest::WifiConnectionCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&WifiHotspotConnectorTest::WifiConnectionCallback,
+                     base::Unretained(this)));
 
   // Allow the asyncronous call to NetworkStateHandler::SetTechnologyEnabled()
   // within WifiHotspotConnector::ConnectToWifiHotspot() to synchronously
@@ -678,8 +678,8 @@ TEST_F(WifiHotspotConnectorTest,
 
   wifi_hotspot_connector_->ConnectToWifiHotspot(
       std::string(kSsid), std::string(kPassword), kTetherNetworkGuid,
-      base::Bind(&WifiHotspotConnectorTest::WifiConnectionCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&WifiHotspotConnectorTest::WifiConnectionCallback,
+                     base::Unretained(this)));
 
   // Ensure that WifiHotspotConnector only begins configuring the Wi-Fi network
   // once Wi-Fi is enabled.
@@ -733,8 +733,8 @@ TEST_F(WifiHotspotConnectorTest, TestConnect_WifiDisabled_AttemptTimesOut) {
 
   wifi_hotspot_connector_->ConnectToWifiHotspot(
       std::string(kSsid), std::string(kPassword), kTetherNetworkGuid,
-      base::Bind(&WifiHotspotConnectorTest::WifiConnectionCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&WifiHotspotConnectorTest::WifiConnectionCallback,
+                     base::Unretained(this)));
 
   // Timeout timer fires.
   InvokeTimerTask();
@@ -768,8 +768,8 @@ TEST_F(WifiHotspotConnectorTest,
 
   wifi_hotspot_connector_->ConnectToWifiHotspot(
       "ssid1", "password1", kTetherNetworkGuid,
-      base::Bind(&WifiHotspotConnectorTest::WifiConnectionCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&WifiHotspotConnectorTest::WifiConnectionCallback,
+                     base::Unretained(this)));
 
   // Pass some arbitrary time -- this should not affect the
   // recorded duration because the start time should be reset
@@ -780,8 +780,8 @@ TEST_F(WifiHotspotConnectorTest,
 
   wifi_hotspot_connector_->ConnectToWifiHotspot(
       "ssid2", "password2", kTetherNetworkGuid2,
-      base::Bind(&WifiHotspotConnectorTest::WifiConnectionCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&WifiHotspotConnectorTest::WifiConnectionCallback,
+                     base::Unretained(this)));
 
   // Allow the asyncronous call to NetworkStateHandler::SetTechnologyEnabled()
   // within WifiHotspotConnector::ConnectToWifiHotspot() to synchronously

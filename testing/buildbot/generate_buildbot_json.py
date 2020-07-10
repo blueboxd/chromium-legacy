@@ -894,7 +894,7 @@ class BBJSONGenerator(object):
     gn_entry = (
         self.gn_isolate_map.get(result['isolate_name']) or
         self.gn_isolate_map.get('telemetry_gpu_integration_test'))
-    result['test_id_prefix'] = 'ninja:%s/%s/' % (gn_entry['label'], step_name)
+    result['test_id_prefix'] = 'ninja:%s/' % gn_entry['label']
 
     args = result.get('args', [])
     test_to_run = result.pop('telemetry_test_name', test_name)

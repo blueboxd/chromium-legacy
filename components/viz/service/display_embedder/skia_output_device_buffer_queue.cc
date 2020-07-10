@@ -229,6 +229,18 @@ void SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers(
     const base::WeakPtr<OutputPresenter::Image>& image,
     std::vector<OutputPresenter::OverlayData> overlays,
     gfx::SwapCompletionResult result) {
+  // Remove the no-longer-in-use overlays from
+  // |in_use_by_window_server_overlays_|.
+  base::EraseIf(in_use_by_window_server_overlays_,
+                [](auto& overlay) { return !overlay.IsInUseByWindowServer(); });
+
+  // Move the still-in-use entries from |overlays| to
+  // |in_use_by_window_server_overlays_|.
+  for (auto& overlay : overlays) {
+    if (overlay.IsInUseByWindowServer())
+      in_use_by_window_server_overlays_.emplace(std::move(overlay));
+  }
+
   DCHECK(!result.gpu_fence);
   FinishSwapBuffers(std::move(result), size, latency_info);
   PageFlipComplete(image.get());
@@ -274,6 +286,12 @@ SkSurface* SkiaOutputDeviceBufferQueue::BeginPaint(
 void SkiaOutputDeviceBufferQueue::EndPaint() {
   DCHECK(current_image_);
   current_image_->EndWriteSkia();
+}
+
+bool SkiaOutputDeviceBufferQueue::OverlayDataComparator::operator()(
+    const OutputPresenter::OverlayData& a,
+    const OutputPresenter::OverlayData& b) const {
+  return a.mailbox() < b.mailbox();
 }
 
 }  // namespace viz

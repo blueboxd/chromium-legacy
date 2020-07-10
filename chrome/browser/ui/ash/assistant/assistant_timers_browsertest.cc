@@ -125,8 +125,7 @@ FindActionButtonsForNotification(
   auto* notification_view = FindViewForNotification(notification);
 
   std::vector<message_center::NotificationMdTextButton*> action_buttons;
-  FindDescendentsOfClass(notification_view, "NotificationMdTextButton",
-                         &action_buttons);
+  FindDescendentsOfClass(notification_view, &action_buttons);
 
   return action_buttons;
 }

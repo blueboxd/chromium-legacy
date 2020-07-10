@@ -935,8 +935,14 @@ VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   // use the value provided from the parent.
   if (is_top_most_widget) {
     const DisplayFeature* display_feature = view_->GetDisplayFeature();
-    visual_properties.root_widget_window_segments = ComputeRootWindowSegments(
-        visual_properties.visible_viewport_size, display_feature);
+    if (display_feature) {
+      visual_properties.root_widget_window_segments =
+          display_feature->ComputeWindowSegments(
+              visual_properties.visible_viewport_size);
+    } else {
+      visual_properties.root_widget_window_segments = {
+          gfx::Rect(visual_properties.visible_viewport_size)};
+    }
   } else {
     visual_properties.root_widget_window_segments =
         properties_from_parent_local_root_.root_widget_window_segments;
@@ -1062,43 +1068,6 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
   }
 
   return true;
-}
-
-std::vector<gfx::Rect> RenderWidgetHostImpl::ComputeRootWindowSegments(
-    const gfx::Size& visible_viewport_size,
-    const DisplayFeature* display_feature) const {
-  std::vector<gfx::Rect> window_segments;
-
-  if (!display_feature) {
-    window_segments.emplace_back(visible_viewport_size);
-    return window_segments;
-  }
-
-  int display_feature_end =
-      display_feature->offset + display_feature->mask_length;
-  if (display_feature->orientation == DisplayFeature::Orientation::kVertical) {
-    // If the display feature is vertically oriented, it splits or masks
-    // the widget into two side-by-side segments. Note that in the masking
-    // scenario, there is an area of the widget that are not covered by the
-    // union of the window segments - this area's pixels will not be visible
-    // to the user.
-    window_segments.emplace_back(0, 0, display_feature->offset,
-                                 visible_viewport_size.height());
-    window_segments.emplace_back(
-        display_feature_end, 0,
-        visible_viewport_size.width() - display_feature_end,
-        visible_viewport_size.height());
-  } else {
-    // If the display feature is offset in the y direction, it splits or masks
-    // the widget into two stacked segments.
-    window_segments.emplace_back(0, 0, visible_viewport_size.width(),
-                                 display_feature->offset);
-    window_segments.emplace_back(
-        0, display_feature_end, visible_viewport_size.width(),
-        visible_viewport_size.height() - display_feature_end);
-  }
-
-  return window_segments;
 }
 
 void RenderWidgetHostImpl::GotFocus() {

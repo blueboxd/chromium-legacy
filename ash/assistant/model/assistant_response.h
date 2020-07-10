@@ -63,7 +63,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse
 
   // Adds the specified |suggestions| that should be rendered for the
   // interaction.
-  void AddSuggestions(std::vector<AssistantSuggestion> suggestions);
+  void AddSuggestions(const std::vector<AssistantSuggestion>& suggestions);
 
   // Returns the suggestion uniquely identified by |id|.
   const AssistantSuggestion* GetSuggestionById(

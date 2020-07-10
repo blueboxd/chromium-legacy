@@ -471,7 +471,7 @@ bool ContentSettingsAgentImpl::IsWhitelistedForContentSettings() const {
   if (document_url.GetString() == content::kUnreachableWebDataURL)
     return true;
 
-  if (origin.IsOpaque())
+  if (origin.IsNull() || origin.IsOpaque())
     return false;  // Uninitialized document?
 
   blink::WebString protocol = origin.Protocol();

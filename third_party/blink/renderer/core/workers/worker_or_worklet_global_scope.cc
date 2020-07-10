@@ -188,11 +188,7 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     std::unique_ptr<WebContentSettingsClient> content_settings_client,
     scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context,
     WorkerReportingProxy& reporting_proxy)
-    : ExecutionContext(isolate, agent),
-      security_context_(
-          SecurityContextInit(origin,
-                              MakeGarbageCollected<OriginTrialContext>()),
-          SecurityContext::kWorker),
+    : ExecutionContext(isolate, agent, SecurityContext::kWorker),
       name_(name),
       parent_devtools_token_(parent_devtools_token),
       worker_clients_(worker_clients),
@@ -202,7 +198,8 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
           MakeGarbageCollected<WorkerOrWorkletScriptController>(this, isolate)),
       v8_cache_options_(v8_cache_options),
       reporting_proxy_(reporting_proxy) {
-  GetOriginTrialContext()->BindExecutionContext(this);
+  Initialize(
+      SecurityContextInit(origin, MakeGarbageCollected<OriginTrialContext>()));
   if (worker_clients_)
     worker_clients_->ReattachThread();
 }
@@ -531,7 +528,6 @@ int WorkerOrWorkletGlobalScope::GetOutstandingThrottledLimit() const {
 }
 
 void WorkerOrWorkletGlobalScope::Trace(Visitor* visitor) const {
-  visitor->Trace(security_context_);
   visitor->Trace(inside_settings_resource_fetcher_);
   visitor->Trace(resource_fetchers_);
   visitor->Trace(subresource_filter_);

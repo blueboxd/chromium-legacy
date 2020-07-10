@@ -99,6 +99,11 @@ class CORE_EXPORT NGPhysicalFragment
     return IsBox() && BoxType() == NGBoxType::kColumnBox;
   }
   bool IsFragmentainerBox() const { return IsColumnBox(); }
+  bool IsColumnSpanAll() const {
+    if (const LayoutBox* box = ToLayoutBoxOrNull(GetLayoutObject()))
+      return box->IsColumnSpanAll();
+    return false;
+  }
   // An atomic inline is represented as a kFragmentBox, such as inline block and
   // replaced elements.
   bool IsAtomicInline() const {

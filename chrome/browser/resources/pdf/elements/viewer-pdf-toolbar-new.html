@@ -127,8 +127,13 @@
   <cr-icon-button id="print" iron-icon="cr:print"
       aria-label$="$i18n{tooltipPrint}" hidden="[[!printingEnabled]]"
       title="$i18n{tooltipPrint}" on-click="onPrintClick_"></cr-icon-button>
-  <cr-icon-button id="actionMenuTrigger"
-      iron-icon="cr:more-vert"></cr-icon-button>
+  <cr-icon-button id="more"
+      iron-icon="cr:more-vert" on-click="onMoreClick_"></cr-icon-button>
 </div>
 <paper-progress id="progress" value="[[loadProgress]]" hidden="[[!loading_]]">
 </paper-progress>
+
+<cr-action-menu>
+  <button class="dropdown-item">Single page view</button>
+  <button class="dropdown-item">Two page view</button>
+</cr-action-menu>

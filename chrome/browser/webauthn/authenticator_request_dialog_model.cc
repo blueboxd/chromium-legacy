@@ -26,52 +26,63 @@ base::Optional<device::FidoTransportProtocol> SelectMostLikelyTransport(
     base::Optional<device::FidoTransportProtocol> last_used_transport,
     bool cable_extension_provided,
     bool have_paired_phones) {
-  base::flat_set<AuthenticatorTransport> candidate_transports(
+  const base::flat_set<AuthenticatorTransport>& candidate_transports(
       transport_availability.available_transports);
 
-  // For GetAssertion requests, auto advance to Touch ID if the authenticator
-  // has a matching credential for the (possibly empty) allow list.
-  if (transport_availability.request_type ==
-          device::FidoRequestHandlerBase::RequestType::kGetAssertion &&
-      base::Contains(candidate_transports,
+  // If there is only one transport available, select that instead of showing a
+  // transport selection screen with only a single item.
+  if (candidate_transports.size() == 1) {
+    return *candidate_transports.begin();
+  }
+
+  // The remaining decisions apply to GetAssertion requests only. For
+  // MakeCredential, the user needs to choose from transport selection.
+  if (transport_availability.request_type !=
+      device::FidoRequestHandlerBase::RequestType::kGetAssertion) {
+    return base::nullopt;
+  }
+
+  // Auto advance to Touch ID if the authenticator has a matching credential
+  // for the (possibly empty) allow list.
+  if (base::Contains(candidate_transports,
                      device::FidoTransportProtocol::kInternal) &&
       transport_availability.has_recognized_mac_touch_id_credential) {
     return device::FidoTransportProtocol::kInternal;
   }
 
-  // If the RP supplied the caBLE extension then respect that and always
-  // select caBLE for GetAssertion operations.
-  if (transport_availability.request_type ==
-          device::FidoRequestHandlerBase::RequestType::kGetAssertion &&
-      cable_extension_provided &&
+  // If the RP supplied the caBLE extension then respect that and always select
+  // caBLE for GetAssertion operations.
+  if (cable_extension_provided &&
       base::Contains(
           candidate_transports,
           AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy)) {
     return AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy;
   }
 
-  // Otherwise, for GetAssertion calls, if the |last_used_transport| is
-  // available, use that. Unless the preference is Touch ID, because Touch ID
-  // at this point is guaranteed to not have the credential and would go
-  // straight to its special error screen.
-  if (transport_availability.request_type ==
-          device::FidoRequestHandlerBase::RequestType::kGetAssertion &&
-      last_used_transport &&
-      base::Contains(candidate_transports, *last_used_transport) &&
-      *last_used_transport != device::FidoTransportProtocol::kInternal &&
-      (have_paired_phones ||
-       *last_used_transport !=
-           device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy)) {
-    return *last_used_transport;
+  // The remaining decisions are based on the most recently used successful
+  // transport.
+  if (!last_used_transport ||
+      !base::Contains(candidate_transports, *last_used_transport)) {
+    return base::nullopt;
   }
 
-  // Finally, if there is only one transport available we can use, select that,
-  // instead of showing a transport selection screen with only a single item.
-  if (candidate_transports.size() == 1) {
-    return *candidate_transports.begin();
+  // Auto-advancing to Touch ID based on credential availability has been
+  // handled above. Hence, at this point it does not have a matching credential
+  // and should not be advanced to, because it would fail immediately.
+  if (*last_used_transport == device::FidoTransportProtocol::kInternal) {
+    return base::nullopt;
   }
 
-  return base::nullopt;
+  // Auto-advancing to caBLE based on a caBLEv1 request extension has been
+  // handled above. For caBLEv2, only auto-advance if the user has previously
+  // paired a caBLEv2 authenticator.
+  if (*last_used_transport ==
+          device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy &&
+      !have_paired_phones) {
+    return base::nullopt;
+  }
+
+  return *last_used_transport;
 }
 
 }  // namespace

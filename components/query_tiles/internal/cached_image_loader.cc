@@ -12,6 +12,7 @@
 #include "components/image_fetcher/core/image_fetcher_service.h"
 #include "components/image_fetcher/core/request_metadata.h"
 #include "components/query_tiles/internal/stats.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/skia/include/core/SkBitmap.h"

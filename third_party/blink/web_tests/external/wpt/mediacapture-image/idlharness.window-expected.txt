@@ -1,0 +1,59 @@
+This is a testharness.js-based test.
+Found 55 tests; 54 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
+PASS idl_test setup
+PASS idl_test validation
+PASS Partial dictionary MediaTrackSupportedConstraints: original dictionary defined
+PASS Partial dictionary MediaTrackSupportedConstraints: member names are unique
+PASS Partial dictionary MediaTrackCapabilities: original dictionary defined
+PASS Partial dictionary MediaTrackCapabilities: member names are unique
+PASS Partial dictionary MediaTrackConstraintSet: original dictionary defined
+PASS Partial dictionary MediaTrackConstraintSet: member names are unique
+PASS Partial dictionary MediaTrackSettings: original dictionary defined
+PASS Partial dictionary MediaTrackSettings: member names are unique
+PASS ImageCapture interface: existence and properties of interface object
+PASS ImageCapture interface object length
+PASS ImageCapture interface object name
+PASS ImageCapture interface: existence and properties of interface prototype object
+PASS ImageCapture interface: existence and properties of interface prototype object's "constructor" property
+PASS ImageCapture interface: existence and properties of interface prototype object's @@unscopables property
+PASS ImageCapture interface: operation takePhoto(optional PhotoSettings)
+PASS ImageCapture interface: operation getPhotoCapabilities()
+PASS ImageCapture interface: operation getPhotoSettings()
+PASS ImageCapture interface: operation grabFrame()
+PASS ImageCapture interface: attribute track
+PASS ImageCapture must be primary interface of capture
+PASS Stringification of capture
+PASS ImageCapture interface: capture must inherit property "takePhoto(optional PhotoSettings)" with the proper type
+PASS ImageCapture interface: calling takePhoto(optional PhotoSettings) on capture with too few arguments must throw TypeError
+PASS ImageCapture interface: capture must inherit property "getPhotoCapabilities()" with the proper type
+PASS ImageCapture interface: capture must inherit property "getPhotoSettings()" with the proper type
+PASS ImageCapture interface: capture must inherit property "grabFrame()" with the proper type
+PASS ImageCapture interface: capture must inherit property "track" with the proper type
+PASS PhotoCapabilities interface: existence and properties of interface object
+PASS PhotoCapabilities interface object length
+PASS PhotoCapabilities interface object name
+PASS PhotoCapabilities interface: existence and properties of interface prototype object
+PASS PhotoCapabilities interface: existence and properties of interface prototype object's "constructor" property
+PASS PhotoCapabilities interface: existence and properties of interface prototype object's @@unscopables property
+PASS PhotoCapabilities interface: attribute redEyeReduction
+PASS PhotoCapabilities interface: attribute imageHeight
+PASS PhotoCapabilities interface: attribute imageWidth
+PASS PhotoCapabilities interface: attribute fillLightMode
+PASS PhotoCapabilities must be primary interface of capabilities
+PASS Stringification of capabilities
+PASS PhotoCapabilities interface: capabilities must inherit property "redEyeReduction" with the proper type
+PASS PhotoCapabilities interface: capabilities must inherit property "imageHeight" with the proper type
+PASS PhotoCapabilities interface: capabilities must inherit property "imageWidth" with the proper type
+PASS PhotoCapabilities interface: capabilities must inherit property "fillLightMode" with the proper type
+PASS MediaSettingsRange interface: existence and properties of interface object
+PASS MediaSettingsRange interface object length
+PASS MediaSettingsRange interface object name
+PASS MediaSettingsRange interface: existence and properties of interface prototype object
+PASS MediaSettingsRange interface: existence and properties of interface prototype object's "constructor" property
+PASS MediaSettingsRange interface: existence and properties of interface prototype object's @@unscopables property
+PASS MediaSettingsRange interface: attribute max
+PASS MediaSettingsRange interface: attribute min
+PASS MediaSettingsRange interface: attribute step
+FAIL MediaSettingsRange interface: operation toJSON() assert_own_property: interface prototype object missing non-static operation expected property "toJSON" missing
+Harness: the test ran to completion.
+

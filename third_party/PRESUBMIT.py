@@ -49,13 +49,11 @@ def _CheckThirdPartyReadmesUpdated(input_api, output_api):
       continue
     if (local_path.startswith('third_party' + input_api.os_path.sep) and
         not local_path.startswith('third_party' + input_api.os_path.sep +
-                                  'WebKit' + input_api.os_path.sep) and
-        not local_path.startswith('third_party' + input_api.os_path.sep +
                                   'blink' + input_api.os_path.sep) and
         not local_path.startswith('third_party' + input_api.os_path.sep +
-                                  'mojo' + input_api.os_path.sep) and
-        not local_path.startswith('third_party' + input_api.os_path.sep +
                                   'boringssl' + input_api.os_path.sep) and
+        not local_path.startswith('third_party' + input_api.os_path.sep +
+                                  'cacheinvalidation' + input_api.os_path.sep) and
         not local_path.startswith('third_party' + input_api.os_path.sep +
                                   'closure_compiler' + input_api.os_path.sep +
                                   'externs' + input_api.os_path.sep) and
@@ -63,9 +61,11 @@ def _CheckThirdPartyReadmesUpdated(input_api, output_api):
                                   'closure_compiler' + input_api.os_path.sep +
                                   'interfaces' + input_api.os_path.sep) and
         not local_path.startswith('third_party' + input_api.os_path.sep +
-                                  'webxr_test_pages' + input_api.os_path.sep) and
+                                  'feed_library' + input_api.os_path.sep) and
         not local_path.startswith('third_party' + input_api.os_path.sep +
-                                  'feed_library' + input_api.os_path.sep)):
+                                  'mojo' + input_api.os_path.sep) and
+        not local_path.startswith('third_party' + input_api.os_path.sep +
+                                  'webxr_test_pages' + input_api.os_path.sep)):
       files.append(f)
       if local_path.endswith("README.chromium"):
         readmes.append(f)

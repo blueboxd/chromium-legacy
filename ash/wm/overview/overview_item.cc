@@ -398,6 +398,8 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
     SetItemBounds(inset_bounds, new_animation_type, is_first_update);
     UpdateHeaderLayout(is_first_update ? OVERVIEW_ANIMATION_NONE
                                        : new_animation_type);
+    if (is_first_update && !should_animate_when_entering_)
+      transform_window_.ClipHeaderIfNeeded(/*animate=*/false);
   }
 
   // Shadow is normally set after an animation is finished. In the case of no
@@ -765,7 +767,7 @@ void OverviewItem::UpdateRoundedCornersAndShadow() {
     overview_item_view_->UpdatePreviewRoundedCorners(
         should_show_rounded_corners);
   } else {
-    transform_window_.UpdateRoundedCorners(should_show_rounded_corners);
+    transform_window_.UpdateRoundedCornersAndClip(should_show_rounded_corners);
   }
 
   // In addition, the shadow should be hidden if
@@ -1237,26 +1239,24 @@ void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
     return;
   }
 
-  ScopedOverviewTransformWindow::ScopedAnimationSettings animation_settings;
-  transform_window_.BeginScopedAnimation(animation_type, &animation_settings);
-  if (animation_type == OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW &&
-      !animation_settings.empty()) {
-    animation_settings.front()->AddObserver(new AnimationObserver{
-        base::BindOnce(&OverviewItem::OnItemBoundsAnimationStarted,
-                       weak_ptr_factory_.GetWeakPtr()),
-        base::BindOnce(&OverviewItem::OnItemBoundsAnimationEnded,
-                       weak_ptr_factory_.GetWeakPtr())});
+  {
+    ScopedOverviewTransformWindow::ScopedAnimationSettings animation_settings;
+    transform_window_.BeginScopedAnimation(animation_type, &animation_settings);
+    if (animation_type ==
+            OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW &&
+        !animation_settings.empty()) {
+      animation_settings.front()->AddObserver(new AnimationObserver{
+          base::BindOnce(&OverviewItem::OnItemBoundsAnimationStarted,
+                         weak_ptr_factory_.GetWeakPtr()),
+          base::BindOnce(&OverviewItem::OnItemBoundsAnimationEnded,
+                         weak_ptr_factory_.GetWeakPtr())});
+    }
+    SetTransform(window, transform);
   }
-  SetTransform(window, transform);
 
-  using ClippingType = ScopedOverviewTransformWindow::ClippingType;
-  ScopedOverviewTransformWindow::ClippingData clipping_data{
-      ClippingType::kCustom, gfx::SizeF()};
-  if (unclipped_size_)
-    clipping_data.second = GetWindowTargetBoundsWithInsets().size();
-  else if (is_first_update)
-    clipping_data.first = ClippingType::kEnter;
-  transform_window_.SetClipping(clipping_data);
+  transform_window_.SetClipping(unclipped_size_
+                                    ? GetWindowTargetBoundsWithInsets().size()
+                                    : gfx::SizeF());
 }
 
 void OverviewItem::CreateItemWidget() {

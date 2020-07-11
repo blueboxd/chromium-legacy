@@ -4347,9 +4347,11 @@ TEST_P(SplitViewOverviewSessionTest, Clipping) {
             /*window_for_minimum_size=*/nullptr);
 
     ToggleOverview();
+    // Clipping like rounded corners and shadows gets updated via a delayed post
+    // task.
+    base::RunLoop().RunUntilIdle();
 
-    // Tests that after entering overview, windows with no top inset and
-    // minimized windows still have no clip.
+    // Tests that in regular overview, the clipping is unchanged.
     ASSERT_TRUE(overview_controller()->InOverviewSession());
     EXPECT_EQ(clipping1, window1->layer()->clip_rect());
     EXPECT_EQ(clipping2, window2->layer()->clip_rect());
@@ -4482,7 +4484,7 @@ TEST_P(SplitViewOverviewSessionTest, NoClippingWhenSplitviewDisabled) {
                                    /*is_touch_dragging=*/false);
   overview_session()->Drag(item1, gfx::PointF());
   EXPECT_EQ(clipping1, window1->layer()->clip_rect());
-  EXPECT_EQ(clipping2, window2->layer()->clip_rect());
+  EXPECT_EQ(clipping2, window1->layer()->clip_rect());
 }
 
 // Tests that if there is only one window in the MRU window list in the overview

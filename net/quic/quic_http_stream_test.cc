@@ -537,18 +537,17 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructAckAndRstStreamPacket(
       uint64_t packet_number) {
-    return client_maker_.MakeAckAndRstPacket(
-        packet_number, !kIncludeVersion, stream_id_,
-        quic::QUIC_STREAM_CANCELLED, 2, 1, 2);
+    return client_maker_.MakeAckAndRstPacket(packet_number, !kIncludeVersion,
+                                             stream_id_,
+                                             quic::QUIC_STREAM_CANCELLED, 2, 1);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructClientAckPacket(
       uint64_t packet_number,
       uint64_t largest_received,
-      uint64_t smallest_received,
-      uint64_t least_unacked) {
+      uint64_t smallest_received) {
     return client_maker_.MakeAckPacket(packet_number, largest_received,
-                                       smallest_received, least_unacked);
+                                       smallest_received);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructServerAckPacket(
@@ -770,8 +769,8 @@ TEST_P(QuicHttpStreamTest, LoadTimingTwoRequests) {
       kIncludeVersion, kFin, DEFAULT_PRIORITY,
       GetNthClientInitiatedBidirectionalStreamId(0),
       &spdy_request_header_frame_length));
-  AddWrite(ConstructClientAckPacket(packet_number++, 3, 1,
-                                    2));  // Ack the responses.
+  AddWrite(
+      ConstructClientAckPacket(packet_number++, 3, 1));  // Ack the responses.
 
   Initialize();
 
@@ -853,8 +852,8 @@ TEST_P(QuicHttpStreamTest, GetRequestWithTrailers) {
       packet_number++, GetNthClientInitiatedBidirectionalStreamId(0),
       kIncludeVersion, kFin, DEFAULT_PRIORITY,
       &spdy_request_header_frame_length));
-  AddWrite(ConstructClientAckPacket(packet_number++, 3, 1,
-                                    2));  // Ack the data packet.
+  AddWrite(
+      ConstructClientAckPacket(packet_number++, 3, 1));  // Ack the data packet.
 
   Initialize();
 
@@ -1213,7 +1212,7 @@ TEST_P(QuicHttpStreamTest, SendPostRequest) {
         &spdy_request_headers_frame_length, {header, kUploadData}));
   }
 
-  AddWrite(ConstructClientAckPacket(packet_number++, 3, 1, 2));
+  AddWrite(ConstructClientAckPacket(packet_number++, 3, 1));
 
   Initialize();
 
@@ -1295,7 +1294,7 @@ TEST_P(QuicHttpStreamTest, SendPostRequestAndReceiveSoloFin) {
         &spdy_request_headers_frame_length, {header, kUploadData}));
   }
 
-  AddWrite(ConstructClientAckPacket(packet_number++, 3, 1, 2));
+  AddWrite(ConstructClientAckPacket(packet_number++, 3, 1));
 
   Initialize();
 
@@ -1383,7 +1382,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequest) {
                                        kUploadData));
   }
 
-  AddWrite(ConstructClientAckPacket(packet_number++, 3, 1, 2));
+  AddWrite(ConstructClientAckPacket(packet_number++, 3, 1));
   Initialize();
 
   upload_data_stream_ = std::make_unique<ChunkedUploadDataStream>(0);
@@ -1467,7 +1466,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithFinalEmptyDataPacket) {
   }
   AddWrite(
       ConstructClientDataPacket(packet_number++, kIncludeVersion, kFin, ""));
-  AddWrite(ConstructClientAckPacket(packet_number++, 3, 1, 2));
+  AddWrite(ConstructClientAckPacket(packet_number++, 3, 1));
   Initialize();
 
   upload_data_stream_ = std::make_unique<ChunkedUploadDataStream>(0);
@@ -1539,7 +1538,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithOneEmptyDataPacket) {
       &spdy_request_headers_frame_length));
   AddWrite(
       ConstructClientDataPacket(packet_number++, kIncludeVersion, kFin, ""));
-  AddWrite(ConstructClientAckPacket(packet_number++, 3, 1, 2));
+  AddWrite(ConstructClientAckPacket(packet_number++, 3, 1));
   Initialize();
 
   upload_data_stream_ = std::make_unique<ChunkedUploadDataStream>(0);
@@ -1614,22 +1613,22 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestAbortedByResetStream) {
         packet_number++, GetNthClientInitiatedBidirectionalStreamId(0),
         kIncludeVersion, !kFin, DEFAULT_PRIORITY, 0,
         &spdy_request_headers_frame_length, {header, kUploadData}));
-    AddWrite(ConstructClientAckPacket(packet_number++, 3, 1, 2));
-      AddWrite(client_maker_.MakeAckAndRstPacket(
-          packet_number++,
-          /* include_version = */ true, stream_id_, quic::QUIC_STREAM_NO_ERROR,
-          4, 1, 1,
-          /* include_stop_sending_if_v99 = */ false));
+    AddWrite(ConstructClientAckPacket(packet_number++, 3, 1));
+    AddWrite(client_maker_.MakeAckAndRstPacket(
+        packet_number++,
+        /* include_version = */ true, stream_id_, quic::QUIC_STREAM_NO_ERROR, 4,
+        1,
+        /* include_stop_sending_if_v99 = */ false));
   } else {
     AddWrite(ConstructRequestHeadersAndDataFramesPacket(
         packet_number++, GetNthClientInitiatedBidirectionalStreamId(0),
         kIncludeVersion, !kFin, DEFAULT_PRIORITY, 0,
         &spdy_request_headers_frame_length, {kUploadData}));
-    AddWrite(ConstructClientAckPacket(packet_number++, 3, 1, 2));
+    AddWrite(ConstructClientAckPacket(packet_number++, 3, 1));
     AddWrite(client_maker_.MakeAckAndRstPacket(
         packet_number++,
         /* include_version = */ false, stream_id_,
-        quic::QUIC_RST_ACKNOWLEDGEMENT, 4, 1, 1,
+        quic::QUIC_RST_ACKNOWLEDGEMENT, 4, 1,
         /* include_stop_sending_if_v99 = */ false));
   }
 

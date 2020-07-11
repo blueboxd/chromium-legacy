@@ -1870,8 +1870,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
   std::unique_ptr<quic::QuicEncryptedPacket> client_ping;
   std::unique_ptr<quic::QuicEncryptedPacket> ack_and_data_out;
   if (VersionUsesHttp3(version_.transport_version)) {
-    client_ping =
-        client_maker_.MakeAckAndPingPacket(packet_num++, false, 1, 1, 1);
+    client_ping = client_maker_.MakeAckAndPingPacket(packet_num++, false, 1, 1);
   } else {
     client_ping = client_maker_.MakePingPacket(packet_num++, true);
   }
@@ -1988,7 +1987,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketMaxReaders) {
 TEST_P(QuicChromiumClientSessionTest, MigrateToSocketReadError) {
   std::unique_ptr<quic::QuicEncryptedPacket> settings_packet;
   std::unique_ptr<quic::QuicEncryptedPacket> client_ping =
-      client_maker_.MakeAckAndPingPacket(2, false, 1, 1, 1);
+      client_maker_.MakeAckAndPingPacket(2, false, 1, 1);
   std::unique_ptr<quic::QuicEncryptedPacket> initial_ping;
   std::vector<MockWrite> old_writes;
   std::vector<MockRead> old_reads;
@@ -2099,8 +2098,7 @@ TEST_P(QuicChromiumClientSessionTest, RetransmittableOnWireTimeout) {
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakePingPacket(packet_num++, true));
 
-  quic_data.AddRead(ASYNC,
-                    server_maker_.MakeAckPacket(1, packet_num - 1, 1, 1));
+  quic_data.AddRead(ASYNC, server_maker_.MakeAckPacket(1, packet_num - 1, 1));
 
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakePingPacket(packet_num++, false));

@@ -541,7 +541,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '54b62c91da5b93312ce7d40daaea957e86da7b4b',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '98f43faf56fd87f1c07896e22d07604ccc550d2f',
       'condition': 'checkout_ios',
   },
 
@@ -1541,7 +1541,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@507a15961061cab9d2ac7b2b968e985d53824d7b',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@032808f2f85dff7915fbbab32498b1af8c82adcc',
     'condition': 'checkout_src_internal',
   },
 

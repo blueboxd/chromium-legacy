@@ -96,23 +96,11 @@ ToAuthenticatorGetAssertionResponse(
       std::move(*authenticator_data),
       std::vector<uint8_t>(assertion.pbSignature,
                            assertion.pbSignature + assertion.cbSignature));
-  // |GetAssertionRequestHandler| requires the credential information to be
-  // included in the response. Due to a quirk of CTAP2, Windows may omit it if
-  // |allow_list| contained only a single value.
-  if (assertion.Credential.cbId > 0) {
-    response.SetCredential(PublicKeyCredentialDescriptor(
-        CredentialType::kPublicKey,
-        std::vector<uint8_t>(
-            assertion.Credential.pbId,
-            assertion.Credential.pbId + assertion.Credential.cbId)));
-  } else if (allow_list.size() == 1) {
-    response.SetCredential(allow_list[0]);
-  } else {
-    FIDO_LOG(ERROR) << "Windows returned no credential in an assertion "
-                       "response but there were "
-                    << allow_list.size() << " entries in the allow list";
-    return base::nullopt;
-  }
+  response.SetCredential(PublicKeyCredentialDescriptor(
+      CredentialType::kPublicKey,
+      std::vector<uint8_t>(
+          assertion.Credential.pbId,
+          assertion.Credential.pbId + assertion.Credential.cbId)));
   if (assertion.cbUserId > 0) {
     response.SetUserEntity(PublicKeyCredentialUserEntity(std::vector<uint8_t>(
         assertion.pbUserId, assertion.pbUserId + assertion.cbUserId)));

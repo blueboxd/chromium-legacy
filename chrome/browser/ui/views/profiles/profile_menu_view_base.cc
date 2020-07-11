@@ -144,11 +144,16 @@ const gfx::ImageSkia ImageForMenu(const gfx::VectorIcon& icon,
 
 class CircularImageButton : public views::ImageButton {
  public:
-  CircularImageButton(views::ButtonListener* listener,
-                      const gfx::VectorIcon& icon,
-                      const base::string16& text,
-                      bool show_border = false)
-      : ImageButton(listener), icon_(icon), show_border_(show_border) {
+  CircularImageButton(
+      views::ButtonListener* listener,
+      const gfx::VectorIcon& icon,
+      const base::string16& text,
+      SkColor background_color_for_contrast = SK_ColorTRANSPARENT,
+      bool show_border = false)
+      : ImageButton(listener),
+        icon_(icon),
+        background_color_for_contrast_(background_color_for_contrast),
+        show_border_(show_border) {
     SetTooltipText(text);
     SetInkDropMode(views::Button::InkDropMode::ON);
     SetFocusForPlatform();
@@ -163,8 +168,15 @@ class CircularImageButton : public views::ImageButton {
     const int kBorderThickness = show_border_ ? 1 : 0;
     const SkScalar kButtonRadius =
         (kCircularImageButtonSize + 2 * kBorderThickness) / 2.0f;
-    const SkColor icon_color = GetNativeTheme()->GetSystemColor(
+
+    SkColor icon_color = GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_DefaultIconColor);
+    if (background_color_for_contrast_ != SK_ColorTRANSPARENT) {
+      // Adjust |icon_color| to assure high enough contrast with the bg.
+      icon_color = color_utils::BlendForMinContrast(
+                       icon_color, background_color_for_contrast_)
+                       .color;
+    }
 
     gfx::ImageSkia image =
         ImageForMenu(icon_, kShortcutIconToImageRatio, icon_color);
@@ -182,6 +194,7 @@ class CircularImageButton : public views::ImageButton {
 
  private:
   const gfx::VectorIcon& icon_;
+  const SkColor background_color_for_contrast_;
   bool show_border_;
 };
 
@@ -549,8 +562,6 @@ void ProfileMenuViewBase::SetProfileIdentityInfo(
     const ui::ThemeProvider* theme_provider =
         anchor_button_->GetThemeProvider();
     DCHECK(theme_provider);
-    // TODO(crbug.com/1099286): Make the |heading_label| and |edit_button| have
-    // good contrast against |background_color|.
     background_color =
         theme_provider->GetColor(ThemeProperties::COLOR_FRAME_ACTIVE);
   }
@@ -564,13 +575,19 @@ void ProfileMenuViewBase::SetProfileIdentityInfo(
     heading_label = std::make_unique<views::Label>(profile_name, font);
     heading_label->SetElideBehavior(gfx::ELIDE_TAIL);
     heading_label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+    if (background_color) {
+      // This only informs the label about the color it is put on so that it can
+      // assure minimum contrast automatically.
+      heading_label->SetBackgroundColor(*background_color);
+    }
   }
 
   std::unique_ptr<views::View> edit_button;
   if (edit_button_params.has_value()) {
     edit_button = std::make_unique<CircularImageButton>(
         this, *edit_button_params->edit_icon,
-        edit_button_params->edit_tooltip_text);
+        edit_button_params->edit_tooltip_text,
+        background_color.value_or(SK_ColorTRANSPARENT));
     RegisterClickAction(edit_button.get(), edit_button_params->edit_action);
   }
 
@@ -669,6 +686,7 @@ void ProfileMenuViewBase::AddShortcutFeatureButton(
 
   views::Button* button = shortcut_features_container_->AddChildView(
       std::make_unique<CircularImageButton>(this, icon, text,
+                                            SK_ColorTRANSPARENT,
                                             /*show_border=*/true));
   button->EnableCanvasFlippingForRTLUI(false);
 

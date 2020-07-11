@@ -63,6 +63,7 @@ class SynchronousLayerTreeFrameSink : public TestLayerTreeFrameSink {
       scoped_refptr<viz::RasterContextProvider> worker_context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const viz::RendererSettings& renderer_settings,
+      const viz::DebugRendererSettings* const debug_settings,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       double refresh_rate,
       viz::BeginFrameSource* begin_frame_source,
@@ -71,6 +72,7 @@ class SynchronousLayerTreeFrameSink : public TestLayerTreeFrameSink {
                                std::move(worker_context_provider),
                                gpu_memory_buffer_manager,
                                renderer_settings,
+                               debug_settings,
                                task_runner,
                                false,
                                false,
@@ -1140,15 +1142,16 @@ std::unique_ptr<TestLayerTreeFrameSink> LayerTreeTest::CreateLayerTreeFrameSink(
   if (layer_tree_host()->GetSettings().using_synchronous_renderer_compositor) {
     return std::make_unique<SynchronousLayerTreeFrameSink>(
         compositor_context_provider, std::move(worker_context_provider),
-        gpu_memory_buffer_manager(), renderer_settings, impl_task_runner_,
-        refresh_rate, begin_frame_source_, use_software_renderer());
+        gpu_memory_buffer_manager(), renderer_settings, &debug_settings_,
+        impl_task_runner_, refresh_rate, begin_frame_source_,
+        use_software_renderer());
   }
 
   return std::make_unique<TestLayerTreeFrameSink>(
       compositor_context_provider, std::move(worker_context_provider),
-      gpu_memory_buffer_manager(), renderer_settings, impl_task_runner_,
-      synchronous_composite, disable_display_vsync, refresh_rate,
-      begin_frame_source_);
+      gpu_memory_buffer_manager(), renderer_settings, &debug_settings_,
+      impl_task_runner_, synchronous_composite, disable_display_vsync,
+      refresh_rate, begin_frame_source_);
 }
 
 std::unique_ptr<viz::SkiaOutputSurface>

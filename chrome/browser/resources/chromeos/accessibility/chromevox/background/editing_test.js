@@ -1305,8 +1305,9 @@ TEST_F('ChromeVoxEditingTest', 'GrammarErrors', function() {
       });
 });
 
+// Flaky test, crbug.com/1098642.
 TEST_F(
-    'ChromeVoxEditingTest', 'CharacterTypedAfterNewLine', function() {
+    'ChromeVoxEditingTest', 'DISABLED_CharacterTypedAfterNewLine', function() {
       const mockFeedback = this.createMockFeedback();
       this.runWithLoadedTree(
           `

@@ -66,6 +66,9 @@ message ChromeUserPopulation {
 
   // Indicates if user is in incognito mode.
   optional bool is_incognito = 7;
+
+  // If the user is opted in to MBB.
+  optional bool is_mbb_enabled = 8;
 }
 
 message ClientPhishingRequest {

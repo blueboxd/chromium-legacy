@@ -425,11 +425,8 @@ bool GPUQueue::CopyContentFromGPU(StaticBitmapImage* image,
     return false;
   }
 
-  WGPUTextureCopyView src;
-  src.nextInChain = nullptr;
+  WGPUTextureCopyView src = {};
   src.texture = src_texture;
-  src.mipLevel = 0;
-  src.arrayLayer = 0;
   src.origin = origin;
 
   WGPUCommandEncoder encoder =

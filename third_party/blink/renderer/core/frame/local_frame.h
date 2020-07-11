@@ -404,7 +404,9 @@ class CORE_EXPORT LocalFrame final
 
   // See viewport_intersection_state.h for more info on these methods.
   gfx::Point RemoteViewportOffset() const {
-    return intersection_state_.viewport_offset;
+    gfx::Point p;
+    intersection_state_.main_frame_transform.TransformPointReverse(&p);
+    return gfx::Point(-p.x(), -p.y());
   }
   IntRect RemoteViewportIntersection() const {
     return intersection_state_.viewport_intersection;

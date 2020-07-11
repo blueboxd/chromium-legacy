@@ -86,7 +86,8 @@ public class ResolvedSearchTerm {
      *        to the server along with user action results in a subsequent request.
      * @param searchUrlFull The URL for the full search to present in the overlay, or empty.
      * @param searchUrlPreload The URL for the search to preload into the overlay, or empty.
-     * @param cardTag The primary internal Coca card tag for the resolution, or {@code 0} if none.
+     * @param cardTagEnum A {@link CardTag} enumeration indicating what kind of card was returned,
+     *        or {@code 0} if no card was returned.
      */
     private ResolvedSearchTerm(boolean isNetworkUnavailable, int responseCode,
             final String searchTerm, final String displayText, final String alternateTerm,
@@ -94,7 +95,8 @@ public class ResolvedSearchTerm {
             int selectionEndAdjust, final String contextLanguage, final String thumbnailUrl,
             final String caption, final String quickActionUri,
             @QuickActionCategory final int quickActionCategory, final long loggedEventId,
-            final String searchUrlFull, final String searchUrlPreload, final int cardTag) {
+            final String searchUrlFull, final String searchUrlPreload,
+            @CardTag final int cardTagEnum) {
         mIsNetworkUnavailable = isNetworkUnavailable;
         mResponseCode = responseCode;
         mSearchTerm = searchTerm;
@@ -112,7 +114,7 @@ public class ResolvedSearchTerm {
         mLoggedEventId = loggedEventId;
         mSearchUrlFull = searchUrlFull;
         mSearchUrlPreload = searchUrlPreload;
-        mCardTagEnum = fromCocaCardTag(cardTag);
+        mCardTagEnum = cardTagEnum;
     }
 
     public boolean isNetworkUnavailable() {

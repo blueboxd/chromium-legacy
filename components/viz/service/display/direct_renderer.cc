@@ -116,10 +116,12 @@ DirectRenderer::SwapFrameData& DirectRenderer::SwapFrameData::operator=(
     SwapFrameData&&) = default;
 
 DirectRenderer::DirectRenderer(const RendererSettings* settings,
+                               const DebugRendererSettings* debug_settings,
                                OutputSurface* output_surface,
                                DisplayResourceProvider* resource_provider,
                                OverlayProcessorInterface* overlay_processor)
     : settings_(settings),
+      debug_settings_(debug_settings),
       output_surface_(output_surface),
       resource_provider_(resource_provider),
       overlay_processor_(overlay_processor) {
@@ -269,7 +271,7 @@ void DirectRenderer::DrawFrame(
   overdraw_tracing_support_missing_logged_once_ = true;
 #endif
 
-  bool overdraw_feedback = settings_->show_overdraw_feedback;
+  bool overdraw_feedback = debug_settings_->show_overdraw_feedback;
   if (overdraw_feedback && !output_surface_->capabilities().supports_stencil) {
 #if DCHECK_IS_ON()
     DLOG_IF(WARNING, !overdraw_feedback_support_missing_logged_once_)

@@ -12,7 +12,6 @@ struct SameSizeAsDisplayItem {
   virtual ~SameSizeAsDisplayItem() = default;  // Allocate vtable pointer.
   void* pointer;
   IntRect rect;
-  float outset;
   uint32_t i1;
   uint32_t i2;
 };
@@ -181,8 +180,11 @@ void DisplayItem::PropertiesAsJSON(JSONObject& json) const {
 
   json.SetString("id", GetId().ToString());
   json.SetString("visualRect", VisualRect().ToString());
-  if (OutsetForRasterEffects())
-    json.SetDouble("outset", OutsetForRasterEffects());
+  if (GetRasterEffectOutset() != RasterEffectOutset::kNone) {
+    json.SetDouble(
+        "outset",
+        GetRasterEffectOutset() == RasterEffectOutset::kHalfPixel ? 0.5 : 1);
+  }
 }
 
 #endif  // DCHECK_IS_ON()

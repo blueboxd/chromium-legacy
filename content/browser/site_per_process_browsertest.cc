@@ -144,6 +144,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/transform.h"
 #include "ui/latency/latency_info.h"
 #include "ui/native_theme/native_theme_features.h"
 
@@ -12220,9 +12221,13 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
       &screen_info);
   // Convert from CSS to physical pixels
   expected.Scale(screen_info.device_scale_factor);
-  gfx::Point actual = filter->GetIntersectionState().viewport_offset;
-  EXPECT_NEAR(expected.x(), actual.x(), 2.0);
-  EXPECT_NEAR(expected.y(), actual.y(), 2.0);
+  gfx::Transform actual = filter->GetIntersectionState().main_frame_transform;
+  gfx::Point viewport_offset;
+  EXPECT_TRUE(actual.TransformPointReverse(&viewport_offset));
+  viewport_offset = gfx::Point(-viewport_offset.x(), -viewport_offset.y());
+  float tolerance = ceilf(screen_info.device_scale_factor);
+  EXPECT_NEAR(expected.x(), viewport_offset.x(), tolerance);
+  EXPECT_NEAR(expected.y(), viewport_offset.y(), tolerance);
 }
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
@@ -12383,9 +12388,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   gfx::Rect compositing_rect =
       filter->GetIntersectionState().compositor_visible_rect;
 
-  float scale_factor = 1.0f;
+  float device_scale_factor = 1.0f;
   if (IsUseZoomForDSFEnabled())
-    scale_factor = GetFrameDeviceScaleFactor(shell()->web_contents());
+    device_scale_factor = GetFrameDeviceScaleFactor(shell()->web_contents());
 
   // The math below replicates the calculations in
   // RemoteFrameView::GetCompositingRect(). That could be subject to tweaking,
@@ -12399,28 +12404,32 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                         ->GetView()
                         ->GetViewBounds()
                         .height() *
-                    5 * scale_factor;
+                    5 * device_scale_factor;
 
   // The raster size is expanded by a factor of 1.3 to allow for some scrolling
   // without requiring re-raster. The expanded area to be rasterized should be
   // centered around the iframe's visible area within the parent document, hence
-  // the "(expected_height - view_height) / 2" term below.
-  int expected_height = view_height * 13 / 10;
+  // the expansion in each direction (top, bottom, left, right) is
+  // (0.15 * viewport dimension).
+  int expansion = ceilf(view_height * 0.15f);
+  int expected_height = view_height + expansion * 2;
 
-  int expected_offset = ((5000 - div_offset_top * 5) * scale_factor) -
-                        (expected_height - view_height) / 2;
+  // 5000 = div scroll offset in scaled pixels
+  // 5 = scale factor from top-level document to iframe contents
+  // 2 = iframe border in scaled pixels
+  int expected_offset =
+      ((5000 - (div_offset_top * 5) - 2) * device_scale_factor) - expansion;
 
   // Allow a small amount for rounding differences from applying page and
   // device scale factors at different times.
-  EXPECT_GE(compositing_rect.height(), expected_height - 2);
-  EXPECT_LE(compositing_rect.height(), expected_height + 2);
-  EXPECT_GE(compositing_rect.y(), expected_offset - 2);
-  EXPECT_LE(compositing_rect.y(), expected_offset + 2);
+  float tolerance = ceilf(device_scale_factor);
+  EXPECT_NEAR(compositing_rect.height(), expected_height, tolerance);
+  EXPECT_NEAR(compositing_rect.y(), expected_offset, tolerance);
 }
 
 // Similar to ScaledIFrameRasterSize but with nested OOPIFs to ensure
 // propagation works correctly.
-#if defined(OS_ANDROID) || defined(OS_LINUX)
+#if defined(OS_ANDROID)
 // Temporarily disabled on Android because this doesn't account for browser
 // control height or page scale factor.
 #define MAYBE_ScaledNestedIframeRasterSize DISABLED_ScaledNestedIframeRasterSize
@@ -12500,7 +12509,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                      50) *
                     scale_factor;
   // 30% padding is added to the view_height to prevent frequent re-rasters.
-  int expected_height = view_height * 13 / 10;
+  // The extra padding is centered around the view height, hence expansion by
+  // 0.15 in each direction.
+  int expansion = ceilf(view_height * 0.15f);
+  int expected_height = view_height + expansion * 2;
 
   // Explanation of terms:
   //   5000 = offset from top of nested iframe to top of containing div, due to
@@ -12510,15 +12522,57 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   //       from the top of the child frame (i.e, clipped amount at top of child)
   //   view_height * 0.15 = padding added to the top of the compositing rect
   //                        (half the the 30% total padding)
-  int expected_offset = 5000 - ((child_div_offset_top - 50) * scale_factor) -
-                        roundf(view_height * 0.15);
+  int expected_offset =
+      5000 - ((child_div_offset_top - 50) * scale_factor) - expansion;
 
   // Allow a small amount for rounding differences from applying page and
   // device scale factors at different times.
-  EXPECT_GE(compositing_rect.height(), expected_height - 1);
-  EXPECT_LE(compositing_rect.height(), expected_height + 1);
-  EXPECT_GE(compositing_rect.y(), expected_offset - 1);
-  EXPECT_LE(compositing_rect.y(), expected_offset + 1);
+  EXPECT_NEAR(compositing_rect.height(), expected_height, ceilf(scale_factor));
+  EXPECT_NEAR(compositing_rect.y(), expected_offset, ceilf(scale_factor));
+}
+
+// Tests that when an OOPIF is inside a multicolumn container, its compositing
+// rect is set correctly.
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
+                       IframeInMulticolCompositingRect) {
+  GURL http_url(embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/page_with_iframe_in_multicol.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), http_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  scoped_refptr<UpdateViewportIntersectionMessageFilter> filter =
+      new UpdateViewportIntersectionMessageFilter();
+  root->current_frame_host()->GetProcess()->AddFilter(filter.get());
+
+  // Force a lifecycle update and wait for it to finish. Changing the width of
+  // the iframe should cause the parent renderer to propagate a new
+  // ViewportIntersectionState while running the rendering pipeline. By the time
+  // this call returns, the viewport intersection IPC should already have been
+  // received by the browser process and handled by the filter.
+  EvalJsResult eval_result = EvalJsAfterLifecycleUpdate(
+      root->current_frame_host(),
+      "document.querySelector('iframe').style.width = '250px'", "");
+  ASSERT_TRUE(filter->MessageReceived());
+  gfx::Rect compositing_rect =
+      filter->GetIntersectionState().compositor_visible_rect;
+
+  float scale_factor = 1.0f;
+  if (IsUseZoomForDSFEnabled())
+    scale_factor = GetFrameDeviceScaleFactor(shell()->web_contents());
+
+  gfx::Point visible_offset(0, 0);
+  gfx::Size visible_size =
+      gfx::ScaleToFlooredSize(gfx::Size(250, 150), scale_factor, scale_factor);
+  gfx::Rect visible_rect(visible_offset, visible_size);
+  float tolerance = ceilf(scale_factor);
+  EXPECT_NEAR(compositing_rect.x(), visible_rect.x(), tolerance);
+  EXPECT_NEAR(compositing_rect.y(), visible_rect.y(), tolerance);
+  EXPECT_NEAR(compositing_rect.width(), visible_rect.width(), tolerance);
+  EXPECT_NEAR(compositing_rect.height(), visible_rect.height(), tolerance);
+  EXPECT_TRUE(compositing_rect.Contains(visible_rect));
 }
 
 // Verify that OOPIF select element popup menu coordinates account for scroll

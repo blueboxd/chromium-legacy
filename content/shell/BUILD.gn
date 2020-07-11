@@ -263,8 +263,6 @@ if (support_web_tests) {
       "renderer/web_test/pixel_dump.h",
       "renderer/web_test/spell_check_client.cc",
       "renderer/web_test/spell_check_client.h",
-      "renderer/web_test/test_interfaces.cc",
-      "renderer/web_test/test_interfaces.h",
       "renderer/web_test/test_plugin.cc",
       "renderer/web_test/test_plugin.h",
       "renderer/web_test/test_preferences.cc",

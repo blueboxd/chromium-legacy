@@ -100,8 +100,12 @@ void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {
     suggestion->set_relevance(i->relevance);
     if (i->typed_count != -1)
       suggestion->set_typed_count(i->typed_count);
-    if (i->subtype_identifier > 0)
-      suggestion->set_result_subtype_identifier(i->subtype_identifier);
+
+    // TODO(https://crbug.com/1103056): send the entire set of subtypes.
+    if (!i->subtypes.empty()) {
+      suggestion->set_result_subtype_identifier(*i->subtypes.begin());
+    }
+
     suggestion->set_has_tab_match(i->has_tab_match);
     suggestion->set_is_keyword_suggestion(i->from_keyword);
   }

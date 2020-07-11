@@ -2,18 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-GEN_INCLUDE(['../testing/chromevox_unittest_base.js']);
-
-GEN('#include "content/public/test/browser_test.h"');
-
 /**
  * Test fixture.
  */
-ChromeVoxPanStrategyUnitTest = class extends ChromeVoxUnitTestBase {};
+ChromeVoxPanStrategyUnitTest = class extends testing.Test {};
 
 /** @override */
-ChromeVoxPanStrategyUnitTest.prototype.closureModuleDeps = [
-  'PanStrategy',
+ChromeVoxPanStrategyUnitTest.prototype.extraLibraries = [
+  '../../common/testing/assert_additions.js',
+  '../testing/fake_dom.js',
+  'pan_strategy.js',
 ];
 
 

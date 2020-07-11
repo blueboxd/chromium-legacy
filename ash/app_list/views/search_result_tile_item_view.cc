@@ -299,6 +299,7 @@ bool SearchResultTileItemView::OnKeyPressed(const ui::KeyEvent& event) {
 }
 
 void SearchResultTileItemView::StateChanged(ButtonState old_state) {
+  SearchResultBaseView::StateChanged(old_state);
   UpdateBackgroundColor();
 }
 

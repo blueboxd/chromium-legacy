@@ -1071,7 +1071,9 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Sends a FrameHostMsg_BeginNavigation to the browser
   void BeginNavigationInternal(std::unique_ptr<blink::WebNavigationInfo> info,
-                               bool is_history_navigation_in_new_child_frame);
+                               bool is_history_navigation_in_new_child_frame,
+                               base::TimeTicks renderer_before_unload_start,
+                               base::TimeTicks renderer_before_unload_end);
 
   // Used to load the initial empty document. This one is special, since it
   // isn't the result of a navigation.

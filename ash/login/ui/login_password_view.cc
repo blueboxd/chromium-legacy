@@ -269,31 +269,25 @@ class LoginPasswordView::EasyUnlockIcon : public views::Button,
 
   // views::Button:
   void StateChanged(ButtonState old_state) override {
+    Button::StateChanged(old_state);
+
     // Stop showing tooltip, as we most likely exited hover state.
     invoke_hover_.Stop();
 
-    switch (state()) {
-      case ButtonState::STATE_NORMAL:
-        UpdateImage(false /*changed_states*/);
-        break;
-      case ButtonState::STATE_HOVERED:
-        UpdateImage(false /*changed_states*/);
-        if (immediately_hover_for_test_) {
-          on_hovered_.Run();
-        } else {
-          invoke_hover_.Start(
-              FROM_HERE,
-              base::TimeDelta::FromMilliseconds(kDelayBeforeShowingTooltipMs),
-              on_hovered_);
-        }
-        break;
-      case ButtonState::STATE_PRESSED:
-        UpdateImage(false /*changed_states*/);
-        break;
-      case ButtonState::STATE_DISABLED:
-        break;
-      case ButtonState::STATE_COUNT:
-        break;
+    if (state() == ButtonState::STATE_DISABLED)
+      return;
+
+    UpdateImage(false /*changed_states*/);
+
+    if (state() == ButtonState::STATE_HOVERED) {
+      if (immediately_hover_for_test_) {
+        on_hovered_.Run();
+      } else {
+        invoke_hover_.Start(
+            FROM_HERE,
+            base::TimeDelta::FromMilliseconds(kDelayBeforeShowingTooltipMs),
+            on_hovered_);
+      }
     }
   }
 

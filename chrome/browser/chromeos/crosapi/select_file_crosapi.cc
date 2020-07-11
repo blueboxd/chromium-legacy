@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/ranges.h"
-#include "chromeos/lacros/mojom/select_file.mojom.h"
+#include "chromeos/crosapi/mojom/select_file.mojom.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/shell_dialogs/selected_file_info.h"
@@ -20,31 +20,32 @@
 
 namespace {
 
-ui::SelectFileDialog::Type GetUiType(lacros::mojom::SelectFileDialogType type) {
+ui::SelectFileDialog::Type GetUiType(
+    crosapi::mojom::SelectFileDialogType type) {
   switch (type) {
-    case lacros::mojom::SelectFileDialogType::kFolder:
+    case crosapi::mojom::SelectFileDialogType::kFolder:
       return ui::SelectFileDialog::Type::SELECT_FOLDER;
-    case lacros::mojom::SelectFileDialogType::kUploadFolder:
+    case crosapi::mojom::SelectFileDialogType::kUploadFolder:
       return ui::SelectFileDialog::Type::SELECT_UPLOAD_FOLDER;
-    case lacros::mojom::SelectFileDialogType::kExistingFolder:
+    case crosapi::mojom::SelectFileDialogType::kExistingFolder:
       return ui::SelectFileDialog::Type::SELECT_EXISTING_FOLDER;
-    case lacros::mojom::SelectFileDialogType::kOpenFile:
+    case crosapi::mojom::SelectFileDialogType::kOpenFile:
       return ui::SelectFileDialog::Type::SELECT_OPEN_FILE;
-    case lacros::mojom::SelectFileDialogType::kOpenMultiFile:
+    case crosapi::mojom::SelectFileDialogType::kOpenMultiFile:
       return ui::SelectFileDialog::Type::SELECT_OPEN_MULTI_FILE;
-    case lacros::mojom::SelectFileDialogType::kSaveAsFile:
+    case crosapi::mojom::SelectFileDialogType::kSaveAsFile:
       return ui::SelectFileDialog::Type::SELECT_SAVEAS_FILE;
   }
 }
 
 ui::SelectFileDialog::FileTypeInfo::AllowedPaths GetUiAllowedPaths(
-    lacros::mojom::AllowedPaths allowed_paths) {
+    crosapi::mojom::AllowedPaths allowed_paths) {
   switch (allowed_paths) {
-    case lacros::mojom::AllowedPaths::kAnyPath:
+    case crosapi::mojom::AllowedPaths::kAnyPath:
       return ui::SelectFileDialog::FileTypeInfo::ANY_PATH;
-    case lacros::mojom::AllowedPaths::kNativePath:
+    case crosapi::mojom::AllowedPaths::kNativePath:
       return ui::SelectFileDialog::FileTypeInfo::NATIVE_PATH;
-    case lacros::mojom::AllowedPaths::kAnyPathOrUrl:
+    case crosapi::mojom::AllowedPaths::kAnyPathOrUrl:
       return ui::SelectFileDialog::FileTypeInfo::ANY_PATH_OR_URL;
   }
 }
@@ -53,8 +54,8 @@ ui::SelectFileDialog::FileTypeInfo::AllowedPaths GetUiAllowedPaths(
 // the same time. Deletes itself when the dialog is closed.
 class SelectFileDialogHolder : public ui::SelectFileDialog::Listener {
  public:
-  SelectFileDialogHolder(lacros::mojom::SelectFileOptionsPtr options,
-                         lacros::mojom::SelectFile::SelectCallback callback)
+  SelectFileDialogHolder(crosapi::mojom::SelectFileOptionsPtr options,
+                         crosapi::mojom::SelectFile::SelectCallback callback)
       : select_callback_(std::move(callback)) {
     // Policy is null because showing the file-dialog-blocked infobar is handled
     // client-side in lacros-chrome.
@@ -133,10 +134,10 @@ class SelectFileDialogHolder : public ui::SelectFileDialog::Listener {
   // Invokes |select_callback_| with the list of files and deletes this object.
   void OnSelected(const std::vector<ui::SelectedFileInfo>& files,
                   int file_type_index) {
-    std::vector<lacros::mojom::SelectedFileInfoPtr> mojo_files;
+    std::vector<crosapi::mojom::SelectedFileInfoPtr> mojo_files;
     for (const ui::SelectedFileInfo& file : files) {
-      lacros::mojom::SelectedFileInfoPtr mojo_file =
-          lacros::mojom::SelectedFileInfo::New();
+      crosapi::mojom::SelectedFileInfoPtr mojo_file =
+          crosapi::mojom::SelectedFileInfo::New();
       mojo_file->file_path = file.file_path;
       mojo_file->local_path = file.local_path;
       mojo_file->display_name = file.display_name;
@@ -144,13 +145,13 @@ class SelectFileDialogHolder : public ui::SelectFileDialog::Listener {
       mojo_files.push_back(std::move(mojo_file));
     }
     std::move(select_callback_)
-        .Run(lacros::mojom::SelectFileResult::kSuccess, std::move(mojo_files),
+        .Run(crosapi::mojom::SelectFileResult::kSuccess, std::move(mojo_files),
              file_type_index);
     delete this;
   }
 
   // Callback run after files are selected or the dialog is canceled.
-  lacros::mojom::SelectFile::SelectCallback select_callback_;
+  crosapi::mojom::SelectFile::SelectCallback select_callback_;
 
   // The file select dialog.
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
@@ -163,12 +164,12 @@ class SelectFileDialogHolder : public ui::SelectFileDialog::Listener {
 
 // TODO(https://crbug.com/1090587): Connection error handling.
 SelectFileCrosapi::SelectFileCrosapi(
-    mojo::PendingReceiver<lacros::mojom::SelectFile> receiver)
+    mojo::PendingReceiver<crosapi::mojom::SelectFile> receiver)
     : receiver_(this, std::move(receiver)) {}
 
 SelectFileCrosapi::~SelectFileCrosapi() = default;
 
-void SelectFileCrosapi::Select(lacros::mojom::SelectFileOptionsPtr options,
+void SelectFileCrosapi::Select(crosapi::mojom::SelectFileOptionsPtr options,
                                SelectCallback callback) {
   // Deletes itself when the dialog closes.
   new SelectFileDialogHolder(std::move(options), std::move(callback));

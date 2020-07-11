@@ -69,7 +69,7 @@ TEST(GeneratePolicySource, ChromeSchemaData) {
   ASSERT_TRUE(subschema.valid());
   EXPECT_EQ(base::Value::Type::BOOLEAN, subschema.type());
 
-  subschema = schema.GetProperty(key::kURLBlacklist);
+  subschema = schema.GetProperty(key::kURLBlocklist);
   ASSERT_TRUE(subschema.valid());
   EXPECT_EQ(base::Value::Type::LIST, subschema.type());
   ASSERT_TRUE(subschema.GetItems().valid());

@@ -56,7 +56,6 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
     return;
 
   Document& owner_document = owner_element->GetDocument();
-  IntPoint viewport_offset;
   IntRect viewport_intersection, mainframe_intersection;
   TransformationMatrix main_frame_transform_matrix;
   DocumentLifecycle::LifecycleState parent_lifecycle_state =
@@ -99,21 +98,6 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
     }
     if (should_compute_occlusion && !geometry.IsVisible())
       occlusion_state = FrameOcclusionState::kPossiblyOccluded;
-
-    // The coordinate system for the iframe's LayoutObject has its origin at the
-    // top/left of the border box rect. The coordinate system of the child frame
-    // is the same as the coordinate system of the iframe's content box rect.
-    // The iframe's PhysicalContentBoxOffset() can be used to move between them.
-    PhysicalOffset content_box_offset =
-        owner_layout_object->PhysicalContentBoxOffset();
-
-    if (NeedsViewportOffset()) {
-      viewport_offset = -RoundedIntPoint(
-          owner_layout_object->AbsoluteToLocalPoint(
-              PhysicalOffset(),
-              kTraverseDocumentBoundaries | kApplyRemoteRootFrameOffset) -
-          content_box_offset);
-    }
 
     // Generate matrix to transform from the space of the containing document
     // to the space of the iframe's contents.
@@ -175,8 +159,8 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
   }
 
   SetViewportIntersection(
-      {viewport_offset, viewport_intersection, mainframe_intersection,
-       WebRect(), occlusion_state, frame.GetMainFrameViewportSize(),
+      {viewport_intersection, mainframe_intersection, WebRect(),
+       occlusion_state, frame.GetMainFrameViewportSize(),
        frame.GetMainFrameScrollOffset(),
        TransformationMatrix::ToTransform(main_frame_transform_matrix)});
 

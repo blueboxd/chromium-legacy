@@ -6,14 +6,14 @@
 #define CONTENT_BROWSER_MEDIA_CAPTURE_DESKTOP_CAPTURER_LACROS_H_
 
 #include "base/memory/weak_ptr.h"
-#include "chromeos/lacros/mojom/screen_manager.mojom.h"
+#include "chromeos/crosapi/mojom/screen_manager.mojom.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
-namespace lacros {
+namespace crosapi {
 struct WindowSnapshot;
-}  // namespace lacros
+}  // namespace crosapi
 
 namespace content {
 
@@ -45,11 +45,11 @@ class DesktopCapturerLacros : public webrtc::DesktopCapturer {
 
  private:
   static void BindReceiverMainThread(
-      mojo::PendingReceiver<lacros::mojom::ScreenManager> receiver);
+      mojo::PendingReceiver<crosapi::mojom::ScreenManager> receiver);
 
   // Callback for when ash-chrome returns a snapshot of the screen or window as
   // a bitmap.
-  void DidTakeSnapshot(bool success, const lacros::WindowSnapshot& snapshot);
+  void DidTakeSnapshot(bool success, const crosapi::WindowSnapshot& snapshot);
 
   // Whether this object is capturing screens or windows.
   const CaptureType capture_type_;
@@ -71,7 +71,7 @@ class DesktopCapturerLacros : public webrtc::DesktopCapturer {
   Callback* callback_ = nullptr;
 
   // This remote is thread safe. Callbacks are invoked on the calling sequence.
-  mojo::SharedRemote<lacros::mojom::ScreenManager> screen_manager_;
+  mojo::SharedRemote<crosapi::mojom::ScreenManager> screen_manager_;
 
   base::WeakPtrFactory<DesktopCapturerLacros> weak_factory_{this};
 };

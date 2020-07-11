@@ -19,6 +19,7 @@
 #include "base/threading/thread_checker.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/managed_memory_policy.h"
+#include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_timing_details_map.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -179,6 +180,8 @@ class SynchronousLayerTreeFrameSinkImpl
         const viz::FrameSinkId& id,
         viz::mojom::CompositorFrameSinkType* type) override;
   };
+
+  viz::DebugRendererSettings debug_settings_;
 
   // TODO(danakj): These don't to be stored in unique_ptrs when OutputSurface
   // is owned/destroyed on the compositor thread.

@@ -65,6 +65,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
 #include "components/sync_user_events/user_event_service.h"
+#include "components/unified_consent/pref_names.h"
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
@@ -1432,6 +1433,11 @@ bool ChromePasswordProtectionService::IsEnhancedProtection() {
 
 bool ChromePasswordProtectionService::IsIncognito() {
   return profile_->IsOffTheRecord();
+}
+
+bool ChromePasswordProtectionService::IsUserMBBOptedIn() {
+  return GetPrefs()->GetBoolean(
+      unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled);
 }
 
 bool ChromePasswordProtectionService::IsInPasswordAlertMode(

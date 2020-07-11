@@ -61,7 +61,8 @@ E2ETestBase = class extends testing.Test {
    * called.  If this method is called one or more times, then
    * {@code testDone()} will be called when all callbacks have been called.
    * @param {Function=} opt_callback Wrapped callback that will have its this
-   *        reference bound to the test fixture.
+   *        reference bound to the test fixture. Optionally, return a promise to
+   * defer completion.
    * @return {Function}
    */
   newCallback(opt_callback) {

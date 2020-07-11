@@ -84,14 +84,14 @@ bool MessageWindow::Create(MessageCallback message_callback) {
 }
 
 bool MessageWindow::CreateNamed(MessageCallback message_callback,
-                                const string16& window_name) {
-  return DoCreate(std::move(message_callback), as_wcstr(window_name));
+                                const std::wstring& window_name) {
+  return DoCreate(std::move(message_callback), window_name.c_str());
 }
 
 // static
-HWND MessageWindow::FindWindow(const string16& window_name) {
+HWND MessageWindow::FindWindow(const std::wstring& window_name) {
   return FindWindowEx(HWND_MESSAGE, nullptr, kMessageWindowClassName,
-                      as_wcstr(window_name));
+                      window_name.c_str());
 }
 
 bool MessageWindow::DoCreate(MessageCallback message_callback,

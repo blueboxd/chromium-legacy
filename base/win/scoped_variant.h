@@ -89,8 +89,19 @@ class BASE_EXPORT ScopedVariant {
   VARIANT Copy() const;
 
   // The return value is 0 if the variants are equal, 1 if this object is
-  // greater than |var|, -1 if it is smaller.
-  int Compare(const VARIANT& var, bool ignore_case = false) const;
+  // greater than |other|, -1 if it is smaller.
+  // Comparison with an array VARIANT is not supported.
+  // 1. VT_NULL and VT_EMPTY is always considered less-than any other VARTYPE.
+  // 2. If both VARIANTS have either VT_UNKNOWN or VT_DISPATCH even if the
+  //    VARTYPEs do not match, the address of its IID_IUnknown is compared to
+  //    guarantee a logical ordering even though it is not a meaningful order.
+  //    e.g. (a.Compare(b) != b.Compare(a)) unless (a == b).
+  // 3. If the VARTYPEs do not match, then the value of the VARTYPE is compared.
+  // 4. Comparing VT_BSTR values is a lexicographical comparison of the contents
+  //    of the BSTR, taking into account |ignore_case|.
+  // 5. Otherwise returns the lexicographical comparison of the values held by
+  //    the two VARIANTS that share the same VARTYPE.
+  int Compare(const VARIANT& other, bool ignore_case = false) const;
 
   // Retrieves the pointer address.
   // Used to receive a VARIANT as an out argument (and take ownership).

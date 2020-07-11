@@ -11804,6 +11804,50 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Unload" singular="True">
+  <owner>kdillon@chromium.org</owner>
+  <summary>
+    Metrics associated with a unloading in preparation for a navigation.
+  </summary>
+  <metric name="BeforeUnloadDuration">
+    <summary>
+      Measures the time in milliseconds of running the beforeunload handlers for
+      a page. If the beforeunloads are dispatched from the browser, this reports
+      the longest running one since these handlers will be run in parallel when
+      the page has frames in different processes. If the navigation is renderer
+      initiated, it will be the duration of running beforeunload handlers in the
+      navigating frame and its local descendants in the renderer plus any
+      latency caused by dispatching beforeunloads to remote frames from the
+      browser.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="BeforeUnloadQueueingDuration">
+    <summary>
+      Measures the time in milliseconds from when the browser sends the request
+      to run beforeunload to the renderer to when the renderer begins
+      dispatching the handlers. For browser-initiated navigations, we report the
+      queueing duration of the beforeunloads that took the longest since they
+      are dispatched in parallel to remote and local frames. For renderer-
+      initiated navigations this metric will only be filled in if we dispatched
+      beforeunloads from the browser to remote frames which we had to wait on.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="UserActivity">
   <owner>jiameng@chromium.org</owner>
   <summary>

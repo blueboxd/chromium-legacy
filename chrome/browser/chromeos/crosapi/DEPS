@@ -1,4 +1,8 @@
 specific_include_rules = {
+  "screen_manager_crosapi\.cc": [
+    # For window parenting.
+    "+ash/shell.h",
+  ],
   "select_file_crosapi\.cc": [
     # For window parenting.
     "+ash/shell.h",

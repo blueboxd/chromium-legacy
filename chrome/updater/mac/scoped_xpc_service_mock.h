@@ -188,9 +188,8 @@ class OCMockBlockCapturer {
   id Capture() {
     if (!arg_.get()) {
       arg_.reset([OCMArg checkWithBlock:^BOOL(id value) {
-                   base::mac::ScopedBlock<B> wrapped(
-                       static_cast<B>(value), base::scoped_policy::RETAIN);
-                   blocks_.push_back(wrapped);
+                   blocks_.emplace_back(static_cast<B>(value),
+                                        base::scoped_policy::RETAIN);
                    return YES;
                  }],
                  base::scoped_policy::RETAIN);
@@ -202,6 +201,49 @@ class OCMockBlockCapturer {
   std::vector<base::mac::ScopedBlock<B>> blocks_;
   base::scoped_nsobject<OCMArg> arg_;
 };  // template class OCMockBlockCapturer
+
+// OCMockObjectCapturer<NST> retains objects provided as arguments to a method
+// mocked from OCMock. It rejects arguments that fail isKindOfClass checks.
+template <typename NST>
+class OCMockObjectCapturer {
+ public:
+  OCMockObjectCapturer() = default;
+  OCMockObjectCapturer(const OCMockObjectCapturer&) = delete;
+  OCMockObjectCapturer& operator=(const OCMockObjectCapturer&) = delete;
+  OCMockObjectCapturer(OCMockObjectCapturer&&) = default;
+  OCMockObjectCapturer& operator=(OCMockObjectCapturer&&) = default;
+  ~OCMockObjectCapturer() = default;
+
+  // Retrieves the captured objects, in capture order.
+  const std::vector<base::scoped_nsobject<NST>>& Get() const {
+    return objects_;
+  }
+
+  // Retrieves an OCMArg that will store blocks passed when the method is
+  // invoked. The OCMArg matches arguments of the specified type.
+  id Capture() {
+    if (!arg_.get()) {
+      arg_.reset([OCMArg checkWithBlock:^BOOL(id value) {
+                   if (!value) {
+                     objects_.push_back(base::scoped_nsobject<NST>{});
+                     return YES;
+                   }
+                   if (![value isKindOfClass:[NST class]]) {
+                     return NO;
+                   }
+                   objects_.emplace_back(static_cast<NST*>(value),
+                                         base::scoped_policy::RETAIN);
+                   return YES;
+                 }],
+                 base::scoped_policy::RETAIN);
+    }
+    return (id)arg_.get();
+  }
+
+ private:
+  std::vector<base::scoped_nsobject<NST>> objects_;
+  base::scoped_nsobject<OCMArg> arg_;
+};  // template class OCMockObjectCapturer
 
 #pragma mark - Helper functions
 

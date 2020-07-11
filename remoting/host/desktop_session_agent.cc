@@ -709,7 +709,7 @@ void DesktopSessionAgent::SetScreenResolution(
     const ScreenResolution& resolution) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  if (screen_controls_ && resolution.IsEmpty())
+  if (screen_controls_)
     screen_controls_->SetScreenResolution(resolution);
 }
 

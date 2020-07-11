@@ -45,7 +45,8 @@ class CompositorDependenciesAndroid {
 
   static void ConnectVizFrameSinkManagerOnIOThread(
       mojo::PendingReceiver<viz::mojom::FrameSinkManager> receiver,
-      mojo::PendingRemote<viz::mojom::FrameSinkManagerClient> client);
+      mojo::PendingRemote<viz::mojom::FrameSinkManagerClient> client,
+      const viz::DebugRendererSettings& debug_renderer_settings);
 
   CompositorDependenciesAndroid();
   ~CompositorDependenciesAndroid();

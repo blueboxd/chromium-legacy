@@ -38,6 +38,7 @@ namespace viz {
 class BspWalkActionDrawPolygon;
 class DrawPolygon;
 class OutputSurface;
+struct DebugRendererSettings;
 class RendererSettings;
 class RenderPass;
 
@@ -52,6 +53,7 @@ struct RenderPassGeometry;
 class VIZ_SERVICE_EXPORT DirectRenderer {
  public:
   DirectRenderer(const RendererSettings* settings,
+                 const DebugRendererSettings* debug_settings,
                  OutputSurface* output_surface,
                  DisplayResourceProvider* resource_provider,
                  OverlayProcessorInterface* overlay_processor);
@@ -247,6 +249,8 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   gfx::ColorSpace CurrentRenderPassColorSpace() const;
 
   const RendererSettings* const settings_;
+  // Points to the viz-global singleton.
+  const DebugRendererSettings* const debug_settings_;
   OutputSurface* const output_surface_;
   DisplayResourceProvider* const resource_provider_;
   // This can be replaced by test implementations.

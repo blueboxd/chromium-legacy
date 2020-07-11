@@ -1152,7 +1152,9 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
           GURL() /* client_side_redirect_url */,
           base::nullopt /* detools_initiator_info */,
           false /* force_ignore_site_for_cookies */,
-          nullptr /* trust_token_params */, impression_);
+          nullptr /* trust_token_params */, impression_,
+          base::TimeTicks() /* renderer_before_unload_start */,
+          base::TimeTicks() /* renderer_before_unload_end */);
   auto common_params = CreateCommonNavigationParams();
   common_params->navigation_start = base::TimeTicks::Now();
   common_params->url = navigation_url_;

@@ -1,7 +1,7 @@
 <!doctype HTML>
 <script src="../../../../resources/testharness.js"></script>
 <script src="../../../../resources/testharnessreport.js"></script>
-<script src="../resources/resizeTestHelper.js"></script>
+<script src="../../../../resize-observer/resources/resizeTestHelper.js"></script>
 <body>
   <svg height="430" width="500" >
     <rect x="0" y="380" width="10.5" height="10" style="fill:orange; stroke:black; stroke-width:1" />
@@ -34,9 +34,9 @@ function test() {
                       "target border-box inline size");
         assert_equals(entries[0].borderBoxSize[0].blockSize, 10,
                       "target border-box block size");
-        assert_equals(entries[0].devicePixelContentBoxSize[0].inlineSize, 10.5,
+        assert_equals(entries[0].devicePixelContentBoxSize[0].inlineSize, 22,
                       "target device-pixel-content-box inline size");
-        assert_equals(entries[0].devicePixelContentBoxSize[0].blockSize, 10,
+        assert_equals(entries[0].devicePixelContentBoxSize[0].blockSize, 20,
                       "target device-pixel-content-box block size");
       }
     }

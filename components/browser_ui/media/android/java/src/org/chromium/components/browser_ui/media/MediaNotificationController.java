@@ -53,18 +53,20 @@ public class MediaNotificationController {
     // The maximum number of actions in BigView media notification.
     private static final int BIG_VIEW_ACTIONS_COUNT = 5;
 
-    // These string values reflect legacy class hierarchy.
-    public static final String ACTION_PLAY = "MediaNotificationManager.ListenerService.PLAY";
-    public static final String ACTION_PAUSE = "MediaNotificationManager.ListenerService.PAUSE";
-    public static final String ACTION_STOP = "MediaNotificationManager.ListenerService.STOP";
-    public static final String ACTION_SWIPE = "MediaNotificationManager.ListenerService.SWIPE";
-    public static final String ACTION_CANCEL = "MediaNotificationManager.ListenerService.CANCEL";
+    public static final String ACTION_PLAY = "org.chromium.components.browser_ui.media.ACTION_PLAY";
+    public static final String ACTION_PAUSE =
+            "org.chromium.components.browser_ui.media.ACTION_PAUSE";
+    public static final String ACTION_STOP = "org.chromium.components.browser_ui.media.ACTION_STOP";
+    public static final String ACTION_SWIPE =
+            "org.chromium.components.browser_ui.media.ACTION_SWIPE";
+    public static final String ACTION_CANCEL =
+            "org.chromium.components.browser_ui.media.ACTION_CANCEL";
     public static final String ACTION_PREVIOUS_TRACK =
-            "MediaNotificationManager.ListenerService.PREVIOUS_TRACK";
+            "org.chromium.components.browser_ui.media.ACTION_PREVIOUS_TRACK";
     public static final String ACTION_NEXT_TRACK =
-            "MediaNotificationManager.ListenerService.NEXT_TRACK";
+            "org.chromium.components.browser_ui.media.ACTION_NEXT_TRACK";
     public static final String ACTION_SEEK_FORWARD =
-            "MediaNotificationManager.ListenerService.SEEK_FORWARD";
+            "org.chromium.components.browser_ui.media.ACTION_SEEK_FORWARD";
     public static final String ACTION_SEEK_BACKWARD =
             "MediaNotificationmanager.ListenerService.SEEK_BACKWARD";
 

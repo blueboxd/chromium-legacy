@@ -320,33 +320,19 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
 
 TEST_F(AuthenticatorRequestDialogModelTest, TransportList) {
   for (const bool cable_extension_provided : {false, true}) {
-    for (const bool have_paired_phones : {false, true}) {
-      TransportAvailabilityInfo transports_info;
-      transports_info.available_transports = kAllTransports;
-      AuthenticatorRequestDialogModel model(/*relying_party_id=*/"example.com");
-      model.set_cable_transport_info(cable_extension_provided,
-                                     have_paired_phones,
-                                     /*qr_generator_key=*/base::nullopt);
-      model.StartFlow(std::move(transports_info), base::nullopt);
-
-      const bool should_include_cable =
-          cable_extension_provided || have_paired_phones;
-      if (should_include_cable) {
-        EXPECT_THAT(
-            model.available_transports(),
-            ::testing::UnorderedElementsAre(
-                AuthenticatorTransport::kUsbHumanInterfaceDevice,
-                AuthenticatorTransport::kNearFieldCommunication,
-                AuthenticatorTransport::kInternal,
-                AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy));
-      } else {
-        EXPECT_THAT(model.available_transports(),
-                    ::testing::UnorderedElementsAre(
-                        AuthenticatorTransport::kUsbHumanInterfaceDevice,
-                        AuthenticatorTransport::kNearFieldCommunication,
-                        AuthenticatorTransport::kInternal));
-      }
-    }
+    TransportAvailabilityInfo transports_info;
+    transports_info.available_transports = kAllTransports;
+    AuthenticatorRequestDialogModel model(/*relying_party_id=*/"example.com");
+    model.set_cable_transport_info(cable_extension_provided,
+                                   /*have_paired_phones=*/false,
+                                   /*qr_generator_key=*/base::nullopt);
+    model.StartFlow(std::move(transports_info), base::nullopt);
+    EXPECT_THAT(model.available_transports(),
+                ::testing::UnorderedElementsAre(
+                    AuthenticatorTransport::kUsbHumanInterfaceDevice,
+                    AuthenticatorTransport::kNearFieldCommunication,
+                    AuthenticatorTransport::kInternal,
+                    AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy));
   }
 }
 

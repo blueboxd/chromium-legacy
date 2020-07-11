@@ -659,10 +659,9 @@ bool GenerateAlternateVersion(const base::FilePath& original_installer_path,
   }
 
   // Get rid of intermediate files
-  if (!base::DeleteFile(chrome_7z, false) ||
-      (!chrome_packed_7z.empty() &&
-       !base::DeleteFile(chrome_packed_7z, false)) ||
-      !base::DeleteFile(setup_ex_, false)) {
+  if (!base::DeleteFile(chrome_7z) ||
+      (!chrome_packed_7z.empty() && !base::DeleteFile(chrome_packed_7z)) ||
+      !base::DeleteFile(setup_ex_)) {
     LOG(DFATAL) << "Failed deleting intermediate files";
     return false;
   }

@@ -44,7 +44,8 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
       FrameSinkManagerImpl* frame_sink_manager,
       OutputSurfaceProvider* output_surface_provider,
       uint32_t restart_id,
-      bool run_all_compositor_stages_before_draw);
+      bool run_all_compositor_stages_before_draw,
+      const DebugRendererSettings* debug_settings);
 
   ~RootCompositorFrameSinkImpl() override;
 

@@ -34,7 +34,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoTrack
  public:
   // Help method to create a blink::WebMediaStreamTrack and a
   // MediaStreamVideoTrack instance. The MediaStreamVideoTrack object is owned
-  // by the blink object in its WebMediaStreamTrack::ExtraData member.
+  // by the blink object in its WebMediaStreamTrack::GetPlatformTrack() member.
   // |callback| is triggered if the track is added to the source
   // successfully and will receive video frames that match the given settings
   // or if the source fails to provide video frames.

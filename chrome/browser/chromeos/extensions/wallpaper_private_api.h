@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/extensions/wallpaper_function_base.h"
 #include "chrome/common/extensions/api/wallpaper_private.h"
 #include "components/account_id/account_id.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
 namespace backdrop {
 class Collection;

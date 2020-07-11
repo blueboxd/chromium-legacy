@@ -4,7 +4,8 @@
 
 /**
  * Creates wrappers for callbacks and calls testDone() when all callbacks
- * have been invoked.
+ * have been invoked. Callbacks may return a promise to defer completion and
+ * continued processing of subsequent callbacks.
  * @param {testing.Test} fixture
  */
 function CallbackHelper(fixture) {
@@ -35,7 +36,9 @@ CallbackHelper.prototype = {
           throw new Error('Only support return type of Promise');
         }
         result.then(() => {
-          CallbackHelper.testDone_();
+          if (--this.pendingCallbacks_ <= 0) {
+            CallbackHelper.testDone_();
+          }
         });
       } else {
         if (--this.pendingCallbacks_ <= 0) {

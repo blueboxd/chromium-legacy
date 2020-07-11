@@ -185,7 +185,7 @@ void LocalHistoryZeroSuggestProvider::DeleteMatch(
   // number of suggestions shown and the async nature of this lookup.
   history::QueryOptions opts;
   opts.duplicate_policy = history::QueryOptions::KEEP_ALL_DUPLICATES;
-  opts.begin_time = history::AutocompleteAgeThreshold();
+  opts.begin_time = OmniboxFieldTrial::GetLocalHistoryZeroSuggestAgeThreshold();
   history_service->QueryHistory(
       base::ASCIIToUTF16(google_search_url), opts,
       base::BindOnce(&LocalHistoryZeroSuggestProvider::OnHistoryQueryResults,
@@ -233,7 +233,7 @@ void LocalHistoryZeroSuggestProvider::QueryURLDatabase(
 
   auto results = url_db->GetMostRecentNormalizedKeywordSearchTerms(
       template_url_service->GetDefaultSearchProvider()->id(),
-      history::AutocompleteAgeThreshold());
+      OmniboxFieldTrial::GetLocalHistoryZeroSuggestAgeThreshold());
 
   bool frecency_ranking = base::FeatureList::IsEnabled(
       omnibox::kOmniboxLocalZeroSuggestFrecencyRanking);
@@ -250,8 +250,8 @@ void LocalHistoryZeroSuggestProvider::QueryURLDatabase(
     SearchSuggestionParser::SuggestResult suggestion(
         /*suggestion=*/result.normalized_term,
         AutocompleteMatchType::SEARCH_HISTORY,
-        /*subtype_identifier=*/0, /*from_keyword=*/false, relevance--,
-        /*relevance_from_server=*/0,
+        /*subtypes=*/{}, /*from_keyword=*/false, relevance--,
+        /*relevance_from_server=*/false,
         /*input_text=*/base::ASCIIToUTF16(std::string()));
 
     AutocompleteMatch match = BaseSearchProvider::CreateSearchSuggestion(

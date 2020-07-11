@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Include test fixture.
-GEN_INCLUDE(['chromevox_unittest_base.js', 'mock_feedback.js']);
-
-GEN('#include "content/public/test/browser_test.h"');
-
 function speak(text, opt_properties) {
   ChromeVox.tts.speak(text, 0, opt_properties);
 }
@@ -24,7 +19,7 @@ function earcon(earconName) {
 /**
  * Test fixture.
  */
-MockFeedbackUnitTest = class extends ChromeVoxUnitTestBase {
+MockFeedbackUnitTest = class extends testing.Test {
   constructor() {
     super();
     this.expectedCalls = [];
@@ -35,8 +30,17 @@ MockFeedbackUnitTest = class extends ChromeVoxUnitTestBase {
   }
 };
 
-MockFeedbackUnitTest.prototype.closureModuleDeps =
-    ['BrailleInterface', 'NavBraille', 'TtsInterface', 'AbstractEarcons'];
+MockFeedbackUnitTest.prototype.extraLibraries = [
+  '../../common/testing/assert_additions.js',
+  '../testing/fake_dom.js',
+  '../braille/nav_braille.js',
+  '../common/abstract_earcons.js',
+  '../common/braille_interface.js',
+  '../common/chromevox.js',
+  '../common/spannable.js',
+  '../common/tts_interface.js',
+  'mock_feedback.js',
+];
 
 TEST_F('MockFeedbackUnitTest', 'speechAndCallbacks', function() {
   let afterThirdStringCalled = false;

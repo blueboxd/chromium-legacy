@@ -7,18 +7,24 @@
 
 #include <string>
 
-#include "content/shell/renderer/web_test/web_test_runtime_flags.h"
-
 namespace blink {
 class WebLocalFrame;
 }  // namespace blink
 
 namespace content {
 
+enum class TextResultType {
+  kEmpty,
+  kText,
+  kMarkup,
+  kLayout,
+  kLayoutAsPrinting,
+};
+
 // Dumps textual representation of |frame| contents.  Exact dump mode depends
 // on |flags| (i.e. dump_as_text VS dump_as_markup and/or is_printing).
 std::string DumpLayoutAsString(blink::WebLocalFrame* frame,
-                               const WebTestRuntimeFlags& flags);
+                               TextResultType type);
 
 }  // namespace content
 

@@ -141,7 +141,7 @@ class CONTENT_EXPORT AudioRendererMixerManager
   // is implicit) of the number of outstanding AudioRendererMixers.
   struct AudioRendererMixerReference {
     media::AudioRendererMixer* mixer;
-    int ref_count;
+    size_t ref_count;
   };
 
   using AudioRendererMixerMap =

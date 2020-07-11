@@ -4,10 +4,12 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Pair;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -21,6 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Centralizes UMA data collection for Contextual Search. All calls must be made from the UI thread.
@@ -29,6 +32,9 @@ public class ContextualSearchUma {
     // Constants to use for the original selection gesture
     private static final boolean LONG_PRESS = false;
     private static final boolean TAP = true;
+
+    /** A pattern to determine if text contains any whitespace. */
+    private static final Pattern CONTAINS_WHITESPACE_PATTERN = Pattern.compile("\\s");
 
     // Constants used to log UMA "enum" histograms about the Contextual Search's preference state.
     @IntDef({Preference.UNINITIALIZED, Preference.ENABLED, Preference.DISABLED})
@@ -1231,6 +1237,70 @@ public class ContextualSearchUma {
             default:
                 break;
         }
+    }
+
+    /**
+     * Logs that the user established a new selection when Contextual Search is active.
+     */
+    public static void logSelectionEstablished() {
+        RecordUserAction.record("ContextualSearch.SelectionEstablished");
+    }
+
+    /**
+     * Logs that the user manually adjusted a selection when Contextual Search is active.
+     * @param selection The new selection.
+     */
+    public static void logSelectionAdjusted(@Nullable String selection) {
+        if (TextUtils.isEmpty(selection)) return;
+
+        boolean isSingleWord = !CONTAINS_WHITESPACE_PATTERN.matcher(selection.trim()).find();
+        if (isSingleWord) {
+            RecordUserAction.record("ContextualSearch.ManualRefineSingleWord");
+        } else {
+            RecordUserAction.record("ContextualSearch.ManualRefineMultiWord");
+        }
+    }
+
+    /**
+     * Logs that the system automatically expanded the selection when a user triggered
+     * Contextual Search on a multiword phrase that could be identified by the server.
+     * @param fromTapGesture Whether the gesture that originally established the selection
+     *        was Tap.
+     */
+    public static void logSelectionExpanded(boolean fromTapGesture) {
+        RecordHistogram.recordBooleanHistogram(
+                "Search.ContextualSearch.SelectionExpanded", fromTapGesture);
+    }
+
+    /**
+     * Logs that the system sent a server request to resolve the search term.
+     * @param fromTapGesture Whether the gesture that originally established the selection
+     *        was Tap.
+     */
+    public static void logResolveRequested(boolean fromTapGesture) {
+        RecordHistogram.recordBooleanHistogram(
+                "Search.ContextualSearch.ResolveRequested", fromTapGesture);
+    }
+
+    /**
+     * Logs that the system received a server response from a resolve request.
+     * @param fromTapGesture Whether the gesture that originally established the selection
+     *        was Tap.
+     */
+    public static void logResolveReceived(boolean fromTapGesture) {
+        RecordHistogram.recordBooleanHistogram(
+                "Search.ContextualSearch.ResolveReceived", fromTapGesture);
+    }
+
+    /**
+     * Logs that the user needs a translation of the selection. The user may or may not actually
+     * see a translation - this only logs that it's needed.
+     * @param fromTapGesture Whether the gesture that originally established the selection
+     *        was Tap.
+     */
+    public static void logTranslationNeeded(boolean fromTapGesture) {
+        RecordHistogram.recordBooleanHistogram(
+                "Search.ContextualSearch.TranslationNeeded", fromTapGesture);
     }
 
     /**

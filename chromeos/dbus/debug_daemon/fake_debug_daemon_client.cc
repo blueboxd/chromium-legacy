@@ -162,7 +162,10 @@ void FakeDebugDaemonClient::TestICMPWithOptions(
       FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
 }
 
-void FakeDebugDaemonClient::UploadCrashes() {}
+void FakeDebugDaemonClient::UploadCrashes(UploadCrashesCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
 
 void FakeDebugDaemonClient::EnableDebuggingFeatures(
     const std::string& password,

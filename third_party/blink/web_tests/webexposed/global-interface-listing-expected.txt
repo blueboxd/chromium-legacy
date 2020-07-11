@@ -5432,6 +5432,7 @@ interface NativeIOFile
     attribute @@toStringTag
     method close
     method constructor
+    method getLength
     method read
     method write
 interface NativeIOManager

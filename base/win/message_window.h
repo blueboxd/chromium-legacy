@@ -7,11 +7,12 @@
 
 #include <windows.h>
 
+#include <string>
+
 #include "base/base_export.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 
 namespace base {
@@ -38,13 +39,13 @@ class BASE_EXPORT MessageWindow {
 
   // Same as Create() but assigns the name to the created window.
   bool CreateNamed(MessageCallback message_callback,
-                   const string16& window_name);
+                   const std::wstring& window_name);
 
   HWND hwnd() const { return window_; }
 
   // Retrieves a handle of the first message-only window with matching
   // |window_name|.
-  static HWND FindWindow(const string16& window_name);
+  static HWND FindWindow(const std::wstring& window_name);
 
  private:
   // Give |WindowClass| access to WindowProc().

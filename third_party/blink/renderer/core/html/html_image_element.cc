@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/html/html_image_fallback_helper.h"
 #include "third_party/blink/renderer/core/html/html_picture_element.h"
 #include "third_party/blink/renderer/core/html/html_source_element.h"
+#include "third_party/blink/renderer/core/html/loading_attribute.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/parser/html_srcset_parser.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -286,9 +287,14 @@ void HTMLImageElement::ParseAttribute(
   } else if (name == html_names::kDecodingAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kImageDecodingAttribute);
     decoding_mode_ = ParseImageDecodingMode(params.new_value);
-  } else if (name == html_names::kLoadingAttr &&
-             EqualIgnoringASCIICase(params.new_value, "eager")) {
-    GetImageLoader().LoadDeferredImage(referrer_policy_);
+  } else if (name == html_names::kLoadingAttr) {
+    LoadingAttributeValue loading = GetLoadingAttributeValue(params.new_value);
+    if (loading == LoadingAttributeValue::kEager ||
+        (loading == LoadingAttributeValue::kAuto && GetDocument().GetFrame() &&
+         GetDocument().GetFrame()->GetLazyLoadImageSetting() !=
+             LocalFrame::LazyLoadImageSetting::kEnabledAutomatic)) {
+      GetImageLoader().LoadDeferredImage(referrer_policy_);
+    }
   } else if (name == html_names::kImportanceAttr &&
              RuntimeEnabledFeatures::PriorityHintsEnabled(
                  GetExecutionContext())) {

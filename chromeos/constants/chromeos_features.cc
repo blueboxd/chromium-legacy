@@ -195,8 +195,8 @@ const base::Feature kMojoDBusRelay{"MojoDBusRelay",
 
 // Enables pasting a few recently copied items in a menu when pressing search +
 // v.
-const base::Feature kMultipaste{"MultiPaste",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kClipboardHistory{"ClipboardHistory",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to launch IME service with an 'ime' sandbox.
 const base::Feature kEnableImeSandbox{"EnableImeSandbox",
@@ -516,8 +516,8 @@ bool IsMinimumChromeVersionEnabled() {
   return base::FeatureList::IsEnabled(kMinimumChromeVersion);
 }
 
-bool IsMultipasteEnabled() {
-  return base::FeatureList::IsEnabled(kMultipaste);
+bool IsClipboardHistoryEnabled() {
+  return base::FeatureList::IsEnabled(kClipboardHistory);
 }
 
 bool IsOobeScreensPriorityEnabled() {

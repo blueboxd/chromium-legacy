@@ -21,7 +21,6 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.TimeUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
@@ -74,7 +73,6 @@ import org.chromium.ui.touch_selection.SelectionEventType;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.regex.Pattern;
 
 /**
  * Manager for the Contextual Search feature. This class keeps track of the status of Contextual
@@ -102,8 +100,6 @@ public class ContextualSearchManager
 
     // We blacklist this URL because malformed URLs may bring up this page.
     private static final String BLACKLISTED_URL = ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL;
-
-    private static final Pattern CONTAINS_WHITESPACE_PATTERN = Pattern.compile("\\s");
 
     // How long to wait for a tap near a previous tap before hiding the UI or showing a re-Tap.
     // This setting is not critical: in practice it determines how long to wait after an invalid
@@ -457,7 +453,7 @@ public class ContextualSearchManager
         boolean canResolve = mSelectionController.getSelectionType() == SelectionType.TAP
                 || mSelectionController.getSelectionType() == SelectionType.RESOLVING_LONG_PRESS;
         if (canResolve) {
-            // If the user action was not a long-press, we should not delay before loading content.
+            // If we can resolve then we should not delay before loading content.
             mShouldLoadDelayedSearch = false;
         }
         if (canResolve && mPolicy.shouldPreviousGestureResolve()) {
@@ -469,15 +465,6 @@ public class ContextualSearchManager
             mDidStartLoadingResolvedSearchRequest = false;
             mSearchPanel.setSearchTerm(selection);
             if (shouldPrefetch) loadSearchUrl();
-
-            // Record metrics for manual refinement of the search term from long-press.
-            // TODO(donnd): remove this section once metrics have been analyzed.
-            if (!canResolve && mSearchPanel.isPeeking()) {
-                boolean isSingleWord =
-                        !CONTAINS_WHITESPACE_PATTERN.matcher(selection.trim()).find();
-                RecordUserAction.record(isSingleWord ? "ContextualSearch.ManualRefineSingleWord"
-                                                     : "ContextualSearch.ManualRefineMultiWord");
-            }
         } else {
             // The selection is no longer valid, so we can't build a request.  Don't show the UX.
             hideContextualSearch(StateChangeReason.UNKNOWN);
@@ -521,6 +508,7 @@ public class ContextualSearchManager
             if (isExactResolve) mContext.setExactResolve();
             ContextualSearchManagerJni.get().startSearchTermResolutionRequest(
                     mNativeContextualSearchManagerPtr, this, mContext, getBaseWebContents());
+            ContextualSearchUma.logResolveRequested(mSelectionController.isTapSelection());
         } else {
             // Something went wrong and we couldn't resolve.
             hideContextualSearch(StateChangeReason.UNKNOWN);
@@ -679,6 +667,7 @@ public class ContextualSearchManager
             @QuickActionCategory final int quickActionCategory, final long loggedEventId,
             final String searchUrlFull, final String searchUrlPreload,
             @CardTag final int cocaCardTag) {
+        ContextualSearchUma.logResolveReceived(mSelectionController.isTapSelection());
         ResolvedSearchTerm resolvedSearchTerm =
                 new ResolvedSearchTerm
                         .Builder(isNetworkUnavailable, responseCode, searchTerm, displayText,
@@ -768,8 +757,8 @@ public class ContextualSearchManager
                     resolvedSearchTerm.mid(), shouldPreload, resolvedSearchTerm.searchUrlFull(),
                     resolvedSearchTerm.searchUrlPreload(), doRequireGoogleUrl);
             // Trigger translation, if enabled.
-            mTranslateController.forceTranslateIfNeeded(
-                    mSearchRequest, resolvedSearchTerm.contextLanguage());
+            mTranslateController.forceTranslateIfNeeded(mSearchRequest,
+                    resolvedSearchTerm.contextLanguage(), mSelectionController.isTapSelection());
             mDidStartLoadingResolvedSearchRequest = false;
             if (mSearchPanel.isContentShowing()) {
                 mSearchRequest.setNormalPriority();

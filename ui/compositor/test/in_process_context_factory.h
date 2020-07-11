@@ -97,6 +97,7 @@ class InProcessContextFactory : public ContextFactory {
   viz::FrameSinkManagerImpl* const frame_sink_manager_;
 
   viz::RendererSettings renderer_settings_;
+  viz::DebugRendererSettings debug_settings_;
   using PerCompositorDataMap =
       std::unordered_map<Compositor*, std::unique_ptr<PerCompositorData>>;
   PerCompositorDataMap per_compositor_data_;

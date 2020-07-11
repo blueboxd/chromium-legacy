@@ -63,14 +63,12 @@ class AuthenticatorSheetModelBase
 // should be accessed.
 class AuthenticatorTransportSelectorSheetModel
     : public AuthenticatorSheetModelBase,
-      public TransportHoverListModel::Delegate,
-      public TransportHoverListModel2::Delegate {
+      public TransportHoverListModel::Delegate {
  public:
   using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
 
   // TransportHoverListModel::Delegate:
   void OnTransportSelected(AuthenticatorTransport transport) override;
-  void StartPhonePairing() override;
   void StartWinNativeApi() override;
 
  private:
@@ -264,6 +262,29 @@ class AuthenticatorPaaskSheetModel : public AuthenticatorSheetModelBase {
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
   ui::MenuModel* GetOtherTransportsMenuModel() override;
+
+  std::unique_ptr<OtherTransportsMenuModel> other_transports_menu_model_;
+};
+
+class AuthenticatorPaaskV2SheetModel : public AuthenticatorSheetModelBase {
+ public:
+  explicit AuthenticatorPaaskV2SheetModel(
+      AuthenticatorRequestDialogModel* dialog_model);
+  ~AuthenticatorPaaskV2SheetModel() override;
+
+ private:
+  // AuthenticatorSheetModelBase:
+  bool IsBackButtonVisible() const override;
+  bool IsActivityIndicatorVisible() const override;
+  const gfx::VectorIcon& GetStepIllustration(
+      ImageColorScheme color_scheme) const override;
+  base::string16 GetStepTitle() const override;
+  base::string16 GetStepDescription() const override;
+  ui::MenuModel* GetOtherTransportsMenuModel() override;
+  bool IsAcceptButtonVisible() const override;
+  bool IsAcceptButtonEnabled() const override;
+  base::string16 GetAcceptButtonLabel() const override;
+  void OnAccept() override;
 
   std::unique_ptr<OtherTransportsMenuModel> other_transports_menu_model_;
 };

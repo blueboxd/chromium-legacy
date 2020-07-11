@@ -2195,6 +2195,11 @@
           'shards': 4,
         },
       },
+      'linux-chromeos-dbg': {
+        'swarming': {
+          'shards': 6,
+        },
+      },
     },
   },
   'storage_service_unsandboxed_interactive_ui_tests': {

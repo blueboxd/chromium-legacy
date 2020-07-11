@@ -119,7 +119,8 @@ HardwareRendererViz::OnViz::OnViz(
 
   display_ = std::make_unique<viz::Display>(
       nullptr /* shared_bitmap_manager */,
-      output_surface_provider->renderer_settings(), frame_sink_id_,
+      output_surface_provider->renderer_settings(),
+      output_surface_provider->debug_settings(), frame_sink_id_,
       std::move(output_surface), std::move(overlay_processor),
       std::move(scheduler), nullptr /* current_task_runner */);
   display_->Initialize(this, GetFrameSinkManager()->surface_manager(),

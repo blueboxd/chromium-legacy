@@ -466,9 +466,7 @@ TEST_F(RenderFrameImplTest, FileUrlPathAlias) {
 
 TEST_F(RenderFrameImplTest, MainFrameIntersectionRecorded) {
   RenderFrameTestObserver observer(frame());
-  gfx::Point viewport_offset(7, -11);
   blink::WebRect viewport_intersection(0, 11, 200, 89);
-
   blink::WebRect mainframe_intersection(0, 0, 200, 140);
   blink::FrameOcclusionState occlusion_state =
       blink::FrameOcclusionState::kUnknown;
@@ -476,9 +474,8 @@ TEST_F(RenderFrameImplTest, MainFrameIntersectionRecorded) {
   transform.Translate(100, 100);
 
   WidgetMsg_SetViewportIntersection set_viewport_intersection_message(
-      0, {viewport_offset, viewport_intersection, mainframe_intersection,
-          blink::WebRect(), occlusion_state, blink::WebSize(), gfx::Point(),
-          transform});
+      0, {viewport_intersection, mainframe_intersection, blink::WebRect(),
+          occlusion_state, blink::WebSize(), gfx::Point(), transform});
   frame_widget()->OnMessageReceived(set_viewport_intersection_message);
   // Setting a new frame intersection in a local frame triggers the render frame
   // observer call.

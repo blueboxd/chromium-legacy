@@ -326,8 +326,9 @@ class RendererPerfTest : public testing::Test {
     output_surface->SetNeedsSwapSizeNotifications(true);
     auto overlay_processor = std::make_unique<OverlayProcessorStub>();
     display_ = std::make_unique<Display>(
-        &shared_bitmap_manager_, renderer_settings_, kArbitraryFrameSinkId,
-        std::move(output_surface), std::move(overlay_processor),
+        &shared_bitmap_manager_, renderer_settings_, &debug_settings_,
+        kArbitraryFrameSinkId, std::move(output_surface),
+        std::move(overlay_processor),
         /*display_scheduler=*/nullptr, base::ThreadTaskRunnerHandle::Get());
     display_->SetVisible(true);
     display_->Initialize(&client_, manager_.surface_manager());
@@ -682,6 +683,7 @@ class RendererPerfTest : public testing::Test {
   std::unique_ptr<CompositorFrameSinkSupport> support_;
   std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
   RendererSettings renderer_settings_;
+  DebugRendererSettings debug_settings_;
   std::unique_ptr<Display> display_;
   scoped_refptr<ContextProvider> child_context_provider_;
   std::unique_ptr<ClientResourceProvider> child_resource_provider_;
@@ -699,7 +701,7 @@ RendererPerfTest<SkiaRenderer>::CreateOutputSurface(
   return SkiaOutputSurfaceImpl::Create(
       std::make_unique<SkiaOutputSurfaceDependencyImpl>(
           gpu_service, gpu::kNullSurfaceHandle),
-      renderer_settings_);
+      renderer_settings_, &debug_settings_);
 }
 
 template <>

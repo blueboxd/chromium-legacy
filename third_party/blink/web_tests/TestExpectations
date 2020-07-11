@@ -3178,8 +3178,8 @@ crbug.com/626703 [ Mac10.10 ] external/wpt/mimesniff/mime-types/parsing.any.work
 crbug.com/626703 [ Mac10.11 ] external/wpt/mimesniff/mime-types/parsing.any.worker.html [ Failure Timeout ]
 crbug.com/626703 [ Win ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/fetch/content-type/response.window.html [ Timeout ]
-crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/no-active-script-manual-classic.html [ Timeout ]
-crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/no-active-script-manual-module.html [ Timeout ]
+crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/no-active-script-classic-manual.html [ Timeout ]
+crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/no-active-script-module-manual.html [ Timeout ]
 crbug.com/626703 external/wpt/html/webappapis/user-prompts/newline-normalization-manual.html [ Skip ]
 crbug.com/626703 [ Mac ] external/wpt/infrastructure/testdriver/actions/pause.html [ Pass Timeout ]
 crbug.com/626703 external/wpt/css/css-text/writing-system/writing-system-text-transform-001.html [ Failure ]
@@ -6818,10 +6818,6 @@ crbug.com/1098743 virtual/scalefactor200/css3/filters/backdrop-filter-edge-pixel
 
 # Sheriff 2020-06-16
 crbug.com/1044825 http/tests/devtools/network/resource-priority.js [ Pass Timeout ]
-
-# Lazyload
-crbug.com/1098062 external/wpt/html/semantics/embedded-content/the-img-element/image-loading-lazy-to-eager.html [ Timeout ]
-crbug.com/1098062 external/wpt/html/semantics/embedded-content/the-iframe-element/iframe-loading-lazy-to-eager.tentative.html [ Timeout ]
 
 # Temporarily disable test to allow devtools-frontend changes
 crbug.com/1095733 http/tests/devtools/tabbed-pane-closeable-persistence.js [ Skip ]

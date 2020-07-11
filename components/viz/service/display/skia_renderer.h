@@ -47,6 +47,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
 
   // TODO(penghuang): Remove skia_output_surface when DDL is used everywhere.
   SkiaRenderer(const RendererSettings* settings,
+               const DebugRendererSettings* debug_settings,
                OutputSurface* output_surface,
                DisplayResourceProvider* resource_provider,
                OverlayProcessorInterface* overlay_processor,

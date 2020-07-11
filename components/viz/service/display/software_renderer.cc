@@ -71,10 +71,12 @@ class AnimatedImagesProvider : public cc::ImageProvider {
 }  // namespace
 
 SoftwareRenderer::SoftwareRenderer(const RendererSettings* settings,
+                                   const DebugRendererSettings* debug_settings,
                                    OutputSurface* output_surface,
                                    DisplayResourceProvider* resource_provider,
                                    OverlayProcessorInterface* overlay_processor)
     : DirectRenderer(settings,
+                     debug_settings,
                      output_surface,
                      resource_provider,
                      overlay_processor),

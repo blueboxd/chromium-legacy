@@ -475,7 +475,7 @@ AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
   match.description_class = ClassifyTermMatches({}, match.description.length(),
                                                 0, ACMatchClassification::NONE);
 
-  match.subtype_identifier = navigation.subtype_identifier();
+  match.subtypes = navigation.subtypes();
   return match;
 }
 
@@ -547,17 +547,12 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
     }
     matches_.push_back(current_text_match_);
     int relevance = 600;
-    if (num_results > 0) {
-      UMA_HISTOGRAM_COUNTS_1M(
-          "Omnibox.ZeroSuggest.MostVisitedResultsCounterfactual",
-          most_visited_urls_.size());
-    }
     const base::string16 current_query_string16(
         base::ASCIIToUTF16(current_query_));
     for (const auto& url : most_visited_urls_) {
       SearchSuggestionParser::NavigationResult nav(
           client()->GetSchemeClassifier(), url.url,
-          AutocompleteMatchType::NAVSUGGEST, {}, 0, url.title, std::string(),
+          AutocompleteMatchType::NAVSUGGEST, {}, url.title, std::string(),
           false, relevance, true, current_query_string16);
       matches_.push_back(NavigationToMatch(nav));
       --relevance;

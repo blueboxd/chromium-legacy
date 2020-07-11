@@ -30,6 +30,7 @@ TestLayerTreeFrameSink::TestLayerTreeFrameSink(
     scoped_refptr<viz::RasterContextProvider> worker_context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const viz::RendererSettings& renderer_settings,
+    const viz::DebugRendererSettings* const debug_settings,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
     bool synchronous_composite,
     bool disable_display_vsync,
@@ -42,6 +43,7 @@ TestLayerTreeFrameSink::TestLayerTreeFrameSink(
       synchronous_composite_(synchronous_composite),
       disable_display_vsync_(disable_display_vsync),
       renderer_settings_(renderer_settings),
+      debug_settings_(debug_settings),
       refresh_rate_(refresh_rate),
       frame_sink_id_(kLayerTreeFrameSinkId),
       parent_local_surface_id_allocator_(
@@ -103,9 +105,10 @@ bool TestLayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
 
   auto overlay_processor = std::make_unique<viz::OverlayProcessorStub>();
   display_ = std::make_unique<viz::Display>(
-      shared_bitmap_manager_.get(), renderer_settings_, frame_sink_id_,
-      std::move(display_output_surface), std::move(overlay_processor),
-      std::move(scheduler), compositor_task_runner_);
+      shared_bitmap_manager_.get(), renderer_settings_, debug_settings_,
+      frame_sink_id_, std::move(display_output_surface),
+      std::move(overlay_processor), std::move(scheduler),
+      compositor_task_runner_);
 
   constexpr bool is_root = true;
   support_ = std::make_unique<viz::CompositorFrameSinkSupport>(

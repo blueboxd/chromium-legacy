@@ -83,22 +83,56 @@ base::Value NetLogQuicDuplicatePacketParams(
   return dict;
 }
 
-base::Value NetLogQuicPacketHeaderParams(const quic::QuicPacketHeader* header,
-                                         bool is_ietf_quic) {
+base::Value NetLogReceivedQuicPacketHeaderParams(
+    const quic::QuicPacketHeader& header,
+    const quic::ParsedQuicVersion& session_version,
+    const quic::QuicConnectionId& connection_id,
+    const quic::QuicConnectionId& client_connection_id) {
   base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetStringKey("connection_id",
-                    header->destination_connection_id.ToString());
-  dict.SetKey("packet_number",
-              NetLogNumberValue(header->packet_number.ToUint64()));
-  dict.SetStringKey("header_format",
-                    quic::PacketHeaderFormatToString(header->form));
-  if (header->form == quic::IETF_QUIC_LONG_HEADER_PACKET) {
-    dict.SetStringKey("long_header_type", quic::QuicLongHeaderTypeToString(
-                                              header->long_packet_type));
+  quic::ParsedQuicVersion version = session_version;
+  if (header.version_flag &&
+      header.version != quic::ParsedQuicVersion::Unsupported()) {
+    version = header.version;
+    if (version != session_version) {
+      dict.SetStringKey("version", quic::ParsedQuicVersionToString(version));
+    }
   }
-  if (!is_ietf_quic) {
-    dict.SetIntKey("reset_flag", header->reset_flag);
-    dict.SetIntKey("version_flag", header->version_flag);
+  dict.SetStringKey("connection_id", connection_id.ToString());
+  if (!client_connection_id.IsEmpty()) {
+    dict.SetStringKey("client_connection_id", client_connection_id.ToString());
+  }
+  if (version.HasIetfInvariantHeader()) {
+    if (header.destination_connection_id_included ==
+            quic::CONNECTION_ID_PRESENT &&
+        header.destination_connection_id != client_connection_id &&
+        !header.destination_connection_id.IsEmpty()) {
+      dict.SetStringKey("destination_connection_id",
+                        header.destination_connection_id.ToString());
+    }
+    if (header.source_connection_id_included == quic::CONNECTION_ID_PRESENT &&
+        header.source_connection_id != connection_id &&
+        !header.source_connection_id.IsEmpty()) {
+      dict.SetStringKey("source_connection_id",
+                        header.source_connection_id.ToString());
+    }
+  } else {
+    if (header.destination_connection_id_included ==
+            quic::CONNECTION_ID_PRESENT &&
+        header.destination_connection_id != connection_id &&
+        !header.destination_connection_id.IsEmpty()) {
+      dict.SetStringKey("destination_connection_id",
+                        header.destination_connection_id.ToString());
+    }
+    dict.SetIntKey("reset_flag", header.reset_flag);
+    dict.SetIntKey("version_flag", header.version_flag);
+  }
+  dict.SetKey("packet_number",
+              NetLogNumberValue(header.packet_number.ToUint64()));
+  dict.SetStringKey("header_format",
+                    quic::PacketHeaderFormatToString(header.form));
+  if (header.form == quic::IETF_QUIC_LONG_HEADER_PACKET) {
+    dict.SetStringKey("long_header_type", quic::QuicLongHeaderTypeToString(
+                                              header.long_packet_type));
   }
   return dict;
 }
@@ -704,9 +738,10 @@ void QuicConnectionLogger::OnUnauthenticatedHeader(
   net_log_.AddEvent(
       NetLogEventType::QUIC_SESSION_UNAUTHENTICATED_PACKET_HEADER_RECEIVED,
       [&] {
-        return NetLogQuicPacketHeaderParams(
-            &header,
-            quic::VersionHasIetfQuicFrames(session_->transport_version()));
+        return NetLogReceivedQuicPacketHeaderParams(
+            header, session_->version(),
+            session_->connection()->connection_id(),
+            session_->connection()->client_connection_id());
       });
 }
 

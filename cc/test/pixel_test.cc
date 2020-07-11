@@ -280,8 +280,8 @@ void PixelTest::SetUpGLWithoutRenderer(
 void PixelTest::SetUpGLRenderer(gfx::SurfaceOrigin output_surface_origin) {
   SetUpGLWithoutRenderer(output_surface_origin);
   renderer_ = std::make_unique<viz::GLRenderer>(
-      &renderer_settings_, output_surface_.get(), resource_provider_.get(),
-      nullptr, base::ThreadTaskRunnerHandle::Get());
+      &renderer_settings_, &debug_settings_, output_surface_.get(),
+      resource_provider_.get(), nullptr, base::ThreadTaskRunnerHandle::Get());
   renderer_->Initialize();
   renderer_->SetVisible(true);
 }
@@ -295,7 +295,7 @@ void PixelTest::SetUpSkiaRenderer(gfx::SurfaceOrigin output_surface_origin) {
   output_surface_ = viz::SkiaOutputSurfaceImpl::Create(
       std::make_unique<viz::SkiaOutputSurfaceDependencyImpl>(
           gpu_service(), gpu::kNullSurfaceHandle),
-      renderer_settings_);
+      renderer_settings_, &debug_settings_);
   output_surface_->BindToClient(output_surface_client_.get());
   static_cast<viz::SkiaOutputSurfaceImpl*>(output_surface_.get())
       ->SetCapabilitiesForTesting(output_surface_origin);
@@ -304,8 +304,9 @@ void PixelTest::SetUpSkiaRenderer(gfx::SurfaceOrigin output_surface_origin) {
       /*compositor_context_provider=*/nullptr,
       /*shared_bitmap_manager=*/nullptr);
   renderer_ = std::make_unique<viz::SkiaRenderer>(
-      &renderer_settings_, output_surface_.get(), resource_provider_.get(),
-      nullptr, static_cast<viz::SkiaOutputSurface*>(output_surface_.get()),
+      &renderer_settings_, &debug_settings_, output_surface_.get(),
+      resource_provider_.get(), nullptr,
+      static_cast<viz::SkiaOutputSurface*>(output_surface_.get()),
       viz::SkiaRenderer::DrawMode::DDL);
   renderer_->Initialize();
   renderer_->SetVisible(true);
@@ -348,8 +349,8 @@ void PixelTest::SetUpSoftwareRenderer() {
   child_resource_provider_ = std::make_unique<viz::ClientResourceProvider>();
 
   auto renderer = std::make_unique<viz::SoftwareRenderer>(
-      &renderer_settings_, output_surface_.get(), resource_provider_.get(),
-      nullptr);
+      &renderer_settings_, &debug_settings_, output_surface_.get(),
+      resource_provider_.get(), nullptr);
   software_renderer_ = renderer.get();
   renderer_ = std::move(renderer);
   renderer_->Initialize();

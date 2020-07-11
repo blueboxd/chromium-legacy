@@ -634,6 +634,78 @@ enum EventMoveDirectionType {
     object flags;
   };
 
+  // A position in the automation tree.
+  // See ui/accessibility/ax_position.h for documentation. All members need to
+  // be kept in sync with
+  // extensions/renderer/api/automation/automation_position.h.
+  // Some members there are kept private and not represented here.
+  [nocompile, noinline_doc] dictionary AutomationPosition {
+
+    AutomationNode? node;
+    long childIndex;
+    long textOffset;
+    DOMString affinity;
+
+    static boolean isNullPosition();
+    static boolean isTreePosition();
+    static boolean isTextPosition();
+    static boolean isLeafTextPosition();
+    static boolean atStartOfAnchor();
+    static boolean atEndOfAnchor();
+    static boolean atStartOfWord();
+    static boolean atEndOfWord();
+    static boolean atStartOfLine();
+    static boolean atEndOfLine();
+    static boolean atStartOfParagraph();
+    static boolean atEndOfParagraph();
+    static boolean atStartOfPage();
+    static boolean atEndOfPage();
+    static boolean atStartOfFormat();
+    static boolean atEndOfFormat();
+    static boolean atStartOfDocument();
+    static boolean atEndOfDocument();
+    static void asTreePosition();
+    static void asTextPosition();
+    static void asLeafTextPosition();
+    static void moveToPositionAtStartOfAnchor();
+    static void moveToPositionAtEndOfAnchor();
+    static void moveToPositionAtStartOfDocument();
+    static void moveToPositionAtEndOfDocument();
+    static void moveToParentPosition();
+    static void moveToNextLeafTreePosition();
+    static void moveToPreviousLeafTreePosition();
+    static void moveToNextLeafTextPosition();
+    static void moveToPreviousLeafTextPosition();
+    static void moveToNextCharacterPosition();
+    static void moveToPreviousCharacterPosition();
+    static void moveToNextWordStartPosition();
+    static void moveToPreviousWordStartPosition();
+    static void moveToNextWordEndPosition();
+    static void moveToPreviousWordEndPosition();
+    static void moveToNextLineStartPosition();
+    static void moveToPreviousLineStartPosition();
+    static void moveToNextLineEndPosition();
+    static void moveToPreviousLineEndPosition();
+    static void moveToPreviousFormatStartPosition();
+    static void moveToNextFormatEndPosition();
+    static void moveToNextParagraphStartPosition();
+    static void moveToPreviousParagraphStartPosition();
+    static void moveToNextParagraphEndPosition();
+    static void moveToPreviousParagraphEndPosition();
+    static void moveToNextPageStartPosition();
+    static void moveToPreviousPageStartPosition();
+    static void moveToNextPageEndPosition();
+    static void moveToPreviousPageEndPosition();
+    static void moveToNextAnchorPosition();
+    static void moveToPreviousAnchorPosition();
+    static long maxTextOffset();
+    static boolean isInLineBreak();
+    static boolean isInTextObject();
+    static boolean isInWhiteSpace();
+    static boolean isValid();
+    static DOMString getText();
+  };
+
   // A single node in an Automation tree.
   [nocompile, noinline_doc] dictionary AutomationNode {
     // The root node of the tree containing this AutomationNode.
@@ -1241,6 +1313,9 @@ enum EventMoveDirectionType {
     // 3. LanguageSpans are non-overlapping and contain exactly one language.
     static LanguageSpan[] languageAnnotationForStringAttribute(
         DOMString attribute);
+
+    // Creates a position object backed by Chrome's accessibility position support.
+    static AutomationPosition createPosition(long offset, optional boolean isUpstream);
   };
 
   // Called when the <code>AutomationNode</code> for the page is available.

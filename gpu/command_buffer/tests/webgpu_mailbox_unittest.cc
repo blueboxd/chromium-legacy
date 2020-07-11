@@ -106,17 +106,15 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
     wgpu::Texture texture = wgpu::Texture::Acquire(reservation.texture);
 
     // Clear the texture using a render pass.
-    wgpu::RenderPassColorAttachmentDescriptor color_desc;
+    wgpu::RenderPassColorAttachmentDescriptor color_desc = {};
     color_desc.attachment = texture.CreateView();
-    color_desc.resolveTarget = nullptr;
     color_desc.loadOp = wgpu::LoadOp::Clear;
     color_desc.storeOp = wgpu::StoreOp::Store;
     color_desc.clearColor = {0, 255, 0, 255};
 
-    wgpu::RenderPassDescriptor render_pass_desc;
+    wgpu::RenderPassDescriptor render_pass_desc = {};
     render_pass_desc.colorAttachmentCount = 1;
     render_pass_desc.colorAttachments = &color_desc;
-    render_pass_desc.depthStencilAttachment = nullptr;
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
     wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&render_pass_desc);
@@ -147,13 +145,12 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
     buffer_desc.usage = wgpu::BufferUsage::MapRead | wgpu::BufferUsage::CopyDst;
     wgpu::Buffer readback_buffer = device.CreateBuffer(&buffer_desc);
 
-    wgpu::TextureCopyView copy_src;
+    wgpu::TextureCopyView copy_src = {};
     copy_src.texture = texture;
     copy_src.mipLevel = 0;
-    copy_src.arrayLayer = 0;
     copy_src.origin = {0, 0, 0};
 
-    wgpu::BufferCopyView copy_dst;
+    wgpu::BufferCopyView copy_dst = {};
     copy_dst.buffer = readback_buffer;
     copy_dst.offset = 0;
     copy_dst.bytesPerRow = 256;

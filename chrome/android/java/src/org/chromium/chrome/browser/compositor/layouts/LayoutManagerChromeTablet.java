@@ -76,21 +76,6 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
     }
 
     @Override
-    public void tabSelected(int tabId, int prevId, boolean incognito) {
-        if (getActiveLayout() == mStaticLayout || getActiveLayout() == mOverviewListLayout) {
-            super.tabSelected(tabId, prevId, incognito);
-        } else {
-            startShowing(mStaticLayout, false);
-            // TODO(dtrainor, jscholler): This is hacky because we're relying on it to set the
-            // internal tab to show and not start hiding until we're done calling finalizeShowing().
-            // This prevents a flicker because we properly build and set the internal
-            // {@link LayoutTab} before actually showing the {@link TabView}.
-            super.tabSelected(tabId, prevId, incognito);
-            if (getActiveLayout() != null) getActiveLayout().onTabSelecting(time(), tabId);
-        }
-    }
-
-    @Override
     protected void tabCreated(int id, int sourceId, @TabLaunchType int launchType,
             boolean incognito, boolean willBeSelected, float originX, float originY) {
         if (getBrowserControlsManager() != null) {

@@ -10,6 +10,11 @@
   SecureContext
 ] interface NativeIOFileSync {
   void close();
+
+  [
+    RaisesException
+  ] unsigned long long getLength();
+
   [
     RaisesException
   ] unsigned long long read([AllowShared] ArrayBufferView buffer,

@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
-#include "chrome/browser/chromeos/lacros/lacros_manager.h"
+#include "chrome/browser/chromeos/crosapi/lacros_manager.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"

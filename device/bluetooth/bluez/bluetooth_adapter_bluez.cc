@@ -194,8 +194,8 @@ void BluetoothAdapterBlueZ::Initialize(base::OnceClosure callback) {
     return;
   }
   bluez::BluezDBusManager::Get()->CallWhenObjectManagerSupportIsKnown(
-      base::BindRepeating(&BluetoothAdapterBlueZ::Init,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&BluetoothAdapterBlueZ::Init,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothAdapterBlueZ::Shutdown() {
@@ -351,7 +351,7 @@ std::string BluetoothAdapterBlueZ::GetSystemName() const {
 
 void BluetoothAdapterBlueZ::SetName(const std::string& name,
                                     base::OnceClosure callback,
-                                    ErrorOnceCallback error_callback) {
+                                    ErrorCallback error_callback) {
   if (!IsPresent()) {
     std::move(error_callback).Run();
     return;
@@ -388,7 +388,7 @@ bool BluetoothAdapterBlueZ::IsPowered() const {
 
 void BluetoothAdapterBlueZ::SetPowered(bool powered,
                                        base::OnceClosure callback,
-                                       ErrorOnceCallback error_callback) {
+                                       ErrorCallback error_callback) {
   if (!IsPresent()) {
     BLUETOOTH_LOG(ERROR) << "SetPowered: " << powered << ". Not Present!";
     std::move(error_callback).Run();
@@ -421,7 +421,7 @@ bool BluetoothAdapterBlueZ::IsDiscoverable() const {
 
 void BluetoothAdapterBlueZ::SetDiscoverable(bool discoverable,
                                             base::OnceClosure callback,
-                                            ErrorOnceCallback error_callback) {
+                                            ErrorCallback error_callback) {
   if (!IsPresent()) {
     std::move(error_callback).Run();
     return;
@@ -993,26 +993,28 @@ void BluetoothAdapterBlueZ::OnRequestDefaultAgentError(
 
 void BluetoothAdapterBlueZ::CreateServiceRecord(
     const BluetoothServiceRecordBlueZ& record,
-    const ServiceRecordCallback& callback,
-    const ServiceRecordErrorCallback& error_callback) {
+    ServiceRecordCallback callback,
+    ServiceRecordErrorCallback error_callback) {
   bluez::BluezDBusManager::Get()
       ->GetBluetoothAdapterClient()
       ->CreateServiceRecord(
-          object_path_, record, callback,
+          object_path_, record, std::move(callback),
           base::BindOnce(&BluetoothAdapterBlueZ::ServiceRecordErrorConnector,
-                         weak_ptr_factory_.GetWeakPtr(), error_callback));
+                         weak_ptr_factory_.GetWeakPtr(),
+                         std::move(error_callback)));
 }
 
 void BluetoothAdapterBlueZ::RemoveServiceRecord(
     uint32_t handle,
     base::OnceClosure callback,
-    const ServiceRecordErrorCallback& error_callback) {
+    ServiceRecordErrorCallback error_callback) {
   bluez::BluezDBusManager::Get()
       ->GetBluetoothAdapterClient()
       ->RemoveServiceRecord(
           object_path_, handle, std::move(callback),
           base::BindOnce(&BluetoothAdapterBlueZ::ServiceRecordErrorConnector,
-                         weak_ptr_factory_.GetWeakPtr(), error_callback));
+                         weak_ptr_factory_.GetWeakPtr(),
+                         std::move(error_callback)));
 }
 
 BluetoothDeviceBlueZ* BluetoothAdapterBlueZ::GetDeviceWithPath(
@@ -1256,7 +1258,7 @@ void BluetoothAdapterBlueZ::UseProfile(
     const bluez::BluetoothProfileManagerClient::Options& options,
     bluez::BluetoothProfileServiceProvider::Delegate* delegate,
     ProfileRegisteredCallback success_callback,
-    ErrorCompletionOnceCallback error_callback) {
+    ErrorCompletionCallback error_callback) {
   DCHECK(delegate);
 
   if (!IsPresent()) {
@@ -1432,7 +1434,7 @@ void BluetoothAdapterBlueZ::SetProfileDelegate(
     const dbus::ObjectPath& device_path,
     bluez::BluetoothProfileServiceProvider::Delegate* delegate,
     ProfileRegisteredCallback success_callback,
-    ErrorCompletionOnceCallback error_callback) {
+    ErrorCompletionCallback error_callback) {
   if (profiles_.find(uuid) == profiles_.end()) {
     std::move(error_callback).Run("Cannot find profile!");
     return;
@@ -1464,7 +1466,7 @@ void BluetoothAdapterBlueZ::OnRegisterProfileError(
 }
 
 void BluetoothAdapterBlueZ::OnSetDiscoverable(base::OnceClosure callback,
-                                              ErrorOnceCallback error_callback,
+                                              ErrorCallback error_callback,
                                               bool success) {
   if (!IsPresent()) {
     std::move(error_callback).Run();
@@ -1484,7 +1486,7 @@ void BluetoothAdapterBlueZ::OnSetDiscoverable(base::OnceClosure callback,
 
 void BluetoothAdapterBlueZ::OnPropertyChangeCompleted(
     base::OnceClosure callback,
-    ErrorOnceCallback error_callback,
+    ErrorCallback error_callback,
     bool success) {
   if (IsPresent() && success) {
     std::move(callback).Run();
@@ -1833,7 +1835,7 @@ void BluetoothAdapterBlueZ::RegisterApplicationOnError(
 }
 
 void BluetoothAdapterBlueZ::ServiceRecordErrorConnector(
-    const ServiceRecordErrorCallback& error_callback,
+    ServiceRecordErrorCallback error_callback,
     const std::string& error_name,
     const std::string& error_message) {
   BLUETOOTH_LOG(EVENT) << "Creating service record failed: error: "
@@ -1851,7 +1853,7 @@ void BluetoothAdapterBlueZ::ServiceRecordErrorConnector(
     code = BluetoothServiceRecordBlueZ::ErrorCode::ERROR_ADAPTER_NOT_READY;
   }
 
-  error_callback.Run(code);
+  std::move(error_callback).Run(code);
 }
 
 }  // namespace bluez

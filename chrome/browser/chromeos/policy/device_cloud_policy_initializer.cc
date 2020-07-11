@@ -39,7 +39,6 @@
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/prefs/pref_service.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace chromeos {
 class ActiveDirectoryJoinDelegate;

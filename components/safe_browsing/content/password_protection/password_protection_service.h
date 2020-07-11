@@ -360,6 +360,8 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 
   virtual bool IsIncognito() = 0;
 
+  virtual bool IsUserMBBOptedIn() = 0;
+
   virtual bool IsInPasswordAlertMode(
       ReusedPasswordAccountType password_type) = 0;
 

@@ -515,7 +515,8 @@ bool OmniboxPopupModel::IsControlPresentOnMatch(Selection selection) const {
       if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled())
         return match.SupportsDeletion();
       else
-        return !match.associated_keyword && !match.has_tab_match &&
+        return !match.associated_keyword &&
+               !match.ShouldShowTabMatchButtonInlineInResultView() &&
                match.SupportsDeletion();
     case FOCUSED_BUTTON_KEYWORD:
       return match.associated_keyword != nullptr;
@@ -525,7 +526,7 @@ bool OmniboxPopupModel::IsControlPresentOnMatch(Selection selection) const {
       if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled())
         return match.has_tab_match;
       else
-        return match.ShouldShowTabMatchButton();
+        return match.ShouldShowTabMatchButtonInlineInResultView();
     case FOCUSED_BUTTON_PEDAL:
       return match.pedal != nullptr;
     default:

@@ -2737,7 +2737,6 @@ TEST_F('ChromeVoxBackgroundTest', 'SwipeToScrollByPage', function() {
 });
 
 TEST_F('ChromeVoxBackgroundTest', 'ReadFromHereAccumulatesText', function() {
-  const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
       `
     <p>start</p>

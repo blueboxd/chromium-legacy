@@ -160,8 +160,9 @@ void AwFeatureListCreator::SetUpFieldTrials() {
       metrics_client->CreateLowEntropyProvider());
 
   // Convert the AwVariationsSeed proto to a SeedResponse object.
-  std::unique_ptr<variations::SeedResponse> seed;
   std::unique_ptr<AwVariationsSeed> seed_proto = TakeSeed();
+  std::unique_ptr<variations::SeedResponse> seed;
+  base::Time seed_date;  // Initializes to null time.
   if (seed_proto) {
     seed = std::make_unique<variations::SeedResponse>();
     seed->data = seed_proto->seed_data();
@@ -169,6 +170,12 @@ void AwFeatureListCreator::SetUpFieldTrials() {
     seed->country = seed_proto->country();
     seed->date = seed_proto->date();
     seed->is_gzip_compressed = seed_proto->is_gzip_compressed();
+
+    // We set the seed fetch time to when the service downloaded the seed rather
+    // than base::Time::Now() because we want to compute seed freshness based on
+    // the initial download time, which happened in the service at some earlier
+    // point.
+    seed_date = base::Time::FromJavaTime(seed->date);
   }
 
   client_ = std::make_unique<AwVariationsServiceClient>();
@@ -176,13 +183,6 @@ void AwFeatureListCreator::SetUpFieldTrials() {
       local_state_.get(), /*initial_seed=*/std::move(seed),
       /*signature_verification_enabled=*/g_signature_verification_enabled);
 
-  // We set the seed fetch time to when the service downloaded the seed rather
-  // than base::Time::Now() because we want to compute seed freshness based on
-  // the initial download time, which happened in the service at some earlier
-  // point.
-  base::Time null_time;
-  base::Time seed_date =
-      seed ? base::Time::FromJavaTime(seed->date) : null_time;
   if (!seed_date.is_null())
     seed_store->RecordLastFetchTime(seed_date);
 

@@ -54,17 +54,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterCast
   std::string GetName() const override;
   void SetName(const std::string& name,
                base::OnceClosure callback,
-               ErrorOnceCallback error_callback) override;
+               ErrorCallback error_callback) override;
   bool IsInitialized() const override;
   bool IsPresent() const override;
   bool IsPowered() const override;
   void SetPowered(bool powered,
                   base::OnceClosure callback,
-                  ErrorOnceCallback error_callback) override;
+                  ErrorCallback error_callback) override;
   bool IsDiscoverable() const override;
   void SetDiscoverable(bool discoverable,
                        base::OnceClosure callback,
-                       ErrorOnceCallback error_callback) override;
+                       ErrorCallback error_callback) override;
   bool IsDiscovering() const override;
   UUIDList GetUUIDs() const override;
   void CreateRfcommService(const BluetoothUUID& uuid,
@@ -154,13 +154,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterCast
 
   struct DiscoveryParams {
     DiscoveryParams(std::unique_ptr<device::BluetoothDiscoveryFilter> filter,
-                    base::Closure success_callback,
+                    base::OnceClosure success_callback,
                     DiscoverySessionErrorCallback error_callback);
     DiscoveryParams(DiscoveryParams&& params) noexcept;
     DiscoveryParams& operator=(DiscoveryParams&& params);
     ~DiscoveryParams();
     std::unique_ptr<device::BluetoothDiscoveryFilter> filter;
-    base::Closure success_callback;
+    base::OnceClosure success_callback;
     DiscoverySessionErrorCallback error_callback;
   };
 

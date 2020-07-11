@@ -64,6 +64,7 @@ class TestLayerTreeFrameSink : public LayerTreeFrameSink,
       scoped_refptr<viz::RasterContextProvider> worker_context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const viz::RendererSettings& renderer_settings,
+      const viz::DebugRendererSettings* debug_settings,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       bool synchronous_composite,
       bool disable_display_vsync,
@@ -133,6 +134,7 @@ class TestLayerTreeFrameSink : public LayerTreeFrameSink,
   const bool synchronous_composite_;
   const bool disable_display_vsync_;
   const viz::RendererSettings renderer_settings_;
+  const viz::DebugRendererSettings* const debug_settings_;
   const double refresh_rate_;
 
   viz::FrameSinkId frame_sink_id_;

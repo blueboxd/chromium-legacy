@@ -2,13 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Include test fixture.
-GEN_INCLUDE([
-  '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_unittest_base.js'
-]);
-
-GEN('#include "content/public/test/browser_test.h"');
-
 UnserializableSpan = function() {};
 
 StatelessSerializableSpan = function() {};
@@ -62,7 +55,7 @@ function assertSpanNotFound(spannable, annotation) {
 /**
  * Test fixture.
  */
-ChromeVoxSpannableUnitTest = class extends ChromeVoxUnitTestBase {
+ChromeVoxSpannableUnitTest = class extends testing.Test {
   /** @override */
   setUp() {
     Spannable.registerStatelessSerializableSpan(
@@ -77,8 +70,10 @@ ChromeVoxSpannableUnitTest = class extends ChromeVoxUnitTestBase {
 
 
 /** @override */
-ChromeVoxSpannableUnitTest.prototype.closureModuleDeps = [
-  'Spannable',
+ChromeVoxSpannableUnitTest.prototype.extraLibraries = [
+  '../../common/testing/assert_additions.js',
+  '../testing/fake_dom.js',
+  'spannable.js',
 ];
 
 

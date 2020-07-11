@@ -56,31 +56,37 @@ std::string DumpFrameScrollPosition(WebLocalFrame* frame) {
 
 }  // namespace
 
-std::string DumpLayoutAsString(WebLocalFrame* frame,
-                               const WebTestRuntimeFlags& flags) {
+std::string DumpLayoutAsString(WebLocalFrame* frame, TextResultType type) {
   DCHECK(frame);
   std::string result;
 
-  if (flags.dump_as_text()) {
-    result = DumpFrameHeaderIfNeeded(frame);
-    result += frame->GetDocument().ContentAsTextForTesting().Utf8();
-    result += "\n";
-  } else if (flags.dump_as_markup()) {
-    DCHECK(!flags.is_printing());
-    result = DumpFrameHeaderIfNeeded(frame);
-    result += WebFrameContentDumper::DumpAsMarkup(frame).Utf8();
-    result += "\n";
-  } else if (flags.dump_as_layout()) {
-    if (frame->Parent() == nullptr) {
-      WebFrameContentDumper::LayoutAsTextControls layout_text_behavior =
-          WebFrameContentDumper::kLayoutAsTextNormal;
-      if (flags.is_printing())
-        layout_text_behavior |= WebFrameContentDumper::kLayoutAsTextPrinting;
-      result = WebFrameContentDumper::DumpLayoutTreeAsText(frame,
-                                                           layout_text_behavior)
-                   .Utf8();
-    }
-    result += DumpFrameScrollPosition(frame);
+  switch (type) {
+    case TextResultType::kEmpty:
+      break;
+    case TextResultType::kText:
+      result += DumpFrameHeaderIfNeeded(frame);
+      result += frame->GetDocument().ContentAsTextForTesting().Utf8();
+      result += "\n";
+      break;
+    case TextResultType::kMarkup:
+      result += DumpFrameHeaderIfNeeded(frame);
+      result += WebFrameContentDumper::DumpAsMarkup(frame).Utf8();
+      result += "\n";
+      break;
+    case TextResultType::kLayout:
+    case TextResultType::kLayoutAsPrinting:
+      if (!frame->Parent()) {
+        WebFrameContentDumper::LayoutAsTextControls layout_text_behavior =
+            WebFrameContentDumper::kLayoutAsTextNormal;
+        if (type == TextResultType::kLayoutAsPrinting)
+          layout_text_behavior |= WebFrameContentDumper::kLayoutAsTextPrinting;
+
+        result += WebFrameContentDumper::DumpLayoutTreeAsText(
+                      frame, layout_text_behavior)
+                      .Utf8();
+      }
+      result += DumpFrameScrollPosition(frame);
+      break;
   }
 
   return result;

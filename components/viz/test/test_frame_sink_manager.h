@@ -60,6 +60,8 @@ class TestFrameSinkManagerImpl : public mojom::FrameSinkManager {
                        const FrameSinkId& root_frame_sink_id) override {}
   void EvictBackBuffer(uint32_t cache_id,
                        EvictBackBufferCallback callback) override {}
+  void UpdateDebugRendererSettings(
+      const DebugRendererSettings& debug_settings) override {}
 
   mojo::Receiver<mojom::FrameSinkManager> receiver_{this};
   mojo::Remote<mojom::FrameSinkManagerClient> client_;

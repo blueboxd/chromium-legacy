@@ -69,6 +69,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   class ScopedUseGrContext;
 
   GLRenderer(const RendererSettings* settings,
+             const DebugRendererSettings* debug_settings,
              OutputSurface* output_surface,
              DisplayResourceProvider* resource_provider,
              OverlayProcessorInterface* overlay_processor,

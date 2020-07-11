@@ -193,11 +193,11 @@ class CONTENT_EXPORT Navigator {
   // suit naming conventions.
   void LogResourceRequestTime(base::TimeTicks timestamp, const GURL& url);
 
-  // Called to record the time it took to execute the before unload hook for the
+  // Called to record the time it took to execute the beforeunload hook for the
   // current navigation.
-  void LogBeforeUnloadTime(
-      const base::TimeTicks& renderer_before_unload_start_time,
-      const base::TimeTicks& renderer_before_unload_end_time);
+  void LogBeforeUnloadTime(base::TimeTicks renderer_before_unload_start_time,
+                           base::TimeTicks renderer_before_unload_end_time,
+                           base::TimeTicks before_unload_sent_time);
 
   NavigationControllerImpl* controller() { return controller_; }
 
@@ -206,7 +206,6 @@ class CONTENT_EXPORT Navigator {
 
   // Holds data used to track browser side navigation metrics.
   struct NavigationMetricsData;
-
 
   void RecordNavigationMetrics(
       const LoadCommittedDetails& details,
@@ -219,6 +218,14 @@ class CONTENT_EXPORT Navigator {
   NavigationEntryImpl* GetNavigationEntryForRendererInitiatedNavigation(
       const mojom::CommonNavigationParams& common_params,
       FrameTreeNode* frame_tree_node);
+
+  // Called to record the time it took to execute beforeunload handlers for
+  // renderer-inititated navigations. It records the time it took to execute
+  // beforeunload handlers in the renderer process before sending the
+  // BeginNavigation IPC.
+  void LogRendererInitiatedBeforeUnloadTime(
+      base::TimeTicks renderer_before_unload_start_time,
+      base::TimeTicks renderer_before_unload_end_time);
 
   // The NavigationController that will keep track of session history for all
   // RenderFrameHost objects using this Navigator.

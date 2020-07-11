@@ -881,26 +881,6 @@
       ]
     },
     {
-      "id": 109,
-      "description": "MediaCodec on Adreno 330 / 4.2.2 doesn't always send FORMAT_CHANGED",
-      "cr_bugs": [585963],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "=",
-          "value": "4.2.2"
-        }
-      },
-      "gl_renderer": "Adreno \\(TM\\) 330",
-      "driver_version": {
-        "op": "=",
-        "value": "45.0"
-      },
-      "features": [
-        "accelerated_video_decode"
-      ]
-    },
-    {
       "id": 111,
       "description": "Apple Software Renderer used under VMWare experiences synchronization issues with GPU Raster",
       "cr_bugs": [607829],
@@ -1017,40 +997,6 @@
       "multi_gpu_category": "any",
       "features": [
         "gpu_rasterization"
-      ]
-    },
-    {
-      "id": 117,
-      "description": "MediaCodec on Vivante hangs in MediaCodec often",
-      "cr_bugs": [626814],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<=",
-          "value": "4.4.4"
-        }
-      },
-      "gl_renderer": ".*Vivante.*",
-      "features": [
-        "accelerated_video_decode"
-      ]
-    },
-    {
-      "id": 118,
-      "description": "webgl/canvas crashy on imporperly parsed vivante driver",
-      "cr_bugs": [628059],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<=",
-          "value": "4.4.4"
-        }
-      },
-      "gl_vendor": "Vivante.*",
-      "gl_renderer": ".*PXA.*",
-      "features": [
-        "accelerated_webgl",
-        "accelerated_2d_canvas"
       ]
     },
     {
@@ -1213,22 +1159,6 @@
       "device_id": ["0x2a02"],
       "features": [
         "all"
-      ]
-    },
-    {
-      "id": 133,
-      "description": "MediaCodec on VideoCore IV HW crashes on JB",
-      "cr_bugs": [654905],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "4.4"
-        }
-      },
-      "gl_renderer": ".*VideoCore IV.*",
-      "features": [
-        "accelerated_video_decode"
       ]
     },
     {
@@ -1434,23 +1364,6 @@
       "multi_gpu_style": "amd_switchable",
       "features": [
         "accelerated_webgl2"
-      ]
-    },
-    {
-      "id": 147,
-      "description": "GPU raster broken on Mali-T760 on KitKat",
-      "cr_bugs": [737048],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<=",
-          "value": "4.4.4"
-        }
-      },
-      "gl_renderer": "Mali-T760.*",
-      "features": [
-        "accelerated_2d_canvas",
-        "gpu_rasterization"
       ]
     },
     {

@@ -2982,9 +2982,9 @@ void WebMediaPlayerImpl::SetDelegateState(DelegateState new_state,
 
   // Prevent duplicate delegate calls.
   // TODO(sandersd): Move this deduplication into the delegate itself.
-  // TODO(sandersd): WebContentsObserverSanityChecker does not allow sending the
-  // 'playing' IPC more than once in a row, even if the metadata has changed.
-  // Figure out whether it should.
+  // TODO(sandersd): WebContentsObserverSequenceChecker does not allow sending
+  // the 'playing' IPC more than once in a row, even if the metadata has
+  // changed. Figure out whether it should.
   // Pretend that the media has no audio if it never played unmuted. This is to
   // avoid any action related to audible media such as taking audio focus or
   // showing a media notification. To preserve a consistent experience, it does

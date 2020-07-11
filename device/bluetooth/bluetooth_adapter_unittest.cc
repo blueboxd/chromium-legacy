@@ -75,7 +75,7 @@ class TestBluetoothAdapter final : public BluetoothAdapter {
 
   void SetName(const std::string& name,
                base::OnceClosure callback,
-               ErrorOnceCallback error_callback) override {}
+               ErrorCallback error_callback) override {}
 
   bool IsInitialized() const override { return false; }
 
@@ -85,13 +85,13 @@ class TestBluetoothAdapter final : public BluetoothAdapter {
 
   void SetPowered(bool powered,
                   base::OnceClosure callback,
-                  ErrorOnceCallback error_callback) override {}
+                  ErrorCallback error_callback) override {}
 
   bool IsDiscoverable() const override { return false; }
 
   void SetDiscoverable(bool discoverable,
                        base::OnceClosure callback,
-                       ErrorOnceCallback error_callback) override {}
+                       ErrorCallback error_callback) override {}
 
   bool IsDiscovering() const override { return false; }
 

@@ -88,7 +88,7 @@ class UserCloudPolicyStoreTest : public testing::Test {
 
   void InitPolicyPayload(enterprise_management::CloudPolicySettings* payload) {
     payload->mutable_searchsuggestenabled()->set_value(true);
-    payload->mutable_urlblacklist()->mutable_value()->add_entries(
+    payload->mutable_urlblocklist()->mutable_value()->add_entries(
         "chromium.org");
   }
 
@@ -107,7 +107,7 @@ class UserCloudPolicyStoreTest : public testing::Test {
         store->policy_map().Get(key::kSearchSuggestEnabled);
     ASSERT_TRUE(entry);
     EXPECT_TRUE(base::Value(true).Equals(entry->value()));
-    ASSERT_TRUE(store->policy_map().Get(key::kURLBlacklist));
+    ASSERT_TRUE(store->policy_map().Get(key::kURLBlocklist));
   }
 
   // Install an expectation on |observer_| for an error code.

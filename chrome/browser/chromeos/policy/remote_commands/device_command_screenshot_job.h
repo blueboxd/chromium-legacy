@@ -20,7 +20,6 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/policy/upload_job.h"
 #include "components/policy/core/common/remote_commands/remote_command_job.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "ui/snapshot/snapshot.h"
 #include "url/gurl.h"
 

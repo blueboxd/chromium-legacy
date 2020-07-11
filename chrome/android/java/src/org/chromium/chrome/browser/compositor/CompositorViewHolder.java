@@ -1239,27 +1239,26 @@ public class CompositorViewHolder extends FrameLayout
         if (mView == null) return;
         WebContents webContents = getWebContents();
         if (show) {
-            if (mView.getParent() != this) {
-                // During tab creation, we temporarily add the new tab's view to a FrameLayout to
-                // measure and lay it out. This way we could show the animation in the stack view.
-                // Therefore we should remove the view from that temporary FrameLayout here.
-                UiUtils.removeViewFromParent(mView);
+            if (mView != getCurrentTab().getView() || mView.getParent() == this) return;
+            // During tab creation, we temporarily add the new tab's view to a FrameLayout to
+            // measure and lay it out. This way we could show the animation in the stack view.
+            // Therefore we should remove the view from that temporary FrameLayout here.
+            UiUtils.removeViewFromParent(mView);
 
-                if (webContents != null) {
-                    assert !webContents.isDestroyed();
-                    getContentView().setVisibility(View.VISIBLE);
-                    updateViewportSize();
-                }
-
-                // CompositorView always has index of 0.
-                addView(mView, 1);
-
-                setFocusable(false);
-                setFocusableInTouchMode(false);
-
-                // Claim focus for the new view unless the user is currently using the URL bar.
-                if (mUrlBar == null || !mUrlBar.hasFocus()) mView.requestFocus();
+            if (webContents != null) {
+                assert !webContents.isDestroyed();
+                getContentView().setVisibility(View.VISIBLE);
+                updateViewportSize();
             }
+
+            // CompositorView always has index of 0.
+            addView(mView, 1);
+
+            setFocusable(false);
+            setFocusableInTouchMode(false);
+
+            // Claim focus for the new view unless the user is currently using the URL bar.
+            if (mUrlBar == null || !mUrlBar.hasFocus()) mView.requestFocus();
         } else {
             if (mView.getParent() == this) {
                 setFocusable(mCanBeFocusable);

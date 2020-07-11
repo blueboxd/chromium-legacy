@@ -28,6 +28,7 @@
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/public/browser/browser_or_resource_context.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
@@ -1349,6 +1350,10 @@ TEST_F(SiteInstanceTest, IsOriginLockASite) {
 }
 
 TEST_F(SiteInstanceTest, StartIsolatingSite) {
+  // Skip this test case if dynamic isolated origins are not enabled.
+  if (!SiteIsolationPolicy::AreDynamicIsolatedOriginsEnabled())
+    return;
+
   IsolationContext isolation_context(context());
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
 

@@ -67,12 +67,13 @@ struct UnregisterAdvertisementArgs {
 
 struct StartDiscoverySessionArgs {
   StartDiscoverySessionArgs(
-      const base::RepeatingClosure callback,
-      const device::BluetoothAdapter::ErrorCallback& error_callback)
-      : callback(callback), error_callback(error_callback) {}
+      base::OnceClosure callback,
+      device::BluetoothAdapter::ErrorCallback error_callback)
+      : callback(std::move(callback)),
+        error_callback(std::move(error_callback)) {}
 
-  const base::RepeatingClosure callback;
-  const device::BluetoothAdapter::ErrorCallback error_callback;
+  base::OnceClosure callback;
+  device::BluetoothAdapter::ErrorCallback error_callback;
 };
 
 struct StopDiscoverySessionArgs {
@@ -343,9 +344,10 @@ class SecureChannelBleSynchronizerTest : public testing::Test {
     EXPECT_TRUE(start_discovery_args_list_.size() >= start_arg_index);
 
     if (success) {
-      start_discovery_args_list_[start_arg_index]->callback.Run();
+      std::move(start_discovery_args_list_[start_arg_index]->callback).Run();
     } else {
-      start_discovery_args_list_[start_arg_index]->error_callback.Run();
+      std::move(start_discovery_args_list_[start_arg_index]->error_callback)
+          .Run();
     }
 
     histogram_tester_.ExpectUniqueSample(

@@ -49,9 +49,6 @@ class SearchResultImageButton : public views::ImageButton {
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  // views::Button:
-  void StateChanged(ButtonState old_state) override;
-
   // views::InkDropHostView:
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
@@ -125,11 +122,6 @@ void SearchResultImageButton::OnGestureEvent(ui::GestureEvent* event) {
     Button::OnGestureEvent(event);
 }
 
-void SearchResultImageButton::StateChanged(
-    views::Button::ButtonState old_state) {
-  parent_->ActionButtonStateChanged();
-}
-
 std::unique_ptr<views::InkDropRipple>
 SearchResultImageButton::CreateInkDropRipple() const {
   const gfx::Point center = GetLocalBounds().CenterPoint();
@@ -201,7 +193,7 @@ SearchResultActionsView::~SearchResultActionsView() {}
 void SearchResultActionsView::SetActions(const SearchResult::Actions& actions) {
   if (selected_action_.has_value())
     selected_action_.reset();
-  buttons_.clear();
+  subscriptions_.clear();
   RemoveAllChildViews(true);
 
   for (size_t i = 0; i < actions.size(); ++i)
@@ -218,12 +210,8 @@ bool SearchResultActionsView::IsSearchResultHoveredOrSelected() const {
 }
 
 void SearchResultActionsView::UpdateButtonsOnStateChanged() {
-  for (SearchResultImageButton* button : buttons_)
-    button->UpdateOnStateChanged();
-}
-
-void SearchResultActionsView::ActionButtonStateChanged() {
-  UpdateButtonsOnStateChanged();
+  for (views::View* child : children())
+    static_cast<SearchResultImageButton*>(child)->UpdateOnStateChanged();
 }
 
 const char* SearchResultActionsView::GetClassName() const {
@@ -272,9 +260,9 @@ void SearchResultActionsView::NotifyA11yResultSelected() {
   DCHECK(HasSelectedAction());
 
   int selected_action = GetSelectedAction();
-  for (views::Button* button : buttons_) {
-    if (button->tag() == selected_action) {
-      button->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+  for (views::View* child : children()) {
+    if (static_cast<views::Button*>(child)->tag() == selected_action) {
+      child->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
       return;
     }
   }
@@ -296,14 +284,16 @@ bool SearchResultActionsView::HasSelectedAction() const {
 void SearchResultActionsView::CreateImageButton(
     const SearchResult::Action& action,
     int action_index) {
-  SearchResultImageButton* button = new SearchResultImageButton(this, action);
+  auto* const button =
+      AddChildView(std::make_unique<SearchResultImageButton>(this, action));
   button->set_tag(action_index);
-  AddChildView(button);
-  buttons_.emplace_back(button);
+  subscriptions_.push_back(button->AddStateChangedCallback(
+      base::BindRepeating(&SearchResultActionsView::UpdateButtonsOnStateChanged,
+                          base::Unretained(this))));
 }
 
 size_t SearchResultActionsView::GetActionCount() const {
-  return buttons_.size();
+  return children().size();
 }
 
 void SearchResultActionsView::ChildVisibilityChanged(views::View* child) {

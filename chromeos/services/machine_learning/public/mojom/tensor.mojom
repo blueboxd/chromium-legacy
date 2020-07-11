@@ -9,9 +9,12 @@
 // NOTE: This mojom exists in two places and must be kept in sync:
 //       Chromium:  //chromeos/services/machine_learning/public/mojom/
 //       Chrome OS: src/platform2/ml/mojom/
+//       Note: Other repos downstream of Chromium might also use this mojom.
 // Example: A backwards-compatible mojom change (and corresponding
 // implementation change) can be made in Chrome OS first, then replicated to the
-// client (Chromium) later.
+// clients (Chromium, other downstream repos) later.
+// Use //chromeos/services/machine_learning/public/mojom/roll_mojom.sh to help
+// replicate Chrome OS-side changes over to Chromium.
 
 module chromeos.machine_learning.mojom;
 
@@ -44,8 +47,8 @@ union ValueList {
   Int64List int64_list;
 };
 
-// A Tensor is a multi-dimensional array with dimensions |shape|, flattened into
-// the one-dimensional array |data|.
+// A Tensor is a multi-dimensional array with dimensions `shape`, flattened into
+// the one-dimensional array `data`.
 // It is used for both the inputs (in the form of a map<string, Tensor>) and
 // outputs (in the form of an array<Tensor>) of ML inference.
 struct Tensor {

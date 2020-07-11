@@ -5,17 +5,22 @@
 #include "chrome/browser/ui/views/tabs/tab_groups_iph_controller.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/views/chrome_test_widget.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/test/mock_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/views/test/scoped_views_test_helper.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/unique_widget_ptr.h"
+#include "ui/views/widget/widget.h"
 
 using ::testing::_;
 using ::testing::AnyNumber;
@@ -26,6 +31,13 @@ class TabGroupsIPHControllerTest : public BrowserWithTestWindowTest {
  public:
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
+
+    views::Widget::InitParams widget_params;
+    widget_params.context = GetContext();
+
+    anchor_widget_ = std::unique_ptr<views::Widget>(new ChromeTestWidget);
+    anchor_widget_->Init(std::move(widget_params));
+
     mock_tracker_ =
         feature_engagement::TrackerFactory::GetInstance()
             ->SetTestingSubclassFactoryAndUse(
@@ -50,20 +62,22 @@ class TabGroupsIPHControllerTest : public BrowserWithTestWindowTest {
 
   void TearDown() override {
     iph_controller_.reset();
+    anchor_widget_.reset();
     BrowserWithTestWindowTest::TearDown();
   }
+
+ private:
+  views::View* GetAnchorView(int tab_index) {
+    return anchor_widget_->GetContentsView();
+  }
+
+  // The Widget our IPH bubble is anchored to. It is specifically
+  // anchored to its contents view.
+  views::UniqueWidgetPtr anchor_widget_;
 
  protected:
   feature_engagement::test::MockTracker* mock_tracker_;
   std::unique_ptr<TabGroupsIPHController> iph_controller_;
-
- private:
-  views::View* GetAnchorView(int tab_index) { return &dummy_anchor_view_; }
-
-  // TabGroupsIPHController takes a callback to get the promo's anchor
-  // view. These tests shouldn't trigger the promo, but we return this
-  // view just in case.
-  views::View dummy_anchor_view_;
 };
 
 TEST_F(TabGroupsIPHControllerTest, NotifyEventAndTriggerOnSixthTabOpened) {
@@ -106,4 +120,22 @@ TEST_F(TabGroupsIPHControllerTest, NotifyEventOnTabGroupCreated) {
       .Times(1);
 
   browser()->tab_strip_model()->AddToNewGroup({0});
+}
+
+TEST_F(TabGroupsIPHControllerTest, DismissedOnContextMenuOpened) {
+  EXPECT_CALL(*mock_tracker_,
+              ShouldTriggerHelpUI(
+                  Ref(feature_engagement::kIPHDesktopTabGroupsNewGroupFeature)))
+      .Times(1)
+      .WillOnce(Return(true));
+
+  for (int i = 0; i < 6; ++i)
+    chrome::NewTab(browser());
+
+  EXPECT_CALL(
+      *mock_tracker_,
+      Dismissed(Ref(feature_engagement::kIPHDesktopTabGroupsNewGroupFeature)))
+      .Times(1);
+
+  iph_controller_->TabContextMenuOpened();
 }

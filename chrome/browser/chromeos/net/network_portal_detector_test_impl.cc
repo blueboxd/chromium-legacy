@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 
+#include "base/callback.h"
+#include "base/logging.h"
 #include "chromeos/network/network_state.h"
 
 namespace chromeos {

@@ -259,7 +259,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
 
   static constexpr int kEvictionIntervalInMilliSeconds =
       30 * kMinutesInMilliSeconds;
-  static constexpr int kThresholdOfErrorsToBeBlacklisted = 3;
+  static constexpr int kThresholdOfErrorsToBeDenylisted = 3;
 
   static constexpr char kDatabaseName[] = "QuotaManager";
   static constexpr char kDaysBetweenRepeatedOriginEvictionsHistogram[] =

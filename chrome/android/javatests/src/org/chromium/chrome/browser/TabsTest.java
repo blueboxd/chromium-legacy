@@ -35,7 +35,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
@@ -93,7 +92,6 @@ import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
-import org.chromium.ui.test.util.UiDisableIf;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.File;
@@ -1443,7 +1441,6 @@ public class TabsTest {
     @MediumTest
     @Feature({"Android-TabSwitcher"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/1073535
     public void testToolbarSwipeNextThenPrevTab() throws TimeoutException {
         initToolbarSwipeTest(true, 0, false);
 
@@ -1460,7 +1457,6 @@ public class TabsTest {
     @MediumTest
     @Feature({"Android-TabSwitcher"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/1073535
     public void testToolbarSwipeNextThenPrevTabIncognito() throws TimeoutException {
         initToolbarSwipeTest(true, 0, true);
 

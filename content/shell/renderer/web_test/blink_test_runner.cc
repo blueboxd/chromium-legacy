@@ -20,6 +20,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view.h"
 
 namespace content {
@@ -45,19 +46,15 @@ blink::WebString BlinkTestRunner::GetAbsoluteWebStringFromUTF8Path(
 void BlinkTestRunner::TestFinished() {
   TestRunner* test_runner = web_view_test_proxy_->GetTestRunner();
 
+  DCHECK(is_main_window_);
+  DCHECK(web_view_test_proxy_->GetMainRenderFrame());
+
   // Avoid a situation where TestFinished is called twice, because
   // of a racey test where renderers both call notifyDone(), or a test that
   // calls notifyDone() more than once.
   if (!test_runner->TestIsRunning())
     return;
   test_runner->SetTestIsRunning(false);
-
-  // If we're not in the main frame, then ask the browser to redirect the call
-  // to the main frame instead.
-  if (!is_main_window_ || !web_view_test_proxy_->GetMainRenderFrame()) {
-    GetWebTestControlHostRemote()->TestFinishedInSecondaryRenderer();
-    return;
-  }
 
   // Now we know that we're in the main frame, we should generate dump results.
   // Clean out the lifecycle if needed before capturing the web tree
@@ -77,14 +74,33 @@ void BlinkTestRunner::TestFinished() {
   if (test_runner->ShouldDumpAsAudio()) {
     dump_result->audio = CaptureLocalAudioDump();
   } else {
+    TextResultType text_result_type = test_runner->ShouldGenerateTextResults();
+    bool pixel_result = test_runner->ShouldGeneratePixelResults();
+
+    std::string spec = GURL(test_config_->test_url).spec();
+    size_t path_start = spec.rfind("web_tests/");
+    if (path_start != std::string::npos)
+      spec = spec.substr(path_start);
+
+    std::string mime_type =
+        web_frame->GetDocumentLoader()->GetResponse().MimeType().Utf8();
+
+    // In a text/plain document, and in a dumpAsText/ subdirectory, we generate
+    // text results no matter what the test may previously have requested.
+    if (mime_type == "text/plain" ||
+        spec.find("/dumpAsText/") != std::string::npos) {
+      text_result_type = TextResultType::kText;
+      pixel_result = false;
+    }
+
     // If possible we grab the layout dump locally because a round trip through
     // the browser would give javascript a chance to run and change the layout.
     // We only go to the browser if we can not do it locally, because we want to
     // dump more than just the local main frame. Those tests must be written to
     // not modify layout after signalling the test is finished.
-    dump_result->layout = CaptureLocalLayoutDump();
+    dump_result->layout = CaptureLocalLayoutDump(text_result_type);
 
-    if (test_runner->ShouldGeneratePixelResults()) {
+    if (pixel_result) {
       if (test_runner->CanDumpPixelsFromRenderer()) {
         SkBitmap actual = CaptureLocalPixelsDump();
 
@@ -115,17 +131,28 @@ std::vector<uint8_t> BlinkTestRunner::CaptureLocalAudioDump() {
   return test_runner->GetAudioData();
 }
 
-base::Optional<std::string> BlinkTestRunner::CaptureLocalLayoutDump() {
+base::Optional<std::string> BlinkTestRunner::CaptureLocalLayoutDump(
+    TextResultType type) {
   TRACE_EVENT0("shell", "BlinkTestRunner::CaptureLocalLayoutDump");
   TestRunner* test_runner = web_view_test_proxy_->GetTestRunner();
-  std::string layout;
-  if (test_runner->HasCustomTextDump(&layout)) {
-    return layout + "\n";
-  } else if (!test_runner->IsRecursiveLayoutDumpRequested()) {
-    return test_runner->DumpLayout(
-        web_view_test_proxy_->GetMainRenderFrame()->GetWebFrame());
+
+  {
+    // The CustomTextDump always takes precedence, and is also only available
+    // for a local dump of the main frame.
+    std::string layout;
+    if (test_runner->HasCustomTextDump(&layout))
+      return layout + "\n";
   }
-  return base::nullopt;
+
+  // If doing a recursive dump, it's done asynchronously from the browser.
+  if (test_runner->IsRecursiveLayoutDumpRequested()) {
+    return base::nullopt;
+  }
+
+  // Otherwise, in the common case, we do a synchronous text dump of the main
+  // frame here.
+  RenderFrame* main_frame = web_view_test_proxy_->GetMainRenderFrame();
+  return DumpLayoutAsString(main_frame->GetWebFrame(), type);
 }
 
 SkBitmap BlinkTestRunner::CaptureLocalPixelsDump() {
@@ -171,7 +198,10 @@ void BlinkTestRunner::DidCommitNavigationInMainFrame() {
     return;
 
   waiting_for_reset_navigation_to_about_blank_ = false;
-  test_runner->Reset(static_cast<WebFrameTestProxy*>(main_frame));
+
+  static_cast<WebFrameTestProxy*>(main_frame)->Reset();
+  test_runner->Reset();
+
   // Ack to the browser (this could converted to be a mojo reply).
   GetWebTestControlHostRemote()->ResetRendererAfterWebTestDone();
 }
@@ -204,10 +234,9 @@ void BlinkTestRunner::ApplyTestConfiguration(
   test_config_ = params.Clone();
 
   is_main_window_ = true;
-  test_runner->SetMainView(web_view_test_proxy_->GetWebView());
   test_runner->SetTestIsRunning(true);
 
-  std::string spec = GURL(params->test_url).spec();
+  std::string spec = GURL(test_config_->test_url).spec();
   size_t path_start = spec.rfind("web_tests/");
   if (path_start != std::string::npos)
     spec = spec.substr(path_start);
@@ -231,17 +260,16 @@ void BlinkTestRunner::ApplyTestConfiguration(
   // For http/tests/loading/, which is served via httpd and becomes /loading/.
   if (spec.find("/loading/") != std::string::npos)
     test_runner->SetShouldDumpFrameLoadCallbacks(true);
-  if (spec.find("/dumpAsText/") != std::string::npos) {
-    test_runner->SetShouldDumpAsText(true);
-    test_runner->SetShouldGeneratePixelResults(false);
-  }
-  test_runner->SetV8CacheDisabled(is_devtools_test);
 
   if (spec.find("/external/wpt/") != std::string::npos ||
       spec.find("/external/csswg-test/") != std::string::npos ||
       spec.find("://web-platform.test") != std::string::npos ||
       spec.find("/harness-tests/wpt/") != std::string::npos)
     test_runner->SetIsWebPlatformTestsMode();
+
+  web_view_test_proxy_->GetWebView()->GetSettings()->SetV8CacheOptions(
+      is_devtools_test ? blink::WebSettings::V8CacheOptions::kNone
+                       : blink::WebSettings::V8CacheOptions::kDefault);
 }
 
 void BlinkTestRunner::OnReplicateTestConfiguration(
@@ -285,14 +313,6 @@ void BlinkTestRunner::OnResetRendererAfterWebTest() {
 }
 
 void BlinkTestRunner::OnFinishTestInMainWindow() {
-  DCHECK(is_main_window_ && web_view_test_proxy_->GetMainRenderFrame());
-
-  // Avoid a situation where TestFinished is called twice, because
-  // of a racey test finish in 2 secondary renderers.
-  TestRunner* test_runner = web_view_test_proxy_->GetTestRunner();
-  if (!test_runner->TestIsRunning())
-    return;
-
   TestFinished();
 }
 

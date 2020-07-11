@@ -83,7 +83,8 @@ SurfacesInstance::SurfacesInstance()
   auto overlay_processor = std::make_unique<viz::OverlayProcessorStub>();
   display_ = std::make_unique<viz::Display>(
       nullptr /* shared_bitmap_manager */,
-      output_surface_provider_.renderer_settings(), frame_sink_id_,
+      output_surface_provider_.renderer_settings(),
+      output_surface_provider_.debug_settings(), frame_sink_id_,
       std::move(output_surface), std::move(overlay_processor),
       std::move(scheduler), nullptr /* current_task_runner */);
   display_->Initialize(this, frame_sink_manager_->surface_manager(),

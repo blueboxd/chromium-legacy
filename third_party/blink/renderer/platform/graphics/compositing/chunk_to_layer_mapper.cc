@@ -21,7 +21,7 @@ ChunkToLayerMapper::ChunkToLayerMapper(
           FloatSize(-layer_offset.x(), -layer_offset.y())) {}
 
 void ChunkToLayerMapper::SwitchToChunk(const PaintChunk& chunk) {
-  outset_for_raster_effects_ = chunk.outset_for_raster_effects;
+  raster_effect_outset_ = chunk.raster_effect_outset;
 
   const auto& new_chunk_state =
       chunk.properties.GetPropertyTreeState().Unalias();
@@ -85,7 +85,7 @@ IntRect ChunkToLayerMapper::MapVisualRect(const IntRect& rect) const {
 
   IntRect result;
   if (!mapped_rect.IsEmpty()) {
-    mapped_rect.Inflate(outset_for_raster_effects_);
+    InflateForRasterEffectOutset(mapped_rect);
     AdjustVisualRectBySubpixelOffset(mapped_rect);
     result = EnclosingIntRect(mapped_rect);
   }
@@ -112,7 +112,7 @@ IntRect ChunkToLayerMapper::MapUsingGeometryMapper(const IntRect& rect) const {
     return IntRect();
 
   visual_rect.Rect().Move(-layer_offset_.x(), -layer_offset_.y());
-  visual_rect.Rect().Inflate(outset_for_raster_effects_);
+  InflateForRasterEffectOutset(visual_rect.Rect());
   AdjustVisualRectBySubpixelOffset(visual_rect.Rect());
   return EnclosingIntRect(visual_rect.Rect());
 }
@@ -125,6 +125,13 @@ void ChunkToLayerMapper::AdjustVisualRectBySubpixelOffset(
   // The condition below should be kept consistent with that function.
   if (&chunk_state_.Transform() == &layer_state_.Transform())
     rect.Move(visual_rect_subpixel_offset_);
+}
+
+void ChunkToLayerMapper::InflateForRasterEffectOutset(FloatRect& rect) const {
+  if (raster_effect_outset_ == RasterEffectOutset::kHalfPixel)
+    rect.Inflate(0.5);
+  else if (raster_effect_outset_ == RasterEffectOutset::kWholePixel)
+    rect.Inflate(1);
 }
 
 }  // namespace blink

@@ -18,6 +18,26 @@
 
 namespace mojo {
 template <>
+struct StructTraits<viz::mojom::DebugRendererSettingsDataView,
+                    viz::DebugRendererSettings> {
+  static bool tint_composited_content(const viz::DebugRendererSettings& input) {
+    return input.tint_composited_content;
+  }
+
+  static bool show_overdraw_feedback(const viz::DebugRendererSettings& input) {
+    return input.show_overdraw_feedback;
+  }
+
+  static bool show_dc_layer_debug_borders(
+      const viz::DebugRendererSettings& input) {
+    return input.show_dc_layer_debug_borders;
+  }
+
+  static bool Read(viz::mojom::DebugRendererSettingsDataView data,
+                   viz::DebugRendererSettings* out);
+};
+
+template <>
 struct StructTraits<viz::mojom::RendererSettingsDataView,
                     viz::RendererSettings> {
   static bool allow_antialiasing(const viz::RendererSettings& input) {
@@ -44,14 +64,6 @@ struct StructTraits<viz::mojom::RendererSettingsDataView,
   static bool release_overlay_resources_after_gpu_query(
       const viz::RendererSettings& input) {
     return input.release_overlay_resources_after_gpu_query;
-  }
-
-  static bool tint_composited_content(const viz::RendererSettings& input) {
-    return input.tint_composited_content;
-  }
-
-  static bool show_overdraw_feedback(const viz::RendererSettings& input) {
-    return input.show_overdraw_feedback;
   }
 
   static bool show_aggregated_damage(const viz::RendererSettings& input) {
@@ -85,10 +97,6 @@ struct StructTraits<viz::mojom::RendererSettingsDataView,
 
   static bool requires_alpha_channel(const viz::RendererSettings& input) {
     return input.requires_alpha_channel;
-  }
-
-  static bool show_dc_layer_debug_borders(const viz::RendererSettings& input) {
-    return input.show_dc_layer_debug_borders;
   }
 
 #if defined(OS_ANDROID)

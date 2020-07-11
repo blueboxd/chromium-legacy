@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//chrome/common/features.gni")
+import("//chrome/test/base/js2gtest.gni")
 import("//chromecast/chromecast.gni")
 import("strings/accessibility_strings.gni")
 
@@ -128,4 +129,37 @@ group("browser_tests") {
       "switch_access:browser_tests",
     ]
   }
+}
+
+group("unit_tests_js") {
+  testonly = true
+  if (is_chromeos) {
+    deps = [
+      ":misc_unit_tests_js",
+      "chromevox:chromevox_unit_js_tests",
+    ]
+  }
+}
+
+js2gtest("misc_unit_tests_js") {
+  test_type = "unit"
+  sources = [
+    "braille_ime/braille_ime_unittest.js",
+    "select_to_speak/node_utils_unittest.js",
+    "select_to_speak/paragraph_utils_unittest.js",
+    "select_to_speak/rect_utils_unittest.js",
+    "select_to_speak/select_to_speak_unittest.js",
+    "select_to_speak/word_utils_unittest.js",
+    "switch_access/rect_helper_unittest.js",
+  ]
+  extra_js_files = [
+    "braille_ime/braille_ime.js",
+    "select_to_speak/paragraph_utils.js",
+    "select_to_speak/rect_utils.js",
+    "select_to_speak/select_to_speak.js",
+    "select_to_speak/test_support.js",
+    "select_to_speak/word_utils.js",
+    "select_to_speak/node_utils.js",
+    "switch_access/rect_helper.js",
+  ]
 }

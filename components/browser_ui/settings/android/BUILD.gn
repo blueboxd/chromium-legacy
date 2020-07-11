@@ -16,7 +16,6 @@ android_library("java") {
     "widget/java/src/org/chromium/components/browser_ui/settings/ChromeImageViewPreference.java",
     "widget/java/src/org/chromium/components/browser_ui/settings/ChromeSwitchPreference.java",
     "widget/java/src/org/chromium/components/browser_ui/settings/ExpandablePreferenceGroup.java",
-    "widget/java/src/org/chromium/components/browser_ui/settings/IconPreference.java",
     "widget/java/src/org/chromium/components/browser_ui/settings/LearnMorePreference.java",
     "widget/java/src/org/chromium/components/browser_ui/settings/SpinnerPreference.java",
     "widget/java/src/org/chromium/components/browser_ui/settings/TextMessagePreference.java",
@@ -53,13 +52,11 @@ android_resources("java_resources") {
     "java/res/layout/button_preference_layout.xml",
     "java/res/layout/checkable_image_view_widget.xml",
     "java/res/layout/preference_chrome_image_view.xml",
-    "java/res/layout/preference_compat.xml",
     "java/res/layout/preference_spinner.xml",
     "java/res/layout/preference_spinner_single_line.xml",
     "java/res/layout/preference_spinner_single_line_item.xml",
     "java/res/layout/settings_action_bar_shadow.xml",
     "java/res/values/attrs.xml",
-    "java/res/values/dimens.xml",
     "java/res/values/styles.xml",
   ]
 

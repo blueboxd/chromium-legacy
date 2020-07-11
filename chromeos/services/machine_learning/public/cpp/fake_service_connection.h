@@ -73,6 +73,10 @@ class FakeServiceConnectionImpl : public ServiceConnection,
   void CreateGraphExecutor(
       mojo::PendingReceiver<mojom::GraphExecutor> receiver,
       mojom::Model::CreateGraphExecutorCallback callback) override;
+  void CreateGraphExecutorWithOptions(
+      mojom::GraphExecutorOptionsPtr options,
+      mojo::PendingReceiver<mojom::GraphExecutor> receiver,
+      mojom::Model::CreateGraphExecutorCallback callback) override;
 
   // mojom::GraphExecutor:
   // Execute() will return the tensor set by SetOutputValue() as the output.

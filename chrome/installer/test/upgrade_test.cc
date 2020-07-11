@@ -30,7 +30,7 @@ class UpgradeTest : public testing::Test {
 
   // Clean up by deleting the created newer version of mini_installer.exe.
   static void TearDownTestCase() {
-    EXPECT_TRUE(base::DeleteFile(next_mini_installer_path_, false));
+    EXPECT_TRUE(base::DeleteFile(next_mini_installer_path_));
   }
 
  private:

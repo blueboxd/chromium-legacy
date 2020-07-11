@@ -77,6 +77,7 @@ CastContentWindowAndroid::CastContentWindowAndroid(
     const CastContentWindow::CreateParams& params)
     : CastContentWindow(params),
       activity_id_(delegate_->GetId()),
+      web_contents_attached_(false),
       java_window_(CreateJavaWindow(reinterpret_cast<jlong>(this),
                                     params.is_headless,
                                     params.enable_touch_input,
@@ -94,6 +95,10 @@ void CastContentWindowAndroid::CreateWindowForWebContents(
     mojom::ZOrder /* z_order */,
     VisibilityPriority visibility_priority) {
   DCHECK(cast_web_contents);
+  if (web_contents_attached_) {
+    RequestVisibility(visibility_priority);
+    return;
+  }
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> java_web_contents =
       cast_web_contents->web_contents()->GetJavaWebContents();
@@ -101,6 +106,7 @@ void CastContentWindowAndroid::CreateWindowForWebContents(
   Java_CastContentWindowAndroid_createWindowForWebContents(
       env, java_window_, java_web_contents,
       static_cast<int>(visibility_priority));
+  web_contents_attached_ = true;
 }
 
 void CastContentWindowAndroid::GrantScreenAccess() {

@@ -313,7 +313,7 @@ void BluetoothTaskManagerWin::StartPolling() {
 void BluetoothTaskManagerWin::PostSetPoweredBluetoothTask(
     bool powered,
     base::OnceClosure callback,
-    BluetoothAdapter::ErrorOnceCallback error_callback) {
+    BluetoothAdapter::ErrorCallback error_callback) {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   bluetooth_task_runner_->PostTask(
       FROM_HERE,
@@ -427,7 +427,7 @@ void BluetoothTaskManagerWin::PostAdapterStateToUi() {
 void BluetoothTaskManagerWin::SetPowered(
     bool powered,
     base::OnceClosure callback,
-    BluetoothAdapter::ErrorOnceCallback error_callback) {
+    BluetoothAdapter::ErrorCallback error_callback) {
   DCHECK(bluetooth_task_runner_->RunsTasksInCurrentSequence());
   bool success = false;
   if (classic_wrapper_->HasHandle()) {

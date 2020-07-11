@@ -1852,7 +1852,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   PhysicalRect DebugRect() const override;
 
-  float VisualRectOutsetForRasterEffects() const override;
+  RasterEffectOutset VisualRectOutsetForRasterEffects() const override;
 
   // Return the width of the vertical scrollbar, unless it's larger than the
   // logical width of the content box, in which case we'll return that instead.

@@ -36,22 +36,6 @@
       ]
     },
     {
-      "id": 6,
-      "description": "Restore scissor on FBO change with Qualcomm GPUs on older versions of Android",
-      "cr_bugs": [165493, 222018],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "4.3"
-        }
-      },
-      "gl_vendor": "Qualcomm.*",
-      "features": [
-        "restore_scissor_on_fbo_change"
-      ]
-    },
-    {
       "id": 7,
       "cr_bugs": [89557],
       "description": "Work around a bug in offscreen buffers on NVIDIA GPUs on Macs",
@@ -211,22 +195,6 @@
       ]
     },
     {
-      "id": 35,
-      "cr_bugs": [163464],
-      "description": "Share-group related crashes on older NVIDIA drivers",
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "4.3"
-        }
-      },
-      "gl_vendor": "NVIDIA.*",
-      "features": [
-        "use_virtualized_gl_contexts"
-      ]
-    },
-    {
       "id": 37,
       "cr_bugs": [286468],
       "description": "Program link fails in NVIDIA Linux if gl_Position is not set",
@@ -264,22 +232,6 @@
       },
       "features": [
         "validate_multisample_buffer_allocation"
-      ]
-    },
-    {
-      "id": 40,
-      "cr_bugs": [290876],
-      "description": "Framebuffer discarding causes flickering on old ARM drivers",
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "4.4"
-        }
-      },
-      "gl_vendor": "ARM.*",
-      "features": [
-        "disable_discard_framebuffer"
       ]
     },
     {
@@ -499,109 +451,6 @@
       ]
     },
     {
-      "id": 74,
-      "cr_bugs": [278606, 382686],
-      "description": "Testing EGL sync fences was broken on most Qualcomm drivers",
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<=",
-          "value": "4.4.4"
-        }
-      },
-      "gl_vendor": "Qualcomm.*",
-      "disabled_extensions": [
-        "EGL_KHR_fence_sync"
-      ]
-    },
-    {
-      "id": 75,
-      "description": "Mali-4xx support of EXT_multisampled_render_to_texture is buggy on Android < 4.3",
-      "cr_bugs": [362435],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "4.3"
-        }
-      },
-      "gl_vendor": "ARM.*",
-      "gl_renderer": ".*Mali-4.*",
-      "disabled_extensions": [
-        "GL_EXT_multisampled_render_to_texture"
-      ]
-    },
-    {
-      "id": 76,
-      "cr_bugs": [371530],
-      "description": "Testing EGL sync fences was broken on IMG",
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<=",
-          "value": "4.4.4"
-        }
-      },
-      "gl_vendor": "Imagination Technologies.*",
-      "disabled_extensions": [
-        "EGL_KHR_fence_sync"
-      ]
-    },
-    {
-      "id": 77,
-      "cr_bugs": [378691, 373360, 371530, 398964],
-      "description": "Testing fences was broken on Mali ES2 drivers",
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<=",
-          "value": "4.4.4"
-        }
-      },
-      "gl_vendor": "ARM.*",
-      "gl_renderer": "Mali.*",
-      "gl_type": "gles",
-      "gl_version": {
-        "op": "<",
-        "value": "3.0"
-      },
-      "disabled_extensions": [
-        "EGL_KHR_fence_sync"
-      ]
-    },
-    {
-      "id": 78,
-      "cr_bugs": [378691, 373360, 371530],
-      "description": "Testing fences was broken on Broadcom drivers",
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<=",
-          "value": "4.4.4"
-        }
-      },
-      "gl_vendor": "Broadcom.*",
-      "disabled_extensions": [
-        "EGL_KHR_fence_sync"
-      ]
-    },
-    {
-      "id": 82,
-      "description": "PBO mappings segfault on certain older Qualcomm drivers",
-      "cr_bugs": [394510],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "4.3"
-        }
-      },
-      "gl_vendor": "Qualcomm.*",
-      "features": [
-        "disable_async_readpixels"
-      ]
-    },
-    {
       "id": 86,
       "description": "Disable use of Direct3D 11 on Matrox video cards",
       "cr_bugs": [395861],
@@ -772,22 +621,6 @@
       ]
     },
     {
-      "id": 99,
-      "description": "Qualcomm driver before Lollipop deletes egl sync objects after context destruction",
-      "cr_bugs": [453857],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "5.0.0"
-        }
-      },
-      "gl_vendor": "Qualcomm.*",
-      "features": [
-        "ignore_egl_sync_failures"
-      ]
-    },
-    {
       "id": 100,
       "description": "Disable Direct3D11 on systems with AMD switchable graphics",
       "cr_bugs": [451420, 721121, 755722],
@@ -833,22 +666,6 @@
       "gl_renderer": "Adreno \\(TM\\) 4.*",
       "features": [
         "disable_discard_framebuffer"
-      ]
-    },
-    {
-      "id": 104,
-      "description": "EXT_occlusion_query_boolean hangs on MediaTek MT8135 pre-Lollipop",
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "5.0.0"
-        }
-      },
-      "gl_vendor": "Imagination.*",
-      "gl_renderer": "PowerVR Rogue Han",
-      "disabled_extensions": [
-        "GL_EXT_occlusion_query_boolean"
       ]
     },
     {
@@ -962,11 +779,7 @@
       "cr_bugs": [477514],
       "description": "EXT_disjoint_timer_query fails after 2 queries on adreno 3xx in lollypop",
       "os": {
-        "type": "android",
-        "version": {
-          "op": ">=",
-          "value": "5.0.0"
-        }
+        "type": "android"
       },
       "gl_vendor": "Qualcomm.*",
       "gl_renderer": "Adreno \\(TM\\) 3.*",
@@ -1069,23 +882,6 @@
       "gl_renderer": ".*Mali-4.*",
       "features": [
         "exit_on_context_lost"
-      ]
-    },
-    {
-      "id": 120,
-      "description": "CHROMIUM_copy_texture is slow on Mali pre-Lollipop",
-      "cr_bugs": [498443],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "5.0.0"
-        }
-      },
-      "gl_vendor": "ARM.*",
-      "gl_renderer": "Mali.*",
-      "features": [
-        "max_copy_texture_chromium_size_262144"
       ]
     },
     {
@@ -1213,20 +1009,6 @@
       "features": [
         "max_copy_texture_chromium_size_1048576"
       ]
-    },
-    {
-      "id": 134,
-      "description": "glReadPixels fails on FBOs with SRGB_ALPHA textures",
-      "cr_bugs": [550292],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "5.0"
-        }
-      },
-      "gl_vendor": "Qualcomm.*",
-      "disabled_extensions": ["GL_EXT_sRGB"]
     },
     {
       "id": 135,
@@ -1657,23 +1439,6 @@
       ]
     },
     {
-      "id": 178,
-      "description": "GL_KHR_blend_equation_advanced is incorrectly implemented on Intel BayTrail on KitKat",
-      "cr_bugs": [639470],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "5.0"
-        }
-      },
-      "gl_vendor": "Intel.*",
-      "gl_renderer": "Intel(R) HD Graphics for BayTrail",
-      "features": [
-        "disable_blend_equation_advanced"
-      ]
-    },
-    {
       "id": 179,
       "description": "glResumeTransformFeedback works incorrectly on Intel GPUs",
       "cr_bugs": [638514],
@@ -1961,21 +1726,6 @@
       "vendor_id": "0x1002",
       "features": [
         "adjust_src_dst_region_for_blitframebuffer"
-      ]
-    },
-    {
-      "id": 200,
-      "description": "ES3 support is unreliable on some older drivers",
-      "cr_bugs": [657925],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "4.4"
-        }
-      },
-      "features": [
-        "disable_es3_gl_context"
       ]
     },
     {

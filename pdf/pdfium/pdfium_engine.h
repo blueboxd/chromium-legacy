@@ -43,6 +43,7 @@
 
 namespace chrome_pdf {
 
+class KeyboardInputEvent;
 class PDFiumDocument;
 class PDFiumPermissions;
 
@@ -383,9 +384,9 @@ class PDFiumEngine : public PDFEngine,
   bool OnMouseUp(const pp::MouseInputEvent& event);
   bool OnMouseMove(const pp::MouseInputEvent& event);
   void OnMouseEnter(const pp::MouseInputEvent& event);
-  bool OnKeyDown(const pp::KeyboardInputEvent& event);
-  bool OnKeyUp(const pp::KeyboardInputEvent& event);
-  bool OnChar(const pp::KeyboardInputEvent& event);
+  bool OnKeyDown(const KeyboardInputEvent& event);
+  bool OnKeyUp(const KeyboardInputEvent& event);
+  bool OnChar(const KeyboardInputEvent& event);
 
   // Decide what cursor should be displayed.
   PP_CursorType_Dev DetermineCursorType(PDFiumPage::Area area,

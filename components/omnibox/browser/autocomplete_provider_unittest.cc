@@ -254,7 +254,7 @@ class AutocompleteProviderTest : public testing::Test {
   struct AssistedQueryStatsTestData {
     const AutocompleteMatch::Type match_type;
     const std::string expected_aqs;
-    int subtype_identifier = 0;
+    base::flat_set<int> subtypes;
   };
 
   // Registers a test TemplateURL under the given keyword.
@@ -565,7 +565,7 @@ void AutocompleteProviderTest::RunAssistedQueryStatsTest(
     match.keyword = base::ASCIIToUTF16(kTestTemplateURLKeyword);
     match.search_terms_args.reset(
         new TemplateURLRef::SearchTermsArgs(base::string16()));
-    match.subtype_identifier = aqs_test_data[i].subtype_identifier;
+    match.subtypes = aqs_test_data[i].subtypes;
     matches.push_back(match);
   }
   result_.Reset();
@@ -868,8 +868,40 @@ TEST_F(AutocompleteProviderTest, UpdateAssistedQueryStats) {
 
   {
     AssistedQueryStatsTestData test_data[] = {
-        {AutocompleteMatchType::SEARCH_SUGGEST_ENTITY, "chrome.0.46i131", 131}};
-    SCOPED_TRACE("One match with provider populated subtype_identifier");
+        {AutocompleteMatchType::SEARCH_SUGGEST_ENTITY,
+         "chrome.0.46i131",
+         {131}}};
+    SCOPED_TRACE("One match with provider populated subtypes");
+    RunAssistedQueryStatsTest(test_data, base::size(test_data));
+  }
+
+  {
+    // This test confirms that repetitive subtype information is being
+    // properly handled and reported as the same suggestion type.
+    AssistedQueryStatsTestData test_data[] = {
+        {AutocompleteMatchType::SEARCH_SUGGEST,
+         "chrome.0.0i13.22.99j46i27.31l2j46i27.31.42j46i27.31",
+         {22, 99, 13, 99}},
+        // The next two matches should be detected as the same type, despite
+        // repeated subtype match.
+        {AutocompleteMatchType::SEARCH_SUGGEST_ENTITY,
+         "chrome.1.0i13.22.99j46i27.31l2j46i27.31.42j46i27.31",
+         {27, 31}},
+        {AutocompleteMatchType::SEARCH_SUGGEST_ENTITY,
+         "chrome.2.0i13.22.99j46i27.31l2j46i27.31.42j46i27.31",
+         {27, 31, 27}},
+        // This match should not be bundled together with previous two, because
+        // it comes with additional subtype information (42).
+        {AutocompleteMatchType::SEARCH_SUGGEST_ENTITY,
+         "chrome.3.0i13.22.99j46i27.31l2j46i27.31.42j46i27.31",
+         {27, 31, 42}},
+        // This match should not be bundled together with the group before,
+        // because these items are not adjacent.
+        {AutocompleteMatchType::SEARCH_SUGGEST_ENTITY,
+         "chrome.4.0i13.22.99j46i27.31l2j46i27.31.42j46i27.31",
+         {27, 31}},
+    };
+    SCOPED_TRACE("Complex set of matches with repetitive subtypes");
     RunAssistedQueryStatsTest(test_data, base::size(test_data));
   }
 

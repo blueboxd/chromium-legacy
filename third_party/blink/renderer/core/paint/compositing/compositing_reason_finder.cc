@@ -164,7 +164,7 @@ CompositingReasons CompositingReasonFinder::DirectReasonsForPaintProperties(
               force_prefer_compositing_to_lcd_text)) {
         reasons |= CompositingReason::kOverflowScrolling;
       }
-    } else if (scrollable_area->UsesCompositedScrolling()) {
+    } else if (scrollable_area->NeedsCompositedScrolling()) {
       // For pre-CompositeAfterPaint, just let |reasons| reflect the current
       // composited scrolling status.
       reasons |= CompositingReason::kOverflowScrolling;

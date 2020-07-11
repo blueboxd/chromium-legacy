@@ -78,6 +78,8 @@ class AuthenticatorRequestDialogModel {
 
     // Phone as a security key.
     kCableActivate,
+    kCableV2Activate,
+    kCableV2QRCode,
 
     // Authenticator Client PIN.
     kClientPinEntry,
@@ -101,9 +103,6 @@ class AuthenticatorRequestDialogModel {
 
     // Attestation permission request.
     kAttestationPermissionRequest,
-
-    // Display QR code for phone pairing.
-    kQRCode,
   };
 
   // Implemented by the dialog to observe this model and show the UI panels
@@ -219,7 +218,7 @@ class AuthenticatorRequestDialogModel {
   // Valid action when at step: kNotStarted, kTransportSelection, and steps
   // where the other transports menu is shown, namely, kUsbInsertAndActivate,
   // kCableActivate.
-  void EnsureBleAdapterIsPoweredBeforeContinuingWithStep(Step step);
+  void EnsureBleAdapterIsPoweredAndContinueWithCable();
 
   // Continues with the BLE/caBLE flow now that the Bluetooth adapter is
   // powered.
@@ -358,8 +357,8 @@ class AuthenticatorRequestDialogModel {
     return ephemeral_state_.saved_authenticators_;
   }
 
-  const std::vector<AuthenticatorTransport>& available_transports() {
-    return available_transports_;
+  const base::flat_set<AuthenticatorTransport>& available_transports() {
+    return transport_availability_.available_transports;
   }
 
   base::span<const uint8_t, 32> qr_generator_key() const {
@@ -466,7 +465,6 @@ class AuthenticatorRequestDialogModel {
 
   // These fields are only filled out when the UX flow is started.
   TransportAvailabilityInfo transport_availability_;
-  std::vector<AuthenticatorTransport> available_transports_;
   base::Optional<device::FidoTransportProtocol> last_used_transport_;
 
   RequestCallback request_callback_;

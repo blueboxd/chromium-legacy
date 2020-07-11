@@ -18,6 +18,7 @@
 #include "base/strings/string16.h"
 #include "content/public/common/page_state.h"
 #include "content/shell/common/web_test/web_test.mojom.h"
+#include "content/shell/renderer/web_test/layout_dump.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -82,7 +83,7 @@ class BlinkTestRunner {
   std::vector<uint8_t> CaptureLocalAudioDump();
   // Returns a string if able to capture the dump locally. If not, then the
   // browser must do the capture.
-  base::Optional<std::string> CaptureLocalLayoutDump();
+  base::Optional<std::string> CaptureLocalLayoutDump(TextResultType type);
   // Grabs the pixel results. This is only called when pixel results are being
   // captured in the renderer (aka CanDumpPixelsFromRenderer() is true), such as
   // to grab the current image being dragged by the mouse.

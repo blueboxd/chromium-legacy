@@ -36,6 +36,8 @@ Polymer({
     disabled: {
       type: Boolean,
       value: false,
+      observer: 'updateTabIndex_',
+      reflectToAttribute: true,
     },
 
     driveDestinationKey: String,
@@ -59,6 +61,7 @@ Polymer({
   attached() {
     this.pointerDownListener_ = event => this.onPointerDown_(event);
     document.addEventListener('pointerdown', this.pointerDownListener_);
+    this.updateTabIndex_();
   },
 
   /** @override */
@@ -224,6 +227,7 @@ Polymer({
       }
       items[currentIndex].toggleAttribute('highlighted_', false);
       items[nextIndex].toggleAttribute('highlighted_', true);
+      items[nextIndex].focus();
     } else {
       const currentIndex =
           items.findIndex(item => item.value === this.value.key);
@@ -258,6 +262,7 @@ Polymer({
     if (dropdownItem) {
       this.fire('dropdown-value-selected', dropdownItem);
     }
+    this.$$('#destination-dropdown').focus();
   },
 
   /**
@@ -296,5 +301,15 @@ Polymer({
       return PrinterState.GOOD;
     }
     return PrinterState.ERROR;
+  },
+
+  /**
+   * Sets tabindex to -1 when dropdown is disabled to prevent the dropdown from
+   * being focusable.
+   * @private
+   */
+  updateTabIndex_() {
+    this.$$('#destination-dropdown')
+        .setAttribute('tabindex', this.disabled ? '-1' : '0');
   },
 });

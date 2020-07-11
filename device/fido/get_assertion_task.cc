@@ -4,6 +4,7 @@
 
 #include "device/fido/get_assertion_task.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -25,6 +26,35 @@ bool MayFallbackToU2fWithAppIdExtension(
       base::Contains(device.device_info()->versions, ProtocolVersion::kU2f);
   return request.alternative_application_parameter &&
          ctap2_device_supports_u2f && !request.allow_list.empty();
+}
+
+// SetResponseCredential sets the credential information in |response|. If the
+// allow list sent to the authenticator contained only a single entry then the
+// authenticator may omit the chosen credential in the response and this
+// function will fill it in. Otherwise, the credential chosen by the
+// authenticator must be one of the ones requested in the allow list, unless the
+// allow list was empty.
+bool SetResponseCredential(
+    AuthenticatorGetAssertionResponse* response,
+    const std::vector<PublicKeyCredentialDescriptor>& allow_list) {
+  if (response->credential()) {
+    if (!allow_list.empty() &&
+        std::none_of(allow_list.cbegin(), allow_list.cend(),
+                     [&response](const auto& credential) {
+                       return credential.id() == response->raw_credential_id();
+                     })) {
+      return false;
+    }
+
+    return true;
+  }
+
+  if (allow_list.size() != 1) {
+    return false;
+  }
+
+  response->SetCredential(allow_list[0]);
+  return true;
 }
 
 }  // namespace
@@ -97,7 +127,7 @@ void GetAssertionTask::GetAssertion() {
         CtapGetAssertionRequest, AuthenticatorGetAssertionResponse>>(
         device(), request_,
         base::BindOnce(&GetAssertionTask::HandleResponse,
-                       weak_factory_.GetWeakPtr()),
+                       weak_factory_.GetWeakPtr(), request_.allow_list),
         base::BindOnce(&ReadCTAPGetAssertionResponse), StringFixupPredicate);
     sign_operation_->Start();
     return;
@@ -108,10 +138,11 @@ void GetAssertionTask::GetAssertion() {
   // and filter out IDs that are too large to originate from this device.
   allow_list_batches_ =
       FilterAndBatchCredentialDescriptors(request_.allow_list, *device());
+  DCHECK(!allow_list_batches_.empty());
 
   // If filtering eliminated all entries from the allowList, just collect a
   // dummy touch, then fail the request.
-  if (allow_list_batches_.empty()) {
+  if (allow_list_batches_.size() == 1 && allow_list_batches_[0].empty()) {
     dummy_register_operation_ = std::make_unique<Ctap2DeviceOperation<
         CtapMakeCredentialRequest, AuthenticatorMakeCredentialResponse>>(
         device(), MakeCredentialTask::GetTouchRequest(device()),
@@ -134,7 +165,7 @@ void GetAssertionTask::GetAssertion() {
         CtapGetAssertionRequest, AuthenticatorGetAssertionResponse>>(
         device(), std::move(request),
         base::BindOnce(&GetAssertionTask::HandleResponse,
-                       weak_factory_.GetWeakPtr()),
+                       weak_factory_.GetWeakPtr(), request.allow_list),
         base::BindOnce(&ReadCTAPGetAssertionResponse), StringFixupPredicate);
     sign_operation_->Start();
     return;
@@ -163,30 +194,38 @@ void GetAssertionTask::U2fSign() {
 }
 
 void GetAssertionTask::HandleResponse(
+    std::vector<PublicKeyCredentialDescriptor> allow_list,
     CtapDeviceResponseCode response_code,
     base::Optional<AuthenticatorGetAssertionResponse> response_data) {
   if (canceled_) {
     return;
   }
 
-  // Some authenticators will return this error before waiting for a touch if
-  // they don't recognise a credential. In other cases the result can be
-  // returned immediately.
-  if (response_code != CtapDeviceResponseCode::kCtap2ErrInvalidCredential) {
-    std::move(callback_).Run(response_code, std::move(response_data));
+  if (response_code == CtapDeviceResponseCode::kCtap2ErrInvalidCredential) {
+    // Some authenticators will return this error before waiting for a touch if
+    // they don't recognise a credential. In other cases the result can be
+    // returned immediately.
+    // The request failed in a way that didn't request a touch. Simulate it.
+    dummy_register_operation_ = std::make_unique<Ctap2DeviceOperation<
+        CtapMakeCredentialRequest, AuthenticatorMakeCredentialResponse>>(
+        device(), MakeCredentialTask::GetTouchRequest(device()),
+        base::BindOnce(&GetAssertionTask::HandleDummyMakeCredentialComplete,
+                       weak_factory_.GetWeakPtr()),
+        base::BindOnce(&ReadCTAPMakeCredentialResponse,
+                       device()->DeviceTransport()),
+        /*string_fixup_predicate=*/nullptr);
+    dummy_register_operation_->Start();
     return;
   }
 
-  // The request failed in a way that didn't request a touch. Simulate it.
-  dummy_register_operation_ = std::make_unique<Ctap2DeviceOperation<
-      CtapMakeCredentialRequest, AuthenticatorMakeCredentialResponse>>(
-      device(), MakeCredentialTask::GetTouchRequest(device()),
-      base::BindOnce(&GetAssertionTask::HandleDummyMakeCredentialComplete,
-                     weak_factory_.GetWeakPtr()),
-      base::BindOnce(&ReadCTAPMakeCredentialResponse,
-                     device()->DeviceTransport()),
-      /*string_fixup_predicate=*/nullptr);
-  dummy_register_operation_->Start();
+  if (response_code == CtapDeviceResponseCode::kSuccess &&
+      !SetResponseCredential(&response_data.value(), allow_list)) {
+    FIDO_LOG(DEBUG) << "Assertion response has invalid credential information";
+    response_code = CtapDeviceResponseCode::kCtap2ErrOther;
+    response_data.reset();
+  }
+
+  std::move(callback_).Run(response_code, std::move(response_data));
 }
 
 void GetAssertionTask::HandleResponseToSilentRequest(
@@ -203,18 +242,19 @@ void GetAssertionTask::HandleResponseToSilentRequest(
 
   // One credential from the previous batch was recognized by the device. As
   // this authentication was a silent authentication (i.e. user touch was not
-  // provided), try again with only that batch, user presence enforced and with
-  // the original user verification configuration.
-  // TODO(martinkr): We could get the exact credential ID that was recognized
-  // from |response_data| and send only that.
-  if (response_code == CtapDeviceResponseCode::kSuccess) {
+  // provided), try again with only that credential, user presence enforced and
+  // with the original user verification configuration.
+  if (response_code == CtapDeviceResponseCode::kSuccess &&
+      SetResponseCredential(
+          &response_data.value(),
+          allow_list_batches_.at(current_allow_list_batch_ - 1))) {
     CtapGetAssertionRequest request = request_;
-    request.allow_list = allow_list_batches_.at(current_allow_list_batch_ - 1);
+    request.allow_list = {*response_data->credential()};
     sign_operation_ = std::make_unique<Ctap2DeviceOperation<
         CtapGetAssertionRequest, AuthenticatorGetAssertionResponse>>(
         device(), std::move(request),
         base::BindOnce(&GetAssertionTask::HandleResponse,
-                       weak_factory_.GetWeakPtr()),
+                       weak_factory_.GetWeakPtr(), request.allow_list),
         base::BindOnce(&ReadCTAPGetAssertionResponse),
         /*string_fixup_predicate=*/nullptr);
     sign_operation_->Start();

@@ -71,8 +71,8 @@ void PaymentRequestRowView::SetIsHighlighted(bool highlighted) {
   }
 }
 
-// views::Button:
 void PaymentRequestRowView::StateChanged(ButtonState old_state) {
+  Button::StateChanged(old_state);
   if (!clickable())
     return;
 

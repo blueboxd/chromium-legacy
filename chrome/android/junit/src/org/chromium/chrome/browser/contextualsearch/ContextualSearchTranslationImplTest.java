@@ -111,7 +111,7 @@ public class ContextualSearchTranslationImplTest {
         doNothing().when(mRequest).forceTranslation(any(), any());
         when(mRequest.isTranslationForced()).thenReturn(true);
 
-        mImpl.forceTranslateIfNeeded(mRequest, GERMAN);
+        mImpl.forceTranslateIfNeeded(mRequest, GERMAN, true);
 
         assertThat(mRequest.isTranslationForced(), is(true));
         verify(mTranslateBridgeWrapperMock).getModelLanguages();
@@ -123,7 +123,7 @@ public class ContextualSearchTranslationImplTest {
     public void testForceTranslateIfNeededWhenNotNeeded() {
         doReturn(ENGLISH_AND_SPANISH).when(mTranslateBridgeWrapperMock).getModelLanguages();
 
-        mImpl.forceTranslateIfNeeded(mRequest, ENGLISH);
+        mImpl.forceTranslateIfNeeded(mRequest, ENGLISH, true);
 
         assertThat(mRequest.isTranslationForced(), is(false));
         verify(mTranslateBridgeWrapperMock).getModelLanguages();

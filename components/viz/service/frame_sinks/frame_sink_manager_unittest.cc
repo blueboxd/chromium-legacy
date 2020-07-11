@@ -98,6 +98,7 @@ class FrameSinkManagerTest : public testing::Test {
   }
 
  protected:
+  DebugRendererSettings debug_settings_;
   ServerSharedBitmapManager shared_bitmap_manager_;
   TestOutputSurfaceProvider output_surface_provider_;
   FrameSinkManagerImpl manager_;

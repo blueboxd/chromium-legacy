@@ -32,8 +32,9 @@ public class ContextualSearchTranslationImpl implements ContextualSearchTranslat
 
     @Override
     public void forceTranslateIfNeeded(
-            ContextualSearchRequest searchRequest, String sourceLanguage) {
+            ContextualSearchRequest searchRequest, String sourceLanguage, boolean isTapSelection) {
         if (needsTranslation(sourceLanguage)) {
+            ContextualSearchUma.logTranslationNeeded(isTapSelection);
             searchRequest.forceTranslation(sourceLanguage, getTranslateServiceTargetLanguage());
         }
     }

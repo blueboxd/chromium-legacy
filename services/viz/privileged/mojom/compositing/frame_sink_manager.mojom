@@ -141,6 +141,10 @@ interface FrameSinkManager {
 
   [Sync]
   EvictBackBuffer(uint32 cache_id) => ();
+
+  // This allows dynamic manipulation of the viz debug options stored in
+  // |debug_settings| (show_overdraw_feedback, etc.).
+  UpdateDebugRendererSettings(DebugRendererSettings debug_settings);
 };
 
 // The FrameSinkManagerClient interface is implemented by the Display

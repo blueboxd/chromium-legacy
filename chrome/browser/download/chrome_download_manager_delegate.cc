@@ -79,7 +79,9 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
+#include "net/base/network_change_notifier.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_ANDROID)
@@ -371,10 +373,12 @@ void ChromeDownloadManagerDelegate::ShowDownloadDialog(
     int64_t total_bytes,
     DownloadLocationDialogType dialog_type,
     const base::FilePath& suggested_path,
+    bool supports_later_dialog,
     DownloadDialogBridge::DialogCallback callback) {
   DCHECK(download_dialog_bridge_);
   download_dialog_bridge_->ShowDialog(native_window, total_bytes, dialog_type,
-                                      suggested_path, std::move(callback));
+                                      suggested_path, supports_later_dialog,
+                                      std::move(callback));
 }
 
 void ChromeDownloadManagerDelegate::SetDownloadDialogBridgeForTesting(
@@ -929,7 +933,8 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
         return;
       }
 
-      if (!download_prefs_->PromptForDownload() && web_contents) {
+      if (!ShouldShowDownloadLaterDialog() &&
+          !download_prefs_->PromptForDownload() && web_contents) {
         android::ChromeDuplicateDownloadInfoBarDelegate::Create(
             InfoBarService::FromWebContents(web_contents), download,
             suggested_path, callback);
@@ -969,7 +974,7 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
 
       gfx::NativeWindow native_window = web_contents->GetTopLevelNativeWindow();
       ShowDownloadDialog(native_window, download->GetTotalBytes(), dialog_type,
-                         suggested_path,
+                         suggested_path, ShouldShowDownloadLaterDialog(),
                          base::BindOnce(&OnDownloadDialogClosed, callback));
     }
   } else {
@@ -1086,9 +1091,11 @@ void ChromeDownloadManagerDelegate::GenerateUniqueFileNameDone(
   // with the filename automatically set to be the unique filename.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (result == PathValidationResult::SUCCESS) {
-    if (download_prefs_->PromptForDownload()) {
+    bool show_download_later = ShouldShowDownloadLaterDialog();
+    if (download_prefs_->PromptForDownload() || show_download_later) {
       ShowDownloadDialog(native_window, 0 /* total_bytes */,
                          DownloadLocationDialogType::NAME_CONFLICT, target_path,
+                         show_download_later,
                          base::BindOnce(&OnDownloadDialogClosed, callback));
       return;
     }
@@ -1110,6 +1117,23 @@ void ChromeDownloadManagerDelegate::OnDownloadCanceled(
   DownloadManagerService::OnDownloadCanceled(download, has_no_external_storage);
 }
 #endif  // defined(OS_ANDROID)
+
+bool ChromeDownloadManagerDelegate::ShouldShowDownloadLaterDialog() const {
+  if (!base::FeatureList::IsEnabled(download::features::kDownloadLater))
+    return false;
+  bool require_cellular = base::GetFieldTrialParamByFeatureAsBool(
+      download::features::kDownloadLater,
+      download::features::kDownloadLaterRequireCellular, true);
+  bool on_cellular = network::NetworkConnectionTracker::IsConnectionCellular(
+      network::mojom::ConnectionType(
+          net::NetworkChangeNotifier::GetConnectionType()));
+
+  // Show download later dialog when network condition is met.
+  if (require_cellular && !on_cellular)
+    return false;
+
+  return download_prefs_->PromptDownloadLater() && !profile_->IsOffTheRecord();
+}
 
 void ChromeDownloadManagerDelegate::DetermineLocalPath(
     DownloadItem* download,

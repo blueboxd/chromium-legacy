@@ -2922,7 +2922,8 @@ void RenderFrameHostImpl::ProcessBeforeUnloadCompletedFromFrame(
                         on_before_unload_overhead_time);
 
     frame_tree_node_->navigator().LogBeforeUnloadTime(
-        renderer_before_unload_start_time, renderer_before_unload_end_time);
+        renderer_before_unload_start_time, renderer_before_unload_end_time,
+        send_before_unload_start_time_);
   }
 
   // Resets beforeunload waiting state.

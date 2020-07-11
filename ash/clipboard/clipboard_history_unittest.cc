@@ -4,7 +4,7 @@
 
 #include "ash/clipboard/clipboard_history.h"
 
-#include "ash/clipboard/multipaste_controller.h"
+#include "ash/clipboard/clipboard_history_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/utf_string_conversions.h"
@@ -25,11 +25,11 @@ class ClipboardHistoryTest : public AshTestBase {
 
   // AshTestBase:
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures({chromeos::features::kMultipaste},
-                                          {});
+    scoped_feature_list_.InitWithFeatures(
+        {chromeos::features::kClipboardHistory}, {});
     AshTestBase::SetUp();
     clipboard_history_ =
-        Shell::Get()->multipaste_controller()->clipboard_history();
+        Shell::Get()->clipboard_history_controller()->clipboard_history();
   }
 
   std::vector<ui::ClipboardData> GetClipboardHistoryData() {
@@ -61,7 +61,7 @@ class ClipboardHistoryTest : public AshTestBase {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  // Owned by MultipasteController.
+  // Owned by ClipboardHistoryController.
   ClipboardHistory* clipboard_history_ = nullptr;
 };
 

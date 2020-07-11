@@ -102,6 +102,35 @@ ScriptPromise NativeIOFile::close(ScriptState* script_state) {
   return resolver->Promise();
 }
 
+ScriptPromise NativeIOFile::getLength(ScriptState* script_state,
+                                      ExceptionState& exception_state) {
+  if (io_pending_) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Another I/O operation is in progress on the same file");
+    return ScriptPromise();
+  }
+  if (closed_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The file was already closed");
+    return ScriptPromise();
+  }
+  io_pending_ = true;
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  // CrossThreadUnretained() is safe here because the NativeIOFile::FileState
+  // instance is owned by this NativeIOFile, which is also passed to the task
+  // via WrapCrossThreadPersistent. Therefore, the FileState instance is
+  // guaranteed to remain alive during the task's execution.
+  worker_pool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::ThreadPool()},
+      CrossThreadBindOnce(&DoGetLength, WrapCrossThreadPersistent(this),
+                          WrapCrossThreadPersistent(resolver),
+                          CrossThreadUnretained(file_state_.get()),
+                          resolver_task_runner_));
+  return resolver->Promise();
+}
+
 ScriptPromise NativeIOFile::read(ScriptState* script_state,
                                  MaybeShared<DOMArrayBufferView> buffer,
                                  uint64_t file_offset,
@@ -267,10 +296,66 @@ void NativeIOFile::DidClose(
     resolver->Resolve();
     return;
   }
-
   backend_file_->Close(
       WTF::Bind([](ScriptPromiseResolver* resolver) { resolver->Resolve(); },
                 WrapPersistent(resolver.Get())));
+}
+
+// static
+void NativeIOFile::DoGetLength(
+    CrossThreadPersistent<NativeIOFile> native_io_file,
+    CrossThreadPersistent<ScriptPromiseResolver> resolver,
+    NativeIOFile::FileState* file_state,
+    scoped_refptr<base::SequencedTaskRunner> resolver_task_runner) {
+  DCHECK(!IsMainThread()) << "File I/O should not happen on the main thread";
+  base::File::Error get_length_error = base::File::FILE_OK;
+  int64_t length = -1;
+  {
+    WTF::MutexLocker mutex_locker(file_state->mutex);
+    DCHECK(file_state->file.IsValid())
+        << "file I/O operation queued after file closed";
+    length = file_state->file.GetLength();
+    if (length < 0) {
+      get_length_error = file_state->file.GetLastFileError();
+    }
+  }
+
+  PostCrossThreadTask(
+      *resolver_task_runner, FROM_HERE,
+      CrossThreadBindOnce(&NativeIOFile::DidGetLength,
+                          std::move(native_io_file), std::move(resolver),
+                          length, get_length_error));
+}
+
+void NativeIOFile::DidGetLength(
+    CrossThreadPersistent<ScriptPromiseResolver> resolver,
+    int64_t length,
+    base::File::Error get_length_error) {
+  ScriptState* script_state = resolver->GetScriptState();
+  if (!script_state->ContextIsValid())
+    return;
+  ScriptState::Scope scope(script_state);
+
+  DCHECK(io_pending_) << "I/O operation performed without io_pending_ set";
+  io_pending_ = false;
+
+  DispatchQueuedClose();
+
+  if (length < 0) {
+    DCHECK(get_length_error != base::File::FILE_OK)
+        << "Negative length reported with no error set";
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kOperationError,
+        "getLength() failed"));
+    return;
+  }
+  DCHECK(get_length_error == base::File::FILE_OK)
+      << "File error reported when length is nonnegative";
+  // getLength returns an unsigned integer, which is different from e.g.,
+  // base::File and POSIX. The uses for negative integers are error handling,
+  // which is done through exceptions, and seeking from an offset without type
+  // conversions, which is not supported by NativeIO.
+  resolver->Resolve(length);
 }
 
 // static

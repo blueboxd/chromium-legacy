@@ -883,12 +883,14 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     method close
 [Worker]     method constructor
+[Worker]     method getLength
 [Worker]     method read
 [Worker]     method write
 [Worker] interface NativeIOFileSync
 [Worker]     attribute @@toStringTag
 [Worker]     method close
 [Worker]     method constructor
+[Worker]     method getLength
 [Worker]     method read
 [Worker]     method write
 [Worker] interface NativeIOManager

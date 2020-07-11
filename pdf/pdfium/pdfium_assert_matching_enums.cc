@@ -5,6 +5,7 @@
 #include "build/build_config.h"
 #include "pdf/pdf.h"
 #include "pdf/pdf_engine.h"
+#include "pdf/ppapi_migration/input_event_conversions.h"
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppp_pdf.h"
@@ -19,18 +20,56 @@
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enums: " #a)
 
-STATIC_ASSERT_ENUM(PP_INPUTEVENT_MODIFIER_SHIFTKEY, FWL_EVENTFLAG_ShiftKey);
-STATIC_ASSERT_ENUM(PP_INPUTEVENT_MODIFIER_CONTROLKEY, FWL_EVENTFLAG_ControlKey);
-STATIC_ASSERT_ENUM(PP_INPUTEVENT_MODIFIER_ALTKEY, FWL_EVENTFLAG_AltKey);
-STATIC_ASSERT_ENUM(PP_INPUTEVENT_MODIFIER_METAKEY, FWL_EVENTFLAG_MetaKey);
-STATIC_ASSERT_ENUM(PP_INPUTEVENT_MODIFIER_ISKEYPAD, FWL_EVENTFLAG_KeyPad);
+// Enum asserts between PP_INPUTEVENT_MODIFIER* and InputEventModifier
+// modifiers.
+STATIC_ASSERT_ENUM(PP_INPUTEVENT_MODIFIER_SHIFTKEY,
+                   chrome_pdf::kInputEventModifierShiftKey);
+STATIC_ASSERT_ENUM(PP_INPUTEVENT_MODIFIER_CONTROLKEY,
+                   chrome_pdf::kInputEventModifierControlKey);
+STATIC_ASSERT_ENUM(PP_INPUTEVENT_MODIFIER_ALTKEY,
+                   chrome_pdf::kInputEventModifierAltKey);
+STATIC_ASSERT_ENUM(PP_INPUTEVENT_MODIFIER_METAKEY,
+                   chrome_pdf::kInputEventModifierMetaKey);
+STATIC_ASSERT_ENUM(PP_INPUTEVENT_MODIFIER_ISKEYPAD,
+                   chrome_pdf::kInputEventModifierIsKeyPad);
 STATIC_ASSERT_ENUM(PP_INPUTEVENT_MODIFIER_ISAUTOREPEAT,
-                   FWL_EVENTFLAG_AutoRepeat);
+                   chrome_pdf::kInputEventModifierIsAutoRepeat);
 STATIC_ASSERT_ENUM(PP_INPUTEVENT_MODIFIER_LEFTBUTTONDOWN,
-                   FWL_EVENTFLAG_LeftButtonDown);
+                   chrome_pdf::kInputEventModifierLeftButtonDown);
 STATIC_ASSERT_ENUM(PP_INPUTEVENT_MODIFIER_MIDDLEBUTTONDOWN,
-                   FWL_EVENTFLAG_MiddleButtonDown);
+                   chrome_pdf::kInputEventModifierMiddleButtonDown);
 STATIC_ASSERT_ENUM(PP_INPUTEVENT_MODIFIER_RIGHTBUTTONDOWN,
+                   chrome_pdf::kInputEventModifierRightButtonDown);
+STATIC_ASSERT_ENUM(PP_INPUTEVENT_MODIFIER_CAPSLOCKKEY,
+                   chrome_pdf::kInputEventModifierCapsLockKey);
+STATIC_ASSERT_ENUM(PP_INPUTEVENT_MODIFIER_NUMLOCKKEY,
+                   chrome_pdf::kInputEventModifierNumLockKey);
+STATIC_ASSERT_ENUM(PP_INPUTEVENT_MODIFIER_ISLEFT,
+                   chrome_pdf::kInputEventModifierIsLeft);
+STATIC_ASSERT_ENUM(PP_INPUTEVENT_MODIFIER_ISRIGHT,
+                   chrome_pdf::kInputEventModifierIsRight);
+STATIC_ASSERT_ENUM(PP_INPUTEVENT_MODIFIER_ISPEN,
+                   chrome_pdf::kInputEventModifierIsPen);
+STATIC_ASSERT_ENUM(PP_INPUTEVENT_MODIFIER_ISERASER,
+                   chrome_pdf::kInputEventModifierIsEraser);
+
+// Enum asserts between InputEventModifier and FWL_* modifiers.
+STATIC_ASSERT_ENUM(chrome_pdf::kInputEventModifierShiftKey,
+                   FWL_EVENTFLAG_ShiftKey);
+STATIC_ASSERT_ENUM(chrome_pdf::kInputEventModifierControlKey,
+                   FWL_EVENTFLAG_ControlKey);
+STATIC_ASSERT_ENUM(chrome_pdf::kInputEventModifierAltKey, FWL_EVENTFLAG_AltKey);
+STATIC_ASSERT_ENUM(chrome_pdf::kInputEventModifierMetaKey,
+                   FWL_EVENTFLAG_MetaKey);
+STATIC_ASSERT_ENUM(chrome_pdf::kInputEventModifierIsKeyPad,
+                   FWL_EVENTFLAG_KeyPad);
+STATIC_ASSERT_ENUM(chrome_pdf::kInputEventModifierIsAutoRepeat,
+                   FWL_EVENTFLAG_AutoRepeat);
+STATIC_ASSERT_ENUM(chrome_pdf::kInputEventModifierLeftButtonDown,
+                   FWL_EVENTFLAG_LeftButtonDown);
+STATIC_ASSERT_ENUM(chrome_pdf::kInputEventModifierMiddleButtonDown,
+                   FWL_EVENTFLAG_MiddleButtonDown);
+STATIC_ASSERT_ENUM(chrome_pdf::kInputEventModifierRightButtonDown,
                    FWL_EVENTFLAG_RightButtonDown);
 
 STATIC_ASSERT_ENUM(ui::VKEY_BACK, FWL_VKEY_Back);

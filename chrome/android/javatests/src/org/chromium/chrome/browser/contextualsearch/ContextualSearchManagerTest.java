@@ -60,6 +60,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.UserActionTester;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity2;
@@ -118,6 +119,10 @@ import org.chromium.ui.touch_selection.SelectionEventType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
 // TODO(donnd): Create class with limited API to encapsulate the internals of simulations.
@@ -1296,6 +1301,42 @@ public class ContextualSearchManagerTest {
                 Assert.assertNotNull("Expected this outcome to be logged: " + feature,
                         getRankerLogger().getOutcomesLogged().get(feature));
             }
+        }
+    }
+
+    /**
+     * Monitor user action UMA recording operations.
+     */
+    private static class UserActionMonitor extends UserActionTester {
+        // TODO(donnd): merge into UserActionTester. See https://crbug.com/1103757.
+        private Set<String> mUserActionPrefixes;
+        private Map<String, Integer> mUserActionCounts;
+
+        /** @param userActionPrefixes A set of plain prefix strings for user actions to monitor. */
+        UserActionMonitor(Set<String> userActionPrefixes) {
+            mUserActionPrefixes = userActionPrefixes;
+            mUserActionCounts = new HashMap<String, Integer>();
+            for (String action : mUserActionPrefixes) {
+                mUserActionCounts.put(action, 0);
+            }
+        }
+
+        @Override
+        public void onActionRecorded(String action) {
+            for (String entry : mUserActionPrefixes) {
+                if (action.startsWith(entry)) {
+                    mUserActionCounts.put(entry, mUserActionCounts.get(entry) + 1);
+                }
+            }
+        }
+
+        /**
+         * Gets the count of user actions recorded for the given prefix.
+         * @param actionPrefix The plain string prefix to lookup (must match a constructed entry)
+         * @return The count of user actions recorded for that prefix.
+         */
+        int get(String actionPrefix) {
+            return mUserActionCounts.get(actionPrefix);
         }
     }
 
@@ -2920,7 +2961,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
-    public void testTapWithLanguage(@EnabledFeature int enabledFeature) throws Exception {
+    public void testTapWithLanguageDLD(@EnabledFeature int enabledFeature) throws Exception {
         // Resolving a German word should trigger translation.
         simulateResolveSearch("german");
 
@@ -2928,6 +2969,9 @@ public class ContextualSearchManagerTest {
         Assert.assertTrue("Translation was not forced with the current request URL: "
                         + mManager.getRequest().getSearchUrl(),
                 mManager.getRequest().isTranslationForced());
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        "Search.ContextualSearch.TranslationNeeded"));
     }
 
     /**
@@ -3604,8 +3648,14 @@ public class ContextualSearchManagerTest {
     @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.P,
             message = "Flaky < P, https://crbug.com/1048827")
     public void
-    testLongpressExtendingSelectionExactResolve() throws Exception {
+    testLongpressExtendingSelectionExactResolveDLD() throws Exception {
         FeatureList.setTestFeatures(ENABLE_LONGPRESS);
+
+        // Set up UserAction monitoring.
+        Set<String> userActions = new HashSet();
+        userActions.add("ContextualSearch.SelectionEstablished");
+        userActions.add("ContextualSearch.ManualRefine");
+        UserActionMonitor userActionMonitor = new UserActionMonitor(userActions);
 
         // First test regular long-press.  It should not require an exact resolve.
         longPressNode("search");
@@ -3622,6 +3672,10 @@ public class ContextualSearchManagerTest {
         fakeAResponse();
         assertSearchTermRequested();
         assertExactResolve(true);
+
+        // Check UMA metrics recorded.
+        Assert.assertEquals(2, userActionMonitor.get("ContextualSearch.ManualRefine"));
+        Assert.assertEquals(2, userActionMonitor.get("ContextualSearch.SelectionEstablished"));
     }
 
     @Test

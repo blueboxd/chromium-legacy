@@ -20,7 +20,7 @@ void ProcessPowerEventHelper(PowerMonitorSource::PowerEvent event) {
 
 namespace {
 
-const char16 kWindowClassName[] = STRING16_LITERAL("Base_PowerMessageWindow");
+constexpr wchar_t kWindowClassName[] = L"Base_PowerMessageWindow";
 
 void ProcessWmPowerBroadcastMessage(WPARAM event_id) {
   PowerMonitorSource::PowerEvent power_event;
@@ -87,14 +87,14 @@ PowerMonitorDeviceSource::PowerMessageWindow::PowerMessageWindow()
   DCHECK(clazz);
 
   message_hwnd_ =
-      CreateWindowEx(WS_EX_NOACTIVATE, as_wcstr(kWindowClassName), NULL,
-                     WS_POPUP, 0, 0, 0, 0, NULL, NULL, instance_, NULL);
+      CreateWindowEx(WS_EX_NOACTIVATE, kWindowClassName, NULL, WS_POPUP, 0, 0,
+                     0, 0, NULL, NULL, instance_, NULL);
 }
 
 PowerMonitorDeviceSource::PowerMessageWindow::~PowerMessageWindow() {
   if (message_hwnd_) {
     DestroyWindow(message_hwnd_);
-    UnregisterClass(as_wcstr(kWindowClassName), instance_);
+    UnregisterClass(kWindowClassName, instance_);
   }
 }
 

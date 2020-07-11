@@ -88,8 +88,8 @@ dbus::Bus* bluez::BluezDBusManager::GetSystemBus() {
 }
 
 void BluezDBusManager::CallWhenObjectManagerSupportIsKnown(
-    base::Closure callback) {
-  object_manager_support_known_callback_ = callback;
+    base::OnceClosure callback) {
+  object_manager_support_known_callback_ = std::move(callback);
 }
 
 BluetoothAdapterClient* bluez::BluezDBusManager::GetBluetoothAdapterClient() {
@@ -173,10 +173,8 @@ void BluezDBusManager::OnObjectManagerSupported(dbus::Response* response) {
   InitializeClients();
 
   object_manager_support_known_ = true;
-  if (!object_manager_support_known_callback_.is_null()) {
-    object_manager_support_known_callback_.Run();
-    object_manager_support_known_callback_.Reset();
-  }
+  if (object_manager_support_known_callback_)
+    std::move(object_manager_support_known_callback_).Run();
 }
 
 void BluezDBusManager::OnObjectManagerNotSupported(
@@ -187,10 +185,8 @@ void BluezDBusManager::OnObjectManagerNotSupported(
   // We don't initialize clients since the clients need ObjectManager.
 
   object_manager_support_known_ = true;
-  if (!object_manager_support_known_callback_.is_null()) {
-    object_manager_support_known_callback_.Run();
-    object_manager_support_known_callback_.Reset();
-  }
+  if (object_manager_support_known_callback_)
+    std::move(object_manager_support_known_callback_).Run();
 }
 
 void BluezDBusManager::InitializeClients() {

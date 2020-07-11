@@ -219,6 +219,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // to return from a previous authenticatorCredentialManagement command.
     std::list<cbor::Value::MapValue> pending_registrations;
 
+    // allow_list_sizes contains the lengths of the allow_lists that have been
+    // seen in assertion requests. This is for tests to confirm that the
+    // expected sequence of requests was sent.
+    std::vector<size_t> allow_list_sizes;
+
     FidoTransportProtocol transport =
         FidoTransportProtocol::kUsbHumanInterfaceDevice;
 

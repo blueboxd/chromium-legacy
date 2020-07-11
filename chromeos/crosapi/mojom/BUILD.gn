@@ -1,0 +1,52 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/tools/bindings/mojom.gni")
+
+mojom("mojom") {
+  sources = [
+    "crosapi.mojom",
+    "screen_manager.mojom",
+    "select_file.mojom",
+  ]
+
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "crosapi.mojom.WindowSnapshot"
+          cpp = "crosapi::WindowSnapshot"
+        },
+      ]
+      traits_headers =
+          [ "//chromeos/crosapi/mojom/window_snapshot_mojom_traits.h" ]
+      traits_public_deps = [
+        ":mojom_traits",
+        "//chromeos/crosapi/cpp",
+      ]
+    },
+  ]
+
+  public_deps = [
+    "//mojo/public/mojom/base",
+    "//url/mojom:url_mojom_gurl",
+  ]
+}
+
+component("mojom_traits") {
+  output_name = "crosapi_mojom_traits"
+
+  sources = [
+    "window_snapshot_mojom_traits.cc",
+    "window_snapshot_mojom_traits.h",
+  ]
+
+  defines = [ "IS_CROSAPI_MOJOM_TRAITS_IMPL" ]
+
+  public_deps = [
+    ":mojom_shared",
+    "//chromeos/crosapi/cpp",
+    "//mojo/public/cpp/base:shared_typemap_traits",
+  ]
+}

@@ -113,12 +113,10 @@ SearchSuggestionParser::Result::Result(bool from_keyword,
                                        bool relevance_from_server,
                                        AutocompleteMatchType::Type type,
                                        std::vector<int> subtypes,
-                                       int subtype_identifier,
                                        const std::string& deletion_url)
     : from_keyword_(from_keyword),
       type_(type),
       subtypes_(std::move(subtypes)),
-      subtype_identifier_(subtype_identifier),
       relevance_(relevance),
       relevance_from_server_(relevance_from_server),
       received_after_last_keystroke_(true),
@@ -133,15 +131,14 @@ SearchSuggestionParser::Result::~Result() {}
 SearchSuggestionParser::SuggestResult::SuggestResult(
     const base::string16& suggestion,
     AutocompleteMatchType::Type type,
-    int subtype_identifier,
+    std::vector<int> subtypes,
     bool from_keyword,
     int relevance,
     bool relevance_from_server,
     const base::string16& input_text)
     : SuggestResult(suggestion,
                     type,
-                    /*subtypes=*/{},
-                    subtype_identifier,
+                    std::move(subtypes),
                     suggestion,
                     /*match_contents_prefix=*/base::string16(),
                     /*annotation=*/base::string16(),
@@ -159,7 +156,6 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
     const base::string16& suggestion,
     AutocompleteMatchType::Type type,
     std::vector<int> subtypes,
-    int subtype_identifier,
     const base::string16& match_contents,
     const base::string16& match_contents_prefix,
     const base::string16& annotation,
@@ -177,7 +173,6 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
              relevance_from_server,
              type,
              std::move(subtypes),
-             subtype_identifier,
              deletion_url),
       suggestion_(suggestion),
       match_contents_prefix_(match_contents_prefix),
@@ -261,7 +256,6 @@ SearchSuggestionParser::NavigationResult::NavigationResult(
     const GURL& url,
     AutocompleteMatchType::Type match_type,
     std::vector<int> subtypes,
-    int subtype_identifier,
     const base::string16& description,
     const std::string& deletion_url,
     bool from_keyword,
@@ -273,7 +267,6 @@ SearchSuggestionParser::NavigationResult::NavigationResult(
              relevance_from_server,
              match_type,
              std::move(subtypes),
-             subtype_identifier,
              deletion_url),
       url_(url),
       formatted_url_(AutocompleteInput::FormattedStringWithEquivalentMeaning(
@@ -530,7 +523,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
         suggestion_details->GetSize() != results_list->GetSize())
       suggestion_details = nullptr;
 
-    // Get subtype identifiers.
+    // Legacy code: Get subtype identifiers.
     if (extras->GetList("google:subtypeid", &subtype_identifiers) &&
         subtype_identifiers->GetSize() != results_list->GetSize()) {
       subtype_identifiers = nullptr;
@@ -545,8 +538,8 @@ bool SearchSuggestionParser::ParseSuggestResults(
   // Processed list of match subtypes, one vector per match.
   // Note: ParseMatchSubtypes will handle the cases where the key does not
   // exist or contains malformed data.
-  std::vector<std::vector<int>> subtypes = ParseMatchSubtypes(suggestsubtypes,
-                                results_list->GetSize());
+  std::vector<std::vector<int>> subtypes =
+      ParseMatchSubtypes(suggestsubtypes, results_list->GetSize());
 
   // Clear the previous results now that new results are available.
   results->suggest_results.clear();
@@ -569,10 +562,18 @@ bool SearchSuggestionParser::ParseSuggestResults(
       relevances = nullptr;
     AutocompleteMatchType::Type match_type =
         AutocompleteMatchType::SEARCH_SUGGEST;
-    int subtype_identifier = 0;
+
+    // Legacy code: if the server sends us a single subtype ID, place it beside
+    // other subtypes.
     if (subtype_identifiers) {
+      int subtype_identifier = 0;
       subtype_identifiers->GetInteger(index, &subtype_identifier);
+
+      if (subtype_identifier != 0) {
+        subtypes[index].emplace_back(subtype_identifier);
+      }
     }
+
     if (types && types->GetString(index, &type))
       match_type = GetAutocompleteMatchType(type);
     const base::DictionaryValue* suggestion_detail = nullptr;
@@ -593,9 +594,9 @@ bool SearchSuggestionParser::ParseSuggestResults(
         if (descriptions != nullptr)
           descriptions->GetString(index, &title);
         results->navigation_results.push_back(NavigationResult(
-            scheme_classifier, url, match_type, subtypes[index],
-            subtype_identifier, title, deletion_url, is_keyword_result,
-            relevance, relevances != nullptr, input.text()));
+            scheme_classifier, url, match_type, subtypes[index], title,
+            deletion_url, is_keyword_result, relevance, relevances != nullptr,
+            input.text()));
       }
     } else {
       base::string16 annotation;
@@ -660,7 +661,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
 
       bool should_prefetch = static_cast<int>(index) == prefetch_index;
       results->suggest_results.push_back(SuggestResult(
-          suggestion, match_type, subtypes[index], subtype_identifier,
+          suggestion, match_type, subtypes[index],
           base::CollapseWhitespace(match_contents, false),
           match_contents_prefix, annotation, additional_query_params,
           deletion_url, image_dominant_color, image_url, is_keyword_result,

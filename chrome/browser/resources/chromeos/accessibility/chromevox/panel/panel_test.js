@@ -158,7 +158,6 @@ TEST_F('ChromeVoxPanelTest', 'FormControlsMenu', function() {
 });
 
 TEST_F('ChromeVoxPanelTest', 'SearchMenu', function() {
-  const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksDoc, async function(root) {
     new PanelCommand(PanelCommandType.OPEN_MENUS).send();
     await this.waitForMenu('panel_search_menu');

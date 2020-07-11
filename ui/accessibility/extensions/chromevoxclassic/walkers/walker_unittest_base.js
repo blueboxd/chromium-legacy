@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-GEN_INCLUDE(['//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_unittest_base.js']);
+GEN_INCLUDE(['//ui/accessibility/extensions/chromevoxclassic/testing/chromevox_unittest_base.js']);
 
 /**
  * Base class for walker test fixtures.

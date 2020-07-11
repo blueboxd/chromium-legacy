@@ -282,6 +282,8 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
     EXPECT_CALL(*password_protection_service_,
                 GetPasswordProtectionWarningTriggerPref(_))
         .WillRepeatedly(Return(PASSWORD_PROTECTION_OFF));
+    EXPECT_CALL(*password_protection_service_, IsUserMBBOptedIn())
+        .WillRepeatedly(Return(true));
     url_ = PasswordProtectionService::GetPasswordProtectionRequestUrl();
   }
 
@@ -1089,6 +1091,7 @@ TEST_P(PasswordProtectionServiceTest,
 
   const LoginReputationClientRequest* actual_request =
       password_protection_service_->GetLatestRequestProto();
+  EXPECT_TRUE(actual_request->population().is_mbb_enabled());
   EXPECT_EQ(kTargetUrl, actual_request->page_url());
   EXPECT_EQ(LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
             actual_request->trigger_type());
@@ -1126,6 +1129,7 @@ TEST_P(PasswordProtectionServiceTest,
 
   const LoginReputationClientRequest* actual_request =
       password_protection_service_->GetLatestRequestProto();
+  EXPECT_TRUE(actual_request->population().is_mbb_enabled());
   ASSERT_TRUE(actual_request->has_password_reuse_event());
   const auto& reuse_event = actual_request->password_reuse_event();
   EXPECT_FALSE(reuse_event.is_chrome_signin_password());

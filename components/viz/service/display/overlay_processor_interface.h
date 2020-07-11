@@ -30,6 +30,7 @@ class DisplayResourceProvider;
 }
 
 namespace viz {
+struct DebugRendererSettings;
 class OutputSurface;
 class RendererSettings;
 
@@ -99,6 +100,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
       gpu::SurfaceHandle surface_handle,
       const OutputSurface::Capabilities& capabilities,
       const RendererSettings& renderer_settings,
+      const DebugRendererSettings* debug_settings,
       gpu::SharedImageManager* shared_image_manager,
       gpu::MemoryTracker* memory_tracker,
       scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler,

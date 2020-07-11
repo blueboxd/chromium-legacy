@@ -21,9 +21,9 @@ enum class SafeSitesFilterBehavior {
 
 // Handles URLBlacklist policies.
 class POLICY_EXPORT URLBlacklistPolicyHandler
-    : public ConfigurationPolicyHandler {
+    : public TypeCheckingPolicyHandler {
  public:
-  URLBlacklistPolicyHandler();
+  explicit URLBlacklistPolicyHandler(const char* policy_name);
   ~URLBlacklistPolicyHandler() override;
 
   // ConfigurationPolicyHandler methods:

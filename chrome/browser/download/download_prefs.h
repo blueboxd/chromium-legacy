@@ -86,6 +86,10 @@ class DownloadPrefs {
   // to choose another download location).
   bool PromptForDownload() const;
 
+  // Returns whether to prompt download later dialog to let the user choose
+  // download time.
+  bool PromptDownloadLater() const;
+
   // Returns true if the download path preference is managed.
   bool IsDownloadPathManaged() const;
 
@@ -142,6 +146,7 @@ class DownloadPrefs {
   BooleanPrefMember prompt_for_download_;
 #if defined(OS_ANDROID)
   IntegerPrefMember prompt_for_download_android_;
+  IntegerPrefMember prompt_for_download_later_;
 #endif
 
   FilePathPrefMember download_path_;

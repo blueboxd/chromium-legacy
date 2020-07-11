@@ -51,7 +51,7 @@
 - (void)testEmptyBlocklist {
   [PolicyAppInterface
       setPolicyValue:@"[]"
-              forKey:base::SysUTF8ToNSString(policy::key::kURLBlacklist)];
+              forKey:base::SysUTF8ToNSString(policy::key::kURLBlocklist)];
 
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo")];
 
@@ -63,7 +63,7 @@
 - (void)testWildcardBlocklist {
   [PolicyAppInterface
       setPolicyValue:@"[\"*\"]"
-              forKey:base::SysUTF8ToNSString(policy::key::kURLBlacklist)];
+              forKey:base::SysUTF8ToNSString(policy::key::kURLBlocklist)];
 
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo")];
 
@@ -76,7 +76,7 @@
 - (void)testNTPIsNotBlocked {
   [PolicyAppInterface
       setPolicyValue:@"[\"*\"]"
-              forKey:base::SysUTF8ToNSString(policy::key::kURLBlacklist)];
+              forKey:base::SysUTF8ToNSString(policy::key::kURLBlocklist)];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       assertWithMatcher:grey_sufficientlyVisible()];
@@ -87,7 +87,7 @@
 - (void)testExplicitBlocklist {
   [PolicyAppInterface
       setPolicyValue:@"[\"*/echo\"]"
-              forKey:base::SysUTF8ToNSString(policy::key::kURLBlacklist)];
+              forKey:base::SysUTF8ToNSString(policy::key::kURLBlocklist)];
 
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo")];
 
@@ -100,10 +100,10 @@
 - (void)testAllowlist {
   [PolicyAppInterface
       setPolicyValue:@"[\"*\"]"
-              forKey:base::SysUTF8ToNSString(policy::key::kURLBlacklist)];
+              forKey:base::SysUTF8ToNSString(policy::key::kURLBlocklist)];
   [PolicyAppInterface
       setPolicyValue:@"[\"*/echo\"]"
-              forKey:base::SysUTF8ToNSString(policy::key::kURLWhitelist)];
+              forKey:base::SysUTF8ToNSString(policy::key::kURLAllowlist)];
 
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo")];
 

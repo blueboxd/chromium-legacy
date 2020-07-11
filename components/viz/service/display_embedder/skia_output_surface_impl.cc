@@ -89,10 +89,11 @@ SkiaOutputSurfaceImpl::ScopedPaint::~ScopedPaint() = default;
 // static
 std::unique_ptr<SkiaOutputSurface> SkiaOutputSurfaceImpl::Create(
     std::unique_ptr<SkiaOutputSurfaceDependency> deps,
-    const RendererSettings& renderer_settings) {
+    const RendererSettings& renderer_settings,
+    const DebugRendererSettings* debug_settings) {
   auto output_surface = std::make_unique<SkiaOutputSurfaceImpl>(
       util::PassKey<SkiaOutputSurfaceImpl>(), std::move(deps),
-      renderer_settings);
+      renderer_settings, debug_settings);
   if (!output_surface->Initialize())
     output_surface = nullptr;
   return output_surface;
@@ -101,10 +102,12 @@ std::unique_ptr<SkiaOutputSurface> SkiaOutputSurfaceImpl::Create(
 SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
     util::PassKey<SkiaOutputSurfaceImpl> /* pass_key */,
     std::unique_ptr<SkiaOutputSurfaceDependency> deps,
-    const RendererSettings& renderer_settings)
+    const RendererSettings& renderer_settings,
+    const DebugRendererSettings* debug_settings)
     : SkiaOutputSurface(GetOutputSurfaceType(deps.get())),
       dependency_(std::move(deps)),
-      renderer_settings_(renderer_settings) {
+      renderer_settings_(renderer_settings),
+      debug_settings_(debug_settings) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
@@ -263,11 +266,11 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintCurrentFrame() {
 
   current_paint_.emplace(&root_recorder_.value());
 
-  if (!renderer_settings_.show_overdraw_feedback)
+  if (!debug_settings_->show_overdraw_feedback)
     return current_paint_->recorder()->getCanvas();
 
   DCHECK(!overdraw_surface_recorder_);
-  DCHECK(renderer_settings_.show_overdraw_feedback);
+  DCHECK(debug_settings_->show_overdraw_feedback);
 
   SkSurfaceCharacterization characterization = CreateSkSurfaceCharacterization(
       gfx::Size(characterization_.width(), characterization_.height()),
@@ -526,7 +529,7 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint(
     // Draw on the root render pass.
     current_buffer_modified_ = true;
     sk_sp<SkDeferredDisplayList> overdraw_ddl;
-    if (renderer_settings_.show_overdraw_feedback) {
+    if (debug_settings_->show_overdraw_feedback) {
       overdraw_ddl = overdraw_surface_recorder_->detach();
       DCHECK(overdraw_ddl);
       overdraw_canvas_.reset();

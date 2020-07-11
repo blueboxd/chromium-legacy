@@ -36,8 +36,7 @@ static constexpr uint32_t kMinScreenRectStableTimeMs = 500;
 // within the viewport of the top-level main frame.
 struct BLINK_PLATFORM_EXPORT ViewportIntersectionState {
   bool operator==(const ViewportIntersectionState& other) const {
-    return viewport_offset == other.viewport_offset &&
-           viewport_intersection == other.viewport_intersection &&
+    return viewport_intersection == other.viewport_intersection &&
            compositor_visible_rect == other.compositor_visible_rect &&
            occlusion_state == other.occlusion_state &&
            main_frame_viewport_size == other.main_frame_viewport_size &&
@@ -49,8 +48,6 @@ struct BLINK_PLATFORM_EXPORT ViewportIntersectionState {
     return !(*this == other);
   }
 
-  // Child frame's offset from the main frame.
-  gfx::Point viewport_offset;
   // Portion of the child frame which is within the main frame's scrolling
   WebRect viewport_intersection;
   // Same as viewport_intersection, but without applying the main frame's

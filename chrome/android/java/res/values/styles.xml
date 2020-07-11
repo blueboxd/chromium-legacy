@@ -136,6 +136,10 @@
         <item name="actionBarStyle">@style/SettingsActionBarModern</item>
         <item name="preferenceTheme">@style/PreferenceTheme</item>
         <item name="alertDialogTheme">@style/Theme.Chromium.AlertDialog</item>
+
+        <!-- Text style attributes used by the preference_material.xml layout. -->
+        <item name="android:textAppearanceListItem">@style/TextAppearance.TextLarge.Primary</item>
+        <item name="android:textColorSecondary">@color/default_text_color_secondary_list</item>
     </style>
 
     <style name="Theme.Chromium.Settings" parent="Base.Theme.Chromium.Settings" />

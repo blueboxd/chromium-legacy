@@ -5047,6 +5047,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ContextualSearch.SelectionEstablished">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    The user established a new selection through a touch and hold gesture or tap
+    while Contextual Search was active.
+  </description>
+</action>
+
 <action name="ContextualSearch.SmartSelectionSuppressed">
   <owner>donnd@chromium.org</owner>
   <description>
@@ -19905,7 +19913,8 @@ should be able to be added at any place in this file.
   <description>
     The user changed the selection by manipulating the selection handles. Only
     one action of this kind is emmitted when the selection handles are
-    repeatedly moved.
+    repeatedly moved. Recorded whenever the selection changes on any platform in
+    the native touch selection controller.
   </description>
 </action>
 

@@ -63,6 +63,7 @@ const CGFloat kDefaultLabelHorizontalMargin = 8.5f;
     [self activateConstraints];
     [self setBackgroundColor:[UIColor colorNamed:kBlueHaloColor]];
     [self setAccessibilityLabel:self.label.text];
+    self.isAccessibilityElement = YES;
   }
   [super willMoveToSuperview:newSuperview];
 }

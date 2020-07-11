@@ -21,6 +21,7 @@
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 
 namespace base {
+class Time;
 class TimeDelta;
 struct Feature;
 }
@@ -155,6 +156,13 @@ void GetActiveSuggestFieldTrialHashes(std::vector<uint32_t>* field_trial_hash);
 // override experiment isn't active or if parsing the experiment-provided
 // duration fails.
 base::TimeDelta StopTimerFieldTrialDuration();
+
+// ---------------------------------------------------------
+// For the OmniboxLocalZeroSuggestAgeThreshold field trial.
+
+// Returns the age threshold since the last visit in order to consider a
+// normalized keyword search term as a zero-prefix suggestion.
+base::Time GetLocalHistoryZeroSuggestAgeThreshold();
 
 // ---------------------------------------------------------
 // For the ZeroSuggestProvider field trial.
@@ -486,6 +494,11 @@ extern const char kHQPExperimentalScoringTopicalityThresholdParam[];
 // urls indexed for suggestions.
 extern const char kMaxNumHQPUrlsIndexedAtStartupOnLowEndDevicesParam[];
 extern const char kMaxNumHQPUrlsIndexedAtStartupOnNonLowEndDevicesParam[];
+
+// Parameter name determining the age threshold for local zero-prefix
+// suggestions. The value of this parameter should be parsable as an unsigned
+// integer, which will be used to specify the age threshold in days.
+extern const char kOmniboxLocalZeroSuggestAgeThresholdParam[];
 
 // Parameter names used by num suggestion experiments.
 extern const char kMaxZeroSuggestMatchesParam[];

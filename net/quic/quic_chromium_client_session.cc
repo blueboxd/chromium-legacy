@@ -262,15 +262,25 @@ std::string MigrationCauseToString(MigrationCause cause) {
   return "InvalidCause";
 }
 
-base::Value NetLogQuicClientSessionParams(const quic::QuicServerId* server_id,
-                                          int cert_verify_flags,
-                                          bool require_confirmation) {
+base::Value NetLogQuicClientSessionParams(
+    const quic::QuicServerId* server_id,
+    const quic::QuicConnectionId& connection_id,
+    const quic::QuicConnectionId& client_connection_id,
+    const quic::ParsedQuicVersionVector& supported_versions,
+    int cert_verify_flags,
+    bool require_confirmation) {
   base::DictionaryValue dict;
   dict.SetString("host", server_id->host());
   dict.SetInteger("port", server_id->port());
   dict.SetBoolean("privacy_mode", server_id->privacy_mode_enabled());
   dict.SetBoolean("require_confirmation", require_confirmation);
   dict.SetInteger("cert_verify_flags", cert_verify_flags);
+  dict.SetString("connection_id", connection_id.ToString());
+  if (!client_connection_id.IsEmpty()) {
+    dict.SetString("client_connection_id", client_connection_id.ToString());
+  }
+  dict.SetString("versions",
+                 ParsedQuicVersionVectorToString(supported_versions));
   return std::move(dict);
 }
 
@@ -863,7 +873,9 @@ QuicChromiumClientSession::QuicChromiumClientSession(
   migrate_back_to_default_timer_.SetTaskRunner(task_runner_);
   net_log_.BeginEvent(NetLogEventType::QUIC_SESSION, [&] {
     return NetLogQuicClientSessionParams(
-        &session_key.server_id(), cert_verify_flags, require_confirmation_);
+        &session_key.server_id(), connection_id(),
+        connection->client_connection_id(), supported_versions(),
+        cert_verify_flags, require_confirmation_);
   });
   IPEndPoint address;
   if (socket_raw && socket_raw->GetLocalAddress(&address) == OK &&
@@ -2880,8 +2892,7 @@ void QuicChromiumClientSession::HistogramAndLogMigrationSuccess(
 base::Value QuicChromiumClientSession::GetInfoAsValue(
     const std::set<HostPortPair>& aliases) {
   base::DictionaryValue dict;
-  dict.SetString("version",
-                 QuicVersionToString(connection()->transport_version()));
+  dict.SetString("version", ParsedQuicVersionToString(connection()->version()));
   dict.SetInteger("open_streams", GetNumActiveStreams());
   std::unique_ptr<base::ListValue> stream_list(new base::ListValue());
   for (StreamMap::const_iterator it = stream_map().begin();
@@ -2898,6 +2909,10 @@ base::Value QuicChromiumClientSession::GetInfoAsValue(
   dict.SetString("network_isolation_key",
                  session_key_.network_isolation_key().ToDebugString());
   dict.SetString("connection_id", connection_id().ToString());
+  if (!connection()->client_connection_id().IsEmpty()) {
+    dict.SetString("client_connection_id",
+                   connection()->client_connection_id().ToString());
+  }
   dict.SetBoolean("connected", connection()->connected());
   const quic::QuicConnectionStats& stats = connection()->GetStats();
   dict.SetInteger("packets_sent", stats.packets_sent);

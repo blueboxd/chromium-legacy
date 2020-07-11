@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar_button_commands.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar_button_manager.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -933,16 +934,27 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   [self setEditing:NO animated:animated];
 }
 
-#pragma mark - Emtpy Table Helpers
+#pragma mark - Empty Table Helpers
 
 // Called when the table is empty.
 - (void)tableIsEmpty {
-  UIImage* emptyImage = [[UIImage imageNamed:kEmptyStateImage]
-      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  [self addEmptyTableViewWithAttributedMessage:GetReadingListEmptyMessage()
-                                         image:emptyImage];
-  [self updateEmptyTableViewAccessibilityLabel:
-            GetReadingListEmptyMessageA11yLabel()];
+  if (base::FeatureList::IsEnabled(kIllustratedEmptyStates)) {
+    UIImage* emptyImage = [UIImage imageNamed:@"reading_list_empty"];
+    NSString* title =
+        l10n_util::GetNSString(IDS_IOS_READING_LIST_NO_ENTRIES_TITLE);
+    NSString* subtitle =
+        l10n_util::GetNSString(IDS_IOS_READING_LIST_NO_ENTRIES_MESSAGE);
+    [self addEmptyTableViewWithImage:emptyImage title:title subtitle:subtitle];
+    self.navigationItem.largeTitleDisplayMode =
+        UINavigationItemLargeTitleDisplayModeNever;
+  } else {
+    UIImage* emptyImage = [[UIImage imageNamed:kEmptyStateImage]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    [self addEmptyTableViewWithAttributedMessage:GetReadingListEmptyMessage()
+                                           image:emptyImage];
+    [self updateEmptyTableViewAccessibilityLabel:
+              GetReadingListEmptyMessageA11yLabel()];
+  }
   self.tableView.alwaysBounceVertical = NO;
   self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
   [self.audience readingListHasItems:NO];

@@ -237,6 +237,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   const RendererType renderer_type_;
 
+  const viz::DebugRendererSettings debug_settings_;
+
  private:
   virtual void DispatchAddNoDamageAnimation(
       Animation* animation_to_receive_animation,

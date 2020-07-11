@@ -192,7 +192,8 @@ void GpuHostImpl::BlockLiveOffscreenContexts() {
 
 void GpuHostImpl::ConnectFrameSinkManager(
     mojo::PendingReceiver<mojom::FrameSinkManager> receiver,
-    mojo::PendingRemote<mojom::FrameSinkManagerClient> client) {
+    mojo::PendingRemote<mojom::FrameSinkManagerClient> client,
+    const DebugRendererSettings& debug_renderer_settings) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TRACE_EVENT0("gpu", "GpuHostImpl::ConnectFrameSinkManager");
 
@@ -205,6 +206,7 @@ void GpuHostImpl::ConnectFrameSinkManager(
       params_.deadline_to_synchronize_surfaces.value_or(0u);
   params->frame_sink_manager = std::move(receiver);
   params->frame_sink_manager_client = std::move(client);
+  params->debug_renderer_settings = debug_renderer_settings;
   viz_main_->CreateFrameSinkManager(std::move(params));
 }
 

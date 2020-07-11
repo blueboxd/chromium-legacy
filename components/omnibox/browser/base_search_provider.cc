@@ -157,7 +157,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   // mode.  They also assume the caller knows what it's doing and we set
   // this match to look as if it was received/created synchronously.
   SearchSuggestionParser::SuggestResult suggest_result(
-      suggestion, type, /*subtype_identifier=*/0, from_keyword,
+      suggestion, type, /*subtypes=*/{}, from_keyword,
       /*relevance=*/0, /*relevance_from_server=*/false,
       /*input_text=*/base::string16());
   suggest_result.set_received_after_last_keystroke(false);
@@ -176,8 +176,8 @@ AutocompleteMatch BaseSearchProvider::CreateOnDeviceSearchSuggestion(
     const SearchTermsData& search_terms_data,
     int accepted_suggestion) {
   SearchSuggestionParser::SuggestResult suggest_result(
-      suggestion, AutocompleteMatchType::SEARCH_SUGGEST,
-      /*subtype_identifier=*/271, /*from_keyword_provider=*/false, relevance,
+      suggestion, AutocompleteMatchType::SEARCH_SUGGEST, /*subtypes=*/{271},
+      /*from_keyword_provider=*/false, relevance,
       /*relevance_from_server=*/false,
       base::CollapseWhitespace(input.text(), false));
   // On device providers are asynchronous.
@@ -289,7 +289,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   match.contents_class = suggestion.match_contents_class();
   match.suggestion_group_id = suggestion.suggestion_group_id();
   match.answer = suggestion.answer();
-  match.subtype_identifier = suggestion.subtype_identifier();
+  match.subtypes = suggestion.subtypes();
   if (suggestion.type() == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
     match.RecordAdditionalInfo(kACMatchPropertySuggestionText,
                                base::UTF16ToUTF8(suggestion.suggestion()));

@@ -47,6 +47,7 @@ class DownloadDialogBridge {
                           int64_t total_bytes,
                           DownloadLocationDialogType dialog_type,
                           const base::FilePath& suggested_path,
+                          bool supports_later_dialog,
                           DialogCallback dialog_callback);
 
   void OnComplete(JNIEnv* env,

@@ -10,6 +10,11 @@
   SecureContext
 ] interface NativeIOFile {
   [CallWith=ScriptState] Promise<void> close();
+
+  [
+    CallWith=ScriptState, RaisesException
+  ] Promise<unsigned long long> getLength();
+
   [
     CallWith=ScriptState, RaisesException
   ] Promise<unsigned long long> read([AllowShared] ArrayBufferView buffer,

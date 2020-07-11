@@ -396,6 +396,14 @@ config("compiler") {
         "-Wl,--as-needed",
       ]
     }
+    if (use_lld && !is_chromeos_device) {
+      # TODO(thakis): File bug against breakpad, and one that's fixed, remove
+      # these again. See https://crbug.com/1102223
+      ldflags += [
+        "-Wl,-z,dead-reloc-in-nonalloc=*=0",
+        "-Wl,-z,dead-reloc-in-nonalloc=.debug_ranges=1",
+      ]
+    }
   }
 
   # Linux-specific compiler flags setup.
@@ -487,9 +495,7 @@ config("compiler") {
     cflags += [
       # TODO(hans): Remove this once Clang generates better optimized debug info
       # by default. https://crbug.com/765793
-      "-Xclang",
       "-mllvm",
-      "-Xclang",
       "-instcombine-lower-dbg-declare=0",
     ]
   }
@@ -642,10 +648,7 @@ config("compiler") {
           if (is_android) {
             # TODO(gbiv): We ideally shouldn't need to specify this; ThinLTO
             # should be able to better manage binary size increases on its own.
-            ldflags += [
-              "-Wl,-mllvm",
-              "-Wl,-import-instr-limit=5",
-            ]
+            ldflags += [ "-Wl,-mllvm,-import-instr-limit=5" ]
           }
         }
       } else {
@@ -1060,6 +1063,14 @@ config("compiler_codegen") {
     # has been resolved, and -mno-outline is obeyed by the linker during
     # ThinLTO.
     ldflags += [ "-Wl,-mllvm,-enable-machine-outliner=never" ]
+  }
+
+  if (is_clang && !is_nacl && !use_xcode_clang && !is_chromeos_device) {
+    cflags += [
+      # TODO(thakis): Remove after next clang roll, see reviews.llvm.org/D82998
+      "-mllvm",
+      "-basic-aa-recphi=0",
+    ]
   }
 
   asmflags = cflags
@@ -1497,6 +1508,11 @@ config("default_warnings") {
         # Flags NaCl (Clang 3.7) and Xcode 9.2 (Clang clang-900.0.39.2) do not
         # recognize.
         cflags += [
+          # An ABI compat warning we don't care about, https://crbug.com/1102157
+          # TODO(thakis): Push this to the (few) targets that need it,
+          # instead of having a global flag.
+          "-Wno-psabi",
+
           # Ignore warnings about MSVC optimization pragmas.
           # TODO(thakis): Only for no_chromium_code? http://crbug.com/912662
           "-Wno-ignored-pragma-optimize",
@@ -1527,13 +1543,6 @@ config("default_warnings") {
         } else {
           # TODO(https://crbug.com/1049569): Remove after Clang 87b235db.
           cflags += [ "-Wno-max-tokens" ]
-        }
-
-        if (llvm_force_head_revision) {
-          # An ABI compat warning we don't care about, https://crbug.com/1102157
-          # TODO(thakis): Push this to the (few) targets that need it,
-          # instead of having a global flag.
-          cflags += [ "-Wno-psabi" ]
         }
       }
     }

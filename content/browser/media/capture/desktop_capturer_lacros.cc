@@ -7,8 +7,8 @@
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
 
+#include "chromeos/crosapi/cpp/window_snapshot.h"
 #include "chromeos/lacros/browser/lacros_chrome_service_impl.h"
-#include "chromeos/lacros/cpp/window_snapshot.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -18,8 +18,8 @@ DesktopCapturerLacros::DesktopCapturerLacros(
     CaptureType capture_type,
     const webrtc::DesktopCaptureOptions& options)
     : capture_type_(capture_type), options_(options) {
-  mojo::PendingRemote<lacros::mojom::ScreenManager> pending_screen_manager;
-  mojo::PendingReceiver<lacros::mojom::ScreenManager> pending_receiver =
+  mojo::PendingRemote<crosapi::mojom::ScreenManager> pending_screen_manager;
+  mojo::PendingReceiver<crosapi::mojom::ScreenManager> pending_receiver =
       pending_screen_manager.InitWithNewPipeAndPassReceiver();
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(&DesktopCapturerLacros::BindReceiverMainThread,
@@ -27,7 +27,7 @@ DesktopCapturerLacros::DesktopCapturerLacros(
 
   // We create a SharedRemote that binds the underlying Remote onto a
   // dedicated sequence.
-  screen_manager_ = mojo::SharedRemote<lacros::mojom::ScreenManager>(
+  screen_manager_ = mojo::SharedRemote<crosapi::mojom::ScreenManager>(
       std::move(pending_screen_manager),
       base::ThreadPool::CreateSequencedTaskRunner({}));
 }
@@ -44,7 +44,7 @@ bool DesktopCapturerLacros::GetSourceList(SourceList* sources) {
     return true;
   }
 
-  std::vector<lacros::mojom::WindowDetailsPtr> windows;
+  std::vector<crosapi::mojom::WindowDetailsPtr> windows;
   {
     mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
     screen_manager_->ListWindows(&windows);
@@ -74,7 +74,7 @@ void DesktopCapturerLacros::Start(Callback* callback) {
 
 void DesktopCapturerLacros::CaptureFrame() {
   if (capture_type_ == kScreen) {
-    lacros::WindowSnapshot snapshot;
+    crosapi::WindowSnapshot snapshot;
     {
       // lacros-chrome is allowed to make sync calls to ash-chrome.
       mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
@@ -83,7 +83,7 @@ void DesktopCapturerLacros::CaptureFrame() {
     DidTakeSnapshot(/*success=*/true, snapshot);
   } else {
     bool success;
-    lacros::WindowSnapshot snapshot;
+    crosapi::WindowSnapshot snapshot;
     {
       // lacros-chrome is allowed to make sync calls to ash-chrome.
       mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
@@ -105,7 +105,7 @@ void DesktopCapturerLacros::SetExcludedWindow(webrtc::WindowId window) {}
 
 // static
 void DesktopCapturerLacros::BindReceiverMainThread(
-    mojo::PendingReceiver<lacros::mojom::ScreenManager> receiver) {
+    mojo::PendingReceiver<crosapi::mojom::ScreenManager> receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // The lacros chrome service must exist at all points in time for the lacros
@@ -118,7 +118,7 @@ void DesktopCapturerLacros::BindReceiverMainThread(
 
 void DesktopCapturerLacros::DidTakeSnapshot(
     bool success,
-    const lacros::WindowSnapshot& snapshot) {
+    const crosapi::WindowSnapshot& snapshot) {
   if (!success) {
     callback_->OnCaptureResult(Result::ERROR_PERMANENT,
                                std::unique_ptr<webrtc::DesktopFrame>());

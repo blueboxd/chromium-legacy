@@ -177,8 +177,9 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) DebugDaemonClient
   // dev mode.
   virtual void RemoveRootfsVerification(EnableDebuggingCallback callback) = 0;
 
+  using UploadCrashesCallback = base::OnceCallback<void(bool succeeded)>;
   // Trigger uploading of crashes.
-  virtual void UploadCrashes() = 0;
+  virtual void UploadCrashes(UploadCrashesCallback callback) = 0;
 
   // Runs the callback as soon as the service becomes available.
   virtual void WaitForServiceToBeAvailable(

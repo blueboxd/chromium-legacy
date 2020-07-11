@@ -198,6 +198,9 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
   prompt_for_download_.Init(prefs::kPromptForDownload, prefs);
 #if defined(OS_ANDROID)
   prompt_for_download_android_.Init(prefs::kPromptForDownloadAndroid, prefs);
+  if (base::FeatureList::IsEnabled(download::features::kDownloadLater)) {
+    prompt_for_download_later_.Init(prefs::kDownloadLaterPromptStatus, prefs);
+  }
 
   // If |kDownloadsLocationChange| is not enabled, always uses the default
   // download location, in case that the feature is enabled and then disabled
@@ -393,6 +396,17 @@ bool DownloadPrefs::PromptForDownload() const {
 #endif
 
   return *prompt_for_download_;
+}
+
+bool DownloadPrefs::PromptDownloadLater() const {
+#ifdef OS_ANDROID
+  if (base::FeatureList::IsEnabled(download::features::kDownloadLater)) {
+    return *prompt_for_download_later_ !=
+           static_cast<int>(DownloadLaterPromptStatus::DONT_SHOW);
+  }
+#endif
+
+  return false;
 }
 
 bool DownloadPrefs::IsDownloadPathManaged() const {

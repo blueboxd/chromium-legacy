@@ -171,13 +171,8 @@ const char* UserConsentView::GetClassName() const {
 }
 
 gfx::Size UserConsentView::CalculatePreferredSize() const {
-  // Minimum width needs to be constrained to reasonable bounds since preferred
-  // size could be arbitrarily wide for some elements.
-  auto min_width = std::min(main_view_->GetPreferredSize().width(),
-                            2 * anchor_view_bounds_.width());
-  // View should match width of the anchor, but should prioritize not clipping
-  // the text from the title or the buttons.
-  auto width = std::max(anchor_view_bounds_.width(), min_width);
+  // View should match width of the anchor.
+  auto width = anchor_view_bounds_.width();
   return gfx::Size(width, GetHeightForWidth(width));
 }
 

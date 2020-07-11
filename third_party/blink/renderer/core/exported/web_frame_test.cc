@@ -194,6 +194,7 @@
 #include "ui/base/ime/mojom/text_input_state.mojom-blink.h"
 #include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/events/keycodes/dom/dom_key.h"
+#include "ui/gfx/transform.h"
 #include "v8/include/v8.h"
 
 using blink::url_test_helpers::ToKURL;
@@ -13360,14 +13361,15 @@ TEST_F(WebFrameTest, RemoteViewportAndMainframeIntersections) {
   // element.
   WebFrameWidget* widget = local_frame->FrameWidget();
   ASSERT_TRUE(widget);
-  gfx::Point viewport_offset(7, -11);
+  gfx::Transform viewport_transform;
+  viewport_transform.Translate(7, -11);
   WebRect viewport_intersection(0, 11, 200, 89);
   WebRect mainframe_intersection(0, 0, 200, 140);
   FrameOcclusionState occlusion_state = FrameOcclusionState::kUnknown;
 
   widget->SetRemoteViewportIntersection(
-      {viewport_offset, viewport_intersection, mainframe_intersection,
-       viewport_intersection, occlusion_state});
+      {viewport_intersection, mainframe_intersection, viewport_intersection,
+       occlusion_state, WebSize(), gfx::Point(), viewport_transform});
 
   // The viewport intersection should be applied by the layout geometry mapping
   // code when these flags are used.

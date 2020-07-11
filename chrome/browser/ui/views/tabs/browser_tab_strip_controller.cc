@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
+#include "chrome/browser/ui/views/tabs/tab_groups_iph_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -399,6 +400,11 @@ void BrowserTabStripController::ShowContextMenuForTab(
     ui::MenuSourceType source_type) {
   context_menu_contents_ = std::make_unique<TabContextMenuContents>(tab, this);
   context_menu_contents_->RunMenuAt(p, source_type);
+
+  TabGroupsIPHController* const iph_controller =
+      browser_view_->tab_groups_iph_controller();
+  if (iph_controller)
+    iph_controller->TabContextMenuOpened();
 }
 
 int BrowserTabStripController::HasAvailableDragActions() const {

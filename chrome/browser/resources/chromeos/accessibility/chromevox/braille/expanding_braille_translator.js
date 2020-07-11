@@ -165,7 +165,7 @@ ExpandingBrailleTranslator = class {
             text.toString().substring(chunk.start, chunk.end),
             formTypeMap.slice(chunk.start, chunk.end),
             ExpandingBrailleTranslator.nullParamsToEmptyAdapter_(
-                chunk.end - chunk.start, goog.partial(chunkTranslated, chunk)));
+                chunk.end - chunk.start, chunkTranslated.bind(null, chunk)));
       });
     } else {
       finish();

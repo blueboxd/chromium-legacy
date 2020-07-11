@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "build/build_config.h"
+#include "components/history/core/browser/url_database.h"
 #include "components/omnibox/browser/url_index_private_data.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/search/search.h"
@@ -221,6 +222,26 @@ base::TimeDelta OmniboxFieldTrial::StopTimerFieldTrialDuration() {
           &stop_timer_ms))
     return base::TimeDelta::FromMilliseconds(stop_timer_ms);
   return base::TimeDelta::FromMilliseconds(1500);
+}
+
+base::Time OmniboxFieldTrial::GetLocalHistoryZeroSuggestAgeThreshold() {
+  // If new search features are disabled, return the default value.
+  if (!base::FeatureList::IsEnabled(omnibox::kNewSearchFeatures)) {
+    return history::AutocompleteAgeThreshold();
+  }
+
+  std::string param_value = base::GetFieldTrialParamValueByFeature(
+      omnibox::kOmniboxLocalZeroSuggestAgeThreshold,
+      OmniboxFieldTrial::kOmniboxLocalZeroSuggestAgeThresholdParam);
+
+  // If the field trial param is not found or cannot be parsed to an unsigned
+  // integer, return the default value.
+  unsigned int param_value_as_int = 0;
+  if (!base::StringToUint(param_value, &param_value_as_int)) {
+    return history::AutocompleteAgeThreshold();
+  }
+
+  return (base::Time::Now() - base::TimeDelta::FromDays(param_value_as_int));
 }
 
 // static
@@ -884,6 +905,9 @@ const char
 const char
     OmniboxFieldTrial::kMaxNumHQPUrlsIndexedAtStartupOnNonLowEndDevicesParam[] =
         "MaxNumHQPUrlsIndexedAtStartupOnNonLowEndDevices";
+
+const char OmniboxFieldTrial::kOmniboxLocalZeroSuggestAgeThresholdParam[] =
+    "OmniboxLocalZeroSuggestAgeThreshold";
 
 const char OmniboxFieldTrial::kMaxZeroSuggestMatchesParam[] =
     "MaxZeroSuggestMatches";

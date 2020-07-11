@@ -72,7 +72,7 @@ bool BluetoothAdapter::CanPower() const {
 
 void BluetoothAdapter::SetPowered(bool powered,
                                   base::OnceClosure callback,
-                                  ErrorOnceCallback error_callback) {
+                                  ErrorCallback error_callback) {
   if (set_powered_callbacks_) {
     // Only allow one pending callback at a time.
     ui_task_runner_->PostTask(FROM_HERE, std::move(error_callback));
@@ -108,7 +108,7 @@ BluetoothAdapter::RetrieveGattConnectedDevicesWithDiscoveryFilter(
 }
 
 void BluetoothAdapter::StartDiscoverySession(DiscoverySessionCallback callback,
-                                             ErrorOnceCallback error_callback) {
+                                             ErrorCallback error_callback) {
   StartDiscoverySessionWithFilter(nullptr, std::move(callback),
                                   std::move(error_callback));
 }
@@ -116,7 +116,7 @@ void BluetoothAdapter::StartDiscoverySession(DiscoverySessionCallback callback,
 void BluetoothAdapter::StartDiscoverySessionWithFilter(
     std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
     DiscoverySessionCallback callback,
-    ErrorOnceCallback error_callback) {
+    ErrorCallback error_callback) {
   std::unique_ptr<BluetoothDiscoverySession> new_session(
       new BluetoothDiscoverySession(this, std::move(discovery_filter)));
   discovery_sessions_.insert(new_session.get());
@@ -436,7 +436,7 @@ BluetoothAdapter::SetPoweredCallbacks::~SetPoweredCallbacks() = default;
 
 BluetoothAdapter::StartOrStopDiscoveryCallback::StartOrStopDiscoveryCallback(
     base::OnceClosure start_callback,
-    ErrorOnceCallback start_error_callback) {
+    ErrorCallback start_error_callback) {
   this->start_callback = std::move(start_callback);
   this->start_error_callback = std::move(start_error_callback);
 }

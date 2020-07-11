@@ -38,12 +38,12 @@ LacrosChromeServiceImpl::~LacrosChromeServiceImpl() {
 }
 
 void LacrosChromeServiceImpl::BindReceiver(
-    mojo::PendingReceiver<lacros::mojom::LacrosChromeService> receiver) {
+    mojo::PendingReceiver<crosapi::mojom::LacrosChromeService> receiver) {
   receiver_.Bind(std::move(receiver));
 }
 
 void LacrosChromeServiceImpl::BindScreenManagerReceiver(
-    mojo::PendingReceiver<lacros::mojom::ScreenManager> pending_receiver) {
+    mojo::PendingReceiver<crosapi::mojom::ScreenManager> pending_receiver) {
   ash_chrome_service_->BindScreenManager(std::move(pending_receiver));
 }
 

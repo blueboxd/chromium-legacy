@@ -103,7 +103,8 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
     gpu::SurfaceHandle surface_handle,
     bool gpu_compositing,
     mojom::DisplayClient* display_client,
-    const RendererSettings& renderer_settings) {
+    const RendererSettings& renderer_settings,
+    const DebugRendererSettings* debug_settings) {
 #if defined(OS_CHROMEOS)
   if (surface_handle == gpu::kNullSurfaceHandle)
     return std::make_unique<OutputSurfaceUnified>();
@@ -122,7 +123,7 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
       output_surface = SkiaOutputSurfaceImpl::Create(
           std::make_unique<SkiaOutputSurfaceDependencyImpl>(gpu_service_impl_,
                                                             surface_handle),
-          renderer_settings);
+          renderer_settings, debug_settings);
     }
     if (!output_surface) {
 #if defined(OS_CHROMEOS) || BUILDFLAG(IS_CHROMECAST)

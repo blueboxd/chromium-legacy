@@ -195,6 +195,40 @@ class NodeUtils {
    * @return {!NodeUtils.Position} The node matching the selected offset.
    */
   static getDeepEquivalentForSelection(parent, offset, isStart) {
+    const automationPosition = parent.createPosition(offset);
+    if (!automationPosition.node) {
+      // TODO(accessibility): Bugs in AXPosition cause this; for example, a
+      // selection on a text field.
+      return this.getDeepEquivalentForSelectionDeprecated(
+          parent, offset, isStart);
+    }
+
+    automationPosition.asLeafTextPosition();
+
+    if (!automationPosition.node ||
+        automationPosition.node.role == RoleType.IMAGE) {
+      // TODO(accessibility): Bugs in AXPosition cause this; for example, a
+      // selection on a image has incorrect text offsets.
+      return this.getDeepEquivalentForSelectionDeprecated(
+          parent, offset, isStart);
+    }
+
+    return {
+      node: automationPosition.node,
+      offset: automationPosition.textOffset
+    };
+  }
+
+  /**
+   * TODO(accessibility): remove once AXPosition bugs are fixed; see above.
+   * @param {!AutomationNode} parent The parent node of the selection,
+   * similar to chrome.automation.selectionStartObject or selectionEndObject.
+   * @param {number} offset The integer offset of the selection. This is
+   * similar to chrome.automation.selectionStartOffset or selectionEndOffset.
+   * @param {boolean} isStart whether this is the start or end of a selection.
+   * @return {!NodeUtils.Position} The node matching the selected offset.
+   */
+  static getDeepEquivalentForSelectionDeprecated(parent, offset, isStart) {
     if (parent.children.length == 0) {
       return {node: parent, offset};
     }

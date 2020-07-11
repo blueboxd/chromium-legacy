@@ -27,7 +27,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/test/content_browser_sanity_checker.h"
+#include "content/test/content_browser_sequence_checker.h"
 #include "content/test/test_navigation_url_loader_factory.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_frame_host_factory.h"
@@ -244,7 +244,7 @@ void RenderViewHostTestHarness::SetUp() {
   aura_test_helper_->SetUp();
 #endif
 
-  sanity_checker_ = std::make_unique<ContentBrowserSanityChecker>();
+  sequence_checker_ = std::make_unique<ContentBrowserSequenceChecker>();
 
 #if !defined(OS_ANDROID)
   network_change_notifier_ = net::test::MockNetworkChangeNotifier::Create();

@@ -159,7 +159,7 @@ TEST(SearchSuggestionParserTest, ParseSuggestResults) {
 
 TEST(SearchSuggestionParserTest, SuggestClassification) {
   SearchSuggestionParser::SuggestResult result(
-      base::ASCIIToUTF16("foobar"), AutocompleteMatchType::SEARCH_SUGGEST, 0,
+      base::ASCIIToUTF16("foobar"), AutocompleteMatchType::SEARCH_SUGGEST, {},
       false, 400, true, base::string16());
   AutocompleteMatch::ValidateClassifications(result.match_contents(),
                                              result.match_contents_class());
@@ -203,7 +203,7 @@ TEST(SearchSuggestionParserTest, NavigationClassification) {
   TestSchemeClassifier scheme_classifier;
   SearchSuggestionParser::NavigationResult result(
       scheme_classifier, GURL("https://news.google.com/"),
-      AutocompleteMatchType::Type::NAVSUGGEST, {}, 0, base::string16(),
+      AutocompleteMatchType::Type::NAVSUGGEST, {}, base::string16(),
       std::string(), false, 400, true, base::ASCIIToUTF16("google"));
   AutocompleteMatch::ValidateClassifications(result.match_contents(),
                                              result.match_contents_class());

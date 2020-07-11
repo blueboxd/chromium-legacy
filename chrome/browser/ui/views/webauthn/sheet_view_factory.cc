@@ -106,6 +106,14 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
           std::make_unique<AuthenticatorPaaskSheetModel>(dialog_model));
       break;
+    case Step::kCableV2Activate:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          std::make_unique<AuthenticatorPaaskV2SheetModel>(dialog_model));
+      break;
+    case Step::kCableV2QRCode:
+      sheet_view = std::make_unique<AuthenticatorQRSheetView>(
+          std::make_unique<AuthenticatorQRSheetModel>(dialog_model));
+      break;
     case Step::kClientPinEntry:
       sheet_view = std::make_unique<AuthenticatorClientPinEntrySheetView>(
           std::make_unique<AuthenticatorClientPinEntrySheetModel>(
@@ -160,10 +168,6 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
           std::make_unique<AttestationPermissionRequestSheetModel>(
               dialog_model));
-      break;
-    case Step::kQRCode:
-      sheet_view = std::make_unique<AuthenticatorQRSheetView>(
-          std::make_unique<AuthenticatorQRSheetModel>(dialog_model));
       break;
     case Step::kNotStarted:
     case Step::kClosed:

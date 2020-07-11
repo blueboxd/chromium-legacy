@@ -305,9 +305,10 @@ TEST_F(FidoGetAssertionHandlerTest, InvalidCredential) {
 
   discovery()->AddDevice(std::move(device));
 
-  get_assertion_callback().WaitForCallback();
-  EXPECT_EQ(GetAssertionStatus::kAuthenticatorResponseInvalid,
-            get_assertion_callback().status());
+  // The response with the invalid credential ID is considered to be an error at
+  // the task level and the request handler will drop the authenticator.
+  task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(get_assertion_callback().was_called());
 }
 
 // Tests a scenario where the authenticator responds with an empty credential.

@@ -33,13 +33,14 @@ RootCompositorFrameSinkImpl::Create(
     FrameSinkManagerImpl* frame_sink_manager,
     OutputSurfaceProvider* output_surface_provider,
     uint32_t restart_id,
-    bool run_all_compositor_stages_before_draw) {
+    bool run_all_compositor_stages_before_draw,
+    const DebugRendererSettings* debug_settings) {
   // First create an output surface.
   mojo::Remote<mojom::DisplayClient> display_client(
       std::move(params->display_client));
   auto output_surface = output_surface_provider->CreateOutputSurface(
       params->widget, params->gpu_compositing, display_client.get(),
-      params->renderer_settings);
+      params->renderer_settings, debug_settings);
 
   // Creating output surface failed. The host can send a new request, possibly
   // with a different compositing mode.
@@ -125,14 +126,14 @@ RootCompositorFrameSinkImpl::Create(
 
   auto overlay_processor = OverlayProcessorInterface::CreateOverlayProcessor(
       output_surface->GetSurfaceHandle(), output_surface->capabilities(),
-      params->renderer_settings,
+      params->renderer_settings, debug_settings,
       output_surface_provider->GetSharedImageManager(),
       output_surface->GetMemoryTracker(),
       output_surface->GetGpuTaskSchedulerHelper(), sii);
 
   auto display = std::make_unique<Display>(
       frame_sink_manager->shared_bitmap_manager(), params->renderer_settings,
-      params->frame_sink_id, std::move(output_surface),
+      debug_settings, params->frame_sink_id, std::move(output_surface),
       std::move(overlay_processor), std::move(scheduler),
       std::move(task_runner));
 

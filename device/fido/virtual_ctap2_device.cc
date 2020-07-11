@@ -1066,6 +1066,8 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
   CtapGetAssertionRequest request = std::move(*opt_request);
   const AuthenticatorSupportedOptions& options = device_info_->options;
 
+  mutable_state()->allow_list_sizes.push_back(request.allow_list.size());
+
   bool user_verified;
   const base::Optional<CtapDeviceResponseCode> uv_error = CheckUserVerification(
       false /* not makeCredential */, options, request.rp_id, request.pin_auth,
@@ -1295,9 +1297,25 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
         std::move(authenticator_data),
         fido_parsing_utils::Materialize(signature));
 
-    assertion.SetCredential(
-        {CredentialType::kPublicKey,
-         fido_parsing_utils::Materialize(registration.first)});
+    bool include_credential;
+    switch (config_.include_credential_in_assertion_response) {
+      case VirtualCtap2Device::Config::IncludeCredential::ONLY_IF_NEEDED:
+        include_credential = request.allow_list.size() != 1;
+        break;
+      case VirtualCtap2Device::Config::IncludeCredential::ALWAYS:
+        include_credential = true;
+        break;
+      case VirtualCtap2Device::Config::IncludeCredential::NEVER:
+        include_credential = false;
+        break;
+    }
+
+    if (include_credential) {
+      assertion.SetCredential(
+          {CredentialType::kPublicKey,
+           fido_parsing_utils::Materialize(registration.first)});
+    }
+
     if (registration.second->is_resident) {
       assertion.SetUserEntity(registration.second->user.value());
     }

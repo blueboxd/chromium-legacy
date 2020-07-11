@@ -61,6 +61,8 @@ if (enable_pdf) {
       "ppapi_migration/callback.h",
       "ppapi_migration/geometry_conversions.cc",
       "ppapi_migration/geometry_conversions.h",
+      "ppapi_migration/input_event_conversions.cc",
+      "ppapi_migration/input_event_conversions.h",
       "preview_mode_client.cc",
       "preview_mode_client.h",
       "range_set.cc",

@@ -11513,6 +11513,8 @@ class LayerTreeHostImplTestWithRenderer
       public ::testing::WithParamInterface<RendererType> {
  protected:
   RendererType renderer_type() const { return GetParam(); }
+
+  viz::DebugRendererSettings debug_settings_;
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -11531,8 +11533,9 @@ TEST_P(LayerTreeHostImplTestWithRenderer, ShutdownReleasesContext) {
   renderer_settings.use_skia_renderer = renderer_type() == RENDERER_SKIA;
   auto layer_tree_frame_sink = std::make_unique<TestLayerTreeFrameSink>(
       context_provider, viz::TestContextProvider::CreateWorker(), nullptr,
-      renderer_settings, base::ThreadTaskRunnerHandle::Get().get(),
-      synchronous_composite, disable_display_vsync, refresh_rate);
+      renderer_settings, &debug_settings_,
+      base::ThreadTaskRunnerHandle::Get().get(), synchronous_composite,
+      disable_display_vsync, refresh_rate);
   layer_tree_frame_sink->SetClient(&test_client);
 
   CreateHostImpl(DefaultSettings(), std::move(layer_tree_frame_sink));

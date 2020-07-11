@@ -7,18 +7,19 @@
 
 import json
 import os
-import shutil
-import tempfile
 import unittest
 import mock
 import gpu_project_config
 import run_gpu_integration_test
+import tempfile
 
 from gpu_tests import context_lost_integration_test
 from gpu_tests import gpu_helper
 from gpu_tests import gpu_integration_test
 from gpu_tests import path_util
 from gpu_tests import webgl_conformance_integration_test
+
+from py_utils import tempfile_ext
 
 from telemetry.internal.util import binary_manager
 from telemetry.internal.platform import system_info
@@ -93,28 +94,31 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
 
   def _RunGpuIntegrationTests(self, test_name, extra_args=None):
     extra_args = extra_args or []
-    temp_file = tempfile.NamedTemporaryFile(delete=False)
-    temp_file.close()
-    test_argv = [
-        test_name, '--write-full-results-to=%s' % temp_file.name
-    ] + extra_args
     unittest_config = chromium_config.ChromiumConfig(
         top_level_dir=path_util.GetGpuTestDir(),
         benchmark_dirs=[
             os.path.join(path_util.GetGpuTestDir(), 'unittest_data')
         ])
-    old_manager = binary_manager._binary_manager
-    with mock.patch.object(gpu_project_config, 'CONFIG', unittest_config):
-      processed_args = run_gpu_integration_test.ProcessArgs(test_argv)
-      telemetry_args = browser_test_runner.ProcessConfig(
-          unittest_config, processed_args)
+    with binary_manager.TemporarilyReplaceBinaryManager(None), \
+         mock.patch.object(gpu_project_config, 'CONFIG', unittest_config):
+      # TODO(crbug.com/1103792): Using NamedTemporaryFile() as a generator is
+      # causing windows bots to fail. When the issue is fixed with
+      # tempfile_ext.NamedTemporaryFile(), put it in the list of generators
+      # starting this with block. Also remove the try finally statement
+      # below.
+      temp_file = tempfile.NamedTemporaryFile(delete=False)
+      temp_file.close()
       try:
-        binary_manager._binary_manager = None
+        test_argv = [
+            test_name, '--write-full-results-to=%s' % temp_file.name
+        ] + extra_args
+        processed_args = run_gpu_integration_test.ProcessArgs(test_argv)
+        telemetry_args = browser_test_runner.ProcessConfig(
+            unittest_config, processed_args)
         run_browser_tests.RunTests(telemetry_args)
         with open(temp_file.name) as f:
           self._test_result = json.load(f)
       finally:
-        binary_manager._binary_manager = old_manager
         temp_file.close()
 
   def testOverrideDefaultRetryArgumentsinRunGpuIntegrationTests(self):
@@ -370,15 +374,12 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
         benchmark_dirs=[
             os.path.join(path_util.GetGpuTestDir(), 'unittest_data')
         ])
-    temp_dir = tempfile.mkdtemp()
-    test_results_path = os.path.join(temp_dir, 'test_results.json')
-    test_state_path = os.path.join(temp_dir, 'test_state.json')
-    old_manager = binary_manager._binary_manager
-    try:
-      # TODO(crbug.com/1099856): Fix telemetry binary_manager API so that
-      # we don't need to access its private global variable
-      binary_manager._binary_manager = None
-      # We are proccissing ChromiumConfig instance and getting the argument
+
+    with binary_manager.TemporarilyReplaceBinaryManager(None), \
+         tempfile_ext.NamedTemporaryDirectory() as temp_dir:
+      test_results_path = os.path.join(temp_dir, 'test_results.json')
+      test_state_path = os.path.join(temp_dir, 'test_state.json')
+      # We are processing ChromiumConfig instance and getting the argument
       # list. Then we pass it directly to run_browser_tests.RunTests. If
       # we called browser_test_runner.Run, then it would spawn another
       # subprocess which is less efficient.
@@ -399,9 +400,6 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
       self.assertEquals(set(actual_failures), set(failures))
       self.assertEquals(set(actual_successes), set(successes))
       self.assertEquals(set(actual_skips), set(skips))
-    finally:
-      binary_manager._binary_manager = old_manager
-      shutil.rmtree(temp_dir)
 
 
 def _ExtractTestResults(test_result):

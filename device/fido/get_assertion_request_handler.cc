@@ -4,7 +4,6 @@
 
 #include "device/fido/get_assertion_request_handler.h"
 
-#include <algorithm>
 #include <set>
 #include <string>
 #include <utility>
@@ -87,6 +86,10 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
                    const AuthenticatorGetAssertionResponse& response,
                    const base::Optional<AndroidClientDataExtensionInput>&
                        android_client_data_ext_in) {
+  // The underlying code must take care of filling in the credential from the
+  // allow list as needed.
+  CHECK(response.credential());
+
   if (response.GetRpIdHash() !=
           fido_parsing_utils::CreateSHA256Hash(request.rp_id) &&
       (!request.app_id ||
@@ -120,39 +123,6 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
     return false;
   }
 
-  // Check whether credential ID returned from the authenticator and transport
-  // type used matches the transport type and credential ID defined in
-  // PublicKeyCredentialDescriptor of the allowed list. If the device has
-  // resident key support, returned credential ID may be resident credential.
-  // Thus, returned credential ID need not be in allowed list.
-  // TODO(hongjunchoi) : Add link to section of the CTAP spec once it is
-  // published.
-  const auto& allow_list = request.allow_list;
-  if (allow_list.empty()) {
-    if (authenticator.Options() &&
-        !authenticator.Options()->supports_resident_key) {
-      // Allow list can't be empty for authenticators w/o resident key support.
-      return false;
-    }
-  } else {
-    // Non-empty allow list. Credential ID on the response may be omitted if
-    // allow list has size 1. Otherwise, it needs to match an entry from the
-    // allow list
-    const auto opt_transport_used = authenticator.AuthenticatorTransport();
-    if ((!response.credential() && allow_list.size() != 1) ||
-        (response.credential() &&
-         !std::any_of(allow_list.cbegin(), allow_list.cend(),
-                      [&response, opt_transport_used](const auto& credential) {
-                        return credential.id() ==
-                                   response.raw_credential_id() &&
-                               (!opt_transport_used ||
-                                base::Contains(credential.transports(),
-                                               *opt_transport_used));
-                      }))) {
-      return false;
-    }
-  }
-
   // The authenticatorData on an GetAssertionResponse must not have
   // attestedCredentialData set.
   if (response.auth_data().attested_data().has_value()) {
@@ -182,17 +152,6 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
   }
 
   return true;
-}
-
-// When the response from the authenticator does not contain a credential and
-// the allow list from the GetAssertion request only contains a single
-// credential id, manually set credential id in the returned response.
-void SetCredentialIdForResponseWithEmptyCredential(
-    const CtapGetAssertionRequest& request,
-    AuthenticatorGetAssertionResponse& response) {
-  if (request.allow_list.size() == 1 && !response.credential()) {
-    response.SetCredential(request.allow_list.at(0));
-  }
 }
 
 base::flat_set<FidoTransportProtocol> GetTransportsAllowedByRP(
@@ -503,7 +462,6 @@ void GetAssertionRequestHandler::HandleResponse(
     return;
   }
 
-  SetCredentialIdForResponseWithEmptyCredential(request_, *response);
   const size_t num_responses = response->num_credentials().value_or(1);
   if (num_responses == 0 ||
       (num_responses > 1 && !request_.allow_list.empty())) {

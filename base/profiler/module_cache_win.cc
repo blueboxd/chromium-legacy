@@ -7,6 +7,8 @@
 #include <objbase.h>
 #include <psapi.h>
 
+#include <string>
+
 #include "base/process/process_handle.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -54,9 +56,9 @@ void GetDebugInfoForModule(HMODULE module_handle,
   *pdb_name = FilePath(std::move(pdb_filename)).BaseName();
 
   auto buffer = win::String16FromGUID(guid);
-  RemoveChars(buffer, STRING16_LITERAL("{}-"), &buffer);
-  buffer.append(NumberToString16(age));
-  *build_id = UTF16ToUTF8(buffer);
+  RemoveChars(buffer, L"{}-", &buffer);
+  buffer.append(NumberToWString(age));
+  *build_id = WideToUTF8(buffer);
 }
 
 // Traits class to adapt GenericScopedHandle for HMODULES.

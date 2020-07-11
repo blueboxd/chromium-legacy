@@ -32,7 +32,13 @@
 #include "ui/aura/scoped_window_event_targeting_blocker.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animation_element.h"
+#include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/layer_animation_sequence.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/compositor/layer_observer.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
@@ -50,6 +56,80 @@ bool immediate_close_for_tests = false;
 
 // Delay closing window to allow it to shrink and fade out.
 constexpr int kCloseWindowDelayInMilliseconds = 150;
+
+// Layer animation observer that is attached to a clip animation. Removes the
+// clip and then self destructs after the animation is finished.
+class RemoveClipObserver : public ui::LayerAnimationObserver,
+                           public aura::WindowObserver {
+ public:
+  explicit RemoveClipObserver(aura::Window* window) : window_(window) {
+    DCHECK(window_->layer()->GetAnimator()->is_animating());
+    window_->AddObserver(this);
+  }
+  RemoveClipObserver(const RemoveClipObserver&) = delete;
+  RemoveClipObserver& operator=(const RemoveClipObserver&) = delete;
+  ~RemoveClipObserver() override {
+    StopObserving();
+    window_->layer()->GetAnimator()->RemoveObserver(this);
+    window_->RemoveObserver(this);
+    window_ = nullptr;
+  }
+
+ private:
+  // ui::LayerAnimationObserver:
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {}
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {}
+  void OnLayerAnimationScheduled(
+      ui::LayerAnimationSequence* sequence) override {}
+  void OnDetachedFromSequence(ui::LayerAnimationSequence* sequence) override {
+    if (!attached_sequences().empty())
+      return;
+    window_->layer()->SetClipRect(gfx::Rect());
+    delete this;
+  }
+
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override {
+    DCHECK_EQ(window_, window);
+    delete this;
+  }
+
+  // Guaranteed to be not null for the duration of |this|.
+  aura::Window* window_;
+};
+
+// Clips |window| to |clip_rect|. If |clip_rect| is empty and there is an
+// animation, animate first to a clip the size of |window|, then remove the
+// clip. Otherwise the clip animation will clip away all the contents while it
+// animates towards an empty clip rect (but not yet empty) before reshowing it
+// once the clip rect is really empty. An empty clip rect means a request to
+// clip nothing.
+void ClipWindow(aura::Window* window, const gfx::Rect& clip_rect) {
+  DCHECK(window);
+
+  ui::LayerAnimator* animator = window->layer()->GetAnimator();
+  const gfx::Rect target_clip_rect = animator->GetTargetClipRect();
+  if (target_clip_rect == clip_rect)
+    return;
+
+  // Before adding a new clip animation, stop the current clip animation if
+  // there is one. This is to prevent having multiple RemoveClipObservers
+  // attached to the animator at a time.
+  ui::LayerAnimationElement::AnimatableProperty clip_property =
+      ui::LayerAnimationElement::CLIP;
+  if (animator->IsAnimatingOnePropertyOf(clip_property))
+    animator->StopAnimatingProperty(clip_property);
+
+  gfx::Rect new_clip_rect = clip_rect;
+  if (new_clip_rect.IsEmpty() && animator->is_animating()) {
+    // Animate to a clip the size of |window|. The observer will remove the clip
+    // when the animation is finished.
+    new_clip_rect = gfx::Rect(window->bounds().size());
+    animator->AddObserver(new RemoveClipObserver(window));
+  }
+
+  window->layer()->SetClipRect(new_clip_rect);
+}
 
 }  // namespace
 
@@ -150,9 +230,8 @@ ScopedOverviewTransformWindow::~ScopedOverviewTransformWindow() {
     transient->RemoveObserver(this);
   }
 
-  // Remove rounded corners and clipping.
-  UpdateRoundedCornersAndClip(/*show=*/false);
-  window_->layer()->SetClipRect(original_clip_rect_);
+  if (!IsMinimized())
+    UpdateRoundedCorners(/*show=*/false);
   aura::client::GetTransientWindowClient()->RemoveObserver(this);
 }
 
@@ -219,6 +298,7 @@ void ScopedOverviewTransformWindow::RestoreWindow(bool reset_transform) {
   ScopedOverviewAnimationSettings animation_settings(
       overview_item_->GetExitOverviewAnimationType(), window_);
   SetOpacity(original_opacity_);
+  SetClipping({ClippingType::kExit, gfx::SizeF()});
 }
 
 void ScopedOverviewTransformWindow::BeginScopedAnimation(
@@ -286,23 +366,42 @@ void ScopedOverviewTransformWindow::SetOpacity(float opacity) {
     window->layer()->SetOpacity(opacity);
 }
 
-void ScopedOverviewTransformWindow::SetClipping(const gfx::SizeF& size) {
-  has_aspect_ratio_clipping_ = !size.IsEmpty();
-
-  // If width or height are 0, restore the overview clipping.
-  if (size.IsEmpty()) {
-    window_->layer()->SetClipRect(overview_clip_rect_);
-    return;
+void ScopedOverviewTransformWindow::SetClipping(
+    const ClippingData& clipping_data) {
+  gfx::SizeF size;
+  switch (clipping_data.first) {
+    case ClippingType::kEnter:
+      size = gfx::SizeF(window_->bounds().size());
+      break;
+    case ClippingType::kExit:
+      ClipWindow(window_, original_clip_rect_);
+      return;
+    case ClippingType::kCustom:
+      size = clipping_data.second;
+      if (size.IsEmpty()) {
+        // Given size is empty so we fallback to the overview clipping, which is
+        // the size of the window. The header will be accounted for below.
+        size = gfx::SizeF(window_->bounds().size());
+      } else {
+        // Transform affects the clip rect, so take that into account.
+        const gfx::Vector2dF scale =
+            window_->layer()->GetTargetTransform().Scale2d();
+        size.Scale(1 / scale.x(), 1 / scale.y());
+      }
+      break;
   }
 
-  // Compute the clip rect. Transform affects the clip rect, so take that into
-  // account.
-  gfx::Rect clip_rect;
-  const gfx::Vector2dF scale = window_->layer()->GetTargetTransform().Scale2d();
-  clip_rect.set_y(GetTopInset());
-  clip_rect.set_width(size.width() / scale.x());
-  clip_rect.set_height(size.height() / scale.y());
-  window_->layer()->SetClipRect(clip_rect);
+  if (size.IsEmpty())
+    return;
+
+  gfx::Rect clip_rect(gfx::ToRoundedSize(size));
+  // We add 1 to the top_inset, because in some cases, the header is not
+  // clipped fully due to what seems to be a rounding error.
+  // TODO(afakhry|sammiequon): Investigate a proper fix for this.
+  const int top_inset = GetTopInset();
+  if (top_inset > 0)
+    clip_rect.Inset(gfx::Insets(top_inset + 1, 0, 0, 0));
+  ClipWindow(window_, clip_rect);
 }
 
 gfx::RectF ScopedOverviewTransformWindow::ShrinkRectToFitPreservingAspectRatio(
@@ -397,52 +496,18 @@ void ScopedOverviewTransformWindow::UpdateWindowDimensionsType() {
   type_ = GetWindowDimensionsType(window_->bounds().size());
 }
 
-void ScopedOverviewTransformWindow::UpdateRoundedCornersAndClip(bool show) {
+void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show) {
   // Hide the corners if minimized, OverviewItemView will handle showing the
   // rounded corners on the UI.
-  const bool show_corners = show && !IsMinimized();
-  // Add the clipping which gives the overview item rounded corners, and add the
-  // shadow around the window.
+  DCHECK(!IsMinimized());
+
   ui::Layer* layer = window_->layer();
   const float scale = layer->transform().Scale2d().x();
   const int radius =
       views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_LOW);
-  const gfx::RoundedCornersF radii(show_corners ? (radius / scale) : 0.0f);
+  const gfx::RoundedCornersF radii(show ? (radius / scale) : 0.0f);
   layer->SetRoundedCornerRadius(radii);
   layer->SetIsFastRoundedCorner(true);
-
-  if (!show || layer->GetAnimator()->is_animating() || IsMinimized())
-    return;
-
-  ClipHeaderIfNeeded(true);
-}
-
-void ScopedOverviewTransformWindow::ClipHeaderIfNeeded(bool animate) {
-  const int top_inset = GetTopInset();
-  if (top_inset <= 0)
-    return;
-
-  // Clipping a window to preserve aspect ratios will account for the header, so
-  // no need to clip here.
-  if (has_aspect_ratio_clipping_)
-    return;
-
-  gfx::Rect clip_rect(window_->bounds().size());
-  // We add 1 to the top_inset, because in some cases, the header is not
-  // clipped fully due to what seems to be a rounding error.
-  // TODO(afakhry|sammiequon): Investigate a proper fix for this.
-  clip_rect.Inset(0, top_inset + 1, 0, 0);
-
-  if (overview_clip_rect_ == clip_rect)
-    return;
-
-  std::unique_ptr<ScopedOverviewAnimationSettings> settings;
-  if (animate) {
-    settings = std::make_unique<ScopedOverviewAnimationSettings>(
-        OVERVIEW_ANIMATION_FRAME_HEADER_CLIP, window_);
-  }
-  window_->layer()->SetClipRect(clip_rect);
-  overview_clip_rect_ = clip_rect;
 }
 
 void ScopedOverviewTransformWindow::OnTransientChildWindowAdded(

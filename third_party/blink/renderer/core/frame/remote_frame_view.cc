@@ -113,7 +113,9 @@ void RemoteFrameView::SetNeedsOcclusionTracking(bool needs_tracking) {
 void RemoteFrameView::UpdateCompositingRect() {
   compositing_rect_ = IntRect();
   LocalFrameView* local_root_view = ParentLocalRootFrameView();
-  if (!local_root_view || !remote_frame_->OwnerLayoutObject())
+  LayoutEmbeddedContent* owner_layout_object =
+      remote_frame_->OwnerLayoutObject();
+  if (!local_root_view || !owner_layout_object)
     return;
 
   // For main frames we constrain the rect that gets painted to the viewport.
@@ -127,9 +129,16 @@ void RemoteFrameView::UpdateCompositingRect() {
 
   // The viewport rect needs to account for intermediate CSS transforms before
   // being compared to the frame size.
-  PhysicalRect local_viewport_rect =
-      remote_frame_->OwnerLayoutObject()->AncestorToLocalRect(
-          nullptr, PhysicalRect(viewport_rect), kTraverseDocumentBoundaries);
+  TransformState local_root_transform_state(
+      TransformState::kApplyTransformDirection);
+  local_root_transform_state.Move(
+      owner_layout_object->PhysicalContentBoxOffset());
+  owner_layout_object->MapLocalToAncestor(nullptr, local_root_transform_state,
+                                          kTraverseDocumentBoundaries);
+  TransformationMatrix matrix =
+      local_root_transform_state.AccumulatedTransform().Inverse();
+  PhysicalRect local_viewport_rect = PhysicalRect::EnclosingRect(
+      matrix.ProjectQuad(FloatRect(viewport_rect)).BoundingBox());
   compositing_rect_ = EnclosingIntRect(local_viewport_rect);
   IntSize frame_size = Size();
 

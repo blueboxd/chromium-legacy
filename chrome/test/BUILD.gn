@@ -362,6 +362,8 @@ static_library("test_support") {
       "views/accessibility_checker.cc",
       "views/accessibility_checker.h",
       "views/chrome_test_views_delegate.h",
+      "views/chrome_test_widget.cc",
+      "views/chrome_test_widget.h",
       "views/chrome_views_test_base.cc",
       "views/chrome_views_test_base.h",
     ]
@@ -4318,6 +4320,7 @@ test("unit_tests") {
 
       # Android uses different way of showing feedback page
       "../browser/feedback/show_feedback_page_unittest.cc",
+      "../browser/feedback/system_logs/log_sources/crash_ids_source_unittest.cc",
 
       # NTP is in native code on Android.
       "../browser/search/ntp_features_unittest.cc",
@@ -4434,6 +4437,11 @@ test("unit_tests") {
 
     if (include_js_tests) {
       deps += [ "//chrome/test/data/webui:unit_tests_js" ]
+      if (is_chromeos) {
+        deps += [
+          "//chrome/browser/resources/chromeos/accessibility:unit_tests_js",
+        ]
+      }
     }
   }
 

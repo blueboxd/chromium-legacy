@@ -16,6 +16,7 @@ class SharedImageManager;
 
 namespace viz {
 
+struct DebugRendererSettings;
 class RendererSettings;
 class OutputSurface;
 
@@ -30,7 +31,8 @@ class OutputSurfaceProvider {
       gpu::SurfaceHandle surface_handle,
       bool gpu_compositing,
       mojom::DisplayClient* display_client,
-      const RendererSettings& renderer_settings) = 0;
+      const RendererSettings& renderer_settings,
+      const DebugRendererSettings* debug_settings) = 0;
 
   // TODO(weiliangc): This API is unfortunately located since this is the
   // overlapping place that both GLOutputSurface and SkiaOutputSurface code path

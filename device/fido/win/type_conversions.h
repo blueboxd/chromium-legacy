@@ -28,7 +28,8 @@ ToAuthenticatorMakeCredentialResponse(
 COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<AuthenticatorGetAssertionResponse>
 ToAuthenticatorGetAssertionResponse(
-    const WEBAUTHN_ASSERTION& credential_attestation);
+    const WEBAUTHN_ASSERTION& credential_attestation,
+    const std::vector<PublicKeyCredentialDescriptor>& allow_list);
 
 COMPONENT_EXPORT(DEVICE_FIDO)
 uint32_t ToWinUserVerificationRequirement(

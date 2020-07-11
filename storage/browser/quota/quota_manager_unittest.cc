@@ -1649,9 +1649,7 @@ TEST_F(QuotaManagerTest, EvictOriginDataWithDeletionError) {
 
   client->AddOriginToErrorSet(ToOrigin("http://foo.com/"), kTemp);
 
-  for (int i = 0;
-       i < QuotaManager::kThresholdOfErrorsToBeBlacklisted + 1;
-       ++i) {
+  for (int i = 0; i < QuotaManager::kThresholdOfErrorsToBeDenylisted + 1; ++i) {
     EvictOriginData(ToOrigin("http://foo.com/"), kTemp);
     task_environment_.RunUntilIdle();
     EXPECT_EQ(QuotaStatusCode::kErrorInvalidModification, status());

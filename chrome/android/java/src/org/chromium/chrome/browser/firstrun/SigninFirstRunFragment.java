@@ -9,11 +9,13 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.chrome.browser.signin.SigninFragmentBase;
 import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 
@@ -42,6 +44,10 @@ public class SigninFirstRunFragment extends SigninFragmentBase implements FirstR
             mArguments = createArgumentsForForcedSigninFlow(forceAccountTo, childAccountStatus);
         }
 
+        // Records if there are {0, 1, 2+} accounts on device for default/non-default flows.
+        int numAccounts = AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts().size();
+        RecordHistogram.recordCountHistogram(
+                "Signin.AndroidDeviceAccountsNumberWhenEnteringFRE", Math.min(numAccounts, 2));
         RecordUserAction.record("MobileFre.SignInShown");
         RecordUserAction.record("Signin_Signin_FromStartPage");
         SigninManager.logSigninStartAccessPoint(SigninAccessPoint.START_PAGE);

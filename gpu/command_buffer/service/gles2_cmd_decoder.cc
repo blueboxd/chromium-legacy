@@ -9427,6 +9427,25 @@ bool GLES2DecoderImpl::ValidateRenderbufferStorageMultisample(
     GLenum internalformat,
     GLsizei width,
     GLsizei height) {
+  // Must check against the internal format's maximum number of samples
+  // first in order to generate the correct INVALID_OPERATION rather than
+  // INVALID_VALUE, below.
+  if (feature_info_->IsES3Capable() &&
+      !GLES2Util::IsIntegerFormat(internalformat)) {
+    std::vector<GLint> sample_counts;
+    GLsizei num_sample_counts = InternalFormatSampleCountsHelper(
+        GL_RENDERBUFFER, internalformat, &sample_counts);
+    // SwiftShader reports 0 samples for GL_DEPTH24_STENCIL8; be robust to this.
+    if (num_sample_counts > 0) {
+      if (samples > sample_counts[0]) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                           "glRenderbufferStorageMultisample",
+                           "samples out of range for internalformat");
+        return false;
+      }
+    }
+  }
+
   if (samples > renderbuffer_manager()->max_samples()) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE,

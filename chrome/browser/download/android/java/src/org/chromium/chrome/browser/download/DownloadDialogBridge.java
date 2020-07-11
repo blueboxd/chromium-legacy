@@ -53,6 +53,9 @@ public class DownloadDialogBridge
     // Whether the user clicked the edit text to open download location dialog.
     private boolean mEditLocation;
 
+    // Whether to show the edit location text in download later dialog.
+    private boolean mShowEditLocation;
+
     @DownloadLaterDialogChoice
     private int mDownloadLaterChoice = DownloadLaterDialogChoice.DOWNLOAD_NOW;
     private long mDownloadLaterTime = INVALID_START_TIME;
@@ -97,10 +100,13 @@ public class DownloadDialogBridge
             return;
         }
 
-        ModalDialogManager modalDialogManager =
-                ((ModalDialogManagerHolder) activity).getModalDialogManager();
-        showDialog(activity, modalDialogManager, getPrefService(), totalBytes, dialogType,
-                suggestedPath, supportsLaterDialog);
+        DownloadDirectoryProvider.getInstance().getAllDirectoriesOptions((dirs) -> {
+            mShowEditLocation = (dirs != null && dirs.size() > 1);
+            ModalDialogManager modalDialogManager =
+                    ((ModalDialogManagerHolder) activity).getModalDialogManager();
+            showDialog(activity, modalDialogManager, getPrefService(), totalBytes, dialogType,
+                    suggestedPath, supportsLaterDialog);
+        });
     }
 
     void showDialog(Context context, ModalDialogManager modalDialogManager, PrefService prefService,
@@ -186,16 +192,20 @@ public class DownloadDialogBridge
         assert mPrefService != null;
         @DownloadLaterPromptStatus
         int promptStatus = mPrefService.getInteger(Pref.DOWNLOAD_LATER_PROMPT_STATUS);
-        PropertyModel model =
+        PropertyModel.Builder builder =
                 new PropertyModel.Builder(DownloadLaterDialogProperties.ALL_KEYS)
                         .with(DownloadLaterDialogProperties.CONTROLLER, mDownloadLaterDialog)
                         .with(DownloadLaterDialogProperties.DOWNLOAD_TIME_INITIAL_SELECTION,
                                 mDownloadLaterChoice)
-                        .with(DownloadLaterDialogProperties.DONT_SHOW_AGAIN_SELECTION, promptStatus)
-                        .with(DownloadLaterDialogProperties.LOCATION_TEXT,
-                                mContext.getResources().getString(R.string.menu_downloads))
-                        .build();
-        mDownloadLaterDialog.showDialog(mContext, mModalDialogManager, mPrefService, model);
+                        .with(DownloadLaterDialogProperties.DONT_SHOW_AGAIN_SELECTION,
+                                promptStatus);
+        if (mShowEditLocation) {
+            builder.with(DownloadLaterDialogProperties.LOCATION_TEXT,
+                    mContext.getResources().getString(R.string.menu_downloads));
+        }
+
+        mDownloadLaterDialog.showDialog(
+                mContext, mModalDialogManager, mPrefService, builder.build());
     }
 
     // DownloadLocationDialogController implementation.

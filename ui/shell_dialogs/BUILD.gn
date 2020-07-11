@@ -115,8 +115,8 @@ jumbo_component("shell_dialogs") {
       "select_file_dialog_lacros.h",
     ]
     deps += [
+      "//chromeos/crosapi/mojom",
       "//chromeos/lacros/browser",
-      "//chromeos/lacros/mojom",
       "//mojo/public/cpp/bindings",
     ]
   }

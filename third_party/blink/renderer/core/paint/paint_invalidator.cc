@@ -48,8 +48,8 @@ bool PaintInvalidatorContext::ShouldExcludeCompositedLayerSubpixelAccumulation(
       !tree_builder_context_)
     return false;
 
-  if (!(directly_composited_container->Layer()->GetCompositingReasons() &
-        CompositingReason::kComboAllDirectReasons))
+  if (!directly_composited_container->Layer()
+           ->CanBeCompositedForDirectReasons())
     return false;
 
   if (object != directly_composited_container &&

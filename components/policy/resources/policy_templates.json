@@ -1267,7 +1267,10 @@
       'tags': [],
       'desc': '''Setting the policy specifies the locale <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses.
 
-      Turning it off or leaving it unset means users specify the locale (if configured), the system locale, or the fallback locale (en-US).''',
+      Turning it off or leaving it unset means the locale will be the first valid locale from:
+      1) The user specified locale (if configured).
+      2) The system locale.
+      3) The fallback locale (en-US).''',
       'label': '''Application locale''',
     },
     {
@@ -1475,7 +1478,7 @@
       'id': 85,
       'caption': '''Disable URL protocol schemes''',
       'tags': [],
-      'desc': '''This policy is deprecated, please use URLBlacklist instead.
+      'desc': '''This policy is deprecated, please use <ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph> instead.
 
       Disables the listed protocol schemes in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
@@ -3695,7 +3698,7 @@
 
       If this policy is not set, no protocols can launch without a prompt by default. Users may opt out of prompts on a per-protocol/per-site basis unless the <ph name="EXTERNAL_PROTOCOL_DIALOG_SHOW_ALWAYS_OPEN_CHECKBOX_POLICY_NAME">ExternalProtocolDialogShowAlwaysOpenCheckbox</ph> policy is set to Disabled. This policy has no impact on per-protocol/per-site prompt exemptions set by users.
 
-      The origin matching patterns use a similar format to those for the 'URLBlacklist' policy, which are documented at http://www.chromium.org/administrators/url-blacklist-filter-format.
+      The origin matching patterns use a similar format to those for the '<ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>' policy, which are documented at http://www.chromium.org/administrators/url-blacklist-filter-format.
 
       However, origin matching patterns for this policy cannot contain "/path" or "@query" elements. Any pattern that does contain a "/path" or "@query" element will be ignored.''',
     },
@@ -7198,7 +7201,7 @@
         'android:30-',
         'webview_android:47-',
       ],
-      'future_on': [ 'ios' ],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -7207,17 +7210,19 @@
       'id': 103,
       'caption': '''Block access to a list of URLs''',
       'tags': ['filtering'],
-      'desc': '''This policy prevents the user from loading web pages from blacklisted URLs. The blacklist provides a list of URL patterns that specify which URLs will be blacklisted.
+      'desc': '''This policy is deprecated, please use the '<ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>' policy instead.
+
+      This policy prevents the user from loading web pages from blocked URLs. The blocklist provides a list of URL patterns that specify which URLs will be blocked.
 
       A URL pattern has to be formatted according to https://www.chromium.org/administrators/url-blacklist-filter-format.
 
-      Exceptions can be defined in the URL whitelist policy. These policies are limited to 1000 entries; subsequent entries will be ignored.
+      Exceptions can be defined in the URL allowlist policy. These policies are limited to 1000 entries; subsequent entries will be ignored.
 
       Note that it is not recommended to block internal 'chrome://*' URLs since this may lead to unexpected errors.
 
-      From M73 you can block 'javascript://*' URLs. However, it affects only JavaScript typed in address bar (or, for example, bookmarklets). Note that in-page JavaScript URLs, as long as dynamically loaded data, are not subject to this policy. For example, if you block 'example.com/abc', page 'example.com' will still be able to load 'example.com/abc' via XMLHTTPRequest.
+      From Chrome 73 you can block 'javascript://*' URLs. However, it affects only JavaScript typed in address bar (or, for example, bookmarklets). Note that in-page JavaScript URLs, as long as dynamically loaded data, are not subject to this policy. For example, if you block 'example.com/abc', page 'example.com' will still be able to load 'example.com/abc' via XMLHTTPRequest.
 
-      If this policy is not set no URL will be blacklisted in the browser.''',
+      If this policy is not set no URL will be blocklisted in the browser.''',
       'arc_support': 'Android apps may voluntarily choose to honor this list. You cannot force them to honor it.',
     },
     {
@@ -7234,7 +7239,7 @@
         'android:30-',
         'webview_android:47-',
       ],
-      'future_on': [ 'ios' ],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -7243,17 +7248,95 @@
       'id': 104,
       'caption': '''Allow access to a list of URLs''',
       'tags': [],
-      'desc': '''Allows access to the listed URLs, as exceptions to the URL blacklist.
+      'desc': '''This policy is deprecated, please use the '<ph name="URL_ALLOWLIST_POLICY_NAME">URLAllowlist</ph>' policy instead.
 
-      See the description of the URL blacklist policy for the format of entries of this list.
+      Allows access to the listed URLs, as exceptions to the URL blocklist.
 
-      This policy can be used to open exceptions to restrictive blacklists. For example, '*' can be blacklisted to block all requests, and this policy can be used to allow access to a limited list of URLs. It can be used to open exceptions to certain schemes, subdomains of other domains, ports, or specific paths.
+      See the description of the '<ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>' policy for the format of entries of this list.
 
-      The most specific filter will determine if a URL is blocked or allowed. The whitelist takes precedence over the blacklist.
+      This policy can be used to open exceptions to restrictive blocklists. For example, '*' can be used to block all requests, and this policy can be used to allow access to a limited list of URLs. It can be used to open exceptions to certain schemes, subdomains of other domains, ports, or specific paths.
+
+      The most specific filter will determine if a URL is blocked or allowed. The allowlist takes precedence over the blocklist.
 
       This policy is limited to 1000 entries; subsequent entries will be ignored.
 
-      If this policy is not set there will be no exceptions to the blacklist from the 'URLBlacklist' policy.''',
+      This policy also allows to enable the automatic invocation by the browser of external application registered as protocol handlers for the listed protocols like "tel:" or "ssh:". This functionality is only available for on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain or Windows 10 Pro or Enterprise instances that enrolled for device management and macOS instances that are that are managed via MDM or joined to a domain via MCX.
+
+      If this policy is not set there will be no exceptions to the blocklist from the '<ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>' policy.''',
+      'arc_support': 'Android apps may voluntarily choose to honor this list. You cannot force them to honor it.',
+    },
+    {
+      'name': 'URLBlocklist',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': [
+        'chrome.*:86-',
+        'chrome_os:86-',
+        'android:86-',
+        'webview_android:86-',
+      ],
+      'future_on': [ 'ios' ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['example.com', 'https://ssl.server.com', 'hosting.com/bad_path', 'https://server:8080/path', '.exact.hostname.com', 'file://*', 'custom_scheme:*', '*'],
+      'id': 736,
+      'caption': '''Block access to a list of URLs''',
+      'tags': ['filtering'],
+      'desc': '''This policy prevents the user from loading web pages from blocked URLs. The blocklist provides a list of URL patterns that specify which URLs will be blocked.
+
+      A URL pattern has to be formatted according to https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Exceptions can be defined in the URL allowlist policy. These policies are limited to 1000 entries; subsequent entries will be ignored.
+
+      Note that it is not recommended to block internal 'chrome://*' URLs since this may lead to unexpected errors.
+
+      You can block 'javascript://*' URLs. However, it affects only JavaScript typed in address bar (or, for example, bookmarklets). Note that in-page JavaScript URLs, as long as dynamically loaded data, are not subject to this policy. For example, if you block 'example.com/abc', page 'example.com' will still be able to load 'example.com/abc' via XMLHTTPRequest.
+
+      If this policy is not set no URL will be blocklisted in the browser.''',
+      'arc_support': 'Android apps may voluntarily choose to honor this list. You cannot force them to honor it.',
+    },
+    {
+      'name': 'URLAllowlist',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': [
+        'chrome.*:86-',
+        'chrome_os:86-',
+        'android:86-',
+        'webview_android:86-',
+      ],
+      'future_on': [ 'ios' ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['example.com', 'https://ssl.server.com', 'hosting.com/good_path', 'https://server:8080/path', '.exact.hostname.com'],
+      'id': 737,
+      'caption': '''Allow access to a list of URLs''',
+      'tags': [],
+      'desc': '''Allows access to the listed URLs, as exceptions to the URL blocklist.
+
+      See the description of the '<ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>' policy for the format of entries of this list.
+
+      This policy can be used to open exceptions to restrictive blocklists. For example, '*' can be used to block all requests, and this policy can be used to allow access to a limited list of URLs. It can be used to open exceptions to certain schemes, subdomains of other domains, ports, or specific paths.
+
+      The most specific filter will determine if a URL is blocked or allowed. The allowlist takes precedence over the blocklist.
+
+      This policy is limited to 1000 entries; subsequent entries will be ignored.
+
+      This policy also allows to enable the automatic invocation by the browser of external application registered as protocol handlers for the listed protocols like "tel:" or "ssh:". This functionality is only available for on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain or Windows 10 Pro or Enterprise instances that enrolled for device management and macOS instances that are that are managed via MDM or joined to a domain via MCX.
+
+      If this policy is not set there will be no exceptions to the blocklist from the '<ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>' policy.''',
       'arc_support': 'Android apps may voluntarily choose to honor this list. You cannot force them to honor it.',
     },
     {
@@ -17473,7 +17556,7 @@
       'id': 466,
       'caption': '''Allow coalescing of HTTP/2 connections for these hosts even when client certificates are used''',
       'tags': [],
-      'desc': '''This policy allows HTTP/2 connection coalescing when client certificates are in use. In order to coalesce, both the hostname of the potential new connection and the hostname of an existing connection must match one or more patterns described by this policy. The policy is a list of hosts using the URLBlacklist filter format: "example.com" matches "example.com" and all subdomains (e.g. "sub.example.com"), while ".example.net" matches exactly "example.net".
+      'desc': '''This policy allows HTTP/2 connection coalescing when client certificates are in use. In order to coalesce, both the hostname of the potential new connection and the hostname of an existing connection must match one or more patterns described by this policy. The policy is a list of hosts using the <ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph> filter format: "example.com" matches "example.com" and all subdomains (e.g. "sub.example.com"), while ".example.net" matches exactly "example.net".
 
       Coalescing requests to different hosts over connections that use client certificates can create security and privacy issues, as the ambient authority will be conveyed to all requests, even if the user did not explicitly authorize this. This policy is temporary and will be removed in a future release. See https://crbug.com/855690.
 
@@ -17537,11 +17620,9 @@
       'id': 468,
       'caption': '''Configure list of force-installed Web Apps''',
       'tags': [],
-      'desc': '''Setting the policy specifies a list of websites that install silently, without user interaction, and which users can't uninstall or turn off.
+      'desc': '''Setting the policy specifies a list of web apps that install silently, without user interaction, and which users can't uninstall or turn off.
 
-      Each list item of the policy is an object with a mandatory member: <ph name="URL_LABEL">url</ph> (the URL of the web app to install) and 2 optional members: <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL">default_launch_container</ph> (for how the web app opens—a new tab is the default) and <ph name="CREATE_DESKTOP_SHORTCUT_LABEL">create_desktop_shortcut</ph> (True, if creating <ph name="LINUX_OS_NAME">Linux</ph> and Windows® desktop shortcuts).
-
-      Users can change which container the app opens in and skip desktop shortcuts.
+      Each list item of the policy is an object with a mandatory member: <ph name="URL_LABEL">url</ph> (the URL of the web app to install) and 2 optional members: <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL">default_launch_container</ph> (for how the web app opens—a new tab is the default) and <ph name="CREATE_DESKTOP_SHORTCUT_LABEL">create_desktop_shortcut</ph> (True if you want to create <ph name="LINUX_OS_NAME">Linux</ph> and Windows® desktop shortcuts).
 
       See <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME">PinnedLauncherApps</ph> for pinning apps to the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> shelf.''',
       'label': '''URLs for Web Apps to be silently installed.''',
@@ -20084,7 +20165,7 @@
 
       If this policy is not set or set to an empty list of url patterns, no downloaded content is checked for sensitive data protection rule violations.
 
-      The URL patterns have the same format as the 'URLBlacklist' policy, which is documented at https://www.chromium.org/administrators/url-blacklist-filter-format.
+      The URL patterns have the same format as the '<ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>' policy, which is documented at https://www.chromium.org/administrators/url-blacklist-filter-format.
       '''
     },
     {
@@ -20110,7 +20191,7 @@
 
       If this policy is not set or set to an empty list of url patterns, all content is checked for sensitive data protection rule violations.
 
-      The URL patterns have the same format as the 'URLBlacklist' policy, which is documented at https://www.chromium.org/administrators/url-blacklist-filter-format.
+      The URL patterns have the same format as the '<ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>' policy, which is documented at https://www.chromium.org/administrators/url-blacklist-filter-format.
       '''
     },
     {
@@ -20503,7 +20584,7 @@
 
       If this policy is not set or set to an empty list of url patterns, no uploaded content is checked for malware.
 
-      The URL patterns have the same format as the 'URLBlacklist' policy, which is documented at https://www.chromium.org/administrators/url-blacklist-filter-format.
+      The URL patterns have the same format as the '<ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>' policy, which is documented at https://www.chromium.org/administrators/url-blacklist-filter-format.
       '''
     },
     {
@@ -20530,7 +20611,7 @@
 
       If this policy is not set or set to an empty list of url patterns, all downloaded content is checked for malware.
 
-      The URL patterns have the same format as the 'URLBlacklist' policy, which is documented at https://www.chromium.org/administrators/url-blacklist-filter-format.
+      The URL patterns have the same format as the '<ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>' policy, which is documented at https://www.chromium.org/administrators/url-blacklist-filter-format.
       '''
     },
     {
@@ -22799,6 +22880,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 735,
+  'highest_id_currently_used': 737,
   'highest_atomic_group_id_currently_used': 38
 }

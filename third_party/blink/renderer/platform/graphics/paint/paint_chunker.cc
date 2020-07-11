@@ -88,8 +88,8 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
       last_chunk_known_to_be_opaque_region_.Complexity() < kMaxRegionComplexity)
     last_chunk_known_to_be_opaque_region_.Unite(item.VisualRect());
 
-  chunk.outset_for_raster_effects =
-      std::max(chunk.outset_for_raster_effects, item.OutsetForRasterEffects());
+  chunk.raster_effect_outset =
+      std::max(chunk.raster_effect_outset, item.GetRasterEffectOutset());
 
   chunk.end_index++;
 

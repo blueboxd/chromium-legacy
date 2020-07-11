@@ -444,9 +444,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kMaxConnectionsPerProxy,
     prefs::kMaxConnectionsPerProxy,
     base::Value::Type::INTEGER },
-  { key::kURLWhitelist,
-    policy_prefs::kUrlWhitelist,
-    base::Value::Type::LIST },
   { key::kRestrictSigninToPattern,
     prefs::kGoogleServicesUsernamePattern,
     base::Value::Type::STRING },
@@ -1403,7 +1400,6 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<ProxyPolicyHandler>());
   handlers->AddHandler(std::make_unique<SecureDnsPolicyHandler>());
   handlers->AddHandler(std::make_unique<ReferrerPolicyPolicyHandler>());
-  handlers->AddHandler(std::make_unique<URLBlacklistPolicyHandler>());
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kCertificateTransparencyEnforcementDisabledForUrls,
       certificate_transparency::prefs::kCTExcludedHosts, chrome_schema,
@@ -1456,6 +1452,17 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       prefs::kEnableDeprecatedWebPlatformFeatures,
       base::Bind(GetDeprecatedFeaturesMap)));
   handlers->AddHandler(std::make_unique<BrowsingHistoryPolicyHandler>());
+
+  handlers->AddHandler(std::make_unique<SimpleDeprecatingPolicyHandler>(
+      std::make_unique<URLBlacklistPolicyHandler>(key::kURLBlacklist),
+      std::make_unique<URLBlacklistPolicyHandler>(key::kURLBlocklist)));
+  handlers->AddHandler(std::make_unique<SimpleDeprecatingPolicyHandler>(
+      std::make_unique<SimplePolicyHandler>(key::kURLWhitelist,
+                                            policy_prefs::kUrlWhitelist,
+                                            base::Value::Type::LIST),
+      std::make_unique<SimplePolicyHandler>(key::kURLAllowlist,
+                                            policy_prefs::kUrlWhitelist,
+                                            base::Value::Type::LIST)));
 
 #if defined(OS_ANDROID)
   handlers->AddHandler(

@@ -48,6 +48,14 @@ void FakeServiceConnectionImpl::CreateGraphExecutor(
       base::Unretained(this), std::move(receiver), std::move(callback)));
 }
 
+// Fake impl of CreateGrapHExecutorWithOptions just ignores `options`.
+void FakeServiceConnectionImpl::CreateGraphExecutorWithOptions(
+    mojom::GraphExecutorOptionsPtr options,
+    mojo::PendingReceiver<mojom::GraphExecutor> receiver,
+    mojom::Model::CreateGraphExecutorCallback callback) {
+  CreateGraphExecutor(std::move(receiver), std::move(callback));
+}
+
 void FakeServiceConnectionImpl::LoadTextClassifier(
     mojo::PendingReceiver<mojom::TextClassifier> receiver,
     mojom::MachineLearningService::LoadTextClassifierCallback callback) {

@@ -25,6 +25,7 @@ class TileDrawQuad;
 class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
  public:
   SoftwareRenderer(const RendererSettings* settings,
+                   const DebugRendererSettings* debug_settings,
                    OutputSurface* output_surface,
                    DisplayResourceProvider* resource_provider,
                    OverlayProcessorInterface* overlay_processor);

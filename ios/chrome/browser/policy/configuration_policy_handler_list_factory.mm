@@ -73,7 +73,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { policy::key::kTranslateEnabled,
     prefs::kOfferTranslateEnabled,
     base::Value::Type::BOOLEAN },
-  { policy::key::kURLWhitelist,
+  { policy::key::kURLAllowlist,
     policy::policy_prefs::kUrlWhitelist,
     base::Value::Type::LIST},
 };
@@ -119,7 +119,8 @@ std::unique_ptr<policy::ConfigurationPolicyHandlerList> BuildPolicyHandlerList(
   }
 
   if (ShouldInstallURLBlocklistPolicyHandlers()) {
-    handlers->AddHandler(std::make_unique<policy::URLBlacklistPolicyHandler>());
+    handlers->AddHandler(std::make_unique<policy::URLBlacklistPolicyHandler>(
+        policy::key::kURLBlocklist));
   }
 
   return handlers;

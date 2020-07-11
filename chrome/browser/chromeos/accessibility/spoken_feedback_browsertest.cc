@@ -151,7 +151,8 @@ void LoggedInSpokenFeedbackTest::EnableChromeVox() {
   sm_.Call([this]() { DisableEarcons(); });
 }
 
-IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, AddBookmark) {
+// Flaky test, crbug.com/1081563
+IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, DISABLED_AddBookmark) {
   EnableChromeVox();
 
   sm_.Call(

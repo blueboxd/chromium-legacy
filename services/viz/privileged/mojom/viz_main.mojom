@@ -8,6 +8,7 @@ import "components/discardable_memory/public/mojom/discardable_shared_memory_man
 import "services/network/public/mojom/tcp_socket.mojom";
 import "services/viz/public/mojom/compositing/compositing_mode_watcher.mojom";
 import "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom";
+import "services/viz/privileged/mojom/compositing/renderer_settings.mojom";
 import "services/viz/privileged/mojom/gl/gpu_host.mojom";
 [EnableIf=is_win]
 import "services/viz/privileged/mojom/gl/info_collection_gpu_service.mojom";
@@ -30,6 +31,8 @@ struct FrameSinkManagerParams {
 
   // Viz to host interface.
   pending_remote<FrameSinkManagerClient> frame_sink_manager_client;
+
+  DebugRendererSettings debug_renderer_settings;
 };
 
 struct VizDevToolsParams {

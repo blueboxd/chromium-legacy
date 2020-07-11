@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/auth/arc_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/arc/auth/arc_auth_context.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
 class Profile;
 

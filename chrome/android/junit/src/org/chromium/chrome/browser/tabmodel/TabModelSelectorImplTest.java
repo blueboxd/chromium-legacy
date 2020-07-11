@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 import android.app.Activity;
 
@@ -59,6 +61,9 @@ public class TabModelSelectorImplTest {
                 .when(mMockTabPersistencePolicy)
                 .getStateFileName();
 
+        doReturn(mock(TabModelFilter.class))
+                .when(mMockTabModelFilterFactory)
+                .createTabModelFilter(any());
         mTabCreatorManager = new MockTabCreatorManager();
         mTabModelSelector = new TabModelSelectorImpl(mActivity, mTabCreatorManager,
                 mMockTabPersistencePolicy, mMockTabModelFilterFactory, mNextTabPolicySupplier,

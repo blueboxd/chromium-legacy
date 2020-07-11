@@ -446,7 +446,7 @@ TEST_P(RasterInvalidatorTest, ClipPropertyChangeWithOutsetForRasterEffects) {
                       .Chunk(0)
                       .Properties(t0(), *clip, e0())
                       .Bounds(EnclosingIntRect(clip_rect.Rect()))
-                      .OutsetForRasterEffects(2)
+                      .SetRasterEffectOutset(RasterEffectOutset::kWholePixel)
                       .Build();
 
   invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
@@ -459,7 +459,7 @@ TEST_P(RasterInvalidatorTest, ClipPropertyChangeWithOutsetForRasterEffects) {
 
   invalidator_.Generate(base::DoNothing(), artifact, kDefaultLayerBounds,
                         layer_state);
-  auto mapper = [](IntRect& r) { r.Inflate(2); };
+  auto mapper = [](IntRect& r) { r.Inflate(1); };
   EXPECT_THAT(
       TrackedRasterInvalidations(),
       ElementsAre(ChunkInvalidation(

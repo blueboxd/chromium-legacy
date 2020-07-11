@@ -58,7 +58,7 @@ class PLATFORM_EXPORT DisplayItemList
     item.fragment_ = result.fragment_;
     DCHECK(item.GetId() == result.GetId());
     item.visual_rect_ = result.visual_rect_;
-    item.outset_for_raster_effects_ = result.outset_for_raster_effects_;
+    item.raster_effect_outset_ = result.raster_effect_outset_;
     result.SetMovedFromCachedSubsequence(false);
     return result;
   }

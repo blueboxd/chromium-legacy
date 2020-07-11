@@ -1183,8 +1183,12 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 }
             }
 
-            boolean hasTabWaitingForReparenting =
-                    AsyncTabParamsManager.hasParamsWithTabToReparent();
+            // If we have tabs to reparent and getSavedInstanceState() is non-null, then the tabs
+            // are coming from night mode tab reparenting. In this case, reparenting happens
+            // synchronously along with tab restoration so there are no tabs waiting for
+            // reparenting like there are for other tab reparenting operations.
+            boolean hasTabWaitingForReparenting = AsyncTabParamsManager.hasParamsWithTabToReparent()
+                    && getSavedInstanceState() == null;
             mCreatedTabOnStartup = getCurrentTabModel().getCount() > 0
                     || mTabModelSelectorImpl.getRestoredTabCount() > 0 || mIntentWithEffect
                     || hasTabWaitingForReparenting;
@@ -1726,7 +1730,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             DefaultBrowserPromoUtils.maybeRecordOutcomeOnStart();
 
             if (mStartSurface != null && mOverviewShownOnStart) {
-                mStartSurface.onOverviewShownAtLaunch(getOnCreateTimestampUptimeMs());
+                mStartSurface.onOverviewShownAtLaunch(getOnCreateTimestampMs());
             }
         });
     }

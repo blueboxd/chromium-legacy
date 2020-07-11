@@ -2082,7 +2082,7 @@ class CONTENT_EXPORT WebContentsImpl::FriendWrapper {
  private:
   friend class TestNavigationObserver;
   friend class WebContentsAddedObserver;
-  friend class ContentBrowserSanityChecker;
+  friend class ContentBrowserSequenceChecker;
 
   FriendWrapper();  // Not instantiable.
 

@@ -20,8 +20,8 @@
 #include "ui/gl/gpu_switching_observer.h"
 
 namespace viz {
+struct DebugRendererSettings;
 class DisplayResourceProvider;
-class RendererSettings;
 
 // TODO(weiliangc): Eventually fold this into OverlayProcessorWin and
 // OverlayCandidate class.
@@ -74,9 +74,10 @@ typedef std::vector<DCLayerOverlay> DCLayerOverlayList;
 class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor
     : public ui::GpuSwitchingObserver {
  public:
-  explicit DCLayerOverlayProcessor(const RendererSettings& settings);
-  // For testing.
-  DCLayerOverlayProcessor();
+  // When |skip_initialization_for_testing| is true, object will be isolated
+  // for unit tests.
+  DCLayerOverlayProcessor(const DebugRendererSettings* debug_settings,
+                          bool skip_initialization_for_testing = false);
   virtual ~DCLayerOverlayProcessor();
 
   // Virtual for testing.
@@ -133,7 +134,8 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor
                                  gfx::Rect* damage_rect);
 
   bool has_overlay_support_;
-  const bool show_debug_borders_;
+  // Reference to the global viz singleton.
+  const DebugRendererSettings* const debug_settings_;
 
   gfx::Rect previous_frame_underlay_rect_;
   gfx::RectF previous_display_rect_;

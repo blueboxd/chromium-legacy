@@ -50,11 +50,13 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
  public:
   static std::unique_ptr<SkiaOutputSurface> Create(
       std::unique_ptr<SkiaOutputSurfaceDependency> deps,
-      const RendererSettings& renderer_settings);
+      const RendererSettings& renderer_settings,
+      const DebugRendererSettings* debug_settings);
 
   SkiaOutputSurfaceImpl(util::PassKey<SkiaOutputSurfaceImpl> pass_key,
                         std::unique_ptr<SkiaOutputSurfaceDependency> deps,
-                        const RendererSettings& renderer_settings);
+                        const RendererSettings& renderer_settings,
+                        const DebugRendererSettings* debug_settings);
   ~SkiaOutputSurfaceImpl() override;
 
   // OutputSurface implementation:
@@ -247,6 +249,9 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   std::vector<gpu::SyncToken> resource_sync_tokens_;
 
   const RendererSettings renderer_settings_;
+
+  // Points to the viz-global singleton.
+  const DebugRendererSettings* const debug_settings_;
 
   // The display transform relative to the hardware natural orientation,
   // applied to the frame content. The transform can be rotations in 90 degree

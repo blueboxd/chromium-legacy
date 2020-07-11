@@ -2,17 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Include test fixture.
-GEN_INCLUDE([
-  '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_unittest_base.js'
-]);
-
-GEN('#include "content/public/test/browser_test.h"');
-
 /**
  * Test fixture.
  */
-ChromeVoxKeySequenceUnitTest = class extends ChromeVoxUnitTestBase {
+ChromeVoxKeySequenceUnitTest = class extends testing.Test {
   /**
    * Create mock event object.
    * @param {number} keyCode The event key code (i.e. 13 for Enter).
@@ -149,9 +142,11 @@ ChromeVoxKeySequenceUnitTest = class extends ChromeVoxUnitTestBase {
 };
 
 /** @override */
-ChromeVoxKeySequenceUnitTest.prototype.closureModuleDeps = [
-  'ChromeVox',
-  'KeySequence',
+ChromeVoxKeySequenceUnitTest.prototype.extraLibraries = [
+  '../../common/testing/assert_additions.js',
+  '../testing/fake_dom.js',
+  '../common/chromevox.js',
+  'key_sequence.js',
 ];
 
 TEST_F('ChromeVoxKeySequenceUnitTest', 'SimpleSequenceNoModifier', function() {

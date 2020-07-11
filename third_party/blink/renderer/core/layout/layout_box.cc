@@ -6706,15 +6706,15 @@ void LayoutBox::MutableForPainting::
       GetLayoutBox().PhysicalLayoutOverflowRect();
 }
 
-float LayoutBox::VisualRectOutsetForRasterEffects() const {
+RasterEffectOutset LayoutBox::VisualRectOutsetForRasterEffects() const {
   // If the box has subpixel visual effect outsets, as the visual effect may be
   // painted along the pixel-snapped border box, the pixels on the anti-aliased
   // edge of the effect may overflow the calculated visual rect. Expand visual
   // rect by one pixel in the case.
   return VisualOverflowIsSet() &&
                  overflow_->visual_overflow->HasSubpixelVisualEffectOutsets()
-             ? 1
-             : 0;
+             ? RasterEffectOutset::kWholePixel
+             : RasterEffectOutset::kNone;
 }
 
 TextDirection LayoutBox::ResolvedDirection() const {

@@ -40,6 +40,8 @@ class TabGroupsIPHController : public TabStripModelObserver,
   TabGroupsIPHController(Browser* browser, GetTabViewCallback get_tab_view);
   ~TabGroupsIPHController() override;
 
+  void TabContextMenuOpened();
+
   // TabStripModelObserver:
   void OnTabStripModelChanged(
       TabStripModel* tab_strip_model,

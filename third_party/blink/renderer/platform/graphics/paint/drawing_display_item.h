@@ -39,18 +39,24 @@ class PLATFORM_EXPORT DrawingDisplayItem : public DisplayItem {
   bool KnownToBeOpaque() const {
     if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
       return false;
-    if (!known_to_be_opaque_.has_value())
-      known_to_be_opaque_.emplace(CalculateKnownToBeOpaque(record_.get()));
-    return *known_to_be_opaque_;
+    if (!known_to_be_opaque_is_set_) {
+      known_to_be_opaque_is_set_ = true;
+      known_to_be_opaque_ = CalculateKnownToBeOpaque(record_.get());
+    }
+    return known_to_be_opaque_;
   }
-  void SetKnownToBeOpaqueForTesting() { known_to_be_opaque_.emplace(true); }
+  void SetKnownToBeOpaqueForTesting() {
+    known_to_be_opaque_is_set_ = true;
+    known_to_be_opaque_ = true;
+  }
 
   SkColor BackgroundColor() const;
 
  private:
   bool CalculateKnownToBeOpaque(const PaintRecord*) const;
 
-  mutable base::Optional<bool> known_to_be_opaque_;
+  mutable bool known_to_be_opaque_is_set_ : 1;
+  mutable bool known_to_be_opaque_ : 1;
   sk_sp<const PaintRecord> record_;
 };
 
@@ -63,6 +69,8 @@ inline DrawingDisplayItem::DrawingDisplayItem(const DisplayItemClient& client,
                   type,
                   sizeof(*this),
                   /* draws_content*/ record && record->size()),
+      known_to_be_opaque_is_set_(false),
+      known_to_be_opaque_(false),
       record_(DrawsContent() ? std::move(record) : nullptr) {
   DCHECK(IsDrawingType(type));
 }

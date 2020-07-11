@@ -143,10 +143,6 @@ void AuthenticatorTransportSelectorSheetModel::OnTransportSelected(
   dialog_model()->StartGuidedFlowForTransport(transport);
 }
 
-void AuthenticatorTransportSelectorSheetModel::StartPhonePairing() {
-  dialog_model()->StartPhonePairing();
-}
-
 void AuthenticatorTransportSelectorSheetModel::StartWinNativeApi() {
   dialog_model()->StartWinNativeApi();
 }
@@ -581,6 +577,64 @@ base::string16 AuthenticatorPaaskSheetModel::GetStepDescription() const {
 }
 
 ui::MenuModel* AuthenticatorPaaskSheetModel::GetOtherTransportsMenuModel() {
+  return other_transports_menu_model_.get();
+}
+
+// AuthenticatorPaaskV2SheetModel  -----------------------------------------
+
+AuthenticatorPaaskV2SheetModel::AuthenticatorPaaskV2SheetModel(
+    AuthenticatorRequestDialogModel* dialog_model)
+    : AuthenticatorSheetModelBase(dialog_model),
+      other_transports_menu_model_(std::make_unique<OtherTransportsMenuModel>(
+          dialog_model,
+          AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy)) {}
+
+AuthenticatorPaaskV2SheetModel::~AuthenticatorPaaskV2SheetModel() = default;
+
+bool AuthenticatorPaaskV2SheetModel::IsBackButtonVisible() const {
+#if defined(OS_WIN)
+  return !base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi);
+#else
+  return true;
+#endif
+}
+
+bool AuthenticatorPaaskV2SheetModel::IsActivityIndicatorVisible() const {
+  return true;
+}
+
+const gfx::VectorIcon& AuthenticatorPaaskV2SheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return color_scheme == ImageColorScheme::kDark ? kWebauthnPhoneDarkIcon
+                                                 : kWebauthnPhoneIcon;
+}
+
+bool AuthenticatorPaaskV2SheetModel::IsAcceptButtonVisible() const {
+  return true;
+}
+
+bool AuthenticatorPaaskV2SheetModel::IsAcceptButtonEnabled() const {
+  return true;
+}
+
+base::string16 AuthenticatorPaaskV2SheetModel::GetAcceptButtonLabel() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLE_QR_TITLE);
+}
+
+void AuthenticatorPaaskV2SheetModel::OnAccept() {
+  return dialog_model()->StartPhonePairing();
+}
+
+base::string16 AuthenticatorPaaskV2SheetModel::GetStepTitle() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLE_V2_ACTIVATE_TITLE);
+}
+
+base::string16 AuthenticatorPaaskV2SheetModel::GetStepDescription() const {
+  return l10n_util::GetStringUTF16(
+      IDS_WEBAUTHN_CABLE_V2_ACTIVATE_DESCRIPTION_SHORT);
+}
+
+ui::MenuModel* AuthenticatorPaaskV2SheetModel::GetOtherTransportsMenuModel() {
   return other_transports_menu_model_.get();
 }
 

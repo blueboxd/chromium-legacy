@@ -395,6 +395,7 @@ void PasswordProtectionService::FillUserPopulation(
       IsUnderAdvancedProtection());
 #endif
   user_population->set_is_incognito(IsIncognito());
+  user_population->set_is_mbb_enabled(IsUserMBBOptedIn());
 }
 
 void PasswordProtectionService::OnURLsDeleted(

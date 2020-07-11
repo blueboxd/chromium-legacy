@@ -25,7 +25,7 @@ void BluetoothAdapterProfileBlueZ::Register(
     const device::BluetoothUUID& uuid,
     const bluez::BluetoothProfileManagerClient::Options& options,
     ProfileRegisteredCallback success_callback,
-    bluez::BluetoothProfileManagerClient::ErrorOnceCallback error_callback) {
+    bluez::BluetoothProfileManagerClient::ErrorCallback error_callback) {
   std::unique_ptr<BluetoothAdapterProfileBlueZ> profile(
       new BluetoothAdapterProfileBlueZ(uuid));
 

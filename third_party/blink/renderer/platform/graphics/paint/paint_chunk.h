@@ -36,8 +36,10 @@ struct PLATFORM_EXPORT PaintChunk {
         end_index(end),
         id(id),
         properties(props),
+        known_to_be_opaque(false),
         is_cacheable(id.client.IsCacheable()),
-        client_is_just_created(id.client.IsJustCreated()) {}
+        client_is_just_created(id.client.IsJustCreated()),
+        is_moved_from_cached_subsequence(false) {}
 
   // Move a paint chunk from a cached subsequence.
   PaintChunk(wtf_size_t begin, PaintChunk&& other)
@@ -48,7 +50,7 @@ struct PLATFORM_EXPORT PaintChunk {
         hit_test_data(std::move(other.hit_test_data)),
         bounds(other.bounds),
         drawable_bounds(other.drawable_bounds),
-        outset_for_raster_effects(other.outset_for_raster_effects),
+        raster_effect_outset(other.raster_effect_outset),
         known_to_be_opaque(other.known_to_be_opaque),
         is_cacheable(other.is_cacheable),
         client_is_just_created(false),
@@ -129,16 +131,16 @@ struct PLATFORM_EXPORT PaintChunk {
   // Some raster effects can exceed |bounds| in the rasterization space. This
   // is the maximum DisplayItemClient::VisualRectOutsetForRasterEffects() of
   // all clients of items in this chunk.
-  float outset_for_raster_effects = 0;
+  RasterEffectOutset raster_effect_outset = RasterEffectOutset::kNone;
 
   // True if the bounds are filled entirely with opaque contents.
-  bool known_to_be_opaque = false;
+  bool known_to_be_opaque : 1;
 
   // End of derived data.
   // The following fields are put here to avoid memory gap.
-  bool is_cacheable;
-  bool client_is_just_created;
-  bool is_moved_from_cached_subsequence = false;
+  bool is_cacheable : 1;
+  bool client_is_just_created : 1;
+  bool is_moved_from_cached_subsequence : 1;
 };
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const PaintChunk&);

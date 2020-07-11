@@ -68,7 +68,7 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) FakeDebugDaemonClient
   void TestICMPWithOptions(const std::string& ip_address,
                            const std::map<std::string, std::string>& options,
                            TestICMPCallback callback) override;
-  void UploadCrashes() override;
+  void UploadCrashes(UploadCrashesCallback callback) override;
   void EnableDebuggingFeatures(const std::string& password,
                                EnableDebuggingCallback callback) override;
   void QueryDebuggingFeatures(QueryDevFeaturesCallback callback) override;

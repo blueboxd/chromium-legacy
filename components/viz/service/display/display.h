@@ -80,6 +80,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   // subclasses are replaced by SkiaRenderer.
   Display(SharedBitmapManager* bitmap_manager,
           const RendererSettings& settings,
+          const DebugRendererSettings* debug_settings,
           const FrameSinkId& frame_sink_id,
           std::unique_ptr<OutputSurface> output_surface,
           std::unique_ptr<OverlayProcessorInterface> overlay_processor,
@@ -222,6 +223,9 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
 
   SharedBitmapManager* const bitmap_manager_;
   const RendererSettings settings_;
+
+  // Points to the viz-global singleton.
+  const DebugRendererSettings* const debug_settings_;
 
   DisplayClient* client_ = nullptr;
   base::ObserverList<DisplayObserver>::Unchecked observers_;

@@ -1,6 +1,12 @@
 <style include="cr-shared-style cr-hidden-style">
   #destination-dropdown {
+    outline: none;
     position: relative;
+  }
+
+  #destination-dropdown:focus {
+    border-radius: 4px;
+    box-shadow: 0 0 0 2px rgba(var(--google-blue-600-rgb), .4);
   }
 
   #destination-dropdown,
@@ -77,6 +83,11 @@
     cursor: pointer;
     display: flex;
     width: 100%;
+  }
+
+  :host([disabled]) #destination-display-container {
+    cursor: default;
+    opacity: var(--cr-disabled-opacity);
   }
 
   #destination-display {

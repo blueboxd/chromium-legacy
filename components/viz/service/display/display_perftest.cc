@@ -71,7 +71,7 @@ class RemoveOverdrawQuadPerfTest : public testing::Test {
 
     auto overlay_processor = std::make_unique<OverlayProcessorStub>();
     auto display = std::make_unique<Display>(
-        &bitmap_manager_, RendererSettings(), frame_sink_id,
+        &bitmap_manager_, RendererSettings(), &debug_settings_, frame_sink_id,
         std::move(output_surface), std::move(overlay_processor),
         std::move(scheduler), task_runner_.get());
     return display;
@@ -312,6 +312,7 @@ class RemoveOverdrawQuadPerfTest : public testing::Test {
   }
 
  private:
+  DebugRendererSettings debug_settings_;
   CompositorFrame frame_;
   base::LapTimer timer_;
   StubBeginFrameSource begin_frame_source_;

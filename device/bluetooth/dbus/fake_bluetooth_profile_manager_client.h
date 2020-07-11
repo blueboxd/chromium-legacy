@@ -35,10 +35,10 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothProfileManagerClient
                        const std::string& uuid,
                        const Options& options,
                        base::OnceClosure callback,
-                       ErrorOnceCallback error_callback) override;
+                       ErrorCallback error_callback) override;
   void UnregisterProfile(const dbus::ObjectPath& profile_path,
                          base::OnceClosure callback,
-                         ErrorOnceCallback error_callback) override;
+                         ErrorCallback error_callback) override;
 
   // Register, unregister and retrieve pointers to profile server providers.
   void RegisterProfileServiceProvider(

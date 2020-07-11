@@ -157,7 +157,11 @@ void CrashesDOMHandler::HandleRequestUploads(const base::ListValue* args) {
       chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
   DCHECK(debugd_client);
 
-  debugd_client->UploadCrashes();
+  debugd_client->UploadCrashes(base::BindOnce([](bool success) {
+    if (!success) {
+      LOG(WARNING) << "crash_sender failed or timed out";
+    }
+  }));
 }
 #endif
 

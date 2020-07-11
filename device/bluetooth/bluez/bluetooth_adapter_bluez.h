@@ -83,14 +83,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
       public bluez::BluetoothAgentServiceProvider::Delegate {
  public:
   using ErrorCompletionCallback =
-      base::Callback<void(const std::string& error_message)>;
-  using ErrorCompletionOnceCallback =
       base::OnceCallback<void(const std::string& error_message)>;
   using ProfileRegisteredCallback =
       base::OnceCallback<void(BluetoothAdapterProfileBlueZ* profile)>;
-  using ServiceRecordCallback = base::Callback<void(uint32_t)>;
+  using ServiceRecordCallback = base::OnceCallback<void(uint32_t)>;
   using ServiceRecordErrorCallback =
-      base::Callback<void(BluetoothServiceRecordBlueZ::ErrorCode)>;
+      base::OnceCallback<void(BluetoothServiceRecordBlueZ::ErrorCode)>;
 
 #if defined(OS_CHROMEOS)
   using ScanRecordPtr = data_decoder::mojom::ScanRecordPtr;
@@ -108,17 +106,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
   std::string GetSystemName() const override;
   void SetName(const std::string& name,
                base::OnceClosure callback,
-               ErrorOnceCallback error_callback) override;
+               ErrorCallback error_callback) override;
   bool IsInitialized() const override;
   bool IsPresent() const override;
   bool IsPowered() const override;
   void SetPowered(bool powered,
                   base::OnceClosure callback,
-                  ErrorOnceCallback error_callback) override;
+                  ErrorCallback error_callback) override;
   bool IsDiscoverable() const override;
   void SetDiscoverable(bool discoverable,
                        base::OnceClosure callback,
-                       ErrorOnceCallback error_callback) override;
+                       ErrorCallback error_callback) override;
   uint32_t GetDiscoverableTimeout() const;
   bool IsDiscovering() const override;
   bool IsDiscoveringForTesting() const;
@@ -159,15 +157,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
   // only creates the record, it does not create a listening socket for the
   // service.
   void CreateServiceRecord(const BluetoothServiceRecordBlueZ& record,
-                           const ServiceRecordCallback& callback,
-                           const ServiceRecordErrorCallback& error_callback);
+                           ServiceRecordCallback callback,
+                           ServiceRecordErrorCallback error_callback);
 
   // Removes a service record from the SDP server. This would result in the
   // service not being discoverable in any further scans of the adapter. Any
   // sockets listening on this service will need to be closed separately.
   void RemoveServiceRecord(uint32_t handle,
                            base::OnceClosure callback,
-                           const ServiceRecordErrorCallback& error_callback);
+                           ServiceRecordErrorCallback error_callback);
 
   // Locates the device object by object path (the devices map and
   // BluetoothDevice methods are by address).
@@ -213,7 +211,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
                   const bluez::BluetoothProfileManagerClient::Options& options,
                   bluez::BluetoothProfileServiceProvider::Delegate* delegate,
                   ProfileRegisteredCallback success_callback,
-                  ErrorCompletionOnceCallback error_callback);
+                  ErrorCompletionCallback error_callback);
 
   // Release use of a profile by a device.
   void ReleaseProfile(const dbus::ObjectPath& device_path,
@@ -274,7 +272,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
 
   // Callback pair for the profile registration queue.
   using RegisterProfileCompletionPair =
-      std::pair<base::OnceClosure, ErrorCompletionOnceCallback>;
+      std::pair<base::OnceClosure, ErrorCompletionCallback>;
 
   explicit BluetoothAdapterBlueZ();
   ~BluetoothAdapterBlueZ() override;
@@ -363,12 +361,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
 
   // Called by dbus:: on completion of the discoverable property change.
   void OnSetDiscoverable(base::OnceClosure callback,
-                         ErrorOnceCallback error_callback,
+                         ErrorCallback error_callback,
                          bool success);
 
   // Called by dbus:: on completion of an adapter property change.
   void OnPropertyChangeCompleted(base::OnceClosure callback,
-                                 ErrorOnceCallback error_callback,
+                                 ErrorCallback error_callback,
                                  bool success);
 
   // BluetoothAdapter:
@@ -422,7 +420,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
       const dbus::ObjectPath& device_path,
       bluez::BluetoothProfileServiceProvider::Delegate* delegate,
       ProfileRegisteredCallback success_callback,
-      ErrorCompletionOnceCallback error_callback);
+      ErrorCompletionCallback error_callback);
   void OnRegisterProfileError(const device::BluetoothUUID& uuid,
                               const std::string& error_name,
                               const std::string& error_message);
@@ -456,10 +454,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
   // Called by dbus:: on an error while trying to create or remove a service
   // record. Translates the error name/message into a
   // BluetoothServiceRecordBlueZ::ErrorCode value.
-  void ServiceRecordErrorConnector(
-      const ServiceRecordErrorCallback& error_callback,
-      const std::string& error_name,
-      const std::string& error_message);
+  void ServiceRecordErrorConnector(ServiceRecordErrorCallback error_callback,
+                                   const std::string& error_name,
+                                   const std::string& error_message);
 
   base::OnceClosure init_callback_;
 

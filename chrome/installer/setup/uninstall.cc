@@ -1073,7 +1073,7 @@ InstallStatus UninstallProduct(const ModifyParams& modify_params,
   // Try and delete the preserved local state once the post-install
   // operations are complete.
   if (!backup_state_file.empty())
-    base::DeleteFile(backup_state_file, false);
+    base::DeleteFile(backup_state_file);
 
   return ret;
 }

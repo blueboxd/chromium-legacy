@@ -257,7 +257,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   // the current node_data. Button's implementation of StateChanged() does
   // nothing; this method is provided for subclasses that wish to do something
   // on state changes.
-  // TODO(pkasting): Replace overrides with property change callbacks.
   virtual void StateChanged(ButtonState old_state);
 
   // Returns true if the event is one that can trigger notifying the listener.

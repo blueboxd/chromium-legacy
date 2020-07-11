@@ -33,6 +33,7 @@
 
 using base::Time;
 using base::TimeDelta;
+using OmniboxFieldTrial::GetLocalHistoryZeroSuggestAgeThreshold;
 
 namespace {
 
@@ -403,7 +404,7 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Ranking) {
   // With frecency ranking disabled, more recent searches are ranked higher.
   scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
   scoped_feature_list_->InitWithFeatures(
-      {omnibox::kReactiveZeroSuggestionsOnNTPRealbox},
+      {omnibox::kReactiveZeroSuggestionsOnNTPRealbox},  // Enables the provider.
       {omnibox::kOmniboxLocalZeroSuggestFrecencyRanking});
 
   StartProviderAndWaitUntilDone();
@@ -414,7 +415,7 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Ranking) {
   // ranked higher.
   scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
   scoped_feature_list_->InitWithFeatures(
-      {omnibox::kReactiveZeroSuggestionsOnNTPRealbox,
+      {omnibox::kReactiveZeroSuggestionsOnNTPRealbox,  // Enables the provider.
        omnibox::kOmniboxLocalZeroSuggestFrecencyRanking},
       {});
 
@@ -423,17 +424,34 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Ranking) {
                  {"more recent less frequent search", 499}});
 }
 
-// Tests that suggestions are created from fresh search histories only.
+// Tests that suggestions are created from fresh search histories only and that
+// the freshness threshold can be adjusted.
 TEST_F(LocalHistoryZeroSuggestProviderTest, Freshness) {
-  int fresh =
-      (Time::Now() - history::AutocompleteAgeThreshold()).InSeconds() - 60;
-  int stale =
-      (Time::Now() - history::AutocompleteAgeThreshold()).InSeconds() + 60;
+  // Verify the default age threshold.
+  base::Time age_threshold = GetLocalHistoryZeroSuggestAgeThreshold();
+  EXPECT_EQ(history::kLowQualityMatchAgeLimitInDays,
+            base::TimeDelta(base::Time::Now() - age_threshold).InDays());
+
+  // Override the age threshold to 7 days.
+  scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list_->InitWithFeaturesAndParameters(
+      {{omnibox::kReactiveZeroSuggestionsOnNTPRealbox,  // Enables the provider.
+        {}},
+       {omnibox::kOmniboxLocalZeroSuggestAgeThreshold,
+        {{OmniboxFieldTrial::kOmniboxLocalZeroSuggestAgeThresholdParam, "7"}}}},
+      {});
+  base::Time new_age_threshold = GetLocalHistoryZeroSuggestAgeThreshold();
+  EXPECT_EQ(7, base::TimeDelta(base::Time::Now() - new_age_threshold).InDays());
+
+  int fresh = (Time::Now() - new_age_threshold).InSeconds() - 60;
+  int stale = (Time::Now() - new_age_threshold).InSeconds() + 60;
   LoadURLs({
       {default_search_provider(), "stale search", "&foo=bar", stale},
       {default_search_provider(), "fresh search", "&foo=bar", fresh},
   });
 
+  // With the new age threshold, one of the two searches qualifies as a
+  // suggestion. With the old threshold, neither would have.
   StartProviderAndWaitUntilDone();
   ExpectMatches({{"fresh search", 500}});
 }
@@ -497,14 +515,15 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Deletion) {
       client_->GetHistoryService()->InMemoryDatabase();
   std::vector<history::NormalizedKeywordSearchTermVisit> visits =
       url_db->GetMostRecentNormalizedKeywordSearchTerms(
-          default_search_provider()->id(), history::AutocompleteAgeThreshold());
+          default_search_provider()->id(),
+          GetLocalHistoryZeroSuggestAgeThreshold());
   EXPECT_EQ(1U, visits.size());
   EXPECT_EQ(base::ASCIIToUTF16("not to be deleted"), visits[0].normalized_term);
 
   // Make sure search terms from other search providers that would produce the
   // deleted match are not deleted.
   visits = url_db->GetMostRecentNormalizedKeywordSearchTerms(
-      other_search_provider->id(), history::AutocompleteAgeThreshold());
+      other_search_provider->id(), GetLocalHistoryZeroSuggestAgeThreshold());
   EXPECT_EQ(1U, visits.size());
   EXPECT_EQ(base::ASCIIToUTF16("hello world"), visits[0].normalized_term);
 }

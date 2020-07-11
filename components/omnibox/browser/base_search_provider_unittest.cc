@@ -109,7 +109,7 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
 
   SearchSuggestionParser::SuggestResult more_relevant(
       query, AutocompleteMatchType::SEARCH_HISTORY,
-      /*subtype_identifier=*/0, /*from_keyword_provider=*/false,
+      /*subtypes=*/{}, /*from_keyword_provider=*/false,
       /*relevance=*/1300, /*relevance_from_server=*/true,
       /*input_text=*/query);
   provider_->AddMatchToMap(
@@ -118,7 +118,7 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
 
   SearchSuggestionParser::SuggestResult less_relevant(
       query, AutocompleteMatchType::SEARCH_SUGGEST,
-      /*subtype_identifier=*/0, /*from_keyword_provider=*/false,
+      /*subtypes=*/{}, /*from_keyword_provider=*/false,
       /*relevance=*/850, /*relevance_from_server=*/true,
       /*input_text=*/query);
   less_relevant.SetAnswer(answer);
@@ -145,7 +145,7 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
   answer2.set_type(8242);
   more_relevant = SearchSuggestionParser::SuggestResult(
       query, AutocompleteMatchType::SEARCH_HISTORY,
-      /*subtype_identifier=*/0, /*from_keyword_provider=*/false,
+      /*subtypes=*/{}, /*from_keyword_provider=*/false,
       /*relevance=*/1300, /*relevance_from_server=*/true,
       /*input_text=*/query);
   more_relevant.SetAnswer(answer2);
@@ -188,7 +188,6 @@ TEST_F(BaseSearchProviderTest, MatchTailSuggestionProperly) {
   SearchSuggestionParser::SuggestResult suggest_result(
       suggestion, AutocompleteMatchType::SEARCH_SUGGEST_TAIL,
       /*subtypes=*/{},
-      /*subtype_identifier=*/0,
       /*match_contents=*/query,
       /*match_contents_prefix=*/base::ASCIIToUTF16("..."),
       /*annotation=*/base::string16(),

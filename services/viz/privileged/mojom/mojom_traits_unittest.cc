@@ -25,7 +25,6 @@ TEST_F(StructTraitsTest, RendererSettings) {
   input.partial_swap_enabled = true;
   input.should_clear_root_render_pass = false;
   input.release_overlay_resources_after_gpu_query = true;
-  input.show_overdraw_feedback = true;
   input.highp_threshold_min = -1;
   input.use_skia_renderer = true;
 
@@ -41,10 +40,25 @@ TEST_F(StructTraitsTest, RendererSettings) {
             output.should_clear_root_render_pass);
   EXPECT_EQ(input.release_overlay_resources_after_gpu_query,
             output.release_overlay_resources_after_gpu_query);
-  EXPECT_EQ(input.tint_composited_content, output.tint_composited_content);
-  EXPECT_EQ(input.show_overdraw_feedback, output.show_overdraw_feedback);
   EXPECT_EQ(input.highp_threshold_min, output.highp_threshold_min);
   EXPECT_EQ(input.use_skia_renderer, output.use_skia_renderer);
+}
+
+TEST_F(StructTraitsTest, DebugRendererSettings) {
+  DebugRendererSettings input;
+
+  // Set |input| to non-default values.
+  input.show_overdraw_feedback = true;
+  input.tint_composited_content = true;
+  input.show_dc_layer_debug_borders = true;
+
+  DebugRendererSettings output;
+  mojom::DebugRendererSettings::Deserialize(
+      mojom::DebugRendererSettings::Serialize(&input), &output);
+  EXPECT_EQ(input.show_overdraw_feedback, output.show_overdraw_feedback);
+  EXPECT_EQ(input.tint_composited_content, output.tint_composited_content);
+  EXPECT_EQ(input.show_dc_layer_debug_borders,
+            output.show_dc_layer_debug_borders);
 }
 
 }  // namespace

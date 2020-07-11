@@ -32,6 +32,21 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     : public VirtualFidoDevice {
  public:
   struct COMPONENT_EXPORT(DEVICE_FIDO) Config {
+    // IncludeCredential enumerates possible behaviours when deciding whether to
+    // return credential information in an assertion response.
+    enum class IncludeCredential {
+      // ONLY_IF_NEEDED causes the credential information to be included when
+      // the
+      // allowlist has zero or several entries.
+      ONLY_IF_NEEDED,
+      // ALWAYS causes credential information to always be returned. This is
+      // a valid behaviour per the CTAP2 spec.
+      ALWAYS,
+      // NEVER causes credential information to never be returned. This is
+      // invalid behaviour whenever the allowlist is not of length one.
+      NEVER,
+    };
+
     Config();
     Config(const Config&);
     Config& operator=(const Config&);
@@ -53,6 +68,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     uint8_t bio_enrollment_samples_required = 4;
     bool cred_protect_support = false;
     bool hmac_secret_support = false;
+    IncludeCredential include_credential_in_assertion_response =
+        IncludeCredential::ONLY_IF_NEEDED;
 
     // force_cred_protect, if set and if |cred_protect_support| is true, is a
     // credProtect level that will be forced for all registrations. This

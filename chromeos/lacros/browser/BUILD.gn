@@ -17,7 +17,7 @@ component("browser") {
   defines = [ "IS_CHROMEOS_LACROS_IMPL" ]
   deps = [
     "//base",
-    "//chromeos/lacros/mojom",
+    "//chromeos/crosapi/mojom",
     "//mojo/public/cpp/bindings",
   ]
   sources = [

@@ -11,7 +11,6 @@
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace policy {

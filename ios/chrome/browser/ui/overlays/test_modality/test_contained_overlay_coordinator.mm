@@ -54,8 +54,8 @@
   [self.viewController.view removeFromSuperview];
   [self.viewController removeFromParentViewController];
   self.containedViewController = nil;
-  self.delegate->OverlayUIDidFinishDismissal(self.request);
   self.started = NO;
+  self.delegate->OverlayUIDidFinishDismissal(self.request);
 }
 
 @end

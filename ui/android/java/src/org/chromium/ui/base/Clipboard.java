@@ -15,7 +15,6 @@ import android.content.pm.PackageInfo;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
-import android.provider.MediaStore;
 import android.text.Html;
 import android.text.Spanned;
 import android.text.style.CharacterStyle;
@@ -237,10 +236,8 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
             Uri uri = getImageUri();
             if (uri == null) return null;
 
-            // TODO(crbug.com/1065914): Use ImageDecoder.decodeBitmap for API level 29 and up.
-            Bitmap bitmap = MediaStore.Images.Media.getBitmap(
+            Bitmap bitmap = ApiCompatibilityUtils.getBitmapByUri(
                     ContextUtils.getApplicationContext().getContentResolver(), uri);
-
             if (!bitmapSupportByGfx(bitmap)) {
                 return bitmap.copy(Bitmap.Config.ARGB_8888, /*mutable=*/false);
             }

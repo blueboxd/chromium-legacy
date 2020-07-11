@@ -522,7 +522,7 @@ TEST_F(CopyTreeWorkItemTest, DISABLED_IfNotPresentTest) {
   EXPECT_FALSE(base::PathExists(backup_file));
 
   // Now delete the destination and try copying the file again.
-  base::DeleteFile(file_name_to, false);
+  base::DeleteFile(file_name_to);
   work_item.reset(WorkItem::CreateCopyTreeWorkItem(
       file_name_from, file_name_to, temp_dir_.GetPath(),
       WorkItem::IF_NOT_PRESENT, base::FilePath()));

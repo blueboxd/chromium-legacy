@@ -4026,7 +4026,8 @@ static PaintInvalidationReason DocumentLifecycleBasedPaintInvalidationReason(
     case DocumentLifecycle::kAfterPerformLayout:
       return PaintInvalidationReason::kGeometry;
     case DocumentLifecycle::kInCompositingUpdate:
-      return PaintInvalidationReason::kCompositing;
+      DCHECK(false);
+      return PaintInvalidationReason::kFull;
     default:
       return PaintInvalidationReason::kFull;
   }

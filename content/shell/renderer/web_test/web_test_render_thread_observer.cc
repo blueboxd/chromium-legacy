@@ -7,7 +7,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/shell/common/web_test/web_test_switches.h"
-#include "content/shell/renderer/web_test/test_interfaces.h"
 #include "content/shell/renderer/web_test/test_runner.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/web/blink.h"
@@ -30,7 +29,7 @@ WebTestRenderThreadObserver::WebTestRenderThreadObserver() {
 
   blink::SetWebTestMode(true);
 
-  test_interfaces_ = std::make_unique<TestInterfaces>();
+  test_runner_ = std::make_unique<TestRunner>();
 }
 
 WebTestRenderThreadObserver::~WebTestRenderThreadObserver() {
@@ -62,7 +61,7 @@ void WebTestRenderThreadObserver::ReplicateWebTestRuntimeFlagsChanges(
   bool ok = changed_layout_test_runtime_flags.GetAsDictionary(
       &changed_web_test_runtime_flags_dictionary);
   DCHECK(ok);
-  test_interfaces()->GetTestRunner()->ReplicateWebTestRuntimeFlagsChanges(
+  test_runner_->ReplicateWebTestRuntimeFlagsChanges(
       *changed_web_test_runtime_flags_dictionary);
 }
 

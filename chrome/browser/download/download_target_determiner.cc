@@ -1055,7 +1055,8 @@ DownloadConfirmationReason DownloadTargetDeterminer::NeedsConfirmation(
   // The user may still be prompted even if this pref is disabled due to, for
   // example, there being an unresolvable filename conflict or the target path
   // is not writeable.
-  return download_prefs_->PromptForDownload()
+  return (download_prefs_->PromptForDownload() ||
+          download_prefs_->PromptDownloadLater())
              ? DownloadConfirmationReason::PREFERENCE
              : DownloadConfirmationReason::NONE;
 }

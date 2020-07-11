@@ -110,7 +110,8 @@ void CompositorDependenciesAndroid::CreateVizFrameSinkManager() {
   pending_connect_viz_on_io_thread_ = base::BindOnce(
       &CompositorDependenciesAndroid::ConnectVizFrameSinkManagerOnIOThread,
       std::move(frame_sink_manager_receiver),
-      std::move(frame_sink_manager_client));
+      std::move(frame_sink_manager_client),
+      host_frame_sink_manager_.debug_renderer_settings());
 }
 
 cc::TaskGraphRunner* CompositorDependenciesAndroid::GetTaskGraphRunner() {
@@ -137,12 +138,14 @@ void CompositorDependenciesAndroid::TryEstablishVizConnectionIfNeeded() {
 // static
 void CompositorDependenciesAndroid::ConnectVizFrameSinkManagerOnIOThread(
     mojo::PendingReceiver<viz::mojom::FrameSinkManager> receiver,
-    mojo::PendingRemote<viz::mojom::FrameSinkManagerClient> client) {
+    mojo::PendingRemote<viz::mojom::FrameSinkManagerClient> client,
+    const viz::DebugRendererSettings& debug_renderer_settings) {
   auto* gpu_process_host = GpuProcessHost::Get();
   if (!gpu_process_host)
     return;
-  gpu_process_host->gpu_host()->ConnectFrameSinkManager(std::move(receiver),
-                                                        std::move(client));
+
+  gpu_process_host->gpu_host()->ConnectFrameSinkManager(
+      std::move(receiver), std::move(client), debug_renderer_settings);
 }
 
 void CompositorDependenciesAndroid::EnqueueLowEndBackgroundCleanup() {

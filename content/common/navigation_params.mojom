@@ -156,6 +156,11 @@ struct BeginNavigationParams {
   // this navigation. Only set on navigations originating from anchors with
   // relevant impression attributes set.
   Impression? impression;
+
+  // Timestamps of the renderer running beforeunload handlers on local frames
+  // in preparation for navigating. Used for metrics.
+  mojo_base.mojom.TimeTicks before_unload_start;
+  mojo_base.mojom.TimeTicks before_unload_end;
 };
 
 // Provided by the browser or the renderer -------------------------------------

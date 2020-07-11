@@ -25,7 +25,6 @@
 #include "chromeos/printing/ppd_cache.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "net/base/net_errors.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"

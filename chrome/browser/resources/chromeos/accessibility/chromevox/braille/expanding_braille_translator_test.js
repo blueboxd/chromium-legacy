@@ -2,26 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Include test fixture.
-GEN_INCLUDE(['../testing/chromevox_unittest_base.js']);
-
-GEN('#include "content/public/test/browser_test.h"');
-
 /**
  * Test fixture.
  */
-ChromeVoxExpandingBrailleTranslatorUnitTest =
-    class extends ChromeVoxUnitTestBase {};
+ChromeVoxExpandingBrailleTranslatorUnitTest = class extends testing.Test {};
 
 
 /** @override */
-ChromeVoxUnitTestBase.prototype.closureModuleDeps = [
-  'Spannable',
-  'BrailleTextStyleSpan',
-  'ExpandingBrailleTranslator',
-  'LibLouis',
-  'ValueSelectionSpan',
-  'ValueSpan',
+ChromeVoxExpandingBrailleTranslatorUnitTest.prototype.extraLibraries = [
+  '../../common/testing/assert_additions.js',
+  '../testing/fake_dom.js',
+  '../common/spannable.js',
+  '../braille/spans.js',
+  '../braille/liblouis.js',
+  'expanding_braille_translator.js',
 ];
 
 /**

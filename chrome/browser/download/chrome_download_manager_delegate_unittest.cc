@@ -1706,6 +1706,7 @@ class TestDownloadDialogBridge : public DownloadDialogBridge {
                   int64_t total_bytes,
                   DownloadLocationDialogType dialog_type,
                   const base::FilePath& suggested_path,
+                  bool supports_later_dialog,
                   DownloadDialogBridge::DialogCallback callback) override {
     dialog_shown_count_++;
     dialog_type_ = dialog_type;

@@ -86,7 +86,7 @@ bool ArchivePatchHelper::CourgetteEnsemblePatch() {
              << target_.value() << " using Courgette. err=" << result;
 
   // Ensure a partial output is not left behind.
-  base::DeleteFile(target_, false);
+  base::DeleteFile(target_);
 
   return false;
 }
@@ -109,7 +109,7 @@ bool ArchivePatchHelper::ZucchiniEnsemblePatch() {
              << " using Zucchini. err=" << static_cast<uint32_t>(result);
 
   // Ensure a partial output is not left behind.
-  base::DeleteFile(target_, false);
+  base::DeleteFile(target_);
 
   return false;
 }
@@ -131,7 +131,7 @@ bool ArchivePatchHelper::BinaryPatch() {
              << target_.value() << " using bsdiff. err=" << result;
 
   // Ensure a partial output is not left behind.
-  base::DeleteFile(target_, false);
+  base::DeleteFile(target_);
 
   return false;
 }

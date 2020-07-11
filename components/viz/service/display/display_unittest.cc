@@ -181,7 +181,7 @@ class DisplayTest : public testing::Test {
       std::unique_ptr<OutputSurface> output_surface) {
     auto overlay_processor = std::make_unique<OverlayProcessorStub>();
     auto display = std::make_unique<Display>(
-        &shared_bitmap_manager_, settings, frame_sink_id,
+        &shared_bitmap_manager_, settings, &debug_settings_, frame_sink_id,
         std::move(output_surface), std::move(overlay_processor),
         std::move(scheduler), task_runner_);
     display->SetVisible(true);
@@ -226,6 +226,7 @@ class DisplayTest : public testing::Test {
     return display_->pending_presentation_group_timings_.size();
   }
 
+  DebugRendererSettings debug_settings_;
   ServerSharedBitmapManager shared_bitmap_manager_;
   FrameSinkManagerImpl manager_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;

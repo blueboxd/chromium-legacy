@@ -121,7 +121,7 @@ bool DeleteExecutablesWithoutMatchingDirectory(
       const base::FilePath executable_name = executable_path.BaseName();
       LOG(WARNING) << "Attempting to delete stray executable "
                    << executable_path.value();
-      if (!base::DeleteFile(executable_path, false)) {
+      if (!base::DeleteFile(executable_path)) {
         PLOG(ERROR) << "Failed to delete stray executable "
                     << executable_path.value();
         success = false;
@@ -185,7 +185,7 @@ bool DeleteVersion(const base::FilePath& version_directory,
   // Delete locked files. The files won't actually be deleted until the locks
   // are released.
   for (const base::FilePath& locked_file_path : locked_file_paths) {
-    if (!base::DeleteFile(locked_file_path, false)) {
+    if (!base::DeleteFile(locked_file_path)) {
       PLOG(ERROR) << "Failed to delete locked file "
                   << locked_file_path.value();
       success = false;

@@ -423,8 +423,11 @@ AuthenticatorGetAssertionBlocking(WinWebAuthnApi* webauthn_api,
             base::nullopt};
   }
   FIDO_LOG(DEBUG) << "WebAuthNAuthenticatorGetAssertion()=" << *assertion;
-  return {CtapDeviceResponseCode::kSuccess,
-          ToAuthenticatorGetAssertionResponse(*assertion)};
+  base::Optional<AuthenticatorGetAssertionResponse> response =
+      ToAuthenticatorGetAssertionResponse(*assertion, request.allow_list);
+  return {response ? CtapDeviceResponseCode::kSuccess
+                   : CtapDeviceResponseCode::kCtap2ErrOther,
+          std::move(response)};
 }
 
 bool SupportsCredProtectExtension(WinWebAuthnApi* api) {

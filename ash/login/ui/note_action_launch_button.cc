@@ -221,6 +221,7 @@ class NoteActionLaunchButton::ActionButton : public views::ImageButton,
     canvas->Restore();
   }
   void StateChanged(ButtonState old_state) override {
+    ImageButton::StateChanged(old_state);
     UpdateBubbleRadiusAndOpacity();
   }
   void OnFocus() override {

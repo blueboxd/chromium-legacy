@@ -250,8 +250,8 @@ bool SynchronousLayerTreeFrameSinkImpl::BindToClient(
   // TODO(crbug.com/692814): The Display never sends its resources out of
   // process so there is no reason for it to use a SharedBitmapManager.
   display_ = std::make_unique<viz::Display>(
-      &shared_bitmap_manager_, software_renderer_settings, kRootFrameSinkId,
-      std::move(output_surface), std::move(overlay_processor),
+      &shared_bitmap_manager_, software_renderer_settings, &debug_settings_,
+      kRootFrameSinkId, std::move(output_surface), std::move(overlay_processor),
       nullptr /* scheduler */, nullptr /* current_task_runner */);
   display_->Initialize(&display_client_,
                        frame_sink_manager_->surface_manager());

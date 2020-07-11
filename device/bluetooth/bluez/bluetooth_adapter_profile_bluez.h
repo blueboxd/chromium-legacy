@@ -46,7 +46,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterProfileBlueZ
       const device::BluetoothUUID& uuid,
       const bluez::BluetoothProfileManagerClient::Options& options,
       ProfileRegisteredCallback success_callback,
-      bluez::BluetoothProfileManagerClient::ErrorOnceCallback error_callback);
+      bluez::BluetoothProfileManagerClient::ErrorCallback error_callback);
 
   ~BluetoothAdapterProfileBlueZ() override;
 

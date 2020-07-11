@@ -5937,7 +5937,8 @@ Unknown properties are collapsed to zero. -->
   <int value="11" label="Trace upload succeeded"/>
   <int value="12" label="Startup scenario triggered"/>
   <int value="13" label="Large upload waiting to retry"/>
-  <int value="14" label="Reached code scenario triggered"/>
+  <int value="14" label="System scenario triggered"/>
+  <int value="15" label="Reached code scenario triggered"/>
 </enum>
 
 <enum name="BackingStoreResults">
@@ -12023,6 +12024,11 @@ Called by update_net_error_codes.py.-->
 <enum name="ContextualSearchFirstRunPanelSeen">
   <int value="0" label="Seen"/>
   <int value="1" label="Unseen"/>
+</enum>
+
+<enum name="ContextualSearchGestureIsTap">
+  <int value="0" label="Longpress"/>
+  <int value="1" label="Tap"/>
 </enum>
 
 <enum name="ContextualSearchIconSpriteAnimated">
@@ -21100,6 +21106,8 @@ Called by update_document_policy_enum.py.-->
   <int value="733" label="DevicePrintersAccessMode"/>
   <int value="734" label="DeviceNativePrintersBlocklist"/>
   <int value="735" label="DeviceNativePrintersAllowlist"/>
+  <int value="736" label="URLBlocklist"/>
+  <int value="737" label="URLAllowlist"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -41128,6 +41136,7 @@ from previous Chrome versions.
   <int value="-400098787" label="QuietNotificationPrompts:enabled"/>
   <int value="-398922143" label="IframeOneGoogleBar:enabled"/>
   <int value="-398623652" label="CCTTargetTranslateLanguage:enabled"/>
+  <int value="-397959190" label="ClipboardHistory:enabled"/>
   <int value="-397392156" label="FtpProtocol:disabled"/>
   <int value="-396994784" label="enable-vr-shell"/>
   <int value="-396496344" label="ViewsTaskManager:enabled"/>
@@ -41705,6 +41714,7 @@ from previous Chrome versions.
   <int value="272631627" label="BookmarkAppsMac:enabled"/>
   <int value="273489120" label="CrostiniDiskResizing:disabled"/>
   <int value="274103741" label="enable-ntp-popular-sites"/>
+  <int value="277483398" label="ClipboardHistory:disabled"/>
   <int value="277565405" label="ContextualSearchDefinitions:disabled"/>
   <int value="278756320" label="disable-app-list-app-info"/>
   <int value="280644887" label="mash"/>

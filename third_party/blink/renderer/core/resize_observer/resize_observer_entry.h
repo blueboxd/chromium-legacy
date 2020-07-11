@@ -14,10 +14,7 @@ namespace blink {
 
 class Element;
 class DOMRectReadOnly;
-class LayoutSize;
-class ComputedStyle;
 class ResizeObserverSize;
-class LayoutRect;
 
 class CORE_EXPORT ResizeObserverEntry final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -45,11 +42,6 @@ class CORE_EXPORT ResizeObserverEntry final : public ScriptWrappable {
   HeapVector<Member<ResizeObserverSize>> device_pixel_content_box_size_;
   HeapVector<Member<ResizeObserverSize>> content_box_size_;
   HeapVector<Member<ResizeObserverSize>> border_box_size_;
-
-  static DOMRectReadOnly* ZoomAdjustedLayoutRect(LayoutRect content_rect,
-                                                 const ComputedStyle& style);
-  static ResizeObserverSize* ZoomAdjustedSize(const LayoutSize box_size,
-                                              const ComputedStyle& style);
 };
 
 }  // namespace blink

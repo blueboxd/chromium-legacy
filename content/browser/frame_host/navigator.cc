@@ -29,6 +29,7 @@
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params_utils.h"
 #include "content/common/page_messages.h"
@@ -41,12 +42,16 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/restore_type.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/url_utils.h"
 #include "net/base/net_errors.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
@@ -56,8 +61,14 @@ namespace content {
 struct Navigator::NavigationMetricsData {
   NavigationMetricsData(base::TimeTicks start_time,
                         GURL url,
+                        ukm::SourceId ukm_source_id,
+                        bool is_browser_initiated_before_unload,
                         RestoreType restore_type)
-      : start_time_(start_time), url_(url) {
+      : start_time_(start_time),
+        url_(url),
+        ukm_source_id_(ukm_source_id),
+        is_browser_initiated_before_unload_(
+            is_browser_initiated_before_unload) {
     is_restoring_from_last_session_ =
         (restore_type == RestoreType::LAST_SESSION_EXITED_CLEANLY ||
          restore_type == RestoreType::LAST_SESSION_CRASHED);
@@ -65,9 +76,30 @@ struct Navigator::NavigationMetricsData {
 
   base::TimeTicks start_time_;
   GURL url_;
+  ukm::SourceId ukm_source_id_;
+  bool is_browser_initiated_before_unload_;
   bool is_restoring_from_last_session_;
   base::TimeTicks url_job_start_time_;
   base::TimeDelta before_unload_delay_;
+
+  // Timestamps before_unload_(start|end)_ give the time it took to run
+  // beforeunloads dispatched from the browser process. For browser-initated
+  // navigations this includes all frames (all beforeunload handlers on a page).
+  // For renderer-initated navigations this just includes OOPIFs since local
+  // beforeunloads will have been run in the renderer before dispatching the
+  // navigation IPC.
+  base::Optional<base::TimeTicks> before_unload_start_;
+  base::Optional<base::TimeTicks> before_unload_end_;
+
+  // Time at which the browser process received a navigation request and
+  // dispatched beforeunloads to the renderer.
+  base::Optional<base::TimeTicks> before_unload_sent_;
+
+  // Timestamps renderer_before_unload_(start|end)_ give the time it took to run
+  // beforeunloads for local frames in a renderer-initiated navigation, prior to
+  // notifying the browser process about the navigation.
+  base::Optional<base::TimeTicks> renderer_before_unload_start_;
+  base::Optional<base::TimeTicks> renderer_before_unload_end_;
 };
 
 Navigator::Navigator(NavigationControllerImpl* navigation_controller,
@@ -374,9 +406,10 @@ void Navigator::Navigate(std::unique_ptr<NavigationRequest> request,
   GURL dest_url = request->common_params().url;
   FrameTreeNode* frame_tree_node = request->frame_tree_node();
 
-  navigation_data_.reset(
-      new NavigationMetricsData(request->common_params().navigation_start,
-                                request->common_params().url, restore_type));
+  navigation_data_ = std::make_unique<NavigationMetricsData>(
+      request->common_params().navigation_start, request->common_params().url,
+      frame_tree_node->current_frame_host()->GetPageUkmSourceId(),
+      true /* is_browser_initiated_before_unload */, restore_type);
 
   // Check if the BeforeUnload event needs to execute before assigning the
   // NavigationRequest to the FrameTreeNode. Assigning it to the FrameTreeNode
@@ -670,6 +703,16 @@ void Navigator::OnBeginNavigation(
           std::move(web_bundle_handle_tracker)));
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
 
+  navigation_data_ = std::make_unique<NavigationMetricsData>(
+      navigation_request->common_params().navigation_start,
+      navigation_request->common_params().url,
+      frame_tree_node->current_frame_host()->GetPageUkmSourceId(),
+      false /* is_browser_initiated_before_unload */, RestoreType::NONE);
+
+  LogRendererInitiatedBeforeUnloadTime(
+      navigation_request->begin_params()->before_unload_start,
+      navigation_request->begin_params()->before_unload_end);
+
   // This frame has already run beforeunload before it sent this IPC.  See if
   // any of its cross-process subframes also need to run beforeunload.  If so,
   // delay the navigation until beforeunload completion callbacks are invoked on
@@ -732,14 +775,79 @@ void Navigator::LogResourceRequestTime(base::TimeTicks timestamp,
 }
 
 void Navigator::LogBeforeUnloadTime(
-    const base::TimeTicks& renderer_before_unload_start_time,
-    const base::TimeTicks& renderer_before_unload_end_time) {
+    base::TimeTicks renderer_before_unload_start_time,
+    base::TimeTicks renderer_before_unload_end_time,
+    base::TimeTicks before_unload_sent_time) {
+  if (!navigation_data_)
+    return;
+
   // Only stores the beforeunload delay if we're tracking a browser initiated
   // navigation and it happened later than the navigation request.
-  if (navigation_data_ &&
+  if (navigation_data_->is_browser_initiated_before_unload_ &&
       renderer_before_unload_start_time > navigation_data_->start_time_) {
     navigation_data_->before_unload_delay_ =
         renderer_before_unload_end_time - renderer_before_unload_start_time;
+  }
+  // LogBeforeUnloadTime is called once for each cross-process frame. Once all
+  // beforeunloads complete, the timestamps in navigation_data will be the
+  // timestamps of the beforeunload that blocked the navigation the longest.
+  if (!base::TimeTicks::IsConsistentAcrossProcesses()) {
+    // These timestamps come directly from the renderer so they might need to be
+    // converted to local time stamps.
+    InterProcessTimeTicksConverter converter(
+        LocalTimeTicks::FromTimeTicks(before_unload_sent_time),
+        LocalTimeTicks::FromTimeTicks(base::TimeTicks::Now()),
+        RemoteTimeTicks::FromTimeTicks(renderer_before_unload_start_time),
+        RemoteTimeTicks::FromTimeTicks(renderer_before_unload_end_time));
+    LocalTimeTicks converted_renderer_before_unload_start =
+        converter.ToLocalTimeTicks(
+            RemoteTimeTicks::FromTimeTicks(renderer_before_unload_start_time));
+    LocalTimeTicks converted_renderer_before_unload_end =
+        converter.ToLocalTimeTicks(
+            RemoteTimeTicks::FromTimeTicks(renderer_before_unload_end_time));
+    navigation_data_->before_unload_start_ =
+        converted_renderer_before_unload_start.ToTimeTicks();
+    navigation_data_->before_unload_end_ =
+        converted_renderer_before_unload_end.ToTimeTicks();
+  } else {
+    navigation_data_->before_unload_start_ = renderer_before_unload_start_time;
+    navigation_data_->before_unload_end_ = renderer_before_unload_end_time;
+  }
+  navigation_data_->before_unload_sent_ = before_unload_sent_time;
+}
+
+void Navigator::LogRendererInitiatedBeforeUnloadTime(
+    base::TimeTicks renderer_before_unload_start_time,
+    base::TimeTicks renderer_before_unload_end_time) {
+  DCHECK(navigation_data_);
+
+  if (renderer_before_unload_start_time == base::TimeTicks() ||
+      renderer_before_unload_end_time == base::TimeTicks())
+    return;
+
+  if (!base::TimeTicks::IsConsistentAcrossProcesses()) {
+    // These timestamps come directly from the renderer so they might need to be
+    // converted to local time stamps.
+    InterProcessTimeTicksConverter converter(
+        LocalTimeTicks::FromTimeTicks(base::TimeTicks()),
+        LocalTimeTicks::FromTimeTicks(base::TimeTicks::Now()),
+        RemoteTimeTicks::FromTimeTicks(renderer_before_unload_start_time),
+        RemoteTimeTicks::FromTimeTicks(renderer_before_unload_end_time));
+    LocalTimeTicks converted_renderer_before_unload_start =
+        converter.ToLocalTimeTicks(
+            RemoteTimeTicks::FromTimeTicks(renderer_before_unload_start_time));
+    LocalTimeTicks converted_renderer_before_unload_end =
+        converter.ToLocalTimeTicks(
+            RemoteTimeTicks::FromTimeTicks(renderer_before_unload_end_time));
+    navigation_data_->renderer_before_unload_start_ =
+        converted_renderer_before_unload_start.ToTimeTicks();
+    navigation_data_->renderer_before_unload_end_ =
+        converted_renderer_before_unload_end.ToTimeTicks();
+  } else {
+    navigation_data_->renderer_before_unload_start_ =
+        renderer_before_unload_start_time;
+    navigation_data_->renderer_before_unload_end_ =
+        renderer_before_unload_end_time;
   }
 }
 
@@ -755,42 +863,85 @@ void Navigator::RecordNavigationMetrics(
     return;
   }
 
-  base::TimeDelta time_to_commit =
-      base::TimeTicks::Now() - navigation_data_->start_time_;
-  UMA_HISTOGRAM_TIMES("Navigation.TimeToCommit", time_to_commit);
+  ukm::builders::Unload builder(navigation_data_->ukm_source_id_);
 
-  time_to_commit -= navigation_data_->before_unload_delay_;
-  base::TimeDelta time_to_network = navigation_data_->url_job_start_time_ -
-                                    navigation_data_->start_time_ -
-                                    navigation_data_->before_unload_delay_;
-  if (navigation_data_->is_restoring_from_last_session_) {
-    UMA_HISTOGRAM_TIMES(
-        "Navigation.TimeToCommit_SessionRestored_BeforeUnloadDiscounted",
-        time_to_commit);
-    UMA_HISTOGRAM_TIMES(
-        "Navigation.TimeToURLJobStart_SessionRestored_BeforeUnloadDiscounted",
-        time_to_network);
-    navigation_data_.reset();
-    return;
-  }
-  bool navigation_created_new_renderer_process =
-      site_instance->GetProcess()->GetInitTimeForNavigationMetrics() >
-      navigation_data_->start_time_;
-  if (navigation_created_new_renderer_process) {
-    UMA_HISTOGRAM_TIMES(
-        "Navigation.TimeToCommit_NewRenderer_BeforeUnloadDiscounted",
-        time_to_commit);
-    UMA_HISTOGRAM_TIMES(
-        "Navigation.TimeToURLJobStart_NewRenderer_BeforeUnloadDiscounted",
-        time_to_network);
+  if (navigation_data_->is_browser_initiated_before_unload_) {
+    base::TimeDelta time_to_commit =
+        base::TimeTicks::Now() - navigation_data_->start_time_;
+    UMA_HISTOGRAM_TIMES("Navigation.TimeToCommit", time_to_commit);
+
+    time_to_commit -= navigation_data_->before_unload_delay_;
+    base::TimeDelta time_to_network = navigation_data_->url_job_start_time_ -
+                                      navigation_data_->start_time_ -
+                                      navigation_data_->before_unload_delay_;
+    if (navigation_data_->is_restoring_from_last_session_) {
+      UMA_HISTOGRAM_TIMES(
+          "Navigation.TimeToCommit_SessionRestored_BeforeUnloadDiscounted",
+          time_to_commit);
+      UMA_HISTOGRAM_TIMES(
+          "Navigation.TimeToURLJobStart_SessionRestored_BeforeUnloadDiscounted",
+          time_to_network);
+      navigation_data_.reset();
+      return;
+    }
+    bool navigation_created_new_renderer_process =
+        site_instance->GetProcess()->GetInitTimeForNavigationMetrics() >
+        navigation_data_->start_time_;
+    if (navigation_created_new_renderer_process) {
+      UMA_HISTOGRAM_TIMES(
+          "Navigation.TimeToCommit_NewRenderer_BeforeUnloadDiscounted",
+          time_to_commit);
+      UMA_HISTOGRAM_TIMES(
+          "Navigation.TimeToURLJobStart_NewRenderer_BeforeUnloadDiscounted",
+          time_to_network);
+    } else {
+      UMA_HISTOGRAM_TIMES(
+          "Navigation.TimeToCommit_ExistingRenderer_BeforeUnloadDiscounted",
+          time_to_commit);
+      UMA_HISTOGRAM_TIMES(
+          "Navigation.TimeToURLJobStart_ExistingRenderer_"
+          "BeforeUnloadDiscounted",
+          time_to_network);
+    }
+    if (navigation_data_->before_unload_start_ &&
+        navigation_data_->before_unload_end_) {
+      builder.SetBeforeUnloadDuration(
+          (navigation_data_->before_unload_end_.value() -
+           navigation_data_->before_unload_start_.value())
+              .InMilliseconds());
+    }
   } else {
-    UMA_HISTOGRAM_TIMES(
-        "Navigation.TimeToCommit_ExistingRenderer_BeforeUnloadDiscounted",
-        time_to_commit);
-    UMA_HISTOGRAM_TIMES(
-        "Navigation.TimeToURLJobStart_ExistingRenderer_BeforeUnloadDiscounted",
-        time_to_network);
+    if (navigation_data_->renderer_before_unload_start_ &&
+        navigation_data_->renderer_before_unload_end_) {
+      base::TimeDelta before_unload_duration =
+          navigation_data_->renderer_before_unload_end_.value() -
+          navigation_data_->renderer_before_unload_start_.value();
+
+      // If we had to dispatch beforeunload handlers for OOPIFs from the
+      // browser, add those into the beforeunload duration as they contributed
+      // to the total beforeunload latency.
+      if (navigation_data_->before_unload_sent_) {
+        before_unload_duration +=
+            navigation_data_->before_unload_end_.value() -
+            navigation_data_->before_unload_start_.value();
+      }
+      builder.SetBeforeUnloadDuration(before_unload_duration.InMilliseconds());
+    }
   }
+
+  // Records the queuing duration of the beforeunload sent from the browser to
+  // the frame that blocked the navigation the longest. This can happen in a
+  // renderer or browser initiated navigation and could mean a long queuing time
+  // blocked the navigation or a long beforeunload. Records nothing if none were
+  // sent.
+  if (navigation_data_->before_unload_sent_) {
+    builder.SetBeforeUnloadQueueingDuration(
+        (navigation_data_->before_unload_start_.value() -
+         navigation_data_->before_unload_sent_.value())
+            .InMilliseconds());
+  }
+
+  builder.Record(ukm::UkmRecorder::Get());
   navigation_data_.reset();
 }
 

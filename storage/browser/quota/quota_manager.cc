@@ -188,7 +188,7 @@ void DidGetUsageAndQuotaStripBreakdown(
 constexpr int64_t QuotaManager::kNoLimit;
 constexpr int64_t QuotaManager::kPerHostPersistentQuotaLimit;
 constexpr int QuotaManager::kEvictionIntervalInMilliSeconds;
-constexpr int QuotaManager::kThresholdOfErrorsToBeBlacklisted;
+constexpr int QuotaManager::kThresholdOfErrorsToBeDenylisted;
 constexpr char QuotaManager::kDatabaseName[];
 constexpr char QuotaManager::kDaysBetweenRepeatedOriginEvictionsHistogram[];
 constexpr char QuotaManager::kEvictedOriginAccessedCountHistogram[];
@@ -1431,7 +1431,7 @@ void QuotaManager::DidOriginDataEvicted(blink::mojom::QuotaStatusCode status) {
   // We only try evict origins that are not in use, so basically
   // deletion attempt for eviction should not fail.  Let's record
   // the origin if we get error and exclude it from future eviction
-  // if the error happens consistently (> kThresholdOfErrorsToBeBlacklisted).
+  // if the error happens consistently (> kThresholdOfErrorsToBeDenylisted).
   if (status != blink::mojom::QuotaStatusCode::kOk)
     origins_in_error_[eviction_context_.evicted_origin]++;
 
@@ -1578,7 +1578,7 @@ std::set<url::Origin> QuotaManager::GetEvictionOriginExceptions() {
   }
 
   for (const auto& p : origins_in_error_) {
-    if (p.second > QuotaManager::kThresholdOfErrorsToBeBlacklisted)
+    if (p.second > QuotaManager::kThresholdOfErrorsToBeDenylisted)
       exceptions.insert(p.first);
   }
 

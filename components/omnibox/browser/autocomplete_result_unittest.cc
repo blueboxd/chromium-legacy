@@ -963,8 +963,8 @@ TEST_F(AutocompleteResultTest, DemoteOnDeviceSearchSuggestions) {
   matches[4].type = AutocompleteMatchType::SEARCH_SUGGEST;
 
   // match1, match2 are set as on device head suggestion.
-  matches[1].subtype_identifier = 271;
-  matches[2].subtype_identifier = 271;
+  matches[1].subtypes = {64, 271, 123};
+  matches[2].subtypes = {64, 124, 271};
   matches[0].provider->type_ = AutocompleteProvider::TYPE_SEARCH;
   matches[1].provider->type_ = AutocompleteProvider::TYPE_ON_DEVICE_HEAD;
 

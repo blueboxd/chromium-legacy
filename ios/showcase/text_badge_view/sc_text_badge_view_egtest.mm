@@ -23,7 +23,7 @@ using ::showcase_utils::Close;
 // Tests that the accessibility label matches the display text.
 - (void)testTextBadgeAccessibilityLabel {
   Open(@"TextBadgeView");
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"TEXT")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"TEXT")]
       assertWithMatcher:grey_notNil()];
   Close();
 }

@@ -3894,7 +3894,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                               expected_variant);
   expected_variant.Reset();
 
-  expected_variant.Set(12.0f);
+  expected_variant.Set(12.0);
   EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider, UIA_FontSizeAttributeId,
                               expected_variant);
   expected_variant.Reset();

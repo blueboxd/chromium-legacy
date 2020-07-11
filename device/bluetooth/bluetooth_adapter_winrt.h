@@ -38,7 +38,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
   std::string GetName() const override;
   void SetName(const std::string& name,
                base::OnceClosure callback,
-               ErrorOnceCallback error_callback) override;
+               ErrorCallback error_callback) override;
   bool IsInitialized() const override;
   bool IsPresent() const override;
   bool CanPower() const override;
@@ -47,7 +47,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
   bool IsDiscoverable() const override;
   void SetDiscoverable(bool discoverable,
                        base::OnceClosure callback,
-                       ErrorOnceCallback error_callback) override;
+                       ErrorCallback error_callback) override;
   bool IsDiscovering() const override;
   UUIDList GetUUIDs() const override;
   void CreateRfcommService(const BluetoothUUID& uuid,

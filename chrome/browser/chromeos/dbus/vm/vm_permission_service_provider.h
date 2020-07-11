@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DBUS_VM_VM_PERMISSION_SERVICE_PROVIDER_H_
 #define CHROME_BROWSER_CHROMEOS_DBUS_VM_VM_PERMISSION_SERVICE_PROVIDER_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -12,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/unguessable_token.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/exported_object.h"
 
@@ -115,7 +117,9 @@ class VmPermissionServiceProvider
     ~VmInfo();
   };
 
-  using VmMap = std::unordered_map<std::string, std::unique_ptr<VmInfo>>;
+  using VmMap = std::unordered_map<base::UnguessableToken,
+                                   std::unique_ptr<VmInfo>,
+                                   base::UnguessableTokenHash>;
 
   // Called from ExportedObject when GetLicenseDataResponse() is exported as a
   // D-Bus method or failed to be exported.

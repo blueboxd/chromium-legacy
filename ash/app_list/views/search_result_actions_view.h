@@ -5,7 +5,7 @@
 #ifndef ASH_APP_LIST_VIEWS_SEARCH_RESULT_ACTIONS_VIEW_H_
 #define ASH_APP_LIST_VIEWS_SEARCH_RESULT_ACTIONS_VIEW_H_
 
-#include <vector>
+#include <list>
 
 #include "ash/app_list/app_list_export.h"
 #include "ash/app_list/model/search/search_result.h"
@@ -17,7 +17,6 @@ namespace ash {
 
 class SearchResultActionsViewDelegate;
 class SearchResultView;
-class SearchResultImageButton;
 
 // SearchResultActionsView displays a SearchResult::Actions in a button
 // strip. Each action is presented as a button and horizontally laid out.
@@ -35,9 +34,6 @@ class APP_LIST_EXPORT SearchResultActionsView : public views::View,
 
   // Updates the button UI upon the SearchResultView's UI state change.
   void UpdateButtonsOnStateChanged();
-
-  // Called when one of the action buttons changes state.
-  void ActionButtonStateChanged();
 
   // views::View:
   const char* GetClassName() const override;
@@ -88,7 +84,7 @@ class APP_LIST_EXPORT SearchResultActionsView : public views::View,
   base::Optional<int> selected_action_;
 
   SearchResultActionsViewDelegate* delegate_;  // Not owned.
-  std::vector<SearchResultImageButton*> buttons_;
+  std::list<views::PropertyChangedSubscription> subscriptions_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultActionsView);
 };

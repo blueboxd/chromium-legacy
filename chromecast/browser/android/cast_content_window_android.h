@@ -56,6 +56,7 @@ class CastContentWindowAndroid : public CastContentWindow {
 
  private:
   const std::string activity_id_;
+  bool web_contents_attached_;
   base::android::ScopedJavaGlobalRef<jobject> java_window_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentWindowAndroid);

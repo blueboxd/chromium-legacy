@@ -2187,8 +2187,8 @@ jumbo_source_set("browser") {
         "media/capture/desktop_capturer_lacros.h",
       ]
       deps += [
+        "//chromeos/crosapi/mojom",
         "//chromeos/lacros/browser",
-        "//chromeos/lacros/mojom",
       ]
     }
   }

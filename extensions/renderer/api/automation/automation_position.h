@@ -16,6 +16,10 @@ class Arguments;
 namespace extensions {
 
 // A class that wraps an ui::AXPosition to make available in javascript.
+//
+// For new additions, consider whether it should be public to the
+// chrome.automation extension api. If so, please update
+// extensions/common/api/automation.idl.
 class AutomationPosition final : public gin::Wrappable<AutomationPosition> {
  public:
   AutomationPosition(const ui::AXNode& node, int offset, bool is_upstream);

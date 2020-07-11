@@ -38,7 +38,7 @@ TEST(MessageWindowTest, Create) {
 TEST(MessageWindowTest, CreateNamed) {
   win::MessageWindow window;
   EXPECT_TRUE(window.CreateNamed(base::BindRepeating(&HandleMessage),
-                                 UTF8ToUTF16("test_message_window")));
+                                 UTF8ToWide("test_message_window")));
 }
 
 // Verifies that the created window can receive messages.
@@ -51,7 +51,7 @@ TEST(MessageWindowTest, SendMessage) {
 
 // Verifies that a named window can be found by name.
 TEST(MessageWindowTest, FindWindow) {
-  string16 name = UTF8ToUTF16(base::GenerateGUID());
+  std::wstring name = UTF8ToWide(base::GenerateGUID());
   win::MessageWindow window;
   EXPECT_TRUE(window.CreateNamed(base::BindRepeating(&HandleMessage), name));
 

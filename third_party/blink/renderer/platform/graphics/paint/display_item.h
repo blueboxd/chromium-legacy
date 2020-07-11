@@ -165,10 +165,11 @@ class PLATFORM_EXPORT DisplayItem {
               bool draws_content = false)
       : client_(&client),
         visual_rect_(client.VisualRect()),
-        outset_for_raster_effects_(client.VisualRectOutsetForRasterEffects()),
         fragment_(0),
         type_(type),
         derived_size_(derived_size),
+        raster_effect_outset_(
+            static_cast<unsigned>(client.VisualRectOutsetForRasterEffects())),
         draws_content_(draws_content),
         is_cacheable_(client.IsCacheable()),
         is_tombstone_(false),
@@ -177,6 +178,8 @@ class PLATFORM_EXPORT DisplayItem {
     // If it doesn't, enlarge |derived_size_| and fix this assert.
     SECURITY_DCHECK(derived_size == derived_size_);
     SECURITY_DCHECK(derived_size >= sizeof(*this));
+    DCHECK_EQ(client.VisualRectOutsetForRasterEffects(),
+              GetRasterEffectOutset());
   }
 
   virtual ~DisplayItem() = default;
@@ -207,7 +210,9 @@ class PLATFORM_EXPORT DisplayItem {
   // not invalidated. Otherwise it saves the previous visual rect of the client.
   // See DisplayItemClient::VisualRect() about its coordinate space.
   const IntRect& VisualRect() const { return visual_rect_; }
-  float OutsetForRasterEffects() const { return outset_for_raster_effects_; }
+  RasterEffectOutset GetRasterEffectOutset() const {
+    return static_cast<RasterEffectOutset>(raster_effect_outset_);
+  }
 
   // Visual rect can change without needing invalidation of the client, e.g.
   // when ancestor clip changes. This is called from PaintController::
@@ -302,22 +307,22 @@ class PLATFORM_EXPORT DisplayItem {
   // AppendByMoving() where a tombstone DisplayItem is constructed at the source
   // location. Only set draws_content_ to false and is_tombstone_ to true,
   // leaving other fields as-is so that we can get their original values.
-  // |visual_rect_| and |outset_for_raster_effects_| are special, see
+  // |visual_rect_| and |raster_effect_outset_| are special, see
   // DisplayItemList::AppendByMoving().
   DisplayItem() : draws_content_(false), is_tombstone_(true) {}
 
   const DisplayItemClient* client_;
   IntRect visual_rect_;
-  float outset_for_raster_effects_;
   wtf_size_t fragment_;
   static_assert(kTypeLast < (1 << 8),
                 "DisplayItem::Type should fit in uint8_t");
-  uint8_t type_;
-  uint8_t derived_size_;  // size of the actual derived class
-  bool draws_content_ : 1;
-  bool is_cacheable_ : 1;
-  bool is_tombstone_ : 1;
-  bool is_moved_from_cached_subsequence_ : 1;
+  unsigned type_ : 8;
+  unsigned derived_size_ : 8;  // size of the actual derived class
+  unsigned raster_effect_outset_ : 2;
+  unsigned draws_content_ : 1;
+  unsigned is_cacheable_ : 1;
+  unsigned is_tombstone_ : 1;
+  unsigned is_moved_from_cached_subsequence_ : 1;
 };
 
 inline bool operator==(const DisplayItem::Id& a, const DisplayItem::Id& b) {

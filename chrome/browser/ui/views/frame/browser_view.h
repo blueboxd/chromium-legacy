@@ -290,6 +290,10 @@ class BrowserView : public BrowserWindow,
     return toolbar_button_provider_;
   }
 
+  TabGroupsIPHController* tab_groups_iph_controller() {
+    return tab_groups_iph_controller_.get();
+  }
+
   // BrowserWindow:
   void Show() override;
   void ShowInactive() override;

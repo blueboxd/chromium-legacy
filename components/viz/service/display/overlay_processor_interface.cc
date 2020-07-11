@@ -81,6 +81,7 @@ OverlayProcessorInterface::CreateOverlayProcessor(
     gpu::SurfaceHandle surface_handle,
     const OutputSurface::Capabilities& capabilities,
     const RendererSettings& renderer_settings,
+    const DebugRendererSettings* debug_settings,
     gpu::SharedImageManager* shared_image_manager,
     gpu::MemoryTracker* memory_tracker,
     scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler,
@@ -100,7 +101,7 @@ OverlayProcessorInterface::CreateOverlayProcessor(
   enable_dc_overlay &= capabilities.supports_dc_layers;
   return base::WrapUnique(new OverlayProcessorWin(
       enable_dc_overlay,
-      std::make_unique<DCLayerOverlayProcessor>(renderer_settings)));
+      std::make_unique<DCLayerOverlayProcessor>(debug_settings)));
 #elif defined(USE_OZONE)
   if (!features::IsUsingOzonePlatform())
     return std::make_unique<OverlayProcessorStub>();

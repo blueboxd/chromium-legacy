@@ -32,6 +32,9 @@ class OutputSurfaceProviderWebview {
   const viz::RendererSettings& renderer_settings() const {
     return renderer_settings_;
   }
+  const viz::DebugRendererSettings* debug_settings() const {
+    return &debug_settings_;
+  }
   scoped_refptr<AwGLSurface> gl_surface() const { return gl_surface_; }
   scoped_refptr<gpu::SharedContextState> shared_context_state() const {
     return shared_context_state_;
@@ -44,6 +47,7 @@ class OutputSurfaceProviderWebview {
   // The member variables are effectively const after constructor, so it's safe
   // to call accessors on different threads
   viz::RendererSettings renderer_settings_;
+  viz::DebugRendererSettings debug_settings_;
   scoped_refptr<AwGLSurface> gl_surface_;
   scoped_refptr<gpu::SharedContextState> shared_context_state_;
   bool enable_shared_image_;

@@ -340,10 +340,8 @@ bool IsKeyboardPresentOnSlate(HWND hwnd, std::string* reason) {
     if (status == CR_SUCCESS) {
       // To reduce the scope of the hack we only look for ACPI and HID\\VID
       // prefixes in the keyboard device ids.
-      if (StartsWith(AsStringPiece16(device_id), STRING16_LITERAL("ACPI"),
-                     CompareCase::INSENSITIVE_ASCII) ||
-          StartsWith(AsStringPiece16(device_id), STRING16_LITERAL("HID\\VID"),
-                     CompareCase::INSENSITIVE_ASCII)) {
+      if (StartsWith(device_id, L"ACPI", CompareCase::INSENSITIVE_ASCII) ||
+          StartsWith(device_id, L"HID\\VID", CompareCase::INSENSITIVE_ASCII)) {
         if (reason) {
           *reason += "device: ";
           *reason += WideToUTF8(device_id);
@@ -722,7 +720,7 @@ void EnableHighDPISupport() {
   }
 }
 
-string16 String16FromGUID(REFGUID rguid) {
+std::wstring String16FromGUID(REFGUID rguid) {
   // This constant counts the number of characters in the formatted string,
   // including the null termination character.
   constexpr int kGuidStringCharacters =
@@ -734,7 +732,7 @@ string16 String16FromGUID(REFGUID rguid) {
       rguid.Data2, rguid.Data3, rguid.Data4[0], rguid.Data4[1], rguid.Data4[2],
       rguid.Data4[3], rguid.Data4[4], rguid.Data4[5], rguid.Data4[6],
       rguid.Data4[7])));
-  return string16(as_u16cstr(guid_string), kGuidStringCharacters - 1);
+  return std::wstring(guid_string, kGuidStringCharacters - 1);
 }
 
 bool PinUser32(NativeLibraryLoadError* error) {

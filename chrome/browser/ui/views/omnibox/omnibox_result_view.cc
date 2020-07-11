@@ -126,7 +126,8 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
 
   suggestion_view_->OnMatchUpdate(this, match_);
   keyword_view_->OnMatchUpdate(this, match_);
-  suggestion_tab_switch_button_->SetVisible(match.ShouldShowTabMatchButton());
+  suggestion_tab_switch_button_->SetVisible(
+      match.ShouldShowTabMatchButtonInlineInResultView());
   UpdateRemoveSuggestionVisibility();
 
   suggestion_view_->content()->SetText(match_.contents, match_.contents_class);
@@ -338,7 +339,7 @@ void OmniboxResultView::Layout() {
                                          button_size.height());
   }
 
-  if (match_.ShouldShowTabMatchButton()) {
+  if (match_.ShouldShowTabMatchButtonInlineInResultView()) {
     suggestion_tab_switch_button_->ProvideWidthHint(suggestion_width);
     const gfx::Size ts_button_size =
         suggestion_tab_switch_button_->GetPreferredSize();
@@ -528,7 +529,7 @@ void OmniboxResultView::UpdateRemoveSuggestionVisibility() {
   bool old_visibility = remove_suggestion_button_->GetVisible();
   bool new_visibility = match_.SupportsDeletion() &&
                         !match_.associated_keyword &&
-                        !match_.ShouldShowTabMatchButton() &&
+                        !match_.ShouldShowTabMatchButtonInlineInResultView() &&
                         (IsMatchSelected() || IsMouseHovered());
 
   remove_suggestion_button_->SetVisible(new_visibility);

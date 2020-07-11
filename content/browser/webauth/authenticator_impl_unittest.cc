@@ -3149,6 +3149,123 @@ TEST_F(AuthenticatorImplTest, GetAssertionSingleBatchListDoesNotProbe) {
   }
 }
 
+TEST_F(AuthenticatorImplTest, OptionalCredentialInAssertionResponse) {
+  // This test exercises the unfortunate optionality in the CTAP2 spec r.e.
+  // whether an authenticator returns credential information when the allowlist
+  // only has a single entry.
+  NavigateAndCommit(GURL(kTestOrigin1));
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConstructAuthenticatorWithTimer(task_runner);
+
+  for (const auto behavior :
+       {device::VirtualCtap2Device::Config::IncludeCredential::ONLY_IF_NEEDED,
+        device::VirtualCtap2Device::Config::IncludeCredential::ALWAYS,
+        device::VirtualCtap2Device::Config::IncludeCredential::NEVER}) {
+    SCOPED_TRACE(static_cast<int>(behavior));
+
+    ResetVirtualDevice();
+    device::VirtualCtap2Device::Config config;
+    config.include_credential_in_assertion_response = behavior;
+    config.max_credential_count_in_list = 10;
+    config.max_credential_id_length = 256;
+    virtual_device_factory_->SetCtap2Config(config);
+
+    size_t num_credentials;
+    bool should_timeout = false;
+    switch (behavior) {
+      case device::VirtualCtap2Device::Config::IncludeCredential::
+          ONLY_IF_NEEDED:
+        // The behaviour to test for |ONLY_IF_NEEDED| is that an omitted
+        // credential in the response is handled correctly.
+        num_credentials = 1;
+        break;
+      case device::VirtualCtap2Device::Config::IncludeCredential::ALWAYS:
+        // Also test that a technically-superfluous credential in the response
+        // is handled.
+        num_credentials = 1;
+        break;
+      case device::VirtualCtap2Device::Config::IncludeCredential::NEVER:
+        // Test that omitting a credential in an ambiguous context causes a
+        // failure.
+        num_credentials = 2;
+        should_timeout = true;
+        break;
+    }
+
+    auto test_credentials = GetTestCredentials(num_credentials);
+    for (const auto& cred : test_credentials) {
+      ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+          cred.id(), kTestRelyingPartyId));
+    }
+
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    options->allow_credentials = std::move(test_credentials);
+
+    TestGetAssertionCallback callback_receiver;
+    authenticator->GetAssertion(std::move(options),
+                                callback_receiver.callback());
+    base::RunLoop().RunUntilIdle();
+    if (should_timeout) {
+      task_runner->FastForwardBy(base::TimeDelta::FromMinutes(5));
+    }
+    callback_receiver.WaitForCallback();
+
+    EXPECT_EQ(callback_receiver.status(),
+              should_timeout ? AuthenticatorStatus::NOT_ALLOWED_ERROR
+                             : AuthenticatorStatus::SUCCESS);
+  }
+}
+
+// Tests that an allowList with only credential IDs of a length exceeding the
+// maxCredentialIdLength parameter is not mistakenly interpreted as an empty
+// allow list.
+TEST_F(AuthenticatorImplTest, AllowListWithOnlyOversizedCredentialIds) {
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  device::VirtualCtap2Device::Config config;
+  config.u2f_support = true;
+  config.max_credential_id_length = kTestCredentialIdLength;
+  config.max_credential_count_in_list = 10;
+  virtual_device_factory_->SetCtap2Config(config);
+
+  const std::vector<uint8_t> cred_id(kTestCredentialIdLength + 1, 0);
+  // Inject registration so that the test will fail (because of a successful
+  // response) if the oversized credential ID is sent.
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+      cred_id, kTestRelyingPartyId));
+
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+
+  for (const bool has_app_id : {false, true}) {
+    SCOPED_TRACE(has_app_id);
+    virtual_device_factory_->mutable_state()->allow_list_sizes.clear();
+
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    if (has_app_id) {
+      options->appid = kTestOrigin1;
+    }
+    options->allow_credentials = {device::PublicKeyCredentialDescriptor(
+        device::CredentialType::kPublicKey, cred_id)};
+
+    TestGetAssertionCallback callback_receiver;
+    authenticator->GetAssertion(std::move(options),
+                                callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+    EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
+              callback_receiver.status());
+    const auto& allow_list_sizes =
+        virtual_device_factory_->mutable_state()->allow_list_sizes;
+    // No empty allow-list requests should have been made.
+    EXPECT_TRUE(std::none_of(allow_list_sizes.cbegin(), allow_list_sizes.cend(),
+                             [](size_t size) { return size == 0; }));
+  }
+}
+
 TEST_F(AuthenticatorImplTest, NoUnexpectedAuthenticatorExtensions) {
   NavigateAndCommit(GURL(kTestOrigin1));
 
@@ -5355,45 +5472,6 @@ TEST_F(ResidentKeyAuthenticatorImplTest, WinCredProtectApiVersion) {
   }
 }
 #endif  // defined(OS_WIN)
-
-// Tests that an allowList with only credential IDs of a length exceeding the
-// maxCredentialIdLength parameter is not mistakenly interpreted as an empty
-// allow list.
-TEST_F(ResidentKeyAuthenticatorImplTest,
-       AllowListWithOnlyOversizedCredentialIds) {
-  device::VirtualCtap2Device::Config config;
-  config.u2f_support = true;
-  config.pin_support = true;
-  config.resident_key_support = true;
-  config.max_credential_id_length = kTestCredentialIdLength;
-  config.max_credential_count_in_list = 10;
-  virtual_device_factory_->SetCtap2Config(config);
-  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
-      /*credential_id=*/std::vector<uint8_t>(kTestCredentialIdLength, 1),
-      kTestRelyingPartyId,
-      /*user_id=*/{{1}}, base::nullopt, base::nullopt));
-  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
-      /*credential_id=*/std::vector<uint8_t>(kTestCredentialIdLength, 2),
-      kTestRelyingPartyId,
-      /*user_id=*/{{2}}, base::nullopt, base::nullopt));
-
-  mojo::Remote<blink::mojom::Authenticator> authenticator =
-      ConnectToAuthenticator();
-  TestGetAssertionCallback callback_receiver;
-  // |SelectAccount| should not be called since this is not a resident key
-  // request.
-  test_client_.expected_accounts = "<invalid>";
-
-  PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
-  options->appid = kTestOrigin1;
-  options->allow_credentials = {device::PublicKeyCredentialDescriptor(
-      device::CredentialType::kPublicKey,
-      std::vector<uint8_t>(kTestCredentialIdLength + 1, 0))};
-
-  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
-  callback_receiver.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
-}
 
 class InternalAuthenticatorImplTest : public AuthenticatorTestBase {
  protected:

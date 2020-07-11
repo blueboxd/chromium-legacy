@@ -123,13 +123,6 @@ void AuthenticatorRequestDialogModel::StartFlow(
 
   transport_availability_ = std::move(transport_availability);
   last_used_transport_ = last_used_transport;
-  for (const auto transport : transport_availability_.available_transports) {
-    if (transport == AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy &&
-        !cable_extension_provided_ && !have_paired_phones_) {
-      continue;
-    }
-    available_transports_.emplace_back(transport);
-  }
 
   StartGuidedFlowForMostLikelyTransportOrShowTransportSelection();
 }
@@ -167,8 +160,7 @@ void AuthenticatorRequestDialogModel::
   auto most_likely_transport =
       SelectMostLikelyTransport(transport_availability_, last_used_transport_,
                                 cable_extension_provided_, have_paired_phones_);
-  if (most_likely_transport &&
-      !base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
+  if (most_likely_transport) {
     StartGuidedFlowForTransport(*most_likely_transport);
   } else if (!transport_availability_.available_transports.empty()) {
     SetCurrentStep(Step::kTransportSelection);
@@ -194,7 +186,7 @@ void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
       StartTouchIdFlow();
       break;
     case AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy:
-      EnsureBleAdapterIsPoweredBeforeContinuingWithStep(Step::kCableActivate);
+      EnsureBleAdapterIsPoweredAndContinueWithCable();
       break;
     default:
       break;
@@ -235,25 +227,35 @@ void AuthenticatorRequestDialogModel::StartWinNativeApi() {
 
 void AuthenticatorRequestDialogModel::StartPhonePairing() {
   DCHECK(qr_generator_key_);
-  EnsureBleAdapterIsPoweredBeforeContinuingWithStep(Step::kQRCode);
+  SetCurrentStep(Step::kCableV2QRCode);
 }
 
 void AuthenticatorRequestDialogModel::
-    EnsureBleAdapterIsPoweredBeforeContinuingWithStep(Step next_step) {
+    EnsureBleAdapterIsPoweredAndContinueWithCable() {
   DCHECK(current_step() == Step::kTransportSelection ||
          current_step() == Step::kUsbInsertAndActivate ||
          current_step() == Step::kCableActivate ||
          current_step() == Step::kNotStarted);
-  if (ble_adapter_is_powered()) {
-    SetCurrentStep(next_step);
+  Step cable_step;
+  if (cable_extension_provided_) {
+    // caBLEv1.
+    cable_step = Step::kCableActivate;
   } else {
-    next_step_once_ble_powered_ = next_step;
-    if (transport_availability()->can_power_on_ble_adapter) {
-      SetCurrentStep(Step::kBlePowerOnAutomatic);
-    } else {
-      SetCurrentStep(Step::kBlePowerOnManual);
-    }
+    // caBLEv2. Display QR code if the user never paired a phone before, or
+    // show instructions how to use the previously paired phone otherwise. The
+    // user can still decide to pair a new phone on that screen.
+    cable_step =
+        have_paired_phones_ ? Step::kCableV2Activate : Step::kCableV2QRCode;
   }
+  if (ble_adapter_is_powered()) {
+    SetCurrentStep(cable_step);
+    return;
+  }
+
+  next_step_once_ble_powered_ = cable_step;
+  SetCurrentStep(transport_availability()->can_power_on_ble_adapter
+                     ? Step::kBlePowerOnAutomatic
+                     : Step::kBlePowerOnManual);
 }
 
 void AuthenticatorRequestDialogModel::ContinueWithFlowAfterBleAdapterPowered() {

@@ -321,15 +321,18 @@ DCLayerOverlay& DCLayerOverlay::operator=(const DCLayerOverlay& other) =
 DCLayerOverlay::~DCLayerOverlay() = default;
 
 DCLayerOverlayProcessor::DCLayerOverlayProcessor(
-    const RendererSettings& settings)
-    : show_debug_borders_(settings.show_dc_layer_debug_borders),
-      viz_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-  UpdateHasHwOverlaySupport();
-  ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
+    const DebugRendererSettings* debug_settings,
+    bool skip_initialization_for_testing)
+    : has_overlay_support_(skip_initialization_for_testing),
+      debug_settings_(debug_settings),
+      viz_task_runner_(skip_initialization_for_testing
+                           ? nullptr
+                           : base::ThreadTaskRunnerHandle::Get()) {
+  if (!skip_initialization_for_testing) {
+    UpdateHasHwOverlaySupport();
+    ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
+  }
 }
-
-DCLayerOverlayProcessor::DCLayerOverlayProcessor()
-    : has_overlay_support_(true), show_debug_borders_(false) {}
 
 DCLayerOverlayProcessor::~DCLayerOverlayProcessor() {
   ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
@@ -542,7 +545,7 @@ void DCLayerOverlayProcessor::Process(
   previous_display_rect_ = display_rect;
   previous_frame_underlay_rect_ = this_frame_underlay_rect;
 
-  if (show_debug_borders_) {
+  if (debug_settings_->show_dc_layer_debug_borders) {
     InsertDebugBorderDrawQuad(display_rect, this_frame_overlay_rect,
                               SK_ColorRED, root_render_pass, damage_rect);
     InsertDebugBorderDrawQuad(display_rect, this_frame_underlay_rect,

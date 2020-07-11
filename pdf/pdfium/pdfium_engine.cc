@@ -41,6 +41,7 @@
 #include "pdf/pdfium/pdfium_mem_buffer_file_write.h"
 #include "pdf/pdfium/pdfium_permissions.h"
 #include "pdf/pdfium/pdfium_unsupported_features.h"
+#include "pdf/ppapi_migration/input_event_conversions.h"
 #include "pdf/url_loader_wrapper_impl.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/cpp/instance.h"
@@ -839,13 +840,13 @@ bool PDFiumEngine::HandleEvent(const pp::InputEvent& event) {
       OnMouseEnter(pp::MouseInputEvent(event));
       break;
     case PP_INPUTEVENT_TYPE_KEYDOWN:
-      rv = OnKeyDown(pp::KeyboardInputEvent(event));
+      rv = OnKeyDown(GetKeyboardInputEvent(pp::KeyboardInputEvent(event)));
       break;
     case PP_INPUTEVENT_TYPE_KEYUP:
-      rv = OnKeyUp(pp::KeyboardInputEvent(event));
+      rv = OnKeyUp(GetKeyboardInputEvent(pp::KeyboardInputEvent(event)));
       break;
     case PP_INPUTEVENT_TYPE_CHAR:
-      rv = OnChar(pp::KeyboardInputEvent(event));
+      rv = OnChar(GetKeyboardInputEvent(pp::KeyboardInputEvent(event)));
       break;
     case PP_INPUTEVENT_TYPE_TOUCHSTART: {
       KillTouchTimer();
@@ -1556,7 +1557,7 @@ bool PDFiumEngine::ExtendSelection(int page_index, int char_index) {
   return true;
 }
 
-bool PDFiumEngine::OnKeyDown(const pp::KeyboardInputEvent& event) {
+bool PDFiumEngine::OnKeyDown(const KeyboardInputEvent& event) {
   // Handle tab events first as we might need to transition focus to an
   // annotation in PDF.
   if (event.GetKeyCode() == FWL_VKEY_Tab)
@@ -1575,9 +1576,9 @@ bool PDFiumEngine::OnKeyDown(const pp::KeyboardInputEvent& event) {
     // So just fake one since PDFium uses it.
     std::string str;
     str.push_back(event.GetKeyCode());
-    pp::KeyboardInputEvent synthesized(pp::KeyboardInputEvent(
-        client_->GetPluginInstance(), PP_INPUTEVENT_TYPE_CHAR,
-        event.GetTimeStamp(), event.GetModifiers(), event.GetKeyCode(), str));
+    KeyboardInputEvent synthesized(InputEventType::kChar, event.GetTimeStamp(),
+                                   event.GetModifiers(), event.GetKeyCode(),
+                                   str);
     OnChar(synthesized);
   }
 
@@ -1595,7 +1596,7 @@ bool PDFiumEngine::OnKeyDown(const pp::KeyboardInputEvent& event) {
   return rv;
 }
 
-bool PDFiumEngine::OnKeyUp(const pp::KeyboardInputEvent& event) {
+bool PDFiumEngine::OnKeyUp(const KeyboardInputEvent& event) {
   if (last_focused_page_ == -1)
     return false;
 
@@ -1607,11 +1608,11 @@ bool PDFiumEngine::OnKeyUp(const pp::KeyboardInputEvent& event) {
   return !!FORM_OnKeyUp(form(), page, event.GetKeyCode(), event.GetModifiers());
 }
 
-bool PDFiumEngine::OnChar(const pp::KeyboardInputEvent& event) {
+bool PDFiumEngine::OnChar(const KeyboardInputEvent& event) {
   if (last_focused_page_ == -1)
     return false;
 
-  base::string16 str = base::UTF8ToUTF16(event.GetCharacterText().AsString());
+  base::string16 str = base::UTF8ToUTF16(event.GetKeyChar());
   bool rv = !!FORM_OnChar(form(), pages_[last_focused_page_]->GetPage(), str[0],
                           event.GetModifiers());
 

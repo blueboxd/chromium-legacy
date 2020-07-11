@@ -30,7 +30,6 @@
 
 #include "base/base_export.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 
 struct IPropertyStore;
@@ -199,7 +198,8 @@ BASE_EXPORT bool IsProcessPerMonitorDpiAware();
 BASE_EXPORT void EnableHighDPISupport();
 
 // Returns a string representation of |rguid|.
-BASE_EXPORT string16 String16FromGUID(REFGUID rguid);
+// TODO(crbug.com/911896): Rename this to WStringFromGUID.
+BASE_EXPORT std::wstring String16FromGUID(REFGUID rguid);
 
 // Attempts to pin user32.dll to ensure it remains loaded. If it isn't loaded
 // yet, the module will first be loaded and then the pin will be attempted. If

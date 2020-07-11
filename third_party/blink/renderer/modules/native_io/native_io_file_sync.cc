@@ -49,6 +49,25 @@ void NativeIOFileSync::close() {
   backend_file_->Close();
 }
 
+uint64_t NativeIOFileSync::getLength(ExceptionState& exception_state) {
+  if (!backing_file_.IsValid()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The file was already closed");
+    return 0;
+  }
+  int64_t length = backing_file_.GetLength();
+  if (length < 0) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
+                                      "getLength() failed");
+    return 0;
+  }
+  // getLength returns an unsigned integer, which is different from e.g.,
+  // base::File and POSIX. The uses for negative integers are error handling,
+  // which is done through exceptions, and seeking from an offset without type
+  // conversions, which is not supported by NativeIO.
+  return base::as_unsigned(length);
+}
+
 int NativeIOFileSync::read(MaybeShared<DOMArrayBufferView> buffer,
                            uint64_t file_offset,
                            ExceptionState& exception_state) {
@@ -56,7 +75,7 @@ int NativeIOFileSync::read(MaybeShared<DOMArrayBufferView> buffer,
   char* read_data = static_cast<char*>(buffer.View()->BaseAddressMaybeShared());
   if (!backing_file_.IsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "File already closed");
+                                      "The file was already closed");
     return 0;
   }
   int read_bytes = backing_file_.Read(file_offset, read_data, read_size);
@@ -75,7 +94,7 @@ int NativeIOFileSync::write(MaybeShared<DOMArrayBufferView> buffer,
       static_cast<char*>(buffer.View()->BaseAddressMaybeShared());
   if (!backing_file_.IsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "File already closed");
+                                      "The file was already closed");
     return 0;
   }
   int written_bytes = backing_file_.Write(file_offset, write_data, write_size);

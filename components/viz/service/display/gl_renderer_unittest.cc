@@ -108,6 +108,7 @@ class GLRendererTest : public testing::Test {
     return renderer->draw_cache_.program_key.tex_coord_precision();
   }
 
+  DebugRendererSettings debug_settings_;
   RenderPassList render_passes_in_draw_order_;
 };
 
@@ -511,19 +512,23 @@ INSTANTIATE_TEST_SUITE_P(MaskShadersCompile,
 class FakeRendererGL : public GLRenderer {
  public:
   FakeRendererGL(const RendererSettings* settings,
+                 const DebugRendererSettings* debug_settings,
                  OutputSurface* output_surface,
                  DisplayResourceProvider* resource_provider)
       : GLRenderer(settings,
+                   debug_settings,
                    output_surface,
                    resource_provider,
                    nullptr,
                    nullptr) {}
 
   FakeRendererGL(const RendererSettings* settings,
+                 const DebugRendererSettings* debug_settings,
                  OutputSurface* output_surface,
                  DisplayResourceProvider* resource_provider,
                  OverlayProcessorInterface* overlay_processor)
       : GLRenderer(settings,
+                   debug_settings,
                    output_surface,
                    resource_provider,
                    overlay_processor,
@@ -531,11 +536,13 @@ class FakeRendererGL : public GLRenderer {
 
   FakeRendererGL(
       const RendererSettings* settings,
+      const DebugRendererSettings* debug_settings,
       OutputSurface* output_surface,
       DisplayResourceProvider* resource_provider,
       OverlayProcessorInterface* overlay_processor,
       scoped_refptr<base::SingleThreadTaskRunner> current_task_runner)
       : GLRenderer(settings,
+                   debug_settings,
                    output_surface,
                    resource_provider,
                    overlay_processor,
@@ -557,8 +564,9 @@ class GLRendererWithDefaultHarnessTest : public GLRendererTest {
     resource_provider_ = std::make_unique<DisplayResourceProvider>(
         DisplayResourceProvider::kGpu, output_surface_->context_provider(),
         shared_bitmap_manager_.get());
-    renderer_ = std::make_unique<FakeRendererGL>(
-        &settings_, output_surface_.get(), resource_provider_.get());
+    renderer_ = std::make_unique<FakeRendererGL>(&settings_, &debug_settings_,
+                                                 output_surface_.get(),
+                                                 resource_provider_.get());
     renderer_->Initialize();
     renderer_->SetVisible(true);
   }
@@ -588,7 +596,8 @@ class GLRendererShaderTest : public GLRendererTest {
     resource_provider_ = std::make_unique<DisplayResourceProvider>(
         DisplayResourceProvider::kGpu, output_surface_->context_provider(),
         shared_bitmap_manager_.get());
-    renderer_.reset(new FakeRendererGL(&settings_, output_surface_.get(),
+    renderer_.reset(new FakeRendererGL(&settings_, &debug_settings_,
+                                       output_surface_.get(),
                                        resource_provider_.get(), nullptr));
     renderer_->Initialize();
     renderer_->SetVisible(true);
@@ -962,7 +971,7 @@ TEST_F(GLRendererTest, InitializationDoesNotMakeSynchronousCalls) {
           shared_bitmap_manager.get());
 
   RendererSettings settings;
-  FakeRendererGL renderer(&settings, output_surface.get(),
+  FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
                           resource_provider.get());
 }
 
@@ -1001,7 +1010,7 @@ TEST_F(GLRendererTest, InitializationWithQuicklyLostContextDoesNotAssert) {
           shared_bitmap_manager.get());
 
   RendererSettings settings;
-  FakeRendererGL renderer(&settings, output_surface.get(),
+  FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
                           resource_provider.get());
 }
 
@@ -1038,7 +1047,7 @@ TEST_F(GLRendererTest, OpaqueBackground) {
           shared_bitmap_manager.get());
 
   RendererSettings settings;
-  FakeRendererGL renderer(&settings, output_surface.get(),
+  FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
                           resource_provider.get());
   renderer.Initialize();
   renderer.SetVisible(true);
@@ -1084,7 +1093,7 @@ TEST_F(GLRendererTest, TransparentBackground) {
           shared_bitmap_manager.get());
 
   RendererSettings settings;
-  FakeRendererGL renderer(&settings, output_surface.get(),
+  FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
                           resource_provider.get());
   renderer.Initialize();
   renderer.SetVisible(true);
@@ -1123,7 +1132,7 @@ TEST_F(GLRendererTest, OffscreenOutputSurface) {
           shared_bitmap_manager.get());
 
   RendererSettings settings;
-  FakeRendererGL renderer(&settings, output_surface.get(),
+  FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
                           resource_provider.get());
   renderer.Initialize();
   renderer.SetVisible(true);
@@ -1193,7 +1202,7 @@ TEST_F(GLRendererTest, ActiveTextureState) {
           shared_bitmap_manager.get());
 
   RendererSettings settings;
-  FakeRendererGL renderer(&settings, output_surface.get(),
+  FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
                           resource_provider.get());
   renderer.Initialize();
   renderer.SetVisible(true);
@@ -1310,7 +1319,7 @@ TEST_F(GLRendererTest, DrawYUVVideoDrawQuadWithVisibleRect) {
           shared_bitmap_manager.get());
 
   RendererSettings settings;
-  FakeRendererGL renderer(&settings, output_surface.get(),
+  FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
                           resource_provider.get());
   renderer.Initialize();
   renderer.SetVisible(true);
@@ -1384,7 +1393,7 @@ TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
   RendererSettings settings;
   settings.should_clear_root_render_pass = false;
 
-  FakeRendererGL renderer(&settings, output_surface.get(),
+  FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
                           resource_provider.get());
   renderer.Initialize();
   renderer.SetVisible(true);
@@ -1471,7 +1480,7 @@ TEST_F(GLRendererTest, ScissorTestWhenClearing) {
           shared_bitmap_manager.get());
 
   RendererSettings settings;
-  FakeRendererGL renderer(&settings, output_surface.get(),
+  FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
                           resource_provider.get());
   renderer.Initialize();
   EXPECT_FALSE(renderer.use_partial_swap());
@@ -1546,7 +1555,7 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
 
   RendererSettings settings;
   settings.partial_swap_enabled = true;
-  FakeRendererGL renderer(&settings, output_surface.get(),
+  FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
                           resource_provider.get());
   renderer.Initialize();
   EXPECT_TRUE(renderer.use_partial_swap());
@@ -1760,7 +1769,7 @@ TEST_F(GLRendererTest, NoResourceLeak) {
 
   {
     RendererSettings settings;
-    FakeRendererGL renderer(&settings, output_surface.get(),
+    FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
                             resource_provider.get());
     renderer.Initialize();
     renderer.SetVisible(true);
@@ -1805,8 +1814,9 @@ class GLRendererSkipTest : public GLRendererTest {
         DisplayResourceProvider::kGpu, output_surface_->context_provider(),
         shared_bitmap_manager_.get());
     settings_.partial_swap_enabled = true;
-    renderer_ = std::make_unique<FakeRendererGL>(
-        &settings_, output_surface_.get(), resource_provider_.get());
+    renderer_ = std::make_unique<FakeRendererGL>(&settings_, &debug_settings_,
+                                                 output_surface_.get(),
+                                                 resource_provider_.get());
     renderer_->Initialize();
     renderer_->SetVisible(true);
   }
@@ -1922,7 +1932,7 @@ TEST_F(GLRendererTest, DrawFramePreservesFramebuffer) {
           shared_bitmap_manager.get());
 
   RendererSettings settings;
-  FakeRendererGL renderer(&settings, output_surface.get(),
+  FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
                           resource_provider.get());
   renderer.Initialize();
   EXPECT_FALSE(renderer.use_partial_swap());
@@ -2296,7 +2306,8 @@ class MockOutputSurfaceTest : public GLRendererTest {
         DisplayResourceProvider::kGpu, output_surface_->context_provider(),
         shared_bitmap_manager_.get());
 
-    renderer_.reset(new FakeRendererGL(&settings_, output_surface_.get(),
+    renderer_.reset(new FakeRendererGL(&settings_, &debug_settings_,
+                                       output_surface_.get(),
                                        resource_provider_.get()));
     renderer_->Initialize();
 
@@ -2361,7 +2372,8 @@ TEST_F(MockOutputSurfaceTest, BackbufferDiscard) {
 #if defined(OS_WIN)
 class MockDCLayerOverlayProcessor : public DCLayerOverlayProcessor {
  public:
-  MockDCLayerOverlayProcessor() : DCLayerOverlayProcessor() {}
+  MockDCLayerOverlayProcessor()
+      : DCLayerOverlayProcessor(&debug_settings_, true) {}
   ~MockDCLayerOverlayProcessor() override = default;
   MOCK_METHOD5(Process,
                void(DisplayResourceProvider* resource_provider,
@@ -2369,6 +2381,9 @@ class MockDCLayerOverlayProcessor : public DCLayerOverlayProcessor {
                     RenderPassList* render_passes,
                     gfx::Rect* damage_rect,
                     DCLayerOverlayList* dc_layer_overlays));
+
+ protected:
+  DebugRendererSettings debug_settings_;
 };
 class TestOverlayProcessor : public OverlayProcessorWin {
  public:
@@ -2518,7 +2533,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
 
   RendererSettings settings;
   auto processor = std::make_unique<TestOverlayProcessor>();
-  FakeRendererGL renderer(&settings, output_surface.get(),
+  FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
                           parent_resource_provider.get(), processor.get(),
                           base::ThreadTaskRunnerHandle::Get());
   renderer.Initialize();
@@ -2708,7 +2723,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
 
   RendererSettings settings;
   auto processor = std::make_unique<SingleOverlayOnTopProcessor>();
-  FakeRendererGL renderer(&settings, output_surface.get(),
+  FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
                           parent_resource_provider.get(), processor.get(),
                           base::ThreadTaskRunnerHandle::Get());
   renderer.Initialize();
@@ -2796,7 +2811,7 @@ TEST_F(GLRendererTest, OutputColorMatrixTest) {
           DisplayResourceProvider::kGpu, output_surface->context_provider(),
           nullptr);
   RendererSettings settings;
-  FakeRendererGL renderer(&settings, output_surface.get(),
+  FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
                           resource_provider.get());
   renderer.Initialize();
   renderer.SetVisible(true);
@@ -2883,7 +2898,7 @@ TEST_F(GLRendererTest, GenerateMipmap) {
           DisplayResourceProvider::kGpu, output_surface->context_provider(),
           nullptr);
   RendererSettings settings;
-  FakeRendererGL renderer(&settings, output_surface.get(),
+  FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
                           resource_provider.get());
   renderer.Initialize();
   renderer.SetVisible(true);
@@ -2948,7 +2963,7 @@ class GLRendererPartialSwapTest : public GLRendererTest {
 
     RendererSettings settings;
     settings.partial_swap_enabled = partial_swap;
-    FakeRendererGL renderer(&settings, output_surface.get(),
+    FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
                             resource_provider.get());
     renderer.Initialize();
     EXPECT_EQ(partial_swap, renderer.use_partial_swap());
@@ -3106,8 +3121,8 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
   settings.partial_swap_enabled = true;
   auto processor = std::make_unique<OverlayProcessorWin>(
       true /* enable_dc_overlay */,
-      std::make_unique<DCLayerOverlayProcessor>());
-  FakeRendererGL renderer(&settings, output_surface.get(),
+      std::make_unique<DCLayerOverlayProcessor>(&debug_settings_, true));
+  FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
                           parent_resource_provider.get(), processor.get());
   renderer.Initialize();
   renderer.SetVisible(true);
@@ -3194,13 +3209,14 @@ class GLRendererWithMockContextTest : public ::testing::Test {
     resource_provider_ = std::make_unique<DisplayResourceProvider>(
         DisplayResourceProvider::kGpu, output_surface_->context_provider(),
         nullptr);
-    renderer_ = std::make_unique<GLRenderer>(&settings_, output_surface_.get(),
-                                             resource_provider_.get(), nullptr,
-                                             nullptr);
+    renderer_ = std::make_unique<GLRenderer>(
+        &settings_, &debug_settings_, output_surface_.get(),
+        resource_provider_.get(), nullptr, nullptr);
     renderer_->Initialize();
   }
 
   RendererSettings settings_;
+  DebugRendererSettings debug_settings_;
   cc::FakeOutputSurfaceClient output_surface_client_;
   MockContextSupport* context_support_ptr_;
   std::unique_ptr<OutputSurface> output_surface_;
@@ -3294,7 +3310,7 @@ class GLRendererSwapWithBoundsTest : public GLRendererTest {
     RendererSettings settings;
     auto processor =
         std::make_unique<ContentBoundsOverlayProcessor>(content_bounds);
-    FakeRendererGL renderer(&settings, output_surface.get(),
+    FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
                             resource_provider.get(), processor.get());
     renderer.Initialize();
     EXPECT_EQ(true, renderer.use_swap_with_bounds());
@@ -3390,7 +3406,7 @@ class CALayerGLRendererTest : public GLRendererTest {
     overlay_processor_ = std::make_unique<OverlayProcessorMac>(
         std::make_unique<CALayerOverlayProcessor>());
     renderer_ = std::make_unique<FakeRendererGL>(
-        settings_.get(), output_surface_.get(),
+        settings_.get(), &debug_settings_, output_surface_.get(),
         display_resource_provider_.get(), overlay_processor_.get(),
         base::ThreadTaskRunnerHandle::Get());
     renderer_->Initialize();
@@ -4278,9 +4294,13 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysCachedTexturesAreFreed) {
 class FramebufferWatchingGLRenderer : public FakeRendererGL {
  public:
   FramebufferWatchingGLRenderer(RendererSettings* settings,
+                                const DebugRendererSettings* debug_settings,
                                 OutputSurface* output_surface,
                                 DisplayResourceProvider* resource_provider)
-      : FakeRendererGL(settings, output_surface, resource_provider) {}
+      : FakeRendererGL(settings,
+                       debug_settings,
+                       output_surface,
+                       resource_provider) {}
 
   void BindFramebufferToOutputSurface() override {
     ++bind_root_framebuffer_calls_;
@@ -4328,7 +4348,8 @@ TEST_F(GLRendererTest, UndamagedRenderPassStillDrawnWhenNoPartialSwap) {
 
     RendererSettings settings;
     settings.partial_swap_enabled = use_partial_swap;
-    FramebufferWatchingGLRenderer renderer(&settings, output_surface.get(),
+    FramebufferWatchingGLRenderer renderer(&settings, &debug_settings_,
+                                           output_surface.get(),
                                            resource_provider.get());
     renderer.Initialize();
     EXPECT_EQ(use_partial_swap, renderer.use_partial_swap());
@@ -4423,8 +4444,9 @@ class GLRendererWithGpuFenceTest : public GLRendererTest {
     overlay_processor_ = std::make_unique<SingleOverlayOnTopProcessor>();
     overlay_processor_->AllowMultipleCandidates();
     renderer_ = std::make_unique<FakeRendererGL>(
-        &settings_, output_surface_.get(), resource_provider_.get(),
-        overlay_processor_.get(), base::ThreadTaskRunnerHandle::Get());
+        &settings_, &debug_settings_, output_surface_.get(),
+        resource_provider_.get(), overlay_processor_.get(),
+        base::ThreadTaskRunnerHandle::Get());
     renderer_->Initialize();
     renderer_->SetVisible(true);
 

@@ -130,7 +130,7 @@ class LayoutSVGShape : public LayoutSVGModelObject {
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void WillBeDestroyed() override;
 
-  float VisualRectOutsetForRasterEffects() const override;
+  RasterEffectOutset VisualRectOutsetForRasterEffects() const override;
 
   void ClearPath();
   void CreatePath();

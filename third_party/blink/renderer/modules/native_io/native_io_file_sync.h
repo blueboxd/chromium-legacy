@@ -38,6 +38,7 @@ class NativeIOFileSync final : public ScriptWrappable {
   ~NativeIOFileSync() override;
 
   void close();
+  uint64_t getLength(ExceptionState&);
   int read(MaybeShared<DOMArrayBufferView> buffer,
            uint64_t file_offset,
            ExceptionState&);

@@ -1346,7 +1346,7 @@ bool ShortcutOpUnpinFromTaskbar(const base::FilePath& shortcut_path) {
 }
 
 bool ShortcutOpDelete(const base::FilePath& shortcut_path) {
-  bool ret = base::DeleteFile(shortcut_path, false);
+  bool ret = base::DeleteFile(shortcut_path);
   LOG_IF(ERROR, !ret) << "Failed to remove " << shortcut_path.value();
   return ret;
 }

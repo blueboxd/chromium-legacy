@@ -104,8 +104,9 @@ TestPaintArtifact& TestPaintArtifact::ScrollHitTest(
   return *this;
 }
 
-TestPaintArtifact& TestPaintArtifact::OutsetForRasterEffects(float outset) {
-  paint_chunks_.back().outset_for_raster_effects = outset;
+TestPaintArtifact& TestPaintArtifact::SetRasterEffectOutset(
+    RasterEffectOutset outset) {
+  paint_chunks_.back().raster_effect_outset = outset;
   return *this;
 }
 

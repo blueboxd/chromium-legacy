@@ -30,7 +30,6 @@
 #include "content/shell/renderer/web_test/app_banner_service.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/shell/renderer/web_test/blink_test_runner.h"
-#include "content/shell/renderer/web_test/layout_dump.h"
 #include "content/shell/renderer/web_test/mock_web_document_subresource_filter.h"
 #include "content/shell/renderer/web_test/pixel_dump.h"
 #include "content/shell/renderer/web_test/spell_check_client.h"
@@ -70,7 +69,6 @@
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_security_policy.h"
 #include "third_party/blink/public/web/web_serialized_script_value.h"
-#include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_testing_support.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -528,6 +526,13 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::DisableAutoResizeMode)
       .SetMethod("disableMockScreenOrientation",
                  &TestRunnerBindings::DisableMockScreenOrientation)
+      // Sets up a mock DocumentSubresourceFilter to disallow subsequent
+      // subresource loads within the current document with the given path
+      // |suffixes|. The filter is created and injected even if |suffixes| is
+      // empty. If |suffixes| contains the empty string, all subresource loads
+      // will be disallowed. If |block_subresources| is false, matching
+      // resources will not be blocked but instead marked as matching a
+      // disallowed resource.
       .SetMethod("setDisallowedSubresourcePathSuffixes",
                  &TestRunnerBindings::SetDisallowedSubresourcePathSuffixes)
       // Causes the beforeinstallprompt event to be sent to the renderer.
@@ -897,7 +902,7 @@ void TestRunnerBindings::QueueLoad(gin::Arguments* args) {
   std::string target;
   args->GetNext(&url);
   args->GetNext(&target);
-  runner_->QueueLoad(url, target);
+  runner_->QueueLoad(GURL(GetWebFrame()->GetDocument().Url()), url, target);
 }
 
 void TestRunnerBindings::SetCustomPolicyDelegate(gin::Arguments* args) {
@@ -1268,7 +1273,8 @@ void TestRunnerBindings::SetDisallowedSubresourcePathSuffixes(
     bool block_subresources) {
   if (invalid_)
     return;
-  runner_->SetDisallowedSubresourcePathSuffixes(suffixes, block_subresources);
+  GetWebFrame()->GetDocumentLoader()->SetSubresourceFilter(
+      new MockWebDocumentSubresourceFilter(suffixes, block_subresources));
 }
 
 void TestRunnerBindings::SetPopupBlockingEnabled(bool block_popups) {
@@ -2154,13 +2160,16 @@ void TestRunner::WorkQueue::AddWork(WorkItem* work) {
 }
 
 void TestRunner::WorkQueue::ProcessWork() {
-  if (!controller_->main_view_)
+  // TODO(danakj): If we bound work to run in the frame that queued it
+  // then we would not rely on being in process with the main frame.
+  WebFrameTestProxy* in_process_main_frame =
+      controller_->FindInProcessMainWindowMainFrame();
+  if (!in_process_main_frame)
     return;
 
   while (!queue_.empty()) {
     finished_loading_ = false;  // Watch for loading finishing inside Run().
-    bool started_load =
-        queue_.front()->Run(controller_, controller_->main_view_);
+    bool started_load = queue_.front()->Run(controller_, in_process_main_frame);
     delete queue_.front();
     queue_.pop_front();
 
@@ -2195,6 +2204,8 @@ TestRunner::TestRunner()
   //
   // Stores state to be restored after each test.
   blink::WebTestingSupport::SaveRuntimeFeatures();
+
+  Reset();
 }
 
 TestRunner::~TestRunner() = default;
@@ -2210,16 +2221,7 @@ void TestRunner::Install(WebFrameTestProxy* frame,
   gamepad_controller_.Install(frame->GetWebFrame());
 }
 
-void TestRunner::SetMainView(blink::WebView* web_view) {
-  main_view_ = web_view;
-  if (disable_v8_cache_)
-    SetV8CacheDisabled(true);
-}
-
-void TestRunner::Reset(WebFrameTestProxy* main_frame) {
-  if (main_frame)
-    main_frame->Reset();
-
+void TestRunner::Reset() {
   loading_frames_.clear();
   web_test_runtime_flags_.Reset();
   mock_screen_orientation_client_.ResetData();
@@ -2291,11 +2293,6 @@ bool TestRunner::ShouldDumpEditingCallbacks() const {
   return web_test_runtime_flags_.dump_editting_callbacks();
 }
 
-void TestRunner::SetShouldDumpAsText(bool value) {
-  web_test_runtime_flags_.set_dump_as_text(value);
-  OnWebTestRuntimeFlagsChanged();
-}
-
 void TestRunner::SetShouldDumpAsLayout(bool value) {
   web_test_runtime_flags_.set_dump_as_layout(value);
   OnWebTestRuntimeFlagsChanged();
@@ -2316,8 +2313,21 @@ void TestRunner::SetCustomTextOutput(const std::string& text) {
 }
 
 bool TestRunner::ShouldGeneratePixelResults() {
-  CheckResponseMimeType();
   return web_test_runtime_flags_.generate_pixel_results();
+}
+
+TextResultType TestRunner::ShouldGenerateTextResults() {
+  if (web_test_runtime_flags_.dump_as_text()) {
+    return TextResultType::kText;
+  } else if (web_test_runtime_flags_.dump_as_markup()) {
+    DCHECK(!web_test_runtime_flags_.is_printing());
+    return TextResultType::kMarkup;
+  } else if (web_test_runtime_flags_.dump_as_layout()) {
+    if (web_test_runtime_flags_.is_printing())
+      return TextResultType::kLayoutAsPrinting;
+    return TextResultType::kLayout;
+  }
+  return TextResultType::kEmpty;
 }
 
 bool TestRunner::ShouldStayOnPageAfterHandlingBeforeUnload() const {
@@ -2338,13 +2348,7 @@ const std::vector<uint8_t>& TestRunner::GetAudioData() const {
 }
 
 bool TestRunner::IsRecursiveLayoutDumpRequested() {
-  CheckResponseMimeType();
   return web_test_runtime_flags_.dump_child_frames();
-}
-
-std::string TestRunner::DumpLayout(blink::WebLocalFrame* frame) {
-  CheckResponseMimeType();
-  return DumpLayoutAsString(frame, web_test_runtime_flags_);
 }
 
 bool TestRunner::CanDumpPixelsFromRenderer() const {
@@ -2470,7 +2474,6 @@ void TestRunner::AddLoadingFrame(blink::WebFrame* frame) {
     OnWebTestRuntimeFlagsChanged();
   }
 
-  LOG(ERROR) << "AddLoadingFrame " << frame;
   loading_frames_.push_back(frame);
   frame_will_start_load_ = false;
 }
@@ -2560,10 +2563,6 @@ void TestRunner::RemoveRenderView(WebViewTestProxy* view) {
   render_views_.erase(view);
 }
 
-blink::WebFrame* TestRunner::MainFrame() const {
-  return main_view_->MainFrame();
-}
-
 void TestRunner::PolicyDelegateDone() {
   DCHECK(web_test_runtime_flags_.wait_until_done());
   FinishTest();
@@ -2592,21 +2591,11 @@ bool TestRunner::ShouldDumpNavigationPolicy() const {
   return web_test_runtime_flags_.dump_navigation_policy();
 }
 
-void TestRunner::SetV8CacheDisabled(bool disabled) {
-  if (!main_view_) {
-    disable_v8_cache_ = disabled;
-    return;
-  }
-  main_view_->GetSettings()->SetV8CacheOptions(
-      disabled ? blink::WebSettings::V8CacheOptions::kNone
-               : blink::WebSettings::V8CacheOptions::kDefault);
-}
-
 class WorkItemBackForward : public TestRunner::WorkItem {
  public:
   explicit WorkItemBackForward(int distance) : distance_(distance) {}
 
-  bool Run(TestRunner* test_runner, blink::WebView*) override {
+  bool Run(TestRunner* test_runner, WebFrameTestProxy*) override {
     test_runner->GoToOffset(distance_);
     return true;  // FIXME: Did it really start a navigation?
   }
@@ -2614,6 +2603,15 @@ class WorkItemBackForward : public TestRunner::WorkItem {
  private:
   int distance_;
 };
+
+WebFrameTestProxy* TestRunner::FindInProcessMainWindowMainFrame() {
+  for (WebFrameTestProxy* main_frame : main_frames_) {
+    WebViewTestProxy* view = main_frame->GetWebViewTestProxy();
+    if (view->blink_test_runner()->is_main_window())
+      return main_frame;
+  }
+  return nullptr;
+}
 
 void TestRunner::WaitUntilDone() {
   web_test_runtime_flags_.set_wait_until_done(true);
@@ -2642,7 +2640,7 @@ void TestRunner::QueueForwardNavigation(int how_far_forward) {
 
 class WorkItemReload : public TestRunner::WorkItem {
  public:
-  bool Run(TestRunner* test_runner, blink::WebView*) override {
+  bool Run(TestRunner* test_runner, WebFrameTestProxy*) override {
     test_runner->Reload();
     return true;
   }
@@ -2656,14 +2654,8 @@ class WorkItemLoadingScript : public TestRunner::WorkItem {
  public:
   explicit WorkItemLoadingScript(const std::string& script) : script_(script) {}
 
-  bool Run(TestRunner*, blink::WebView* web_view) override {
-    blink::WebFrame* main_frame = web_view->MainFrame();
-    if (!main_frame->IsWebLocalFrame()) {
-      CHECK(false) << "This function cannot be called if the main frame is not "
-                      "a local frame.";
-      return false;
-    }
-    main_frame->ToWebLocalFrame()->ExecuteScript(
+  bool Run(TestRunner*, WebFrameTestProxy* in_process_main_frame) override {
+    in_process_main_frame->GetWebFrame()->ExecuteScript(
         blink::WebScriptSource(blink::WebString::FromUTF8(script_)));
     return true;  // FIXME: Did it really start a navigation?
   }
@@ -2681,14 +2673,8 @@ class WorkItemNonLoadingScript : public TestRunner::WorkItem {
   explicit WorkItemNonLoadingScript(const std::string& script)
       : script_(script) {}
 
-  bool Run(TestRunner*, blink::WebView* web_view) override {
-    blink::WebFrame* main_frame = web_view->MainFrame();
-    if (!main_frame->IsWebLocalFrame()) {
-      CHECK(false) << "This function cannot be called if the main frame is not "
-                      "a local frame.";
-      return false;
-    }
-    main_frame->ToWebLocalFrame()->ExecuteScript(
+  bool Run(TestRunner*, WebFrameTestProxy* in_process_main_frame) override {
+    in_process_main_frame->GetWebFrame()->ExecuteScript(
         blink::WebScriptSource(blink::WebString::FromUTF8(script_)));
     return false;
   }
@@ -2706,7 +2692,7 @@ class WorkItemLoad : public TestRunner::WorkItem {
   WorkItemLoad(const GURL& url, const std::string& target)
       : url_(url), target_(target) {}
 
-  bool Run(TestRunner* test_runner, blink::WebView*) override {
+  bool Run(TestRunner* test_runner, WebFrameTestProxy*) override {
     test_runner->LoadURLForFrame(url_, target_);
     return true;  // FIXME: Did it really start a navigation?
   }
@@ -2716,21 +2702,10 @@ class WorkItemLoad : public TestRunner::WorkItem {
   std::string target_;
 };
 
-void TestRunner::QueueLoad(const std::string& url, const std::string& target) {
-  if (!main_view_)
-    return;
-
-  // TODO(lukasza): testRunner.queueLoad(...) should work even if the main
-  // frame is remote (ideally testRunner.queueLoad would bind to and execute
-  // in the context of a specific local frame - resolving relative urls should
-  // be done on relative to the calling frame's url).
-  CHECK(main_view_->MainFrame()->IsWebLocalFrame())
-      << "This function cannot be called if the main frame is not "
-         "a local frame.";
-
-  GURL current_url =
-      main_view_->MainFrame()->ToWebLocalFrame()->GetDocument().Url();
-  GURL full_url = current_url.Resolve(url);
+void TestRunner::QueueLoad(const GURL& current_url,
+                           const std::string& relative_url,
+                           const std::string& target) {
+  GURL full_url = current_url.Resolve(relative_url);
   work_queue_.AddWork(new WorkItemLoad(full_url, target));
 }
 
@@ -2824,13 +2799,13 @@ void TestRunner::SetMockScreenOrientation(const std::string& orientation_str) {
     orientation = blink::kWebScreenOrientationLandscapeSecondary;
   }
 
-  blink::WebLocalFrame* main_frame = nullptr;
-  if (main_view_ && main_view_->MainFrame()->IsWebLocalFrame())
-    main_frame = main_view_->MainFrame()->ToWebLocalFrame();
   // TODO(lukasza): Need to make MockScreenOrientation updates work for
   // cross-site iframes/windows.
+  WebFrameTestProxy* main_frame = FindInProcessMainWindowMainFrame();
+  blink::WebLocalFrame* main_web_frame =
+      main_frame ? main_frame->GetWebFrame() : nullptr;
   bool changed = mock_screen_orientation_client_.UpdateDeviceOrientation(
-      main_frame, orientation);
+      main_web_frame, orientation);
   if (changed)
     GetWebTestControlHostRemote()->SetScreenOrientationChanged();
 }
@@ -2963,19 +2938,6 @@ void TestRunner::SetAllowRunningOfInsecureContent(bool allowed) {
 void TestRunner::DumpPermissionClientCallbacks() {
   web_test_runtime_flags_.set_dump_web_content_settings_client_callbacks(true);
   OnWebTestRuntimeFlagsChanged();
-}
-
-void TestRunner::SetDisallowedSubresourcePathSuffixes(
-    const std::vector<std::string>& suffixes,
-    bool block_subresources) {
-  DCHECK(main_view_);
-  if (!main_view_->MainFrame()->IsWebLocalFrame())
-    return;
-  main_view_->MainFrame()
-      ->ToWebLocalFrame()
-      ->GetDocumentLoader()
-      ->SetSubresourceFilter(
-          new MockWebDocumentSubresourceFilter(suffixes, block_subresources));
 }
 
 void TestRunner::DumpBackForwardList() {
@@ -3147,42 +3109,8 @@ void TestRunner::OnWebTestRuntimeFlagsChanged() {
   web_test_runtime_flags_.tracked_dictionary().ResetChangeTracking();
 }
 
-void TestRunner::CheckResponseMimeType() {
-  // Text output: the test page can request different types of output which we
-  // handle here.
-
-  if (web_test_runtime_flags_.dump_as_text())
-    return;
-
-  if (!main_view_)
-    return;
-
-  if (!main_view_->MainFrame()->IsWebLocalFrame())
-    return;
-
-  blink::WebDocumentLoader* document_loader =
-      main_view_->MainFrame()->ToWebLocalFrame()->GetDocumentLoader();
-  if (!document_loader)
-    return;
-
-  std::string mimeType = document_loader->GetResponse().MimeType().Utf8();
-  if (mimeType != "text/plain")
-    return;
-
-  web_test_runtime_flags_.set_dump_as_text(true);
-  web_test_runtime_flags_.set_generate_pixel_results(false);
-  OnWebTestRuntimeFlagsChanged();
-}
-
 void TestRunner::FinishTest() {
-  WebViewTestProxy* main_window_main_frame_view = nullptr;
-  for (WebFrameTestProxy* main_frame : main_frames_) {
-    WebViewTestProxy* view = main_frame->GetWebViewTestProxy();
-    if (view->blink_test_runner()->is_main_window()) {
-      main_window_main_frame_view = view;
-      break;
-    }
-  }
+  WebFrameTestProxy* main_frame = FindInProcessMainWindowMainFrame();
 
   // When there are no more frames loading, and the test hasn't asked to wait
   // for NotifyDone(), then we normally conclude the test. However if this
@@ -3197,13 +3125,13 @@ void TestRunner::FinishTest() {
   // renderers. So in this case the test should finish when frames finish
   // loading in the primary renderer, and we don't finish the test from a
   // secondary renderer unless it is asked for explicitly via NotifyDone.
-  if (!main_window_main_frame_view) {
+  if (!main_frame) {
     if (did_notify_done_)
       GetWebTestControlHostRemote()->TestFinishedInSecondaryRenderer();
     return;
   }
 
-  main_window_main_frame_view->blink_test_runner()->TestFinished();
+  main_frame->GetWebViewTestProxy()->blink_test_runner()->TestFinished();
 }
 
 mojo::AssociatedRemote<mojom::WebTestControlHost>&

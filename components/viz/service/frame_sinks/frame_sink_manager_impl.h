@@ -74,6 +74,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
     uint32_t restart_id = BeginFrameSource::kNotRestartableId;
     bool run_all_compositor_stages_before_draw = false;
     bool log_capture_pipeline_in_webrtc = false;
+    DebugRendererSettings debug_renderer_settings;
   };
   explicit FrameSinkManagerImpl(const InitParams& params);
   // TODO(kylechar): Cleanup tests and remove this constructor.
@@ -135,6 +136,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
                        const FrameSinkId& root_frame_sink_id) override;
   void EvictBackBuffer(uint32_t cache_id,
                        EvictBackBufferCallback callback) override;
+  void UpdateDebugRendererSettings(
+      const DebugRendererSettings& debug_settings) override;
 
   // SurfaceObserver implementation.
   void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override;
@@ -296,6 +299,9 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
   // Whether capture pipeline should emit log messages to webrtc log.
   const bool log_capture_pipeline_in_webrtc_;
+
+  // This is viz-global instance of DebugRendererSettings.
+  DebugRendererSettings debug_settings_;
 
   // Contains registered frame sink ids, debug labels and synchronization
   // labels. Map entries will be created when frame sink is registered and

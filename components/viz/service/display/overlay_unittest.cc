@@ -2217,10 +2217,12 @@ TEST_F(UnderlayCastTest, PrimaryPlaneOverlayIsAlwaysTransparent) {
 class OverlayInfoRendererGL : public GLRenderer {
  public:
   OverlayInfoRendererGL(const RendererSettings* settings,
+                        const DebugRendererSettings* debug_settings,
                         OutputSurface* output_surface,
                         DisplayResourceProvider* resource_provider,
                         SingleOverlayProcessor* overlay_processor)
       : GLRenderer(settings,
+                   debug_settings,
                    output_surface,
                    resource_provider,
                    overlay_processor,
@@ -2301,8 +2303,8 @@ class GLRendererWithOverlaysTest : public testing::Test {
     if (use_overlay_processor)
       owned_overlay_processor_ = std::make_unique<SingleOverlayProcessor>();
     renderer_ = std::make_unique<OverlayInfoRendererGL>(
-        &settings_, output_surface_.get(), resource_provider_.get(),
-        owned_overlay_processor_.get());
+        &settings_, &debug_settings_, output_surface_.get(),
+        resource_provider_.get(), owned_overlay_processor_.get());
     renderer_->Initialize();
     renderer_->SetVisible(true);
   }
@@ -2353,6 +2355,7 @@ class GLRendererWithOverlaysTest : public testing::Test {
   }
 
   RendererSettings settings_;
+  DebugRendererSettings debug_settings_;
   cc::FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<OverlayOutputSurface> output_surface_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;

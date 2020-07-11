@@ -134,7 +134,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
   void PostSetPoweredBluetoothTask(
       bool powered,
       base::OnceClosure callback,
-      BluetoothAdapter::ErrorOnceCallback error_callback);
+      BluetoothAdapter::ErrorCallback error_callback);
   void PostStartDiscoveryTask();
   void PostStopDiscoveryTask();
 
@@ -232,7 +232,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
   void PostAdapterStateToUi();
   void SetPowered(bool powered,
                   base::OnceClosure callback,
-                  BluetoothAdapter::ErrorOnceCallback error_callback);
+                  BluetoothAdapter::ErrorCallback error_callback);
 
   // Starts discovery. Once the discovery starts, it issues a discovery inquiry
   // with a short timeout, then issues more inquiries with greater timeout

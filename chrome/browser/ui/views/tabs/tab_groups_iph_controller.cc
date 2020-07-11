@@ -38,6 +38,13 @@ TabGroupsIPHController::~TabGroupsIPHController() {
   HandlePromoClose();
 }
 
+void TabGroupsIPHController::TabContextMenuOpened() {
+  if (!promo_widget_)
+    return;
+
+  promo_widget_->Close();
+}
+
 void TabGroupsIPHController::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
     const TabStripModelChange& change,

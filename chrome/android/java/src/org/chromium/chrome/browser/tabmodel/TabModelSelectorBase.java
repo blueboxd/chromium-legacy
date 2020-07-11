@@ -76,9 +76,8 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
                 notifyChanged();
             }
         };
-        for (TabModel model : models) {
-            model.addObserver(tabModelObserver);
-        }
+
+        mTabModelFilterProvider.addTabModelFilterObserver(tabModelObserver);
 
         if (sObserver != null) {
             addObserver(sObserver);

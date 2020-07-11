@@ -8,48 +8,48 @@
 
 #include "base/bind.h"
 #include "base/notreached.h"
+#include "chromeos/crosapi/mojom/select_file.mojom.h"
 #include "chromeos/lacros/browser/lacros_chrome_service_impl.h"
-#include "chromeos/lacros/mojom/select_file.mojom.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
 namespace ui {
 namespace {
 
-lacros::mojom::SelectFileDialogType GetMojoType(SelectFileDialog::Type type) {
+crosapi::mojom::SelectFileDialogType GetMojoType(SelectFileDialog::Type type) {
   switch (type) {
     case SelectFileDialog::Type::SELECT_FOLDER:
-      return lacros::mojom::SelectFileDialogType::kFolder;
+      return crosapi::mojom::SelectFileDialogType::kFolder;
     case SelectFileDialog::Type::SELECT_UPLOAD_FOLDER:
-      return lacros::mojom::SelectFileDialogType::kUploadFolder;
+      return crosapi::mojom::SelectFileDialogType::kUploadFolder;
     case SelectFileDialog::Type::SELECT_EXISTING_FOLDER:
-      return lacros::mojom::SelectFileDialogType::kExistingFolder;
+      return crosapi::mojom::SelectFileDialogType::kExistingFolder;
     case SelectFileDialog::Type::SELECT_OPEN_FILE:
-      return lacros::mojom::SelectFileDialogType::kOpenFile;
+      return crosapi::mojom::SelectFileDialogType::kOpenFile;
     case SelectFileDialog::Type::SELECT_OPEN_MULTI_FILE:
-      return lacros::mojom::SelectFileDialogType::kOpenMultiFile;
+      return crosapi::mojom::SelectFileDialogType::kOpenMultiFile;
     case SelectFileDialog::Type::SELECT_SAVEAS_FILE:
-      return lacros::mojom::SelectFileDialogType::kSaveAsFile;
+      return crosapi::mojom::SelectFileDialogType::kSaveAsFile;
     case SelectFileDialog::Type::SELECT_NONE:
       NOTREACHED();
-      return lacros::mojom::SelectFileDialogType::kOpenFile;
+      return crosapi::mojom::SelectFileDialogType::kOpenFile;
   }
 }
 
-lacros::mojom::AllowedPaths GetMojoAllowedPaths(
+crosapi::mojom::AllowedPaths GetMojoAllowedPaths(
     SelectFileDialog::FileTypeInfo::AllowedPaths allowed_paths) {
   switch (allowed_paths) {
     case SelectFileDialog::FileTypeInfo::ANY_PATH:
-      return lacros::mojom::AllowedPaths::kAnyPath;
+      return crosapi::mojom::AllowedPaths::kAnyPath;
     case SelectFileDialog::FileTypeInfo::NATIVE_PATH:
-      return lacros::mojom::AllowedPaths::kNativePath;
+      return crosapi::mojom::AllowedPaths::kNativePath;
     case SelectFileDialog::FileTypeInfo::ANY_PATH_OR_URL:
-      return lacros::mojom::AllowedPaths::kAnyPathOrUrl;
+      return crosapi::mojom::AllowedPaths::kAnyPathOrUrl;
   }
 }
 
 SelectedFileInfo ConvertSelectedFileInfo(
-    lacros::mojom::SelectedFileInfoPtr mojo_file) {
+    crosapi::mojom::SelectedFileInfoPtr mojo_file) {
   SelectedFileInfo file;
   file.file_path = std::move(mojo_file->file_path);
   file.local_path = std::move(mojo_file->local_path);
@@ -95,13 +95,13 @@ void SelectFileDialogLacros::SelectFileImpl(
     void* params) {
   params_ = params;
 
-  lacros::mojom::SelectFileOptionsPtr options =
-      lacros::mojom::SelectFileOptions::New();
+  crosapi::mojom::SelectFileOptionsPtr options =
+      crosapi::mojom::SelectFileOptions::New();
   options->type = GetMojoType(type);
   options->title = title;
   options->default_path = default_path;
   if (file_types) {
-    options->file_types = lacros::mojom::SelectFileTypeInfo::New();
+    options->file_types = crosapi::mojom::SelectFileTypeInfo::New();
     options->file_types->extensions = file_types->extensions;
     options->file_types->extension_description_overrides =
         file_types->extension_description_overrides;
@@ -119,8 +119,8 @@ void SelectFileDialogLacros::SelectFileImpl(
 }
 
 void SelectFileDialogLacros::OnSelected(
-    lacros::mojom::SelectFileResult result,
-    std::vector<lacros::mojom::SelectedFileInfoPtr> mojo_files,
+    crosapi::mojom::SelectFileResult result,
+    std::vector<crosapi::mojom::SelectedFileInfoPtr> mojo_files,
     int file_type_index) {
   if (!listener_)
     return;

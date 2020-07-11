@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
@@ -346,7 +347,7 @@ void CommandLine::AppendSwitchPath(const std::string& switch_string,
 }
 
 void CommandLine::AppendSwitchNative(const std::string& switch_string,
-                                     const CommandLine::StringType& value) {
+                                     CommandLine::StringPieceType value) {
 #if defined(OS_WIN)
   const std::string switch_key = ToLowerASCII(switch_string);
   StringType combined_switch_string(UTF8ToWide(switch_key));
@@ -355,17 +356,15 @@ void CommandLine::AppendSwitchNative(const std::string& switch_string,
   StringType combined_switch_string(switch_key);
 #endif
   size_t prefix_length = GetSwitchPrefixLength(combined_switch_string);
-  auto insertion =
-      switches_.insert(make_pair(switch_key.substr(prefix_length), value));
-  if (!insertion.second)
-    insertion.first->second = value;
+  base::InsertOrAssign(switches_, switch_key.substr(prefix_length),
+                       StringType(value));
   // Preserve existing switch prefixes in |argv_|; only append one if necessary.
   if (prefix_length == 0) {
     combined_switch_string.insert(0, kSwitchPrefixes[0].data(),
                                   kSwitchPrefixes[0].size());
   }
   if (!value.empty())
-    combined_switch_string += kSwitchValueSeparator + value;
+    base::StrAppend(&combined_switch_string, {kSwitchValueSeparator, value});
   // Append the switch and update the switches/arguments divider |begin_args_|.
   argv_.insert(argv_.begin() + begin_args_++, combined_switch_string);
 }

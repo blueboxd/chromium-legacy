@@ -4,7 +4,7 @@
 
 #include "ash/clipboard/clipboard_history.h"
 
-#include "ash/clipboard/multipaste_controller.h"
+#include "ash/clipboard/clipboard_history_controller.h"
 #include "ash/shell.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"

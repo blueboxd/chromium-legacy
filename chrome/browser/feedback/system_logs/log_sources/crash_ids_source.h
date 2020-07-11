@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/memory/weak_ptr.h"
 #include "components/feedback/system_logs/system_logs_source.h"
 #include "components/upload_list/upload_list.h"
 
@@ -21,6 +22,10 @@ class CrashIdsSource : public SystemLogsSource {
 
   // SystemLogsSource:
   void Fetch(SysLogsSourceCallback callback) override;
+
+  void SetUploadListForTesting(scoped_refptr<UploadList> upload_list) {
+    crash_upload_list_ = upload_list;
+  }
 
  private:
   void OnUploadListAvailable();
@@ -39,6 +44,8 @@ class CrashIdsSource : public SystemLogsSource {
 
   // True if the crash list is currently being loaded.
   bool pending_crash_list_loading_;
+
+  base::WeakPtrFactory<CrashIdsSource> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrashIdsSource);
 };

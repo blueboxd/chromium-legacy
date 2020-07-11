@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['../testing/chromevox_unittest_base.js']);
+GEN_INCLUDE(['../testing/chromevox_webui_test_base.js']);
 GEN_INCLUDE(['../testing/fake_objects.js']);
 
 GEN('#include "content/public/test/browser_test.h"');
@@ -31,8 +31,8 @@ chrome.metricsPrivate.recordUserAction = function() {};
 /**
  * Test fixture.
  */
-ChromeVoxBluetoothBrailleDisplayUIUnitTest =
-    class extends ChromeVoxUnitTestBase {
+ChromeVoxBluetoothBrailleDisplayUIWebUITest =
+    class extends ChromeVoxWebUITestBase {
   /** @override */
   setUp() {
     Msgs = TestMsgs;
@@ -63,16 +63,16 @@ ChromeVoxBluetoothBrailleDisplayUIUnitTest =
 
 
 /** @override */
-ChromeVoxBluetoothBrailleDisplayUIUnitTest.prototype.closureModuleDeps = [
+ChromeVoxBluetoothBrailleDisplayUIWebUITest.prototype.closureModuleDeps = [
   'BluetoothBrailleDisplayManager',
   'BluetoothBrailleDisplayUI',
   'TestMsgs',
 ];
 
-ChromeVoxBluetoothBrailleDisplayUIUnitTest.prototype.isAsync = true;
+ChromeVoxBluetoothBrailleDisplayUIWebUITest.prototype.isAsync = true;
 
 SYNC_TEST_F(
-    'ChromeVoxBluetoothBrailleDisplayUIUnitTest', 'NoDisplays', function() {
+    'ChromeVoxBluetoothBrailleDisplayUIWebUITest', 'NoDisplays', function() {
       const ui = new BluetoothBrailleDisplayUI();
       ui.attach(document.body);
       assertEqualsDOM(
@@ -84,7 +84,7 @@ SYNC_TEST_F(
     });
 
 SYNC_TEST_F(
-    'ChromeVoxBluetoothBrailleDisplayUIUnitTest',
+    'ChromeVoxBluetoothBrailleDisplayUIWebUITest',
     'ControlStateUpdatesNotConnectedOrPaired', function() {
       const ui = new BluetoothBrailleDisplayUI();
       ui.attach(document.body);
@@ -115,7 +115,7 @@ SYNC_TEST_F(
     });
 
 SYNC_TEST_F(
-    'ChromeVoxBluetoothBrailleDisplayUIUnitTest',
+    'ChromeVoxBluetoothBrailleDisplayUIWebUITest',
     'ControlStateUpdatesPairedNotConnected', function() {
       const ui = new BluetoothBrailleDisplayUI();
       ui.attach(document.body);
@@ -205,7 +205,8 @@ SYNC_TEST_F(
     });
 
 SYNC_TEST_F(
-    'ChromeVoxBluetoothBrailleDisplayUIUnitTest', 'PincodeRequest', function() {
+    'ChromeVoxBluetoothBrailleDisplayUIWebUITest', 'PincodeRequest',
+    function() {
       const ui = new BluetoothBrailleDisplayUI();
       ui.attach(document.body);
 
@@ -231,7 +232,7 @@ SYNC_TEST_F(
     });
 
 TEST_F(
-    'ChromeVoxBluetoothBrailleDisplayUIUnitTest', 'ClickControls', function() {
+    'ChromeVoxBluetoothBrailleDisplayUIWebUITest', 'ClickControls', function() {
       const ui = new BluetoothBrailleDisplayUI();
       ui.attach(document.body);
 

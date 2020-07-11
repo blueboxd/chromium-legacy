@@ -83,8 +83,9 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
   test_settings.dont_round_texture_sizes_for_pixel_tests = true;
   auto delegating_output_surface = std::make_unique<TestLayerTreeFrameSink>(
       compositor_context_provider, worker_context_provider,
-      gpu_memory_buffer_manager(), test_settings, ImplThreadTaskRunner(),
-      synchronous_composite, disable_display_vsync, refresh_rate);
+      gpu_memory_buffer_manager(), test_settings, &debug_settings_,
+      ImplThreadTaskRunner(), synchronous_composite, disable_display_vsync,
+      refresh_rate);
   delegating_output_surface->SetEnlargePassTextureAmount(
       enlarge_texture_amount_);
   return delegating_output_surface;
@@ -114,7 +115,7 @@ LayerTreePixelTest::CreateDisplaySkiaOutputSurfaceOnThread() {
       std::make_unique<viz::SkiaOutputSurfaceDependencyImpl>(
           viz::TestGpuServiceHolder::GetInstance()->gpu_service(),
           gpu::kNullSurfaceHandle),
-      viz::RendererSettings());
+      viz::RendererSettings(), &debug_settings_);
   return output_surface;
 }
 

@@ -20,8 +20,10 @@ public interface ContextualSearchTranslation {
      * Also log whenever conditions are right to translate.
      * @param searchRequest The search request to force translation upon.
      * @param sourceLanguage The language to translate from, or an empty string if not known.
+     * @param isTapSelection Whether the selection was established with a Tap gesture.
      */
-    void forceTranslateIfNeeded(ContextualSearchRequest searchRequest, String sourceLanguage);
+    void forceTranslateIfNeeded(
+            ContextualSearchRequest searchRequest, String sourceLanguage, boolean isTapSelection);
 
     /**
      * Force auto-detect translation for the current search request.  The language to translate from

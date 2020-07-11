@@ -11,13 +11,8 @@ import android.text.style.ClickableSpan;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
-
-import androidx.core.view.ViewCompat;
 import androidx.preference.PreferenceViewHolder;
-
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
@@ -52,7 +47,6 @@ public class ClearBrowsingDataCheckBoxPreference extends ChromeBaseCheckBoxPrefe
         super.onBindViewHolder(holder);
 
         mView = holder.itemView;
-        setupLayout(mView);
 
         final TextView textView = (TextView) mView.findViewById(android.R.id.summary);
 
@@ -83,18 +77,6 @@ public class ClearBrowsingDataCheckBoxPreference extends ChromeBaseCheckBoxPrefe
                 return false;
             }
         });
-    }
-
-    /**
-     * This method modifies the default CheckBoxPreference layout.
-     * @param view The view of this preference.
-     */
-    private void setupLayout(View view) {
-        // Adjust icon padding.
-        int padding = getContext().getResources().getDimensionPixelSize(R.dimen.pref_icon_padding);
-        ImageView icon = (ImageView) view.findViewById(android.R.id.icon);
-        ViewCompat.setPaddingRelative(
-                icon, padding, icon.getPaddingTop(), 0, icon.getPaddingBottom());
     }
 
     public void announceForAccessibility(CharSequence announcement) {

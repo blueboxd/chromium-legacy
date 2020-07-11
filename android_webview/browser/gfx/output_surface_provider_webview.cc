@@ -125,8 +125,8 @@ OutputSurfaceProviderWebview::CreateOutputSurface() {
     auto skia_dependency = std::make_unique<SkiaOutputSurfaceDependencyWebView>(
         TaskQueueWebView::GetInstance(), GpuServiceWebView::GetInstance(),
         shared_context_state_.get(), gl_surface_.get());
-    return viz::SkiaOutputSurfaceImpl::Create(std::move(skia_dependency),
-                                              renderer_settings_);
+    return viz::SkiaOutputSurfaceImpl::Create(
+        std::move(skia_dependency), renderer_settings_, debug_settings());
   } else {
     auto context_provider = AwRenderThreadContextProvider::Create(
         gl_surface_, DeferredGpuCommandService::GetInstance());

@@ -46,9 +46,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
       public bluez::BluetoothGattServiceClient::Observer {
  public:
   using GetServiceRecordsCallback =
-      base::Callback<void(const std::vector<BluetoothServiceRecordBlueZ>&)>;
+      base::OnceCallback<void(const std::vector<BluetoothServiceRecordBlueZ>&)>;
   using GetServiceRecordsErrorCallback =
-      base::Callback<void(BluetoothServiceRecordBlueZ::ErrorCode)>;
+      base::OnceCallback<void(BluetoothServiceRecordBlueZ::ErrorCode)>;
 
   ~BluetoothDeviceBlueZ() override;
 

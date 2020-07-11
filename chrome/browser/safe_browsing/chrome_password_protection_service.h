@@ -299,6 +299,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   bool IsIncognito() override;
 
+  bool IsUserMBBOptedIn() override;
+
   bool IsInPasswordAlertMode(ReusedPasswordAccountType password_type) override;
 
   // Checks if pinging should be enabled based on the |trigger_type|,

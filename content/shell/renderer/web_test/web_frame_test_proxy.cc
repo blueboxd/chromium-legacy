@@ -12,8 +12,8 @@
 #include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/renderer/web_test/event_sender.h"
 #include "content/shell/renderer/web_test/gc_controller.h"
+#include "content/shell/renderer/web_test/layout_dump.h"
 #include "content/shell/renderer/web_test/spell_check_client.h"
-#include "content/shell/renderer/web_test/test_interfaces.h"
 #include "content/shell/renderer/web_test/test_plugin.h"
 #include "content/shell/renderer/web_test/test_runner.h"
 #include "content/shell/renderer/web_test/web_view_test_proxy.h"
@@ -737,7 +737,8 @@ void WebFrameTestProxy::SynchronouslyCompositeAfterTest(
 }
 
 void WebFrameTestProxy::DumpFrameLayout(DumpFrameLayoutCallback callback) {
-  std::string dump = test_runner()->DumpLayout(GetWebFrame());
+  std::string dump = DumpLayoutAsString(
+      GetWebFrame(), test_runner()->ShouldGenerateTextResults());
   std::move(callback).Run(std::move(dump));
 }
 

@@ -57,8 +57,11 @@ public class NativePageNavigationDelegateImpl implements NativePageNavigationDel
                 mHost.loadUrl(loadUrlParams, mTabModelSelector.isIncognitoSelected());
                 loadingTab = mTab;
                 break;
+            case WindowOpenDisposition.NEW_FOREGROUND_TAB:
+                loadingTab = openUrlInNewTab(loadUrlParams, windowOpenDisposition);
+                break;
             case WindowOpenDisposition.NEW_BACKGROUND_TAB:
-                loadingTab = openUrlInNewTab(loadUrlParams);
+                loadingTab = openUrlInNewTab(loadUrlParams, windowOpenDisposition);
                 break;
             case WindowOpenDisposition.OFF_THE_RECORD:
                 mHost.loadUrl(loadUrlParams, true);
@@ -81,9 +84,13 @@ public class NativePageNavigationDelegateImpl implements NativePageNavigationDel
         tabDelegate.createTabInOtherWindow(loadUrlParams, mActivity, mHost.getParentId());
     }
 
-    private Tab openUrlInNewTab(LoadUrlParams loadUrlParams) {
-        return mTabModelSelector.openNewTab(loadUrlParams, TabLaunchType.FROM_LONGPRESS_BACKGROUND,
-                mTab, /* incognito = */ false);
+    private Tab openUrlInNewTab(LoadUrlParams loadUrlParams, int windowOpenDisposition) {
+        int tabLaunchType = TabLaunchType.FROM_LONGPRESS_BACKGROUND;
+        if (windowOpenDisposition == WindowOpenDisposition.NEW_FOREGROUND_TAB) {
+            tabLaunchType = TabLaunchType.FROM_LONGPRESS_FOREGROUND;
+        }
+        return mTabModelSelector.openNewTab(
+                loadUrlParams, tabLaunchType, mTab, /* incognito = */ false);
     }
 
     private void saveUrlForOffline(String url) {

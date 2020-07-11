@@ -182,7 +182,7 @@ std::string BluetoothAdapterMac::GetName() const {
 
 void BluetoothAdapterMac::SetName(const std::string& name,
                                   base::OnceClosure callback,
-                                  ErrorOnceCallback error_callback) {
+                                  ErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 
@@ -207,7 +207,7 @@ bool BluetoothAdapterMac::IsDiscoverable() const {
 
 void BluetoothAdapterMac::SetDiscoverable(bool discoverable,
                                           base::OnceClosure callback,
-                                          ErrorOnceCallback error_callback) {
+                                          ErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 

@@ -5546,11 +5546,13 @@ void RenderFrameImpl::BeginNavigation(
     // BeforeUnload event destroyed this frame.
     base::WeakPtr<RenderFrameImpl> weak_self = weak_factory_.GetWeakPtr();
 
+    base::TimeTicks renderer_before_unload_start = base::TimeTicks::Now();
     if (!frame_->DispatchBeforeUnloadEvent(info->navigation_type ==
                                            blink::kWebNavigationTypeReload) ||
         !weak_self) {
       return;
     }
+    base::TimeTicks renderer_before_unload_end = base::TimeTicks::Now();
 
     if (!info->form.IsNull()) {
       for (auto& observer : observers_)
@@ -5575,8 +5577,9 @@ void RenderFrameImpl::BeginNavigation(
 
     // Everything else is handled asynchronously by the browser process through
     // BeginNavigation.
-    BeginNavigationInternal(std::move(info),
-                            is_history_navigation_in_new_child_frame);
+    BeginNavigationInternal(
+        std::move(info), is_history_navigation_in_new_child_frame,
+        renderer_before_unload_start, renderer_before_unload_end);
     return;
   }
 
@@ -5966,7 +5969,9 @@ void RenderFrameImpl::PrepareRenderViewForNavigation(
 
 void RenderFrameImpl::BeginNavigationInternal(
     std::unique_ptr<blink::WebNavigationInfo> info,
-    bool is_history_navigation_in_new_child_frame) {
+    bool is_history_navigation_in_new_child_frame,
+    base::TimeTicks renderer_before_unload_start,
+    base::TimeTicks renderer_before_unload_end) {
   if (!frame_->WillStartNavigation(*info))
     return;
 
@@ -6079,7 +6084,8 @@ void RenderFrameImpl::BeginNavigationInternal(
           info->impression
               ? base::make_optional<Impression>(
                     ConvertWebImpressionToImpression(*info->impression))
-              : base::nullopt);
+              : base::nullopt,
+          renderer_before_unload_start, renderer_before_unload_end);
 
   mojo::PendingAssociatedRemote<mojom::NavigationClient>
       navigation_client_remote;

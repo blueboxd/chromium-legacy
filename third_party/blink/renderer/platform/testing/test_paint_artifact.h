@@ -126,7 +126,7 @@ class TestPaintArtifact {
   TestPaintArtifact& Bounds(const IntRect&);
   TestPaintArtifact& DrawableBounds(const IntRect&);
 
-  TestPaintArtifact& OutsetForRasterEffects(float);
+  TestPaintArtifact& SetRasterEffectOutset(RasterEffectOutset);
   TestPaintArtifact& KnownToBeOpaque();
   TestPaintArtifact& Uncacheable();
 

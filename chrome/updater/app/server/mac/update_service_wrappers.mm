@@ -315,6 +315,20 @@ typedef NS_ENUM(NSInteger, CRUUpdatePriorityEnum) {
   [coder encodeInt:static_cast<NSInteger>(self.priority) forKey:kCRUPriority];
 }
 
+// Required for unit tests.
+- (BOOL)isEqual:(id)object {
+  if (![object isMemberOfClass:[CRUPriorityWrapper class]]) {
+    return NO;
+  }
+  CRUPriorityWrapper* otherPriorityWrapper = object;
+  return self.priority == otherPriorityWrapper.priority;
+}
+
+// Required because isEqual is overridden.
+- (NSUInteger)hash {
+  return static_cast<NSUInteger>(_priority);
+}
+
 @end
 
 @implementation CRUErrorCategoryWrapper

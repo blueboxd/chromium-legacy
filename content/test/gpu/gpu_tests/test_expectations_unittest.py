@@ -7,7 +7,6 @@ import inspect
 import itertools
 import mock
 import os
-import tempfile
 import unittest
 
 from gpu_tests import gpu_helper
@@ -18,6 +17,7 @@ from gpu_tests import webgl_conformance_integration_test
 from gpu_tests import webgl_test_util
 
 from py_utils import discover
+from py_utils import tempfile_ext
 
 from typ import expectations_parser
 from typ import json_results
@@ -461,30 +461,29 @@ class TestGpuTestExpectationsValidators(unittest.TestCase):
                          '[ mac ] a/b/d [ Failure ]\n'
                          'a/c/* [ Failure ]\n')
     options = gpu_helper.GetMockArgs()
-    expectations_file = tempfile.NamedTemporaryFile(delete=False)
-    expectations_file.write(test_expectations)
-    expectations_file.close()
     test_class = gpu_integration_test.GpuIntegrationTest
-    with mock.patch.object(
-        test_class, 'GenerateGpuTests', return_value=[('a/b/c', ())]):
-      with mock.patch.object(
-          test_class,
-          'ExpectationsFiles',
-          return_value=[expectations_file.name]):
-        with self.assertRaises(AssertionError) as context:
-          CheckTestExpectationsAreForExistingTests(self, test_class, options)
-        self.assertIn(
-            'The following expectations were found to not apply'
-            ' to any tests in the GpuIntegrationTest test suite',
-            str(context.exception))
-        self.assertIn(
-            '4: Expectation with pattern \'a/c/*\' does not match'
-            ' any tests in the GpuIntegrationTest test suite',
-            str(context.exception))
-        self.assertIn(
-            '3: Expectation with pattern \'a/b/d\' does not match'
-            ' any tests in the GpuIntegrationTest test suite',
-            str(context.exception))
+    with tempfile_ext.NamedTemporaryFile() as expectations_file,            \
+         mock.patch.object(
+             test_class, 'GenerateGpuTests', return_value=[('a/b/c', ())]), \
+         mock.patch.object(
+             test_class,
+             'ExpectationsFiles', return_value=[expectations_file.name]):
+      expectations_file.write(test_expectations)
+      expectations_file.close()
+      with self.assertRaises(AssertionError) as context:
+        CheckTestExpectationsAreForExistingTests(self, test_class, options)
+      self.assertIn(
+          'The following expectations were found to not apply'
+          ' to any tests in the GpuIntegrationTest test suite',
+          str(context.exception))
+      self.assertIn(
+          '4: Expectation with pattern \'a/c/*\' does not match'
+          ' any tests in the GpuIntegrationTest test suite',
+          str(context.exception))
+      self.assertIn(
+          '3: Expectation with pattern \'a/b/d\' does not match'
+          ' any tests in the GpuIntegrationTest test suite',
+          str(context.exception))
 
 
 def testDriverVersionComparision(self):

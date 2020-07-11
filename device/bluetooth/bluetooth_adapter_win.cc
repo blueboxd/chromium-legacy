@@ -78,7 +78,7 @@ std::string BluetoothAdapterWin::GetName() const {
 
 void BluetoothAdapterWin::SetName(const std::string& name,
                                   base::OnceClosure callback,
-                                  ErrorOnceCallback error_callback) {
+                                  ErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 
@@ -98,7 +98,7 @@ bool BluetoothAdapterWin::IsPowered() const {
 
 void BluetoothAdapterWin::SetPowered(bool powered,
                                      base::OnceClosure callback,
-                                     ErrorOnceCallback error_callback) {
+                                     ErrorCallback error_callback) {
   task_manager_->PostSetPoweredBluetoothTask(powered, std::move(callback),
                                              std::move(error_callback));
 }
@@ -110,7 +110,7 @@ bool BluetoothAdapterWin::IsDiscoverable() const {
 
 void BluetoothAdapterWin::SetDiscoverable(bool discoverable,
                                           base::OnceClosure callback,
-                                          ErrorOnceCallback error_callback) {
+                                          ErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 

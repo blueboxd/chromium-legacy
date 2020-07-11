@@ -38,7 +38,7 @@ void FakeBluetoothProfileManagerClient::RegisterProfile(
     const std::string& uuid,
     const Options& options,
     base::OnceClosure callback,
-    ErrorOnceCallback error_callback) {
+    ErrorCallback error_callback) {
   DVLOG(1) << "RegisterProfile: " << profile_path.value() << ": " << uuid;
 
   if (uuid == kUnregisterableUuid) {
@@ -74,7 +74,7 @@ void FakeBluetoothProfileManagerClient::RegisterProfile(
 void FakeBluetoothProfileManagerClient::UnregisterProfile(
     const dbus::ObjectPath& profile_path,
     base::OnceClosure callback,
-    ErrorOnceCallback error_callback) {
+    ErrorCallback error_callback) {
   DVLOG(1) << "UnregisterProfile: " << profile_path.value();
 
   auto iter = service_provider_map_.find(profile_path);

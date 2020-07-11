@@ -6,10 +6,11 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/feature_list.h"
-#include "base/guid.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
@@ -22,6 +23,32 @@
 #include "components/prefs/pref_service.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+
+namespace {
+
+base::UnguessableToken TokenFromString(const std::string& str) {
+  static constexpr int kBytesPerUint64 = sizeof(uint64_t) / sizeof(uint8_t);
+  static constexpr int kMaxBytesPerToken = 2 * kBytesPerUint64;
+
+  std::vector<uint8_t> bytes;
+  if (!base::HexStringToBytes(str, &bytes) || bytes.size() == 0 ||
+      bytes.size() > kMaxBytesPerToken) {
+    return base::UnguessableToken();
+  }
+
+  uint64_t high = 0, low = 0;
+  int count = 0;
+  std::for_each(std::rbegin(bytes), std::rend(bytes), [&](auto byte) {
+    auto* p = count < kBytesPerUint64 ? &low : &high;
+    int pos = count < kBytesPerUint64 ? count : count - kBytesPerUint64;
+    *p += static_cast<uint64_t>(byte) << (pos * 8);
+    count++;
+  });
+
+  return base::UnguessableToken::Deserialize(high, low);
+}
+
+}  // namespace
 
 namespace chromeos {
 
@@ -126,11 +153,11 @@ void VmPermissionServiceProvider::RegisterVm(
   // to re-launch the VM, we do not need to update them after this.
   UpdateVmPermissions(vm.get());
 
-  const std::string token(base::GenerateGUID());
+  const base::UnguessableToken token(base::UnguessableToken::Create());
   vms_[token] = std::move(vm);
 
   vm_permission_service::RegisterVmResponse payload;
-  payload.set_token(token);
+  payload.set_token(token.ToString());
 
   dbus::MessageWriter writer(response.get());
   writer.AppendProtoAsArrayOfBytes(payload);
@@ -245,9 +272,18 @@ void VmPermissionServiceProvider::GetPermissions(
     return;
   }
 
-  auto iter = vms_.find(request.token());
+  auto token = TokenFromString(request.token());
+  if (!token) {
+    LOG(ERROR) << "Malformed token '" << request.token() << "'";
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_INVALID_ARGS, "Malformed token"));
+    return;
+  }
+
+  auto iter = vms_.find(token);
   if (iter == vms_.end()) {
-    LOG(ERROR) << "Invalid token " << request.token();
+    LOG(ERROR) << "Invalid token " << token;
     std::move(response_sender)
         .Run(dbus::ErrorResponse::FromMethodCall(
             method_call, DBUS_ERROR_INVALID_ARGS, "Invalid token"));

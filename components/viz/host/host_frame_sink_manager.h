@@ -186,6 +186,12 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   uint32_t CacheBackBufferForRootSink(const FrameSinkId& root_sink_id);
   void EvictCachedBackBuffer(uint32_t cache_id);
 
+  void UpdateDebugRendererSettings(const DebugRendererSettings& debug_settings);
+
+  const DebugRendererSettings& debug_renderer_settings() const {
+    return debug_renderer_settings_;
+  }
+
  private:
   friend class HostFrameSinkManagerTest;
   friend class HostFrameSinkManagerTestApi;
@@ -271,6 +277,9 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
 
   uint32_t next_cache_back_buffer_id_ = 1;
   uint32_t min_valid_cache_back_buffer_id_ = 1;
+
+  // This is kept in sync with implementation.
+  DebugRendererSettings debug_renderer_settings_;
 
   base::WeakPtrFactory<HostFrameSinkManager> weak_ptr_factory_{this};
 

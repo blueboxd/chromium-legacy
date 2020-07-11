@@ -43,4 +43,12 @@ void RemoveSinkFromMediaStreamTrack(const WebMediaStreamTrack& track,
     video_track->RemoveSink(sink);
 }
 
+WebMediaStreamTrack CreateWebMediaStreamVideoTrack(
+    MediaStreamVideoSource* source,
+    MediaStreamVideoSource::ConstraintsOnceCallback callback,
+    bool enabled) {
+  return MediaStreamVideoTrack::CreateVideoTrack(source, std::move(callback),
+                                                 enabled);
+}
+
 }  // namespace blink

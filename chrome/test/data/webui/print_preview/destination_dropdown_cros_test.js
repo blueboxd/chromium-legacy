@@ -290,10 +290,14 @@ suite(destination_dropdown_cros_test.suiteName, function() {
 
     clickDropdown();
     assertFalse(dropdown.$$('iron-dropdown').opened);
+    assertEquals(
+        '-1', dropdown.$$('#destination-dropdown').getAttribute('tabindex'));
 
     dropdown.disabled = false;
     clickDropdown();
     assertTrue(dropdown.$$('iron-dropdown').opened);
+    assertEquals(
+        '0', dropdown.$$('#destination-dropdown').getAttribute('tabindex'));
   });
 
   test(

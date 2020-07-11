@@ -231,8 +231,7 @@ void ExecuteSessionCommandOnSessionThread(
       // Note: ChromeDriver log-replay depends on the format of this logging.
       // see chromedriver/log_replay/client_replay.py
       VLOG(0) << "[" << session->id << "] "
-              << "COMMAND " << command_name << " "
-              << FormatValueForDisplay(*params);
+              << "COMMAND " << command_name << " " << PrettyPrintValue(*params);
     }
   }
 

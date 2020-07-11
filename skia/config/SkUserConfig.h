@@ -217,6 +217,9 @@ SK_API void SkDebugf_FileLine(const char* file,
 // Staging for lowp::bilerp_clamp_8888, and for planned misc. others.
 #define SK_DISABLE_LOWP_BILERP_CLAMP_CLAMP_STAGE
 
+// Staging for https://review.skia.org/300707
+#define SK_IMAGE_SUBSET_USE_SOURCE_CONTEXT
+
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,

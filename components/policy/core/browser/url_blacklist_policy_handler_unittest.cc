@@ -31,6 +31,11 @@ const char kTestBlacklistValue[] = "kTestBlacklistValue";
 }  // namespace
 
 class URLBlacklistPolicyHandlerTest : public testing::Test {
+ public:
+  void SetUp() override {
+    handler_ = std::make_unique<URLBlacklistPolicyHandler>(key::kURLBlocklist);
+  }
+
  protected:
   void SetPolicy(const std::string& key, base::Value value) {
     policies_.Set(key, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
@@ -38,13 +43,11 @@ class URLBlacklistPolicyHandlerTest : public testing::Test {
   }
   bool CheckPolicy(const std::string& key, base::Value value) {
     SetPolicy(key, std::move(value));
-    return handler_.CheckPolicySettings(policies_, &errors_);
+    return handler_->CheckPolicySettings(policies_, &errors_);
   }
-  void ApplyPolicies() {
-    handler_.ApplyPolicySettings(policies_, &prefs_);
-  }
+  void ApplyPolicies() { handler_->ApplyPolicySettings(policies_, &prefs_); }
 
-  URLBlacklistPolicyHandler handler_;
+  std::unique_ptr<URLBlacklistPolicyHandler> handler_;
   PolicyErrorMap errors_;
   PolicyMap policies_;
   PrefValueMap prefs_;
@@ -53,7 +56,7 @@ class URLBlacklistPolicyHandlerTest : public testing::Test {
 TEST_F(URLBlacklistPolicyHandlerTest,
        CheckPolicySettings_DisabledSchemesUnspecified) {
   EXPECT_TRUE(
-      CheckPolicy(key::kURLBlacklist, base::Value(base::Value::Type::LIST)));
+      CheckPolicy(key::kURLBlocklist, base::Value(base::Value::Type::LIST)));
   EXPECT_EQ(0U, errors_.size());
 }
 
@@ -77,9 +80,9 @@ TEST_F(URLBlacklistPolicyHandlerTest,
 TEST_F(URLBlacklistPolicyHandlerTest,
        CheckPolicySettings_URLBlacklistWrongType) {
   // The policy expects a list. Give it a boolean.
-  EXPECT_TRUE(CheckPolicy(key::kURLBlacklist, base::Value(false)));
+  EXPECT_TRUE(CheckPolicy(key::kURLBlocklist, base::Value(false)));
   EXPECT_EQ(1U, errors_.size());
-  const std::string expected = key::kURLBlacklist;
+  const std::string expected = key::kURLBlocklist;
   const std::string actual = errors_.begin()->first;
   EXPECT_EQ(expected, actual);
 }
@@ -100,7 +103,7 @@ TEST_F(URLBlacklistPolicyHandlerTest,
 TEST_F(URLBlacklistPolicyHandlerTest,
        ApplyPolicySettings_URLBlacklistWrongType) {
   // The policy expects a list. Give it a boolean.
-  SetPolicy(key::kURLBlacklist, base::Value(false));
+  SetPolicy(key::kURLBlocklist, base::Value(false));
   ApplyPolicies();
   EXPECT_FALSE(prefs_.GetValue(policy_prefs::kUrlBlacklist, nullptr));
 }
@@ -118,7 +121,7 @@ TEST_F(URLBlacklistPolicyHandlerTest,
 
 TEST_F(URLBlacklistPolicyHandlerTest,
        ApplyPolicySettings_URLBlacklistEmpty) {
-  SetPolicy(key::kURLBlacklist, base::Value(base::Value::Type::LIST));
+  SetPolicy(key::kURLBlocklist, base::Value(base::Value::Type::LIST));
   ApplyPolicies();
   base::Value* out;
   EXPECT_TRUE(prefs_.GetValue(policy_prefs::kUrlBlacklist, &out));
@@ -148,7 +151,7 @@ TEST_F(URLBlacklistPolicyHandlerTest,
   // The policy expects string-valued elements. Give it booleans.
   base::Value in(base::Value::Type::LIST);
   in.Append(false);
-  SetPolicy(key::kURLBlacklist, std::move(in));
+  SetPolicy(key::kURLBlocklist, std::move(in));
   ApplyPolicies();
 
   // The element should be skipped.
@@ -178,10 +181,10 @@ TEST_F(URLBlacklistPolicyHandlerTest,
 }
 
 TEST_F(URLBlacklistPolicyHandlerTest,
-       ApplyPolicySettings_URLBlacklistSuccessful) {
+       ApplyPolicySettings_URLBlocklistSuccessful) {
   base::Value in_url_blacklist(base::Value::Type::LIST);
   in_url_blacklist.Append(kTestBlacklistValue);
-  SetPolicy(key::kURLBlacklist, std::move(in_url_blacklist));
+  SetPolicy(key::kURLBlocklist, std::move(in_url_blacklist));
   ApplyPolicies();
 
   base::Value* out;
@@ -202,7 +205,7 @@ TEST_F(URLBlacklistPolicyHandlerTest, ApplyPolicySettings_MergeSuccessful) {
 
   base::Value in_url_blacklist(base::Value::Type::LIST);
   in_url_blacklist.Append(kTestBlacklistValue);
-  SetPolicy(key::kURLBlacklist, std::move(in_url_blacklist));
+  SetPolicy(key::kURLBlocklist, std::move(in_url_blacklist));
 
   ApplyPolicies();
 

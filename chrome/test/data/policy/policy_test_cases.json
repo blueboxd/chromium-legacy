@@ -2756,6 +2756,7 @@
   "HideWebStorePromo": {},
 
   "URLBlacklist": {
+    "note": "This policy is deprecated, see http://crbug.com/1095230.",
     "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [
       {
@@ -2765,11 +2766,32 @@
     ]
   },
 
+  "URLBlocklist": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {"URLBlocklist": ["google.com"]},
+        "prefs": { "policy.url_blacklist": {}}
+      }
+    ]
+  },
+
   "URLWhitelist": {
+    "note": "This policy is deprecated, see http://crbug.com/1095230.",
     "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": {"URLWhitelist": ["google.com"]},
+        "prefs": { "policy.url_whitelist": {}}
+      }
+    ]
+  },
+
+  "URLAllowlist": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {"URLAllowlist": ["google.com"]},
         "prefs": { "policy.url_whitelist": {}}
       }
     ]

@@ -286,6 +286,7 @@ void Display::PresentationGroupTiming::OnPresent(
 Display::Display(
     SharedBitmapManager* bitmap_manager,
     const RendererSettings& settings,
+    const DebugRendererSettings* debug_settings,
     const FrameSinkId& frame_sink_id,
     std::unique_ptr<OutputSurface> output_surface,
     std::unique_ptr<OverlayProcessorInterface> overlay_processor,
@@ -293,6 +294,7 @@ Display::Display(
     scoped_refptr<base::SingleThreadTaskRunner> current_task_runner)
     : bitmap_manager_(bitmap_manager),
       settings_(settings),
+      debug_settings_(debug_settings),
       frame_sink_id_(frame_sink_id),
       output_surface_(std::move(output_surface)),
       skia_output_surface_(output_surface_->AsSkiaOutputSurface()),
@@ -518,9 +520,9 @@ void Display::InitializeRenderer(bool enable_shared_images) {
     // Default to use DDL if skia_output_surface is not null.
     if (skia_output_surface_) {
       renderer_ = std::make_unique<SkiaRenderer>(
-          &settings_, output_surface_.get(), resource_provider_.get(),
-          overlay_processor_.get(), skia_output_surface_,
-          SkiaRenderer::DrawMode::DDL);
+          &settings_, debug_settings_, output_surface_.get(),
+          resource_provider_.get(), overlay_processor_.get(),
+          skia_output_surface_, SkiaRenderer::DrawMode::DDL);
     } else {
       // GPU compositing with GL to an SKP.
       DCHECK(output_surface_);
@@ -528,19 +530,20 @@ void Display::InitializeRenderer(bool enable_shared_images) {
       DCHECK(settings_.record_sk_picture);
       DCHECK(!overlay_processor_->IsOverlaySupported());
       renderer_ = std::make_unique<SkiaRenderer>(
-          &settings_, output_surface_.get(), resource_provider_.get(),
-          overlay_processor_.get(), nullptr /* skia_output_surface */,
-          SkiaRenderer::DrawMode::SKPRECORD);
+          &settings_, debug_settings_, output_surface_.get(),
+          resource_provider_.get(), overlay_processor_.get(),
+          nullptr /* skia_output_surface */, SkiaRenderer::DrawMode::SKPRECORD);
     }
   } else if (output_surface_->context_provider()) {
     renderer_ = std::make_unique<GLRenderer>(
-        &settings_, output_surface_.get(), resource_provider_.get(),
-        overlay_processor_.get(), current_task_runner_);
+        &settings_, debug_settings_, output_surface_.get(),
+        resource_provider_.get(), overlay_processor_.get(),
+        current_task_runner_);
   } else {
     DCHECK(!overlay_processor_->IsOverlaySupported());
     auto renderer = std::make_unique<SoftwareRenderer>(
-        &settings_, output_surface_.get(), resource_provider_.get(),
-        overlay_processor_.get());
+        &settings_, debug_settings_, output_surface_.get(),
+        resource_provider_.get(), overlay_processor_.get());
     software_renderer_ = renderer.get();
     renderer_ = std::move(renderer);
   }

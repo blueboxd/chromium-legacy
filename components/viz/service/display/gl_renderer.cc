@@ -350,11 +350,13 @@ class GLRenderer::ScopedUseGrContext {
 
 GLRenderer::GLRenderer(
     const RendererSettings* settings,
+    const DebugRendererSettings* debug_settings,
     OutputSurface* output_surface,
     DisplayResourceProvider* resource_provider,
     OverlayProcessorInterface* overlay_processor,
     scoped_refptr<base::SingleThreadTaskRunner> current_task_runner)
     : DirectRenderer(settings,
+                     debug_settings,
                      output_surface,
                      resource_provider,
                      overlay_processor),
@@ -3248,7 +3250,7 @@ void GLRenderer::DidReceiveTextureInUseResponses(
 void GLRenderer::BindFramebufferToOutputSurface() {
   current_framebuffer_texture_ = nullptr;
   output_surface_->BindFramebuffer();
-  tint_gl_composited_content_ = settings_->tint_composited_content;
+  tint_gl_composited_content_ = debug_settings_->tint_composited_content;
   if (overdraw_feedback_) {
     // Output surfaces that require an external stencil test should not allow
     // overdraw feedback by setting |supports_stencil| to false.
@@ -3986,7 +3988,8 @@ void GLRenderer::FlushOverdrawFeedback(const gfx::Rect& output_rect) {
   for (const auto& test : stencil_tests) {
     gl_->StencilFunc(test.func, test.ref, 0xffffffff);
     // Transparent color unless color-coding of overdraw is enabled.
-    SetShaderColor(settings_->show_overdraw_feedback ? test.color : 0, 1.f);
+    SetShaderColor(debug_settings_->show_overdraw_feedback ? test.color : 0,
+                   1.f);
     gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, nullptr);
   }
 }

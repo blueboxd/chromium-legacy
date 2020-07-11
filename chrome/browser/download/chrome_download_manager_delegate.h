@@ -72,6 +72,7 @@ class ChromeDownloadManagerDelegate
                           int64_t total_bytes,
                           DownloadLocationDialogType dialog_type,
                           const base::FilePath& suggested_path,
+                          bool supports_later_dialog,
                           DownloadDialogBridge::DialogCallback callback);
 
   void SetDownloadDialogBridgeForTesting(DownloadDialogBridge* bridge);
@@ -278,6 +279,9 @@ class ChromeDownloadManagerDelegate
       download::PathValidationResult result,
       const base::FilePath& target_path);
 #endif
+
+  // Returns whether to show download later dialog.
+  bool ShouldShowDownloadLaterDialog() const;
 
   Profile* profile_;
 

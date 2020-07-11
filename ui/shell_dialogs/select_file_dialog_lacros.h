@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "chromeos/lacros/mojom/select_file.mojom-forward.h"
+#include "chromeos/crosapi/mojom/select_file.mojom-forward.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/select_file_dialog_factory.h"
 #include "ui/shell_dialogs/shell_dialogs_export.h"
@@ -55,8 +55,8 @@ class SHELL_DIALOGS_EXPORT SelectFileDialogLacros : public SelectFileDialog {
   ~SelectFileDialogLacros() override;
 
   // Callback for file selection.
-  void OnSelected(lacros::mojom::SelectFileResult result,
-                  std::vector<lacros::mojom::SelectedFileInfoPtr> files,
+  void OnSelected(crosapi::mojom::SelectFileResult result,
+                  std::vector<crosapi::mojom::SelectedFileInfoPtr> files,
                   int file_type_index);
 
   // Cached parameters from the call to SelectFileImpl.

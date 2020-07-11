@@ -59,10 +59,6 @@ RendererSettings CreateRendererSettings() {
 #elif defined(OS_CHROMEOS)
   renderer_settings.auto_resize_output_surface = false;
 #endif
-  renderer_settings.tint_composited_content =
-      command_line->HasSwitch(switches::kTintCompositedContent);
-  renderer_settings.show_overdraw_feedback =
-      command_line->HasSwitch(switches::kShowOverdrawFeedback);
   renderer_settings.show_aggregated_damage =
       command_line->HasSwitch(switches::kShowAggregatedDamage);
   renderer_settings.allow_antialiasing =
@@ -75,8 +71,6 @@ RendererSettings CreateRendererSettings() {
           switches::kDisableMacOverlays);
 #endif
   renderer_settings.record_sk_picture = features::IsRecordingSkPicture();
-  renderer_settings.show_dc_layer_debug_borders =
-      command_line->HasSwitch(switches::kShowDCLayerDebugBorders);
 
   if (command_line->HasSwitch(switches::kSlowDownCompositingScaleFactor)) {
     const int kMinSlowDownScaleFactor = 1;
@@ -104,6 +98,18 @@ RendererSettings CreateRendererSettings() {
 #endif
 
   return renderer_settings;
+}
+
+DebugRendererSettings CreateDefaultDebugRendererSettings() {
+  DebugRendererSettings result;
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  result.tint_composited_content =
+      command_line->HasSwitch(switches::kTintCompositedContent);
+  result.show_overdraw_feedback =
+      command_line->HasSwitch(switches::kShowOverdrawFeedback);
+  result.show_dc_layer_debug_borders =
+      command_line->HasSwitch(switches::kShowDCLayerDebugBorders);
+  return result;
 }
 
 }  // namespace viz

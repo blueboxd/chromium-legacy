@@ -25,7 +25,6 @@ namespace chromeos {
 // finished (either successful or failed) wallpaper download.
 class CustomizationWallpaperDownloader {
  public:
-  // - |url_context_getter| - Context to initialize net::URLFetcher.
   // - |wallpaper_url| - wallpaper URL to download.
   // - |wallpaper_dir| - directory, where wallpaper will be downloaded
   // (it will be created).

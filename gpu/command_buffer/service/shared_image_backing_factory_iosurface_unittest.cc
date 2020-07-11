@@ -408,7 +408,7 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Dawn_SkiaGL) {
     color_desc.storeOp = wgpu::StoreOp::Store;
     color_desc.clearColor = {0, 255, 0, 255};
 
-    wgpu::RenderPassDescriptor renderPassDesc;
+    wgpu::RenderPassDescriptor renderPassDesc = {};
     renderPassDesc.colorAttachmentCount = 1;
     renderPassDesc.colorAttachments = &color_desc;
     renderPassDesc.depthStencilAttachment = nullptr;
@@ -529,7 +529,7 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, GL_Dawn_Skia_UnclearTexture) {
     color_desc.loadOp = wgpu::LoadOp::Load;
     color_desc.storeOp = wgpu::StoreOp::Store;
 
-    wgpu::RenderPassDescriptor renderPassDesc;
+    wgpu::RenderPassDescriptor renderPassDesc = {};
     renderPassDesc.colorAttachmentCount = 1;
     renderPassDesc.colorAttachments = &color_desc;
     renderPassDesc.depthStencilAttachment = nullptr;
@@ -611,7 +611,7 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, UnclearDawn_SkiaFails) {
     color_desc.storeOp = wgpu::StoreOp::Clear;
     color_desc.clearColor = {0, 255, 0, 255};
 
-    wgpu::RenderPassDescriptor renderPassDesc;
+    wgpu::RenderPassDescriptor renderPassDesc = {};
     renderPassDesc.colorAttachmentCount = 1;
     renderPassDesc.colorAttachments = &color_desc;
     renderPassDesc.depthStencilAttachment = nullptr;

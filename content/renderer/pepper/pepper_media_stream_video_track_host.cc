@@ -23,10 +23,10 @@
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/media_stream_buffer.h"
-#include "ui/gfx/gpu_memory_buffer.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/public/web/modules/mediastream/web_media_stream_utils.h"
 #include "third_party/libyuv/include/libyuv.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 using media::VideoFrame;
 using ppapi::host::HostMessageContext;
@@ -535,7 +535,7 @@ void PepperMediaStreamVideoTrackHost::InitBlinkTrack() {
       base::WrapUnique(source));  // Takes ownership of |source|.
 
   const bool enabled = true;
-  track_ = blink::MediaStreamVideoTrack::CreateVideoTrack(
+  track_ = blink::CreateWebMediaStreamVideoTrack(
       source,
       base::BindOnce(&PepperMediaStreamVideoTrackHost::OnTrackStarted,
                      base::Unretained(this)),

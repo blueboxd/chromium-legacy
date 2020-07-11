@@ -16,6 +16,7 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/resource_provider_test_utils.h"
 #include "components/viz/client/client_resource_provider.h"
+#include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
@@ -106,8 +107,11 @@ class OverlayOutputSurface : public OutputSurface {
 class DCTestOverlayProcessor : public OverlayProcessorWin {
  public:
   DCTestOverlayProcessor()
-      : OverlayProcessorWin(true, std::make_unique<DCLayerOverlayProcessor>()) {
+      : OverlayProcessorWin(
+            true,
+            std::make_unique<DCLayerOverlayProcessor>(&debug_settings_, true)) {
   }
+  DebugRendererSettings debug_settings_;
 };
 
 std::unique_ptr<RenderPass> CreateRenderPass() {

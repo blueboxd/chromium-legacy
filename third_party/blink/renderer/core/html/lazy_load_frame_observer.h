@@ -41,7 +41,17 @@ class LazyLoadFrameObserver final
     kMaxValue = kLoadedHidden
   };
 
-  explicit LazyLoadFrameObserver(HTMLFrameOwnerElement&);
+  // The loading pipeline for an iframe differs depending on whether the
+  // navigation is its first, or a dynamic / subsequent one. Since the iframe
+  // loading path differs, LazyLoadFrameObserver must also account for this
+  // difference when loading a deferred frame. This enum helps us keep track of
+  // that so we can do the right thing.
+  enum class LoadType {
+    kFirst,
+    kSubsequent,
+  };
+
+  LazyLoadFrameObserver(HTMLFrameOwnerElement&, LoadType);
   ~LazyLoadFrameObserver();
 
   void DeferLoadUntilNearViewport(const ResourceRequestHead&, WebFrameLoadType);
@@ -95,6 +105,8 @@ class LazyLoadFrameObserver final
   // deferred, so that the appropriate histograms can be recorded if the frame
   // later gets loaded in for some reason.
   bool was_recorded_as_deferred_ = false;
+
+  LoadType load_type_;
 };
 
 }  // namespace blink

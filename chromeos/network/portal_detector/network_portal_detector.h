@@ -7,8 +7,8 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
-#include "net/url_request/url_fetcher.h"
 
 namespace chromeos {
 
@@ -30,8 +30,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkPortalDetector {
 
   struct CaptivePortalState {
     CaptivePortalState()
-        : status(CAPTIVE_PORTAL_STATUS_UNKNOWN),
-          response_code(net::URLFetcher::RESPONSE_CODE_INVALID) {}
+        : status(CAPTIVE_PORTAL_STATUS_UNKNOWN), response_code(-1) {}
 
     bool operator==(const CaptivePortalState& o) const {
       return status == o.status && response_code == o.response_code;

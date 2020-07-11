@@ -33,7 +33,7 @@ class BluetoothProfileManagerClientImpl : public BluetoothProfileManagerClient {
                        const std::string& uuid,
                        const Options& options,
                        base::OnceClosure callback,
-                       ErrorOnceCallback error_callback) override {
+                       ErrorCallback error_callback) override {
     dbus::MethodCall method_call(
         bluetooth_profile_manager::kBluetoothProfileManagerInterface,
         bluetooth_profile_manager::kRegisterProfile);
@@ -165,7 +165,7 @@ class BluetoothProfileManagerClientImpl : public BluetoothProfileManagerClient {
   // BluetoothProfileManagerClient override.
   void UnregisterProfile(const dbus::ObjectPath& profile_path,
                          base::OnceClosure callback,
-                         ErrorOnceCallback error_callback) override {
+                         ErrorCallback error_callback) override {
     dbus::MethodCall method_call(
         bluetooth_profile_manager::kBluetoothProfileManagerInterface,
         bluetooth_profile_manager::kUnregisterProfile);
@@ -200,8 +200,7 @@ class BluetoothProfileManagerClientImpl : public BluetoothProfileManagerClient {
   }
 
   // Called when a response for a failed method call is received.
-  void OnError(ErrorOnceCallback error_callback,
-               dbus::ErrorResponse* response) {
+  void OnError(ErrorCallback error_callback, dbus::ErrorResponse* response) {
     // Error response has optional error message argument.
     std::string error_name;
     std::string error_message;

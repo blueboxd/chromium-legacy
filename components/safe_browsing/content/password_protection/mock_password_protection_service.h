@@ -42,6 +42,7 @@ class MockPasswordProtectionService : public PasswordProtectionService {
   MOCK_METHOD0(IsExtendedReporting, bool());
   MOCK_METHOD0(IsEnhancedProtection, bool());
   MOCK_METHOD0(IsIncognito, bool());
+  MOCK_METHOD0(IsUserMBBOptedIn, bool());
   MOCK_METHOD1(IsInPasswordAlertMode, bool(ReusedPasswordAccountType));
   MOCK_METHOD0(IsHistorySyncEnabled, bool());
   MOCK_METHOD0(IsUnderAdvancedProtection, bool());

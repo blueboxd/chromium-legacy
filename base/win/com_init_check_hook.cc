@@ -270,11 +270,14 @@ class HookManager {
     return true;
   }
 
-  static HRESULT __stdcall DCheckedCoCreateInstance(const CLSID& rclsid,
-                                                    IUnknown* pUnkOuter,
-                                                    DWORD dwClsContext,
-                                                    REFIID riid,
-                                                    void** ppv) {
+  // Indirect call to original_co_create_instance_body_function_ triggers CFI
+  // so this function must have CFI disabled.
+  static DISABLE_CFI_ICALL HRESULT __stdcall DCheckedCoCreateInstance(
+      const CLSID& rclsid,
+      IUnknown* pUnkOuter,
+      DWORD dwClsContext,
+      REFIID riid,
+      void** ppv) {
     // Chromium COM callers need to make sure that their thread is configured to
     // process COM objects to avoid creating an implicit MTA or silently failing
     // STA object creation call due to the SUCCEEDED() pattern for COM calls.

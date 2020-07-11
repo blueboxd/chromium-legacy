@@ -318,10 +318,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
 
   // The ErrorCallback is used for methods that can fail in which case it is
   // called, in the success case the callback is simply not called.
-  using ErrorCallback = base::Closure;
-  // TODO(reillyg): Remove this and rename everything to ErrorCallback once
-  // all users are converted to using OnceClosure.
-  using ErrorOnceCallback = base::OnceClosure;
+  using ErrorCallback = base::OnceClosure;
 
   using DiscoverySessionCallback =
       base::OnceCallback<void(std::unique_ptr<BluetoothDiscoverySession>)>;
@@ -391,7 +388,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // |callback| will be called. On failure, |error_callback| will be called.
   virtual void SetName(const std::string& name,
                        base::OnceClosure callback,
-                       ErrorOnceCallback error_callback) = 0;
+                       ErrorCallback error_callback) = 0;
 
   // Indicates whether the adapter is initialized and ready to use.
   virtual bool IsInitialized() const = 0;
@@ -427,7 +424,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // See https://github.com/Microsoft/cppwinrt/issues/47 for more details.
   virtual void SetPowered(bool powered,
                           base::OnceClosure callback,
-                          ErrorOnceCallback error_callback);
+                          ErrorCallback error_callback);
 
   // Indicates whether the adapter support the LowEnergy peripheral role.
   virtual bool IsPeripheralRoleSupported() const;
@@ -441,7 +438,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // will be called. On failure, |error_callback| will be called.
   virtual void SetDiscoverable(bool discoverable,
                                base::OnceClosure callback,
-                               ErrorOnceCallback error_callback) = 0;
+                               ErrorCallback error_callback) = 0;
 
   // Indicates whether the adapter is currently discovering new devices.
   virtual bool IsDiscovering() const = 0;
@@ -473,11 +470,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // new and lost devices by implementing the Observer methods "DeviceAdded" and
   // "DeviceRemoved".
   void StartDiscoverySession(DiscoverySessionCallback callback,
-                             ErrorOnceCallback error_callback);
+                             ErrorCallback error_callback);
   void StartDiscoverySessionWithFilter(
       std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
       DiscoverySessionCallback callback,
-      ErrorOnceCallback error_callback);
+      ErrorCallback error_callback);
 
   // Return all discovery filters assigned to this adapter merged together.
   std::unique_ptr<BluetoothDiscoveryFilter> GetMergedDiscoveryFilter() const;
@@ -631,7 +628,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // desired from all requests is achieved or an error is thrown.
   struct StartOrStopDiscoveryCallback {
     StartOrStopDiscoveryCallback(base::OnceClosure start_callback,
-                                 ErrorOnceCallback start_error_callback);
+                                 ErrorCallback start_error_callback);
     StartOrStopDiscoveryCallback(
         base::OnceClosure stop_callback,
         DiscoverySessionErrorCallback stop_error_callback);
@@ -642,7 +639,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
     // The success callback for a stop discovery request.
     base::OnceClosure stop_callback;
     // The error callback for a start discovery request.
-    ErrorOnceCallback start_error_callback;
+    ErrorCallback start_error_callback;
     // The error callback for a stop discovery request.
     DiscoverySessionErrorCallback stop_error_callback;
   };
@@ -671,7 +668,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
 
     bool powered = false;
     base::OnceClosure callback;
-    ErrorOnceCallback error_callback;
+    ErrorCallback error_callback;
   };
 
   BluetoothAdapter();

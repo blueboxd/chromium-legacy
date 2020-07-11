@@ -29,8 +29,6 @@ class VIZ_COMMON_EXPORT RendererSettings {
   bool partial_swap_enabled = false;
   bool should_clear_root_render_pass = true;
   bool release_overlay_resources_after_gpu_query = false;
-  bool tint_composited_content = false;
-  bool show_overdraw_feedback = false;
   bool show_aggregated_damage = false;
   bool use_skia_renderer = false;
   bool allow_overlays = true;
@@ -39,7 +37,6 @@ class VIZ_COMMON_EXPORT RendererSettings {
   bool auto_resize_output_surface = true;
   bool requires_alpha_channel = false;
   bool record_sk_picture = false;
-  bool show_dc_layer_debug_borders = false;
 
   int slow_down_compositing_scale_factor = 1;
 
@@ -66,6 +63,18 @@ class VIZ_COMMON_EXPORT RendererSettings {
   // then overlays aren't supported.
   std::vector<OverlayStrategy> overlay_strategies;
 #endif
+};
+
+// This is a set of debug flags that can be changed at runtime, so that we can
+// trigger developer features. (The above RendererSettings cannot be changed in
+// viz after initialization.) It has a single instance in viz (basically a
+// singleton, owned by FrameSinkManagerImpl), while other objects keep a
+// reference to it. On the host size the single instance is owned by
+// HostFrameSinkManager.
+struct VIZ_COMMON_EXPORT DebugRendererSettings {
+  bool tint_composited_content = false;
+  bool show_overdraw_feedback = false;
+  bool show_dc_layer_debug_borders = false;
 };
 
 }  // namespace viz

@@ -277,21 +277,21 @@ TEST_F(
     });
 
 TEST_F(
-    'SelectToSpeakNodeUtilsUnitTest', 'getDeepEquivalentForSelectionNoChildren',
-    function() {
+    'SelectToSpeakNodeUtilsUnitTest',
+    'getDeepEquivalentForSelectionDeprecatedNoChildren', function() {
       const node = {name: 'Hello, world', children: []};
-      let result = NodeUtils.getDeepEquivalentForSelection(node, 0);
+      let result = NodeUtils.getDeepEquivalentForSelectionDeprecated(node, 0);
       assertEquals(node, result.node);
       assertEquals(0, result.offset);
 
-      result = NodeUtils.getDeepEquivalentForSelection(node, 6);
+      result = NodeUtils.getDeepEquivalentForSelectionDeprecated(node, 6);
       assertEquals(node, result.node);
       assertEquals(6, result.offset);
     });
 
 TEST_F(
     'SelectToSpeakNodeUtilsUnitTest',
-    'getDeepEquivalentForSelectionSimpleChildren', function() {
+    'getDeepEquivalentForSelectionDeprecatedSimpleChildren', function() {
       const child1 =
           {name: 'Hello,', children: [], role: 'inlineTextBox', state: {}};
       const child2 =
@@ -304,28 +304,30 @@ TEST_F(
       };
       child1.parent = root;
       child2.parent = root;
-      let result = NodeUtils.getDeepEquivalentForSelection(root, 0, true);
+      let result =
+          NodeUtils.getDeepEquivalentForSelectionDeprecated(root, 0, true);
       assertEquals(child1, result.node);
       assertEquals(0, result.offset);
 
       // Get the last index of the first child
-      result = NodeUtils.getDeepEquivalentForSelection(root, 5, false);
+      result =
+          NodeUtils.getDeepEquivalentForSelectionDeprecated(root, 5, false);
       assertEquals(child1, result.node);
       assertEquals(5, result.offset);
 
       // Get the first index of the second child
-      result = NodeUtils.getDeepEquivalentForSelection(root, 6, true);
+      result = NodeUtils.getDeepEquivalentForSelectionDeprecated(root, 6, true);
       assertEquals(child2, result.node);
       assertEquals(0, result.offset);
 
-      result = NodeUtils.getDeepEquivalentForSelection(root, 9, true);
+      result = NodeUtils.getDeepEquivalentForSelectionDeprecated(root, 9, true);
       assertEquals(child2, result.node);
       assertEquals(3, result.offset);
     });
 
 TEST_F(
     'SelectToSpeakNodeUtilsUnitTest',
-    'getDeepEquivalentForSelectionComplexChildren', function() {
+    'getDeepEquivalentForSelectionDeprecatedComplexChildren', function() {
       const child1 =
           {name: 'Hello', children: [], role: 'inlineTextBox', state: {}};
       // Empty name
@@ -371,23 +373,27 @@ TEST_F(
       child4.parent = root;
       child7.parent = root;
 
-      let result = NodeUtils.getDeepEquivalentForSelection(root, 0, true);
+      let result =
+          NodeUtils.getDeepEquivalentForSelectionDeprecated(root, 0, true);
       assertEquals(child1, result.node);
       assertEquals(0, result.offset);
 
-      result = NodeUtils.getDeepEquivalentForSelection(root, 1, true);
+      result = NodeUtils.getDeepEquivalentForSelectionDeprecated(root, 1, true);
       assertEquals(child5, result.node);
       assertEquals(0, result.offset);
 
-      result = NodeUtils.getDeepEquivalentForSelection(root, 2, false);
+      result =
+          NodeUtils.getDeepEquivalentForSelectionDeprecated(root, 2, false);
       assertEquals(child6, result.node);
       assertEquals(5, result.offset);
 
-      result = NodeUtils.getDeepEquivalentForSelection(child4, 2, true);
+      result =
+          NodeUtils.getDeepEquivalentForSelectionDeprecated(child4, 2, true);
       assertEquals(child1, result.node);
       assertEquals(2, result.offset);
 
-      result = NodeUtils.getDeepEquivalentForSelection(child4, 5, true);
+      result =
+          NodeUtils.getDeepEquivalentForSelectionDeprecated(child4, 5, true);
       assertEquals(child3, result.node);
       assertEquals(0, result.offset);
     });

@@ -53,7 +53,8 @@ class SoftwareRendererTest : public testing::Test {
         DisplayResourceProvider::kSoftware, nullptr,
         shared_bitmap_manager_.get());
     renderer_ = std::make_unique<SoftwareRenderer>(
-        &settings_, output_surface_.get(), resource_provider(), nullptr);
+        &settings_, &debug_settings_, output_surface_.get(),
+        resource_provider(), nullptr);
     renderer_->Initialize();
     renderer_->SetVisible(true);
 
@@ -123,6 +124,7 @@ class SoftwareRendererTest : public testing::Test {
 
  protected:
   RendererSettings settings_;
+  DebugRendererSettings debug_settings_;
   cc::FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<FakeOutputSurface> output_surface_;
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;

@@ -146,7 +146,9 @@ ScopedXPCServiceMock::ConnectionMockRecord::ConnectionMockRecord(
   }  // autoreleasepool
 }  // ScopedXPCServiceMock::ConnectionMockRecord constructor
 
-ScopedXPCServiceMock::ConnectionMockRecord::~ConnectionMockRecord() = default;
+ScopedXPCServiceMock::ConnectionMockRecord::~ConnectionMockRecord() {
+  [mock_connection_ stopMocking];
+}
 
 id ScopedXPCServiceMock::ConnectionMockRecord::Get() {
   return mock_connection_.get();

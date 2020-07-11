@@ -83,7 +83,7 @@ std::string BluetoothAdapterAndroid::GetName() const {
 
 void BluetoothAdapterAndroid::SetName(const std::string& name,
                                       base::OnceClosure callback,
-                                      ErrorOnceCallback error_callback) {
+                                      ErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 
@@ -106,10 +106,9 @@ bool BluetoothAdapterAndroid::IsDiscoverable() const {
                                                     j_adapter_);
 }
 
-void BluetoothAdapterAndroid::SetDiscoverable(
-    bool discoverable,
-    base::OnceClosure callback,
-    ErrorOnceCallback error_callback) {
+void BluetoothAdapterAndroid::SetDiscoverable(bool discoverable,
+                                              base::OnceClosure callback,
+                                              ErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 

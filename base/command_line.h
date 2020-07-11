@@ -179,7 +179,7 @@ class BASE_EXPORT CommandLine {
   void AppendSwitchPath(const std::string& switch_string,
                         const FilePath& path);
   void AppendSwitchNative(const std::string& switch_string,
-                          const StringType& value);
+                          StringPieceType value);
   void AppendSwitchASCII(const std::string& switch_string,
                          const std::string& value);
 

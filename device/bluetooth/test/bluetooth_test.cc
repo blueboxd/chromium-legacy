@@ -87,7 +87,7 @@ void BluetoothTestBase::StartLowEnergyDiscoverySession() {
   adapter_->StartDiscoverySessionWithFilter(
       std::make_unique<BluetoothDiscoveryFilter>(BLUETOOTH_TRANSPORT_LE),
       GetDiscoverySessionCallback(Call::EXPECTED),
-      GetErrorOnceCallback(Call::NOT_EXPECTED));
+      GetErrorCallback(Call::NOT_EXPECTED));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -95,7 +95,7 @@ void BluetoothTestBase::StartLowEnergyDiscoverySessionExpectedToFail() {
   adapter_->StartDiscoverySessionWithFilter(
       std::make_unique<BluetoothDiscoveryFilter>(BLUETOOTH_TRANSPORT_LE),
       GetDiscoverySessionCallback(Call::NOT_EXPECTED),
-      GetErrorOnceCallback(Call::EXPECTED));
+      GetErrorCallback(Call::EXPECTED));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -483,14 +483,6 @@ BluetoothTestBase::GetReadValueCallback(Call expected) {
 }
 
 BluetoothAdapter::ErrorCallback BluetoothTestBase::GetErrorCallback(
-    Call expected) {
-  if (expected == Call::EXPECTED)
-    ++expected_error_callback_calls_;
-  return base::Bind(&BluetoothTestBase::ErrorCallback,
-                    weak_factory_.GetWeakPtr(), expected);
-}
-
-BluetoothAdapter::ErrorOnceCallback BluetoothTestBase::GetErrorOnceCallback(
     Call expected) {
   if (expected == Call::EXPECTED)
     ++expected_error_callback_calls_;

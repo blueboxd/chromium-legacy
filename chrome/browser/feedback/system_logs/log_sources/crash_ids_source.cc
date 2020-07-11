@@ -7,9 +7,19 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/time/time.h"
 #include "chrome/browser/crash_upload_list/crash_upload_list.h"
 #include "components/feedback/feedback_report.h"
+#include "content/public/browser/browser_thread.h"
+
+#if defined(OS_CHROMEOS)
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
+#endif
 
 namespace system_logs {
 
@@ -37,7 +47,9 @@ CrashIdsSource::CrashIdsSource()
 CrashIdsSource::~CrashIdsSource() {}
 
 void CrashIdsSource::Fetch(SysLogsSourceCallback callback) {
-  // Unretained since we own these callbacks.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Unretained since we own this callback.
   pending_requests_.emplace_back(
       base::BindOnce(&CrashIdsSource::RespondWithCrashIds,
                      base::Unretained(this), std::move(callback)));
@@ -46,8 +58,37 @@ void CrashIdsSource::Fetch(SysLogsSourceCallback callback) {
     return;
 
   pending_crash_list_loading_ = true;
-  crash_upload_list_->Load(base::BindOnce(
-      &CrashIdsSource::OnUploadListAvailable, base::Unretained(this)));
+
+  base::OnceClosure list_available_cb = base::BindOnce(
+      &CrashIdsSource::OnUploadListAvailable, weak_ptr_factory_.GetWeakPtr());
+
+#if defined(OS_CHROMEOS)
+  // Upload recent crashes so that they're shown in the report.
+  // Non-chromeOS systems upload crashes shortly after they happen. ChromeOS is
+  // unique in that it has a separate process (crash_sender) that uploads
+  // crashes periodically (by default every 5 minutes).
+  chromeos::DebugDaemonClient* debugd_client =
+      chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
+  if (debugd_client) {
+    debugd_client->UploadCrashes(base::BindOnce(
+        [](base::OnceClosure load_crash_list_cb, bool success) {
+          if (!success) {
+            LOG(ERROR) << "crash_sender failed; proceeding anyway";
+          }
+          std::move(load_crash_list_cb).Run();
+        },
+        base::BindOnce(&UploadList::Load, crash_upload_list_,
+                       std::move(list_available_cb))));
+
+    // Don't call Load directly; instead let UploadCrashes invoke it via the
+    // callback.
+    return;
+  }
+  // Fall through to Load statement below.
+  LOG(ERROR) << "Failed to create debugd_client. debugd may be down?";
+#endif
+
+  crash_upload_list_->Load(std::move(list_available_cb));
 }
 
 void CrashIdsSource::OnUploadListAvailable() {

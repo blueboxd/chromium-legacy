@@ -285,9 +285,16 @@ bool GraphicsLayer::PaintRecursively() {
 }
 
 bool GraphicsLayer::Paint() {
+  if (client_.ShouldThrottleRendering())
+    return false;
+
 #if !DCHECK_IS_ON()
   // TODO(crbug.com/853096): Investigate why we can ever reach here without
   // a valid layer state. Seems to only happen on Android builds.
+  // TODO(chrishtr): I think this might have been due to iframe throttling.
+  // The comment above and the code here was written before the early
+  // out if client_.ShouldThrottleRendering() was true was added. Throttled
+  // layers can of course have a stale or missing layer_state_.
   if (!layer_state_)
     return false;
 #endif

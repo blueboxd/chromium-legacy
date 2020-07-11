@@ -68,6 +68,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionTask : public FidoTask {
   // HandleResponse is the callback to a CTAP2 assertion request that requested
   // user-presence.
   void HandleResponse(
+      std::vector<PublicKeyCredentialDescriptor> allow_list,
       CtapDeviceResponseCode response_code,
       base::Optional<AuthenticatorGetAssertionResponse> response_data);
 

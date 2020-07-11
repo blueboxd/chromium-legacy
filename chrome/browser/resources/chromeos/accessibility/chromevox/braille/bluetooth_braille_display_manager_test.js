@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['../testing/chromevox_unittest_base.js']);
+GEN_INCLUDE(['../testing/chromevox_webui_test_base.js']);
 GEN_INCLUDE(['../testing/fake_objects.js']);
 
 GEN('#include "content/public/test/browser_test.h"');
@@ -46,17 +46,17 @@ class FakeBluetoothBrailleDisplayManagerListener {
 /**
  * Test fixture.
  */
-ChromeVoxBluetoothBrailleDisplayManagerUnitTest =
-    class extends ChromeVoxUnitTestBase {};
+ChromeVoxBluetoothBrailleDisplayManagerWebUITest =
+    class extends ChromeVoxWebUITestBase {};
 
 /** @override */
-ChromeVoxBluetoothBrailleDisplayManagerUnitTest.prototype.closureModuleDeps = [
+ChromeVoxBluetoothBrailleDisplayManagerWebUITest.prototype.closureModuleDeps = [
   'BluetoothBrailleDisplayManager',
 ];
 
-ChromeVoxBluetoothBrailleDisplayManagerUnitTest.prototype.isAsync = true;
+ChromeVoxBluetoothBrailleDisplayManagerWebUITest.prototype.isAsync = true;
 TEST_F(
-    'ChromeVoxBluetoothBrailleDisplayManagerUnitTest', 'Connect', function() {
+    'ChromeVoxBluetoothBrailleDisplayManagerWebUITest', 'Connect', function() {
       let connectCalled = false;
       chrome.bluetoothPrivate.connect = (result, callback) => {
         connectCalled = true;
@@ -70,7 +70,7 @@ TEST_F(
     });
 
 TEST_F(
-    'ChromeVoxBluetoothBrailleDisplayManagerUnitTest', 'ConnectAlreadyPaired',
+    'ChromeVoxBluetoothBrailleDisplayManagerWebUITest', 'ConnectAlreadyPaired',
     function() {
       chrome.bluetoothPrivate.connect = this.newCallback();
       chrome.bluetoothPrivate.disconnectAll = assertNotReached;
@@ -80,7 +80,7 @@ TEST_F(
     });
 
 TEST_F(
-    'ChromeVoxBluetoothBrailleDisplayManagerUnitTest',
+    'ChromeVoxBluetoothBrailleDisplayManagerWebUITest',
     'ConnectAlreadyConnectedNotPaired', function() {
       chrome.bluetoothPrivate.connect = assertNotReached;
       chrome.bluetoothPrivate.disconnectAll = assertNotReached;
@@ -90,7 +90,7 @@ TEST_F(
     });
 
 TEST_F(
-    'ChromeVoxBluetoothBrailleDisplayManagerUnitTest',
+    'ChromeVoxBluetoothBrailleDisplayManagerWebUITest',
     'DisconnectPreviousPreferredOnConnectNewPreferred', function() {
       chrome.bluetoothPrivate.connect = this.newCallback((address) => {
         assertEquals('abcd', address);
@@ -106,7 +106,7 @@ TEST_F(
     });
 
 TEST_F(
-    'ChromeVoxBluetoothBrailleDisplayManagerUnitTest', 'ReconnectPreferred',
+    'ChromeVoxBluetoothBrailleDisplayManagerWebUITest', 'ReconnectPreferred',
     function() {
       chrome.bluetoothPrivate.connect = this.newCallback();
       chrome.bluetoothPrivate.disconnectAll = assertNotReached;
@@ -116,7 +116,7 @@ TEST_F(
     });
 
 SYNC_TEST_F(
-    'ChromeVoxBluetoothBrailleDisplayManagerUnitTest', 'Listener', function() {
+    'ChromeVoxBluetoothBrailleDisplayManagerWebUITest', 'Listener', function() {
       const manager = new BluetoothBrailleDisplayManager();
       const listener = new FakeBluetoothBrailleDisplayManagerListener();
       manager.addListener(listener);
@@ -154,7 +154,7 @@ SYNC_TEST_F(
     });
 
 TEST_F(
-    'ChromeVoxBluetoothBrailleDisplayManagerUnitTest',
+    'ChromeVoxBluetoothBrailleDisplayManagerWebUITest',
     'ConnectPreferredTriggersBrlttyUpdate', function() {
       chrome.brailleDisplayPrivate.updateBluetoothBrailleDisplayAddress =
           this.newCallback((address) => {
@@ -183,7 +183,7 @@ TEST_F(
     });
 
 TEST_F(
-    'ChromeVoxBluetoothBrailleDisplayManagerUnitTest',
+    'ChromeVoxBluetoothBrailleDisplayManagerWebUITest',
     'ForgetPreferredTriggersBrlttyUpdate', function() {
       chrome.bluetoothPrivate.forgetDevice = this.newCallback();
       chrome.brailleDisplayPrivate.updateBluetoothBrailleDisplayAddress =
@@ -199,7 +199,7 @@ TEST_F(
     });
 
 TEST_F(
-    'ChromeVoxBluetoothBrailleDisplayManagerUnitTest',
+    'ChromeVoxBluetoothBrailleDisplayManagerWebUITest',
     'DisconnectPreferredTriggersBrlttyUpdate', function() {
       chrome.bluetoothPrivate.disconnectAll = this.newCallback();
       chrome.brailleDisplayPrivate.updateBluetoothBrailleDisplayAddress =

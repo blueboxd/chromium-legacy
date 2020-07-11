@@ -272,13 +272,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_draft_25, false)
 // If true, disable QUIC version h3-27.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_draft_27, false)
 
-// If true, QUIC BBRv2 to take ack height into account when calculating
-// queuing_threshold in PROBE_UP.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_bbr2_add_ack_height_to_queueing_threshold,
-    true)
-
 // If true, server push will be allowed in QUIC versions using HTTP/3.
 QUIC_FLAG(bool, FLAGS_quic_enable_http3_server_push, false)
 
@@ -356,7 +349,7 @@ QUIC_FLAG(bool,
 // If true, save user agent into in QuicSession.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_save_user_agent_in_quic_session,
-          false)
+          true)
 
 // When true, QUIC_CRYPTO versions of QUIC will not send the max ACK delay
 // unless it is configured to a non-default value.
@@ -415,3 +408,8 @@ QUIC_FLAG(
 // If true, take the largest acked packet into account when computing the sent
 // packet number length.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_packet_number_length, false)
+
+// If true, retransmit unacked handshake data before PTO expiry.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_retransmit_handshake_data_early,
+          false)

@@ -855,6 +855,40 @@ class LazyLoadAutomaticImagesTest : public SimTest {
       scoped_lazy_image_visible_load_time_metrics_for_test_ = true;
 };
 
+TEST_F(LazyLoadAutomaticImagesTest, AttributeChangedFromLazyToUnset) {
+  TestLoadImageExpectingLazyLoad("id='my_image' loading='lazy'");
+
+  // The body's load event should have already fired.
+  EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
+  EXPECT_FALSE(ConsoleMessages().Contains("child frame element onload"));
+
+  Element* img = GetDocument().getElementById("my_image");
+  ASSERT_TRUE(img);
+  img->removeAttribute(html_names::kLoadingAttr);
+
+  test::RunPendingTasks();
+
+  EXPECT_FALSE(ConsoleMessages().Contains("image onload"));
+
+  SimSubresourceRequest img_resource("https://example.com/image.png",
+                                     "image/png");
+
+  // The img should still be deferred because automatic lazy loading is enabled.
+  // Scroll down until it is visible.
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 150), mojom::blink::ScrollType::kProgrammatic);
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  img_resource.Complete(ReadTestImage());
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  EXPECT_TRUE(ConsoleMessages().Contains("image onload"));
+}
+
 TEST_F(LazyLoadAutomaticImagesTest, AttributeChangedFromLazyToEager) {
   TestLoadImageExpectingLazyLoad("id='my_image' loading='lazy'");
 

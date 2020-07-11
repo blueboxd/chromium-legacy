@@ -393,21 +393,21 @@
     ]
   },
 
-  "URLBlacklist": {
+  "URLBlocklist": {
     "os": [ "ios" ],
     "policy_pref_mapping_test": [
       {
-        "policies": {"URLBlacklist": ["google.com"]},
+        "policies": {"URLBlocklist": ["google.com"]},
         "prefs": { "policy.url_blacklist": {}}
       }
     ]
   },
 
-  "URLWhitelist": {
+  "URLAllowlist": {
     "os": [ "ios" ],
     "policy_pref_mapping_test": [
       {
-        "policies": {"URLWhitelist": ["google.com"]},
+        "policies": {"URLAllowlist": ["google.com"]},
         "prefs": { "policy.url_whitelist": {}}
       }
     ]

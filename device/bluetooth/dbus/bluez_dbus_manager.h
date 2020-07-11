@@ -106,7 +106,7 @@ class DEVICE_BLUETOOTH_EXPORT BluezDBusManager {
   bool IsObjectManagerSupportKnown() { return object_manager_support_known_; }
 
   // Calls |callback| once we know whether Object Manager is supported or not.
-  void CallWhenObjectManagerSupportIsKnown(base::Closure callback);
+  void CallWhenObjectManagerSupportIsKnown(base::OnceClosure callback);
 
   // Returns true if Object Manager is supported.
   bool IsObjectManagerSupported() { return object_manager_supported_; }
@@ -165,7 +165,7 @@ class DEVICE_BLUETOOTH_EXPORT BluezDBusManager {
 
   std::unique_ptr<BluetoothDBusClientBundle> client_bundle_;
 
-  base::Closure object_manager_support_known_callback_;
+  base::OnceClosure object_manager_support_known_callback_;
 
   bool object_manager_support_known_;
   bool object_manager_supported_;

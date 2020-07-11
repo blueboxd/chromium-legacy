@@ -326,7 +326,7 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
         std::make_unique<viz::SkiaOutputSurfaceDependencyImpl>(
             viz::TestGpuServiceHolder::GetInstance()->gpu_service(),
             gpu::kNullSurfaceHandle),
-        renderer_settings_);
+        renderer_settings_, &debug_settings_);
   } else if (use_test_surface_) {
     gfx::SurfaceOrigin surface_origin = gfx::SurfaceOrigin::kBottomLeft;
     display_output_surface = std::make_unique<cc::PixelTestOutputSurface>(
@@ -358,9 +358,10 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
       display_output_surface->capabilities().max_frames_pending);
 
   data->SetDisplay(std::make_unique<viz::Display>(
-      &shared_bitmap_manager_, renderer_settings_, compositor->frame_sink_id(),
-      std::move(display_output_surface), std::move(overlay_processor),
-      std::move(scheduler), compositor->task_runner()));
+      &shared_bitmap_manager_, renderer_settings_, &debug_settings_,
+      compositor->frame_sink_id(), std::move(display_output_surface),
+      std::move(overlay_processor), std::move(scheduler),
+      compositor->task_runner()));
   frame_sink_manager_->RegisterBeginFrameSource(begin_frame_source.get(),
                                                 compositor->frame_sink_id());
   // Note that we are careful not to destroy a prior |data->begin_frame_source|

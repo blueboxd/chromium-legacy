@@ -12,6 +12,10 @@
 namespace download {
 namespace features {
 
+// The Finch parameter for download later feature to function only on cellular
+// network.
+constexpr char kDownloadLaterRequireCellular[] = "require_cellular";
+
 // Whether offline content provider should be used for the downloads UI..
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
     kUseDownloadOfflineContentProvider;

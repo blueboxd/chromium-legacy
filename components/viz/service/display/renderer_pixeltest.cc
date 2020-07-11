@@ -5007,7 +5007,7 @@ class RendererPixelTestWithOverdrawFeedback
     : public RendererPixelTest<RendererType> {
  protected:
   void SetUp() override {
-    this->renderer_settings_.show_overdraw_feedback = true;
+    this->debug_settings_.show_overdraw_feedback = true;
     RendererPixelTest<RendererType>::SetUp();
   }
 };
@@ -5060,7 +5060,7 @@ class SkiaRendererPixelTestWithOverdrawFeedback
     : public cc::RendererPixelTest<RendererType> {
  protected:
   void SetUp() override {
-    this->renderer_settings_.show_overdraw_feedback = true;
+    this->debug_settings_.show_overdraw_feedback = true;
     RendererPixelTest<RendererType>::SetUp();
   }
 };

@@ -384,8 +384,8 @@ interesting attributes supported today.
     a response. This makes it so that callers of the method can wait
     synchronously for a response. See
     [Synchronous Calls](/mojo/public/cpp/bindings/README.md#Synchronous-Calls)
-    in the C++ bindings documentation. Note that sync calls are not currently
-    supported in other target languages.
+    in the C++ bindings documentation. Note that sync methods are only actually
+    synchronous when called from C++.
 
 **`[Extensible]`**
 :   The `Extensible` attribute may be specified for any enum definition. This

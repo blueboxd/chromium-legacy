@@ -5,6 +5,7 @@
 #include "content/renderer/media/audio/audio_renderer_mixer_manager.h"
 
 #include <algorithm>
+#include <limits>
 #include <string>
 #include <utility>
 
@@ -154,7 +155,9 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
 
   auto it = mixers_.find(key);
   if (it != mixers_.end()) {
-    it->second.ref_count++;
+    auto new_count = ++it->second.ref_count;
+    CHECK(new_count != std::numeric_limits<decltype(new_count)>::max());
+
     DVLOG(1) << "Reusing mixer: " << it->second.mixer;
 
     // Sink will now be released unused, but still must be stopped.

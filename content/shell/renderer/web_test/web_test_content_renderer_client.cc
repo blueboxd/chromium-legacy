@@ -54,7 +54,7 @@ RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
                                        const mojom::CreateViewParams& params) {
   return new WebViewTestProxy(
       compositor_deps, params,
-      WebTestRenderThreadObserver::GetInstance()->test_interfaces());
+      WebTestRenderThreadObserver::GetInstance()->test_runner());
 }
 
 std::unique_ptr<RenderWidget> CreateWebWidgetTestProxy(

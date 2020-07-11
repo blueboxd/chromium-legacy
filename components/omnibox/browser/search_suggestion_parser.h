@@ -50,7 +50,6 @@ class SearchSuggestionParser {
            bool relevance_from_server,
            AutocompleteMatchType::Type type,
            std::vector<int> subtypes,
-           int subtype_identifier,
            const std::string& deletion_url);
     Result(const Result& other);
     virtual ~Result();
@@ -64,7 +63,6 @@ class SearchSuggestionParser {
 
     AutocompleteMatchType::Type type() const { return type_; }
     const std::vector<int>& subtypes() const { return subtypes_; }
-    int subtype_identifier() const { return subtype_identifier_; }
     int relevance() const { return relevance_; }
     void set_relevance(int relevance) { relevance_ = relevance; }
     bool received_after_last_keystroke() const {
@@ -102,12 +100,6 @@ class SearchSuggestionParser {
     // Suggestion subtypes.
     std::vector<int> subtypes_;
 
-    // Used to identify the specific source / type for suggestions by the
-    // suggest server. See |result_subtype_identifier| in omnibox.proto for more
-    // details.
-    // The identifier 0 is reserved for cases where this specific type is unset.
-    int subtype_identifier_;
-
     // The relevance score.
     int relevance_;
 
@@ -134,7 +126,7 @@ class SearchSuggestionParser {
    public:
     SuggestResult(const base::string16& suggestion,
                   AutocompleteMatchType::Type type,
-                  int subtype_identifier,
+                  std::vector<int> subtypes,
                   bool from_keyword,
                   int relevance,
                   bool relevance_from_server,
@@ -142,7 +134,6 @@ class SearchSuggestionParser {
     SuggestResult(const base::string16& suggestion,
                   AutocompleteMatchType::Type type,
                   std::vector<int> subtypes,
-                  int subtype_identifier,
                   const base::string16& match_contents,
                   const base::string16& match_contents_prefix,
                   const base::string16& annotation,
@@ -242,7 +233,6 @@ class SearchSuggestionParser {
                      const GURL& url,
                      AutocompleteMatchType::Type type,
                      std::vector<int> subtypes,
-                     int subtype_identifier,
                      const base::string16& description,
                      const std::string& deletion_url,
                      bool from_keyword,

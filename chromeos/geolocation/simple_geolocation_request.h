@@ -16,7 +16,6 @@
 #include "base/timer/timer.h"
 #include "chromeos/geolocation/geoposition.h"
 #include "chromeos/network/network_util.h"
-#include "net/url_request/url_fetcher.h"
 #include "url/gurl.h"
 
 namespace network {

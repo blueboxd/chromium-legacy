@@ -102,8 +102,9 @@ struct LazyLoadFrameObserver::LazyLoadRequestInfo {
   const WebFrameLoadType frame_load_type;
 };
 
-LazyLoadFrameObserver::LazyLoadFrameObserver(HTMLFrameOwnerElement& element)
-    : element_(&element) {}
+LazyLoadFrameObserver::LazyLoadFrameObserver(HTMLFrameOwnerElement& element,
+                                             LoadType load_type)
+    : element_(&element), load_type_(load_type) {}
 
 LazyLoadFrameObserver::~LazyLoadFrameObserver() = default;
 
@@ -182,9 +183,15 @@ void LazyLoadFrameObserver::LoadImmediately() {
   // |lazy_load_intersection_observer_| to be disconnected.
   FrameLoadRequest request(element_->GetDocument().domWindow(),
                            scoped_request_info->resource_request);
-  To<LocalFrame>(element_->ContentFrame())
-      ->Loader()
-      .StartNavigation(request, scoped_request_info->frame_load_type);
+
+  if (load_type_ == LoadType::kFirst) {
+    To<LocalFrame>(element_->ContentFrame())
+        ->Loader()
+        .StartNavigation(request, scoped_request_info->frame_load_type);
+  } else if (load_type_ == LoadType::kSubsequent) {
+    element_->ContentFrame()->Navigate(request,
+                                       scoped_request_info->frame_load_type);
+  }
 
   DCHECK(!IsLazyLoadPending());
 }

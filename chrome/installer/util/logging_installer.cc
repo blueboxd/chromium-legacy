@@ -63,7 +63,7 @@ TruncateResult TruncateLogFileIfNeeded(const base::FilePath& log_file) {
           result = LOGFILE_TRUNCATED;
         }
       }
-    } else if (base::DeleteFile(log_file, false)) {
+    } else if (base::DeleteFile(log_file)) {
       // Couldn't get sufficient access to the log file, optimistically try to
       // delete it.
       result = LOGFILE_DELETED;

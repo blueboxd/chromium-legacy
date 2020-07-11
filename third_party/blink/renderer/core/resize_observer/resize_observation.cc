@@ -4,14 +4,14 @@
 
 #include "third_party/blink/renderer/core/resize_observer/resize_observation.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
-#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_box_options.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observer_utilities.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_graphics_element.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 
 namespace blink {
@@ -53,56 +53,30 @@ size_t ResizeObservation::TargetDepth() {
 LayoutSize ResizeObservation::ComputeTargetSize() const {
   if (target_) {
     if (LayoutObject* layout_object = target_->GetLayoutObject()) {
-      // https://drafts.csswg.org/resize-observer/#calculate-box-size states
-      // that the bounding box should be used for SVGGraphicsElements regardless
-      // of the observed box.
+      const ComputedStyle& style = layout_object->StyleRef();
       if (auto* svg_graphics_element =
               DynamicTo<SVGGraphicsElement>(target_.Get())) {
-        return LayoutSize(svg_graphics_element->GetBBox().Size());
+        LayoutSize bounding_box_size =
+            LayoutSize(svg_graphics_element->GetBBox().Size());
+        switch (observed_box_) {
+          case ResizeObserverBoxOptions::BorderBox:
+          case ResizeObserverBoxOptions::ContentBox:
+            return bounding_box_size;
+          case ResizeObserverBoxOptions::DevicePixelContentBox: {
+            bounding_box_size.Scale(style.EffectiveZoom());
+            LayoutSize snapped_device_pixel_content_box_size = LayoutSize(
+                ResizeObserverUtilities::ComputeSnappedDevicePixelContentBox(
+                    bounding_box_size, layout_object, style));
+
+            return snapped_device_pixel_content_box_size;
+          }
+        }
       }
       if (!layout_object->IsBox())
         return LayoutSize();
 
-      if (LayoutBox* layout_box = ToLayoutBox(layout_object)) {
-        const ComputedStyle& style = layout_object->StyleRef();
-        switch (observed_box_) {
-          case ResizeObserverBoxOptions::BorderBox:
-            return LayoutSize(AdjustForAbsoluteZoom::AdjustLayoutUnit(
-                                  layout_box->LogicalWidth(), style),
-                              AdjustForAbsoluteZoom::AdjustLayoutUnit(
-                                  layout_box->LogicalHeight(), style));
-          case ResizeObserverBoxOptions::ContentBox:
-            return LayoutSize(AdjustForAbsoluteZoom::AdjustLayoutUnit(
-                                  layout_box->ContentLogicalWidth(), style),
-                              AdjustForAbsoluteZoom::AdjustLayoutUnit(
-                                  layout_box->ContentLogicalHeight(), style));
-          case ResizeObserverBoxOptions::DevicePixelContentBox: {
-            LayoutSize paint_offset =
-                layout_object->FirstFragment().PaintOffset().ToLayoutSize();
-
-            LayoutSize device_pixel_content_box_size(
-                SnapSizeToPixel(layout_box->ContentLogicalWidth(),
-                                style.IsHorizontalWritingMode()
-                                    ? paint_offset.Width()
-                                    : paint_offset.Height()),
-                SnapSizeToPixel(layout_box->ContentLogicalHeight(),
-                                style.IsHorizontalWritingMode()
-                                    ? paint_offset.Height()
-                                    : paint_offset.Width()));
-
-            // Get Device Scale Factor for cases where use-zoom-for-dsf is
-            // disabled. This is 1 if use-zoom-for-dsf is enabled.
-            float device_scale_factor = layout_object->GetFrame()
-                                            ->GetPage()
-                                            ->DeviceScaleFactorDeprecated();
-            device_pixel_content_box_size.Scale(device_scale_factor);
-
-            return device_pixel_content_box_size;
-          }
-          default:
-            NOTREACHED();
-        }
-      }
+      return LayoutSize(ResizeObserverUtilities::ComputeZoomAdjustedBox(
+          observed_box_, layout_object, style));
     }
   }
   return LayoutSize();

@@ -74,9 +74,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothProfileManagerClient
   // The ErrorCallback is used by adapter methods to indicate failure.
   // It receives two arguments: the name of the error in |error_name| and
   // an optional message in |error_message|.
-  typedef base::Callback<void(const std::string& error_name,
-                              const std::string& error_message)> ErrorCallback;
-  using ErrorOnceCallback =
+  using ErrorCallback =
       base::OnceCallback<void(const std::string& error_name,
                               const std::string& error_message)>;
 
@@ -88,13 +86,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothProfileManagerClient
                                const std::string& uuid,
                                const Options& options,
                                base::OnceClosure callback,
-                               ErrorOnceCallback error_callback) = 0;
+                               ErrorCallback error_callback) = 0;
 
   // Unregisters the profile with the D-Bus object path |agent_path| from the
   // remote profile manager.
   virtual void UnregisterProfile(const dbus::ObjectPath& profile_path,
                                  base::OnceClosure callback,
-                                 ErrorOnceCallback error_callback) = 0;
+                                 ErrorCallback error_callback) = 0;
 
   // Creates the instance.
   static BluetoothProfileManagerClient* Create();

@@ -56,6 +56,7 @@ class SkiaOutputSurfaceImplTest : public testing::Test {
   void UnblockMainThread();
 
  protected:
+  DebugRendererSettings debug_settings_;
   gl::DisableNullDrawGLBindings enable_pixel_output_;
   std::unique_ptr<SkiaOutputSurface> output_surface_;
   cc::FakeOutputSurfaceClient output_surface_client_;
@@ -78,7 +79,7 @@ void SkiaOutputSurfaceImplTest::SetUpSkiaOutputSurfaceImpl() {
   output_surface_ = SkiaOutputSurfaceImpl::Create(
       std::make_unique<SkiaOutputSurfaceDependencyImpl>(
           GetGpuService(), gpu::kNullSurfaceHandle),
-      settings);
+      settings, &debug_settings_);
   output_surface_->BindToClient(&output_surface_client_);
 }
 

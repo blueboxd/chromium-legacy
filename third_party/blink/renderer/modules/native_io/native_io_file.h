@@ -47,6 +47,7 @@ class NativeIOFile final : public ScriptWrappable {
   ~NativeIOFile() override;
 
   ScriptPromise close(ScriptState*);
+  ScriptPromise getLength(ScriptState*, ExceptionState&);
   ScriptPromise read(ScriptState*,
                      MaybeShared<DOMArrayBufferView> buffer,
                      uint64_t file_offset,
@@ -79,10 +80,21 @@ class NativeIOFile final : public ScriptWrappable {
       CrossThreadPersistent<ScriptPromiseResolver> resolver,
       NativeIOFile::FileState* file_state,
       scoped_refptr<base::SequencedTaskRunner> file_task_runner);
-  // Performs the post file-I/O part of close(), on the main thread.
+  // Performs the post file I/O part of close(), on the main thread.
   void DidClose(CrossThreadPersistent<ScriptPromiseResolver> resolver);
 
-  // Performs the file I/O part of read().
+  // Performs the file I/O part of getLength(), off the main thread.
+  static void DoGetLength(
+      CrossThreadPersistent<NativeIOFile> native_io_file,
+      CrossThreadPersistent<ScriptPromiseResolver> resolver,
+      NativeIOFile::FileState* file_state,
+      scoped_refptr<base::SequencedTaskRunner> file_task_runner);
+  // Performs the post file I/O part of getLength(), on the main thread.
+  void DidGetLength(CrossThreadPersistent<ScriptPromiseResolver> resolver,
+                    int64_t length,
+                    base::File::Error get_length_error);
+
+  // Performs the file I/O part of read(), off the main thread.
   static void DoRead(
       CrossThreadPersistent<NativeIOFile> native_io_file,
       CrossThreadPersistent<ScriptPromiseResolver> resolver,
@@ -92,12 +104,12 @@ class NativeIOFile final : public ScriptWrappable {
       char* read_buffer,
       uint64_t file_offset,
       int read_size);
-  // Performs the post file-I/O part of read(), on the main thread.
+  // Performs the post file I/O part of read(), on the main thread.
   void DidRead(CrossThreadPersistent<ScriptPromiseResolver> resolver,
                int read_bytes,
                base::File::Error read_error);
 
-  // Performs the file I/O part of write().
+  // Performs the file I/O part of write(), off the main thread.
   static void DoWrite(
       CrossThreadPersistent<NativeIOFile> native_io_file,
       CrossThreadPersistent<ScriptPromiseResolver> resolver,
@@ -107,7 +119,7 @@ class NativeIOFile final : public ScriptWrappable {
       const char* write_data,
       uint64_t file_offset,
       int write_size);
-  // Performs the post file-I/O part of write(), on the main thread.
+  // Performs the post file I/O part of write(), on the main thread.
   void DidWrite(CrossThreadPersistent<ScriptPromiseResolver> resolver,
                 int written_bytes,
                 base::File::Error write_error);

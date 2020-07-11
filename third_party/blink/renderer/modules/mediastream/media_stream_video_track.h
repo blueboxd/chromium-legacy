@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_TRACK_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_TRACK_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_TRACK_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_TRACK_H_
 
 #include <memory>
 #include <vector>
@@ -17,22 +17,21 @@
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_sink.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/web/modules/mediastream/encoded_video_frame.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
 class VideoTrackAdapterSettings;
 
-// MediaStreamVideoTrack is a video specific representation of a
-// blink::WebMediaStreamTrack in content. It is owned by the blink object
-// and can be retrieved from a blink object using
-// WebMediaStreamTrack::getExtraData() or MediaStreamVideoTrack::GetVideoTrack.
-class BLINK_MODULES_EXPORT MediaStreamVideoTrack
-    : public blink::WebPlatformMediaStreamTrack {
+// MediaStreamVideoTrack is a video-specific representation of a
+// WebPlatformMediaStreamTrack. It is owned by a MediaStreamComponent
+// and can be retrieved using MediaStreamComponent::GetPlatformTrack().
+class MODULES_EXPORT MediaStreamVideoTrack
+    : public WebPlatformMediaStreamTrack {
  public:
-  // Help method to create a blink::WebMediaStreamTrack and a
+  // Help method to create a WebMediaStreamTrack and a
   // MediaStreamVideoTrack instance. The MediaStreamVideoTrack object is owned
   // by the blink object in its WebMediaStreamTrack::GetPlatformTrack() member.
   // |callback| is triggered if the track is added to the source
@@ -40,11 +39,11 @@ class BLINK_MODULES_EXPORT MediaStreamVideoTrack
   // or if the source fails to provide video frames.
   // If |enabled| is true, sinks added to the track will
   // receive video frames when the source delivers frames to the track.
-  static blink::WebMediaStreamTrack CreateVideoTrack(
+  static WebMediaStreamTrack CreateVideoTrack(
       MediaStreamVideoSource* source,
       MediaStreamVideoSource::ConstraintsOnceCallback callback,
       bool enabled);
-  static blink::WebMediaStreamTrack CreateVideoTrack(
+  static WebMediaStreamTrack CreateVideoTrack(
       MediaStreamVideoSource* source,
       const VideoTrackAdapterSettings& adapter_settings,
       const base::Optional<bool>& noise_reduction,
@@ -57,8 +56,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoTrack
       MediaStreamVideoSource::ConstraintsOnceCallback callback,
       bool enabled);
 
-  static MediaStreamVideoTrack* GetVideoTrack(
-      const blink::WebMediaStreamTrack& track);
+  static MediaStreamVideoTrack* GetVideoTrack(const WebMediaStreamTrack& track);
 
   // Constructors for video tracks.
   MediaStreamVideoTrack(
@@ -82,31 +80,30 @@ class BLINK_MODULES_EXPORT MediaStreamVideoTrack
   // MediaStreamTrack overrides.
   void SetEnabled(bool enabled) override;
   void SetContentHint(
-      blink::WebMediaStreamTrack::ContentHintType content_hint) override;
+      WebMediaStreamTrack::ContentHintType content_hint) override;
   void StopAndNotify(base::OnceClosure callback) override;
-  void GetSettings(blink::WebMediaStreamTrack::Settings& settings) override;
+  void GetSettings(WebMediaStreamTrack::Settings& settings) override;
 
   // Add |sink| to receive state changes on the main render thread and video
   // frames in the |callback| method on the IO-thread.
   // |callback| will be reset on the render thread.
-  void AddSink(blink::WebMediaStreamSink* sink,
-               const blink::VideoCaptureDeliverFrameCB& callback,
+  void AddSink(WebMediaStreamSink* sink,
+               const VideoCaptureDeliverFrameCB& callback,
                bool is_sink_secure);
-  void RemoveSink(blink::WebMediaStreamSink* sink);
+  void RemoveSink(WebMediaStreamSink* sink);
 
   // Adds |callback| for encoded frame output on the IO thread. The function
   // will cause generation of a keyframe from the source.
   // Encoded sinks are not secure.
-  void AddEncodedSink(blink::WebMediaStreamSink* sink,
-                      EncodedVideoFrameCB callback);
+  void AddEncodedSink(WebMediaStreamSink* sink, EncodedVideoFrameCB callback);
 
   // Removes encoded callbacks associated with |sink|.
-  void RemoveEncodedSink(blink::WebMediaStreamSink* sink);
+  void RemoveEncodedSink(WebMediaStreamSink* sink);
 
   // Returns the number of currently present encoded sinks.
   size_t CountEncodedSinks() const;
 
-  void OnReadyStateChanged(blink::WebMediaStreamSource::ReadyState state);
+  void OnReadyStateChanged(WebMediaStreamSource::ReadyState state);
 
   const base::Optional<bool>& noise_reduction() const {
     return noise_reduction_;
@@ -173,8 +170,8 @@ class BLINK_MODULES_EXPORT MediaStreamVideoTrack
   // or data flow changes are being called on the main thread.
   THREAD_CHECKER(main_render_thread_checker_);
 
-  std::vector<blink::WebMediaStreamSink*> sinks_;
-  std::vector<blink::WebMediaStreamSink*> encoded_sinks_;
+  std::vector<WebMediaStreamSink*> sinks_;
+  std::vector<WebMediaStreamSink*> encoded_sinks_;
 
   // |FrameDeliverer| is an internal helper object used for delivering video
   // frames on the IO-thread using callbacks to all registered tracks.
@@ -196,7 +193,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoTrack
   base::WeakPtr<MediaStreamVideoSource> source_;
 
   // This is used for tracking if all connected video sinks are secure.
-  blink::SecureDisplayLinkTracker<blink::WebMediaStreamSink> secure_tracker_;
+  SecureDisplayLinkTracker<WebMediaStreamSink> secure_tracker_;
 
   // Remembering our desired video size and frame rate.
   int width_ = 0;
@@ -212,4 +209,4 @@ class BLINK_MODULES_EXPORT MediaStreamVideoTrack
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_TRACK_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_TRACK_H_

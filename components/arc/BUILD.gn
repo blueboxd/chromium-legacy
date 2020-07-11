@@ -64,8 +64,6 @@ static_library("arc") {
     "property/arc_property_bridge.h",
     "rotation_lock/arc_rotation_lock_bridge.cc",
     "rotation_lock/arc_rotation_lock_bridge.h",
-    "sensor/arc_sensor_bridge.cc",
-    "sensor/arc_sensor_bridge.h",
     "storage_manager/arc_storage_manager.cc",
     "storage_manager/arc_storage_manager.h",
     "timer/arc_timer_bridge.cc",

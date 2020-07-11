@@ -81,8 +81,6 @@ class PropertyInstance;
 class RotationLockInstance;
 class ScreenCaptureHost;
 class ScreenCaptureInstance;
-class SensorHost;
-class SensorInstance;
 class SmartCardManagerHost;
 class SmartCardManagerInstance;
 class StorageManagerInstance;
@@ -251,9 +249,6 @@ class ArcBridgeService {
   screen_capture() {
     return &screen_capture_;
   }
-  ConnectionHolder<mojom::SensorInstance, mojom::SensorHost>* sensor() {
-    return &sensor_;
-  }
   ConnectionHolder<mojom::SmartCardManagerInstance,
                    mojom::SmartCardManagerHost>*
   smart_card_manager() {
@@ -339,7 +334,6 @@ class ArcBridgeService {
   ConnectionHolder<mojom::RotationLockInstance> rotation_lock_;
   ConnectionHolder<mojom::ScreenCaptureInstance, mojom::ScreenCaptureHost>
       screen_capture_;
-  ConnectionHolder<mojom::SensorInstance, mojom::SensorHost> sensor_;
   ConnectionHolder<mojom::SmartCardManagerInstance, mojom::SmartCardManagerHost>
       smart_card_manager_;
   ConnectionHolder<mojom::StorageManagerInstance> storage_manager_;

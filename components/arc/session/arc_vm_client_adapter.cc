@@ -59,7 +59,6 @@ namespace {
 // ascii code in hex. So "arc_2dcreate_2ddata" becomes "arc-create-data".
 constexpr const char kArcCreateDataJobName[] = "arc_2dcreate_2ddata";
 constexpr const char kArcKeymasterJobName[] = "arc_2dkeymasterd";
-constexpr const char kArcSensorServiceJobName[] = "arc_2dsensor_2dservice";
 constexpr const char kArcVmServerProxyJobName[] = "arcvm_2dserver_2dproxy";
 constexpr const char kArcVmPerBoardFeaturesJobName[] =
     "arcvm_2dper_2dboard_2dfeatures";
@@ -548,33 +547,6 @@ class ArcVmClientAdapter : public ArcClientAdapter,
                                 bool result) {
     if (!result) {
       LOG(ERROR) << "Failed to start arc-keymasterd job";
-      std::move(callback).Run(false);
-      return;
-    }
-
-    // Kill a stale arc-sensor-service job
-    chromeos::UpstartClient::Get()->StopJob(
-        kArcSensorServiceJobName, /*environment=*/{},
-        base::BindOnce(&ArcVmClientAdapter::OnArcSensorServiceStopped,
-                       weak_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  void OnArcSensorServiceStopped(chromeos::VoidDBusMethodCallback callback,
-                                 bool result) {
-    VLOG(1) << "OnArcSensorServiceStopped: job "
-            << (result ? "stopped" : "not running?");
-
-    VLOG(1) << "Starting arc-sensor-service";
-    chromeos::UpstartClient::Get()->StartJob(
-        kArcSensorServiceJobName, /*environment=*/{},
-        base::BindOnce(&ArcVmClientAdapter::OnArcSensorServiceStarted,
-                       weak_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  void OnArcSensorServiceStarted(chromeos::VoidDBusMethodCallback callback,
-                                 bool result) {
-    if (!result) {
-      LOG(ERROR) << "Failed to start arc-sensor-service job";
       std::move(callback).Run(false);
       return;
     }

@@ -7,12 +7,17 @@ This document describes the state of native binaries for these Macs.
 Building _for_ arm Macs
 -----------------------
 
-We're currently bringing up the build. At the moment, not everything compiles.
+We're currently bringing up the build. At the moment, everything compiles
+in a vanilla release build (we haven't tried anything else) and Chromium
+starts up fine and seems to work. We haven't tried running tests yet.
+
 You can follow the [tracking bug](https://crbug.com/1098899) to get updates on
 progress.
 
 There's a [bot](https://ci.chromium.org/p/chromium/builders/ci/mac-arm64) that
-builds for arm that you can look at to get an idea of the current state.
+builds for arm that you can look at to get an idea of the current state. It
+cross-builds on an Intel machine, and we don't have enough hardware to
+continuously run tests.
 
 To build for arm64, you have to do 2 things:
 
@@ -23,8 +28,8 @@ To build for arm64, you have to do 2 things:
        "custom_vars": { "mac_xcode_version": "xcode_12_beta" },
 
    Then just `gclient sync` and you'll automatically get that SDK and will build
-   against it. Else, manually download and install Xcode 12 beta and make it the
-   active xcode with `xcode-select`.
+   against it. Else, manually download and install Xcode 12 for macOS Universal
+   Apps Beta 2 and make it the active xcode with `xcode-select`.
 
 2. Add `target_cpu = "arm64"` to your `args.gn`.
 

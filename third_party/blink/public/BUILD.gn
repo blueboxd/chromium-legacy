@@ -283,7 +283,6 @@ source_set("blink_headers") {
     "web/modules/mediastream/encoded_video_frame.h",
     "web/modules/mediastream/media_stream_video_sink.h",
     "web/modules/mediastream/media_stream_video_source.h",
-    "web/modules/mediastream/media_stream_video_track.h",
     "web/modules/mediastream/web_media_stream_device_observer.h",
     "web/modules/mediastream/web_media_stream_renderer_factory.h",
     "web/modules/mediastream/web_media_stream_utils.h",

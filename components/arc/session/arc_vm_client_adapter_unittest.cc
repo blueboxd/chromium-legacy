@@ -43,7 +43,6 @@ namespace {
 
 constexpr const char kArcCreateDataJobName[] = "arc_2dcreate_2ddata";
 constexpr const char kArcKeymasterJobName[] = "arc_2dkeymasterd";
-constexpr const char kArcSensorServiceJobName[] = "arc_2dsensor_2dservice";
 constexpr const char kArcVmServerProxyJobName[] = "arcvm_2dserver_2dproxy";
 constexpr const char kArcVmPerBoardFeaturesJobName[] =
     "arcvm_2dper_2dboard_2dfeatures";
@@ -518,27 +517,6 @@ TEST_F(ArcVmClientAdapterTest, StartMiniArc_StartArcKeymasterJobFail) {
 TEST_F(ArcVmClientAdapterTest, StartMiniArc_StopArcKeymasterJobFail) {
   // Inject failure to FakeUpstartClient.
   InjectUpstartStopJobFailure(kArcKeymasterJobName);
-
-  StartMiniArc();
-  // Confirm that no VM is started. ARCVM doesn't support mini ARC yet.
-  EXPECT_FALSE(GetTestConciergeClient()->start_arc_vm_called());
-}
-
-// Tests that StartMiniArc() fails if Upstart fails to start arc-sensor-service.
-TEST_F(ArcVmClientAdapterTest, StartMiniArc_StartArcSensorServiceJobFail) {
-  // Inject failure to FakeUpstartClient.
-  InjectUpstartStartJobFailure(kArcSensorServiceJobName);
-
-  StartMiniArcWithParams(false, {});
-  // Confirm that no VM is started. ARCVM doesn't support mini ARC yet.
-  EXPECT_FALSE(GetTestConciergeClient()->start_arc_vm_called());
-}
-
-// Tests that StartMiniArc() succeeds if Upstart fails to stop
-// arc-sensor-service.
-TEST_F(ArcVmClientAdapterTest, StartMiniArc_StopArcSensorServiceJobFail) {
-  // Inject failure to FakeUpstartClient.
-  InjectUpstartStopJobFailure(kArcSensorServiceJobName);
 
   StartMiniArc();
   // Confirm that no VM is started. ARCVM doesn't support mini ARC yet.

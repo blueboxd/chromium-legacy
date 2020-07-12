@@ -20,11 +20,7 @@ namespace network_icon {
 
 namespace {
 
-// TODO(estade): share this alpha with other things in ash (battery, etc.).
-// See https://crbug.com/623987 and https://crbug.com/632827
-// For now, this value should match the one used in kTrayIconBackgroundAlpha
-// in ash/system/tray/tray_constants.cc
-constexpr int kSignalStrengthImageBgAlpha = 0x4D;
+constexpr int kIconStrokeWidth = 2;
 
 SkPath CreateArcPath(gfx::RectF oval, float start_angle, float sweep_angle) {
   SkPath path;
@@ -137,16 +133,17 @@ void SignalStrengthImageSource::DrawArcs(gfx::Canvas* canvas) {
 
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setStyle(cc::PaintFlags::kFill_Style);
-  // Background. Skip drawing for full signal.
-  if (signal_strength_ != kNumNetworkImages - 1) {
-    flags.setColor(SkColorSetA(color_, kSignalStrengthImageBgAlpha));
-    canvas->sk_canvas()->drawPath(
-        CreateArcPath(oval_bounds, kStartAngle, kSweepAngle), flags);
-  }
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setStrokeWidth(kIconStrokeWidth);
+  flags.setColor(color_);
+
+  // Background (outline)
+  canvas->sk_canvas()->drawPath(
+      CreateArcPath(oval_bounds, kStartAngle, kSweepAngle), flags);
+
   // Foreground (signal strength).
   if (signal_strength_ != 0) {
-    flags.setColor(color_);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
     // Percent of the height of the background wedge that we draw the
     // foreground wedge, indexed by signal strength.
     static constexpr float kWedgeHeightPercentages[] = {0.f, 0.375f, 0.5833f,
@@ -182,15 +179,17 @@ void SignalStrengthImageSource::DrawBars(gfx::Canvas* canvas) {
 
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setStyle(cc::PaintFlags::kFill_Style);
-  // Background. Skip drawing for full signal.
-  if (signal_strength_ != kNumNetworkImages - 1) {
-    flags.setColor(SkColorSetA(color_, kSignalStrengthImageBgAlpha));
-    canvas->DrawPath(make_triangle(kFullTriangleSide), flags);
-  }
+  flags.setColor(color_);
+
+  // Background.
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setStrokeWidth(kIconStrokeWidth);
+
+  canvas->DrawPath(make_triangle(kFullTriangleSide), flags);
+
   // Foreground (signal strength).
   if (signal_strength_ != 0) {
-    flags.setColor(color_);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
     // As a percentage of the bg triangle, the length of one of the short
     // sides of the fg triangle, indexed by signal strength.
     static constexpr float kTriangleSidePercents[] = {0.f, 0.375f, 0.5833f,

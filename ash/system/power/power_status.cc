@@ -61,39 +61,30 @@ class BatteryImageSource : public gfx::CanvasImageSource {
 
   // gfx::ImageSkiaSource implementation.
   void Draw(gfx::Canvas* canvas) override {
+    gfx::ImageSkia icon = CreateVectorIcon(kBatteryIcon, fg_color_);
+
+    // Draw the solid outline of the battery icon.
+    canvas->DrawImageInt(icon, 0, 0);
+
     canvas->Save();
+
     const float dsf = canvas->UndoDeviceScaleFactor();
     // All constants below are expressed relative to a canvas size of 20. The
     // actual canvas size (i.e. |size()|) may not be 20.
     const float kAssumedCanvasSize = 20;
     const float const_scale = dsf * size().height() / kAssumedCanvasSize;
 
-    // The two shapes in this path define the outline of the battery icon.
-    SkPath path;
-    gfx::RectF top = gfx::RectF(8, 3, 4, 2);
-    top.Scale(const_scale);
-    top = gfx::RectF(gfx::ToEnclosingRect(top));
-    path.addRect(gfx::RectFToSkRect(top));
-
-    gfx::RectF bottom = gfx::RectF(6, 5, 8, 12);
-    bottom.Scale(const_scale);
-    // Align the top of bottom rect to the bottom of the top one. Otherwise,
-    // they may overlap and the top will be too small.
-    bottom.set_y(top.bottom());
-    const float corner_radius = const_scale;
-    path.addRoundRect(gfx::RectToSkRect(gfx::ToEnclosingRect(bottom)),
-                      corner_radius, corner_radius);
-    // Paint the battery's base (background) color.
-    cc::PaintFlags flags;
-    flags.setAntiAlias(true);
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setColor(bg_color_);
-    canvas->DrawPath(path, flags);
-
     // |charge_level| is a value between 0 and the visual height of the icon
     // representing the number of device pixels the battery image should be
     // shown charged. The exception is when |charge_level| is very low; in this
     // case, still draw 1dip of charge.
+
+    SkPath path;
+    gfx::RectF fill_rect = gfx::RectF(7, 6, 6, 10);
+    fill_rect.Scale(const_scale);
+    path.addRect(gfx::RectToSkRect(gfx::ToEnclosingRect(fill_rect)));
+    cc::PaintFlags flags;
+
     SkRect icon_bounds = path.getBounds();
     float charge_level =
         std::floor(info_.charge_percent / 100.0 * icon_bounds.height());
@@ -116,10 +107,19 @@ class BatteryImageSource : public gfx::CanvasImageSource {
 
     canvas->Restore();
 
-    // Paint the badge over top of the battery, if applicable.
+    if (info_.badge_outline) {
+      const SkColor outline_color =
+          info_.charge_percent > 50 ? fg_color_ : bg_color_;
+      PaintVectorIcon(canvas, *info_.badge_outline, outline_color);
+    }
+
+    // // Paint the badge over top of the battery, if applicable.
     if (info_.icon_badge) {
       const SkColor badge_color =
-          use_alert_color ? alert_color : kBatteryBadgeColor;
+          use_alert_color
+              ? alert_color
+              : info_.charge_percent > 50 ? kBatteryBadgeColor : fg_color_;
+
       PaintVectorIcon(canvas, *info_.icon_badge, badge_color);
     }
   }
@@ -353,16 +353,21 @@ void PowerStatus::CalculateBatteryImageInfo(BatteryImageInfo* info) const {
 
   if (!IsUsbChargerConnected() && !IsBatteryPresent()) {
     info->icon_badge = &kUnifiedMenuBatteryXIcon;
+    info->badge_outline = &kUnifiedMenuBatteryXOutlineIcon;
     info->charge_percent = 0;
     return;
   }
 
-  if (IsUsbChargerConnected())
+  if (IsUsbChargerConnected()) {
     info->icon_badge = &kUnifiedMenuBatteryUnreliableIcon;
-  else if (IsLinePowerConnected())
+    info->badge_outline = &kUnifiedMenuBatteryUnreliableOutlineIcon;
+  } else if (IsLinePowerConnected()) {
     info->icon_badge = &kUnifiedMenuBatteryBoltIcon;
-  else
+    info->badge_outline = &kUnifiedMenuBatteryBoltOutlineIcon;
+  } else {
     info->icon_badge = nullptr;
+    info->badge_outline = nullptr;
+  }
 
   info->charge_percent = GetBatteryPercent();
 
@@ -371,6 +376,7 @@ void PowerStatus::CalculateBatteryImageInfo(BatteryImageInfo* info) const {
   if (GetBatteryPercent() < kCriticalBatteryChargePercentage &&
       !info->icon_badge) {
     info->icon_badge = &kUnifiedMenuBatteryAlertIcon;
+    info->badge_outline = &kUnifiedMenuBatteryAlertOutlineIcon;
   }
 }
 

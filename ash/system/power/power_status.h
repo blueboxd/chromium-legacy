@@ -67,7 +67,10 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
   // call).
   struct BatteryImageInfo {
     BatteryImageInfo()
-        : icon_badge(nullptr), alert_if_low(false), charge_percent(-1) {}
+        : icon_badge(nullptr),
+          badge_outline(nullptr),
+          alert_if_low(false),
+          charge_percent(-1) {}
 
     // Returns true if |this| and |o| are similar enough in terms of the image
     // they'd generate.
@@ -76,6 +79,10 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
     // The badge (lightning bolt, exclamation mark, etc) that should be drawn
     // on top of the battery icon.
     const gfx::VectorIcon* icon_badge;
+
+    // The outline for the badge, need to draw this to satisfy contrast
+    // requirements.
+    const gfx::VectorIcon* badge_outline;
 
     // When true and |charge_percent| is very low, special colors will be used
     // to alert the user.

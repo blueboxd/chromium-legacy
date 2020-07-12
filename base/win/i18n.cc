@@ -38,14 +38,22 @@ bool GetPreferredUILanguageList(GetPreferredUILanguages_Fn function,
     return false;
   }
 
-  languages->clear();
+  // The buffer has been populated with a series of strings separated by
+  // terminators, which ends with a single empty string (two terminators in a
+  // row). Chop off the last of those two terminators so that |buffer| is a
+  // basic_string that contains the terminator ending the last string but not
+  // the terminator denoting an empty string.
+  buffer.resize(buffer_length - 1);
+
   // Split string on NUL characters.
+  ULONG languages_added = 0;
   for (auto token :
        base::SplitStringPiece(buffer, kNullTerminator, base::KEEP_WHITESPACE,
                               base::SPLIT_WANT_NONEMPTY)) {
     languages->emplace_back(token);
+    ++languages_added;
   }
-  DCHECK_EQ(languages->size(), language_count);
+  DCHECK_EQ(languages_added, language_count);
   return true;
 }
 

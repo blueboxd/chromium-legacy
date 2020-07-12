@@ -135,6 +135,9 @@ const double kConnectingImageAlpha = 0.5;
 // Number of discrete images to use for alpha fade animation
 const int kNumFadeImages = 10;
 
+// Padding to accommodate for space required by the badge.
+const int kIconBadgePadding = 4;
+
 bool IsTrayIcon(IconType icon_type) {
   return icon_type == ICON_TYPE_TRAY_REGULAR ||
          icon_type == ICON_TYPE_TRAY_OOBE;
@@ -146,8 +149,10 @@ bool IconTypeHasVPNBadge(IconType icon_type) {
 
 gfx::ImageSkia CreateNetworkIconImage(const gfx::ImageSkia& icon,
                                       const Badges& badges) {
+  gfx::Size icon_size(icon.size().width() + kIconBadgePadding,
+                      icon.size().height() + kIconBadgePadding);
   return gfx::CanvasImageSource::MakeImageSkia<NetworkIconImageSource>(
-      icon.size(), icon, badges);
+      icon_size, icon, badges);
 }
 
 //------------------------------------------------------------------------------

@@ -8,6 +8,7 @@
 
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -26,6 +27,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/devicetype_utils.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
@@ -115,8 +117,11 @@ void PowerTrayView::UpdateImage() {
 
   // Note: The icon color (both fg and bg) changes when the UI in in OOBE mode.
   const SkColor icon_fg_color = TrayIconColor(session_state);
-  const SkColor icon_bg_color =
-      AshColorProvider::GetSecondToneColor(icon_fg_color);
+  const SkColor icon_bg_color = color_utils::GetResultingPaintColor(
+      ShelfConfig::Get()->GetShelfControlButtonColor(),
+      AshColorProvider::Get()->GetBackgroundColor(
+          AshColorProvider::AshColorMode::kDark));
+
   image_view()->SetImage(PowerStatus::GetBatteryImage(
       info, kUnifiedTrayIconSize, icon_bg_color, icon_fg_color));
 }

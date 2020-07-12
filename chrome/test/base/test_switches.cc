@@ -16,9 +16,4 @@ const char kAlsoEmitSuccessLogs[] = "also-emit-success-logs";
 // subclasses.
 const char kPerfTestPrintUmaMeans[] = "perf-test-print-uma-means";
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-// Makes browser pixel tests overwrite the reference if it does not match.
-const char kRebaselinePixelTests[] = "rebaseline-pixel-tests";
-#endif
-
 }  // namespace switches

@@ -247,8 +247,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // |drop_data| must have been filtered. The embedder should call
   // FilterDropData before passing the drop data to RWHI.
   void DragTargetDrop(const DropData& drop_data,
-                      const gfx::PointF& client_pt,
-                      const gfx::PointF& screen_pt,
+                      const gfx::PointF& client_point,
+                      const gfx::PointF& screen_point,
                       int key_modifiers) override;
   void DragSourceEndedAt(const gfx::PointF& client_pt,
                          const gfx::PointF& screen_pt,

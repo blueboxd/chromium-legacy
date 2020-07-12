@@ -235,72 +235,6 @@ WebDragData DropMetaDataToWebDragData(
   return result;
 }
 
-WebDragData DropDataToWebDragData(const DropData& drop_data) {
-  std::vector<WebDragData::Item> item_list;
-
-  // These fields are currently unused when dragging into WebKit.
-  DCHECK(drop_data.download_metadata.empty());
-  DCHECK(drop_data.file_contents.empty());
-  DCHECK(drop_data.file_contents_content_disposition.empty());
-
-  if (drop_data.text) {
-    WebDragData::Item item;
-    item.storage_type = WebDragData::Item::kStorageTypeString;
-    item.string_type = WebString::FromUTF8(ui::kMimeTypeText);
-    item.string_data = WebString::FromUTF16(*drop_data.text);
-    item_list.push_back(item);
-  }
-
-  if (!drop_data.url.is_empty()) {
-    WebDragData::Item item;
-    item.storage_type = WebDragData::Item::kStorageTypeString;
-    item.string_type = WebString::FromUTF8(ui::kMimeTypeURIList);
-    item.string_data = WebString::FromUTF8(drop_data.url.spec());
-    item.title = WebString::FromUTF16(drop_data.url_title);
-    item_list.push_back(item);
-  }
-
-  if (drop_data.html) {
-    WebDragData::Item item;
-    item.storage_type = WebDragData::Item::kStorageTypeString;
-    item.string_type = WebString::FromUTF8(ui::kMimeTypeHTML);
-    item.string_data = WebString::FromUTF16(*drop_data.html);
-    item.base_url = drop_data.html_base_url;
-    item_list.push_back(item);
-  }
-
-  for (const ui::FileInfo& filename : drop_data.filenames) {
-    WebDragData::Item item;
-    item.storage_type = WebDragData::Item::kStorageTypeFilename;
-    item.filename_data = blink::FilePathToWebString(filename.path);
-    item.display_name_data =
-        blink::FilePathToWebString(base::FilePath(filename.display_name));
-    item_list.push_back(item);
-  }
-
-  for (const DropData::FileSystemFileInfo& file : drop_data.file_system_files) {
-    WebDragData::Item item;
-    item.storage_type = WebDragData::Item::kStorageTypeFileSystemFile;
-    item.file_system_url = file.url;
-    item.file_system_file_size = file.size;
-    item.file_system_id = blink::WebString::FromASCII(file.filesystem_id);
-    item_list.push_back(item);
-  }
-
-  for (const auto& data : drop_data.custom_data) {
-    WebDragData::Item item;
-    item.storage_type = WebDragData::Item::kStorageTypeString;
-    item.string_type = WebString::FromUTF16(data.first);
-    item.string_data = WebString::FromUTF16(data.second);
-    item_list.push_back(item);
-  }
-
-  WebDragData result;
-  result.SetItems(item_list);
-  result.SetFilesystemId(WebString::FromUTF16(drop_data.filesystem_id));
-  return result;
-}
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 blink::WebTextInputType ConvertTextInputType(ui::TextInputType type) {
   // Check the type is in the range representable by ui::TextInputType.
@@ -516,7 +450,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(WidgetMsg_WaitForNextFrameForTests,
                         OnWaitNextFrameForTests)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragEnter, OnDragTargetDragEnter)
-    IPC_MESSAGE_HANDLER(DragMsg_TargetDrop, OnDragTargetDrop)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1718,19 +1651,6 @@ void RenderWidget::OnDragTargetDragEnter(
       ops, key_modifiers);
 
   Send(new DragHostMsg_UpdateDragCursor(routing_id(), operation));
-}
-
-void RenderWidget::OnDragTargetDrop(const DropData& drop_data,
-                                    const gfx::PointF& client_point,
-                                    const gfx::PointF& screen_point,
-                                    int key_modifiers) {
-  blink::WebFrameWidget* frame_widget = GetFrameWidget();
-  if (!frame_widget)
-    return;
-
-  frame_widget->DragTargetDrop(DropDataToWebDragData(drop_data),
-                               ConvertWindowPointToViewport(client_point),
-                               screen_point, key_modifiers);
 }
 
 void RenderWidget::ConvertViewportToWindow(blink::WebRect* rect) {

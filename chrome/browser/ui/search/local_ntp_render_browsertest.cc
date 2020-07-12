@@ -52,9 +52,9 @@ const base::FilePath& GetTestDataDir() {
 
 class LocalNTPRenderTest : public InProcessBrowserTest {
  public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // This is required for the output to be rendered, then captured.
-    command_line->AppendSwitch(switches::kEnablePixelOutputInTests);
+  void SetUp() override {
+    EnablePixelOutput();
+    InProcessBrowserTest::SetUp();
   }
 
   void LoadNewTabPageAndCapture(int viewport_width,

@@ -104,23 +104,34 @@ if (use_aura) {
 source_set("unittests") {
   testonly = true
   sources = []
-  deps = [
-    "//skia",
-    "//testing/gtest",
-    "//ui/gfx/geometry",
-  ]
+  deps = [ "//testing/gtest" ]
 
   if (!is_ios) {
     sources += [ "cursor_unittest.cc" ]
     deps += [
       ":cursor_base",
+      "//skia",
       "//ui/base/cursor/mojom:cursor_type",
       "//ui/gfx:geometry_skia",
+      "//ui/gfx/geometry",
     ]
   }
 
   if (use_aura) {
     sources += [ "cursor_util_unittest.cc" ]
-    deps += [ ":cursor" ]
+    deps += [
+      ":cursor",
+      "//skia",
+      "//ui/gfx/geometry",
+    ]
+  }
+
+  if (use_ozone) {
+    sources += [ "ozone/bitmap_cursor_factory_ozone_unittest.cc" ]
+    deps += [
+      ":cursor",
+      "//base",
+      "//ui/base/cursor/mojom:cursor_type",
+    ]
   }
 }

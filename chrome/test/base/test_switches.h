@@ -16,10 +16,6 @@ extern const char kAlsoEmitSuccessLogs[];
 
 extern const char kPerfTestPrintUmaMeans[];
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-extern const char kRebaselinePixelTests[];
-#endif
-
 }  // namespace switches
 
 #endif  // CHROME_TEST_BASE_TEST_SWITCHES_H_

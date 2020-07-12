@@ -34,6 +34,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/page_type.h"
 #include "content/public/common/untrustworthy_context_menu_params.h"
@@ -49,6 +50,7 @@
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_update.h"
+#include "ui/display/display_switches.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -1898,6 +1900,16 @@ class ProxyDSFObserver {
   std::vector<float> proxy_host_created_dsf_;
   std::unique_ptr<base::RunLoop> runner_;
 };
+
+// Helper used by the wrapper class below. Compares the output of the given
+// |web_contents| to the PNG file at |expected_path| across the region defined
+// by |snapshot_size| and returns true if the images are equivalent. Uses a
+// ManhattanDistancePixelComparator which allows some small differences.  If
+// the flag switches::kRebaselinePixelTests (--rebaseline-pixel-tests) is set,
+// this function will (over)write the reference file with the produced output.
+bool CompareWebContentsOutputToReference(WebContents* web_contents,
+                                         const base::FilePath& expected_path,
+                                         const gfx::Size& snapshot_size);
 
 }  // namespace content
 

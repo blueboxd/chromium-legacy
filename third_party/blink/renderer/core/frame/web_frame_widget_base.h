@@ -222,10 +222,6 @@ class CORE_EXPORT WebFrameWidgetBase
                                        const gfx::PointF& screen_point,
                                        WebDragOperationsMask operations_allowed,
                                        uint32_t key_modifiers) override;
-  void DragTargetDrop(const WebDragData&,
-                      const gfx::PointF& point_in_viewport,
-                      const gfx::PointF& screen_point,
-                      uint32_t key_modifiers) override;
   void SendOverscrollEventFromImplSide(
       const gfx::Vector2dF& overscroll_delta,
       cc::ElementId scroll_latched_element_id) override;
@@ -345,6 +341,10 @@ class CORE_EXPORT WebFrameWidgetBase
                           DragTargetDragOverCallback callback) override;
   void DragTargetDragLeave(const gfx::PointF& point_in_viewport,
                            const gfx::PointF& screen_point) override;
+  void DragTargetDrop(const WebDragData&,
+                      const gfx::PointF& point_in_viewport,
+                      const gfx::PointF& screen_point,
+                      uint32_t key_modifiers) override;
   void DragSourceEndedAt(const gfx::PointF& point_in_viewport,
                          const gfx::PointF& screen_point,
                          WebDragOperation) override;

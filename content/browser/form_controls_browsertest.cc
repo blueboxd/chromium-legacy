@@ -43,9 +43,6 @@ class FormControlsBrowserTest : public ContentBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
-    // The --force-device-scale-factor flag helps make the pixel output of
-    // different android trybots more similar.
-    command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor, "1.0");
     feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
     feature_list_->InitWithFeatures({features::kFormControlsRefresh}, {});
   }

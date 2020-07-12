@@ -507,8 +507,9 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
 
  private:
 #if !defined(OS_ANDROID)
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnablePixelOutputInTests);
+  void SetUp() override {
+    EnablePixelOutput();
+    DevToolsProtocolTest::SetUp();
   }
 #endif
 };

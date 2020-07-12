@@ -484,10 +484,6 @@ class CONTENT_EXPORT RenderWidget
       const gfx::PointF& screen_pt,
       blink::WebDragOperationsMask operations_allowed,
       int key_modifiers);
-  void OnDragTargetDrop(const DropData& drop_data,
-                        const gfx::PointF& client_pt,
-                        const gfx::PointF& screen_pt,
-                        int key_modifiers);
   void OnDragSourceEnded(const gfx::PointF& client_point,
                          const gfx::PointF& screen_point,
                          blink::WebDragOperation drag_operation);

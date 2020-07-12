@@ -11,7 +11,7 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/test/scoped_feature_list.h"
-#include "cc/base/switches.h"
+#include "base/test/test_switches.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer.h"
 #include "cc/test/pixel_comparator.h"
@@ -193,7 +193,7 @@ void LayerTreePixelTest::AfterTest() {
   base::FilePath ref_file_path = test_data_dir.Append(ref_file_);
 
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  if (cmd->HasSwitch(switches::kCCRebaselinePixeltests))
+  if (cmd->HasSwitch(switches::kRebaselinePixelTests))
     EXPECT_TRUE(WritePNGFile(*result_bitmap_, ref_file_path, true));
   EXPECT_TRUE(MatchesPNGFile(*result_bitmap_,
                              ref_file_path,

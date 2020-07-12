@@ -356,7 +356,7 @@ class CompositingRenderWidgetHostViewBrowserTest
   void SetUp() override {
     if (compositing_mode_ == SOFTWARE_COMPOSITING)
       UseSoftwareCompositing();
-    EnablePixelOutput();
+    EnablePixelOutput(scale());
     RenderWidgetHostViewBrowserTest::SetUp();
   }
 
@@ -380,6 +380,8 @@ class CompositingRenderWidgetHostViewBrowserTest
     WaitForCopySourceReady();
     return true;
   }
+
+  virtual float scale() const { return 1.f; }
 
  private:
   const CompositingMode compositing_mode_;
@@ -743,12 +745,6 @@ class CompositingRenderWidgetHostViewBrowserTestTabCaptureHighDPI
   CompositingRenderWidgetHostViewBrowserTestTabCaptureHighDPI() {}
 
  protected:
-  void SetUpCommandLine(base::CommandLine* cmd) override {
-    CompositingRenderWidgetHostViewBrowserTestTabCapture::SetUpCommandLine(cmd);
-    cmd->AppendSwitchASCII(switches::kForceDeviceScaleFactor,
-                           base::StringPrintf("%f", scale()));
-  }
-
   bool ShouldContinueAfterTestURLLoad() override {
     // Short-circuit a pass for platforms where setting up high-DPI fails.
     const float actual_scale_factor =
@@ -764,7 +760,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCaptureHighDPI
     return true;
   }
 
-  static float scale() { return 2.0f; }
+  float scale() const override { return 2.0f; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(
@@ -822,12 +818,6 @@ class CompositingRenderWidgetHostViewBrowserTestHiDPI
   CompositingRenderWidgetHostViewBrowserTestHiDPI() {}
 
  protected:
-  void SetUpCommandLine(base::CommandLine* cmd) override {
-    CompositingRenderWidgetHostViewBrowserTest::SetUpCommandLine(cmd);
-    cmd->AppendSwitchASCII(switches::kForceDeviceScaleFactor,
-                           base::StringPrintf("%f", scale()));
-  }
-
   GURL TestUrl() override { return GURL(test_url_); }
 
   void SetTestUrl(const std::string& url) { test_url_ = url; }
@@ -848,7 +838,7 @@ class CompositingRenderWidgetHostViewBrowserTestHiDPI
     return true;
   }
 
-  static float scale() { return 2.0f; }
+  float scale() const override { return 2.0f; }
 
  private:
   std::string test_url_;

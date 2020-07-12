@@ -7,6 +7,13 @@
 // Flag to show the help message.
 const char switches::kHelpFlag[] = "help";
 
+const char switches::kIsolatedScriptTestLauncherRetryLimit[] =
+    "isolated-script-test-launcher-retry-limit";
+
+// Makes pixel tests overwrite their reference if the output and reference
+// don't match.
+const char switches::kRebaselinePixelTests[] = "rebaseline-pixel-tests";
+
 // Flag to run all tests and the launcher in a single process. Useful for
 // debugging a specific test in a debugger.
 const char switches::kSingleProcessTests[] = "single-process-tests";
@@ -25,14 +32,14 @@ const char switches::kTestLauncherBotMode[] =
 const char switches::kTestLauncherDebugLauncher[] =
     "test-launcher-debug-launcher";
 
+// List of paths to files (separated by ';') containing test filters (one
+// pattern per line).
+const char switches::kTestLauncherFilterFile[] = "test-launcher-filter-file";
+
 // Force running all requested tests and retries even if too many test errors
 // occur.
 const char switches::kTestLauncherForceRunBrokenTests[] =
     "test-launcher-force-run-broken-tests";
-
-// List of paths to files (separated by ';') containing test filters (one
-// pattern per line).
-const char switches::kTestLauncherFilterFile[] = "test-launcher-filter-file";
 
 // Whether the test launcher should launch in "interactive mode", which disables
 // timeouts (and may have other effects for specific test types).
@@ -46,17 +53,6 @@ const char switches::kTestLauncherListTests[] = "test-launcher-list-tests";
 
 // Path to test results file in our custom test launcher format.
 const char switches::kTestLauncherOutput[] = "test-launcher-output";
-
-// These two flags has the same effect, but don't use them at the same time.
-// And isolated-script-test-launcher-retry-limit is preferred in the future.
-// Maximum number of times to retry a test after failure.
-const char switches::kTestLauncherRetryLimit[] = "test-launcher-retry-limit";
-const char switches::kIsolatedScriptTestLauncherRetryLimit[] =
-    "isolated-script-test-launcher-retry-limit";
-
-// Path to test results file with all the info from the test launcher.
-const char switches::kTestLauncherSummaryOutput[] =
-    "test-launcher-summary-output";
 
 // Causes the test launcher to print information about leaked files and/or
 // directories in child process's temporary directories.
@@ -72,10 +68,19 @@ const char switches::kTestLauncherPrintTestStdio[] =
 const char switches::kTestLauncherPrintWritablePath[] =
     "test-launcher-print-writable-path";
 
+// These two flags has the same effect, but don't use them at the same time.
+// And isolated-script-test-launcher-retry-limit is preferred in the future.
+// Maximum number of times to retry a test after failure.
+const char switches::kTestLauncherRetryLimit[] = "test-launcher-retry-limit";
+
 // Index of the test shard to run, starting from 0 (first shard) to total shards
 // minus one (last shard).
 const char switches::kTestLauncherShardIndex[] =
     "test-launcher-shard-index";
+
+// Path to test results file with all the info from the test launcher.
+const char switches::kTestLauncherSummaryOutput[] =
+    "test-launcher-summary-output";
 
 // Limit of test part results in the output. Default limit is 10.
 // Negative value will completely disable limit.
@@ -94,8 +99,8 @@ const char switches::kTestLauncherTrace[] = "test-launcher-trace";
 
 // TODO(phajdan.jr): Clean up the switch names.
 const char switches::kTestTinyTimeout[] = "test-tiny-timeout";
-const char switches::kUiTestActionTimeout[] = "ui-test-action-timeout";
 const char switches::kUiTestActionMaxTimeout[] = "ui-test-action-max-timeout";
+const char switches::kUiTestActionTimeout[] = "ui-test-action-timeout";
 
 #if defined(OS_IOS)
 // If enabled, runs unittests using the XCTest test runner.

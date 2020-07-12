@@ -15,6 +15,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/hash/hash.h"
 #include "base/i18n/rtl.h"
@@ -102,6 +103,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "storage/browser/file_system/isolated_context.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
+#include "third_party/blink/public/mojom/page/drag.mojom.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
@@ -242,6 +244,60 @@ std::vector<DropData::Metadata> DropDataToMetaData(const DropData& drop_data) {
   }
 
   return metadata;
+}
+
+blink::mojom::DragDataPtr DropDataToDragData(const DropData& drop_data) {
+  // These fields are currently unused when dragging into Blink.
+  DCHECK(drop_data.download_metadata.empty());
+  DCHECK(drop_data.file_contents.empty());
+  DCHECK(drop_data.file_contents_content_disposition.empty());
+
+  std::vector<blink::mojom::DragItemPtr> items;
+  if (drop_data.text) {
+    blink::mojom::DragItemStringPtr item = blink::mojom::DragItemString::New();
+    item->string_type = ui::kMimeTypeText;
+    item->string_data = *drop_data.text;
+    items.push_back(blink::mojom::DragItem::NewString(std::move(item)));
+  }
+  if (!drop_data.url.is_empty()) {
+    blink::mojom::DragItemStringPtr item = blink::mojom::DragItemString::New();
+    item->string_type = ui::kMimeTypeURIList;
+    item->string_data = base::UTF8ToUTF16(drop_data.url.spec());
+    item->title = drop_data.url_title;
+    items.push_back(blink::mojom::DragItem::NewString(std::move(item)));
+  }
+  if (drop_data.html) {
+    blink::mojom::DragItemStringPtr item = blink::mojom::DragItemString::New();
+    item->string_type = ui::kMimeTypeHTML;
+    item->string_data = *drop_data.html;
+    item->base_url = drop_data.html_base_url;
+    items.push_back(blink::mojom::DragItem::NewString(std::move(item)));
+  }
+  for (const ui::FileInfo& file : drop_data.filenames) {
+    blink::mojom::DragItemFilePtr item = blink::mojom::DragItemFile::New();
+    item->path = file.path;
+    item->display_name = file.display_name;
+    items.push_back(blink::mojom::DragItem::NewFile(std::move(item)));
+  }
+  for (const content::DropData::FileSystemFileInfo& file_system_file :
+       drop_data.file_system_files) {
+    blink::mojom::DragItemFileSystemFilePtr item =
+        blink::mojom::DragItemFileSystemFile::New();
+    item->url = file_system_file.url;
+    item->size = file_system_file.size;
+    item->file_system_id = file_system_file.filesystem_id;
+    items.push_back(blink::mojom::DragItem::NewFileSystemFile(std::move(item)));
+  }
+  for (const std::pair<base::string16, base::string16> data :
+       drop_data.custom_data) {
+    blink::mojom::DragItemStringPtr item = blink::mojom::DragItemString::New();
+    item->string_type = base::UTF16ToUTF8(data.first);
+    item->string_data = data.second;
+    items.push_back(blink::mojom::DragItem::NewString(std::move(item)));
+  }
+
+  return blink::mojom::DragData::New(
+      std::move(items), base::UTF16ToUTF8(drop_data.filesystem_id));
 }
 
 class UnboundWidgetInputHandler : public blink::mojom::WidgetInputHandler {
@@ -1738,9 +1794,7 @@ void RenderWidgetHostImpl::DragTargetDragOver(
     const gfx::PointF& screen_point,
     WebDragOperationsMask operations_allowed,
     int key_modifiers) {
-  // TODO(dtapuska): Remove this null check once all of the Drag IPCs
-  // come over the mojo channels. It will be guaranteed that this
-  // will be non-null.
+  // TODO(https://crbug.com/1102769): Replace with a for_frame() check.
   if (blink_frame_widget_) {
     blink_frame_widget_->DragTargetDragOver(
         ConvertWindowPointToViewport(client_point), screen_point,
@@ -1753,9 +1807,7 @@ void RenderWidgetHostImpl::DragTargetDragOver(
 void RenderWidgetHostImpl::DragTargetDragLeave(
     const gfx::PointF& client_point,
     const gfx::PointF& screen_point) {
-  // TODO(dtapuska): Remove this null check once all of the Drag IPCs
-  // come over the mojo channels. It will be guaranteed that this
-  // will be non-null.
+  // TODO(https://crbug.com/1102769): Replace with a for_frame() check.
   if (blink_frame_widget_) {
     gfx::PointF viewport_point = client_point;
     if (IsUseZoomForDSFEnabled())
@@ -1765,22 +1817,25 @@ void RenderWidgetHostImpl::DragTargetDragLeave(
 }
 
 void RenderWidgetHostImpl::DragTargetDrop(const DropData& drop_data,
-                                          const gfx::PointF& client_pt,
-                                          const gfx::PointF& screen_pt,
+                                          const gfx::PointF& client_point,
+                                          const gfx::PointF& screen_point,
                                           int key_modifiers) {
-  DropData drop_data_with_permissions(drop_data);
-  GrantFileAccessFromDropData(&drop_data_with_permissions);
-  Send(new DragMsg_TargetDrop(GetRoutingID(), drop_data_with_permissions,
-                              client_pt, screen_pt, key_modifiers));
+  // TODO(https://crbug.com/1102769): Replace with a for_frame() check.
+  if (blink_frame_widget_) {
+    DropData drop_data_with_permissions(drop_data);
+    GrantFileAccessFromDropData(&drop_data_with_permissions);
+    blink_frame_widget_->DragTargetDrop(
+        DropDataToDragData(drop_data_with_permissions),
+        ConvertWindowPointToViewport(client_point), screen_point,
+        key_modifiers);
+  }
 }
 
 void RenderWidgetHostImpl::DragSourceEndedAt(
     const gfx::PointF& client_point,
     const gfx::PointF& screen_point,
     blink::WebDragOperation operation) {
-  // TODO(dtapuska): Remove this null check once all of the Drag IPCs
-  // come over the mojo channels. It will be guaranteed that this
-  // will be non-null.
+  // TODO(https://crbug.com/1102769): Replace with a for_frame() check.
   if (blink_frame_widget_) {
     blink_frame_widget_->DragSourceEndedAt(
         ConvertWindowPointToViewport(client_point), screen_point, operation);
@@ -1788,9 +1843,7 @@ void RenderWidgetHostImpl::DragSourceEndedAt(
 }
 
 void RenderWidgetHostImpl::DragSourceSystemDragEnded() {
-  // TODO(dtapuska): Remove this null check once all of the Drag IPCs
-  // come over the mojo channels. It will be guaranteed that this
-  // will be non-null.
+  // TODO(https://crbug.com/1102769): Replace with a for_frame() check.
   if (blink_frame_widget_)
     blink_frame_widget_->DragSourceSystemDragEnded();
 }

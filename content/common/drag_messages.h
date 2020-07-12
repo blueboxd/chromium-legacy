@@ -28,12 +28,6 @@ IPC_MESSAGE_ROUTED5(DragMsg_TargetDragEnter,
                     blink::WebDragOperationsMask /* ops_allowed */,
                     int /* key_modifiers */)
 
-IPC_MESSAGE_ROUTED4(DragMsg_TargetDrop,
-                    content::DropData /* drop_data */,
-                    gfx::PointF /* client_pt */,
-                    gfx::PointF /* screen_pt */,
-                    int /* key_modifiers */)
-
 // Messages sent from the renderer to the browser.
 
 // Used to tell the parent the user started dragging in the content area. The

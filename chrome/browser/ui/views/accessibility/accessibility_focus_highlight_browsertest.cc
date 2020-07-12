@@ -19,11 +19,6 @@
 
 class AccessibilityFocusHighlightBrowserTest : public InProcessBrowserTest {
  public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // This is required for the output to be rendered, then captured.
-    command_line->AppendSwitch(switches::kEnablePixelOutputInTests);
-  }
-
   AccessibilityFocusHighlightBrowserTest() = default;
   ~AccessibilityFocusHighlightBrowserTest() override = default;
   AccessibilityFocusHighlightBrowserTest(
@@ -33,6 +28,7 @@ class AccessibilityFocusHighlightBrowserTest : public InProcessBrowserTest {
 
   // InProcessBrowserTest overrides:
   void SetUp() override {
+    EnablePixelOutput();
     scoped_feature_list_.InitAndEnableFeature(
         features::kAccessibilityFocusHighlight);
     InProcessBrowserTest::SetUp();

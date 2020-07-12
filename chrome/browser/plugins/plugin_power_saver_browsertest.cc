@@ -63,13 +63,7 @@ const int kBrowserHeight = 700;
 
 // Compare only a portion of the snapshots, as different platforms will
 // capture different sized snapshots (due to differences in browser chrome).
-const int kComparisonWidth = 500;
-const int kComparisonHeight = 600;
-
-// Different platforms have slightly different pixel output, due to different
-// graphics implementations. Slightly different pixels (in BGR space) are still
-// counted as a matching pixel by this simple manhattan distance threshold.
-const int kPixelManhattanDistanceTolerance = 25;
+const gfx::Size kComparisonSize = gfx::Size(500, 600);
 
 // This also tests that we have JavaScript access to the underlying plugin.
 bool PluginLoaded(content::WebContents* contents,
@@ -127,105 +121,10 @@ void VerifyPluginMarkedEssential(content::WebContents* contents,
   EXPECT_TRUE(PluginLoaded(contents, element_id));
 }
 
-void VerifyVisualStateUpdated(base::OnceClosure done_cb,
-                              bool visual_state_updated) {
-  ASSERT_TRUE(visual_state_updated);
-  std::move(done_cb).Run();
-}
-
-bool SnapshotMatches(const base::FilePath& reference, const SkBitmap& bitmap) {
-  if (bitmap.width() < kComparisonWidth ||
-      bitmap.height() < kComparisonHeight) {
-    return false;
-  }
-
-  std::string reference_data;
-  if (!base::ReadFileToString(reference, &reference_data))
-    return false;
-
-  int w = 0;
-  int h = 0;
-  std::vector<unsigned char> decoded;
-  if (!gfx::PNGCodec::Decode(
-          reinterpret_cast<const unsigned char*>(base::data(reference_data)),
-          reference_data.size(), gfx::PNGCodec::FORMAT_BGRA, &decoded, &w,
-          &h)) {
-    return false;
-  }
-
-  if (w < kComparisonWidth || h < kComparisonHeight)
-    return false;
-
-  int32_t* ref_pixels = reinterpret_cast<int32_t*>(decoded.data());
-  int32_t* pixels = static_cast<int32_t*>(bitmap.getPixels());
-
-  bool success = true;
-  for (int y = 0; y < kComparisonHeight; ++y) {
-    for (int x = 0; x < kComparisonWidth; ++x) {
-      int32_t pixel = pixels[y * bitmap.rowBytes() / sizeof(int32_t) + x];
-      int pixel_b = pixel & 0xFF;
-      int pixel_g = (pixel >> 8) & 0xFF;
-      int pixel_r = (pixel >> 16) & 0xFF;
-
-      int32_t ref_pixel = ref_pixels[y * w + x];
-      int ref_pixel_b = ref_pixel & 0xFF;
-      int ref_pixel_g = (ref_pixel >> 8) & 0xFF;
-      int ref_pixel_r = (ref_pixel >> 16) & 0xFF;
-
-      int manhattan_distance = abs(pixel_b - ref_pixel_b) +
-                               abs(pixel_g - ref_pixel_g) +
-                               abs(pixel_r - ref_pixel_r);
-
-      if (manhattan_distance > kPixelManhattanDistanceTolerance) {
-        ADD_FAILURE() << "Pixel test failed on (" << x << ", " << y << "). " <<
-            "Pixel manhattan distance: " << manhattan_distance << ".";
-        success = false;
-      }
-    }
-  }
-
-  return success;
-}
-
-// |snapshot_matches| is set to true if the snapshot matches the reference and
-// the test passes. Otherwise, set to false.
-void CompareSnapshotToReference(const base::FilePath& reference,
-                                bool* snapshot_matches,
-                                const base::Closure& done_cb,
-                                const SkBitmap& bitmap) {
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  DCHECK(snapshot_matches);
-  ASSERT_FALSE(bitmap.drawsNothing());
-
-  *snapshot_matches = SnapshotMatches(reference, bitmap);
-
-  // When rebaselining the pixel test, the test may fail. However, the
-  // reference file will still be overwritten.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kRebaselinePixelTests)) {
-    SkBitmap clipped_bitmap;
-    bitmap.extractSubset(&clipped_bitmap,
-                         SkIRect::MakeWH(kComparisonWidth, kComparisonHeight));
-    std::vector<unsigned char> png_data;
-    ASSERT_TRUE(
-        gfx::PNGCodec::EncodeBGRASkBitmap(clipped_bitmap, false, &png_data));
-    ASSERT_TRUE(base::WriteFile(reference, png_data));
-  }
-
-  done_cb.Run();
-}
-
 }  // namespace
 
 class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
  public:
-  void SetUp() override {
-    if (PixelTestsEnabled())
-      EnablePixelOutput();
-
-    InProcessBrowserTest::SetUp();
-  }
-
   void SetUpOnMainThread() override {
     embedded_test_server()->ServeFilesFromDirectory(
         ui_test_utils::GetTestFilePath(
@@ -246,12 +145,7 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kEnablePluginPlaceholderTesting);
     ASSERT_TRUE(ppapi::RegisterFlashTestPlugin(command_line));
 
-    // Allows us to use the same reference image on HiDPI/Retina displays.
-    command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor, "1");
-
-    // The pixel tests run more reliably in software mode.
-    if (PixelTestsEnabled())
-      command_line->AppendSwitch(switches::kDisableGpu);
+    InProcessBrowserTest::SetUpCommandLine(command_line);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -261,16 +155,7 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
-  void LoadHTML(const std::string& file) {
-    if (PixelTestsEnabled()) {
-      gfx::Rect bounds(gfx::Rect(0, 0, kBrowserWidth, kBrowserHeight));
-      gfx::Rect screen_bounds =
-          display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
-      ASSERT_GT(screen_bounds.width(), kBrowserWidth);
-      ASSERT_GT(screen_bounds.height(), kBrowserHeight);
-      browser()->window()->SetBounds(bounds);
-    }
-
+  virtual void LoadHTML(const std::string& file) {
     ui_test_utils::NavigateToURL(browser(),
                                  embedded_test_server()->GetURL(file));
     EXPECT_TRUE(content::WaitForRenderFrameReady(
@@ -329,138 +214,9 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
                                              element_id);
   }
 
-  bool VerifySnapshot(const base::FilePath::StringType& expected_filename) {
-    if (!PixelTestsEnabled())
-      return true;
-
-    base::FilePath reference = ui_test_utils::GetTestFilePath(
-        base::FilePath(FILE_PATH_LITERAL("plugin_power_saver")),
-        base::FilePath(expected_filename));
-
-    {
-      base::RunLoop run_loop;
-      GetActiveWebContents()->GetMainFrame()->InsertVisualStateCallback(
-          base::BindOnce(&VerifyVisualStateUpdated, run_loop.QuitClosure()));
-      run_loop.Run();
-    }
-
-    content::RenderWidgetHost* rwh =
-        GetActiveWebContents()->GetRenderViewHost()->GetWidget();
-
-    if (!rwh->GetView() || !rwh->GetView()->IsSurfaceAvailableForCopy()) {
-      ADD_FAILURE() << "RWHV surface not available for copy.";
-      return false;
-    }
-
-    bool snapshot_matches = false;
-    {
-      base::RunLoop run_loop;
-      rwh->GetView()->CopyFromSurface(
-          gfx::Rect(), gfx::Size(),
-          base::BindOnce(&CompareSnapshotToReference, reference,
-                         &snapshot_matches, run_loop.QuitClosure()));
-      run_loop.Run();
-    }
-
-    return snapshot_matches;
-  }
-
-  // TODO(tommycli): Remove this once all flakiness resolved.
-  bool PixelTestsEnabled() {
-#if defined(OS_WIN) || defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
-    // Flaky on Windows, Asan, and Msan bots.
-    // See crbug.com/549285 and crbug.com/512140.
-    return false;
-#elif defined(OS_CHROMEOS)
-    // Because ChromeOS cannot use software rendering and the pixel tests
-    // continue to flake with hardware acceleration, disable these on ChromeOS.
-    return false;
-#else
-    return true;
-#endif
-  }
-
  protected:
   policy::MockConfigurationPolicyProvider provider_;
 };
-
-IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, EssentialPlugins) {
-  LoadHTML("/essential_plugins.html");
-
-  VerifyPluginMarkedEssential(GetActiveWebContents(), "small_same_origin");
-  VerifyPluginMarkedEssential(GetActiveWebContents(),
-                              "small_same_origin_poster");
-  VerifyPluginMarkedEssential(GetActiveWebContents(), "large_cross_origin");
-  VerifyPluginMarkedEssential(GetActiveWebContents(),
-                              "medium_16_9_cross_origin");
-}
-
-// This test fail on macOS 10.12. https://crbug.com/599484.
-#if defined(OS_MACOSX)
-#define MAYBE_SmallCrossOrigin DISABLED_SmallCrossOrigin
-#else
-#define MAYBE_SmallCrossOrigin SmallCrossOrigin
-#endif
-IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, MAYBE_SmallCrossOrigin) {
-  LoadHTML("/small_cross_origin.html");
-
-  VerifyPluginIsThrottled(GetActiveWebContents(), "plugin");
-  VerifyPluginIsPlaceholderOnly("plugin_poster");
-
-  EXPECT_TRUE(
-      VerifySnapshot(FILE_PATH_LITERAL("small_cross_origin_expected.png")));
-
-  SimulateClickAndAwaitMarkedEssential("plugin", gfx::Point(50, 50));
-  SimulateClickAndAwaitMarkedEssential("plugin_poster", gfx::Point(50, 150));
-}
-
-IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, SmallerThanPlayIcon) {
-  LoadHTML("/smaller_than_play_icon.html");
-
-  VerifyPluginIsThrottled(GetActiveWebContents(), "plugin_16");
-  VerifyPluginIsThrottled(GetActiveWebContents(), "plugin_32");
-  VerifyPluginIsThrottled(GetActiveWebContents(), "plugin_16_64");
-  VerifyPluginIsThrottled(GetActiveWebContents(), "plugin_64_16");
-
-  EXPECT_TRUE(
-      VerifySnapshot(FILE_PATH_LITERAL("smaller_than_play_icon_expected.png")));
-}
-
-// This test fail on macOS 10.12. https://crbug.com/599484.
-#if defined(OS_MACOSX)
-#define MAYBE_PosterTests DISABLED_PosterTests
-#else
-#define MAYBE_PosterTests PosterTests
-#endif
-IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, MAYBE_PosterTests) {
-  // This test simultaneously verifies the varied supported poster syntaxes,
-  // as well as verifies that the poster is rendered correctly with various
-  // mismatched aspect ratios and sizes, following the same rules as VIDEO.
-  LoadHTML("/poster_tests.html");
-
-  VerifyPluginIsPlaceholderOnly("plugin_src");
-  VerifyPluginIsPlaceholderOnly("plugin_srcset");
-
-  VerifyPluginIsPlaceholderOnly("plugin_poster_param");
-  VerifyPluginIsPlaceholderOnly("plugin_embed_src");
-  VerifyPluginIsPlaceholderOnly("plugin_embed_srcset");
-
-  VerifyPluginIsPlaceholderOnly("poster_missing");
-  VerifyPluginIsPlaceholderOnly("poster_too_small");
-  VerifyPluginIsPlaceholderOnly("poster_too_big");
-
-  VerifyPluginIsPlaceholderOnly("poster_16");
-  VerifyPluginIsPlaceholderOnly("poster_32");
-  VerifyPluginIsPlaceholderOnly("poster_16_64");
-  VerifyPluginIsPlaceholderOnly("poster_64_16");
-
-  VerifyPluginIsPlaceholderOnly("poster_obscured");
-
-  EXPECT_TRUE(VerifySnapshot(FILE_PATH_LITERAL("poster_tests_expected.png")));
-
-  // Test that posters can be unthrottled via click.
-  SimulateClickAndAwaitMarkedEssential("plugin_src", gfx::Point(50, 50));
-}
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, LargePostersNotThrottled) {
   // This test verifies that small posters are throttled, large posters are not,
@@ -482,20 +238,15 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, OriginWhitelisting) {
   VerifyPluginMarkedEssential(GetActiveWebContents(), "plugin_large");
 }
 
-// Flaky on almost all platforms: crbug.com/648827.
-IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest,
-                       DISABLED_LargeCrossOriginObscured) {
-  LoadHTML("/large_cross_origin_obscured.html");
-  VerifyPluginIsThrottled(GetActiveWebContents(), "plugin");
-  EXPECT_TRUE(VerifySnapshot(
-      FILE_PATH_LITERAL("large_cross_origin_obscured_expected.png")));
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, EssentialPlugins) {
+  LoadHTML("/essential_plugins.html");
 
-  // Test that's unthrottled if it is unobscured.
-  std::string script =
-      "var container = window.document.getElementById('container');"
-      "container.setAttribute('style', 'width: 400px; height: 400px;');";
-  ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), script));
-  VerifyPluginMarkedEssential(GetActiveWebContents(), "plugin");
+  VerifyPluginMarkedEssential(GetActiveWebContents(), "small_same_origin");
+  VerifyPluginMarkedEssential(GetActiveWebContents(),
+                              "small_same_origin_poster");
+  VerifyPluginMarkedEssential(GetActiveWebContents(), "large_cross_origin");
+  VerifyPluginMarkedEssential(GetActiveWebContents(),
+                              "medium_16_9_cross_origin");
 }
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ExpandingSmallPlugin) {
@@ -581,4 +332,145 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, RunAllFlashInAllowMode) {
   LoadHTML("/run_all_flash.html");
   VerifyPluginMarkedEssential(GetActiveWebContents(), "small");
   VerifyPluginMarkedEssential(GetActiveWebContents(), "cross_origin");
+}
+
+class PluginPowerSaverPixelTest : public PluginPowerSaverBrowserTest {
+ public:
+  void SetUp() override {
+    EnablePixelOutput();
+    PluginPowerSaverBrowserTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // The pixel tests run more reliably in software mode.
+    command_line->AppendSwitch(switches::kDisableGpu);
+
+    PluginPowerSaverBrowserTest::SetUpCommandLine(command_line);
+  }
+
+ protected:
+  void LoadHTML(const std::string& file) override {
+    gfx::Rect bounds(gfx::Rect(0, 0, kBrowserWidth, kBrowserHeight));
+    gfx::Rect screen_bounds =
+        display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+    ASSERT_GT(screen_bounds.width(), kBrowserWidth);
+    ASSERT_GT(screen_bounds.height(), kBrowserHeight);
+    browser()->window()->SetBounds(bounds);
+
+    PluginPowerSaverBrowserTest::LoadHTML(file);
+  }
+};
+
+// This test fail on macOS 10.12. https://crbug.com/599484.
+// Flaky on Windows, Asan, and Msan. See crbug.com/549285 and crbug.com/512140.
+// Because ChromeOS cannot use software rendering and the pixel tests continue
+// to flake with hardware acceleration, disable these on ChromeOS.
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(ADDRESS_SANITIZER) || \
+    defined(MEMORY_SANITIZER) || defined(OS_CHROMEOS)
+#define MAYBE_SmallCrossOrigin DISABLED_SmallCrossOrigin
+#else
+#define MAYBE_SmallCrossOrigin SmallCrossOrigin
+#endif
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverPixelTest, MAYBE_SmallCrossOrigin) {
+  LoadHTML("/small_cross_origin.html");
+
+  VerifyPluginIsThrottled(GetActiveWebContents(), "plugin");
+  VerifyPluginIsPlaceholderOnly("plugin_poster");
+
+  base::FilePath reference = ui_test_utils::GetTestFilePath(
+      base::FilePath(FILE_PATH_LITERAL("plugin_power_saver")),
+      base::FilePath(FILE_PATH_LITERAL("small_cross_origin_expected.png")));
+  EXPECT_TRUE(CompareWebContentsOutputToReference(GetActiveWebContents(),
+                                                  reference, kComparisonSize));
+
+  SimulateClickAndAwaitMarkedEssential("plugin", gfx::Point(50, 50));
+  SimulateClickAndAwaitMarkedEssential("plugin_poster", gfx::Point(50, 150));
+}
+
+// Flaky on Windows, Asan, and Msan. See crbug.com/549285 and crbug.com/512140.
+// Because ChromeOS cannot use software rendering and the pixel tests continue
+// to flake with hardware acceleration, disable these on ChromeOS.
+#if defined(OS_WIN) || defined(ADDRESS_SANITIZER) || \
+    defined(MEMORY_SANITIZER) || defined(OS_CHROMEOS)
+#define MAYBE_SmallerThanPlayIcon DISABLED_SmallerThanPlayIcon
+#else
+#define MAYBE_SmallerThanPlayIcon SmallerThanPlayIcon
+#endif
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverPixelTest, MAYBE_SmallerThanPlayIcon) {
+  LoadHTML("/smaller_than_play_icon.html");
+
+  VerifyPluginIsThrottled(GetActiveWebContents(), "plugin_16");
+  VerifyPluginIsThrottled(GetActiveWebContents(), "plugin_32");
+  VerifyPluginIsThrottled(GetActiveWebContents(), "plugin_16_64");
+  VerifyPluginIsThrottled(GetActiveWebContents(), "plugin_64_16");
+
+  base::FilePath reference = ui_test_utils::GetTestFilePath(
+      base::FilePath(FILE_PATH_LITERAL("plugin_power_saver")),
+      base::FilePath(FILE_PATH_LITERAL("smaller_than_play_icon_expected.png")));
+  EXPECT_TRUE(CompareWebContentsOutputToReference(GetActiveWebContents(),
+                                                  reference, kComparisonSize));
+}
+
+// This test fail on macOS 10.12. https://crbug.com/599484.
+// Flaky on Windows, Asan, and Msan. See crbug.com/549285 and crbug.com/512140.
+// Because ChromeOS cannot use software rendering and the pixel tests continue
+// to flake with hardware acceleration, disable these on ChromeOS.
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(ADDRESS_SANITIZER) || \
+    defined(MEMORY_SANITIZER) || defined(OS_CHROMEOS)
+#define MAYBE_PosterTests DISABLED_PosterTests
+#else
+#define MAYBE_PosterTests PosterTests
+#endif
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverPixelTest, MAYBE_PosterTests) {
+  // This test simultaneously verifies the varied supported poster syntaxes,
+  // as well as verifies that the poster is rendered correctly with various
+  // mismatched aspect ratios and sizes, following the same rules as VIDEO.
+  LoadHTML("/poster_tests.html");
+
+  VerifyPluginIsPlaceholderOnly("plugin_src");
+  VerifyPluginIsPlaceholderOnly("plugin_srcset");
+
+  VerifyPluginIsPlaceholderOnly("plugin_poster_param");
+  VerifyPluginIsPlaceholderOnly("plugin_embed_src");
+  VerifyPluginIsPlaceholderOnly("plugin_embed_srcset");
+
+  VerifyPluginIsPlaceholderOnly("poster_missing");
+  VerifyPluginIsPlaceholderOnly("poster_too_small");
+  VerifyPluginIsPlaceholderOnly("poster_too_big");
+
+  VerifyPluginIsPlaceholderOnly("poster_16");
+  VerifyPluginIsPlaceholderOnly("poster_32");
+  VerifyPluginIsPlaceholderOnly("poster_16_64");
+  VerifyPluginIsPlaceholderOnly("poster_64_16");
+
+  VerifyPluginIsPlaceholderOnly("poster_obscured");
+
+  base::FilePath reference = ui_test_utils::GetTestFilePath(
+      base::FilePath(FILE_PATH_LITERAL("plugin_power_saver")),
+      base::FilePath(FILE_PATH_LITERAL("poster_tests_expected.png")));
+  EXPECT_TRUE(CompareWebContentsOutputToReference(GetActiveWebContents(),
+                                                  reference, kComparisonSize));
+
+  // Test that posters can be unthrottled via click.
+  SimulateClickAndAwaitMarkedEssential("plugin_src", gfx::Point(50, 50));
+}
+
+// Flaky on almost all platforms: crbug.com/648827.
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverPixelTest,
+                       DISABLED_LargeCrossOriginObscured) {
+  LoadHTML("/large_cross_origin_obscured.html");
+  VerifyPluginIsThrottled(GetActiveWebContents(), "plugin");
+  base::FilePath reference = ui_test_utils::GetTestFilePath(
+      base::FilePath(FILE_PATH_LITERAL("plugin_power_saver")),
+      base::FilePath(
+          FILE_PATH_LITERAL("large_cross_origin_obscured_expected.png")));
+  EXPECT_TRUE(CompareWebContentsOutputToReference(GetActiveWebContents(),
+                                                  reference, kComparisonSize));
+
+  // Test that's unthrottled if it is unobscured.
+  std::string script =
+      "var container = window.document.getElementById('container');"
+      "container.setAttribute('style', 'width: 400px; height: 400px;');";
+  ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), script));
+  VerifyPluginMarkedEssential(GetActiveWebContents(), "plugin");
 }

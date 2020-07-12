@@ -104,6 +104,7 @@ mojom("mojom_platform") {
     "notifications/notification_service.mojom",
     "oom_intervention/oom_intervention.mojom",
     "page/display_cutout.mojom",
+    "page/drag.mojom",
     "page/page.mojom",
     "page/page_visibility_state.mojom",
     "page/spatial_navigation.mojom",
@@ -287,8 +288,20 @@ mojom("mojom_platform") {
       traits_public_deps = [ "//ui/base/clipboard:clipboard_types" ]
     },
   ]
+  blink_cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "blink.mojom.DragData"
+          cpp = "::blink::WebDragData"
+        },
+      ]
+      traits_headers =
+          [ "//third_party/blink/renderer/platform/mojo/drag_mojom_traits.h" ]
+    },
+  ]
   cpp_typemaps += shared_cpp_typemaps
-  blink_cpp_typemaps = shared_cpp_typemaps
+  blink_cpp_typemaps += shared_cpp_typemaps
 
   export_class_attribute = "BLINK_COMMON_EXPORT"
   export_define = "BLINK_COMMON_IMPLEMENTATION=1"

@@ -11,8 +11,8 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/test_switches.h"
 #include "build/build_config.h"
-#include "cc/base/switches.h"
 #include "cc/test/pixel_test.h"
 #include "cc/test/pixel_test_utils.h"
 #include "cc/test/resource_provider_test_utils.h"
@@ -215,7 +215,7 @@ TEST_P(SkiaReadbackPixelTest, ExecutesCopyRequest) {
 
   base::FilePath expected_path = GetExpectedPath();
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          cc::switches::kCCRebaselinePixeltests)) {
+          switches::kRebaselinePixelTests)) {
     EXPECT_TRUE(cc::WritePNGFile(actual, expected_path, false));
   }
 

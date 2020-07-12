@@ -9,6 +9,7 @@ import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/text_direction.mojom";
 import "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom";
 import "third_party/blink/public/mojom/input/input_handler.mojom";
+import "third_party/blink/public/mojom/page/drag.mojom";
 import "ui/base/mojom/ui_base_types.mojom";
 import "ui/base/ime/mojom/text_input_state.mojom";
 import "ui/base/cursor/mojom/cursor.mojom";
@@ -16,31 +17,6 @@ import "ui/gfx/geometry/mojom/geometry.mojom";
 
 [EnableIf=is_mac]
 import "ui/base/mojom/attributed_string.mojom";
-
-// "Verb" of a drag-and-drop operation as negotiated between the source and
-// destination. It's typemapped to blink::WebDragOperation.
-enum DragOperation {
-  kNone,
-  kCopy,
-  kLink,
-  kGeneric,
-  kPrivate,
-  kMove,
-  kDelete,
-};
-
-// This struct encodes what drag-and-drop operations are allowed. It's
-// typemapped to blink::WebDragOperationsMask.
-// TODO(https://crbug.com/1082291): Change this to a bitset if/when mojom
-// supports bitset types.
-struct AllowedDragOperations {
-  bool allow_copy;
-  bool allow_link;
-  bool allow_generic;
-  bool allow_private;
-  bool allow_move;
-  bool allow_delete;
-};
 
 // Implemented in Blink, this interface defines frame-widget-specific methods that
 // will be invoked from the browser process (e.g. blink::WebFrameWidget).
@@ -60,6 +36,12 @@ interface FrameWidget {
   // Notifies the Widget of a drag leave operation.
   DragTargetDragLeave(gfx.mojom.PointF point_in_viewport,
                       gfx.mojom.PointF screen_point);
+
+  // Notifies the Widget of a drag drop operation.
+  DragTargetDrop(DragData drag_data,
+                 gfx.mojom.PointF point_in_viewport,
+                 gfx.mojom.PointF screen_point,
+                 uint32 key_modifiers);
 
   // Notifies the Widget that a drag has terminated.
   DragSourceEndedAt(gfx.mojom.PointF point_in_viewport,

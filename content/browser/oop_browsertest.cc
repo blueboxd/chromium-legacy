@@ -31,10 +31,14 @@ namespace {
 
 class OOPBrowserTest : public ContentBrowserTest {
  public:
+  void SetUp() override {
+    EnablePixelOutput();
+    ContentBrowserTest::SetUp();
+  }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableGpuRasterization);
-    command_line->AppendSwitch(switches::kEnablePixelOutputInTests);
     command_line->AppendSwitch(switches::kEnableOopRasterization);
     command_line->AppendSwitch(switches::kUseGpuInTests);
   }
@@ -65,27 +69,12 @@ IN_PROC_BROWSER_TEST_F(OOPBrowserTest, MAYBE_Basic) {
           ->render_frame_metadata_provider());
   frame_observer.WaitForAnyFrameSubmission();
 
-  auto* rwh = shell()->web_contents()->GetRenderViewHost()->GetWidget();
-  ASSERT_TRUE(rwh->GetView()->IsSurfaceAvailableForCopy());
-  base::RunLoop run_loop;
-  SkBitmap snapshot;
-  rwh->GetView()->CopyFromSurface(
-      gfx::Rect(), gfx::Size(),
-      base::BindOnce(
-          [](SkBitmap* snapshot, base::OnceClosure done_cb,
-             const SkBitmap& bitmap) {
-            *snapshot = bitmap;
-            std::move(done_cb).Run();
-          },
-          &snapshot, run_loop.QuitWhenIdleClosure()));
-  run_loop.Run();
+  const gfx::Size kComparisonSize(300, 300);
 
-  ASSERT_FALSE(snapshot.drawsNothing());
-  for (int i = 0; i < snapshot.width(); ++i) {
-    for (int j = 0; j < snapshot.height(); ++j) {
-      ASSERT_EQ(snapshot.getColor(i, j), SK_ColorBLUE);
-    }
-  }
+  base::FilePath reference =
+      content::GetTestFilePath(nullptr, "oopbrowsertest-basic.png");
+  EXPECT_TRUE(CompareWebContentsOutputToReference(shell()->web_contents(),
+                                                  reference, kComparisonSize));
 }
 #endif
 

@@ -1,0 +1,244 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "third_party/blink/renderer/platform/mojo/drag_mojom_traits.h"
+
+#include "base/files/file_path.h"
+#include "base/notreached.h"
+#include "base/strings/string16.h"
+#include "third_party/blink/public/platform/file_path_conversion.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+
+namespace mojo {
+
+// static
+WTF::String StructTraits<
+    blink::mojom::DragItemStringDataView,
+    blink::WebDragData::Item>::string_type(blink::WebDragData::Item item) {
+  return item.string_type;
+}
+
+// static
+WTF::String
+StructTraits<blink::mojom::DragItemStringDataView, blink::WebDragData::Item>::
+    string_data(const blink::WebDragData::Item& item) {
+  return item.string_data;
+}
+
+// static
+WTF::String StructTraits<
+    blink::mojom::DragItemStringDataView,
+    blink::WebDragData::Item>::title(const blink::WebDragData::Item& item) {
+  return item.title;
+}
+
+// static
+blink::KURL StructTraits<
+    blink::mojom::DragItemStringDataView,
+    blink::WebDragData::Item>::base_url(const blink::WebDragData::Item& item) {
+  return item.base_url;
+}
+
+// static
+bool StructTraits<
+    blink::mojom::DragItemStringDataView,
+    blink::WebDragData::Item>::Read(blink::mojom::DragItemStringDataView data,
+                                    blink::WebDragData::Item* out) {
+  blink::WebDragData::Item item;
+  WTF::String string_type;
+  base::string16 string_data, title;
+  blink::KURL url;
+  if (!data.ReadStringType(&string_type) ||
+      !data.ReadStringData(&string_data) || !data.ReadTitle(&title) ||
+      !data.ReadBaseUrl(&url))
+    return false;
+
+  item.storage_type = blink::WebDragData::Item::kStorageTypeString;
+  item.string_type = string_type;
+  item.string_data = blink::WebString::FromUTF16(string_data);
+  item.title = blink::WebString::FromUTF16(title);
+  item.base_url = url;
+  *out = std::move(item);
+  return true;
+}
+
+// static
+base::FilePath StructTraits<
+    blink::mojom::DragItemFileDataView,
+    blink::WebDragData::Item>::path(const blink::WebDragData::Item& item) {
+  return WebStringToFilePath(item.filename_data);
+}
+
+// static
+base::FilePath
+StructTraits<blink::mojom::DragItemFileDataView, blink::WebDragData::Item>::
+    display_name(const blink::WebDragData::Item& item) {
+  return WebStringToFilePath(item.display_name_data);
+}
+
+// static
+bool StructTraits<
+    blink::mojom::DragItemFileDataView,
+    blink::WebDragData::Item>::Read(blink::mojom::DragItemFileDataView data,
+                                    blink::WebDragData::Item* out) {
+  blink::WebDragData::Item item;
+  base::FilePath filename_data, display_name_data;
+  if (!data.ReadPath(&filename_data) ||
+      !data.ReadDisplayName(&display_name_data))
+    return false;
+
+  item.storage_type = blink::WebDragData::Item::kStorageTypeFilename;
+  item.filename_data = blink::FilePathToWebString(filename_data);
+  item.display_name_data = blink::FilePathToWebString(display_name_data);
+  *out = std::move(item);
+  return true;
+}
+
+// static
+blink::WebVector<uint8_t> StructTraits<
+    blink::mojom::DragItemBinaryDataView,
+    blink::WebDragData::Item>::data(const blink::WebDragData::Item& item) {
+  return item.binary_data.Copy();
+}
+
+// static
+blink::KURL
+StructTraits<blink::mojom::DragItemBinaryDataView, blink::WebDragData::Item>::
+    source_url(const blink::WebDragData::Item& item) {
+  return item.binary_data_source_url;
+}
+
+// static
+base::FilePath
+StructTraits<blink::mojom::DragItemBinaryDataView, blink::WebDragData::Item>::
+    filename_extension(const blink::WebDragData::Item& item) {
+  return WebStringToFilePath(item.binary_data_filename_extension);
+}
+
+// static
+WTF::String
+StructTraits<blink::mojom::DragItemBinaryDataView, blink::WebDragData::Item>::
+    content_disposition(const blink::WebDragData::Item& item) {
+  return item.binary_data_content_disposition;
+}
+
+// static
+bool StructTraits<
+    blink::mojom::DragItemBinaryDataView,
+    blink::WebDragData::Item>::Read(blink::mojom::DragItemBinaryDataView data,
+                                    blink::WebDragData::Item* out) {
+  // storage_type == kBinary should not happen when dragging into Blink.
+  NOTREACHED();
+  return true;
+}
+
+//  static
+blink::KURL StructTraits<
+    blink::mojom::DragItemFileSystemFileDataView,
+    blink::WebDragData::Item>::url(const blink::WebDragData::Item& item) {
+  return item.file_system_url;
+}
+
+//  static
+int64_t StructTraits<
+    blink::mojom::DragItemFileSystemFileDataView,
+    blink::WebDragData::Item>::size(const blink::WebDragData::Item& item) {
+  return item.file_system_file_size;
+}
+
+//  static
+WTF::String StructTraits<blink::mojom::DragItemFileSystemFileDataView,
+                         blink::WebDragData::Item>::
+    file_system_id(const blink::WebDragData::Item& item) {
+  return item.file_system_id;
+}
+
+// static
+bool StructTraits<blink::mojom::DragItemFileSystemFileDataView,
+                  blink::WebDragData::Item>::
+    Read(blink::mojom::DragItemFileSystemFileDataView data,
+         blink::WebDragData::Item* out) {
+  blink::WebDragData::Item item;
+  blink::KURL file_system_url;
+  WTF::String file_system_id;
+  if (!data.ReadUrl(&file_system_url) ||
+      !data.ReadFileSystemId(&file_system_id))
+    return false;
+
+  item.storage_type = blink::WebDragData::Item::kStorageTypeFileSystemFile;
+  item.file_system_url = file_system_url;
+  item.file_system_file_size = data.size();
+  item.file_system_id = file_system_id;
+  *out = std::move(item);
+  return true;
+}
+
+// static
+bool UnionTraits<blink::mojom::DragItemDataView, blink::WebDragData::Item>::
+    Read(blink::mojom::DragItemDataView data, blink::WebDragData::Item* out) {
+  blink::WebDragData::Item item;
+  switch (data.tag()) {
+    case blink::mojom::DragItemDataView::Tag::STRING:
+      return data.ReadString(out);
+    case blink::mojom::DragItemDataView::Tag::FILE:
+      return data.ReadFile(out);
+    case blink::mojom::DragItemDataView::Tag::BINARY:
+      return data.ReadBinary(out);
+    case blink::mojom::DragItemDataView::Tag::FILE_SYSTEM_FILE:
+      return data.ReadFileSystemFile(out);
+  }
+  NOTREACHED();
+  return false;
+}
+
+// static
+blink::mojom::DragItemDataView::Tag
+UnionTraits<blink::mojom::DragItemDataView, blink::WebDragData::Item>::GetTag(
+    const blink::WebDragData::Item& item) {
+  switch (item.storage_type) {
+    case blink::WebDragData::Item::kStorageTypeString:
+      return blink::mojom::DragItemDataView::Tag::STRING;
+    case blink::WebDragData::Item::kStorageTypeFilename:
+      return blink::mojom::DragItemDataView::Tag::FILE;
+    case blink::WebDragData::Item::kStorageTypeBinaryData:
+      return blink::mojom::DragItemDataView::Tag::BINARY;
+    case blink::WebDragData::Item::kStorageTypeFileSystemFile:
+      return blink::mojom::DragItemDataView::Tag::FILE_SYSTEM_FILE;
+  }
+  NOTREACHED();
+  return blink::mojom::DragItemDataView::Tag::STRING;
+}
+
+// static
+blink::WebVector<blink::WebDragData::Item>
+StructTraits<blink::mojom::DragDataDataView, blink::WebDragData>::items(
+    const blink::WebDragData& drag_data) {
+  return drag_data.Items();
+}
+
+// static
+WTF::String StructTraits<blink::mojom::DragDataDataView, blink::WebDragData>::
+    file_system_id(const blink::WebDragData& drag_data) {
+  return drag_data.FilesystemId();
+}
+
+// static
+bool StructTraits<blink::mojom::DragDataDataView, blink::WebDragData>::Read(
+    blink::mojom::DragDataDataView data,
+    blink::WebDragData* out) {
+  blink::WebVector<blink::WebDragData::Item> items;
+  WTF::String file_system_id;
+  if (!data.ReadItems(&items) || !data.ReadFileSystemId(&file_system_id))
+    return false;
+
+  blink::WebDragData drag_data;
+  drag_data.SetItems(std::move(items));
+  drag_data.SetFilesystemId(file_system_id);
+  *out = std::move(drag_data);
+  return true;
+}
+
+}  // namespace mojo

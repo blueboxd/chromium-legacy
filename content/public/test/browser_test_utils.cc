@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/process/kill.h"
@@ -25,11 +26,14 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "cc/test/pixel_test_utils.h"
 #include "components/viz/client/frame_evictor.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -115,6 +119,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/clipboard/test/test_clipboard.h"
@@ -3605,6 +3610,63 @@ void ProxyDSFObserver::OnCreation(RenderFrameProxyHost* rfph) {
   }
   if (runner_)
     runner_->Quit();
+}
+
+bool CompareWebContentsOutputToReference(WebContents* web_contents,
+                                         const base::FilePath& expected_path,
+                                         const gfx::Size& snapshot_size) {
+  // Produce a frame of output first to ensure the system is in a consistent,
+  // known state.
+  {
+    base::RunLoop run_loop;
+    web_contents->GetMainFrame()->InsertVisualStateCallback(
+        base::BindLambdaForTesting([&](bool visual_state_updated) {
+          ASSERT_TRUE(visual_state_updated);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+  }
+
+  content::RenderWidgetHostImpl* rwh = content::RenderWidgetHostImpl::From(
+      web_contents->GetRenderViewHost()->GetWidget());
+
+  if (!rwh->GetView() || !rwh->GetView()->IsSurfaceAvailableForCopy()) {
+    ADD_FAILURE() << "RWHV surface not available for copy.";
+    return false;
+  }
+
+  bool snapshot_matches = false;
+  {
+    base::RunLoop run_loop;
+    rwh->GetView()->CopyFromSurface(
+        gfx::Rect(), gfx::Size(),
+        base::BindLambdaForTesting([&](const SkBitmap& bitmap) {
+          base::ScopedAllowBlockingForTesting allow_blocking;
+          ASSERT_FALSE(bitmap.drawsNothing());
+
+          SkBitmap clipped_bitmap;
+          bitmap.extractSubset(
+              &clipped_bitmap,
+              SkIRect::MakeWH(snapshot_size.width(), snapshot_size.height()));
+
+          snapshot_matches =
+              cc::MatchesPNGFile(clipped_bitmap, expected_path,
+                                 cc::ManhattanDistancePixelComparator());
+
+          // When rebaselining the pixel test, the test may fail. However, the
+          // reference file will still be overwritten.
+          if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+                  switches::kRebaselinePixelTests)) {
+            ASSERT_TRUE(cc::WritePNGFile(clipped_bitmap, expected_path,
+                                         /*discard_transparency=*/false));
+          }
+
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+  }
+
+  return snapshot_matches;
 }
 
 }  // namespace content

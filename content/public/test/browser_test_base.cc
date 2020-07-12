@@ -175,11 +175,7 @@ class InitialNavigationObserver : public WebContentsObserver {
 
 }  // namespace
 
-BrowserTestBase::BrowserTestBase()
-    : expected_exit_code_(0),
-      enable_pixel_output_(false),
-      use_software_compositing_(false),
-      set_up_called_(false) {
+BrowserTestBase::BrowserTestBase() {
   CHECK(!g_instance_already_created)
       << "Each browser test should be run in a new process. If you are adding "
          "a new browser test suite that runs on Android, please add it to "
@@ -264,6 +260,20 @@ void BrowserTestBase::SetUp() {
   // occlusion when running browser tests.
   command_line->AppendSwitch(
       switches::kDisableBackgroundingOccludedWindowsForTesting);
+
+  if (enable_pixel_output_) {
+    DCHECK(!command_line->HasSwitch(switches::kForceDeviceScaleFactor))
+        << "--force-device-scale-factor flag already present. Tests using "
+        << "EnablePixelOutput should specify a forced device scale factor by "
+        << "passing it as an argument to EnblePixelOutput.";
+    DCHECK(force_device_scale_factor_);
+
+    // We do this before setting enable_pixel_output_ from the switch below so
+    // that the device scale factor is forced only when enabled from test code.
+    command_line->AppendSwitchASCII(
+        switches::kForceDeviceScaleFactor,
+        base::StringPrintf("%f", force_device_scale_factor_));
+  }
 
 #if defined(USE_AURA)
   // Most tests do not need pixel output, so we don't produce any. The command
@@ -732,7 +742,10 @@ void BrowserTestBase::PostTaskToInProcessRendererAndWait(
   run_loop.Run();
 }
 
-void BrowserTestBase::EnablePixelOutput() { enable_pixel_output_ = true; }
+void BrowserTestBase::EnablePixelOutput(float force_device_scale_factor) {
+  enable_pixel_output_ = true;
+  force_device_scale_factor_ = force_device_scale_factor;
+}
 
 void BrowserTestBase::UseSoftwareCompositing() {
   use_software_compositing_ = true;

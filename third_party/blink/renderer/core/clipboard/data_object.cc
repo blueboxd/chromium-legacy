@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 
+#include "base/notreached.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"

@@ -2124,8 +2124,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsAllowedByCommandLineSwitch,
 
 class DevToolsPixelOutputTests : public DevToolsSanityTest {
  public:
+  void SetUp() override {
+    EnablePixelOutput();
+    DevToolsSanityTest::SetUp();
+  }
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnablePixelOutputInTests);
     command_line->AppendSwitch(switches::kUseGpuInTests);
   }
 };

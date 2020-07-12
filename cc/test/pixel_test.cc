@@ -14,9 +14,9 @@
 #include "base/memory/shared_memory_mapping.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/test_switches.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "cc/base/switches.h"
 #include "cc/raster/raster_buffer_provider.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/pixel_test_output_surface.h"
@@ -216,7 +216,7 @@ bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file,
     return false;
 
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  if (cmd->HasSwitch(switches::kCCRebaselinePixeltests))
+  if (cmd->HasSwitch(switches::kRebaselinePixelTests))
     return WritePNGFile(*result_bitmap_, test_data_dir.Append(ref_file), true);
 
   return MatchesPNGFile(

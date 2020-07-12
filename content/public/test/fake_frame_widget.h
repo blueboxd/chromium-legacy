@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "third_party/blink/public/mojom/page/drag.mojom.h"
 #include "third_party/blink/public/mojom/page/widget.mojom.h"
 #include "ui/base/ui_base_types.h"
 
@@ -37,6 +38,10 @@ class FakeFrameWidget : public blink::mojom::FrameWidget {
                           DragTargetDragOverCallback callback) override {}
   void DragTargetDragLeave(const gfx::PointF& point_in_viewport,
                            const gfx::PointF& screen_point) override {}
+  void DragTargetDrop(blink::mojom::DragDataPtr drag_data,
+                      const gfx::PointF& point_in_viewport,
+                      const gfx::PointF& screen_point,
+                      uint32_t key_modifiers) override {}
   void DragSourceEndedAt(const gfx::PointF& client_point,
                          const gfx::PointF& screen_point,
                          blink::WebDragOperation operation) override {}

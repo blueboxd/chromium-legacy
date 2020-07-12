@@ -88,7 +88,9 @@ base::string16 TimeFormat::DetailedWithMonthAndYear(
     const int seconds = static_cast<int>((delta + half_second).InSeconds());
     formatter->Format(Formatter::UNIT_SEC, seconds, &time_string);
 
-  } else if (delta < one_hour - (cutoff < 60 ? half_minute : half_second)) {
+  } else if (delta < one_hour - (cutoff < base::Time::kMinutesPerHour
+                                     ? half_minute
+                                     : half_second)) {
     // Anything up to 59.5 minutes (respectively 59:59.500 when |cutoff| permits
     // two-value output) is formatted as minutes (respectively minutes and
     // seconds).
@@ -97,13 +99,15 @@ base::string16 TimeFormat::DetailedWithMonthAndYear(
       formatter->Format(Formatter::UNIT_MIN, minutes, &time_string);
     } else {
       const int minutes = (delta + half_second).InMinutes();
-      const int seconds = static_cast<int>(
-          (delta + half_second).InSeconds() % 60);
+      const int seconds = static_cast<int>((delta + half_second).InSeconds() %
+                                           base::Time::kSecondsPerMinute);
       formatter->Format(Formatter::TWO_UNITS_MIN_SEC,
                         minutes, seconds, &time_string);
     }
 
-  } else if (delta < one_day - (cutoff < 24 ? half_hour : half_minute)) {
+  } else if (delta < one_day - (cutoff < base::Time::kHoursPerDay
+                                    ? half_hour
+                                    : half_minute)) {
     // Anything up to 23.5 hours (respectively 23:59:30.000 when |cutoff|
     // permits two-value output) is formatted as hours (respectively hours and
     // minutes).
@@ -112,7 +116,8 @@ base::string16 TimeFormat::DetailedWithMonthAndYear(
       formatter->Format(Formatter::UNIT_HOUR, hours, &time_string);
     } else {
       const int hours = (delta + half_minute).InHours();
-      const int minutes = (delta + half_minute).InMinutes() % 60;
+      const int minutes =
+          (delta + half_minute).InMinutes() % base::Time::kMinutesPerHour;
       formatter->Format(Formatter::TWO_UNITS_HOUR_MIN,
                         hours, minutes, &time_string);
     }
@@ -123,7 +128,8 @@ base::string16 TimeFormat::DetailedWithMonthAndYear(
       formatter->Format(Formatter::UNIT_DAY, days, &time_string);
     } else {
       const int days = (delta + half_hour).InDays();
-      const int hours = (delta + half_hour).InHours() % 24;
+      const int hours =
+          (delta + half_hour).InHours() % base::Time::kHoursPerDay;
       formatter->Format(Formatter::TWO_UNITS_DAY_HOUR,
                         days, hours, &time_string);
     }

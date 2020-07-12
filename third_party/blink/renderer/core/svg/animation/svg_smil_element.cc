@@ -28,6 +28,7 @@
 #include <algorithm>
 
 #include "base/auto_reset.h"
+#include "base/time/time.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -345,16 +346,20 @@ SMILTime SVGSMILElement::ParseOffsetValue(const String& data) {
   bool ok;
   double result = 0;
   String parse = data.StripWhiteSpace();
-  if (parse.EndsWith('h'))
-    result = parse.Left(parse.length() - 1).ToDouble(&ok) * 60 * 60;
-  else if (parse.EndsWith("min"))
-    result = parse.Left(parse.length() - 3).ToDouble(&ok) * 60;
-  else if (parse.EndsWith("ms"))
-    result = parse.Left(parse.length() - 2).ToDouble(&ok) / 1000;
-  else if (parse.EndsWith('s'))
+  if (parse.EndsWith('h')) {
+    result = parse.Left(parse.length() - 1).ToDouble(&ok) *
+             base::Time::kSecondsPerHour;
+  } else if (parse.EndsWith("min")) {
+    result = parse.Left(parse.length() - 3).ToDouble(&ok) *
+             base::Time::kSecondsPerMinute;
+  } else if (parse.EndsWith("ms")) {
+    result = parse.Left(parse.length() - 2).ToDouble(&ok) /
+             base::Time::kMillisecondsPerSecond;
+  } else if (parse.EndsWith('s')) {
     result = parse.Left(parse.length() - 1).ToDouble(&ok);
-  else
+  } else {
     result = parse.ToDouble(&ok);
+  }
   if (!ok)
     return SMILTime::Unresolved();
   return SMILTime::FromSecondsD(result);

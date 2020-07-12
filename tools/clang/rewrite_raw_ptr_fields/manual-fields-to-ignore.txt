@@ -14,10 +14,11 @@ base::CheckedContiguousIterator::current_
 base::CheckedContiguousIterator::end_
 base::CheckedContiguousIterator::start_
 base::CheckedContiguousRange::container_
+base::FeatureParam<base::TimeDelta, false>::feature
 base::FeatureParam<bool, false>::feature
 base::FeatureParam<double, false>::feature
 base::FeatureParam<int, false>::feature
-base::FeatureParam<std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>>, false>::feature
+base::FeatureParam<std::__1::basic_string<char>, false>::feature
 base::FeatureParam<type-parameter-0-0, true>::feature
 base::FeatureParam<type-parameter-0-0, true>::options
 base::span::data_
@@ -153,6 +154,9 @@ device::BluetoothDevice::adapter_
 # expects the raw pointer type.
 vr::LocationBarState::vector_icon
 vr::OmniboxSuggestion::icon
+
+# Populated manually - other compile-time reasons
+logging::CheckOpResult::message_  # cyclic #include
 
 # Populated manually - these pointers are assigned invalid address (with top
 # bits sets), which CheckedPtr is unable to handle, leading to run-time crashes.

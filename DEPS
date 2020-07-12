@@ -194,7 +194,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '4a1f5fc94295c5861af74dd35e1c44a8ce55f9e8',
+  'skia_revision': 'e4f36d7ac8f5dc6f5157616149f0eff3877808b4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -939,7 +939,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'ba8dd2919fcaf65646858a6d7fd5e75ed4946cb1',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '1ee5d1c0bb683daea245e8329fd619940a35a5b4',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '09ea6fa99aef68c5115281216530d1f28f928ce1',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1541,7 +1541,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8fe5ce583f6cb6b2d184c31ae15f51265d052873',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@754f527718a77e02a1afc4a0664c64dea8ec0633',
     'condition': 'checkout_src_internal',
   },
 

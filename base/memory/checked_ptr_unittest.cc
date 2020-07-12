@@ -10,6 +10,8 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/allocator/partition_allocator/partition_cookie.h"
 #include "base/allocator/partition_allocator/partition_tag.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -642,8 +644,11 @@ TEST(CheckedPtr2Impl, SafelyUnwrapNull) {
 }
 
 TEST(CheckedPtr2Impl, WrapAndSafelyUnwrap) {
-  // Put generation 16B and 32B before the "object", so that it works on both
-  // Debug and Release builds.
+  // Create a fake allocation, with first 32B for generation and optionally
+  // cookie for Debug builds (ignored), 16B each. Put generation both 16B and
+  // 32B before the "object", so that it works on both Debug and Release builds.
+  // We can use a fake allocation, instead of PartitionAlloc, because
+  // CheckedPtr2ImplEnabled fakes the functionality is enabled for this pointer.
   char bytes[] = {0xBA, 0x42, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
                   0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xBA, 0x42,
                   0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
@@ -659,8 +664,8 @@ TEST(CheckedPtr2Impl, WrapAndSafelyUnwrap) {
 #endif
 
   uintptr_t wrapped = CheckedPtr2ImplEnabled::WrapRawPtr(ptr);
-  // First 2 bytes in the preceding word will be used as generation (in reverse
-  // order due to little-endianness).
+  // First 2 bytes in the preceding 16B block will be used as generation (in
+  // reverse order due to little-endianness).
 #if CHECKED_PTR2_USE_NO_OP_WRAPPER
   ASSERT_EQ(wrapped, addr);
   std::ignore = set_top_bit;
@@ -671,6 +676,7 @@ TEST(CheckedPtr2Impl, WrapAndSafelyUnwrap) {
   ASSERT_EQ(CheckedPtr2ImplEnabled::SafelyUnwrapPtrForDereference(wrapped),
             ptr);
 
+  // Modify the generation associated with the fake allocation.
   bytes[1] |= 0x80;                // for Debug builds
   bytes[kCookieSize + 1] |= 0x80;  // for Release builds
   wrapped = CheckedPtr2ImplEnabled::WrapRawPtr(ptr);
@@ -683,6 +689,7 @@ TEST(CheckedPtr2Impl, WrapAndSafelyUnwrap) {
             ptr);
 
 #if CHECKED_PTR2_AVOID_BRANCH_WHEN_DEREFERENCING
+  // Clear the generation associated with the fake allocation.
   bytes[0] = 0;  // for Debug builds
   bytes[1] = 0;
   bytes[kCookieSize] = 0;  // for Release builds
@@ -702,8 +709,11 @@ TEST(CheckedPtr2Impl, WrapAndSafelyUnwrap) {
 }
 
 TEST(CheckedPtr2Impl, SafelyUnwrapDisabled) {
-  // Put generation 16B and 32B before the "object", so that it works on both
-  // Debug and Release builds.
+  // Create a fake allocation, with first 32B for generation and optionally
+  // cookie for Debug builds (ignored), 16B each. Put generation both 16B and
+  // 32B before the "object", so that it works on both Debug and Release builds.
+  // We can use a fake allocation, instead of PartitionAlloc, because
+  // CheckedPtr2ImplEnabled fakes the functionality is enabled for this pointer.
   char bytes[] = {0xBA, 0x42, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
                   0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xBA, 0x42,
                   0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
@@ -712,6 +722,28 @@ TEST(CheckedPtr2Impl, SafelyUnwrapDisabled) {
   ASSERT_EQ(0x78, *static_cast<char*>(ptr));
   uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
   ASSERT_EQ(CheckedPtr2ImplEnabled::SafelyUnwrapPtrForDereference(addr), ptr);
+}
+
+TEST(CheckedPtr2Impl, CrashOnGenerationMismatch) {
+  // Create a fake allocation, with first 32B for generation and optionally
+  // cookie for Debug builds (ignored), 16B each. Put generation both 16B and
+  // 32B before the "object", so that it works on both Debug and Release builds.
+  // We can use a fake allocation, instead of PartitionAlloc, because
+  // CheckedPtr2ImplEnabled fakes the functionality is enabled for this pointer.
+  char bytes[] = {0xBA, 0x42, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
+                  0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xBA, 0x42,
+                  0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
+                  0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0x78, 0x89};
+  CheckedPtr<char, CheckedPtr2ImplEnabled> ptr = bytes + 32;
+  EXPECT_TRUE(*ptr == 0x78);
+  // Clobber the generation associated with the fake allocation.
+  bytes[0] = 0;            // for Debug builds
+  bytes[kCookieSize] = 0;  // for Release builds
+  EXPECT_DEATH_IF_SUPPORTED(if (*ptr == 0x78) return, "");
+}
+
+void HandleOOM(size_t unused_size) {
+  LOG(FATAL) << "Out of memory";
 }
 
 }  // namespace internal

@@ -209,15 +209,20 @@ AbortCallback ProvidedFileSystem::GetMetadata(const base::FilePath& entry_path,
 AbortCallback ProvidedFileSystem::GetActions(
     const std::vector<base::FilePath>& entry_paths,
     GetActionsCallback callback) {
+  // Create |copyable_callback| which is copyable, though it can still only be
+  // called at most once.  This is safe, because RequestManager::CreateRequest()
+  // is guaranteed not to call |callback| if it signals an error (by returning
+  // request_id == 0).
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   const int request_id = request_manager_->CreateRequest(
       GET_ACTIONS,
       std::unique_ptr<RequestManager::HandlerInterface>(
           new operations::GetActions(event_router_, file_system_info_,
-                                     entry_paths, callback)));
+                                     entry_paths, copyable_callback)));
   if (!request_id) {
     // If the provider doesn't listen for GetActions requests, treat it as
     // having no actions.
-    callback.Run(Actions(), base::File::FILE_OK);
+    copyable_callback.Run(Actions(), base::File::FILE_OK);
     return AbortCallback();
   }
 
@@ -288,15 +293,20 @@ AbortCallback ProvidedFileSystem::ReadFile(int file_handle,
 AbortCallback ProvidedFileSystem::OpenFile(const base::FilePath& file_path,
                                            OpenFileMode mode,
                                            OpenFileCallback callback) {
+  // Create |copyable_callback| which is copyable, though it can still only be
+  // called at most once.  This is safe, because RequestManager::CreateRequest()
+  // is guaranteed not to call |callback| if it signals an error (by returning
+  // request_id == 0).
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   const int request_id = request_manager_->CreateRequest(
       OPEN_FILE, std::unique_ptr<RequestManager::HandlerInterface>(
                      new operations::OpenFile(
                          event_router_, file_system_info_, file_path, mode,
                          base::Bind(&ProvidedFileSystem::OnOpenFileCompleted,
                                     weak_ptr_factory_.GetWeakPtr(), file_path,
-                                    mode, callback))));
+                                    mode, copyable_callback))));
   if (!request_id) {
-    callback.Run(0 /* file_handle */, base::File::FILE_ERROR_SECURITY);
+    copyable_callback.Run(0 /* file_handle */, base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
   }
 

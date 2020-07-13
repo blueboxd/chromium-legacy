@@ -39,6 +39,7 @@
 #include "content/common/render_accessibility.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/unique_name_helper.h"
+#include "content/common/web_ui.mojom.h"
 #include "content/public/common/browser_controls_state.h"
 #include "content/public/common/fullscreen_video_element.mojom.h"
 #include "content/public/common/previews_state.h"
@@ -540,6 +541,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // mojom::FrameBindingsControl implementation:
   void AllowBindings(int32_t enabled_bindings_flags) override;
   void EnableMojoJsBindings() override;
+  void BindWebUI(mojo::PendingReceiver<mojom::WebUI> Receiver,
+                 mojo::PendingRemote<mojom::WebUIHost> remote) override;
 
   // These mirror mojom::NavigationClient, called by NavigationClient.
   void CommitNavigation(
@@ -1136,6 +1139,8 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Send |callback| our AndroidOverlay routing token.
   void RequestOverlayRoutingToken(media::RoutingTokenCallback callback);
+
+  void BindWebUIReceiver(mojo::PendingReceiver<mojom::WebUI> receiver);
 
   void ShowDeferredContextMenu(const UntrustworthyContextMenuParams& params);
 

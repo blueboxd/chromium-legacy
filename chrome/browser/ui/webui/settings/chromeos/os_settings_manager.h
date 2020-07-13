@@ -19,10 +19,6 @@ class WebUI;
 class WebUIDataSource;
 }  // namespace content
 
-namespace local_search_service {
-class LocalSearchService;
-}  // namespace local_search_service
-
 namespace signin {
 class IdentityManager;
 }  // namespace signin
@@ -39,6 +35,10 @@ class KerberosCredentialsManager;
 namespace android_sms {
 class AndroidSmsService;
 }  // namespace android_sms
+
+namespace local_search_service {
+class LocalSearchService;
+}  // namespace local_search_service
 
 namespace multidevice_setup {
 class MultiDeviceSetupClient;

@@ -5,11 +5,12 @@
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 
 #include "base/no_destructor.h"
-#include "chrome/browser/chromeos/local_search_service/index.h"
-#include "chrome/browser/chromeos/local_search_service/local_search_service.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/components/local_search_service/index.h"
+#include "chromeos/components/local_search_service/local_search_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -69,7 +70,8 @@ class SearchTagRegistryTest : public testing::Test {
   void SetUp() override {
     search_tag_registry_.AddObserver(&observer_);
     index_ = local_search_service_.GetIndex(
-        local_search_service::IndexId::kCrosSettings);
+        local_search_service::IndexId::kCrosSettings,
+        local_search_service::Backend::kLinearMap, nullptr /* local_state */);
   }
 
   void TearDown() override { search_tag_registry_.RemoveObserver(&observer_); }

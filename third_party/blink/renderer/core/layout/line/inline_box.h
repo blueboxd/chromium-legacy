@@ -98,7 +98,7 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   }
 
   virtual void Paint(const PaintInfo&,
-                     const LayoutPoint&,
+                     const PhysicalOffset&,
                      LayoutUnit line_top,
                      LayoutUnit line_bottom) const;
   virtual bool NodeAtPoint(HitTestResult&,

@@ -32,7 +32,7 @@
   TestRunner.completeTest();
 
   function log(name, frame) {
-    var parentFrameId = frame.parentFrame ? ', parentFrameId: ' + (frame.parentFrame[frameId] || 1) : '';
+    var parentFrameId = frame.parentFrame() ? ', parentFrameId: ' + (frame.parentFrame()[frameId] || 1) : '';
     TestRunner.addResult(
         '    ' + name + ' id: ' + frame[frameId] + parentFrameId + ', isMainFrame: ' + frame.isMainFrame());
   }

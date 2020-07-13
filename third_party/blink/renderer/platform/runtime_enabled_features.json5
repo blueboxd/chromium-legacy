@@ -2010,11 +2010,6 @@
       status: "test",
     },
     {
-      name: "WebShareV2",
-      status: "test",
-      depends_on: ["WebShare"],
-    },
-    {
       name: "WebSocketStream",
       status: "experimental",
     },

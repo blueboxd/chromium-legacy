@@ -205,7 +205,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   //
   // |callback| must not be null.
   virtual google_apis::CancelCallback GetAllTeamDriveList(
-      const google_apis::TeamDriveListCallback& callback) = 0;
+      google_apis::TeamDriveListCallback callback) = 0;
 
   // Fetches a file list of the account. |callback| will be called upon
   // completion.
@@ -268,7 +268,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   // |callback| must not be null.
   virtual google_apis::CancelCallback GetChangeList(
       int64_t start_changestamp,
-      const google_apis::ChangeListCallback& callback) = 0;
+      google_apis::ChangeListCallback callback) = 0;
 
   // Fetches change list since |start_page_token|. |callback| will be
   // called upon completion.
@@ -282,7 +282,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   virtual google_apis::CancelCallback GetChangeListByToken(
       const std::string& team_drive_id,
       const std::string& start_page_token,
-      const google_apis::ChangeListCallback& callback) = 0;
+      google_apis::ChangeListCallback callback) = 0;
 
   // The result of GetChangeList() may be paged.
   // In such a case, a next link to fetch remaining result is returned.
@@ -292,7 +292,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   // |next_link| must not be empty. |callback| must not be null.
   virtual google_apis::CancelCallback GetRemainingChangeList(
       const GURL& next_link,
-      const google_apis::ChangeListCallback& callback) = 0;
+      google_apis::ChangeListCallback callback) = 0;
 
   // The result of GetAllTeamDrives() may be paged. In such a case, a token to
   // fetch remaining result is returned. The page token can be used for this
@@ -301,7 +301,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   // |next_link| must not be empty. |callback| must not be null.
   virtual google_apis::CancelCallback GetRemainingTeamDriveList(
       const std::string& page_token,
-      const google_apis::TeamDriveListCallback& callback) = 0;
+      google_apis::TeamDriveListCallback callback) = 0;
 
   // The result of GetAllFileList(), GetFileListInDirectory(), Search()
   // and SearchByTitle() may be paged. In such a case, a next link to fetch

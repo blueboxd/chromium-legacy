@@ -353,10 +353,10 @@ void FakeDriveService::GetTeamDriveListInternal(
     int start_offset,
     int max_results,
     int* load_counter,
-    const google_apis::TeamDriveListCallback& callback) {
+    google_apis::TeamDriveListCallback callback) {
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, DRIVE_NO_CONNECTION,
+        FROM_HERE, base::BindOnce(std::move(callback), DRIVE_NO_CONNECTION,
                                   std::unique_ptr<TeamDriveList>()));
     return;
   }
@@ -385,16 +385,17 @@ void FakeDriveService::GetTeamDriveListInternal(
     result->mutable_items()->push_back(std::move(team_drive));
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, HTTP_SUCCESS, std::move(result)));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), HTTP_SUCCESS, std::move(result)));
 }
 
 CancelCallback FakeDriveService::GetAllTeamDriveList(
-    const TeamDriveListCallback& callback) {
+    TeamDriveListCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(callback);
 
   GetTeamDriveListInternal(0, default_max_results_,
-                           &team_drive_list_load_count_, callback);
+                           &team_drive_list_load_count_, std::move(callback));
 
   return CancelCallback();
 }
@@ -474,9 +475,8 @@ CancelCallback FakeDriveService::SearchByTitle(
   return CancelCallback();
 }
 
-CancelCallback FakeDriveService::GetChangeList(
-    int64_t start_changestamp,
-    const ChangeListCallback& callback) {
+CancelCallback FakeDriveService::GetChangeList(int64_t start_changestamp,
+                                               ChangeListCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(callback);
 
@@ -486,14 +486,14 @@ CancelCallback FakeDriveService::GetChangeList(
                         std::string(),  // empty team drive id.
                         0,              // start offset
                         default_max_results_, &change_list_load_count_,
-                        callback);
+                        std::move(callback));
   return CancelCallback();
 }
 
 CancelCallback FakeDriveService::GetChangeListByToken(
     const std::string& team_drive_id,
     const std::string& start_page_token,
-    const ChangeListCallback& callback) {
+    ChangeListCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(callback);
 
@@ -506,14 +506,14 @@ CancelCallback FakeDriveService::GetChangeListByToken(
                         team_drive_id,
                         0,  // start offset
                         default_max_results_, &change_list_load_count_,
-                        callback);
+                        std::move(callback));
 
   return CancelCallback();
 }
 
 CancelCallback FakeDriveService::GetRemainingChangeList(
     const GURL& next_link,
-    const ChangeListCallback& callback) {
+    ChangeListCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!next_link.is_empty());
   DCHECK(callback);
@@ -555,13 +555,13 @@ CancelCallback FakeDriveService::GetRemainingChangeList(
 
   GetChangeListInternal(start_changestamp, search_query, directory_resource_id,
                         team_drive_id, start_offset, max_results, nullptr,
-                        callback);
+                        std::move(callback));
   return CancelCallback();
 }
 
 CancelCallback FakeDriveService::GetRemainingTeamDriveList(
     const std::string& page_token,
-    const TeamDriveListCallback& callback) {
+    TeamDriveListCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!page_token.empty());
   DCHECK(callback);
@@ -571,7 +571,7 @@ CancelCallback FakeDriveService::GetRemainingTeamDriveList(
   bool parse_success = base::StringToSizeT(page_token, &start_offset);
   DCHECK(parse_success);
   GetTeamDriveListInternal(start_offset, default_max_results_, nullptr,
-                           callback);
+                           std::move(callback));
   return CancelCallback();
 }
 

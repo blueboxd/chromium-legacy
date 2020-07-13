@@ -9,8 +9,9 @@
 
 #include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/chromeos/local_search_service/local_search_service.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
+#include "chromeos/components/local_search_service/local_search_service.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -100,7 +101,9 @@ void SearchTagRegistry::ScopedTagUpdater::ProcessPendingSearchTags(
 SearchTagRegistry::SearchTagRegistry(
     local_search_service::LocalSearchService* local_search_service)
     : index_(local_search_service->GetIndex(
-          local_search_service::IndexId::kCrosSettings)) {}
+          local_search_service::IndexId::kCrosSettings,
+          local_search_service::Backend::kLinearMap,
+          g_browser_process ? g_browser_process->local_state() : nullptr)) {}
 
 SearchTagRegistry::~SearchTagRegistry() = default;
 

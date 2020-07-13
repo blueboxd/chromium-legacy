@@ -60,6 +60,9 @@ class PLATFORM_EXPORT ExceptionState {
     kIndexedGetterContext,
     kIndexedSetterContext,
     kIndexedDeletionContext,
+    kNamedGetterContext,
+    kNamedSetterContext,
+    kNamedDeletionContext,
     kUnknownContext,  // FIXME: Remove this once we've flipped over to the new
                       // API.
   };
@@ -95,6 +98,9 @@ class PLATFORM_EXPORT ExceptionState {
       case kIndexedGetterContext:
       case kIndexedSetterContext:
       case kIndexedDeletionContext:
+      case kNamedGetterContext:
+      case kNamedSetterContext:
+      case kNamedDeletionContext:
         break;
       default:
         NOTREACHED();

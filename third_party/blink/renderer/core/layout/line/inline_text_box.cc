@@ -483,7 +483,7 @@ bool InlineTextBox::GetEmphasisMarkPosition(
 }
 
 void InlineTextBox::Paint(const PaintInfo& paint_info,
-                          const LayoutPoint& paint_offset,
+                          const PhysicalOffset& paint_offset,
                           LayoutUnit /*lineTop*/,
                           LayoutUnit /*lineBottom*/) const {
   InlineTextBoxPainter(*this).Paint(paint_info, paint_offset);
@@ -501,7 +501,7 @@ void InlineTextBox::SelectionStartEnd(int& s_pos, int& e_pos) const {
 }
 
 void InlineTextBox::PaintDocumentMarker(GraphicsContext& pt,
-                                        const LayoutPoint& box_origin,
+                                        const PhysicalOffset& box_origin,
                                         const DocumentMarker& marker,
                                         const ComputedStyle& style,
                                         const Font& font,
@@ -511,7 +511,7 @@ void InlineTextBox::PaintDocumentMarker(GraphicsContext& pt,
 }
 
 void InlineTextBox::PaintTextMarkerForeground(const PaintInfo& paint_info,
-                                              const LayoutPoint& box_origin,
+                                              const PhysicalOffset& box_origin,
                                               const TextMarkerBase& marker,
                                               const ComputedStyle& style,
                                               const Font& font) const {
@@ -520,7 +520,7 @@ void InlineTextBox::PaintTextMarkerForeground(const PaintInfo& paint_info,
 }
 
 void InlineTextBox::PaintTextMarkerBackground(const PaintInfo& paint_info,
-                                              const LayoutPoint& box_origin,
+                                              const PhysicalOffset& box_origin,
                                               const TextMarkerBase& marker,
                                               const ComputedStyle& style,
                                               const Font& font) const {

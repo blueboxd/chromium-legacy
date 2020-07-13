@@ -10,6 +10,7 @@ import "content/common/frame_messages.mojom";
 import "content/common/native_types.mojom";
 import "content/common/navigation_client.mojom";
 import "content/common/navigation_params.mojom";
+import "content/common/web_ui.mojom";
 import "content/public/common/browser_controls_state.mojom";
 import "content/public/common/transferrable_url_loader.mojom";
 import "content/public/common/window_container_type.mojom";
@@ -232,6 +233,10 @@ interface FrameBindingsControl {
   // and make method calls on them.
   // This is used for WebUI only at this time.
   EnableMojoJsBindings();
+
+  // Used to bind WebUI and WebUIHost mojo connections.
+  BindWebUI(pending_receiver<content.mojom.WebUI> receiver,
+            pending_remote<content.mojom.WebUIHost> remote);
 };
 
 // Implemented by a service that provides implementations of the Frame

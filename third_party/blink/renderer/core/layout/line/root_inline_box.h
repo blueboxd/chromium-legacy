@@ -135,7 +135,7 @@ class RootInlineBox : public InlineFlowBox {
   LayoutUnit LineHeight() const final;
 
   void Paint(const PaintInfo&,
-             const LayoutPoint&,
+             const PhysicalOffset&,
              LayoutUnit line_top,
              LayoutUnit line_bottom) const override;
   bool NodeAtPoint(HitTestResult&,

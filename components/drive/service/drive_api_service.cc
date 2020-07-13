@@ -281,13 +281,13 @@ std::string DriveAPIService::GetRootResourceId() const {
 }
 
 CancelCallback DriveAPIService::GetAllTeamDriveList(
-    const TeamDriveListCallback& callback) {
+    TeamDriveListCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   std::unique_ptr<TeamDriveListRequest> request =
       std::make_unique<TeamDriveListRequest>(sender_.get(), url_generator_,
-                                             callback);
+                                             std::move(callback));
   request->set_max_results(kMaxNumTeamDriveResourcePerRequest);
   request->set_fields(kTeamDrivesListFields);
   return sender_->StartRequestWithAuthRetry(std::move(request));
@@ -387,15 +387,14 @@ CancelCallback DriveAPIService::SearchByTitle(
   return sender_->StartRequestWithAuthRetry(std::move(request));
 }
 
-CancelCallback DriveAPIService::GetChangeList(
-    int64_t start_changestamp,
-    const ChangeListCallback& callback) {
+CancelCallback DriveAPIService::GetChangeList(int64_t start_changestamp,
+                                              ChangeListCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   std::unique_ptr<ChangesListRequest> request =
       std::make_unique<ChangesListRequest>(sender_.get(), url_generator_,
-                                           callback);
+                                           std::move(callback));
   request->set_max_results(kMaxNumFilesResourcePerRequest);
   request->set_start_change_id(start_changestamp);
   request->set_fields(kChangeListFields);
@@ -405,13 +404,13 @@ CancelCallback DriveAPIService::GetChangeList(
 CancelCallback DriveAPIService::GetChangeListByToken(
     const std::string& team_drive_id,
     const std::string& start_page_token,
-    const ChangeListCallback& callback) {
+    ChangeListCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   std::unique_ptr<ChangesListRequest> request =
       std::make_unique<ChangesListRequest>(sender_.get(), url_generator_,
-                                           callback);
+                                           std::move(callback));
   request->set_max_results(kMaxNumFilesResourcePerRequest);
   request->set_page_token(start_page_token);
   request->set_team_drive_id(team_drive_id);
@@ -421,13 +420,14 @@ CancelCallback DriveAPIService::GetChangeListByToken(
 
 CancelCallback DriveAPIService::GetRemainingChangeList(
     const GURL& next_link,
-    const ChangeListCallback& callback) {
+    ChangeListCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!next_link.is_empty());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   std::unique_ptr<ChangesListNextPageRequest> request =
-      std::make_unique<ChangesListNextPageRequest>(sender_.get(), callback);
+      std::make_unique<ChangesListNextPageRequest>(sender_.get(),
+                                                   std::move(callback));
   request->set_next_link(next_link);
   request->set_fields(kChangeListFields);
   return sender_->StartRequestWithAuthRetry(std::move(request));
@@ -435,14 +435,14 @@ CancelCallback DriveAPIService::GetRemainingChangeList(
 
 CancelCallback DriveAPIService::GetRemainingTeamDriveList(
     const std::string& page_token,
-    const TeamDriveListCallback& callback) {
+    TeamDriveListCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!page_token.empty());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   std::unique_ptr<TeamDriveListRequest> request =
       std::make_unique<TeamDriveListRequest>(sender_.get(), url_generator_,
-                                             callback);
+                                             std::move(callback));
   request->set_page_token(page_token);
   request->set_max_results(kMaxNumTeamDriveResourcePerRequest);
   request->set_fields(kTeamDrivesListFields);
@@ -539,7 +539,7 @@ CancelCallback DriveAPIService::TrashResource(
   std::unique_ptr<FilesTrashRequest> request =
       std::make_unique<FilesTrashRequest>(
           sender_.get(), url_generator_,
-          base::Bind(&EntryActionCallbackAdapter, callback));
+          base::BindOnce(&EntryActionCallbackAdapter, callback));
   request->set_file_id(resource_id);
   request->set_fields(kFileResourceFields);
   return sender_->StartRequestWithAuthRetry(std::move(request));

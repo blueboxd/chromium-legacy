@@ -12,15 +12,16 @@
 #include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
-#include "chrome/browser/chromeos/local_search_service/index.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_section.h"
+#include "chromeos/components/local_search_service/index.h"
+
+namespace chromeos {
 
 namespace local_search_service {
 class Index;
 class LocalSearchService;
 }  // namespace local_search_service
 
-namespace chromeos {
 namespace settings {
 
 struct SearchConcept;

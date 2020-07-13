@@ -817,12 +817,6 @@
         android:name="com.google.android.gms.cast.framework.media.MediaIntentReceiver"/>
     <receiver
         android:exported="false"
-        android:name="com.google.ipc.invalidation.external.client.contrib.AndroidListener$AlarmReceiver"/>
-    <receiver
-        android:exported="false"
-        android:name="com.google.ipc.invalidation.ticl.android2.AndroidInternalScheduler$AlarmReceiver"/>
-    <receiver
-        android:exported="false"
         android:name="org.chromium.chrome.browser.announcement.AnnouncementNotificationManager$Receiver"/>
     <receiver
         android:exported="false"
@@ -991,19 +985,6 @@
     <service
         android:exported="false"
         android:name="com.google.android.gms.cast.framework.media.MediaNotificationService"/>
-    <service
-        android:exported="false"
-        android:name="com.google.ipc.invalidation.ticl.android2.TiclService"/>
-    <service
-        android:exported="false"
-        android:name="com.google.ipc.invalidation.ticl.android2.channel.AndroidInstanceIDListenerService">
-      <intent-filter>
-        <action android:name="com.google.android.gms.iid.InstanceID"/>
-      </intent-filter>
-    </service>
-    <service
-        android:exported="false"
-        android:name="com.google.ipc.invalidation.ticl.android2.channel.AndroidMessageSenderService"/>
     <service
         android:exported="false"
         android:name="org.chromium.android_webview.services.AwVariationsSeedFetcher"

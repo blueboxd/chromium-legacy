@@ -667,8 +667,7 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
   // |ContentsInkOverflow()|.
   PhysicalRect content_ink_rect = fragment.LocalRect();
   content_ink_rect.Unite(ContentsInkOverflow());
-  content_ink_rect.offset += PhysicalOffset(paint_offset);
-  if (!paint_info.GetCullRect().Intersects(content_ink_rect.ToLayoutRect()))
+  if (!paint_info.IntersectsCullRect(content_ink_rect, paint_offset))
     return;
 
   if (paint_fragment_) {

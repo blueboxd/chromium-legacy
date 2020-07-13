@@ -35,8 +35,6 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
     return host_;
   }
 
-  EmbeddedWorkerTestHelper* helper() { return helper_; }
-
   void Bind(mojo::PendingReceiver<blink::mojom::ServiceWorker> receiver);
 
   // Returns after InitializeGlobalScope() is called.

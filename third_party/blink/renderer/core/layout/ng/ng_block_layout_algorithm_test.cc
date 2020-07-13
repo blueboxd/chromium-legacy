@@ -2497,5 +2497,13 @@ TEST_F(NGBlockLayoutAlgorithmTest, DetailsFlexDoesntCrash) {
   // No crash is good.
 }
 
+TEST_F(NGBlockLayoutAlgorithmTest, LayoutRubyTextCrash) {
+  // crbug.com/1102186. This test passes if no DCHECK failure.
+  SetBodyInnerHTML(R"HTML(
+    <ruby>base<rt style="writing-mode:vertical-rl">annotation</ruby>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+}
+
 }  // namespace
 }  // namespace blink

@@ -38,7 +38,7 @@ class SVGRootInlineBox final : public RootInlineBox {
   void SetLogicalHeight(LayoutUnit height) { logical_height_ = height; }
 
   void Paint(const PaintInfo&,
-             const LayoutPoint&,
+             const PhysicalOffset&,
              LayoutUnit line_top,
              LayoutUnit line_bottom) const override;
 

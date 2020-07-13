@@ -117,15 +117,15 @@ google_apis::CancelCallback DriveServiceOnWorker::GetStartPageToken(
 
 google_apis::CancelCallback DriveServiceOnWorker::GetChangeList(
     int64_t start_changestamp,
-    const google_apis::ChangeListCallback& callback) {
+    google_apis::ChangeListCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&DriveServiceWrapper::GetChangeList, wrapper_,
-                     start_changestamp,
-                     RelayCallbackToTaskRunner(worker_task_runner_.get(),
-                                               FROM_HERE, callback)));
+      base::BindOnce(
+          &DriveServiceWrapper::GetChangeList, wrapper_, start_changestamp,
+          RelayCallbackToTaskRunner(worker_task_runner_.get(), FROM_HERE,
+                                    std::move(callback))));
 
   return google_apis::CancelCallback();
 }
@@ -133,30 +133,30 @@ google_apis::CancelCallback DriveServiceOnWorker::GetChangeList(
 google_apis::CancelCallback DriveServiceOnWorker::GetChangeListByToken(
     const std::string& team_drive_id,
     const std::string& start_page_token,
-    const google_apis::ChangeListCallback& callback) {
+    google_apis::ChangeListCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   ui_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DriveServiceWrapper::GetChangeListByToken, wrapper_,
-                     team_drive_id, start_page_token,
-                     RelayCallbackToTaskRunner(worker_task_runner_.get(),
-                                               FROM_HERE, callback)));
+      FROM_HERE, base::BindOnce(&DriveServiceWrapper::GetChangeListByToken,
+                                wrapper_, team_drive_id, start_page_token,
+                                RelayCallbackToTaskRunner(
+                                    worker_task_runner_.get(), FROM_HERE,
+                                    std::move(callback))));
 
   return google_apis::CancelCallback();
 }
 
 google_apis::CancelCallback DriveServiceOnWorker::GetRemainingChangeList(
     const GURL& next_link,
-    const google_apis::ChangeListCallback& callback) {
+    google_apis::ChangeListCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&DriveServiceWrapper::GetRemainingChangeList, wrapper_,
-                     next_link,
-                     RelayCallbackToTaskRunner(worker_task_runner_.get(),
-                                               FROM_HERE, callback)));
+      base::BindOnce(
+          &DriveServiceWrapper::GetRemainingChangeList, wrapper_, next_link,
+          RelayCallbackToTaskRunner(worker_task_runner_.get(), FROM_HERE,
+                                    std::move(callback))));
 
   return google_apis::CancelCallback();
 }
@@ -169,15 +169,15 @@ std::string DriveServiceOnWorker::GetRootResourceId() const {
 
 google_apis::CancelCallback DriveServiceOnWorker::GetRemainingTeamDriveList(
     const std::string& page_token,
-    const google_apis::TeamDriveListCallback& callback) {
+    google_apis::TeamDriveListCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&DriveServiceWrapper::GetRemainingTeamDriveList, wrapper_,
-                     page_token,
-                     RelayCallbackToTaskRunner(worker_task_runner_.get(),
-                                               FROM_HERE, callback)));
+      base::BindOnce(
+          &DriveServiceWrapper::GetRemainingTeamDriveList, wrapper_, page_token,
+          RelayCallbackToTaskRunner(worker_task_runner_.get(), FROM_HERE,
+                                    std::move(callback))));
 
   return google_apis::CancelCallback();
 }
@@ -301,7 +301,7 @@ void DriveServiceOnWorker::ClearRefreshToken() {
 }
 
 google_apis::CancelCallback DriveServiceOnWorker::GetAllTeamDriveList(
-    const google_apis::TeamDriveListCallback& callback) {
+    google_apis::TeamDriveListCallback callback) {
   NOTREACHED();
   return google_apis::CancelCallback();
 }

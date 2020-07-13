@@ -183,7 +183,6 @@ void ContentRendererClientImpl::
   // Web Share is experimental by default, and explicitly enabled on Android
   // (for both Chrome and WebLayer).
   blink::WebRuntimeFeatures::EnableWebShare(true);
-  blink::WebRuntimeFeatures::EnableWebShareV2(true);
 #endif
 }
 

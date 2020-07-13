@@ -84,13 +84,11 @@ const LayoutInline* GetOOFContainingBlockFromAnonymous(
 NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
     const NGBlockNode& container_node,
     const NGConstraintSpace& container_space,
-    const NGBoxStrut& border_scrollbar,
     NGBoxFragmentBuilder* container_builder)
     : NGOutOfFlowLayoutPart(container_node.IsAbsoluteContainer(),
                             container_node.IsFixedContainer(),
                             container_node.Style(),
                             container_space,
-                            border_scrollbar,
                             container_builder) {}
 
 NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
@@ -98,21 +96,22 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
     bool is_fixed_container,
     const ComputedStyle& container_style,
     const NGConstraintSpace& container_space,
-    const NGBoxStrut& border_scrollbar,
     NGBoxFragmentBuilder* container_builder,
     base::Optional<LogicalSize> initial_containing_block_fixed_size)
     : container_space_(container_space),
       container_builder_(container_builder),
       writing_mode_(container_style.GetWritingMode()),
       is_absolute_container_(is_absolute_container),
-      is_fixed_container_(is_fixed_container),
-      allow_first_tier_oof_cache_(border_scrollbar.IsEmpty()) {
+      is_fixed_container_(is_fixed_container) {
   if (!container_builder->HasOutOfFlowPositionedCandidates() &&
       !To<LayoutBlock>(container_builder_->GetLayoutObject())
            ->HasPositionedObjects())
     return;
 
   default_containing_block_.direction = container_style.Direction();
+  const NGBoxStrut border_scrollbar =
+      container_builder->Borders() + container_builder->Scrollbar();
+  allow_first_tier_oof_cache_ = border_scrollbar.IsEmpty();
   default_containing_block_.content_size_for_absolute =
       ShrinkLogicalSize(container_builder_->Size(), border_scrollbar);
   default_containing_block_.content_size_for_fixed =

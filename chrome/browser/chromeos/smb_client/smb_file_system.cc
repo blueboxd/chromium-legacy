@@ -297,7 +297,7 @@ AbortCallback SmbFileSystem::OpenFile(const base::FilePath& file_path,
       mode == file_system_provider::OPEN_FILE_MODE_WRITE ? true : false;
 
   auto reply = base::BindOnce(&SmbFileSystem::HandleRequestOpenFileCallback,
-                              AsWeakPtr(), callback);
+                              AsWeakPtr(), std::move(callback));
   SmbTask task =
       base::BindOnce(&SmbProviderClient::OpenFile, GetWeakSmbProviderClient(),
                      GetMountId(), file_path, writeable, std::move(reply));
@@ -310,7 +310,7 @@ void SmbFileSystem::HandleRequestOpenFileCallback(
     smbprovider::ErrorType error,
     int32_t file_id) const {
   task_queue_.TaskFinished();
-  callback.Run(file_id, TranslateToFileError(error));
+  std::move(callback).Run(file_id, TranslateToFileError(error));
 }
 
 AbortCallback SmbFileSystem::CloseFile(

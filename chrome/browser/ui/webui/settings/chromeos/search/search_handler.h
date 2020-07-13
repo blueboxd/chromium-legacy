@@ -9,20 +9,21 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/optional.h"
-#include "chrome/browser/chromeos/local_search_service/index.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
+#include "chromeos/components/local_search_service/index.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 
+namespace chromeos {
+
 namespace local_search_service {
 class LocalSearchService;
 }  // namespace local_search_service
 
-namespace chromeos {
 namespace settings {
 
 class Hierarchy;

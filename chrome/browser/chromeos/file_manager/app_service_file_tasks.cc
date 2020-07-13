@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/apps/app_service/app_icon_source.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
@@ -80,7 +81,6 @@ void FindAppServiceTasks(Profile* profile,
   std::string task_action_id =
       entries.size() == 1 ? kActionIdSend : kActionIdSendMultiple;
   using extensions::api::file_manager_private::Verb;
-  // TODO(crbug/1092784): Get the icons.
   // TODO(crbug/1092784): Support file open with in the future.
   for (auto& app_id_and_activity : app_id_and_activities) {
     apps::mojom::AppType app_type =
@@ -90,10 +90,14 @@ void FindAppServiceTasks(Profile* profile,
           app_type == apps::mojom::AppType::kWeb)) {
       continue;
     }
+
+    constexpr int kIconSize = 32;
+    GURL icon_url =
+        apps::AppIconSource::GetIconURL(app_id_and_activity.app_id, kIconSize);
     result_list->push_back(FullTaskDescriptor(
         TaskDescriptor(app_id_and_activity.app_id, GetTaskType(app_type),
                        task_action_id),
-        app_id_and_activity.activity_name, Verb::VERB_SHARE_WITH, GURL(),
+        app_id_and_activity.activity_name, Verb::VERB_SHARE_WITH, icon_url,
         /* is_default=*/false,
         /* is_generic=*/true,
         /* is_file_extension_match=*/false));

@@ -552,7 +552,8 @@ inline bool PaintFastBottomLayer(Node* node,
       // pass. The best way to fix this would be to remove the paint rect offset
       // from the tile computation, because we effectively add it in
       // ComputePhaseForBackground then remove it in ComputeSubsetForBackground.
-      image_tile = FloatRect(LayoutRect(image_tile));
+      image_tile =
+          FloatRect(PhysicalRect::FastAndLossyFromFloatRect(image_tile));
       // We cannot optimize if the tile is misaligned.
       if (!image_tile.Contains(image_border.Rect()))
         return false;

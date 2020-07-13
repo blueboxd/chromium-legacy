@@ -135,8 +135,7 @@ void LineBoxListPainter::Paint(const LayoutBoxModelObject& layout_object,
                 const_cast<LayoutBoxModelObject*>(&layout_object)),
             curr, paint_info.GetCullRect(), paint_offset)) {
       RootInlineBox& root = curr->Root();
-      curr->Paint(paint_info, paint_offset.ToLayoutPoint(), root.LineTop(),
-                  root.LineBottom());
+      curr->Paint(paint_info, paint_offset, root.LineTop(), root.LineBottom());
     }
   }
 }

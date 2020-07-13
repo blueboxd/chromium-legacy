@@ -50,7 +50,7 @@ String ErrorToString(mojom::blink::ShareError error) {
 }
 
 bool HasFiles(const ShareData& data) {
-  if (!RuntimeEnabledFeatures::WebShareV2Enabled() || !data.hasFiles())
+  if (!data.hasFiles())
     return false;
 
   return !data.files().IsEmpty();

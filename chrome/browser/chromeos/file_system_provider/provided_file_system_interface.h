@@ -102,7 +102,7 @@ class ProvidedFileSystemInterface {
 
   // Callback for OpenFile(). In case of an error, file_handle is equal to 0
   // and result is set to an error code.
-  typedef base::Callback<void(int file_handle, base::File::Error result)>
+  typedef base::OnceCallback<void(int file_handle, base::File::Error result)>
       OpenFileCallback;
 
   typedef base::RepeatingCallback<
@@ -113,7 +113,8 @@ class ProvidedFileSystemInterface {
                                   base::File::Error result)>
       GetMetadataCallback;
 
-  typedef base::Callback<void(const Actions& actions, base::File::Error result)>
+  typedef base::OnceCallback<void(const Actions& actions,
+                                  base::File::Error result)>
       GetActionsCallback;
 
   // Mask of fields requested from the GetMetadata() call.

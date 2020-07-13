@@ -21,6 +21,7 @@ component("browser") {
     "//mojo/public/cpp/bindings",
   ]
   sources = [
+    "lacros_chrome_service_delegate.h",
     "lacros_chrome_service_impl.cc",
     "lacros_chrome_service_impl.h",
   ]

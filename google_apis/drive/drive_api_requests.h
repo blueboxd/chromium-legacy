@@ -30,9 +30,9 @@ namespace google_apis {
 
 // Callback used for requests that the server returns TeamDrive data
 // formatted into JSON value.
-typedef base::Callback<void(DriveApiErrorCode error,
-                            std::unique_ptr<TeamDriveList> entry)>
-    TeamDriveListCallback;
+using TeamDriveListCallback =
+    base::OnceCallback<void(DriveApiErrorCode error,
+                            std::unique_ptr<TeamDriveList> entry)>;
 
 // Callback used for requests that the server returns FileList data
 // formatted into JSON value.
@@ -43,9 +43,9 @@ typedef base::Callback<void(DriveApiErrorCode error,
 // DEPRECATED: Please use ChangeListOnceCallback instead
 // Callback used for requests that the server returns ChangeList data
 // formatted into JSON value.
-typedef base::Callback<void(DriveApiErrorCode error,
-                            std::unique_ptr<ChangeList> entry)>
-    ChangeListCallback;
+using ChangeListCallback =
+    base::OnceCallback<void(DriveApiErrorCode error,
+                            std::unique_ptr<ChangeList> entry)>;
 
 using ChangeListOnceCallback =
     base::OnceCallback<void(DriveApiErrorCode error,
@@ -463,7 +463,7 @@ class TeamDriveListRequest : public DriveApiDataRequest<TeamDriveList> {
  public:
   TeamDriveListRequest(RequestSender* sender,
                        const DriveApiUrlGenerator& url_generator,
-                       const TeamDriveListCallback& callback);
+                       TeamDriveListCallback callback);
   ~TeamDriveListRequest() override;
 
   // Optional parameter
@@ -688,7 +688,7 @@ class ChangesListRequest : public DriveApiDataRequest<ChangeList> {
  public:
   ChangesListRequest(RequestSender* sender,
                      const DriveApiUrlGenerator& url_generator,
-                     const ChangeListCallback& callback);
+                     ChangeListCallback callback);
   ~ChangesListRequest() override;
 
   // Optional parameter
@@ -739,7 +739,7 @@ class ChangesListRequest : public DriveApiDataRequest<ChangeList> {
 class ChangesListNextPageRequest : public DriveApiDataRequest<ChangeList> {
  public:
   ChangesListNextPageRequest(RequestSender* sender,
-                             const ChangeListCallback& callback);
+                             ChangeListCallback callback);
   ~ChangesListNextPageRequest() override;
 
   const GURL& next_link() const { return next_link_; }

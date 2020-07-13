@@ -980,6 +980,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   const mojo::Remote<blink::mojom::HighPriorityLocalFrame>&
   GetHighPriorityLocalFrame();
 
+  // Returns associated remote for the blink::mojom::FrameBindingsControl Mojo
+  // interface.
+  const mojo::AssociatedRemote<mojom::FrameBindingsControl>&
+  GetFrameBindingsControl();
+
   // Resets the loading state. Following this call, the RenderFrameHost will be
   // in a non-loading state.
   void ResetLoadingState();

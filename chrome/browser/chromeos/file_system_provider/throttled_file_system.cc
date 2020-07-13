@@ -80,9 +80,9 @@ AbortCallback ThrottledFileSystem::OpenFile(const base::FilePath& file_path,
           &ProvidedFileSystemInterface::OpenFile,
           base::Unretained(file_system_.get()),  // Outlives the queue.
           file_path, mode,
-          base::Bind(&ThrottledFileSystem::OnOpenFileCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), task_token,
-                     std::move(callback))));
+          base::BindOnce(&ThrottledFileSystem::OnOpenFileCompleted,
+                         weak_ptr_factory_.GetWeakPtr(), task_token,
+                         std::move(callback))));
   return base::BindOnce(&ThrottledFileSystem::Abort,
                         weak_ptr_factory_.GetWeakPtr(), task_token);
 }

@@ -18,8 +18,6 @@ namespace blink {
 // Normally a Paint(const PaintInfo&) method creates an ScopedPaintState and
 // holds it in the stack, and pass its GetPaintInfo() and PaintOffset() to the
 // other PaintXXX() methods that paint different parts of the object.
-// TODO(wangxianzhu): Would it be better if ScopedPaintState was passed to
-// PaintXXX() methods instead of (const PaintInfo&, const LayoutPoint&)?
 //
 // Each object create its own ScopedPaintState, so ScopedPaintState created for
 // one object won't be passed to another object. Instead, PaintInfo is passed
@@ -93,10 +91,7 @@ class ScopedPaintState {
   }
 
   bool LocalRectIntersectsCullRect(const PhysicalRect& local_rect) const {
-    PhysicalRect rect_in_paint_info_space = local_rect;
-    rect_in_paint_info_space.Move(PaintOffset());
-    return GetPaintInfo().GetCullRect().Intersects(
-        rect_in_paint_info_space.ToLayoutRect());
+    return GetPaintInfo().IntersectsCullRect(local_rect, PaintOffset());
   }
 
  protected:

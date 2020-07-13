@@ -744,9 +744,6 @@ extern const char kSamlInSessionPasswordChangeEnabled[];
 extern const char kSamlPasswordExpirationAdvanceWarningDays[];
 extern const char kSamlLockScreenReauthenticationEnabled[];
 extern const char kLastRsuDeviceIdUploaded[];
-extern const char kLocalSearchServiceMetricsDailySample[];
-extern const char kLocalSearchServiceMetricsCrosSettingsCount[];
-extern const char kLocalSearchServiceMetricsHelpAppCount[];
 
 #endif  // defined(OS_CHROMEOS)
 

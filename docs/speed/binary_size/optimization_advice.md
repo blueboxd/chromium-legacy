@@ -31,8 +31,11 @@ Feel free to email [binary-size@chromium.org](https://groups.google.com/a/chromi
 [Grit] supports gzip and brotli compression for resources in the .grd files
 used to build the `resources.pak` file.
 
-*   Ensure `compress="gzip"` or `compress="brotli"` is used for all
-    highly-compressible (e.g. text, WebUI) resources.
+Note that `compress="gzip"` is already the default behavior for HTML, JS, CSS
+and SVG files, when the `compress` attribute is not specified.
+
+*   Choose between gzip (default) or brotli (with `compress="brotli"`) as
+    follows
     *   gzip compression for highly-compressible data typically has minimal
         impact on load times (but it is worth measuring this, see
         [webui_load_timer.cc] for an example of measuring load times).

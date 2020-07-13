@@ -21,11 +21,15 @@ interface AshChromeService {
 // LacrosChromeService defines the APIs that live in lacros-chrome and
 // are accessed from ash-chrome.
 interface LacrosChromeService {
-    // Returns the pending_receiver of AshChromeService.
-    // Ash-chrome is expected to call this method on initialization.
-    // Lacros-chrome may call AshChromeService APIs earlier than this
-    // invocation. In the case, the calls are queued, and processed
-    // sequentially, when ash-chrome binds the receiver to the service.
-    RequestAshChromeServiceReceiver@0() => (
-        pending_receiver<AshChromeService> receiver);
+  // Returns the pending_receiver of AshChromeService.
+  // Ash-chrome is expected to call this method on initialization.
+  // Lacros-chrome may call AshChromeService APIs earlier than this
+  // invocation. In the case, the calls are queued, and processed
+  // sequentially, when ash-chrome binds the receiver to the service.
+  RequestAshChromeServiceReceiver@0() => (
+      pending_receiver<AshChromeService> receiver);
+
+  // Opens a new window in lacros-chrome with, currently, the last used profile.
+  // The callback is called on the command execution.
+  NewWindow@1() => ();
 };

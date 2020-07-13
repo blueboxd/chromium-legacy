@@ -507,12 +507,10 @@ bool FilesCopyRequest::GetContentData(std::string* upload_content_type,
 TeamDriveListRequest::TeamDriveListRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
-    const TeamDriveListCallback& callback)
-    : DriveApiDataRequest<TeamDriveList>(sender, callback),
+    TeamDriveListCallback callback)
+    : DriveApiDataRequest<TeamDriveList>(sender, std::move(callback)),
       url_generator_(url_generator),
-      max_results_(30) {
-  DCHECK(!callback.is_null());
-}
+      max_results_(30) {}
 
 TeamDriveListRequest::~TeamDriveListRequest() {}
 
@@ -635,14 +633,12 @@ GURL AboutGetRequest::GetURLInternal() const {
 ChangesListRequest::ChangesListRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
-    const ChangeListCallback& callback)
-    : DriveApiDataRequest<ChangeList>(sender, callback),
+    ChangeListCallback callback)
+    : DriveApiDataRequest<ChangeList>(sender, std::move(callback)),
       url_generator_(url_generator),
       include_deleted_(true),
       max_results_(100),
-      start_change_id_(0) {
-  DCHECK(!callback.is_null());
-}
+      start_change_id_(0) {}
 
 ChangesListRequest::~ChangesListRequest() {}
 
@@ -656,10 +652,8 @@ GURL ChangesListRequest::GetURLInternal() const {
 
 ChangesListNextPageRequest::ChangesListNextPageRequest(
     RequestSender* sender,
-    const ChangeListCallback& callback)
-    : DriveApiDataRequest<ChangeList>(sender, callback) {
-  DCHECK(!callback.is_null());
-}
+    ChangeListCallback callback)
+    : DriveApiDataRequest<ChangeList>(sender, std::move(callback)) {}
 
 ChangesListNextPageRequest::~ChangesListNextPageRequest() {
 }

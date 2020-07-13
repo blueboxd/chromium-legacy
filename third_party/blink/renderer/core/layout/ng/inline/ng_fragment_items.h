@@ -36,11 +36,17 @@ class CORE_EXPORT NGFragmentItems {
     return items_[0];
   }
 
+  // Text content for |this| inline formatting context.
+  const String& NormalText() const { return text_content_; }
   // Text content for `::first-line`. Available only if `::first-line` has
   // different style than non-first-line style.
   const String& FirstLineText() const { return first_line_text_content_; }
+  // Returns |FirstLineText()| if it is available and |first_line| is |true|.
+  // Otherwise returns |NormalText()|.
   const String& Text(bool first_line) const {
-    return UNLIKELY(first_line) ? first_line_text_content_ : text_content_;
+    return UNLIKELY(first_line && first_line_text_content_)
+               ? first_line_text_content_
+               : text_content_;
   }
 
   // Associate |NGFragmentItem|s with |LayoutObject|s and finalize the items

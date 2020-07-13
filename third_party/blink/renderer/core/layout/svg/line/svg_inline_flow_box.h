@@ -35,7 +35,7 @@ class SVGInlineFlowBox final : public InlineFlowBox {
   void SetLogicalHeight(LayoutUnit h) { logical_height_ = h; }
 
   void Paint(const PaintInfo&,
-             const LayoutPoint&,
+             const PhysicalOffset&,
              LayoutUnit line_top,
              LayoutUnit line_bottom) const override;
 

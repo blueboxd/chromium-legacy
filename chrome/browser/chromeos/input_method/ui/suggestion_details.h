@@ -13,7 +13,7 @@ namespace ime {
 struct SuggestionDetails {
   base::string16 text;
   size_t confirmed_length = 0;
-  bool show_tab = false;
+  bool show_annotation = false;
   bool show_setting_link = false;
 };
 

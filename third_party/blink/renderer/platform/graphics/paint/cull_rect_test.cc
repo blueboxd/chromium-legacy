@@ -39,14 +39,6 @@ TEST_F(CullRectTest, IntersectsIntRect) {
   EXPECT_FALSE(cull_rect.Intersects(IntRect(51, 51, 1, 1)));
 }
 
-TEST_F(CullRectTest, IntersectsLayoutRect) {
-  CullRect cull_rect(IntRect(0, 0, 50, 50));
-
-  EXPECT_TRUE(cull_rect.Intersects(LayoutRect(0, 0, 1, 1)));
-  EXPECT_TRUE(cull_rect.Intersects(LayoutRect(
-      LayoutUnit(0.1), LayoutUnit(0.1), LayoutUnit(0.1), LayoutUnit(0.1))));
-}
-
 TEST_F(CullRectTest, IntersectsTransformed) {
   CullRect cull_rect(IntRect(0, 0, 50, 50));
   AffineTransform transform;

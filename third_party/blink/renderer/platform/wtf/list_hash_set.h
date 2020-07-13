@@ -59,7 +59,7 @@ class ListHashSetReverseIterator;
 template <typename Set>
 class ListHashSetConstReverseIterator;
 
-template <typename ValueArg, typename Allocator>
+template <typename ValueArg>
 class ListHashSetNodeBase;
 template <typename ValueArg, typename Allocator>
 class ListHashSetNode;
@@ -276,62 +276,10 @@ class ListHashSet
   typename Allocator::AllocatorProvider allocator_provider_;
 };
 
-template <typename T, typename Allocator>
-class ListHashSetNodeBasePointer {
-  using NodeType = ListHashSetNodeBase<T, Allocator>;
-
- public:
-  ListHashSetNodeBasePointer& operator=(
-      const ListHashSetNodeBasePointer& other) {
-    SetSafe(other);
-    return *this;
-  }
-
-  template <typename U>
-  ListHashSetNodeBasePointer& operator=(
-      const ListHashSetNodeBasePointer<U, Allocator>& other) {
-    SetSafe(other);
-    return *this;
-  }
-
-  template <typename U>
-  ListHashSetNodeBasePointer& operator=(U* other) {
-    SetSafe(other);
-    return *this;
-  }
-
-  ListHashSetNodeBasePointer& operator=(std::nullptr_t) {
-    SetSafe(nullptr);
-    return *this;
-  }
-
-  NodeType* Get() const { return node_; }
-  explicit operator bool() const { return Get(); }
-  operator NodeType*() const { return Get(); }
-  NodeType* operator->() const { return Get(); }
-  NodeType& operator*() const { return *Get(); }
-
- private:
-  void SetSafe(NodeType* node) {
-    AsAtomicPtr(&node_)->store(node, std::memory_order_relaxed);
-  }
-
-  NodeType* GetSafe() const {
-    if (Allocator::kIsGarbageCollected)
-      return AsAtomicPtr(&node_)->load(std::memory_order_relaxed);
-    return node_;
-  }
-
-  NodeType* node_ = nullptr;
-
-  template <typename ValueArg, typename AllocatorArg>
-  friend class ListHashSetNode;
-};
-
 // ListHashSetNode has this base class to hold the members because the MSVC
 // compiler otherwise gets into circular template dependencies when trying to do
 // sizeof on a node.
-template <typename ValueArg, typename Allocator>
+template <typename ValueArg>
 class ListHashSetNodeBase {
   DISALLOW_NEW();
 
@@ -341,8 +289,8 @@ class ListHashSetNodeBase {
 
  public:
   ValueArg value_;
-  ListHashSetNodeBasePointer<ValueArg, Allocator> prev_;
-  ListHashSetNodeBasePointer<ValueArg, Allocator> next_;
+  ListHashSetNodeBase* prev_ = nullptr;
+  ListHashSetNodeBase* next_ = nullptr;
 #if DCHECK_IS_ON()
   bool is_allocated_ = true;
 #endif
@@ -353,7 +301,7 @@ template <typename ValueArg, size_t inlineCapacity>
 struct ListHashSetAllocator : public PartitionAllocator {
   typedef PartitionAllocator TableAllocator;
   typedef ListHashSetNode<ValueArg, ListHashSetAllocator> Node;
-  typedef ListHashSetNodeBase<ValueArg, ListHashSetAllocator> NodeBase;
+  typedef ListHashSetNodeBase<ValueArg> NodeBase;
 
   class AllocatorProvider {
     DISALLOW_NEW();
@@ -458,116 +406,52 @@ struct ListHashSetAllocator : public PartitionAllocator {
 };
 
 template <typename ValueArg, typename AllocatorArg>
-class ListHashSetNode
-    : public ListHashSetNodeBase<ValueArg, AllocatorArg>,
-      // Destruction handling:
-      // !AllocatorArg::kIsGarbageCollected (PartitionAlloc):
-      // - ListHashSet has destructor and manually destructs all nodes.
-      // - ListHashSetNode has no destructor.
-      // AllocatorArg::kIsGarbageCollected (Oilpan):
-      // - ListHashSet has no destructor.
-      // - ListHashSetNode has a destructor if it is not trivially destructible.
-      public ConditionalDestructor<
-          ListHashSetNode<ValueArg, AllocatorArg>,
-          !AllocatorArg::kIsGarbageCollected ||
-              std::is_trivially_destructible<ValueArg>::value> {
+class ListHashSetNode : public ListHashSetNodeBase<ValueArg> {
  public:
   typedef AllocatorArg NodeAllocator;
   typedef ValueArg Value;
 
   template <typename U>
-  ListHashSetNode(U&& value)
-      : ListHashSetNodeBase<ValueArg, AllocatorArg>(std::forward<U>(value)) {}
+  explicit ListHashSetNode(U&& value)
+      : ListHashSetNodeBase<ValueArg>(std::forward<U>(value)) {
+    static_assert(!NodeAllocator::kIsGarbageCollected ||
+                      std::is_trivially_destructible<Value>::value,
+                  "Garbage collected types used in ListHashSet should be "
+                  "trivially destructible");
+  }
 
   void* operator new(size_t, NodeAllocator* allocator) {
-    static_assert(sizeof(ListHashSetNode) ==
-                      sizeof(ListHashSetNodeBase<ValueArg, AllocatorArg>),
-                  "please add any fields to the base");
+    static_assert(
+        sizeof(ListHashSetNode) == sizeof(ListHashSetNodeBase<ValueArg>),
+        "please add any fields to the base");
     return allocator->AllocateNode();
   }
 
-  void SetWasAlreadyDestructed() {
-    if (NodeAllocator::kIsGarbageCollected &&
-        !std::is_trivially_destructible<ValueArg>::value)
-      this->prev_ = UnlinkedNodePointer();
-  }
-
-  bool WasAlreadyDestructed() const {
-    DCHECK(NodeAllocator::kIsGarbageCollected);
-    return this->prev_ == UnlinkedNodePointer();
-  }
-
-  void Finalize() {
-    // No need to waste time calling finalize if it's not needed.
-    static_assert(
-        !std::is_trivially_destructible<ValueArg>::value,
-        "Finalization of trivially destructible classes should not happen.");
-    ListHashSetNode* self = reinterpret_cast_ptr<ListHashSetNode*>(this);
-
-    // Check whether this node was already destructed before being unlinked
-    // from the collection.
-    if (self->WasAlreadyDestructed())
-      return;
-
-    self->value_.~ValueArg();
-  }
-
   void Destroy(NodeAllocator* allocator) {
+    if (NodeAllocator::kIsGarbageCollected)
+      return;
     this->~ListHashSetNode();
-    SetWasAlreadyDestructed();
     allocator->Deallocate(this);
   }
 
   template <typename VisitorDispatcher, typename A = NodeAllocator>
   std::enable_if_t<A::kIsGarbageCollected> Trace(
       VisitorDispatcher visitor) const {
-    if (!ListHashSetTraits<Value, NodeAllocator>::kCanTraceConcurrently) {
-      if (visitor->DeferredTraceIfConcurrent(
-              {this, [](blink::Visitor* visitor, const void* object) {
-                 reinterpret_cast<
-                     const ListHashSetNode<ValueArg, AllocatorArg>*>(object)
-                     ->Trace(visitor);
-               }}))
-        return;
-    }
-
-    // The conservative stack scan can find nodes that have been removed
-    // from the set and destructed. We don't need to trace these, and it
-    // would be wrong to do so, because the class will not expect the trace
-    // method to be called after the destructor.  It's an error to remove a
-    // node from the ListHashSet while an iterator is positioned at that
-    // node, so there should be no valid pointers from the stack to a
-    // destructed node.
-    if (WasAlreadyDestructedSafe())
-      return;
     NodeAllocator::TraceValue(visitor, this);
-    visitor->Trace(
-        reinterpret_cast<const ListHashSetNode*>(this->next_.GetSafe()));
-    visitor->Trace(
-        reinterpret_cast<const ListHashSetNode*>(this->prev_.GetSafe()));
   }
 
   ListHashSetNode* Next() const {
-    return reinterpret_cast<ListHashSetNode*>(this->next_.Get());
+    return reinterpret_cast<ListHashSetNode*>(this->next_);
   }
   ListHashSetNode* Prev() const {
-    return reinterpret_cast<ListHashSetNode*>(this->prev_.Get());
+    return reinterpret_cast<ListHashSetNode*>(this->prev_);
   }
 
   // Don't add fields here, the ListHashSetNodeBase and this should have the
   // same size.
 
-  static ListHashSetNode* UnlinkedNodePointer() {
+  static constexpr ListHashSetNode* UnlinkedNodePointer() {
     return reinterpret_cast<ListHashSetNode*>(-1);
-  }
-
-  template <typename HashArg>
-  friend struct ListHashSetNodeHashFunctions;
-
- private:
-  bool WasAlreadyDestructedSafe() const {
-    DCHECK(NodeAllocator::kIsGarbageCollected);
-    return this->prev_.GetSafe() == UnlinkedNodePointer();
   }
 };
 

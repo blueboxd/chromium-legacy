@@ -8,7 +8,7 @@
   ImplementedAs=NavigatorShare,
   RuntimeEnabled=WebShare
 ] partial interface Navigator {
-  [SecureContext, CallWith=ScriptState, MeasureAs=WebShareCanShare, RuntimeEnabled=WebShareV2]
+  [SecureContext, CallWith=ScriptState, MeasureAs=WebShareCanShare]
   boolean canShare(optional ShareData data = {});
 
   [SecureContext, CallWith=ScriptState, RaisesException, MeasureAs=WebShareShare]

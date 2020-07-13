@@ -173,7 +173,7 @@ LayoutUnit RootInlineBox::PlaceEllipsisBox(bool ltr,
 }
 
 void RootInlineBox::Paint(const PaintInfo& paint_info,
-                          const LayoutPoint& paint_offset,
+                          const PhysicalOffset& paint_offset,
                           LayoutUnit line_top,
                           LayoutUnit line_bottom) const {
   RootInlineBoxPainter(*this).Paint(paint_info, paint_offset, line_top,

@@ -118,7 +118,7 @@ std::unique_ptr<views::View> SuggestionView::CreateAnnotationLabel() {
 void SuggestionView::SetView(const SuggestionDetails& details) {
   SetSuggestionText(details.text, details.confirmed_length);
   suggestion_width_ = suggestion_label_->GetPreferredSize().width();
-  annotation_label_->SetVisible(details.show_tab);
+  annotation_label_->SetVisible(details.show_annotation);
 }
 
 void SuggestionView::SetViewWithIndex(const base::string16& index,

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chrome_browser_main_extra_parts_lacros.h"
 
+#include "chrome/browser/lacros/lacros_chrome_service_delegate_impl.h"
 #include "chromeos/lacros/browser/lacros_chrome_service_impl.h"
 
 ChromeBrowserMainExtraPartsLacros::ChromeBrowserMainExtraPartsLacros() =
@@ -13,6 +14,6 @@ ChromeBrowserMainExtraPartsLacros::~ChromeBrowserMainExtraPartsLacros() =
     default;
 
 void ChromeBrowserMainExtraPartsLacros::PostCreateThreads() {
-  lacros_chrome_service_ =
-      std::make_unique<chromeos::LacrosChromeServiceImpl>();
+  lacros_chrome_service_ = std::make_unique<chromeos::LacrosChromeServiceImpl>(
+      std::make_unique<LacrosChromeServiceDelegateImpl>());
 }

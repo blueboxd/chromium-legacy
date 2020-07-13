@@ -171,7 +171,7 @@ LayoutRect SVGInlineTextBox::LocalSelectionRect(
 }
 
 void SVGInlineTextBox::Paint(const PaintInfo& paint_info,
-                             const LayoutPoint& paint_offset,
+                             const PhysicalOffset& paint_offset,
                              LayoutUnit,
                              LayoutUnit) const {
   SVGInlineTextBoxPainter(*this).Paint(paint_info, paint_offset);
@@ -231,7 +231,7 @@ bool SVGInlineTextBox::MapStartEndPositionsIntoFragmentCoordinates(
 }
 
 void SVGInlineTextBox::PaintDocumentMarker(GraphicsContext&,
-                                           const LayoutPoint&,
+                                           const PhysicalOffset&,
                                            const DocumentMarker&,
                                            const ComputedStyle&,
                                            const Font&,
@@ -241,7 +241,7 @@ void SVGInlineTextBox::PaintDocumentMarker(GraphicsContext&,
 }
 
 void SVGInlineTextBox::PaintTextMarkerForeground(const PaintInfo& paint_info,
-                                                 const LayoutPoint& point,
+                                                 const PhysicalOffset& point,
                                                  const TextMarkerBase& marker,
                                                  const ComputedStyle& style,
                                                  const Font& font) const {
@@ -250,7 +250,7 @@ void SVGInlineTextBox::PaintTextMarkerForeground(const PaintInfo& paint_info,
 }
 
 void SVGInlineTextBox::PaintTextMarkerBackground(const PaintInfo& paint_info,
-                                                 const LayoutPoint& point,
+                                                 const PhysicalOffset& point,
                                                  const TextMarkerBase& marker,
                                                  const ComputedStyle& style,
                                                  const Font& font) const {

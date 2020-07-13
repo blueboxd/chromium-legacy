@@ -15,8 +15,6 @@ import android.view.inputmethod.InputMethodSubtype;
 
 import androidx.annotation.WorkerThread;
 
-import com.google.ipc.invalidation.external.client.android.service.AndroidLogger;
-
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -168,11 +166,6 @@ public class ProcessInitializationHandler {
         // default AccountManagerDelegate.
         AccountManagerFacadeProvider.setInstance(
                 new AccountManagerFacadeImpl(AppHooks.get().createAccountManagerDelegate()));
-
-        // Set minimum Tango log level. This sets an in-memory static field, and needs to be
-        // set in the ApplicationContext instead of an activity, since Tango can be woken up
-        // by the system directly though messages from GCM.
-        AndroidLogger.setMinimumAndroidLogLevel(Log.WARN);
 
         // Set up the identification generator for sync. The ID is actually generated
         // in the SyncController constructor.

@@ -103,9 +103,7 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
         FragmentainerSpaceAtBfcStart(ConstraintSpace()), &container_builder_);
   }
 
-  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), borders_,
-                        &container_builder_)
-      .Run();
+  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
 
   return container_builder_.ToBoxFragment();
 }

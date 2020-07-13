@@ -18,6 +18,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
+#include "content/browser/webui/web_ui_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -30,12 +31,14 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/data/web_ui_test_mojo_bindings.mojom.h"
@@ -115,6 +118,9 @@ class TestWebUIController : public WebUIController {
     web_ui->SetBindings(bindings);
     {
       WebUIDataSource* data_source = WebUIDataSource::Create("mojo-web-ui");
+      data_source->OverrideContentSecurityPolicy(
+          network::mojom::CSPDirectiveName::ScriptSrc,
+          "script-src chrome://resources 'self' 'unsafe-eval';");
       data_source->SetRequestFilter(
           base::BindRepeating([](const std::string& path) { return true; }),
           base::BindRepeating(&GetResource));
@@ -435,6 +441,35 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, MAYBE_ChromeSendAvailable) {
   factory()->set_web_ui_enabled(false);
   NavigateWithNewWebUI("web_ui_mojo_native.html?hybrid");
   EXPECT_FALSE(RunBoolFunction("isChromeSendAvailable()"));
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIMojoTest, ChromeSendAvailable_AfterCrash) {
+  GURL test_url(
+      GetWebUIURL("mojo-web-ui/web_ui_mojo_native.html?webui_bindings"));
+
+  // Navigate with normal WebUI bindings and ensure chrome.send is available.
+  EXPECT_TRUE(NavigateToURL(shell(), test_url));
+  EXPECT_TRUE(EvalJs(shell(), "isChromeSendAvailable()").ExtractBool());
+
+  WebUIImpl* web_ui = static_cast<WebUIImpl*>(
+      shell()->web_contents()->GetMainFrame()->GetWebUI());
+
+  // Simulate a crash on the page.
+  content::ScopedAllowRendererCrashes allow_renderer_crashes(shell());
+  RenderProcessHostWatcher crash_observer(
+      shell()->web_contents(),
+      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  shell()->web_contents()->GetController().LoadURL(
+      GURL(content::kChromeUICrashURL), content::Referrer(),
+      ui::PAGE_TRANSITION_TYPED, std::string());
+  crash_observer.Wait();
+  EXPECT_FALSE(web_ui->GetRemoteForTest().is_bound());
+
+  // Now navigate again both WebUI and Mojo bindings and ensure chrome.send is
+  // available.
+  EXPECT_TRUE(NavigateToURL(shell(), test_url));
+  EXPECT_TRUE(EvalJs(shell(), "isChromeSendAvailable()").ExtractBool());
+  EXPECT_TRUE(web_ui->GetRemoteForTest().is_bound());
 }
 
 }  // namespace

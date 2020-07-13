@@ -135,18 +135,18 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
   void SelectionStartEnd(int& s_pos, int& e_pos) const;
 
   virtual void PaintDocumentMarker(GraphicsContext&,
-                                   const LayoutPoint& box_origin,
+                                   const PhysicalOffset& box_origin,
                                    const DocumentMarker&,
                                    const ComputedStyle&,
                                    const Font&,
                                    bool grammar) const;
   virtual void PaintTextMarkerForeground(const PaintInfo&,
-                                         const LayoutPoint& box_origin,
+                                         const PhysicalOffset& box_origin,
                                          const TextMarkerBase&,
                                          const ComputedStyle&,
                                          const Font&) const;
   virtual void PaintTextMarkerBackground(const PaintInfo&,
-                                         const LayoutPoint& box_origin,
+                                         const PhysicalOffset& box_origin,
                                          const TextMarkerBase&,
                                          const ComputedStyle&,
                                          const Font&) const;
@@ -155,7 +155,7 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
 
  protected:
   void Paint(const PaintInfo&,
-             const LayoutPoint&,
+             const PhysicalOffset&,
              LayoutUnit line_top,
              LayoutUnit line_bottom) const override;
   bool NodeAtPoint(HitTestResult&,

@@ -17,7 +17,7 @@
 namespace blink {
 
 void SVGRootInlineBoxPainter::Paint(const PaintInfo& paint_info,
-                                    const LayoutPoint& paint_offset) {
+                                    const PhysicalOffset& paint_offset) {
   DCHECK(paint_info.phase == PaintPhase::kForeground ||
          paint_info.phase == PaintPhase::kSelectionDragImage);
 

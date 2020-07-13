@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.text.TextUtils;
 
 import com.google.android.gms.gcm.GcmListenerService;
-import com.google.ipc.invalidation.ticl.android2.channel.AndroidGcmController;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -46,12 +45,6 @@ public class ChromeGcmListenerService extends GcmListenerService {
     public void onMessageReceived(final String from, final Bundle data) {
         boolean hasCollapseKey = !TextUtils.isEmpty(data.getString("collapse_key"));
         GcmUma.recordDataMessageReceived(ContextUtils.getApplicationContext(), hasCollapseKey);
-
-        String invalidationSenderId = AndroidGcmController.get(this).getSenderId();
-        if (from.equals(invalidationSenderId)) {
-            AndroidGcmController.get(this).onMessageReceived(data);
-            return;
-        }
 
         // Dispatch the message to the GCM Driver for native features.
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {

@@ -166,8 +166,8 @@ NGFragmentItemsBuilder::AddPreviousItems(
   } else {
     DCHECK(!container_builder);
     DCHECK(!text_content_);
-    text_content_ = items.Text(false);
-    first_line_text_content_ = items.Text(true);
+    text_content_ = items.NormalText();
+    first_line_text_content_ = items.FirstLineText();
   }
 
   DCHECK(items_.IsEmpty());

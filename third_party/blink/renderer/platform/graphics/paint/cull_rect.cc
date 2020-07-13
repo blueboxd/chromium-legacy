@@ -18,16 +18,6 @@ bool CullRect::Intersects(const IntRect& rect) const {
   return IsInfinite() || rect.Intersects(rect_);
 }
 
-bool CullRect::Intersects(const LayoutRect& rect) const {
-  return IsInfinite() || rect_.Intersects(EnclosingIntRect(rect));
-}
-
-bool CullRect::Intersects(const LayoutRect& rect,
-                          const LayoutPoint& offset) const {
-  return IsInfinite() || rect_.Intersects(EnclosingIntRect(LayoutRect(
-                             rect.Location() + offset, rect.Size())));
-}
-
 bool CullRect::IntersectsTransformed(const AffineTransform& transform,
                                      const FloatRect& rect) const {
   return IsInfinite() || transform.MapRect(rect).Intersects(rect_);

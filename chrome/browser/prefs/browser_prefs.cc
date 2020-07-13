@@ -286,7 +286,6 @@
 #include "chrome/browser/chromeos/file_system_provider/registry.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
-#include "chrome/browser/chromeos/local_search_service/search_metrics_reporter.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_mode_detector.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_mode_resources_remover.h"
@@ -347,6 +346,7 @@
 #include "chrome/browser/upgrade_detector/upgrade_detector_chromeos.h"
 #include "chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/components/account_manager/account_manager.h"
+#include "chromeos/components/local_search_service/search_metrics_reporter.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/network/fast_transition_observer.h"
@@ -776,6 +776,8 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::KioskAppManager::RegisterPrefs(registry);
   chromeos::KioskCryptohomeRemover::RegisterPrefs(registry);
   chromeos::language_prefs::RegisterPrefs(registry);
+  chromeos::local_search_service::SearchMetricsReporter::
+      RegisterLocalStatePrefs(registry);
   chromeos::MultiProfileUserController::RegisterPrefs(registry);
   chromeos::NetworkMetadataStore::RegisterPrefs(registry);
   chromeos::NetworkThrottlingObserver::RegisterPrefs(registry);
@@ -802,8 +804,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
       registry);
   extensions::login_api::RegisterLocalStatePrefs(registry);
   ::onc::RegisterPrefs(registry);
-  local_search_service::SearchMetricsReporter::RegisterLocalStatePrefs(
-      registry);
   policy::AdbSideloadingAllowanceModePolicyHandler::RegisterPrefs(registry);
   policy::AutoEnrollmentClientImpl::RegisterPrefs(registry);
   policy::BrowserPolicyConnectorChromeOS::RegisterPrefs(registry);

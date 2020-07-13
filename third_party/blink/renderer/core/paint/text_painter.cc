@@ -36,7 +36,7 @@ void TextPainter::Paint(unsigned start_offset,
   if (combined_text_) {
     graphics_context_.Save();
     combined_text_->TransformToInlineCoordinates(graphics_context_,
-                                                 text_bounds_.ToLayoutRect());
+                                                 text_bounds_);
     PaintInternal<kPaintText>(start_offset, end_offset, length, node_id);
     graphics_context_.Restore();
   } else {

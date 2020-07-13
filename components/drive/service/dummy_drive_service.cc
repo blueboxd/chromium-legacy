@@ -53,7 +53,7 @@ std::string DummyDriveService::GetRootResourceId() const {
 }
 
 CancelCallback DummyDriveService::GetAllTeamDriveList(
-    const TeamDriveListCallback& callback) {
+    TeamDriveListCallback callback) {
   return CancelCallback();
 }
 
@@ -76,26 +76,27 @@ CancelCallback DummyDriveService::SearchByTitle(
     const std::string& directory_resource_id,
     const FileListCallback& callback) { return CancelCallback(); }
 
-CancelCallback DummyDriveService::GetChangeList(
-    int64_t start_changestamp,
-    const ChangeListCallback& callback) {
+CancelCallback DummyDriveService::GetChangeList(int64_t start_changestamp,
+                                                ChangeListCallback callback) {
   return CancelCallback();
 }
 
 CancelCallback DummyDriveService::GetChangeListByToken(
     const std::string& team_drive_id,
     const std::string& start_page_token,
-    const ChangeListCallback& callback) {
+    ChangeListCallback callback) {
   return CancelCallback();
 }
 
 CancelCallback DummyDriveService::GetRemainingChangeList(
     const GURL& next_link,
-    const ChangeListCallback& callback) { return CancelCallback(); }
+    ChangeListCallback callback) {
+  return CancelCallback();
+}
 
 CancelCallback DummyDriveService::GetRemainingTeamDriveList(
     const std::string& page_token,
-    const TeamDriveListCallback& callback) {
+    TeamDriveListCallback callback) {
   return CancelCallback();
 }
 

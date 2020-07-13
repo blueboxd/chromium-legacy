@@ -60,7 +60,8 @@ public class LogoDelegateImpl implements LogoView.Delegate {
         mNavigationDelegate = navigationDelegate;
         mLogoView = logoView;
         mLogoBridge = new LogoBridge(profile);
-        mImageFetcher = ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.DISK_CACHE_ONLY);
+        mImageFetcher =
+                ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.DISK_CACHE_ONLY, profile);
     }
 
     public void destroy() {

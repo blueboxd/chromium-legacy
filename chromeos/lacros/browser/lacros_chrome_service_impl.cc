@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "chromeos/lacros/browser/lacros_chrome_service_delegate.h"
 
 namespace chromeos {
 namespace {
@@ -20,8 +21,10 @@ LacrosChromeServiceImpl* LacrosChromeServiceImpl::Get() {
   return g_instance;
 }
 
-LacrosChromeServiceImpl::LacrosChromeServiceImpl()
-    : pending_ash_chrome_service_receiver_(
+LacrosChromeServiceImpl::LacrosChromeServiceImpl(
+    std::unique_ptr<LacrosChromeServiceDelegate> delegate)
+    : delegate_(std::move(delegate)),
+      pending_ash_chrome_service_receiver_(
           ash_chrome_service_.BindNewPipeAndPassReceiver()) {
   // Bind remote interfaces in ash-chrome. These remote interfaces can be used
   // immediately. Outgoing calls will be queued.
@@ -52,6 +55,11 @@ void LacrosChromeServiceImpl::RequestAshChromeServiceReceiver(
   // TODO(hidehiko): Remove non-error logging from here.
   LOG(WARNING) << "AshChromeServiceReceiver requested.";
   std::move(callback).Run(std::move(pending_ash_chrome_service_receiver_));
+}
+
+void LacrosChromeServiceImpl::NewWindow(NewWindowCallback callback) {
+  delegate_->NewWindow();
+  std::move(callback).Run();
 }
 
 }  // namespace chromeos

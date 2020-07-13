@@ -925,11 +925,7 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
       return container_builder_.Abort(NGLayoutResult::kNeedsEarlierBreak);
   }
 
-  NGOutOfFlowLayoutPart(
-      Node(), ConstraintSpace(),
-      container_builder_.Borders() + container_builder_.Scrollbar(),
-      &container_builder_)
-      .Run();
+  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
 
 #if DCHECK_IS_ON()
   // If we're not participating in a fragmentation context, no block
@@ -2775,8 +2771,13 @@ void NGBlockLayoutAlgorithm::LayoutRubyText(
     }
   }
 
-  NGConstraintSpaceBuilder builder(
-      ConstraintSpace(), ruby_text_child->Style().GetWritingMode(), true);
+  const ComputedStyle& rt_style = ruby_text_child->Style();
+  NGConstraintSpaceBuilder builder(ConstraintSpace(), rt_style.GetWritingMode(),
+                                   true);
+  SetOrthogonalFallbackInlineSizeIfNeeded(Style(), *ruby_text_child, &builder);
+  if (!IsParallelWritingMode(Style().GetWritingMode(),
+                             rt_style.GetWritingMode()))
+    builder.SetIsShrinkToFit(rt_style.LogicalWidth().IsAuto());
   builder.SetAvailableSize(ChildAvailableSize());
 
   scoped_refptr<const NGLayoutResult> result =

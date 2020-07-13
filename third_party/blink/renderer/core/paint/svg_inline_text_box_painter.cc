@@ -73,7 +73,7 @@ LayoutSVGInlineText& SVGInlineTextBoxPainter::InlineText() const {
 }
 
 void SVGInlineTextBoxPainter::Paint(const PaintInfo& paint_info,
-                                    const LayoutPoint& paint_offset) {
+                                    const PhysicalOffset& paint_offset) {
   DCHECK(paint_info.phase == PaintPhase::kForeground ||
          paint_info.phase == PaintPhase::kSelectionDragImage);
   DCHECK(svg_inline_text_box_.Truncation() == kCNoTruncation);
@@ -597,7 +597,7 @@ SVGInlineTextBoxPainter::CollectFragmentsInRange(int start_position,
 
 void SVGInlineTextBoxPainter::PaintTextMarkerForeground(
     const PaintInfo& paint_info,
-    const LayoutPoint& point,
+    const PhysicalOffset& point,
     const TextMarkerBase& marker,
     const ComputedStyle& style,
     const Font& font) {
@@ -644,7 +644,7 @@ void SVGInlineTextBoxPainter::PaintTextMarkerForeground(
 
 void SVGInlineTextBoxPainter::PaintTextMarkerBackground(
     const PaintInfo& paint_info,
-    const LayoutPoint& point,
+    const PhysicalOffset& point,
     const TextMarkerBase& marker,
     const ComputedStyle& style,
     const Font& font) {

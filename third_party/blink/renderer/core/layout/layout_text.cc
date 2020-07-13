@@ -809,8 +809,24 @@ CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
 
 PositionWithAffinity LayoutText::PositionForPoint(
     const PhysicalOffset& point) const {
-  if (const LayoutBlockFlow* ng_block_flow = ContainingNGBlockFlow())
-    return ng_block_flow->PositionForPoint(*this, point);
+  if (IsInLayoutNGInlineFormattingContext()) {
+    NGInlineCursor cursor;
+    for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject()) {
+      if (!EnclosingIntRect(cursor.Current().RectInContainerBlock())
+               .Contains(FlooredIntPoint(point)))
+        continue;
+      if (auto position_with_affinity = cursor.PositionForPointInChild(point)) {
+        // Note: Due by Bidi adjustment, |position| isn't relative to this.
+        const Position& position = position_with_affinity.GetPosition();
+        DCHECK(position.IsOffsetInAnchor()) << position;
+        return position.ComputeContainerNode()
+            ->GetLayoutObject()
+            ->CreatePositionWithAffinity(position.OffsetInContainerNode(),
+                                         position_with_affinity.Affinity());
+      }
+    }
+    return CreatePositionWithAffinity(0);
+  }
 
   DCHECK(CanUseInlineBox(*this));
   if (!FirstTextBox() || TextLength() == 0)

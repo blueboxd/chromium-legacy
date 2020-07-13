@@ -34,7 +34,7 @@ class DummyDriveService : public DriveServiceInterface {
   void ClearRefreshToken() override;
   std::string GetRootResourceId() const override;
   google_apis::CancelCallback GetAllTeamDriveList(
-      const google_apis::TeamDriveListCallback& callback) override;
+      google_apis::TeamDriveListCallback callback) override;
   google_apis::CancelCallback GetAllFileList(
       const std::string& team_drive_id,
       const google_apis::FileListCallback& callback) override;
@@ -50,17 +50,17 @@ class DummyDriveService : public DriveServiceInterface {
       const google_apis::FileListCallback& callback) override;
   google_apis::CancelCallback GetChangeList(
       int64_t start_changestamp,
-      const google_apis::ChangeListCallback& callback) override;
+      google_apis::ChangeListCallback callback) override;
   google_apis::CancelCallback GetChangeListByToken(
       const std::string& team_drive_id,
       const std::string& start_page_token,
-      const google_apis::ChangeListCallback& callback) override;
+      google_apis::ChangeListCallback callback) override;
   google_apis::CancelCallback GetRemainingChangeList(
       const GURL& next_link,
-      const google_apis::ChangeListCallback& callback) override;
+      google_apis::ChangeListCallback callback) override;
   google_apis::CancelCallback GetRemainingTeamDriveList(
       const std::string& page_token,
-      const google_apis::TeamDriveListCallback& callback) override;
+      google_apis::TeamDriveListCallback callback) override;
   google_apis::CancelCallback GetRemainingFileList(
       const GURL& next_link,
       const google_apis::FileListCallback& callback) override;

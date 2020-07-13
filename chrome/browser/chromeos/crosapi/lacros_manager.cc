@@ -207,11 +207,10 @@ void LacrosManager::StartForeground(bool already_running) {
 
   if (already_running) {
     DCHECK_EQ(state_, State::RUNNING);
+    DCHECK(lacros_chrome_service_.is_connected());
     // If Lacros is already running, then the new call to launch process spawns
     // a new window but does not create a lasting process.
-    // TODO(erikchen): we should send a mojo signal to open a new tab rather
-    // than going through the start flow again.
-    base::LaunchProcess(argv, options);
+    lacros_chrome_service_->NewWindow(base::DoNothing());
   } else {
     DCHECK_EQ(state_, State::STARTING);
     // Set up Mojo channel.
@@ -244,8 +243,8 @@ void LacrosManager::StartForeground(bool already_running) {
           base::BindOnce(&LacrosManager::OnAshChromeServiceReceiverReceived,
                          weak_factory_.GetWeakPtr()));
     }
+    LOG(WARNING) << "Launched lacros-chrome with pid " << lacros_process_.Pid();
   }
-  LOG(WARNING) << "Launched lacros-chrome with pid " << lacros_process_.Pid();
 }
 
 void LacrosManager::OnAshChromeServiceReceiverReceived(

@@ -103,9 +103,10 @@ void ScaleHorizontallyAndTranslate(GraphicsContext& context,
       offset_y));
 }
 
-void LayoutTextCombine::TransformToInlineCoordinates(GraphicsContext& context,
-                                                     const LayoutRect& box_rect,
-                                                     bool clip) const {
+void LayoutTextCombine::TransformToInlineCoordinates(
+    GraphicsContext& context,
+    const PhysicalRect& box_rect,
+    bool clip) const {
   DCHECK(is_combined_);
 
   // No transform needed if we don't have a font.

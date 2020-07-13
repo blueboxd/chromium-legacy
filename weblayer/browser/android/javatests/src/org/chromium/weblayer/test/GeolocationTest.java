@@ -59,17 +59,6 @@ public final class GeolocationTest {
             + "      gotPos, errorCallback, {});"
             + "}";
 
-    private static final String RAW_HTML =
-            "<!doctype html>"
-            + "<html>"
-            + "  <head>"
-            + "    <title>Geolocation</title>"
-            + "    <script>" + RAW_JAVASCRIPT + "</script>"
-            + "  </head>"
-            + "  <body>"
-            + "  </body>"
-            + "</html>";
-
     @Before
     public void setUp() throws Throwable {
         mActivity = mActivityTestRule.launchShellWithUrl("about:blank");
@@ -80,9 +69,8 @@ public final class GeolocationTest {
         mTestWebLayer.setMockLocationProvider(true /* enable */);
 
         mTestServer = TestWebServer.start();
-        String testUrl = mTestServer.setResponse("/geolocation.html", RAW_HTML, null);
 
-        mActivityTestRule.navigateAndWait(testUrl);
+        mActivityTestRule.navigateAndWait(mActivityTestRule.getTestDataURL("geolocation.html"));
         ensureGeolocationIsRunning(false);
     }
 

@@ -451,10 +451,6 @@ void WebRuntimeFeatures::EnableWebShare(bool enable) {
   RuntimeEnabledFeatures::SetWebShareEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableWebShareV2(bool enable) {
-  RuntimeEnabledFeatures::SetWebShareV2Enabled(enable);
-}
-
 void WebRuntimeFeatures::EnableWebGPU(bool enable) {
   RuntimeEnabledFeatures::SetWebGPUEnabled(enable);
 }

@@ -220,8 +220,8 @@ void LayoutNGMixin<Base>::UpdateOutOfFlowBlockLayout() {
   // should get laid out by the actual containing block.
   NGOutOfFlowLayoutPart(css_container->CanContainAbsolutePositionObjects(),
                         css_container->CanContainFixedPositionObjects(),
-                        *container_style, constraint_space, border_scrollbar,
-                        &container_builder, initial_containing_block_fixed_size)
+                        *container_style, constraint_space, &container_builder,
+                        initial_containing_block_fixed_size)
       .Run(/* only_layout */ this);
   scoped_refptr<const NGLayoutResult> result =
       container_builder.ToBoxFragment();

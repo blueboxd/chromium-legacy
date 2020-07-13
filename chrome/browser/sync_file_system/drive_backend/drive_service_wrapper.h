@@ -48,19 +48,17 @@ class DriveServiceWrapper : public base::SupportsWeakPtr<DriveServiceWrapper> {
                          google_apis::StartPageTokenCallback callback);
 
   void GetChangeList(int64_t start_changestamp,
-                     const google_apis::ChangeListCallback& callback);
+                     google_apis::ChangeListCallback callback);
 
   void GetChangeListByToken(const std::string& team_drive_id,
                             const std::string& start_page_token,
-                            const google_apis::ChangeListCallback& callback);
+                            google_apis::ChangeListCallback callback);
 
-  void GetRemainingChangeList(
-      const GURL& next_link,
-      const google_apis::ChangeListCallback& callback);
+  void GetRemainingChangeList(const GURL& next_link,
+                              google_apis::ChangeListCallback callback);
 
-  void GetRemainingTeamDriveList(
-      const std::string& page_token,
-      const google_apis::TeamDriveListCallback& callback);
+  void GetRemainingTeamDriveList(const std::string& page_token,
+                                 google_apis::TeamDriveListCallback callback);
 
   void GetRemainingFileList(
       const GURL& next_link,

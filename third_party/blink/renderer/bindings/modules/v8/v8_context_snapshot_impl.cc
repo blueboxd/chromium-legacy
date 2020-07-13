@@ -73,6 +73,15 @@ using InstallPropsPerIsolate =
              v8::Local<v8::ObjectTemplate> prototype_template,
              v8::Local<v8::FunctionTemplate> interface_template);
 
+// Construction of |type_info_table| requires non-trivial initialization due
+// to cross-component address resolution.  We ignore this issue because the
+// issue happens only on component builds and the official release builds
+// (statically-linked builds) are never affected by this issue.
+#if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wglobal-constructors"
+#endif
+
 const struct {
   const WrapperTypeInfo* wrapper_type_info;
   // Installs context-independent properties to per-isolate templates.
@@ -102,6 +111,10 @@ const struct {
      bindings::v8_context_snapshot::InstallPropsOfV8EventTarget,
      {true, true}},
 };
+
+#if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 enum class InternalFieldSerializedValue : uint8_t {
   // ScriptWrappable pointer

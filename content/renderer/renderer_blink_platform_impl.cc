@@ -159,14 +159,12 @@ gpu::ContextType ToGpuContextType(blink::Platform::ContextType type) {
 
 RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
     blink::scheduler::WebThreadScheduler* main_thread_scheduler)
-    : BlinkPlatformImpl(main_thread_scheduler->DefaultTaskRunner(),
-                        RenderThreadImpl::current()
+    : BlinkPlatformImpl(RenderThreadImpl::current()
                             ? RenderThreadImpl::current()->GetIOTaskRunner()
                             : nullptr),
       sudden_termination_disables_(0),
       is_locked_to_site_(false),
       main_thread_scheduler_(main_thread_scheduler) {
-
   // RenderThread may not exist in some tests.
   if (RenderThreadImpl::current()) {
 #if defined(OS_LINUX)
@@ -366,8 +364,8 @@ void RendererBlinkPlatformImpl::SuddenTerminationChanged(bool enabled) {
     // We should not get more enables than disables, but we want it to be a
     // non-fatal error if it does happen.
     DCHECK_GT(sudden_termination_disables_, 0);
-    sudden_termination_disables_ = std::max(sudden_termination_disables_ - 1,
-                                            0);
+    sudden_termination_disables_ =
+        std::max(sudden_termination_disables_ - 1, 0);
     if (sudden_termination_disables_ != 0)
       return;
   } else {
@@ -689,9 +687,8 @@ RendererBlinkPlatformImpl::GetVideoCaptureImplManager() {
 
 //------------------------------------------------------------------------------
 
-static void Collect3DContextInformation(
-    blink::Platform::GraphicsInfo* gl_info,
-    const gpu::GPUInfo& gpu_info) {
+static void Collect3DContextInformation(blink::Platform::GraphicsInfo* gl_info,
+                                        const gpu::GPUInfo& gpu_info) {
   DCHECK(gl_info);
   const gpu::GPUInfo::GPUDevice& active_gpu = gpu_info.active_gpu();
   gl_info->vendor_id = active_gpu.vendor_id;

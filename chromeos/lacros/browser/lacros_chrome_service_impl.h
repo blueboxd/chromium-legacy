@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_LACROS_BROWSER_LACROS_CHROME_SERVICE_IMPL_H_
 #define CHROMEOS_LACROS_BROWSER_LACROS_CHROME_SERVICE_IMPL_H_
 
+#include <memory>
+
 #include "base/component_export.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "chromeos/crosapi/mojom/screen_manager.mojom.h"
@@ -15,6 +17,8 @@
 
 namespace chromeos {
 
+class LacrosChromeServiceDelegate;
+
 // Implements LacrosChromeService, which owns the mojo remote connection to
 // ash-chrome.
 // This class is not thread safe. It can only be used on the main thread.
@@ -23,7 +27,8 @@ class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl
  public:
   static LacrosChromeServiceImpl* Get();
 
-  LacrosChromeServiceImpl();
+  explicit LacrosChromeServiceImpl(
+      std::unique_ptr<LacrosChromeServiceDelegate> delegate);
   ~LacrosChromeServiceImpl() override;
 
   void BindReceiver(
@@ -39,8 +44,12 @@ class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl
   // crosapi::mojom::LacrosChromeService:
   void RequestAshChromeServiceReceiver(
       RequestAshChromeServiceReceiverCallback callback) override;
+  void NewWindow(NewWindowCallback callback) override;
 
  private:
+  // Delegate instance to inject Chrome dependent code.
+  std::unique_ptr<LacrosChromeServiceDelegate> delegate_;
+
   mojo::Receiver<crosapi::mojom::LacrosChromeService> receiver_{this};
 
   // Proxy to AshChromeService in ash-chrome.

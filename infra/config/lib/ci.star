@@ -535,11 +535,12 @@ def android_fyi_builder(*, name, **kwargs):
   )
 
 
-def chromium_builder(*, name, **kwargs):
+def chromium_builder(*, name, tree_closing=True, **kwargs):
   return ci_builder(
       name = name,
       goma_backend = builders.goma.backend.RBE_PROD,
       mastername = 'chromium',
+      tree_closing = tree_closing,
       **kwargs
   )
 

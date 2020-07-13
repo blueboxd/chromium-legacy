@@ -160,6 +160,9 @@ bool IsAllowedUrl(const char* (&allowedDomains)[N]) {
 template <size_t N>
 bool IsAllowedApp(const char* (&allowedApps)[N]) {
   // WMHelper is not available in Chrome on Linux.
+  if (!exo::WMHelper::HasInstance())
+    return false;
+
   auto* wm_helper = exo::WMHelper::GetInstance();
   auto* window = wm_helper ? wm_helper->GetActiveWindow() : nullptr;
   if (!window)

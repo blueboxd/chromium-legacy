@@ -2459,6 +2459,7 @@ static_library("ui") {
       "//chromeos/components/account_manager",
       "//chromeos/components/camera_app_ui",
       "//chromeos/components/help_app_ui",
+      "//chromeos/components/local_search_service:local_search_service",
       "//chromeos/components/media_app_ui",
       "//chromeos/components/multidevice",
       "//chromeos/components/multidevice/debug_webui",

@@ -67,32 +67,32 @@ void DriveServiceWrapper::GetStartPageToken(
 
 void DriveServiceWrapper::GetChangeList(
     int64_t start_changestamp,
-    const google_apis::ChangeListCallback& callback) {
+    google_apis::ChangeListCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  drive_service_->GetChangeList(start_changestamp, callback);
+  drive_service_->GetChangeList(start_changestamp, std::move(callback));
 }
 
 void DriveServiceWrapper::GetChangeListByToken(
     const std::string& team_drive_id,
     const std::string& start_page_token,
-    const google_apis::ChangeListCallback& callback) {
+    google_apis::ChangeListCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   drive_service_->GetChangeListByToken(team_drive_id, start_page_token,
-                                       callback);
+                                       std::move(callback));
 }
 
 void DriveServiceWrapper::GetRemainingChangeList(
     const GURL& next_link,
-    const google_apis::ChangeListCallback& callback) {
+    google_apis::ChangeListCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  drive_service_->GetRemainingChangeList(next_link, callback);
+  drive_service_->GetRemainingChangeList(next_link, std::move(callback));
 }
 
 void DriveServiceWrapper::GetRemainingTeamDriveList(
     const std::string& page_token,
-    const google_apis::TeamDriveListCallback& callback) {
+    google_apis::TeamDriveListCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  drive_service_->GetRemainingTeamDriveList(page_token, callback);
+  drive_service_->GetRemainingTeamDriveList(page_token, std::move(callback));
 }
 
 void DriveServiceWrapper::GetRemainingFileList(

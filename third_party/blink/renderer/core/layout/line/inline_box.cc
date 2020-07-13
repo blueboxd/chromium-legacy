@@ -241,7 +241,7 @@ void InlineBox::Move(const LayoutSize& delta) {
 }
 
 void InlineBox::Paint(const PaintInfo& paint_info,
-                      const LayoutPoint&,
+                      const PhysicalOffset&,
                       LayoutUnit,
                       LayoutUnit) const {
   BlockPainter::PaintInlineBox(*this, paint_info);

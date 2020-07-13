@@ -296,10 +296,12 @@ namespace bindings {
 //   F(x);  // ToBlinkString<AtomicString> is used.
 //   G(x);  // ToBlinkString<String> is used.
 class CORE_EXPORT NativeValueTraitsStringAdapter {
+  STACK_ALLOCATED();
+
  public:
   NativeValueTraitsStringAdapter() = default;
   NativeValueTraitsStringAdapter(const NativeValueTraitsStringAdapter&) =
-      default;
+      delete;
   NativeValueTraitsStringAdapter(NativeValueTraitsStringAdapter&&) = default;
   explicit NativeValueTraitsStringAdapter(v8::Local<v8::String> value)
       : v8_string_(value) {}
@@ -309,7 +311,7 @@ class CORE_EXPORT NativeValueTraitsStringAdapter {
       : wtf_string_(ToBlinkString(value)) {}
 
   NativeValueTraitsStringAdapter& operator=(
-      const NativeValueTraitsStringAdapter&) = default;
+      const NativeValueTraitsStringAdapter&) = delete;
   NativeValueTraitsStringAdapter& operator=(NativeValueTraitsStringAdapter&&) =
       default;
   NativeValueTraitsStringAdapter& operator=(const String& value) {
@@ -318,8 +320,14 @@ class CORE_EXPORT NativeValueTraitsStringAdapter {
     return *this;
   }
 
+  // NOLINTNEXTLINE(google-explicit-constructor)
   operator String() const { return ToString<String>(); }
+  // NOLINTNEXTLINE(google-explicit-constructor)
   operator AtomicString() const { return ToString<AtomicString>(); }
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  operator StringView() const& { return ToStringView(); }
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  operator StringView() const&& = delete;
 
  private:
   template <class StringType>
@@ -329,8 +337,17 @@ class CORE_EXPORT NativeValueTraitsStringAdapter {
     return StringType(wtf_string_);
   }
 
+  StringView ToStringView() const& {
+    if (LIKELY(!v8_string_.IsEmpty())) {
+      return ToBlinkStringView(v8_string_, string_view_backing_store_,
+                               kExternalize);
+    }
+    return wtf_string_;
+  }
+
   v8::Local<v8::String> v8_string_;
   String wtf_string_;
+  mutable StringView::StackBackingStore string_view_backing_store_;
 };
 
 }  // namespace bindings

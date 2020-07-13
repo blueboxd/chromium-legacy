@@ -7,12 +7,13 @@
 #include <algorithm>
 
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/chromeos/local_search_service/local_search_service.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/webui/settings/chromeos/hierarchy.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_sections.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_result_icon.mojom.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/components/local_search_service/local_search_service.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
@@ -48,7 +49,9 @@ SearchHandler::SearchHandler(
       sections_(sections),
       hierarchy_(hierarchy),
       index_(local_search_service->GetIndex(
-          local_search_service::IndexId::kCrosSettings)) {
+          local_search_service::IndexId::kCrosSettings,
+          local_search_service::Backend::kLinearMap,
+          g_browser_process ? g_browser_process->local_state() : nullptr)) {
   search_tag_registry_->AddObserver(this);
 }
 

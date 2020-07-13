@@ -952,19 +952,12 @@ by a child template that "extends" this file.
                <category android:name="{{ manifest_package }}"/>
             </intent-filter>
         </receiver>
-        <!-- GcmTaskService for registration for Invalidations. -->
+        <!-- GcmTaskService for registration for Invalidations. Not actually implemented anymore. -->
         <service android:name="com.google.ipc.invalidation.ticl.android2.channel.GcmRegistrationTaskService"
             android:exported="true"
             android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE" >
             <intent-filter>
                 <action android:name="com.google.android.gms.gcm.ACTION_TASK_READY"/>
-            </intent-filter>
-        </service>
-        <!-- InstanceIDListenerService for token refresh events from GCM. -->
-        <service android:name="com.google.ipc.invalidation.ticl.android2.channel.AndroidInstanceIDListenerService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.android.gms.iid.InstanceID"/>
             </intent-filter>
         </service>
         <!-- GcmListenerService for messages from GCM. -->
@@ -977,16 +970,6 @@ by a child template that "extends" this file.
         <service android:name="org.chromium.chrome.browser.services.gcm.GCMBackgroundService"
             android:exported="false"/>
         <service android:name="org.chromium.chrome.browser.services.gcm.InvalidationGcmUpstreamSender"
-            android:exported="false"/>
-
-        <!-- Notification service for sync. -->
-        <service android:name="com.google.ipc.invalidation.ticl.android2.TiclService"
-            android:exported="false"/>
-        <service android:name="com.google.ipc.invalidation.ticl.android2.channel.AndroidMessageSenderService"
-            android:exported="false"/>
-        <receiver android:name="com.google.ipc.invalidation.ticl.android2.AndroidInternalScheduler$AlarmReceiver"
-            android:exported="false"/>
-        <receiver android:name="com.google.ipc.invalidation.external.client.contrib.AndroidListener$AlarmReceiver"
             android:exported="false"/>
 
         <!-- Android Notification service listener -->

@@ -2149,10 +2149,16 @@ void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
     GetLocalRenderWidgetHost()->InitForFrame();
   }
 
-  if (enabled_bindings_ && created) {
-    if (!frame_bindings_control_)
-      GetRemoteAssociatedInterfaces()->GetInterface(&frame_bindings_control_);
-    frame_bindings_control_->AllowBindings(enabled_bindings_);
+  if (enabled_bindings_ && created)
+    GetFrameBindingsControl()->AllowBindings(enabled_bindings_);
+
+  if (web_ui_) {
+    if (created) {
+      if (enabled_bindings_ & BINDINGS_POLICY_WEB_UI)
+        web_ui_->SetupMojoConnection();
+    } else {
+      web_ui_->InvalidateMojoConnection();
+    }
   }
 
   // Clear all the user data associated with this RenderFrameHost in case if
@@ -3428,9 +3434,9 @@ void RenderFrameHostImpl::AllowBindings(int bindings_flags) {
   enabled_bindings_ |= bindings_flags;
 
   if (render_frame_created_) {
-    if (!frame_bindings_control_)
-      GetRemoteAssociatedInterfaces()->GetInterface(&frame_bindings_control_);
-    frame_bindings_control_->AllowBindings(enabled_bindings_);
+    GetFrameBindingsControl()->AllowBindings(enabled_bindings_);
+    if (web_ui_ && enabled_bindings_ & BINDINGS_POLICY_WEB_UI)
+      web_ui_->SetupMojoConnection();
   }
 }
 
@@ -3440,12 +3446,16 @@ int RenderFrameHostImpl::GetEnabledBindings() {
 
 void RenderFrameHostImpl::SetWebUIProperty(const std::string& name,
                                            const std::string& value) {
+  // WebUI allows to register SetProperties only for the main frame.
+  if (GetParent())
+    return;
+
   // This is a sanity check before telling the renderer to enable the property.
   // It could lie and send the corresponding IPC messages anyway, but we will
   // not act on them if enabled_bindings_ doesn't agree. If we get here without
   // WebUI bindings, terminate the renderer process.
   if (enabled_bindings_ & BINDINGS_POLICY_WEB_UI)
-    Send(new FrameMsg_SetWebUIProperty(routing_id_, name, value));
+    web_ui_->SetProperty(name, value);
   else
     ReceivedBadMessage(GetProcess(), bad_message::RVH_WEB_UI_BINDINGS_MISMATCH);
 }
@@ -6413,7 +6423,7 @@ bool RenderFrameHostImpl::CreateWebUI(const GURL& dest_url,
     return false;
   }
 
-  web_ui_ = delegate_->CreateWebUIForRenderFrameHost(dest_url);
+  web_ui_ = delegate_->CreateWebUIForRenderFrameHost(this, dest_url);
   if (!web_ui_)
     return false;
 
@@ -6490,6 +6500,13 @@ RenderFrameHostImpl::GetHighPriorityLocalFrame() {
         high_priority_local_frame_.BindNewPipeAndPassReceiver());
   }
   return high_priority_local_frame_;
+}
+
+const mojo::AssociatedRemote<mojom::FrameBindingsControl>&
+RenderFrameHostImpl::GetFrameBindingsControl() {
+  if (!frame_bindings_control_)
+    GetRemoteAssociatedInterfaces()->GetInterface(&frame_bindings_control_);
+  return frame_bindings_control_;
 }
 
 void RenderFrameHostImpl::ResetLoadingState() {
@@ -8812,9 +8829,7 @@ void RenderFrameHostImpl::EnableMojoJsBindings() {
                 GetSiteInstance()->GetBrowserContext(),
                 site_instance_->GetSiteInfo().site_url()));
 
-  if (!frame_bindings_control_)
-    GetRemoteAssociatedInterfaces()->GetInterface(&frame_bindings_control_);
-  frame_bindings_control_->EnableMojoJsBindings();
+  GetFrameBindingsControl()->EnableMojoJsBindings();
 }
 
 BackForwardCacheMetrics* RenderFrameHostImpl::GetBackForwardCacheMetrics() {

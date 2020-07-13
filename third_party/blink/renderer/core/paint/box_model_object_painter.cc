@@ -71,8 +71,11 @@ void BoxModelObjectPainter::PaintTextClipMask(
             EBoxDecorationBreak::kSlice) {
       local_offset -= LogicalOffsetOnLine(*flow_box_);
     }
+    // TODO(layout-ng): This looks incorrect in flipped writing mode.
+    PhysicalOffset physical_local_offset(local_offset.Width(),
+                                         local_offset.Height());
     const RootInlineBox& root = flow_box_->Root();
-    flow_box_->Paint(paint_info, paint_offset.ToLayoutPoint() - local_offset,
+    flow_box_->Paint(paint_info, paint_offset - physical_local_offset,
                      root.LineTop(), root.LineBottom());
   } else if (auto* layout_block = DynamicTo<LayoutBlock>(box_model_)) {
     layout_block->PaintObject(paint_info, paint_offset);

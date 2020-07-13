@@ -3051,18 +3051,17 @@ void RenderFrameImpl::CancelBlockedRequests() {
 }
 
 void RenderFrameImpl::AllowBindings(int32_t enabled_bindings_flags) {
-  // TODO(nasko): WebUIExtensionsData might be useful to be registered for
-  // subframes as well, though at this time there is no such usage.
-  if (IsMainFrame() && (enabled_bindings_flags & BINDINGS_POLICY_WEB_UI) &&
-      !(enabled_bindings_ & BINDINGS_POLICY_WEB_UI)) {
-    new WebUIExtensionData(this);
-  }
-
   enabled_bindings_ |= enabled_bindings_flags;
 }
 
 void RenderFrameImpl::EnableMojoJsBindings() {
   enable_mojo_js_bindings_ = true;
+}
+
+void RenderFrameImpl::BindWebUI(mojo::PendingReceiver<mojom::WebUI> receiver,
+                                mojo::PendingRemote<mojom::WebUIHost> remote) {
+  DCHECK(enabled_bindings_ & BINDINGS_POLICY_WEB_UI);
+  WebUIExtensionData::Create(this, std::move(receiver), std::move(remote));
 }
 
 void RenderFrameImpl::CommitNavigation(

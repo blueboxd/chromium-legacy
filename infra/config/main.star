@@ -16,8 +16,7 @@ lucicfg.check_version(
 # Enable LUCI Realms support.
 lucicfg.enable_experiment('crbug.com/1085650')
 
-# Enable tree closing. Note that for now it is only in a "dry run" mode, where
-# it doesn't actually close the tree, just logs what it would have done.
+# Enable tree closing.
 lucicfg.enable_experiment("crbug.com/1054172")
 
 # Tell lucicfg what files it is allowed to touch
@@ -85,6 +84,10 @@ luci.logdog(
 
 luci.milo(
     logo = 'https://storage.googleapis.com/chrome-infra-public/logo/chromium.svg',
+)
+
+luci.notify(
+    tree_closing_enabled = True,
 )
 
 exec('//recipes.star')

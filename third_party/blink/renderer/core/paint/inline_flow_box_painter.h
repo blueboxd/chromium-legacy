@@ -17,7 +17,6 @@ namespace blink {
 
 class InlineFlowBox;
 class IntRect;
-class LayoutPoint;
 class LayoutRect;
 class LayoutUnit;
 struct PaintInfo;
@@ -29,7 +28,7 @@ class InlineFlowBoxPainter : public InlineBoxPainterBase {
   InlineFlowBoxPainter(const InlineFlowBox&);
 
   void Paint(const PaintInfo&,
-             const LayoutPoint& paint_offset,
+             const PhysicalOffset& paint_offset,
              const LayoutUnit line_top,
              const LayoutUnit line_bottom);
 
@@ -38,49 +37,28 @@ class InlineFlowBoxPainter : public InlineBoxPainterBase {
  private:
   // LayoutNG version adapters.
   PhysicalRect PaintRectForImageStrip(const PhysicalRect& rect,
-                                      TextDirection direction) const override {
-    return PhysicalRect(PaintRectForImageStrip(rect.ToLayoutRect(), direction));
-  }
+                                      TextDirection direction) const override;
   void PaintNormalBoxShadow(const PaintInfo& info,
                             const ComputedStyle& style,
-                            const PhysicalRect& rect) override {
-    return PaintNormalBoxShadow(info, style, rect.ToLayoutRect());
-  }
+                            const PhysicalRect& rect) override;
   void PaintInsetBoxShadow(const PaintInfo& info,
                            const ComputedStyle& style,
-                           const PhysicalRect& rect) override {
-    return PaintInsetBoxShadow(info, style, rect.ToLayoutRect());
-  }
+                           const PhysicalRect& rect) override;
   BorderPaintingType GetBorderPaintType(
       const PhysicalRect& adjusted_frame_rect,
       IntRect& adjusted_clip_rect,
-      bool object_has_multiple_boxes) const override {
-    return GetBorderPaintType(adjusted_frame_rect.ToLayoutRect(),
-                              adjusted_clip_rect, object_has_multiple_boxes);
-  }
-
-  // Legacy version.
-  LayoutRect PaintRectForImageStrip(const LayoutRect&, TextDirection) const;
-  void PaintNormalBoxShadow(const PaintInfo&,
-                            const ComputedStyle&,
-                            const LayoutRect& paint_rect);
-  void PaintInsetBoxShadow(const PaintInfo&,
-                           const ComputedStyle&,
-                           const LayoutRect& paint_rect);
-  BorderPaintingType GetBorderPaintType(const LayoutRect& adjusted_frame_rect,
-                                        IntRect& adjusted_clip_rect,
-                                        bool object_has_multiple_boxes) const;
+      bool object_has_multiple_boxes) const override;
 
   void PaintBackgroundBorderShadow(const PaintInfo&,
-                                   const LayoutPoint& paint_offset);
-  void PaintMask(const PaintInfo&, const LayoutPoint& paint_offset);
+                                   const PhysicalOffset& paint_offset);
+  void PaintMask(const PaintInfo&, const PhysicalOffset& paint_offset);
 
-  LayoutRect AdjustedPaintRect(const LayoutPoint& paint_offset) const;
+  PhysicalRect AdjustedPaintRect(const PhysicalOffset& paint_offset) const;
 
   // Expands the bounds of the current paint chunk for hit test, and records
   // special touch action if any. This should be called in the background paint
   // phase even if there is no other painted content.
-  void RecordHitTestData(const PaintInfo&, const LayoutPoint& paint_offset);
+  void RecordHitTestData(const PaintInfo&, const PhysicalOffset& paint_offset);
 
   const InlineFlowBox& inline_flow_box_;
 };

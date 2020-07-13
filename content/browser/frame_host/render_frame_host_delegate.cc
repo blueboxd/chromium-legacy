@@ -107,7 +107,9 @@ RenderFrameHostImpl* RenderFrameHostDelegate::GetMainFrame() {
 }
 
 std::unique_ptr<WebUIImpl>
-RenderFrameHostDelegate::CreateWebUIForRenderFrameHost(const GURL& url) {
+RenderFrameHostDelegate::CreateWebUIForRenderFrameHost(
+    RenderFrameHost* frame_host,
+    const GURL& url) {
   return nullptr;
 }
 

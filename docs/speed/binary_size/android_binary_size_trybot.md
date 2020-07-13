@@ -134,7 +134,9 @@ For more information on when to use `const char *` vs `const char[]`, see
 
 #### What to do if the Check Fails?
 
-- Add `compress="gzip"` to the `.grd` entry for the resource.
+- Ensure that `compress="false"` is **not** being used in the `.grd` entry for
+  the resource, so that the default behavior of `compress="gzip"` is triggered
+  (for HTML, JS, CSS, and SVG files).
 
 ### Expectation Failures
 

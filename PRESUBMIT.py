@@ -304,7 +304,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^components/chromeos_camera/',
   '^components/component_updater/',
   '^components/content_settings/',
-  '^components/cronet/',
   '^components/data_reduction_proxy/',
   '^components/domain_reliability/',
   '^components/dom_distiller/',

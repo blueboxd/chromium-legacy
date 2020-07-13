@@ -482,6 +482,7 @@ ci.chromium_builder(
     cores = 32,
     main_console_view = 'main',
     os = os.WINDOWS_DEFAULT,
+    tree_closing = False,
 )
 
 ci.chromium_builder(
@@ -504,6 +505,7 @@ ci.chromium_builder(
     cores = 32,
     main_console_view = 'main',
     os = os.WINDOWS_DEFAULT,
+    tree_closing = False,
 )
 
 ci.chromium_builder(

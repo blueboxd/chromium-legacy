@@ -114,4 +114,8 @@ public final class TestWebLayer {
     public boolean canInfoBarContainerScroll(Tab tab) throws RemoteException {
         return mITestWebLayer.canInfoBarContainerScroll(tab.getITab());
     }
+
+    public String getDisplayedUrl(View urlBarView) throws RemoteException {
+        return mITestWebLayer.getDisplayedUrl(ObjectWrapper.wrap(urlBarView));
+    }
 }

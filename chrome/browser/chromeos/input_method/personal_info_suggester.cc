@@ -34,7 +34,8 @@ const char kAssistPhoneNumberPrefix[] = "my phone number is ";
 const char kAssistNumberPrefix[] = "my number is ";
 const char kAssistFirstNamePrefix[] = "my first name is ";
 const char kAssistLastNamePrefix[] = "my last name is ";
-const char kAnnounceShortcut[] = "Press down to navigate and enter to insert.";
+const char kAnnounceAnnotation[] =
+    "Press down to navigate and enter to insert.";
 const int kNoneHighlighted = -1;
 
 constexpr base::TimeDelta kTtsShowDelay =
@@ -292,10 +293,12 @@ void PersonalInfoSuggester::ShowSuggestion(const base::string16& text,
   }
 
   std::string error;
+  bool show_annotation =
+      GetPrefValue(kPersonalInfoSuggesterAcceptanceCount) < kMaxAcceptanceCount;
   ui::ime::SuggestionDetails details;
   details.text = text;
   details.confirmed_length = confirmed_length;
-  details.show_tab = false;
+  details.show_annotation = show_annotation;
   details.show_setting_link =
       GetPrefValue(kPersonalInfoSuggesterAcceptanceCount) == 0 &&
       GetPrefValue(kPersonalInfoSuggesterShowSettingCount) <
@@ -321,7 +324,7 @@ void PersonalInfoSuggester::ShowSuggestion(const base::string16& text,
         // TODO(jiwan): Add translation to other languages when we support more
         // than English.
         base::StringPrintf("Suggestion %s. %s", base::UTF16ToUTF8(text).c_str(),
-                           kAnnounceShortcut),
+                           show_annotation ? kAnnounceAnnotation : ""),
         kTtsShowDelay);
   }
 

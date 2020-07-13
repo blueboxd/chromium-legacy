@@ -50,6 +50,7 @@ suite('CrostiniPageTests', function() {
 
   teardown(function() {
     crostiniPage.remove();
+    settings.Router.getInstance().resetRouteForTesting();
   });
 
   suite('MainPage', function() {

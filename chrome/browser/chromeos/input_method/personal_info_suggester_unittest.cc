@@ -38,7 +38,7 @@ class TestSuggestionHandler : public SuggestionHandlerInterface {
                      std::string* error) override {
     suggestion_text_ = details.text;
     confirmed_length_ = details.confirmed_length;
-    show_tab_ = details.show_tab;
+    show_annotation_ = details.show_annotation;
     show_setting_link_ = details.show_setting_link;
     return true;
   }
@@ -96,7 +96,9 @@ class TestSuggestionHandler : public SuggestionHandlerInterface {
     return false;
   }
 
-  void VerifyShowTab(const bool show_tab) { EXPECT_EQ(show_tab_, show_tab); }
+  void VerifyShowAnnotation(const bool show_annotation) {
+    EXPECT_EQ(show_annotation_, show_annotation);
+  }
   void VerifyShowSettingLink(const bool show_setting_link) {
     EXPECT_EQ(show_setting_link_, show_setting_link);
   }
@@ -106,7 +108,7 @@ class TestSuggestionHandler : public SuggestionHandlerInterface {
  private:
   base::string16 suggestion_text_;
   size_t confirmed_length_ = 0;
-  bool show_tab_ = false;
+  bool show_annotation_ = false;
   bool show_setting_link_ = false;
   bool suggestion_accepted_ = false;
   std::vector<std::string> previous_suggestions_;
@@ -335,6 +337,35 @@ TEST_F(PersonalInfoSuggesterTest, AnnounceSpokenFeedbackWhenChromeVoxIsOn) {
   task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(200));
   tts_handler_->VerifyAnnouncement(base::StringPrintf(
       "Inserted suggestion %s.", base::UTF16ToUTF8(email_).c_str()));
+}
+
+TEST_F(PersonalInfoSuggesterTest, DoNotShowAnnotationAfterMaxAcceptanceCount) {
+  for (int i = 0; i < kMaxAcceptanceCount; i++) {
+    suggester_->Suggest(base::UTF8ToUTF16("my email is "));
+    SendKeyboardEvent("Down");
+    SendKeyboardEvent("Enter");
+    suggestion_handler_->VerifyShowAnnotation(true);
+  }
+  suggester_->Suggest(base::UTF8ToUTF16("my email is "));
+  suggestion_handler_->VerifyShowAnnotation(false);
+}
+
+TEST_F(PersonalInfoSuggesterTest, DoNotAnnounceAnnotationWhenTabNotShown) {
+  profile_->set_profile_name(base::UTF16ToUTF8(email_));
+  profile_->GetPrefs()->SetBoolean(
+      ash::prefs::kAccessibilitySpokenFeedbackEnabled, true);
+  DictionaryPrefUpdate update(profile_->GetPrefs(),
+                              prefs::kAssistiveInputFeatureSettings);
+  update->SetIntKey(kPersonalInfoSuggesterAcceptanceCount, kMaxAcceptanceCount);
+
+  suggester_->Suggest(base::UTF8ToUTF16("my email is "));
+  suggestion_handler_->VerifyShowAnnotation(false);
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(500));
+  tts_handler_->VerifyAnnouncement("");
+
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1000));
+  tts_handler_->VerifyAnnouncement(
+      base::StringPrintf("Suggestion %s. ", base::UTF16ToUTF8(email_).c_str()));
 }
 
 TEST_F(PersonalInfoSuggesterTest, ShowSettingLink) {

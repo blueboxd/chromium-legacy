@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.feed.library.api.host.imageloader.ImageLoader
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.ThumbnailGradient;
 import org.chromium.chrome.feed.R;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -56,7 +57,7 @@ public class FeedImageLoader implements ImageLoaderApi {
         mImageFetcher = ImageFetcherFactory.createImageFetcher(SysUtils.isLowEndDevice()
                         ? ImageFetcherConfig.DISK_CACHE_ONLY
                         : ImageFetcherConfig.IN_MEMORY_WITH_DISK_CACHE,
-                referencePool);
+                Profile.getLastUsedRegularProfile(), referencePool);
     }
 
     public void destroy() {

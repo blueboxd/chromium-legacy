@@ -6,11 +6,11 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "chrome/browser/chromeos/local_search_service/local_search_service.h"
 #include "chrome/browser/ui/webui/settings/chromeos/hierarchy.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_sections.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
+#include "chromeos/components/local_search_service/local_search_service.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -41,7 +41,7 @@ class LayoutTextCombine final : public LayoutText {
   }
   const Font& OriginalFont() const { return Parent()->StyleRef().GetFont(); }
   void TransformToInlineCoordinates(GraphicsContext&,
-                                    const LayoutRect& box_rect,
+                                    const PhysicalRect& box_rect,
                                     bool clip = false) const;
   LayoutUnit InlineWidthForLayout() const;
 

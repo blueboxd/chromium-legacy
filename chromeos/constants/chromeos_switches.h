@@ -220,6 +220,8 @@ extern const char kWaitForInitialPolicyFetchForTest[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kWakeOnWifiPacket[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kUnfilteredBluetoothDevices[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kUpdateRequiredAueForTest[];
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -273,6 +275,11 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsUnfilteredBluetoothDevicesEnabled();
 // the user on their first login) should show tablet mode screens when the
 // device is not in tablet mode.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldOobeUseTabletModeFirstRun();
+
+// Returns true if device policy MinimumChromeVersionEnforced should assume that
+// Auto Update Expiration is reached. This should only be used for testing.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+bool IsAueReachedForUpdateRequiredForTest();
 
 }  // namespace switches
 }  // namespace chromeos

@@ -36,7 +36,7 @@ class MessageDispatcher::RequestHolder {
   // Send |response| if the sequence number matches, or if the request times
   // out, in which case the |response| is UNKNOWN type.
   void SendResponse(const ReceiverResponse& response) {
-    if (!timer_.IsRunning() || response.sequence_number == sequence_number_)
+    if (!timer_.IsRunning() || response.sequence_number() == sequence_number_)
       std::move(response_callback_).Run(response);
     // Ignore the response with mismatched sequence number.
   }
@@ -78,27 +78,27 @@ void MessageDispatcher::Send(mojom::CastMessagePtr message) {
   if (message->json_format_data.empty())
     return;  // Ignore null message.
 
-  ReceiverResponse response;
-  if (!response.Parse(message->json_format_data)) {
+  auto response = ReceiverResponse::Parse(message->json_format_data);
+  if (!response) {
     error_callback_.Run("Response parsing error. message=" +
                         message->json_format_data);
     return;
   }
 
 #if DCHECK_IS_ON()
-  if (response.type == ResponseType::RPC)
+  if (response->type() == ResponseType::RPC)
     DCHECK_EQ(mojom::kRemotingNamespace, message->message_namespace);
   else
     DCHECK_EQ(mojom::kWebRtcNamespace, message->message_namespace);
 #endif  // DCHECK_IS_ON()
 
-  const auto callback_iter = callback_map_.find(response.type);
+  const auto callback_iter = callback_map_.find(response->type());
   if (callback_iter == callback_map_.end()) {
     error_callback_.Run("No callback subscribed. message=" +
                         message->json_format_data);
     return;
   }
-  callback_iter->second.Run(response);
+  callback_iter->second.Run(*response);
 }
 
 void MessageDispatcher::Subscribe(ResponseType type,

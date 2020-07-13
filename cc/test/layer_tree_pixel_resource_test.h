@@ -5,21 +5,16 @@
 #ifndef CC_TEST_LAYER_TREE_PIXEL_RESOURCE_TEST_H_
 #define CC_TEST_LAYER_TREE_PIXEL_RESOURCE_TEST_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
 #include "cc/test/layer_tree_pixel_test.h"
 
 namespace cc {
 
-enum RasterType {
-  SOFTWARE,
-  GPU,
-  ONE_COPY,
-  ZERO_COPY,
-};
-
 struct PixelResourceTestCase {
   LayerTreeTest::RendererType renderer_type;
-  RasterType raster_type;
+  TestRasterType raster_type;
 };
 
 class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
@@ -28,11 +23,7 @@ class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
 
   RendererType renderer_type() const { return test_case_.renderer_type; }
 
-  RasterType raster_type() const { return test_case_.raster_type; }
-
   const char* GetRendererSuffix() const;
-
-  void InitializeSettings(LayerTreeSettings* settings) override;
 
   std::unique_ptr<RasterBufferProvider> CreateRasterBufferProvider(
       LayerTreeHostImpl* host_impl) override;

@@ -6,10 +6,17 @@
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "invalidations": [
-        [8, 572, 440, 18],
-        [8, 74, 418, 516],
-        [485, 0, 15, 600]
+        [8, 18, 440, 554]
       ]
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [485, 606]
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [485, 0],
+      "bounds": [15, 600]
     }
   ]
 }

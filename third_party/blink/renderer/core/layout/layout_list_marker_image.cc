@@ -40,7 +40,7 @@ LayoutSize LayoutListMarkerImage::DefaultSize() const {
 void LayoutListMarkerImage::ComputeIntrinsicSizingInfoByDefaultSize(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
   FloatSize concrete_size = ImageResource()->ImageSizeWithDefaultSize(
-      Style()->EffectiveZoom(), DefaultSize());
+      Style()->EffectiveZoom(), FloatSize(DefaultSize()));
   concrete_size.Scale(ImageDevicePixelRatio());
   LayoutSize image_size(RoundedLayoutSize(concrete_size));
 

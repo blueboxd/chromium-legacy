@@ -27,11 +27,11 @@ import androidx.core.app.NotificationManagerCompat;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
-import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
 import org.chromium.components.browser_ui.notifications.ForegroundServiceUtils;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
+import org.chromium.components.browser_ui.notifications.NotificationWrapperBuilder;
 import org.chromium.media_session.mojom.MediaSessionAction;
 import org.chromium.services.media_session.MediaMetadata;
 
@@ -85,7 +85,7 @@ public class MediaNotificationController {
     private SparseArray<MediaButtonInfo> mActionToButtonInfo;
 
     @VisibleForTesting
-    public ChromeNotificationBuilder mNotificationBuilder;
+    public NotificationWrapperBuilder mNotificationBuilder;
 
     @VisibleForTesting
     public Bitmap mDefaultNotificationLargeIcon;
@@ -243,7 +243,7 @@ public class MediaNotificationController {
      * @return true if {@link Service#startForeground()} was called.
      */
     public static boolean finishStartingForegroundServiceOnO(
-            Service service, ChromeNotification notification) {
+            Service service, NotificationWrapper notification) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return false;
         ForegroundServiceUtils.getInstance().startForeground(service, notification.getMetadata().id,
                 notification.getNotification(), 0 /* foregroundServiceType */);
@@ -294,13 +294,13 @@ public class MediaNotificationController {
         String getNotificationGroupName();
 
         /** Returns a builder suitable as a starting point for creating the notification. */
-        ChromeNotificationBuilder createChromeNotificationBuilder();
+        NotificationWrapperBuilder createNotificationWrapperBuilder();
 
         /** Called when the Android MediaSession has been updated. */
         void onMediaSessionUpdated(MediaSessionCompat session);
 
         /** Called when a notification has been shown and should be logged in UMA. */
-        void logNotificationShown(ChromeNotification notification);
+        void logNotificationShown(NotificationWrapper notification);
     }
 
     public MediaNotificationController(Delegate delegate) {
@@ -547,7 +547,7 @@ public class MediaNotificationController {
         if (mMediaNotificationInfo == null) {
             if (serviceStarting) {
                 finishStartingForegroundServiceOnO(mService,
-                        mDelegate.createChromeNotificationBuilder().buildChromeNotification());
+                        mDelegate.createNotificationWrapperBuilder().buildNotificationWrapper());
                 ForegroundServiceUtils.getInstance().stopForeground(
                         mService, Service.STOP_FOREGROUND_REMOVE);
             }
@@ -556,7 +556,7 @@ public class MediaNotificationController {
         updateMediaSession();
         updateNotificationBuilder();
 
-        ChromeNotification notification = mNotificationBuilder.buildChromeNotification();
+        NotificationWrapper notification = mNotificationBuilder.buildNotificationWrapper();
 
         // On O, finish starting the foreground service nevertheless, or Android will
         // crash Chrome.
@@ -586,7 +586,7 @@ public class MediaNotificationController {
     public void updateNotificationBuilder() {
         assert (mMediaNotificationInfo != null);
 
-        mNotificationBuilder = mDelegate.createChromeNotificationBuilder();
+        mNotificationBuilder = mDelegate.createNotificationWrapperBuilder();
         setMediaStyleLayoutForNotificationBuilder(mNotificationBuilder);
 
         // TODO(zqzhang): It's weird that setShowWhen() doesn't work on K. Calling setWhen() to
@@ -697,7 +697,7 @@ public class MediaNotificationController {
         mMediaSession.setActive(true);
     }
 
-    private void setMediaStyleLayoutForNotificationBuilder(ChromeNotificationBuilder builder) {
+    private void setMediaStyleLayoutForNotificationBuilder(NotificationWrapperBuilder builder) {
         setMediaStyleNotificationText(builder);
         if (!mMediaNotificationInfo.supportsPlayPause()) {
             // Non-playback (Cast) notification will not use MediaStyle, so not
@@ -721,7 +721,7 @@ public class MediaNotificationController {
         addNotificationButtons(builder);
     }
 
-    private void addNotificationButtons(ChromeNotificationBuilder builder) {
+    private void addNotificationButtons(NotificationWrapperBuilder builder) {
         Set<Integer> actions = new HashSet<>();
 
         // TODO(zqzhang): handle other actions when play/pause is not supported? See
@@ -759,7 +759,7 @@ public class MediaNotificationController {
         }
     }
 
-    private void setMediaStyleNotificationText(ChromeNotificationBuilder builder) {
+    private void setMediaStyleNotificationText(NotificationWrapperBuilder builder) {
         if (mMediaNotificationInfo.isPrivate) {
             // Notifications in incognito shouldn't show what is playing to avoid leaking
             // information.

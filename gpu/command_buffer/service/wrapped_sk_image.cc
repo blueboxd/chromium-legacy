@@ -10,6 +10,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -248,6 +249,14 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
           tracing_id_ = tex_info.fID;
         break;
       }
+#if defined(OS_MACOSX)
+      case GrBackendApi::kMetal: {
+        GrMtlTextureInfo image_info;
+        if (backend_texture_.getMtlTextureInfo(&image_info))
+          tracing_id_ = reinterpret_cast<uint64_t>(image_info.fTexture.get());
+        break;
+      }
+#endif
       case GrBackendApi::kVulkan: {
         GrVkImageInfo image_info;
         if (backend_texture_.getVkImageInfo(&image_info))

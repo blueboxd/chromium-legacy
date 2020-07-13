@@ -75,7 +75,6 @@ class CSSTransitionData;
 class CSSVariableData;
 class FilterOperations;
 class Font;
-class FloatRoundedRect;
 class Hyphenation;
 class LayoutTheme;
 class NinePieceImage;
@@ -1897,25 +1896,6 @@ class ComputedStyle : public ComputedStyleBase,
     SetBorderRadius(
         LengthSize(Length::Fixed(s.Width()), Length::Fixed(s.Height())));
   }
-
-  FloatRoundedRect GetBorderFor(const LayoutRect& border_rect) const;
-
-  FloatRoundedRect GetRoundedBorderFor(
-      const LayoutRect& border_rect,
-      bool include_logical_left_edge = true,
-      bool include_logical_right_edge = true) const;
-
-  FloatRoundedRect GetInnerBorderFor(const LayoutRect& border_rect) const;
-
-  FloatRoundedRect GetRoundedInnerBorderFor(
-      const LayoutRect& border_rect,
-      bool include_logical_left_edge = true,
-      bool include_logical_right_edge = true) const;
-  FloatRoundedRect GetRoundedInnerBorderFor(
-      const LayoutRect& border_rect,
-      const LayoutRectOutsets& insets,
-      bool include_logical_left_edge = true,
-      bool include_logical_right_edge = true) const;
 
   bool CanRenderBorderImage() const;
 

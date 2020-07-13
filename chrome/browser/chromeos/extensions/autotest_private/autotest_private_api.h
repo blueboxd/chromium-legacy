@@ -1280,6 +1280,17 @@ class AutotestPrivateDisableSwitchAccessDialogFunction
   ResponseAction Run() override;
 };
 
+class AutotestPrivateDisableAutomationFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateDisableAutomationFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.disableAutomation",
+                             AUTOTESTPRIVATE_DISABLEAUTOMATION)
+
+ private:
+  ~AutotestPrivateDisableAutomationFunction() override;
+  ResponseAction Run() override;
+};
+
 template <>
 KeyedService*
 BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(

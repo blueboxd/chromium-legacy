@@ -34,9 +34,9 @@ const char kIgnoreGpuBlacklist[] = "ignore-gpu-blacklist";
 // devices.
 const char kShaderDiskCacheSizeKB[] = "shader-disk-cache-size-kb";
 
-// Disables the non-sandboxed GPU process for DX12 and Vulkan info collection
-const char kDisableGpuProcessForDX12VulkanInfoCollection[] =
-    "disable-gpu-process-for-dx12-vulkan-info-collection";
+// Disables the non-sandboxed GPU process for DX12 info collection
+const char kDisableGpuProcessForDX12InfoCollection[] =
+    "disable-gpu-process-for-dx12-info-collection";
 
 const char kEnableUnsafeWebGPU[] = "enable-unsafe-webgpu";
 

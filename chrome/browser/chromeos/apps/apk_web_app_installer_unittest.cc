@@ -122,9 +122,9 @@ TEST_F(ApkWebAppInstallerTest, IconDecodeCallsWebAppInstallManager) {
             static_cast<int32_t>(
                 apk_web_app_installer.web_app_info().theme_color.value()));
 
-  EXPECT_EQ(1u, apk_web_app_installer.web_app_info().icon_bitmaps.size());
+  EXPECT_EQ(1u, apk_web_app_installer.web_app_info().icon_bitmaps_any.size());
   EXPECT_FALSE(apk_web_app_installer.web_app_info()
-                   .icon_bitmaps.at(kGeneratedIconSize)
+                   .icon_bitmaps_any.at(kGeneratedIconSize)
                    .drawsNothing());
 }
 

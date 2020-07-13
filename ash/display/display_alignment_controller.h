@@ -12,6 +12,7 @@
 #include "ash/public/cpp/session/session_observer.h"
 #include "base/containers/flat_map.h"
 #include "ui/events/event_handler.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 namespace base {
 class OneShotTimer;
@@ -40,6 +41,10 @@ class ASH_EXPORT DisplayAlignmentController
     // The indicators are visible.
     kIndicatorsVisible,
 
+    // A display is being dragged around in display layouts. Preview indicators
+    // are being updated and shown.
+    kLayoutPreview,
+
     // Screen is locked or there is only one display.
     kDisabled,
   };
@@ -60,11 +65,18 @@ class ASH_EXPORT DisplayAlignmentController
   // SessionObserver:
   void OnLockStateChanged(bool locked) override;
 
-  // Overrides the default OneShotTimer for unit testing.
+  // Update positions of display alignment preview highlights. Display being
+  // dragged is specified by |display_id|. |preview_indicators_| is
+  // populated with indicators from this display and its neighbors as
+  // it is not possible for |display_id| to change mid-drag.
+  void DisplayDragged(int64_t display_id, int32_t delta_x, int32_t delta_y);
+
   void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer);
 
   const std::vector<std::unique_ptr<DisplayAlignmentIndicator>>&
   GetActiveIndicatorsForTesting();
+
+  int64_t GetDraggedDisplayIdForTesting() const;
 
  private:
   // Show all indicators on |src_display| and other indicators that shares
@@ -81,10 +93,15 @@ class ASH_EXPORT DisplayAlignmentController
   // configuration or lock state updates.
   void RefreshState();
 
+  // Updates, shows/hides preview indicators according to changes reported by
+  // DisplayDragged().
+  void ComputePreviewIndicators();
+
   // Stores all DisplayAlignmentIndicators currently being shown. All indicators
   // should either belong to or be a shared edge of display with
   // |triggered_display_id_|. Indicators are created upon activation in
-  // ShowIndicators() and cleared in ResetState().
+  // ShowIndicators() or upon adjusting display layout in
+  // ComputePreviewIndicators() and cleared in ResetState().
   std::vector<std::unique_ptr<DisplayAlignmentIndicator>> active_indicators_;
 
   // Timer used for both edge trigger timeouts and hiding indicators.
@@ -104,6 +121,16 @@ class ASH_EXPORT DisplayAlignmentController
   // Number of times the mouse was on an edge of some display specified by
   // |triggered_display_id_| recently.
   int trigger_count_ = 0;
+
+  // ID of display currently beign dragged. Cannot change from one valid
+  // ID to another as dropping the dragged display causes changes to display
+  // configuration, resetting this ID.
+  int64_t dragged_display_id_;
+
+  // The difference between dragged display's actual position and preview
+  // position. Is an accumulation of |delta_x| and |delta_y| from
+  // DisplayDragged(). The offset is reset when a configuration event occurs.
+  gfx::Vector2d dragged_offset_;
 };
 
 }  // namespace ash

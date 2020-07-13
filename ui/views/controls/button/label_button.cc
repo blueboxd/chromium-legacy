@@ -107,7 +107,7 @@ void LabelButton::SetTextColor(ButtonState for_state, SkColor color) {
   button_state_colors_[for_state] = color;
   if (for_state == STATE_DISABLED)
     label_->SetDisabledColor(color);
-  else if (for_state == state())
+  else if (for_state == GetState())
     label_->SetEnabledColor(color);
   explicitly_set_colors_[for_state] = true;
 }
@@ -379,7 +379,7 @@ gfx::Rect LabelButton::GetThemePaintRect() const {
 ui::NativeTheme::State LabelButton::GetThemeState(
     ui::NativeTheme::ExtraParams* params) const {
   GetExtraParams(params);
-  switch (state()) {
+  switch (GetState()) {
     case STATE_NORMAL:
       return ui::NativeTheme::kNormal;
     case STATE_HOVERED:
@@ -543,12 +543,12 @@ Button::ButtonState LabelButton::GetVisualState() const {
   const bool force_disabled =
       PlatformStyle::kInactiveWidgetControlsAppearDisabled && GetWidget() &&
       !GetWidget()->ShouldPaintAsActive();
-  return force_disabled ? STATE_DISABLED : state();
+  return force_disabled ? STATE_DISABLED : GetState();
 }
 
 void LabelButton::VisualStateChanged() {
   UpdateImage();
-  label_->SetEnabled(state() != STATE_DISABLED);
+  label_->SetEnabled(GetState() != STATE_DISABLED);
 }
 
 void LabelButton::ResetColorsFromNativeTheme() {
@@ -573,8 +573,8 @@ void LabelButton::ResetColorsFromNativeTheme() {
 }
 
 void LabelButton::ResetLabelEnabledColor() {
-  const SkColor color = button_state_colors_[state()];
-  if (state() != STATE_DISABLED && label_->GetEnabledColor() != color)
+  const SkColor color = button_state_colors_[GetState()];
+  if (GetState() != STATE_DISABLED && label_->GetEnabledColor() != color)
     label_->SetEnabledColor(color);
 }
 

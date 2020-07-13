@@ -54,8 +54,8 @@ void ResponseToDownloadCheckResult(
         continue;
       }
       for (const auto& rule : result.triggered_rules()) {
-        if (rule.action() > malware_action)
-          malware_action = rule.action();
+        malware_action = enterprise_connectors::GetHighestPrecedenceAction(
+            malware_action, rule.action());
       }
     }
     if (result.tag() == "dlp") {
@@ -65,41 +65,45 @@ void ResponseToDownloadCheckResult(
         continue;
       }
       for (const auto& rule : result.triggered_rules()) {
-        if (rule.action() > dlp_action)
-          dlp_action = rule.action();
+        dlp_action = enterprise_connectors::GetHighestPrecedenceAction(
+            dlp_action, rule.action());
       }
     }
   }
 
-  switch (malware_action) {
-    case enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
-        BLOCK:
-      *download_result = DownloadCheckResult::DANGEROUS;
-      return;
-    case enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
-        WARN:
-      *download_result = DownloadCheckResult::POTENTIALLY_UNWANTED;
-      return;
-    case enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
-        REPORT_ONLY:
-    case enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
-        ACTION_UNSPECIFIED:
-      break;
-  }
-  switch (dlp_action) {
-    case enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
-        BLOCK:
-      *download_result = DownloadCheckResult::SENSITIVE_CONTENT_BLOCK;
-      return;
-    case enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
-        WARN:
-      *download_result = DownloadCheckResult::SENSITIVE_CONTENT_WARNING;
-      return;
-    case enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
-        REPORT_ONLY:
-    case enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
-        ACTION_UNSPECIFIED:
-      break;
+  if (malware_action == enterprise_connectors::GetHighestPrecedenceAction(
+                            malware_action, dlp_action)) {
+    switch (malware_action) {
+      case enterprise_connectors::ContentAnalysisResponse::Result::
+          TriggeredRule::BLOCK:
+        *download_result = DownloadCheckResult::DANGEROUS;
+        return;
+      case enterprise_connectors::ContentAnalysisResponse::Result::
+          TriggeredRule::WARN:
+        *download_result = DownloadCheckResult::POTENTIALLY_UNWANTED;
+        return;
+      case enterprise_connectors::ContentAnalysisResponse::Result::
+          TriggeredRule::REPORT_ONLY:
+      case enterprise_connectors::ContentAnalysisResponse::Result::
+          TriggeredRule::ACTION_UNSPECIFIED:
+        break;
+    }
+  } else {
+    switch (dlp_action) {
+      case enterprise_connectors::ContentAnalysisResponse::Result::
+          TriggeredRule::BLOCK:
+        *download_result = DownloadCheckResult::SENSITIVE_CONTENT_BLOCK;
+        return;
+      case enterprise_connectors::ContentAnalysisResponse::Result::
+          TriggeredRule::WARN:
+        *download_result = DownloadCheckResult::SENSITIVE_CONTENT_WARNING;
+        return;
+      case enterprise_connectors::ContentAnalysisResponse::Result::
+          TriggeredRule::REPORT_ONLY:
+      case enterprise_connectors::ContentAnalysisResponse::Result::
+          TriggeredRule::ACTION_UNSPECIFIED:
+        break;
+    }
   }
 
   if (dlp_scan_failure || malware_scan_failure) {
@@ -112,18 +116,11 @@ void ResponseToDownloadCheckResult(
 
 void ResponseToDownloadCheckResult(const DeepScanningClientResponse& response,
                                    DownloadCheckResult* download_result) {
-  if (response.has_malware_scan_verdict()) {
-    if (response.malware_scan_verdict().verdict() ==
-        MalwareDeepScanningVerdict::MALWARE) {
-      *download_result = DownloadCheckResult::DANGEROUS;
-      return;
-    }
-
-    if (response.malware_scan_verdict().verdict() ==
-        MalwareDeepScanningVerdict::UWS) {
-      *download_result = DownloadCheckResult::POTENTIALLY_UNWANTED;
-      return;
-    }
+  if (response.has_malware_scan_verdict() &&
+      response.malware_scan_verdict().verdict() ==
+          MalwareDeepScanningVerdict::MALWARE) {
+    *download_result = DownloadCheckResult::DANGEROUS;
+    return;
   }
 
   if (response.has_dlp_scan_verdict() &&
@@ -138,7 +135,17 @@ void ResponseToDownloadCheckResult(const DeepScanningClientResponse& response,
       *download_result = DownloadCheckResult::SENSITIVE_CONTENT_BLOCK;
       return;
     }
+  }
 
+  if (response.has_malware_scan_verdict() &&
+      response.malware_scan_verdict().verdict() ==
+          MalwareDeepScanningVerdict::UWS) {
+    *download_result = DownloadCheckResult::POTENTIALLY_UNWANTED;
+    return;
+  }
+
+  if (response.has_dlp_scan_verdict() &&
+      response.dlp_scan_verdict().status() == DlpDeepScanningVerdict::SUCCESS) {
     bool should_dlp_warn = std::any_of(
         response.dlp_scan_verdict().triggered_rules().begin(),
         response.dlp_scan_verdict().triggered_rules().end(),

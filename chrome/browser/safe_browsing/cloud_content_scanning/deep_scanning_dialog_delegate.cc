@@ -141,28 +141,6 @@ bool DlpVerdictAllowsDataUse(
   return true;
 }
 
-enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::Action
-GetHighestPrecedenceAction(
-    const enterprise_connectors::ContentAnalysisResponse& response) {
-  auto action = enterprise_connectors::ContentAnalysisResponse::Result::
-      TriggeredRule::ACTION_UNSPECIFIED;
-
-  for (const auto& result : response.results()) {
-    if (!result.has_status() ||
-        result.status() !=
-            enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS) {
-      continue;
-    }
-
-    for (const auto& rule : result.triggered_rules()) {
-      if (rule.action() > action)
-        action = rule.action();
-    }
-  }
-
-  return action;
-}
-
 bool ContentAnalysisActionAllowsDataUse(
     enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
         Action action) {
@@ -540,7 +518,7 @@ void DeepScanningDialogDelegate::ConnectorStringRequestCallback(
       access_point_, content_size, result, response);
 
   text_request_complete_ = true;
-  auto action = GetHighestPrecedenceAction(response);
+  auto action = enterprise_connectors::GetHighestPrecedenceAction(response);
   bool text_complies = ResultShouldAllowDataUse(result, data_.settings) &&
                        ContentAnalysisActionAllowsDataUse(action);
   std::fill(result_.text_results.begin(), result_.text_results.end(),

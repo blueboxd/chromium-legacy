@@ -60,6 +60,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kIntensiveWakeUpThrottling;
 BLINK_COMMON_EXPORT extern const char
     kIntensiveWakeUpThrottling_GracePeriodSeconds_Name[];
 
+BLINK_COMMON_EXPORT extern const base::Feature kOptOutWebRTCFromAllThrottling;
+
 #if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 BLINK_COMMON_EXPORT extern const base::Feature kWebRtcH264WithOpenH264FFmpeg;
 #endif  // BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)

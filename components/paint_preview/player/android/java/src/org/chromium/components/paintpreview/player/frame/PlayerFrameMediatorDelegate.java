@@ -4,6 +4,7 @@
 
 package org.chromium.components.paintpreview.player.frame;
 
+import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 
@@ -46,4 +47,9 @@ public interface PlayerFrameMediatorDelegate {
      * redraw when scaling is finished if its layout size didn't change.
      */
     void forceRedrawVisibleSubframes();
+
+    /**
+     * Updates the bitmap matrix in the model.
+     */
+    void updateBitmapMatrix(Bitmap[][] bitmapMatrix);
 }

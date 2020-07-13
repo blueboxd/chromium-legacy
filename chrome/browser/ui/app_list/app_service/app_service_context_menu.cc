@@ -84,6 +84,12 @@ void AppServiceContextMenu::GetMenuModel(GetMenuModelCallback callback) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
   DCHECK(proxy);
+  if (proxy->AppRegistryCache().GetAppType(app_id()) ==
+      apps::mojom::AppType::kUnknown) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
   proxy->GetMenuModel(
       app_id(), apps::mojom::MenuType::kAppList,
       controller()->GetAppListDisplayId(),

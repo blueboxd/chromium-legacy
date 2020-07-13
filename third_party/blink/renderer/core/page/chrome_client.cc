@@ -54,7 +54,7 @@ void ChromeClient::InstallSupplements(LocalFrame& frame) {
 
 void ChromeClient::SetWindowRectWithAdjustment(const IntRect& pending_rect,
                                                LocalFrame& frame) {
-  IntRect screen = GetScreenInfo(frame).available_rect;
+  IntRect screen(GetScreenInfo(frame).available_rect);
   IntRect window = pending_rect;
 
   IntSize minimum_size = MinimumWindowSize();

@@ -162,7 +162,7 @@ void ToolbarActionView::UpdateState() {
   if (!view_controller_->IsEnabled(web_contents) &&
       !view_controller_->DisabledClickOpensMenu()) {
     SetState(views::Button::STATE_DISABLED);
-  } else if (state() == views::Button::STATE_DISABLED) {
+  } else if (GetState() == views::Button::STATE_DISABLED) {
     SetState(views::Button::STATE_NORMAL);
   }
 

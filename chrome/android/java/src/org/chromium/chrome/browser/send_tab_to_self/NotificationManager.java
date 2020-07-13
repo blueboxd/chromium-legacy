@@ -25,16 +25,16 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.notifications.NotificationWrapperBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
-import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
+import org.chromium.components.browser_ui.notifications.NotificationWrapperBuilder;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 
 /**
@@ -151,9 +151,9 @@ public class NotificationManager {
         String contextText = res.getString(
                 R.string.send_tab_to_self_notification_context_text, uri.getHost(), deviceName);
         // Build the notification itself.
-        ChromeNotificationBuilder builder =
-                NotificationBuilderFactory
-                        .createChromeNotificationBuilder(true /* preferCompat */,
+        NotificationWrapperBuilder builder =
+                NotificationWrapperBuilderFactory
+                        .createNotificationWrapperBuilder(true /* preferCompat */,
                                 ChromeChannelDefinitions.ChannelId.SHARING,
                                 null /* remoteAppPackageName */,
                                 new NotificationMetadata(
@@ -169,7 +169,7 @@ public class NotificationManager {
                         .setVibrate(new long[0])
                         .setSmallIcon(R.drawable.ic_chrome)
                         .setDefaults(Notification.DEFAULT_ALL);
-        ChromeNotification notification = builder.buildChromeNotification();
+        NotificationWrapper notification = builder.buildNotificationWrapper();
 
         manager.notify(notification);
         NotificationUmaTracker.getInstance().onNotificationShown(

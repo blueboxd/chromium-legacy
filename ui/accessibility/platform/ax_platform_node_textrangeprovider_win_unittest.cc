@@ -39,49 +39,29 @@ namespace ui {
 #define ASSERT_UIA_NOTSUPPORTED(expr) \
   ASSERT_EQ(static_cast<HRESULT>(UIA_E_NOTSUPPORTED), (expr))
 
-#define EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(safearray, expected_property_values) \
-  {                                                                         \
-    EXPECT_EQ(sizeof(V_R8(LPVARIANT(NULL))),                                \
-              ::SafeArrayGetElemsize(safearray));                           \
-    ASSERT_EQ(1u, SafeArrayGetDim(safearray));                              \
-    LONG array_lower_bound;                                                 \
-    ASSERT_HRESULT_SUCCEEDED(                                               \
-        SafeArrayGetLBound(safearray, 1, &array_lower_bound));              \
-    LONG array_upper_bound;                                                 \
-    ASSERT_HRESULT_SUCCEEDED(                                               \
-        SafeArrayGetUBound(safearray, 1, &array_upper_bound));              \
-    double* array_data;                                                     \
-    ASSERT_HRESULT_SUCCEEDED(::SafeArrayAccessData(                         \
-        safearray, reinterpret_cast<void**>(&array_data)));                 \
-    size_t count = array_upper_bound - array_lower_bound + 1;               \
-    ASSERT_EQ(expected_property_values.size(), count);                      \
-    for (size_t i = 0; i < count; ++i) {                                    \
-      EXPECT_EQ(array_data[i], expected_property_values[i]);                \
-    }                                                                       \
-    ASSERT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(safearray));           \
-  }
-
-#define EXPECT_UIA_VT_UNKNOWN_SAFEARRAY_EQ(safearray,                    \
-                                           expected_property_values)     \
-  {                                                                      \
-    EXPECT_EQ(sizeof(V_UNKNOWN(LPVARIANT(NULL))),                        \
-              ::SafeArrayGetElemsize(safearray));                        \
-    EXPECT_EQ(1u, SafeArrayGetDim(safearray));                           \
-    LONG array_lower_bound;                                              \
-    EXPECT_HRESULT_SUCCEEDED(                                            \
-        SafeArrayGetLBound(safearray, 1, &array_lower_bound));           \
-    LONG array_upper_bound;                                              \
-    EXPECT_HRESULT_SUCCEEDED(                                            \
-        SafeArrayGetUBound(safearray, 1, &array_upper_bound));           \
-    ComPtr<IRawElementProviderSimple>* array_data;                       \
-    EXPECT_HRESULT_SUCCEEDED(::SafeArrayAccessData(                      \
-        safearray, reinterpret_cast<void**>(&array_data)));              \
-    size_t count = array_upper_bound - array_lower_bound + 1;            \
-    EXPECT_EQ(expected_property_values.size(), count);                   \
-    for (size_t i = 0; i < count; ++i) {                                 \
-      EXPECT_EQ(array_data[i].Get(), expected_property_values[i].Get()); \
-    }                                                                    \
-    EXPECT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(safearray));        \
+#define EXPECT_UIA_SAFEARRAY_EQ(safearray, expected_property_values)   \
+  {                                                                    \
+    using T = typename decltype(expected_property_values)::value_type; \
+    EXPECT_EQ(sizeof(T), ::SafeArrayGetElemsize(safearray));           \
+    EXPECT_EQ(1u, SafeArrayGetDim(safearray));                         \
+    LONG array_lower_bound;                                            \
+    EXPECT_HRESULT_SUCCEEDED(                                          \
+        SafeArrayGetLBound(safearray, 1, &array_lower_bound));         \
+    LONG array_upper_bound;                                            \
+    EXPECT_HRESULT_SUCCEEDED(                                          \
+        SafeArrayGetUBound(safearray, 1, &array_upper_bound));         \
+    const size_t count = array_upper_bound - array_lower_bound + 1;    \
+    EXPECT_EQ(expected_property_values.size(), count);                 \
+    if (sizeof(T) == ::SafeArrayGetElemsize(safearray) &&              \
+        count == expected_property_values.size()) {                    \
+      T* array_data;                                                   \
+      EXPECT_HRESULT_SUCCEEDED(::SafeArrayAccessData(                  \
+          safearray, reinterpret_cast<void**>(&array_data)));          \
+      for (size_t i = 0; i < count; ++i) {                             \
+        EXPECT_EQ(array_data[i], expected_property_values[i]);         \
+      }                                                                \
+      EXPECT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(safearray));    \
+    }                                                                  \
   }
 
 #define EXPECT_UIA_TEXTATTRIBUTE_EQ(provider, attribute, variant)          \
@@ -226,6 +206,30 @@ class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
     EXPECT_HRESULT_SUCCEEDED(
         text_provider->get_DocumentRange(&text_range_provider));
     ASSERT_NE(nullptr, text_range_provider.Get());
+  }
+
+  void CreateTextRangeProviderWin(
+      ComPtr<AXPlatformNodeTextRangeProviderWin>& text_range_provider_win,
+      AXPlatformNodeWin* owner,
+      AXTreeID tree_id,
+      AXNode::AXID start_anchor_id,
+      int start_offset,
+      ax::mojom::TextAffinity start_affinity,
+      AXNode::AXID end_anchor_id,
+      int end_offset,
+      ax::mojom::TextAffinity end_affinity) {
+    AXNodePosition::AXPositionInstance range_start =
+        AXNodePosition::CreateTextPosition(tree_id, start_anchor_id,
+                                           start_offset, start_affinity);
+    AXNodePosition::AXPositionInstance range_end =
+        AXNodePosition::CreateTextPosition(tree_id, end_anchor_id, end_offset,
+                                           end_affinity);
+
+    ComPtr<ITextRangeProvider> text_range_provider =
+        AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
+            owner, std::move(range_start), std::move(range_end));
+
+    text_range_provider->QueryInterface(IID_PPV_ARGS(&text_range_provider_win));
   }
 
   void ComputeWordBoundariesOffsets(const std::string& text,
@@ -2920,7 +2924,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                                          20,  50, 200, 30, /* check box */
                                          220, 20, 30,  30, /* line 1 */
                                          220, 50, 42,  30 /* line 2 */};
-  EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(rectangles.Get(), expected_values);
+  EXPECT_UIA_SAFEARRAY_EQ(rectangles.Get(), expected_values);
   rectangles.Reset();
 
   // Move the text range end back by one character.
@@ -2936,7 +2940,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                      20,  50, 200, 30, /* check box */
                      220, 20, 30,  30, /* line 1 */
                      220, 50, 35,  30 /* line 2 */};
-  EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(rectangles.Get(), expected_values);
+  EXPECT_UIA_SAFEARRAY_EQ(rectangles.Get(), expected_values);
   rectangles.Reset();
 
   // Move the text range end back by one line.
@@ -2951,7 +2955,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   expected_values = {20,  20, 200, 30, /* button */
                      20,  50, 200, 30, /* check box */
                      220, 20, 30,  30 /* line 1 */};
-  EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(rectangles.Get(), expected_values);
+  EXPECT_UIA_SAFEARRAY_EQ(rectangles.Get(), expected_values);
   rectangles.Reset();
 
   // Move the text range end back by one line.
@@ -2965,7 +2969,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
       text_range_provider->GetBoundingRectangles(rectangles.Receive()));
   expected_values = {20, 20, 200, 30, /* button */
                      20, 50, 200, 30 /* check box */};
-  EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(rectangles.Get(), expected_values);
+  EXPECT_UIA_SAFEARRAY_EQ(rectangles.Get(), expected_values);
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
@@ -3524,7 +3528,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderGetChildren) {
 
     expected_values = {};
 
-    EXPECT_UIA_VT_UNKNOWN_SAFEARRAY_EQ(children.Get(), expected_values);
+    EXPECT_UIA_SAFEARRAY_EQ(children.Get(), expected_values);
   }
 
   // Test static_text_6 - a leaf node should have no children.
@@ -3540,7 +3544,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderGetChildren) {
 
     expected_values = {};
 
-    EXPECT_UIA_VT_UNKNOWN_SAFEARRAY_EQ(children.Get(), expected_values);
+    EXPECT_UIA_SAFEARRAY_EQ(children.Get(), expected_values);
   }
 
   // Test static_text_3 - children should include inline_box_4 and inline_box_5.
@@ -3556,7 +3560,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderGetChildren) {
 
     expected_values = {inline_box_4_raw, inline_box_5_raw};
 
-    EXPECT_UIA_VT_UNKNOWN_SAFEARRAY_EQ(children.Get(), expected_values);
+    EXPECT_UIA_SAFEARRAY_EQ(children.Get(), expected_values);
   }
 
   // Test button_8 - a button should never expose its children.
@@ -3572,7 +3576,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderGetChildren) {
 
     expected_values = {};
 
-    EXPECT_UIA_VT_UNKNOWN_SAFEARRAY_EQ(children.Get(), expected_values);
+    EXPECT_UIA_SAFEARRAY_EQ(children.Get(), expected_values);
   }
 
   // Test document_2 - children should not include ignored nodes and nodes under
@@ -3592,7 +3596,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderGetChildren) {
         static_text_6_raw, button_8_raw,
     };
 
-    EXPECT_UIA_VT_UNKNOWN_SAFEARRAY_EQ(children.Get(), expected_values);
+    EXPECT_UIA_SAFEARRAY_EQ(children.Get(), expected_values);
   }
 }
 
@@ -3617,6 +3621,13 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   text_data.SetTextPosition(ax::mojom::TextPosition::kSubscript);
   text_data.SetRestriction(ax::mojom::Restriction::kReadOnly);
   text_data.SetTextAlign(ax::mojom::TextAlign::kCenter);
+  text_data.AddIntListAttribute(ax::mojom::IntListAttribute::kMarkerTypes,
+                                {(int)ax::mojom::MarkerType::kGrammar,
+                                 (int)ax::mojom::MarkerType::kSpelling});
+  text_data.AddIntListAttribute(ax::mojom::IntListAttribute::kMarkerStarts,
+                                {0, 5});
+  text_data.AddIntListAttribute(ax::mojom::IntListAttribute::kMarkerEnds,
+                                {9, 9});
   text_data.SetName("some text");
 
   ui::AXNodeData heading_data;
@@ -3643,6 +3654,13 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   heading_text_data.SetTextPosition(ax::mojom::TextPosition::kSuperscript);
   heading_text_data.AddState(ax::mojom::State::kEditable);
   heading_text_data.SetTextAlign(ax::mojom::TextAlign::kJustify);
+  heading_text_data.AddIntListAttribute(
+      ax::mojom::IntListAttribute::kMarkerTypes,
+      {(int)ax::mojom::MarkerType::kSpelling});
+  heading_text_data.AddIntListAttribute(
+      ax::mojom::IntListAttribute::kMarkerStarts, {5});
+  heading_text_data.AddIntListAttribute(
+      ax::mojom::IntListAttribute::kMarkerEnds, {9});
   heading_text_data.SetName("more text");
 
   ui::AXNodeData mark_data;
@@ -4077,6 +4095,72 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                               UIA_TextFlowDirectionsAttributeId,
                               expected_variant);
   expected_variant.Reset();
+
+  {
+    // |text_node| has a grammar error on the entire text, and a spelling error
+    // for one word, so the range has mixed annotations.
+    EXPECT_UIA_TEXTATTRIBUTE_MIXED(text_range_provider,
+                                   UIA_AnnotationTypesAttributeId);
+
+    // start: TextPosition, anchor_id=2, text_offset=5,
+    //        annotated_text=some <t>ext
+    // end  : TextPosition, anchor_id=2, text_offset=9,
+    //        annotated_text=some text<>
+    AXPlatformNodeWin* owner =
+        static_cast<AXPlatformNodeWin*>(AXPlatformNodeFromNode(text_node));
+    ComPtr<AXPlatformNodeTextRangeProviderWin> range_with_annotations;
+    CreateTextRangeProviderWin(
+        range_with_annotations, owner, tree_data.tree_id,
+        /*start_anchor_id=*/text_node->id(), /*start_offset=*/5,
+        /*start_affinity*/ ax::mojom::TextAffinity::kDownstream,
+        /*end_anchor_id=*/text_node->id(), /*end_offset=*/9,
+        /*end_affinity*/ ax::mojom::TextAffinity::kDownstream);
+
+    base::win::ScopedVariant annotation_types_variant;
+    EXPECT_HRESULT_SUCCEEDED(range_with_annotations->GetAttributeValue(
+        UIA_AnnotationTypesAttributeId, annotation_types_variant.Receive()));
+
+    EXPECT_EQ(annotation_types_variant.type(), VT_ARRAY | VT_I4);
+    std::vector<int> expected_annotations = {AnnotationType_SpellingError,
+                                             AnnotationType_GrammarError};
+    EXPECT_UIA_SAFEARRAY_EQ(V_ARRAY(annotation_types_variant.ptr()),
+                            expected_annotations);
+  }
+
+  {
+    // |heading_text_node| has a a spelling error for one word, and no
+    // annotations for the remaining text, so the range has mixed annotations.
+    EXPECT_UIA_TEXTATTRIBUTE_MIXED(heading_text_range_provider,
+                                   UIA_AnnotationTypesAttributeId);
+
+    // start: TextPosition, anchor_id=4, text_offset=5,
+    //        annotated_text=more <t>ext
+    // end  : TextPosition, anchor_id=4, text_offset=9,
+    //        annotated_text=more text<>
+    AXPlatformNodeWin* owner = static_cast<AXPlatformNodeWin*>(
+        AXPlatformNodeFromNode(heading_text_node));
+    ComPtr<AXPlatformNodeTextRangeProviderWin> range_with_annotations;
+    CreateTextRangeProviderWin(
+        range_with_annotations, owner, tree_data.tree_id,
+        /*start_anchor_id=*/heading_text_node->id(), /*start_offset=*/5,
+        /*start_affinity*/ ax::mojom::TextAffinity::kDownstream,
+        /*end_anchor_id=*/heading_text_node->id(), /*end_offset=*/9,
+        /*end_affinity*/ ax::mojom::TextAffinity::kDownstream);
+
+    base::win::ScopedVariant annotation_types_variant;
+    EXPECT_HRESULT_SUCCEEDED(range_with_annotations->GetAttributeValue(
+        UIA_AnnotationTypesAttributeId, annotation_types_variant.Receive()));
+
+    std::vector<int> expected_annotations = {AnnotationType_SpellingError};
+    EXPECT_UIA_SAFEARRAY_EQ(V_ARRAY(annotation_types_variant.ptr()),
+                            expected_annotations);
+  }
+
+  {
+    base::win::ScopedVariant empty_variant;
+    EXPECT_UIA_TEXTATTRIBUTE_EQ(mark_text_range_provider,
+                                UIA_AnnotationTypesAttributeId, empty_variant);
+  }
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
@@ -4118,8 +4202,6 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                                         UIA_AnimationStyleAttributeId);
   EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
                                         UIA_AnnotationObjectsAttributeId);
-  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
-                                        UIA_AnnotationTypesAttributeId);
   EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
                                         UIA_BeforeParagraphSpacingAttributeId);
   EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
@@ -4192,27 +4274,21 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
   Init(initial_state);
 
+  // Making |owner| AXID:2 so that |TestAXNodeWrapper::BuildAllWrappers|
+  // will build the entire subtree, and not only AXID:3 for example.
+  AXPlatformNodeWin* owner = static_cast<AXPlatformNodeWin*>(
+      AXPlatformNodeFromNode(GetNodeFromTree(tree_id, 2)));
+
+  // start: TextPosition, anchor_id=4, text_offset=0, annotated_text=<s>ome text
+  // end  : TextPosition, anchor_id=2, text_offset=17,
+  //        annotated_text=some textmore tex<t>
   ComPtr<AXPlatformNodeTextRangeProviderWin> text_range_provider_win;
-  {
-    // Making |owner| AXID:2 so that |TestAXNodeWrapper::BuildAllWrappers|
-    // will build the entire subtree, and not only AXID:3 for example.
-    AXPlatformNodeWin* owner = static_cast<AXPlatformNodeWin*>(
-        AXPlatformNodeFromNode(GetNodeFromTree(tree_id, 2)));
-
-    AXNodePosition::AXPositionInstance range_start =
-        AXNodePosition::CreateTextPosition(
-            tree_id, /*anchor_id=*/4, /*text_offset=*/0,
-            ax::mojom::TextAffinity::kDownstream);
-    AXNodePosition::AXPositionInstance range_end =
-        AXNodePosition::CreateTextPosition(
-            tree_id, /*anchor_id=*/2, /*text_offset=*/17,
-            ax::mojom::TextAffinity::kDownstream);
-
-    ComPtr<ITextRangeProvider> text_range_provider =
-        AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
-            owner, std::move(range_start), std::move(range_end));
-    text_range_provider->QueryInterface(IID_PPV_ARGS(&text_range_provider_win));
-  }
+  CreateTextRangeProviderWin(
+      text_range_provider_win, owner, tree_id,
+      /*start_anchor_id=*/4, /*start_offset=*/0,
+      /*start_affinity*/ ax::mojom::TextAffinity::kDownstream,
+      /*end_anchor_id=*/2, /*end_offset=*/17,
+      /*end_affinity*/ ax::mojom::TextAffinity::kDownstream);
 
   ASSERT_TRUE(GetStart(text_range_provider_win.Get())->IsTextPosition());
   ASSERT_EQ(4, GetStart(text_range_provider_win.Get())->anchor_id());
@@ -5225,27 +5301,20 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
   Init(initial_state);
 
+  // Making |owner| AXID:1 so that |TestAXNodeWrapper::BuildAllWrappers|
+  // will build the entire tree.
+  AXPlatformNodeWin* owner = static_cast<AXPlatformNodeWin*>(
+      AXPlatformNodeFromNode(GetNodeFromTree(tree_id, 1)));
+
+  // start: TextPosition, anchor_id=3, text_offset=1, annotated_text=i<g>nored
+  // end  : TextPosition, anchor_id=3, text_offset=6, annotated_text=ignore<d>
   ComPtr<AXPlatformNodeTextRangeProviderWin> ignored_range_win;
-  {
-    // Making |owner| AXID:1 so that |TestAXNodeWrapper::BuildAllWrappers|
-    // will build the entire tree.
-    AXPlatformNodeWin* owner = static_cast<AXPlatformNodeWin*>(
-        AXPlatformNodeFromNode(GetNodeFromTree(tree_id, 1)));
-
-    AXNodePosition::AXPositionInstance range_start =
-        AXNodePosition::CreateTextPosition(
-            tree_id, /*anchor_id=*/3, /*text_offset=*/1,
-            ax::mojom::TextAffinity::kDownstream);
-    AXNodePosition::AXPositionInstance range_end =
-        AXNodePosition::CreateTextPosition(
-            tree_id, /*anchor_id=*/3, /*text_offset=*/6,
-            ax::mojom::TextAffinity::kDownstream);
-
-    ComPtr<ITextRangeProvider> text_range_provider =
-        AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
-            owner, std::move(range_start), std::move(range_end));
-    text_range_provider->QueryInterface(IID_PPV_ARGS(&ignored_range_win));
-  }
+  CreateTextRangeProviderWin(
+      ignored_range_win, owner, tree_id,
+      /*start_anchor_id=*/3, /*start_offset=*/1,
+      /*start_affinity*/ ax::mojom::TextAffinity::kDownstream,
+      /*end_anchor_id=*/3, /*end_offset=*/6,
+      /*end_affinity*/ ax::mojom::TextAffinity::kDownstream);
 
   EXPECT_TRUE(GetStart(ignored_range_win.Get())->IsIgnored());
   EXPECT_TRUE(GetEnd(ignored_range_win.Get())->IsIgnored());
@@ -5330,26 +5399,18 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   AXPlatformNodeWin* owner = static_cast<AXPlatformNodeWin*>(
       AXPlatformNodeFromNode(GetNodeFromTree(tree_id, 1)));
 
-  // TextPosition, anchor_id=2, text_offset=6, annotated_text=before<>
-  AXNodePosition::AXPositionInstance range_start =
-      AXNodePosition::CreateTextPosition(tree_id, /*anchor_id=*/2,
-                                         /*text_offset=*/6,
-                                         ax::mojom::TextAffinity::kDownstream);
-
-  // TextPosition, anchor_id=5, text_offset=0, annotated_text=<a>fter
-  AXNodePosition::AXPositionInstance range_end =
-      AXNodePosition::CreateTextPosition(tree_id, /*anchor_id=*/5,
-                                         /*text_offset=*/0,
-                                         ax::mojom::TextAffinity::kDownstream);
-
-  ComPtr<AXPlatformNodeTextRangeProviderWin> range_span_ignored_nodes;
   // Text range before NormalizeTextRange()
   // |before<>||ignored1||ignored2||<a>fter|
   //         |-----------------------|
-  ComPtr<ITextRangeProvider> text_range_provider =
-      AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
-          owner, std::move(range_start), std::move(range_end));
-  text_range_provider->QueryInterface(IID_PPV_ARGS(&range_span_ignored_nodes));
+  // start: TextPosition, anchor_id=2, text_offset=6, annotated_text=before<>
+  // end  : TextPosition, anchor_id=5, text_offset=0, annotated_text=<a>fter
+  ComPtr<AXPlatformNodeTextRangeProviderWin> range_span_ignored_nodes;
+  CreateTextRangeProviderWin(
+      range_span_ignored_nodes, owner, tree_id,
+      /*start_anchor_id=*/2, /*start_offset=*/6,
+      /*start_affinity*/ ax::mojom::TextAffinity::kDownstream,
+      /*end_anchor_id=*/5, /*end_offset=*/0,
+      /*end_affinity*/ ax::mojom::TextAffinity::kDownstream);
 
   // Text range after NormalizeTextRange()
   // |before||ignored1||ignored2||<a>fter|
@@ -5437,23 +5498,15 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   AXPlatformNodeWin* owner = static_cast<AXPlatformNodeWin*>(
       AXPlatformNodeFromNode(GetNodeFromTree(tree_data.tree_id, 1)));
 
-  // TextPosition, anchor_id=3, text_offset=1, annotated_text=/xFFFC<>
-  AXNodePosition::AXPositionInstance range_start =
-      AXNodePosition::CreateTextPosition(tree_data.tree_id, /*anchor_id=*/3,
-                                         /*text_offset=*/1,
-                                         ax::mojom::TextAffinity::kDownstream);
-
-  // TextPosition, anchor_id=7, text_offset=0, annotated_text=<p>i
-  AXNodePosition::AXPositionInstance range_end =
-      AXNodePosition::CreateTextPosition(tree_data.tree_id, /*anchor_id=*/7,
-                                         /*text_offset=*/0,
-                                         ax::mojom::TextAffinity::kDownstream);
-
+  // start: TextPosition, anchor_id=3, text_offset=1, annotated_text=/xFFFC<>
+  // end  : TextPosition, anchor_id=7, text_offset=0, annotated_text=<p>i
   ComPtr<AXPlatformNodeTextRangeProviderWin> range;
-  ComPtr<ITextRangeProvider> text_range_provider =
-      AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
-          owner, std::move(range_start), std::move(range_end));
-  text_range_provider->QueryInterface(IID_PPV_ARGS(&range));
+  CreateTextRangeProviderWin(
+      range, owner, tree_data.tree_id,
+      /*start_anchor_id=*/3, /*start_offset=*/1,
+      /*start_affinity*/ ax::mojom::TextAffinity::kDownstream,
+      /*end_anchor_id=*/7, /*end_offset=*/0,
+      /*end_affinity*/ ax::mojom::TextAffinity::kDownstream);
 
   NormalizeTextRange(range.Get());
   EXPECT_EQ(*GetStart(range.Get()), *GetEnd(range.Get()));
@@ -5498,21 +5551,15 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestValidateStartAndEnd) {
   AXPlatformNodeWin* owner = static_cast<AXPlatformNodeWin*>(
       AXPlatformNodeFromNode(GetNodeFromTree(tree_id, 1)));
 
-  // TextPosition, anchor_id=2, text_offset=9, annotated_text=some text<>
-  AXNodePosition::AXPositionInstance range_start =
-      AXNodePosition::CreateTextPosition(tree_id, /*anchor_id=*/1,
-                                         /*text_offset=*/0,
-                                         ax::mojom::TextAffinity::kDownstream);
-
-  // TextPosition, anchor_id=2, text_offset=9, annotated_text=some text<>
-  AXNodePosition::AXPositionInstance range_end =
-      AXNodePosition::CreateTextPosition(tree_id, /*anchor_id=*/3,
-                                         /*text_offset=*/9,
-                                         ax::mojom::TextAffinity::kDownstream);
-
-  ComPtr<ITextRangeProvider> text_range_provider =
-      AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
-          owner, std::move(range_start), std::move(range_end));
+  // start: TextPosition, anchor_id=1, text_offset=0, annotated_text=<s>ome text
+  // end  : TextPosition, anchor_id=3, text_offset=9, annotated_text=more text<>
+  ComPtr<AXPlatformNodeTextRangeProviderWin> text_range_provider;
+  CreateTextRangeProviderWin(
+      text_range_provider, owner, tree_id,
+      /*start_anchor_id=*/1, /*start_offset=*/0,
+      /*start_affinity*/ ax::mojom::TextAffinity::kDownstream,
+      /*end_anchor_id=*/3, /*end_offset=*/9,
+      /*end_affinity*/ ax::mojom::TextAffinity::kDownstream);
 
   // Since the end of the range is at MaxTextOffset, moving it by 1 character
   // should have an expected_count of 0.

@@ -45,7 +45,7 @@ class Gpu;
 
 namespace mirroring {
 
-struct ReceiverResponse;
+class ReceiverResponse;
 class VideoCaptureClient;
 class ReceiverSetupQuerier;
 
@@ -85,6 +85,11 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
   void OnLoggingEventsReceived(
       std::unique_ptr<std::vector<media::cast::FrameEvent>> frame_events,
       std::unique_ptr<std::vector<media::cast::PacketEvent>> packet_events);
+
+  // Helper method for setting constraints from the ANSWER response.
+  void SetConstraints(const openscreen::cast::Answer& answer,
+                      media::cast::FrameSenderConfig* audio_config,
+                      media::cast::FrameSenderConfig* video_config);
 
   // Callback for ANSWER response. If the ANSWER is invalid, |observer_| will
   // get notified with error, and session is stopped. Otherwise, capturing and

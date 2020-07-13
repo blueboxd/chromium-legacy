@@ -8,10 +8,13 @@
 #include <utility>
 #include <vector>
 
+#include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/ambient_photo_controller.h"
 #include "ash/ambient/fake_ambient_backend_controller_impl.h"
+#include "ash/ambient/ui/ambient_background_image_view.h"
 #include "ash/ambient/ui/ambient_container_view.h"
 #include "ash/ambient/ui/photo_view.h"
+#include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/shell.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
@@ -53,10 +56,19 @@ class TestAmbientImageDecoderImpl : public AmbientImageDecoder {
       base::OnceCallback<void(const gfx::ImageSkia&)> callback) override {
     // Pretend to respond asynchronously.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), gfx::test::CreateImageSkia(
-                                                /*width=*/10, /*height=*/10)));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  gfx::test::CreateImageSkia(width_, height_)));
   }
+
+  void SetImageSize(int width, int height) {
+    width_ = width;
+    height_ = height;
+  }
+
+ private:
+  // Width and height of test images.
+  int width_ = 10;
+  int height_ = 20;
 };
 
 AmbientAshTestBase::AmbientAshTestBase()
@@ -126,10 +138,23 @@ void AmbientAshTestBase::SimulateSystemResumeAndWait() {
   base::RunLoop().RunUntilIdle();
 }
 
-const gfx::ImageSkia& AmbientAshTestBase::GetImageInPhotoView() {
-  return container_view()
-      ->photo_view_for_testing()
-      ->GetCurrentImagesForTesting();
+void AmbientAshTestBase::SetPhotoViewImageSize(int width, int height) {
+  auto* image_decoder = static_cast<TestAmbientImageDecoderImpl*>(
+      ambient_controller()
+          ->get_ambient_photo_controller_for_testing()
+          ->get_image_decoder_for_testing());
+
+  image_decoder->SetImageSize(width, height);
+}
+
+AmbientBackgroundImageView*
+AmbientAshTestBase::GetAmbientBackgroundImageView() {
+  return static_cast<AmbientBackgroundImageView*>(container_view()->GetViewByID(
+      AssistantViewID::kAmbientBackgroundImageView));
+}
+
+void AmbientAshTestBase::FastForwardToNextImage() {
+  task_environment()->FastForwardBy(1.2 * kPhotoRefreshInterval);
 }
 
 int AmbientAshTestBase::GetNumOfActiveWakeLocks(

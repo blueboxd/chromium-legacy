@@ -3414,6 +3414,10 @@ const char kChromeOSDirectVideoDecoderDescription[] =
     "OS)";
 #endif  // defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
+const char kCdmFactoryDaemonName[] = "CDM Factory Daemon";
+const char kCdmFactoryDaemonDescription[] =
+    "Use the CDM daemon instead of the library CDM";
+
 const char kContextualNudgesName[] =
     "Contextual nudges for user gesture education";
 const char kContextualNudgesDescription[] =

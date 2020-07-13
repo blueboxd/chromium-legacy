@@ -36,7 +36,10 @@ class ClipboardWriter : public GarbageCollected<ClipboardWriter>,
   static ClipboardWriter* Create(RawSystemClipboard* raw_system_clipboard,
                                  const String& mime_type,
                                  ClipboardPromise* promise);
-
+  static ClipboardWriter* Create(SystemClipboard* system_clipboard,
+                                 const String& mime_type,
+                                 ClipboardPromise* promise,
+                                 LocalFrame* frame);
   ~ClipboardWriter() override;
 
   static bool IsValidType(const String& type, bool is_raw);
@@ -55,11 +58,15 @@ class ClipboardWriter : public GarbageCollected<ClipboardWriter>,
   ClipboardWriter(RawSystemClipboard* raw_system_clipboard,
                   ClipboardPromise* promise);
 
+  virtual void StartWrite(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      DOMArrayBuffer* raw_data) = 0;
   virtual void DecodeOnBackgroundThread(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       DOMArrayBuffer* raw_data) = 0;
   // This ClipboardPromise owns this.
   Member<ClipboardPromise> promise_;
+
   // Ensure that System Clipboard operations occur on the main thread.
   SEQUENCE_CHECKER(sequence_checker_);
 

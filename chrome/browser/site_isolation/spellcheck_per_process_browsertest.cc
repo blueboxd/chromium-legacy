@@ -132,6 +132,10 @@ class MockSpellCheckHost : spellcheck::mojom::SpellCheckHost {
   }
 #endif  // defined(OS_WIN)
 
+  void InitializeDictionaries(
+      InitializeDictionariesCallback callback) override {
+    NOTREACHED();
+  }
 #endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
 #if defined(OS_ANDROID)

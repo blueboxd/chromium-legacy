@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -108,7 +109,8 @@ void UpdateRequiredScreen::OnGetEolInfo(
     const chromeos::UpdateEngineClient::EolInfo& info) {
   //  TODO(crbug.com/1020616) : Handle if the device is left on this screen
   //  for long enough to reach Eol.
-  if (!info.eol_date.is_null() && info.eol_date <= clock_->Now()) {
+  if (chromeos::switches::IsAueReachedForUpdateRequiredForTest() ||
+      (!info.eol_date.is_null() && info.eol_date <= clock_->Now())) {
     EnsureScreenIsShown();
     if (view_)
       view_->SetUIState(UpdateRequiredView::EOL_REACHED);

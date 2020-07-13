@@ -41,7 +41,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PasswordCheckViewTest {
     private static final CompromisedCredential ANA =
-            new CompromisedCredential("Ana", "https://some-url.com");
+            new CompromisedCredential("https://some-url.com", "Ana", "password", false);
 
     private PropertyModel mModel = PasswordCheckProperties.createDefaultModel();
     private PasswordCheckFragmentView mPasswordCheckView;

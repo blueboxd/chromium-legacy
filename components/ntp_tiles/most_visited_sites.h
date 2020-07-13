@@ -106,7 +106,6 @@ class MostVisitedSites : public history::TopSitesObserver,
     virtual ~HomepageClient() = default;
     virtual bool IsHomepageTileEnabled() const = 0;
     virtual GURL GetHomepageUrl() const = 0;
-    // TODO(https://crbug.com/862753): Extract this to another interface.
     virtual void QueryHomepageTitle(TitleCallback title_callback) = 0;
   };
 

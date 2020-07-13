@@ -20,8 +20,8 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
@@ -68,7 +68,7 @@ public class NotificationBuilderBaseTest {
 
         NotificationBuilderBase notificationBuilder = new NotificationBuilderBase(resources) {
             @Override
-            public ChromeNotification build(NotificationMetadata metadata) {
+            public NotificationWrapper build(NotificationMetadata metadata) {
                 return null;
             }
         };

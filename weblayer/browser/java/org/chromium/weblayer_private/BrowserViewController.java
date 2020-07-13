@@ -53,6 +53,7 @@ public final class BrowserViewController
             RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
 
     private final FragmentWindowAndroid mWindowAndroid;
+    private final View.OnAttachStateChangeListener mOnAttachedStateChangeListener;
     private final ModalDialogManager mModalDialogManager;
 
     private TabImpl mTab;
@@ -66,10 +67,13 @@ public final class BrowserViewController
      */
     private boolean mCachedDoBrowserControlsShrinkRendererSize;
 
-    public BrowserViewController(FragmentWindowAndroid windowAndroid) {
+    public BrowserViewController(
+            FragmentWindowAndroid windowAndroid, View.OnAttachStateChangeListener listener) {
         mWindowAndroid = windowAndroid;
+        mOnAttachedStateChangeListener = listener;
         Context context = mWindowAndroid.getContext().get();
         mContentViewRenderView = new ContentViewRenderView(context);
+        mContentViewRenderView.addOnAttachStateChangeListener(listener);
 
         mContentViewRenderView.onNativeLibraryLoaded(
                 mWindowAndroid, ContentViewRenderView.MODE_SURFACE_VIEW);
@@ -116,6 +120,7 @@ public final class BrowserViewController
     public void destroy() {
         mWindowAndroid.setModalDialogManager(null);
         setActiveTab(null);
+        mContentViewRenderView.removeOnAttachStateChangeListener(mOnAttachedStateChangeListener);
         mTopControlsContainerView.destroy();
         mBottomControlsContainerView.destroy();
         mContentViewRenderView.destroy();

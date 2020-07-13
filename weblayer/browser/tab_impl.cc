@@ -240,8 +240,10 @@ static ScopedJavaLocalRef<jobject> JNI_TabImpl_FromWebContents(
   return nullptr;
 }
 
-TabImpl::TabImpl(ProfileImpl* profile, const JavaParamRef<jobject>& java_impl)
-    : TabImpl(profile) {
+TabImpl::TabImpl(ProfileImpl* profile,
+                 const JavaParamRef<jobject>& java_impl,
+                 std::unique_ptr<content::WebContents> web_contents)
+    : TabImpl(profile, std::move(web_contents)) {
   java_impl_ = java_impl;
 }
 #endif
@@ -253,16 +255,10 @@ TabImpl::TabImpl(ProfileImpl* profile,
       web_contents_(std::move(web_contents)),
       guid_(guid.empty() ? base::GenerateGUID() : guid) {
   GetTabs().insert(this);
-  if (web_contents_) {
-    // This code path is hit when the page requests a new tab, which should
-    // only be possible from the same profile.
-    DCHECK_EQ(profile_->GetBrowserContext(),
-              web_contents_->GetBrowserContext());
-  } else {
-    content::WebContents::CreateParams create_params(
-        profile_->GetBrowserContext());
-    web_contents_ = content::WebContents::Create(create_params);
-  }
+  DCHECK(web_contents_);
+  // This code path is hit when the page requests a new tab, which should
+  // only be possible from the same profile.
+  DCHECK_EQ(profile_->GetBrowserContext(), web_contents_->GetBrowserContext());
 
   // By default renderer initiated navigations inherit the user-agent override
   // of the current NavigationEntry. For WebLayer, the user-agent override is
@@ -542,8 +538,12 @@ void TabImpl::DisableAutofillSystemIntegrationForTesting() {
 static jlong JNI_TabImpl_CreateTab(JNIEnv* env,
                                    jlong profile,
                                    const JavaParamRef<jobject>& java_impl) {
-  return reinterpret_cast<intptr_t>(
-      new TabImpl(reinterpret_cast<ProfileImpl*>(profile), java_impl));
+  ProfileImpl* profile_impl = reinterpret_cast<ProfileImpl*>(profile);
+  content::WebContents::CreateParams create_params(
+      profile_impl->GetBrowserContext());
+  create_params.initially_hidden = true;
+  return reinterpret_cast<intptr_t>(new TabImpl(
+      profile_impl, java_impl, content::WebContents::Create(create_params)));
 }
 
 static void JNI_TabImpl_DeleteTab(JNIEnv* env, jlong tab) {

@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/inline_flow_box_painter.h"
+#include "third_party/blink/renderer/core/paint/rounded_border_geometry.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
@@ -1429,11 +1430,11 @@ bool InlineFlowBox::NodeAtPoint(HitTestResult& result,
 
   if (GetLineLayoutItem().StyleRef().HasBorderRadius()) {
     // TODO(layout-dev): LogicalFrameRect() seems incorrect.
-    LayoutRect border_rect = LogicalFrameRect();
-    border_rect.MoveBy(accumulated_offset.ToLayoutPoint());
-    FloatRoundedRect border =
-        GetLineLayoutItem().StyleRef().GetRoundedBorderFor(
-            border_rect, IncludeLogicalLeftEdge(), IncludeLogicalRightEdge());
+    PhysicalRect border_rect = PhysicalRectToBeNoop(LogicalFrameRect());
+    border_rect.Move(accumulated_offset);
+    FloatRoundedRect border = RoundedBorderGeometry::PixelSnappedRoundedBorder(
+        GetLineLayoutItem().StyleRef(), border_rect, IncludeLogicalLeftEdge(),
+        IncludeLogicalRightEdge());
     if (!hit_test_location.Intersects(border))
       return false;
   }

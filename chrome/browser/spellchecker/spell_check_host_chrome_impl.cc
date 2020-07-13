@@ -210,6 +210,22 @@ void SpellCheckHostChromeImpl::GetPerLanguageSuggestions(
 }
 #endif  // defined(OS_WIN)
 
+void SpellCheckHostChromeImpl::InitializeDictionaries(
+    InitializeDictionariesCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Initialize the spellcheck service if needed. Initialization must
+  // happen on UI thread.
+  SpellcheckService* spellcheck = GetSpellcheckService();
+
+  if (!spellcheck) {  // Teardown.
+    std::move(callback).Run();
+    return;
+  }
+
+  spellcheck->InitializeDictionaries(std::move(callback));
+}
+
 void SpellCheckHostChromeImpl::OnRequestFinished(SpellingRequest* request) {
   auto iterator = requests_.find(request);
   requests_.erase(iterator);

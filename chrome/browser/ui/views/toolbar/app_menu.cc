@@ -182,7 +182,7 @@ class InMenuButtonBackground : public views::Background {
 
     // Fill in background for state.
     views::Button::ButtonState state =
-        button ? button->state() : views::Button::STATE_NORMAL;
+        button ? button->GetState() : views::Button::STATE_NORMAL;
     DrawBackground(canvas, view, view->GetMirroredRect(bounds), state);
   }
 

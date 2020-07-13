@@ -526,6 +526,8 @@ blink_core_sources("layout") {
     "ng/ng_relative_utils.h",
     "ng/ng_simplified_layout_algorithm.cc",
     "ng/ng_simplified_layout_algorithm.h",
+    "ng/ng_simplified_oof_layout_algorithm.cc",
+    "ng/ng_simplified_oof_layout_algorithm.h",
     "ng/ng_space_utils.cc",
     "ng/ng_space_utils.h",
     "ng/ng_text_decoration_offset.cc",

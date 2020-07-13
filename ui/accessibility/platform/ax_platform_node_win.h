@@ -311,6 +311,12 @@ enum {
     return E_INVALIDARG;                  \
   *arg = {};
 
+namespace base {
+namespace win {
+class VariantVector;
+}  // namespace win
+}  // namespace base
+
 namespace ui {
 
 class AXPlatformNodeWin;
@@ -1059,8 +1065,13 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                                              REFIID riid,
                                              void** object);
 
-  // Support method for ITextRangeProvider::GetAttributeValue
-  HRESULT GetTextAttributeValue(TEXTATTRIBUTEID attribute_id, VARIANT* result);
+  // Support method for ITextRangeProvider::GetAttributeValue.
+  // If either |start_offset| or |end_offset| are not provided then the
+  // endpoint is treated as the start or end of the node respectively.
+  HRESULT GetTextAttributeValue(TEXTATTRIBUTEID attribute_id,
+                                const base::Optional<int>& start_offset,
+                                const base::Optional<int>& end_offset,
+                                base::win::VariantVector* result);
 
   // IRawElementProviderSimple support method.
   bool IsPatternProviderSupported(PATTERNID pattern_id);
@@ -1094,6 +1105,10 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   // Returns the parent node that makes this node inaccessible.
   AXPlatformNodeWin* GetLowestAccessibleElement();
+
+  // Returns the first |IsTextOnlyObject| descendant using
+  // depth-first pre-order traversal.
+  AXPlatformNodeWin* GetFirstTextOnlyDescendant();
 
   // Convert a mojo event to an MSAA event. Exposed for testing.
   static base::Optional<DWORD> MojoEventToMSAAEvent(ax::mojom::Event event);
@@ -1338,8 +1353,13 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // Getters for UIA GetTextAttributeValue
   //
 
-  // Lookup the LCID for the language this node is using
-  HRESULT GetCultureAttributeAsVariant(VARIANT* result) const;
+  // Computes the AnnotationTypes Attribute for the current node.
+  HRESULT GetAnnotationTypesAttribute(const base::Optional<int>& start_offset,
+                                      const base::Optional<int>& end_offset,
+                                      base::win::VariantVector* result);
+  // Lookup the LCID for the language this node is using.
+  // Returns base::nullopt if there was an error.
+  base::Optional<LCID> GetCultureAttributeAsLCID() const;
   // Converts an int attribute to a COLORREF
   COLORREF GetIntAttributeAsCOLORREF(ax::mojom::IntAttribute attribute) const;
   // Converts the ListStyle to UIA BulletStyle
@@ -1355,6 +1375,30 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   static LONG AXListStyleToUIAStyleId(ax::mojom::ListStyle list_style);
   // Convert mojom TextDirection to UIA FlowDirections enumeration
   static FlowDirections TextDirectionToFlowDirections(ax::mojom::TextDirection);
+
+  // Helper method for |GetMarkerTypeFromRange| which aggregates all
+  // of the ranges for |marker_type| attached to |node|.
+  static void AggregateRangesForMarkerType(
+      AXPlatformNodeBase* node,
+      ax::mojom::MarkerType marker_type,
+      int offset_ranges_amount,
+      std::vector<std::pair<int, int>>* ranges);
+
+  enum class MarkerTypeRangeResult {
+    // The MarkerType does not overlap the range.
+    kNone,
+    // The MarkerType overlaps the entire range.
+    kMatch,
+    // The MarkerType partially overlaps the range.
+    kMixed,
+  };
+
+  // Determine if a text range overlaps a |marker_type|, and whether
+  // the overlap is a partial or or complete match.
+  MarkerTypeRangeResult GetMarkerTypeFromRange(
+      const base::Optional<int>& start_offset,
+      const base::Optional<int>& end_offset,
+      ax::mojom::MarkerType marker_type);
 
   bool IsAncestorComboBox();
 

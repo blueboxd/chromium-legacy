@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_phase.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
+#include "third_party/blink/renderer/core/paint/rounded_border_geometry.h"
 #include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/core/paint/theme_painter.h"
@@ -1043,9 +1044,10 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRectImpl(
     } else if (BleedAvoidanceIsClipping(
                    box_decoration_data.GetBackgroundBleedAvoidance())) {
       state_saver.Save();
-      FloatRoundedRect border = style.GetRoundedBorderFor(
-          paint_rect.ToLayoutRect(), border_edges.line_left,
-          border_edges.line_right);
+      FloatRoundedRect border =
+          RoundedBorderGeometry::PixelSnappedRoundedBorder(
+              style, paint_rect, border_edges.line_left,
+              border_edges.line_right);
       paint_info.context.ClipRoundedRect(border);
 
       if (box_decoration_data.GetBackgroundBleedAvoidance() ==
@@ -1863,7 +1865,8 @@ bool NGBoxFragmentPainter::NodeAtPoint(const HitTestContext& hit_test,
     if (!skip_children && style.HasBorderRadius()) {
       PhysicalRect bounds_rect(physical_offset, size);
       skip_children = !hit_test.location.Intersects(
-          style.GetRoundedInnerBorderFor(bounds_rect.ToLayoutRect()));
+          RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(style,
+                                                                bounds_rect));
     }
   }
 
@@ -2043,7 +2046,8 @@ bool NGBoxFragmentPainter::HitTestLineBoxFragment(
   const ComputedStyle& containing_box_style = box_fragment_.Style();
   if (containing_box_style.HasBorderRadius() &&
       !hit_test.location.Intersects(
-          containing_box_style.GetRoundedBorderFor(bounds_rect.ToLayoutRect())))
+          RoundedBorderGeometry::PixelSnappedRoundedBorder(containing_box_style,
+                                                           bounds_rect)))
     return false;
 
   // Now hit test ourselves.
@@ -2502,8 +2506,9 @@ bool NGBoxFragmentPainter::HitTestClippedOutByBorder(
   PhysicalRect rect(PhysicalOffset(), PhysicalFragment().Size());
   rect.Move(border_box_location);
   const NGBorderEdges& border_edges = BorderEdges();
-  return !hit_test_location.Intersects(style.GetRoundedBorderFor(
-      rect.ToLayoutRect(), border_edges.line_left, border_edges.line_right));
+  return !hit_test_location.Intersects(
+      RoundedBorderGeometry::PixelSnappedRoundedBorder(
+          style, rect, border_edges.line_left, border_edges.line_right));
 }
 
 bool NGBoxFragmentPainter::HitTestOverflowControl(

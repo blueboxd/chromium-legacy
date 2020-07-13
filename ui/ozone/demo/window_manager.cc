@@ -69,13 +69,13 @@ void WindowManager::OnConfigurationChanged() {
   }
 
   is_configuring_ = true;
-  delegate_->GetDisplays(base::BindOnce(&WindowManager::OnDisplaysAquired,
+  delegate_->GetDisplays(base::BindOnce(&WindowManager::OnDisplaysAcquired,
                                         base::Unretained(this)));
 }
 
 void WindowManager::OnDisplaySnapshotsInvalidated() {}
 
-void WindowManager::OnDisplaysAquired(
+void WindowManager::OnDisplaysAcquired(
     const std::vector<display::DisplaySnapshot*>& displays) {
   windows_.clear();
 

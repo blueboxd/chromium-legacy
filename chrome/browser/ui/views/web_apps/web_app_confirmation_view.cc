@@ -79,7 +79,7 @@ WebAppConfirmationView::WebAppConfirmationView(
   gfx::Size image_size(web_app::kWebAppIconSmall, web_app::kWebAppIconSmall);
   gfx::ImageSkia image(
       std::make_unique<WebAppInfoImageSource>(web_app::kWebAppIconSmall,
-                                              web_app_info_->icon_bitmaps),
+                                              web_app_info_->icon_bitmaps_any),
       image_size);
   icon_image_view->SetImageSize(image_size);
   icon_image_view->SetImage(image);

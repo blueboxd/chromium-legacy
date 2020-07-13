@@ -37,16 +37,16 @@ class CheckNotificationConstructors(unittest.TestCase):
     mock_input.files = [
         MockFile(
             'chrome/android/java/src/org/chromium/chrome/browser/notifications/'
-            'NotificationBuilder.java',
+            'ChromeNotificationWrapperBuilder.java',
             ['new Notification.Builder()']),
         MockFile(
             'chrome/android/java/src/org/chromium/chrome/browser/notifications/'
-            'NotificationCompatBuilder.java',
+            'ChromeNotificationWrapperCompatBuilder.java',
             ['new NotificationCompat.Builder()']),
         MockFile('path/One.java', ['Notification.Builder']),
         MockFile('path/Two.java', ['// do not: new Notification.Builder()']),
         MockFile('path/Three.java',
-                 ['/** ChromeNotificationBuilder',
+                 ['/** NotificationWrapperBuilder',
                   ' * replaces: new Notification.Builder()']),
         MockFile('path/PRESUBMIT.py', ['new Notification.Builder()']),
         MockFile('path/Four.java', ['new NotificationCompat.Builder()'],

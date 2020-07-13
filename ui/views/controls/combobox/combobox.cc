@@ -622,7 +622,7 @@ void Combobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
 
   gfx::Rect bounds(menu_position, lb.size());
 
-  Button::ButtonState original_state = arrow_button_->state();
+  Button::ButtonState original_state = arrow_button_->GetState();
   arrow_button_->SetState(Button::STATE_PRESSED);
 
   // Allow |menu_runner_| to be set by the testing API, but if this method is

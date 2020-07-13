@@ -310,7 +310,7 @@ class ExtensionAdminPolicyTest : public ExtensionManagementServiceTest {
   // Wrappers for legacy admin policy functions, for testing purpose only.
   bool BlocklistedByDefault(const base::ListValue* blocklist);
   bool UserMayLoad(const base::ListValue* blocklist,
-                   const base::ListValue* whitelist,
+                   const base::ListValue* allowlist,
                    const base::DictionaryValue* forcelist,
                    const base::ListValue* allowed_types,
                    const Extension* extension,
@@ -336,7 +336,7 @@ bool ExtensionAdminPolicyTest::BlocklistedByDefault(
 
 bool ExtensionAdminPolicyTest::UserMayLoad(
     const base::ListValue* blocklist,
-    const base::ListValue* whitelist,
+    const base::ListValue* allowlist,
     const base::DictionaryValue* forcelist,
     const base::ListValue* allowed_types,
     const Extension* extension,
@@ -344,8 +344,8 @@ bool ExtensionAdminPolicyTest::UserMayLoad(
   SetUpPolicyProvider();
   if (blocklist)
     SetPref(true, pref_names::kInstallDenyList, blocklist->CreateDeepCopy());
-  if (whitelist)
-    SetPref(true, pref_names::kInstallAllowList, whitelist->CreateDeepCopy());
+  if (allowlist)
+    SetPref(true, pref_names::kInstallAllowList, allowlist->CreateDeepCopy());
   if (forcelist)
     SetPref(true, pref_names::kInstallForceList, forcelist->CreateDeepCopy());
   if (allowed_types)
@@ -424,9 +424,9 @@ TEST_F(ExtensionManagementServiceTest, LegacyInstallBlocklist) {
             ExtensionManagement::INSTALLATION_ALLOWED);
 }
 
-// Verify that preference controlled by legacy ExtensionInstallWhitelist policy
+// Verify that preference controlled by legacy ExtensionInstallAllowlist policy
 // is handled well.
-TEST_F(ExtensionManagementServiceTest, LegacyInstallWhitelist) {
+TEST_F(ExtensionManagementServiceTest, LegacyAllowlist) {
   base::ListValue denied_list_pref;
   denied_list_pref.AppendString("*");
   base::ListValue allowed_list_pref;
@@ -441,7 +441,7 @@ TEST_F(ExtensionManagementServiceTest, LegacyInstallWhitelist) {
   EXPECT_EQ(GetInstallationModeById(kNonExistingExtension),
             ExtensionManagement::INSTALLATION_BLOCKED);
 
-  // Verify that install whitelist preference set by user is ignored.
+  // Verify that install allowlist preference set by user is ignored.
   RemovePref(true, pref_names::kInstallAllowList);
   SetPref(false, pref_names::kInstallAllowList,
           allowed_list_pref.CreateDeepCopy());
@@ -549,7 +549,7 @@ TEST_F(ExtensionManagementServiceTest, PreferenceParsing) {
   EXPECT_TRUE(base::Contains(allowed_types, Manifest::TYPE_THEME));
   EXPECT_TRUE(base::Contains(allowed_types, Manifest::TYPE_USER_SCRIPT));
 
-  // Verifies blocked permission list settings.
+  // Verifies blocked permission allowlist settings.
   APIPermissionSet api_permission_set;
   api_permission_set.clear();
   api_permission_set.insert(APIPermission::kFileSystem);
@@ -756,8 +756,8 @@ TEST_F(ExtensionManagementServiceTest, NewInstallBlocklist) {
 }
 
 // Tests functionality of new preference as to deprecate legacy
-// ExtensionInstallWhitelist policy.
-TEST_F(ExtensionManagementServiceTest, NewInstallWhitelist) {
+// ExtensionInstallAllowlist policy.
+TEST_F(ExtensionManagementServiceTest, NewAllowlist) {
   // Set the new dictionary preference.
   {
     PrefUpdater updater(pref_service_);
@@ -957,21 +957,21 @@ TEST_F(ExtensionAdminPolicyTest, UserMayLoadNoBlocklist) {
   EXPECT_TRUE(error.empty());
 }
 
-// Tests UserMayLoad for an extension on the whitelist.
-TEST_F(ExtensionAdminPolicyTest, UserMayLoadWhitelisted) {
+// Tests UserMayLoad for an extension on the allowlist.
+TEST_F(ExtensionAdminPolicyTest, UserMayLoadAllowlisted) {
   CreateExtension(Manifest::INTERNAL);
 
-  base::ListValue whitelist;
-  whitelist.AppendString(extension_->id());
-  EXPECT_TRUE(UserMayLoad(nullptr, &whitelist, nullptr, nullptr,
+  base::ListValue allowlist;
+  allowlist.AppendString(extension_->id());
+  EXPECT_TRUE(UserMayLoad(nullptr, &allowlist, nullptr, nullptr,
                           extension_.get(), nullptr));
 
   base::ListValue blocklist;
   blocklist.AppendString(extension_->id());
-  EXPECT_TRUE(UserMayLoad(nullptr, &whitelist, nullptr, nullptr,
+  EXPECT_TRUE(UserMayLoad(nullptr, &allowlist, nullptr, nullptr,
                           extension_.get(), nullptr));
   base::string16 error;
-  EXPECT_TRUE(UserMayLoad(nullptr, &whitelist, nullptr, nullptr,
+  EXPECT_TRUE(UserMayLoad(nullptr, &allowlist, nullptr, nullptr,
                           extension_.get(), &error));
   EXPECT_TRUE(error.empty());
 }
@@ -999,13 +999,13 @@ TEST_F(ExtensionAdminPolicyTest, UserMayLoadBlocklisted) {
   EXPECT_FALSE(UserMayLoad(&blocklist, nullptr, nullptr, nullptr,
                            extension_.get(), nullptr));
 
-  // With a whitelist. There's no such thing as a whitelist wildcard.
-  base::ListValue whitelist;
-  whitelist.AppendString("behllobkkfkfnphdnhnkndlbkcpglgmj");
-  EXPECT_FALSE(UserMayLoad(&blocklist, &whitelist, nullptr, nullptr,
+  // With a allowlist. There's no such thing as a allowlist wildcard.
+  base::ListValue allowlist;
+  allowlist.AppendString("behllobkkfkfnphdnhnkndlbkcpglgmj");
+  EXPECT_FALSE(UserMayLoad(&blocklist, &allowlist, nullptr, nullptr,
                            extension_.get(), nullptr));
-  whitelist.AppendString("*");
-  EXPECT_FALSE(UserMayLoad(&blocklist, &whitelist, nullptr, nullptr,
+  allowlist.AppendString("*");
+  EXPECT_FALSE(UserMayLoad(&blocklist, &allowlist, nullptr, nullptr,
                            extension_.get(), nullptr));
 }
 

@@ -1090,12 +1090,13 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   // always include in that set a legal default match if possible.  If Instant
   // Extended is enabled and we have server-provided (and thus hopefully more
   // accurate) scores for some suggestions, we allow more of those, until we
-  // reach AutocompleteResult::GetMaxMatches() total matches (that is, enough to
-  // fill the whole popup).
+  // reach AutocompleteResult::GetDynamicMaxMatches() total matches (that is,
+  // enough to fill the whole popup).
   //
   // We will always return any verbatim matches, no matter how we obtained their
-  // scores, unless we have already accepted AutocompleteResult::GetMaxMatches()
-  // higher-scoring matches under the conditions above.
+  // scores, unless we have already accepted
+  // AutocompleteResult::GetDynamicMaxMatches() higher-scoring matches under
+  // the conditions above.
   std::sort(matches.begin(), matches.end(), &AutocompleteMatch::MoreRelevant);
 
   // Guarantee that if there's a legal default match anywhere in the result
@@ -1117,7 +1118,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   size_t num_suggestions = 0;
   for (ACMatches::const_iterator i(matches.begin());
        (i != matches.end()) &&
-       (matches_.size() < AutocompleteResult::GetMaxMatches());
+       (matches_.size() < AutocompleteResult::GetDynamicMaxMatches());
        ++i) {
     // SEARCH_OTHER_ENGINE is only used in the SearchProvider for the keyword
     // verbatim result, so this condition basically means "if this match is a
@@ -1612,7 +1613,7 @@ void SearchProvider::PrefetchImages(SearchSuggestionParser::Results* results) {
   // are processed in descending order of relevance so the first suggestions are
   // the ones to be shown; prefetching images for the rest would be wasteful.
   std::vector<GURL> prefetch_image_urls;
-  int prefetch_limit = AutocompleteResult::GetMaxMatches();
+  int prefetch_limit = AutocompleteResult::GetDynamicMaxMatches();
   for (const auto& suggestion : results->suggest_results) {
     if (prefetch_limit <= 0)
       break;

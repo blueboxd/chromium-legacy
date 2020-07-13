@@ -32,7 +32,7 @@ import java.util.Arrays;
 @RunWith(BaseRobolectricTestRunner.class)
 public class PasswordCheckControllerTest {
     private static final CompromisedCredential ANA =
-            new CompromisedCredential("Ana", "https://m.a.xyz/");
+            new CompromisedCredential("https://m.a.xyz/", "Ana", "password", false);
 
     private final PasswordCheckMediator mMediator = new PasswordCheckMediator();
     private final PropertyModel mModel = PasswordCheckProperties.createDefaultModel();

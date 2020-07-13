@@ -90,6 +90,8 @@ class ASH_EXPORT AshMessagePopupCollection
 
   // ShelfObserver:
   void OnShelfWorkAreaInsetsChanged() override;
+  void OnHotseatStateChanged(HotseatState old_state,
+                             HotseatState new_state) override;
 
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,

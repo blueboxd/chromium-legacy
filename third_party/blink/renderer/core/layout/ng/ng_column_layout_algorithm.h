@@ -72,10 +72,6 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
   // such as break-before:avoid or break-after:avoid.
   scoped_refptr<const NGLayoutResult> RelayoutAndBreakEarlier();
 
-  NGConstraintSpace CreateConstraintSpaceForColumns(
-      const LogicalSize& column_size,
-      bool is_first_fragmentainer,
-      bool balance_columns) const;
   NGConstraintSpace CreateConstraintSpaceForBalancing(
       const LogicalSize& column_size) const;
   NGConstraintSpace CreateConstraintSpaceForSpanner(

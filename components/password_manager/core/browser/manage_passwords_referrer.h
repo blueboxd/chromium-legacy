@@ -42,7 +42,10 @@ enum class ManagePasswordsReferrer {
   // Corresponds to the touch to fill bottom sheet that replaces the dropdown.
   // Only used on Android.
   kTouchToFill = 7,
-  kMaxValue = kTouchToFill,
+  // The bubble notifying the user that the last compromised password was
+  // updated.
+  kSafeStateBubble = 8,
+  kMaxValue = kSafeStateBubble,
 };
 
 }  // namespace password_manager

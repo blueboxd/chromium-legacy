@@ -19,6 +19,11 @@
 #include "content/public/browser/render_process_host.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chromeos/settings/cros_settings_names.h"
+#endif  // defined(OS_CHROMEOS)
+
 using media::mojom::PlatformVerification;
 
 namespace {
@@ -154,3 +159,18 @@ void PlatformVerificationImpl::OnStorageIdResponse(
   std::move(callback).Run(kCurrentStorageIdVersion, storage_id);
 }
 #endif  // BUILDFLAG(ENABLE_CDM_STORAGE_ID)
+
+#if defined(OS_CHROMEOS)
+void PlatformVerificationImpl::IsVerifiedAccessEnabled(
+    IsVerifiedAccessEnabledCallback callback) {
+  bool enabled_for_device = false;
+  if (!chromeos::CrosSettings::Get()->GetBoolean(
+          chromeos::kAttestationForContentProtectionEnabled,
+          &enabled_for_device)) {
+    LOG(ERROR) << "Failed to get device setting.";
+    std::move(callback).Run(false);
+    return;
+  }
+  std::move(callback).Run(enabled_for_device);
+}
+#endif  // defined(OS_CHROMEOS)

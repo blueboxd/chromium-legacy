@@ -487,6 +487,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "cdm-factory-daemon",
+    "owners": [ "jkardatzke", "xhwang", "chromeos-gfx-video@google.com" ],
+    "expiry_milestone": 91
+  },
+  {
     "name": "change-tab-switcher-position",
     "owners": [ "ewannpv", "gambard" ],
     "expiry_milestone": 87

@@ -112,6 +112,14 @@ size_t AutocompleteResult::GetMaxMatches(bool input_from_omnibox_focus) {
   return field_trial_value;
 }
 
+// static
+size_t AutocompleteResult::GetDynamicMaxMatches() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      omnibox::kDynamicMaxAutocomplete,
+      OmniboxFieldTrial::kDynamicMaxAutocompleteIncreasedLimitParam,
+      AutocompleteResult::GetMaxMatches());
+}
+
 AutocompleteResult::AutocompleteResult() {
   // Reserve enough space for the maximum number of matches we'll show in either
   // on-focus or prefix-suggest mode.
@@ -639,13 +647,11 @@ size_t AutocompleteResult::CalculateNumMatchesPerUrlCount(
     const ACMatches& matches,
     const CompareWithDemoteByType<AutocompleteMatch>& comparing_object) {
   size_t base_limit = GetMaxMatches();
+  size_t increased_limit = GetDynamicMaxMatches();
   size_t url_cutoff = base::GetFieldTrialParamByFeatureAsInt(
       omnibox::kDynamicMaxAutocomplete,
       OmniboxFieldTrial::kDynamicMaxAutocompleteUrlCutoffParam, 0);
-  size_t increased_limit = base::GetFieldTrialParamByFeatureAsInt(
-      omnibox::kDynamicMaxAutocomplete,
-      OmniboxFieldTrial::kDynamicMaxAutocompleteIncreasedLimitParam,
-      base_limit);
+  DCHECK(increased_limit > base_limit);
 
   size_t num_matches = 0;
   size_t num_url_matches = 0;

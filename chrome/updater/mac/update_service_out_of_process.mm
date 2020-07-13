@@ -72,19 +72,6 @@ using base::SysUTF8ToNSString;
   [super dealloc];
 }
 
-- (void)getUpdaterVersionWithReply:
-    (void (^_Nonnull)(NSString* _Nullable version))reply {
-  auto errorHandler = ^(NSError* xpcError) {
-    LOG(ERROR) << "XPC connection failed: "
-               << base::SysNSStringToUTF8([xpcError description]);
-    reply(nil);
-  };
-
-  [[_updateCheckXPCConnection.get()
-      remoteObjectProxyWithErrorHandler:errorHandler]
-      getUpdaterVersionWithReply:reply];
-}
-
 - (void)registerForUpdatesWithAppId:(NSString* _Nullable)appId
                           brandCode:(NSString* _Nullable)brandCode
                                 tag:(NSString* _Nullable)tag
@@ -137,19 +124,6 @@ using base::SysUTF8ToNSString;
                      priority:priority
                   updateState:updateState
                         reply:reply];
-}
-
-- (void)haltForUpdateToVersion:(NSString* _Nonnull)version
-                         reply:(void (^_Nonnull)(BOOL shouldUpdate))reply {
-  auto errorHandler = ^(NSError* xpcError) {
-    LOG(ERROR) << "XPC connection failed: "
-               << base::SysNSStringToUTF8([xpcError description]);
-    reply(NO);
-  };
-
-  [[_updateCheckXPCConnection remoteObjectProxyWithErrorHandler:errorHandler]
-      haltForUpdateToVersion:version
-                       reply:reply];
 }
 
 @end

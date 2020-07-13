@@ -34,12 +34,12 @@ import org.chromium.base.ContentUriUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.media.MediaViewerUtils;
-import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.notifications.NotificationWrapperBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
-import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.NotificationWrapperBuilder;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.offline_items_collection.ContentId;
@@ -93,9 +93,9 @@ public final class DownloadNotificationFactory {
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_NOTIFICATION_BADGE)) {
             channelId = ChromeChannelDefinitions.ChannelId.COMPLETED_DOWNLOADS;
         }
-        ChromeNotificationBuilder builder =
-                NotificationBuilderFactory
-                        .createChromeNotificationBuilder(true /* preferCompat */, channelId,
+        NotificationWrapperBuilder builder =
+                NotificationWrapperBuilderFactory
+                        .createNotificationWrapperBuilder(true /* preferCompat */, channelId,
                                 null /* remoteAppPackageName */,
                                 new NotificationMetadata(LegacyHelpers.isLegacyDownload(
                                                                  downloadUpdate.getContentId())
@@ -383,7 +383,7 @@ public final class DownloadNotificationFactory {
      * @param builder The builder to build notification.
      * @param subText A string shown as sub text on the notification.
      */
-    private static void setSubText(ChromeNotificationBuilder builder, String subText) {
+    private static void setSubText(NotificationWrapperBuilder builder, String subText) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             builder.setSubText(subText);
         } else {

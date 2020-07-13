@@ -201,11 +201,11 @@ void CandidateView::SetHighlighted(bool highlighted) {
 
 void CandidateView::StateChanged(ButtonState old_state) {
   Button::StateChanged(old_state);
-  int text_style = state() == STATE_DISABLED ? views::style::STYLE_DISABLED
-                                             : views::style::STYLE_PRIMARY;
+  int text_style = GetState() == STATE_DISABLED ? views::style::STYLE_DISABLED
+                                                : views::style::STYLE_PRIMARY;
   shortcut_label_->SetEnabledColor(views::style::GetColor(
       *shortcut_label_, views::style::CONTEXT_LABEL, text_style));
-  if (state() == STATE_PRESSED)
+  if (GetState() == STATE_PRESSED)
     SetHighlighted(true);
 }
 

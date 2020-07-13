@@ -20,15 +20,15 @@ import androidx.mediarouter.media.MediaRouter;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.notifications.NotificationWrapperBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.components.browser_ui.media.MediaNotificationController;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
-import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
 import org.chromium.components.browser_ui.notifications.ForegroundServiceUtils;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
+import org.chromium.components.browser_ui.notifications.NotificationWrapperBuilder;
 
 /** A class that provides Chrome-specific behavior to {@link MediaNotificationController}. */
 class ChromeMediaNotificationControllerDelegate implements MediaNotificationController.Delegate {
@@ -97,7 +97,8 @@ class ChromeMediaNotificationControllerDelegate implements MediaNotificationCont
                 // notification hasn't been shown. On O it will lead to the app crash.
                 // So show an empty notification before stopping the service.
                 MediaNotificationController.finishStartingForegroundServiceOnO(this,
-                        createChromeNotificationBuilder(mNotificationId).buildChromeNotification());
+                        createNotificationWrapperBuilder(mNotificationId)
+                                .buildNotificationWrapper());
                 stopListenerService();
             }
             return START_NOT_STICKY;
@@ -211,8 +212,8 @@ class ChromeMediaNotificationControllerDelegate implements MediaNotificationCont
     }
 
     @Override
-    public ChromeNotificationBuilder createChromeNotificationBuilder() {
-        return createChromeNotificationBuilder(mNotificationId);
+    public NotificationWrapperBuilder createNotificationWrapperBuilder() {
+        return createNotificationWrapperBuilder(mNotificationId);
     }
 
     @Override
@@ -230,19 +231,19 @@ class ChromeMediaNotificationControllerDelegate implements MediaNotificationCont
     }
 
     @Override
-    public void logNotificationShown(ChromeNotification notification) {
+    public void logNotificationShown(NotificationWrapper notification) {
         NotificationUmaTracker.getInstance().onNotificationShown(
                 NotificationUmaTracker.SystemNotificationType.MEDIA,
                 notification.getNotification());
     }
 
-    private static ChromeNotificationBuilder createChromeNotificationBuilder(int notificationId) {
+    private static NotificationWrapperBuilder createNotificationWrapperBuilder(int notificationId) {
         NotificationMetadata metadata =
                 new NotificationMetadata(NotificationUmaTracker.SystemNotificationType.MEDIA,
                         null /* notificationTag */, notificationId);
-        return NotificationBuilderFactory.createChromeNotificationBuilder(true /* preferCompat */,
-                ChromeChannelDefinitions.ChannelId.MEDIA_PLAYBACK, null /* remoteAppPackageName*/,
-                metadata);
+        return NotificationWrapperBuilderFactory.createNotificationWrapperBuilder(
+                true /* preferCompat */, ChromeChannelDefinitions.ChannelId.MEDIA_PLAYBACK,
+                null /* remoteAppPackageName*/, metadata);
     }
 
     private static Context getContext() {

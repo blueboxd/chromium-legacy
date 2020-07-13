@@ -32,8 +32,8 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.browserservices.ui.trustedwebactivity.TrustedWebActivityModel;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
 
 /**
  * Tests for {@link DisclosureNotification}.
@@ -77,7 +77,7 @@ public class DisclosureNotificationTest {
     public void displaysNotification_highPriority() {
         mModel.set(DISCLOSURE_STATE, DISCLOSURE_STATE_SHOWN);
 
-        ChromeNotification notification = verifyAndGetNotification();
+        NotificationWrapper notification = verifyAndGetNotification();
         assertEquals(TWA_DISCLOSURE_INITIAL, notification.getNotification().getChannelId());
     }
 
@@ -86,7 +86,7 @@ public class DisclosureNotificationTest {
         mModel.set(DISCLOSURE_FIRST_TIME, false);
         mModel.set(DISCLOSURE_STATE, DISCLOSURE_STATE_SHOWN);
 
-        ChromeNotification notification = verifyAndGetNotification();
+        NotificationWrapper notification = verifyAndGetNotification();
         assertEquals(TWA_DISCLOSURE_SUBSEQUENT, notification.getNotification().getChannelId());
     }
 
@@ -94,7 +94,7 @@ public class DisclosureNotificationTest {
     public void dismissesNotification_onStateChange() {
         mModel.set(DISCLOSURE_STATE, DISCLOSURE_STATE_SHOWN);
 
-        ChromeNotification notification = verifyAndGetNotification();
+        NotificationWrapper notification = verifyAndGetNotification();
         String tag = notification.getMetadata().tag;
         int id = notification.getMetadata().id;
 
@@ -106,7 +106,7 @@ public class DisclosureNotificationTest {
     public void dismissesNotification_onStop() {
         mModel.set(DISCLOSURE_STATE, DISCLOSURE_STATE_SHOWN);
 
-        ChromeNotification notification = verifyAndGetNotification();
+        NotificationWrapper notification = verifyAndGetNotification();
         String tag = notification.getMetadata().tag;
         int id = notification.getMetadata().id;
 
@@ -114,9 +114,9 @@ public class DisclosureNotificationTest {
         verify(mNotificationManager).cancel(eq(tag), eq(id));
     }
 
-    private ChromeNotification verifyAndGetNotification() {
-        ArgumentCaptor<ChromeNotification> captor =
-                ArgumentCaptor.forClass(ChromeNotification.class);
+    private NotificationWrapper verifyAndGetNotification() {
+        ArgumentCaptor<NotificationWrapper> captor =
+                ArgumentCaptor.forClass(NotificationWrapper.class);
         verify(mNotificationManager).notify(captor.capture());
 
         return captor.getValue();

@@ -153,8 +153,8 @@ bool ToolbarIconContainerView::ShouldDisplayHighlight() {
     views::Button* button = views::Button::AsButton(child);
     if (!button)
       continue;
-    if (button->state() == views::Button::ButtonState::STATE_PRESSED ||
-        button->state() == views::Button::ButtonState::STATE_HOVERED) {
+    if (button->GetState() == views::Button::ButtonState::STATE_PRESSED ||
+        button->GetState() == views::Button::ButtonState::STATE_HOVERED) {
       return true;
     }
     // The container should also be highlighted if a dialog is anchored to.

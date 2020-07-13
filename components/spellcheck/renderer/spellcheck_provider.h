@@ -132,7 +132,17 @@ class SpellCheckProvider : public content::RenderFrameObserver,
       int identifier,
       const base::string16& line,
       const std::vector<SpellCheckResult>& results);
-#endif
+
+  // Makes mojo calls to the browser process to perform platform spellchecking.
+  void RequestTextCheckingFromBrowser(const base::string16& text);
+
+#if defined(OS_WIN)
+  // Flag indicating that the spellcheck service has been initialized and
+  // the dictionaries have been loaded initially. Used to avoid an unnecessary
+  // mojo call to determine this in every text check request.
+  bool dictionaries_loaded_ = false;
+#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
   // Holds ongoing spellchecking operations.
   WebTextCheckCompletions text_check_completions_;

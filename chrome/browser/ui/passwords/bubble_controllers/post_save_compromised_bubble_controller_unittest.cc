@@ -71,10 +71,20 @@ TEST_F(PostSaveCompromisedBubbleControllerTest, SafeState_Content) {
                 kPasswordUpdatedSafeState,
             controller()->type());
   EXPECT_NE(base::string16(), controller()->GetBody());
+  EXPECT_NE(gfx::Range(), controller()->GetSettingLinkRange());
   EXPECT_EQ(base::string16(), controller()->GetButtonText());
   EXPECT_EQ(IDR_SAVED_PASSWORDS_SAFE_STATE_DARK,
             controller()->GetImageID(true));
   EXPECT_EQ(IDR_SAVED_PASSWORDS_SAFE_STATE, controller()->GetImageID(false));
+}
+
+TEST_F(PostSaveCompromisedBubbleControllerTest, SafeState_Click) {
+  CreateController(password_manager::ui::PASSWORD_UPDATED_SAFE_STATE);
+
+  EXPECT_CALL(*delegate(),
+              NavigateToPasswordManagerSettingsPage(
+                  password_manager::ManagePasswordsReferrer::kSafeStateBubble));
+  controller()->OnSettingsClicked();
 }
 
 TEST_F(PostSaveCompromisedBubbleControllerTest, MoreToFix_Destroy) {
@@ -100,6 +110,7 @@ TEST_F(PostSaveCompromisedBubbleControllerTest, MoreToFix_Content) {
                 kPasswordUpdatedWithMoreToFix,
             controller()->type());
   EXPECT_NE(base::string16(), controller()->GetBody());
+  EXPECT_EQ(gfx::Range(), controller()->GetSettingLinkRange());
   EXPECT_NE(base::string16(), controller()->GetButtonText());
   EXPECT_EQ(IDR_SAVED_PASSWORDS_NEUTRAL_STATE_DARK,
             controller()->GetImageID(true));
@@ -140,6 +151,7 @@ TEST_F(PostSaveCompromisedBubbleControllerTest, Unsafe_Content) {
   EXPECT_EQ(PostSaveCompromisedBubbleController::BubbleType::kUnsafeState,
             controller()->type());
   EXPECT_NE(base::string16(), controller()->GetBody());
+  EXPECT_EQ(gfx::Range(), controller()->GetSettingLinkRange());
   EXPECT_NE(base::string16(), controller()->GetButtonText());
   EXPECT_EQ(IDR_SAVED_PASSWORDS_WARNING_STATE_DARK,
             controller()->GetImageID(true));

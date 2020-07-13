@@ -30,14 +30,14 @@ namespace {
 base::Optional<VAProfile> ConvertToVAProfile(VideoCodecProfile profile) {
   // A map between VideoCodecProfile and VAProfile.
   const std::map<VideoCodecProfile, VAProfile> kProfileMap = {
+      // VAProfileH264Baseline is marked deprecated in <va/va.h> from libva 2.0.
+      // consider making VAProfileH264ConstrainedBaseline the default one.
       {H264PROFILE_BASELINE, VAProfileH264Baseline},
       {H264PROFILE_MAIN, VAProfileH264Main},
       {H264PROFILE_HIGH, VAProfileH264High},
       {VP8PROFILE_ANY, VAProfileVP8Version0_3},
       {VP9PROFILE_PROFILE0, VAProfileVP9Profile0},
-      {VP9PROFILE_PROFILE1, VAProfileVP9Profile1},
       {VP9PROFILE_PROFILE2, VAProfileVP9Profile2},
-      {VP9PROFILE_PROFILE3, VAProfileVP9Profile3},
   };
   auto it = kProfileMap.find(profile);
   return it != kProfileMap.end() ? base::make_optional<VAProfile>(it->second)
@@ -55,9 +55,7 @@ base::Optional<VAProfile> StringToVAProfile(const std::string& va_profile) {
       {"VAProfileJPEGBaseline", VAProfileJPEGBaseline},
       {"VAProfileVP8Version0_3", VAProfileVP8Version0_3},
       {"VAProfileVP9Profile0", VAProfileVP9Profile0},
-      {"VAProfileVP9Profile1", VAProfileVP9Profile1},
       {"VAProfileVP9Profile2", VAProfileVP9Profile2},
-      {"VAProfileVP9Profile3", VAProfileVP9Profile3},
   };
 
   auto it = kStringToVAProfile.find(va_profile);
@@ -87,6 +85,12 @@ class VaapiTest : public testing::Test {
  public:
   VaapiTest() = default;
   ~VaapiTest() override = default;
+
+  void SetUp() override {
+    // PreSandboxInitialization() loads and opens the driver, queries its
+    // capabilities and fills in the VASupportedProfiles.
+    VaapiWrapper::PreSandboxInitialization();
+  }
 };
 
 std::map<VAProfile, std::vector<VAEntrypoint>> ParseVainfo(
@@ -120,17 +124,7 @@ std::map<VAProfile, std::vector<VAEntrypoint>> ParseVainfo(
   return info;
 }
 
-TEST_F(VaapiTest, VaapiSandboxInitialization) {
-  // VASupportedProfiles::Get() is called in PreSandboxInitialization().
-  // It queries VA-API driver their capabilities.
-  VaapiWrapper::PreSandboxInitialization();
-}
-
-TEST_F(VaapiTest, VaapiProfiles) {
-  // VASupportedProfiles::Get() is called in PreSandboxInitialization().
-  // It queries VA-API driver their capabilities.
-  VaapiWrapper::PreSandboxInitialization();
-
+std::map<VAProfile, std::vector<VAEntrypoint>> RetrieveVAInfoOutput() {
   int fds[2];
   PCHECK(pipe(fds) == 0);
   base::File read_pipe(fds[0]);
@@ -148,50 +142,86 @@ TEST_F(VaapiTest, VaapiProfiles) {
   EXPECT_LT(n, 4096);
   std::string output(buf, n);
   DVLOG(4) << output;
-  auto va_info = ParseVainfo(output);
+  return ParseVainfo(output);
+}
+
+TEST_F(VaapiTest, VaapiSandboxInitialization) {
+  // Here we just test that the PreSandboxInitialization() in SetUp() worked
+  // fine. Said initialization is buried in internal singletons, but we can
+  // verify that at least the implementation type has been filled in.
+  EXPECT_NE(VaapiWrapper::GetImplementationType(), VAImplementation::kInvalid);
+}
+
+// Verifies that every VAProfile from VaapiWrapper::GetSupportedDecodeProfiles()
+// is indeed supported by the command line vainfo utility and by
+// VaapiWrapper::IsDecodeSupported().
+TEST_F(VaapiTest, GetSupportedDecodeProfiles) {
+  const auto va_info = RetrieveVAInfoOutput();
 
   for (const auto& profile : VaapiWrapper::GetSupportedDecodeProfiles()) {
-    auto va_profile = ConvertToVAProfile(profile.profile);
+    const auto va_profile = ConvertToVAProfile(profile.profile);
     ASSERT_TRUE(va_profile.has_value());
 
     bool is_profile_supported =
-        base::Contains(va_info[*va_profile], VAEntrypointVLD);
+        base::Contains(va_info, *va_profile) &&
+        base::Contains(va_info.at(*va_profile), VAEntrypointVLD);
+    bool is_decode_supported = VaapiWrapper::IsDecodeSupported(*va_profile);
+    // H264PROFILE_BASELINE may be supported by VAProfileH264Baseline
+    // (deprecated) or by VAProfileH264ConstrainedBaseline. This is the same
+    // logic as in vaapi_wrapper.cc.
     if (profile.profile == H264PROFILE_BASELINE) {
-      // ConstrainedBaseline is the fallback profile for H264PROFILE_BASELINE.
-      // This is the same logic as in vaapi_wrapper.cc.
       is_profile_supported |= base::Contains(
-          va_info[VAProfileH264ConstrainedBaseline], VAEntrypointVLD);
+          va_info.at(VAProfileH264ConstrainedBaseline), VAEntrypointVLD);
+      is_decode_supported |=
+          VaapiWrapper::IsDecodeSupported(VAProfileH264ConstrainedBaseline);
     }
 
     EXPECT_TRUE(is_profile_supported)
         << " profile: " << GetProfileName(profile.profile);
+    EXPECT_TRUE(is_decode_supported)
+        << " profile: " << GetProfileName(profile.profile);
   }
+}
+
+// Verifies that every VAProfile from VaapiWrapper::GetSupportedEncodeProfiles()
+// is indeed supported by the command line vainfo utility.
+TEST_F(VaapiTest, GetSupportedEncodeProfiles) {
+  const auto va_info = RetrieveVAInfoOutput();
 
   for (const auto& profile : VaapiWrapper::GetSupportedEncodeProfiles()) {
-    auto va_profile = ConvertToVAProfile(profile.profile);
+    const auto va_profile = ConvertToVAProfile(profile.profile);
     ASSERT_TRUE(va_profile.has_value());
+
     bool is_profile_supported =
-        base::Contains(va_info[*va_profile], VAEntrypointEncSlice) ||
-        base::Contains(va_info[*va_profile], VAEntrypointEncSliceLP);
+        base::Contains(va_info, *va_profile) &&
+        (base::Contains(va_info.at(*va_profile), VAEntrypointEncSlice) ||
+         base::Contains(va_info.at(*va_profile), VAEntrypointEncSliceLP));
+    // H264PROFILE_BASELINE may be supported by VAProfileH264Baseline
+    // (deprecated) or by VAProfileH264ConstrainedBaseline. This is the same
+    // logic as in vaapi_wrapper.cc.
     if (profile.profile == H264PROFILE_BASELINE) {
-      // ConstrainedBaseline is the fallback profile for H264PROFILE_BASELINE.
-      // This is the same logic as in vaapi_wrapper.cc.
       is_profile_supported |=
-          base::Contains(va_info[VAProfileH264ConstrainedBaseline],
+          base::Contains(va_info.at(VAProfileH264ConstrainedBaseline),
                          VAEntrypointEncSlice) ||
-          base::Contains(va_info[VAProfileH264ConstrainedBaseline],
+          base::Contains(va_info.at(VAProfileH264ConstrainedBaseline),
                          VAEntrypointEncSliceLP);
     }
 
     EXPECT_TRUE(is_profile_supported)
         << " profile: " << GetProfileName(profile.profile);
   }
+}
+
+// Verifies that if JPEG decoding and encoding are supported by VaapiWrapper,
+// they are also supported by by the command line vainfo utility.
+TEST_F(VaapiTest, VaapiProfilesJPEG) {
+  const auto va_info = RetrieveVAInfoOutput();
 
   EXPECT_EQ(VaapiWrapper::IsDecodeSupported(VAProfileJPEGBaseline),
-            base::Contains(va_info[VAProfileJPEGBaseline], VAEntrypointVLD));
-  EXPECT_EQ(
-      VaapiWrapper::IsJpegEncodeSupported(),
-      base::Contains(va_info[VAProfileJPEGBaseline], VAEntrypointEncPicture));
+            base::Contains(va_info.at(VAProfileJPEGBaseline), VAEntrypointVLD));
+  EXPECT_EQ(VaapiWrapper::IsJpegEncodeSupported(),
+            base::Contains(va_info.at(VAProfileJPEGBaseline),
+                           VAEntrypointEncPicture));
 }
 
 // Verifies that the default VAEntrypoint as per VaapiWrapper is indeed among
@@ -219,8 +249,6 @@ TEST_F(VaapiTest, DefaultEntrypointIsSupported) {
 
 int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);
-
-  media::VaapiWrapper::PreSandboxInitialization();
 
   return base::LaunchUnitTests(
       argc, argv,

@@ -10,6 +10,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -39,6 +40,7 @@ ActivityStorage::ActivityStorage(PrefService* pref_service,
 ActivityStorage::~ActivityStorage() = default;
 
 base::Time ActivityStorage::GetBeginningOfDay(base::Time timestamp) const {
+  DCHECK(!timestamp.is_max());
   return timestamp.LocalMidnight() + day_start_offset_;
 }
 
@@ -157,6 +159,8 @@ void ActivityStorage::AddActivityPeriod(base::Time start,
                                         base::Time end,
                                         const std::string& activity_id) {
   DCHECK(start <= end);
+  DCHECK(!start.is_max());
+  DCHECK(!end.is_max());
 
   DictionaryPrefUpdate update(pref_service_, pref_name_);
   base::Value* activity_times = update.Get();
@@ -198,6 +202,14 @@ void ActivityStorage::SetActivityPeriods(
 }
 
 int64_t ActivityStorage::LocalTimeToUtcDayStart(base::Time timestamp) const {
+  if (timestamp.is_max()) {
+    // If timestamp is base::Time::Max(), trying to calculate day start
+    // is not needed, just keep it as is. timestamp like this cannot be part
+    // of an actual activity interval, it only happens as a threshold for
+    // activities report.
+    return timestamp.ToJavaTime();
+  }
+
   base::Time::Exploded exploded;
   base::Time day_start = GetBeginningOfDay(timestamp);
   // TODO(crbug.com/827386): directly test this time change. Currently it is

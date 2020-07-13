@@ -304,7 +304,7 @@ size_t EstimatedSize(viz::ResourceFormat format, const gfx::Size& size) {
 SharedImageRepresentationGLTextureImpl::SharedImageRepresentationGLTextureImpl(
     SharedImageManager* manager,
     SharedImageBacking* backing,
-    Client* client,
+    SharedImageRepresentationGLTextureClient* client,
     MemoryTypeTracker* tracker,
     gles2::Texture* texture)
     : SharedImageRepresentationGLTexture(manager, backing, tracker),
@@ -316,9 +316,14 @@ gles2::Texture* SharedImageRepresentationGLTextureImpl::GetTexture() {
 }
 
 bool SharedImageRepresentationGLTextureImpl::BeginAccess(GLenum mode) {
-  if (client_)
-    return client_->OnGLTextureBeginAccess(mode);
+  if (client_ && mode != GL_SHARED_IMAGE_ACCESS_MODE_OVERLAY_CHROMIUM)
+    return client_->SharedImageRepresentationGLTextureBeginAccess();
   return true;
+}
+
+void SharedImageRepresentationGLTextureImpl::EndAccess() {
+  if (client_)
+    return client_->SharedImageRepresentationGLTextureEndAccess();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -328,7 +333,7 @@ SharedImageRepresentationGLTexturePassthroughImpl::
     SharedImageRepresentationGLTexturePassthroughImpl(
         SharedImageManager* manager,
         SharedImageBacking* backing,
-        Client* client,
+        SharedImageRepresentationGLTextureClient* client,
         MemoryTypeTracker* tracker,
         scoped_refptr<gles2::TexturePassthrough> texture_passthrough)
     : SharedImageRepresentationGLTexturePassthrough(manager, backing, tracker),
@@ -345,9 +350,14 @@ SharedImageRepresentationGLTexturePassthroughImpl::GetTexturePassthrough() {
 
 bool SharedImageRepresentationGLTexturePassthroughImpl::BeginAccess(
     GLenum mode) {
-  if (client_)
-    return client_->OnGLTexturePassthroughBeginAccess(mode);
+  if (client_ && mode != GL_SHARED_IMAGE_ACCESS_MODE_OVERLAY_CHROMIUM)
+    return client_->SharedImageRepresentationGLTextureBeginAccess();
   return true;
+}
+
+void SharedImageRepresentationGLTexturePassthroughImpl::EndAccess() {
+  if (client_)
+    return client_->SharedImageRepresentationGLTextureEndAccess();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -396,7 +406,7 @@ void SharedImageBackingGLCommon::MakeTextureAndSetParameters(
 SharedImageRepresentationSkiaImpl::SharedImageRepresentationSkiaImpl(
     SharedImageManager* manager,
     SharedImageBacking* backing,
-    Client* client,
+    SharedImageRepresentationGLTextureClient* client,
     scoped_refptr<SharedContextState> context_state,
     sk_sp<SkPromiseImageTexture> promise_texture,
     MemoryTypeTracker* tracker)
@@ -424,14 +434,18 @@ sk_sp<SkSurface> SharedImageRepresentationSkiaImpl::BeginWriteAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores) {
   CheckContext();
-  if (client_ && !client_->OnSkiaBeginWriteAccess())
-    return nullptr;
+  if (client_) {
+    DCHECK(context_state_->GrContextIsGL());
+    if (!client_->SharedImageRepresentationGLTextureBeginAccess())
+      return nullptr;
+  }
+
   if (write_surface_)
     return nullptr;
 
-  if (!promise_texture_) {
+  if (!promise_texture_)
     return nullptr;
-  }
+
   SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
       /*gpu_compositing=*/true, format());
   auto surface = SkSurface::MakeFromBackendTexture(
@@ -449,19 +463,26 @@ void SharedImageRepresentationSkiaImpl::EndWriteAccess(
   CheckContext();
   // TODO(ericrk): Keep the surface around for re-use.
   write_surface_ = nullptr;
+
+  if (client_)
+    client_->SharedImageRepresentationGLTextureEndAccess();
 }
 
 sk_sp<SkPromiseImageTexture> SharedImageRepresentationSkiaImpl::BeginReadAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores) {
   CheckContext();
-  if (client_ && !client_->OnSkiaBeginReadAccess())
-    return nullptr;
+  if (client_) {
+    DCHECK(context_state_->GrContextIsGL());
+    if (!client_->SharedImageRepresentationGLTextureBeginAccess())
+      return nullptr;
+  }
   return promise_texture_;
 }
 
 void SharedImageRepresentationSkiaImpl::EndReadAccess() {
-  // TODO(ericrk): Handle begin/end correctness checks.
+  if (client_)
+    client_->SharedImageRepresentationGLTextureEndAccess();
 }
 
 bool SharedImageRepresentationSkiaImpl::SupportsMultipleConcurrentReadAccess() {
@@ -814,6 +835,7 @@ SharedImageBackingGLImage::ProduceSkia(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
     scoped_refptr<SharedContextState> context_state) {
+  SharedImageRepresentationGLTextureClient* gl_client = nullptr;
   if (!cached_promise_texture_) {
     if (context_state->GrContextIsMetal()) {
 #if defined(OS_MACOSX)
@@ -823,6 +845,7 @@ SharedImageBackingGLImage::ProduceSkia(
       DCHECK(cached_promise_texture_);
 #endif
     } else {
+      gl_client = this;
       GrBackendTexture backend_texture;
       GetGrBackendTexture(context_state->feature_info(), GetGLTarget(), size(),
                           GetGLServiceId(), format(), &backend_texture);
@@ -830,8 +853,8 @@ SharedImageBackingGLImage::ProduceSkia(
     }
   }
   return std::make_unique<SharedImageRepresentationSkiaImpl>(
-      manager, this, this, std::move(context_state), cached_promise_texture_,
-      tracker);
+      manager, this, gl_client, std::move(context_state),
+      cached_promise_texture_, tracker);
 }
 
 std::unique_ptr<SharedImageRepresentationGLTexture>
@@ -897,24 +920,20 @@ void SharedImageBackingGLImage::Update(
   image_bind_or_copy_needed_ = true;
 }
 
-bool SharedImageBackingGLImage::OnGLTextureBeginAccess(GLenum mode) {
-  if (mode == GL_SHARED_IMAGE_ACCESS_MODE_OVERLAY_CHROMIUM)
-    return true;
+bool SharedImageBackingGLImage::
+    SharedImageRepresentationGLTextureBeginAccess() {
   return BindOrCopyImageIfNeeded();
 }
 
-bool SharedImageBackingGLImage::OnGLTexturePassthroughBeginAccess(GLenum mode) {
-  if (mode == GL_SHARED_IMAGE_ACCESS_MODE_OVERLAY_CHROMIUM)
-    return true;
-  return BindOrCopyImageIfNeeded();
-}
-
-bool SharedImageBackingGLImage::OnSkiaBeginReadAccess() {
-  return BindOrCopyImageIfNeeded();
-}
-
-bool SharedImageBackingGLImage::OnSkiaBeginWriteAccess() {
-  return BindOrCopyImageIfNeeded();
+void SharedImageBackingGLImage::SharedImageRepresentationGLTextureEndAccess() {
+#if defined(OS_MACOSX)
+  // If this image could potentially be shared with Metal via WebGPU, then flush
+  // the GL context to ensure Metal will see it.
+  if (usage() & SHARED_IMAGE_USAGE_WEBGPU) {
+    gl::GLApi* api = gl::g_current_gl_context;
+    api->glFlushFn();
+  }
+#endif
 }
 
 bool SharedImageBackingGLImage::BindOrCopyImageIfNeeded() {
@@ -1333,7 +1352,12 @@ SharedImageBackingFactoryGLTexture::CreateSharedImageInternal(
     return nullptr;
   }
 
+#if defined(OS_MACOSX)
+  const bool use_buffer =
+      usage & (SHARED_IMAGE_USAGE_SCANOUT | SHARED_IMAGE_USAGE_WEBGPU);
+#else
   const bool use_buffer = usage & SHARED_IMAGE_USAGE_SCANOUT;
+#endif
   if (use_buffer && !format_info.allow_scanout) {
     LOG(ERROR) << "CreateSharedImage: SCANOUT shared images unavailable";
     return nullptr;

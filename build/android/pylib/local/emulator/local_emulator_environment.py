@@ -68,7 +68,9 @@ class LocalEmulatorEnvironment(local_device_environment.LocalDeviceEnvironment):
 
       return timeout_retry.Run(
           impl,
-          timeout=120 if self._writable_system else 30,
+          # TODO(crbug.com/1093602): Temporarily increase the default timeout
+          # to make sure emulators can start successfully with GLDMA disabled.
+          timeout=120 if self._writable_system else 90,
           retries=2,
           args=[e],
           retry_if_func=retry_on_timeout)

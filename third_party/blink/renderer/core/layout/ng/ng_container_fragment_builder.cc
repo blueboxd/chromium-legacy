@@ -33,6 +33,14 @@ void NGContainerFragmentBuilder::AddChild(
   AddChildInternal(&child, child_offset);
 }
 
+void NGContainerFragmentBuilder::ReplaceChild(
+    wtf_size_t index,
+    const NGPhysicalContainerFragment& new_child,
+    const LogicalOffset offset) {
+  DCHECK_LT(index, children_.size());
+  children_[index] = ChildWithOffset(offset, std::move(&new_child));
+}
+
 // Propagate data in |child| to this fragment. The |child| will then be added as
 // a child fragment or a child fragment item.
 void NGContainerFragmentBuilder::PropagateChildData(

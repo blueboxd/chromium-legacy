@@ -172,7 +172,7 @@ gfx::ImageSkia ImageButton::GetImageToPaint() {
         images_[STATE_NORMAL], images_[STATE_HOVERED],
         hover_animation().GetCurrentValue());
   } else {
-    img = images_[state()];
+    img = images_[GetState()];
   }
 
   return !img.isNull() ? img : images_[STATE_NORMAL];
@@ -233,7 +233,7 @@ void ToggleImageButton::SetToggledImage(ButtonState image_state,
                                         const gfx::ImageSkia* image) {
   if (toggled_) {
     images_[image_state] = image ? *image : gfx::ImageSkia();
-    if (state() == image_state)
+    if (GetState() == image_state)
       SchedulePaint();
   } else {
     alternate_images_[image_state] = image ? *image : gfx::ImageSkia();
@@ -260,7 +260,7 @@ void ToggleImageButton::SetImage(ButtonState image_state,
     alternate_images_[image_state] = image;
   } else {
     images_[image_state] = image;
-    if (state() == image_state)
+    if (GetState() == image_state)
       SchedulePaint();
   }
   PreferredSizeChanged();

@@ -11,7 +11,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
@@ -39,11 +38,11 @@ namespace update_client {
 // the BITS service.
 class BackgroundDownloader : public CrxDownloader {
  public:
-  explicit BackgroundDownloader(std::unique_ptr<CrxDownloader> successor);
-  ~BackgroundDownloader() override;
+  explicit BackgroundDownloader(scoped_refptr<CrxDownloader> successor);
 
  private:
   // Overrides for CrxDownloader.
+  ~BackgroundDownloader() override;
   void DoStartDownload(const GURL& url) override;
 
   // Called asynchronously on the |com_task_runner_| at different stages during
@@ -148,8 +147,6 @@ class BackgroundDownloader : public CrxDownloader {
 
   // Contains the path of the downloaded file if the download was successful.
   base::FilePath response_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundDownloader);
 };
 
 }  // namespace update_client

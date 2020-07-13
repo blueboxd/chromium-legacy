@@ -1015,8 +1015,7 @@ TEST_F(ScrollableShelfViewTest, ClickAtLastIcon) {
 
 // Verifies that presentation time for shelf gesture scroll is recorded as
 // expected (https://crbug.com/1095259).
-TEST_F(ScrollableShelfViewTest,
-       DISABLED_PresentationTimeMetricsForGestureScroll) {
+TEST_F(ScrollableShelfViewTest, PresentationTimeMetricsForGestureScroll) {
   PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(true);
 
   AddAppShortcutsUntilOverflow();
@@ -1078,7 +1077,8 @@ TEST_F(ScrollableShelfViewTest,
 
   // Scroll the shelf rightward. Verify that shelf should be scrolled to the
   // right end. The bucket number changes as expected.
-  GetEventGenerator()->MoveTouchBy(-50, 0);
+  GetEventGenerator()->MoveTouchBy(
+      -scrollable_shelf_view_->GetScrollUpperBoundForTest() - 5, 0);
   EXPECT_TRUE(shelf_scrolled());
   ASSERT_EQ(ScrollableShelfView::kShowLeftArrowButton,
             scrollable_shelf_view_->layout_strategy_for_test());

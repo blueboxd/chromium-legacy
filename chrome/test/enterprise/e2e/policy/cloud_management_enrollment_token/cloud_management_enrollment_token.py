@@ -23,8 +23,8 @@ class CloudManagementEnrollmentTokenTest(ChromeEnterpriseTestCase):
 
   @before_all
   def setup(self):
-    self.InstallChrome('client2012')
-    self.InstallWebDriver('client2012')
+    self.InstallChrome('client2019')
+    self.InstallWebDriver('client2019')
 
   @test
   def test_browser_enrolled_prod(self):
@@ -32,17 +32,17 @@ class CloudManagementEnrollmentTokenTest(ChromeEnterpriseTestCase):
     if token == None:
       path = "gs://%s/secrets/enrollToken" % self.gsbucket
       cmd = r'gsutil cat ' + path
-      token = self.RunCommand('win2012-dc', cmd).rstrip()
-    self.SetPolicy('win2012-dc', r'CloudManagementEnrollmentToken', token,
+      token = self.RunCommand('win2019-dc', cmd).rstrip()
+    self.SetPolicy('win2019-dc', r'CloudManagementEnrollmentToken', token,
                    'String')
-    self.RunCommand('client2012', 'gpupdate /force')
+    self.RunCommand('client2019', 'gpupdate /force')
 
     local_dir = os.path.dirname(os.path.abspath(__file__))
 
     output = self.RunWebDriverTest(
-        'client2012', os.path.join(local_dir, 'cloud_enrollment_webdriver.py'))
+        'client2019', os.path.join(local_dir, 'cloud_enrollment_webdriver.py'))
     # Verify CBCM status legend
     self.assertIn('Machine policies', output)
-    self.assertIn('CLIENT2012', output)
+    self.assertIn('CLIENT2019', output)
     self.assertIn(token, output)
     self.assertIn('Policy cache OK', output)

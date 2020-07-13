@@ -1378,8 +1378,8 @@ blink::WebScreenInfo RenderWidget::GetScreenInfo() {
   web_screen_info.depth = info.depth;
   web_screen_info.depth_per_component = info.depth_per_component;
   web_screen_info.is_monochrome = info.is_monochrome;
-  web_screen_info.rect = blink::WebRect(info.rect);
-  web_screen_info.available_rect = blink::WebRect(info.available_rect);
+  web_screen_info.rect = info.rect;
+  web_screen_info.available_rect = info.available_rect;
   switch (info.orientation_type) {
     case SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY:
       web_screen_info.orientation_type =

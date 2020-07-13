@@ -154,7 +154,7 @@ TEST_F(LabelButtonTest, Init) {
                       ax::mojom::StringAttribute::kName));
 
   EXPECT_FALSE(button.GetIsDefault());
-  EXPECT_EQ(Button::STATE_NORMAL, button.state());
+  EXPECT_EQ(Button::STATE_NORMAL, button.GetState());
 
   EXPECT_EQ(button.image()->parent(), &button);
   EXPECT_EQ(button.label()->parent(), &button);

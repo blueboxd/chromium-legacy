@@ -19,6 +19,7 @@
 #import "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
+#include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/util.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -52,6 +53,7 @@
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/content_settings_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_mediator.h"
@@ -66,8 +68,11 @@
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/settings/voice_search_table_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
+#include "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_cell.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -131,6 +136,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemGoogleServices,
   ItemTypeHeader,
   ItemTypeSearchEngine,
+  ItemTypeManagedDefaultSearchEngine,
   ItemTypePasswords,
   ItemTypeAutofillCreditCard,
   ItemTypeAutofillProfile,
@@ -395,8 +401,17 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 
   // Basics section
   [model addSectionWithIdentifier:SectionIdentifierBasics];
-  [model addItem:[self searchEngineDetailItem]
-      toSectionWithIdentifier:SectionIdentifierBasics];
+  // Show managed UI if default search engine is managed by policy.
+  // TODO(crbug.com/1103663): support the UI when default search engine is
+  // enabled by policy.
+  if (base::FeatureList::IsEnabled(kEnableIOSManagedSettingsUI) &&
+      [self isDefaultSearchEngineDisabledByPolicy]) {
+    [model addItem:[self managedSearchEngineItem]
+        toSectionWithIdentifier:SectionIdentifierBasics];
+  } else {
+    [model addItem:[self searchEngineDetailItem]
+        toSectionWithIdentifier:SectionIdentifierBasics];
+  }
   [model addItem:[self passwordsDetailItem]
       toSectionWithIdentifier:SectionIdentifierBasics];
   [model addItem:[self autoFillCreditCardDetailItem]
@@ -516,6 +531,20 @@ NSString* kDevViewSourceKey = @"DevViewSource";
                     iconImageName:kSettingsSearchEngineImageName
           accessibilityIdentifier:kSettingsSearchEngineCellId];
   return _defaultSearchEngineItem;
+}
+
+- (TableViewInfoButtonItem*)managedSearchEngineItem {
+  TableViewInfoButtonItem* managedDefaultSearchEngineItem =
+      [[TableViewInfoButtonItem alloc]
+          initWithType:ItemTypeManagedDefaultSearchEngine];
+  managedDefaultSearchEngineItem.text =
+      l10n_util::GetNSString(IDS_IOS_SEARCH_ENGINE_SETTING_TITLE);
+  managedDefaultSearchEngineItem.iconImageName = kSettingsSearchEngineImageName;
+  managedDefaultSearchEngineItem.statusText =
+      l10n_util::GetNSString(IDS_IOS_SEARCH_ENGINE_SETTING_DISABLED_STATUS);
+  managedDefaultSearchEngineItem.accessibilityIdentifier =
+      kSettingsManagedSearchEngineCellId;
+  return managedDefaultSearchEngineItem;
 }
 
 - (TableViewItem*)passwordsDetailItem {
@@ -783,6 +812,15 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 #endif  // BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
       break;
     }
+    case ItemTypeManagedDefaultSearchEngine: {
+      TableViewInfoButtonCell* managedCell =
+          base::mac::ObjCCastStrict<TableViewInfoButtonCell>(cell);
+      [managedCell.trailingButton
+                 addTarget:self
+                    action:@selector(didTapManagedUIInfoButton:)
+          forControlEvents:UIControlEventTouchUpInside];
+      break;
+    }
     default:
       break;
   }
@@ -901,6 +939,31 @@ NSString* kDevViewSourceKey = @"DevViewSource";
     controller.dispatcher = self.dispatcher;
     [self.navigationController pushViewController:controller animated:YES];
   }
+}
+
+#pragma mark - Actions
+
+// Called when the user clicks on the information button of a managed
+// settings UI cell. Shows a contextual bubble with the information of the
+// enterprise.
+- (void)didTapManagedUIInfoButton:(UIButton*)buttonView {
+  EnterpriseInfoPopoverViewController* bubbleViewController =
+      [[EnterpriseInfoPopoverViewController alloc] initWithEnterpriseName:nil];
+
+  // Disable the button when showing the bubble.
+  // The button will be enabled when close the bubble in
+  // (void)popoverPresentationControllerDidDismissPopover: of
+  // EnterpriseInfoPopoverViewController.
+  buttonView.enabled = NO;
+
+  // Set the anchor and arrow direction of the bubble.
+  bubbleViewController.popoverPresentationController.sourceView = buttonView;
+  bubbleViewController.popoverPresentationController.sourceRect =
+      buttonView.bounds;
+  bubbleViewController.popoverPresentationController.permittedArrowDirections =
+      UIPopoverArrowDirectionAny;
+
+  [self presentViewController:bubbleViewController animated:YES completion:nil];
 }
 
 #pragma mark Switch Actions
@@ -1093,6 +1156,18 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   DCHECK(googleServicesItem);
   [self updateGoogleServicesItem:googleServicesItem];
   [self reconfigureCellsForItems:@[ googleServicesItem ]];
+}
+
+// Check if the default search engine is disabled by policy.
+- (BOOL)isDefaultSearchEngineDisabledByPolicy {
+  const base::DictionaryValue* dict = _browserState->GetPrefs()->GetDictionary(
+      DefaultSearchManager::kDefaultSearchProviderDataPrefName);
+  base::Optional<bool> disabledByPolicy =
+      dict->FindBoolPath(DefaultSearchManager::kDisabledByPolicy);
+  if (disabledByPolicy) {
+    return YES;
+  }
+  return NO;
 }
 
 #pragma mark - SigninPresenter

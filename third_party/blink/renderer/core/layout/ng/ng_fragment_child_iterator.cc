@@ -121,9 +121,7 @@ void NGFragmentChildIterator::UpdateSelfFromFragment(
       // rendered legend. We'll leave |current_block_break_token_| alone here,
       // as it will be used as in incoming break token when we get to the next
       // column.
-      // TODO(almaher): Remove check for out of flow.
       DCHECK(previous_fragment->IsRenderedLegend() ||
-             previous_fragment->IsOutOfFlowPositioned() ||
              previous_fragment->IsColumnSpanAll());
     }
   } else {

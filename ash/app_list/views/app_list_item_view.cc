@@ -783,7 +783,7 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
       }
       break;
     case ui::ET_GESTURE_TAP_DOWN:
-      if (state() != STATE_DISABLED) {
+      if (GetState() != STATE_DISABLED) {
         SetState(STATE_PRESSED);
         touch_drag_timer_.Start(
             FROM_HERE,
@@ -796,7 +796,7 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
       break;
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_TAP_CANCEL:
-      if (state() != STATE_DISABLED) {
+      if (GetState() != STATE_DISABLED) {
         touch_drag_timer_.Stop();
         SetState(STATE_NORMAL);
       }

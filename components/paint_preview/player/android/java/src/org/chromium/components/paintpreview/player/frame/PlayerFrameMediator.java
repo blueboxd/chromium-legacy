@@ -13,7 +13,6 @@ import android.widget.OverScroller;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.Callback;
 import org.chromium.base.UnguessableToken;
 import org.chromium.components.paintpreview.player.OverscrollHandler;
 import org.chromium.components.paintpreview.player.PlayerCompositorDelegate;
@@ -64,18 +63,6 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
     private final PlayerCompositorDelegate mCompositorDelegate;
     /** The viewport of this frame. */
     private final PlayerFrameViewport mViewport;
-    /** Dimension of tiles. */
-    private int[] mTileDimensions;
-    /** Bitmaps that make up the content of this frame. */
-    private Bitmap[][] mBitmapMatrix;
-    /** Whether a request for a bitmap tile is pending. */
-    private boolean[][] mPendingBitmapRequests;
-    /**
-     * Whether we currently need a bitmap tile. This is used for deleting bitmaps that we don't
-     * need and freeing up memory.
-     */
-    @VisibleForTesting
-    boolean[][] mRequiredBitmaps;
 
     /** Handles scaling of bitmaps. */
     private final Matrix mBitmapScaleMatrix = new Matrix();
@@ -84,6 +71,9 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
     private final PlayerFrameScrollController mScrollController;
     /** Handles scaling. */
     private final PlayerFrameScaleController mScaleController;
+
+    @VisibleForTesting
+    PlayerFrameBitmapState mBitmapState;
 
     PlayerFrameMediator(PropertyModel model, PlayerCompositorDelegate compositorDelegate,
             PlayerFrameViewport viewport, OverScroller scroller,
@@ -215,65 +205,33 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
     @Override
     public void updateVisuals(boolean scaleUpdated) {
         final float scaleFactor = mViewport.getScale();
-        if (scaleUpdated || mBitmapMatrix == null) {
-            // Each tile is as big as the initial view port. Here we determine the number of
-            // columns and rows for the current scale factor.
-            int rows = (int) Math.ceil(
-                    (mContentSize.getHeight() * scaleFactor) / mViewport.getHeight());
-            int cols =
-                    (int) Math.ceil((mContentSize.getWidth() * scaleFactor) / mViewport.getWidth());
-            mTileDimensions = new int[] {mViewport.getWidth(), mViewport.getHeight()};
-            mBitmapMatrix = new Bitmap[rows][cols];
-            mPendingBitmapRequests = new boolean[rows][cols];
-            mRequiredBitmaps = new boolean[rows][cols];
+        if (scaleUpdated || mBitmapState == null) {
+            if (mBitmapState != null) {
+                mBitmapState.clear();
+            }
+            mBitmapState =
+                    new PlayerFrameBitmapState(mGuid, mViewport.getWidth(), mViewport.getHeight(),
+                            mViewport.getScale(), mContentSize, mCompositorDelegate, this);
         }
 
         Rect viewportRect = mViewport.asRect();
         updateSubframes(viewportRect, mViewport.getScale());
         // Let the view know |mViewport| changed. PropertyModelChangeProcessor is smart about
         // this and will only update the view if |mViewport|'s rect is actually changed.
-        mModel.set(PlayerFrameProperties.TILE_DIMENSIONS, mTileDimensions);
+        mModel.set(PlayerFrameProperties.TILE_DIMENSIONS, mBitmapState.getTileDimensions());
         mModel.set(PlayerFrameProperties.VIEWPORT, mViewport.asRect());
 
         // Clear the required bitmaps matrix. It will be updated in #requestBitmapForTile.
-        for (int row = 0; row < mRequiredBitmaps.length; row++) {
-            for (int col = 0; col < mRequiredBitmaps[row].length; col++) {
-                mRequiredBitmaps[row][col] = false;
-            }
-        }
+        mBitmapState.clearRequiredBitmaps();
 
         // Request bitmaps for tiles inside the view port that don't already have a bitmap.
-        final int tileWidth = mTileDimensions[0];
-        final int tileHeight = mTileDimensions[1];
-        final int colStart = Math.max(0, (int) Math.floor((double) viewportRect.left / tileWidth));
-        final int colEnd = Math.min(mRequiredBitmaps[0].length,
-                (int) Math.ceil((double) viewportRect.right / tileWidth));
-        final int rowStart = Math.max(0, (int) Math.floor((double) viewportRect.top / tileHeight));
-        final int rowEnd = Math.min(mRequiredBitmaps.length,
-                (int) Math.ceil((double) viewportRect.bottom / tileHeight));
-        for (int col = colStart; col < colEnd; col++) {
-            for (int row = rowStart; row < rowEnd; row++) {
-                int tileLeft = col * tileWidth;
-                int tileTop = row * tileHeight;
-                requestBitmapForTile(
-                        tileLeft, tileTop, tileWidth, tileHeight, row, col, scaleFactor);
-            }
-        }
-
-        // Request bitmaps for adjacent tiles that are not currently in the view port. The reason
-        // that we do this in a separate loop is to make sure bitmaps for tiles inside the view port
-        // are fetched first.
-        for (int col = colStart; col < colEnd; col++) {
-            for (int row = rowStart; row < rowEnd; row++) {
-                requestBitmapForAdjacentTiles(tileWidth, tileHeight, row, col, scaleFactor);
-            }
-        }
+        mBitmapState.requestBitmapForRect(mViewport.asRect());
 
         // If the scale factor is changed, the view should get the correct bitmap matrix.
         // TODO(crbug/1090804): "Double buffer" this such that there is no period where there is a
         // blank screen between scale finishing and new bitmaps being fetched.
         if (scaleUpdated) {
-            mModel.set(PlayerFrameProperties.BITMAP_MATRIX, mBitmapMatrix);
+            mModel.set(PlayerFrameProperties.BITMAP_MATRIX, mBitmapState.getMatrix());
         }
     }
 
@@ -291,6 +249,11 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
 
             mSubFrameMediators.get(i).forceRedraw();
         }
+    }
+
+    @Override
+    public void updateBitmapMatrix(Bitmap[][] bitmapMatrix) {
+        mModel.set(PlayerFrameProperties.BITMAP_MATRIX, bitmapMatrix);
     }
 
     @Override
@@ -363,111 +326,4 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
                 (int) (((float) inRect.bottom) * scaleFactor));
     }
 
-    private void requestBitmapForAdjacentTiles(
-            int tileWidth, int tileHeight, int row, int col, float scaleFactor) {
-        if (mBitmapMatrix == null) return;
-
-        if (row > 0) {
-            requestBitmapForTile(col * tileWidth, (row - 1) * tileHeight, tileWidth, tileHeight,
-                    row - 1, col, scaleFactor);
-        }
-        if (row < mBitmapMatrix.length - 1) {
-            requestBitmapForTile(col * tileWidth, (row + 1) * tileHeight, tileWidth, tileHeight,
-                    row + 1, col, scaleFactor);
-        }
-        if (col > 0) {
-            requestBitmapForTile((col - 1) * tileWidth, row * tileHeight, tileWidth, tileHeight,
-                    row, col - 1, scaleFactor);
-        }
-        if (col < mBitmapMatrix[row].length - 1) {
-            requestBitmapForTile((col + 1) * tileWidth, row * tileHeight, tileWidth, tileHeight,
-                    row, col + 1, scaleFactor);
-        }
-    }
-
-    private void requestBitmapForTile(
-            int x, int y, int width, int height, int row, int col, float scaleFactor) {
-        if (mRequiredBitmaps == null) return;
-
-        mRequiredBitmaps[row][col] = true;
-        if (mBitmapMatrix == null || mPendingBitmapRequests == null
-                || mBitmapMatrix[row][col] != null || mPendingBitmapRequests[row][col]) {
-            return;
-        }
-
-        BitmapRequestHandler bitmapRequestHandler = new BitmapRequestHandler(row, col, scaleFactor);
-        mPendingBitmapRequests[row][col] = true;
-        mCompositorDelegate.requestBitmap(mGuid, new Rect(x, y, x + width, y + height), scaleFactor,
-                bitmapRequestHandler, bitmapRequestHandler);
-    }
-
-    /**
-     * Remove previously fetched bitmaps that are no longer required according to
-     * {@link #mRequiredBitmaps}.
-     */
-    private void deleteUnrequiredBitmaps() {
-        for (int row = 0; row < mBitmapMatrix.length; row++) {
-            for (int col = 0; col < mBitmapMatrix[row].length; col++) {
-                Bitmap bitmap = mBitmapMatrix[row][col];
-                if (!mRequiredBitmaps[row][col] && bitmap != null) {
-                    bitmap.recycle();
-                    mBitmapMatrix[row][col] = null;
-                }
-            }
-        }
-    }
-
-    /**
-     * Used as the callback for bitmap requests from the Paint Preview compositor.
-     */
-    private class BitmapRequestHandler implements Callback<Bitmap>, Runnable {
-        int mRequestRow;
-        int mRequestCol;
-        float mRequestScaleFactor;
-
-        private BitmapRequestHandler(int requestRow, int requestCol, float requestScaleFactor) {
-            mRequestRow = requestRow;
-            mRequestCol = requestCol;
-            mRequestScaleFactor = requestScaleFactor;
-        }
-
-        /**
-         * Called when bitmap is successfully composited.
-         * @param result
-         */
-        @Override
-        public void onResult(Bitmap result) {
-            if (result == null) {
-                run();
-                return;
-            }
-            if (mViewport.getScale() != mRequestScaleFactor
-                    || !mPendingBitmapRequests[mRequestRow][mRequestCol]
-                    || !mRequiredBitmaps[mRequestRow][mRequestCol]) {
-                result.recycle();
-                deleteUnrequiredBitmaps();
-                return;
-            }
-
-            mPendingBitmapRequests[mRequestRow][mRequestCol] = false;
-            mBitmapMatrix[mRequestRow][mRequestCol] = result;
-            mModel.set(PlayerFrameProperties.BITMAP_MATRIX, mBitmapMatrix);
-            deleteUnrequiredBitmaps();
-        }
-
-        /**
-         * Called when there was an error compositing the bitmap.
-         */
-        @Override
-        public void run() {
-            if (mViewport.getScale() != mRequestScaleFactor) return;
-
-            // TODO(crbug.com/1021590): Handle errors.
-            assert mBitmapMatrix != null;
-            assert mBitmapMatrix[mRequestRow][mRequestCol] == null;
-            assert mPendingBitmapRequests[mRequestRow][mRequestCol];
-
-            mPendingBitmapRequests[mRequestRow][mRequestCol] = false;
-        }
-    }
 }

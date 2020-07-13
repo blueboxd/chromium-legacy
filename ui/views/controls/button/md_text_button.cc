@@ -111,7 +111,7 @@ std::unique_ptr<views::InkDropHighlight> MdTextButton::CreateInkDropHighlight()
       is_prominent_
           ? ui::NativeTheme::kColorId_ProminentButtonInkDropShadowColor
           : ui::NativeTheme::kColorId_ButtonInkDropShadowColor;
-  if (state() == STATE_HOVERED) {
+  if (GetState() == STATE_HOVERED) {
     fill_color_id = is_prominent_
                         ? ui::NativeTheme::kColorId_ProminentButtonHoverColor
                         : ui::NativeTheme::kColorId_ButtonHoverColor;
@@ -228,7 +228,7 @@ gfx::Insets MdTextButton::CalculateDefaultPadding() const {
 }
 
 void MdTextButton::UpdateColors() {
-  bool is_disabled = state() == STATE_DISABLED;
+  bool is_disabled = GetState() == STATE_DISABLED;
   SkColor enabled_text_color =
       style::GetColor(*this, label()->GetTextContext(),
                       is_prominent_ ? style::STYLE_DIALOG_BUTTON_DEFAULT
@@ -264,7 +264,7 @@ void MdTextButton::UpdateColors() {
     }
   }
 
-  if (state() == STATE_PRESSED) {
+  if (GetState() == STATE_PRESSED) {
     bg_color = theme->GetSystemButtonPressedColor(bg_color);
   }
 

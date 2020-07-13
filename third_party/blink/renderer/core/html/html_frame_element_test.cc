@@ -19,12 +19,8 @@ class HTMLFrameElementTest : public testing::Test {};
 // fullscreen feature should be unconditionally disabled.
 TEST_F(HTMLFrameElementTest, DefaultContainerPolicy) {
   const KURL document_url("http://example.com");
-  DocumentInit init =
-      DocumentInit::Create()
-          .ForTest()
-          .WithInitiatorOrigin(SecurityOrigin::Create(document_url))
-          .WithURL(document_url);
-  auto* document = MakeGarbageCollected<Document>(init);
+  auto* document = MakeGarbageCollected<Document>(
+      DocumentInit::Create().ForTest().WithURL(document_url));
 
   auto* frame_element = MakeGarbageCollected<HTMLFrameElement>(*document);
 

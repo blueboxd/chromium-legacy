@@ -45,6 +45,7 @@ android_library("internal_ui_factory_java") {
 android_library("internal_java") {
   deps = [
     ":java_resources",
+    "//base:jni_java",
     "//chrome/android:chrome_app_java_resources",
     "//chrome/android:chrome_java",
     "//chrome/browser/password_check/android:public_ui_java",
@@ -59,12 +60,30 @@ android_library("internal_java") {
     _public_target,
   ]
   sources = [
+    "java/src/org/chromium/chrome/browser/password_check/PasswordCheckBridge.java",
     "java/src/org/chromium/chrome/browser/password_check/PasswordCheckCoordinator.java",
     "java/src/org/chromium/chrome/browser/password_check/PasswordCheckImpl.java",
     "java/src/org/chromium/chrome/browser/password_check/PasswordCheckMediator.java",
     "java/src/org/chromium/chrome/browser/password_check/PasswordCheckProperties.java",
     "java/src/org/chromium/chrome/browser/password_check/PasswordCheckViewBinder.java",
     "java/src/org/chromium/chrome/browser/password_check/PasswordCheckViewHolder.java",
+  ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+}
+
+generate_jni("jni_headers") {
+  visibility = [ ":*" ]
+  sources = [ "java/src/org/chromium/chrome/browser/password_check/PasswordCheckBridge.java" ]
+}
+
+source_set("internal") {
+  deps = [
+    ":jni_headers",
+    "//base:base",
+  ]
+  sources = [
+    "password_check_bridge.cc",
+    "password_check_bridge.h",
   ]
 }
 

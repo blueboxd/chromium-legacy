@@ -88,6 +88,10 @@ class SESSIONS_EXPORT CommandStorageBackend
 
   const base::FilePath& path() const { return path_; }
 
+  // Change the file path used to save the session. Must be called after closing
+  // the file first (CloseFile())
+  void SetPath(const base::FilePath& path);
+
   // Reads the commands from the specified file.  If |crypto_key| is non-empty,
   // it is used to decrypt the file.
   std::vector<std::unique_ptr<sessions::SessionCommand>> ReadCommandsFromFile(
@@ -133,7 +137,7 @@ class SESSIONS_EXPORT CommandStorageBackend
   bool IsEncrypted() const { return !crypto_key_.empty(); }
 
   // Path commands are saved to.
-  const base::FilePath path_;
+  base::FilePath path_;
 
   // This may be null, created as necessary.
   std::unique_ptr<base::File> file_;

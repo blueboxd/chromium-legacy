@@ -533,9 +533,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
 
   ASSERT_TRUE(VerifyUi());
   ASSERT_EQ(1u, GetExtensionsMenuItemViews().size());
-  EXPECT_EQ(
-      views::Button::STATE_DISABLED,
-      GetExtensionsMenuItemViews().front()->pin_button_for_testing()->state());
+  EXPECT_EQ(views::Button::STATE_DISABLED, GetExtensionsMenuItemViews()
+                                               .front()
+                                               ->pin_button_for_testing()
+                                               ->GetState());
 
   DismissUi();
 }

@@ -76,6 +76,10 @@ class DisplayAlignmentControllerTest : public AshTestBase {
     display_alignment_controller()->SetTimerForTesting(std::move(mock_timer));
   }
 
+  void DragDisplay(int64_t id, int32_t delta_x, int32_t delta_y) {
+    display_alignment_controller()->DisplayDragged(id, delta_x, delta_y);
+  }
+
   bool NoIndicatorsExist() {
     return display_alignment_controller()
         ->GetActiveIndicatorsForTesting()
@@ -108,6 +112,41 @@ class DisplayAlignmentControllerTest : public AshTestBase {
         EXPECT_FALSE(indicator->pill_widget_);
       }
     }
+  }
+
+  void CheckPreviewIndicatorShown(int64_t dragged_display_id,
+                                  int64_t target_display_id,
+                                  bool is_visible) {
+    ASSERT_EQ(dragged_display_id,
+              display_alignment_controller()->GetDraggedDisplayIdForTesting());
+
+    const auto& active_indicators_ =
+        display_alignment_controller()->GetActiveIndicatorsForTesting();
+
+    const auto& iter =
+        std::find_if(active_indicators_.begin(), active_indicators_.end(),
+                     [target_display_id](const auto& indicator) {
+                       return target_display_id == indicator->display_id();
+                     });
+
+    if (iter == active_indicators_.end()) {
+      EXPECT_FALSE(is_visible);
+      return;
+    }
+
+    DisplayAlignmentIndicator* indicator = iter->get();
+    ASSERT_TRUE(indicator);
+
+    const views::Widget& indicator_widget = indicator->indicator_widget_;
+
+    if (!is_visible) {
+      EXPECT_FALSE(indicator_widget.IsVisible());
+      return;
+    }
+
+    EXPECT_EQ(Shell::GetRootWindowForDisplayId(target_display_id),
+              indicator_widget.GetNativeWindow()->GetRootWindow());
+    EXPECT_TRUE(indicator_widget.IsVisible());
   }
 
   base::MockOneShotTimer* mock_timer_ptr_ = nullptr;
@@ -359,4 +398,66 @@ TEST_F(DisplayAlignmentControllerTest, AllowOffByOnes) {
   CheckIndicatorShown(2, primary_display);
 }
 
+TEST_F(DisplayAlignmentControllerTest, DragDisplayBasic) {
+  UpdateDisplay("1920x1080,1366x768");
+  const auto& primary_display = display_manager()->GetDisplayAt(0);
+  const auto& secondary_display = display_manager()->GetDisplayAt(1);
+
+  DragDisplay(primary_display.id(), 0, 0);
+
+  CheckPreviewIndicatorShown(primary_display.id(), secondary_display.id(),
+                             /*is_visible=*/true);
+
+  UpdateDisplay("1920x1080,1366x768");
+  EXPECT_TRUE(NoIndicatorsExist());
+}
+
+// When drag display starts, all existing indicators should be replaced.
+TEST_F(DisplayAlignmentControllerTest, DragDisplayReplaceExistingIndicators) {
+  UpdateDisplay("1920x1080,1366x768");
+
+  const auto& primary_display = display_manager()->GetDisplayAt(0);
+  const auto& secondary_display = display_manager()->GetDisplayAt(1);
+
+  TriggerIndicator(primary_display, EdgeType::kLeft);
+
+  CheckIndicatorShown(2, primary_display);
+
+  DragDisplay(primary_display.id(), 0, 10);
+
+  CheckPreviewIndicatorShown(primary_display.id(), secondary_display.id(),
+                             /*is_visible=*/true);
+}
+
+TEST_F(DisplayAlignmentControllerTest, DragDisplayHideOldNeighbors) {
+  UpdateDisplay("1920x1080,1366x768");
+  const auto& primary_display = display_manager()->GetDisplayAt(0);
+  const auto& secondary_display = display_manager()->GetDisplayAt(1);
+
+  DragDisplay(primary_display.id(), 0, 0);
+
+  // Move the primary display so that the two are no longer neighbors
+  DragDisplay(primary_display.id(), -2000, -2000);
+
+  CheckPreviewIndicatorShown(primary_display.id(), secondary_display.id(),
+                             /*is_visible=*/false);
+}
+
+TEST_F(DisplayAlignmentControllerTest, DragDisplayNewNeighbor) {
+  UpdateDisplay("1000x1000,1000x1000,1000x100");
+  const auto& display_1 = display_manager()->GetDisplayAt(0);
+  const auto& display_2 = display_manager()->GetDisplayAt(1);
+  const auto& display_3 = display_manager()->GetDisplayAt(2);
+
+  DragDisplay(display_1.id(), 0, 0);
+
+  // Move the primary display so that the other two are no longer neighbors
+  DragDisplay(display_1.id(), 3000, 0);
+
+  CheckPreviewIndicatorShown(display_1.id(), display_2.id(),
+                             /*is_visible=*/false);
+
+  CheckPreviewIndicatorShown(display_1.id(), display_3.id(),
+                             /*is_visible=*/true);
+}
 }  // namespace ash

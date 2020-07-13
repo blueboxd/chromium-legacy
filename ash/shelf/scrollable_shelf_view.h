@@ -118,6 +118,9 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // Returns true if any shelf corner button has ripple ring activated.
   bool IsAnyCornerButtonInkDropActivatedForTest() const;
 
+  // Returns the maximum scroll distance for the current layout.
+  float GetScrollUpperBoundForTest() const;
+
   ShelfView* shelf_view() { return shelf_view_; }
   ShelfContainerView* shelf_container_view() { return shelf_container_view_; }
   const ShelfContainerView* shelf_container_view() const {

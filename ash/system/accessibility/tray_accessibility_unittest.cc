@@ -251,13 +251,14 @@ class TrayAccessibilityTest : public AshTestBase, public AccessibilityObserver {
   // In material design we show the help button but theme it as disabled if
   // it is not possible to load the help page.
   bool IsHelpAvailableOnDetailMenu() {
-    return detailed_menu_->help_view_->state() == views::Button::STATE_NORMAL;
+    return detailed_menu_->help_view_->GetState() ==
+           views::Button::STATE_NORMAL;
   }
 
   // In material design we show the settings button but theme it as disabled if
   // it is not possible to load the settings page.
   bool IsSettingsAvailableOnDetailMenu() {
-    return detailed_menu_->settings_view_->state() ==
+    return detailed_menu_->settings_view_->GetState() ==
            views::Button::STATE_NORMAL;
   }
 

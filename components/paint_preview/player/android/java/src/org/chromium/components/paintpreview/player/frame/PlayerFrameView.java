@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Rect;
+import android.util.Size;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -80,7 +81,7 @@ class PlayerFrameView extends FrameLayout {
         mBitmapPainter.updateBitmapMatrix(bitmapMatrix);
     }
 
-    void updateTileDimensions(int[] tileDimensions) {
+    void updateTileDimensions(Size tileDimensions) {
         mBitmapPainter.updateTileDimensions(tileDimensions);
     }
 

@@ -146,7 +146,7 @@ guestMessagePipe.registerHandler(Message.RENAME_FILE, async (message) => {
 
   const originalFile = await handle.getFile();
   const renamedFileHandle =
-      await directory.getFile(renameMsg.newFilename, {create: true});
+      await directory.getFileHandle(renameMsg.newFilename, {create: true});
   // Copy file data over to the new file.
   const writer = await renamedFileHandle.createWritable();
   // TODO(b/153021155): Use originalFile.stream().
@@ -438,7 +438,8 @@ async function getFileHandleFromCurrentDirectory(
     return null;
   }
   try {
-    return (await currentDirectoryHandle.getFile(filename, {create: false}));
+    return (
+        await currentDirectoryHandle.getFileHandle(filename, {create: false}));
   } catch (/** @type {?Object} */ e) {
     if (!suppressError) {
       console.error(e);
@@ -455,7 +456,7 @@ async function getFileHandleFromCurrentDirectory(
  * @return {!Promise<{file: !File, handle: !FileSystemFileHandle}>}
  */
 async function getFileFromHandle(fileSystemHandle) {
-  if (!fileSystemHandle || !fileSystemHandle.isFile) {
+  if (!fileSystemHandle || fileSystemHandle.kind !== 'file') {
     // Invent our own exception for this corner case. It might happen if a file
     // is deleted and replaced with a directory with the same name.
     throw new DOMException('Not a file.', 'NotAFile');
@@ -529,7 +530,7 @@ async function processOtherFilesInDirectory(
       return ProcessOtherFilesResult.ABORT;
     }
 
-    if (!handle.isFile) {
+    if (handle.kind !== 'file') {
       continue;
     }
     let entry = null;
@@ -670,7 +671,7 @@ async function launchWithDirectory(directory, handle) {
 async function launchWithMultipleSelection(directory, handles) {
   currentFiles.length = 0;
   for (const handle of handles) {
-    if (handle && handle.isFile) {
+    if (handle && handle.kind === 'file') {
       const fileHandle = /** @type {!FileSystemFileHandle} */ (handle);
       currentFiles.push({
         token: generateToken(fileHandle),
@@ -718,7 +719,7 @@ function launchConsumer(params) {
     return Promise.resolve();
   }
 
-  if (!assertCast(params.files[0]).isDirectory) {
+  if (assertCast(params.files[0]).kind !== 'directory') {
     console.error('Invalid launch: files[0] is not a directory: ', params);
     return Promise.resolve();
   }

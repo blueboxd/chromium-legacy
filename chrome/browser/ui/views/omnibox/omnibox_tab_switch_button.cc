@@ -71,7 +71,7 @@ OmniboxTabSwitchButton::~OmniboxTabSwitchButton() = default;
 
 void OmniboxTabSwitchButton::StateChanged(ButtonState old_state) {
   MdTextButton::StateChanged(old_state);
-  if (state() == STATE_NORMAL && old_state == STATE_PRESSED) {
+  if (GetState() == STATE_NORMAL && old_state == STATE_PRESSED) {
     SetMouseHandler(parent());
     if (popup_contents_view_->model()->selected_line_state() ==
         OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH)

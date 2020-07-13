@@ -26,6 +26,14 @@
         android:minSdkVersion="21"
         android:targetSdkVersion="29" />
 
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
+    </queries>
+
     <application
         android:icon="@mipmap/ic_launcher"
         android:label="@string/short_name"

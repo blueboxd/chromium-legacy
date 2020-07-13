@@ -511,9 +511,7 @@ ci.chromium_builder(
 
 ci.chromium_builder(
     name = 'win-official',
-    # TODO(https://crbug.com/1072012) Use the default console view and add
-    # main_console_view = settings.main_console_name once the build is green
-    console_view = 'chromium.fyi',
+    main_console_view = settings.main_console_name,
     console_view_entry = ci.console_view_entry(
         category = 'win|off',
         short_name = '64',
@@ -526,9 +524,7 @@ ci.chromium_builder(
 
 ci.chromium_builder(
     name = 'win32-official',
-    # TODO(https://crbug.com/1072012) Use the default console view and add
-    # main_console_view = settings.main_console_name once the build is green
-    console_view = 'chromium.fyi',
+    main_console_view = settings.main_console_name,
     console_view_entry = ci.console_view_entry(
         category = 'win|off',
         short_name = '32',

@@ -9,16 +9,13 @@
 #include <string>
 
 #include "ash/ambient/ambient_controller.h"
+#include "ash/ambient/ui/ambient_background_image_view.h"
 #include "ash/public/cpp/test/test_ambient_client.h"
 #include "ash/public/cpp/test/test_image_downloader.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/scoped_feature_list.h"
 #include "services/device/public/cpp/test/test_wake_lock_provider.h"
 #include "ui/views/widget/widget.h"
-
-namespace gfx {
-class ImageSkia;
-}  // namespace gfx
 
 namespace ash {
 
@@ -60,7 +57,11 @@ class AmbientAshTestBase : public AshTestBase {
   // Wait until the event has been processed.
   void SimulateSystemResumeAndWait();
 
-  const gfx::ImageSkia& GetImageInPhotoView();
+  // Set the size of the next image that will be loaded.
+  void SetPhotoViewImageSize(int width, int height);
+
+  // Advance the task environment timer to load the next photo.
+  void FastForwardToNextImage();
 
   // Returns the number of active wake locks of type |type|.
   int GetNumOfActiveWakeLocks(device::mojom::WakeLockType type);
@@ -70,6 +71,8 @@ class AmbientAshTestBase : public AshTestBase {
   void IssueAccessToken(const std::string& access_token, bool with_error);
 
   bool IsAccessTokenRequestPending() const;
+
+  AmbientBackgroundImageView* GetAmbientBackgroundImageView();
 
   AmbientController* ambient_controller();
 

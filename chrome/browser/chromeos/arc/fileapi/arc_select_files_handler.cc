@@ -389,11 +389,14 @@ bool SelectFileDialogHolder::SelectFile(
     return false;
   }
 
+  SelectFileDialogExtension::Owner owner;
+  owner.window = owner_window;
+  owner.android_task_id = task_id;
   select_file_dialog_->SelectFileWithFileManagerParams(
       type,
       /*title=*/base::string16(), default_path, file_types,
-      /*file_type_index=*/0, owner_window,
-      /*params=*/nullptr, task_id, show_android_picker_apps);
+      /*file_type_index=*/0,
+      /*params=*/nullptr, owner, show_android_picker_apps);
   return true;
 }
 

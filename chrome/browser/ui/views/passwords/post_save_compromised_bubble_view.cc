@@ -12,7 +12,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/bubble/bubble_frame_view.h"
-#include "ui/views/controls/label.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/fill_layout.h"
 
 PostSaveCompromisedBubbleView::PostSaveCompromisedBubbleView(
@@ -32,11 +32,15 @@ PostSaveCompromisedBubbleView::PostSaveCompromisedBubbleView(
     SetButtonLabel(ui::DIALOG_BUTTON_OK, std::move(button));
   }
 
-  auto label = std::make_unique<views::Label>(controller_.GetBody(),
-                                              CONTEXT_BODY_TEXT_LARGE,
-                                              views::style::STYLE_SECONDARY);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->SetMultiLine(true);
+  auto label =
+      std::make_unique<views::StyledLabel>(controller_.GetBody(), this);
+  label->SetTextContext(CONTEXT_BODY_TEXT_LARGE);
+  label->SetDefaultTextStyle(views::style::STYLE_SECONDARY);
+  gfx::Range range = controller_.GetSettingLinkRange();
+  if (!range.is_empty()) {
+    label->AddStyleRange(range,
+                         views::StyledLabel::RangeStyleInfo::CreateForLink());
+  }
   AddChildView(std::move(label));
 
   SetAcceptCallback(
@@ -75,4 +79,11 @@ void PostSaveCompromisedBubbleView::OnThemeChanged() {
   image_view->SetImage(
       *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(image_id));
   GetBubbleFrameView()->SetHeaderView(std::move(image_view));
+}
+
+void PostSaveCompromisedBubbleView::StyledLabelLinkClicked(
+    views::StyledLabel* label,
+    const gfx::Range& range,
+    int event_flags) {
+  controller_.OnSettingsClicked();
 }

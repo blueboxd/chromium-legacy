@@ -293,7 +293,7 @@ TEST_F(ExtensionFromWebApp, Basic) {
         web_app.app_url.Resolve(base::StringPrintf("%i.png", sizes[i]));
     icon_info.square_size_px = sizes[i];
     web_app.icon_infos.push_back(std::move(icon_info));
-    web_app.icon_bitmaps[sizes[i]] = GetIconBitmap(sizes[i]);
+    web_app.icon_bitmaps_any[sizes[i]] = GetIconBitmap(sizes[i]);
   }
 
   scoped_refptr<Extension> extension = ConvertWebAppToExtension(
@@ -334,10 +334,10 @@ TEST_F(ExtensionFromWebApp, Basic) {
     EXPECT_EQ(web_app.icon_infos[i].square_size_px, linked_icons.icons[i].size);
   }
 
-  EXPECT_EQ(web_app.icon_bitmaps.size(),
+  EXPECT_EQ(web_app.icon_bitmaps_any.size(),
             IconsInfo::GetIcons(extension.get()).map().size());
   for (const std::pair<const SquareSizePx, SkBitmap>& icon :
-       web_app.icon_bitmaps) {
+       web_app.icon_bitmaps_any) {
     int size = icon.first;
     EXPECT_EQ(base::StringPrintf("icons/%i.png", size),
               IconsInfo::GetIcons(extension.get())

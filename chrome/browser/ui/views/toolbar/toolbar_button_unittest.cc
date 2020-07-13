@@ -154,7 +154,7 @@ TEST_F(ToolbarButtonUITest, ShowMenu) {
 
   EXPECT_FALSE(test_api.menu_showing());
   EXPECT_FALSE(test_api.menu_runner());
-  EXPECT_EQ(views::Button::STATE_NORMAL, button_->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, button_->GetState());
 
   // Show the menu. Note that it is asynchronous.
   button_->ShowContextMenuForView(nullptr, gfx::Point(), ui::MENU_SOURCE_MOUSE);
@@ -164,14 +164,14 @@ TEST_F(ToolbarButtonUITest, ShowMenu) {
   EXPECT_TRUE(test_api.menu_runner()->IsRunning());
 
   // Button should appear pressed when the menu is showing.
-  EXPECT_EQ(views::Button::STATE_PRESSED, button_->state());
+  EXPECT_EQ(views::Button::STATE_PRESSED, button_->GetState());
 
   test_api.menu_runner()->Cancel();
 
   // Ensure the ToolbarButton's |menu_runner_| member is reset to null.
   EXPECT_FALSE(test_api.menu_showing());
   EXPECT_FALSE(test_api.menu_runner());
-  EXPECT_EQ(views::Button::STATE_NORMAL, button_->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, button_->GetState());
 }
 
 // Test deleting a ToolbarButton while its menu is showing.

@@ -106,8 +106,13 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
      * Production implementation of the PaymentRequestImpl's Delegate. Gives true answers
      * about the system.
      */
-    public class PaymentRequestDelegateImpl implements PaymentRequestImpl.Delegate {
+    public static class PaymentRequestDelegateImpl implements PaymentRequestImpl.Delegate {
         private final TwaPackageManagerDelegate mPackageManager = new TwaPackageManagerDelegate();
+        private final RenderFrameHost mRenderFrameHost;
+
+        /* package */ PaymentRequestDelegateImpl(RenderFrameHost renderFrameHost) {
+            mRenderFrameHost = renderFrameHost;
+        }
 
         @Override
         public boolean isOffTheRecord(@Nullable ChromeActivity activity) {
@@ -145,6 +150,10 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
         public String getTwaPackageName(@Nullable ChromeActivity activity) {
             return activity != null ? mPackageManager.getTwaPackageName(activity) : null;
         }
+
+        private WebContents getWebContents() {
+            return WebContentsStatics.fromRenderFrameHost(mRenderFrameHost);
+        }
     }
 
     /**
@@ -174,14 +183,14 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
         if (sDelegateForTest != null) {
             delegate = sDelegateForTest;
         } else {
-            delegate = new PaymentRequestDelegateImpl();
+            delegate = new PaymentRequestDelegateImpl(mRenderFrameHost);
         }
 
         return new ComponentPaymentRequestImpl(
                 new PaymentRequestImpl(mRenderFrameHost, delegate, sNativeObserverForTest));
     }
 
-    WebContents getWebContents() {
+    private WebContents getWebContents() {
         return WebContentsStatics.fromRenderFrameHost(mRenderFrameHost);
     }
 }

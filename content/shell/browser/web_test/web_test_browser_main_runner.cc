@@ -132,11 +132,9 @@ void WebTestBrowserMainRunner::Initialize() {
   command_line.AppendSwitch(
       switches::kDisableBackgroundingOccludedWindowsForTesting);
 
-  // Always disable the unsandbox GPU process for DX12 and Vulkan Info
-  // collection to avoid interference. This GPU process is launched 120
-  // seconds after chrome starts.
-  command_line.AppendSwitch(
-      switches::kDisableGpuProcessForDX12VulkanInfoCollection);
+  // Always disable the unsandbox GPU process for DX12 Info collection to avoid
+  // interference. This GPU process is launched 120 seconds after chrome starts.
+  command_line.AppendSwitch(switches::kDisableGpuProcessForDX12InfoCollection);
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   bool ppapi_ok = ppapi::RegisterBlinkTestPlugin(&command_line);
@@ -217,11 +215,9 @@ void WebTestBrowserMainRunner::Initialize() {
   // Enable the deprecated WebAuthn Mojo Testing API.
   command_line.AppendSwitch(switches::kEnableWebAuthDeprecatedMojoTestingApi);
 
-  // Always disable the unsandbox GPU process for DX12 and Vulkan Info
-  // collection to avoid interference. This GPU process is launched 120
-  // seconds after chrome starts.
-  command_line.AppendSwitch(
-      switches::kDisableGpuProcessForDX12VulkanInfoCollection);
+  // Always disable the unsandbox GPU process for DX12 Info collection to avoid
+  // interference. This GPU process is launched 120 seconds after chrome starts.
+  command_line.AppendSwitch(switches::kDisableGpuProcessForDX12InfoCollection);
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
   content::WebTestBrowserPlatformInitialize();

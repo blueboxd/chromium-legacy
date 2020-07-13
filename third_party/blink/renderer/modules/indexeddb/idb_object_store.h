@@ -102,6 +102,9 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
                   const ScriptValue& key,
                   ExceptionState&);
   IDBRequest* put(ScriptState*, const ScriptValue& value, ExceptionState&);
+  HeapVector<Member<IDBRequest>> putAll(ScriptState*,
+                                        const HeapVector<ScriptValue>& values,
+                                        ExceptionState&);
   IDBRequest* put(ScriptState*,
                   const ScriptValue& value,
                   const ScriptValue& key,

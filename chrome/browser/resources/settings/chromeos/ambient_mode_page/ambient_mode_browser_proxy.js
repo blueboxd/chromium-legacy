@@ -27,16 +27,15 @@ cr.define('settings', function() {
      * response, the C++ sends the 'photos-containers-changed' WebUIListener
      * event.
      * @param {!AmbientModeTopicSource} topicSource the topic source for which
-     *     the containers requested
-     * for.
+     *     the containers requested for.
      */
     requestPhotosContainers(topicSource) {}
 
     /**
      * Updates the selected personal albums or art categories to server.
-     * @param {!Array<string>} containers the selected albums or categeries.
+     * @param {!AmbientModeSettings} settings the selected albums or categeries.
      */
-    setSelectedPhotosContainers(containers) {}
+    setSelectedPhotosContainers(settings) {}
   }
 
   /** @implements {settings.AmbientModeBrowserProxy} */
@@ -57,8 +56,8 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    setSelectedPhotosContainers(containers) {
-      chrome.send('setSelectedPhotosContainers', containers);
+    setSelectedPhotosContainers(settings) {
+      chrome.send('setSelectedPhotosContainers', [settings]);
     }
   }
 

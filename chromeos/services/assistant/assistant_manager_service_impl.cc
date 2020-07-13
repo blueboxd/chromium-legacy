@@ -149,6 +149,33 @@ void UpdateInternalOptions(
   });
 }
 
+const char* ToTriggerSource(AssistantEntryPoint entry_point) {
+  switch (entry_point) {
+    case AssistantEntryPoint::kUnspecified:
+      return kEntryPointUnspecified;
+    case AssistantEntryPoint::kDeepLink:
+      return kEntryPointDeepLink;
+    case AssistantEntryPoint::kHotkey:
+      return kEntryPointHotkey;
+    case AssistantEntryPoint::kHotword:
+      return kEntryPointHotword;
+    case AssistantEntryPoint::kLongPressLauncher:
+      return kEntryPointLongPressLauncher;
+    case AssistantEntryPoint::kSetup:
+      return kEntryPointSetup;
+    case AssistantEntryPoint::kStylus:
+      return kEntryPointStylus;
+    case AssistantEntryPoint::kLauncherSearchResult:
+      return kEntryPointLauncherSearchResult;
+    case AssistantEntryPoint::kLauncherSearchBoxIcon:
+      return kEntryPointLauncherSearchBoxIcon;
+    case AssistantEntryPoint::kProactiveSuggestions:
+      return kEntryPointProactiveSuggestions;
+    case AssistantEntryPoint::kLauncherChip:
+      return kEntryPointLauncherChip;
+  }
+}
+
 }  // namespace
 
 AssistantManagerServiceImpl::AssistantManagerServiceImpl(
@@ -1288,7 +1315,7 @@ void AssistantManagerServiceImpl::ResumeTimer(const std::string& id) {
 void AssistantManagerServiceImpl::NotifyEntryIntoAssistantUi(
     AssistantEntryPoint entry_point) {
   base::AutoLock lock(last_trigger_source_lock_);
-  last_trigger_source_ = ToTriggerSource(static_cast<int>(entry_point));
+  last_trigger_source_ = ToTriggerSource(entry_point);
 }
 
 std::string AssistantManagerServiceImpl::ConsumeLastTriggerSource() {

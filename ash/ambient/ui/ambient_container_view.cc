@@ -12,6 +12,7 @@
 #include "ash/ambient/ui/glanceable_info_view.h"
 #include "ash/ambient/ui/photo_view.h"
 #include "ash/ambient/util/ambient_util.h"
+#include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/assistant/util/animation_util.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
@@ -110,6 +111,7 @@ class AmbientContainerView::HostWidgetEventObserver : public ui::EventObserver {
 
 AmbientContainerView::AmbientContainerView(AmbientViewDelegate* delegate)
     : delegate_(delegate) {
+  SetID(AssistantViewID::kAmbientContainerView);
   Init();
 }
 

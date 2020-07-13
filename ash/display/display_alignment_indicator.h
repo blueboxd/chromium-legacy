@@ -48,9 +48,16 @@ class ASH_EXPORT DisplayAlignmentIndicator {
       delete;
   ~DisplayAlignmentIndicator();
 
+  int64_t display_id() const { return display_id_; }
+
   // Shows/Hides the indicator.
   void Show();
   void Hide();
+
+  // Updates the position of the indicator according to |bounds|. Used to move
+  // around preview indicators during dragging. The indicator must NOT have a
+  // pill.
+  void Update(const display::Display& display, gfx::Rect bounds);
 
  private:
   friend class DisplayAlignmentIndicatorTest;
@@ -60,6 +67,9 @@ class ASH_EXPORT DisplayAlignmentIndicator {
   DisplayAlignmentIndicator(const display::Display& src_display,
                             const gfx::Rect& bounds,
                             const std::string& target_name);
+
+  // The ID of the display that the indicator is shown on.
+  const int64_t display_id_;
 
   // View and Widget for showing the blue indicator highlights on the edge of
   // the display.

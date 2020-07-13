@@ -28,8 +28,6 @@ namespace chromeos {
 class COMPONENT_EXPORT(CDM_FACTORY_DAEMON) CdmFactoryDaemonProxy
     : public cdm::mojom::CdmFactoryDaemon {
  public:
-  typedef base::OnceCallback<void(bool connected)> ValidateDaemonConnectionCB;
-
   CdmFactoryDaemonProxy();
 
   CdmFactoryDaemonProxy(const CdmFactoryDaemonProxy&) = delete;

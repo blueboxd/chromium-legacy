@@ -230,7 +230,7 @@ TEST_F(ToolbarActionViewUnitTest, MAYBE_BasicToolbarActionViewTest) {
                       ax::mojom::StringAttribute::kName));
 
   // The button should start in normal state, with no actions executed.
-  EXPECT_EQ(views::Button::STATE_NORMAL, view->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, view->GetState());
   EXPECT_EQ(0, view_controller->execute_action_count());
 
   // Click the button. This should execute it.
@@ -242,26 +242,26 @@ TEST_F(ToolbarActionViewUnitTest, MAYBE_BasicToolbarActionViewTest) {
   // Since this was not a user action, the button should not be pressed.
   generator.MoveMouseTo(gfx::Point(300, 300));
   view_controller->ShowPopup(false);
-  EXPECT_EQ(views::Button::STATE_NORMAL, view->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, view->GetState());
   view_controller->HidePopup();
 
   // Show the popup through a user action - the button should be pressed.
   view_controller->ShowPopup(true);
-  EXPECT_EQ(views::Button::STATE_PRESSED, view->state());
+  EXPECT_EQ(views::Button::STATE_PRESSED, view->GetState());
   view_controller->HidePopup();
-  EXPECT_EQ(views::Button::STATE_NORMAL, view->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, view->GetState());
 
   // Ensure that the button's enabled state reflects that of the controller.
   view_controller->SetEnabled(false);
-  EXPECT_EQ(views::Button::STATE_DISABLED, view->state());
+  EXPECT_EQ(views::Button::STATE_DISABLED, view->GetState());
   view_controller->SetEnabled(true);
-  EXPECT_EQ(views::Button::STATE_NORMAL, view->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, view->GetState());
 
   // Ensure that clicking on an otherwise-disabled action optionally opens the
   // context menu.
   view_controller->SetDisabledClickOpensMenu(true);
   view_controller->SetEnabled(false);
-  EXPECT_EQ(views::Button::STATE_NORMAL, view->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, view->GetState());
   int old_execute_action_count = view_controller->execute_action_count();
   {
     OpenMenuListener menu_listener(view);
@@ -279,9 +279,9 @@ TEST_F(ToolbarActionViewUnitTest, MAYBE_BasicToolbarActionViewTest) {
   // popups.
   view->SetVisible(false);
   view_controller->ShowPopup(true);
-  EXPECT_EQ(views::Button::STATE_NORMAL, view->state());
-  EXPECT_EQ(views::Button::STATE_PRESSED, overflow_button->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, view->GetState());
+  EXPECT_EQ(views::Button::STATE_PRESSED, overflow_button->GetState());
   view_controller->HidePopup();
-  EXPECT_EQ(views::Button::STATE_NORMAL, view->state());
-  EXPECT_EQ(views::Button::STATE_NORMAL, overflow_button->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, view->GetState());
+  EXPECT_EQ(views::Button::STATE_NORMAL, overflow_button->GetState());
 }

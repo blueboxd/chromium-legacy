@@ -89,8 +89,8 @@ SharedImageFactory::SharedImageFactory(
       shared_image_manager_(shared_image_manager),
       shared_context_state_(context_state),
       memory_tracker_(std::make_unique<MemoryTypeTracker>(memory_tracker)),
-      using_vulkan_(context_state && context_state->GrContextIsVulkan()),
-      using_skia_dawn_(context_state && context_state->GrContextIsDawn()) {
+      gr_context_type_(context_state ? context_state->gr_context_type()
+                                     : GrContextType::kGL) {
   bool use_gl = gl::GetGLImplementation() != gl::kGLImplementationNone;
   if (use_gl) {
     gl_backing_factory_ = std::make_unique<SharedImageBackingFactoryGLTexture>(
@@ -98,25 +98,26 @@ SharedImageFactory::SharedImageFactory(
         shared_image_manager->batch_access_manager());
   }
 
-  // For X11
+  // TODO(ccameron): This block of code should be changed to a switch on
+  // |gr_context_type|.
 #if defined(USE_X11) && BUILDFLAG(ENABLE_VULKAN)
   if (!features::IsUsingOzonePlatform()) {
-    if (using_vulkan_) {
+    if (gr_context_type_ == GrContextType::kVulkan) {
       interop_backing_factory_ =
           std::make_unique<ExternalVkImageFactory>(context_state);
     }
-  } else if (using_vulkan_) {
-    LOG(ERROR) << "ERROR: using_vulkan_ = true and interop_backing_factory_ is "
-                  "not set";
+  } else if (gr_context_type_ == GrContextType::kVulkan) {
+    LOG(ERROR) << "ERROR: gr_context_type_ is GrContextType::kVulkan and "
+                  "interop_backing_factory_ is not set";
   }
 #elif (defined(OS_FUCHSIA) || defined(OS_WIN)) && BUILDFLAG(ENABLE_VULKAN)
-  if (using_vulkan_) {
+  if (gr_context_type_ == GrContextType::kVulkan) {
     interop_backing_factory_ =
         std::make_unique<ExternalVkImageFactory>(context_state);
   }
 #elif defined(OS_ANDROID) && BUILDFLAG(ENABLE_VULKAN)
   // For Android
-  if (using_vulkan_) {
+  if (gr_context_type_ == GrContextType::kVulkan) {
     external_vk_image_factory_ =
         std::make_unique<ExternalVkImageFactory>(context_state);
     const auto& enabled_extensions = context_state->vk_context_provider()
@@ -134,21 +135,22 @@ SharedImageFactory::SharedImageFactory(
   }
 #elif defined(OS_MACOSX)
   // OSX
-  DCHECK(!using_vulkan_);
+  DCHECK(gr_context_type_ == GrContextType::kGL ||
+         gr_context_type_ == GrContextType::kMetal);
   interop_backing_factory_ =
       std::make_unique<SharedImageBackingFactoryIOSurface>(
           workarounds, gpu_feature_info, use_gl);
 #elif defined(OS_CHROMEOS)
-  if (context_state && context_state->vk_context_provider()) {
+  if (gr_context_type_ == GrContextType::kVulkan) {
     interop_backing_factory_ =
         std::make_unique<SharedImageBackingFactoryOzone>(context_state);
   }
 #else
   // Others
-  if (using_vulkan_)
-    LOG(ERROR) << "ERROR: using_vulkan_ = true and interop_backing_factory_ is "
-                  "not set";
-
+  if (gr_context_type_ == GrContextType::kVulkan) {
+    LOG(ERROR) << "ERROR: gr_context_type_ is GrContextType::kVulkan and "
+                  "interop_backing_factory_ is not set";
+  }
 #endif
   if (enable_wrapped_sk_image && context_state) {
     wrapped_sk_image_factory_ =
@@ -159,7 +161,7 @@ SharedImageFactory::SharedImageFactory(
   // For Windows
   bool use_passthrough = gpu_preferences.use_passthrough_cmd_decoder &&
                          gles2::PassthroughCommandDecoderSupported();
-  if (use_passthrough && !using_vulkan_) {
+  if (use_passthrough && gr_context_type_ == GrContextType::kGL) {
     // Only supported for passthrough command decoder.
     interop_backing_factory_ = std::make_unique<SharedImageBackingFactoryD3D>();
   }
@@ -215,7 +217,7 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   SharedImageBackingFactory* factory = nullptr;
   if (backing_factory_for_testing_) {
     factory = backing_factory_for_testing_;
-  } else if (!using_vulkan_ && !using_skia_dawn_) {
+  } else if (gr_context_type_ == GrContextType::kGL) {
     allow_legacy_mailbox = true;
     factory = gl_backing_factory_.get();
   } else {
@@ -397,7 +399,7 @@ bool SharedImageFactory::CanUseWrappedSkImage(uint32_t usage) const {
                                         SHARED_IMAGE_USAGE_OOP_RASTERIZATION |
                                         SHARED_IMAGE_USAGE_DISPLAY;
 
-  if (using_vulkan_ || using_skia_dawn_) {
+  if (gr_context_type_ != GrContextType::kGL) {
     // For SkiaRenderer/Vulkan+Dawn use WrappedSkImage if the usage is only
     // raster and/or display.
     return (usage & kWrappedSkImageUsage) && !(usage & ~kWrappedSkImageUsage);
@@ -417,7 +419,8 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
     return backing_factory_for_testing_;
 
   bool using_dawn = usage & SHARED_IMAGE_USAGE_WEBGPU;
-  bool vulkan_usage = using_vulkan_ && (usage & SHARED_IMAGE_USAGE_DISPLAY);
+  bool vulkan_usage = gr_context_type_ == GrContextType::kVulkan &&
+                      (usage & SHARED_IMAGE_USAGE_DISPLAY);
   bool gl_usage = usage & SHARED_IMAGE_USAGE_GLES2;
   bool share_between_threads = IsSharedBetweenThreads(usage);
   bool share_between_gl_vulkan = gl_usage && vulkan_usage;
@@ -460,8 +463,9 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
     using_interop_factory |= interop_factory_supports_gmb;
   }
 
-  *allow_legacy_mailbox =
-      !using_interop_factory && !using_vulkan_ && !share_between_threads;
+  *allow_legacy_mailbox = !using_interop_factory &&
+                          gr_context_type_ == GrContextType::kGL &&
+                          !share_between_threads;
 
   if (using_interop_factory) {
     // TODO(crbug.com/969114): Not all shared image factory implementations

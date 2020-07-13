@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/path_service.h"
@@ -136,6 +135,8 @@ class MockPingManagerImpl : public PingManager {
   };
 
   explicit MockPingManagerImpl(scoped_refptr<Configurator> config);
+  MockPingManagerImpl(const MockPingManagerImpl&) = delete;
+  MockPingManagerImpl& operator=(const MockPingManagerImpl&) = delete;
 
   void SendPing(const Component& component, Callback callback) override;
 
@@ -149,7 +150,6 @@ class MockPingManagerImpl : public PingManager {
  private:
   std::vector<PingData> ping_data_;
   std::vector<base::Value> events_;
-  DISALLOW_COPY_AND_ASSIGN(MockPingManagerImpl);
 };
 
 MockPingManagerImpl::MockPingManagerImpl(scoped_refptr<Configurator> config)
@@ -188,6 +188,8 @@ const std::vector<base::Value>& MockPingManagerImpl::events() const {
 class UpdateClientTest : public testing::Test {
  public:
   UpdateClientTest();
+  UpdateClientTest(const UpdateClientTest&) = delete;
+  UpdateClientTest& operator=(const UpdateClientTest&) = delete;
   ~UpdateClientTest() override;
 
  protected:
@@ -213,8 +215,6 @@ class UpdateClientTest : public testing::Test {
       base::MakeRefCounted<TestConfigurator>(pref_.get());
   std::unique_ptr<update_client::PersistedData> metadata_ =
       std::make_unique<PersistedData>(pref_.get(), nullptr);
-
-  DISALLOW_COPY_AND_ASSIGN(UpdateClientTest);
 };
 
 constexpr int UpdateClientTest::kNumWorkerThreads_;
@@ -307,15 +307,17 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static std::unique_ptr<CrxDownloader> Create(
+    static scoped_refptr<CrxDownloader> Create(
         bool is_background_download,
         scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return std::make_unique<MockCrxDownloader>();
+      return base::MakeRefCounted<MockCrxDownloader>();
     }
 
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
+    ~MockCrxDownloader() override = default;
+
     void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
   };
 
@@ -487,15 +489,17 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static std::unique_ptr<CrxDownloader> Create(
+    static scoped_refptr<CrxDownloader> Create(
         bool is_background_download,
         scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return std::make_unique<MockCrxDownloader>();
+      return base::MakeRefCounted<MockCrxDownloader>();
     }
 
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
+    ~MockCrxDownloader() override = default;
+
     void DoStartDownload(const GURL& url) override {
       DownloadMetrics download_metrics;
       download_metrics.url = url;
@@ -730,15 +734,17 @@ TEST_F(UpdateClientTest, TwoCrxUpdateFirstServerIgnoresSecond) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static std::unique_ptr<CrxDownloader> Create(
+    static scoped_refptr<CrxDownloader> Create(
         bool is_background_download,
         scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return std::make_unique<MockCrxDownloader>();
+      return base::MakeRefCounted<MockCrxDownloader>();
     }
 
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
+    ~MockCrxDownloader() override = default;
+
     void DoStartDownload(const GURL& url) override {
       DownloadMetrics download_metrics;
       download_metrics.url = url;
@@ -963,15 +969,17 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoCrxComponentData) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static std::unique_ptr<CrxDownloader> Create(
+    static scoped_refptr<CrxDownloader> Create(
         bool is_background_download,
         scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return std::make_unique<MockCrxDownloader>();
+      return base::MakeRefCounted<MockCrxDownloader>();
     }
 
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
+    ~MockCrxDownloader() override = default;
+
     void DoStartDownload(const GURL& url) override {
       DownloadMetrics download_metrics;
       FilePath path;
@@ -1125,15 +1133,17 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoCrxComponentDataAtAll) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static std::unique_ptr<CrxDownloader> Create(
+    static scoped_refptr<CrxDownloader> Create(
         bool is_background_download,
         scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return std::make_unique<MockCrxDownloader>();
+      return base::MakeRefCounted<MockCrxDownloader>();
     }
 
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
+    ~MockCrxDownloader() override = default;
+
     void DoStartDownload(const GURL& url) override { NOTREACHED(); }
   };
 
@@ -1326,15 +1336,17 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static std::unique_ptr<CrxDownloader> Create(
+    static scoped_refptr<CrxDownloader> Create(
         bool is_background_download,
         scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return std::make_unique<MockCrxDownloader>();
+      return base::MakeRefCounted<MockCrxDownloader>();
     }
 
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
+    ~MockCrxDownloader() override = default;
+
     void DoStartDownload(const GURL& url) override {
       DownloadMetrics download_metrics;
       FilePath path;
@@ -1648,15 +1660,17 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static std::unique_ptr<CrxDownloader> Create(
+    static scoped_refptr<CrxDownloader> Create(
         bool is_background_download,
         scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return std::make_unique<MockCrxDownloader>();
+      return base::MakeRefCounted<MockCrxDownloader>();
     }
 
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
+    ~MockCrxDownloader() override = default;
+
     void DoStartDownload(const GURL& url) override {
       DownloadMetrics download_metrics;
       FilePath path;
@@ -2007,15 +2021,17 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static std::unique_ptr<CrxDownloader> Create(
+    static scoped_refptr<CrxDownloader> Create(
         bool is_background_download,
         scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return std::make_unique<MockCrxDownloader>();
+      return base::MakeRefCounted<MockCrxDownloader>();
     }
 
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
+    ~MockCrxDownloader() override = default;
+
     void DoStartDownload(const GURL& url) override {
       DownloadMetrics download_metrics;
       download_metrics.url = url;
@@ -2276,15 +2292,17 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static std::unique_ptr<CrxDownloader> Create(
+    static scoped_refptr<CrxDownloader> Create(
         bool is_background_download,
         scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return std::make_unique<MockCrxDownloader>();
+      return base::MakeRefCounted<MockCrxDownloader>();
     }
 
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
+    ~MockCrxDownloader() override = default;
+
     void DoStartDownload(const GURL& url) override {
       DownloadMetrics download_metrics;
       FilePath path;
@@ -2544,15 +2562,17 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static std::unique_ptr<CrxDownloader> Create(
+    static scoped_refptr<CrxDownloader> Create(
         bool is_background_download,
         scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return std::make_unique<MockCrxDownloader>();
+      return base::MakeRefCounted<MockCrxDownloader>();
     }
 
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
+    ~MockCrxDownloader() override = default;
+
     void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
   };
 
@@ -2727,15 +2747,17 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static std::unique_ptr<CrxDownloader> Create(
+    static scoped_refptr<CrxDownloader> Create(
         bool is_background_download,
         scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return std::make_unique<MockCrxDownloader>();
+      return base::MakeRefCounted<MockCrxDownloader>();
     }
 
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
+    ~MockCrxDownloader() override = default;
+
     void DoStartDownload(const GURL& url) override {
       DownloadMetrics download_metrics;
       FilePath path;
@@ -2909,15 +2931,17 @@ TEST_F(UpdateClientTest, OneCrxInstallNoCrxComponentData) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static std::unique_ptr<CrxDownloader> Create(
+    static scoped_refptr<CrxDownloader> Create(
         bool is_background_download,
         scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return std::make_unique<MockCrxDownloader>();
+      return base::MakeRefCounted<MockCrxDownloader>();
     }
 
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
+    ~MockCrxDownloader() override = default;
+
     void DoStartDownload(const GURL& url) override { NOTREACHED(); }
   };
 
@@ -3054,15 +3078,17 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static std::unique_ptr<CrxDownloader> Create(
+    static scoped_refptr<CrxDownloader> Create(
         bool is_background_download,
         scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return std::make_unique<MockCrxDownloader>();
+      return base::MakeRefCounted<MockCrxDownloader>();
     }
 
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
+    ~MockCrxDownloader() override = default;
+
     void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
   };
 
@@ -3164,15 +3190,17 @@ TEST_F(UpdateClientTest, EmptyIdList) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static std::unique_ptr<CrxDownloader> Create(
+    static scoped_refptr<CrxDownloader> Create(
         bool is_background_download,
         scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return std::make_unique<MockCrxDownloader>();
+      return base::MakeRefCounted<MockCrxDownloader>();
     }
 
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
+    ~MockCrxDownloader() override = default;
+
     void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
   };
 
@@ -3226,14 +3254,15 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static std::unique_ptr<CrxDownloader> Create(
+    static scoped_refptr<CrxDownloader> Create(
         bool is_background_download,
         scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
       return nullptr;
     }
 
-   private:
     MockCrxDownloader() : CrxDownloader(nullptr) {}
+
+   private:
     ~MockCrxDownloader() override = default;
 
     void DoStartDownload(const GURL& url) override {}
@@ -3358,15 +3387,17 @@ TEST_F(UpdateClientTest, RetryAfter) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static std::unique_ptr<CrxDownloader> Create(
+    static scoped_refptr<CrxDownloader> Create(
         bool is_background_download,
         scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return std::make_unique<MockCrxDownloader>();
+      return base::MakeRefCounted<MockCrxDownloader>();
     }
 
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
+    ~MockCrxDownloader() override = default;
+
     void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
   };
 
@@ -3601,15 +3632,17 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static std::unique_ptr<CrxDownloader> Create(
+    static scoped_refptr<CrxDownloader> Create(
         bool is_background_download,
         scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return std::make_unique<MockCrxDownloader>();
+      return base::MakeRefCounted<MockCrxDownloader>();
     }
 
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
+    ~MockCrxDownloader() override = default;
+
     void DoStartDownload(const GURL& url) override {
       DownloadMetrics download_metrics;
       FilePath path;
@@ -3797,15 +3830,17 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static std::unique_ptr<CrxDownloader> Create(
+    static scoped_refptr<CrxDownloader> Create(
         bool is_background_download,
         scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return std::make_unique<MockCrxDownloader>();
+      return base::MakeRefCounted<MockCrxDownloader>();
     }
 
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
+    ~MockCrxDownloader() override = default;
+
     void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
   };
 
@@ -3967,15 +4002,17 @@ TEST_F(UpdateClientTest, OneCrxErrorUnknownApp) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static std::unique_ptr<CrxDownloader> Create(
+    static scoped_refptr<CrxDownloader> Create(
         bool is_background_download,
         scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return std::make_unique<MockCrxDownloader>();
+      return base::MakeRefCounted<MockCrxDownloader>();
     }
 
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
+    ~MockCrxDownloader() override = default;
+
     void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
   };
 
@@ -4150,15 +4187,17 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static std::unique_ptr<CrxDownloader> Create(
+    static scoped_refptr<CrxDownloader> Create(
         bool is_background_download,
         scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return std::make_unique<MockCrxDownloader>();
+      return base::MakeRefCounted<MockCrxDownloader>();
     }
 
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
+    ~MockCrxDownloader() override = default;
+
     void DoStartDownload(const GURL& url) override {
       DownloadMetrics download_metrics;
       FilePath path;
@@ -4324,15 +4363,17 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static std::unique_ptr<CrxDownloader> Create(
+    static scoped_refptr<CrxDownloader> Create(
         bool is_background_download,
         scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return std::make_unique<MockCrxDownloader>();
+      return base::MakeRefCounted<MockCrxDownloader>();
     }
 
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
+    ~MockCrxDownloader() override = default;
+
     void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
   };
 
@@ -4501,15 +4542,17 @@ TEST_F(UpdateClientTest, CustomAttributeNoUpdate) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static std::unique_ptr<CrxDownloader> Create(
+    static scoped_refptr<CrxDownloader> Create(
         bool is_background_download,
         scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return std::make_unique<MockCrxDownloader>();
+      return base::MakeRefCounted<MockCrxDownloader>();
     }
 
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
+    ~MockCrxDownloader() override = default;
+
     void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
   };
 

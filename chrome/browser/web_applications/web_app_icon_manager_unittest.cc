@@ -63,11 +63,11 @@ class WebAppIconManagerTest : public WebAppTest {
 
     for (size_t i = 0; i < sizes_px.size(); ++i) {
       std::string icon_name = base::StringPrintf("app-%d.ico", sizes_px[i]);
-      AddGeneratedIcon(&web_app_info->icon_bitmaps, sizes_px[i], colors[i]);
+      AddGeneratedIcon(&web_app_info->icon_bitmaps_any, sizes_px[i], colors[i]);
     }
 
     base::RunLoop run_loop;
-    icon_manager_->WriteData(app_id, std::move(web_app_info->icon_bitmaps),
+    icon_manager_->WriteData(app_id, std::move(web_app_info->icon_bitmaps_any),
                              base::BindLambdaForTesting([&](bool success) {
                                EXPECT_TRUE(success);
                                run_loop.Quit();

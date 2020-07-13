@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/check.h"
 #include "base/json/json_writer.h"
+#include "base/values.h"
 #include "components/mirroring/service/message_dispatcher.h"
 
 namespace mirroring {
@@ -63,14 +64,16 @@ void WifiStatusMonitor::QueryStatus() {
 }
 
 void WifiStatusMonitor::RecordStatus(const ReceiverResponse& response) {
-  if (!response.status || response.status->wifi_speed.size() != 4)
+  if (!response.valid() || response.status().wifi_speed.size() != 4)
     return;
+
   if (recent_status_.size() == kMaxRecords)
     recent_status_.pop_front();
+
   WifiStatus received_status;
-  received_status.snr = response.status->wifi_snr;
+  received_status.snr = response.status().wifi_snr;
   // Only records the current speed.
-  received_status.speed = response.status->wifi_speed[3];
+  received_status.speed = response.status().wifi_speed[3];
   received_status.timestamp = base::Time::Now();
   recent_status_.emplace_back(received_status);
 }

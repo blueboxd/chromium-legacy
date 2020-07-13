@@ -103,14 +103,6 @@ quic::QuicFrames CloneFrames(const quic::QuicFrames& frames) {
   return new_frames;
 }
 
-// TODO(crbug.com/1085541): Consider moving this method into QuicTestUtils.
-quic::QuicConnectionId TestConnectionId(uint64_t connection_number) {
-  const uint64_t connection_id64_net =
-      quiche::QuicheEndian::HostToNet64(connection_number);
-  return quic::QuicConnectionId(
-      reinterpret_cast<const char*>(&connection_id64_net),
-      sizeof(connection_id64_net));
-}
 
 }  // namespace
 
@@ -939,7 +931,7 @@ QuicTestPacketMaker::MakeRetransmissionPacket(uint64_t original_packet_number,
 
 std::unique_ptr<quic::QuicEncryptedPacket>
 QuicTestPacketMaker::MakeStatelessResetPacket() {
-  auto connection_id = TestConnectionId(0x1337);
+  auto connection_id = quic::test::TestConnectionId();
   return quic::QuicFramer::BuildIetfStatelessResetPacket(
       connection_id,
       quic::QuicUtils::GenerateStatelessResetToken(connection_id));

@@ -24,7 +24,8 @@
       "contentsOpaque": true,
       "backgroundColor": "#D3D3D3",
       "invalidations": [
-        [0, 610, 22, 20]
+        [0, 629, 22, 1],
+        [0, 610, 21, 20]
       ],
       "transform": 2
     },

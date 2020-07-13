@@ -565,6 +565,11 @@ const char kWaitForInitialPolicyFetchForTest[] =
 // throttled.
 const char kDisableArcCpuRestriction[] = "disable-arc-cpu-restriction";
 
+// If this switch is passed, the device policy MinimumChromeVersionEnforced
+// assumes that the device has reached Auto Update Expiration. This is useful
+// for testing the policy behaviour on the DUT.
+const char kUpdateRequiredAueForTest[] = "aue-reached-for-update-required-test";
+
 bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
 }
@@ -635,6 +640,11 @@ bool IsUnfilteredBluetoothDevicesEnabled() {
 bool ShouldOobeUseTabletModeFirstRun() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kOobeForceTabletFirstRun);
+}
+
+bool IsAueReachedForUpdateRequiredForTest() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kUpdateRequiredAueForTest);
 }
 
 }  // namespace switches

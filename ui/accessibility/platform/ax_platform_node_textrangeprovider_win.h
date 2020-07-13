@@ -171,6 +171,13 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
       const AXNodeRange& new_selection);
   AXPlatformNodeWin* GetLowestAccessibleCommonPlatformNode() const;
 
+  static bool TextAttributeIsArrayType(TEXTATTRIBUTEID attribute_id);
+  static bool TextAttributeIsUiaReservedValue(
+      const base::win::VariantVector& vector);
+  static bool ShouldReleaseTextAttributeAsSafearray(
+      TEXTATTRIBUTEID attribute_id,
+      const base::win::VariantVector& vector);
+
   Microsoft::WRL::ComPtr<AXPlatformNodeWin> owner_;
   AXPositionInstance start_;
   AXPositionInstance end_;

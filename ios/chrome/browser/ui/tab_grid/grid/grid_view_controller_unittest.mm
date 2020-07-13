@@ -189,6 +189,13 @@ TEST_F(GridViewControllerTest, MoveUnselectedItem) {
 // Tests that |-replaceItemID:withItem:| does not crash when updating an item
 // that is scrolled offscreen.
 TEST_F(GridViewControllerTest, ReplaceScrolledOffScreenCell) {
+  // TODO(crbug.com/1104872): On iOS 14 iPhone X, visibleCellsCount is always
+  // equal to the total number of cells, so the while loop below never
+  // terminates.
+  if (@available(iOS 14, *)) {
+    return;
+  }
+
   // This test requires that the collection view be placed on the screen.
   SetRootViewController(view_controller_);
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(

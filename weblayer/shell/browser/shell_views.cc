@@ -105,7 +105,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
 
   void UpdateLoadProgress(double progress = 0.) {
     std::string stop_text("Stop");
-    if (stop_button_->state() == views::Button::STATE_NORMAL)
+    if (stop_button_->GetState() == views::Button::STATE_NORMAL)
       stop_text = base::StringPrintf("Stop (%.0f%%)", progress * 100);
     stop_button_->SetText(base::ASCIIToUTF16(stop_text));
   }

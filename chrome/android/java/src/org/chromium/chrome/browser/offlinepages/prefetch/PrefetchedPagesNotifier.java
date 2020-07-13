@@ -17,17 +17,17 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadOpenSource;
 import org.chromium.chrome.browser.download.DownloadUtils;
-import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.notifications.NotificationWrapperBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.chrome.browser.notifications.settings.NotificationSettings;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
-import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
+import org.chromium.components.browser_ui.notifications.NotificationWrapperBuilder;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.BrowserStartupController.StartupCallback;
@@ -122,9 +122,9 @@ public class PrefetchedPagesNotifier {
         NotificationMetadata metadata = new NotificationMetadata(
                 NotificationUmaTracker.SystemNotificationType.OFFLINE_CONTENT_SUGGESTION,
                 NOTIFICATION_TAG, notificationId);
-        ChromeNotificationBuilder builder =
-                NotificationBuilderFactory
-                        .createChromeNotificationBuilder(true /* preferCompat */,
+        NotificationWrapperBuilder builder =
+                NotificationWrapperBuilderFactory
+                        .createNotificationWrapperBuilder(true /* preferCompat */,
                                 ChromeChannelDefinitions.ChannelId.CONTENT_SUGGESTIONS,
                                 null /* remoteAppPackageName */, metadata)
                         .setAutoCancel(true)
@@ -142,7 +142,7 @@ public class PrefetchedPagesNotifier {
                     NotificationUmaTracker.ActionType.OFFLINE_CONTENT_SUGGESTION_SETTINGS);
         }
 
-        ChromeNotification notification = builder.buildChromeNotification();
+        NotificationWrapper notification = builder.buildNotificationWrapper();
 
         NotificationManagerProxy manager = new NotificationManagerProxyImpl(context);
         manager.notify(notification);

@@ -74,7 +74,8 @@ IN_PROC_BROWSER_TEST_F(WebAppIconManagerBrowserTest, SingleIcon) {
       SkBitmap bitmap;
       bitmap.allocN32Pixels(icon_size::k32, icon_size::k32, true);
       bitmap.eraseColor(SK_ColorBLUE);
-      web_application_info->icon_bitmaps[icon_size::k32] = std::move(bitmap);
+      web_application_info->icon_bitmaps_any[icon_size::k32] =
+          std::move(bitmap);
     }
 
     InstallManager& install_manager =

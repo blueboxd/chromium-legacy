@@ -24,17 +24,25 @@ Polymer({
       value: AmbientModeTopicSource,
     },
 
+    // TODO(b/160632748): Dynamically generate topic source of Google Photos.
+    /** @private {!Array<!AmbientModeTopicSource>} */
+    topicSources_: {
+      type: Array,
+      value: [
+        AmbientModeTopicSource.GOOGLE_PHOTOS, AmbientModeTopicSource.ART_GALLERY
+      ],
+    },
+
     /** @private {!AmbientModeTopicSource} */
     selectedTopicSource_: {
       type: AmbientModeTopicSource,
       value: AmbientModeTopicSource.UNKNOWN,
     },
+  },
 
-    /** @private {!AmbientModeTopicSource} */
-    previousTopicSource_: {
-      type: AmbientModeTopicSource,
-      value: AmbientModeTopicSource.UNKNOWN,
-    },
+  listeners: {
+    'selected-topic-source-changed': 'onSelectedTopicSourceChanged_',
+    'show-albums': 'onShowAlbums_',
   },
 
   /** @private {?settings.AmbientModeBrowserProxy} */
@@ -49,7 +57,6 @@ Polymer({
   ready() {
     this.addWebUIListener('topic-source-changed', (topicSource) => {
       this.selectedTopicSource_ = topicSource;
-      this.previousTopicSource_ = topicSource;
     });
 
     this.browserProxy_.onAmbientModePageReady();
@@ -64,26 +71,6 @@ Polymer({
     return this.i18n(toggleValue ? 'ambientModeOn' : 'ambientModeOff');
   },
 
-  /** @private */
-  onTopicSourceClicked_() {
-    const selectedTopicSource = this.$$('#topicSourceRadioGroup').selected;
-    if (selectedTopicSource === '0') {
-      this.selectedTopicSource_ = AmbientModeTopicSource.GOOGLE_PHOTOS;
-    } else if (selectedTopicSource === '1') {
-      this.selectedTopicSource_ = AmbientModeTopicSource.ART_GALLERY;
-    }
-
-    if (this.selectedTopicSource_ !== this.previousTopicSource_) {
-      this.previousTopicSource_ = this.selectedTopicSource_;
-      this.browserProxy_.setSelectedTopicSource(this.selectedTopicSource_);
-    }
-
-    const params = new URLSearchParams();
-    params.append('topicSource', JSON.stringify(this.selectedTopicSource_));
-    settings.Router.getInstance().navigateTo(
-        settings.routes.AMBIENT_MODE_PHOTOS, params);
-  },
-
   /**
    * @param {number} topicSource
    * @return {boolean}
@@ -92,4 +79,25 @@ Polymer({
   isValidTopicSource_(topicSource) {
     return topicSource !== AmbientModeTopicSource.UNKNOWN;
   },
+
+  /**
+   * @param {!CustomEvent<{item: !AmbientModeTopicSource}>} event
+   * @private
+   */
+  onSelectedTopicSourceChanged_(event) {
+    this.browserProxy_.setSelectedTopicSource(
+        /** @type {!AmbientModeTopicSource} */ (event.detail));
+  },
+
+  /**
+   * Open ambientMode/photos subpage.
+   * @param {!CustomEvent<{item: !AmbientModeTopicSource}>} event
+   * @private
+   */
+  onShowAlbums_(event) {
+    const params = new URLSearchParams();
+    params.append('topicSource', JSON.stringify(event.detail));
+    settings.Router.getInstance().navigateTo(
+        settings.routes.AMBIENT_MODE_PHOTOS, params);
+  }
 });

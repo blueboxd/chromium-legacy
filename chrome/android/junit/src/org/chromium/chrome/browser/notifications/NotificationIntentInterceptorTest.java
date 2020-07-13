@@ -33,10 +33,10 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
-import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
+import org.chromium.components.browser_ui.notifications.NotificationWrapperBuilder;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -98,12 +98,12 @@ public class NotificationIntentInterceptorTest {
     }
 
     // Builds a simple notification used in tests.
-    private ChromeNotification buildSimpleNotification(String title) {
+    private NotificationWrapper buildSimpleNotification(String title) {
         NotificationMetadata metaData = new NotificationMetadata(
                 NotificationUmaTracker.SystemNotificationType.DOWNLOAD_FILES, null, 0);
-        ChromeNotificationBuilder builder =
-                NotificationBuilderFactory.createChromeNotificationBuilder(true /* preferCompat */,
-                        ChromeChannelDefinitions.ChannelId.DOWNLOADS,
+        NotificationWrapperBuilder builder =
+                NotificationWrapperBuilderFactory.createNotificationWrapperBuilder(
+                        true /* preferCompat */, ChromeChannelDefinitions.ChannelId.DOWNLOADS,
                         null /* remoteAppPackageName */, metaData);
 
         // Set content intent.
@@ -128,7 +128,7 @@ public class NotificationIntentInterceptorTest {
         builder.addAction(0, TEST_NOTIFICATION_ACTION_TITLE, actionPendingIntent,
                 NotificationUmaTracker.ActionType.DOWNLOAD_PAUSE);
 
-        return builder.buildChromeNotification();
+        return builder.buildNotificationWrapper();
     }
 
     /**

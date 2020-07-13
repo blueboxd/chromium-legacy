@@ -85,6 +85,8 @@ class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
       GetPerLanguageSuggestionsCallback callback) override;
 #endif  // defined(OS_WIN)
 
+  void InitializeDictionaries(InitializeDictionariesCallback callback) override;
+
   // Clears a finished request from |requests_|. Exposed to SpellingRequest.
   void OnRequestFinished(SpellingRequest* request);
 

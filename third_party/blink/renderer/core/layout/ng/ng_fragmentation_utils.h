@@ -259,6 +259,14 @@ bool AttemptSoftBreak(const NGConstraintSpace&,
                       NGBreakAppeal appeal_before,
                       NGBoxFragmentBuilder*);
 
+// Calculate the constraint space for columns of a multi-column layout.
+NGConstraintSpace CreateConstraintSpaceForColumns(
+    const NGConstraintSpace& parent_space,
+    WritingMode writing_mode,
+    const LogicalSize& column_size,
+    bool is_first_fragmentainer,
+    bool balance_columns);
+
 // Return the adjusted child margin to be applied at the end of a fragment.
 // Margins should collapse with the fragmentainer boundary. |bfc_block_offset|
 // is the BFC offset where the margin should be applied (i.e. after the

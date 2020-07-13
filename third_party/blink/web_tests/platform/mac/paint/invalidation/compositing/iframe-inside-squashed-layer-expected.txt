@@ -18,10 +18,20 @@
       "position": [0, -8],
       "bounds": [300, 654],
       "invalidations": [
-        [8, 508, 31, 18],
-        [285, 500, 15, 150]
+        [8, 508, 31, 18]
       ],
       "transform": 1
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [285, 216],
+      "transform": 2
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [285, 0],
+      "bounds": [15, 150],
+      "transform": 2
     },
     {
       "name": "ContentsLayer for Vertical Scrollbar Layer",
@@ -38,6 +48,15 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [8, 8, 0, 1]
+      ]
+    },
+    {
+      "id": 2,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 500, 0, 1]
       ]
     }
   ]

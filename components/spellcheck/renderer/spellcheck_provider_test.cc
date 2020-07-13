@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
+#include "components/spellcheck/common/spellcheck_features.h"
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/renderer/hunspell_engine.h"
 #include "components/spellcheck/renderer/spellcheck.h"
@@ -192,6 +193,18 @@ void TestingSpellCheckProvider::GetPerLanguageSuggestions(
 }
 #endif  // defined(OS_WIN)
 
+void TestingSpellCheckProvider::InitializeDictionaries(
+    InitializeDictionariesCallback callback) {
+#if defined(OS_WIN)
+  if (base::FeatureList::IsEnabled(
+          spellcheck::kWinDelaySpellcheckServiceInit)) {
+    std::move(callback).Run();
+    return;
+  }
+#endif  // defined(OS_WIN)
+
+  NOTREACHED();
+}
 #endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
 #if defined(OS_ANDROID)

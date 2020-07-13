@@ -61,9 +61,9 @@ class AmbientModeHandler : public ::settings::SettingsPageUIHandler {
   // settings is retrieved.
   void SendTopicSource();
 
-  // Send the "photos-containers-changed" WebUIListener event when the personal
-  // albums are retrieved.
-  void SendPhotosContainers();
+  // Send the "photos-containers-changed" WebUIListener event with albums info
+  // in the |topic_source|.
+  void SendPhotosContainers(ash::AmbientModeTopicSource topic_source);
 
   // Update the local |settings_| to server.
   void UpdateSettings();

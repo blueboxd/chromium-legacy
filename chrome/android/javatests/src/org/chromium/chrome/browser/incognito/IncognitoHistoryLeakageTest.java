@@ -25,7 +25,6 @@ import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -168,7 +167,6 @@ public class IncognitoHistoryLeakageTest {
 
     @Test
     @LargeTest
-    @DisabledTest(message = "https://crbug.com/1102755")
     @UseMethodParameter(AllTypesToAllTypes.class)
     public void testTabNavigationHistoryDoNotLeakBetweenActivities(
             String activityType1, String activityType2) throws TimeoutException {
@@ -177,14 +175,13 @@ public class IncognitoHistoryLeakageTest {
 
         Tab tab1 = activity1.launchUrl(
                 mChromeActivityTestRule, mCustomTabActivityTestRule, mTestPage1);
-        Tab tab2 = activity2.launchUrl(
-                mChromeActivityTestRule, mCustomTabActivityTestRule, mTestPage2);
-
         CriteriaHelper.pollUiThread(
                 () -> Criteria.checkThat(tab1.getWebContents(), Matchers.notNullValue()));
         NavigationHistory navigationHistory1 =
                 tab1.getWebContents().getNavigationController().getNavigationHistory();
 
+        Tab tab2 = activity2.launchUrl(
+                mChromeActivityTestRule, mCustomTabActivityTestRule, mTestPage2);
         CriteriaHelper.pollUiThread(
                 () -> Criteria.checkThat(tab2.getWebContents(), Matchers.notNullValue()));
         NavigationHistory navigationHistory2 =

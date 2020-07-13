@@ -30,18 +30,18 @@ import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
-import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.notifications.NotificationWrapperBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.chrome.browser.omaha.OmahaBase;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateStatus;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
-import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
+import org.chromium.components.browser_ui.notifications.NotificationWrapperBuilder;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 
 import java.lang.annotation.Retention;
@@ -121,9 +121,9 @@ public class UpdateNotificationControllerImpl implements UpdateNotificationContr
     private void scheduleUpdateNotification() {
         if (!shouldPushNotification()) return;
 
-        ChromeNotificationBuilder builder =
-                NotificationBuilderFactory
-                        .createChromeNotificationBuilder(true,
+        NotificationWrapperBuilder builder =
+                NotificationWrapperBuilderFactory
+                        .createNotificationWrapperBuilder(true,
                                 ChromeChannelDefinitions.ChannelId.UPDATES, null,
                                 new NotificationMetadata(
                                         NotificationUmaTracker.SystemNotificationType.UPDATES,
@@ -135,7 +135,7 @@ public class UpdateNotificationControllerImpl implements UpdateNotificationContr
                         .setContentText(getUpdateNotificationTextBody());
 
         builder.setContentIntent(createContentIntent(mUpdateStatus));
-        ChromeNotification notification = builder.buildChromeNotification();
+        NotificationWrapper notification = builder.buildNotificationWrapper();
         NotificationManagerProxy notificationManager = new NotificationManagerProxyImpl(mActivity);
         notificationManager.notify(notification);
         NotificationUmaTracker.getInstance().onNotificationShown(

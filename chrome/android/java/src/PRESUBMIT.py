@@ -9,7 +9,7 @@ for more details about the presubmit API built into depot_tools.
 
 This presubmit checks for the following:
   - No new calls to Notification.Builder or NotificationCompat.Builder
-    constructors. Callers should use ChromeNotificationBuilder instead.
+    constructors. Callers should use NotificationWrapperBuilder instead.
   - No new calls to AlertDialog.Builder. Callers should use ModalDialogView
     instead.
 """
@@ -55,9 +55,9 @@ def _CheckNotificationConstructors(input_api, output_api):
   # "Blacklist" because the following files are excluded from the check.
   blacklist = (
       'chrome/android/java/src/org/chromium/chrome/browser/notifications/'
-      'NotificationBuilder.java',
+      'ChromeNotificationWrapperBuilder.java',
       'chrome/android/java/src/org/chromium/chrome/browser/notifications/'
-      'NotificationCompatBuilder.java'
+      'ChromeNotificationWrapperCompatBuilder.java'
   )
   error_msg = '''
   Android Notification Construction Check failed:
@@ -65,7 +65,7 @@ def _CheckNotificationConstructors(input_api, output_api):
   NotificationCompat.Builder constructors, listed below.
 
   This is banned, please construct notifications using
-  NotificationBuilderFactory.createChromeNotificationBuilder instead,
+  NotificationWrapperBuilderFactory.createNotificationWrapperBuilder instead,
   specifying a channel for use on Android O.
 
   See https://crbug.com/678670 for more information.

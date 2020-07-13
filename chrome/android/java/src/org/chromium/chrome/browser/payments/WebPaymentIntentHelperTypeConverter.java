@@ -111,7 +111,7 @@ public final class WebPaymentIntentHelperTypeConverter {
             @Nullable PaymentShippingOption shippingOption) {
         if (shippingOption == null) return null;
         return new WebPaymentIntentHelperType.PaymentShippingOption(shippingOption.id,
-                shippingOption.label, shippingOption.amount.currency, shippingOption.amount.value,
+                shippingOption.label, fromMojoPaymentCurrencyAmount(shippingOption.amount),
                 shippingOption.selected);
     }
 

@@ -445,6 +445,12 @@ void SMILTimeContainer::ServiceOnNextFrame() {
 }
 
 void SMILTimeContainer::ServiceAnimations() {
+  // If a synchronization is pending, we can flush it now.
+  if (frame_scheduling_state_ == kSynchronizeAnimations) {
+    DCHECK(wakeup_timer_.IsActive());
+    wakeup_timer_.Stop();
+    frame_scheduling_state_ = kAnimationFrame;
+  }
   if (frame_scheduling_state_ != kAnimationFrame)
     return;
   frame_scheduling_state_ = kIdle;

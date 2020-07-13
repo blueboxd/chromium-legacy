@@ -183,8 +183,14 @@ void ObjectPaintInvalidator::SlowSetPaintingLayerNeedsRepaint() {
 DISABLE_CFI_PERF
 PaintInvalidationReason
 ObjectPaintInvalidatorWithContext::ComputePaintInvalidationReason() {
-  // This is before any early return to ensure the background obscuration status
-  // is saved.
+  // This is before any early return to ensure the previous visibility status is
+  // saved.
+  bool previous_visibility_visible = object_.PreviousVisibilityVisible();
+  object_.GetMutableForPainting().UpdatePreviousVisibilityVisible();
+  if (object_.VisualRectRespectsVisibility() && !previous_visibility_visible &&
+      object_.StyleRef().Visibility() != EVisibility::kVisible)
+    return PaintInvalidationReason::kNone;
+
   if (!object_.ShouldCheckForPaintInvalidation() &&
       (!context_.subtree_flags ||
        context_.subtree_flags ==
@@ -201,44 +207,13 @@ ObjectPaintInvalidatorWithContext::ComputePaintInvalidationReason() {
   if (object_.ShouldDoFullPaintInvalidation())
     return object_.FullPaintInvalidationReason();
 
-  if (object_.GetDocument().InForcedColorsMode() &&
-      object_.IsLayoutBlockFlow() && !context_.old_visual_rect.IsEmpty())
+  if (object_.GetDocument().InForcedColorsMode() && object_.IsLayoutBlockFlow())
     return PaintInvalidationReason::kBackplate;
-
-  if (!(context_.subtree_flags &
-        PaintInvalidatorContext::kInvalidateEmptyVisualRect) &&
-      context_.old_visual_rect.IsEmpty() &&
-      context_.fragment_data->VisualRect().IsEmpty())
-    return PaintInvalidationReason::kNone;
-
-  // Force full paint invalidation if the outline may be affected by descendants
-  // and this object is marked for checking paint invalidation for any reason.
-  if (object_.OutlineMayBeAffectedByDescendants() ||
-      object_.PreviousOutlineMayBeAffectedByDescendants()) {
-    object_.GetMutableForPainting()
-        .UpdatePreviousOutlineMayBeAffectedByDescendants();
-    return PaintInvalidationReason::kOutline;
-  }
 
   // Force full paint invalidation if the object has background-clip:text to
   // update the background on any change in the subtree.
   if (object_.StyleRef().BackgroundClip() == EFillBox::kText)
     return PaintInvalidationReason::kBackground;
-
-  // If the size is zero on one of our bounds then we know we're going to have
-  // to do a full invalidation of either old bounds or new bounds.
-  if (context_.old_visual_rect.IsEmpty())
-    return PaintInvalidationReason::kAppeared;
-  if (context_.fragment_data->VisualRect().IsEmpty())
-    return PaintInvalidationReason::kDisappeared;
-
-  // If we shifted, we don't know the exact reason so we are conservative and
-  // trigger a full invalidation. Shifting could be caused by some layout
-  // property (left / top) or some in-flow layoutObject inserted / removed
-  // before us in the tree.
-  if (context_.fragment_data->VisualRect().Location() !=
-      context_.old_visual_rect.Location())
-    return PaintInvalidationReason::kGeometry;
 
   // Most paintings are pixel-snapped so subpixel change of paint offset doesn't
   // directly cause full raster invalidation.
@@ -253,9 +228,6 @@ ObjectPaintInvalidatorWithContext::ComputePaintInvalidationReason() {
   // paint invalidation reason if needed.
   if (object_.IsBox())
     return PaintInvalidationReason::kIncremental;
-
-  if (context_.old_visual_rect != context_.fragment_data->VisualRect())
-    return PaintInvalidationReason::kGeometry;
 
   return PaintInvalidationReason::kNone;
 }

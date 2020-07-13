@@ -1360,6 +1360,16 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     return service_manager::RESULT_CODE_NORMAL_EXIT;
 
 #if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+  if (first_run::IsChromeFirstRun()) {
+    // The installed Windows language packs aren't determined until
+    // the spellcheck service is initialized. Make sure the primary
+    // preferred language is enabled for spellchecking until the user
+    // opts out later. If there is no dictionary support for the language
+    // then it will later be automatically disabled.
+    SpellcheckService::EnableFirstUserLanguageForSpellcheck(
+        profile_->GetPrefs());
+  }
+
   // Create the spellcheck service. This will asynchronously retrieve the
   // Windows platform spellcheck dictionary language tags used to populate the
   // context menu for editable content.

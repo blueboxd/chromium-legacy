@@ -65,10 +65,35 @@ class HybridSpellCheckTest
   HybridSpellCheckTest() : provider_(&embedder_provider_) {}
   ~HybridSpellCheckTest() override {}
 
+  void SetUp() override {
+    // Don't delay initialization of the SpellcheckService on browser launch.
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{spellcheck::kWinUseBrowserSpellChecker},
+        /*disabled_features=*/{spellcheck::kWinDelaySpellcheckServiceInit});
+  }
+
+  void RunShouldUseBrowserSpellCheckOnlyWhenNeededTest();
+
  protected:
+  base::test::ScopedFeatureList feature_list_;
   base::test::SingleThreadTaskEnvironment task_environment_;
   spellcheck::EmptyLocalInterfaceProvider embedder_provider_;
   TestingSpellCheckProvider provider_;
+};
+
+// Test fixture for testing hybrid check cases with delayed initialization of
+// the spellcheck service.
+class HybridSpellCheckTestDelayInit : public HybridSpellCheckTest {
+ public:
+  HybridSpellCheckTestDelayInit() = default;
+
+  void SetUp() override {
+    // Don't initialize the SpellcheckService on browser launch.
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{spellcheck::kWinUseBrowserSpellChecker,
+                              spellcheck::kWinDelaySpellcheckServiceInit},
+        /*disabled_features=*/{});
+  }
 };
 
 // Test fixture for testing combining results from both the native spell checker
@@ -156,35 +181,39 @@ TEST_F(SpellCheckProviderTest, ShouldNotUseBrowserSpellCheck) {
   EXPECT_EQ(completion.cancellation_count_, 0U);
 }
 
+static const HybridSpellCheckTestCase kSpellCheckProviderHybridTestsParams[] = {
+    // No languages - should go straight to completion
+    HybridSpellCheckTestCase{0U, 0U, 0U, 0U},
+    // 1 disabled language - should go to browser
+    HybridSpellCheckTestCase{1U, 0U, 0U, 1U},
+    // 1 enabled language - should skip browser
+    HybridSpellCheckTestCase{1U, 1U, 1U, 0U},
+    // 1 disabled language, 1 enabled - should should go to browser
+    HybridSpellCheckTestCase{2U, 1U, 0U, 1U},
+    // 3 enabled languages - should skip browser
+    HybridSpellCheckTestCase{3U, 3U, 1U, 0U},
+    // 3 disabled languages - should go to browser
+    HybridSpellCheckTestCase{3U, 0U, 0U, 1U},
+    // 3 disabled languages, 3 enabled - should go to browser
+    HybridSpellCheckTestCase{6U, 3U, 0U, 1U}};
+
 // Tests that the SpellCheckProvider calls into the native spell checker only
 // when needed.
 INSTANTIATE_TEST_SUITE_P(
     SpellCheckProviderHybridTests,
     HybridSpellCheckTest,
-    testing::Values(
-        // No languages - should go straight to completion
-        HybridSpellCheckTestCase{0U, 0U, 0U, 0U},
-        // 1 disabled language - should go to browser
-        HybridSpellCheckTestCase{1U, 0U, 0U, 1U},
-        // 1 enabled language - should skip browser
-        HybridSpellCheckTestCase{1U, 1U, 1U, 0U},
-        // 1 disabled language, 1 enabled - should should go to browser
-        HybridSpellCheckTestCase{2U, 1U, 0U, 1U},
-        // 3 enabled languages - should skip browser
-        HybridSpellCheckTestCase{3U, 3U, 1U, 0U},
-        // 3 disabled languages - should go to browser
-        HybridSpellCheckTestCase{3U, 0U, 0U, 1U},
-        // 3 disabled languages, 3 enabled - should go to browser
-        HybridSpellCheckTestCase{6U, 3U, 0U, 1U}));
+    testing::ValuesIn(kSpellCheckProviderHybridTestsParams));
 
 TEST_P(HybridSpellCheckTest, ShouldUseBrowserSpellCheckOnlyWhenNeeded) {
+  RunShouldUseBrowserSpellCheckOnlyWhenNeededTest();
+}
+
+void HybridSpellCheckTest::RunShouldUseBrowserSpellCheckOnlyWhenNeededTest() {
   if (!spellcheck::WindowsVersionSupportsSpellchecker()) {
     return;
   }
 
   const auto& test_case = GetParam();
-  base::test::ScopedFeatureList local_features;
-  local_features.InitAndEnableFeature(spellcheck::kWinUseBrowserSpellChecker);
 
   FakeTextCheckingResult completion;
   provider_.spellcheck()->SetFakeLanguageCounts(
@@ -200,6 +229,20 @@ TEST_P(HybridSpellCheckTest, ShouldUseBrowserSpellCheckOnlyWhenNeeded) {
   EXPECT_EQ(completion.completion_count_,
             test_case.expected_text_check_requests_count > 0u ? 0u : 1u);
   EXPECT_EQ(completion.cancellation_count_, 0U);
+}
+
+// Tests that the SpellCheckProvider calls into the native spell checker only
+// when needed when the code path through
+// SpellCheckProvider::RequestTextChecking is that used when the spellcheck
+// service is initialized on demand.
+INSTANTIATE_TEST_SUITE_P(
+    SpellCheckProviderHybridTests,
+    HybridSpellCheckTestDelayInit,
+    testing::ValuesIn(kSpellCheckProviderHybridTestsParams));
+
+TEST_P(HybridSpellCheckTestDelayInit,
+       ShouldUseBrowserSpellCheckOnlyWhenNeeded) {
+  RunShouldUseBrowserSpellCheckOnlyWhenNeededTest();
 }
 
 // Tests that the SpellCheckProvider can correctly combine results from the

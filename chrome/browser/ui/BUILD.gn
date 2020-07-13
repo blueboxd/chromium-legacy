@@ -1626,8 +1626,6 @@ static_library("ui") {
       "app_list/chrome_app_list_item.h",
       "app_list/chrome_app_list_model_updater.cc",
       "app_list/chrome_app_list_model_updater.h",
-      "app_list/extension_app_context_menu.cc",
-      "app_list/extension_app_context_menu.h",
       "app_list/extension_app_utils.cc",
       "app_list/extension_app_utils.h",
       "app_list/internal_app/internal_app_metadata.cc",

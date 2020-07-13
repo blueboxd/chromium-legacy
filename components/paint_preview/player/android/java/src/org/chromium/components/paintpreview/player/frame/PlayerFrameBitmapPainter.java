@@ -7,6 +7,7 @@ package org.chromium.components.paintpreview.player.frame;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.util.Size;
 
 import javax.annotation.Nonnull;
 
@@ -15,8 +16,7 @@ import javax.annotation.Nonnull;
  * on a {@link Canvas}.
  */
 class PlayerFrameBitmapPainter {
-    private int mTileWidth;
-    private int mTileHeight;
+    private Size mTileSize;
     private Bitmap[][] mBitmapMatrix;
     private Rect mViewPort = new Rect();
     private Rect mDrawBitmapSrc = new Rect();
@@ -27,9 +27,8 @@ class PlayerFrameBitmapPainter {
         mInvalidateCallback = invalidateCallback;
     }
 
-    void updateTileDimensions(int[] tileDimensions) {
-        mTileWidth = tileDimensions[0];
-        mTileHeight = tileDimensions[1];
+    void updateTileDimensions(Size tileDimensions) {
+        mTileSize = tileDimensions;
     }
 
     void updateViewPort(int left, int top, int right, int bottom) {
@@ -50,12 +49,12 @@ class PlayerFrameBitmapPainter {
 
         if (mViewPort.isEmpty()) return;
 
-        if (mTileWidth <= 0 || mTileHeight <= 0) return;
+        if (mTileSize.getWidth() <= 0 || mTileSize.getHeight() <= 0) return;
 
-        final int rowStart = mViewPort.top / mTileHeight;
-        final int rowEnd = (int) Math.ceil((double) mViewPort.bottom / mTileHeight);
-        final int colStart = mViewPort.left / mTileWidth;
-        final int colEnd = (int) Math.ceil((double) mViewPort.right / mTileWidth);
+        final int rowStart = mViewPort.top / mTileSize.getHeight();
+        final int rowEnd = (int) Math.ceil((double) mViewPort.bottom / mTileSize.getHeight());
+        final int colStart = mViewPort.left / mTileSize.getWidth();
+        final int colEnd = (int) Math.ceil((double) mViewPort.right / mTileSize.getWidth());
         if (rowEnd > mBitmapMatrix.length || colEnd > mBitmapMatrix[rowEnd - 1].length) {
             return;
         }
@@ -68,17 +67,17 @@ class PlayerFrameBitmapPainter {
                 }
 
                 // Calculate the portion of this tileBitmap that is visible in mViewPort.
-                int bitmapLeft = Math.max(mViewPort.left - (col * mTileWidth), 0);
-                int bitmapTop = Math.max(mViewPort.top - (row * mTileHeight), 0);
-                int bitmapRight =
-                        Math.min(mTileWidth, bitmapLeft + mViewPort.right - (col * mTileWidth));
-                int bitmapBottom =
-                        Math.min(mTileHeight, bitmapTop + mViewPort.bottom - (row * mTileHeight));
+                int bitmapLeft = Math.max(mViewPort.left - (col * mTileSize.getWidth()), 0);
+                int bitmapTop = Math.max(mViewPort.top - (row * mTileSize.getHeight()), 0);
+                int bitmapRight = Math.min(mTileSize.getWidth(),
+                        bitmapLeft + mViewPort.right - (col * mTileSize.getWidth()));
+                int bitmapBottom = Math.min(mTileSize.getHeight(),
+                        bitmapTop + mViewPort.bottom - (row * mTileSize.getHeight()));
                 mDrawBitmapSrc.set(bitmapLeft, bitmapTop, bitmapRight, bitmapBottom);
 
                 // Calculate the portion of the canvas that tileBitmap is gonna be drawn on.
-                int canvasLeft = Math.max((col * mTileWidth) - mViewPort.left, 0);
-                int canvasTop = Math.max((row * mTileHeight) - mViewPort.top, 0);
+                int canvasLeft = Math.max((col * mTileSize.getWidth()) - mViewPort.left, 0);
+                int canvasTop = Math.max((row * mTileSize.getHeight()) - mViewPort.top, 0);
                 int canvasRight = canvasLeft + mDrawBitmapSrc.width();
                 int canvasBottom = canvasTop + mDrawBitmapSrc.height();
                 mDrawBitmapDst.set(canvasLeft, canvasTop, canvasRight, canvasBottom);

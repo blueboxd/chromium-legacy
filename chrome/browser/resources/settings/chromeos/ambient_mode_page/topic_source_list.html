@@ -1,0 +1,46 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="topic_source_item.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
+<link rel="import" href="../../settings_shared_css.html">
+
+<dom-module id="topic-source-list">
+  <template>
+    <style include="settings-shared cr-shared-style iron-flex">
+      topic-source-item {
+        align-items: center;
+        height: 48px;
+      }
+
+      iron-list > *:not(:first-of-type) {
+        border-top: var(--cr-separator-line);
+      }
+
+     iron-list > :focus {
+        background-color: var(--cr-focused-item-color);
+      }
+    </style>
+    <div class="first">
+      <h2>
+        $i18n{ambientModeTopicSourceTitle}
+      </h2>
+    </div>
+
+    <iron-list id="topicSourceList" selection-enabled
+        items="[[topicSources]]"
+        selected-item="{{selectedItem}}"
+        on-selected-item-changed="onSelectedItemChanged_">
+      <template>
+        <topic-source-item item="[[item]]"
+            checked="[[isItemSelected_(item, selectedItem)]]"
+            tabindex$="[[tabIndex]]"
+            disabled$="[[disabled]]">
+        </topic-source-item>
+      </template>
+    </iron-list>
+  </template>
+  <script src="topic_source_list.js"></script>
+</dom-module>

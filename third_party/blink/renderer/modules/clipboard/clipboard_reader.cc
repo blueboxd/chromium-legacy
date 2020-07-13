@@ -6,7 +6,10 @@
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom-blink.h"
 #include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
+#include "third_party/blink/renderer/core/dom/document_fragment.h"
+#include "third_party/blink/renderer/core/editing/serializers/serialization.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/modules/clipboard/clipboard_promise.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder.h"
@@ -142,10 +145,77 @@ class ClipboardTextReader final : public ClipboardReader {
   }
 };
 
+class ClipboardHtmlReader final : public ClipboardReader {
+ public:
+  explicit ClipboardHtmlReader(SystemClipboard* system_clipboard,
+                               ClipboardPromise* promise)
+      : ClipboardReader(system_clipboard, promise) {}
+  ~ClipboardHtmlReader() override = default;
+
+  // This must be called on the main thread because HTML DOM nodes can
+  // only be used on the main thread.
+  void Read() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    KURL url;
+    unsigned fragment_start = 0;
+    unsigned fragment_end = 0;
+
+    String html_string =
+        system_clipboard()->ReadHTML(url, fragment_start, fragment_end);
+
+    // Now sanitize the HTML string.
+    LocalFrame* frame = promise_->GetLocalFrame();
+    DocumentFragment* fragment = CreateSanitizedFragmentFromMarkupWithContext(
+        *frame->GetDocument(), html_string, fragment_start,
+        html_string.length(), url);
+    String sanitized_html =
+        CreateMarkup(fragment, kIncludeNode, kResolveAllURLs);
+
+    if (sanitized_html.IsEmpty()) {
+      NextRead(Vector<uint8_t>());
+      return;
+    }
+    worker_pool::PostTask(
+        FROM_HERE,
+        CrossThreadBindOnce(&ClipboardHtmlReader::EncodeHTMLOnBackgroundThread,
+                            std::move(sanitized_html),
+                            WrapCrossThreadPersistent(this),
+                            std::move(clipboard_task_runner_)));
+  }
+
+ private:
+  static void EncodeHTMLOnBackgroundThread(
+      String plain_text,
+      ClipboardHtmlReader* reader,
+      scoped_refptr<base::SingleThreadTaskRunner> clipboard_task_runner) {
+    DCHECK(!IsMainThread());
+
+    // Encode WTF String to UTF-8, the standard text format for blobs.
+    StringUTF8Adaptor utf8_text(plain_text);
+    Vector<uint8_t> utf8_bytes;
+    utf8_bytes.ReserveInitialCapacity(utf8_text.size());
+    utf8_bytes.Append(utf8_text.data(), utf8_text.size());
+
+    PostCrossThreadTask(*clipboard_task_runner, FROM_HERE,
+                        CrossThreadBindOnce(&ClipboardHtmlReader::NextRead,
+                                            WrapCrossThreadPersistent(reader),
+                                            std::move(utf8_bytes)));
+  }
+
+  void NextRead(Vector<uint8_t> utf8_bytes) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    Blob* blob = nullptr;
+    if (utf8_bytes.size()) {
+      blob =
+          Blob::Create(utf8_bytes.data(), utf8_bytes.size(), kMimeTypeTextHTML);
+    }
+    promise_->OnRead(blob);
+  }
+};
+
 }  // anonymous namespace
 // ClipboardReader functions.
 
-// static
 ClipboardReader* ClipboardReader::Create(SystemClipboard* system_clipboard,
                                          const String& mime_type,
                                          ClipboardPromise* promise) {
@@ -155,6 +225,8 @@ ClipboardReader* ClipboardReader::Create(SystemClipboard* system_clipboard,
   if (mime_type == kMimeTypeTextPlain)
     return MakeGarbageCollected<ClipboardTextReader>(system_clipboard, promise);
 
+  if (mime_type == kMimeTypeTextHTML)
+    return MakeGarbageCollected<ClipboardHtmlReader>(system_clipboard, promise);
   // The MIME type is not supported.
   return nullptr;
 }

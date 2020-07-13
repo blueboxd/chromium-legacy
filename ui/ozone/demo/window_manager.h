@@ -36,7 +36,7 @@ class WindowManager : public display::NativeDisplayObserver {
   void RemoveWindow(DemoWindow* window);
 
  private:
-  void OnDisplaysAquired(
+  void OnDisplaysAcquired(
       const std::vector<display::DisplaySnapshot*>& displays);
   void OnDisplayConfigured(const gfx::Rect& bounds, bool success);
 

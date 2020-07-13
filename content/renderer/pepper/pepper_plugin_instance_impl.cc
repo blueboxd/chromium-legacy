@@ -2619,7 +2619,7 @@ PP_Bool PepperPluginInstanceImpl::GetScreenSize(PP_Instance instance,
       return PP_FALSE;
     blink::WebScreenInfo info =
         render_frame_->GetLocalRootRenderWidget()->GetScreenInfo();
-    *size = PP_MakeSize(info.rect.width, info.rect.height);
+    *size = PP_MakeSize(info.rect.width(), info.rect.height());
   }
   return PP_TRUE;
 }
@@ -3203,7 +3203,7 @@ void PepperPluginInstanceImpl::SetSizeAttributesForFullscreen() {
 
   blink::WebScreenInfo info =
       render_frame_->GetLocalRootRenderWidget()->GetScreenInfo();
-  screen_size_for_fullscreen_ = gfx::Size(info.rect.width, info.rect.height);
+  screen_size_for_fullscreen_ = info.rect.size();
   std::string width = base::NumberToString(screen_size_for_fullscreen_.width());
   std::string height =
       base::NumberToString(screen_size_for_fullscreen_.height());

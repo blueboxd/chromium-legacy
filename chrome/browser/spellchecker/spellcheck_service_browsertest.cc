@@ -23,11 +23,13 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/language/core/browser/pref_names.h"
@@ -667,8 +669,8 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceWindowsHybridBrowserTest,
   // The list of Windows spellcheck languages should have been populated by at
   // least one language. This assures that the spellcheck context menu will
   // include Windows spellcheck languages that lack Hunspell support.
-  ASSERT_TRUE(service->dictionaries_loaded());
-  ASSERT_FALSE(service->windows_spellcheck_dictionary_map_.empty());
+  EXPECT_TRUE(service->dictionaries_loaded());
+  EXPECT_FALSE(service->windows_spellcheck_dictionary_map_.empty());
 }
 
 class SpellcheckServiceWindowsHybridBrowserTestDelayInit
@@ -682,6 +684,14 @@ class SpellcheckServiceWindowsHybridBrowserTestDelayInit
         /*enabled_features=*/{spellcheck::kWinUseBrowserSpellChecker,
                               spellcheck::kWinDelaySpellcheckServiceInit},
         /*disabled_features=*/{});
+
+    // Add command line switch that forces first run state, to test whether
+    // primary preferred language has its spellcheck dictionary enabled by
+    // default for non-Hunspell languages.
+    first_run::ResetCachedSentinelDataForTesting();
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kForceFirstRun);
+
     InProcessBrowserTest::SetUp();
   }
 
@@ -710,6 +720,47 @@ class SpellcheckServiceWindowsHybridBrowserTestDelayInit
   base::OnceClosure quit_on_callback_;
 };
 
+// Used for faking the presence of Windows spellcheck dictionaries.
+const std::vector<std::string> kWindowsSpellcheckLanguages = {
+    "fi-FI"   // Finnish has no Hunspell support.
+    "fr-FR",  // French has both Windows and Hunspell support.
+};
+
+// Used for testing whether primary preferred language is enabled by default for
+// spellchecking.
+const char kAcceptLanguages[] = "fi-FI,fi,ar-AR,fr-FR,hr,ceb";
+const std::vector<std::string> kSpellcheckDictionariesBefore = {
+    // Note that Finnish is initially unset, but has Windows spellcheck
+    // dictionary present.
+    "ar",     // Arabic has no Hunspell support, and its Windows spellcheck
+              // dictionary is not present.
+    "fr-FR",  // French has both Windows and Hunspell support, and its Windows
+              // spellcheck dictionary is present.
+    "hr",     // Croatian has Hunspell support.
+    "ceb"  // Cebuano doesn't have any dictionary support and should be removed
+           // from preferences.
+};
+
+const std::vector<std::string> kSpellcheckDictionariesAfter = {
+    "fi",  // Finnish should have been enabled for spellchecking since it's the
+           // primary language.
+    "fr-FR",  // French should still be there.
+    "hr"      // So should Croatian.
+};
+
+// As a prelude to the next test, sets the initial accept languages and
+// spellcheck language preferences for the test profile.
+IN_PROC_BROWSER_TEST_F(SpellcheckServiceWindowsHybridBrowserTestDelayInit,
+                       PRE_WindowsHybridSpellcheckDelayInit) {
+  GetPrefs()->SetString(language::prefs::kAcceptLanguages, kAcceptLanguages);
+  base::Value spellcheck_dictionaries_list(base::Value::Type::LIST);
+  for (const auto& dictionary : kSpellcheckDictionariesBefore) {
+    spellcheck_dictionaries_list.Append(std::move(dictionary));
+  }
+  GetPrefs()->Set(spellcheck::prefs::kSpellCheckDictionaries,
+                  spellcheck_dictionaries_list);
+}
+
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceWindowsHybridBrowserTestDelayInit,
                        WindowsHybridSpellcheckDelayInit) {
   if (!spellcheck::WindowsVersionSupportsSpellchecker())
@@ -724,7 +775,7 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceWindowsHybridBrowserTestDelayInit,
   SpellcheckService* service = static_cast<SpellcheckService*>(
       SpellcheckServiceFactory::GetInstance()->GetServiceForBrowserContext(
           GetContext(), /* create */ false));
-  ASSERT_EQ(nullptr, service);
+  EXPECT_EQ(nullptr, service);
 
   // Now create the SpellcheckService but don't call InitializeDictionaries().
   service = static_cast<SpellcheckService*>(
@@ -735,8 +786,11 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceWindowsHybridBrowserTestDelayInit,
 
   // The list of Windows spellcheck languages should not have been populated
   // yet since InitializeDictionaries() has not been called.
-  ASSERT_FALSE(service->dictionaries_loaded());
-  ASSERT_TRUE(service->windows_spellcheck_dictionary_map_.empty());
+  EXPECT_FALSE(service->dictionaries_loaded());
+  EXPECT_TRUE(service->windows_spellcheck_dictionary_map_.empty());
+
+  // Fake the presence of Windows spellcheck dictionaries.
+  service->AddSpellcheckLanguagesForTesting(kWindowsSpellcheckLanguages);
 
   service->InitializeDictionaries(
       base::BindOnce(&SpellcheckServiceWindowsHybridBrowserTestDelayInit::
@@ -744,12 +798,25 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceWindowsHybridBrowserTestDelayInit,
                      base::Unretained(this)));
 
   RunUntilCallbackReceived();
-  ASSERT_TRUE(service->dictionaries_loaded());
+  EXPECT_TRUE(service->dictionaries_loaded());
   // The list of Windows spellcheck languages should now have been populated.
   std::map<std::string, std::string>
       windows_spellcheck_dictionary_map_first_call =
           service->windows_spellcheck_dictionary_map_;
-  ASSERT_FALSE(windows_spellcheck_dictionary_map_first_call.empty());
+  EXPECT_EQ(kWindowsSpellcheckLanguages.size(),
+            windows_spellcheck_dictionary_map_first_call.size());
+
+  // Check that the primary accept language has spellchecking enabled and
+  // that languages with no spellcheck support have spellchecking disabled.
+  EXPECT_EQ(kAcceptLanguages,
+            GetPrefs()->GetString(language::prefs::kAcceptLanguages));
+  const base::Value* dictionaries_list =
+      GetPrefs()->Get(spellcheck::prefs::kSpellCheckDictionaries);
+  std::vector<std::string> actual_dictionaries;
+  for (const auto& dictionary : dictionaries_list->GetList()) {
+    actual_dictionaries.push_back(dictionary.GetString());
+  }
+  EXPECT_EQ(kSpellcheckDictionariesAfter, actual_dictionaries);
 
   // It should be safe to call InitializeDictionaries again (it should
   // immediately run the callback).
@@ -759,8 +826,8 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceWindowsHybridBrowserTestDelayInit,
                      base::Unretained(this)));
 
   RunUntilCallbackReceived();
-  ASSERT_TRUE(service->dictionaries_loaded());
-  ASSERT_EQ(windows_spellcheck_dictionary_map_first_call,
+  EXPECT_TRUE(service->dictionaries_loaded());
+  EXPECT_EQ(windows_spellcheck_dictionary_map_first_call,
             service->windows_spellcheck_dictionary_map_);
 }
 #endif  // defined(OS_WIN)

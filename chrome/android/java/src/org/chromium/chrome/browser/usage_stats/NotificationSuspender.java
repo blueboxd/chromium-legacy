@@ -26,8 +26,8 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.NotificationPlatformBridge;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.BrowserStartupController.StartupCallback;
 
@@ -54,7 +54,7 @@ public class NotificationSuspender {
      * @param notification The notification to suspend.
      * @return A {@link Promise} that resolves to whether the given notification got suspended.
      */
-    public static Promise<Boolean> maybeSuspendNotification(ChromeNotification notification) {
+    public static Promise<Boolean> maybeSuspendNotification(NotificationWrapper notification) {
         // No need to initialize UsageStatsService if it is disabled.
         if (!isEnabled()) return Promise.fulfilled(false);
         return waitForChromeStartup()
@@ -84,7 +84,7 @@ public class NotificationSuspender {
         }
     }
 
-    private void storeNotificationResources(List<ChromeNotification> notifications) {
+    private void storeNotificationResources(List<NotificationWrapper> notifications) {
         if (notifications.isEmpty()) return;
 
         String[] ids = new String[notifications.size()];
@@ -118,8 +118,8 @@ public class NotificationSuspender {
     }
 
     @TargetApi(Build.VERSION_CODES.M)
-    private List<ChromeNotification> getActiveNotificationsForFqdns(List<String> fqdns) {
-        List<ChromeNotification> notifications = new ArrayList<>();
+    private List<NotificationWrapper> getActiveNotificationsForFqdns(List<String> fqdns) {
+        List<NotificationWrapper> notifications = new ArrayList<>();
 
         for (StatusBarNotification notification : mNotificationManager.getActiveNotifications()) {
             if (notification.getId() != NotificationPlatformBridge.PLATFORM_ID) continue;
@@ -130,7 +130,7 @@ public class NotificationSuspender {
             NotificationMetadata metadata =
                     new NotificationMetadata(NotificationUmaTracker.SystemNotificationType.SITES,
                             tag, NotificationPlatformBridge.PLATFORM_ID);
-            notifications.add(new ChromeNotification(notification.getNotification(), metadata));
+            notifications.add(new NotificationWrapper(notification.getNotification(), metadata));
         }
 
         return notifications;
@@ -156,7 +156,7 @@ public class NotificationSuspender {
         return (Bitmap) notification.extras.get(Notification.EXTRA_PICTURE);
     }
 
-    private static String getValidFqdnOrEmptyString(ChromeNotification notification) {
+    private static String getValidFqdnOrEmptyString(NotificationWrapper notification) {
         String tag = notification.getMetadata().tag;
         String origin = NotificationPlatformBridge.getOriginFromNotificationTag(tag);
         if (TextUtils.isEmpty(origin)) return "";

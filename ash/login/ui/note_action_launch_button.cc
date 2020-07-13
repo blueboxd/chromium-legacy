@@ -286,8 +286,8 @@ class NoteActionLaunchButton::ActionButton : public views::ImageButton,
   // Updates the background view size and opacity depending on the current note
   // action button state.
   void UpdateBubbleRadiusAndOpacity() {
-    bool show_large_bubble = HasFocus() || state() == STATE_HOVERED ||
-                             state() == STATE_PRESSED ||
+    bool show_large_bubble = HasFocus() || GetState() == STATE_HOVERED ||
+                             GetState() == STATE_PRESSED ||
                              tracking_activation_gesture_;
     background_->SetBubbleRadiusAndOpacity(
         show_large_bubble ? kLargeBubbleRadiusDp : kSmallBubbleRadiusDp,

@@ -1341,12 +1341,12 @@ IN_PROC_BROWSER_TEST_F(
   cardholder_name_textfield->InsertOrReplaceText(base::ASCIIToUTF16(""));
   views::LabelButton* save_button = static_cast<views::LabelButton*>(
       FindViewInBubbleById(DialogViewId::OK_BUTTON));
-  EXPECT_EQ(save_button->state(),
+  EXPECT_EQ(save_button->GetState(),
             views::LabelButton::ButtonState::STATE_DISABLED);
   // Setting a cardholder name should enable the [Save] button.
   cardholder_name_textfield->InsertOrReplaceText(
       base::ASCIIToUTF16("John Smith"));
-  EXPECT_EQ(save_button->state(),
+  EXPECT_EQ(save_button->GetState(),
             views::LabelButton::ButtonState::STATE_NORMAL);
 }
 
@@ -1811,21 +1811,21 @@ IN_PROC_BROWSER_TEST_F(
   // because there are no preselected values in the dropdown lists.
   views::LabelButton* save_button = static_cast<views::LabelButton*>(
       FindViewInBubbleById(DialogViewId::OK_BUTTON));
-  EXPECT_EQ(save_button->state(),
+  EXPECT_EQ(save_button->GetState(),
             views::LabelButton::ButtonState::STATE_DISABLED);
   // Selecting only month or year will disable [Save] button.
   year_input()->SetSelectedRow(2);
-  EXPECT_EQ(save_button->state(),
+  EXPECT_EQ(save_button->GetState(),
             views::LabelButton::ButtonState::STATE_DISABLED);
   year_input()->SetSelectedRow(0);
   month_input()->SetSelectedRow(2);
-  EXPECT_EQ(save_button->state(),
+  EXPECT_EQ(save_button->GetState(),
             views::LabelButton::ButtonState::STATE_DISABLED);
 
   // Selecting both month and year will enable [Save] button.
   month_input()->SetSelectedRow(2);
   year_input()->SetSelectedRow(2);
-  EXPECT_EQ(save_button->state(),
+  EXPECT_EQ(save_button->GetState(),
             views::LabelButton::ButtonState::STATE_NORMAL);
 }
 
@@ -1850,7 +1850,7 @@ IN_PROC_BROWSER_TEST_F(
   // Selecting expired date will disable [Save] button.
   month_input()->SetSelectedRow(1);
   year_input()->SetSelectedRow(1);
-  EXPECT_EQ(save_button->state(),
+  EXPECT_EQ(save_button->GetState(),
             views::LabelButton::ButtonState::STATE_DISABLED);
 }
 

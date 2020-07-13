@@ -21137,6 +21137,7 @@ Called by update_document_policy_enum.py.-->
   <int value="735" label="DeviceNativePrintersAllowlist"/>
   <int value="736" label="URLBlocklist"/>
   <int value="737" label="URLAllowlist"/>
+  <int value="738" label="ExtensionInstallAllowlist"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -23895,6 +23896,7 @@ Called by update_extension_histograms.py.-->
   <int value="1483" label="INPUTMETHODPRIVATE_SETAUTOCORRECTRANGE"/>
   <int value="1484" label="PLATFORMKEYSINTERNAL_GETPUBLICKEYBYSPKI"/>
   <int value="1485" label="CERTIFICATEPROVIDER_SETCERTIFICATES"/>
+  <int value="1486" label="AUTOTESTPRIVATE_DISABLEAUTOMATION"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -39944,6 +39946,7 @@ from previous Chrome versions.
   <int value="-1696619241" label="OmniboxWrapPopupPosition:disabled"/>
   <int value="-1696366449" label="disable-permissions-bubbles"/>
   <int value="-1695774453" label="skip-extra-ash-window-positioning"/>
+  <int value="-1693498375" label="CdmFactoryDaemon:enabled"/>
   <int value="-1692967465"
       label="ContextMenuPerformanceInfoAndRemoteHintFetching:enabled"/>
   <int value="-1692384483" label="disambiguate-autofill-server-name-types"/>
@@ -41323,6 +41326,7 @@ from previous Chrome versions.
   <int value="-225505731" label="CCTModule:enabled"/>
   <int value="-222296540" label="VirtualKeyboardBorderedKey:disabled"/>
   <int value="-220599034" label="UsePdfCompositorServiceForPrint:enabled"/>
+  <int value="-217885320" label="CdmFactoryDaemon:disabled"/>
   <int value="-216219963" label="ash-shelf-color-scheme"/>
   <int value="-215580565"
       label="OmniboxEnableClipboardProviderImageSuggestions:disabled"/>
@@ -44187,6 +44191,7 @@ from previous Chrome versions.
   <int value="5" label="Profile Chooser"/>
   <int value="6" label="Passwords Accessory Sheet"/>
   <int value="7" label="Touch To Fill"/>
+  <int value="8" label="Safe state bubble"/>
 </enum>
 
 <enum name="ManifestFetchResultType">

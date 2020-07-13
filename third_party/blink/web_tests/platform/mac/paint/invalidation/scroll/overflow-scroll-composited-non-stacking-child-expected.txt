@@ -1,0 +1,94 @@
+{
+  "layers": [
+    {
+      "name": "LayoutNGBlockFlow HTML",
+      "bounds": [800, 268]
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV class='back'",
+      "position": [75, 65],
+      "bounds": [180, 100],
+      "contentsOpaque": true,
+      "backgroundColor": "#CCDDCC",
+      "transform": 2
+    },
+    {
+      "name": "LayoutNGBlockFlow HTML (foreground) Layer",
+      "bounds": [800, 268]
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV class='scroller'",
+      "bounds": [310, 200],
+      "transform": 1
+    },
+    {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [5, 180],
+      "bounds": [285, 15],
+      "transform": 1
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [290, 5],
+      "bounds": [15, 175],
+      "transform": 1
+    },
+    {
+      "name": "Scroll Corner Layer",
+      "position": [290, 180],
+      "bounds": [15, 15],
+      "transform": 1
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV class='icon'",
+      "bounds": [40, 40],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFDDBB",
+      "transform": 3
+    },
+    {
+      "name": "LayoutNGBlockFlow (relative positioned) DIV class='list'",
+      "position": [25, 25],
+      "bounds": [180, 250],
+      "drawsContent": false,
+      "transform": 2
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV class='commit')",
+      "position": [25, 25],
+      "bounds": [180, 250],
+      "transform": 2
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [18, 60, 0, 1]
+      ]
+    },
+    {
+      "id": 2,
+      "parent": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, -50, 0, 1]
+      ]
+    },
+    {
+      "id": 3,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [200, 10, 0, 1]
+      ]
+    }
+  ]
+}
+

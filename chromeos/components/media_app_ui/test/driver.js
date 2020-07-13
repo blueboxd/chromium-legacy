@@ -108,8 +108,7 @@ class FakeFileSystemHandle {
    * @param {string=} name
    */
   constructor(name = 'fake_file.png') {
-    this.isFile = true;
-    this.isDirectory = false;
+    this.kind = 'file';
     this.name = name;
   }
   /** @override */
@@ -178,8 +177,7 @@ class FakeFileSystemDirectoryHandle extends FakeFileSystemHandle {
    */
   constructor(name = 'fake-dir') {
     super(name);
-    this.isFile = false;
-    this.isDirectory = true;
+    this.kind = 'directory';
     /**
      * Internal state mocking file handles in a directory handle.
      * @type {!Array<!FakeFileSystemFileHandle>}
@@ -206,7 +204,7 @@ class FakeFileSystemDirectoryHandle extends FakeFileSystemHandle {
     return this.files.map(f => f.getFileSync());
   }
   /** @override */
-  async getFile(name, options) {
+  async getFileHandle(name, options) {
     const fileHandle = this.files.find(f => f.name === name);
     if (!fileHandle && options && options.create === true) {
       // Simulate creating a new file, assume it is an image. This is needed for
@@ -221,7 +219,7 @@ class FakeFileSystemDirectoryHandle extends FakeFileSystemHandle {
                             'NotFoundError', `File ${name} not found`)));
   }
   /** @override */
-  getDirectory(name, options) {}
+  getDirectoryHandle(name, options) {}
   /**
    * @override
    * @return {!AsyncIterable<!FileSystemHandle>}
@@ -371,7 +369,7 @@ function createNamedError(name, msg) {
  * @param {!File} file
  */
 async function loadFilesWithoutSendingToGuest(directory, file) {
-  const handle = await directory.getFile(file.name);
+  const handle = await directory.getFileHandle(file.name);
   globalLaunchNumber++;
   setCurrentDirectory(directory, {file, handle});
   await processOtherFilesInDirectory(directory, file, globalLaunchNumber);

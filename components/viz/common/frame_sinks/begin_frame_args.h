@@ -6,7 +6,9 @@
 #define COMPONENTS_VIZ_COMMON_FRAME_SINKS_BEGIN_FRAME_ARGS_H_
 
 #include <stdint.h>
+
 #include <memory>
+#include <string>
 
 #include "base/location.h"
 #include "base/memory/ref_counted.h"

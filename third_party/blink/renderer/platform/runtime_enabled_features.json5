@@ -863,6 +863,10 @@
       status: "experimental",
     },
     {
+      name: "IDBPutAll",
+      status: "experimental",
+    },
+    {
       name: "IDBRelaxedDurability",
       status: "stable",
     },

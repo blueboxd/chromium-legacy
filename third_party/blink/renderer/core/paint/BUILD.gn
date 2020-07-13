@@ -194,6 +194,8 @@ blink_core_sources("paint") {
     "replaced_painter.h",
     "root_inline_box_painter.cc",
     "root_inline_box_painter.h",
+    "rounded_border_geometry.cc",
+    "rounded_border_geometry.h",
     "rounded_inner_rect_clipper.cc",
     "rounded_inner_rect_clipper.h",
     "scoped_paint_state.cc",

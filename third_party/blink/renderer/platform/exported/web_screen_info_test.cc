@@ -35,8 +35,8 @@ TEST(WebScreenInfoTest, Equality) {
   screen_info1.depth = 1;
   screen_info1.depth_per_component = 1;
   screen_info1.is_monochrome = false;
-  screen_info1.rect = WebRect(0, 0, 1024, 1024);
-  screen_info1.available_rect = WebRect(0, 0, 1024, 1024);
+  screen_info1.rect = gfx::Rect(1024, 1024);
+  screen_info1.available_rect = gfx::Rect(1024, 1024);
   screen_info1.orientation_type = blink::kWebScreenOrientationLandscapePrimary;
   screen_info1.orientation_angle = 90;
 
@@ -46,8 +46,8 @@ TEST(WebScreenInfoTest, Equality) {
   screen_info2.depth = 1;
   screen_info2.depth_per_component = 1;
   screen_info2.is_monochrome = false;
-  screen_info2.rect = WebRect(0, 0, 1024, 1024);
-  screen_info2.available_rect = WebRect(0, 0, 1024, 1024);
+  screen_info2.rect = gfx::Rect(1024, 1024);
+  screen_info2.available_rect = gfx::Rect(1024, 1024);
   screen_info2.orientation_type = blink::kWebScreenOrientationLandscapePrimary;
   screen_info2.orientation_angle = 90;
 

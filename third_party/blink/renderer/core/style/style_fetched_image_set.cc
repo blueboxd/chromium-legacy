@@ -96,7 +96,7 @@ bool StyleFetchedImageSet::ErrorOccurred() const {
 FloatSize StyleFetchedImageSet::ImageSize(
     const Document&,
     float multiplier,
-    const LayoutSize& default_object_size,
+    const FloatSize& default_object_size,
     RespectImageOrientationEnum respect_orientation) const {
   Image* image = best_fit_image_->GetImage();
   if (auto* svg_image = DynamicTo<SVGImage>(image)) {

@@ -23,7 +23,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
+import org.chromium.chrome.browser.notifications.NotificationWrapperBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
@@ -117,8 +117,8 @@ public final class DownloadForegroundServiceManagerTest {
         mDownloadServiceManager = new MockDownloadForegroundServiceManager();
 
         mNotification =
-                NotificationBuilderFactory
-                        .createChromeNotificationBuilder(true /* preferCompat */,
+                NotificationWrapperBuilderFactory
+                        .createNotificationWrapperBuilder(true /* preferCompat */,
                                 ChromeChannelDefinitions.ChannelId.DOWNLOADS)
                         .setSmallIcon(org.chromium.chrome.R.drawable.ic_file_download_white_24dp)
                         .setContentTitle(FAKE_NOTIFICATION_CHANNEL)

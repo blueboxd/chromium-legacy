@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_border_edges.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
@@ -35,31 +36,6 @@ struct SameSizeAsNGPhysicalFragment
 };
 
 ASSERT_SIZE(NGPhysicalFragment, SameSizeAsNGPhysicalFragment);
-
-bool AppendFragmentOffsetAndSize(const NGPhysicalFragment* fragment,
-                                 base::Optional<PhysicalOffset> fragment_offset,
-                                 StringBuilder* builder,
-                                 NGPhysicalFragment::DumpFlags flags,
-                                 bool has_content) {
-  if (flags & NGPhysicalFragment::DumpOffset) {
-    if (has_content)
-      builder->Append(" ");
-    builder->Append("offset:");
-    if (fragment_offset)
-      builder->Append(fragment_offset->ToString());
-    else
-      builder->Append("unplaced");
-    has_content = true;
-  }
-  if (flags & NGPhysicalFragment::DumpSize) {
-    if (has_content)
-      builder->Append(" ");
-    builder->Append("size:");
-    builder->Append(fragment->Size().ToString());
-    has_content = true;
-  }
-  return has_content;
-}
 
 String StringForBoxType(const NGPhysicalFragment& fragment) {
   StringBuilder result;
@@ -113,99 +89,175 @@ String StringForBoxType(const NGPhysicalFragment& fragment) {
   return result.ToString();
 }
 
-void AppendFragmentToString(const NGPhysicalFragment* fragment,
-                            base::Optional<PhysicalOffset> fragment_offset,
-                            StringBuilder* builder,
-                            NGPhysicalFragment::DumpFlags flags,
-                            unsigned indent = 2) {
-  if (flags & NGPhysicalFragment::DumpIndentation) {
-    for (unsigned i = 0; i < indent; i++)
-      builder->Append(" ");
-  }
+class FragmentTreeDumper {
+  STACK_ALLOCATED();
 
-  bool has_content = false;
-  if (const auto* box = DynamicTo<NGPhysicalBoxFragment>(fragment)) {
-    if (flags & NGPhysicalFragment::DumpType) {
-      builder->Append("Box");
-      String box_type = StringForBoxType(*fragment);
-      has_content = true;
-      if (!box_type.IsEmpty()) {
-        builder->Append(" (");
-        builder->Append(box_type);
-        builder->Append(")");
+ public:
+  FragmentTreeDumper(StringBuilder* builder,
+                     NGPhysicalFragment::DumpFlags flags)
+      : builder_(builder), flags_(flags) {}
+
+  void Append(const NGPhysicalFragment* fragment,
+              base::Optional<PhysicalOffset> fragment_offset,
+              unsigned indent = 2) {
+    AppendIndentation(indent);
+
+    bool has_content = false;
+    if (const auto* box = DynamicTo<NGPhysicalBoxFragment>(fragment)) {
+      if (flags_ & NGPhysicalFragment::DumpType) {
+        builder_->Append("Box");
+        String box_type = StringForBoxType(*fragment);
+        has_content = true;
+        if (!box_type.IsEmpty()) {
+          builder_->Append(" (");
+          builder_->Append(box_type);
+          builder_->Append(")");
+        }
+        if (flags_ & NGPhysicalFragment::DumpSelfPainting &&
+            box->HasSelfPaintingLayer()) {
+          if (box_type.IsEmpty())
+            builder_->Append(" ");
+          builder_->Append("(self paint)");
+        }
       }
-      if (flags & NGPhysicalFragment::DumpSelfPainting &&
-          box->HasSelfPaintingLayer()) {
-        if (box_type.IsEmpty())
-          builder->Append(" ");
-        builder->Append("(self paint)");
+      has_content = AppendOffsetAndSize(fragment, fragment_offset, has_content);
+
+      if (flags_ & NGPhysicalFragment::DumpNodeName &&
+          fragment->GetLayoutObject()) {
+        if (has_content)
+          builder_->Append(" ");
+        builder_->Append(fragment->GetLayoutObject()->DebugName());
       }
-    }
-    has_content = AppendFragmentOffsetAndSize(fragment, fragment_offset,
-                                              builder, flags, has_content);
+      builder_->Append("\n");
 
-    if (flags & NGPhysicalFragment::DumpNodeName &&
-        fragment->GetLayoutObject()) {
-      if (has_content)
-        builder->Append(" ");
-      builder->Append(fragment->GetLayoutObject()->DebugName());
-    }
-    builder->Append("\n");
-
-    if (flags & NGPhysicalFragment::DumpSubtree) {
-      for (auto& child : box->Children()) {
-        AppendFragmentToString(child.get(), child.Offset(), builder, flags,
-                               indent + 2);
+      bool has_fragment_items = false;
+      if (flags_ & NGPhysicalFragment::DumpItems) {
+        if (const NGFragmentItems* fragment_items = box->Items()) {
+          NGInlineCursor cursor(*fragment_items);
+          Append(&cursor, indent + 2);
+          has_fragment_items = true;
+        }
       }
-    }
-    return;
-  }
-
-  if (const auto* line_box = DynamicTo<NGPhysicalLineBoxFragment>(fragment)) {
-    if (flags & NGPhysicalFragment::DumpType) {
-      builder->Append("LineBox");
-      has_content = true;
-    }
-    has_content = AppendFragmentOffsetAndSize(fragment, fragment_offset,
-                                              builder, flags, has_content);
-    builder->Append("\n");
-
-    if (flags & NGPhysicalFragment::DumpSubtree) {
-      for (auto& child : line_box->Children()) {
-        AppendFragmentToString(child.get(), child.Offset(), builder, flags,
-                               indent + 2);
+      if (flags_ & NGPhysicalFragment::DumpSubtree) {
+        for (auto& child : box->Children()) {
+          if (has_fragment_items && child->IsLineBox())
+            continue;
+          Append(child.get(), child.Offset(), indent + 2);
+        }
       }
       return;
     }
-  }
 
-  if (const auto* text = DynamicTo<NGPhysicalTextFragment>(fragment)) {
-    if (flags & NGPhysicalFragment::DumpType) {
-      builder->Append("Text");
+    if (const auto* line_box = DynamicTo<NGPhysicalLineBoxFragment>(fragment)) {
+      if (flags_ & NGPhysicalFragment::DumpType) {
+        builder_->Append("LineBox");
+        has_content = true;
+      }
+      has_content = AppendOffsetAndSize(fragment, fragment_offset, has_content);
+      builder_->Append("\n");
+
+      if (flags_ & NGPhysicalFragment::DumpSubtree) {
+        for (auto& child : line_box->Children()) {
+          Append(child.get(), child.Offset(), indent + 2);
+        }
+        return;
+      }
+    }
+
+    if (const auto* text = DynamicTo<NGPhysicalTextFragment>(fragment)) {
+      if (flags_ & NGPhysicalFragment::DumpType) {
+        builder_->Append("Text");
+        has_content = true;
+      }
+      has_content = AppendOffsetAndSize(fragment, fragment_offset, has_content);
+
+      if (flags_ & NGPhysicalFragment::DumpTextOffsets) {
+        if (has_content)
+          builder_->Append(' ');
+        builder_->AppendFormat("start: %u end: %u", text->StartOffset(),
+                               text->EndOffset());
+        has_content = true;
+      }
+      builder_->Append("\n");
+      return;
+    }
+
+    if (flags_ & NGPhysicalFragment::DumpType) {
+      builder_->Append("Unknown fragment type");
       has_content = true;
     }
-    has_content = AppendFragmentOffsetAndSize(fragment, fragment_offset,
-                                              builder, flags, has_content);
+    has_content = AppendOffsetAndSize(fragment, fragment_offset, has_content);
+    builder_->Append("\n");
+  }
 
-    if (flags & NGPhysicalFragment::DumpTextOffsets) {
+ private:
+  void Append(NGInlineCursor* cursor, unsigned indent) {
+    for (; *cursor; cursor->MoveToNextSkippingChildren()) {
+      const NGInlineCursorPosition& current = cursor->Current();
+      if (const NGPhysicalBoxFragment* box = current.BoxFragment()) {
+        if (!box->IsInlineBox()) {
+          Append(box, current.OffsetInContainerBlock(), indent);
+          continue;
+        }
+      }
+
+      AppendIndentation(indent);
+
+      // TODO(kojii): Use the same format as layout tree dump for now. We can
+      // make this more similar to |AppendFragmentToString| above.
+      builder_->Append(current->ToString());
+
+      if (flags_ & NGPhysicalFragment::DumpOffset) {
+        builder_->Append(" offset:");
+        builder_->Append(current.OffsetInContainerBlock().ToString());
+      }
+      if (flags_ & NGPhysicalFragment::DumpSize) {
+        builder_->Append(" size:");
+        builder_->Append(current.Size().ToString());
+      }
+
+      builder_->Append("\n");
+
+      if (flags_ & NGPhysicalFragment::DumpSubtree && current.HasChildren()) {
+        NGInlineCursor descendants = cursor->CursorForDescendants();
+        Append(&descendants, indent + 2);
+      }
+    }
+  }
+
+  bool AppendOffsetAndSize(const NGPhysicalFragment* fragment,
+                           base::Optional<PhysicalOffset> fragment_offset,
+                           bool has_content) {
+    if (flags_ & NGPhysicalFragment::DumpOffset) {
       if (has_content)
-        builder->Append(' ');
-      builder->AppendFormat("start: %u end: %u", text->StartOffset(),
-                            text->EndOffset());
+        builder_->Append(" ");
+      builder_->Append("offset:");
+      if (fragment_offset)
+        builder_->Append(fragment_offset->ToString());
+      else
+        builder_->Append("unplaced");
       has_content = true;
     }
-    builder->Append("\n");
-    return;
+    if (flags_ & NGPhysicalFragment::DumpSize) {
+      if (has_content)
+        builder_->Append(" ");
+      builder_->Append("size:");
+      builder_->Append(fragment->Size().ToString());
+      has_content = true;
+    }
+    return has_content;
   }
 
-  if (flags & NGPhysicalFragment::DumpType) {
-    builder->Append("Unknown fragment type");
-    has_content = true;
+  void AppendIndentation(unsigned indent) {
+    if (flags_ & NGPhysicalFragment::DumpIndentation) {
+      for (unsigned i = 0; i < indent; i++)
+        builder_->Append(" ");
+    }
   }
-  has_content = AppendFragmentOffsetAndSize(fragment, fragment_offset, builder,
-                                            flags, has_content);
-  builder->Append("\n");
-}
+
+  StringBuilder* builder_;
+  NGPhysicalFragment::DumpFlags flags_;
+};
 
 }  // namespace
 
@@ -566,7 +618,8 @@ String NGPhysicalFragment::DumpFragmentTree(
   StringBuilder string_builder;
   if (flags & DumpHeaderText)
     string_builder.Append(".:: LayoutNG Physical Fragment Tree ::.\n");
-  AppendFragmentToString(this, fragment_offset, &string_builder, flags, indent);
+  FragmentTreeDumper(&string_builder, flags)
+      .Append(this, fragment_offset, indent);
   return string_builder.ToString();
 }
 

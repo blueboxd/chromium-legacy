@@ -180,23 +180,20 @@ public final class WebPaymentIntentHelperType {
 
     /** The class that mirrors mojom.PaymentShippingOption. */
     public static final class PaymentShippingOption {
-        public static final String EXTRA_SHIPPING_OPTION_ID = "shippingOptionId";
+        public static final String EXTRA_SHIPPING_OPTION_ID = "id";
         public static final String EXTRA_SHIPPING_OPTION_LABEL = "label";
+        public static final String EXTRA_SHIPPING_OPTION_AMOUNT = "amount";
         public static final String EXTRA_SHIPPING_OPTION_SELECTED = "selected";
-        public static final String EXTRA_SHIPPING_OPTION_AMOUNT_CURRENCY = "amountCurrency";
-        public static final String EXTRA_SHIPPING_OPTION_AMOUNT_VALUE = "amountValue";
 
         public final String id;
         public final String label;
-        public final String amountCurrency;
-        public final String amountValue;
+        public final PaymentCurrencyAmount amount;
         public final boolean selected;
-        public PaymentShippingOption(String id, String label, String amountCurrency,
-                String amountValue, boolean selected) {
+        public PaymentShippingOption(
+                String id, String label, PaymentCurrencyAmount amount, boolean selected) {
             this.id = id;
             this.label = label;
-            this.amountCurrency = amountCurrency;
-            this.amountValue = amountValue;
+            this.amount = amount;
             this.selected = selected;
         }
 
@@ -204,8 +201,7 @@ public final class WebPaymentIntentHelperType {
             Bundle bundle = new Bundle();
             bundle.putString(EXTRA_SHIPPING_OPTION_ID, id);
             bundle.putString(EXTRA_SHIPPING_OPTION_LABEL, label);
-            bundle.putString(EXTRA_SHIPPING_OPTION_AMOUNT_CURRENCY, amountCurrency);
-            bundle.putString(EXTRA_SHIPPING_OPTION_AMOUNT_VALUE, amountValue);
+            bundle.putBundle(EXTRA_SHIPPING_OPTION_AMOUNT, amount.asBundle());
             bundle.putBoolean(EXTRA_SHIPPING_OPTION_SELECTED, selected);
             return bundle;
         }

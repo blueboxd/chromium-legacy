@@ -456,7 +456,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithPolicyUsbDevices) {
             label->GetText());
 
   views::Button* button = static_cast<views::Button*>(children[2]);
-  EXPECT_EQ(button->state(), views::Button::STATE_DISABLED);
+  EXPECT_EQ(button->GetState(), views::Button::STATE_DISABLED);
 
   views::Label* desc_label = static_cast<views::Label*>(children[3]);
   EXPECT_EQ(base::ASCIIToUTF16("USB device allowed by your administrator"),
@@ -518,7 +518,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUserAndPolicyUsbDevices) {
     EXPECT_EQ(base::ASCIIToUTF16("Gizmo"), label->GetText());
 
     views::Button* button = static_cast<views::Button*>(children[2]);
-    EXPECT_NE(button->state(), views::Button::STATE_DISABLED);
+    EXPECT_NE(button->GetState(), views::Button::STATE_DISABLED);
 
     views::Label* desc_label = static_cast<views::Label*>(children[3]);
     EXPECT_EQ(base::ASCIIToUTF16("USB device"), desc_label->GetText());
@@ -545,7 +545,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUserAndPolicyUsbDevices) {
               label->GetText());
 
     views::Button* button = static_cast<views::Button*>(children[2]);
-    EXPECT_EQ(button->state(), views::Button::STATE_DISABLED);
+    EXPECT_EQ(button->GetState(), views::Button::STATE_DISABLED);
 
     views::Label* desc_label = static_cast<views::Label*>(children[3]);
     EXPECT_EQ(base::ASCIIToUTF16("USB device allowed by your administrator"),

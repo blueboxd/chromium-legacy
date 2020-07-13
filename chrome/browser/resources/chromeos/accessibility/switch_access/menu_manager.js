@@ -217,9 +217,17 @@ class MenuManager {
       return;
     }
 
+    // Before overriding the reference to the current menu node, remove the
+    // event handler.
+    if (this.menuAutomationNode_) {
+      this.menuAutomationNode_.removeEventListener(
+          chrome.automation.EventType.CLICKED, MenuManager.onButtonClicked_,
+          false);
+    }
+
     this.menuAutomationNode_ = node;
     this.menuAutomationNode_.addEventListener(
-        chrome.automation.EventType.CLICKED, this.onButtonClicked_.bind(this),
+        chrome.automation.EventType.CLICKED, MenuManager.onButtonClicked_,
         false);
     NavigationManager.jumpToSwitchAccessMenu(this.menuAutomationNode_);
   }
@@ -230,15 +238,16 @@ class MenuManager {
    * @param {!chrome.automation.AutomationEvent} event
    * @private
    */
-  onButtonClicked_(event) {
-    const selectedAction = this.asAction_(event.target.value);
-    if (!this.isMenuOpen_ || !selectedAction ||
-        this.handleGlobalActions_(selectedAction)) {
+  static onButtonClicked_(event) {
+    const manager = MenuManager.instance;
+    const selectedAction = manager.asAction_(event.target.value);
+    if (!manager.isMenuOpen_ || !selectedAction ||
+        manager.handleGlobalActions_(selectedAction)) {
       return;
     }
 
-    if (!this.actionNode_.hasAction(selectedAction)) {
-      this.refreshActions_();
+    if (!manager.actionNode_.hasAction(selectedAction)) {
+      manager.refreshActions_();
       return;
     }
 
@@ -246,21 +255,21 @@ class MenuManager {
     // having the menu on the group stack interferes with some actions. We do
     // not close the menu bubble until we receive the ActionResponse CLOSE_MENU.
     // If we receive a different response, we re-enter the menu.
-    NavigationManager.exitIfInGroup(this.menuAutomationNode_);
-    const response = this.actionNode_.performAction(selectedAction);
+    NavigationManager.exitIfInGroup(manager.menuAutomationNode_);
+    const response = manager.actionNode_.performAction(selectedAction);
     if (response === SAConstants.ActionResponse.CLOSE_MENU ||
-        !this.hasValidMenuAutomationNode_()) {
+        !manager.hasValidMenuAutomationNode_()) {
       MenuManager.exit();
     } else {
-      NavigationManager.jumpToSwitchAccessMenu(this.menuAutomationNode_);
+      NavigationManager.jumpToSwitchAccessMenu(manager.menuAutomationNode_);
     }
 
     switch (response) {
       case SAConstants.ActionResponse.RELOAD_MAIN_MENU:
-        this.refreshActions_();
+        manager.refreshActions_();
         break;
       case SAConstants.ActionResponse.OPEN_TEXT_NAVIGATION_MENU:
-        this.openTextNavigation_();
+        manager.openTextNavigation_();
     }
   }
 

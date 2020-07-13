@@ -362,11 +362,9 @@ void BrowserTestBase::SetUp() {
                                     disabled_features);
   }
 
-  // Always disable the unsandbox GPU process for DX12 and Vulkan Info
-  // collection to avoid interference. This GPU process is launched 120
-  // seconds after chrome starts.
-  command_line->AppendSwitch(
-      switches::kDisableGpuProcessForDX12VulkanInfoCollection);
+  // Always disable the unsandbox GPU process for DX12 Info collection to avoid
+  // interference. This GPU process is launched 120 seconds after chrome starts.
+  command_line->AppendSwitch(switches::kDisableGpuProcessForDX12InfoCollection);
 
   // The current global field trial list contains any trials that were activated
   // prior to main browser startup. That global field trial list is about to be

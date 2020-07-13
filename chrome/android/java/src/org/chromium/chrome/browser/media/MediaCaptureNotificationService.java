@@ -16,18 +16,18 @@ import androidx.annotation.Nullable;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.document.ChromeIntentUtil;
-import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.notifications.NotificationWrapperBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
-import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
+import org.chromium.components.browser_ui.notifications.NotificationWrapperBuilder;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 import org.chromium.components.webrtc.MediaCaptureNotificationUtil;
 import org.chromium.components.webrtc.MediaCaptureNotificationUtil.MediaType;
@@ -166,9 +166,9 @@ public class MediaCaptureNotificationService extends Service {
                 : ChromeChannelDefinitions.ChannelId.WEBRTC_CAM_AND_MIC;
 
         Context appContext = ContextUtils.getApplicationContext();
-        ChromeNotificationBuilder builder =
-                NotificationBuilderFactory.createChromeNotificationBuilder(true /* preferCompat */,
-                        channelId, null /*remoteAppPackageName*/,
+        NotificationWrapperBuilder builder =
+                NotificationWrapperBuilderFactory.createNotificationWrapperBuilder(
+                        true /* preferCompat */, channelId, null /*remoteAppPackageName*/,
                         new NotificationMetadata(
                                 NotificationUmaTracker.SystemNotificationType.MEDIA_CAPTURE,
                                 NOTIFICATION_NAMESPACE, notificationId));
@@ -182,7 +182,7 @@ public class MediaCaptureNotificationService extends Service {
         PendingIntent stopIntent = mediaType == MediaType.SCREEN_CAPTURE
                 ? buildStopCapturePendingIntent(notificationId)
                 : null;
-        ChromeNotification notification = MediaCaptureNotificationUtil.createNotification(builder,
+        NotificationWrapper notification = MediaCaptureNotificationUtil.createNotification(builder,
                 mediaType, isIncognito ? null : url, appContext.getString(R.string.app_name),
                 contentIntent, stopIntent);
 

@@ -449,27 +449,6 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
         expect_swap_to_succeed);
   }
 
-  void NavigateToURL(const std::string& dest_html_file) const {
-    NavigateToURLWithDisposition(dest_html_file,
-                                 WindowOpenDisposition::CURRENT_TAB, true);
-  }
-
-  void NavigateToURLWithDisposition(const std::string& dest_html_file,
-                                    WindowOpenDisposition disposition,
-                                    bool expect_swap_to_succeed) const {
-    GURL dest_url = embedded_test_server()->GetURL(dest_html_file);
-    NavigateToURLWithDisposition(dest_url, disposition, expect_swap_to_succeed);
-  }
-
-  void NavigateToURLWithDisposition(const GURL& dest_url,
-                                    WindowOpenDisposition disposition,
-                                    bool expect_swap_to_succeed) const {
-    NavigateToURLWithParams(
-        content::OpenURLParams(dest_url, Referrer(), disposition,
-                               ui::PAGE_TRANSITION_TYPED, false),
-        expect_swap_to_succeed);
-  }
-
   void NavigateToURLWithParams(const content::OpenURLParams& params,
                                bool expect_swap_to_succeed) const {
     NavigateToURLImpl(params, expect_swap_to_succeed);

@@ -202,7 +202,7 @@ void FrameCaptionButton::PaintButtonContents(gfx::Canvas* canvas) {
   if (hover_animation().is_animating()) {
     highlight_alpha = hover_animation().CurrentValueBetween(
         SK_AlphaTRANSPARENT, kHighlightVisibleOpacity);
-  } else if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
+  } else if (GetState() == STATE_HOVERED || GetState() == STATE_PRESSED) {
     // Painting a circular highlight in both "hovered" and "pressed" states
     // simulates and ink drop highlight mode of
     // AutoHighlightMode::SHOW_ON_RIPPLE.
@@ -264,7 +264,7 @@ int FrameCaptionButton::GetAlphaForIcon(int base_alpha) const {
   if (hover_animation().is_animating()) {
     inactive_alpha =
         hover_animation().CurrentValueBetween(inactive_alpha, 1.0f);
-  } else if (state() == STATE_PRESSED || state() == STATE_HOVERED) {
+  } else if (GetState() == STATE_PRESSED || GetState() == STATE_HOVERED) {
     inactive_alpha = 1.0f;
   }
   return base_alpha * inactive_alpha;

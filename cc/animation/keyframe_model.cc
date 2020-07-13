@@ -4,7 +4,11 @@
 
 #include "cc/animation/keyframe_model.h"
 
+#include <algorithm>
 #include <cmath>
+#include <limits>
+#include <string>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"

@@ -40,7 +40,6 @@
 
 namespace blink {
 
-class ContentSecurityPolicy;
 class Document;
 class DocumentLoader;
 class ExecutionContext;
@@ -104,9 +103,8 @@ class CORE_EXPORT DocumentInit final {
   bool HasSecurityContext() const { return TreeRootDocumentLoader(); }
   bool IsSrcdocDocument() const;
   bool ShouldSetURL() const;
-  network::mojom::blink::WebSandboxFlags GetSandboxFlags() const;
 
-  DocumentInit& WithDocumentLoader(DocumentLoader*, ContentSecurityPolicy*);
+  DocumentInit& WithDocumentLoader(DocumentLoader*);
   LocalFrame* GetFrame() const;
   UseCounter* GetUseCounter() const;
 
@@ -135,26 +133,10 @@ class CORE_EXPORT DocumentInit final {
 
   const KURL& GetCookieUrl() const;
 
-  // Pre-calculates the origin. This is needed for DocumentLoader, which wants
-  // to inspect the origin multiple times and should receive the same object
-  // back each time.
-  void CalculateAndCacheDocumentOrigin();
-  scoped_refptr<SecurityOrigin> GetDocumentOrigin() const;
-
   // Specifies the Document to inherit security configurations from.
   DocumentInit& WithOwnerDocument(Document*);
 
-  // Specifies the SecurityOrigin in which the URL was requested. This is
-  // relevant for determining properties of the resulting document's origin
-  // when loading data: and about: schemes.
-  DocumentInit& WithInitiatorOrigin(
-      scoped_refptr<const SecurityOrigin> initiator_origin);
-
-  DocumentInit& WithOriginToCommit(
-      scoped_refptr<SecurityOrigin> origin_to_commit);
-
   DocumentInit& WithSrcdocDocument(bool is_srcdoc_document);
-  DocumentInit& WithGrantLoadLocalResources(bool grant_load_local_resources);
 
   DocumentInit& WithRegistrationContext(V0CustomElementRegistrationContext*);
   V0CustomElementRegistrationContext* RegistrationContext(Document*) const;
@@ -162,12 +144,8 @@ class CORE_EXPORT DocumentInit final {
 
   DocumentInit& WithSandboxFlags(network::mojom::blink::WebSandboxFlags flags);
 
-  ContentSecurityPolicy* GetContentSecurityPolicy() const;
-
   DocumentInit& WithWebBundleClaimedUrl(const KURL& web_bundle_claimed_url);
   const KURL& GetWebBundleClaimedUrl() const { return web_bundle_claimed_url_; }
-
-  bool ShouldReuseDOMWindow() const;
 
  private:
   DocumentInit() = default;
@@ -194,45 +172,16 @@ class CORE_EXPORT DocumentInit final {
   KURL url_;
   Document* owner_document_ = nullptr;
 
-  // Used to cache the final origin for the Document to be created.
-  scoped_refptr<SecurityOrigin> cached_document_origin_;
-
-  // Initiator origin is used for calculating the document origin when the
-  // navigation is started in a different process. In such cases, the document
-  // which initiates the navigation sends its origin to the browser process and
-  // it is provided by the browser process here. It is used for cases such as
-  // data: URLs, which inherit their origin from the initiator of the
-  // navigation.
-  // Note: about:blank should also behave this way, however currently it
-  // inherits its origin from the parent frame or opener, regardless of whether
-  // it is the initiator or not.
-  scoped_refptr<const SecurityOrigin> initiator_origin_;
-
-  // The |origin_to_commit_| is to be used directly without calculating the
-  // document origin at initialization time. It is specified by the browser
-  // process for session history navigations. This allows us to preserve
-  // the origin across session history and ensure the exact same origin
-  // is present on such navigations to URLs that inherit their origins (e.g.
-  // about:blank and data: URLs).
-  scoped_refptr<SecurityOrigin> origin_to_commit_;
-
   // Whether we should treat the new document as "srcdoc" document. This
   // affects security checks, since srcdoc's content comes directly from
   // the parent document, not from loading a URL.
   bool is_srcdoc_document_ = false;
-
-  // Whether the document should be able to access local file:// resources.
-  bool grant_load_local_resources_ = false;
-
   V0CustomElementRegistrationContext* registration_context_ = nullptr;
   bool create_new_registration_context_ = false;
 
   // Additional sandbox flags
   network::mojom::blink::WebSandboxFlags sandbox_flags_ =
       network::mojom::blink::WebSandboxFlags::kNone;
-
-  // Loader's CSP
-  ContentSecurityPolicy* content_security_policy_ = nullptr;
 
   // The claimed URL inside Web Bundle file from which the document is loaded.
   // This URL is used for window.location and document.URL and relative path

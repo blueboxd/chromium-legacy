@@ -497,8 +497,6 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
 
     @Override
     public void sendFeedback(Map<String, String> productSpecificDataMap) {
-        HashMap<String, String> feedContext = new HashMap<String, String>();
-
         Profile profile = Profile.getLastUsedRegularProfile();
         if (profile == null) {
             return;
@@ -509,7 +507,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
             return;
         }
 
-        convertNameFormat(productSpecificDataMap, feedContext);
+        Map<String, String> feedContext = convertNameFormat(productSpecificDataMap);
 
         // FEEDBACK_CONTEXT: This identifies this feedback as coming from Chrome for Android (as
         // opposed to desktop).
@@ -524,8 +522,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     // name from the XSurface format to the format that can be handled by the feedback system.  Any
     // new strings that are added on the XSurface side will need a code change here, and adding the
     // PSD to the allow list.
-    private void convertNameFormat(
-            Map<String, String> xSurfaceMap, Map<String, String> feedbackMap) {
+    private Map<String, String> convertNameFormat(Map<String, String> xSurfaceMap) {
         Map<String, String> feedbackNameConversionMap = new HashMap<>();
         feedbackNameConversionMap.put("Card URL", "CardUrl");
         feedbackNameConversionMap.put("Card Title", "CardTitle");
@@ -535,10 +532,21 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
 
         // For each <name, value> entry in the input map, convert the name to the new name, and
         // write the new <name, value> pair into the output map.
+        Map<String, String> feedbackMap = new HashMap<>();
         for (Map.Entry<String, String> entry : xSurfaceMap.entrySet()) {
             String newName = feedbackNameConversionMap.get(entry.getKey());
-            feedbackMap.put(newName, entry.getValue());
+            if (newName != null) {
+                feedbackMap.put(newName, entry.getValue());
+            } else {
+                Log.v(TAG, "Found an entry with no conversion available.");
+                // We will put the entry into the map if untranslatable. It will be discarded
+                // unless it matches an allow list on the server, though. This way we can choose
+                // to allow it on the server if desired.
+                feedbackMap.put(entry.getKey(), entry.getValue());
+            }
         }
+
+        return feedbackMap;
     }
 
     @Override

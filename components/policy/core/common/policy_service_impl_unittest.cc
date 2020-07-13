@@ -1062,7 +1062,7 @@ TEST_F(PolicyServiceTest, GroupPoliciesMergingDisabledForCloudUsers) {
                                 POLICY_SOURCE_CLOUD, std::move(list3), nullptr);
   policy_map2.Set(key::kExtensionInstallForcelist, entry_list_2.DeepCopy());
   policy_map2.Set(key::kExtensionInstallBlacklist, entry_list_2.DeepCopy());
-  policy_map2.Set(key::kExtensionInstallWhitelist, entry_list_3.DeepCopy());
+  policy_map2.Set(key::kExtensionInstallAllowlist, entry_list_3.DeepCopy());
 
   PolicyMap expected_chrome;
   expected_chrome.Set(key::kPolicyListMultipleSourceMergeList,
@@ -1078,7 +1078,7 @@ TEST_F(PolicyServiceTest, GroupPoliciesMergingDisabledForCloudUsers) {
   merged.AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
   expected_chrome.Set(key::kExtensionInstallForcelist, merged.DeepCopy());
   expected_chrome.Set(key::kExtensionInstallBlacklist, std::move(merged));
-  expected_chrome.Set(key::kExtensionInstallWhitelist, std::move(entry_list_3));
+  expected_chrome.Set(key::kExtensionInstallAllowlist, std::move(entry_list_3));
   expected_chrome.Set(key::kPolicyAtomicGroupsEnabled,
                       atomic_policy_enabled.DeepCopy());
 
@@ -1130,7 +1130,7 @@ TEST_F(PolicyServiceTest, GroupPoliciesMergingEnabled) {
                                 POLICY_SOURCE_CLOUD, std::move(list3), nullptr);
   policy_map2.Set(key::kExtensionInstallForcelist, entry_list_2.DeepCopy());
   policy_map2.Set(key::kExtensionInstallBlacklist, entry_list_2.DeepCopy());
-  policy_map2.Set(key::kExtensionInstallWhitelist, entry_list_3.DeepCopy());
+  policy_map2.Set(key::kExtensionInstallAllowlist, entry_list_3.DeepCopy());
 
   PolicyMap expected_chrome;
   expected_chrome.Set(key::kPolicyListMultipleSourceMergeList,
@@ -1147,7 +1147,7 @@ TEST_F(PolicyServiceTest, GroupPoliciesMergingEnabled) {
   entry_list_3.SetIgnoredByPolicyAtomicGroup();
   expected_chrome.Set(key::kExtensionInstallForcelist, merged.DeepCopy());
   expected_chrome.Set(key::kExtensionInstallBlacklist, std::move(merged));
-  expected_chrome.Set(key::kExtensionInstallWhitelist, std::move(entry_list_3));
+  expected_chrome.Set(key::kExtensionInstallAllowlist, std::move(entry_list_3));
   expected_chrome.Set(key::kPolicyAtomicGroupsEnabled,
                       atomic_policy_enabled.DeepCopy());
 

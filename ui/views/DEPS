@@ -23,8 +23,6 @@ include_rules = [
   "+ui/touch_selection",
   "+ui/wm/core",
   "+ui/wm/public",
-
-  "-testing/gmock",
 ]
 
 specific_include_rules = {

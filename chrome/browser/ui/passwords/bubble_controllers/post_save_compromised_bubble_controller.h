@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_PASSWORDS_BUBBLE_CONTROLLERS_POST_SAVE_COMPROMISED_BUBBLE_CONTROLLER_H_
 
 #include "chrome/browser/ui/passwords/bubble_controllers/password_bubble_controller_base.h"
+#include "ui/gfx/range/range.h"
 
 class PasswordsModelDelegate;
 
@@ -30,12 +31,16 @@ class PostSaveCompromisedBubbleController
   ~PostSaveCompromisedBubbleController() override;
 
   BubbleType type() const { return type_; }
-  base::string16 GetBody() const;
+  base::string16 GetBody();
+  gfx::Range GetSettingLinkRange() const;
   base::string16 GetButtonText() const;
   int GetImageID(bool dark) const;
 
   // The user chose to check passwords.
   void OnAccepted();
+
+  // The user chose to view passwords.
+  void OnSettingsClicked();
 
  private:
   // PasswordBubbleControllerBase:
@@ -44,6 +49,8 @@ class PostSaveCompromisedBubbleController
 
   BubbleType type_;
   bool checked_clicked_ = false;
+  // Link to the settings range in the body text.
+  gfx::Range link_range_;
 };
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_BUBBLE_CONTROLLERS_POST_SAVE_COMPROMISED_BUBBLE_CONTROLLER_H_

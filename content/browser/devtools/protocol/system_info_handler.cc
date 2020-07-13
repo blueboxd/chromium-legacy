@@ -302,7 +302,7 @@ class SystemInfoHandlerGpuObserver : public content::GpuDataManagerObserver {
     base::CommandLine* command = base::CommandLine::ForCurrentProcess();
     // Only wait for DX12/Vulkan info if requested at Chrome start up.
     if (!command->HasSwitch(
-            switches::kDisableGpuProcessForDX12VulkanInfoCollection) &&
+            switches::kDisableGpuProcessForDX12InfoCollection) &&
         command->HasSwitch(switches::kNoDelayForDX12VulkanInfoCollection) &&
         !GpuDataManagerImpl::GetInstance()->IsDx12VulkanVersionAvailable())
       return;

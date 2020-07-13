@@ -250,7 +250,7 @@ bool ManifestUpdateTask::IsUpdateNeededForIconContents(
     const std::map<SquareSizePx, SkBitmap>& disk_icon_bitmaps) const {
   DCHECK(web_application_info_.has_value());
   const std::map<SquareSizePx, SkBitmap>& downloaded_icon_bitmaps =
-      web_application_info_->icon_bitmaps;
+      web_application_info_->icon_bitmaps_any;
   if (HaveIconContentsChanged(disk_icon_bitmaps, downloaded_icon_bitmaps))
     return true;
 

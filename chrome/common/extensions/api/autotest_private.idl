@@ -1038,6 +1038,13 @@ namespace autotestPrivate {
         long numCompletions,
         long timeout,
         VoidCallback callback);
+
+    // Disables the automation feature. Note that the event handlers and caches
+    // of automation nodes still remain in the test extension and so the next
+    // automation.getDesktop will miss initialization. The caller should ensure
+    // invalidation of those information (i.e. reloading the entire background
+    // page).
+    static void disableAutomation(VoidCallback callback);
   };
 
   interface Events {

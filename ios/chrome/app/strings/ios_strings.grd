@@ -1638,11 +1638,14 @@ While in incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_SEARCH_COPIED_TEXT" desc="If a user has some text on their clipboard, this string will appear as an option when the user long-presses on Chrome's address bar. The user can select this option to search the default search engine for the text. This string is a complete sentence. If necessary for your language, you can translate as 'Search for Text That You Copied.' [iOS only]" meaning="Maximum characters: 32">
           Search for Copied Text
       </message>
-      <message name="IDS_IOS_SEARCH_ENGINE_SETTING_TITLE" desc="The title for Search Engine selection setting [iOS only]">
-        Search Engine
-      </message>
       <message name="IDS_IOS_SEARCH_ENGINE_SETTING_CUSTOM_SECTION_HEADER" desc="The header for custom search engines section in Search Engine selection setting [iOS only]">
         Recently Visited
+      </message>
+      <message name="IDS_IOS_SEARCH_ENGINE_SETTING_DISABLED_STATUS" desc="The status for Search Engine selection setting when the default search engine is disabled by policy [iOS only]">
+        None
+      </message>
+      <message name="IDS_IOS_SEARCH_ENGINE_SETTING_TITLE" desc="The title for Search Engine selection setting [iOS only]">
+        Search Engine
       </message>
       <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_PASSWORDS_TITLE" desc="Title for the passwords element of safety check" meaning="Row title to access the passowrd check subpage if a probelm is found with user's saved passwords [CHAR_LIMIT=20]">
         Passwords

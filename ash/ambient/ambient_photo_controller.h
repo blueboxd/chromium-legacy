@@ -146,6 +146,10 @@ class ASH_EXPORT AmbientPhotoController : public AmbientBackendModelObserver {
     image_decoder_ = std::move(image_decoder);
   }
 
+  AmbientImageDecoder* get_image_decoder_for_testing() {
+    return image_decoder_.get();
+  }
+
   AmbientBackendModel ambient_backend_model_;
 
   // The timer to refresh photos.

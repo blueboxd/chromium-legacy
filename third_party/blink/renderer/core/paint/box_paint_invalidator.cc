@@ -131,23 +131,24 @@ PaintInvalidationReason BoxPaintInvalidator::ComputePaintInvalidationReason() {
     return PaintInvalidationReason::kGeometry;
 
   if (box_.PreviousSize() == box_.Size() &&
-      context_.old_visual_rect == context_.fragment_data->VisualRect())
+      box_.PreviousPhysicalSelfVisualOverflowRect() ==
+          box_.PhysicalSelfVisualOverflowRect())
     return PaintInvalidationReason::kNone;
 
-  // If either border box changed or bounds changed, and old or new border box
-  // doesn't equal old or new bounds, incremental invalidation is not
-  // applicable. This captures the following cases:
-  // - pixel snapping, or not snapping e.g. for some visual overflowing effects,
-  // - scale, rotate, skew etc. transforms,
-  // - visual (ink) overflows.
-  if (PhysicalRect(context_.old_visual_rect) !=
-          PhysicalRect(context_.old_paint_offset, box_.PreviousSize()) ||
-      PhysicalRect(context_.fragment_data->VisualRect()) !=
-          PhysicalRect(context_.fragment_data->PaintOffset(), box_.Size())) {
+  // Incremental invalidation is not applicable if there is visual overflow.
+  if (box_.PreviousPhysicalSelfVisualOverflowRect().size !=
+          PhysicalSizeToBeNoop(box_.PreviousSize()) ||
+      box_.PhysicalSelfVisualOverflowRect().size !=
+          PhysicalSizeToBeNoop(box_.Size()))
     return PaintInvalidationReason::kGeometry;
-  }
 
-  DCHECK_NE(box_.PreviousSize(), box_.Size());
+  // Incremental invalidation is not applicable if paint offset or size has
+  // fraction.
+  if (context_.old_paint_offset.HasFraction() ||
+      context_.fragment_data->PaintOffset().HasFraction() ||
+      PhysicalSizeToBeNoop(box_.PreviousSize()).HasFraction() ||
+      PhysicalSizeToBeNoop(box_.Size()).HasFraction())
+    return PaintInvalidationReason::kGeometry;
 
   // Incremental invalidation is not applicable if there is border in the
   // direction of border box size change because we don't know the border
@@ -364,8 +365,7 @@ void BoxPaintInvalidator::InvalidatePaint() {
   SavePreviousBoxGeometriesIfNeeded();
 }
 
-bool BoxPaintInvalidator::
-    NeedsToSavePreviousContentBoxRectOrLayoutOverflowRect() {
+bool BoxPaintInvalidator::NeedsToSavePreviousContentBoxRectOrOverflowRects() {
   // The LayoutView depends on the document element's layout overflow rect (see:
   // ComputeViewBackgroundInvalidation) and needs to invalidate before the
   // document element invalidates. There are few document elements so the
@@ -379,10 +379,8 @@ bool BoxPaintInvalidator::
   if (box_.IsLayoutReplaced())
     return true;
 
-  // Don't save old box geometries if the paint rect is empty because we'll
-  // fully invalidate once the paint rect becomes non-empty.
-  if (context_.fragment_data->VisualRect().IsEmpty())
-    return false;
+  if (box_.HasSelfVisualOverflow())
+    return true;
 
   const ComputedStyle& style = box_.StyleRef();
 
@@ -403,12 +401,10 @@ bool BoxPaintInvalidator::
 void BoxPaintInvalidator::SavePreviousBoxGeometriesIfNeeded() {
   box_.GetMutableForPainting().SavePreviousSize();
 
-  if (NeedsToSavePreviousContentBoxRectOrLayoutOverflowRect()) {
-    box_.GetMutableForPainting()
-        .SavePreviousContentBoxRectAndLayoutOverflowRect();
+  if (NeedsToSavePreviousContentBoxRectOrOverflowRects()) {
+    box_.GetMutableForPainting().SavePreviousContentBoxAndOverflowRects();
   } else {
-    box_.GetMutableForPainting()
-        .ClearPreviousContentBoxRectAndLayoutOverflowRect();
+    box_.GetMutableForPainting().ClearPreviousContentBoxAndOverflowRects();
   }
 }
 

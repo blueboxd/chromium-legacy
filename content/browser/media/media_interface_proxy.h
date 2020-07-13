@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/token.h"
 #include "base/unguessable_token.h"
@@ -18,6 +19,7 @@
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/mojom/content_decryption_module.mojom.h"
+#include "media/mojo/mojom/decryptor.mojom.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "media/mojo/services/media_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -104,6 +106,20 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
   // Callback for connection error from the CdmFactoryPtr in the
   // |cdm_factory_map_| associated with |cdm_guid|.
   void OnCdmServiceConnectionError(const base::Token& cdm_guid);
+
+#if defined(OS_CHROMEOS)
+  // Callback for for Chrome OS CDM creation to facilitate falling back to the
+  // library CDM if the daemon is unavailable or other settings prevent usage of
+  // it.
+  void OnChromeOsCdmCreated(
+      const std::string& key_system,
+      const media::CdmConfig& cdm_config,
+      CreateCdmCallback callback,
+      mojo::PendingRemote<media::mojom::ContentDecryptionModule> receiver,
+      int32_t cdm_id,
+      mojo::PendingRemote<media::mojom::Decryptor> decryptor,
+      const std::string& error_message);
+#endif  // defined(OS_CHROMEOS)
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
   // Safe to hold a raw pointer since |this| is owned by RenderFrameHostImpl.
@@ -136,6 +152,8 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
 
   // Receivers for incoming interface requests from the the RenderFrameImpl.
   mojo::ReceiverSet<media::mojom::InterfaceFactory> receivers_;
+
+  base::WeakPtrFactory<MediaInterfaceProxy> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaInterfaceProxy);
 };

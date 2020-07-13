@@ -58,6 +58,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -107,7 +108,9 @@ public class IncognitoPermissionLeakageTest {
         mTestServer.stopAndDestroyServer();
     }
 
-    private void requestLocationPermission(Tab tab) throws TimeoutException {
+    private void requestLocationPermission(Tab tab) throws TimeoutException, ExecutionException {
+        // If tab is frozen then getWebContents may return null
+        TestThreadUtils.runOnUiThreadBlocking(() -> tab.loadIfNeeded());
         CriteriaHelper.pollUiThread(
                 () -> Criteria.checkThat(tab.getWebContents(), Matchers.notNullValue()));
         JavaScriptUtils.executeJavaScriptAndWaitForResult(

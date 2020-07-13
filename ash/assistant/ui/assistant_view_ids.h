@@ -34,6 +34,15 @@ enum AssistantViewID {
   kUiElementContainer,
   kZeroStateView,
   kOnboardingView,
+
+  // Ambient mode and its components.
+  kAmbientContainerView,
+  kAmbientAssistantContainerView,
+  kAmbientAssistantResponseContainerView,
+  kAmbientPhotoView,
+  kAmbientBackgroundImageView,
+  kAmbientGlanceableInfoView,
+  kAmbientAssistantDialogPlate,
 };
 
 }  // namespace ash

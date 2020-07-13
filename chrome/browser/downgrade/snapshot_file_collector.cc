@@ -93,14 +93,21 @@ std::vector<SnapshotItemDetails> CollectProfileItems() {
           ChromeBrowsingDataRemoverDelegate::DATA_TYPE_BOOKMARKS,
           SnapshotItemId::kBookmarks),
       // Tab Restore and sessions
-      SnapshotItemDetails(base::FilePath(sessions::kCurrentTabSessionFileName),
-                          SnapshotItemDetails::ItemType::kFile,
+      // TODO(crbug.com/1103458): Remove legacy snapshots in M89
+      SnapshotItemDetails(
+          base::FilePath(sessions::kLegacyCurrentTabSessionFileName),
+          SnapshotItemDetails::ItemType::kFile,
+          ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY,
+          SnapshotItemId::kLegacyCurrentTabSession),
+      SnapshotItemDetails(
+          base::FilePath(sessions::kLegacyCurrentSessionFileName),
+          SnapshotItemDetails::ItemType::kFile,
+          ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY,
+          SnapshotItemId::kLegacyCurrentSession),
+      SnapshotItemDetails(base::FilePath(sessions::kSessionsDirectory),
+                          SnapshotItemDetails::ItemType::kDirectory,
                           ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY,
-                          SnapshotItemId::kCurrentTabSession),
-      SnapshotItemDetails(base::FilePath(sessions::kCurrentSessionFileName),
-                          SnapshotItemDetails::ItemType::kFile,
-                          ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY,
-                          SnapshotItemId::kCurrentSession),
+                          SnapshotItemId::kSessions),
       // Sign-in state
       SnapshotItemDetails(base::FilePath(profiles::kGAIAPictureFileName),
                           SnapshotItemDetails::ItemType::kFile, 0,

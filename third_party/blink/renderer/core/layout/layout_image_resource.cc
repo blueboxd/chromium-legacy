@@ -118,7 +118,7 @@ FloatSize LayoutImageResource::ImageSize(float multiplier) const {
 
 FloatSize LayoutImageResource::ImageSizeWithDefaultSize(
     float multiplier,
-    const LayoutSize&) const {
+    const FloatSize&) const {
   return ImageSize(multiplier);
 }
 

@@ -20,15 +20,15 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
-import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationIntentInterceptor;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker.SystemNotificationType;
+import org.chromium.chrome.browser.notifications.NotificationWrapperBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions.ChannelId;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
-import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
+import org.chromium.components.browser_ui.notifications.NotificationWrapperBuilder;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 
 import java.util.ArrayList;
@@ -234,9 +234,10 @@ public class DisplayAgent {
         // mode and provide correct notification id. Support buttons.
         Context context = ContextUtils.getApplicationContext();
 
-        ChromeNotificationBuilder builder =
-                NotificationBuilderFactory.createChromeNotificationBuilder(true /* preferCompat */,
-                        platformData.channel, null /* remoteAppPackageName */,
+        NotificationWrapperBuilder builder =
+                NotificationWrapperBuilderFactory.createNotificationWrapperBuilder(
+                        true /* preferCompat */, platformData.channel,
+                        null /* remoteAppPackageName */,
                         new NotificationMetadata(platformData.systemNotificationType,
                                 DISPLAY_AGENT_TAG, systemData.guid.hashCode()));
         builder.setContentTitle(notificationData.title);
@@ -297,7 +298,7 @@ public class DisplayAgent {
                     NotificationUmaTracker.ActionType.UNKNOWN);
         }
 
-        ChromeNotification notification = builder.buildChromeNotification();
+        NotificationWrapper notification = builder.buildNotificationWrapper();
         new NotificationManagerProxyImpl(ContextUtils.getApplicationContext()).notify(notification);
         NotificationUmaTracker.getInstance().onNotificationShown(
                 platformData.systemNotificationType, notification.getNotification());

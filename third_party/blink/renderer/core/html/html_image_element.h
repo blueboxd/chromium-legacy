@@ -43,9 +43,10 @@
 
 namespace blink {
 
+class ExceptionState;
 class HTMLFormElement;
 class ImageCandidate;
-class ExceptionState;
+class LayoutSize;
 class ShadowRoot;
 
 class CORE_EXPORT HTMLImageElement final

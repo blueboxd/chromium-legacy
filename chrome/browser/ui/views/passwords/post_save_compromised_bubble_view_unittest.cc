@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/passwords/post_save_compromised_bubble_view.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/views/passwords/password_bubble_view_test_base.h"
 
 namespace {
@@ -44,7 +45,13 @@ TEST_F(PostSaveCompromisedBubbleViewTest, SafeState) {
   EXPECT_FALSE(view_->GetCancelButton());
 }
 
-TEST_F(PostSaveCompromisedBubbleViewTest, MoreToFixState) {
+// Flaky on Windows due to http://crbug.com/968222
+#if defined(OS_WIN)
+#define MAYBE_MoreToFixState DISABLED_MoreToFixState
+#else
+#define MAYBE_MoreToFixState MoreToFixState
+#endif
+TEST_F(PostSaveCompromisedBubbleViewTest, MAYBE_MoreToFixState) {
   CreateViewAndShow(password_manager::ui::PASSWORD_UPDATED_MORE_TO_FIX);
   EXPECT_TRUE(view_->GetOkButton());
   EXPECT_FALSE(view_->GetCancelButton());
@@ -53,7 +60,13 @@ TEST_F(PostSaveCompromisedBubbleViewTest, MoreToFixState) {
   view_->AcceptDialog();
 }
 
-TEST_F(PostSaveCompromisedBubbleViewTest, UnsafeState) {
+// Flaky on Windows due to http://crbug.com/968222
+#if defined(OS_WIN)
+#define MAYBE_UnsafeState DISABLED_UnsafeState
+#else
+#define MAYBE_UnsafeState UnsafeState
+#endif
+TEST_F(PostSaveCompromisedBubbleViewTest, MAYBE_UnsafeState) {
   CreateViewAndShow(password_manager::ui::PASSWORD_UPDATED_UNSAFE_STATE);
   EXPECT_TRUE(view_->GetOkButton());
   EXPECT_FALSE(view_->GetCancelButton());

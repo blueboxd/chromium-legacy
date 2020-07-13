@@ -164,7 +164,7 @@
 :host([dragging]) #dragImage {
   /* Position the actual drag image out of view so it is not visible. */
   position: absolute;
-  top: 100vh;
+  top: calc(100vh + var(--drag-image-padding));
 }
 </style>
 

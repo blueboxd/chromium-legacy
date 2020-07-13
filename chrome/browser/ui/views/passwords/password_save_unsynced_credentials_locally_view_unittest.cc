@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate_mock.h"
 #include "chrome/browser/ui/views/passwords/password_bubble_view_test_base.h"
 #include "components/autofill/core/common/password_form.h"
@@ -55,7 +56,14 @@ void PasswordSaveUnsyncedCredentialsLocallyViewTest::TearDown() {
   PasswordBubbleViewTestBase::TearDown();
 }
 
-TEST_F(PasswordSaveUnsyncedCredentialsLocallyViewTest, HasTitleAndTwoButtons) {
+// Flaky on Windows due to http://crbug.com/968222
+#if defined(OS_WIN)
+#define MAYBE_HasTitleAndTwoButtons DISABLED_HasTitleAndTwoButtons
+#else
+#define MAYBE_HasTitleAndTwoButtons HasTitleAndTwoButtons
+#endif
+TEST_F(PasswordSaveUnsyncedCredentialsLocallyViewTest,
+       MAYBE_HasTitleAndTwoButtons) {
   CreateViewAndShow();
   EXPECT_TRUE(view_->ShouldShowWindowTitle());
   EXPECT_TRUE(view_->GetOkButton());

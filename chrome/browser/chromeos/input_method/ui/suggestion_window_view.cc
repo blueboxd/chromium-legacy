@@ -46,8 +46,8 @@ namespace ime {
 namespace {
 
 bool ShouldHighlight(const views::Button& button) {
-  return button.state() == views::Button::STATE_HOVERED ||
-         button.state() == views::Button::STATE_PRESSED;
+  return button.GetState() == views::Button::STATE_HOVERED ||
+         button.GetState() == views::Button::STATE_PRESSED;
 }
 
 // TODO(b/1101669): Create abstract HighlightableButton for learn_more button,

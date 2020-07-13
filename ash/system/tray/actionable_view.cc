@@ -52,7 +52,7 @@ const char* ActionableView::GetClassName() const {
 }
 
 bool ActionableView::OnKeyPressed(const ui::KeyEvent& event) {
-  if (state() != STATE_DISABLED && event.key_code() == ui::VKEY_SPACE) {
+  if (GetState() != STATE_DISABLED && event.key_code() == ui::VKEY_SPACE) {
     NotifyClick(event);
     return true;
   }

@@ -19,6 +19,7 @@
 #import "chrome/updater/app/server/mac/app_server.h"
 #include "chrome/updater/app/server/mac/service_delegate.h"
 #include "chrome/updater/configurator.h"
+#include "chrome/updater/mac/setup/setup.h"
 #import "chrome/updater/mac/xpc_service_names.h"
 #include "chrome/updater/prefs.h"
 #include "chrome/updater/update_service_in_process.h"
@@ -71,12 +72,11 @@ void AppServerMac::ActiveDuty() {
 }
 
 void AppServerMac::UninstallSelf() {
-  // TODO(crbug.com/1098934): Uninstall this candidate version of the updater.
+  UninstallCandidate();
 }
 
 bool AppServerMac::SwapRPCInterfaces() {
-  // TODO(crbug.com/1098935): Update unversioned XPC interface.
-  return true;
+  return PromoteCandidate() == setup_exit_codes::kSuccess;
 }
 
 void AppServerMac::TaskStarted() {

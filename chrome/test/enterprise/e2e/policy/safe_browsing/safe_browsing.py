@@ -15,20 +15,20 @@ class SafeBrowsingEnabledTest(ChromeEnterpriseTestCase):
 
   @before_all
   def setup(self):
-    self.InstallChrome('client2012')
-    self.EnableUITest('client2012')
+    self.InstallChrome('client2019')
+    self.EnableUITest('client2019')
 
   def isSafeBrowsingEnabled(self):
     dir = os.path.dirname(os.path.abspath(__file__))
     return self.RunUITest(
-        'client2012',
+        'client2019',
         os.path.join(dir, 'safe_browsing_ui_test.py'),
         timeout=600)
 
   @test
   def test_SafeBrowsingDisabledNoWarning(self):
-    self.SetPolicy('win2012-dc', r'SafeBrowsingEnabled', 0, 'DWORD')
-    self.RunCommand('client2012', 'gpupdate /force')
+    self.SetPolicy('win2019-dc', r'SafeBrowsingEnabled', 0, 'DWORD')
+    self.RunCommand('client2019', 'gpupdate /force')
 
     output = self.isSafeBrowsingEnabled()
     self.assertIn("RESULTS.unsafe_page: False", output)
@@ -36,8 +36,8 @@ class SafeBrowsingEnabledTest(ChromeEnterpriseTestCase):
 
   @test
   def test_SafeBrowsingEnabledShowsWarning(self):
-    self.SetPolicy('win2012-dc', r'SafeBrowsingEnabled', 1, 'DWORD')
-    self.RunCommand('client2012', 'gpupdate /force')
+    self.SetPolicy('win2019-dc', r'SafeBrowsingEnabled', 1, 'DWORD')
+    self.RunCommand('client2019', 'gpupdate /force')
 
     output = self.isSafeBrowsingEnabled()
     self.assertIn("RESULTS.unsafe_page: True", output)

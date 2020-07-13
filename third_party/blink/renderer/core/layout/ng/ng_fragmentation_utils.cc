@@ -670,4 +670,38 @@ bool AttemptSoftBreak(const NGConstraintSpace& space,
   return true;
 }
 
+NGConstraintSpace CreateConstraintSpaceForColumns(
+    const NGConstraintSpace& parent_space,
+    WritingMode writing_mode,
+    const LogicalSize& column_size,
+    bool is_first_fragmentainer,
+    bool balance_columns) {
+  NGConstraintSpaceBuilder space_builder(parent_space, writing_mode,
+                                         /* is_new_fc */ true);
+  space_builder.SetAvailableSize(column_size);
+  space_builder.SetPercentageResolutionSize(column_size);
+
+  // To ensure progression, we need something larger than 0 here. The spec
+  // actually says that fragmentainers have to accept at least 1px of content.
+  // See https://www.w3.org/TR/css-break-3/#breaking-rules
+  LayoutUnit column_block_size =
+      std::max(column_size.block_size, LayoutUnit(1));
+
+  space_builder.SetFragmentationType(kFragmentColumn);
+  space_builder.SetFragmentainerBlockSize(column_block_size);
+  space_builder.SetIsAnonymous(true);
+  space_builder.SetIsInColumnBfc();
+  if (balance_columns)
+    space_builder.SetIsInsideBalancedColumns();
+  if (!is_first_fragmentainer) {
+    // Margins at fragmentainer boundaries should be eaten and truncated to
+    // zero. Note that this doesn't apply to margins at forced breaks, but we'll
+    // deal with those when we get to them. Set up a margin strut that eats all
+    // leading adjacent margins.
+    space_builder.SetDiscardingMarginStrut();
+  }
+
+  return space_builder.ToConstraintSpace();
+}
+
 }  // namespace blink

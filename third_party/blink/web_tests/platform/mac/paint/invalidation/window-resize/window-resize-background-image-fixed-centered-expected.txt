@@ -1,0 +1,69 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [600, 250],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "invalidations": [
+        [0, 0, 600, 250]
+      ]
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [600, 250]
+    }
+  ]
+}
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [400, 250],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "invalidations": [
+        [0, 0, 400, 250]
+      ]
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [400, 250]
+    }
+  ]
+}
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [400, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "invalidations": [
+        [0, 0, 400, 600]
+      ]
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [400, 600]
+    }
+  ]
+}
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "invalidations": [
+        [0, 0, 800, 600]
+      ]
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600]
+    }
+  ]
+}
+

@@ -7,7 +7,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
-#include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/feature_policy/document_policy_parser.h"
@@ -87,17 +86,9 @@ SecurityContextInit::SecurityContextInit(scoped_refptr<SecurityOrigin> origin,
 
 // A helper class that allows the security context be initialized in the
 // process of constructing the document.
-SecurityContextInit::SecurityContextInit(const DocumentInit& initializer)
-    : execution_context_(initializer.GetExecutionContext()),
-      csp_(initializer.GetContentSecurityPolicy()),
-      sandbox_flags_(initializer.GetSandboxFlags()),
-      security_origin_(initializer.GetDocumentOrigin()) {
-  // Derive possibly a new security origin that contains the agent cluster id.
-  if (execution_context_) {
-    security_origin_ = security_origin_->GetOriginForAgentCluster(
-        execution_context_->GetAgent()->cluster_id());
-  }
-}
+SecurityContextInit::SecurityContextInit(ExecutionContext* context,
+                                         scoped_refptr<SecurityOrigin> origin)
+    : execution_context_(context), security_origin_(std::move(origin)) {}
 
 void SecurityContextInit::CountFeaturePolicyUsage(
     mojom::blink::WebFeature feature) {
@@ -158,7 +149,6 @@ void SecurityContextInit::CalculateDocumentPolicy(
 
 void SecurityContextInit::CalculateFeaturePolicy(
     LocalFrame* frame,
-    bool is_view_source,
     const ResourceResponse& response,
     const base::Optional<WebOriginPolicy>& origin_policy,
     const FramePolicy& frame_policy) {
@@ -166,7 +156,7 @@ void SecurityContextInit::CalculateFeaturePolicy(
   initialized_feature_policy_state_ = true;
   // If we are a HTMLViewSourceDocument we use container, header or
   // inherited policies. https://crbug.com/898688.
-  if (is_view_source)
+  if (frame && frame->InViewSourceMode())
     return;
 
   // For a main frame, get inherited feature policy from the opener if any.
@@ -225,13 +215,16 @@ void SecurityContextInit::CalculateFeaturePolicy(
     }
   }
 
-  if (sandbox_flags_ != network::mojom::blink::WebSandboxFlags::kNone &&
+  // DocumentLoader applied the sandbox flags before calling this function, so
+  // they are accessible here.
+  auto sandbox_flags = execution_context_->GetSandboxFlags();
+  if (sandbox_flags != network::mojom::blink::WebSandboxFlags::kNone &&
       RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
     // The sandbox flags might have come from CSP header or the browser; in
     // such cases the sandbox is not part of the container policy. They are
     // added to the header policy (which specifically makes sense in the case
     // of CSP sandbox).
-    ApplySandboxFlagsToParsedFeaturePolicy(sandbox_flags_,
+    ApplySandboxFlagsToParsedFeaturePolicy(sandbox_flags,
                                            feature_policy_header_);
   }
 
@@ -242,7 +235,7 @@ void SecurityContextInit::CalculateFeaturePolicy(
   // feature policy is initialized.
   if (RuntimeEnabledFeatures::BlockingFocusWithoutUserActivationEnabled() &&
       frame && frame->Tree().Parent() &&
-      (sandbox_flags_ & network::mojom::blink::WebSandboxFlags::kNavigation) !=
+      (sandbox_flags & network::mojom::blink::WebSandboxFlags::kNavigation) !=
           network::mojom::blink::WebSandboxFlags::kNone) {
     // Enforcing the policy for sandbox frames (for context see
     // https://crbug.com/954349).
@@ -348,7 +341,8 @@ void SecurityContextInit::CalculateSecureContextMode(LocalFrame* frame) {
     secure_context_mode_ = SecureContextMode::kInsecureContext;
   }
   bool is_secure = secure_context_mode_ == SecureContextMode::kSecureContext;
-  if (GetSandboxFlags() != network::mojom::blink::WebSandboxFlags::kNone) {
+  if (execution_context_->GetSandboxFlags() !=
+      network::mojom::blink::WebSandboxFlags::kNone) {
     UseCounter::Count(
         execution_context_,
         is_secure ? WebFeature::kSecureContextCheckForSandboxedOriginPassed

@@ -70,17 +70,6 @@ NSString* GetMachServiceName() {
   return self;
 }
 
-- (void)getUpdaterVersionWithReply:(void (^_Nonnull)(NSString* version))reply {
-  auto errorHandler = ^(NSError* xpcError) {
-    LOG(ERROR) << "XPC connection failed: "
-               << base::SysNSStringToUTF8([xpcError description]);
-    reply(nil);
-  };
-
-  [[_xpcConnection.get() remoteObjectProxyWithErrorHandler:errorHandler]
-      getUpdaterVersionWithReply:reply];
-}
-
 - (void)registerForUpdatesWithAppId:(NSString* _Nullable)appId
                           brandCode:(NSString* _Nullable)brandCode
                                 tag:(NSString* _Nullable)tag
@@ -123,19 +112,6 @@ NSString* GetMachServiceName() {
                      priority:priority
                   updateState:updateState
                         reply:reply];
-}
-
-- (void)haltForUpdateToVersion:(NSString* _Nonnull)version
-                         reply:(void (^_Nonnull)(BOOL shouldUpdate))reply {
-  auto errorHandler = ^(NSError* xpcError) {
-    LOG(ERROR) << "XPC connection failed: "
-               << base::SysNSStringToUTF8([xpcError description]);
-    reply(NO);
-  };
-
-  [[_xpcConnection remoteObjectProxyWithErrorHandler:errorHandler]
-      haltForUpdateToVersion:version
-                       reply:reply];
 }
 
 - (BOOL)CanDialIPC {

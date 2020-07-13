@@ -17,30 +17,30 @@ class AllowDeletingBrowserHistory(ChromeEnterpriseTestCase):
 
   @before_all
   def setup(self):
-    self.InstallChrome('client2012')
-    self.InstallWebDriver('client2012')
+    self.InstallChrome('client2019')
+    self.InstallWebDriver('client2019')
 
   def allowDeletingBrowserHistoryEnabled(self, instance_name):
     """Returns true if AllowDeletingBrowserHistory is enabled."""
     directory = os.path.dirname(os.path.abspath(__file__))
     output = self.RunWebDriverTest(
-        'client2012',
+        'client2019',
         os.path.join(directory,
                      'allow_deleting_browser_history_webdriver_test.py'))
     return 'ENABLED' in output
 
   @test
   def test_allow_deleting_browser_history_enabled(self):
-    self.SetPolicy('win2012-dc', r'AllowDeletingBrowserHistory', 1, 'DWORD')
-    self.RunCommand('client2012', 'gpupdate /force')
+    self.SetPolicy('win2019-dc', r'AllowDeletingBrowserHistory', 1, 'DWORD')
+    self.RunCommand('client2019', 'gpupdate /force')
 
-    policy_enabled = self.allowDeletingBrowserHistoryEnabled('client2012')
+    policy_enabled = self.allowDeletingBrowserHistoryEnabled('client2019')
     self.assertTrue(policy_enabled)
 
   @test
   def test_allow_deleting_browser_history_disabled(self):
-    self.SetPolicy('win2012-dc', r'AllowDeletingBrowserHistory', 0, 'DWORD')
-    self.RunCommand('client2012', 'gpupdate /force')
+    self.SetPolicy('win2019-dc', r'AllowDeletingBrowserHistory', 0, 'DWORD')
+    self.RunCommand('client2019', 'gpupdate /force')
 
-    policy_enabled = self.allowDeletingBrowserHistoryEnabled('client2012')
+    policy_enabled = self.allowDeletingBrowserHistoryEnabled('client2019')
     self.assertFalse(policy_enabled)

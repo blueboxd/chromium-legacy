@@ -37,3 +37,6 @@ crbug.com/1099576 [ mac intel ] GpuProcess_mac_webgl_backgrounded_high_performan
 
 # GpuProcess_canvas2d is flaky on fuchsia.
 crbug.com/1102542 [ fuchsia ] GpuProcess_canvas2d [ Failure ]
+
+# Flaky on Fuchsia
+crbug.com/1087298 [ fuchsia ] GpuProcess_webgl_disabled_extension [ Skip ]

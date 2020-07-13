@@ -194,6 +194,8 @@ void KioskLaunchController::OnCancelAppLaunch() {
   if (KioskAppManager::Get()->GetDisableBailoutShortcut())
     return;
 
+  SYSLOG(INFO) << "Canceling kiosk app launch.";
+
   KioskAppLaunchError::Save(KioskAppLaunchError::USER_CANCEL);
   CleanUp();
   chrome::AttemptUserExit();
@@ -262,6 +264,7 @@ void KioskLaunchController::CloseSplashScreen() {
 }
 
 void KioskLaunchController::OnAppInstalling() {
+  SYSLOG(INFO) << "Kiosk app started installing.";
   app_state_ = AppState::INSTALLING;
   if (!splash_screen_view_)
     return;
@@ -273,6 +276,7 @@ void KioskLaunchController::OnAppInstalling() {
 }
 
 void KioskLaunchController::OnAppPrepared() {
+  SYSLOG(INFO) << "Kiosk app is ready to launch.";
   app_state_ = AppState::INSTALLED;
 
   if (!splash_screen_view_)
@@ -460,6 +464,7 @@ bool KioskLaunchController::NeedOwnerAuthToConfigureNetwork() {
 }
 
 void KioskLaunchController::MaybeShowNetworkConfigureUI() {
+  SYSLOG(INFO) << "Network configure UI was requested to be shown.";
   if (!splash_screen_view_)
     return;
 
@@ -480,6 +485,7 @@ void KioskLaunchController::MaybeShowNetworkConfigureUI() {
 
 void KioskLaunchController::ShowNetworkConfigureUI() {
   if (!profile_) {
+    SYSLOG(INFO) << "Postponing network dialog till profile is loaded.";
     splash_screen_view_->UpdateAppLaunchState(
         AppLaunchSplashScreenView::
             APP_LAUNCH_STATE_SHOWING_NETWORK_CONFIGURE_UI);
@@ -493,8 +499,10 @@ void KioskLaunchController::ShowNetworkConfigureUI() {
   network_ui_state_ = NetworkUIState::SHOWING;
   splash_screen_view_->ShowNetworkConfigureUI();
 }
+
 void KioskLaunchController::CloseNetworkConfigureScreenIfTimedout() {
   if (network_ui_state_ == NetworkUIState::SHOWING && network_wait_timedout_) {
+    SYSLOG(INFO) << "We are back online, closing network configure screen.";
     splash_screen_view_->ToggleNetworkConfig(false);
     network_ui_state_ = NetworkUIState::NOT_SHOWING;
   }
@@ -543,6 +551,8 @@ void KioskLaunchController::OnNetworkStateChanged(bool online) {
   }
 
   if (app_state_ == AppState::INSTALLING && !online) {
+    SYSLOG(WARNING)
+        << "Connection lost during installation, restarting launcher.";
     app_state_ = AppState::INIT_NETWORK;
     app_launcher_->RestartLauncher();
     MaybeShowNetworkConfigureUI();

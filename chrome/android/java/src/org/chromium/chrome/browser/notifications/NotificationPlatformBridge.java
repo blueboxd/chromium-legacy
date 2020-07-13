@@ -43,10 +43,10 @@ import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.usage_stats.NotificationSuspender;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.chrome.browser.webapps.WebApkServiceClient;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
 import org.chromium.components.browser_ui.site_settings.SingleWebsiteSettings;
@@ -546,7 +546,7 @@ public class NotificationPlatformBridge {
             return;
         }
 
-        ChromeNotification notification = buildNotification(
+        NotificationWrapper notification = buildNotificationWrapper(
                 notificationBuilder, notificationType, notificationId, origin, actions, image);
 
         // Store notification if its origin is suspended.
@@ -642,9 +642,9 @@ public class NotificationPlatformBridge {
         return notificationBuilder;
     }
 
-    private ChromeNotification buildNotification(NotificationBuilderBase notificationBuilder,
-            @NotificationType int notificationType, String notificationId, String origin,
-            ActionInfo[] actions, Bitmap image) {
+    private NotificationWrapper buildNotificationWrapper(
+            NotificationBuilderBase notificationBuilder, @NotificationType int notificationType,
+            String notificationId, String origin, ActionInfo[] actions, Bitmap image) {
         Context context = ContextUtils.getApplicationContext();
         Resources res = context.getResources();
 

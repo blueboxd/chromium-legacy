@@ -92,7 +92,7 @@ class KWalletDBusTest
         mock_session_bus_.get(), dbus_service_name_,
         dbus::ObjectPath(dbus_path_));
 
-    // The kwallet proxy is aquired once, when preparing |kwallet_dbus_|
+    // The kwallet proxy is acquired once, when preparing |kwallet_dbus_|
     EXPECT_CALL(
         *mock_session_bus_.get(),
         GetObjectProxy(dbus_service_name_, dbus::ObjectPath(dbus_path_)))

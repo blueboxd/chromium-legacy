@@ -75,12 +75,10 @@ void SecurityContext::Initialize(const SecurityContextInit& init) {
   }
   security_origin_ = init.GetSecurityOrigin();
   secure_context_mode_ = init.GetSecureContextMode();
-  ApplySandboxFlags(init.GetSandboxFlags());
   feature_policy_ = init.CreateFeaturePolicy();
   report_only_feature_policy_ = init.CreateReportOnlyFeaturePolicy();
   document_policy_ = init.CreateDocumentPolicy();
   report_only_document_policy_ = init.CreateReportOnlyDocumentPolicy();
-  SetContentSecurityPolicy(init.GetCSP());
   origin_trial_context_ = init.GetOriginTrialContext();
 }
 

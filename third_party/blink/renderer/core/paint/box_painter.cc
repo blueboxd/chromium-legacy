@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/paint/rounded_border_geometry.h"
 #include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/core/paint/svg_foreign_object_painter.h"
@@ -158,7 +159,7 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
           box_decoration_data.GetBackgroundBleedAvoidance())) {
     state_saver.Save();
     FloatRoundedRect border =
-        style.GetRoundedBorderFor(paint_rect.ToLayoutRect());
+        RoundedBorderGeometry::PixelSnappedRoundedBorder(style, paint_rect);
     paint_info.context.ClipRoundedRect(border);
 
     if (box_decoration_data.GetBackgroundBleedAvoidance() ==

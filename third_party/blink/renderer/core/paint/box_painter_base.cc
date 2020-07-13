@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
+#include "third_party/blink/renderer/core/paint/rounded_border_geometry.h"
 #include "third_party/blink/renderer/core/paint/rounded_inner_rect_clipper.h"
 #include "third_party/blink/renderer/core/style/border_edge.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -67,9 +68,8 @@ void BoxPainterBase::PaintNormalBoxShadow(const PaintInfo& info,
     return;
   GraphicsContext& context = info.context;
 
-  FloatRoundedRect border = style.GetRoundedBorderFor(
-      paint_rect.ToLayoutRect(), include_logical_left_edge,
-      include_logical_right_edge);
+  FloatRoundedRect border = RoundedBorderGeometry::PixelSnappedRoundedBorder(
+      style, paint_rect, include_logical_left_edge, include_logical_right_edge);
 
   bool has_border_radius = style.HasBorderRadius();
   bool has_opaque_background =
@@ -167,9 +167,9 @@ void BoxPainterBase::PaintInsetBoxShadowWithBorderRect(
     bool include_logical_right_edge) {
   if (!style.BoxShadow())
     return;
-  auto bounds = style.GetRoundedInnerBorderFor(border_rect.ToLayoutRect(),
-                                               include_logical_left_edge,
-                                               include_logical_right_edge);
+  auto bounds = RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
+      style, border_rect, include_logical_left_edge,
+      include_logical_right_edge);
   PaintInsetBoxShadow(info, bounds, style, include_logical_left_edge,
                       include_logical_right_edge);
 }
@@ -180,8 +180,8 @@ void BoxPainterBase::PaintInsetBoxShadowWithInnerRect(
     const ComputedStyle& style) {
   if (!style.BoxShadow())
     return;
-  auto bounds = style.GetRoundedInnerBorderFor(inner_rect.ToLayoutRect(),
-                                               LayoutRectOutsets());
+  auto bounds = RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
+      style, inner_rect, LayoutRectOutsets());
   PaintInsetBoxShadow(info, bounds, style);
 }
 
@@ -533,8 +533,8 @@ inline bool PaintFastBottomLayer(Node* node,
 
     if (!image_border.Rect().IsEmpty()) {
       // We cannot optimize if the tile is too small.
-      if (geometry.TileSize().Width() < image_border.Rect().Width() ||
-          geometry.TileSize().Height() < image_border.Rect().Height())
+      if (geometry.TileSize().width < image_border.Rect().Width() ||
+          geometry.TileSize().height < image_border.Rect().Height())
         return false;
 
       // Phase calculation uses the actual painted location, given by the
@@ -701,12 +701,15 @@ FloatRoundedRect RoundedBorderRectForClip(
   if (!info.is_rounded_fill)
     return FloatRoundedRect();
 
-  FloatRoundedRect border = style.GetRoundedBorderFor(
-      rect.ToLayoutRect(), info.include_left_edge, info.include_right_edge);
+  FloatRoundedRect border = RoundedBorderGeometry::PixelSnappedRoundedBorder(
+      style, rect, info.include_left_edge, info.include_right_edge);
   if (object_has_multiple_boxes) {
-    FloatRoundedRect segment_border = style.GetRoundedBorderFor(
-        LayoutRect(LayoutPoint(), LayoutSize(FlooredIntSize(flow_box_size))),
-        info.include_left_edge, info.include_right_edge);
+    FloatRoundedRect segment_border =
+        RoundedBorderGeometry::PixelSnappedRoundedBorder(
+            style,
+            PhysicalRect(PhysicalOffset(),
+                         PhysicalSize(FlooredIntSize(flow_box_size))),
+            info.include_left_edge, info.include_right_edge);
     border.SetRadii(segment_border.GetRadii());
   }
 
@@ -718,14 +721,16 @@ FloatRoundedRect RoundedBorderRectForClip(
   }
 
   // Clip to the padding or content boxes as necessary.
+  // Use FastAndLossyFromFloatRect because we know it has been pixel snapped.
+  PhysicalRect border_rect =
+      PhysicalRect::FastAndLossyFromFloatRect(border.Rect());
   if (bg_layer.Clip() == EFillBox::kContent) {
-    border = style.GetRoundedInnerBorderFor(
-        LayoutRect(border.Rect()), border_padding_insets,
-        info.include_left_edge, info.include_right_edge);
+    border = RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
+        style, border_rect, border_padding_insets, info.include_left_edge,
+        info.include_right_edge);
   } else if (bg_layer.Clip() == EFillBox::kPadding) {
-    border = style.GetRoundedInnerBorderFor(LayoutRect(border.Rect()),
-                                            info.include_left_edge,
-                                            info.include_right_edge);
+    border = RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
+        style, border_rect, info.include_left_edge, info.include_right_edge);
   }
   return border;
 }

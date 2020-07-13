@@ -18,13 +18,13 @@ class ExtensionInstallForcelistTest(ChromeEnterpriseTestCase):
 
   @before_all
   def setup(self):
-    self.InstallChrome('client2012')
-    self.InstallWebDriver('client2012')
+    self.InstallChrome('client2019')
+    self.InstallWebDriver('client2019')
 
   def isExtensionInstalled(self, incognito=False):
     dir = os.path.dirname(os.path.abspath(__file__))
     output = self.RunWebDriverTest(
-        'client2012',
+        'client2019',
         os.path.join(dir, 'is_extension_installed.py'),
         args=["--extension_id", ExtensionInstallForcelistTest.ExtensionId])
 
@@ -36,8 +36,8 @@ class ExtensionInstallForcelistTest(ChromeEnterpriseTestCase):
 
   @test
   def test_NoForcelistNoExtensionInstalled(self):
-    self.SetPolicy('win2012-dc', r'ExtensionInstallForcelist\1', '""', 'String')
-    self.RunCommand('client2012', 'gpupdate /force')
+    self.SetPolicy('win2019-dc', r'ExtensionInstallForcelist\1', '""', 'String')
+    self.RunCommand('client2019', 'gpupdate /force')
 
     installed = self.isExtensionInstalled()
     self.assertFalse(installed)
@@ -46,9 +46,9 @@ class ExtensionInstallForcelistTest(ChromeEnterpriseTestCase):
   def test_ForcelistExtensionInstalled(self):
     url = 'https://clients2.google.com/service/update2/crx'
     extension = '"%s;%s"' % (ExtensionInstallForcelistTest.ExtensionId, url)
-    self.SetPolicy('win2012-dc', r'ExtensionInstallForcelist\1', extension,
+    self.SetPolicy('win2019-dc', r'ExtensionInstallForcelist\1', extension,
                    'String')
-    self.RunCommand('client2012', 'gpupdate /force')
+    self.RunCommand('client2019', 'gpupdate /force')
 
     installed = self.isExtensionInstalled()
     self.assertTrue(installed)

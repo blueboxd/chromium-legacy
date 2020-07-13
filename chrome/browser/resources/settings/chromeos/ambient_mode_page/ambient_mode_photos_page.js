@@ -86,7 +86,7 @@ Polymer({
    * @private
    */
   getDescription_(topicSource) {
-    // TODO(b/159766700): Finialize the strings and i18n.
+    // TODO(b/159766700, items 2&3): Finalize the strings and i18n.
     if (topicSource === AmbientModeTopicSource.GOOGLE_PHOTOS) {
       return 'A slideshow of selected memories will be created';
     } else {
@@ -103,7 +103,8 @@ Polymer({
         containers.push(checkbox.label);
       }
     });
-    this.browserProxy_.setSelectedPhotosContainers(containers);
+    this.browserProxy_.setSelectedPhotosContainers(
+        {topicSource: this.topicSource_, topicContainers: containers});
   }
 
 });

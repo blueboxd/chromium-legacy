@@ -14,7 +14,6 @@
 #include "base/supports_user_data.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -125,7 +124,7 @@ INSTANTIATE_TEST_SUITE_P(
     TestCases,
     SpellcheckServiceUnitTest,
     testing::Values(
-        TestCase("en,aa", {"aa"}, {""}, {""}),
+        TestCase("en,aa", {"aa"}, {}, {}),
         TestCase("en,en-JP,fr,aa", {"fr"}, {"fr"}, {"fr"}),
         TestCase("en,en-JP,fr,zz,en-US", {"fr"}, {"fr", "en-US"}, {"fr"}),
         TestCase("en,en-US,en-GB", {"en-GB"}, {"en-US", "en-GB"}, {"en-GB"}),
@@ -171,13 +170,6 @@ class SpellcheckServiceHybridUnitTestBase
  protected:
   void SetUp() override {
     InitFeatures();
-
-    // Add command line switch that forces first run state, since code path
-    // through SpellcheckService::InitWindowsDictionaryLanguages depends on
-    // whether this is first run.
-    first_run::ResetCachedSentinelDataForTesting();
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kForceFirstRun);
 
     // Use SetTestingFactoryAndUse to force creation and initialization.
     SpellcheckServiceFactory::GetInstance()->SetTestingFactoryAndUse(
@@ -230,6 +222,11 @@ void SpellcheckServiceHybridUnitTestBase::RunGetDictionariesTest(
   spellcheck_dictionaries_list.AppendStrings(spellcheck_dictionaries);
   prefs()->Set(spellcheck::prefs::kSpellCheckDictionaries,
                spellcheck_dictionaries_list);
+
+  // Simulate first-run scenario (method is normally called during browser
+  // start-up). If the primary accept language has no dictionary support, it is
+  // expected that spellchecking will be disabled for that language.
+  SpellcheckService::EnableFirstUserLanguageForSpellcheck(prefs());
 
   InitializeSpellcheckService(windows_spellcheck_languages_for_testing_);
 
@@ -315,16 +312,18 @@ class SpellcheckServiceHybridUnitTest
 static const TestCase kHybridGetDictionariesParams[] = {
     // Galician (gl) has only Windows support, no Hunspell dictionary. Croatian
     // (hr) has only Hunspell support, no local Windows dictionary. First
-    // language is supported by windows and should be spellchecked
-    TestCase("gl", {""}, {"gl"}, {"gl"}),
-    TestCase("gl", {"gl"}, {"gl"}, {"gl"}),
-    TestCase("gl,hr", {""}, {"gl", "hr"}, {"gl"}),
+    // language is supported by windows and should be spellchecked.
+    TestCase("gl", {}, {"gl"}, {"gl"}), TestCase("gl", {"gl"}, {"gl"}, {"gl"}),
+    TestCase("gl,hr", {}, {"gl", "hr"}, {"gl"}),
     TestCase("gl,hr", {"gl"}, {"gl", "hr"}, {"gl"}),
     TestCase("gl,hr", {"hr"}, {"gl", "hr"}, {"gl", "hr"}),
     TestCase("gl,hr", {"gl", "hr"}, {"gl", "hr"}, {"gl", "hr"}),
-    // First language is not supported by windows so nothing is changed
-    TestCase("hr", {""}, {"hr"}, {""}), TestCase("hr", {"hr"}, {"hr"}, {"hr"}),
+    TestCase("hr", {}, {"hr"}, {"hr"}), TestCase("hr", {"hr"}, {"hr"}, {"hr"}),
     TestCase("hr,gl", {"hr"}, {"hr", "gl"}, {"hr"}),
+    // Cebuano (ceb) is a language with neither Windows or Hunspell support,
+    // should be unset if was enabled during simulated "first run" scenario.
+    TestCase("ceb", {}, {}, {}),
+    TestCase("ceb,gl,hr", {"gl", "hr"}, {"gl", "hr"}, {"gl", "hr"}),
     // Finnish has only "fi" in hard-coded list of accept languages.
     TestCase("fi-FI,fi,en-US,en", {"en-US"}, {"fi", "en-US"}, {"fi", "en-US"}),
     // First language is supported by Windows but private use dictionaries
@@ -332,7 +331,7 @@ static const TestCase kHybridGetDictionariesParams[] = {
     TestCase("ja,gl", {"gl"}, {"gl"}, {"gl"}),
     // (Basque) No Hunspell support, has Windows support but
     // language pack not present.
-    TestCase("eu", {"eu"}, {""}, {""}),
+    TestCase("eu", {"eu"}, {}, {}),
     TestCase("es-419,es-MX",
              {"es-419", "es-MX"},
              {"es-419", "es-MX"},
@@ -342,9 +341,9 @@ static const TestCase kHybridGetDictionariesParams[] = {
              {"fr-FR", "es-MX", "gl", "pt-BR", "hr", "it"},
              {"fr-FR", "gl", "pt-BR", "it"}),
     // Hausa with Hawaiian language pack (ha/haw string in string).
-    TestCase("ha", {"ha"}, {""}, {""}),
+    TestCase("ha", {"ha"}, {}, {}),
     // Sesotho with Asturian language pack (st/ast string in string).
-    TestCase("st", {"st"}, {""}, {""}),
+    TestCase("st", {"st"}, {}, {}),
     // User chose generic Serbian in languages preferences (which uses
     // Cyrillic script).
     TestCase("sr,sr-Latn-RS", {"sr", "sr-Latn-RS"}, {"sr"}, {"sr"})};

@@ -224,7 +224,7 @@ void Connection::PreDispatchEvent(const Event& event) {
       setup_.roots[index].height_in_pixels = configure->height;
     }
   } else if (auto* screen = event.As<x11::RandR::ScreenChangeNotifyEvent>()) {
-    int index = ScreenIndexFromRootWindow(configure->window);
+    int index = ScreenIndexFromRootWindow(screen->root);
     DCHECK_GE(index, 0);
     bool portrait = static_cast<bool>(
         screen->rotation &

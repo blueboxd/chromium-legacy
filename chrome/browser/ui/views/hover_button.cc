@@ -258,9 +258,9 @@ void HoverButton::StateChanged(ButtonState old_state) {
 
   // |HoverButtons| are designed for use in a list, so ensure only one button
   // can have a hover background at any time by requesting focus on hover.
-  if (state() == STATE_HOVERED && old_state != STATE_PRESSED) {
+  if (GetState() == STATE_HOVERED && old_state != STATE_PRESSED) {
     RequestFocus();
-  } else if (state() == STATE_NORMAL && HasFocus()) {
+  } else if (GetState() == STATE_NORMAL && HasFocus()) {
     GetFocusManager()->SetFocusedView(nullptr);
   }
 }

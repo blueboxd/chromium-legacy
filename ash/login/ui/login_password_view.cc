@@ -274,12 +274,12 @@ class LoginPasswordView::EasyUnlockIcon : public views::Button,
     // Stop showing tooltip, as we most likely exited hover state.
     invoke_hover_.Stop();
 
-    if (state() == ButtonState::STATE_DISABLED)
+    if (GetState() == ButtonState::STATE_DISABLED)
       return;
 
     UpdateImage(false /*changed_states*/);
 
-    if (state() == ButtonState::STATE_HOVERED) {
+    if (GetState() == ButtonState::STATE_HOVERED) {
       if (immediately_hover_for_test_) {
         on_hovered_.Run();
       } else {
@@ -318,7 +318,7 @@ class LoginPasswordView::EasyUnlockIcon : public views::Button,
     int active_resource = resources.normal;
     if (IsMouseHovered())
       active_resource = resources.hover;
-    if (state() == ButtonState::STATE_PRESSED)
+    if (GetState() == ButtonState::STATE_PRESSED)
       active_resource = resources.pressed;
 
     // Image to show. It may or may not be an animation, depending on

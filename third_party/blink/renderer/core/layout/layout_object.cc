@@ -2549,10 +2549,7 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
 
   // First assume the outline will be affected. It may be updated when we know
   // it's not affected.
-  bool has_outline = style_->HasOutline();
-  SetOutlineMayBeAffectedByDescendants(has_outline);
-  if (!has_outline)
-    SetPreviousOutlineMayBeAffectedByDescendants(false);
+  SetOutlineMayBeAffectedByDescendants(style_->HasOutline());
 
   if (affects_parent_block_)
     HandleDynamicFloatPositionChange(this);
@@ -4134,6 +4131,21 @@ bool LayoutObject::PaintInvalidationStateIsDirty() const {
          !fragment_.PartialInvalidationLocalRect().IsEmpty();
 }
 #endif
+
+void LayoutObject::EnsureIsReadyForPaintInvalidation() {
+  DCHECK(!NeedsLayout() ||
+         LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren));
+
+  // Force full paint invalidation if the outline may be affected by descendants
+  // and this object is marked for checking paint invalidation for any reason.
+  if (bitfields_.OutlineMayBeAffectedByDescendants() ||
+      bitfields_.PreviousOutlineMayBeAffectedByDescendants()) {
+    SetShouldDoFullPaintInvalidationWithoutGeometryChange(
+        PaintInvalidationReason::kOutline);
+  }
+  bitfields_.SetPreviousOutlineMayBeAffectedByDescendants(
+      bitfields_.OutlineMayBeAffectedByDescendants());
+}
 
 void LayoutObject::ClearPaintFlags() {
   DCHECK_EQ(GetDocument().Lifecycle().GetState(),

@@ -427,7 +427,7 @@ TEST_F(DesksTest, DesksBarViewDeskCreation) {
   EXPECT_FALSE(controller->CanCreateDesks());
   EXPECT_TRUE(controller->CanRemoveDesks());
   EXPECT_FALSE(new_desk_button->GetEnabled());
-  EXPECT_EQ(views::Button::STATE_DISABLED, new_desk_button->state());
+  EXPECT_EQ(views::Button::STATE_DISABLED, new_desk_button->GetState());
 
   // Hover over one of the mini_views, and expect that the close button becomes
   // visible.
@@ -448,7 +448,7 @@ TEST_F(DesksTest, DesksBarViewDeskCreation) {
   EXPECT_EQ(controller->desks().size(), desks_bar_view->mini_views().size());
   EXPECT_TRUE(controller->CanCreateDesks());
   EXPECT_TRUE(new_desk_button->GetEnabled());
-  EXPECT_EQ(views::Button::STATE_NORMAL, new_desk_button->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, new_desk_button->GetState());
 
   // Exit overview mode and re-enter. Since we have more than one pre-existing
   // desks, their mini_views should be created upon construction of the desks
@@ -492,7 +492,7 @@ TEST_F(DesksTest, GestureTapOnNewDeskButton) {
     GestureTapOnView(new_desk_button, event_generator);
 
   EXPECT_FALSE(new_desk_button->GetEnabled());
-  EXPECT_EQ(views::Button::STATE_DISABLED, new_desk_button->state());
+  EXPECT_EQ(views::Button::STATE_DISABLED, new_desk_button->GetState());
 }
 
 TEST_F(DesksTest, DesksBarViewScreenLayoutTest) {

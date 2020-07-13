@@ -5,6 +5,9 @@
 #ifndef CC_TEST_LAYER_TREE_TEST_H_
 #define CC_TEST_LAYER_TREE_TEST_H_
 
+#include <memory>
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
@@ -223,10 +226,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
     return renderer_type_ == RENDERER_SOFTWARE;
   }
   bool use_skia_vulkan() const { return renderer_type_ == RENDERER_SKIA_VK; }
-  bool use_oopr() const {
-    return renderer_type_ == RENDERER_SKIA_VK ||
-           renderer_type_ == RENDERER_SKIA_DAWN;
-  }
   bool use_d3d12() const {
 #if defined(OS_WIN)
     return renderer_type_ == RENDERER_SKIA_DAWN;

@@ -110,9 +110,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   const base::string16& GetAccessibleName() const;
 
   // Get/sets the current display state of the button.
-  // TODO(pkasting): Replace all calls to state() with GetState(), and remove
-  // state().
-  ButtonState state() const { return state_; }
   ButtonState GetState() const;
   // Clients passing in STATE_DISABLED should consider calling
   // SetEnabled(false) instead because the enabled flag can affect other things

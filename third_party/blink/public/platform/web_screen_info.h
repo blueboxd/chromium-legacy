@@ -32,8 +32,8 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCREEN_INFO_H_
 
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
-#include "third_party/blink/public/platform/web_rect.h"
 #include "ui/gfx/color_space.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace blink {
 
@@ -60,7 +60,7 @@ struct WebScreenInfo {
   //   expressed in virtual-screen coordinates. Note that if the monitor
   //   is not the primary display monitor, some of the rectangle's
   //   coordinates may be negative values."
-  WebRect rect;
+  gfx::Rect rect;
 
   // This is set from the rcWork member of MONITORINFOEX, to whit:
   //   "A RECT structure that specifies the work area rectangle of the
@@ -70,7 +70,7 @@ struct WebScreenInfo {
   //   rcMonitor contains system windows such as the task bar and side
   //   bars. Note that if the monitor is not the primary display monitor,
   //   some of the rectangle's coordinates may be negative values".
-  WebRect available_rect;
+  gfx::Rect available_rect;
 
   // This is the orientation 'type' or 'name', as in landscape-primary or
   // portrait-secondary for examples.

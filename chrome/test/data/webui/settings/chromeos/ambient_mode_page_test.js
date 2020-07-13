@@ -46,6 +46,7 @@ suite('AmbientModeHandler', function() {
       page = document.createElement('settings-ambient-mode-page');
       page.prefs = prefElement.prefs;
       document.body.appendChild(page);
+      Polymer.dom.flush();
     });
   });
 
@@ -78,11 +79,10 @@ suite('AmbientModeHandler', function() {
     assertEquals(enabled, enabled_toggled_twice);
   });
 
-  test('hasTopicSourceButtons', function() {
-    const topicSourceRadioGroup = page.$$('#topicSourceRadioGroup');
-
-    const radioButtons =
-        topicSourceRadioGroup.querySelectorAll('cr-radio-button');
-    assertEquals(2, radioButtons.length);
+  test('hasTopicSourceItems', function() {
+    const topicSourceListElement = page.$$('topic-source-list');
+    const ironList = topicSourceListElement.$$('iron-list');
+    const topicSourceItems = ironList.querySelectorAll('topic-source-item');
+    assertEquals(2, topicSourceItems.length);
   });
 });

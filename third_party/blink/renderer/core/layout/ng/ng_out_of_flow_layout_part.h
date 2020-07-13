@@ -125,6 +125,8 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
 
   bool IsContainingBlockForCandidate(const NGLogicalOutOfFlowPositionedNode&);
 
+  void AddOOFResultToFragmentainer(scoped_refptr<const NGLayoutResult> result,
+                                   const wtf_size_t index);
   scoped_refptr<const NGLayoutResult> GenerateFragment(
       NGBlockNode node,
       const LogicalSize& container_content_size_in_child_writing_mode,

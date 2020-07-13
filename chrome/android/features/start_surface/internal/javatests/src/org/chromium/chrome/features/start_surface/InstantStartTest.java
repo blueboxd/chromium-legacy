@@ -52,7 +52,6 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChromePhone;
@@ -699,7 +698,6 @@ public class InstantStartTest {
 
     @Test
     @SmallTest
-    @FlakyTest(message = "crbug.com/1097003")
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
             ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})

@@ -233,7 +233,7 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
 
 #if defined(OS_WIN)
   command_line->AppendSwitch(
-      ::switches::kDisableGpuProcessForDX12VulkanInfoCollection);
+      ::switches::kDisableGpuProcessForDX12InfoCollection);
 #endif
 
   content::Profiling::ProcessStarted();

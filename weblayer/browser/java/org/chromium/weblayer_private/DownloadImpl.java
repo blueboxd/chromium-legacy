@@ -340,7 +340,7 @@ public final class DownloadImpl extends IDownload.Stub {
                 ? WebLayerNotificationChannels.ChannelId.COMPLETED_DOWNLOADS
                 : WebLayerNotificationChannels.ChannelId.ACTIVE_DOWNLOADS;
 
-        WebLayerNotificationBuilder builder = WebLayerNotificationBuilder.create(
+        WebLayerNotificationWrapperBuilder builder = WebLayerNotificationWrapperBuilder.create(
                 channelId, new NotificationMetadata(0, NOTIFICATION_TAG, mNotificationId));
         builder.setOngoing(true)
                 .setDeleteIntent(deletePendingIntent)
@@ -443,7 +443,7 @@ public final class DownloadImpl extends IDownload.Stub {
                     cancelPendingIntent, 0 /* no action for UMA */);
         }
 
-        notificationManager.notify(builder.buildChromeNotification());
+        notificationManager.notify(builder.buildNotificationWrapper());
     }
 
     /**

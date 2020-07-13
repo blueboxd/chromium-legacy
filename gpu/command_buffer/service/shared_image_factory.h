@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/config/gpu_preferences.h"
 #include "gpu/gpu_gles2_export.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ui/gfx/buffer_types.h"
@@ -134,8 +135,11 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   SharedImageManager* shared_image_manager_;
   SharedContextState* shared_context_state_;
   std::unique_ptr<MemoryTypeTracker> memory_tracker_;
-  const bool using_vulkan_;
-  const bool using_skia_dawn_;
+
+  // This is |shared_context_state_|'s context type. Some tests leave
+  // |shared_context_state_| as nullptr, in which case this is set to a default
+  /// of kGL.
+  const GrContextType gr_context_type_;
 
   // The set of SharedImages which have been created (and are being kept alive)
   // by this factory.

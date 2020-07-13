@@ -12,10 +12,10 @@ import android.support.v4.media.session.MediaSessionCompat;
 import org.chromium.components.browser_ui.media.MediaNotificationController;
 import org.chromium.components.browser_ui.media.MediaNotificationInfo;
 import org.chromium.components.browser_ui.media.MediaSessionHelper;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
-import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
 import org.chromium.components.browser_ui.notifications.ForegroundServiceUtils;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
+import org.chromium.components.browser_ui.notifications.NotificationWrapperBuilder;
 
 /**
  * A glue class for MediaSession.
@@ -37,7 +37,7 @@ class MediaSessionManager {
         // notification hasn't been shown. See similar logic in {@link
         // ChromeMediaNotificationControllerDelegate}.
         MediaNotificationController.finishStartingForegroundServiceOnO(
-                service, createChromeNotificationBuilder().buildChromeNotification());
+                service, createNotificationWrapperBuilder().buildNotificationWrapper());
         // Call stopForeground to guarantee Android unset the foreground bit.
         ForegroundServiceUtils.getInstance().stopForeground(
                 service, Service.STOP_FOREGROUND_REMOVE);
@@ -109,8 +109,8 @@ class MediaSessionManager {
         }
 
         @Override
-        public ChromeNotificationBuilder createChromeNotificationBuilder() {
-            return MediaSessionManager.createChromeNotificationBuilder();
+        public NotificationWrapperBuilder createNotificationWrapperBuilder() {
+            return MediaSessionManager.createNotificationWrapperBuilder();
         }
 
         @Override
@@ -119,17 +119,17 @@ class MediaSessionManager {
         }
 
         @Override
-        public void logNotificationShown(ChromeNotification notification) {}
+        public void logNotificationShown(NotificationWrapper notification) {}
     }
 
-    private static ChromeNotificationBuilder createChromeNotificationBuilder() {
+    private static NotificationWrapperBuilder createNotificationWrapperBuilder() {
         ensureNotificationId();
 
         // Only the null tag will work as expected, because {@link Service#startForeground()} only
         // takes an ID and no tag. If we pass a tag here, then the notification that's used to
         // display a paused state (no foreground service) will not be identified as the same one
         // that's used with the foreground service.
-        return WebLayerNotificationBuilder.create(
+        return WebLayerNotificationWrapperBuilder.create(
                 WebLayerNotificationChannels.ChannelId.MEDIA_PLAYBACK,
                 new NotificationMetadata(0, null /*notificationTag*/, sNotificationId));
     }

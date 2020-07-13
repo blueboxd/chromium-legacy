@@ -1971,6 +1971,9 @@ extern const char kChromeOSDirectVideoDecoderName[];
 extern const char kChromeOSDirectVideoDecoderDescription[];
 #endif  // defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
+extern const char kCdmFactoryDaemonName[];
+extern const char kCdmFactoryDaemonDescription[];
+
 extern const char kContextualNudgesName[];
 extern const char kContextualNudgesDescription[];
 

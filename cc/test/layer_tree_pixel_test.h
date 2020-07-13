@@ -41,6 +41,14 @@ class PixelComparator;
 class SolidColorLayer;
 class TextureLayer;
 
+enum class TestRasterType {
+  kBitmap,
+  kGpu,
+  kOop,
+  kOneCopy,
+  kZeroCopy,
+};
+
 class LayerTreePixelTest : public LayerTreeTest {
  protected:
   explicit LayerTreePixelTest(RendererType renderer_type);
@@ -58,6 +66,7 @@ class LayerTreePixelTest : public LayerTreeTest {
   std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<viz::ContextProvider> compositor_context_provider) override;
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override;
+  void InitializeSettings(LayerTreeSettings* settings) override;
 
   virtual std::unique_ptr<viz::CopyOutputRequest> CreateCopyOutputRequest();
 
@@ -114,9 +123,18 @@ class LayerTreePixelTest : public LayerTreeTest {
     enlarge_texture_amount_ = enlarge_texture_amount;
   }
 
-  // Gpu rasterization is not used in pixel tests by default, except on Vulkan
-  // where it is required. Tests may opt into using it.
-  void set_gpu_rasterization() { gpu_rasterization_ = true; }
+  // Gpu rasterization is not used in pixel tests by default, and OOP
+  // rasterization is used by default only for Vulkan and Skia Dawn. Tests may
+  // opt into using a different raster mode.
+  void set_raster_type(TestRasterType raster_type) {
+    raster_type_ = raster_type;
+  }
+
+  TestRasterType raster_type() const { return raster_type_; }
+  bool use_accelerated_raster() const {
+    return raster_type_ == TestRasterType::kGpu ||
+           raster_type_ == TestRasterType::kOop;
+  }
 
   // Common CSS colors defined for tests to use.
   static const SkColor kCSSOrange = 0xffffa500;
@@ -125,7 +143,7 @@ class LayerTreePixelTest : public LayerTreeTest {
   static const SkColor kCSSLime = 0xff00ff00;
   static const SkColor kCSSBlack = 0xff000000;
 
-  bool gpu_rasterization_ = use_oopr();
+  TestRasterType raster_type_;
   gl::DisableNullDrawGLBindings enable_pixel_output_;
   std::unique_ptr<PixelComparator> pixel_comparator_;
   scoped_refptr<Layer> content_root_;  // Not used in layer list mode.

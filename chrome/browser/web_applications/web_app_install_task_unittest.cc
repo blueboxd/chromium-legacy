@@ -589,7 +589,7 @@ TEST_F(WebAppInstallTaskTest, GetIcons) {
       test_install_finalizer().web_app_info();
 
   // Make sure that icons have been generated for all sub sizes.
-  EXPECT_TRUE(ContainsOneIconOfEachSize(web_app_info->icon_bitmaps));
+  EXPECT_TRUE(ContainsOneIconOfEachSize(web_app_info->icon_bitmaps_any));
 
   // Generated icons are not considered part of the manifest icons.
   EXPECT_TRUE(web_app_info->icon_infos.empty());
@@ -614,7 +614,7 @@ TEST_F(WebAppInstallTaskTest, GetIcons_NoIconsProvided) {
       test_install_finalizer().web_app_info();
 
   // Make sure that icons have been generated for all sizes.
-  EXPECT_TRUE(ContainsOneIconOfEachSize(web_app_info->icon_bitmaps));
+  EXPECT_TRUE(ContainsOneIconOfEachSize(web_app_info->icon_bitmaps_any));
 
   // Generated icons are not considered part of the manifest icons.
   EXPECT_TRUE(web_app_info->icon_infos.empty());
@@ -639,7 +639,7 @@ TEST_F(WebAppInstallTaskTest, WriteDataToDisk) {
   const int original_icon_size_px = icon_size::k512;
 
   // Generate one icon as if it was fetched from renderer.
-  AddGeneratedIcon(&data_retriever_->web_app_info().icon_bitmaps,
+  AddGeneratedIcon(&data_retriever_->web_app_info().icon_bitmaps_any,
                    original_icon_size_px, color);
 
   const AppId app_id = InstallWebAppFromManifestWithFallback();
@@ -863,7 +863,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
   web_app_info->open_as_window = false;
 
   // Add square yellow icon.
-  AddGeneratedIcon(&web_app_info->icon_bitmaps, icon_size::k256,
+  AddGeneratedIcon(&web_app_info->icon_bitmaps_any, icon_size::k256,
                    SK_ColorYELLOW);
 
   base::RunLoop run_loop;
@@ -877,12 +877,12 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
                 test_install_finalizer().web_app_info();
 
             // Make sure that icons have been generated for all sub sizes.
-            EXPECT_TRUE(
-                ContainsOneIconOfEachSize(final_web_app_info->icon_bitmaps));
+            EXPECT_TRUE(ContainsOneIconOfEachSize(
+                final_web_app_info->icon_bitmaps_any));
 
             // Make sure they're all derived from the yellow icon.
             for (const std::pair<const SquareSizePx, SkBitmap>& icon :
-                 final_web_app_info->icon_bitmaps) {
+                 final_web_app_info->icon_bitmaps_any) {
               EXPECT_FALSE(icon.second.drawsNothing());
               EXPECT_EQ(SK_ColorYELLOW, icon.second.getColor(0, 0));
             }
@@ -914,10 +914,10 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifestWithFallback_NoIcons) {
             std::unique_ptr<WebApplicationInfo> final_web_app_info =
                 test_install_finalizer().web_app_info();
             // Make sure that icons have been generated for all sub sizes.
-            EXPECT_TRUE(
-                ContainsOneIconOfEachSize(final_web_app_info->icon_bitmaps));
+            EXPECT_TRUE(ContainsOneIconOfEachSize(
+                final_web_app_info->icon_bitmaps_any));
             for (const std::pair<const SquareSizePx, SkBitmap>& icon :
-                 final_web_app_info->icon_bitmaps) {
+                 final_web_app_info->icon_bitmaps_any) {
               EXPECT_FALSE(icon.second.drawsNothing());
             }
 
@@ -1138,7 +1138,7 @@ TEST_F(WebAppInstallTaskTest, LoadAndRetrieveWebApplicationInfoWithIcons) {
     EXPECT_TRUE(result);
     EXPECT_EQ(result->app_url, start_url);
     EXPECT_TRUE(result->icon_infos.empty());
-    EXPECT_FALSE(result->icon_bitmaps.empty());
+    EXPECT_FALSE(result->icon_bitmaps_any.empty());
   }
   {
     // Verify the callback is always called.

@@ -141,6 +141,28 @@ void DisplayAlignmentController::OnLockStateChanged(const bool locked) {
   RefreshState();
 }
 
+void DisplayAlignmentController::DisplayDragged(int64_t display_id,
+                                                int32_t delta_x,
+                                                int32_t delta_y) {
+  if (current_state_ != DisplayAlignmentState::kLayoutPreview) {
+    // Clear existing indicators. They are all regenerated via
+    // OnDisplayConfigurationChanged() after dragging ends.
+    ResetState();
+
+    dragged_display_id_ = display_id;
+    current_state_ = DisplayAlignmentState::kLayoutPreview;
+  }
+
+  // It is not possible to change display being dragged without dropping it
+  // first (and causing update on display configuration).
+  DCHECK_EQ(dragged_display_id_, display_id);
+  DCHECK_NE(dragged_display_id_, display::kInvalidDisplayId);
+
+  dragged_offset_ += gfx::Vector2d(delta_x, delta_y);
+
+  ComputePreviewIndicators();
+}
+
 void DisplayAlignmentController::SetTimerForTesting(
     std::unique_ptr<base::OneShotTimer> timer) {
   action_trigger_timer_ = std::move(timer);
@@ -149,6 +171,10 @@ void DisplayAlignmentController::SetTimerForTesting(
 const std::vector<std::unique_ptr<DisplayAlignmentIndicator>>&
 DisplayAlignmentController::GetActiveIndicatorsForTesting() {
   return active_indicators_;
+}
+
+int64_t DisplayAlignmentController::GetDraggedDisplayIdForTesting() const {
+  return dragged_display_id_;
 }
 
 void DisplayAlignmentController::ShowIndicators(
@@ -197,6 +223,9 @@ void DisplayAlignmentController::ResetState() {
   active_indicators_.clear();
   trigger_count_ = 0;
 
+  dragged_display_id_ = display::kInvalidDisplayId;
+  dragged_offset_ = gfx::Vector2d(0, 0);
+
   // Do not re-enable if disabled.
   if (current_state_ != DisplayAlignmentState::kDisabled)
     current_state_ = DisplayAlignmentState::kIdle;
@@ -221,6 +250,61 @@ void DisplayAlignmentController::RefreshState() {
 
   if (current_state_ == DisplayAlignmentState::kDisabled)
     current_state_ = DisplayAlignmentState::kIdle;
+}
+
+void DisplayAlignmentController::ComputePreviewIndicators() {
+  DCHECK_EQ(current_state_, DisplayAlignmentState::kLayoutPreview);
+  DCHECK_NE(dragged_display_id_, display::kInvalidDisplayId);
+
+  const display::Display& dragged_display =
+      Shell::Get()->display_manager()->GetDisplayForId(dragged_display_id_);
+  DCHECK(dragged_display.is_valid());
+
+  gfx::Rect bounds = dragged_display.bounds();
+  bounds += dragged_offset_;
+
+  const display::Displays& display_list =
+      Shell::Get()->display_manager()->active_display_list();
+
+  // Iterate through all the active displays and see if they are neighbors to
+  // |dragged_display|.
+  for (const display::Display& peer : display_list) {
+    // Skip currently dragged display or it might be detected as a neighbor
+    if (peer.id() == dragged_display_id_)
+      continue;
+
+    // True if |source| and |peer| are neighbors. Returns |source_edge| and
+    // |peer_edge| that denotes shared edges between |source| and |peer|
+    // displays.
+    gfx::Rect source_edge;
+    gfx::Rect peer_edge;
+    const bool are_neighbors = display::ComputeBoundary(
+        bounds, peer.bounds(), &source_edge, &peer_edge);
+
+    const auto& existing_indicator_it =
+        std::find_if(active_indicators_.begin(), active_indicators_.end(),
+                     [id = peer.id()](const auto& indicator) {
+                       return id == indicator->display_id();
+                     });
+
+    const bool indicator_exists =
+        existing_indicator_it != active_indicators_.end();
+
+    if (indicator_exists) {
+      if (are_neighbors) {
+        // Displays are already neighbors.
+        (*existing_indicator_it)->Update(peer, peer_edge);
+        (*existing_indicator_it)->Show();
+      } else {
+        // Displays are no longer neighbors but previously were neighbors.
+        (*existing_indicator_it)->Hide();
+      }
+    } else if (are_neighbors) {
+      // Displays are newly-neighbored.
+      active_indicators_.push_back(
+          DisplayAlignmentIndicator::Create(peer, peer_edge));
+    }
+  }
 }
 
 }  // namespace ash

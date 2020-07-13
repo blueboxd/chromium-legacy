@@ -93,6 +93,7 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/paint/rounded_border_geometry.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
@@ -243,7 +244,7 @@ LayoutBoxRareData::LayoutBoxRareData()
       has_override_containing_block_content_logical_width_(false),
       has_override_containing_block_content_logical_height_(false),
       has_override_percentage_resolution_block_size_(false),
-      has_previous_content_box_rect_and_layout_overflow_rect_(false),
+      has_previous_content_box_and_overflow_rects_(false),
       percent_height_container_(nullptr),
       snap_container_(nullptr),
       snap_areas_(nullptr) {}
@@ -1830,7 +1831,8 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
     if (!skip_children && StyleRef().HasBorderRadius()) {
       PhysicalRect bounds_rect(accumulated_offset, Size());
       skip_children = !hit_test_location.Intersects(
-          StyleRef().GetRoundedInnerBorderFor(bounds_rect.ToLayoutRect()));
+          RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(StyleRef(),
+                                                                bounds_rect));
     }
   }
 
@@ -1895,7 +1897,8 @@ bool LayoutBox::HitTestClippedOutByBorder(
   PhysicalRect border_rect = PhysicalBorderBoxRect();
   border_rect.Move(border_box_location);
   return !hit_test_location.Intersects(
-      StyleRef().GetRoundedBorderFor(border_rect.ToLayoutRect()));
+      RoundedBorderGeometry::PixelSnappedRoundedBorder(StyleRef(),
+                                                       border_rect));
 }
 
 void LayoutBox::Paint(const PaintInfo& paint_info) const {
@@ -2906,6 +2909,11 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
 const NGPhysicalBoxFragment* LayoutBox::GetPhysicalFragment(
     wtf_size_t index) const {
   return &To<NGPhysicalBoxFragment>(layout_results_[index]->PhysicalFragment());
+}
+
+const NGPhysicalBoxFragment&
+LayoutBox::NGPhysicalFragmentList::Iterator::operator*() const {
+  return To<NGPhysicalBoxFragment>((*iterator_)->PhysicalFragment());
 }
 
 const FragmentData* LayoutBox::FragmentDataFromPhysicalFragment(
@@ -6696,14 +6704,15 @@ bool LayoutBox::ComputeShouldClipOverflow() const {
   return HasOverflowClip() || ShouldApplyPaintContainment() || HasControlClip();
 }
 
-void LayoutBox::MutableForPainting::
-    SavePreviousContentBoxRectAndLayoutOverflowRect() {
+void LayoutBox::MutableForPainting::SavePreviousContentBoxAndOverflowRects() {
   auto& rare_data = GetLayoutBox().EnsureRareData();
-  rare_data.has_previous_content_box_rect_and_layout_overflow_rect_ = true;
+  rare_data.has_previous_content_box_and_overflow_rects_ = true;
   rare_data.previous_physical_content_box_rect_ =
       GetLayoutBox().PhysicalContentBoxRect();
   rare_data.previous_physical_layout_overflow_rect_ =
       GetLayoutBox().PhysicalLayoutOverflowRect();
+  rare_data.previous_physical_self_visual_overflow_rect_ =
+      GetLayoutBox().PhysicalSelfVisualOverflowRect();
 }
 
 RasterEffectOutset LayoutBox::VisualRectOutsetForRasterEffects() const {

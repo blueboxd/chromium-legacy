@@ -3709,8 +3709,7 @@ if (enable_java_templates) {
                              ])
       test_name = invoker.target_name
       test_type = "instrumentation"
-      _apk_target_name =
-          get_label_info(invoker.android_test_apk, "name") + "__apk"
+      _apk_target_name = get_label_info(invoker.android_test_apk, "name")
       apk_target = ":$_apk_target_name"
       test_jar = "$root_build_dir/test.lib.java/" +
                  invoker.android_test_apk_name + ".jar"
@@ -3753,34 +3752,29 @@ if (enable_java_templates) {
   #     ]
   #   }
   template("android_test_apk") {
-    _apk_target_name = "${target_name}__apk"
-    android_apk(_apk_target_name) {
-      forward_variables_from(invoker, "*")
-
+    android_apk(target_name) {
       testonly = true
-      if (!defined(deps)) {
-        deps = []
+      deps = [ "//testing/android/broker:broker_java" ]
+      if (defined(invoker.deps)) {
+        deps += invoker.deps
       }
-      if (!defined(data_deps)) {
-        data_deps = []
-      }
-      deps += [ "//testing/android/broker:broker_java" ]
-      data_deps += [
+      data_deps = [
+        # Ensure unstripped libraries are included in runtime deps so that
+        # symbolization can be done.
+        ":${target_name}__secondary_abi_shared_library_list",
+        ":${target_name}__shared_library_list",
         "//build/android/pylib/device/commands",
         "//tools/android/forwarder2",
       ]
+      if (defined(invoker.data_deps)) {
+        data_deps += invoker.data_deps
+      }
       if (defined(invoker.apk_under_test)) {
         data_deps += [ invoker.apk_under_test ]
       } else {
         enable_native_mocks = true
       }
 
-      # Ensure unstripped libraries are included in runtime deps so that
-      # symbolization can be done.
-      data_deps += [
-        ":${_apk_target_name}__secondary_abi_shared_library_list",
-        ":${_apk_target_name}__shared_library_list",
-      ]
       if (defined(invoker.apk_under_test)) {
         _under_test_label =
             get_label_info(invoker.apk_under_test, "label_no_toolchain")
@@ -3790,13 +3784,17 @@ if (enable_java_templates) {
         ]
       }
 
-      if (defined(additional_apks)) {
-        data_deps += additional_apks
+      if (defined(invoker.additional_apks)) {
+        data_deps += invoker.additional_apks
       }
-      if (defined(use_webview_provider)) {
-        data_deps += [ use_webview_provider ]
+      if (defined(invoker.use_webview_provider)) {
+        data_deps += [ invoker.use_webview_provider ]
       }
 
+      data = []
+      if (defined(invoker.data)) {
+        data += invoker.data
+      }
       if (defined(invoker.proguard_enabled) && invoker.proguard_enabled &&
           !incremental_install) {
         # When ProGuard is on, we use ProGuard to combine the under test java
@@ -3804,21 +3802,30 @@ if (enable_java_templates) {
         # optimizations that we ship with, but not have them break tests. The
         # apk under test will still have the same resources, assets, and
         # manifest, all of which are the ones used in the tests.
-        if (!defined(invoker.proguard_configs)) {
-          proguard_configs = []
+        proguard_configs = [ "//testing/android/proguard_for_test.flags" ]
+        if (defined(invoker.proguard_configs)) {
+          proguard_configs += invoker.proguard_configs
         }
-        proguard_configs += [ "//testing/android/proguard_for_test.flags" ]
         disable_checkdiscard = true
-        if (defined(final_apk_path)) {
+        if (defined(invoker.final_apk_path)) {
           _final_apk_path = final_apk_path
         } else {
-          _final_apk_path = "$root_build_dir/apks/${apk_name}.apk"
+          _final_apk_path = "$root_build_dir/apks/${invoker.apk_name}.apk"
         }
-        data = [ "$_final_apk_path.mapping" ]
+        data += [ "$_final_apk_path.mapping" ]
       }
 
       dist_ijar_path = "$root_build_dir/test.lib.java/${invoker.apk_name}.jar"
       create_apk_script = false
+
+      forward_variables_from(invoker,
+                             "*",
+                             [
+                               "data",
+                               "data_deps",
+                               "deps",
+                               "proguard_configs",
+                             ])
     }
   }
 

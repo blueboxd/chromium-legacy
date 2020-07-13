@@ -15,9 +15,9 @@ class ExtensionInstallBlacklistTest(ChromeEnterpriseTestCase):
 
   @before_all
   def setup(self):
-    self.InstallChrome('client2012')
-    self.EnableUITest('client2012')
-    self.InstallWebDriver('client2012')
+    self.InstallChrome('client2019')
+    self.EnableUITest('client2019')
+    self.InstallWebDriver('client2019')
 
   def installExtension(self, url):
     args = ['--url', url]
@@ -25,15 +25,15 @@ class ExtensionInstallBlacklistTest(ChromeEnterpriseTestCase):
     dir = os.path.dirname(os.path.abspath(__file__))
     logging.info('Opening page: %s' % url)
     output = self.RunUITest(
-        'client2012', os.path.join(dir, '../install_extension.py'), args=args)
+        'client2019', os.path.join(dir, '../install_extension.py'), args=args)
     return output
 
   @test
   def test_ExtensionBlacklist_all(self):
     extension = '*'
-    self.SetPolicy('win2012-dc', r'ExtensionInstallBlacklist\1', extension,
+    self.SetPolicy('win2019-dc', r'ExtensionInstallBlacklist\1', extension,
                    'String')
-    self.RunCommand('client2012', 'gpupdate /force')
+    self.RunCommand('client2019', 'gpupdate /force')
     logging.info('Disabled extension install for ' + extension)
 
     test_url = 'https://chrome.google.com/webstore/detail/google-hangouts/nckgahadagoaajjgafhacjanaoiihapd'
@@ -43,9 +43,9 @@ class ExtensionInstallBlacklistTest(ChromeEnterpriseTestCase):
   @test
   def test_ExtensionBlacklist_hangout(self):
     extension = 'nckgahadagoaajjgafhacjanaoiihapd'
-    self.SetPolicy('win2012-dc', r'ExtensionInstallBlacklist\1', extension,
+    self.SetPolicy('win2019-dc', r'ExtensionInstallBlacklist\1', extension,
                    'String')
-    self.RunCommand('client2012', 'gpupdate /force')
+    self.RunCommand('client2019', 'gpupdate /force')
     logging.info('Disabled extension install for ' + extension)
 
     test_url = 'https://chrome.google.com/webstore/detail/google-hangouts/nckgahadagoaajjgafhacjanaoiihapd'

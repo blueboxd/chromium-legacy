@@ -8,7 +8,9 @@
 #include <vector>
 
 #include "base/i18n/string_search.h"
+#include "base/win/scoped_safearray.h"
 #include "base/win/scoped_variant.h"
+#include "base/win/variant_vector.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 
@@ -385,13 +387,14 @@ HRESULT AXPlatformNodeTextRangeProviderWin::FindAttributeRange(
     current_platform_node = static_cast<AXPlatformNodeWin*>(
         delegate->GetFromNodeID(current_start->GetAnchor()->id()));
 
-    base::win::ScopedVariant current_attribute_value;
+    base::win::VariantVector current_attribute_value;
     if (FAILED(current_platform_node->GetTextAttributeValue(
-            text_attribute_id, current_attribute_value.Receive())))
+            text_attribute_id, current_start->text_offset(),
+            current_end->text_offset(), &current_attribute_value))) {
       return E_FAIL;
+    }
 
-    if (VARCMP_EQ == VarCmp(&attribute_val, current_attribute_value.AsInput(),
-                            LOCALE_USER_DEFAULT, 0)) {
+    if (!current_attribute_value.Compare(attribute_val)) {
       // When we encounter an AXRange instance that matches the attribute
       // and its value which we are looking for and no previously matched text
       // range exists, we expand or initialize the matched range.
@@ -469,10 +472,11 @@ HRESULT AXPlatformNodeTextRangeProviderWin::GetAttributeValue(
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_OUT(value);
   NormalizeTextRange();
 
-  base::win::ScopedVariant attribute_value_variant;
+  base::win::VariantVector attribute_value;
 
   // The range is inclusive, so advance our endpoint to the next position
-  auto end = end_->AsLeafTextPosition()->CreateNextAnchorPosition();
+  const auto end_leaf_text_position = end_->AsLeafTextPosition();
+  auto end = end_leaf_text_position->CreateNextAnchorPosition();
 
   // Iterate over anchor positions
   for (auto it = start_->AsLeafTextPosition();
@@ -500,25 +504,34 @@ HRESULT AXPlatformNodeTextRangeProviderWin::GetAttributeValue(
       DCHECK(platform_node);
     }
 
-    base::win::ScopedVariant current_variant;
+    base::win::VariantVector current_value;
+    const bool at_end_leaf_text_anchor =
+        it->anchor_id() == end_leaf_text_position->anchor_id() &&
+        it->tree_id() == end_leaf_text_position->tree_id();
+    const base::Optional<int> start_offset =
+        it->IsTextPosition() ? base::make_optional(it->text_offset())
+                             : base::nullopt;
+    const base::Optional<int> end_offset =
+        at_end_leaf_text_anchor
+            ? base::make_optional(end_leaf_text_position->text_offset())
+            : base::nullopt;
     HRESULT hr = platform_node->GetTextAttributeValue(
-        attribute_id, current_variant.Receive());
+        attribute_id, start_offset, end_offset, &current_value);
     if (FAILED(hr))
       return E_FAIL;
 
-    if (attribute_value_variant.type() == VT_EMPTY) {
-      attribute_value_variant.Reset(current_variant);
-      if (attribute_value_variant.type() == VT_UNKNOWN) {
-        *value = attribute_value_variant.Release();
-        return S_OK;
-      }
-    } else if (attribute_value_variant.Compare(current_variant)) {
+    if (attribute_value.Type() == VT_EMPTY) {
+      attribute_value = std::move(current_value);
+    } else if (attribute_value != current_value) {
       V_VT(value) = VT_UNKNOWN;
       return ::UiaGetReservedMixedAttributeValue(&V_UNKNOWN(value));
     }
   }
 
-  *value = attribute_value_variant.Release();
+  if (ShouldReleaseTextAttributeAsSafearray(attribute_id, attribute_value))
+    *value = attribute_value.ReleaseAsSafearrayVariant();
+  else
+    *value = attribute_value.ReleaseAsScalarVariant();
   return S_OK;
 }
 
@@ -1288,6 +1301,51 @@ AXPlatformNodeTextRangeProviderWin::GetLowestAccessibleCommonPlatformNode()
   DCHECK(platform_node);
 
   return platform_node->GetLowestAccessibleElement();
+}
+
+// static
+bool AXPlatformNodeTextRangeProviderWin::TextAttributeIsArrayType(
+    TEXTATTRIBUTEID attribute_id) {
+  // https://docs.microsoft.com/en-us/windows/win32/winauto/uiauto-textattribute-ids
+  return attribute_id == UIA_AnnotationTypesAttributeId ||
+         attribute_id == UIA_TabsAttributeId;
+}
+
+// static
+bool AXPlatformNodeTextRangeProviderWin::TextAttributeIsUiaReservedValue(
+    const base::win::VariantVector& vector) {
+  // Reserved values are always IUnknown.
+  if (vector.Type() != VT_UNKNOWN)
+    return false;
+
+  base::win::ScopedVariant mixed_attribute_value_variant;
+  {
+    Microsoft::WRL::ComPtr<IUnknown> mixed_attribute_value;
+    HRESULT hr = ::UiaGetReservedMixedAttributeValue(&mixed_attribute_value);
+    DCHECK(SUCCEEDED(hr));
+    mixed_attribute_value_variant.Set(mixed_attribute_value.Get());
+  }
+
+  base::win::ScopedVariant not_supported_value_variant;
+  {
+    Microsoft::WRL::ComPtr<IUnknown> not_supported_value;
+    HRESULT hr = ::UiaGetReservedNotSupportedValue(&not_supported_value);
+    DCHECK(SUCCEEDED(hr));
+    not_supported_value_variant.Set(not_supported_value.Get());
+  }
+
+  return !vector.Compare(mixed_attribute_value_variant) ||
+         !vector.Compare(not_supported_value_variant);
+}
+
+// static
+bool AXPlatformNodeTextRangeProviderWin::ShouldReleaseTextAttributeAsSafearray(
+    TEXTATTRIBUTEID attribute_id,
+    const base::win::VariantVector& attribute_value) {
+  // |vector| may be pre-populated with a UIA reserved value. In such a case, we
+  // must release as a scalar variant.
+  return TextAttributeIsArrayType(attribute_id) &&
+         !TextAttributeIsUiaReservedValue(attribute_value);
 }
 
 }  // namespace ui

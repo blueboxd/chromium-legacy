@@ -58,15 +58,6 @@ void ProcessImageOnUiThread(const gfx::ImageSkia& image,
       rep.GetBitmap(), false /* discard transparency */, &data->data());
 }
 
-void ProcessResourceOnUiThread(int resource_id,
-                               float scale,
-                               scoped_refptr<base::RefCountedBytes> data) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  ProcessImageOnUiThread(
-      *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id),
-      scale, data);
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -211,22 +202,18 @@ void ThemeSource::SendThemeImage(
     content::URLDataSource::GotDataCallback callback,
     int resource_id,
     float scale) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   scoped_refptr<base::RefCountedBytes> data(new base::RefCountedBytes());
   if (BrowserThemePack::IsPersistentImageID(resource_id)) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     const ui::ThemeProvider& tp = ThemeService::GetThemeProviderForProfile(
         profile_->GetOriginalProfile());
     ProcessImageOnUiThread(*tp.GetImageSkiaNamed(resource_id), scale, data);
-    std::move(callback).Run(data.get());
   } else {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    // Fetching image data in ResourceBundle should happen on the UI thread. See
-    // crbug.com/449277
-    content::GetUIThreadTaskRunner({})->PostTaskAndReply(
-        FROM_HERE,
-        base::BindOnce(&ProcessResourceOnUiThread, resource_id, scale, data),
-        base::BindOnce(std::move(callback), data));
+    ProcessImageOnUiThread(
+        *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id),
+        scale, data);
   }
+  std::move(callback).Run(data.get());
 }
 
 std::string ThemeSource::GetAccessControlAllowOriginForOrigin(

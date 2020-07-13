@@ -757,6 +757,10 @@ bool ScrollableShelfView::IsAnyCornerButtonInkDropActivatedForTest() const {
   return activated_corner_buttons_ > 0;
 }
 
+float ScrollableShelfView::GetScrollUpperBoundForTest() const {
+  return CalculateScrollUpperBound(GetSpaceForIcons());
+}
+
 int ScrollableShelfView::GetSumOfButtonSizeAndSpacing() const {
   return shelf_view_->GetButtonSize() + ShelfConfig::Get()->button_spacing();
 }

@@ -5937,7 +5937,10 @@ the Bookmarks menu.">
           other {Successfully changed the compromised password. You have # more compromised passwords. Chrome recommends checking these passwords now.}}
         </message>
         <message name="IDS_PASSWORD_MANAGER_SAFE_STATE_BODY_MESSAGE" desc="The content of the bubble notifying that there are more problems to fix after the user changed a compromised password.">
-          Successfully changed the compromised password. Check your passwords anytime in Settings.
+          Successfully changed the compromised password. Check your passwords anytime in <ph name="SETTINGS">$1<ex>Settings</ex></ph>.
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_SAFE_STATE_SETTINGS" meaning="The hyperlink text referring to Chrome settings. It replaces the placeholder in 'Check your passwords anytime in $1' string">
+          Settings
         </message>
         <message name="IDS_PASSWORD_MANAGER_UNSAFE_STATE_BODY_MESSAGE" desc="The content of the bubble notifying that there are problems to fix after the user saved a password.">
           {COUNT, plural,

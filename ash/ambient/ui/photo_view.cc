@@ -9,7 +9,9 @@
 
 #include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/model/ambient_backend_model.h"
+#include "ash/ambient/ui/ambient_background_image_view.h"
 #include "ash/ambient/ui/ambient_view_delegate.h"
+#include "ash/assistant/ui/assistant_view_ids.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/animation_metrics_reporter.h"
@@ -55,47 +57,13 @@ gfx::ImageSkia ResizeImage(const gfx::ImageSkia& image,
 
 }  // namespace
 
-// AmbientBackgroundImageView--------------------------------------------------
-// A custom ImageView for ambient mode to handle specific mouse/gesture events
-// when user interacting with the background photos.
-class AmbientBackgroundImageView : public views::ImageView {
- public:
-  explicit AmbientBackgroundImageView(AmbientViewDelegate* delegate)
-      : delegate_(delegate) {
-    DCHECK(delegate_);
-  }
-  AmbientBackgroundImageView(const AmbientBackgroundImageView&) = delete;
-  AmbientBackgroundImageView& operator=(AmbientBackgroundImageView&) = delete;
-  ~AmbientBackgroundImageView() override = default;
-
-  // views::View:
-  const char* GetClassName() const override {
-    return "AmbientBackgroundImageView";
-  }
-
-  bool OnMousePressed(const ui::MouseEvent& event) override {
-    delegate_->OnBackgroundPhotoEvents();
-    return true;
-  }
-
-  void OnGestureEvent(ui::GestureEvent* event) override {
-    if (event->type() == ui::ET_GESTURE_TAP) {
-      delegate_->OnBackgroundPhotoEvents();
-      event->SetHandled();
-    }
-  }
-
- private:
-  // Owned by |AmbientController| and should always outlive |this|.
-  AmbientViewDelegate* delegate_ = nullptr;
-};
-
 // PhotoView ------------------------------------------------------------------
 PhotoView::PhotoView(AmbientViewDelegate* delegate)
     : delegate_(delegate),
       metrics_reporter_(std::make_unique<ui::HistogramPercentageMetricsReporter<
                             kPhotoTransitionSmoothness>>()) {
   DCHECK(delegate_);
+  SetID(AssistantViewID::kAmbientPhotoView);
   Init();
 }
 

@@ -58,6 +58,10 @@ using media::android_mojo_util::CreateProvisionFetcher;
 using media::android_mojo_util::CreateMediaDrmStorage;
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/components/cdm_factory_daemon/chromeos_cdm_factory.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace media {
 
 namespace {
@@ -335,14 +339,16 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
 }
 
 std::unique_ptr<CdmFactory> GpuMojoMediaClient::CreateCdmFactory(
-    mojom::FrameInterfaceFactory* interface_provider) {
+    mojom::FrameInterfaceFactory* frame_interfaces) {
 #if defined(OS_ANDROID)
   return std::make_unique<AndroidCdmFactory>(
-      base::BindRepeating(&CreateProvisionFetcher, interface_provider),
-      base::BindRepeating(&CreateMediaDrmStorage, interface_provider));
+      base::BindRepeating(&CreateProvisionFetcher, frame_interfaces),
+      base::BindRepeating(&CreateMediaDrmStorage, frame_interfaces));
+#elif defined(OS_CHROMEOS)
+  return std::make_unique<chromeos::ChromeOsCdmFactory>(frame_interfaces);
 #else
   return nullptr;
-#endif  // defined(OS_ANDROID)
+#endif
 }
 
 }  // namespace media

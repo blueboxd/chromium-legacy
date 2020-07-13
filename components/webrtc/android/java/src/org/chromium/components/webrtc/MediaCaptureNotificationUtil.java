@@ -13,8 +13,8 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
-import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
+import org.chromium.components.browser_ui.notifications.NotificationWrapperBuilder;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
@@ -41,7 +41,7 @@ public class MediaCaptureNotificationUtil {
      * @param contentIntent the intent to be sent when the notification is clicked.
      * @param stopIntent if non-null, a stop button that triggers this intent will be added.
      */
-    public static ChromeNotification createNotification(ChromeNotificationBuilder builder,
+    public static NotificationWrapper createNotification(NotificationWrapperBuilder builder,
             @MediaType int mediaType, @Nullable String url, @Nullable String appName,
             @Nullable PendingIntentProvider contentIntent, @Nullable PendingIntent stopIntent) {
         Context appContext = ContextUtils.getApplicationContext();

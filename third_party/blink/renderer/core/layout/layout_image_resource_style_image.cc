@@ -71,17 +71,17 @@ scoped_refptr<Image> LayoutImageResourceStyleImage::GetImage(
 
 FloatSize LayoutImageResourceStyleImage::ImageSize(float multiplier) const {
   // TODO(davve): Find out the correct default object size in this context.
-  LayoutSize default_size =
+  FloatSize default_size =
       layout_object_->IsListMarkerImage()
-          ? ToLayoutListMarkerImage(layout_object_)->DefaultSize()
-          : LayoutSize(LayoutReplaced::kDefaultWidth,
-                       LayoutReplaced::kDefaultHeight);
+          ? FloatSize(ToLayoutListMarkerImage(layout_object_)->DefaultSize())
+          : FloatSize(LayoutReplaced::kDefaultWidth,
+                      LayoutReplaced::kDefaultHeight);
   return ImageSizeWithDefaultSize(multiplier, default_size);
 }
 
 FloatSize LayoutImageResourceStyleImage::ImageSizeWithDefaultSize(
     float multiplier,
-    const LayoutSize& default_size) const {
+    const FloatSize& default_size) const {
   return style_image_->ImageSize(
       layout_object_->GetDocument(), multiplier, default_size,
       LayoutObject::ShouldRespectImageOrientation(layout_object_));

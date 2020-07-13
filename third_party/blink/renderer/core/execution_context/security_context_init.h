@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_SECURITY_CONTEXT_INIT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_SECURITY_CONTEXT_INIT_H_
 
-#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
@@ -20,9 +19,7 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
-class ContentSecurityPolicy;
 class Document;
-class DocumentInit;
 class Frame;
 class LocalFrame;
 class OriginTrialContext;
@@ -33,14 +30,16 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   STACK_ALLOCATED();
 
  public:
+  // The first constructor is for workers and tests. The second is for windows.
+  // TODO(japhet): Merge these.
   SecurityContextInit(scoped_refptr<SecurityOrigin>, OriginTrialContext*);
-  explicit SecurityContextInit(const DocumentInit&);
+  explicit SecurityContextInit(ExecutionContext*,
+                               scoped_refptr<SecurityOrigin>);
 
   void CalculateSecureContextMode(LocalFrame* frame);
   void InitializeOriginTrials(const String& origin_trials_header);
   void CalculateFeaturePolicy(
       LocalFrame* frame,
-      bool is_view_source,
       const ResourceResponse& response,
       const base::Optional<WebOriginPolicy>& origin_policy,
       const FramePolicy& frame_policy);
@@ -51,12 +50,6 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   const scoped_refptr<SecurityOrigin>& GetSecurityOrigin() const {
     return security_origin_;
   }
-
-  network::mojom::blink::WebSandboxFlags GetSandboxFlags() const {
-    return sandbox_flags_;
-  }
-
-  ContentSecurityPolicy* GetCSP() const { return csp_; }
 
   // Returns nullptr if SecurityContext is used for non-Document contexts(i.e.,
   // workers and tests).
@@ -88,9 +81,6 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
 
  private:
   ExecutionContext* execution_context_ = nullptr;
-  ContentSecurityPolicy* csp_ = nullptr;
-  network::mojom::blink::WebSandboxFlags sandbox_flags_ =
-      network::mojom::blink::WebSandboxFlags::kNone;
   scoped_refptr<SecurityOrigin> security_origin_;
   DocumentPolicy::ParsedDocumentPolicy document_policy_;
   DocumentPolicy::ParsedDocumentPolicy report_only_document_policy_;

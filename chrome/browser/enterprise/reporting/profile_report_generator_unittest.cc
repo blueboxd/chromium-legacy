@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/enterprise/reporting/profile_report_generator.h"
+#include "components/enterprise/browser/reporting/profile_report_generator.h"
 
 #include "base/json/json_reader.h"
 #include "base/strings/string16.h"

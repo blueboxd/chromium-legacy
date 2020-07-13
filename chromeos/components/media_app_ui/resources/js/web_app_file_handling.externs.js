@@ -71,11 +71,8 @@ let FileSystemHandlePermissionDescriptor;
 /** @interface */
 class FileSystemHandle {
   constructor() {
-    /** @type {boolean} */
-    this.isFile;
-
-    /** @type {boolean} */
-    this.isDirectory;
+    /** @type {string} */
+    this.kind;
 
     /** @type {string} */
     this.name;
@@ -141,14 +138,14 @@ class FileSystemDirectoryHandle extends FileSystemHandle {
    * @param {FileSystemGetFileOptions=} options
    * @return {!Promise<!FileSystemFileHandle>}
    */
-  getFile(name, options) {}
+  getFileHandle(name, options) {}
 
   /**
    * @param {string} name
    * @param {FileSystemGetDirectoryOptions=} options
    * @return {Promise<!FileSystemDirectoryHandle>}
    */
-  getDirectory(name, options) {}
+  getDirectoryHandle(name, options) {}
 
   /** @return {!AsyncIterable<!FileSystemHandle>} */
   getEntries() {}
@@ -159,12 +156,6 @@ class FileSystemDirectoryHandle extends FileSystemHandle {
    * @return {Promise<undefined>}
    */
   removeEntry(name, options) {}
-
-  /**
-   * @param {GetSystemDirectoryOptions} options
-   * @return {Promise<!FileSystemDirectoryHandle>}
-   */
-  static getSystemDirectory(options) {}
 }
 
 /** @interface */

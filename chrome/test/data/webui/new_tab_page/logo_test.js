@@ -354,6 +354,25 @@ function createSuite(themeModeDoodlesEnabled) {
     assertStyle($$(logo, '#logo'), 'background-image', 'none');
   });
 
+  test('logo aligned correctly', async () => {
+    // Act.
+    const logo = await createLogo();
+
+    // Assert.
+    const pos = getRelativePosition($$(logo, '#logo'), logo);
+    assertEquals(108, pos.top);
+    assertEquals(92, $$(logo, '#logo').offsetHeight);
+  });
+
+  test('doodle aligned correctly', async () => {
+    // Act.
+    const logo = await createLogo(createImageDoodle());
+
+    // Assert.
+    const pos = getRelativePosition($$(logo, '#doodle'), logo);
+    assertEquals(0, pos.top);
+  });
+
   // Disabled for flakiness, see https://crbug.com/1065812.
   test.skip('receiving resize message resizes doodle', async () => {
     // Arrange.

@@ -10,6 +10,8 @@ js_type_check("closure_compile") {
     ":ambient_mode_page",
     ":ambient_mode_photos_page",
     ":constants",
+    ":topic_source_item",
+    ":topic_source_list",
   ]
 }
 
@@ -49,6 +51,17 @@ js_library("ambient_mode_photos_page") {
 js_library("constants") {
 }
 
+js_library("topic_source_item") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:i18n_behavior",
+  ]
+}
+
+js_library("topic_source_list") {
+  deps = [ "//ui/webui/resources/js:cr" ]
+}
+
 # TODO: Uncomment as the Polymer3 migration makes progress.
 #js_type_check("closure_compile_module") {
 #  is_polymer3 = true
@@ -56,6 +69,8 @@ js_library("constants") {
 #    ":ambient_mode_browser_proxy.m",
 #    ":ambient_mode_page.m",
 #    ":ambient_mode_photos_page.m",
+#    ":topic_source_item.m",
+#    ":topic_source_list.m",
 #  ]
 #}
 
@@ -83,6 +98,22 @@ js_library("ambient_mode_photos_page.m") {
   extra_deps = [ ":ambient_mode_photos_page_module" ]
 }
 
+js_library("topic_source_item.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/ambient_mode_page/topic_source_item.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":topic_source_item_module" ]
+}
+
+js_library("topic_source_list.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/ambient_mode_page/topic_source_list.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":topic_source_list_module" ]
+}
+
 import("//tools/polymer/polymer.gni")
 
 group("polymer3_elements") {
@@ -90,6 +121,8 @@ group("polymer3_elements") {
     ":ambient_mode_page_module",
     ":ambient_mode_photos_page_module",
     ":modulize",
+    ":topic_source_item_module",
+    ":topic_source_list_module",
   ]
 }
 
@@ -102,6 +135,18 @@ polymer_modulizer("ambient_mode_page") {
 polymer_modulizer("ambient_mode_photos_page") {
   js_file = "ambient_mode_photos_page.js"
   html_file = "ambient_mode_photos_page.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("topic_source_item") {
+  js_file = "topic_source_item.js"
+  html_file = "topic_source_item.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("topic_source_list") {
+  js_file = "topic_source_list.js"
+  html_file = "topic_source_list.html"
   html_type = "dom-module"
 }
 

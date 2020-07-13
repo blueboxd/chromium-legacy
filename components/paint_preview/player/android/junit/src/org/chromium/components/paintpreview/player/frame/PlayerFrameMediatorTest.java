@@ -400,7 +400,8 @@ public class PlayerFrameMediatorTest {
         expectedRequiredBitmaps[0][0] = true;
         expectedRequiredBitmaps[0][1] = true;
         expectedRequiredBitmaps[1][0] = true;
-        Assert.assertTrue(Arrays.deepEquals(expectedRequiredBitmaps, mMediator.mRequiredBitmaps));
+        Assert.assertTrue(Arrays.deepEquals(
+                expectedRequiredBitmaps, mMediator.mBitmapState.mRequiredBitmaps));
 
         mMediator.scrollBy(10, 15);
         // The current viewport covers portions of the 4 top left bitmap tiles.
@@ -421,7 +422,8 @@ public class PlayerFrameMediatorTest {
         expectedRequiredBitmaps[1][2] = true;
         expectedRequiredBitmaps[2][0] = true;
         expectedRequiredBitmaps[2][1] = true;
-        Assert.assertTrue(Arrays.deepEquals(expectedRequiredBitmaps, mMediator.mRequiredBitmaps));
+        Assert.assertTrue(Arrays.deepEquals(
+                expectedRequiredBitmaps, mMediator.mBitmapState.mRequiredBitmaps));
 
         mMediator.scrollBy(200, 400);
         // The current view port contains portions of the middle 4 tiles.
@@ -454,7 +456,8 @@ public class PlayerFrameMediatorTest {
         expectedRequiredBitmaps[3][4] = true;
         expectedRequiredBitmaps[4][2] = true;
         expectedRequiredBitmaps[4][3] = true;
-        Assert.assertTrue(Arrays.deepEquals(expectedRequiredBitmaps, mMediator.mRequiredBitmaps));
+        Assert.assertTrue(Arrays.deepEquals(
+                expectedRequiredBitmaps, mMediator.mBitmapState.mRequiredBitmaps));
 
         mMediator.scrollBy(200, 400);
         // The current view port contains portions of the 4 bottom right tiles.
@@ -488,7 +491,8 @@ public class PlayerFrameMediatorTest {
         expectedRequiredBitmaps[5][3] = true;
         expectedRequiredBitmaps[5][4] = true;
         expectedRequiredBitmaps[5][5] = true;
-        Assert.assertTrue(Arrays.deepEquals(expectedRequiredBitmaps, mMediator.mRequiredBitmaps));
+        Assert.assertTrue(Arrays.deepEquals(
+                expectedRequiredBitmaps, mMediator.mBitmapState.mRequiredBitmaps));
     }
 
     /**
@@ -811,7 +815,8 @@ public class PlayerFrameMediatorTest {
         expectedRequiredBitmaps[0][0] = true;
         expectedRequiredBitmaps[0][1] = true;
         expectedRequiredBitmaps[1][0] = true;
-        Assert.assertTrue(Arrays.deepEquals(expectedRequiredBitmaps, mMediator.mRequiredBitmaps));
+        Assert.assertTrue(Arrays.deepEquals(
+                expectedRequiredBitmaps, mMediator.mBitmapState.mRequiredBitmaps));
 
         // Now a scale factor of 2 will be applied. This will happen at a focal point of 0, 0.
         // The same bitmaps will be required but the grid will be double the size.
@@ -822,7 +827,8 @@ public class PlayerFrameMediatorTest {
         expectedRequiredBitmaps[0][0] = true;
         expectedRequiredBitmaps[0][1] = true;
         expectedRequiredBitmaps[1][0] = true;
-        Assert.assertTrue(Arrays.deepEquals(expectedRequiredBitmaps, mMediator.mRequiredBitmaps));
+        Assert.assertTrue(Arrays.deepEquals(
+                expectedRequiredBitmaps, mMediator.mBitmapState.mRequiredBitmaps));
 
         // Reduce the scale factor by 0.5 returning to a scale of 1.
         Assert.assertTrue(mMediator.scaleBy(0.5f, 0, 0));
@@ -832,7 +838,8 @@ public class PlayerFrameMediatorTest {
         expectedRequiredBitmaps[0][0] = true;
         expectedRequiredBitmaps[0][1] = true;
         expectedRequiredBitmaps[1][0] = true;
-        Assert.assertTrue(Arrays.deepEquals(expectedRequiredBitmaps, mMediator.mRequiredBitmaps));
+        Assert.assertTrue(Arrays.deepEquals(
+                expectedRequiredBitmaps, mMediator.mBitmapState.mRequiredBitmaps));
 
         // Increase the scale factor to 6 which is above the maximum limit returning to a scale
         // of 5. Note that the grid is smaller than 30x30 as the viewport is not a multiple of the
@@ -844,7 +851,8 @@ public class PlayerFrameMediatorTest {
         expectedRequiredBitmaps[0][0] = true;
         expectedRequiredBitmaps[0][1] = true;
         expectedRequiredBitmaps[1][0] = true;
-        Assert.assertTrue(Arrays.deepEquals(expectedRequiredBitmaps, mMediator.mRequiredBitmaps));
+        Assert.assertTrue(Arrays.deepEquals(
+                expectedRequiredBitmaps, mMediator.mBitmapState.mRequiredBitmaps));
 
         // Reduce the scale factor back to 1.
         Assert.assertTrue(mMediator.scaleBy(0.2f, 0, 0));
@@ -854,7 +862,8 @@ public class PlayerFrameMediatorTest {
         expectedRequiredBitmaps[0][0] = true;
         expectedRequiredBitmaps[0][1] = true;
         expectedRequiredBitmaps[1][0] = true;
-        Assert.assertTrue(Arrays.deepEquals(expectedRequiredBitmaps, mMediator.mRequiredBitmaps));
+        Assert.assertTrue(Arrays.deepEquals(
+                expectedRequiredBitmaps, mMediator.mBitmapState.mRequiredBitmaps));
 
         // We now reduce the scale factor to less than mInitialScaleFactor; however, the maximum
         // scale out is limited to mInitialScaleFactor.
@@ -866,7 +875,8 @@ public class PlayerFrameMediatorTest {
         expectedRequiredBitmaps = new boolean[2][1];
         expectedRequiredBitmaps[0][0] = true;
         expectedRequiredBitmaps[1][0] = true;
-        Assert.assertTrue(Arrays.deepEquals(expectedRequiredBitmaps, mMediator.mRequiredBitmaps));
+        Assert.assertTrue(Arrays.deepEquals(
+                expectedRequiredBitmaps, mMediator.mBitmapState.mRequiredBitmaps));
     }
 
     /**
@@ -910,7 +920,8 @@ public class PlayerFrameMediatorTest {
         assertViewportStateIs(1f, 0f, 0f, mViewport);
         Assert.assertTrue(mModel.get(PlayerFrameProperties.SCALE_MATRIX).isIdentity());
         // Ensure the correct bitmaps are required and requested.
-        Assert.assertTrue(Arrays.deepEquals(expectedRequiredBitmaps, mMediator.mRequiredBitmaps));
+        Assert.assertTrue(Arrays.deepEquals(
+                expectedRequiredBitmaps, mMediator.mBitmapState.mRequiredBitmaps));
         Assert.assertEquals(expectedRequestedBitmaps, mCompositorDelegate.mRequestedBitmap);
 
         // STEP 2: Scroll slightly.
@@ -933,7 +944,8 @@ public class PlayerFrameMediatorTest {
         expectedRequiredBitmaps[1][2] = true;
         expectedRequiredBitmaps[2][0] = true;
         expectedRequiredBitmaps[2][1] = true;
-        Assert.assertTrue(Arrays.deepEquals(expectedRequiredBitmaps, mMediator.mRequiredBitmaps));
+        Assert.assertTrue(Arrays.deepEquals(
+                expectedRequiredBitmaps, mMediator.mBitmapState.mRequiredBitmaps));
 
         expectedRequestedBitmaps.add(
                 new RequestedBitmap(mFrameGuid, getRectForTile(100, 200, 1, 1), 1f));
@@ -985,7 +997,8 @@ public class PlayerFrameMediatorTest {
         expectedRequiredBitmaps[1][2] = true;
         expectedRequiredBitmaps[2][0] = true;
         expectedRequiredBitmaps[2][1] = true;
-        Assert.assertTrue(Arrays.deepEquals(expectedRequiredBitmaps, mMediator.mRequiredBitmaps));
+        Assert.assertTrue(Arrays.deepEquals(
+                expectedRequiredBitmaps, mMediator.mBitmapState.mRequiredBitmaps));
 
         expectedRequestedBitmaps.add(
                 new RequestedBitmap(mFrameGuid, getRectForTile(100, 200, 0, 0), 2f));
@@ -1035,7 +1048,8 @@ public class PlayerFrameMediatorTest {
         expectedRequiredBitmaps[1][2] = true;
         expectedRequiredBitmaps[2][0] = true;
         expectedRequiredBitmaps[2][1] = true;
-        Assert.assertTrue(Arrays.deepEquals(expectedRequiredBitmaps, mMediator.mRequiredBitmaps));
+        Assert.assertTrue(Arrays.deepEquals(
+                expectedRequiredBitmaps, mMediator.mBitmapState.mRequiredBitmaps));
 
         expectedRequestedBitmaps.add(
                 new RequestedBitmap(mFrameGuid, getRectForTile(100, 200, 0, 0), 1f));
@@ -1098,7 +1112,8 @@ public class PlayerFrameMediatorTest {
         expectedRequiredBitmaps[2][3] = true;
         expectedRequiredBitmaps[3][1] = true;
         expectedRequiredBitmaps[3][2] = true;
-        Assert.assertTrue(Arrays.deepEquals(expectedRequiredBitmaps, mMediator.mRequiredBitmaps));
+        Assert.assertTrue(Arrays.deepEquals(
+                expectedRequiredBitmaps, mMediator.mBitmapState.mRequiredBitmaps));
 
         expectedRequestedBitmaps.add(
                 new RequestedBitmap(mFrameGuid, getRectForTile(100, 200, 1, 1), 2f));
@@ -1249,7 +1264,8 @@ public class PlayerFrameMediatorTest {
         expectedRequiredBitmaps[0][0] = true;
         expectedRequiredBitmaps[0][1] = true;
         expectedRequiredBitmaps[1][0] = true;
-        Assert.assertTrue(Arrays.deepEquals(expectedRequiredBitmaps, mMediator.mRequiredBitmaps));
+        Assert.assertTrue(Arrays.deepEquals(
+                expectedRequiredBitmaps, mMediator.mBitmapState.mRequiredBitmaps));
 
         // Now a scale factor of 2 will be applied. This will happen at a focal point of 0, 0.
         // The same bitmaps will be required but the grid will be double the size.
@@ -1267,7 +1283,8 @@ public class PlayerFrameMediatorTest {
         expectedRequiredBitmaps[0][0] = true;
         expectedRequiredBitmaps[0][1] = true;
         expectedRequiredBitmaps[1][0] = true;
-        Assert.assertTrue(Arrays.deepEquals(expectedRequiredBitmaps, mMediator.mRequiredBitmaps));
+        Assert.assertTrue(Arrays.deepEquals(
+                expectedRequiredBitmaps, mMediator.mBitmapState.mRequiredBitmaps));
 
         // Reduce the scale factor by 0.5 returning to a scale of 1 but try to do so with a focal
         // point that causes translation outside the bounds. The focal point should be ignored.
@@ -1284,7 +1301,8 @@ public class PlayerFrameMediatorTest {
         expectedRequiredBitmaps[0][0] = true;
         expectedRequiredBitmaps[0][1] = true;
         expectedRequiredBitmaps[1][0] = true;
-        Assert.assertTrue(Arrays.deepEquals(expectedRequiredBitmaps, mMediator.mRequiredBitmaps));
+        Assert.assertTrue(Arrays.deepEquals(
+                expectedRequiredBitmaps, mMediator.mBitmapState.mRequiredBitmaps));
     }
 
     /**

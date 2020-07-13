@@ -146,7 +146,7 @@ WebApplicationInfo CreateWebAppInfo(const char* title,
   web_app_info.description = base::UTF8ToUTF16(description);
   web_app_info.app_url = GURL(app_url);
   web_app_info.scope = GURL(app_url);
-  web_app_info.icon_bitmaps[size] = CreateSquareBitmap(size);
+  web_app_info.icon_bitmaps_any[size] = CreateSquareBitmap(size);
   if (create_with_shortcuts) {
     WebApplicationShortcutsMenuItemInfo shortcut_item;
     WebApplicationShortcutsMenuItemInfo::Icon icon;

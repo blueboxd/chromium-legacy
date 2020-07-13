@@ -36,7 +36,7 @@ import java.util.List;
  * Implementation of {@link IBrowser}.
  */
 @JNINamespace("weblayer")
-public class BrowserImpl extends IBrowser.Stub {
+public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChangeListener {
     private final ObserverList<VisibleSecurityStateObserver> mVisibleSecurityStateObservers =
             new ObserverList<VisibleSecurityStateObserver>();
 
@@ -68,6 +68,7 @@ public class BrowserImpl extends IBrowser.Stub {
     private Boolean mPasswordEchoEnabled;
     private Boolean mDarkThemeEnabled;
     private Float mFontScale;
+    private boolean mViewAttachedToWindow;
 
     // Created in the constructor from saved state and used in setClient().
     private PersistenceInfo mPersistenceInfo;
@@ -135,7 +136,7 @@ public class BrowserImpl extends IBrowser.Stub {
         assert mEmbedderActivityContext == null;
         mWindowAndroid = windowAndroid;
         mEmbedderActivityContext = embedderAppContext;
-        mViewController = new BrowserViewController(windowAndroid);
+        mViewController = new BrowserViewController(windowAndroid, this);
         mLocaleReceiver = new LocaleChangedBroadcastReceiver(windowAndroid.getContext().get());
         mPasswordEchoEnabled = null;
     }
@@ -488,6 +489,30 @@ public class BrowserImpl extends IBrowser.Stub {
         return mFragmentStoppedForConfigurationChange;
     }
 
+    public boolean isViewAttachedToWindow() {
+        return mViewAttachedToWindow;
+    }
+
+    @Override
+    public void onViewAttachedToWindow(View v) {
+        mViewAttachedToWindow = true;
+        updateAllTabsViewAttachedState();
+    }
+
+    @Override
+    public void onViewDetachedFromWindow(View v) {
+        // Note this separate state is needed because v.isAttachedToWindow()
+        // still returns true inside this call.
+        mViewAttachedToWindow = false;
+        updateAllTabsViewAttachedState();
+    }
+
+    private void updateAllTabsViewAttachedState() {
+        for (Object tab : getTabs()) {
+            ((TabImpl) tab).updateViewAttachedStateFromBrowser();
+        }
+    }
+
     private void destroyAttachmentState() {
         if (mLocaleReceiver != null) {
             mLocaleReceiver.destroy();
@@ -496,6 +521,8 @@ public class BrowserImpl extends IBrowser.Stub {
         if (mViewController != null) {
             mViewController.destroy();
             mViewController = null;
+            mViewAttachedToWindow = false;
+            updateAllTabsViewAttachedState();
         }
         if (mWindowAndroid != null) {
             mWindowAndroid.destroy();

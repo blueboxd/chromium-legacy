@@ -19,7 +19,9 @@ namespace cc {
 
 LayerTreeHostPixelResourceTest::LayerTreeHostPixelResourceTest(
     PixelResourceTestCase test_case)
-    : LayerTreePixelTest(test_case.renderer_type), test_case_(test_case) {}
+    : LayerTreePixelTest(test_case.renderer_type), test_case_(test_case) {
+  set_raster_type(test_case_.raster_type);
+}
 
 const char* LayerTreeHostPixelResourceTest::GetRendererSuffix() const {
   switch (renderer_type_) {
@@ -33,13 +35,6 @@ const char* LayerTreeHostPixelResourceTest::GetRendererSuffix() const {
     case RENDERER_SOFTWARE:
       return "sw";
   }
-}
-
-void LayerTreeHostPixelResourceTest::InitializeSettings(
-    LayerTreeSettings* settings) {
-  LayerTreePixelTest::InitializeSettings(settings);
-  if (raster_type() != GPU)
-    settings->gpu_rasterization_disabled = true;
 }
 
 std::unique_ptr<RasterBufferProvider>
@@ -75,21 +70,22 @@ LayerTreeHostPixelResourceTest::CreateRasterBufferProvider(
     }
   }
   switch (raster_type()) {
-    case SOFTWARE:
+    case TestRasterType::kBitmap:
       EXPECT_FALSE(compositor_context_provider);
       EXPECT_TRUE(use_software_renderer());
 
       return std::make_unique<BitmapRasterBufferProvider>(
           host_impl->layer_tree_frame_sink());
-    case GPU: {
+    case TestRasterType::kGpu:
+    case TestRasterType::kOop:
       EXPECT_TRUE(compositor_context_provider);
       EXPECT_TRUE(worker_context_provider);
       EXPECT_FALSE(use_software_renderer());
       return std::make_unique<GpuRasterBufferProvider>(
           compositor_context_provider, worker_context_provider, false,
-          gpu_raster_format, gfx::Size(), true, use_oopr());
-    }
-    case ZERO_COPY:
+          gpu_raster_format, gfx::Size(), true,
+          /*enable_oop_rasterization=*/raster_type() == TestRasterType::kOop);
+    case TestRasterType::kZeroCopy:
       EXPECT_TRUE(compositor_context_provider);
       EXPECT_TRUE(gpu_memory_buffer_manager);
       EXPECT_FALSE(use_software_renderer());
@@ -97,7 +93,7 @@ LayerTreeHostPixelResourceTest::CreateRasterBufferProvider(
       return std::make_unique<ZeroCopyRasterBufferProvider>(
           gpu_memory_buffer_manager, compositor_context_provider,
           sw_raster_format);
-    case ONE_COPY:
+    case TestRasterType::kOneCopy:
       EXPECT_TRUE(compositor_context_provider);
       EXPECT_TRUE(worker_context_provider);
       EXPECT_FALSE(use_software_renderer());

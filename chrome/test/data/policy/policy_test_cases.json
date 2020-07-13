@@ -1412,6 +1412,16 @@
     ]
   },
 
+  "ExtensionInstallAllowlist": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "ExtensionInstallAllowlist": ["lcncmkcnkcdbbanbjakcencbaoegdjlp"]},
+        "prefs": { "extensions.install.allowlist": {} }
+      }
+    ]
+  },
+
   "ExtensionInstallForcelist": {
     "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [

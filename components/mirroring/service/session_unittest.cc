@@ -27,6 +27,7 @@
 #include "services/viz/public/cpp/gpu/gpu.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/openscreen/src/cast/streaming/ssrc.h"
 
 using ::testing::InvokeWithoutArgs;
 using ::testing::_;
@@ -46,6 +47,30 @@ namespace mirroring {
 namespace {
 
 constexpr int kDefaultPlayoutDelay = 400;  // ms
+
+const openscreen::cast::Answer kAnswerWithConstraints{
+    1234,
+    // Send indexes and SSRCs are set later.
+    {},
+    {},
+    openscreen::cast::Constraints{
+        openscreen::cast::AudioConstraints{44100, 2, 32000, 960000,
+                                           std::chrono::milliseconds(4000)},
+        openscreen::cast::VideoConstraints{
+            40000.0, openscreen::cast::Dimensions{320, 480, {30, 1}},
+            openscreen::cast::Dimensions{1920, 1080, {60, 1}}, 300000,
+            144000000, std::chrono::milliseconds(4000)}},
+    openscreen::cast::DisplayDescription{
+        openscreen::cast::Dimensions{1280, 720, {60, 1}},
+        openscreen::cast::AspectRatio{16, 9},
+        openscreen::cast::AspectRatioConstraint::kFixed,
+    },
+    // We don't currently use the RTCP event log, or DSCP, or extensions.
+    {},
+    {},
+    true,  // receiver_get_status
+    {},
+};
 
 class MockRemotingSource final : public media::mojom::RemotingSource {
  public:
@@ -181,22 +206,23 @@ class SessionTest : public mojom::ResourceProvider,
       }
     }
 
-    auto answer = std::make_unique<Answer>();
+    std::unique_ptr<openscreen::cast::Answer> answer;
+    if (answer_) {
+      answer.swap(answer_);
+    } else {
+      answer = std::make_unique<openscreen::cast::Answer>();
+      answer->supports_wifi_status_reporting = true;
+    }
+
     answer->udp_port = receiver_endpoint_.port();
-    answer->cast_mode = cast_mode_;
-    answer->supports_get_status = true;
     const int number_of_configs = audio_configs.size() + video_configs.size();
     for (int i = 0; i < number_of_configs; ++i) {
       answer->send_indexes.push_back(i);
       answer->ssrcs.push_back(31 + i);  // Arbitrary receiver SSRCs.
     }
 
-    ReceiverResponse response;
-    response.result = "ok";
-    response.type = ResponseType::ANSWER;
-    response.sequence_number = offer_sequence_number_;
-    response.answer = std::move(answer);
-
+    auto response = ReceiverResponse::CreateAnswerResponseForTesting(
+        offer_sequence_number_, std::move(answer));
     session_->OnAnswer(audio_configs, video_configs, response);
     task_environment_.RunUntilIdle();
   }
@@ -292,6 +318,7 @@ class SessionTest : public mojom::ResourceProvider,
           .Times(1);
       EXPECT_CALL(remoting_source_, OnSinkGone()).Times(AtLeast(1));
     }
+
     session_->OnAnswer(std::vector<FrameSenderConfig>(),
                        std::vector<FrameSenderConfig>(), ReceiverResponse());
     task_environment_.RunUntilIdle();
@@ -303,13 +330,11 @@ class SessionTest : public mojom::ResourceProvider,
   void SendRemotingCapabilities() {
     EXPECT_CALL(*this, OnConnectToRemotingSource()).Times(1);
     EXPECT_CALL(remoting_source_, OnSinkAvailable(_)).Times(1);
-    ReceiverResponse response;
-    response.result = "ok";
-    response.type = ResponseType::CAPABILITIES_RESPONSE;
-    response.sequence_number = capability_sequence_number_;
-    response.capabilities = std::make_unique<ReceiverCapability>();
-    response.capabilities->media_caps =
+    auto capabilities = std::make_unique<ReceiverCapability>();
+    capabilities->media_caps =
         std::vector<std::string>({"video", "audio", "vp8", "opus"});
+    auto response = ReceiverResponse::CreateCapabilitiesResponseForTesting(
+        capability_sequence_number_, std::move(capabilities));
     session_->OnCapabilitiesResponse(response);
     task_environment_.RunUntilIdle();
     Mock::VerifyAndClear(this);
@@ -356,6 +381,10 @@ class SessionTest : public mojom::ResourceProvider,
     target_playout_delay_ms_ = target_playout_delay_ms;
   }
 
+  void SetAnswer(std::unique_ptr<openscreen::cast::Answer> answer) {
+    answer_ = std::move(answer);
+  }
+
  private:
   base::test::TaskEnvironment task_environment_;
   const net::IPEndPoint receiver_endpoint_;
@@ -374,7 +403,7 @@ class SessionTest : public mojom::ResourceProvider,
   std::unique_ptr<Session> session_;
   std::unique_ptr<FakeVideoCaptureHost> video_host_;
   std::unique_ptr<MockNetworkContext> network_context_;
-
+  std::unique_ptr<openscreen::cast::Answer> answer_;
   DISALLOW_COPY_AND_ASSIGN(SessionTest);
 };
 
@@ -394,6 +423,13 @@ TEST_F(SessionTest, VideoOnlyMirroring) {
 
 TEST_F(SessionTest, AudioAndVideoMirroring) {
   SetTargetPlayoutDelay(150);
+  CreateSession(SessionType::AUDIO_AND_VIDEO);
+  StartSession();
+  StopSession();
+}
+
+TEST_F(SessionTest, AnswerWithConstraints) {
+  SetAnswer(std::make_unique<openscreen::cast::Answer>(kAnswerWithConstraints));
   CreateSession(SessionType::AUDIO_AND_VIDEO);
   StartSession();
   StopSession();

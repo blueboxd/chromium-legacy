@@ -84,6 +84,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/paint/rounded_border_geometry.h"
 #include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
@@ -2477,7 +2478,8 @@ gfx::RRectF PaintLayer::BackdropFilterBounds(
   FloatRect scaled_reference_box(reference_box);
   scaled_reference_box.Scale(style.EffectiveZoom());
   gfx::RRectF backdrop_filter_bounds =
-      gfx::RRectF(style.GetRoundedBorderFor(LayoutRect(scaled_reference_box)));
+      gfx::RRectF(RoundedBorderGeometry::PixelSnappedRoundedBorder(
+          style, PhysicalRect::EnclosingRect(scaled_reference_box)));
   return backdrop_filter_bounds;
 }
 bool PaintLayer::HitTestClippedOutByClipPath(

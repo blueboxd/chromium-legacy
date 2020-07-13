@@ -124,7 +124,8 @@
       <div slot="footer" class="flex layout vertical">
         <div id="adminMessageContainer"
             hidden="[[isEmpty_(eolAdminMessage_)]]">
-          <div>[[i18nDynamic(locale, 'eolAdminMessageTitle')]]</div>
+          <div class="bold">[[i18nDynamic(locale, 'eolAdminMessageTitle')]]
+          </div>
           <div id="adminMessage">[[eolAdminMessage_]]</div>
         </div>
         <div class="flex layout vertical center-justified center">

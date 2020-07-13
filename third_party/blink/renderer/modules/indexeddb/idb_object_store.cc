@@ -364,6 +364,22 @@ IDBRequest* IDBObjectStore::put(ScriptState* script_state,
              exception_state);
 }
 
+HeapVector<Member<IDBRequest>> IDBObjectStore::putAll(
+    ScriptState* script_state,
+    const HeapVector<ScriptValue>& values,
+    ExceptionState& exception_state) {
+  v8::Isolate* isolate = script_state->GetIsolate();
+  const ScriptValue& v8_undefined =
+      ScriptValue(isolate, v8::Undefined(isolate));
+  HeapVector<Member<IDBRequest>> requests;
+  for (const auto& value : values) {
+    IDBRequest* result =
+        put(script_state, value, v8_undefined, exception_state);
+    requests.push_back(*result);
+  }
+  return requests;
+}
+
 IDBRequest* IDBObjectStore::put(ScriptState* script_state,
                                 const ScriptValue& value,
                                 const ScriptValue& key,

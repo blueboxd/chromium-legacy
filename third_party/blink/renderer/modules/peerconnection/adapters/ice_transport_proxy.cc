@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_proxy.h"
 
+#include "base/feature_list.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_host.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/web_rtc_cross_thread_copier.h"
@@ -24,8 +26,13 @@ IceTransportProxy::IceTransportProxy(
       delegate_(delegate),
       feature_handle_for_scheduler_(frame.GetFrameScheduler()->RegisterFeature(
           SchedulingPolicy::Feature::kWebRTC,
-          {SchedulingPolicy::DisableAggressiveThrottling(),
-           SchedulingPolicy::RecordMetricsForBackForwardCache()})) {
+          base::FeatureList::IsEnabled(features::kOptOutWebRTCFromAllThrottling)
+              ? SchedulingPolicy{SchedulingPolicy::DisableAllThrottling(),
+                                 SchedulingPolicy::
+                                     RecordMetricsForBackForwardCache()}
+              : SchedulingPolicy{
+                    SchedulingPolicy::DisableAggressiveThrottling(),
+                    SchedulingPolicy::RecordMetricsForBackForwardCache()})) {
   DCHECK(host_thread_);
   DCHECK(delegate_);
   DCHECK(adapter_factory);

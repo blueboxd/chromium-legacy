@@ -872,6 +872,13 @@ TEST_P(HistogramTest, ExpiredHistogramTest) {
   samples = linear_expired->SnapshotDelta();
   EXPECT_EQ(0, samples->TotalCount());
 
+  ScaledLinearHistogram scaled_linear_expired(kExpiredHistogramName, 1, 5, 6,
+                                              100, HistogramBase::kNoFlags);
+  scaled_linear_expired.AddScaledCount(0, 1);
+  scaled_linear_expired.AddScaledCount(1, 49);
+  samples = scaled_linear_expired.histogram()->SnapshotDelta();
+  EXPECT_EQ(0, samples->TotalCount());
+
   std::vector<int> custom_ranges;
   custom_ranges.push_back(1);
   custom_ranges.push_back(5);

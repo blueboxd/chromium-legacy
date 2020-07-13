@@ -110,7 +110,7 @@ class PerfBenchmark(benchmark.Benchmark):
     # skip this gpu process for all perf tests to prevent any interference
     # with the test results.
     browser_options.AppendExtraBrowserArgs(
-        '--disable-gpu-process-for-dx12-vulkan-info-collection')
+        '--disable-gpu-process-for-dx12-info-collection')
 
     self.SetExtraBrowserOptions(browser_options)
 

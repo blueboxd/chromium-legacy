@@ -297,6 +297,7 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
     policy_lists_to_merge.insert(key::kExtensionInstallForcelist);
     policy_lists_to_merge.insert(key::kExtensionInstallBlacklist);
     policy_lists_to_merge.insert(key::kExtensionInstallWhitelist);
+    policy_lists_to_merge.insert(key::kExtensionInstallAllowlist);
   }
 
   PolicyListMerger policy_list_merger(std::move(policy_lists_to_merge));

@@ -45,7 +45,7 @@ public interface NotificationManagerProxy {
     @Deprecated
     void notify(String tag, int id, Notification notification);
 
-    void notify(ChromeNotification notification);
+    void notify(NotificationWrapper notification);
 
     @TargetApi(Build.VERSION_CODES.O)
     NotificationChannel getNotificationChannel(String channelId);

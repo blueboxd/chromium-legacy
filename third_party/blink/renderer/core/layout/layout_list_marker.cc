@@ -67,11 +67,10 @@ LayoutSize LayoutListMarker::ImageBulletSize() const {
   // markers really won't become particularly useful until we support the CSS3
   // marker pseudoclass to allow control over the width and height of the
   // marker box.
-  LayoutUnit bullet_width =
-      font_data->GetFontMetrics().Ascent() / LayoutUnit(2);
+  float bullet_width = font_data->GetFontMetrics().Ascent() / 2.0f;
   return RoundedLayoutSize(
       image_->ImageSize(GetDocument(), StyleRef().EffectiveZoom(),
-                        LayoutSize(bullet_width, bullet_width),
+                        FloatSize(bullet_width, bullet_width),
                         LayoutObject::ShouldRespectImageOrientation(this)));
 }
 

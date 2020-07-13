@@ -692,7 +692,7 @@ TEST_P(DeepScanningReportingTest, ProcessesResponseCorrectly) {
       response.mutable_dlp_scan_verdict()->set_status(
           DlpDeepScanningVerdict::SUCCESS);
       response.mutable_dlp_scan_verdict()->add_triggered_rules()->set_action(
-          DlpDeepScanningVerdict::TriggeredRule::BLOCK);
+          DlpDeepScanningVerdict::TriggeredRule::WARN);
       download_protection_service_.GetFakeBinaryUploadService()->SetResponse(
           BinaryUploadService::Result::SUCCESS, response);
       dlp_verdict = SensitiveDataVerdictToResult(response.dlp_scan_verdict());
@@ -714,8 +714,7 @@ TEST_P(DeepScanningReportingTest, ProcessesResponseCorrectly) {
           enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS);
       auto* dlp_rule = dlp_result->add_triggered_rules();
       dlp_rule->set_action(enterprise_connectors::ContentAnalysisResponse::
-                               Result::TriggeredRule::BLOCK);
-      dlp_rule->set_rule_name("dlp_rule");
+                               Result::TriggeredRule::WARN);
       dlp_rule->set_rule_name("dlp_rule");
       dlp_rule->set_rule_id("0");
 

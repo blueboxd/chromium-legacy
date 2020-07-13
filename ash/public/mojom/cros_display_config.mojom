@@ -302,6 +302,15 @@ interface CrosDisplayConfigController {
   // Sets |id| of display to render identification highlight on. Invalid |id|
   // turns identification highlight off.
   HighlightDisplay(int64 id);
+
+  // Updates preview indicators with change in position of display being dragged
+  // in display layouts section of the display settings page. |display_id| is
+  // the ID of the display being dragged. |delta_x| and |delta_y| are the change
+  // in position of the dragged display since DragDisplayDelta() was last
+  // called. |display_id| remains the same while the drag is in progress, once
+  // the display is dropped, the new layout is applied, updating the display
+  // configuration.
+  DragDisplayDelta(int64 display_id, int32 delta_x, int32 delta_y);
 };
 
 // Interface for clients needing to be informed when the display configuration

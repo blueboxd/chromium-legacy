@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
+#include "third_party/blink/renderer/core/paint/rounded_border_geometry.h"
 #include "third_party/blink/renderer/core/paint/svg_root_painter.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
@@ -1537,12 +1538,12 @@ void FragmentPaintPropertyTreeBuilder::UpdateInnerBorderRadiusClip() {
   if (NeedsPaintPropertyUpdate()) {
     if (NeedsInnerBorderRadiusClip(object_)) {
       const LayoutBox& box = ToLayoutBox(object_);
-      LayoutRect box_rect(context_.current.paint_offset.ToLayoutPoint(),
-                          box.Size());
+      PhysicalRect box_rect(context_.current.paint_offset, box.Size());
       ClipPaintPropertyNode::State state(
           context_.current.transform,
-          box.StyleRef().GetInnerBorderFor(box_rect),
-          box.StyleRef().GetRoundedInnerBorderFor(box_rect));
+          RoundedBorderGeometry::RoundedInnerBorder(box.StyleRef(), box_rect),
+          RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(box.StyleRef(),
+                                                                box_rect));
       OnUpdateClip(properties_->UpdateInnerBorderRadiusClip(
           *context_.current.clip, std::move(state)));
     } else {
@@ -1633,8 +1634,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
               LayoutReplaced::PreSnappedRectForPersistentSizing(content_rect);
         }
         // LayoutReplaced clips the foreground by rounded content box.
-        auto clip_rect = replaced.StyleRef().GetRoundedInnerBorderFor(
-            content_rect.ToLayoutRect(),
+        auto clip_rect = RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
+            replaced.StyleRef(), content_rect,
             LayoutRectOutsets(
                 -(replaced.PaddingTop() + replaced.BorderTop()),
                 -(replaced.PaddingRight() + replaced.BorderRight()),

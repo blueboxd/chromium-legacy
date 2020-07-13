@@ -6,7 +6,10 @@ package org.chromium.weblayer.test;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.view.View;
+import android.view.ViewGroup;
 
+import androidx.fragment.app.Fragment;
 import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -240,5 +243,25 @@ public class TabTest {
         // Make sure the new tab can navigate correctly.
         mActivityTestRule.navigateAndWait(
                 tab, mActivityTestRule.getTestDataURL("simple_page.html"), false);
+    }
+
+    @Test
+    @SmallTest
+    @MinWebLayerVersion(86) // New behavior added in 86
+    public void testViewDetachedTabIsInvisible() throws Exception {
+        mActivity = mActivityTestRule.launchShellWithUrl("about:blank");
+
+        boolean hidden = mActivityTestRule.executeScriptAndExtractBoolean("document.hidden;");
+        Assert.assertFalse(hidden);
+
+        Fragment fragment = mActivityTestRule.getFragment();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            View fragmentView = fragment.getView();
+            ViewGroup parent = (ViewGroup) fragmentView.getParent();
+            parent.removeView(fragmentView);
+        });
+
+        hidden = mActivityTestRule.executeScriptAndExtractBoolean("document.hidden;");
+        Assert.assertTrue(hidden);
     }
 }

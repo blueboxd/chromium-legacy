@@ -72,7 +72,7 @@ public class WebPaymentIntentHelperTest {
         extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_PAYER_NAME, "John Smith");
         extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_PAYER_PHONE, "4169158200");
         extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_PAYER_EMAIL, "JohnSmith@google.com");
-        extras.putString(PaymentShippingOption.EXTRA_SHIPPING_OPTION_ID, "shippingId");
+        extras.putString(WebPaymentIntentHelper.EXTRA_SHIPPING_OPTION_ID, "shippingId");
 
         // Redact the entry with missingField key.
         extras.remove(missingField);
@@ -111,8 +111,8 @@ public class WebPaymentIntentHelperTest {
                 /*requestPayerPhone=*/true, /*requestShipping=*/true, /*shippingType=*/"delivery");
 
         List<PaymentShippingOption> shippingOptions = new ArrayList<PaymentShippingOption>();
-        shippingOptions.add(new PaymentShippingOption(
-                "shippingId", "Free shipping", "USD", "0", /*selected=*/true));
+        shippingOptions.add(new PaymentShippingOption("shippingId", "Free shipping",
+                new PaymentCurrencyAmount("USD", "0"), /*selected=*/true));
 
         Intent intent = WebPaymentIntentHelper.createPayIntent("package.name", "activity.name",
                 "payment.request.id", "merchant.name", "schemeless.origin",
@@ -181,11 +181,10 @@ public class WebPaymentIntentHelperTest {
                 shippingOption.getString(PaymentShippingOption.EXTRA_SHIPPING_OPTION_ID));
         Assert.assertEquals("Free shipping",
                 shippingOption.getString(PaymentShippingOption.EXTRA_SHIPPING_OPTION_LABEL));
-        Assert.assertEquals("USD",
-                shippingOption.getString(
-                        PaymentShippingOption.EXTRA_SHIPPING_OPTION_AMOUNT_CURRENCY));
-        Assert.assertEquals("0",
-                shippingOption.getString(PaymentShippingOption.EXTRA_SHIPPING_OPTION_AMOUNT_VALUE));
+        Bundle amount =
+                shippingOption.getBundle(PaymentShippingOption.EXTRA_SHIPPING_OPTION_AMOUNT);
+        Assert.assertEquals("USD", amount.getString(PaymentCurrencyAmount.EXTRA_CURRENCY));
+        Assert.assertEquals("0", amount.getString(PaymentCurrencyAmount.EXTRA_VALUE));
         Assert.assertTrue(
                 shippingOption.getBoolean(PaymentShippingOption.EXTRA_SHIPPING_OPTION_SELECTED));
     }
@@ -682,7 +681,7 @@ public class WebPaymentIntentHelperTest {
     @Feature({"Payments"})
     public void parsePaymentResponseMissingShippingOptionTest() throws Throwable {
         Intent intent = createPaymentResponseWithMissingField(
-                PaymentShippingOption.EXTRA_SHIPPING_OPTION_ID);
+                WebPaymentIntentHelper.EXTRA_SHIPPING_OPTION_ID);
         mErrorString = null;
         WebPaymentIntentHelper.parsePaymentResponse(Activity.RESULT_OK, intent,
                 new PaymentOptions(/*requestPayerName=*/false, /*requestPayerEmail=*/false,
@@ -766,7 +765,7 @@ public class WebPaymentIntentHelperTest {
         extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_PAYER_NAME, "John Smith");
         extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_PAYER_PHONE, "4169158200");
         extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_PAYER_EMAIL, "JohnSmith@google.com");
-        extras.putString(PaymentShippingOption.EXTRA_SHIPPING_OPTION_ID, "shippingId");
+        extras.putString(WebPaymentIntentHelper.EXTRA_SHIPPING_OPTION_ID, "shippingId");
         intent.putExtras(extras);
         mErrorString = null;
         WebPaymentIntentHelper.parsePaymentResponse(Activity.RESULT_OK, intent,

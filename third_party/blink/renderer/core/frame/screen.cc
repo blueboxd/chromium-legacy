@@ -63,9 +63,9 @@ int Screen::height() const {
   if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
     WebScreenInfo screen_info = GetScreenInfo(*frame);
     return static_cast<int>(
-        lroundf(screen_info.rect.height * screen_info.device_scale_factor));
+        lroundf(screen_info.rect.height() * screen_info.device_scale_factor));
   }
-  return GetScreenInfo(*frame).rect.height;
+  return GetScreenInfo(*frame).rect.height();
 }
 
 int Screen::width() const {
@@ -80,9 +80,9 @@ int Screen::width() const {
   if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
     WebScreenInfo screen_info = GetScreenInfo(*frame);
     return static_cast<int>(
-        lroundf(screen_info.rect.width * screen_info.device_scale_factor));
+        lroundf(screen_info.rect.width() * screen_info.device_scale_factor));
   }
-  return GetScreenInfo(*frame).rect.width;
+  return GetScreenInfo(*frame).rect.width();
 }
 
 unsigned Screen::colorDepth() const {
@@ -111,10 +111,10 @@ int Screen::availLeft() const {
   Page* page = frame->GetPage();
   if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
     WebScreenInfo screen_info = GetScreenInfo(*frame);
-    return static_cast<int>(lroundf(screen_info.available_rect.x *
+    return static_cast<int>(lroundf(screen_info.available_rect.x() *
                                     screen_info.device_scale_factor));
   }
-  return static_cast<int>(GetScreenInfo(*frame).available_rect.x);
+  return static_cast<int>(GetScreenInfo(*frame).available_rect.x());
 }
 
 int Screen::availTop() const {
@@ -128,10 +128,10 @@ int Screen::availTop() const {
   Page* page = frame->GetPage();
   if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
     WebScreenInfo screen_info = GetScreenInfo(*frame);
-    return static_cast<int>(lroundf(screen_info.available_rect.y *
+    return static_cast<int>(lroundf(screen_info.available_rect.y() *
                                     screen_info.device_scale_factor));
   }
-  return static_cast<int>(GetScreenInfo(*frame).available_rect.y);
+  return static_cast<int>(GetScreenInfo(*frame).available_rect.y());
 }
 
 int Screen::availHeight() const {
@@ -145,10 +145,10 @@ int Screen::availHeight() const {
   Page* page = frame->GetPage();
   if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
     WebScreenInfo screen_info = GetScreenInfo(*frame);
-    return static_cast<int>(lroundf(screen_info.available_rect.height *
+    return static_cast<int>(lroundf(screen_info.available_rect.height() *
                                     screen_info.device_scale_factor));
   }
-  return GetScreenInfo(*frame).available_rect.height;
+  return GetScreenInfo(*frame).available_rect.height();
 }
 
 int Screen::availWidth() const {
@@ -162,10 +162,10 @@ int Screen::availWidth() const {
   Page* page = frame->GetPage();
   if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
     WebScreenInfo screen_info = GetScreenInfo(*frame);
-    return static_cast<int>(lroundf(screen_info.available_rect.width *
+    return static_cast<int>(lroundf(screen_info.available_rect.width() *
                                     screen_info.device_scale_factor));
   }
-  return GetScreenInfo(*frame).available_rect.width;
+  return GetScreenInfo(*frame).available_rect.width();
 }
 
 void Screen::Trace(Visitor* visitor) const {
@@ -196,9 +196,9 @@ int Screen::left() const {
   if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
     WebScreenInfo screen_info = GetScreenInfo(*frame);
     return static_cast<int>(
-        lroundf(screen_info.rect.x * screen_info.device_scale_factor));
+        lroundf(screen_info.rect.x() * screen_info.device_scale_factor));
   }
-  return GetScreenInfo(*frame).rect.x;
+  return GetScreenInfo(*frame).rect.x();
 }
 
 int Screen::top() const {
@@ -213,9 +213,9 @@ int Screen::top() const {
   if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
     WebScreenInfo screen_info = GetScreenInfo(*frame);
     return static_cast<int>(
-        lroundf(screen_info.rect.y * screen_info.device_scale_factor));
+        lroundf(screen_info.rect.y() * screen_info.device_scale_factor));
   }
-  return GetScreenInfo(*frame).rect.y;
+  return GetScreenInfo(*frame).rect.y();
 }
 
 bool Screen::internal() const {

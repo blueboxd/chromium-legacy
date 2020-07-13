@@ -35,8 +35,8 @@ const int kMaxOvershootY = 50;
 bool HitTestButton(const views::FrameCaptionButton* button,
                    const gfx::Point& location_in_screen) {
   gfx::Rect expanded_bounds_in_screen = button->GetBoundsInScreen();
-  if (button->state() == views::Button::STATE_HOVERED ||
-      button->state() == views::Button::STATE_PRESSED) {
+  if (button->GetState() == views::Button::STATE_HOVERED ||
+      button->GetState() == views::Button::STATE_PRESSED) {
     expanded_bounds_in_screen.Inset(-kMaxOvershootX, -kMaxOvershootY);
   }
   return expanded_bounds_in_screen.Contains(location_in_screen);

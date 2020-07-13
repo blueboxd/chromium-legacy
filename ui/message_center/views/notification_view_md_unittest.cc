@@ -486,7 +486,7 @@ TEST_F(NotificationViewMDTest, UpdateButtonsStateTest) {
   EXPECT_TRUE(notification_view()->actions_row_->GetVisible());
 
   EXPECT_EQ(views::Button::STATE_NORMAL,
-            notification_view()->action_buttons_[0]->state());
+            notification_view()->action_buttons_[0]->GetState());
 
   // Now construct a mouse move event 1 pixel inside the boundary of the action
   // button.
@@ -498,12 +498,12 @@ TEST_F(NotificationViewMDTest, UpdateButtonsStateTest) {
   generator.MoveMouseTo(cursor_location);
 
   EXPECT_EQ(views::Button::STATE_HOVERED,
-            notification_view()->action_buttons_[0]->state());
+            notification_view()->action_buttons_[0]->GetState());
 
   notification_view()->CreateOrUpdateViews(*notification);
 
   EXPECT_EQ(views::Button::STATE_HOVERED,
-            notification_view()->action_buttons_[0]->state());
+            notification_view()->action_buttons_[0]->GetState());
 
   // Now construct a mouse move event 1 pixel outside the boundary of the
   // widget.
@@ -513,7 +513,7 @@ TEST_F(NotificationViewMDTest, UpdateButtonsStateTest) {
   generator.MoveMouseTo(cursor_location);
 
   EXPECT_EQ(views::Button::STATE_NORMAL,
-            notification_view()->action_buttons_[0]->state());
+            notification_view()->action_buttons_[0]->GetState());
 }
 
 TEST_F(NotificationViewMDTest, UpdateButtonCountTest) {
@@ -528,9 +528,9 @@ TEST_F(NotificationViewMDTest, UpdateButtonCountTest) {
   EXPECT_TRUE(notification_view()->actions_row_->GetVisible());
 
   EXPECT_EQ(views::Button::STATE_NORMAL,
-            notification_view()->action_buttons_[0]->state());
+            notification_view()->action_buttons_[0]->GetState());
   EXPECT_EQ(views::Button::STATE_NORMAL,
-            notification_view()->action_buttons_[1]->state());
+            notification_view()->action_buttons_[1]->GetState());
 
   // Now construct a mouse move event 1 pixel inside the boundary of the action
   // button.
@@ -542,15 +542,15 @@ TEST_F(NotificationViewMDTest, UpdateButtonCountTest) {
   generator.MoveMouseTo(cursor_location);
 
   EXPECT_EQ(views::Button::STATE_HOVERED,
-            notification_view()->action_buttons_[0]->state());
+            notification_view()->action_buttons_[0]->GetState());
   EXPECT_EQ(views::Button::STATE_NORMAL,
-            notification_view()->action_buttons_[1]->state());
+            notification_view()->action_buttons_[1]->GetState());
 
   notification->set_buttons(CreateButtons(1));
   UpdateNotificationViews(*notification);
 
   EXPECT_EQ(views::Button::STATE_HOVERED,
-            notification_view()->action_buttons_[0]->state());
+            notification_view()->action_buttons_[0]->GetState());
   EXPECT_EQ(1u, notification_view()->action_buttons_.size());
 
   // Now construct a mouse move event 1 pixel outside the boundary of the
@@ -561,7 +561,7 @@ TEST_F(NotificationViewMDTest, UpdateButtonCountTest) {
   generator.MoveMouseTo(cursor_location);
 
   EXPECT_EQ(views::Button::STATE_NORMAL,
-            notification_view()->action_buttons_[0]->state());
+            notification_view()->action_buttons_[0]->GetState());
 }
 
 TEST_F(NotificationViewMDTest, TestActionButtonClick) {

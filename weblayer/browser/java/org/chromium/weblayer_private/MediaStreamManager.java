@@ -16,10 +16,10 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 import org.chromium.components.webrtc.MediaCaptureNotificationUtil;
 import org.chromium.components.webrtc.MediaCaptureNotificationUtil.MediaType;
@@ -224,8 +224,8 @@ public class MediaStreamManager {
                                        : audio ? MediaType.AUDIO_ONLY : MediaType.VIDEO_ONLY;
 
         // TODO(crbug/1076098): don't pass a URL in incognito.
-        ChromeNotification notification = MediaCaptureNotificationUtil.createNotification(
-                WebLayerNotificationBuilder.create(
+        NotificationWrapper notification = MediaCaptureNotificationUtil.createNotification(
+                WebLayerNotificationWrapperBuilder.create(
                         WebLayerNotificationChannels.ChannelId.WEBRTC_CAM_AND_MIC,
                         new NotificationMetadata(0, AV_STREAM_TAG, mNotificationId)),
                 mediaType, mTab.getWebContents().getVisibleUrl().getSpec(),

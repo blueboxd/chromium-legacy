@@ -155,7 +155,13 @@ FrameSchedulerImpl::FrameSchedulerImpl(
           this,
           &tracing_controller_,
           YesNoStateToString),
-      aggressive_throttling_opt_out_count(0),
+      all_throttling_opt_out_count_(0),
+      aggressive_throttling_opt_out_count_(0),
+      opted_out_from_all_throttling_(false,
+                                     "FrameScheduler.AllThrottlingDisabled",
+                                     this,
+                                     &tracing_controller_,
+                                     YesNoStateToString),
       opted_out_from_aggressive_throttling_(
           false,
           "FrameScheduler.AggressiveThrottlingDisabled",
@@ -236,8 +242,10 @@ FrameSchedulerImpl::~FrameSchedulerImpl() {
   if (parent_page_scheduler_) {
     parent_page_scheduler_->Unregister(this);
 
-    if (opted_out_from_aggressive_throttling())
-      parent_page_scheduler_->OnAggressiveThrottlingStatusUpdated();
+    if (opted_out_from_all_throttling() ||
+        opted_out_from_aggressive_throttling()) {
+      parent_page_scheduler_->OnThrottlingStatusUpdated();
+    }
   }
 
   // Can be null in tests.
@@ -636,6 +644,8 @@ void FrameSchedulerImpl::OnStartedUsingFeature(
     const SchedulingPolicy& policy) {
   uint64_t old_mask = GetActiveFeaturesTrackedForBackForwardCacheMetricsMask();
 
+  if (policy.disable_all_throttling)
+    OnAddedAllThrottlingOptOut();
   if (policy.disable_aggressive_throttling)
     OnAddedAggressiveThrottlingOptOut();
   if (policy.disable_back_forward_cache) {
@@ -659,6 +669,8 @@ void FrameSchedulerImpl::OnStoppedUsingFeature(
     const SchedulingPolicy& policy) {
   uint64_t old_mask = GetActiveFeaturesTrackedForBackForwardCacheMetricsMask();
 
+  if (policy.disable_all_throttling)
+    OnRemovedAllThrottlingOptOut();
   if (policy.disable_aggressive_throttling)
     OnRemovedAggressiveThrottlingOptOut();
   if (policy.disable_back_forward_cache)
@@ -705,21 +717,38 @@ base::WeakPtr<const FrameSchedulerImpl> FrameSchedulerImpl::GetWeakPtr() const {
   return weak_factory_.GetWeakPtr();
 }
 
-void FrameSchedulerImpl::OnAddedAggressiveThrottlingOptOut() {
-  ++aggressive_throttling_opt_out_count;
-  opted_out_from_aggressive_throttling_ =
-      static_cast<bool>(aggressive_throttling_opt_out_count);
+void FrameSchedulerImpl::OnAddedAllThrottlingOptOut() {
+  ++all_throttling_opt_out_count_;
+  opted_out_from_all_throttling_ =
+      static_cast<bool>(all_throttling_opt_out_count_);
   if (parent_page_scheduler_)
-    parent_page_scheduler_->OnAggressiveThrottlingStatusUpdated();
+    parent_page_scheduler_->OnThrottlingStatusUpdated();
+}
+
+void FrameSchedulerImpl::OnRemovedAllThrottlingOptOut() {
+  DCHECK_GT(all_throttling_opt_out_count_, 0);
+  --all_throttling_opt_out_count_;
+  opted_out_from_all_throttling_ =
+      static_cast<bool>(all_throttling_opt_out_count_);
+  if (parent_page_scheduler_)
+    parent_page_scheduler_->OnThrottlingStatusUpdated();
+}
+
+void FrameSchedulerImpl::OnAddedAggressiveThrottlingOptOut() {
+  ++aggressive_throttling_opt_out_count_;
+  opted_out_from_aggressive_throttling_ =
+      static_cast<bool>(aggressive_throttling_opt_out_count_);
+  if (parent_page_scheduler_)
+    parent_page_scheduler_->OnThrottlingStatusUpdated();
 }
 
 void FrameSchedulerImpl::OnRemovedAggressiveThrottlingOptOut() {
-  DCHECK_GT(aggressive_throttling_opt_out_count, 0);
-  --aggressive_throttling_opt_out_count;
+  DCHECK_GT(aggressive_throttling_opt_out_count_, 0);
+  --aggressive_throttling_opt_out_count_;
   opted_out_from_aggressive_throttling_ =
-      static_cast<bool>(aggressive_throttling_opt_out_count);
+      static_cast<bool>(aggressive_throttling_opt_out_count_);
   if (parent_page_scheduler_)
-    parent_page_scheduler_->OnAggressiveThrottlingStatusUpdated();
+    parent_page_scheduler_->OnThrottlingStatusUpdated();
 }
 
 void FrameSchedulerImpl::OnAddedBackForwardCacheOptOut(
@@ -778,11 +807,6 @@ void FrameSchedulerImpl::SetPageVisibilityForTracing(
 bool FrameSchedulerImpl::IsPageVisible() const {
   return parent_page_scheduler_ ? parent_page_scheduler_->IsPageVisible()
                                 : true;
-}
-
-bool FrameSchedulerImpl::IsAudioPlaying() const {
-  return parent_page_scheduler_ ? parent_page_scheduler_->IsAudioPlaying()
-                                : false;
 }
 
 void FrameSchedulerImpl::SetPaused(bool frame_paused) {
@@ -927,6 +951,8 @@ bool FrameSchedulerImpl::ShouldThrottleTaskQueues() const {
   if (!RuntimeEnabledFeatures::TimerThrottlingForBackgroundTabsEnabled())
     return false;
   if (parent_page_scheduler_->IsAudioPlaying())
+    return false;
+  if (parent_page_scheduler_->OptedOutFromAllThrottling())
     return false;
   if (!parent_page_scheduler_->IsPageVisible())
     return true;

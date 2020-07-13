@@ -11,6 +11,10 @@
 #include "build/build_config.h"
 #include "ui/views/repeat_controller.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace views {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -26,7 +30,8 @@ class VIEWS_EXPORT BaseScrollBarButton : public Button {
  public:
   METADATA_HEADER(BaseScrollBarButton);
 
-  explicit BaseScrollBarButton(ButtonListener* listener);
+  explicit BaseScrollBarButton(ButtonListener* listener,
+                               const base::TickClock* tick_clock = nullptr);
   ~BaseScrollBarButton() override;
 
  protected:

@@ -16,8 +16,8 @@ class UrlBlacklistTest(ChromeEnterpriseTestCase):
 
   @before_all
   def setup(self):
-    self.InstallChrome('client2012')
-    self.InstallWebDriver('client2012')
+    self.InstallChrome('client2019')
+    self.InstallWebDriver('client2019')
 
   def openPage(self, url, incognito=False):
     args = ['--url', url, '--text_only']
@@ -26,14 +26,14 @@ class UrlBlacklistTest(ChromeEnterpriseTestCase):
 
     dir = os.path.dirname(os.path.abspath(__file__))
     logging.info('Opening page: %s' % url)
-    output = self.RunWebDriverTest('client2012',
+    output = self.RunWebDriverTest('client2019',
                                    os.path.join(dir, '../open_page.py'), args)
     return output
 
   @test
   def test_BlacklistAllCantVisit(self, incognito=False):
-    self.SetPolicy('win2012-dc', r'URLBlacklist\1', '*', 'String')
-    self.RunCommand('client2012', 'gpupdate /force')
+    self.SetPolicy('win2019-dc', r'URLBlacklist\1', '*', 'String')
+    self.RunCommand('client2019', 'gpupdate /force')
 
     # Verify that we can't visit any site.
     output = self.openPage('https://youtube.com/yt/about/', incognito=incognito)
@@ -44,9 +44,9 @@ class UrlBlacklistTest(ChromeEnterpriseTestCase):
 
   @test
   def test_BlacklistYouTubeCantVisit(self, incognito=False):
-    self.SetPolicy('win2012-dc', r'URLBlacklist\1', 'https://youtube.com',
+    self.SetPolicy('win2019-dc', r'URLBlacklist\1', 'https://youtube.com',
                    'String')
-    self.RunCommand('client2012', 'gpupdate /force')
+    self.RunCommand('client2019', 'gpupdate /force')
 
     # Verify that we can't visit YouTube, but can still visit other sites.
     output = self.openPage('https://youtube.com/yt/about/', incognito=incognito)

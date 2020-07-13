@@ -260,22 +260,22 @@ TEST_F(ButtonTest, MetadataTest) {
 TEST_F(ButtonTest, HoverStateOnVisibilityChange) {
   event_generator()->MoveMouseTo(button()->GetBoundsInScreen().CenterPoint());
   event_generator()->PressLeftButton();
-  EXPECT_EQ(Button::STATE_PRESSED, button()->state());
+  EXPECT_EQ(Button::STATE_PRESSED, button()->GetState());
 
   event_generator()->ReleaseLeftButton();
-  EXPECT_EQ(Button::STATE_HOVERED, button()->state());
+  EXPECT_EQ(Button::STATE_HOVERED, button()->GetState());
 
   button()->SetEnabled(false);
-  EXPECT_EQ(Button::STATE_DISABLED, button()->state());
+  EXPECT_EQ(Button::STATE_DISABLED, button()->GetState());
 
   button()->SetEnabled(true);
-  EXPECT_EQ(Button::STATE_HOVERED, button()->state());
+  EXPECT_EQ(Button::STATE_HOVERED, button()->GetState());
 
   button()->SetVisible(false);
-  EXPECT_EQ(Button::STATE_NORMAL, button()->state());
+  EXPECT_EQ(Button::STATE_NORMAL, button()->GetState());
 
   button()->SetVisible(true);
-  EXPECT_EQ(Button::STATE_HOVERED, button()->state());
+  EXPECT_EQ(Button::STATE_HOVERED, button()->GetState());
 
 #if defined(USE_AURA)
   {
@@ -290,16 +290,16 @@ TEST_F(ButtonTest, HoverStateOnVisibilityChange) {
     second_widget.GetNativeWindow()->SetCapture();
 
     button()->SetEnabled(false);
-    EXPECT_EQ(Button::STATE_DISABLED, button()->state());
+    EXPECT_EQ(Button::STATE_DISABLED, button()->GetState());
 
     button()->SetEnabled(true);
-    EXPECT_EQ(Button::STATE_NORMAL, button()->state());
+    EXPECT_EQ(Button::STATE_NORMAL, button()->GetState());
 
     button()->SetVisible(false);
-    EXPECT_EQ(Button::STATE_NORMAL, button()->state());
+    EXPECT_EQ(Button::STATE_NORMAL, button()->GetState());
 
     button()->SetVisible(true);
-    EXPECT_EQ(Button::STATE_NORMAL, button()->state());
+    EXPECT_EQ(Button::STATE_NORMAL, button()->GetState());
   }
 #endif
 
@@ -313,16 +313,16 @@ TEST_F(ButtonTest, HoverStateOnVisibilityChange) {
   cursor_client.DisableMouseEvents();
 
   button()->SetEnabled(false);
-  EXPECT_EQ(Button::STATE_DISABLED, button()->state());
+  EXPECT_EQ(Button::STATE_DISABLED, button()->GetState());
 
   button()->SetEnabled(true);
-  EXPECT_EQ(Button::STATE_NORMAL, button()->state());
+  EXPECT_EQ(Button::STATE_NORMAL, button()->GetState());
 
   button()->SetVisible(false);
-  EXPECT_EQ(Button::STATE_NORMAL, button()->state());
+  EXPECT_EQ(Button::STATE_NORMAL, button()->GetState());
 
   button()->SetVisible(true);
-  EXPECT_EQ(Button::STATE_NORMAL, button()->state());
+  EXPECT_EQ(Button::STATE_NORMAL, button()->GetState());
 #endif  // !defined(OS_MACOSX) || defined(USE_AURA)
 }
 
@@ -331,11 +331,11 @@ TEST_F(ButtonTest, HoverStateOnVisibilityChange) {
 TEST_F(ButtonTest, HoverStatePreservedOnDescendantViewHierarchyChange) {
   event_generator()->MoveMouseTo(button()->GetBoundsInScreen().CenterPoint());
 
-  EXPECT_EQ(Button::STATE_HOVERED, button()->state());
+  EXPECT_EQ(Button::STATE_HOVERED, button()->GetState());
   Label* child = new Label(base::string16());
   button()->AddChildView(child);
   delete child;
-  EXPECT_EQ(Button::STATE_HOVERED, button()->state());
+  EXPECT_EQ(Button::STATE_HOVERED, button()->GetState());
 }
 
 // Tests the different types of NotifyActions.
@@ -346,13 +346,13 @@ TEST_F(ButtonTest, NotifyAction) {
   button()->OnMousePressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
-  EXPECT_EQ(Button::STATE_PRESSED, button()->state());
+  EXPECT_EQ(Button::STATE_PRESSED, button()->GetState());
   EXPECT_FALSE(button()->pressed());
 
   button()->OnMouseReleased(ui::MouseEvent(
       ui::ET_MOUSE_RELEASED, center, center, ui::EventTimeForNow(),
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
-  EXPECT_EQ(Button::STATE_HOVERED, button()->state());
+  EXPECT_EQ(Button::STATE_HOVERED, button()->GetState());
   EXPECT_TRUE(button()->pressed());
 
   // Set the notify action to its listener on mouse press.
@@ -362,7 +362,7 @@ TEST_F(ButtonTest, NotifyAction) {
   button()->OnMousePressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
-  EXPECT_EQ(Button::STATE_PRESSED, button()->state());
+  EXPECT_EQ(Button::STATE_PRESSED, button()->GetState());
   EXPECT_TRUE(button()->pressed());
 
   // The button should no longer notify on mouse release.
@@ -370,7 +370,7 @@ TEST_F(ButtonTest, NotifyAction) {
   button()->OnMouseReleased(ui::MouseEvent(
       ui::ET_MOUSE_RELEASED, center, center, ui::EventTimeForNow(),
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
-  EXPECT_EQ(Button::STATE_HOVERED, button()->state());
+  EXPECT_EQ(Button::STATE_HOVERED, button()->GetState());
   EXPECT_FALSE(button()->pressed());
 }
 
@@ -425,16 +425,16 @@ void PerformGesture(Button* button, ui::EventType event_type) {
 TEST_F(ButtonTest, GestureEventsSetState) {
   aura::test::TestCursorClient cursor_client(GetRootWindow(widget()));
 
-  EXPECT_EQ(Button::STATE_NORMAL, button()->state());
+  EXPECT_EQ(Button::STATE_NORMAL, button()->GetState());
 
   PerformGesture(button(), ui::ET_GESTURE_TAP_DOWN);
-  EXPECT_EQ(Button::STATE_PRESSED, button()->state());
+  EXPECT_EQ(Button::STATE_PRESSED, button()->GetState());
 
   PerformGesture(button(), ui::ET_GESTURE_SHOW_PRESS);
-  EXPECT_EQ(Button::STATE_PRESSED, button()->state());
+  EXPECT_EQ(Button::STATE_PRESSED, button()->GetState());
 
   PerformGesture(button(), ui::ET_GESTURE_TAP_CANCEL);
-  EXPECT_EQ(Button::STATE_NORMAL, button()->state());
+  EXPECT_EQ(Button::STATE_NORMAL, button()->GetState());
 }
 
 // Tests that if the button was disabled in its button press handler, gesture
@@ -444,9 +444,9 @@ TEST_F(ButtonTest, GestureEventsRespectDisabledState) {
   button()->set_on_button_pressed_handler(base::BindRepeating(
       [](TestButton* button) { button->SetEnabled(false); }, button()));
 
-  EXPECT_EQ(Button::STATE_NORMAL, button()->state());
+  EXPECT_EQ(Button::STATE_NORMAL, button()->GetState());
   event_generator()->GestureTapAt(button()->GetBoundsInScreen().CenterPoint());
-  EXPECT_EQ(Button::STATE_DISABLED, button()->state());
+  EXPECT_EQ(Button::STATE_DISABLED, button()->GetState());
 }
 
 #endif  // !defined(OS_MACOSX) || defined(USE_AURA)
@@ -507,13 +507,13 @@ TEST_F(ButtonTest, CaptureLossHidesInkDrop) {
   event_generator()->PressLeftButton();
   EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop->GetTargetInkDropState());
 
-  EXPECT_EQ(Button::ButtonState::STATE_PRESSED, button()->state());
+  EXPECT_EQ(Button::ButtonState::STATE_PRESSED, button()->GetState());
   SetDraggedView(button());
   widget()->SetCapture(button());
   widget()->ReleaseCapture();
   SetDraggedView(nullptr);
   EXPECT_EQ(InkDropState::HIDDEN, ink_drop->GetTargetInkDropState());
-  EXPECT_EQ(Button::ButtonState::STATE_NORMAL, button()->state());
+  EXPECT_EQ(Button::ButtonState::STATE_NORMAL, button()->GetState());
 }
 
 TEST_F(ButtonTest, HideInkDropWhenShowingContextMenu) {
@@ -806,10 +806,10 @@ TEST_F(ButtonTest, ActionOnSpace) {
   EXPECT_TRUE(button()->OnKeyPressed(space_press));
 
 #if defined(OS_MACOSX)
-  EXPECT_EQ(Button::STATE_NORMAL, button()->state());
+  EXPECT_EQ(Button::STATE_NORMAL, button()->GetState());
   EXPECT_TRUE(button()->pressed());
 #else
-  EXPECT_EQ(Button::STATE_PRESSED, button()->state());
+  EXPECT_EQ(Button::STATE_PRESSED, button()->GetState());
   EXPECT_FALSE(button()->pressed());
 #endif
 
@@ -821,7 +821,7 @@ TEST_F(ButtonTest, ActionOnSpace) {
   EXPECT_TRUE(button()->OnKeyReleased(space_release));
 #endif
 
-  EXPECT_EQ(Button::STATE_NORMAL, button()->state());
+  EXPECT_EQ(Button::STATE_NORMAL, button()->GetState());
   EXPECT_TRUE(button()->pressed());
 }
 
@@ -838,11 +838,11 @@ TEST_F(ButtonTest, ActionOnReturn) {
 
 #if defined(OS_MACOSX)
   EXPECT_FALSE(button()->OnKeyPressed(return_press));
-  EXPECT_EQ(Button::STATE_NORMAL, button()->state());
+  EXPECT_EQ(Button::STATE_NORMAL, button()->GetState());
   EXPECT_FALSE(button()->pressed());
 #else
   EXPECT_TRUE(button()->OnKeyPressed(return_press));
-  EXPECT_EQ(Button::STATE_NORMAL, button()->state());
+  EXPECT_EQ(Button::STATE_NORMAL, button()->GetState());
   EXPECT_TRUE(button()->pressed());
 #endif
 
@@ -863,7 +863,7 @@ TEST_F(ButtonTest, CustomActionOnKeyPressedEvent) {
 
   ui::KeyEvent control_press(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL, ui::EF_NONE);
   EXPECT_TRUE(button()->OnKeyPressed(control_press));
-  EXPECT_EQ(Button::STATE_NORMAL, button()->state());
+  EXPECT_EQ(Button::STATE_NORMAL, button()->GetState());
   EXPECT_TRUE(button()->pressed());
 
   ui::KeyEvent control_release(ui::ET_KEY_RELEASED, ui::VKEY_CONTROL,

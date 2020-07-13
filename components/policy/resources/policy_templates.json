@@ -445,6 +445,7 @@
       'caption': '''Extensions''',
       'desc': '''Configures extension-related policies. The user is not allowed to install blacklisted extensions unless they are whitelisted. You can also force <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to automatically install extensions by specifying them in <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME">ExtensionInstallForcelist</ph>. Force-installed extensions are installed regardless whether they are present in the blacklist.''',
       'policies': [
+        'ExtensionInstallAllowlist',
         'ExtensionInstallBlacklist',
         'ExtensionInstallWhitelist',
         'ExtensionInstallForcelist',
@@ -4286,6 +4287,30 @@
       'label': '''Extension IDs the user should be prevented from installing (or * for all)''',
     },
     {
+      'name': 'ExtensionInstallAllowlist',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome.*:86-', 'chrome_os:86-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['extension_id1', 'extension_id2'],
+      'id': 738,
+      'caption': '''Configure extension installation allow list''',
+      'tags': [],
+      'desc': '''Allows you to specify which extensions are not subject to the blocklist.
+
+          A blocklist value of * means all extensions are blocklisted and users can only install extensions listed in the allow list.
+
+          By default, all extensions are allowed, but if all extensions have been blocklisted by policy, the allow list can be used to override that policy.''',
+      'label': '''Extension IDs to exempt from the blocklist''',
+    },
+    {
       'name': 'ExtensionInstallWhitelist',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'list',
@@ -4300,13 +4325,16 @@
       },
       'example_value': ['extension_id1', 'extension_id2'],
       'id': 33,
+      'deprecated': True,
       'caption': '''Configure extension installation whitelist''',
       'tags': [],
       'desc': '''Allows you to specify which extensions are not subject to the blacklist.
 
           A blacklist value of * means all extensions are blacklisted and users can only install extensions listed in the whitelist.
 
-          By default, all extensions are whitelisted, but if all extensions have been blacklisted by policy, the whitelist can be used to override that policy.''',
+          By default, all extensions are whitelisted, but if all extensions have been blacklisted by policy, the whitelist can be used to override that policy.
+
+          This policy is deprecated in favor of <ph name="EXTENSION_INSTALL_ALLOWLIST_POLICY_NAME">ExtensionInstallAllowlist</ph>. If both <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME">ExtensionInstallWhitelist</ph> and <ph name="EXTENSION_INSTALL_ALLOWLIST_POLICY_NAME">ExtensionInstallAllowlist</ph> are set, <ph name="EXTENSION_INSTALL_ALLOWLIST_POLICY_NAME">ExtensionInstallAllowlist</ph> will be used and <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME">ExtensionInstallWhitelist</ph> ignored.''',
       'label': '''Extension IDs to exempt from the blacklist''',
     },
     {
@@ -4607,7 +4635,7 @@
       'id': 544,
       'caption': '''Merge extension install list policies from multiple sources''',
       'tags': [],
-      'desc': '''Enables merging of the extension install list policies <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME">ExtensionInstallBlacklist</ph>, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME">ExtensionInstallWhitelist</ph> and <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME">ExtensionInstallForcelist</ph>.
+      'desc': '''Enables merging of the extension install list policies <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME">ExtensionInstallBlacklist</ph>, <ph name="EXTENSION_INSTALL_ALLOWLIST_POLICY_NAME">ExtensionInstallAllowlist</ph> and <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME">ExtensionInstallForcelist</ph>.
 
       If you enable this setting, the values from machine platform policy, machine cloud policy and user platform policy are merged into a single list and used as a whole instead of only using the values from the single source with highest priority.
 
@@ -7372,7 +7400,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': ['ExtensionInstallWhitelist', 'ExtensionInstallBlacklist'],
+      'example_value': ['ExtensionInstallAllowlist', 'ExtensionInstallBlacklist'],
       'id': 554,
       'caption': '''Allow merging list policies from different sources''',
       'tags': [],
@@ -7466,7 +7494,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': ['ExtensionInstallWhitelist', 'ExtensionInstallBlacklist'],
+      'example_value': ['ExtensionInstallAllowlist', 'ExtensionInstallBlacklist'],
       'id': 711,
       'caption': '''Enables experimental policies''',
       'tags': [],
@@ -22480,6 +22508,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       'name': 'Extensions',
       'caption': '''Extensions''',
       'policies': [
+        'ExtensionInstallAllowlist',
         'ExtensionInstallBlacklist',
         'ExtensionInstallWhitelist',
         'ExtensionInstallForcelist',
@@ -22880,6 +22909,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 737,
+  'highest_id_currently_used': 738,
   'highest_atomic_group_id_currently_used': 38
 }

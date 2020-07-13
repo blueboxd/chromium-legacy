@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/ranges.h"
+#include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chromeos/crosapi/mojom/select_file.mojom.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/select_file_policy.h"
@@ -19,6 +20,9 @@
 #include "url/gurl.h"
 
 namespace {
+
+// TODO(https://crbug.com/1090587): Replace with window ID from Wayland client.
+int g_next_window_id = 0;
 
 ui::SelectFileDialog::Type GetUiType(
     crosapi::mojom::SelectFileDialogType type) {
@@ -60,13 +64,16 @@ class SelectFileDialogHolder : public ui::SelectFileDialog::Listener {
     // Policy is null because showing the file-dialog-blocked infobar is handled
     // client-side in lacros-chrome.
     select_file_dialog_ =
-        ui::SelectFileDialog::Create(this, /*policy=*/nullptr);
+        SelectFileDialogExtension::Create(this, /*policy=*/nullptr);
 
+    SelectFileDialogExtension::Owner owner;
     // TODO(https://crbug.com/1090587): Parent to the ShellSurface that spawned
     // the dialog. For now, just put it on the default desktop.
-    aura::Window* owning_window = ash::Shell::GetContainer(
+    owner.window = ash::Shell::GetContainer(
         ash::Shell::GetRootWindowForNewWindows(),
         ash::kShellWindowId_DefaultContainerDeprecated);
+    // TODO(https://crbug.com/1090587): Replace with ID from Wayland client.
+    owner.lacros_window_id = g_next_window_id++;
 
     int file_type_index = 0;
     if (options->file_types) {
@@ -88,11 +95,11 @@ class SelectFileDialogHolder : public ui::SelectFileDialog::Listener {
           GetUiAllowedPaths(options->file_types->allowed_paths);
     }
     // |default_extension| is unused on Chrome OS.
-    select_file_dialog_->SelectFile(
+    select_file_dialog_->SelectFileWithFileManagerParams(
         GetUiType(options->type), options->title, options->default_path,
-        file_types_.get(), file_type_index, /*default_extension=*/std::string(),
-        owning_window,
-        /*params=*/nullptr);
+        file_types_.get(), file_type_index,
+        /*params=*/nullptr, owner,
+        /*show_android_picker_apps=*/false);
   }
 
   SelectFileDialogHolder(const SelectFileDialogHolder&) = delete;
@@ -154,7 +161,7 @@ class SelectFileDialogHolder : public ui::SelectFileDialog::Listener {
   crosapi::mojom::SelectFile::SelectCallback select_callback_;
 
   // The file select dialog.
-  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
+  scoped_refptr<SelectFileDialogExtension> select_file_dialog_;
 
   // Optional file type extension filters.
   std::unique_ptr<ui::SelectFileDialog::FileTypeInfo> file_types_;

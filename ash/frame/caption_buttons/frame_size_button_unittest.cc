@@ -97,9 +97,9 @@ class FrameSizeButtonTest : public AshTestBase {
 
   // Returns true if all three buttons are in the normal state.
   bool AllButtonsInNormalState() const {
-    return minimize_button_->state() == views::Button::STATE_NORMAL &&
-           size_button_->state() == views::Button::STATE_NORMAL &&
-           close_button_->state() == views::Button::STATE_NORMAL;
+    return minimize_button_->GetState() == views::Button::STATE_NORMAL &&
+           size_button_->GetState() == views::Button::STATE_NORMAL &&
+           close_button_->GetState() == views::Button::STATE_NORMAL;
   }
 
   // Creates a widget with |delegate|. The returned widget takes ownership of
@@ -160,17 +160,17 @@ TEST_F(FrameSizeButtonTest, PressedState) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseTo(CenterPointInScreen(size_button()));
   generator->PressLeftButton();
-  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
+  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->GetState());
   generator->ReleaseLeftButton();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(views::Button::STATE_NORMAL, size_button()->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, size_button()->GetState());
 
   generator->MoveMouseTo(CenterPointInScreen(size_button()));
   generator->PressTouchId(3);
-  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
+  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->GetState());
   generator->ReleaseTouchId(3);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(views::Button::STATE_NORMAL, size_button()->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, size_button()->GetState());
 }
 
 // Tests that clicking on the size button toggles between the maximized and
@@ -287,7 +287,7 @@ TEST_F(FrameSizeButtonTest, RightMouseButton) {
 // Test that during the waiting to snap mode, if the window's state is changed,
 // or the window is put in overview, we should cancel the waiting to snap mode.
 TEST_F(FrameSizeButtonTest, CancelSnapTest) {
-  EXPECT_EQ(views::Button::STATE_NORMAL, size_button()->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, size_button()->GetState());
 
   // Press on the size button and drag toward to close buton to enter waiting-
   // for-snap mode.
@@ -295,12 +295,12 @@ TEST_F(FrameSizeButtonTest, CancelSnapTest) {
   generator->MoveMouseTo(CenterPointInScreen(size_button()));
   generator->PressLeftButton();
   generator->MoveMouseTo(CenterPointInScreen(close_button()));
-  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
+  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->GetState());
   EXPECT_TRUE(
       static_cast<FrameSizeButton*>(size_button())->in_snap_mode_for_testing());
   // Maximize the window.
   window_state()->Maximize();
-  EXPECT_EQ(views::Button::STATE_NORMAL, size_button()->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, size_button()->GetState());
   EXPECT_FALSE(
       static_cast<FrameSizeButton*>(size_button())->in_snap_mode_for_testing());
   generator->ReleaseLeftButton();
@@ -309,11 +309,11 @@ TEST_F(FrameSizeButtonTest, CancelSnapTest) {
   generator->MoveMouseTo(CenterPointInScreen(size_button()));
   generator->PressLeftButton();
   generator->MoveMouseTo(CenterPointInScreen(close_button()));
-  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
+  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->GetState());
   EXPECT_TRUE(
       static_cast<FrameSizeButton*>(size_button())->in_snap_mode_for_testing());
   window_state()->window()->SetProperty(kIsShowingInOverviewKey, true);
-  EXPECT_EQ(views::Button::STATE_NORMAL, size_button()->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, size_button()->GetState());
   EXPECT_FALSE(
       static_cast<FrameSizeButton*>(size_button())->in_snap_mode_for_testing());
   generator->ReleaseLeftButton();
@@ -333,18 +333,18 @@ TEST_F(FrameSizeButtonTest, ResetButtonsAfterClick) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseTo(CenterPointInScreen(size_button()));
   generator->PressLeftButton();
-  EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->state());
-  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
-  EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->GetState());
+  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->GetState());
+  EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->GetState());
   EXPECT_EQ(views::CAPTION_BUTTON_ICON_LEFT_SNAPPED, minimize_button()->icon());
   EXPECT_EQ(views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED, close_button()->icon());
 
   // Dragging the mouse over the minimize button should hover the minimize
   // button and the minimize and close button icons should stay changed.
   generator->MoveMouseTo(CenterPointInScreen(minimize_button()));
-  EXPECT_EQ(views::Button::STATE_HOVERED, minimize_button()->state());
-  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
-  EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->state());
+  EXPECT_EQ(views::Button::STATE_HOVERED, minimize_button()->GetState());
+  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->GetState());
+  EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->GetState());
   EXPECT_EQ(views::CAPTION_BUTTON_ICON_LEFT_SNAPPED, minimize_button()->icon());
   EXPECT_EQ(views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED, close_button()->icon());
 
@@ -363,9 +363,9 @@ TEST_F(FrameSizeButtonTest, ResetButtonsAfterClick) {
   // because the code path is different.
   generator->MoveMouseTo(CenterPointInScreen(size_button()));
   generator->PressLeftButton();
-  EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->state());
-  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
-  EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->GetState());
+  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->GetState());
+  EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->GetState());
   EXPECT_EQ(views::CAPTION_BUTTON_ICON_LEFT_SNAPPED, minimize_button()->icon());
   EXPECT_EQ(views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED, close_button()->icon());
 
@@ -404,18 +404,18 @@ TEST_F(FrameSizeButtonTest, SizeButtonPressedWhenSnapButtonHovered) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseTo(CenterPointInScreen(size_button()));
   generator->PressLeftButton();
-  EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->state());
-  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
-  EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->GetState());
+  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->GetState());
+  EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->GetState());
   EXPECT_EQ(views::CAPTION_BUTTON_ICON_LEFT_SNAPPED, minimize_button()->icon());
   EXPECT_EQ(views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED, close_button()->icon());
 
   // Dragging the mouse over the minimize button (snap left button) should hover
   // the minimize button and keep the size button pressed.
   generator->MoveMouseTo(CenterPointInScreen(minimize_button()));
-  EXPECT_EQ(views::Button::STATE_HOVERED, minimize_button()->state());
-  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
-  EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->state());
+  EXPECT_EQ(views::Button::STATE_HOVERED, minimize_button()->GetState());
+  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->GetState());
+  EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->GetState());
 
   // Moving the mouse far away from the caption buttons and then moving it over
   // the close button (snap right button) should hover the close button and
@@ -425,9 +425,9 @@ TEST_F(FrameSizeButtonTest, SizeButtonPressedWhenSnapButtonHovered) {
   generator->MoveMouseTo(work_area_bounds_in_screen.bottom_left());
   EXPECT_TRUE(AllButtonsInNormalState());
   generator->MoveMouseTo(CenterPointInScreen(close_button()));
-  EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->state());
-  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
-  EXPECT_EQ(views::Button::STATE_HOVERED, close_button()->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->GetState());
+  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->GetState());
+  EXPECT_EQ(views::Button::STATE_HOVERED, close_button()->GetState());
 }
 
 class FrameSizeButtonTestRTL : public FrameSizeButtonTest {
@@ -474,18 +474,18 @@ TEST_F(FrameSizeButtonTestRTL, ButtonDrag) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseTo(CenterPointInScreen(size_button()));
   generator->PressLeftButton();
-  EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->state());
-  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
-  EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->GetState());
+  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->GetState());
+  EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->GetState());
   EXPECT_EQ(views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
             minimize_button()->icon());
   EXPECT_EQ(views::CAPTION_BUTTON_ICON_LEFT_SNAPPED, close_button()->icon());
 
   // Dragging over to the minimize button should press it.
   generator->MoveMouseTo(CenterPointInScreen(minimize_button()));
-  EXPECT_EQ(views::Button::STATE_HOVERED, minimize_button()->state());
-  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
-  EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->state());
+  EXPECT_EQ(views::Button::STATE_HOVERED, minimize_button()->GetState());
+  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->GetState());
+  EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->GetState());
 
   // Releasing should snap the window right.
   generator->ReleaseLeftButton();
@@ -522,9 +522,9 @@ TEST_F(FrameSizeButtonNonResizableTest, NoSnap) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseTo(CenterPointInScreen(size_button()));
   generator->PressLeftButton();
-  EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->state());
-  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
-  EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->GetState());
+  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->GetState());
+  EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->GetState());
 
   EXPECT_EQ(views::CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
   EXPECT_EQ(views::CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());

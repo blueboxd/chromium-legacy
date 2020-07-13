@@ -23,6 +23,7 @@
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
@@ -318,7 +319,8 @@ void MinimumVersionPolicyHandler::FetchEolInfo() {
 
 void MinimumVersionPolicyHandler::OnFetchEolInfo(
     const chromeos::UpdateEngineClient::EolInfo info) {
-  if (info.eol_date.is_null() || info.eol_date > update_required_time_) {
+  if (!chromeos::switches::IsAueReachedForUpdateRequiredForTest() &&
+      (info.eol_date.is_null() || info.eol_date > update_required_time_)) {
     // End of life is not reached. Start update with |warning_time_|.
     eol_reached_ = false;
     HandleUpdateRequired(state_->warning());

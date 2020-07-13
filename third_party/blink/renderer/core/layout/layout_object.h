@@ -2405,9 +2405,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       layout_object_.SetBackgroundPaintLocation(location);
     }
 
-    void UpdatePreviousOutlineMayBeAffectedByDescendants() {
-      layout_object_.SetPreviousOutlineMayBeAffectedByDescendants(
-          layout_object_.OutlineMayBeAffectedByDescendants());
+    void UpdatePreviousVisibilityVisible() {
+      layout_object_.bitfields_.SetPreviousVisibilityVisible(
+          layout_object_.StyleRef().Visibility() == EVisibility::kVisible);
     }
 
     void SetNeedsPaintPropertyUpdate() {
@@ -2543,13 +2543,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     bitfields_.SetBackgroundNeedsFullPaintInvalidation(true);
   }
 
-  bool OutlineMayBeAffectedByDescendants() const {
-    return bitfields_.OutlineMayBeAffectedByDescendants();
-  }
-  bool PreviousOutlineMayBeAffectedByDescendants() const {
-    return bitfields_.PreviousOutlineMayBeAffectedByDescendants();
-  }
-
   IntRect SelectionVisualRect() const {
     return fragment_.SelectionVisualRect();
   }
@@ -2629,6 +2622,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     DCHECK(IsListMarkerImage());
     bitfields_.SetIsLayoutNGObjectForListMarkerImage(b);
   }
+
+  bool PreviousVisibilityVisible() const {
+    return bitfields_.PreviousVisibilityVisible();
+  }
+
+  // See LocalVisualRect().
+  virtual bool VisualRectRespectsVisibility() const { return true; }
 
  protected:
   enum LayoutObjectType {
@@ -2778,10 +2778,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 #endif
 
   // Called before paint invalidation.
-  virtual void EnsureIsReadyForPaintInvalidation() {
-    DCHECK(!NeedsLayout() ||
-           LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren));
-  }
+  virtual void EnsureIsReadyForPaintInvalidation();
   virtual void ClearPaintFlags();
 
   void SetIsBackgroundAttachmentFixedObject(bool);
@@ -2792,12 +2789,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // LayoutFlowThread.
   void RemoveFromLayoutFlowThread();
 
-  void SetPreviousOutlineMayBeAffectedByDescendants(bool b) {
-    bitfields_.SetPreviousOutlineMayBeAffectedByDescendants(b);
-  }
-
   // See LocalVisualRect().
-  virtual bool VisualRectRespectsVisibility() const { return true; }
   virtual PhysicalRect LocalVisualRectIgnoringVisibility() const;
 
   virtual bool CanBeSelectionLeafInternal() const { return false; }
@@ -3020,6 +3012,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           background_needs_full_paint_invalidation_(true),
           outline_may_be_affected_by_descendants_(false),
           previous_outline_may_be_affected_by_descendants_(false),
+          previous_visibility_visible_(false),
           is_truncated_(false),
           inside_blocking_touch_event_handler_(false),
           effective_allowed_touch_action_changed_(true),
@@ -3271,6 +3264,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // invalidation.
     ADD_BOOLEAN_BITFIELD(previous_outline_may_be_affected_by_descendants_,
                          PreviousOutlineMayBeAffectedByDescendants);
+    // CSS visibility : visible status of the last paint invalidation.
+    ADD_BOOLEAN_BITFIELD(previous_visibility_visible_,
+                         PreviousVisibilityVisible);
 
     ADD_BOOLEAN_BITFIELD(is_truncated_, IsTruncated);
 

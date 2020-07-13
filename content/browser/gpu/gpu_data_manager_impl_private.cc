@@ -717,7 +717,7 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedDx12Version(bool delayed) {
         base::CommandLine* command_line =
             base::CommandLine::ForCurrentProcess();
         if (command_line->HasSwitch(
-                switches::kDisableGpuProcessForDX12VulkanInfoCollection)) {
+                switches::kDisableGpuProcessForDX12InfoCollection)) {
           manager->UpdateDx12RequestStatus(false);
           return;
         }
@@ -777,14 +777,6 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedVulkanVersion(bool delayed) {
         GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
         if (manager->VulkanRequested())
           return;
-
-        base::CommandLine* command_line =
-            base::CommandLine::ForCurrentProcess();
-        if (command_line->HasSwitch(
-                switches::kDisableGpuProcessForDX12VulkanInfoCollection)) {
-          manager->UpdateVulkanRequestStatus(false);
-          return;
-        }
 
         // No info collection for software GL implementation (id == 0xffff) or
         // abnormal situation (id == 0). There are a few crash reports on

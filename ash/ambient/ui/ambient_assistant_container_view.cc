@@ -13,6 +13,7 @@
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/session/session_controller_impl.h"
@@ -45,6 +46,7 @@ base::string16 GetGreetingMessage(const UserSession* user_session) {
 AmbientAssistantContainerView::AmbientAssistantContainerView()
     : delegate_(Shell::Get()->assistant_controller()->view_delegate()) {
   DCHECK(delegate_);
+  SetID(AssistantViewID::kAmbientAssistantContainerView);
   InitLayout();
 
   assistant_controller_observer_.Add(AssistantController::Get());

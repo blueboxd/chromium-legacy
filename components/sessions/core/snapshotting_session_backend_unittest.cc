@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
+#include "components/sessions/core/session_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::MakeRefCounted;
@@ -210,6 +211,169 @@ TEST_F(SnapshottingCommandStorageBackendTest, Truncate) {
   AssertCommandEqualsData(second_data, commands[0].get());
 
   commands.clear();
+}
+
+// Test parsing the timestamp of a session from the path.
+TEST_F(SnapshottingCommandStorageBackendTest, TimestampFromPath) {
+  const auto base_dir = base::FilePath(kSessionsDirectory);
+
+  // Test parsing the timestamp from a valid session.
+  const auto test_path_1 = base_dir.Append(FILE_PATH_LITERAL("Tabs_0"));
+  base::Time result_time_1;
+  EXPECT_TRUE(SnapshottingCommandStorageBackend::TimestampFromPath(
+      test_path_1, result_time_1));
+  EXPECT_EQ(base::Time(), result_time_1);
+
+  const auto test_path_2 =
+      base_dir.Append(FILE_PATH_LITERAL("Session_13234316721694577"));
+  base::Time result_time_2;
+  EXPECT_TRUE(SnapshottingCommandStorageBackend::TimestampFromPath(
+      test_path_2, result_time_2));
+  EXPECT_EQ(base::Time::FromDeltaSinceWindowsEpoch(
+                base::TimeDelta::FromMicroseconds(13234316721694577)),
+            result_time_2);
+
+  // Test attempting to parse invalid file names.
+  const auto invalid_path_1 =
+      base_dir.Append(FILE_PATH_LITERAL("Session_nonsense"));
+  base::Time invalid_result_1;
+  EXPECT_FALSE(SnapshottingCommandStorageBackend::TimestampFromPath(
+      invalid_path_1, invalid_result_1));
+
+  const auto invalid_path_2 = base_dir.Append(FILE_PATH_LITERAL("Arbitrary"));
+  base::Time invalid_result_2;
+  EXPECT_FALSE(SnapshottingCommandStorageBackend::TimestampFromPath(
+      invalid_path_2, invalid_result_2));
+}
+
+// Test serializing a timestamp to string.
+TEST_F(SnapshottingCommandStorageBackendTest, FilePathFromTime) {
+  const auto base_dir = base::FilePath(kSessionsDirectory);
+  const auto test_time_1 = base::Time();
+  const auto result_path_1 =
+      SnapshottingCommandStorageBackend::FilePathFromTime(
+          SnapshottingCommandStorageManager::SessionType::SESSION_RESTORE,
+          base::FilePath(), test_time_1);
+  EXPECT_EQ(base_dir.Append(FILE_PATH_LITERAL("Session_0")), result_path_1);
+
+  const auto test_time_2 = base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(13234316721694577));
+  const auto result_path_2 =
+      SnapshottingCommandStorageBackend::FilePathFromTime(
+          SnapshottingCommandStorageManager::SessionType::TAB_RESTORE,
+          base::FilePath(), test_time_2);
+  EXPECT_EQ(base_dir.Append(FILE_PATH_LITERAL("Tabs_13234316721694577")),
+            result_path_2);
+}
+
+// Test migrating a session from the old format.
+TEST_F(SnapshottingCommandStorageBackendTest, ReadLegacySession) {
+  // Create backend with some data.
+  scoped_refptr<SnapshottingCommandStorageBackend> backend = CreateBackend();
+
+  // Set to legacy path for testing.
+  const auto legacy_path = path_.Append(kLegacyCurrentSessionFileName);
+  backend->SetPath(legacy_path);
+
+  const struct TestData first_data = {1, "a"};
+  SessionCommands commands;
+  commands.push_back(CreateCommandFromData(first_data));
+  backend->AppendCommands(std::move(commands), true);
+  EXPECT_TRUE(base::PathExists(legacy_path));
+
+  // Reset backend and ensure we loaded from the legacy session.
+  backend = nullptr;
+  backend = CreateBackend();
+  commands = backend->ReadLastSessionCommands();
+  ASSERT_EQ(1U, commands.size());
+  AssertCommandEqualsData(first_data, commands[0].get());
+  commands.clear();
+
+  // Add data to new session.
+  struct TestData second_data = {2, "b"};
+  commands.push_back(CreateCommandFromData(second_data));
+  backend->AppendCommands(std::move(commands), true);
+  EXPECT_TRUE(base::PathExists(legacy_path));
+
+  // Reset backend and ensure we loaded from the newer session, not the legacy
+  // one.
+  backend = nullptr;
+  backend = CreateBackend();
+  commands = backend->ReadLastSessionCommands();
+  ASSERT_EQ(1U, commands.size());
+  AssertCommandEqualsData(second_data, commands[0].get());
+  EXPECT_FALSE(base::PathExists(legacy_path));
+}
+
+// Test that the previous session is empty if no session files exist.
+TEST_F(SnapshottingCommandStorageBackendTest, DeterminePreviousSessionEmpty) {
+  scoped_refptr<SnapshottingCommandStorageBackend> backend = CreateBackend();
+  backend->DetermineLastSessionFile();
+  ASSERT_FALSE(backend->last_session_info_);
+}
+
+// Test that the previous session is selected correctly when a file is present.
+TEST_F(SnapshottingCommandStorageBackendTest, DeterminePreviousSessionSingle) {
+  const auto prev_path =
+      path_.Append(base::FilePath(kSessionsDirectory)
+                       .Append(FILE_PATH_LITERAL("Session_13235178308836991")));
+  ASSERT_TRUE(base::CreateDirectory(prev_path.DirName()));
+  ASSERT_EQ(0, base::WriteFile(prev_path, "", 0));
+
+  scoped_refptr<SnapshottingCommandStorageBackend> backend = CreateBackend();
+  backend->DetermineLastSessionFile();
+  ASSERT_TRUE(backend->last_session_info_);
+  ASSERT_EQ(prev_path, backend->last_session_info_->path);
+}
+
+// Test that the previous session is selected correctly when multiple session
+// files are present.
+TEST_F(SnapshottingCommandStorageBackendTest,
+       DeterminePreviousSessionMultiple) {
+  const auto sessions_dir = path_.Append(base::FilePath(kSessionsDirectory));
+  const auto prev_path =
+      sessions_dir.Append(FILE_PATH_LITERAL("Session_13235178308836991"));
+  const auto old_path_1 =
+      sessions_dir.Append(FILE_PATH_LITERAL("Session_13235178308548874"));
+  const auto old_path_2 = sessions_dir.Append(FILE_PATH_LITERAL("Session_0"));
+  ASSERT_TRUE(base::CreateDirectory(prev_path.DirName()));
+  ASSERT_EQ(0, base::WriteFile(prev_path, "", 0));
+  ASSERT_EQ(0, base::WriteFile(old_path_1, "", 0));
+  ASSERT_EQ(0, base::WriteFile(old_path_2, "", 0));
+
+  scoped_refptr<SnapshottingCommandStorageBackend> backend = CreateBackend();
+  backend->DetermineLastSessionFile();
+  ASSERT_TRUE(backend->last_session_info_);
+  ASSERT_EQ(prev_path, backend->last_session_info_->path);
+}
+
+// Test that the a file with an invalid name won't be used.
+TEST_F(SnapshottingCommandStorageBackendTest, DeterminePreviousSessionInvalid) {
+  const auto prev_path =
+      path_.Append(base::FilePath(kSessionsDirectory)
+                       .Append(FILE_PATH_LITERAL("Session_invalid")));
+  ASSERT_TRUE(base::CreateDirectory(prev_path.DirName()));
+  ASSERT_EQ(0, base::WriteFile(prev_path, "", 0));
+
+  scoped_refptr<SnapshottingCommandStorageBackend> backend = CreateBackend();
+  backend->DetermineLastSessionFile();
+  ASSERT_FALSE(backend->last_session_info_);
+}
+
+// Tests that MoveCurrentSessionToLastSession deletes the last session file.
+TEST_F(SnapshottingCommandStorageBackendTest,
+       MoveCurrentSessionToLastDeletesLastSession) {
+  const auto sessions_dir = path_.Append(base::FilePath(kSessionsDirectory));
+  const auto last_session =
+      sessions_dir.Append(FILE_PATH_LITERAL("Session_13235178308548874"));
+  ASSERT_TRUE(base::CreateDirectory(last_session.DirName()));
+  ASSERT_EQ(0, base::WriteFile(last_session, "", 0));
+
+  scoped_refptr<SnapshottingCommandStorageBackend> backend = CreateBackend();
+  char buffer[1];
+  ASSERT_EQ(0, base::ReadFile(last_session, buffer, 0));
+  backend->MoveCurrentSessionToLastSession();
+  ASSERT_EQ(-1, base::ReadFile(last_session, buffer, 0));
 }
 
 }  // namespace sessions

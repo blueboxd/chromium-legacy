@@ -76,8 +76,8 @@ void PaymentRequestRowView::StateChanged(ButtonState old_state) {
   if (!clickable())
     return;
 
-  SetIsHighlighted(state() == views::Button::STATE_HOVERED ||
-                   state() == views::Button::STATE_PRESSED);
+  SetIsHighlighted(GetState() == views::Button::STATE_HOVERED ||
+                   GetState() == views::Button::STATE_PRESSED);
 }
 
 void PaymentRequestRowView::OnFocus() {

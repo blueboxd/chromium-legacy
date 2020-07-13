@@ -15,28 +15,28 @@ class PasswordManagerEnabledTest(ChromeEnterpriseTestCase):
 
   @before_all
   def setup(self):
-    self.InstallChrome('client2012')
-    self.InstallWebDriver('client2012')
+    self.InstallChrome('client2019')
+    self.InstallWebDriver('client2019')
 
   def isPasswordManagerEnabled(self):
     dir = os.path.dirname(os.path.abspath(__file__))
     output = self.RunWebDriverTest(
-        'client2012',
+        'client2019',
         os.path.join(dir, 'password_manager_enabled_webdriver_test.py'))
     return "TRUE" in output
 
   @test
   def test_PasswordManagerDisabled(self):
-    self.SetPolicy('win2012-dc', 'PasswordManagerEnabled', 0, 'DWORD')
-    self.RunCommand('client2012', 'gpupdate /force')
+    self.SetPolicy('win2019-dc', 'PasswordManagerEnabled', 0, 'DWORD')
+    self.RunCommand('client2019', 'gpupdate /force')
 
     enabled = self.isPasswordManagerEnabled()
     self.assertFalse(enabled)
 
   @test
   def test_PasswordManagerEnabled(self):
-    self.SetPolicy('win2012-dc', 'PasswordManagerEnabled', 1, 'DWORD')
-    self.RunCommand('client2012', 'gpupdate /force')
+    self.SetPolicy('win2019-dc', 'PasswordManagerEnabled', 1, 'DWORD')
+    self.RunCommand('client2019', 'gpupdate /force')
 
     enabled = self.isPasswordManagerEnabled()
     self.assertTrue(enabled)

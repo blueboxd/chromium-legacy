@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_service/app_service_context_menu.h"
-#include "chrome/browser/ui/app_list/extension_app_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/common/chrome_features.h"
 

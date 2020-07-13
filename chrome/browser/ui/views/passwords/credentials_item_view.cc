@@ -166,7 +166,7 @@ int CredentialsItemView::GetPreferredHeight() const {
 }
 
 void CredentialsItemView::OnPaintBackground(gfx::Canvas* canvas) {
-  if (state() == STATE_PRESSED || state() == STATE_HOVERED) {
+  if (GetState() == STATE_PRESSED || GetState() == STATE_HOVERED) {
     canvas->DrawColor(GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor));
   }

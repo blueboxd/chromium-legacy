@@ -45,6 +45,9 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/ip_endpoint.h"
 #include "services/viz/public/cpp/gpu/gpu.h"
+#include "third_party/openscreen/src/cast/streaming/answer_messages.h"
+#include "third_party/openscreen/src/cast/streaming/capture_recommendations.h"
+#include "third_party/openscreen/src/cast/streaming/offer_messages.h"
 
 using media::cast::CastTransportStatus;
 using media::cast::Codec;
@@ -577,32 +580,73 @@ void Session::OnLoggingEventsReceived(
                                                      std::move(packet_events));
 }
 
+void Session::SetConstraints(const openscreen::cast::Answer& answer,
+                             FrameSenderConfig* audio_config,
+                             FrameSenderConfig* video_config) {
+  const auto recommendations =
+      openscreen::cast::capture_recommendations::GetRecommendations(answer);
+  const auto& audio = recommendations.audio;
+  const auto& video = recommendations.video;
+
+  if (video_config) {
+    // We use pixels instead of comparing width and height to allow for
+    // differences in aspect ratio.
+    const int current_pixels =
+        mirror_settings_.max_width() * mirror_settings_.max_height();
+    const int recommended_pixels = video.maximum.width * video.maximum.height;
+    // Prioritize the stricter of the sender's and receiver's constraints.
+    if (recommended_pixels < current_pixels) {
+      // The resolution constraints here are used to generate the
+      // media::VideoCaptureParams below.
+      mirror_settings_.SetResolutionConstraints(video.maximum.width,
+                                                video.maximum.height);
+    }
+    video_config->min_bitrate =
+        std::max(video_config->min_bitrate, video.bit_rate_limits.minimum);
+    video_config->start_bitrate = video_config->min_bitrate;
+    video_config->max_bitrate =
+        std::min(video_config->max_bitrate, video.bit_rate_limits.maximum);
+    video_config->max_playout_delay =
+        std::min(video_config->max_playout_delay,
+                 base::TimeDelta::FromMilliseconds(video.max_delay.count()));
+    video_config->max_frame_rate =
+        std::min(video_config->max_frame_rate, video.maximum.frame_rate);
+
+    // We only do sender-side letterboxing if the receiver doesn't support it.
+    mirror_settings_.SetSenderSideLetterboxingEnabled(!video.supports_scaling);
+  }
+
+  if (audio_config) {
+    audio_config->min_bitrate =
+        std::max(audio_config->min_bitrate, audio.bit_rate_limits.minimum);
+    audio_config->start_bitrate = audio_config->min_bitrate;
+    audio_config->max_bitrate =
+        std::min(audio_config->max_bitrate, audio.bit_rate_limits.maximum);
+    audio_config->max_playout_delay =
+        std::min(audio_config->max_playout_delay,
+                 base::TimeDelta::FromMilliseconds(audio.max_delay.count()));
+    // Currently, Chrome only supports stereo, so audio.max_channels is ignored.
+  }
+}
+
 void Session::OnAnswer(const std::vector<FrameSenderConfig>& audio_configs,
                        const std::vector<FrameSenderConfig>& video_configs,
                        const ReceiverResponse& response) {
   if (state_ == STOPPED)
     return;
 
-  if (!response.answer || response.type == ResponseType::UNKNOWN) {
+  if (response.type() == ResponseType::UNKNOWN) {
     ReportError(SessionError::ANSWER_TIME_OUT);
     return;
   }
 
-  DCHECK_EQ(ResponseType::ANSWER, response.type);
-
-  if (response.result != "ok") {
+  DCHECK_EQ(ResponseType::ANSWER, response.type());
+  if (!response.valid()) {
     ReportError(SessionError::ANSWER_NOT_OK);
     return;
   }
 
-  const Answer& answer = *response.answer;
-  const std::string cast_mode =
-      (state_ == MIRRORING ? "mirroring" : "remoting");
-  if (answer.cast_mode != cast_mode) {
-    ReportError(SessionError::ANSWER_MISMATCHED_CAST_MODE);
-    return;
-  }
-
+  const openscreen::cast::Answer& answer = response.answer();
   if (answer.send_indexes.size() != answer.ssrcs.size()) {
     ReportError(SessionError::ANSWER_MISMATCHED_SSRC_LENGTH);
     return;
@@ -647,6 +691,10 @@ void Session::OnAnswer(const std::vector<FrameSenderConfig>& audio_configs,
     ReportError(SessionError::ANSWER_NO_AUDIO_OR_VIDEO);
     return;
   }
+
+  // Set constraints from ANSWER message.
+  SetConstraints(answer, has_audio ? &audio_config : nullptr,
+                 has_video ? &video_config : nullptr);
 
   // Start streaming.
   const bool initially_starting_session =
@@ -744,7 +792,7 @@ void Session::OnAnswer(const std::vector<FrameSenderConfig>& audio_configs,
   }
 
   std::unique_ptr<WifiStatusMonitor> wifi_status_monitor;
-  if (answer.supports_get_status) {
+  if (answer.supports_wifi_status_reporting) {
     wifi_status_monitor =
         std::make_unique<WifiStatusMonitor>(&message_dispatcher_);
     // Nest Hub devices do not support remoting despite having a relatively new
@@ -782,6 +830,8 @@ void Session::SetTargetPlayoutDelay(base::TimeDelta playout_delay) {
     video_stream_->SetTargetPlayoutDelay(playout_delay);
 }
 
+// TODO(issuetracker.google.com/159352836): Refactor to use libcast's
+// OFFER message format.
 void Session::CreateAndSendOffer() {
   DCHECK(state_ != STOPPED);
 
@@ -923,20 +973,16 @@ void Session::QueryCapabilitiesForRemoting() {
 }
 
 void Session::OnCapabilitiesResponse(const ReceiverResponse& response) {
-  if (!response.capabilities || response.type == ResponseType::UNKNOWN) {
-    VLOG(1) << "Receiver doens't support GET_CAPABILITIES. Remoting disabled.";
-    return;
-  }
-  if (response.result != "ok") {
+  if (!response.valid()) {
     VLOG(1) << "Bad CAPABILITIES_RESPONSE. Remoting disabled.";
-    if (response.error) {
-      VLOG(1) << "error code=" << response.error->code
-              << " description=" << response.error->description
-              << " details=" << response.error->details;
+    if (response.error()) {
+      VLOG(1) << " error code=" << response.error()->code
+              << " description=" << response.error()->description
+              << " details=" << response.error()->details;
     }
     return;
   }
-  const std::vector<std::string>& caps = response.capabilities->media_caps;
+  const std::vector<std::string>& caps = response.capabilities().media_caps;
 
   std::string build_version;
   std::string friendly_name;

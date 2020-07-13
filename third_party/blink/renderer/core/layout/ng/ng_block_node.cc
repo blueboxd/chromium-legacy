@@ -205,10 +205,6 @@ void UpdateLegacyMultiColumnFlowThread(
   LayoutMultiColumnSet* column_set =
       ToLayoutMultiColumnSetOrNull(flow_thread->FirstMultiColumnBox());
   for (const auto& child : fragment.Children()) {
-    // TODO(almaher): Remove check for out of flow.
-    if (child->IsOutOfFlowPositioned())
-      continue;
-
     if (child->GetLayoutObject() &&
         child->GetLayoutObject()->IsColumnSpanAll()) {
       // Column spanners are not part of the fragmentation context. We'll use
@@ -1119,9 +1115,7 @@ void NGBlockNode::PlaceChildrenInFlowThread(
   for (const auto& child : physical_fragment.Children()) {
     const LayoutObject* child_object = child->GetLayoutObject();
     if (child_object && child_object != box_) {
-      // TODO(almaher): Remove check for out of flow.
-      DCHECK(child_object->IsColumnSpanAll() ||
-             child_object->IsOutOfFlowPositioned());
+      DCHECK(child_object->IsColumnSpanAll());
       CopyChildFragmentPosition(To<NGPhysicalBoxFragment>(*child), child.offset,
                                 physical_fragment);
       continue;

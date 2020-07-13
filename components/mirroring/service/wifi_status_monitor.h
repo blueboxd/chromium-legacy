@@ -16,7 +16,7 @@
 namespace mirroring {
 
 class MessageDispatcher;
-struct ReceiverResponse;
+class ReceiverResponse;
 
 struct WifiStatus {
   double snr;

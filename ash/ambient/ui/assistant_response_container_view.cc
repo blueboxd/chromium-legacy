@@ -9,6 +9,7 @@
 #include "ash/assistant/model/ui/assistant_text_element.h"
 #include "ash/assistant/model/ui/assistant_ui_element.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/assistant/ui/main_stage/assistant_text_element_view.h"
 #include "ash/assistant/ui/main_stage/element_animator.h"
 #include "ui/views/layout/box_layout.h"
@@ -25,6 +26,7 @@ constexpr int kPreferredWidthDip = 600;
 AssistantResponseContainerView::AssistantResponseContainerView(
     AssistantViewDelegate* delegate)
     : AnimatedContainerView(delegate) {
+  SetID(AssistantViewID::kAmbientAssistantResponseContainerView);
   InitLayout();
 }
 

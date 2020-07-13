@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
 #include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -42,8 +43,6 @@ class SelectFileDialogExtension
   // every WebContents or every Android task ID.
   typedef std::string RoutingID;
 
-  static const int kAndroidTaskIdNone = -1;
-
   static SelectFileDialogExtension* Create(
       ui::SelectFileDialog::Listener* listener,
       std::unique_ptr<ui::SelectFilePolicy> policy);
@@ -70,20 +69,27 @@ class SelectFileDialogExtension
   content::RenderViewHost* GetRenderViewHost();
 
   // Call SelectFile with params specific to Chrome OS file manager.
-  // |owner_android_task_id| is the Android task ID of the owner window if the
-  //     owner is Android, or kAndroidTaskIdNone if the owner is browser.
+  // |owner| specifies the window and app type that opened the dialog.
   // |show_android_picker_apps| determines whether to show Android picker apps
   //     in the select file dialog.
-  void SelectFileWithFileManagerParams(
-      Type type,
-      const base::string16& title,
-      const base::FilePath& default_path,
-      const FileTypeInfo* file_types,
-      int file_type_index,
-      aura::Window* owning_window,
-      void* params,
-      int owner_android_task_id,
-      bool show_android_picker_apps);
+  struct Owner {
+    Owner();
+    ~Owner();
+    // The native window that opened the dialog.
+    aura::Window* window = nullptr;
+    // Android task ID if the owner window is an Android app.
+    base::Optional<int> android_task_id;
+    // Lacros window ID if the owner window is a Lacros browser.
+    base::Optional<int> lacros_window_id;
+  };
+  void SelectFileWithFileManagerParams(Type type,
+                                       const base::string16& title,
+                                       const base::FilePath& default_path,
+                                       const FileTypeInfo* file_types,
+                                       int file_type_index,
+                                       void* params,
+                                       const Owner& owner,
+                                       bool show_android_picker_apps);
 
  protected:
   // SelectFileDialog implementation.

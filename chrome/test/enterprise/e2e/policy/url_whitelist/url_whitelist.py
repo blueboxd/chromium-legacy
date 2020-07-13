@@ -19,8 +19,8 @@ class UrlWhitelistTest(ChromeEnterpriseTestCase):
 
   @before_all
   def setup(self):
-    client = 'client2012'
-    dc = 'win2012-dc'
+    client = 'client2019'
+    dc = 'win2019-dc'
     self.InstallChrome(client)
     self.InstallWebDriver(client)
 
@@ -36,7 +36,7 @@ class UrlWhitelistTest(ChromeEnterpriseTestCase):
 
     dir = os.path.dirname(os.path.abspath(__file__))
     logging.info('Opening page: %s' % url)
-    output = self.RunWebDriverTest('client2012',
+    output = self.RunWebDriverTest('client2019',
                                    os.path.join(dir, '../open_page.py'), args)
     return output
 

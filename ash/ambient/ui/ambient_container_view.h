@@ -45,8 +45,6 @@ class ASH_EXPORT AmbientContainerView : public views::View {
   // Invoked on specific types of events.
   void HandleEvent();
 
-  PhotoView* photo_view_for_testing() { return photo_view_; }
-
   AmbientViewDelegate* delegate_ = nullptr;
 
   // Owned by view hierarchy.

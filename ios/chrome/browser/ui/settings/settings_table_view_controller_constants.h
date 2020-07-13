@@ -19,6 +19,9 @@ extern NSString* const kSettingsAccountCellId;
 // The accessibility identifier of the Search Engine cell.
 extern NSString* const kSettingsSearchEngineCellId;
 
+// The accessibility identifier of the Managed Search Engine cell.
+extern NSString* const kSettingsManagedSearchEngineCellId;
+
 // The accessibility identifier of the Voice Search cell.
 extern NSString* const kSettingsVoiceSearchCellId;
 

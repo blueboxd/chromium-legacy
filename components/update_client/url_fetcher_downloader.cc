@@ -21,23 +21,21 @@
 namespace update_client {
 
 UrlFetcherDownloader::UrlFetcherDownloader(
-    std::unique_ptr<CrxDownloader> successor,
+    scoped_refptr<CrxDownloader> successor,
     scoped_refptr<NetworkFetcherFactory> network_fetcher_factory)
     : CrxDownloader(std::move(successor)),
       network_fetcher_factory_(network_fetcher_factory) {}
 
 UrlFetcherDownloader::~UrlFetcherDownloader() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void UrlFetcherDownloader::DoStartDownload(const GURL& url) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE, kTaskTraits,
-      base::BindOnce(&UrlFetcherDownloader::CreateDownloadDir,
-                     base::Unretained(this)),
-      base::BindOnce(&UrlFetcherDownloader::StartURLFetch,
-                     base::Unretained(this), url));
+      base::BindOnce(&UrlFetcherDownloader::CreateDownloadDir, this),
+      base::BindOnce(&UrlFetcherDownloader::StartURLFetch, this, url));
 }
 
 void UrlFetcherDownloader::CreateDownloadDir() {
@@ -46,7 +44,7 @@ void UrlFetcherDownloader::CreateDownloadDir() {
 }
 
 void UrlFetcherDownloader::StartURLFetch(const GURL& url) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (download_dir_.empty()) {
     Result result;
@@ -62,8 +60,7 @@ void UrlFetcherDownloader::StartURLFetch(const GURL& url) {
 
     main_task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&UrlFetcherDownloader::OnDownloadComplete,
-                                  base::Unretained(this), false, result,
-                                  download_metrics));
+                                  this, false, result, download_metrics));
     return;
   }
 
@@ -71,19 +68,16 @@ void UrlFetcherDownloader::StartURLFetch(const GURL& url) {
   network_fetcher_ = network_fetcher_factory_->Create();
   network_fetcher_->DownloadToFile(
       url, file_path_,
-      base::BindOnce(&UrlFetcherDownloader::OnResponseStarted,
-                     base::Unretained(this)),
-      base::BindRepeating(&UrlFetcherDownloader::OnDownloadProgress,
-                          base::Unretained(this)),
-      base::BindOnce(&UrlFetcherDownloader::OnNetworkFetcherComplete,
-                     base::Unretained(this)));
+      base::BindOnce(&UrlFetcherDownloader::OnResponseStarted, this),
+      base::BindRepeating(&UrlFetcherDownloader::OnDownloadProgress, this),
+      base::BindOnce(&UrlFetcherDownloader::OnNetworkFetcherComplete, this));
 
   download_start_time_ = base::TimeTicks::Now();
 }
 
 void UrlFetcherDownloader::OnNetworkFetcherComplete(int net_error,
                                                     int64_t content_size) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const base::TimeTicks download_end_time(base::TimeTicks::Now());
   const base::TimeDelta download_time =
@@ -131,15 +125,15 @@ void UrlFetcherDownloader::OnNetworkFetcherComplete(int net_error,
   }
 
   main_task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&UrlFetcherDownloader::OnDownloadComplete,
-                                base::Unretained(this), is_handled, result,
-                                download_metrics));
+      FROM_HERE, base::BindOnce(&UrlFetcherDownloader::OnDownloadComplete, this,
+                                is_handled, result, download_metrics));
+  network_fetcher_ = nullptr;
 }
 
 // This callback is used to indicate that a download has been started.
 void UrlFetcherDownloader::OnResponseStarted(int response_code,
                                              int64_t content_length) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   VLOG(1) << "url fetcher response started for: " << url().spec();
 
@@ -148,7 +142,7 @@ void UrlFetcherDownloader::OnResponseStarted(int response_code,
 }
 
 void UrlFetcherDownloader::OnDownloadProgress(int64_t current) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CrxDownloader::OnDownloadProgress(current, total_bytes_);
 }
 

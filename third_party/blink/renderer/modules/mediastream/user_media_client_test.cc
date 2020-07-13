@@ -478,8 +478,8 @@ class UserMediaChromeClient : public EmptyChromeClient {
  public:
   WebScreenInfo GetScreenInfo(LocalFrame&) const override {
     WebScreenInfo info;
-    info.rect.width = blink::kDefaultScreenCastWidth;
-    info.rect.height = blink::kDefaultScreenCastHeight;
+    info.rect = gfx::Rect(blink::kDefaultScreenCastWidth,
+                          blink::kDefaultScreenCastHeight);
     return info;
   }
 };

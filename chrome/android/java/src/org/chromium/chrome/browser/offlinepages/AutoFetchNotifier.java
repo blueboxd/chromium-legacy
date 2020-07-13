@@ -27,18 +27,18 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
-import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.notifications.NotificationWrapperBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.TabLaunchType;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
-import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
+import org.chromium.components.browser_ui.notifications.NotificationWrapperBuilder;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -159,9 +159,9 @@ public class AutoFetchNotifier {
                 R.plurals.offline_pages_auto_fetch_in_progress_notification_text, inProgressCount);
 
         // Create the notification.
-        ChromeNotificationBuilder builder =
-                NotificationBuilderFactory
-                        .createChromeNotificationBuilder(true /* preferCompat */,
+        NotificationWrapperBuilder builder =
+                NotificationWrapperBuilderFactory
+                        .createNotificationWrapperBuilder(true /* preferCompat */,
                                 ChromeChannelDefinitions.ChannelId.DOWNLOADS)
                         .setContentTitle(title)
                         .setGroup(COMPLETE_NOTIFICATION_TAG)
@@ -312,9 +312,9 @@ public class AutoFetchNotifier {
         NotificationMetadata metadata = new NotificationMetadata(
                 NotificationUmaTracker.SystemNotificationType.OFFLINE_PAGES,
                 COMPLETE_NOTIFICATION_TAG, notificationId);
-        ChromeNotificationBuilder builder =
-                NotificationBuilderFactory
-                        .createChromeNotificationBuilder(true /* preferCompat */,
+        NotificationWrapperBuilder builder =
+                NotificationWrapperBuilderFactory
+                        .createNotificationWrapperBuilder(true /* preferCompat */,
                                 ChromeChannelDefinitions.ChannelId.DOWNLOADS,
                                 null /* remoteAppPackageName */, metadata)
                         .setAutoCancel(true)
@@ -328,7 +328,7 @@ public class AutoFetchNotifier {
                         .setDeleteIntent(PendingIntentProvider.getBroadcast(
                                 context, 0 /* requestCode */, deleteIntent, 0 /* flags */));
 
-        ChromeNotification notification = builder.buildChromeNotification();
+        NotificationWrapper notification = builder.buildNotificationWrapper();
         NotificationManagerProxy manager = new NotificationManagerProxyImpl(context);
         manager.notify(notification);
         NotificationUmaTracker.getInstance().onNotificationShown(

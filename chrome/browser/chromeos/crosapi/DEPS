@@ -6,5 +6,7 @@ specific_include_rules = {
   "select_file_crosapi\.cc": [
     # For window parenting.
     "+ash/shell.h",
+    # For Chrome OS-specific file manager parameters.
+    "+chrome/browser/ui/views/select_file_dialog_extension.h",
   ],
 }

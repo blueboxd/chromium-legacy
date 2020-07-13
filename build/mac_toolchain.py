@@ -63,7 +63,7 @@ def PlatformMeetsHermeticXcodeRequirements(version):
   if sys.platform != 'darwin':
     return True
   needed = MAC_MINIMUM_OS_VERSION[version]
-  major_version = map(int, platform.release().split('.')[:len(needed)])
+  major_version = [int(v) for v in platform.release().split('.')[:len(needed)]]
   return major_version >= needed
 
 

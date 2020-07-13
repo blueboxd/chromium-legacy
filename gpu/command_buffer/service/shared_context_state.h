@@ -85,13 +85,13 @@ class GPU_GLES2_EXPORT SharedContextState
     return gr_context_type_ == GrContextType::kGL;
   }
   bool GrContextIsVulkan() const {
-    return vk_context_provider_ && gr_context_type_ == GrContextType::kVulkan;
+    return gr_context_type_ == GrContextType::kVulkan;
   }
   bool GrContextIsMetal() const {
-    return metal_context_provider_ && gr_context_type_ == GrContextType::kMetal;
+    return gr_context_type_ == GrContextType::kMetal;
   }
   bool GrContextIsDawn() const {
-    return dawn_context_provider_ && gr_context_type_ == GrContextType::kDawn;
+    return gr_context_type_ == GrContextType::kDawn;
   }
 
   bool InitializeGL(const GpuPreferences& gpu_preferences,
@@ -126,6 +126,7 @@ class GPU_GLES2_EXPORT SharedContextState
   }
   gl::ProgressReporter* progress_reporter() const { return progress_reporter_; }
   GrContext* gr_context() { return gr_context_; }
+  GrContextType gr_context_type() const { return gr_context_type_; }
   // Handles Skia-reported shader compilation errors.
   void compileError(const char* shader, const char* errors) override;
   gles2::FeatureInfo* feature_info() { return feature_info_.get(); }

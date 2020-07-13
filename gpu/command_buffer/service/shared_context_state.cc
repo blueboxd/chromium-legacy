@@ -144,6 +144,21 @@ SharedContextState::SharedContextState(
     DCHECK(gr_context_);
   }
 
+  // Ensure that the context type is consistent with the provided factories.
+  switch (gr_context_type_) {
+    case GrContextType::kGL:
+      break;
+    case GrContextType::kVulkan:
+      DCHECK(vk_context_provider_);
+      break;
+    case GrContextType::kMetal:
+      DCHECK(metal_context_provider_);
+      break;
+    case GrContextType::kDawn:
+      DCHECK(dawn_context_provider_);
+      break;
+  }
+
   if (base::ThreadTaskRunnerHandle::IsSet()) {
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
         this, "SharedContextState", base::ThreadTaskRunnerHandle::Get());

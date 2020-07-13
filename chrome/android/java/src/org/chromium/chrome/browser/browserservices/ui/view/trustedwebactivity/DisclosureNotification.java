@@ -27,12 +27,12 @@ import org.chromium.chrome.browser.browserservices.ui.trustedwebactivity.Disclos
 import org.chromium.chrome.browser.browserservices.ui.trustedwebactivity.TrustedWebActivityModel;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
-import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.notifications.NotificationWrapperBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyObservable;
@@ -70,7 +70,8 @@ public class DisclosureNotification
         boolean firstTime = mModel.get(DISCLOSURE_FIRST_TIME);
         String packageName = mModel.get(PACKAGE_NAME);
 
-        ChromeNotification notification = createNotification(firstTime, mCurrentScope, packageName);
+        NotificationWrapper notification =
+                createNotification(firstTime, mCurrentScope, packageName);
         mNotificationManager.notify(notification);
 
         mModel.get(DISCLOSURE_EVENTS_CALLBACK).onDisclosureShown();
@@ -82,7 +83,7 @@ public class DisclosureNotification
         mCurrentScope = null;
     }
 
-    private ChromeNotification createNotification(
+    private NotificationWrapper createNotification(
             boolean firstTime, String scope, String packageName) {
         int umaType;
         int preOPriority;
@@ -118,8 +119,8 @@ public class DisclosureNotification
         // We don't have an icon to display.
         int icon = 0;
 
-        return NotificationBuilderFactory
-                .createChromeNotificationBuilder(
+        return NotificationWrapperBuilderFactory
+                .createNotificationWrapperBuilder(
                         preferCompat, channelId, remoteAppPackageName, metadata)
                 .setSmallIcon(R.drawable.ic_chrome)
                 .setContentTitle(title)
@@ -133,7 +134,7 @@ public class DisclosureNotification
                 .setStyle(new Notification.BigTextStyle().bigText(text))
                 .setOngoing(!firstTime)
                 .setPriorityBeforeO(preOPriority)
-                .buildChromeNotification();
+                .buildNotificationWrapper();
     }
 
     @Override

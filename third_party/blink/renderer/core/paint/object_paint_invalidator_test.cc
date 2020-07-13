@@ -342,4 +342,46 @@ TEST_F(ObjectPaintInvalidatorTest, ZeroWidthForeignObject) {
   )HTML");
 }
 
+TEST_F(ObjectPaintInvalidatorTest, VisibilityHidden) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target {
+        visibility: hidden;
+        width: 100px;
+        height: 100px;
+        background: blue;
+      }
+    </style>
+    <div id="target"></div>
+  )HTML");
+
+  auto* target_element = GetDocument().getElementById("target");
+  const auto* target = target_element->GetLayoutObject();
+  ValidateDisplayItemClient(target);
+  EXPECT_TRUE(IsValidDisplayItemClient(target));
+
+  target_element->setAttribute(html_names::kStyleAttr, "width: 200px");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
+  EXPECT_TRUE(IsValidDisplayItemClient(target));
+  UpdateAllLifecyclePhasesForTest();
+
+  target_element->setAttribute(html_names::kStyleAttr,
+                               "width: 200px; visibility: visible");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
+  EXPECT_FALSE(IsValidDisplayItemClient(target));
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(IsValidDisplayItemClient(target));
+
+  target_element->setAttribute(html_names::kStyleAttr,
+                               "width: 200px; visibility: hidden");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
+  EXPECT_FALSE(IsValidDisplayItemClient(target));
+  UpdateAllLifecyclePhasesForTest();
+  // |target| is not validated because it didn't paint anything.
+  EXPECT_FALSE(IsValidDisplayItemClient(target));
+}
+
 }  // namespace blink

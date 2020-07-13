@@ -311,7 +311,7 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
         mWebContents.setTopLevelNativeWindow(mBrowser.getWindowAndroid());
         mViewAndroidDelegate.setContainerView(mBrowser.getViewAndroidDelegateContainerView());
         doInitAfterSettingContainerView();
-        updateWebContentsVisibility();
+        updateViewAttachedStateFromBrowser();
 
         boolean attached = (mBrowser.getContext() != null);
         mInterceptNavigationDelegateClient.onActivityAttachmentChanged(attached);
@@ -341,6 +341,10 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
                         new AutofillActionModeCallback(mBrowser.getContext(), mAutofillProvider));
             }
         }
+    }
+
+    public void updateViewAttachedStateFromBrowser() {
+        updateWebContentsVisibility();
     }
 
     public void onProvideAutofillVirtualStructure(ViewStructure structure, int flags) {
@@ -411,8 +415,9 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
      * Returns whether this Tab is visible.
      */
     public boolean isVisible() {
-        return (mBrowser.getActiveTab() == this
-                && (mBrowser.isStarted() || mBrowser.isFragmentStoppedForConfigurationChange()));
+        return mBrowser.getActiveTab() == this
+                && (mBrowser.isStarted() || mBrowser.isFragmentStoppedForConfigurationChange())
+                && mBrowser.isViewAttachedToWindow();
     }
 
     private void updateWebContentsVisibility() {

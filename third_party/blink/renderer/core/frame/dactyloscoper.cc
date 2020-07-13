@@ -33,7 +33,7 @@ void Dactyloscoper::Record(ExecutionContext* context, WebFeature feature) {
 // static
 void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
                                         WebFeature feature,
-                                        unsigned value) {
+                                        IdentifiableToken value) {
   auto* window = DynamicTo<LocalDOMWindow>(context);
   if (!window)
     return;

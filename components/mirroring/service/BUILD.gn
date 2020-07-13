@@ -46,6 +46,8 @@ component("mirroring_service") {
 
   deps = [
     "//components/mirroring/mojom:service",
+    "//components/openscreen_platform",
+    "//components/openscreen_platform:openscreen_platform_network_service",
     "//components/version_info",
     "//crypto",
     "//gpu/config",
@@ -66,10 +68,13 @@ component("mirroring_service") {
     "//services/network/public/cpp",
     "//services/network/public/mojom",
     "//services/viz/public/cpp/gpu",
+    "//third_party/jsoncpp",
+    "//third_party/openscreen/src/cast/streaming:common",
     "//ui/base",
     "//ui/gfx",
   ]
 
+  include_dirs = [ "//third_party/openscreen/src" ]
   defines = [ "IS_MIRRORING_SERVICE_IMPL" ]
 }
 
@@ -98,6 +103,8 @@ source_set("unittests") {
     "//base",
     "//base/test:test_support",
     "//components/mirroring/mojom:service",
+    "//components/openscreen_platform",
+    "//components/openscreen_platform:openscreen_platform_network_service",
     "//media",
     "//media/capture/mojom:video_capture",
     "//media/cast:common",
@@ -113,5 +120,8 @@ source_set("unittests") {
     "//services/viz/public/cpp/gpu",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/openscreen/src/cast/streaming:common",
   ]
+
+  include_dirs = [ "//third_party/openscreen/src" ]
 }

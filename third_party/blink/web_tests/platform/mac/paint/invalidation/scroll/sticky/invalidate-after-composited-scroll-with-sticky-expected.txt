@@ -4,10 +4,23 @@
       "name": "Scrolling Contents Layer",
       "bounds": [785, 656],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF",
-      "invalidations": [
-        [353, 8, 15, 640]
-      ]
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutNGBlockFlow MAT id='scroller'",
+      "bounds": [360, 640],
+      "transform": 2
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [345, 2018],
+      "transform": 3
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [345, 0],
+      "bounds": [15, 640],
+      "transform": 2
     },
     {
       "name": "LayoutNGBlockFlow (sticky positioned) DIV id='sticky'",

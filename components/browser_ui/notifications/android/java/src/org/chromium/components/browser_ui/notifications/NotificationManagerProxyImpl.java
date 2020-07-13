@@ -109,7 +109,7 @@ public class NotificationManagerProxyImpl implements NotificationManagerProxy {
     }
 
     @Override
-    public void notify(ChromeNotification notification) {
+    public void notify(NotificationWrapper notification) {
         if (notification == null || notification.getNotification() == null) {
             Log.e(TAG, "Failed to create notification.");
             return;

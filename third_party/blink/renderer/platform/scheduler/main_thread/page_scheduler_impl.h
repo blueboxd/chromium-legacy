@@ -48,6 +48,10 @@ class WakeUpBudgetPool;
 
 class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
  public:
+  // Interval between throttled wake ups, when intensive throttling is disabled.
+  static constexpr base::TimeDelta kDefaultThrottledWakeUpInterval =
+      base::TimeDelta::FromSeconds(1);
+
   PageSchedulerImpl(PageScheduler::Delegate*, MainThreadSchedulerImpl*);
 
   ~PageSchedulerImpl() override;
@@ -90,8 +94,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
 
   bool IsPageVisible() const;
   bool IsFrozen() const;
-  // PageSchedulerImpl::OptedOutFromAggressiveThrottling can be used in non-test
-  // code, while PageScheduler::OptedOutFromAggressiveThrottlingForTest can't.
+  bool OptedOutFromAllThrottling() const;
   bool OptedOutFromAggressiveThrottling() const;
   // Returns whether CPU time is throttled for the page. Note: This is
   // independent from wake up rate throttling.
@@ -109,7 +112,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   void Unregister(FrameSchedulerImpl*);
   void OnNavigation();
 
-  void OnAggressiveThrottlingStatusUpdated();
+  void OnThrottlingStatusUpdated();
 
   void OnTraceLogEnabled();
 
@@ -281,6 +284,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   AudioState audio_state_;
   bool is_frozen_;
   bool reported_background_throttling_since_navigation_;
+  bool opted_out_from_all_throttling_;
   bool opted_out_from_aggressive_throttling_;
   bool nested_runloop_;
   bool is_main_frame_local_;

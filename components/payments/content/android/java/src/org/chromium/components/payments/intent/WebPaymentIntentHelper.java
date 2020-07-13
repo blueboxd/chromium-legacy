@@ -72,6 +72,7 @@ public class WebPaymentIntentHelper {
     public static final String EXTRA_RESPONSE_PAYER_NAME = "payerName";
     public static final String EXTRA_RESPONSE_PAYER_EMAIL = "payerEmail";
     public static final String EXTRA_RESPONSE_PAYER_PHONE = "payerPhone";
+    public static final String EXTRA_SHIPPING_OPTION_ID = "shippingOptionId";
 
     // Shipping address bundle used in payment response and shippingAddressChange.
     public static final String EXTRA_SHIPPING_ADDRESS = "shippingAddress";
@@ -183,7 +184,7 @@ public class WebPaymentIntentHelper {
         }
 
         String selectedShippingOptionId = requestedPaymentOptions.requestShipping
-                ? getStringOrEmpty(data, PaymentShippingOption.EXTRA_SHIPPING_OPTION_ID)
+                ? getStringOrEmpty(data, EXTRA_SHIPPING_OPTION_ID)
                 : "";
         if (requestedPaymentOptions.requestShipping
                 && TextUtils.isEmpty(selectedShippingOptionId)) {

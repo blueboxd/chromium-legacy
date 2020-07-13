@@ -14,6 +14,7 @@
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_config_peer.h"
+#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
@@ -48,19 +49,6 @@ using quic::QuicTime;
 using quic::TransportParameters;
 using quiche::QuicheStringPiece;
 using std::string;
-
-namespace {
-
-// TODO(crbug.com/1085541): Consider moving this method into QuicTestUtils.
-quic::QuicConnectionId TestConnectionId(uint64_t connection_number) {
-  const uint64_t connection_id64_net =
-      quiche::QuicheEndian::HostToNet64(connection_number);
-  return quic::QuicConnectionId(
-      reinterpret_cast<const char*>(&connection_id64_net),
-      sizeof(connection_id64_net));
-}
-
-}  // namespace
 
 namespace net {
 
@@ -327,7 +315,7 @@ void MockCryptoClientStream::SetConfigNegotiated() {
 
   if (quic::VersionHasIetfInvariantHeader(
           session()->connection()->transport_version())) {
-    auto connection_id = TestConnectionId(0x1337);
+    auto connection_id = quic::test::TestConnectionId();
     config.SetStatelessResetTokenToSend(
         quic::QuicUtils::GenerateStatelessResetToken(connection_id));
   }

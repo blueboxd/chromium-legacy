@@ -354,7 +354,8 @@ DisplayAlignmentIndicator::DisplayAlignmentIndicator(
     const display::Display& src_display,
     const gfx::Rect& bounds,
     const std::string& target_name)
-    : indicator_view_(new IndicatorHighlightView(src_display)) {
+    : display_id_(src_display.id()),
+      indicator_view_(new IndicatorHighlightView(src_display)) {
   gfx::Rect thickened_bounds = bounds;
   AdjustIndicatorBounds(src_display, &thickened_bounds);
 
@@ -407,6 +408,16 @@ void DisplayAlignmentIndicator::Hide() {
 
   if (pill_widget_)
     pill_widget_->Hide();
+}
+
+void DisplayAlignmentIndicator::Update(const display::Display& display,
+                                       gfx::Rect bounds) {
+  DCHECK(!pill_widget_);
+
+  AdjustIndicatorBounds(display, &bounds);
+  const IndicatorPosition src_direction = GetIndicatorPosition(display, bounds);
+  indicator_view_->SetPosition(src_direction);
+  indicator_widget_.SetBounds(bounds);
 }
 
 }  // namespace ash

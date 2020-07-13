@@ -95,6 +95,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
+#include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -4585,6 +4586,22 @@ AutotestPrivateDisableSwitchAccessDialogFunction::Run() {
   auto* accessibility_controller = ash::AccessibilityController::Get();
   accessibility_controller
       ->DisableSwitchAccessDisableConfirmationDialogTesting();
+  return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateDisableAutomationFunction
+//////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateDisableAutomationFunction::
+    AutotestPrivateDisableAutomationFunction() = default;
+
+AutotestPrivateDisableAutomationFunction::
+    ~AutotestPrivateDisableAutomationFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateDisableAutomationFunction::Run() {
+  AutomationManagerAura::GetInstance()->Disable();
   return RespondNow(NoArguments());
 }
 

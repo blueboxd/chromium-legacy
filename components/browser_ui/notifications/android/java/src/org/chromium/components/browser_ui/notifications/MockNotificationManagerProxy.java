@@ -115,7 +115,7 @@ public class MockNotificationManagerProxy implements NotificationManagerProxy {
     }
 
     @Override
-    public void notify(ChromeNotification notification) {
+    public void notify(NotificationWrapper notification) {
         notify(notification.getMetadata().tag, notification.getMetadata().id,
                 notification.getNotification());
     }

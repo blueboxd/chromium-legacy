@@ -194,7 +194,8 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
                                      /*load_extension_immediately=*/true};
 };
 
-IN_PROC_BROWSER_TEST_F(SecurityTokenLoginTest, Basic) {
+// TODO(crbug.com/1033936): Disabled due to flakiness.
+IN_PROC_BROWSER_TEST_F(SecurityTokenLoginTest, DISABLED_Basic) {
   // The user pod is displayed with the challenge-response "start" button
   // instead of the password input field.
   EXPECT_TRUE(

@@ -440,17 +440,21 @@ String NGFragmentItem::ToString() const {
   if (Type() == NGFragmentItem::kText) {
     StringBuilder name;
     name.Append("NGPhysicalTextFragment '");
-    const NGPhysicalBoxFragment* containing_fragment =
-        layout_object_->ContainingBlockFlowFragment();
-    if (containing_fragment) {
-      name.Append(Text(*containing_fragment->Items()));
-    } else {
-      // TODO(crbug.com/1061423): ContainingBlockFlowFragment() relies on
-      // CurrentFragment(), which doesn't work inside block fragmentation. Check
-      // that we're (most likely) inside block fragmentation. Otherwise, this
-      // shouldn't happen.
-      DCHECK(layout_object_->IsInsideFlowThread());
+    const NGFragmentItems* fragment_items = nullptr;
+    if (const LayoutBlockFlow* block_flow =
+            layout_object_->FragmentItemsContainer()) {
+      for (unsigned i = 0; i < block_flow->PhysicalFragmentCount(); ++i) {
+        const NGPhysicalBoxFragment* containing_fragment =
+            block_flow->GetPhysicalFragment(i);
+        fragment_items = containing_fragment->Items();
+        if (fragment_items)
+          break;
+      }
     }
+    if (fragment_items)
+      name.Append(Text(*fragment_items));
+    else
+      name.Append("(container not found)");
     name.Append('\'');
     return name.ToString();
   }

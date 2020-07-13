@@ -342,6 +342,10 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       mojom::MHTMLLoadResult::kSuccess;
 
  private:
+  scoped_refptr<SecurityOrigin> CalculateOrigin(
+      Document* owner_document,
+      network::mojom::blink::WebSandboxFlags);
+  GlobalObjectReusePolicy CalculateGlobalObjectReusePolicy(SecurityOrigin*);
   void DidInstallNewDocument(Document*);
   void WillCommitNavigation();
   void DidCommitNavigation();

@@ -296,7 +296,7 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
   }
   auto icons = std::make_unique<base::DictionaryValue>();
   for (const std::pair<const SquareSizePx, SkBitmap>& icon :
-       web_app.icon_bitmaps) {
+       web_app.icon_bitmaps_any) {
     std::string size = base::StringPrintf("%i", icon.first);
     std::string icon_path = base::StringPrintf("%s/%s.png", kIconsDirName,
                                                size.c_str());
@@ -383,7 +383,7 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
     return nullptr;
   }
   for (const std::pair<const SquareSizePx, SkBitmap>& icon :
-       web_app.icon_bitmaps) {
+       web_app.icon_bitmaps_any) {
     DCHECK_NE(icon.second.colorType(), kUnknown_SkColorType);
 
     base::FilePath icon_file =

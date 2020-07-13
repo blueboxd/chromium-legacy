@@ -54,6 +54,8 @@ class ClipboardPromise final : public GarbageCollected<ClipboardPromise>,
   // Adds the blob to the clipboard items.
   void OnRead(Blob* blob);
 
+  LocalFrame* GetLocalFrame() const;
+
   void Trace(Visitor*) const override;
 
  private:
@@ -84,7 +86,6 @@ class ClipboardPromise final : public GarbageCollected<ClipboardPromise>,
       bool allow_without_sanitization,
       base::OnceCallback<void(::blink::mojom::PermissionStatus)> callback);
 
-  LocalFrame* GetLocalFrame() const;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
 
   Member<ScriptState> script_state_;

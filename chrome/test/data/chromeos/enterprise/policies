@@ -50,7 +50,7 @@
          'https://clients2.google.com/service/update2/crx'),
         (u'inmnggcpelemfookhlhkdfbechcdadfp;'
          'https://clients2.google.com/service/update2/crx')],
-      u'ExtensionInstallWhitelist': [
+      u'ExtensionInstallAllowlist': [
         u'kcnhkahnjcbndmmehfkdnkjomaanaooo',
         u'boidnimkebefpfgbeekbjoponilnomle',
         u'aggljnipbdiebhbmadknfbjlhehbohbn',
@@ -112,7 +112,7 @@
          'https://clients2.google.com/service/update2/crx'),
         (u'kcnhkahnjcbndmmehfkdnkjomaanaooo;'
          'https://clients2.google.com/service/update2/crx')],
-      u'ExtensionInstallWhitelist': [
+      u'ExtensionInstallAllowlist': [
         u'kcnhkahnjcbndmmehfkdnkjomaanaooo',
         u'boidnimkebefpfgbeekbjoponilnomle',
         u'aggljnipbdiebhbmadknfbjlhehbohbn',
@@ -174,7 +174,7 @@
         u'slashdot.org/popular'],
       u'DefaultSearchProviderInstantURL':
         u'http://search.my.company/suggest?q={searchTerms}',
-      u'ExtensionInstallWhitelist': [
+      u'ExtensionInstallAllowlist': [
         u'kjebfhglflhjjjiceimfkgicifkhjlnm',
         u'aknpkdffaafgjchaibgeefbgmgeghloj',
         u'hpfomeedmekonipambfkmjfacahlngjd'],
@@ -228,7 +228,7 @@
          'https://clients2.google.com/service/update2/crx'),
         (u'inmnggcpelemfookhlhkdfbechcdadfp;'
          'https://clients2.google.com/service/update2/crx')],
-      u'ExtensionInstallWhitelist': [
+      u'ExtensionInstallAllowlist': [
         u'kcnhkahnjcbndmmehfkdnkjomaanaooo',
         u'boidnimkebefpfgbeekbjoponilnomle',
         u'aggljnipbdiebhbmadknfbjlhehbohbn',
@@ -301,7 +301,7 @@
          'https://clients2.google.com/service/update2/crx'),
         (u'inmnggcpelemfookhlhkdfbechcdadfp;'
          'https://clients2.google.com/service/update2/crx')],
-      u'ExtensionInstallWhitelist': [
+      u'ExtensionInstallAllowlist': [
         u'kcnhkahnjcbndmmehfkdnkjomaanaooo',
         u'boidnimkebefpfgbeekbjoponilnomle',
         u'aggljnipbdiebhbmadknfbjlhehbohbn',
@@ -363,7 +363,7 @@
          'https://clients2.google.com/service/update2/crx'),
         (u'kcnhkahnjcbndmmehfkdnkjomaanaooo;'
          'https://clients2.google.com/service/update2/crx')],
-      u'ExtensionInstallWhitelist': [
+      u'ExtensionInstallAllowlist': [
         u'kcnhkahnjcbndmmehfkdnkjomaanaooo',
         u'boidnimkebefpfgbeekbjoponilnomle',
         u'aggljnipbdiebhbmadknfbjlhehbohbn',
@@ -425,7 +425,7 @@
         u'slashdot.org/popular'],
       u'DefaultSearchProviderInstantURL':
         u'http://search.my.company/suggest?q={searchTerms}',
-      u'ExtensionInstallWhitelist': [
+      u'ExtensionInstallAllowlist': [
         u'kjebfhglflhjjjiceimfkgicifkhjlnm',
         u'aknpkdffaafgjchaibgeefbgmgeghloj',
         u'hpfomeedmekonipambfkmjfacahlngjd'],
@@ -479,7 +479,7 @@
          'https://clients2.google.com/service/update2/crx'),
         (u'inmnggcpelemfookhlhkdfbechcdadfp;'
          'https://clients2.google.com/service/update2/crx')],
-      u'ExtensionInstallWhitelist': [
+      u'ExtensionInstallAllowlist': [
         u'kcnhkahnjcbndmmehfkdnkjomaanaooo',
         u'boidnimkebefpfgbeekbjoponilnomle',
         u'aggljnipbdiebhbmadknfbjlhehbohbn',

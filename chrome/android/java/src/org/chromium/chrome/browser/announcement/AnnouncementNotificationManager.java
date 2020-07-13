@@ -21,14 +21,14 @@ import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
-import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.notifications.NotificationWrapperBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
-import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
+import org.chromium.components.browser_ui.notifications.NotificationWrapperBuilder;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 
 import java.lang.annotation.Retention;
@@ -126,9 +126,9 @@ public class AnnouncementNotificationManager {
     @CalledByNative
     private static void showNotification(String url) {
         Context context = ContextUtils.getApplicationContext();
-        ChromeNotificationBuilder builder =
-                NotificationBuilderFactory
-                        .createChromeNotificationBuilder(true /* preferCompat */,
+        NotificationWrapperBuilder builder =
+                NotificationWrapperBuilderFactory
+                        .createNotificationWrapperBuilder(true /* preferCompat */,
                                 ChromeChannelDefinitions.ChannelId.ANNOUNCEMENT,
                                 null /* remoteAppPackageName */,
                                 new NotificationMetadata(
@@ -151,7 +151,7 @@ public class AnnouncementNotificationManager {
                 NotificationUmaTracker.ActionType.ANNOUNCEMENT_OPEN);
 
         NotificationManagerProxy nm = new NotificationManagerProxyImpl(context);
-        ChromeNotification notification = builder.buildChromeNotification();
+        NotificationWrapper notification = builder.buildNotificationWrapper();
         nm.notify(notification);
 
         NotificationUmaTracker.getInstance().onNotificationShown(

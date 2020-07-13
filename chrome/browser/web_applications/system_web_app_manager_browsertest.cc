@@ -555,13 +555,13 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchDirectoryBrowserTest,
                              "});"));
 
   // Check launch directory is correct.
-  bool is_directory;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+  std::string kind;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       web_contents,
       "domAutomationController.send(window.firstLaunchParams."
-      "files[0].isDirectory)",
-      &is_directory));
-  EXPECT_TRUE(is_directory);
+      "files[0].kind)",
+      &kind));
+  EXPECT_EQ("directory", kind);
 
   std::string file_name;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
@@ -571,11 +571,12 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchDirectoryBrowserTest,
   EXPECT_EQ(temp_directory.GetPath().BaseName().AsUTF8Unsafe(), file_name);
 
   // Check launch files are correct.
-  bool is_file;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       web_contents,
-      "domAutomationController.send(window.firstLaunchParams.files[1].isFile)",
-      &is_file));
+      "domAutomationController.send(window.firstLaunchParams.files[1].kind)",
+      &kind));
+  EXPECT_EQ("file", kind);
+
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       web_contents,
       "domAutomationController.send(window.firstLaunchParams.files[1].name)",
@@ -613,12 +614,12 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchDirectoryBrowserTest,
                              "});"));
 
   // Second launch_dir and launch_files are passed to the opened application.
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       web_contents,
       "domAutomationController.send(window.secondLaunchParams.files[0]."
-      "isDirectory)",
-      &is_directory));
-  EXPECT_TRUE(is_directory);
+      "kind)",
+      &kind));
+  EXPECT_EQ("directory", kind);
 
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       web_contents,
@@ -626,12 +627,12 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchDirectoryBrowserTest,
       &file_name));
   EXPECT_EQ(temp_directory2.GetPath().BaseName().AsUTF8Unsafe(), file_name);
 
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       web_contents,
       "domAutomationController.send(window.secondLaunchParams.files[1]."
-      "isFile)",
-      &is_file));
-  EXPECT_TRUE(is_file);
+      "kind)",
+      &kind));
+  EXPECT_EQ("file", kind);
 
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       web_contents,

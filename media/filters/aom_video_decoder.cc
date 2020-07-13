@@ -276,7 +276,7 @@ bool AomVideoDecoder::DecodeBuffer(const DecoderBuffer* buffer) {
     }
 
     // TODO(dalecurtis): Is this true even for low resolutions?
-    frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, false);
+    frame->metadata()->power_efficient = false;
 
     // Ensure the frame memory is returned to the MemoryPool upon discard.
     frame->AddDestructionObserver(

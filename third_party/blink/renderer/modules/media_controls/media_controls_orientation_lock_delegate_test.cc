@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
+#include "ui/gfx/geometry/rect.h"
 
 using testing::_;
 using testing::AtLeast;
@@ -325,12 +326,12 @@ class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
         ->is_auto_rotate_enabled_by_user_override_for_testing_ = enabled;
   }
 
-  WebRect ScreenRectFromAngle(uint16_t screen_orientation_angle) {
+  gfx::Rect ScreenRectFromAngle(uint16_t screen_orientation_angle) {
     uint16_t portrait_angle_mod_180 = natural_orientation_is_portrait_ ? 0 : 90;
     bool screen_rect_is_portrait =
         screen_orientation_angle % 180 == portrait_angle_mod_180;
-    return screen_rect_is_portrait ? IntRect(0, 0, 1080, 1920)
-                                   : IntRect(0, 0, 1920, 1080);
+    return screen_rect_is_portrait ? gfx::Rect(0, 0, 1080, 1920)
+                                   : gfx::Rect(0, 0, 1920, 1080);
   }
 
   void RotateDeviceTo(uint16_t new_device_orientation_angle) {

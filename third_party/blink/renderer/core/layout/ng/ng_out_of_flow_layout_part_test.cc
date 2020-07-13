@@ -104,14 +104,12 @@ TEST_F(NGOutOfFlowLayoutPartTest, FixedInsideAbs) {
 }
 
 // Tests that positioned nodes fragment correctly.
-// TODO(almaher): Reenable once the layout algorithm for fragmented positioned
-// items is in a more stable state.
-TEST_F(NGOutOfFlowLayoutPartTest, DISABLED_PositionedFragmentation) {
+TEST_F(NGOutOfFlowLayoutPartTest, PositionedFragmentation) {
   SetBodyInnerHTML(
       R"HTML(
       <style>
         #multicol {
-          column-count: 2; height: 40px; column-fill:auto;
+          column-count: 2; height: 40px; column-fill: auto; column-gap: 16px;
         }
         .rel {
           position: relative;
@@ -123,11 +121,11 @@ TEST_F(NGOutOfFlowLayoutPartTest, DISABLED_PositionedFragmentation) {
       <div id="container">
         <div id="multicol">
           <div style="width:100px; height:50px;"></div>
-          <div class="rel">
-            <div class="abs" style="width:5px; top: 10px; height:5px;">
+          <div class="rel" style="width:30px;">
+            <div class="abs" style="width:5px; top:10px; height:5px;">
             </div>
-            <div class="rel">
-              <div class="abs" style="width:10px; top: 20px; height:10px;">
+            <div class="rel" style="width:35px; padding-top:8px;">
+              <div class="abs" style="width:10px; top:20px; height:10px;">
               </div>
             </div>
           </div>
@@ -136,19 +134,17 @@ TEST_F(NGOutOfFlowLayoutPartTest, DISABLED_PositionedFragmentation) {
       )HTML");
   String dump = DumpFragmentTree(GetElementById("container"));
 
-  // TODO(almaher): Positioned nodes are not currently placed in the correct
-  // fragment.
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:1000x40
     offset:0,0 size:1000x40
-      offset:0,0 size:499.5x40
+      offset:0,0 size:492x40
         offset:0,0 size:100x40
-      offset:500.5,0 size:499.5x40
+        offset:0,20 size:10x10
+        offset:0,10 size:5x5
+      offset:508,0 size:492x40
         offset:0,0 size:100x10
-        offset:0,10 size:499.5x0
-          offset:0,0 size:499.5x0
-      offset:0,20 size:10x10
-      offset:0,10 size:5x5
+        offset:0,10 size:30x8
+          offset:0,0 size:35x8
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }

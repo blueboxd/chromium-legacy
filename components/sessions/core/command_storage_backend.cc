@@ -358,6 +358,12 @@ void CommandStorageBackend::InitIfNecessary() {
   DoInit();
 }
 
+void CommandStorageBackend::SetPath(const base::FilePath& path) {
+  // Do not change the path if the file is open
+  DCHECK(!file_);
+  path_ = path;
+}
+
 std::vector<std::unique_ptr<sessions::SessionCommand>>
 CommandStorageBackend::ReadCommandsFromFile(
     const base::FilePath& path,

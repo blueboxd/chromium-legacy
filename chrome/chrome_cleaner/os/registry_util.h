@@ -56,13 +56,19 @@ extern const wchar_t kUninstallerKeyPath[];
 // The key for Chrome policies.
 extern const wchar_t kChromePoliciesKeyPath[];
 
-// The keys for the Chrome policy forcelist and whitelist.
+// The keys for the Chrome policy forcelist, whitelist and allowlist.
+// Whitelist has been deprecated in favor of allowlist, but is still reported
+// by the cleaner for compatibility with older versions of Chrome.
 extern const wchar_t kChromePoliciesForcelistKeyPath[];
-extern const wchar_t kChromePoliciesWhitelistKeyPath[];
+extern const wchar_t kChromePoliciesWhitelistKeyPathDeprecated[];
+extern const wchar_t kChromePoliciesAllowlistKeyPath[];
 
-// The keys for the Chromium policy forcelist and whitelist.
+// The keys for the Chromium policy forcelist, whitelist and allowlist.
+// Whitelist has been deprecated in favor of allowlist, but is still reported
+// by the cleaner for compatibility with older versions of Chromium.
 extern const wchar_t kChromiumPoliciesForcelistKeyPath[];
-extern const wchar_t kChromiumPoliciesWhitelistKeyPath[];
+extern const wchar_t kChromiumPoliciesWhitelistKeyPathDeprecated[];
+extern const wchar_t kChromiumPoliciesAllowlistKeyPath[];
 
 // Returns a string representation of the registry value type.
 base::string16 RegistryValueTypeToString(DWORD value_type);

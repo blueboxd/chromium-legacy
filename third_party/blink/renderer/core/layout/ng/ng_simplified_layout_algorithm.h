@@ -45,7 +45,7 @@ class CORE_EXPORT NGSimplifiedLayoutAlgorithm
   scoped_refptr<const NGLayoutResult> Layout() override;
   MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const override {
     NOTREACHED();
-    return {MinMaxSizes(), true};
+    return {MinMaxSizes(), /* depends_on_percentage_block_size */ true};
   }
 
   NOINLINE scoped_refptr<const NGLayoutResult> LayoutWithItemsBuilder();

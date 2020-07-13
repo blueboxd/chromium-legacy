@@ -8,6 +8,7 @@
 
 #include "base/notreached.h"
 #include "skia/ext/skia_utils_base.h"
+#include "ui/gfx/skia_util.h"
 
 namespace ui {
 
@@ -18,8 +19,6 @@ ClipboardData::ClipboardData(const ClipboardData&) = default;
 ClipboardData::~ClipboardData() = default;
 
 bool ClipboardData::operator==(const ClipboardData& that) const {
-  // TODO(https://crbug.com/1102513): This does not check for equality of
-  // bitmaps. Hash them for comparison.
   return format_ == that.format() && text_ == that.text() &&
          markup_data_ == that.markup_data() && url_ == that.url() &&
          rtf_data_ == that.rtf_data() &&
@@ -27,7 +26,8 @@ bool ClipboardData::operator==(const ClipboardData& that) const {
          bookmark_url_ == that.bookmark_url() &&
          custom_data_format_ == that.custom_data_format() &&
          custom_data_data_ == that.custom_data_data() &&
-         web_smart_paste_ == that.web_smart_paste();
+         web_smart_paste_ == that.web_smart_paste() &&
+         gfx::BitmapsAreEqual(bitmap_, that.bitmap());
 }
 
 void ClipboardData::SetBitmapData(const SkBitmap& bitmap) {

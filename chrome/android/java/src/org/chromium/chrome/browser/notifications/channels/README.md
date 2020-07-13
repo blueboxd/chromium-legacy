@@ -8,7 +8,7 @@ make a sound, and expose these settings to the user.
 Starting with Android O, all notifications must be assigned to a registered
 notification channel. We enforce this in the codebase by requiring all
 notifications to be constructed using
-`NotificationBuilderFactory.createChromeNotificationBuilder`, which requires a
+`NotificationWrapperBuilderFactory.createNotificationWrapperBuilder`, which requires a
 valid `ChannelId`.
 
 For an up-to-date enumeration of what channels exist, see the
@@ -52,7 +52,7 @@ In both cases, take the following steps:
 3. To make the test pass (yay TDD), add a corresponding entry to `PredefinedChannels.MAP` in
 `ChromeChannelDefinitions.java` with the correct channel properties
 4. Create notifications via
-`NotificationBuilderFactory.createChromeNotificationBuilder`, passing the new
+`NotificationWrapperBuilderFactory.createNotificationWrapperBuilder`, passing the new
 channel id (the custom builder will set the channel on the notification for
 you, and ensure the channel is initialized before building it)
 5. After posting a notification, call `NotificationUmaTracker.onNotificationShown`, passing the new

@@ -95,7 +95,7 @@ void ScrollBarButton::PaintButtonContents(gfx::Canvas* canvas) {
 ui::NativeTheme::ExtraParams ScrollBarButton::GetNativeThemeParams() const {
   ui::NativeTheme::ExtraParams params;
 
-  switch (state()) {
+  switch (GetState()) {
     case Button::STATE_HOVERED:
       params.scrollbar_arrow.is_hovering = true;
       break;
@@ -124,7 +124,7 @@ ui::NativeTheme::Part ScrollBarButton::GetNativeThemePart() const {
 }
 
 ui::NativeTheme::State ScrollBarButton::GetNativeThemeState() const {
-  switch (state()) {
+  switch (GetState()) {
     case Button::STATE_HOVERED:
       return ui::NativeTheme::kHovered;
     case Button::STATE_PRESSED:

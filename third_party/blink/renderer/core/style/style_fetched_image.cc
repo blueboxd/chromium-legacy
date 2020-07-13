@@ -109,7 +109,7 @@ bool StyleFetchedImage::ErrorOccurred() const {
 FloatSize StyleFetchedImage::ImageSize(
     const Document&,
     float multiplier,
-    const LayoutSize& default_object_size,
+    const FloatSize& default_object_size,
     RespectImageOrientationEnum respect_orientation) const {
   Image* image = image_->GetImage();
   if (image_->HasDevicePixelRatioHeaderValue()) {

@@ -1546,6 +1546,7 @@ enum HistogramValue {
   INPUTMETHODPRIVATE_SETAUTOCORRECTRANGE = 1483,
   PLATFORMKEYSINTERNAL_GETPUBLICKEYBYSPKI = 1484,
   CERTIFICATEPROVIDER_SETCERTIFICATES = 1485,
+  AUTOTESTPRIVATE_DISABLEAUTOMATION = 1486,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

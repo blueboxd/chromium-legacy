@@ -148,7 +148,10 @@ class QuicTransport::Stream final {
     MayDisposeLater();
   }
 
-  ~Stream() { transport_->transport_->session()->CloseStream(id_); }
+  ~Stream() {
+    transport_->transport_->session()->ResetStream(
+        id_, quic::QuicRstStreamErrorCode::QUIC_STREAM_CANCELLED);
+  }
 
  private:
   using ArmingPolicy = mojo::SimpleWatcher::ArmingPolicy;
@@ -506,13 +509,15 @@ void QuicTransport::OnIncomingBidirectionalStreamAvailable() {
         sizeof(options), MOJO_CREATE_DATA_PIPE_FLAG_NONE, 1, 256 * 1024};
     if (mojo::CreateDataPipe(&options, &writable_for_outgoing,
                              &readable_for_outgoing) != MOJO_RESULT_OK) {
-      transport_->session()->CloseStream(stream->id());
+      transport_->session()->ResetStream(
+          stream->id(), quic::QuicRstStreamErrorCode::QUIC_STREAM_CANCELLED);
       // TODO(yhirano): Error the entire connection.
       return;
     }
     if (mojo::CreateDataPipe(&options, &writable_for_incoming,
                              &readable_for_incoming) != MOJO_RESULT_OK) {
-      transport_->session()->CloseStream(stream->id());
+      transport_->session()->ResetStream(
+          stream->id(), quic::QuicRstStreamErrorCode::QUIC_STREAM_CANCELLED);
       // TODO(yhirano): Error the entire connection.
       return;
     }
@@ -547,7 +552,8 @@ void QuicTransport::OnIncomingUnidirectionalStreamAvailable() {
         sizeof(options), MOJO_CREATE_DATA_PIPE_FLAG_NONE, 1, 256 * 1024};
     if (mojo::CreateDataPipe(&options, &writable_for_incoming,
                              &readable_for_incoming) != MOJO_RESULT_OK) {
-      transport_->session()->CloseStream(stream->id());
+      transport_->session()->ResetStream(
+          stream->id(), quic::QuicRstStreamErrorCode::QUIC_STREAM_CANCELLED);
       // TODO(yhirano): Error the entire connection.
       return;
     }

@@ -10,7 +10,9 @@
 
 #include "ash/public/cpp/app_menu_constants.h"
 #include "base/bind.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,25 +22,28 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/chromeos/arc/icon_decode_request.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/menu_manager_factory.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/app_service/app_service_app_item.h"
+#include "chrome/browser/ui/app_list/app_service/app_service_context_menu.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
-#include "chrome/browser/ui/app_list/extension_app_context_menu.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/services/app_service/public/cpp/app_update.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/test/test_screen.h"
@@ -223,7 +228,7 @@ class AppContextMenuTest : public AppListTestBase,
 
   Profile* profile() { return profile_.get(); }
 
-  void AddToStates(const app_list::ExtensionAppContextMenu& menu,
+  void AddToStates(const AppServiceContextMenu& menu,
                    MenuState state,
                    std::vector<MenuState>* states) {
     // If the command is not enabled do not add it to states.
@@ -233,15 +238,45 @@ class AppContextMenuTest : public AppListTestBase,
     states->push_back(state);
   }
 
+  scoped_refptr<extensions::Extension> MakeApp(const std::string& app_id,
+                                               bool platform_app) {
+    base::FilePath path;
+    base::PathService::Get(chrome::DIR_TEST_DATA, &path);
+    path = path.AppendASCII("extensions").AppendASCII("manifest_tests");
+    base::FilePath manifest_path =
+        (platform_app) ? path.AppendASCII("init_valid_platform_app.json")
+                       : path.AppendASCII("hosted_app_absolute_options.json");
+
+    JSONFileValueDeserializer deserializer(manifest_path);
+    std::unique_ptr<base::Value> manifest =
+        deserializer.Deserialize(nullptr, nullptr);
+
+    base::Value value = base::Value(std::move(*manifest));
+    DCHECK(value.is_dict());
+    const base::DictionaryValue* dictionary_manifest = nullptr;
+    value.GetAsDictionary(&dictionary_manifest);
+    std::string error;
+    return extensions::Extension::Create(
+        path.DirName(), extensions::Manifest::INTERNAL, *dictionary_manifest,
+        extensions::Extension::NO_FLAGS, app_id, &error);
+  }
+
   void TestExtensionApp(const std::string& app_id,
                         bool platform_app,
                         AppListControllerDelegate::Pinnable pinnable,
                         extensions::LaunchType launch_type) {
+    scoped_refptr<extensions::Extension> store = MakeApp(app_id, platform_app);
+    service_->AddExtension(store.get());
+    extensions::ExtensionRegistry::Get(profile())->AddEnabled(store);
+    app_service_test_.SetUp(profile());
+    app_service_test_.FlushMojoCalls();
+
     controller_ = std::make_unique<FakeAppListControllerDelegate>();
     controller_->SetAppPinnable(app_id, pinnable);
     controller_->SetExtensionLaunchType(profile(), app_id, launch_type);
-    app_list::ExtensionAppContextMenu menu(menu_delegate(), profile(), app_id,
-                                           controller(), platform_app);
+
+    AppServiceContextMenu menu(menu_delegate(), profile(), app_id,
+                               controller());
     std::unique_ptr<ui::MenuModel> menu_model = GetMenuModel(&menu);
     ASSERT_NE(nullptr, menu_model);
 
@@ -257,18 +292,36 @@ class AppContextMenuTest : public AppListTestBase,
           &states);
     }
     if (!platform_app)
-      AddToStates(menu, MenuState(ash::OPTIONS, false, false), &states);
+      AddToStates(menu, MenuState(ash::OPTIONS), &states);
     AddToStates(menu, MenuState(ash::UNINSTALL), &states);
     AddToStates(menu, MenuState(ash::SHOW_APP_INFO), &states);
 
     ValidateMenuState(menu_model.get(), states);
   }
 
+  scoped_refptr<extensions::Extension> MakeChromeApp() {
+    std::string err;
+    base::DictionaryValue value;
+    value.SetString("name", "Chrome App");
+    value.SetString("version", "0.0");
+    value.SetString("app.launch.web_url", "http://google.com");
+    scoped_refptr<extensions::Extension> app = extensions::Extension::Create(
+        base::FilePath(), extensions::Manifest::INTERNAL, value,
+        extensions::Extension::WAS_INSTALLED_BY_DEFAULT,
+        extension_misc::kChromeAppId, &err);
+    EXPECT_EQ(err, "");
+    return app;
+  }
+
   void TestChromeApp() {
+    scoped_refptr<extensions::Extension> store = MakeChromeApp();
+    service_->AddExtension(store.get());
+    app_service_test_.SetUp(profile());
+    app_service_test_.FlushMojoCalls();
+
     controller_ = std::make_unique<FakeAppListControllerDelegate>();
-    app_list::ExtensionAppContextMenu menu(
-        menu_delegate(), profile(), extension_misc::kChromeAppId, controller(),
-        false /* is_platform_app */);
+    AppServiceContextMenu menu(menu_delegate(), profile(),
+                               extension_misc::kChromeAppId, controller());
     std::unique_ptr<ui::MenuModel> menu_model = GetMenuModel(&menu);
     ASSERT_NE(nullptr, menu_model);
 
@@ -288,13 +341,12 @@ class AppContextMenuTest : public AppListTestBase,
   std::unique_ptr<FakeAppListControllerDelegate> controller_;
   std::unique_ptr<FakeAppContextMenuDelegate> menu_delegate_;
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
+  apps::AppServiceTest app_service_test_;
 
   DISALLOW_COPY_AND_ASSIGN(AppContextMenuTest);
 };
 
 TEST_P(AppContextMenuTest, ExtensionApp) {
-  app_list::ExtensionAppContextMenu::DisableInstalledExtensionCheckForTesting(
-      false);
   for (extensions::LaunchType launch_type = extensions::LAUNCH_TYPE_FIRST;
        launch_type < extensions::NUM_LAUNCH_TYPES;
        launch_type = static_cast<extensions::LaunchType>(launch_type + 1)) {
@@ -316,17 +368,12 @@ TEST_P(AppContextMenuTest, ExtensionApp) {
 }
 
 TEST_P(AppContextMenuTest, ChromeApp) {
-  app_list::ExtensionAppContextMenu::DisableInstalledExtensionCheckForTesting(
-      true);
   TestChromeApp();
 }
 
 TEST_P(AppContextMenuTest, NonExistingExtensionApp) {
-  app_list::ExtensionAppContextMenu::DisableInstalledExtensionCheckForTesting(
-      false);
-  app_list::ExtensionAppContextMenu menu(
-      menu_delegate(), profile(), "some_non_existing_extension_app",
-      controller(), false /* is_platform_app */);
+  AppServiceContextMenu menu(menu_delegate(), profile(),
+                             "some_non_existing_extension_app", controller());
   std::unique_ptr<ui::MenuModel> menu_model = GetMenuModel(&menu);
   EXPECT_EQ(nullptr, menu_model);
 }

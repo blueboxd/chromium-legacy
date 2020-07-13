@@ -74,7 +74,7 @@ public class ScreenshotCoordinator {
     private void launchEditor() {
         ImageEditorDialogCoordinator editor = ImageEditorModuleProvider.getImageEditorProvider()
                                                       .getImageEditorDialogCoordinator();
-        editor.launchEditor(mActivity, mScreenshot, mTab);
+        editor.launchEditor(mActivity, mScreenshot, mTab, mChromeOptionShareCallback);
         mScreenshot = null;
     }
 

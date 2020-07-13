@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ambient/model/ambient_backend_model_observer.h"
+#include "ash/ambient/ui/ambient_background_image_view.h"
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/compositor/layer_animation_observer.h"

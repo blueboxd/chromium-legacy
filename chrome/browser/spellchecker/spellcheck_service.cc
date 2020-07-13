@@ -18,7 +18,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h"
 #include "components/language/core/browser/pref_names.h"
@@ -328,6 +327,50 @@ std::string SpellcheckService::GetSupportedAcceptLanguageCode(
   return supported_accept_language;
 }
 
+#if defined(OS_WIN)
+// static
+void SpellcheckService::EnableFirstUserLanguageForSpellcheck(
+    PrefService* prefs) {
+  // Ensure that spellcheck is enabled for the first language in the
+  // accept languages list.
+  base::Value user_dictionaries =
+      prefs->GetList(spellcheck::prefs::kSpellCheckDictionaries)->Clone();
+  std::vector<std::string> user_languages =
+      base::SplitString(prefs->GetString(language::prefs::kAcceptLanguages),
+                        ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+
+  // Some first run scenarios will add an accept language to preferences that
+  // is not found in the hard-coded list in kAcceptLanguageList. Only
+  // languages in kAcceptLanguageList can be spellchecked. An example is an
+  // installation on a device where Finnish is the Windows display
+  // language--the initial accept language preferences are observed to be
+  // "fi-FI,fi,en-US,en". Only "fi" is contained in kAcceptLanguageList.
+  std::string first_user_language;
+  std::vector<std::string> accept_languages;
+  l10n_util::GetAcceptLanguages(&accept_languages);
+  for (const auto& user_language : user_languages) {
+    if (base::Contains(accept_languages, user_language)) {
+      first_user_language = user_language;
+      break;
+    }
+  }
+
+  bool first_user_language_spellchecked = false;
+  for (const auto& dictionary_value : user_dictionaries.GetList()) {
+    first_user_language_spellchecked =
+        base::Contains(dictionary_value.GetString(), first_user_language);
+    if (first_user_language_spellchecked)
+      break;
+  }
+
+  if (!first_user_language_spellchecked) {
+    user_dictionaries.Insert(user_dictionaries.GetList().begin(),
+                             base::Value(first_user_language));
+    prefs->Set(spellcheck::prefs::kSpellCheckDictionaries, user_dictionaries);
+  }
+}
+#endif  // defined(OS_WIN)
+
 void SpellcheckService::StartRecordingMetrics(bool spellcheck_enabled) {
   metrics_ = std::make_unique<SpellCheckHostMetrics>();
   metrics_->RecordEnabledStats(spellcheck_enabled);
@@ -349,6 +392,19 @@ void SpellcheckService::InitForRenderer(content::RenderProcessHost* host) {
   const PrefService* prefs = user_prefs::UserPrefs::Get(context);
   std::vector<spellcheck::mojom::SpellCheckBDictLanguagePtr> dictionaries;
 
+  bool enable_if_uninitialized = false;
+#if defined(OS_WIN)
+  if (spellcheck::UseBrowserSpellChecker() &&
+      base::FeatureList::IsEnabled(
+          spellcheck::kWinDelaySpellcheckServiceInit)) {
+    // If initialization of the spellcheck service is on-demand, the
+    // renderer-side SpellCheck object needs to start out as enabled in order
+    // for a click on editable content to initialize the spellcheck service.
+    if (!dictionaries_loaded())
+      enable_if_uninitialized = true;
+  }
+#endif  // defined(OS_WIN)
+
   for (const auto& hunspell_dictionary : hunspell_dictionaries_) {
     dictionaries.push_back(spellcheck::mojom::SpellCheckBDictLanguage::New(
         hunspell_dictionary->GetDictionaryFile().Duplicate(),
@@ -356,7 +412,7 @@ void SpellcheckService::InitForRenderer(content::RenderProcessHost* host) {
   }
 
   bool enable = prefs->GetBoolean(spellcheck::prefs::kSpellCheckEnable) &&
-                !dictionaries.empty();
+                (!dictionaries.empty() || enable_if_uninitialized);
 
   std::vector<std::string> custom_words;
   if (enable) {
@@ -580,7 +636,10 @@ void SpellcheckService::InitWindowsDictionaryLanguages(
   // enabling it for spellcheck on the language settings page. Remove
   // preferences for this language so that there is no attempt to load a
   // non-existent Hunspell dictionary, and so that Hunspell spellchecking isn't
-  // broken because of the failed load.
+  // broken because of the failed load. This also handles the case where the
+  // primary preferred language is enabled for spellchecking during first run,
+  // but it's now determined that there is neither Windows platform nor Hunspell
+  // dictionary support for that language.
   PrefService* prefs = user_prefs::UserPrefs::Get(context_);
   DCHECK(prefs);
   // When following object goes out of scope, preference change observers will
@@ -592,48 +651,6 @@ void SpellcheckService::InitWindowsDictionaryLanguages(
             spellcheck::GetCorrespondingSpellCheckLanguage(dictionary_name)
                 .empty());
   });
-
-  if (first_run::IsChromeFirstRun()) {
-    // Ensure that spellcheck is enabled for the first dialect of the
-    // accepted languages if there is a Windows dictionary installed for
-    // that dialect.
-    base::Value user_dictionaries =
-        prefs->GetList(spellcheck::prefs::kSpellCheckDictionaries)->Clone();
-    std::vector<std::string> user_languages =
-        base::SplitString(prefs->GetString(language::prefs::kAcceptLanguages),
-                          ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-
-    // Some first run scenarios will add an accept language to preferences that
-    // is not found in the hard-coded list in kAcceptLanguageList. Only
-    // languages in kAcceptLanguageList can be spellchecked. An example is an
-    // installation on a device where Finnnish is the Windows display
-    // language--the initial accept language preferences are observed to be
-    // "fi-FI,fi,en-US,en". Only "fi" is contained in kAcceptLanguageList.
-    std::string first_user_language;
-    std::vector<std::string> accept_languages;
-    l10n_util::GetAcceptLanguages(&accept_languages);
-    for (const auto& user_language : user_languages) {
-      if (base::Contains(accept_languages, user_language)) {
-        first_user_language = user_language;
-        break;
-      }
-    }
-
-    bool first_user_language_spellchecked = false;
-    for (const auto& dictionary_value : user_dictionaries.GetList()) {
-      first_user_language_spellchecked =
-          base::Contains(dictionary_value.GetString(), first_user_language);
-      if (first_user_language_spellchecked)
-        break;
-    }
-
-    if (!first_user_language_spellchecked &&
-        UsesWindowsDictionary(first_user_language)) {
-      user_dictionaries.Insert(user_dictionaries.GetList().begin(),
-                               base::Value(first_user_language));
-      prefs->Set(spellcheck::prefs::kSpellCheckDictionaries, user_dictionaries);
-    }
-  }
 
   // No need to call LoadDictionaries() as when the ListPrefUpdate
   // object goes out of scope, the preference change handler will do this.

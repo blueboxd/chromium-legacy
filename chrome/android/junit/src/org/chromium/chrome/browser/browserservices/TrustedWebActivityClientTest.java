@@ -39,7 +39,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
 import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -63,7 +63,8 @@ public class TrustedWebActivityClientTest {
     @Mock private NotificationUmaTracker mNotificationUmaTracker;
 
     @Mock private Bitmap mServiceSmallIconBitmap;
-    @Mock private ChromeNotification mChromeNotification;
+    @Mock
+    private NotificationWrapper mNotificationWrapper;
     @Mock private TrustedWebActivityPermissionManager mDelegatesManager;
 
     private TrustedWebActivityClient mClient;
@@ -84,7 +85,7 @@ public class TrustedWebActivityClientTest {
         when(mService.getSmallIconBitmap()).thenReturn(mServiceSmallIconBitmap);
         when(mService.getComponentName()).thenReturn(new ComponentName(CLIENT_PACKAGE_NAME, ""));
         when(mService.areNotificationsEnabled(any())).thenReturn(true);
-        when(mNotificationBuilder.build(any())).thenReturn(mChromeNotification);
+        when(mNotificationBuilder.build(any())).thenReturn(mNotificationWrapper);
 
         Set<Token> delegateApps = new HashSet<>();
         delegateApps.add(Mockito.mock(Token.class));

@@ -16,9 +16,9 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
+import org.chromium.chrome.browser.notifications.NotificationWrapperBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
-import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
+import org.chromium.components.browser_ui.notifications.NotificationWrapperBuilder;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.webapk.lib.client.WebApkNavigationClient;
@@ -67,8 +67,8 @@ public class WebApkInstallService {
     private static void showNotification(String notificationId, String shortName, String url,
             Bitmap icon, String message, PendingIntent clickPendingIntent) {
         Context context = ContextUtils.getApplicationContext();
-        ChromeNotificationBuilder notificationBuilder =
-                NotificationBuilderFactory.createChromeNotificationBuilder(
+        NotificationWrapperBuilder notificationBuilder =
+                NotificationWrapperBuilderFactory.createNotificationWrapperBuilder(
                         false /* preferCompat */, ChromeChannelDefinitions.ChannelId.BROWSER);
         notificationBuilder.setContentTitle(shortName)
                 .setContentText(message)

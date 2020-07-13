@@ -35,6 +35,9 @@ class PlatformVerificationImpl final
                          const std::string& challenge,
                          ChallengePlatformCallback callback) final;
   void GetStorageId(uint32_t version, GetStorageIdCallback callback) final;
+#if defined(OS_CHROMEOS)
+  void IsVerifiedAccessEnabled(IsVerifiedAccessEnabledCallback callback) final;
+#endif  // defined(OS_CHROMEOS)
 
  private:
   // |this| can only be destructed as a FrameServiceBase.

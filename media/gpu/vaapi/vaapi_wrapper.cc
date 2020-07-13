@@ -250,6 +250,8 @@ bool ClearNV12Padding(const VAImage& image,
 
 // Map of the supported VaProfiles indexed by media's VideoCodecProfile.
 std::map<VideoCodecProfile, VAProfile> kMediaToVAProfileMap = {
+    // VAProfileH264Baseline is marked deprecated in <va/va.h> from libva 2.0.
+    // consider making VAProfileH264ConstrainedBaseline the default one.
     {H264PROFILE_BASELINE, VAProfileH264Baseline},
     {H264PROFILE_MAIN, VAProfileH264Main},
     // TODO(posciak): See if we can/want to support other variants of

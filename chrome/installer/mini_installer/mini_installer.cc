@@ -719,7 +719,8 @@ void RecursivelyDeleteDirectory(PathString* path) {
       if (!path->append(name))
         continue;  // Continue in spite of too long names.
 
-      if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+      if ((find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) &&
+          !(find_data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)) {
         RecursivelyDeleteDirectory(path);
       } else {
         ::DeleteFile(path->get());

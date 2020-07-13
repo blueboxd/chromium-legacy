@@ -93,6 +93,18 @@
       <structure name="IDR_OS_SETTINGS_AMBIENT_CONSTANTS_HTML"
                  file="chromeos/ambient_mode_page/constants.html"
                  compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_AMBIENT_TOPIC_SOURCE_ITEM_JS"
+                 file="chromeos/ambient_mode_page/topic_source_item.js"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_AMBIENT_TOPIC_SOURCE_ITEM_HTML"
+                 file="chromeos/ambient_mode_page/topic_source_item.html"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_AMBIENT_TOPIC_SOURCE_LIST_JS"
+                 file="chromeos/ambient_mode_page/topic_source_list.js"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_AMBIENT_TOPIC_SOURCE_LIST_HTML"
+                 file="chromeos/ambient_mode_page/topic_source_list.html"
+                 compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_APPS_PAGE_JS"
                  file="chromeos/os_apps_page/os_apps_page.js"
                  compress="false" type="chrome_html" />

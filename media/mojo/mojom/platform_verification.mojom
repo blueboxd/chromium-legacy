@@ -31,4 +31,8 @@ interface PlatformVerification {
   // available version if 0 is specified). This returns the requested
   // |storage_id|, which may be empty if it is not supported by the platform.
   GetStorageId(uint32 version) => (uint32 version, array<uint8> storage_id);
+
+  // Returns true if Verified Access is enabled in settings, false otherwise.
+  [EnableIf=is_chromeos]
+  IsVerifiedAccessEnabled() => (bool enabled);
 };

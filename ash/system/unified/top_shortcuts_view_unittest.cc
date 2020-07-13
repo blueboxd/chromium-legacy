@@ -180,13 +180,13 @@ TEST_F(TopShortcutsViewTest, DisableSettingsIconPolicy) {
   GetSessionControllerClient()->AddUserSession(
       "foo@example.com", user_manager::USER_TYPE_REGULAR, enable_settings);
   SetUpView();
-  EXPECT_EQ(views::Button::STATE_NORMAL, GetSettingsButton()->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, GetSettingsButton()->GetState());
 
   local_state()->SetBoolean(prefs::kOsSettingsEnabled, false);
-  EXPECT_EQ(views::Button::STATE_DISABLED, GetSettingsButton()->state());
+  EXPECT_EQ(views::Button::STATE_DISABLED, GetSettingsButton()->GetState());
 
   local_state()->SetBoolean(prefs::kOsSettingsEnabled, true);
-  EXPECT_EQ(views::Button::STATE_NORMAL, GetSettingsButton()->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, GetSettingsButton()->GetState());
 }
 
 }  // namespace ash

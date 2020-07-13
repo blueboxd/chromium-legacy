@@ -2047,9 +2047,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, UnsatisfiableOrphansAndWidows) {
   EXPECT_EQ(expectation, dump);
 }
 
-// TODO(1079031): Re-enable once layout for fragmented positioned elements is
-// complete.
-TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_WidowsAndAbspos) {
+TEST_F(NGColumnLayoutAlgorithmTest, WidowsAndAbspos) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -2085,12 +2083,12 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_WidowsAndAbspos) {
         offset:0,0 size:100x70
           offset:0,0 size:0x20
           offset:0,20 size:0x20
+        offset:0,40 size:33x33
       offset:110,0 size:100x70
         offset:0,0 size:100x60
           offset:0,0 size:0x20
           offset:0,20 size:0x20
           offset:0,40 size:0x20
-          offset:0,40 size:33x33
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }
@@ -4320,9 +4318,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, NestedWithTallSpanner) {
   EXPECT_EQ(expectation, dump);
 }
 
-// TODO(1079031): Re-enable once layout for fragmented positioned elements is
-// complete.
-TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_AbsposFitsInOneColumn) {
+TEST_F(NGColumnLayoutAlgorithmTest, AbsposFitsInOneColumn) {
   SetBodyInnerHTML(R"HTML(
     <div id="container">
       <div style="columns:3; width:320px; height:100px; column-gap:10px; column-fill:auto;">
@@ -4339,7 +4335,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_AbsposFitsInOneColumn) {
     offset:0,0 size:320x100
       offset:0,0 size:100x100
         offset:0,0 size:222x100
-          offset:0,0 size:111x50
+        offset:0,0 size:111x50
       offset:110,0 size:100x100
         offset:0,0 size:222x100
       offset:220,0 size:100x100

@@ -23,8 +23,8 @@ enum class SnapshotItemId {
   kFavicons = 6,
   kTopSites = 7,
   kBookmarks = 8,
-  kCurrentTabSession = 9,
-  kCurrentSession = 10,
+  kLegacyCurrentTabSession = 9,  // TODO(crbug.com/1103458): Remove in M89
+  kLegacyCurrentSession = 10,    // TODO(crbug.com/1103458): Remove in M89
   kGAIAPicture = 11,
   kAffiliationDatabase = 12,
   kLoginDataForProfile = 13,
@@ -34,7 +34,8 @@ enum class SnapshotItemId {
   kCookie = 17,
   kProfileIcon = 18,
   kLastVersion = 19,
-  kMaxValue = kLastVersion
+  kSessions = 20,
+  kMaxValue = kSessions
 };
 
 struct SnapshotItemDetails {

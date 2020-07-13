@@ -178,7 +178,7 @@ bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
   // are scaled to effective zoom instead so we must take care not to cause
   // scale of them again.
   IntSize image_size = RoundedIntSize(
-      style_image->ImageSize(document, 1, border_image_rect.size.ToLayoutSize(),
+      style_image->ImageSize(document, 1, FloatSize(border_image_rect.size),
                              kRespectImageOrientation));
   scoped_refptr<Image> image =
       style_image->GetImage(observer, document, style, FloatSize(image_size));

@@ -23,9 +23,9 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.R;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
-import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
+import org.chromium.components.browser_ui.notifications.NotificationWrapperBuilder;
 import org.chromium.ui.base.LocalizationUtils;
 
 import java.util.Date;
@@ -85,7 +85,7 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
     }
 
     @Override
-    public ChromeNotification build(NotificationMetadata metadata) {
+    public NotificationWrapper build(NotificationMetadata metadata) {
         // A note about RemoteViews and updating notifications. When a notification is passed to the
         // {@code NotificationManager} with the same tag and id as a previous notification, an
         // in-place update will be performed. In that case, the actions of all new
@@ -133,9 +133,10 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
         // Note: under the hood this is not a NotificationCompat builder so be mindful of the
         // API level of methods you call on the builder.
         // TODO(crbug.com/697104) We should probably use a Compat builder.
-        ChromeNotificationBuilder builder =
-                NotificationBuilderFactory.createChromeNotificationBuilder(false /* preferCompat */,
-                        mChannelId, mRemotePackageForBuilderContext, metadata);
+        NotificationWrapperBuilder builder =
+                NotificationWrapperBuilderFactory.createNotificationWrapperBuilder(
+                        false /* preferCompat */, mChannelId, mRemotePackageForBuilderContext,
+                        metadata);
         builder.setTicker(mTickerText);
         builder.setContentIntent(mContentIntent);
         builder.setDeleteIntent(mDeleteIntent);

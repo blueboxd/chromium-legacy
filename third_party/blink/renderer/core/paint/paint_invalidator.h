@@ -125,8 +125,7 @@ struct CORE_EXPORT PaintInvalidatorContext {
 
   PaintLayer* painting_layer = nullptr;
 
-  // The previous VisualRect and PaintOffset of FragmentData.
-  IntRect old_visual_rect;
+  // The previous PaintOffset and OffsetTo2DTranslationRoot of FragmentData.
   PhysicalOffset old_paint_offset;
   PhysicalOffset old_offset_to_2d_translation_root;
 

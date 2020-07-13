@@ -140,6 +140,10 @@ jumbo_component("services") {
       deps += [ "//sandbox" ]
     }
   }
+  if (is_chromeos) {
+    deps +=
+        [ "//chromeos/components/cdm_factory_daemon:cdm_factory_daemon_gpu" ]
+  }
 }
 
 source_set("unit_tests") {

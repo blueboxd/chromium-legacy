@@ -280,7 +280,7 @@ void ViewPainter::PaintRootElementGroup(
   // Offset for BackgroundImageGeometry to offset the image's origin. This makes
   // background tiling start at the root element's origin instead of the view.
   // This is different from the offset for painting, which is in |paint_rect|.
-  LayoutPoint background_image_offset;
+  PhysicalOffset background_image_offset;
   if (!root_object || !root_object->IsBox()) {
     background_renderable = false;
   } else {
@@ -295,10 +295,9 @@ void ViewPainter::PaintRootElementGroup(
       // With transforms, paint offset is encoded in paint property nodes but we
       // can use the |paint_rect|'s adjusted location as the offset from the
       // view to the root element.
-      background_image_offset = paint_rect.Location();
+      background_image_offset = PhysicalOffset(paint_rect.Location());
     } else {
-      background_image_offset =
-          -root_object->FirstFragment().PaintOffset().ToLayoutPoint();
+      background_image_offset = -root_object->FirstFragment().PaintOffset();
     }
   }
 

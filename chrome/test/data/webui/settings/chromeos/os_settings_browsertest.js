@@ -1198,9 +1198,7 @@ var OSSettingsPersonalizationPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-
-// TODO(https://crbug.com/1094896): Re-enable once we fix the cause for flakes.
-TEST_F('OSSettingsPersonalizationPageTest', 'DISABLED_AllJsTests', () => {
+TEST_F('OSSettingsPersonalizationPageTest', 'AllJsTests', () => {
   mocha.run();
 });
 

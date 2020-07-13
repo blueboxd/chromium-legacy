@@ -33,8 +33,12 @@ class AutocompleteResult {
 
   // Max number of matches we'll show from the various providers. This limit may
   // be different for zero suggest (i.e. when |input_from_omnibox_focus| is
-  // true) and non zero suggest.
+  // true) and non zero suggest. Does not take into account the boost
+  // conditionally provided by the omnibox::kDynamicMaxAutocomplete feature.
   static size_t GetMaxMatches(bool input_from_omnibox_focus = false);
+  // Defaults to GetMaxMatches if omnibox::kDynamicMaxAutocomplete is disabled;
+  // otherwise returns the boosted dynamic limit.
+  static size_t GetDynamicMaxMatches();
 
   AutocompleteResult();
   ~AutocompleteResult();

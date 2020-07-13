@@ -1130,7 +1130,7 @@ void AppLauncherHandler::OnFaviconForApp(
   web_app->app_url = install_info->app_url;
 
   if (!image_result.image.IsEmpty()) {
-    web_app->icon_bitmaps[image_result.image.Width()] =
+    web_app->icon_bitmaps_any[image_result.image.Width()] =
         image_result.image.AsBitmap();
   }
 

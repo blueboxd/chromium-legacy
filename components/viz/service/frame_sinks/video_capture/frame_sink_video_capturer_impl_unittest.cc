@@ -4,6 +4,7 @@
 
 #include "components/viz/service/frame_sinks/video_capture/frame_sink_video_capturer_impl.h"
 
+#include <string>
 #include <utility>
 #include <vector>
 

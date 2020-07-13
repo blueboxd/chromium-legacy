@@ -11,27 +11,33 @@
 
 namespace gpu {
 
+// Interface through which a representation that has a GL texture calls into its
+// GLImage backing.
+class SharedImageRepresentationGLTextureClient {
+ public:
+  virtual bool SharedImageRepresentationGLTextureBeginAccess() = 0;
+  virtual void SharedImageRepresentationGLTextureEndAccess() = 0;
+};
+
 // Representation of a SharedImageBackingGLTexture or SharedImageBackingGLImage
 // as a GL Texture.
 class SharedImageRepresentationGLTextureImpl
     : public SharedImageRepresentationGLTexture {
  public:
-  class Client {
-   public:
-    virtual bool OnGLTextureBeginAccess(GLenum mode) = 0;
-  };
-  SharedImageRepresentationGLTextureImpl(SharedImageManager* manager,
-                                         SharedImageBacking* backing,
-                                         Client* client,
-                                         MemoryTypeTracker* tracker,
-                                         gles2::Texture* texture);
+  SharedImageRepresentationGLTextureImpl(
+      SharedImageManager* manager,
+      SharedImageBacking* backing,
+      SharedImageRepresentationGLTextureClient* client,
+      MemoryTypeTracker* tracker,
+      gles2::Texture* texture);
 
  private:
   // SharedImageRepresentationGLTexture:
   gles2::Texture* GetTexture() override;
   bool BeginAccess(GLenum mode) override;
+  void EndAccess() override;
 
-  Client* const client_ = nullptr;
+  SharedImageRepresentationGLTextureClient* const client_ = nullptr;
   gles2::Texture* texture_;
 };
 
@@ -47,7 +53,7 @@ class SharedImageRepresentationGLTexturePassthroughImpl
   SharedImageRepresentationGLTexturePassthroughImpl(
       SharedImageManager* manager,
       SharedImageBacking* backing,
-      Client* client,
+      SharedImageRepresentationGLTextureClient* client,
       MemoryTypeTracker* tracker,
       scoped_refptr<gles2::TexturePassthrough> texture_passthrough);
   ~SharedImageRepresentationGLTexturePassthroughImpl() override;
@@ -57,8 +63,9 @@ class SharedImageRepresentationGLTexturePassthroughImpl
   const scoped_refptr<gles2::TexturePassthrough>& GetTexturePassthrough()
       override;
   bool BeginAccess(GLenum mode) override;
+  void EndAccess() override;
 
-  Client* const client_ = nullptr;
+  SharedImageRepresentationGLTextureClient* const client_ = nullptr;
   scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
 };
 
@@ -103,7 +110,7 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
   SharedImageRepresentationSkiaImpl(
       SharedImageManager* manager,
       SharedImageBacking* backing,
-      Client* client,
+      SharedImageRepresentationGLTextureClient* client,
       scoped_refptr<SharedContextState> context_state,
       sk_sp<SkPromiseImageTexture> promise_texture,
       MemoryTypeTracker* tracker);
@@ -128,7 +135,7 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
 
   void CheckContext();
 
-  Client* const client_ = nullptr;
+  SharedImageRepresentationGLTextureClient* const client_ = nullptr;
   scoped_refptr<SharedContextState> context_state_;
   sk_sp<SkPromiseImageTexture> promise_texture_;
 
@@ -201,9 +208,7 @@ class SharedImageBackingGLTexture : public SharedImageBacking {
 // mailbox implementation.
 class SharedImageBackingGLImage
     : public SharedImageBacking,
-      public SharedImageRepresentationGLTextureImpl::Client,
-      public SharedImageRepresentationGLTexturePassthroughImpl::Client,
-      public SharedImageRepresentationSkiaImpl::Client {
+      public SharedImageRepresentationGLTextureClient {
  public:
   SharedImageBackingGLImage(
       scoped_refptr<gl::GLImage> image,
@@ -257,15 +262,9 @@ class SharedImageBackingGLImage
                                MemoryTypeTracker* tracker) override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
 
-  // SharedImageRepresentationGLTextureImpl::Client:
-  bool OnGLTextureBeginAccess(GLenum mode) override;
-
-  // SharedImageRepresentationGLTexturePassthroughImpl::Client:
-  bool OnGLTexturePassthroughBeginAccess(GLenum mode) override;
-
-  // SharedImageRepresentationGLTextureImpl::Client:
-  bool OnSkiaBeginReadAccess() override;
-  bool OnSkiaBeginWriteAccess() override;
+  // SharedImageRepresentationGLTextureClient:
+  bool SharedImageRepresentationGLTextureBeginAccess() override;
+  void SharedImageRepresentationGLTextureEndAccess() override;
 
   bool IsPassthrough() const { return is_passthrough_; }
 

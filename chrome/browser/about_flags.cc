@@ -5832,6 +5832,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNewDragSpecInLauncherName,
      flag_descriptions::kNewDragSpecInLauncherDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kNewDragSpecInLauncher)},
+    {"cdm-factory-daemon", flag_descriptions::kCdmFactoryDaemonName,
+     flag_descriptions::kCdmFactoryDaemonDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kCdmFactoryDaemon)},
 #endif  // OS_CHROMEOS
 
     {"autofill-enable-offers-in-downstream",

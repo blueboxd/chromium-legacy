@@ -11,11 +11,13 @@ include_rules = [
   "+components/webapk/android/libs",
   "+services/device/public/java/src/org/chromium/device/geolocation",
 
-  # WebLayerNotificationBuilder should be used for all notifications.
-  "-components/browser_ui/notifications/android/java/src/org/chromium/components/browser_ui/notifications/NotificationBuilder.java",
+  # WebLayerNotificationWrapperBuilder should be used for all notifications.
+  "-components/browser_ui/notifications/android/java/src/org/chromium/components/browser_ui/notifications/NotificationWrapperCompatBuilder.java",
+  "-components/browser_ui/notifications/android/java/src/org/chromium/components/browser_ui/notifications/NotificationWrapperStandardBuilder.java",
 ]
 specific_include_rules = {
-  "WebLayerNotificationBuilder.java": [
-    "+components/browser_ui/notifications/android/java/src/org/chromium/components/browser_ui/notifications/NotificationBuilder.java",
+  "WebLayerNotificationWrapperBuilder.java": [
+    "+components/browser_ui/notifications/android/java/src/org/chromium/components/browser_ui/notifications/NotificationWrapperCompatBuilder.java",
+    "+components/browser_ui/notifications/android/java/src/org/chromium/components/browser_ui/notifications/NotificationWrapperStandardBuilder.java",
   ]
 }

@@ -63,7 +63,7 @@ int MediaValues::CalculateDeviceWidth(LocalFrame* frame) {
   DCHECK(frame && frame->View() && frame->GetSettings() && frame->GetPage());
   blink::WebScreenInfo screen_info =
       frame->GetPage()->GetChromeClient().GetScreenInfo(*frame);
-  int device_width = screen_info.rect.width;
+  int device_width = screen_info.rect.width();
   if (frame->GetSettings()->GetReportScreenSizeInPhysicalPixelsQuirk()) {
     device_width = static_cast<int>(
         lroundf(device_width * screen_info.device_scale_factor));
@@ -75,7 +75,7 @@ int MediaValues::CalculateDeviceHeight(LocalFrame* frame) {
   DCHECK(frame && frame->View() && frame->GetSettings() && frame->GetPage());
   blink::WebScreenInfo screen_info =
       frame->GetPage()->GetChromeClient().GetScreenInfo(*frame);
-  int device_height = screen_info.rect.height;
+  int device_height = screen_info.rect.height();
   if (frame->GetSettings()->GetReportScreenSizeInPhysicalPixelsQuirk()) {
     device_height = static_cast<int>(
         lroundf(device_height * screen_info.device_scale_factor));

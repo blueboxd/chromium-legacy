@@ -132,12 +132,16 @@ const RegistryValue system_values[] = {
      L"disablewindowsupdateaccess"}};
 
 const RegistryKey extension_policy_keys[] = {
-    {HKEY_LOCAL_MACHINE, kChromePoliciesWhitelistKeyPath},
-    {HKEY_CURRENT_USER, kChromePoliciesWhitelistKeyPath},
+    {HKEY_LOCAL_MACHINE, kChromePoliciesAllowlistKeyPath},
+    {HKEY_LOCAL_MACHINE, kChromePoliciesWhitelistKeyPathDeprecated},
+    {HKEY_CURRENT_USER, kChromePoliciesAllowlistKeyPath},
+    {HKEY_CURRENT_USER, kChromePoliciesWhitelistKeyPathDeprecated},
     {HKEY_LOCAL_MACHINE, kChromePoliciesForcelistKeyPath},
     {HKEY_CURRENT_USER, kChromePoliciesForcelistKeyPath},
-    {HKEY_LOCAL_MACHINE, kChromiumPoliciesWhitelistKeyPath},
-    {HKEY_CURRENT_USER, kChromiumPoliciesWhitelistKeyPath},
+    {HKEY_LOCAL_MACHINE, kChromiumPoliciesAllowlistKeyPath},
+    {HKEY_LOCAL_MACHINE, kChromiumPoliciesWhitelistKeyPathDeprecated},
+    {HKEY_CURRENT_USER, kChromiumPoliciesAllowlistKeyPath},
+    {HKEY_CURRENT_USER, kChromiumPoliciesWhitelistKeyPathDeprecated},
     {HKEY_LOCAL_MACHINE, kChromiumPoliciesForcelistKeyPath},
     {HKEY_CURRENT_USER, kChromiumPoliciesForcelistKeyPath}};
 

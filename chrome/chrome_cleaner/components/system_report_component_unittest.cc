@@ -77,7 +77,7 @@ struct ReportTestData {
 };
 
 const ReportTestData kExtensionPolicyEmpty{
-    HKEY_LOCAL_MACHINE, kChromePoliciesWhitelistKeyPath, L"test1", L""};
+    HKEY_LOCAL_MACHINE, kChromePoliciesAllowlistKeyPath, L"test1", L""};
 
 constexpr base::char16 kTestingExtensionId1[] =
     L"ababababcdcdcdcdefefefefghghghgh";
@@ -91,22 +91,30 @@ constexpr base::char16 kTestingExtensionId2WithUpdateUrl[] =
     L"update2/crx";
 
 const ReportTestData extension_policies[] = {
-    {HKEY_LOCAL_MACHINE, kChromePoliciesWhitelistKeyPath, L"test1",
+    {HKEY_LOCAL_MACHINE, kChromePoliciesWhitelistKeyPathDeprecated, L"test1",
      kTestingExtensionId1},
-    {HKEY_CURRENT_USER, kChromePoliciesWhitelistKeyPath, L"test2",
+    {HKEY_CURRENT_USER, kChromePoliciesWhitelistKeyPathDeprecated, L"test2",
      kTestingExtensionId1},
     {HKEY_LOCAL_MACHINE, kChromePoliciesForcelistKeyPath, L"test3",
      kTestingExtensionId2WithUpdateUrl},
     {HKEY_CURRENT_USER, kChromePoliciesForcelistKeyPath, L"test4",
      kTestingExtensionId2WithUpdateUrl},
-    {HKEY_LOCAL_MACHINE, kChromiumPoliciesWhitelistKeyPath, L"test5",
+    {HKEY_LOCAL_MACHINE, kChromiumPoliciesWhitelistKeyPathDeprecated, L"test5",
      kTestingExtensionId1},
-    {HKEY_CURRENT_USER, kChromiumPoliciesWhitelistKeyPath, L"test6",
+    {HKEY_CURRENT_USER, kChromiumPoliciesWhitelistKeyPathDeprecated, L"test6",
      kTestingExtensionId1},
     {HKEY_LOCAL_MACHINE, kChromiumPoliciesForcelistKeyPath, L"test7",
      kTestingExtensionId2WithUpdateUrl},
     {HKEY_CURRENT_USER, kChromiumPoliciesForcelistKeyPath, L"test8",
      kTestingExtensionId2WithUpdateUrl},
+    {HKEY_LOCAL_MACHINE, kChromePoliciesAllowlistKeyPath, L"test9",
+     kTestingExtensionId1},
+    {HKEY_CURRENT_USER, kChromePoliciesAllowlistKeyPath, L"test10",
+     kTestingExtensionId1},
+    {HKEY_LOCAL_MACHINE, kChromiumPoliciesAllowlistKeyPath, L"test11",
+     kTestingExtensionId1},
+    {HKEY_CURRENT_USER, kChromiumPoliciesAllowlistKeyPath, L"test12",
+     kTestingExtensionId1},
 };
 
 const ReportTestData extension_forcelist_policies[] = {

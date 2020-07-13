@@ -99,10 +99,11 @@ class TabImpl : public Tab,
   // TODO(sky): investigate a better way to not have so many ifdefs.
 #if defined(OS_ANDROID)
   TabImpl(ProfileImpl* profile,
-          const base::android::JavaParamRef<jobject>& java_impl);
+          const base::android::JavaParamRef<jobject>& java_impl,
+          std::unique_ptr<content::WebContents> web_contents);
 #endif
   explicit TabImpl(ProfileImpl* profile,
-                   std::unique_ptr<content::WebContents> = nullptr,
+                   std::unique_ptr<content::WebContents> web_contents,
                    const std::string& guid = std::string());
   ~TabImpl() override;
 

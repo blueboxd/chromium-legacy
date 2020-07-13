@@ -137,45 +137,22 @@ void SpellCheckProvider::RequestTextChecking(
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   if (spellcheck::UseBrowserSpellChecker()) {
 #if defined(OS_WIN)
-    // Determine whether a hybrid check is needed.
-    bool use_hunspell = spellcheck_->EnabledLanguageCount() > 0;
-    bool use_native =
-        spellcheck_->EnabledLanguageCount() != spellcheck_->LanguageCount();
-
-    if (!use_hunspell && !use_native) {
-      OnRespondTextCheck(last_identifier_, text, /*results=*/{});
+    if (base::FeatureList::IsEnabled(
+            spellcheck::kWinDelaySpellcheckServiceInit) &&
+        !dictionaries_loaded_) {
+      // Initialize the spellcheck service on demand (this spellcheck request
+      // could be the result of the first click in editable content), then
+      // complete the text check request when the dictionaries are loaded.
+      GetSpellCheckHost().InitializeDictionaries(
+          base::BindOnce(&SpellCheckProvider::RequestTextCheckingFromBrowser,
+                         weak_factory_.GetWeakPtr(), text));
       return;
     }
-
-    if (!use_native) {
-      // No language can be handled by the native spell checker. Use the regular
-      // Hunspell code path.
-      GetSpellCheckHost().CallSpellingService(
-          text,
-          base::BindOnce(&SpellCheckProvider::OnRespondSpellingService,
-                         weak_factory_.GetWeakPtr(), last_identifier_, text));
-      return;
-    }
-
-    // Some languages can be handled by the native spell checker. Use the
-    // regular browser spell check code path. If hybrid spell check is
-    // required (i.e. some locales must be checked by Hunspell), misspellings
-    // from the native spell checker will be double-checked with Hunspell in
-    // the |OnRespondTextCheck| callback.
-    hybrid_requests_info_[last_identifier_] = {/*used_hunspell=*/use_hunspell,
-                                               /*used_native=*/use_native,
-                                               base::TimeTicks::Now()};
 #endif  // defined(OS_WIN)
 
-    // Text check (unified request for grammar and spell check) is only
-    // available for browser process, so we ask the system spellchecker
-    // over mojo or return an empty result if the checker is not available.
-    GetSpellCheckHost().RequestTextCheck(
-        text, routing_id(),
-        base::BindOnce(&SpellCheckProvider::OnRespondTextCheck,
-                       weak_factory_.GetWeakPtr(), last_identifier_, text));
+    RequestTextCheckingFromBrowser(text);
   }
-#endif
+#endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
 #if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
   if (!spellcheck::UseBrowserSpellChecker()) {
@@ -184,8 +161,55 @@ void SpellCheckProvider::RequestTextChecking(
         base::BindOnce(&SpellCheckProvider::OnRespondSpellingService,
                        weak_factory_.GetWeakPtr(), last_identifier_, text));
   }
-#endif
+#endif  // BUILDFLAG(USE_RENDERER_SPELLCHECKER)
 }
+
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+void SpellCheckProvider::RequestTextCheckingFromBrowser(
+    const base::string16& text) {
+  DCHECK(spellcheck::UseBrowserSpellChecker());
+#if defined(OS_WIN)
+  dictionaries_loaded_ = true;
+
+  // Determine whether a hybrid check is needed.
+  bool use_hunspell = spellcheck_->EnabledLanguageCount() > 0;
+  bool use_native =
+      spellcheck_->EnabledLanguageCount() != spellcheck_->LanguageCount();
+
+  if (!use_hunspell && !use_native) {
+    OnRespondTextCheck(last_identifier_, text, /*results=*/{});
+    return;
+  }
+
+  if (!use_native) {
+    // No language can be handled by the native spell checker. Use the regular
+    // Hunspell code path.
+    GetSpellCheckHost().CallSpellingService(
+        text,
+        base::BindOnce(&SpellCheckProvider::OnRespondSpellingService,
+                       weak_factory_.GetWeakPtr(), last_identifier_, text));
+    return;
+  }
+
+  // Some languages can be handled by the native spell checker. Use the
+  // regular browser spell check code path. If hybrid spell check is
+  // required (i.e. some locales must be checked by Hunspell), misspellings
+  // from the native spell checker will be double-checked with Hunspell in
+  // the |OnRespondTextCheck| callback.
+  hybrid_requests_info_[last_identifier_] = {/*used_hunspell=*/use_hunspell,
+                                             /*used_native=*/use_native,
+                                             base::TimeTicks::Now()};
+#endif  // defined(OS_WIN)
+
+  // Text check (unified request for grammar and spell check) is only
+  // available for browser process, so we ask the system spellchecker
+  // over mojo or return an empty result if the checker is not available.
+  GetSpellCheckHost().RequestTextCheck(
+      text, routing_id(),
+      base::BindOnce(&SpellCheckProvider::OnRespondTextCheck,
+                     weak_factory_.GetWeakPtr(), last_identifier_, text));
+}
+#endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
 void SpellCheckProvider::FocusedElementChanged(
     const blink::WebElement& unused) {
@@ -367,7 +391,7 @@ void SpellCheckProvider::OnRespondTextCheck(
   last_request_ = line;
   last_results_.Swap(textcheck_results);
 }
-#endif
+#endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
 bool SpellCheckProvider::SatisfyRequestFromCache(
     const base::string16& text,

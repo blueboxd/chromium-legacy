@@ -1,0 +1,55 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [1000, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [1000, 600]
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV id='container'",
+      "bounds": [202, 202],
+      "transform": 1
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "position": [1, 1],
+      "bounds": [2000, 2000],
+      "transform": 1
+    },
+    {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [1, 186],
+      "bounds": [185, 15],
+      "transform": 1
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [186, 1],
+      "bounds": [15, 185],
+      "transform": 1
+    },
+    {
+      "name": "Scroll Corner Layer",
+      "position": [186, 186],
+      "bounds": [15, 15],
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 50, 0, 1]
+      ]
+    }
+  ]
+}
+

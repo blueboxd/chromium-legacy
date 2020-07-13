@@ -34,7 +34,6 @@ share_java_sources = [
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/screenshot/ScreenshotShareSheetView.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/screenshot/ScreenshotShareSheetViewBinder.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/screenshot/ScreenshotShareSheetViewProperties.java",
-  "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/share_sheet/ChromeOptionShareCallback.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/share_sheet/ChromeProvidedSharingOptionsProvider.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/share_sheet/ShareSheetBottomSheetContent.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/share_sheet/ShareSheetCoordinator.java",

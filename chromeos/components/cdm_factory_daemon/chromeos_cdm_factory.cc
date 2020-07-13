@@ -16,6 +16,7 @@
 #include "chromeos/components/cdm_factory_daemon/mojom/content_decryption_module.mojom.h"
 #include "media/base/content_decryption_module.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 
 namespace chromeos {
@@ -66,6 +67,37 @@ void ChromeOsCdmFactory::Create(
     const media::SessionExpirationUpdateCB& session_expiration_update_cb,
     media::CdmCreatedCB cdm_created_cb) {
   DVLOG(1) << __func__ << " key system=" << key_system;
+  // Check that the user has Verified Access enabled in their Chrome settings
+  // and if they do not then block this connection since OEMCrypto utilizes
+  // remote attestation as part of verification.
+  if (!platform_verification_) {
+    frame_interfaces_->BindEmbedderReceiver(mojo::GenericPendingReceiver(
+        platform_verification_.BindNewPipeAndPassReceiver()));
+  }
+  platform_verification_->IsVerifiedAccessEnabled(base::BindOnce(
+      &ChromeOsCdmFactory::OnVerifiedAccessEnabled, weak_factory_.GetWeakPtr(),
+      key_system, cdm_config, session_message_cb, session_closed_cb,
+      session_keys_change_cb, session_expiration_update_cb,
+      std::move(cdm_created_cb)));
+}
+
+void ChromeOsCdmFactory::OnVerifiedAccessEnabled(
+    const std::string& key_system,
+    const media::CdmConfig& cdm_config,
+    const media::SessionMessageCB& session_message_cb,
+    const media::SessionClosedCB& session_closed_cb,
+    const media::SessionKeysChangeCB& session_keys_change_cb,
+    const media::SessionExpirationUpdateCB& session_expiration_update_cb,
+    media::CdmCreatedCB cdm_created_cb,
+    bool enabled) {
+  if (!enabled) {
+    DVLOG(1)
+        << "Not using Chrome OS CDM factory due to Verified Access disabled";
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(cdm_created_cb), nullptr,
+                                  "Verified Access is disabled."));
+    return;
+  }
   // This tests if it is bound already.
   if (!GetCdmFactoryDaemonRemote()) {
     DCHECK(GetBrowserProxy());

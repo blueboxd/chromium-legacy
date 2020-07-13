@@ -107,6 +107,14 @@ class SpellcheckService : public KeyedService,
   static std::string GetSupportedAcceptLanguageCode(
       const std::string& supported_language_full_tag);
 
+#if defined(OS_WIN)
+  // Since Windows platform dictionary support is determined asynchronously,
+  // this method is used to assure that the first preferred language initially
+  // has spellchecking enabled after first run. Spellchecking for the primary
+  // language will be disabled later if there is no dictionary support.
+  static void EnableFirstUserLanguageForSpellcheck(PrefService* prefs);
+#endif  // defined(OS_WIN)
+
   // Instantiates SpellCheckHostMetrics object and makes it ready for recording
   // metrics. This should be called only if the metrics recording is active.
   void StartRecordingMetrics(bool spellcheck_enabled);

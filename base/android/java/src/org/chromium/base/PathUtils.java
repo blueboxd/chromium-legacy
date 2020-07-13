@@ -195,7 +195,7 @@ public abstract class PathUtils {
     @SuppressWarnings("unused")
     @CalledByNative
     private static @NonNull String getDownloadsDirectory() {
-        // TODO(crbug.com/508615): Temporarily allowing disk access until more permanent fix is in.
+        // TODO(crbug.com/508615): Move calls to getDownloadsDirectory() to background thread.
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             if (BuildInfo.isAtLeastQ()) {
                 // https://developer.android.com/preview/privacy/scoped-storage

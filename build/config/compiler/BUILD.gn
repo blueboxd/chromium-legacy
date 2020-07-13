@@ -1073,7 +1073,10 @@ config("compiler_codegen") {
     ]
   }
 
-  asmflags = cflags
+  # TODO(thakis): Remove `if (!is_win)` after next clang roll.
+  if (!is_win) {
+    asmflags = cflags
+  }
 }
 
 # This provides options that make the build deterministic, so that the same

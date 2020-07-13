@@ -17,11 +17,11 @@ class FullscreenAllowedTest(ChromeEnterpriseTestCase):
 
   @before_all
   def setup(self):
-    self.InstallChrome('client2012')
-    self.EnableUITest('client2012')
+    self.InstallChrome('client2019')
+    self.EnableUITest('client2019')
 
     # Enable the bookmark bar so we can see the Apps Shortcut that lives there.
-    self.SetPolicy('win2012-dc', 'BookmarkBarEnabled', 1, 'DWORD')
+    self.SetPolicy('win2019-dc', 'BookmarkBarEnabled', 1, 'DWORD')
 
   def isFullscreenAllowed(self, instance):
     local = os.path.dirname(os.path.abspath(__file__))
@@ -31,16 +31,16 @@ class FullscreenAllowedTest(ChromeEnterpriseTestCase):
 
   @test
   def test_FullscreenAllowed(self):
-    self.SetPolicy('win2012-dc', FullscreenAllowedTest.Policy, 1, 'DWORD')
-    self.RunCommand('client2012', 'gpupdate /force')
+    self.SetPolicy('win2019-dc', FullscreenAllowedTest.Policy, 1, 'DWORD')
+    self.RunCommand('client2019', 'gpupdate /force')
 
-    allowed = self.isFullscreenAllowed('client2012')
+    allowed = self.isFullscreenAllowed('client2019')
     self.assertTrue(allowed)
 
   @test
   def test_FullscreenNotAllowed(self):
-    self.SetPolicy('win2012-dc', FullscreenAllowedTest.Policy, 0, 'DWORD')
-    self.RunCommand('client2012', 'gpupdate /force')
+    self.SetPolicy('win2019-dc', FullscreenAllowedTest.Policy, 0, 'DWORD')
+    self.RunCommand('client2019', 'gpupdate /force')
 
-    allowed = self.isFullscreenAllowed('client2012')
+    allowed = self.isFullscreenAllowed('client2019')
     self.assertFalse(allowed)

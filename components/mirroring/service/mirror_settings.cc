@@ -131,6 +131,10 @@ void MirrorSettings::SetResolutionConstraints(int max_width, int max_height) {
   max_height_ = std::max(max_height, min_height_);
 }
 
+void MirrorSettings::SetSenderSideLetterboxingEnabled(bool enabled) {
+  enable_sender_side_letterboxing_ = enabled;
+}
+
 media::VideoCaptureParams MirrorSettings::GetVideoCaptureParams() {
   media::VideoCaptureParams params;
   params.requested_format =

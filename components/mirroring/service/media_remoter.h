@@ -23,7 +23,7 @@ class CastTransport;
 namespace mirroring {
 
 class MessageDispatcher;
-struct ReceiverResponse;
+class ReceiverResponse;
 class RemotingSender;
 
 // MediaRemoter remotes media content directly to a Cast Receiver. When

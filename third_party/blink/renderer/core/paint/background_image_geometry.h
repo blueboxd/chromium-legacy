@@ -7,9 +7,6 @@
 
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/paint/paint_phase.h"
-#include "third_party/blink/renderer/platform/geometry/layout_point.h"
-#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
-#include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
@@ -19,7 +16,6 @@ class FillLayer;
 class LayoutBox;
 class LayoutBoxModelObject;
 class LayoutObject;
-class LayoutRect;
 class LayoutTableCell;
 class LayoutView;
 class Document;
@@ -31,8 +27,9 @@ class BackgroundImageGeometry {
 
  public:
   // Constructor for LayoutView where the coordinate space is different.
-  BackgroundImageGeometry(const LayoutView&,
-                          const LayoutPoint& element_positioning_area_offset);
+  BackgroundImageGeometry(
+      const LayoutView&,
+      const PhysicalOffset& element_positioning_area_offset);
 
   // Constructor for table cells where background_object may be the row or
   // column the background image is attached to.
@@ -58,19 +55,15 @@ class BackgroundImageGeometry {
   // unsnapped rectangle is the size and location intended by the content
   // author, and is needed to correctly subset images when no background-size
   // size is given.
-  PhysicalRect UnsnappedDestRect() const {
-    return PhysicalRectToBeNoop(unsnapped_dest_rect_);
-  }
-  PhysicalRect SnappedDestRect() const {
-    return PhysicalRectToBeNoop(snapped_dest_rect_);
-  }
+  const PhysicalRect& UnsnappedDestRect() const { return unsnapped_dest_rect_; }
+  const PhysicalRect& SnappedDestRect() const { return snapped_dest_rect_; }
 
   // Tile size is the area into which to draw one copy of the image. It
   // need not be the same as the intrinsic size of the image; if not,
   // the image will be resized (via an image filter) when painted into
   // that tile region. This may happen because of CSS background-size and
   // background-repeat requirements.
-  const LayoutSize& TileSize() const { return tile_size_; }
+  const PhysicalSize& TileSize() const { return tile_size_; }
 
   // Phase() represents the point in the image that will appear at (0,0) in the
   // destination space. The point is defined in TileSize() coordinates, that is,
@@ -79,7 +72,7 @@ class BackgroundImageGeometry {
 
   // SpaceSize() represents extra width and height that may be added to
   // the image if used as a pattern with background-repeat: space.
-  const LayoutSize& SpaceSize() const { return repeat_spacing_; }
+  const PhysicalSize& SpaceSize() const { return repeat_spacing_; }
 
   // Has background-attachment: fixed. Implies that we can't always cheaply
   // compute the destination rects.
@@ -99,7 +92,7 @@ class BackgroundImageGeometry {
  private:
   static bool ShouldUseFixedAttachment(const FillLayer&);
 
-  void SetSpaceSize(const LayoutSize& repeat_spacing) {
+  void SetSpaceSize(const PhysicalSize& repeat_spacing) {
     repeat_spacing_ = repeat_spacing;
   }
   void SetPhaseX(float x) { phase_.SetX(x); }
@@ -120,19 +113,19 @@ class BackgroundImageGeometry {
   void SetSpaceX(LayoutUnit space, LayoutUnit extra_offset);
   void SetSpaceY(LayoutUnit space, LayoutUnit extra_offset);
 
-  void UseFixedAttachment(const LayoutPoint& attachment_point);
+  void UseFixedAttachment(const PhysicalOffset& attachment_point);
   void SetHasNonLocalGeometry() { has_non_local_geometry_ = true; }
-  LayoutPoint GetPositioningOffsetForCell(const LayoutTableCell&,
-                                          const LayoutBox&);
-  LayoutSize GetBackgroundObjectDimensions(const LayoutTableCell&,
-                                           const LayoutBox&);
+  PhysicalOffset GetPositioningOffsetForCell(const LayoutTableCell&,
+                                             const LayoutBox&);
+  PhysicalSize GetBackgroundObjectDimensions(const LayoutTableCell&,
+                                             const LayoutBox&);
 
   // Compute adjustments for the destination rects. Adjustments
   // both optimize painting when the background is obscured by a
   // border, and snap the dest rect to the border. They also
   // account for the background-clip property.
   void ComputeDestRectAdjustments(const FillLayer&,
-                                  const LayoutRect&,
+                                  const PhysicalRect&,
                                   bool,
                                   LayoutRectOutsets&,
                                   LayoutRectOutsets&) const;
@@ -141,7 +134,7 @@ class BackgroundImageGeometry {
   // positioning area to snap values and apply the
   // background-origin property.
   void ComputePositioningAreaAdjustments(const FillLayer&,
-                                         const LayoutRect&,
+                                         const PhysicalRect&,
                                          bool,
                                          LayoutRectOutsets&,
                                          LayoutRectOutsets&) const;
@@ -150,17 +143,17 @@ class BackgroundImageGeometry {
                               PaintPhase,
                               GlobalPaintFlags,
                               const FillLayer&,
-                              const LayoutRect&,
-                              LayoutRect&,
-                              LayoutRect&,
-                              LayoutPoint&,
-                              LayoutPoint&);
+                              const PhysicalRect&,
+                              PhysicalRect&,
+                              PhysicalRect&,
+                              PhysicalOffset&,
+                              PhysicalOffset&);
   void CalculateFillTileSize(const FillLayer&,
-                             const LayoutSize&,
-                             const LayoutSize&);
+                             const PhysicalSize&,
+                             const PhysicalSize&);
 
   // The offset of the background image within the background positioning area.
-  LayoutPoint OffsetInBackground(const FillLayer&) const;
+  PhysicalOffset OffsetInBackground(const FillLayer&) const;
 
   // |box_| is the source for the Document. In most cases it also provides the
   // background properties (see |positioning_box_| for exceptions.) It's also
@@ -175,17 +168,17 @@ class BackgroundImageGeometry {
 
   // When painting table cells or the view, the positioning area
   // differs from the requested paint rect.
-  LayoutSize positioning_size_override_;
+  PhysicalSize positioning_size_override_;
 
   // The background image offset from within the background positioning area for
   // non-fixed background attachment. Used for table cells and the view.
-  LayoutPoint element_positioning_area_offset_;
+  PhysicalOffset element_positioning_area_offset_;
 
-  LayoutRect unsnapped_dest_rect_;
-  LayoutRect snapped_dest_rect_;
+  PhysicalRect unsnapped_dest_rect_;
+  PhysicalRect snapped_dest_rect_;
   FloatPoint phase_;
-  LayoutSize tile_size_;
-  LayoutSize repeat_spacing_;
+  PhysicalSize tile_size_;
+  PhysicalSize repeat_spacing_;
   bool has_non_local_geometry_ = false;
   bool painting_view_ = false;
   bool painting_table_cell_ = false;

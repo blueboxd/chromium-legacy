@@ -109,6 +109,7 @@
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -141,6 +142,11 @@ Vector<String> CopyForceEnabledOriginTrials(
   for (const auto& trial : force_enabled_origin_trials)
     result.push_back(trial);
   return result;
+}
+
+bool IsPagePopupRunningInWebTest(LocalFrame* frame) {
+  return frame && frame->GetPage()->GetChromeClient().IsPopup() &&
+         WebTestSupport::IsRunningWebTest();
 }
 
 }  // namespace
@@ -1496,6 +1502,94 @@ void DocumentLoader::DidCommitNavigation() {
   }
 }
 
+scoped_refptr<SecurityOrigin> DocumentLoader::CalculateOrigin(
+    Document* owner_document,
+    network::mojom::blink::WebSandboxFlags sandbox_flags) {
+  scoped_refptr<SecurityOrigin> origin;
+  if (origin_to_commit_) {
+    // Origin to commit is specified by the browser process, it must be taken
+    // and used directly. It is currently supplied only for session history
+    // navigations, where the origin was already calcuated previously and
+    // stored on the session history entry.
+    origin = origin_to_commit_;
+  } else if (IsPagePopupRunningInWebTest(frame_)) {
+    // If we are a page popup in LayoutTests ensure we use the popup
+    // owner's security origin so the tests can possibly access the
+    // document via internals API.
+    auto* owner_context = frame_->PagePopupOwner()->GetExecutionContext();
+    origin = owner_context->GetSecurityOrigin()->IsolatedCopy();
+  } else if (owner_document && owner_document->domWindow()) {
+    origin = owner_document->domWindow()->GetMutableSecurityOrigin();
+  } else {
+    // Otherwise, create an origin that propagates precursor information
+    // as needed. For non-opaque origins, this creates a standard tuple
+    // origin, but for opaque origins, it creates an origin with the
+    // initiator origin as the precursor.
+    origin = SecurityOrigin::CreateWithReferenceOrigin(url_,
+                                                       requestor_origin_.get());
+  }
+
+  if ((sandbox_flags & network::mojom::blink::WebSandboxFlags::kOrigin) !=
+      network::mojom::blink::WebSandboxFlags::kNone) {
+    auto sandbox_origin = origin->DeriveNewOpaqueOrigin();
+
+    // If we're supposed to inherit our security origin from our
+    // owner, but we're also sandboxed, the only things we inherit are
+    // the origin's potential trustworthiness and the ability to
+    // load local resources. The latter lets about:blank iframes in
+    // file:// URL documents load images and other resources from
+    // the file system.
+    //
+    // Note: Sandboxed about:srcdoc iframe without "allow-same-origin" aren't
+    // allowed to load user's file, even if its parent can.
+    if (owner_document) {
+      if (origin->IsPotentiallyTrustworthy())
+        sandbox_origin->SetOpaqueOriginIsPotentiallyTrustworthy(true);
+      if (origin->CanLoadLocalResources() && !loading_srcdoc_)
+        sandbox_origin->GrantLoadLocalResources();
+    }
+    origin = sandbox_origin;
+  }
+
+  if (!frame_->GetSettings()->GetWebSecurityEnabled()) {
+    // Web security is turned off. We should let this document access
+    // every other document. This is used primary by testing harnesses for
+    // web sites.
+    origin->GrantUniversalAccess();
+  } else if (origin->IsLocal()) {
+    if (frame_->GetSettings()->GetAllowUniversalAccessFromFileURLs()) {
+      // Some clients want local URLs to have universal access, but that
+      // setting is dangerous for other clients.
+      origin->GrantUniversalAccess();
+    } else if (!frame_->GetSettings()->GetAllowFileAccessFromFileURLs()) {
+      // Some clients do not want local URLs to have access to other local
+      // URLs.
+      origin->BlockLocalAccessFromLocalOrigin();
+    }
+  }
+
+  if (grant_load_local_resources_)
+    origin->GrantLoadLocalResources();
+
+  if (origin->IsOpaque()) {
+    KURL url = url_.IsEmpty() ? BlankURL() : url_;
+    if (SecurityOrigin::Create(url)->IsPotentiallyTrustworthy())
+      origin->SetOpaqueOriginIsPotentiallyTrustworthy(true);
+  }
+  return origin;
+}
+
+GlobalObjectReusePolicy DocumentLoader::CalculateGlobalObjectReusePolicy(
+    SecurityOrigin* security_origin) {
+  // Secure transitions can only happen when navigating from the initial empty
+  // document.
+  if (!GetFrameLoader().StateMachine()->IsDisplayingInitialEmptyDocument())
+    return GlobalObjectReusePolicy::kCreateNew;
+  if (!frame_->DomWindow()->GetSecurityOrigin()->CanAccess(security_origin))
+    return GlobalObjectReusePolicy::kCreateNew;
+  return GlobalObjectReusePolicy::kUseExisting;
+}
+
 void DocumentLoader::CommitNavigation() {
   CHECK_GE(state_, kCommitted);
   DCHECK(frame_->GetPage());
@@ -1535,25 +1629,9 @@ void DocumentLoader::CommitNavigation() {
   // initialize sandbox flags in security context. crbug.com/1026627
   GetFrameLoader().SetFrameOwnerSandboxFlags(frame_policy_.sandbox_flags);
 
-  DocumentInit init =
-      DocumentInit::Create()
-          .WithDocumentLoader(this, content_security_policy_.Get())
-          .WithURL(Url())
-          .WithTypeFrom(MimeType())
-          .WithOwnerDocument(owner_document)
-          // Initiator origin will be unused if owner_document is non-null.
-          // WithInitiatorOrigin() does some DCHECKs that the initiator origin
-          // and owner document origin match, but it can mismatch in certain
-          // cases, e.g. a subframe is navigated to about:blank by a frame other
-          // than its parent.
-          .WithInitiatorOrigin(owner_document ? nullptr
-                                              : requestor_origin_.get())
-          .WithOriginToCommit(origin_to_commit_)
-          .WithSrcdocDocument(loading_srcdoc_)
-          .WithGrantLoadLocalResources(grant_load_local_resources_)
-          .WithNewRegistrationContext()
-          .WithWebBundleClaimedUrl(web_bundle_claimed_url_);
-
+  network::mojom::blink::WebSandboxFlags sandbox_flags =
+      GetFrameLoader().EffectiveSandboxFlags() |
+      content_security_policy_->GetSandboxMask();
   if (archive_) {
     // The URL of a Document loaded from a MHTML archive is controlled by
     // the Content-Location header. This would allow UXSS, since
@@ -1563,23 +1641,18 @@ void DocumentLoader::CommitNavigation() {
     // new windows.
     DCHECK(commit_reason_ == CommitReason::kRegular ||
            commit_reason_ == CommitReason::kInitialization);
-    auto flags = (network::mojom::blink::WebSandboxFlags::kAll &
-                  ~(network::mojom::blink::WebSandboxFlags::kPopups |
-                    network::mojom::blink::WebSandboxFlags::
-                        kPropagatesToAuxiliaryBrowsingContexts));
-    init = init.WithSandboxFlags(flags);
+    sandbox_flags |= (network::mojom::blink::WebSandboxFlags::kAll &
+                      ~(network::mojom::blink::WebSandboxFlags::kPopups |
+                        network::mojom::blink::WebSandboxFlags::
+                            kPropagatesToAuxiliaryBrowsingContexts));
   } else if (commit_reason_ == CommitReason::kXSLT) {
-    init = init.WithSandboxFlags(frame_->DomWindow()->GetSandboxFlags());
+    sandbox_flags |= frame_->DomWindow()->GetSandboxFlags();
   }
 
-  // We've not set the requisite state on the DocumentInit. Calculate the origin
-  // and cache it, so repeated GetDocumentOrigin() invocations return the same
-  // object.
-  init.CalculateAndCacheDocumentOrigin();
+  auto security_origin = CalculateOrigin(owner_document, sandbox_flags);
 
   GlobalObjectReusePolicy global_object_reuse_policy =
-      init.ShouldReuseDOMWindow() ? GlobalObjectReusePolicy::kUseExisting
-                                  : GlobalObjectReusePolicy::kCreateNew;
+      CalculateGlobalObjectReusePolicy(security_origin.get());
 
   if (GetFrameLoader().StateMachine()->IsDisplayingInitialEmptyDocument()) {
     GetFrameLoader().StateMachine()->AdvanceTo(
@@ -1604,7 +1677,7 @@ void DocumentLoader::CommitNavigation() {
         frame_->GetSettings()->GetAllowUniversalAccessFromFileURLs();
     auto* agent = frame_->window_agent_factory().GetAgentForOrigin(
         has_potential_universal_access_privilege,
-        V8PerIsolateData::MainThreadIsolate(), init.GetDocumentOrigin().get());
+        V8PerIsolateData::MainThreadIsolate(), security_origin.get());
 
     if (frame_->GetDocument())
       frame_->GetDocument()->RemoveAllEventListenersRecursively();
@@ -1620,14 +1693,22 @@ void DocumentLoader::CommitNavigation() {
     }
   }
 
-  SecurityContextInit security_init(init);
+  // Now that we have the final window and Agent, ensure the security origin has
+  // the appropriate agent cluster id. This may derive a new security origin.
+  security_origin = security_origin->GetOriginForAgentCluster(
+      frame_->DomWindow()->GetAgent()->cluster_id());
+
+  frame_->DomWindow()->GetSecurityContext().SetContentSecurityPolicy(
+      content_security_policy_.Get());
+  frame_->DomWindow()->GetSecurityContext().ApplySandboxFlags(sandbox_flags);
+
+  SecurityContextInit security_init(frame_->DomWindow(), security_origin);
   security_init.CalculateSecureContextMode(frame_.Get());
   security_init.InitializeOriginTrials(
       response_.HttpHeaderField(http_names::kOriginTrial));
   // TODO(iclelland): Add Feature-Policy-Report-Only to Origin Policy.
-  security_init.CalculateFeaturePolicy(
-      frame_.Get(), init.GetType() == DocumentInit::Type::kViewSource,
-      response_, origin_policy_, frame_policy_);
+  security_init.CalculateFeaturePolicy(frame_.Get(), response_, origin_policy_,
+                                       frame_policy_);
   // |document_policy_| is parsed in document loader because it is
   // compared with |frame_policy.required_document_policy| to decide
   // whether to block the document load or not.
@@ -1656,6 +1737,15 @@ void DocumentLoader::CommitNavigation() {
 
   WillCommitNavigation();
 
+  DocumentInit init = DocumentInit::Create()
+                          .WithDocumentLoader(this)
+                          .WithURL(Url())
+                          .WithTypeFrom(MimeType())
+                          .WithOwnerDocument(owner_document)
+                          .WithSrcdocDocument(loading_srcdoc_)
+                          .WithSandboxFlags(sandbox_flags)
+                          .WithNewRegistrationContext()
+                          .WithWebBundleClaimedUrl(web_bundle_claimed_url_);
   Document* document = frame_->DomWindow()->InstallNewDocument(init);
 
   // Clear the user activation state.

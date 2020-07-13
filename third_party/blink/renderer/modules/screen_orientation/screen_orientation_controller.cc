@@ -58,7 +58,7 @@ ScreenOrientationController::ScreenOrientationController(LocalDOMWindow& window)
 // Compute the screen orientation using the orientation angle and the screen
 // width / height.
 WebScreenOrientationType ScreenOrientationController::ComputeOrientation(
-    const IntRect& rect,
+    const gfx::Rect& rect,
     uint16_t rotation) {
   // Bypass orientation detection in web tests to get consistent results.
   // FIXME: The screen dimension should be fixed when running the web tests
@@ -66,8 +66,8 @@ WebScreenOrientationType ScreenOrientationController::ComputeOrientation(
   if (WebTestSupport::IsRunningWebTest())
     return kWebScreenOrientationPortraitPrimary;
 
-  bool is_tall_display = rotation % 180 ? rect.Height() < rect.Width()
-                                        : rect.Height() > rect.Width();
+  bool is_tall_display = rotation % 180 ? rect.height() < rect.width()
+                                        : rect.height() > rect.width();
 
   // https://w3c.github.io/screen-orientation/#dfn-current-orientation-angle
   // allows the UA to associate *-primary and *-secondary values at will. Blink

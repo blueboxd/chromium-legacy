@@ -270,7 +270,7 @@ void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
       FilterSquareIconsFromMap(*icons_map, &square_icons);
     }
   }
-  FilterSquareIconsFromBitmaps(web_app_info->icon_bitmaps, &square_icons);
+  FilterSquareIconsFromBitmaps(web_app_info->icon_bitmaps_any, &square_icons);
 
   base::char16 icon_letter =
       web_app_info->title.empty()
@@ -285,8 +285,8 @@ void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
 
   for (auto& item : size_to_icons) {
     // Retain any bitmaps provided as input to the installation.
-    if (web_app_info->icon_bitmaps.count(item.first) == 0)
-      web_app_info->icon_bitmaps[item.first] = std::move(item.second);
+    if (web_app_info->icon_bitmaps_any.count(item.first) == 0)
+      web_app_info->icon_bitmaps_any[item.first] = std::move(item.second);
   }
 }
 

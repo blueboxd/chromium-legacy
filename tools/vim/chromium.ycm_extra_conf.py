@@ -337,8 +337,10 @@ def GetClangOptionsFromNinjaForFilename(chrome_root, filename):
   return GetClangOptionsFromCommandLine(clang_line, out_dir, additional_flags)
 
 
+# FlagsForFile entrypoint is deprecated in YCM and has replaced by
+# Settings.
 def FlagsForFile(filename):
-  """This is the main entry point for YCM. Its interface is fixed.
+  """This is the old entry point for YCM. Its interface is fixed.
 
   Args:
     filename: (String) Path to source file being edited.
@@ -348,6 +350,11 @@ def FlagsForFile(filename):
       'flags': (List of Strings) Command line flags.
       'do_cache': (Boolean) True if the result should be cached.
   """
+  return Settings(filename=filename)
+
+
+def Settings(**kwargs):
+  filename = kwargs['filename']
   abs_filename = os.path.abspath(filename)
   chrome_root = FindChromeSrcFromFilename(abs_filename)
   clang_flags = GetClangOptionsFromNinjaForFilename(chrome_root, abs_filename)

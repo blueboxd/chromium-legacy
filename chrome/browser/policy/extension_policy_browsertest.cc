@@ -821,8 +821,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
   EXPECT_EQ(kSharedModuleId, imports[0].extension_id);
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallWhitelist) {
-  // Verifies that the whitelist can open exceptions to the blacklist.
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallAllowlist) {
+  // Verifies that the allowlist can open exceptions to the blacklist.
   extensions::ExtensionRegistry* registry = extension_registry();
   ASSERT_FALSE(registry->GetExtensionById(
       kGoodCrxId, extensions::ExtensionRegistry::EVERYTHING));
@@ -830,21 +830,21 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallWhitelist) {
       kSimpleWithIconCrxId, extensions::ExtensionRegistry::EVERYTHING));
   base::ListValue blacklist;
   blacklist.AppendString("*");
-  base::ListValue whitelist;
-  whitelist.AppendString(kGoodCrxId);
+  base::ListValue allowlist;
+  allowlist.AppendString(kGoodCrxId);
   PolicyMap policies;
   policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                blacklist.CreateDeepCopy(), nullptr);
-  policies.Set(key::kExtensionInstallWhitelist, POLICY_LEVEL_MANDATORY,
+  policies.Set(key::kExtensionInstallAllowlist, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               whitelist.CreateDeepCopy(), nullptr);
+               allowlist.CreateDeepCopy(), nullptr);
   UpdateProviderPolicy(policies);
   // "simple_with_icon.crx" is blacklisted.
   EXPECT_FALSE(InstallExtension(kSimpleWithIconCrxName));
   EXPECT_FALSE(registry->GetExtensionById(
       kSimpleWithIconCrxId, extensions::ExtensionRegistry::EVERYTHING));
-  // "good.crx" has a whitelist exception.
+  // "good.crx" has a allowlist exception.
   const extensions::Extension* good = InstallExtension(kGoodCrxName);
   ASSERT_TRUE(good);
   EXPECT_EQ(kGoodCrxId, good->id());
@@ -1699,7 +1699,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionAllowedTypes) {
   EXPECT_FALSE(registry->GetExtensionById(
       kGoodCrxId, extensions::ExtensionRegistry::EVERYTHING));
 
-  // "hosted_app.crx" is of a whitelisted type.
+  // "hosted_app.crx" is of a allowlisted type.
   const extensions::Extension* hosted_app = InstallExtension(kHostedAppCrxName);
   ASSERT_TRUE(hosted_app);
   EXPECT_EQ(kHostedAppCrxId, hosted_app->id());
@@ -1712,7 +1712,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionAllowedTypes) {
 
 // Checks that a click on an extension CRX download triggers the extension
 // installation prompt without further user interaction when the source is
-// whitelisted by policy.
+// allowlisted by policy.
 // Flaky on windows; http://crbug.com/295729 .
 #if defined(OS_WIN)
 #define MAYBE_ExtensionInstallSources DISABLED_ExtensionInstallSources

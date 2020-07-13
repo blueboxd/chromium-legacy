@@ -423,8 +423,7 @@ TEST_F('MediaAppUIBrowserTest', 'FileThatBecomesDirectory', async () => {
   let result = await waitForImageAndGetWidth('1.png');
   assertEquals(await getFileErrors(), ',');
 
-  handles[1].isFile = false;
-  handles[1].isDirectory = true;
+  handles[1].kind = 'directory';
   handles[1].getFileSync = () => {
     throw new Error(
         '(in test) FileThatBecomesDirectory: getFileSync should not be called');

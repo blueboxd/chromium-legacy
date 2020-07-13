@@ -469,15 +469,21 @@ def _RunCompiler(options, javac_cmd, java_files, classpath, jar_path,
                                              input_srcjars_dir)
       logging.info('Done extracting srcjars')
 
-    if options.header_jar:
+    if classpath or options.header_jar:
       logging.info('Extracting transitive classes to %s', transitive_classes)
-      # Without the META-INF pattern prefix, it takes more than 4 seconds to
-      # extract all the .class files from chrome_java's header jar. With the
-      # prefix it takes 0.6 seconds.
-      build_utils.ExtractAll(options.header_jar,
-                             no_clobber=True,
-                             path=transitive_classes,
-                             pattern='META-INF*.class')
+      # All classes under META-INF/TRANSITIVE of all direct dependencies and the
+      # current target's META-INF/TRANSITIVE can be required during compile.
+      for path in classpath + [options.header_jar]:
+        if path.endswith('.turbine.jar'):
+          # Without the META-INF pattern prefix, it takes more than 4 seconds to
+          # extract all the .class files from chrome_java's header jar. With the
+          # prefix it takes less than 0.6 seconds.
+          # Set no_clobber=False since there are some overlaps in base classes
+          # from various header jars.
+          build_utils.ExtractAll(path,
+                                 no_clobber=False,
+                                 path=transitive_classes,
+                                 pattern='META-INF*.class')
       # Specifying the root directory is required, see:
       # https://docs.oracle.com/javase/8/docs/technotes/tools/findingclasses.html#userclass
       classpath.append(

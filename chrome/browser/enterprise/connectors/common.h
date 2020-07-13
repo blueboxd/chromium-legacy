@@ -70,6 +70,14 @@ struct ReportingSettings {
 const char* ConnectorPref(AnalysisConnector connector);
 const char* ConnectorPref(ReportingConnector connector);
 
+// Returns the highest precedence action in the given parameters.
+ContentAnalysisResponse::Result::TriggeredRule::Action
+GetHighestPrecedenceAction(const ContentAnalysisResponse& response);
+ContentAnalysisResponse::Result::TriggeredRule::Action
+GetHighestPrecedenceAction(
+    const ContentAnalysisResponse::Result::TriggeredRule::Action& action_1,
+    const ContentAnalysisResponse::Result::TriggeredRule::Action& action_2);
+
 }  // namespace enterprise_connectors
 
 #endif  // CHROME_BROWSER_ENTERPRISE_CONNECTORS_COMMON_H_

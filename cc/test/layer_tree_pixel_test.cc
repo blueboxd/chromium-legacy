@@ -37,9 +37,26 @@ using gpu::gles2::GLES2Interface;
 
 namespace cc {
 
+namespace {
+
+TestRasterType GetDefaultRasterType(LayerTreeTest::RendererType renderer_type) {
+  switch (renderer_type) {
+    case LayerTreeTest::RENDERER_SOFTWARE:
+      return TestRasterType::kBitmap;
+    case LayerTreeTest::RENDERER_SKIA_VK:
+    case LayerTreeTest::RENDERER_SKIA_DAWN:
+      return TestRasterType::kOop;
+    default:
+      return TestRasterType::kOneCopy;
+  }
+}
+
+}  // namespace
+
 LayerTreePixelTest::LayerTreePixelTest(
     LayerTreeTest::RendererType renderer_type)
     : LayerTreeTest(renderer_type),
+      raster_type_(GetDefaultRasterType(renderer_type)),
       pixel_comparator_(new ExactPixelComparator(true)),
       pending_texture_mailbox_callbacks_(0) {}
 
@@ -54,18 +71,14 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
   scoped_refptr<viz::TestInProcessContextProvider> compositor_context_provider;
   scoped_refptr<viz::TestInProcessContextProvider> worker_context_provider;
   if (!use_software_renderer()) {
-    // Use gpu rasterization when using vulkan.
-    if (use_oopr())
-      DCHECK(gpu_rasterization_);
     compositor_context_provider =
         base::MakeRefCounted<viz::TestInProcessContextProvider>(
-            /*enable_gpu_rasterization=*/gpu_rasterization_,
+            /*enable_gpu_rasterization=*/use_accelerated_raster(),
             /*enable_oop_rasterization=*/false, /*support_locking=*/false);
-    // With vulkan, OOPR has to be enabled.
     worker_context_provider =
         base::MakeRefCounted<viz::TestInProcessContextProvider>(
-            /*enable_gpu_rasterization=*/gpu_rasterization_,
-            /*enable_oop_rasterization=*/use_oopr(),
+            /*enable_gpu_rasterization=*/use_accelerated_raster(),
+            /*enable_oop_rasterization=*/raster_type() == TestRasterType::kOop,
             /*support_locking=*/true);
     // Bind worker context to main thread like it is in production. This is
     // needed to fully initialize the context. Compositor context is bound to
@@ -98,14 +111,23 @@ void LayerTreePixelTest::DrawLayersOnThread(LayerTreeHostImpl* host_impl) {
         host_impl->layer_tree_frame_sink()->context_provider();
     viz::RasterContextProvider* worker_context_provider =
         host_impl->layer_tree_frame_sink()->worker_context_provider();
-    EXPECT_EQ(gpu_rasterization_,
+    EXPECT_EQ(use_accelerated_raster(),
               context_provider->ContextCapabilities().gpu_rasterization);
-    EXPECT_EQ(gpu_rasterization_,
+    EXPECT_EQ(use_accelerated_raster(),
               worker_context_provider->ContextCapabilities().gpu_rasterization);
+    EXPECT_EQ(
+        raster_type() == TestRasterType::kOop,
+        worker_context_provider->ContextCapabilities().supports_oop_raster);
   } else {
-    EXPECT_FALSE(gpu_rasterization_);
+    EXPECT_EQ(TestRasterType::kBitmap, raster_type());
   }
   LayerTreeTest::DrawLayersOnThread(host_impl);
+}
+
+void LayerTreePixelTest::InitializeSettings(LayerTreeSettings* settings) {
+  LayerTreeTest::InitializeSettings(settings);
+  settings->gpu_rasterization_disabled = !use_accelerated_raster();
+  settings->use_zero_copy = raster_type() == TestRasterType::kZeroCopy;
 }
 
 std::unique_ptr<viz::SkiaOutputSurface>

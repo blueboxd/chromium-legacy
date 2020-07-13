@@ -82,8 +82,8 @@ SkBitmap CreateSquareBitmapWithColor(int size, SkColor color) {
 }
 
 void SetAppIcon(WebApplicationInfo* web_app, int size, SkColor color) {
-  web_app->icon_bitmaps.clear();
-  web_app->icon_bitmaps[size] = CreateSquareBitmapWithColor(size, color);
+  web_app->icon_bitmaps_any.clear();
+  web_app->icon_bitmaps_any[size] = CreateSquareBitmapWithColor(size, color);
 }
 
 // Use only real BookmarkAppInstallFinalizer::FinalizeInstall and mock any other

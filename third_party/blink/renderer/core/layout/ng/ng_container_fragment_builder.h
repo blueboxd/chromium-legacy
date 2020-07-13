@@ -86,6 +86,10 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     AddChildInternal(child, offset);
   }
 
+  void ReplaceChild(wtf_size_t index,
+                    const NGPhysicalContainerFragment& new_child,
+                    const LogicalOffset offset);
+
   const ChildrenVector& Children() const { return children_; }
 
   // Builder has non-trivial OOF-positioned methods.

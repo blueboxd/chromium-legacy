@@ -6,6 +6,10 @@
 
 #include <stddef.h>
 
+#include <algorithm>
+#include <memory>
+#include <utility>
+
 #include "base/atomic_sequence_num.h"
 #include "base/auto_reset.h"
 #include "base/check_op.h"

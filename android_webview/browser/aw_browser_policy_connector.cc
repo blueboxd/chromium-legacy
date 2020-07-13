@@ -11,6 +11,7 @@
 #include "components/policy/core/browser/android/android_combined_policy_provider.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
 #include "components/policy/core/browser/url_blacklist_policy_handler.h"
+#include "components/policy/core/common/policy_details.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/policy_constants.h"
 #include "components/version_info/android/channel_getter.h"
@@ -25,11 +26,6 @@ namespace {
 void PopulatePolicyHandlerParameters(
     policy::PolicyHandlerParameters* parameters) {}
 
-// Used to check if a policy is deprecated. Currently bypasses that check.
-const policy::PolicyDetails* GetChromePolicyDetails(const std::string& policy) {
-  return nullptr;
-}
-
 // Factory for the handlers that will be responsible for converting the policies
 // to the associated preferences.
 std::unique_ptr<policy::ConfigurationPolicyHandlerList> BuildHandlerList(
@@ -38,7 +34,9 @@ std::unique_ptr<policy::ConfigurationPolicyHandlerList> BuildHandlerList(
   std::unique_ptr<policy::ConfigurationPolicyHandlerList> handlers(
       new policy::ConfigurationPolicyHandlerList(
           base::BindRepeating(&PopulatePolicyHandlerParameters),
-          base::BindRepeating(&GetChromePolicyDetails),
+          // Used to check if a policy is deprecated. Currently bypasses that
+          // check.
+          policy::GetChromePolicyDetailsCallback(),
           channel != version_info::Channel::STABLE &&
               channel != version_info::Channel::BETA));
 

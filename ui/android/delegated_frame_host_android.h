@@ -68,9 +68,6 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
     return ResizeTimeout() / viz::BeginFrameArgs::DefaultInterval();
   }
 
-  // FrameEvictorClient implementation.
-  void EvictDelegatedFrame() override;
-
   // Advances the fallback surface to the first surface after navigation. This
   // ensures that stale surfaces are not presented to the user for an indefinite
   // period of time.
@@ -123,6 +120,9 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   void SetTopControlsVisibleHeight(float height);
 
  private:
+  // FrameEvictorClient implementation.
+  void EvictDelegatedFrame() override;
+
   // viz::HostFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;

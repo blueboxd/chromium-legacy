@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/screen_orientation/web_lock_orientation_callback.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_remote.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace blink {
 
@@ -55,7 +56,8 @@ class MODULES_EXPORT ScreenOrientationController final
   friend class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest;
   friend class ScreenOrientationControllerTest;
 
-  static WebScreenOrientationType ComputeOrientation(const IntRect&, uint16_t);
+  static WebScreenOrientationType ComputeOrientation(const gfx::Rect&,
+                                                     uint16_t);
 
   // Inherited from ExecutionContextLifecycleObserver and
   // PageVisibilityObserver.

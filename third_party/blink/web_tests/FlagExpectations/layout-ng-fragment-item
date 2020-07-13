@@ -12,7 +12,6 @@ crbug.com/982194 external/wpt/css/css-animations/animationevent-marker-pseudoele
 crbug.com/982194 external/wpt/css/css-fonts/font-variant-position-01.html [ Pass ]
 crbug.com/982194 external/wpt/css/css-masking/clip-path-svg-content/clip-path-recursion-002.svg [ Pass ]
 crbug.com/982194 external/wpt/css/css-pseudo/selection-text-shadow-016.html [ Pass ]
-crbug.com/982194 external/wpt/css/css-pseudo/textpath-selection-011.html [ Pass ]
 crbug.com/982194 external/wpt/css/css-ruby/ruby-bidi-001.html [ Pass ]
 crbug.com/982194 external/wpt/css/css-ruby/ruby-line-breaking-002.html [ Pass ]
 crbug.com/982194 external/wpt/css/css-sizing/aspect-ratio/abspos-001.tentative.html [ Pass ]

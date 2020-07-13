@@ -99,6 +99,10 @@ struct CORE_EXPORT PhysicalSize {
     return {LayoutUnit::FromFloatRound(size.Width()),
             LayoutUnit::FromFloatRound(size.Height())};
   }
+  static PhysicalSize FromFloatSizeFloor(const FloatSize& size) {
+    return {LayoutUnit::FromFloatFloor(size.Width()),
+            LayoutUnit::FromFloatFloor(size.Height())};
+  }
   constexpr explicit operator FloatSize() const { return {width, height}; }
 
   explicit PhysicalSize(const IntSize& size)

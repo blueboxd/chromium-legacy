@@ -151,6 +151,8 @@ class TestingSpellCheckProvider : public SpellCheckProvider,
       GetPerLanguageSuggestionsCallback callback) override;
 #endif  // defined(OS_WIN)
 
+  void InitializeDictionaries(InitializeDictionariesCallback callback) override;
+
 #endif
 
 #if defined(OS_ANDROID)

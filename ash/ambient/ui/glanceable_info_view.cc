@@ -10,6 +10,7 @@
 #include "ash/ambient/model/ambient_backend_model.h"
 #include "ash/ambient/ui/ambient_view_delegate.h"
 #include "ash/ambient/util/ambient_util.h"
+#include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/clock_model.h"
@@ -72,6 +73,7 @@ gfx::Insets GetWeatherInfoInsets() {
 GlanceableInfoView::GlanceableInfoView(AmbientViewDelegate* delegate)
     : delegate_(delegate) {
   DCHECK(delegate);
+  SetID(AssistantViewID::kAmbientGlanceableInfoView);
   delegate_->GetAmbientBackendModel()->AddObserver(this);
 
   InitLayout();

@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/enterprise/reporting/profile_report_generator.h"
+#include "components/enterprise/browser/reporting/profile_report_generator.h"
 #include "components/policy/core/browser/policy_conversions_client.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 

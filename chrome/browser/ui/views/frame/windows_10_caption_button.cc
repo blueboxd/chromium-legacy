@@ -119,7 +119,7 @@ void Windows10CaptionButton::OnPaintBackground(gfx::Canvas* canvas) {
   }
 
   SkAlpha alpha;
-  if (state() == STATE_PRESSED)
+  if (GetState() == STATE_PRESSED)
     alpha = pressed_alpha;
   else
     alpha = gfx::Tween::IntValueBetween(hover_animation().GetCurrentValue(),
@@ -180,8 +180,8 @@ void DrawRect(gfx::Canvas* canvas,
 
 void Windows10CaptionButton::PaintSymbol(gfx::Canvas* canvas) {
   SkColor symbol_color = GetBaseColor();
-  if (!frame_view_->ShouldPaintAsActive() && state() != STATE_HOVERED &&
-      state() != STATE_PRESSED) {
+  if (!frame_view_->ShouldPaintAsActive() && GetState() != STATE_HOVERED &&
+      GetState() != STATE_PRESSED) {
     symbol_color = SkColorSetA(
         symbol_color, GlassBrowserFrameView::kInactiveTitlebarFeatureAlpha);
   } else if (button_type_ == VIEW_ID_CLOSE_BUTTON &&
@@ -189,7 +189,7 @@ void Windows10CaptionButton::PaintSymbol(gfx::Canvas* canvas) {
     symbol_color = gfx::Tween::ColorValueBetween(
         hover_animation().GetCurrentValue(), symbol_color, SK_ColorWHITE);
   } else if (button_type_ == VIEW_ID_CLOSE_BUTTON &&
-             (state() == STATE_HOVERED || state() == STATE_PRESSED)) {
+             (GetState() == STATE_HOVERED || GetState() == STATE_PRESSED)) {
     symbol_color = SK_ColorWHITE;
   }
 

@@ -43,6 +43,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -469,6 +470,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "Flaky - https://crbug.com/1105146")
     public void interactingWithLocationBarHidesAutofillAssistant() {
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add((ActionProto) ActionProto.newBuilder()

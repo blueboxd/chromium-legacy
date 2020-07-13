@@ -810,8 +810,13 @@ RTCPeerConnection::RTCPeerConnection(
   feature_handle_for_scheduler_ =
       window->GetFrame()->GetFrameScheduler()->RegisterFeature(
           SchedulingPolicy::Feature::kWebRTC,
-          {SchedulingPolicy::DisableAggressiveThrottling(),
-           SchedulingPolicy::RecordMetricsForBackForwardCache()});
+          base::FeatureList::IsEnabled(features::kOptOutWebRTCFromAllThrottling)
+              ? SchedulingPolicy{SchedulingPolicy::DisableAllThrottling(),
+                                 SchedulingPolicy::
+                                     RecordMetricsForBackForwardCache()}
+              : SchedulingPolicy{
+                    SchedulingPolicy::DisableAggressiveThrottling(),
+                    SchedulingPolicy::RecordMetricsForBackForwardCache()});
 }
 
 RTCPeerConnection::~RTCPeerConnection() {

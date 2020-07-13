@@ -216,7 +216,8 @@ template("write_ssargs_trichrome") {
   ssargs_lines = [
     "# Written by build target \"${target_name}.\"",
     "Library -f ${invoker.trichrome_library_basename}",
-    "Chrome -f ${invoker.trichrome_chrome_basename}",
+    "# Add --no-native to Chrome as workaround for crbug.com/1103271.",
+    "Chrome -f ${invoker.trichrome_chrome_basename} --no-native",
     "WebView -f ${invoker.trichrome_webview_basename}",
   ]
 

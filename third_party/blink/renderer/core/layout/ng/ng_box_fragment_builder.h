@@ -181,6 +181,10 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     DCHECK(space_);
     return child_available_size_;
   }
+  const NGBlockNode& Node() {
+    DCHECK(node_);
+    return To<NGBlockNode>(node_);
+  }
 
   // Add a break token for a child that doesn't yet have any fragments, because
   // its first fragment is to be produced in the next fragmentainer. This will

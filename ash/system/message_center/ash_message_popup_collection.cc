@@ -9,6 +9,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/message_center/fullscreen_notification_blocker.h"
@@ -97,8 +98,12 @@ int AshMessagePopupCollection::GetToastOriginX(
 
 int AshMessagePopupCollection::GetBaseline() const {
   gfx::Insets tray_bubble_insets = GetTrayBubbleInsets();
+  int hotseat_height =
+      shelf_->hotseat_widget()->state() == HotseatState::kExtended
+          ? shelf_->hotseat_widget()->GetHotseatSize()
+          : 0;
   return work_area_.bottom() - tray_bubble_insets.bottom() -
-         tray_bubble_height_;
+         tray_bubble_height_ - hotseat_height;
 }
 
 gfx::Rect AshMessagePopupCollection::GetWorkArea() const {
@@ -213,6 +218,11 @@ void AshMessagePopupCollection::UpdateWorkArea() {
 
 void AshMessagePopupCollection::OnShelfWorkAreaInsetsChanged() {
   UpdateWorkArea();
+}
+
+void AshMessagePopupCollection::OnHotseatStateChanged(HotseatState old_state,
+                                                      HotseatState new_state) {
+  ResetBounds();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

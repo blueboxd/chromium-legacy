@@ -64,10 +64,6 @@ constexpr base::TimeDelta kDefaultDelayForBackgroundTabFreezing =
 constexpr base::TimeDelta kDefaultDelayForBackgroundAndNetworkIdleTabFreezing =
     base::TimeDelta::FromMinutes(1);
 
-// Interval between throttled wake ups, when intensive throttling is disabled.
-constexpr base::TimeDelta kDefaultThrottledWakeUpInterval =
-    base::TimeDelta::FromSeconds(1);
-
 // Duration of a throttled wake up.
 constexpr base::TimeDelta kThrottledWakeUpDuration =
     base::TimeDelta::FromMilliseconds(3);
@@ -151,6 +147,8 @@ base::TimeDelta GetDelayForBackgroundAndNetworkIdleTabFreezing() {
 
 }  // namespace
 
+constexpr base::TimeDelta PageSchedulerImpl::kDefaultThrottledWakeUpInterval;
+
 PageSchedulerImpl::PageSchedulerImpl(
     PageScheduler::Delegate* delegate,
     MainThreadSchedulerImpl* main_thread_scheduler)
@@ -161,6 +159,7 @@ PageSchedulerImpl::PageSchedulerImpl(
       audio_state_(AudioState::kSilent),
       is_frozen_(false),
       reported_background_throttling_since_navigation_(false),
+      opted_out_from_all_throttling_(false),
       opted_out_from_aggressive_throttling_(false),
       nested_runloop_(false),
       is_main_frame_local_(false),
@@ -471,6 +470,10 @@ bool PageSchedulerImpl::IsExemptFromBudgetBasedThrottling() const {
   return opted_out_from_aggressive_throttling_;
 }
 
+bool PageSchedulerImpl::OptedOutFromAllThrottling() const {
+  return opted_out_from_all_throttling_;
+}
+
 bool PageSchedulerImpl::OptedOutFromAggressiveThrottlingForTest() const {
   return OptedOutFromAggressiveThrottling();
 }
@@ -502,21 +505,29 @@ bool PageSchedulerImpl::IsCPUTimeThrottled() const {
   return is_cpu_time_throttled_;
 }
 
-void PageSchedulerImpl::OnAggressiveThrottlingStatusUpdated() {
+void PageSchedulerImpl::OnThrottlingStatusUpdated() {
+  bool opted_out_from_all_throttling = false;
   bool opted_out_from_aggressive_throttling = false;
   for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
+    opted_out_from_all_throttling |=
+        frame_scheduler->opted_out_from_all_throttling();
     opted_out_from_aggressive_throttling |=
         frame_scheduler->opted_out_from_aggressive_throttling();
   }
+  DCHECK(!opted_out_from_all_throttling ||
+         opted_out_from_aggressive_throttling);
 
-  if (opted_out_from_aggressive_throttling_ !=
-      opted_out_from_aggressive_throttling) {
+  if (opted_out_from_all_throttling_ != opted_out_from_all_throttling ||
+      opted_out_from_aggressive_throttling_ !=
+          opted_out_from_aggressive_throttling) {
+    opted_out_from_all_throttling_ = opted_out_from_all_throttling;
     opted_out_from_aggressive_throttling_ =
         opted_out_from_aggressive_throttling;
     base::sequence_manager::LazyNow lazy_now(
         main_thread_scheduler_->tick_clock());
     UpdateCPUTimeBudgetPool(&lazy_now);
     UpdateWakeUpBudgetPools(&lazy_now);
+    NotifyFrames();
   }
 }
 

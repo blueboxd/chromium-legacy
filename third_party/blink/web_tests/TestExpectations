@@ -209,6 +209,10 @@ crbug.com/1011060 virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Fa
 crbug.com/974720 [ Mac10.13 ] virtual/text-antialias/firstline/capitalize-transform-2.html [ Pass Crash ]
 crbug.com/974720 [ Mac10.13 ] virtual/text-antialias/firstline/capitalize-transform.html [ Pass Crash ]
 
+# Subpixel differences due to compositing on Mac10.14+.
+crbug.com/1079418 [ Mac10.14 ] external/wpt/svg/extensibility/foreignObject/foreign-object-scale-scroll.html [ Failure ]
+crbug.com/1079418 [ Mac10.15 ] external/wpt/svg/extensibility/foreignObject/foreign-object-scale-scroll.html [ Failure ]
+
 # This test depends on synchronous focus() which does not exist (anymore?).
 crbug.com/1074482 external/wpt/html/interaction/focus/the-autofocus-attribute/update-the-rendering.html [ Failure ]
 crbug.com/1074482 external/wpt/clipboard-apis/feature-policy/clipboard-read/clipboard-read-enabled-by-feature-policy-cross-origin-tentative.https.sub.html [ Pass Failure ]
@@ -293,6 +297,9 @@ crbug.com/591099 virtual/scalefactor200/external/wpt/css/filter-effects/filtered
 crbug.com/767318 compositing/reflections/nested-reflection-mask-change.html [ Failure ]
 # Incorrect scrollbar invalidation.
 crbug.com/887000 virtual/prefer_compositing_to_lcd_text/scrollbars/hidden-scrollbars-invisible.html [ Failure ]
+crbug.com/887000 [ Mac10.14 ] scrollbars/hidden-scrollbars-invisible.html [ Failure ]
+crbug.com/887000 [ Mac10.15 ] scrollbars/hidden-scrollbars-invisible.html [ Failure ]
+
 crbug.com/882975 virtual/threaded/fast/events/pinch/gesture-pinch-zoom-prevent-in-handler.html [ Failure Pass ]
 crbug.com/882975 virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Failure Pass ]
 
@@ -1444,7 +1451,7 @@ crbug.com/1053725 [ Mac ] virtual/web-components-v0-disabled/fast/dom/title-text
 
 # Needs triage:
 crbug.com/1053725 [ Mac ] fast/css/button-height.html [ Skip ]
-crbug.com/1053725 [ Mac ] fast/css/css2-system-color.html [ Skip ]
+crbug.com/1104697 fast/css/css2-system-color.html [ Pass Failure ]
 crbug.com/1053725 [ Mac ] fast/css-grid-layout/preferred-width-computed-after-layout.html [ Skip ]
 crbug.com/1053725 [ Mac ] fast/css/text-overflow-ellipsis-button.html [ Skip ]
 crbug.com/1053725 [ Mac ] editing/selection/replaced-boundaries-3.html [ Skip ]
@@ -2723,9 +2730,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-grid/alignment/grid-baseline-align
 crbug.com/626703 [ Linux ] external/wpt/wasm/jsapi/functions/incumbent.html [ Crash ]
 crbug.com/626703 [ Mac ] external/wpt/wasm/jsapi/functions/incumbent.html [ Crash ]
 crbug.com/626703 [ Win ] external/wpt/wasm/jsapi/functions/incumbent.html [ Crash ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-pseudo/textpath-selection-011.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-pseudo/textpath-selection-011.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-pseudo/textpath-selection-011.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] virtual/cors/external/wpt/preload/download-resources.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] virtual/cors/external/wpt/preload/download-resources.html [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] virtual/cors/external/wpt/preload/download-resources.html [ Timeout ]
@@ -6859,7 +6863,7 @@ crbug.com/1099689 [ Linux ] external/wpt/html/browsers/windows/nested-browsing-c
 crbug.com/1010170 media/video-played-reset.html [ Pass Failure ]
 
 #Sheriff 2020-06-30
-crbug.com/1100774 [ Mac10.13 ] virtual/threaded-no-composited-antialiasing/animations/svg-attribute-interpolation/svg-d-interpolation.html [ Pass Failure ]
+crbug.com/1099657 [ Mac10.13 ] virtual/threaded-no-composited-antialiasing/animations/svg-attribute-interpolation/svg-d-interpolation.html [ Pass Failure ]
 crbug.com/1100786 [ Mac10.10 ] fast/scroll-snap/snaps-after-touchpad-scrolling.html [ Failure ]
 crbug.com/1100786 [ Mac10.10 ] storage/indexeddb/transaction-active-flag.html [ Timeout ]
 
@@ -6888,3 +6892,14 @@ crbug.com/1104186 [ Win ] fast/forms/color-scheme/suggestion-picker/time-suggest
 
 crbug.com/1104195 inspector-protocol/css/css-set-effective-property-value.js [ Pass Failure ]
 crbug.com/1104333 http/tests/devtools/bindings/inline-styles-binding.js [ Pass Failure ]
+
+# Sheriff 2020-07-13
+
+crbug.com/1104910 [ Mac ] external/wpt/webaudio/the-audio-api/the-oscillatornode-interface/osc-basic-waveform.html [ Pass Failure ]
+crbug.com/1104910 [ Mac10.13 ] fast/dom/cssTarget-crash.html [ Pass Failure ]
+crbug.com/1104910 [ Mac10.13 ] fast/peerconnection/RTCPeerConnection-reload-interesting-usage.html [ Pass Failure ]
+crbug.com/1104910 [ Win ] http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-no-url-end-to-end.js [ Pass Failure ]
+crbug.com/1104910 [ Linux ] inspector-protocol/stylesheet-tracking-restart.js [ Pass Failure ]
+crbug.com/1104910 [ Linux ] virtual/web-components-v0-disabled/fast/dom/cssTarget-crash.html [ Pass Failure ]
+crbug.com/1104910 [ Win ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/registration-updateviacache.https.html [ Pass Failure ]
+crbug.com/1104910 [ Win ] http/tests/devtools/elements/styles-1/dynamic-style-tag.js [ Pass Failure ]

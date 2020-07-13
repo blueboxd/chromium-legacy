@@ -55,6 +55,7 @@ android_library("java") {
     "java/src/org/chromium/components/paintpreview/player/PlayerManager.java",
     "java/src/org/chromium/components/paintpreview/player/PlayerSwipeRefreshHandler.java",
     "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameBitmapPainter.java",
+    "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameBitmapState.java",
     "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameCoordinator.java",
     "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameGestureDetector.java",
     "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameMediator.java",

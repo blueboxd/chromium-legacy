@@ -16,11 +16,13 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_simplified_oof_layout_algorithm.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -605,10 +607,9 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendants(
       scoped_refptr<const NGLayoutResult> result =
           LayoutFragmentainerDescendant(descendant);
 
-      // TODO(almaher): Add children to the correct fragmentainer.
-      container_builder_->AddChild(result->PhysicalFragment(),
-                                   result->OutOfFlowPositionedOffset(),
-                                   descendant.inline_container);
+      // TODO(almaher): Add children to the correct fragmentainer. For now, it
+      // always get added to the first one.
+      AddOOFResultToFragmentainer(result, /* index */ 0);
     }
     // Sweep any descendants that might have been added.
     // This happens when an absolute container has a fixed child.
@@ -962,6 +963,42 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
   NGConstraintSpace space = builder.ToConstraintSpace();
 
   return node.Layout(space);
+}
+
+void NGOutOfFlowLayoutPart::AddOOFResultToFragmentainer(
+    scoped_refptr<const NGLayoutResult> result,
+    const wtf_size_t index) {
+  DCHECK_LT(index, container_builder_->Children().size());
+
+  const auto& fragmentainer = container_builder_->Children()[index];
+  DCHECK(fragmentainer.fragment->IsFragmentainerBox());
+  const NGBlockNode& node = container_builder_->Node();
+  const auto& fragment =
+      To<NGPhysicalBoxFragment>(*fragmentainer.fragment.get());
+  const WritingMode container_writing_mode =
+      container_builder_->Style().GetWritingMode();
+  // TODO(bebeaudr): Need to handle different fragmentation types. It won't
+  // always be multi-column.
+  NGConstraintSpace space = CreateConstraintSpaceForColumns(
+      *container_builder_->ConstraintSpace(), container_writing_mode,
+      fragment.Size().ConvertToLogical(container_writing_mode),
+      /* is_first_fragmentainer */ index == 0, /* balance_columns */ false);
+  NGFragmentGeometry fragment_geometry =
+      CalculateInitialFragmentGeometry(space, node);
+  NGLayoutAlgorithmParams params(node, fragment_geometry, space,
+                                 /* break_token */ nullptr,
+                                 /* early_break */ nullptr);
+
+  // |algorithm| corresponds to the "mutable copy" of our original
+  // fragmentainer. As long as this "copy" hasn't been laid out via
+  // NGSimplifiedOOFLayoutAlgorithm::Layout, we can append new items to it.
+  NGSimplifiedOOFLayoutAlgorithm algorithm(params, fragment);
+
+  // TODO(bebeaudr): Is the offset returned by OutOfFlowPositionedOffset the one
+  // to use?
+  algorithm.AppendOutOfFlowResult(result, result->OutOfFlowPositionedOffset());
+  container_builder_->ReplaceChild(
+      index, algorithm.Layout()->PhysicalFragment(), fragmentainer.offset);
 }
 
 }  // namespace blink

@@ -15,9 +15,9 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.notifications.NotificationWrapperBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
@@ -27,11 +27,11 @@ import org.chromium.chrome.browser.sync.GoogleServiceAuthError.State;
 import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
 import org.chromium.chrome.browser.sync.ui.PassphraseActivity;
 import org.chromium.chrome.browser.sync.ui.TrustedVaultKeyRetrievalProxyActivity;
-import org.chromium.components.browser_ui.notifications.ChromeNotification;
-import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
+import org.chromium.components.browser_ui.notifications.NotificationWrapperBuilder;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
@@ -131,9 +131,9 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
 
         // There is no need to provide a group summary notification because the NOTIFICATION_ID_SYNC
         // notification id ensures there's only one sync notification at a time.
-        ChromeNotificationBuilder builder =
-                NotificationBuilderFactory
-                        .createChromeNotificationBuilder(true /* preferCompat */,
+        NotificationWrapperBuilder builder =
+                NotificationWrapperBuilderFactory
+                        .createNotificationWrapperBuilder(true /* preferCompat */,
                                 ChromeChannelDefinitions.ChannelId.BROWSER,
                                 null /*remoteAppPackageName*/,
                                 new NotificationMetadata(
@@ -148,7 +148,7 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
                         .setLocalOnly(true)
                         .setGroup(NotificationConstants.GROUP_SYNC);
 
-        ChromeNotification notification = builder.buildWithBigTextStyle(text);
+        NotificationWrapper notification = builder.buildWithBigTextStyle(text);
 
         mNotificationManager.notify(notification);
         NotificationUmaTracker.getInstance().onNotificationShown(

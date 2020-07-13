@@ -276,18 +276,21 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
   DCHECK(context.tree_builder_context_);
   DCHECK(!pre_paint_info || &fragment_data == &pre_paint_info->fragment_data);
 
-  IntRect visual_rect = ComputeVisualRect(object, pre_paint_info, context);
+  IntRect old_visual_rect = fragment_data.VisualRect();
+  IntRect new_visual_rect = ComputeVisualRect(object, pre_paint_info, context);
   if (pre_paint_info && !object.IsBox()) {
     DCHECK(object.IsInline());
     // Text and non-atomic inlines share the same FragmentData object per block
     // fragment, and their FragmentData objects are reset when visiting their
     // first fragment. So just add to the visual rectangle.
-    visual_rect.Unite(fragment_data.VisualRect());
+    // TODO(crbug.com/1043787): Fix this. The way we use FragmentData for
+    // non-atomic inlines is not ideal for how LayoutNG works.
+    new_visual_rect.Unite(fragment_data.VisualRect());
   } else {
     DCHECK_EQ(context.tree_builder_context_->current.paint_offset,
               fragment_data.PaintOffset());
   }
-  fragment_data.SetVisualRect(visual_rect);
+  fragment_data.SetVisualRect(new_visual_rect);
   fragment_data.SetOffsetTo2DTranslationRoot(
       context.tree_builder_context_->current.offset_to_2d_translation_root);
 
@@ -297,7 +300,7 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
           *context.tree_builder_context_->current.transform,
           *context.tree_builder_context_->current.clip,
           *context.tree_builder_context_->current_effect),
-      context.old_visual_rect, fragment_data.VisualRect(),
+      old_visual_rect, new_visual_rect,
       FloatSize(context.old_offset_to_2d_translation_root -
                 fragment_data.OffsetTo2DTranslationRoot()));
 }
@@ -362,16 +365,8 @@ bool PaintInvalidator::InvalidatePaint(
   if (pre_paint_info) {
     FragmentData& fragment_data = pre_paint_info->fragment_data;
     if (!object.IsBox()) {
-      // Text and non-atomic inlines may generate multiple physical fragments,
-      // and we're updating the VisualRect in the FragmentData as we visit each
-      // of them. As such, the current VisualRect in FragmentData is possibly
-      // incomplete, so letting anyone use it for comparisons is meaningless.
-      // TODO(crbug.com/1043787): Fix this. The way we use FragmentData for
-      // non-atomic inlines is not ideal for how LayoutNG works.
-      context.old_visual_rect = IntRect();
       context.old_offset_to_2d_translation_root = PhysicalOffset();
     } else {
-      context.old_visual_rect = fragment_data.VisualRect();
       context.old_offset_to_2d_translation_root =
           fragment_data.OffsetTo2DTranslationRoot();
     }
@@ -399,7 +394,6 @@ bool PaintInvalidator::InvalidatePaint(
     for (auto* fragment_data = &object.GetMutableForPainting().FirstFragment();
          fragment_data;
          fragment_data = fragment_data->NextFragment(), tree_builder_index++) {
-      context.old_visual_rect = fragment_data->VisualRect();
       context.old_offset_to_2d_translation_root =
           fragment_data->OffsetTo2DTranslationRoot();
       context.fragment_data = fragment_data;

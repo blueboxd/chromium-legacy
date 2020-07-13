@@ -458,7 +458,7 @@ TEST(WebAppInstallUtils, FilterAndResizeIconsGenerateMissingNoWebAppIconData) {
   icons_map.emplace(IconUrl1(), bmp1);
   FilterAndResizeIconsGenerateMissing(&web_app_info, &icons_map);
 
-  EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps.size());
+  EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps_any.size());
 }
 
 // Tests that when FilterAndResizeIconsGenerateMissing is called with no
@@ -472,7 +472,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   icons_map.emplace(IconUrl1(), bmp1);
   FilterAndResizeIconsGenerateMissing(&web_app_info, &icons_map);
 
-  EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps.size());
+  EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps_any.size());
 }
 
 // Tests that when FilterAndResizeIconsGenerateMissing is called with both
@@ -511,8 +511,8 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
 
   FilterAndResizeIconsGenerateMissing(&web_app_info, &icons_map);
 
-  EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps.size());
-  for (const auto& icon_bitmap : web_app_info.icon_bitmaps) {
+  EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps_any.size());
+  for (const auto& icon_bitmap : web_app_info.icon_bitmaps_any) {
     EXPECT_EQ(SK_ColorWHITE, icon_bitmap.second.getColor(0, 0));
   }
 }

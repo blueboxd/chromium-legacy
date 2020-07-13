@@ -204,6 +204,10 @@ void AssistantControllerImpl::OnDeepLinkReceived(
     case DeepLinkType::kFeedback:
       NewWindowDelegate::GetInstance()->OpenFeedbackPage(
           /*from_assistant=*/true);
+
+      // Close the assistant UI so that the feedback page is visible.
+      assistant_ui_controller_.CloseUi(
+          chromeos::assistant::AssistantExitPoint::kUnspecified);
       break;
     case DeepLinkType::kScreenshot:
       // We close the UI before taking the screenshot as it's probably not the

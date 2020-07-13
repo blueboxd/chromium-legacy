@@ -80,6 +80,10 @@ interface SpellCheckHost {
   [EnableIf=is_win, Sync]
   GetPerLanguageSuggestions(mojo_base.mojom.String16 word) =>
       (array<array<mojo_base.mojom.String16>> suggestions);
+
+  // Completes initialization of the spellcheck service by loading dictionaries.
+  [EnableIf=USE_BROWSER_SPELLCHECKER]
+  InitializeDictionaries() => ();
 };
 
 enum Decoration {

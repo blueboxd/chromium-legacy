@@ -24,7 +24,6 @@ class LayerTreeHostSynchronousPixelTest
   void InitializeSettings(LayerTreeSettings* settings) override {
     LayerTreePixelTest::InitializeSettings(settings);
     settings->single_thread_proxy_scheduler = false;
-    settings->use_zero_copy = use_zero_copy_;
   }
 
   RendererType renderer_type() const { return GetParam(); }
@@ -49,8 +48,6 @@ class LayerTreeHostSynchronousPixelTest
     RunSingleThreadedPixelTest(root,
                                base::FilePath(FILE_PATH_LITERAL("green.png")));
   }
-
-  bool use_zero_copy_ = false;
 };
 
 LayerTreeTest::RendererType const kRendererTypesGpu[] = {
@@ -66,12 +63,12 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ::testing::ValuesIn(kRendererTypesGpu));
 
 TEST_P(LayerTreeHostSynchronousPixelTest, OneContentLayerZeroCopy) {
-  use_zero_copy_ = true;
+  set_raster_type(TestRasterType::kZeroCopy);
   DoContentLayerTest();
 }
 
 TEST_P(LayerTreeHostSynchronousPixelTest, OneContentLayerGpuRasterization) {
-  set_gpu_rasterization();
+  set_raster_type(TestRasterType::kGpu);
   DoContentLayerTest();
 }
 

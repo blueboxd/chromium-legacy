@@ -43,6 +43,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -129,8 +130,8 @@ public class IncognitoStorageLeakageTest {
     @Test
     @LargeTest
     @UseMethodParameter(TestParams.AllTypesToAllTypes.class)
-    public void testStorageDoesNotLeakFromActivityToActivity(
-            String activityType1, String activityType2) throws TimeoutException {
+    public void testStorageDoesNotLeakFromActivityToActivity(String activityType1,
+            String activityType2) throws ExecutionException, TimeoutException {
         ActivityType activity1 = ActivityType.valueOf(activityType1);
         ActivityType activity2 = ActivityType.valueOf(activityType2);
 
@@ -155,18 +156,24 @@ public class IncognitoStorageLeakageTest {
                 expected = "true";
             }
 
+            // Since the test required launching tab2 right after launching tab1
+            // it may happen that these tabs were fired in different Activities.
+            // Due to which tab1 could potentially be marked as frozen and invoking
+            // getWebContents on it may return null. Please see the javadoc for
+            // TabImpl#getWebContents.
+            TestThreadUtils.runOnUiThreadBlocking(() -> tab1.loadIfNeeded());
             CriteriaHelper.pollUiThread(
                     () -> Criteria.checkThat(tab1.getWebContents(), Matchers.notNullValue()));
             // Set the storage in tab1
             assertEquals("true",
                     JavaScriptUtils.runJavascriptWithAsyncResult(
                             tab1.getWebContents(), "set" + type + "()"));
-
             // Checks the storage is set in tab1
             assertEquals("true",
                     JavaScriptUtils.runJavascriptWithAsyncResult(
                             tab1.getWebContents(), "has" + type + "()"));
 
+            TestThreadUtils.runOnUiThreadBlocking(() -> tab2.loadIfNeeded());
             CriteriaHelper.pollUiThread(
                     () -> Criteria.checkThat(tab2.getWebContents(), Matchers.notNullValue()));
             // Access the storage from tab2

@@ -258,7 +258,7 @@ TEST_F(ServiceWorkerContextWrapperTest, GetInstalledRegistrationOrigins_Empty) {
 TEST_F(ServiceWorkerContextWrapperTest, GetInstalledRegistrationOrigins_One) {
   const GURL scope("https://example.com/");
   const GURL script("https://example.com/sw.js");
-  const url::Origin origin = url::Origin::Create(scope.GetOrigin());
+  const url::Origin origin = url::Origin::Create(scope);
 
   wrapper_->WaitForRegistrationsInitializedForTest();
   scoped_refptr<ServiceWorkerRegistration> registration =
@@ -279,7 +279,7 @@ TEST_F(ServiceWorkerContextWrapperTest,
        GetInstalledRegistrationOrigins_SameOrigin) {
   const GURL scope1("https://example.com/foo");
   const GURL script1("https://example.com/foo/sw.js");
-  const url::Origin origin = url::Origin::Create(scope1.GetOrigin());
+  const url::Origin origin = url::Origin::Create(scope1);
   const GURL scope2("https://example.com/bar");
   const GURL script2("https://example.com/bar/sw.js");
 
@@ -308,10 +308,10 @@ TEST_F(ServiceWorkerContextWrapperTest,
        GetInstalledRegistrationOrigins_DifferentOrigin) {
   const GURL scope1("https://example1.com/foo");
   const GURL script1("https://example1.com/foo/sw.js");
-  const url::Origin origin1 = url::Origin::Create(scope1.GetOrigin());
+  const url::Origin origin1 = url::Origin::Create(scope1);
   const GURL scope2("https://example2.com/bar");
   const GURL script2("https://example2.com/bar/sw.js");
-  const url::Origin origin2 = url::Origin::Create(scope2.GetOrigin());
+  const url::Origin origin2 = url::Origin::Create(scope2);
 
   wrapper_->WaitForRegistrationsInitializedForTest();
 
@@ -339,7 +339,7 @@ TEST_F(ServiceWorkerContextWrapperTest,
        GetInstalledRegistrationOrigins_HostFilterMatch) {
   const GURL scope("https://example.com/");
   const GURL script("https://example.com/sw.js");
-  const url::Origin origin = url::Origin::Create(scope.GetOrigin());
+  const url::Origin origin = url::Origin::Create(scope);
 
   wrapper_->WaitForRegistrationsInitializedForTest();
   scoped_refptr<ServiceWorkerRegistration> registration =
@@ -360,7 +360,7 @@ TEST_F(ServiceWorkerContextWrapperTest,
        GetInstalledRegistrationOrigins_HostFilterNoMatch) {
   const GURL scope("https://example.com/");
   const GURL script("https://example.com/sw.js");
-  const url::Origin origin = url::Origin::Create(scope.GetOrigin());
+  const url::Origin origin = url::Origin::Create(scope);
 
   wrapper_->WaitForRegistrationsInitializedForTest();
   scoped_refptr<ServiceWorkerRegistration> registration =
@@ -380,10 +380,10 @@ TEST_F(ServiceWorkerContextWrapperTest,
        GetInstalledRegistrationOrigins_DeletedRegistration) {
   const GURL scope1("https://example1.com/foo");
   const GURL script1("https://example1.com/foo/sw.js");
-  const url::Origin origin1 = url::Origin::Create(scope1.GetOrigin());
+  const url::Origin origin1 = url::Origin::Create(scope1);
   const GURL scope2("https://example2.com/bar");
   const GURL script2("https://example2.com/bar/sw.js");
-  const url::Origin origin2 = url::Origin::Create(scope2.GetOrigin());
+  const url::Origin origin2 = url::Origin::Create(scope2);
 
   wrapper_->WaitForRegistrationsInitializedForTest();
 

@@ -645,19 +645,6 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_SelectionChanged,
 // The message is delivered using RenderWidget::QueueMessage.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_VisualStateResponse, uint64_t /* id */)
 
-// Sent when the renderer runs insecure content in a secure origin.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_DidRunInsecureContent,
-                    GURL /* security_origin */,
-                    GURL /* target URL */)
-
-// Sent when the renderer displays content that was loaded with
-// certificate errors.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_DidDisplayContentWithCertificateErrors)
-
-// Sent when the renderer runs content that was loaded with certificate
-// errors.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_DidRunContentWithCertificateErrors)
-
 // Ask the frame host to print a cross-process subframe.
 // The printed content of this subframe belongs to the document specified by
 // its document cookie. Document cookie is a unique id for a printed document

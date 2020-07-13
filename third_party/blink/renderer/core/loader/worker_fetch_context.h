@@ -7,10 +7,12 @@
 
 #include <memory>
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/public/mojom/loader/content_security_notifier.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/loader/base_fetch_context.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -97,6 +99,8 @@ class WorkerFetchContext final : public BaseFetchContext {
   bool AllowRunningInsecureContent(bool enabled_per_settings,
                                    const KURL& url) const;
 
+  mojom::blink::ContentSecurityNotifier& GetContentSecurityNotifier();
+
   void Trace(Visitor*) const override;
 
  private:
@@ -116,6 +120,9 @@ class WorkerFetchContext final : public BaseFetchContext {
   // WorkerGlobalScope::GetContentSecurityPolicy(), not bound to
   // WorkerGlobalScope and owned by this WorkerFetchContext.
   const Member<ContentSecurityPolicy> content_security_policy_;
+
+  HeapMojoRemote<mojom::blink::ContentSecurityNotifier>
+      content_security_notifier_;
 
   const CrossThreadPersistent<WorkerResourceTimingNotifier>
       resource_timing_notifier_;

@@ -1197,6 +1197,12 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                const GURL& scope,
                                AllowServiceWorkerResult allowed);
 
+  void OnDidRunInsecureContent(RenderFrameHostImpl* source,
+                               const GURL& security_origin,
+                               const GURL& target_url);
+  void OnDidDisplayContentWithCertificateErrors(RenderFrameHostImpl* source);
+  void OnDidRunContentWithCertificateErrors(RenderFrameHostImpl* source);
+
   JavaScriptDialogNavigationDeferrer* GetJavaScriptDialogNavigationDeferrer() {
     return javascript_dialog_navigation_deferrer_.get();
   }
@@ -1423,11 +1429,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                       const base::string16& user_input);
 
   // IPC message handlers.
-  void OnDidRunInsecureContent(RenderFrameHostImpl* source,
-                               const GURL& security_origin,
-                               const GURL& target_url);
-  void OnDidDisplayContentWithCertificateErrors(RenderFrameHostImpl* source);
-  void OnDidRunContentWithCertificateErrors(RenderFrameHostImpl* source);
   void OnUpdateZoomLimits(RenderViewHostImpl* source,
                           int minimum_percent,
                           int maximum_percent);

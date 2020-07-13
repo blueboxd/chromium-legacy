@@ -33,7 +33,7 @@ three animation types share a common base class ([Animation](
 https://cs.chromium.org/search/?q=class:blink::Animation$)) with the majority
 of the code being common to all three animation types.
 
-### CSS animations
+### CSS animation
 
 CSS animations are created via CSS rules, whereby an animation-name property
 (or animation shorthand property) refers to one or more keyframes rules.
@@ -192,6 +192,114 @@ cannot be combined into a single animation to achieve the desired results.
 A more detailed description of the animate method can be found on the
 [MDN Element.animate](
 https://developer.mozilla.org/en-US/docs/Web/API/Element/animate) page.
+
+## Web animation model
+
+At a fundamental level, the web animation model converts a time value to one or
+more property values. This is true whether we are using a DocumentTimeline
+driven by an AnimationClock, or a ScrollTimeline that converts a scroll position
+to an abstract representation of time.  The same rules also apply for
+CSSAnimations and CSSTransitions, which derive from the base Animation class.
+
+The web animation model can be further broken down into two sub-models:
+
+1. A 'timing model' which converts time to an iteration index and progress
+(proportional value between 0 and 1).
+
+2. An 'animation model' which converts the progress to property values.
+
+![](https://drafts.csswg.org/web-animations/img/timing-and-animation-models.svg)
+
+The division of responsibilities can best be illustrated through an example.
+Consider the following:
+
+```css
+@keyframes fade {
+  from { opacity: 1; animation-timing-function: ease-in; }
+  50% { opacity: 0.5; animation-timing-function: ease-out; }
+  to { opacity: 0; }
+}
+.pulse {
+  animation-name: fade;
+  animation-iteration-count: 3;
+  animation-duration: 0.5s;
+  animation-delay: 200ms;
+  animation-direction: alternate-reverse;
+  animation-fill: both;
+}
+```
+```javascript
+element.classList.add('pulse');
+```
+
+Prior to the 200ms mark, the animation is in the 'before' phase. since the
+elapsed time is less than the start delay (200ms). Conversely, after the 1.7s
+mark (start delay + itertions * duration), the animation is in the 'after'
+phase. Between these time boundaries, we are in the 'active' phase, and the
+timing model is applied to calculate the iteration index and progress.
+
+At the 1s mark of the animation, we are 0.8s into playing the animation (active
+time) due to the start delay. Each iteration takes 0.5s, putting us 0.3s into
+the second iteration, which is in the forward direction since alternating and
+initially playing backwards (alternate-reverse). The last step of the timing
+model is to convert the iteration time to an iteration progress. This is simply
+the ratio of the iteration time to the iteration duration (0.3s / 0.5s = 0.6).
+
+Conversely, at the 0.5s mark, we are 0.3s into an iteration playing in the
+reverse direction. As the iteration progress measures progress in the forward
+direction, the iteration progress becomes 1 - directional progress, which is
+1 - 0.3s / 0.5s = 0.4.
+
+The animation model converts the iteration index and progress into property
+values. As the iteration-composite property is not supported at this time, only
+the iteration progress is a factor in our calculations. The iteration progress
+is fed into the keyframes model to compute property values.
+
+Each keyframe has an offset, and for each property, we determine the keyframe
+pair that bounds the iteration progress. Returning to our example with an
+iteration progress of 0.6 at the 1s mark, we are iterating between the '50%'
+and 'to' keyframes. The relative progress between these frames is
+(0.6 - 0.5) / (1.0 - 0.5) = 0.2.  This value is the input to our
+animation-timing-function. The timing function for this keyframe pair
+is 'ease-out', which is equivalent to cubic-bezier(0, 0, 0.58, 1)). Plugging an
+input value of 0.2 into our cubic-bezier function, we get an output of roughly
+0.31, which is the local progress value used for interpolation between the two
+keyframes. For any scalar-valued property, the interpolation function is:
+
+v = progress * v_1 + (1 - progress) * v_0
+
+For our example,
+
+opacity = 0.31 * 0 + (1 - 0.31) * 0.5 = 0.35
+
+The interpolation procedure is less straightforward for non-scalar values
+(especially for transform lists).  Nonetheless, this example provides a good
+overview of the web animation model.
+
+Points of interest in the Blink code base:
+* [timing_calculations.h](
+https://cs.chromium.org/search?q=file:core/animation/timing_calculations.h):
+contains static helper functions for various timing calculations used in the
+animation model such as determining the phase of the animation, iteration
+progress and transformed progress.
+* [AnimationEffect::UpdateInheritedTime](
+https://cs.chromium.org/search?q=function:blink::AnimationEffect::UpdateInheritedTime):
+applies the web animation model and dispatches animation/transition events.
+* [InterpolationEffect::GetActiveInterpolations](
+https://cs.chromium.org/search?q=function:blink::InterpolationEffect::GetActiveInterpolations):
+creates a list of active interpolations by determining keyframe-pairs that bound
+the iteration progress and determining the 'local' progress between keyframes.
+If a timing function is specified for the interpolation, it is applied when
+computing the 'local' progress.
+* [KeyframeEffect::ApplyEffects](
+https://cs.chromium.org/search?q=function:blink::KeyframeEffect::ApplyEffects):
+Samples the keyframe effect, adding it to the effect stack if necessary and
+signaling that an animation style recalc is needed if the sampled value changed.
+* [Animation::Update](
+https://cs.chromium.org/search?q=function:blink::Animation::Update):
+Called in response to ticking the animation timeline or to revalidate outdated
+animations.  In addition to applying the web animation model via
+UpdateInheritedTime, this method determines if the animation is finished.
 
 
 ## Integration with Chromium

@@ -161,7 +161,7 @@ void UseAddressAction::ExecuteFallback(const ClientStatus& status) {
   std::vector<RequiredField> required_fields;
   for (const auto& required_field_proto :
        proto_.use_address().required_fields()) {
-    if (required_field_proto.value_expression().empty()) {
+    if (!required_field_proto.has_value_expression()) {
       continue;
     }
 

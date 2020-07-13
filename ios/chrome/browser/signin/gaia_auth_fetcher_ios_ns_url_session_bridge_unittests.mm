@@ -397,6 +397,12 @@ bool GaiaAuthFetcherIOSNSURLSessionBridgeTest::FetchURL(const GURL& url) {
 #endif
 TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest,
        MAYBE_FetchWithEmptyCookieStore) {
+  // TODO(crbug.com/1102903): __NSCFURLSessionConfiguration does not exist on
+  // iOS 14.
+  if (@available(iOS 14, *)) {
+    return;
+  }
+
   OCMExpect([http_cookie_storage_mock_
       storeCookies:@[]
            forTask:url_session_data_task_mock_]);
@@ -424,6 +430,12 @@ TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest,
 #define MAYBE_FetchWithCookieStore DISABLED_FetchWithCookieStore
 #endif
 TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, MAYBE_FetchWithCookieStore) {
+  // TODO(crbug.com/1102903): __NSCFURLSessionConfiguration does not exist on
+  // iOS 14.
+  if (@available(iOS 14, *)) {
+    return;
+  }
+
   NSArray* cookies_to_send = @[ GetCookie1() ];
   ASSERT_TRUE(SetCookiesInCookieManager(cookies_to_send));
 
@@ -453,6 +465,12 @@ TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, MAYBE_FetchWithCookieStore) {
 #define MAYBE_FetchWithRedirect DISABLED_FetchWithRedirect
 #endif
 TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, MAYBE_FetchWithRedirect) {
+  // TODO(crbug.com/1102903): __NSCFURLSessionConfiguration does not exist on
+  // iOS 14.
+  if (@available(iOS 14, *)) {
+    return;
+  }
+
   OCMExpect([http_cookie_storage_mock_
       storeCookies:@[]
            forTask:url_session_data_task_mock_]);

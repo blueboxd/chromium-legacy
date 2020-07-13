@@ -293,7 +293,9 @@ public class PageInfoController
                 new PermissionParamsListBuilder(mContext, mWindowAndroid, mFullUrl, showTitle, this,
                         mView::setPermissions, mPermissionParamsListBuilderDelegate);
         mNativePageInfoController = PageInfoControllerJni.get().init(this, mWebContents);
-        mCookieBridge = mDelegate.createCookieControlsBridge(this);
+        mCookieBridge =
+                mDelegate.createCookieControlsBridge(mIsV2Enabled ? mCookiesController : this);
+        if (mCookiesController != null) mCookiesController.setCookieControlsBridge(mCookieBridge);
 
         mWebContentsObserver = new WebContentsObserver(webContents) {
             @Override
@@ -492,6 +494,8 @@ public class PageInfoController
 
     @VisibleForTesting
     public PageInfoView getPageInfoViewForTesting() {
+        // Check that this view is active.
+        assert mView.getParent() != null;
         return mView;
     }
 
@@ -540,19 +544,15 @@ public class PageInfoController
     @Override
     public void onCookieBlockingStatusChanged(
             @CookieControlsStatus int status, @CookieControlsEnforcement int enforcement) {
-        if (!mIsV2Enabled) {
-            mView.getCookieControlsView().setCookieBlockingStatus(
-                    status, enforcement != CookieControlsEnforcement.NO_ENFORCEMENT);
-        }
+        assert !mIsV2Enabled;
+        mView.getCookieControlsView().setCookieBlockingStatus(
+                status, enforcement != CookieControlsEnforcement.NO_ENFORCEMENT);
     }
 
     @Override
     public void onCookiesCountChanged(int allowedCookies, int blockedCookies) {
-        if (mIsV2Enabled) {
-            mCookiesController.onBlockedCookiesCountChanged(blockedCookies);
-        } else {
-            mView.getCookieControlsView().setBlockedCookiesCount(blockedCookies);
-        }
+        assert !mIsV2Enabled;
+        mView.getCookieControlsView().setBlockedCookiesCount(blockedCookies);
     }
 
     @NativeMethods
@@ -610,10 +610,8 @@ public class PageInfoController
         parent.addView(newView, index);
     }
 
-    /**
-     * Switches back to the main page info view.
-     */
-    private void exitSubpage() {
+    @Override
+    public void exitSubpage() {
         replaceView(mSubpage, mView);
         mSubpageController.onSubpageRemoved();
         mSubpageController = null;

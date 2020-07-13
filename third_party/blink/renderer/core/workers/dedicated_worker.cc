@@ -207,6 +207,19 @@ void DedicatedWorker::Start() {
         script_request_url_,
         blob_url_loader_factory.InitWithNewPipeAndPassReceiver());
   }
+
+  if (GetExecutionContext()->GetSecurityOrigin()->IsLocal()) {
+    // Local resources always have empty COEP, and Worker creation
+    // from a blob URL in a local resource cannot work with
+    // asynchronous OnHostCreated call, so we call it directly here.
+    // See https://crbug.com/1101603#c8.
+    factory_client_->CreateWorkerHostDeprecated(
+        WTF::Bind([](const network::CrossOriginEmbedderPolicy&) {}));
+    OnHostCreated(std::move(blob_url_loader_factory),
+                  network::CrossOriginEmbedderPolicy());
+    return;
+  }
+
   factory_client_->CreateWorkerHostDeprecated(
       WTF::Bind(&DedicatedWorker::OnHostCreated, WrapWeakPersistent(this),
                 std::move(blob_url_loader_factory)));

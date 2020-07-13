@@ -831,7 +831,8 @@ bool FrameFetchContext::ShouldBlockFetchByMixedContentCheck(
                     : RedirectStatus::kNoRedirect;
   return MixedContentChecker::ShouldBlockFetch(
       GetFrame(), request_context, url_before_redirects, redirect_status, url,
-      devtools_id, reporting_disposition);
+      devtools_id, reporting_disposition,
+      document_loader_->GetContentSecurityNotifier());
 }
 
 bool FrameFetchContext::ShouldBlockFetchAsCredentialedSubresource(
@@ -1092,6 +1093,12 @@ mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
 FrameFetchContext::TakePendingWorkerTimingReceiver(int request_id) {
   DCHECK(!GetResourceFetcherProperties().IsDetached());
   return document_loader_->TakePendingWorkerTimingReceiver(request_id);
+}
+
+mojom::blink::ContentSecurityNotifier&
+FrameFetchContext::GetContentSecurityNotifier() const {
+  DCHECK(!GetResourceFetcherProperties().IsDetached());
+  return document_loader_->GetContentSecurityNotifier();
 }
 
 base::Optional<ResourceRequestBlockedReason> FrameFetchContext::CanRequest(

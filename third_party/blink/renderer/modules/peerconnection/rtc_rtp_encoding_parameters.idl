@@ -22,4 +22,6 @@ dictionary RTCRtpEncodingParameters : RTCRtpCodingParameters {
     double          maxFramerate;
     // https://w3c.github.io/webrtc-svc/#dom-rtcrtpencodingparameters-scalabilitymode
     [RuntimeEnabled=RTCSvcScalabilityMode] DOMString scalabilityMode;
+    // https://w3c.github.io/webrtc-extensions/#dom-rtcrtpencodingparameters-adaptiveptime
+    [RuntimeEnabled=RTCAdaptivePtime] boolean adaptivePtime = false;
 };

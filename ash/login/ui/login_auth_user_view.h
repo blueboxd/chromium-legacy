@@ -64,6 +64,7 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
     LoginPinView* pin_view() const;
     views::Button* online_sign_in_message() const;
     views::View* disabled_auth_message() const;
+    views::Button* challenge_response_button();
     bool HasAuthMethod(AuthMethods auth_method) const;
     const base::string16& GetDisabledAuthMessageContent() const;
 

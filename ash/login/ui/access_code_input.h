@@ -5,6 +5,7 @@
 #ifndef ASH_LOGIN_UI_ACCESS_CODE_INPUT_H_
 #define ASH_LOGIN_UI_ACCESS_CODE_INPUT_H_
 
+#include "base/strings/string16.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 
@@ -62,6 +63,8 @@ class FlexCodeInput : public AccessCodeInput {
   FlexCodeInput(const FlexCodeInput&) = delete;
   FlexCodeInput& operator=(const FlexCodeInput&) = delete;
   ~FlexCodeInput() override;
+
+  void SetAccessibleName(const base::string16& name);
 
   // Appends |value| to the code
   void InsertDigit(int value) override;

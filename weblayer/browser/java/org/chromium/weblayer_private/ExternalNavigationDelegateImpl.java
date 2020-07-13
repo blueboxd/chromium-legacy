@@ -15,7 +15,6 @@ import org.chromium.base.PackageManagerUtils;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.external_intents.ExternalNavigationDelegate;
 import org.chromium.components.external_intents.ExternalNavigationDelegate.StartActivityIfNeededResult;
-import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.components.external_intents.ExternalNavigationParams;
 import org.chromium.components.webapk.lib.client.ChromeWebApkHostSignature;
@@ -90,14 +89,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
         // Otherwise defer to ExternalNavigationHandler's default logic.
         return StartActivityIfNeededResult.DID_NOT_HANDLE;
-    }
-
-    @Override
-    public boolean startIncognitoIntent(final Intent intent, final String referrerUrl,
-            final String fallbackUrl, final boolean needsToCloseTab, final boolean proxy) {
-        // TODO(crbug.com/1063399): Determine if this behavior should be refined.
-        ExternalNavigationHandler.startActivity(intent, proxy, this);
-        return true;
     }
 
     // This method should never be invoked as WebLayer does not handle incoming intents.
@@ -193,6 +184,11 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     public boolean hasValidTab() {
         assert mTab != null;
         return !mTabDestroyed;
+    }
+
+    @Override
+    public boolean canCloseTabOnIncognitoIntentLaunch() {
+        return hasValidTab();
     }
 
     @Override

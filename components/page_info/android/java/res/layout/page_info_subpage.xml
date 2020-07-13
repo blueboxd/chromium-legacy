@@ -36,9 +36,10 @@
             android:id="@+id/subpage_back_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="12dp"
             android:layout_marginStart="-12dp"
-            android:layout_marginEnd="4dp"
+            android:minHeight="@dimen/min_touch_target_size"
+            android:minWidth="@dimen/min_touch_target_size"
+            android:layout_marginEnd="20dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_arrow_back_white_24dp"
             app:tint="@color/default_icon_color" />

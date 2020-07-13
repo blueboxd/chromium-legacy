@@ -21,6 +21,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom-forward.h"
+#include "third_party/blink/public/mojom/loader/content_security_notifier.mojom.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom-forward.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom-forward.h"
 #include "third_party/blink/public/mojom/wake_lock/wake_lock.mojom-forward.h"
@@ -65,6 +66,8 @@ class DedicatedWorkerHost final : public RenderProcessHostObserver {
   RenderProcessHost* GetProcessHost() { return worker_process_host_; }
   const url::Origin& GetWorkerOrigin() { return worker_origin_; }
 
+  void CreateContentSecurityNotifier(
+      mojo::PendingReceiver<blink::mojom::ContentSecurityNotifier> receiver);
   void CreateIdleManager(
       mojo::PendingReceiver<blink::mojom::IdleManager> receiver);
   void CreateNestedDedicatedWorker(

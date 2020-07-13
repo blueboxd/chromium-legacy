@@ -196,6 +196,8 @@ message AutofillFormatProto {
     CREDIT_CARD_RAW_NUMBER = -3;
     CREDIT_CARD_NUMBER_LAST_FOUR_DIGITS = -4;
     CREDIT_CARD_NETWORK_FOR_DISPLAY = -5;
+    // Currently only US states are supported. The state name is in lower case.
+    ADDRESS_HOME_STATE_NAME = -6;
   }
   // The format string to use. May contain one or multiple "${key}"
   // placeholders, where the key is an integer corresponding to

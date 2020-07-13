@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/migration_waiter.h"
@@ -229,12 +230,26 @@ IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, PrefsOnlyModifyPref) {
   RunSingleClientMigrationTest(MakeList(syncer::PREFERENCES), MODIFY_PREF);
 }
 
-IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, PrefsOnlyModifyBookmark) {
+// This is disabled due to flakiness: https://crbug.com/1094907.
+#if defined(OS_WIN)
+#define MAYBE_PrefsOnlyModifyBookmark DISABLED_PrefsOnlyModifyBookmark
+#else
+#define MAYBE_PrefsOnlyModifyBookmark PrefsOnlyModifyBookmark
+#endif
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
+                       MAYBE_PrefsOnlyModifyBookmark) {
   RunSingleClientMigrationTest(MakeList(syncer::PREFERENCES),
                                MODIFY_BOOKMARK);
 }
 
-IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, PrefsOnlyTriggerRefresh) {
+// This is disabled due to flakiness: https://crbug.com/1094907.
+#if defined(OS_WIN)
+#define MAYBE_PrefsOnlyTriggerRefresh DISABLED_PrefsOnlyTriggerRefresh
+#else
+#define MAYBE_PrefsOnlyTriggerRefresh PrefsOnlyTriggerRefresh
+#endif
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
+                       MAYBE_PrefsOnlyTriggerRefresh) {
   RunSingleClientMigrationTest(MakeList(syncer::PREFERENCES), TRIGGER_REFRESH);
 }
 

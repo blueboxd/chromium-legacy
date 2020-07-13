@@ -68,6 +68,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
       base::OnceCallback<void(const ClientStatus&)> cancel_callback) override;
   UserModel* GetUserModel() override;
   EventHandler* GetEventHandler() override;
+  void ExpectNavigation() override;
   bool HasNavigationError() override;
   bool IsNavigatingToNewDocument() override;
   void RequireUI() override;

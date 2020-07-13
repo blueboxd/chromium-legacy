@@ -24,7 +24,7 @@ const char kIncognitoSessionOnlyError[] =
     "is open.";
 const char kInvalidUrlError[] = "The URL \"*\" is invalid.";
 const char kWildcardPatternsForPluginsDisallowed[] =
-    "Scheme and host wildcards ('*') and \"<all_urls>\" are no longer "
+    "Host wildcards ('*') and \"<all_urls>\" are no longer "
     "supported in `primaryPattern` for `plugins`.";
 }  // namespace content_settings_api_constants
 }  // namespace extensions

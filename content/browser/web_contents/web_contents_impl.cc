@@ -1037,14 +1037,8 @@ bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
   }
 
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(WebContentsImpl, message, render_frame_host)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidRunInsecureContent,
-                        OnDidRunInsecureContent)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidDisplayContentWithCertificateErrors,
-                        OnDidDisplayContentWithCertificateErrors)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidRunContentWithCertificateErrors,
-                        OnDidRunContentWithCertificateErrors)
 #if BUILDFLAG(ENABLE_PLUGINS)
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(WebContentsImpl, message, render_frame_host)
     IPC_MESSAGE_HANDLER(FrameHostMsg_PepperInstanceCreated,
                         OnPepperInstanceCreated)
     IPC_MESSAGE_HANDLER(FrameHostMsg_PepperInstanceDeleted,
@@ -1055,9 +1049,11 @@ bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
     IPC_MESSAGE_HANDLER(FrameHostMsg_PepperStopsPlayback,
                         OnPepperStopsPlayback)
     IPC_MESSAGE_HANDLER(FrameHostMsg_PluginCrashed, OnPluginCrashed)
-#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+#else
+  handled = false;
+#endif
 
   return handled;
 }

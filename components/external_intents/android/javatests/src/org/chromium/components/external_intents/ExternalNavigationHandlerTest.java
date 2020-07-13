@@ -1084,7 +1084,7 @@ public class ExternalNavigationHandlerTest {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION,
                         START_INCOGNITO | START_OTHER_ACTIVITY);
 
-        Intent invokedIntent = mDelegate.startActivityIntent;
+        Intent invokedIntent = mUrlHandler.mStartActivityInIncognitoIntent;
         Assert.assertTrue(invokedIntent.getData().toString().startsWith("market://"));
         Assert.assertEquals(null, mUrlHandler.mNewUrlAfterClobbering);
         Assert.assertEquals(null, mUrlHandler.mReferrerUrlForClobbering);
@@ -1602,7 +1602,7 @@ public class ExternalNavigationHandlerTest {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION,
                         START_INCOGNITO | START_OTHER_ACTIVITY);
 
-        Assert.assertTrue(mDelegate.startIncognitoIntentCalled);
+        Assert.assertTrue(mUrlHandler.mStartIncognitoIntentCalled);
     }
 
     @Test
@@ -1613,7 +1613,7 @@ public class ExternalNavigationHandlerTest {
                 .withIsIncognito(true)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
 
-        Assert.assertFalse(mDelegate.startIncognitoIntentCalled);
+        Assert.assertFalse(mUrlHandler.mStartIncognitoIntentCalled);
     }
 
     @Test
@@ -1628,7 +1628,7 @@ public class ExternalNavigationHandlerTest {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
         Assert.assertTrue(mDelegate.maybeSetRequestMetadataCalled);
-        Assert.assertFalse(mDelegate.startIncognitoIntentCalled);
+        Assert.assertFalse(mUrlHandler.mStartIncognitoIntentCalled);
     }
 
     @Test
@@ -1644,7 +1644,7 @@ public class ExternalNavigationHandlerTest {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION,
                         START_INCOGNITO | START_OTHER_ACTIVITY);
         Assert.assertTrue(mDelegate.maybeSetRequestMetadataCalled);
-        Assert.assertTrue(mDelegate.startIncognitoIntentCalled);
+        Assert.assertTrue(mUrlHandler.mStartIncognitoIntentCalled);
     }
 
     @Test
@@ -1981,6 +1981,8 @@ public class ExternalNavigationHandlerTest {
         public String mNewUrlAfterClobbering;
         public String mReferrerUrlForClobbering;
         public boolean mStartFileIntentCalled;
+        public Intent mStartActivityInIncognitoIntent;
+        public boolean mStartIncognitoIntentCalled;
 
         public ExternalNavigationHandlerForTesting(ExternalNavigationDelegate delegate) {
             super(delegate);
@@ -1988,6 +1990,14 @@ public class ExternalNavigationHandlerTest {
 
         @Override
         public boolean blockExternalFormRedirectsWithoutGesture() {
+            return true;
+        }
+
+        @Override
+        protected boolean startIncognitoIntentInternal(Intent intent, String referrerUrl,
+                String fallbackUrl, boolean needsToCloseTab, boolean proxy) {
+            mStartActivityInIncognitoIntent = intent;
+            mStartIncognitoIntentCalled = true;
             return true;
         }
 
@@ -2100,14 +2110,6 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public boolean startIncognitoIntent(Intent intent, String referrerUrl, String fallbackUrl,
-                boolean needsToCloseTab, boolean proxy) {
-            startActivityIntent = intent;
-            startIncognitoIntentCalled = true;
-            return true;
-        }
-
-        @Override
         public @OverrideUrlLoadingResult int handleIncognitoIntentTargetingSelf(
                 Intent intent, String referrerUrl, String fallbackUrl) {
             handleIncognitoIntentTargetingSelfCalled = true;
@@ -2190,6 +2192,11 @@ public class ExternalNavigationHandlerTest {
 
         @Override
         public boolean hasValidTab() {
+            return false;
+        }
+
+        @Override
+        public boolean canCloseTabOnIncognitoIntentLaunch() {
             return false;
         }
 
@@ -2414,26 +2421,32 @@ public class ExternalNavigationHandlerTest {
             int result = mUrlHandler.shouldOverrideUrlLoading(params);
             boolean startActivityCalled = false;
             boolean startWebApkCalled = false;
-            if (mDelegate.startActivityIntent != null) {
+
+            // Incognito intent launching gets caught by the test URL handler, whereas non-incgonito
+            // intent launching gets caught by the test delegate.
+            Intent startActivityIntent = expectStartIncognito
+                    ? mUrlHandler.mStartActivityInIncognitoIntent
+                    : mDelegate.startActivityIntent;
+
+            if (startActivityIntent != null) {
                 startActivityCalled = true;
-                String packageName = mDelegate.startActivityIntent.getPackage();
+                String packageName = startActivityIntent.getPackage();
                 if (packageName != null) {
                     startWebApkCalled = packageName.startsWith(WEBAPK_PACKAGE_PREFIX);
                 }
             }
 
             Assert.assertEquals(expectedOverrideResult, result);
-            Assert.assertEquals(expectStartIncognito, mDelegate.startIncognitoIntentCalled);
+            Assert.assertEquals(expectStartIncognito, mUrlHandler.mStartIncognitoIntentCalled);
             Assert.assertEquals(expectStartActivity, startActivityCalled);
             Assert.assertEquals(expectStartWebApk, startWebApkCalled);
             Assert.assertEquals(expectStartFile, mUrlHandler.mStartFileIntentCalled);
             Assert.assertEquals(expectProxyForIA, mDelegate.mCalledWithProxy);
 
             if (startActivityCalled && expectSaneIntent) {
-                checkIntentSanity(mDelegate.startActivityIntent, "Intent");
-                if (mDelegate.startActivityIntent.getSelector() != null) {
-                    checkIntentSanity(
-                            mDelegate.startActivityIntent.getSelector(), "Intent's selector");
+                checkIntentSanity(startActivityIntent, "Intent");
+                if (startActivityIntent.getSelector() != null) {
+                    checkIntentSanity(startActivityIntent.getSelector(), "Intent's selector");
                 }
             }
         }

@@ -68,9 +68,9 @@ uint64_t NativeIOFileSync::getLength(ExceptionState& exception_state) {
   return base::as_unsigned(length);
 }
 
-int NativeIOFileSync::read(MaybeShared<DOMArrayBufferView> buffer,
-                           uint64_t file_offset,
-                           ExceptionState& exception_state) {
+uint64_t NativeIOFileSync::read(MaybeShared<DOMArrayBufferView> buffer,
+                                uint64_t file_offset,
+                                ExceptionState& exception_state) {
   int read_size = OperationSize(*buffer.View());
   char* read_data = static_cast<char*>(buffer.View()->BaseAddressMaybeShared());
   if (!backing_file_.IsValid()) {
@@ -83,12 +83,12 @@ int NativeIOFileSync::read(MaybeShared<DOMArrayBufferView> buffer,
     exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
                                       "read() failed");
   }
-  return read_bytes;
+  return base::as_unsigned(read_bytes);
 }
 
-int NativeIOFileSync::write(MaybeShared<DOMArrayBufferView> buffer,
-                            uint64_t file_offset,
-                            ExceptionState& exception_state) {
+uint64_t NativeIOFileSync::write(MaybeShared<DOMArrayBufferView> buffer,
+                                 uint64_t file_offset,
+                                 ExceptionState& exception_state) {
   int write_size = OperationSize(*buffer.View());
   char* write_data =
       static_cast<char*>(buffer.View()->BaseAddressMaybeShared());
@@ -102,7 +102,7 @@ int NativeIOFileSync::write(MaybeShared<DOMArrayBufferView> buffer,
     exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
                                       "write() failed");
   }
-  return written_bytes;
+  return base::as_unsigned(written_bytes);
 }
 
 void NativeIOFileSync::Trace(Visitor* visitor) const {

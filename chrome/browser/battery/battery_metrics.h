@@ -10,10 +10,15 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/device/public/mojom/battery_status.mojom-forward.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/battery/android_battery_metrics.h"
+#endif  // defined(OS_ANDROID)
 
 // Records metrics around battery usage on all platforms. Connects to
 // Battery monitor via mojo.
@@ -48,6 +53,10 @@ class BatteryMetrics {
 
   // The battery monitor backend for the device Chrome is running on.
   mojo::Remote<device::mojom::BatteryMonitor> battery_monitor_;
+
+#if defined(OS_ANDROID)
+  AndroidBatteryMetrics android_metrics_;
+#endif  // defined(OS_ANDROID)
 
   SEQUENCE_CHECKER(sequence_checker_);
 

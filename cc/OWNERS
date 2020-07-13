@@ -18,7 +18,6 @@ sunnyps@chromium.org
 
 # tiles, tile management, and raster work
 vmpstr@chromium.org
-ericrk@chromium.org
 
 # texture uploading
 sunnyps@chromium.org
@@ -37,13 +36,11 @@ flackr@chromium.org
 smcgruer@chromium.org
 
 # images
-ericrk@chromium.org
 khushalsagar@chromium.org
 vmpstr@chromium.org
 
 # surfaces
 kylechar@chromium.org
-samans@chromium.org
 jonross@chromium.org
 
 # input, scrolling

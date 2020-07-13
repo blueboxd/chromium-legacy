@@ -134,6 +134,7 @@ class Controller : public ScriptExecutorDelegate,
       std::unique_ptr<FormProto> form,
       base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,
       base::OnceCallback<void(const ClientStatus&)> cancel_callback) override;
+  void ExpectNavigation() override;
   bool IsNavigatingToNewDocument() override;
   bool HasNavigationError() override;
   void SetGenericUi(
@@ -426,6 +427,9 @@ class Controller : public ScriptExecutorDelegate,
   // Value for ScriptExecutorDelegate::HasNavigationError()
   bool navigation_error_ = false;
   base::ObserverList<NavigationListener> navigation_listeners_;
+
+  // The next DidStartNavigation will not cause an error.
+  bool expect_navigation_ = false;
 
   // Tracks scripts and script execution. It's kept at the end, as it tend to
   // depend on everything the controller support, through script and script

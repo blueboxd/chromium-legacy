@@ -96,7 +96,6 @@ class WebPluginContainerImpl;
 class ResourceError;
 class ResourceRequest;
 class ResourceResponse;
-class SecurityOrigin;
 class WebContentCaptureClient;
 class WebDedicatedWorkerHostFactoryClient;
 class WebLocalFrame;
@@ -169,16 +168,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual bool NavigateBackForward(int offset) const = 0;
 
-  // The indicated security origin has run active content (such as a script)
-  // from an insecure source.  Note that the insecure content can spread to
-  // other frames in the same origin.
-  virtual void DidRunInsecureContent(const SecurityOrigin*, const KURL&) = 0;
   virtual void DidDispatchPingLoader(const KURL&) = 0;
-
-  // The frame displayed content with certificate errors with given URL.
-  virtual void DidDisplayContentWithCertificateErrors() = 0;
-  // The frame ran content with certificate errors with the given URL.
-  virtual void DidRunContentWithCertificateErrors() = 0;
 
   // Will be called when |PerformanceTiming| events are updated
   virtual void DidChangePerformanceTiming() {}

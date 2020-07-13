@@ -12,13 +12,11 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -147,18 +145,7 @@ void LacrosManager::Start() {
   DCHECK_EQ(state_, State::STOPPED);
   DCHECK(!lacros_process_.IsValid());
   state_ = State::STARTING;
-  // Only delete the old log file if lacros is not running. If it's already
-  // running, then the subsequent call to base::LaunchProcess opens a new
-  // window, and we do not want to delete the existing log file.
-  // TODO(erikchen/hidehiko): Currently, launching a second instance of chrome
-  // deletes the existing log file, even though the new instance quickly exits.
-  scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-  task_runner->PostTaskAndReply(
-      FROM_HERE, base::BindOnce(base::GetDeleteFileCallback(), LacrosLogPath()),
-      base::BindOnce(&LacrosManager::StartForeground,
-                     weak_factory_.GetWeakPtr(), false));
+  StartForeground(false);
 }
 
 void LacrosManager::StartForeground(bool already_running) {

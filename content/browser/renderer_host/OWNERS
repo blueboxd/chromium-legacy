@@ -9,7 +9,6 @@ kbr@chromium.org
 ccameron@chromium.org
 
 # for *android*
-per-file *android*=ericrk@chromium.org
 per-file *android*=khushalsagar@chromium.org
 
 # For touch/gesture specific changes
@@ -17,13 +16,9 @@ rjkroege@chromium.org
 sadrul@chromium.org
 
 # For surface ID propagation and synchronization
-fsamuel@chromium.org
-samans@chromium.org
 jonross@chromium.org
 
 # DelegatedFrame*
-per-file *delegated_frame*=fsamuel@chromium.org
-per-file *delegated_frame*=samans@chromium.org
 per-file *delegated_frame*=jonross@chromium.org
 
 # WebSQL

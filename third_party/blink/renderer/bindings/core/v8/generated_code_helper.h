@@ -228,6 +228,29 @@ bool ConvertDictionaryMember(v8::Isolate* isolate,
   return true;
 }
 
+// Common implementation to reduce the binary size of attribute set callbacks.
+CORE_EXPORT void PerformAttributeSetCEReactionsReflectTypeBoolean(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    const QualifiedName& content_attribute,
+    const char* interface_name,
+    const char* attribute_name);
+CORE_EXPORT void PerformAttributeSetCEReactionsReflectTypeString(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    const QualifiedName& content_attribute,
+    const char* interface_name,
+    const char* attribute_name);
+CORE_EXPORT void
+PerformAttributeSetCEReactionsReflectTypeStringLegacyNullToEmptyString(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    const QualifiedName& content_attribute,
+    const char* interface_name,
+    const char* attribute_name);
+CORE_EXPORT void PerformAttributeSetCEReactionsReflectTypeStringOrNull(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    const QualifiedName& content_attribute,
+    const char* interface_name,
+    const char* attribute_name);
+
 }  // namespace bindings
 
 }  // namespace blink

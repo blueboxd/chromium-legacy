@@ -34,10 +34,6 @@ class CrostiniRecoveryViewBrowserTest : public CrostiniDialogBrowserTest {
 
   void SetUpOnMainThread() override {
     CrostiniDialogBrowserTest::SetUpOnMainThread();
-
-    static_cast<chromeos::FakeConciergeClient*>(
-        chromeos::DBusThreadManager::Get()->GetConciergeClient())
-        ->set_notify_vm_stopped_on_stop_vm(true);
   }
 
   // DialogBrowserTest:

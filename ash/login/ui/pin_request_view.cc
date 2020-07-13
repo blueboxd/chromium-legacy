@@ -316,16 +316,18 @@ PinRequestView::PinRequestView(PinRequest request, Delegate* delegate)
                             base::Unretained(this)),
         base::BindRepeating(&PinRequestView::OnBack, base::Unretained(this)),
         request.obscure_pin));
+    access_code_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
   } else {
-    access_code_view_ = AddChildView(std::make_unique<FlexCodeInput>(
+    auto flex_code_input = std::make_unique<FlexCodeInput>(
         base::BindRepeating(&PinRequestView::OnInputChange,
                             base::Unretained(this), false),
         base::BindRepeating(&PinRequestView::SubmitCode,
                             base::Unretained(this)),
         base::BindRepeating(&PinRequestView::OnBack, base::Unretained(this)),
-        request.obscure_pin));
+        request.obscure_pin);
+    flex_code_input->SetAccessibleName(default_accessible_title_);
+    access_code_view_ = AddChildView(std::move(flex_code_input));
   }
-  access_code_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
 
   add_spacer(kAccessCodeToPinKeyboardDistanceDp);
 

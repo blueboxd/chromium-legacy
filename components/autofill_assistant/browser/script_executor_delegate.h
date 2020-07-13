@@ -107,6 +107,9 @@ class ScriptExecutorDelegate {
     SetTouchableElementArea(ElementAreaProto::default_instance());
   }
 
+  // The next navigation is expected and will not cause an error.
+  virtual void ExpectNavigation() = 0;
+
   // Returns true if a new document is being fetched for the main frame.
   //
   // Navigation ends once a response, with its associated URL has been

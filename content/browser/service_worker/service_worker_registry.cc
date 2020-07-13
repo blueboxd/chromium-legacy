@@ -1185,8 +1185,7 @@ void ServiceWorkerRegistry::DidStoreRegistration(
   context_->NotifyRegistrationStored(stored_registration_id, stored_scope);
 
   if (special_storage_policy_) {
-    EnsureRegisteredOriginIsTracked(
-        url::Origin::Create(stored_scope.GetOrigin()));
+    EnsureRegisteredOriginIsTracked(url::Origin::Create(stored_scope));
     OnStoragePolicyChanged();
   }
 

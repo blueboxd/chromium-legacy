@@ -33,6 +33,11 @@ class ShareTargetBuilder {
     return *this;
   }
 
+  ShareTargetBuilder& set_is_incoming(bool is_incoming) {
+    is_incoming_ = is_incoming;
+    return *this;
+  }
+
   ShareTargetBuilder& add_attachment(TextAttachment attachment) {
     text_attachments_.push_back(std::move(attachment));
     return *this;
@@ -46,14 +51,14 @@ class ShareTargetBuilder {
   ShareTarget build() const {
     return ShareTarget(device_name_,
                        /*image_url=*/GURL(), ShareTarget::Type::kPhone,
-                       text_attachments_, file_attachments_,
-                       /*is_incoming=*/false,
+                       text_attachments_, file_attachments_, is_incoming_,
                        /*full_name=*/base::nullopt,
                        /*is_known=*/false);
   }
 
  private:
   std::string device_name_;
+  bool is_incoming_ = false;
   std::vector<TextAttachment> text_attachments_;
   std::vector<FileAttachment> file_attachments_;
 };
@@ -114,13 +119,13 @@ class NearbyNotificationManagerTest : public testing::Test {
   NearbyNotificationManager manager_{&profile_};
 };
 
-struct ProgressNotificationTestParam {
+struct ProgressNotificationTestParamInternal {
   std::vector<TextAttachment::Type> text_attachments;
   std::vector<FileAttachment::Type> file_attachments;
   int expected_resource_id;
 };
 
-ProgressNotificationTestParam kProgressNotificationTestParams[] = {
+ProgressNotificationTestParamInternal kProgressNotificationTestParams[] = {
     // No attachments.
     {{}, {}, IDS_NEARBY_UNKNOWN_ATTACHMENTS},
 
@@ -157,6 +162,9 @@ ProgressNotificationTestParam kProgressNotificationTestParams[] = {
      {FileAttachment::Type::kApp, FileAttachment::Type::kImage},
      IDS_NEARBY_FILE_ATTACHMENTS_UNKNOWN},
 };
+
+using ProgressNotificationTestParam =
+    std::tuple<ProgressNotificationTestParamInternal, bool>;
 
 class NearbyNotificationManagerProgressNotificationTest
     : public NearbyNotificationManagerTest,
@@ -230,10 +238,13 @@ TEST_F(NearbyNotificationManagerTest, ShowProgress_UpdatesProgress) {
 }
 
 TEST_P(NearbyNotificationManagerProgressNotificationTest, Test) {
-  const ProgressNotificationTestParam& param = GetParam();
+  const ProgressNotificationTestParamInternal& param = std::get<0>(GetParam());
+  bool is_incoming = std::get<1>(GetParam());
+
   std::string device_name = "device";
   ShareTargetBuilder share_target_builder;
   share_target_builder.set_device_name(device_name);
+  share_target_builder.set_is_incoming(is_incoming);
 
   for (TextAttachment::Type type : param.text_attachments)
     share_target_builder.add_attachment(CreateTextAttachment(type));
@@ -245,9 +256,12 @@ TEST_P(NearbyNotificationManagerProgressNotificationTest, Test) {
   TransferMetadata transfer_metadata = TransferMetadataBuilder().build();
   manager()->ShowProgress(share_target, transfer_metadata);
 
+  int expected_resource_id =
+      is_incoming ? IDS_NEARBY_NOTIFICATION_RECEIVE_PROGRESS_TITLE
+                  : IDS_NEARBY_NOTIFICATION_SEND_PROGRESS_TITLE;
   size_t total = param.text_attachments.size() + param.file_attachments.size();
   base::string16 expected = l10n_util::GetStringFUTF16(
-      IDS_NEARBY_NOTIFICATION_SEND_PROGRESS_TITLE,
+      expected_resource_id,
       l10n_util::GetPluralStringFUTF16(param.expected_resource_id, total),
       base::ASCIIToUTF16(device_name));
 
@@ -259,6 +273,8 @@ TEST_P(NearbyNotificationManagerProgressNotificationTest, Test) {
   EXPECT_EQ(expected, notification.title());
 }
 
-INSTANTIATE_TEST_SUITE_P(NearbyNotificationManagerProgressNotificationTest,
-                         NearbyNotificationManagerProgressNotificationTest,
-                         testing::ValuesIn(kProgressNotificationTestParams));
+INSTANTIATE_TEST_SUITE_P(
+    NearbyNotificationManagerProgressNotificationTest,
+    NearbyNotificationManagerProgressNotificationTest,
+    testing::Combine(testing::ValuesIn(kProgressNotificationTestParams),
+                     testing::Bool()));

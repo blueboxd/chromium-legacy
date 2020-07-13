@@ -13,6 +13,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.chromium.components.content_settings.PrefNames.BLOCK_THIRD_PARTY_COOKIES;
 
 import android.os.Build;
+import android.view.View;
 
 import androidx.test.filters.MediumTest;
 
@@ -235,6 +236,21 @@ public class PageInfoViewTest {
     public void testShowOnSecureWebsiteV2() throws IOException {
         loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(mPath));
         mRenderTestRule.render(getPageInfoView(), "PageInfo_SecureWebsiteV2");
+    }
+
+    /**
+     * Tests the new PageInfo UI on a secure website.
+     */
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @Features.EnableFeatures(PageInfoFeatureList.PAGE_INFO_V2)
+    public void testShowCookiesSubpage() throws IOException {
+        setThirdPartyCookieBlocking(true);
+        loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(mPath));
+        View dialog = (View) getPageInfoView().getParent();
+        onView(withId(R.id.page_info_cookies_row)).perform(click());
+        mRenderTestRule.render(dialog, "PageInfo_CookiesSubpage");
     }
 
     // TODO(1071762): Add tests for preview pages, offline pages, offline state and other states.

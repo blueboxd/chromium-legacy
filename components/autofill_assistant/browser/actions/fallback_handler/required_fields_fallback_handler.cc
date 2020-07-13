@@ -54,6 +54,12 @@ void FillStatusDetailsWithEmptyField(const RequiredField& required_field,
   field_error->set_empty_after_fallback(true);
 }
 
+void FillStatusDetailsWithNotClearedField(const RequiredField& required_field,
+                                          ClientStatus* client_status) {
+  auto* field_error = AddAutofillError(required_field, client_status);
+  field_error->set_filled_after_clear(true);
+}
+
 }  // namespace
 
 RequiredFieldsFallbackHandler::~RequiredFieldsFallbackHandler() = default;
@@ -139,9 +145,15 @@ void RequiredFieldsFallbackHandler::OnCheckRequiredFieldsDone(
     if (required_field.ShouldFallback(apply_fallback)) {
       should_fallback = true;
       if (!apply_fallback) {
-        VLOG(1) << "Field was empty after applying fallback: "
-                << required_field.selector;
-        FillStatusDetailsWithEmptyField(required_field, &client_status_);
+        if (required_field.value_expression.empty()) {
+          VLOG(1) << "Field was filled after attempting to clear it: "
+                  << required_field.selector;
+          FillStatusDetailsWithNotClearedField(required_field, &client_status_);
+        } else {
+          VLOG(1) << "Field was empty after applying fallback: "
+                  << required_field.selector;
+          FillStatusDetailsWithEmptyField(required_field, &client_status_);
+        }
       }
       break;
     }
@@ -168,9 +180,11 @@ void RequiredFieldsFallbackHandler::OnCheckRequiredFieldsDone(
       continue;
     }
 
-    if (field_formatter::FormatString(required_field.value_expression,
-                                      fallback_values_)
-            .has_value()) {
+    if (required_field.value_expression.empty()) {
+      has_fallbacks = true;
+    } else if (field_formatter::FormatString(required_field.value_expression,
+                                             fallback_values_)
+                   .has_value()) {
       has_fallbacks = true;
     } else {
       VLOG(3) << "Field has no fallback data: " << required_field.selector
@@ -206,14 +220,25 @@ void RequiredFieldsFallbackHandler::SetFallbackFieldValuesSequentially(
     return;
   }
 
-  // Set the next field to its fallback value.
+  // Treat the next field.
   const RequiredField& required_field = required_fields_[required_fields_index];
+
+  if (required_field.value_expression.empty()) {
+    ActionDelegateUtil::SetFieldValue(
+        action_delegate_, required_field.selector, "",
+        required_field.fill_strategy, required_field.delay_in_millisecond,
+        base::BindOnce(&RequiredFieldsFallbackHandler::OnSetFallbackFieldValue,
+                       weak_ptr_factory_.GetWeakPtr(), required_fields_index));
+    return;
+  }
+
   auto fallback_value = field_formatter::FormatString(
       required_field.value_expression, fallback_values_);
   if (!fallback_value.has_value()) {
     VLOG(3) << "No fallback for " << required_field.selector;
     // If there is no fallback value, we skip this failed field.
-    return SetFallbackFieldValuesSequentially(++required_fields_index);
+    SetFallbackFieldValuesSequentially(++required_fields_index);
+    return;
   }
 
   if (required_field.fallback_click_element.has_value()) {

@@ -5,6 +5,8 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_PAC_PROCESSOR_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_PAC_PROCESSOR_H_
 
+#include <android/multinetwork.h>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
@@ -16,10 +18,11 @@
 namespace android_webview {
 
 class Job;
+class HostResolver;
 
 class AwPacProcessor {
  public:
-  AwPacProcessor();
+  AwPacProcessor(net_handle_t net_handle);
   AwPacProcessor(const AwPacProcessor&) = delete;
   AwPacProcessor& operator=(const AwPacProcessor&) = delete;
 
@@ -36,9 +39,10 @@ class AwPacProcessor {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& jurl);
   std::string MakeProxyRequest(std::string url);
-  proxy_resolver::ProxyHostResolver* host_resolver() {
-    return host_resolver_.get();
-  }
+  void SetNetworkLinkAddresses(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobjectArray>& addresses);
+
  private:
   void Destroy(base::WaitableEvent* event);
   void SetProxyScriptNative(
@@ -50,14 +54,16 @@ class AwPacProcessor {
       const std::string& url,
       net::ProxyInfo* proxy_info,
       net::CompletionOnceCallback complete);
-  std::unique_ptr<proxy_resolver::ProxyResolverV8Tracing> proxy_resolver_;
-  std::unique_ptr<proxy_resolver::ProxyHostResolver> host_resolver_;
 
   friend class Job;
   friend class SetProxyScriptJob;
   friend class MakeProxyRequestJob;
 
+  std::unique_ptr<proxy_resolver::ProxyResolverV8Tracing> proxy_resolver_;
+  std::unique_ptr<HostResolver> host_resolver_;
+
   std::set<Job*> jobs_;
+  net_handle_t net_handle_;
 };
 }  // namespace android_webview
 

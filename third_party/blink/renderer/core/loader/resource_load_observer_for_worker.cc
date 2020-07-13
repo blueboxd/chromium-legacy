@@ -6,8 +6,9 @@
 
 #include "third_party/blink/public/platform/web_mixed_content.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
-#include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/renderer/core/core_probes_inl.h"
+#include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
+#include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
@@ -17,11 +18,11 @@ namespace blink {
 ResourceLoadObserverForWorker::ResourceLoadObserverForWorker(
     CoreProbeSink& probe,
     const ResourceFetcherProperties& properties,
-    scoped_refptr<WebWorkerFetchContext> web_context,
+    WorkerFetchContext& worker_fetch_context,
     const base::UnguessableToken& devtools_worker_token)
     : probe_(probe),
       fetcher_properties_(properties),
-      web_context_(std::move(web_context)),
+      worker_fetch_context_(worker_fetch_context),
       devtools_worker_token_(devtools_worker_token) {}
 
 ResourceLoadObserverForWorker::~ResourceLoadObserverForWorker() = default;
@@ -53,15 +54,10 @@ void ResourceLoadObserverForWorker::DidReceiveResponse(
     const Resource* resource,
     ResponseSource) {
   if (response.HasMajorCertificateErrors()) {
-    WebMixedContentContextType context_type =
-        WebMixedContent::ContextTypeFromRequestContext(
-            request.GetRequestContext(),
-            false /* strictMixedContentCheckingForPlugin */);
-    if (context_type == WebMixedContentContextType::kBlockable) {
-      web_context_->DidRunContentWithCertificateErrors();
-    } else {
-      web_context_->DidDisplayContentWithCertificateErrors();
-    }
+    MixedContentChecker::HandleCertificateError(
+        response, request.GetRequestContext(),
+        /*strict_mixed_content_checking_for_plugin=*/false,
+        worker_fetch_context_->GetContentSecurityNotifier());
   }
   probe::DidReceiveResourceResponse(probe_, identifier, nullptr, response,
                                     resource);
@@ -108,6 +104,7 @@ void ResourceLoadObserverForWorker::DidFailLoading(const KURL&,
 void ResourceLoadObserverForWorker::Trace(Visitor* visitor) const {
   visitor->Trace(probe_);
   visitor->Trace(fetcher_properties_);
+  visitor->Trace(worker_fetch_context_);
   ResourceLoadObserver::Trace(visitor);
 }
 

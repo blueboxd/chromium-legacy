@@ -456,6 +456,20 @@
       <message name="IDS_PAGE_INFO_FAST_SITE_SUMMARY" desc="A short summary phrase in the Page Info bubble (which shows when you click the lock icon) that indicates that pages on the current website should load quickly.">
         Site is fast
       </message>
+      <message name="IDS_PAGE_INFO_COOKIES_CLEAR" desc="Text on the button to clear cookies for a site.">
+        Clear cookies
+      </message>
+      <message name="IDS_PAGE_INFO_COOKIES_DESCRIPTION" desc="Description in the Page Info UI explaining cookies.">
+        Cookies and other site data are used to remember you, for example to sign you in or to personalize ads. To manage cookies for all sites, see <ph name="BEGIN_LINK">&lt;link&gt;</ph>Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+      </message>
+      <message name="IDS_PAGE_INFO_COOKIES_BLOCK" desc="Label for a toggle to allow or block third-party cookies for a site.">
+        Block third-party cookies
+      </message>
+      <message name="IDS_PAGE_INFO_COOKIES_IN_USE" desc="Label showing the amount of cookies being used by a site.">
+        {NUM_SELECTED, plural,
+          =1 {1 cookie in use}
+          other {# cookies in use}}
+      </message>
       <message name="IDS_PAGE_INFO_FAST_SITE_MESSAGE" desc="A short paragraph that explains what is meant by labeling the current website as fast.">
         This site opens and responds quickly for most people
       </message>
@@ -573,7 +587,20 @@
       <message name="IDS_BOTTOM_BAR_SCREEN_POSITION" desc="Accessibility label to inform users about the InfoBar location">
         Options available near bottom of the screen
       </message>
-    </messages>
 
+    <!-- Warning on sharing info with external apps in incognito mode -->
+      <message name="IDS_EXTERNAL_APP_LEAVE_INCOGNITO_WARNING" desc="Alert dialog text warning the user (who is currently in incognito mode) that the site they are currently using is going to share data with an external application." formatter_data="android_java">
+        This site is about to share information with an app outside of incognito mode.
+      </message>
+      <message name="IDS_EXTERNAL_APP_LEAVE_INCOGNITO_WARNING_TITLE" desc="Title for dialog asking if the user wants to leave incognito mode. [CHAR-LIMIT=32]" formatter_data="android_java">
+        Leave incognito mode?
+      </message>
+      <message name="IDS_EXTERNAL_APP_LEAVE_INCOGNITO_STAY" desc="Label for the dialog button to stay in incognito mode. [CHAR-LIMIT=20]" formatter_data="android_java">
+        Stay
+      </message>
+      <message name="IDS_EXTERNAL_APP_LEAVE_INCOGNITO_LEAVE" desc="Label for the dialog button to leave incognito mode. [CHAR-LIMIT=20]" formatter_data="android_java">
+        Leave
+      </message>
+    </messages>
   </release>
 </grit>

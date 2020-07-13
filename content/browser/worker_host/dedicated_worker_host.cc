@@ -11,6 +11,7 @@
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/loader/content_security_notifier.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/storage_partition_impl.h"
@@ -78,6 +79,21 @@ void DedicatedWorkerHost::BindBrowserInterfaceBrokerReceiver(
   broker_receiver_.Bind(std::move(receiver));
   broker_receiver_.set_disconnect_handler(base::BindOnce(
       &DedicatedWorkerHost::OnMojoDisconnect, base::Unretained(this)));
+}
+
+void DedicatedWorkerHost::CreateContentSecurityNotifier(
+    mojo::PendingReceiver<blink::mojom::ContentSecurityNotifier> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto* ancestor_render_frame_host =
+      RenderFrameHostImpl::FromID(ancestor_render_frame_host_id_);
+  if (!ancestor_render_frame_host) {
+    // The ancestor frame may have already been closed. In that case, the worker
+    // will soon be terminated too, so abort the connection.
+    return;
+  }
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<ContentSecurityNotifier>(ancestor_render_frame_host_id_),
+      std::move(receiver));
 }
 
 void DedicatedWorkerHost::OnMojoDisconnect() {

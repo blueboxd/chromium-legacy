@@ -69,6 +69,7 @@ bool TransceiverDirectionFromString(
 }  // namespace
 
 webrtc::RtpTransceiverInit ToRtpTransceiverInit(
+    ExecutionContext* context,
     const RTCRtpTransceiverInit* init) {
   webrtc::RtpTransceiverInit webrtc_init;
   base::Optional<webrtc::RtpTransceiverDirection> direction;
@@ -83,7 +84,8 @@ webrtc::RtpTransceiverInit ToRtpTransceiverInit(
   }
   DCHECK(init->hasSendEncodings());
   for (const auto& encoding : init->sendEncodings()) {
-    webrtc_init.send_encodings.push_back(ToRtpEncodingParameters(encoding));
+    webrtc_init.send_encodings.push_back(
+        ToRtpEncodingParameters(context, encoding));
   }
   return webrtc_init;
 }

@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/login_types.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/gfx/geometry/rect.h"
@@ -30,6 +31,7 @@ class ASH_PUBLIC_EXPORT LoginScreenTestApi {
   static bool IsParentAccessButtonShown();
   static bool IsWarningBubbleShown();
   static bool IsSystemInfoShown();
+  static bool IsPasswordFieldShown(const AccountId& account_id);
   static bool IsDisplayPasswordButtonShown(const AccountId& account_id);
   static bool IsManagedIconShown(const AccountId& account_id);
   static bool IsManagedMessageInMenuShown(const AccountId& account_id);
@@ -37,6 +39,7 @@ class ASH_PUBLIC_EXPORT LoginScreenTestApi {
   static void SubmitPassword(const AccountId& account_id,
                              const std::string& password,
                              bool check_if_submittable);
+  static void ClickChallengeResponseButton(const AccountId& account_id);
   static int64_t GetUiUpdateCount();
   static bool LaunchApp(const std::string& app_id);
   static bool ClickAddUserButton();
@@ -71,6 +74,10 @@ class ASH_PUBLIC_EXPORT LoginScreenTestApi {
   static base::string16 GetShutDownButtonLabel();
   static gfx::Rect GetShutDownButtonTargetBounds();
   static gfx::Rect GetShutDownButtonMirroredBounds();
+
+  static void SetPinRequestWidgetShownCallback(
+      base::RepeatingClosure on_pin_request_widget_shown);
+  static void SubmitPinRequestWidget(const std::string& pin);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(LoginScreenTestApi);

@@ -35,6 +35,7 @@ n * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 #include "base/single_thread_task_runner.h"
 #include "services/network/public/mojom/web_client_hints_types.mojom-blink-forward.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
+#include "third_party/blink/public/mojom/loader/content_security_notifier.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/loader/base_fetch_context.h"
@@ -117,6 +118,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
   TakePendingWorkerTimingReceiver(int request_id) override;
+
+  mojom::blink::ContentSecurityNotifier& GetContentSecurityNotifier() const;
 
  private:
   friend class FrameFetchContextTest;

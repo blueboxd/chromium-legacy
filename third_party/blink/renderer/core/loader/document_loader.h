@@ -37,6 +37,7 @@
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
+#include "third_party/blink/public/mojom/loader/content_security_notifier.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
@@ -327,6 +328,8 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // the LCP limit. See crbug.com/1065508 for details.
   base::TimeDelta RemainingTimeToLCPLimit() const;
 
+  mojom::blink::ContentSecurityNotifier& GetContentSecurityNotifier();
+
  protected:
   Vector<KURL> redirect_chain_;
 
@@ -468,6 +471,8 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   const Member<ContentSecurityPolicy> content_security_policy_;
   const bool was_blocked_by_csp_;
+  mojo::Remote<mojom::blink::ContentSecurityNotifier>
+      content_security_notifier_;
 
   const scoped_refptr<SecurityOrigin> origin_to_commit_;
   WebNavigationType navigation_type_;

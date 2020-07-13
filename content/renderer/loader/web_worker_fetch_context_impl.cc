@@ -512,22 +512,6 @@ WebWorkerFetchContextImpl::TopFrameOrigin() const {
   return top_frame_origin_;
 }
 
-void WebWorkerFetchContextImpl::DidRunContentWithCertificateErrors() {
-  Send(new FrameHostMsg_DidRunContentWithCertificateErrors(ancestor_frame_id_));
-}
-
-void WebWorkerFetchContextImpl::DidDisplayContentWithCertificateErrors() {
-  Send(new FrameHostMsg_DidDisplayContentWithCertificateErrors(
-      ancestor_frame_id_));
-}
-
-void WebWorkerFetchContextImpl::DidRunInsecureContent(
-    const blink::WebSecurityOrigin& origin,
-    const blink::WebURL& url) {
-  Send(new FrameHostMsg_DidRunInsecureContent(
-      ancestor_frame_id_, GURL(origin.ToString().Utf8()), url));
-}
-
 void WebWorkerFetchContextImpl::SetSubresourceFilterBuilder(
     std::unique_ptr<blink::WebDocumentSubresourceFilter::Builder>
         subresource_filter_builder) {

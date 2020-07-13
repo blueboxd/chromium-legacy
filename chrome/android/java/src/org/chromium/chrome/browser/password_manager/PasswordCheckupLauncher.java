@@ -9,6 +9,8 @@ import android.net.Uri;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -16,12 +18,20 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class PasswordCheckupLauncher {
     @CalledByNative
-    private static void launchCheckup(String checkupUrl, WindowAndroid windowAndroid) {
+    private static void launchCheckupInAccount(String checkupUrl, WindowAndroid windowAndroid) {
+        if (windowAndroid.getContext().get() == null) return; // Window not available yet/anymore.
         ChromeActivity activity = (ChromeActivity) windowAndroid.getActivity().get();
         if (tryLaunchingNativePasswordCheckup(activity)) return;
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(checkupUrl));
         intent.setPackage(activity.getPackageName());
         activity.startActivity(intent);
+    }
+
+    @CalledByNative
+    private static void launchLocalCheckup(WindowAndroid windowAndroid) {
+        assert ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORD_CHECK);
+        if (windowAndroid.getContext().get() == null) return; // Window not available yet/anymore.
+        PasswordCheckFactory.create().showUi(windowAndroid.getContext().get());
     }
 
     private static boolean tryLaunchingNativePasswordCheckup(ChromeActivity activity) {

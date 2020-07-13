@@ -33,6 +33,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "third_party/blink/public/mojom/loader/content_security_notifier.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -75,10 +76,10 @@ class CORE_EXPORT MixedContentChecker final {
                                ResourceRequest::RedirectStatus redirect_status,
                                const KURL& url,
                                const base::Optional<String>& devtools_id,
-                               ReportingDisposition reporting_disposition =
-                                   ReportingDisposition::kReport);
+                               ReportingDisposition reporting_disposition,
+                               mojom::blink::ContentSecurityNotifier& notifier);
 
-  static bool ShouldBlockFetchOnWorker(const WorkerFetchContext&,
+  static bool ShouldBlockFetchOnWorker(WorkerFetchContext&,
                                        mojom::RequestContextType,
                                        const KURL& url_before_redirects,
                                        ResourceRequest::RedirectStatus,
@@ -89,7 +90,7 @@ class CORE_EXPORT MixedContentChecker final {
   static bool IsWebSocketAllowed(const FrameFetchContext&,
                                  LocalFrame*,
                                  const KURL&);
-  static bool IsWebSocketAllowed(const WorkerFetchContext&, const KURL&);
+  static bool IsWebSocketAllowed(WorkerFetchContext&, const KURL&);
 
   static bool IsMixedContent(const SecurityOrigin*, const KURL&);
   static bool IsMixedContent(const String& origin_protocol, const KURL&);
@@ -111,9 +112,13 @@ class CORE_EXPORT MixedContentChecker final {
       LocalFrame*,
       const ResourceRequest&);
 
-  static void HandleCertificateError(LocalFrame*,
-                                     const ResourceResponse&,
-                                     mojom::RequestContextType);
+  // TODO(nhiroki): Introduce an enum class for
+  // |strict_mixed_content_checking_for_plugin|.
+  static void HandleCertificateError(
+      const ResourceResponse&,
+      mojom::RequestContextType,
+      bool strict_mixed_content_checking_for_plugin,
+      mojom::blink::ContentSecurityNotifier& notifier);
 
   // Receive information about mixed content found externally.
   static void MixedContentFound(LocalFrame*,

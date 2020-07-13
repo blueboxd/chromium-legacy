@@ -91,7 +91,7 @@ public class QueryTileSection {
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         mImageFetcher =
                 ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.IN_MEMORY_WITH_DISK_CACHE,
-                        GlobalDiscardableReferencePool.getReferencePool());
+                        profile, GlobalDiscardableReferencePool.getReferencePool());
         mSearchBoxCoordinator.addVoiceSearchButtonClickListener(v -> reloadTiles());
         reloadTiles();
     }

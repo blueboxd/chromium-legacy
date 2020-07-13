@@ -11,6 +11,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/window_dimmer.h"
+#include "base/no_destructor.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/views/widget/widget.h"
 
@@ -19,6 +20,11 @@ namespace ash {
 namespace {
 
 PinRequestWidget* instance_ = nullptr;
+
+base::RepeatingClosure& GetOnShownCallback() {
+  static base::NoDestructor<base::RepeatingClosure> on_shown;
+  return *on_shown;
+}
 
 }  // namespace
 
@@ -36,11 +42,19 @@ void PinRequestWidget::Show(PinRequest request,
                             PinRequestView::Delegate* delegate) {
   DCHECK(!instance_);
   instance_ = new PinRequestWidget(std::move(request), delegate);
+  if (GetOnShownCallback())
+    GetOnShownCallback().Run();
 }
 
 // static
 PinRequestWidget* PinRequestWidget::Get() {
   return instance_;
+}
+
+// static
+void PinRequestWidget::SetShownCallbackForTesting(
+    base::RepeatingClosure on_shown) {
+  GetOnShownCallback() = std::move(on_shown);
 }
 
 void PinRequestWidget::UpdateState(PinRequestViewState state,

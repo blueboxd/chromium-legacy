@@ -424,7 +424,8 @@ bool MixedContentChecker::ShouldBlockFetch(
     ResourceRequest::RedirectStatus redirect_status,
     const KURL& url,
     const base::Optional<String>& devtools_id,
-    ReportingDisposition reporting_disposition) {
+    ReportingDisposition reporting_disposition,
+    mojom::blink::ContentSecurityNotifier& notifier) {
   Frame* mixed_frame = InWhichFrameIsContentMixed(frame, url);
   if (!mixed_frame)
     return false;
@@ -454,9 +455,6 @@ bool MixedContentChecker::ShouldBlockFetch(
     policy->ReportMixedContent(url_before_redirects, redirect_status);
 
   Settings* settings = mixed_frame->GetSettings();
-  // Use the current local frame's client; the embedder doesn't distinguish
-  // mixed content signals from different frames on the same page.
-  LocalFrameClient* client = frame->Client();
   auto& local_frame_host = frame->GetLocalFrameHostRemote();
   WebContentSettingsClient* content_settings_client =
       frame->GetContentSettingsClient();
@@ -517,7 +515,8 @@ bool MixedContentChecker::ShouldBlockFetch(
         }
       }
       if (allowed) {
-        client->DidRunInsecureContent(security_origin, url);
+        notifier.NotifyInsecureContentRan(KURL(security_origin->ToString()),
+                                          url);
         UseCounter::Count(frame->GetDocument(),
                           WebFeature::kMixedContentBlockableAllowed);
       }
@@ -553,7 +552,7 @@ bool MixedContentChecker::ShouldBlockFetch(
 
 // static
 bool MixedContentChecker::ShouldBlockFetchOnWorker(
-    const WorkerFetchContext& worker_fetch_context,
+    WorkerFetchContext& worker_fetch_context,
     mojom::RequestContextType request_context,
     const KURL& url_before_redirects,
     ResourceRequest::RedirectStatus redirect_status,
@@ -600,9 +599,11 @@ bool MixedContentChecker::ShouldBlockFetchOnWorker(
               worker_fetch_context.AllowRunningInsecureContent(
                   settings->GetAllowRunningOfInsecureContent(), url);
     if (allowed) {
-      worker_fetch_context.GetWebWorkerFetchContext()->DidRunInsecureContent(
-          WebSecurityOrigin(fetch_client_settings_object.GetSecurityOrigin()),
-          url);
+      worker_fetch_context.GetContentSecurityNotifier()
+          .NotifyInsecureContentRan(
+              KURL(
+                  fetch_client_settings_object.GetSecurityOrigin()->ToString()),
+              url);
       worker_fetch_context.CountUsage(
           WebFeature::kMixedContentBlockableAllowed);
     }
@@ -660,8 +661,10 @@ bool MixedContentChecker::IsWebSocketAllowed(
         content_settings_client->AllowRunningInsecureContent(allowed, url);
   }
 
-  if (allowed)
-    frame->Client()->DidRunInsecureContent(security_origin, url);
+  if (allowed) {
+    frame_fetch_context.GetContentSecurityNotifier().NotifyInsecureContentRan(
+        KURL(security_origin->ToString()), url);
+  }
 
   frame->GetDocument()->AddConsoleMessage(CreateConsoleMessageAboutWebSocket(
       MainResourceUrlForFrame(mixed_frame), url, allowed));
@@ -677,7 +680,7 @@ bool MixedContentChecker::IsWebSocketAllowed(
 
 // static
 bool MixedContentChecker::IsWebSocketAllowed(
-    const WorkerFetchContext& worker_fetch_context,
+    WorkerFetchContext& worker_fetch_context,
     const KURL& url) {
   const FetchClientSettingsObject& fetch_client_settings_object =
       worker_fetch_context.GetResourceFetcherProperties()
@@ -695,8 +698,8 @@ bool MixedContentChecker::IsWebSocketAllowed(
   allowed = worker_fetch_context.AllowRunningInsecureContent(allowed, url);
 
   if (allowed) {
-    worker_fetch_context.GetWebWorkerFetchContext()->DidRunInsecureContent(
-        WebSecurityOrigin(security_origin), url);
+    worker_fetch_context.GetContentSecurityNotifier().NotifyInsecureContentRan(
+        KURL(security_origin->ToString()), url);
   }
 
   worker_fetch_context.AddConsoleMessage(CreateConsoleMessageAboutWebSocket(
@@ -807,25 +810,20 @@ void MixedContentChecker::CheckMixedPrivatePublic(
 }
 
 void MixedContentChecker::HandleCertificateError(
-    LocalFrame* frame,
     const ResourceResponse& response,
-    mojom::RequestContextType request_context) {
-  // Use the current local frame's client; the embedder doesn't distinguish
-  // mixed content signals from different frames on the same page.
-  LocalFrameClient* client = frame->Client();
-  bool strict_mixed_content_checking_for_plugin =
-      frame->GetSettings() &&
-      frame->GetSettings()->GetStrictMixedContentCheckingForPlugin();
+    mojom::RequestContextType request_context,
+    bool strict_mixed_content_checking_for_plugin,
+    mojom::blink::ContentSecurityNotifier& notifier) {
   WebMixedContentContextType context_type =
       WebMixedContent::ContextTypeFromRequestContext(
           request_context, strict_mixed_content_checking_for_plugin);
   if (context_type == WebMixedContentContextType::kBlockable) {
-    client->DidRunContentWithCertificateErrors();
+    notifier.NotifyContentWithCertificateErrorsRan();
   } else {
     // contextTypeFromRequestContext() never returns NotMixedContent (it
     // computes the type of mixed content, given that the content is mixed).
     DCHECK_NE(context_type, WebMixedContentContextType::kNotMixedContent);
-    client->DidDisplayContentWithCertificateErrors();
+    notifier.NotifyContentWithCertificateErrorsDisplayed();
   }
 }
 

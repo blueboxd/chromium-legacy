@@ -1675,6 +1675,10 @@ void Controller::DidFinishLoad(content::RenderFrameHost* render_frame_host,
   OnUrlChange();
 }
 
+void Controller::ExpectNavigation() {
+  expect_navigation_ = true;
+}
+
 void Controller::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() ||
@@ -1685,6 +1689,12 @@ void Controller::DidStartNavigation(
   if (!navigating_to_new_document_) {
     navigating_to_new_document_ = true;
     ReportNavigationStateChanged();
+  }
+
+  // The navigation is expected, do not check for errors below.
+  if (expect_navigation_) {
+    expect_navigation_ = false;
+    return;
   }
 
   // The following types of navigations are allowed for the main frame, when
@@ -1718,6 +1728,7 @@ void Controller::DidStartNavigation(
     // When in RUNNING state, all renderer initiated navigation is allowed,
     // user initiated navigation will cause an error.
     if (state_ == AutofillAssistantState::RUNNING &&
+        !navigation_handle->WasServerRedirect() &&
         !navigation_handle->IsRendererInitiated()) {
       error_causing_navigation_id_ = navigation_handle->GetNavigationId();
       OnScriptError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP),

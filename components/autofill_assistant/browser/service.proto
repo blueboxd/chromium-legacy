@@ -668,6 +668,10 @@ message AutofillErrorInfoProto {
       // The field was required and expected to be filled during the fallback
       // flow but was empty in the end.
       bool empty_after_fallback = 6;
+
+      // The field was expected to be cleared during the fallback flow but
+      // still had a value in the end.
+      bool filled_after_clear = 7;
     }
 
     reserved 2;
@@ -984,6 +988,7 @@ message UseAddressProto {
     //   e.g., (+41) (79) (1234567)
     // Note that the set of actually available fields are outside of our
     // control and are retrieved automatically from the provided profile.
+    // An value expression set to an empty string will clear the field.
     optional string value_expression = 6;
 
     optional SelectorProto element = 2;
@@ -1048,6 +1053,7 @@ message UseCreditCardProto {
     // * "${53}/${55}" -> expiration month / expiration year
     // Note that the set of actually available fields are outside of our
     // control and are retrieved automatically from the provided credit card.
+    // An value expression set to an empty string will clear the field.
     optional string value_expression = 6;
 
     optional SelectorProto element = 2;

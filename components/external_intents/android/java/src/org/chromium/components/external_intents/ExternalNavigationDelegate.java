@@ -95,22 +95,6 @@ public interface ExternalNavigationDelegate {
     int maybeHandleStartActivityIfNeeded(Intent intent, boolean proxy);
 
     /**
-     * Display a dialog warning the user that they may be leaving this app by starting this
-     * intent. Give the user the opportunity to cancel the action. And if it is canceled, a
-     * navigation will happen in this app. Catches BadTokenExceptions caused by showing the dialog
-     * on certain devices. (crbug.com/782602)
-     * @param intent The intent for external application that will be sent.
-     * @param referrerUrl The referrer for the current navigation.
-     * @param fallbackUrl The URL to load if the user doesn't proceed with external intent.
-     * @param needsToCloseTab Whether the current tab has to be closed after the intent is sent.
-     * @param proxy Whether we need to proxy the intent through AuthenticatedProxyActivity (this is
-     *              used by Instant Apps intents.
-     * @return True if the function returned error free, false if it threw an exception.
-     */
-    boolean startIncognitoIntent(Intent intent, String referrerUrl, String fallbackUrl,
-            boolean needsToCloseTab, boolean proxy);
-
-    /**
      * Handle the incognito intent by loading it as a URL in the embedder, using the fallbackUrl if
      * the intent URL cannot be handled by the embedder.
      * @param intent The intent to be handled by the embedder.
@@ -184,6 +168,15 @@ public interface ExternalNavigationDelegate {
      * @return Whether this delegate has a valid tab available.
      */
     boolean hasValidTab();
+
+    /**
+     * @return Whether it's possible to close the current tab on launching on an incognito intent.
+     * TODO(blundell): Investigate whether it would be feasible to change the //chrome
+     * implementation of this method to be identical to that of its implementation of
+     * ExternalNavigationDelegate#hasValidTab() and then eliminate this method in favor of
+     * ExternalNavigationHandler calling hasValidTab() if so.
+     */
+    boolean canCloseTabOnIncognitoIntentLaunch();
 
     /**
      * @return whether this delegate supports creation of new tabs. If this method returns false,

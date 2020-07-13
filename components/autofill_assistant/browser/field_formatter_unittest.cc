@@ -46,18 +46,37 @@ TEST(FieldFormatterTest, AutofillProfile) {
   autofill::test::SetProfileInfo(
       &profile, "John", "", "Doe", "editor@gmail.com", "", "203 Barfield Lane",
       "", "Mountain View", "CA", "94043", "US", "+12345678901");
-  // NAME_FIRST
-  EXPECT_EQ(*FormatString("${3}", CreateAutofillMappings(profile, "en-US")),
-            "John");
 
-  // UNKNOWN_TYPE
-  EXPECT_EQ(FormatString("${1}", CreateAutofillMappings(profile, "en-US")),
-            base::nullopt);
+  // NAME_FIRST NAME_LAST
+  EXPECT_EQ(
+      *FormatString("${3} ${5}", CreateAutofillMappings(profile, "en-US")),
+      "John Doe");
 
   // PHONE_HOME_COUNTRY_CODE, PHONE_HOME_CITY_CODE, PHONE_HOME_NUMBER
   EXPECT_EQ(*FormatString("(+${12}) (${11}) ${10}",
                           CreateAutofillMappings(profile, "en-US")),
             "(+1) (234) 5678901");
+
+  // ADDRESS_HOME_STATE, ADDRESS_HOME_STATE_NAME
+  EXPECT_EQ(
+      *FormatString("${34} - ${-6}", CreateAutofillMappings(profile, "en-US")),
+      "CA - california");
+
+  // Unknown state.
+  autofill::AutofillProfile unknown_state_profile(base::GenerateGUID(),
+                                                  kFakeUrl);
+  autofill::test::SetProfileInfo(&unknown_state_profile, "John", "", "Doe", "",
+                                 "", "", "", "", "XY", "", "US", "");
+  EXPECT_EQ(FormatString("${34}", CreateAutofillMappings(unknown_state_profile,
+                                                         "en-US")),
+            "XY");
+  EXPECT_EQ(FormatString("${-6}", CreateAutofillMappings(unknown_state_profile,
+                                                         "en-US")),
+            base::nullopt);
+
+  // UNKNOWN_TYPE
+  EXPECT_EQ(FormatString("${1}", CreateAutofillMappings(profile, "en-US")),
+            base::nullopt);
 }
 
 TEST(FieldFormatterTest, CreditCard) {

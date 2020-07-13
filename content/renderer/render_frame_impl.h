@@ -720,10 +720,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidLoadResourceFromMemoryCache(
       const blink::WebURLRequest& request,
       const blink::WebURLResponse& response) override;
-  void DidRunInsecureContent(const blink::WebSecurityOrigin& origin,
-                             const blink::WebURL& target) override;
-  void DidDisplayContentWithCertificateErrors() override;
-  void DidRunContentWithCertificateErrors() override;
   void DidChangePerformanceTiming() override;
   void DidObserveInputDelay(base::TimeDelta input_delay) override;
   void DidChangeCpuTiming(base::TimeDelta time) override;

@@ -4707,21 +4707,6 @@ void RenderFrameImpl::DidReceiveTransferSizeUpdate(int resource_id,
   }
 }
 
-void RenderFrameImpl::DidRunInsecureContent(
-    const blink::WebSecurityOrigin& origin,
-    const blink::WebURL& target) {
-  Send(new FrameHostMsg_DidRunInsecureContent(
-      routing_id_, GURL(origin.ToString().Utf8()), target));
-}
-
-void RenderFrameImpl::DidDisplayContentWithCertificateErrors() {
-  Send(new FrameHostMsg_DidDisplayContentWithCertificateErrors(routing_id_));
-}
-
-void RenderFrameImpl::DidRunContentWithCertificateErrors() {
-  Send(new FrameHostMsg_DidRunContentWithCertificateErrors(routing_id_));
-}
-
 void RenderFrameImpl::DidChangePerformanceTiming() {
   for (auto& observer : observers_)
     observer.DidChangePerformanceTiming();

@@ -1261,7 +1261,13 @@ void DocumentLoader::StartLoadingInternal() {
       nullptr /* recursive_prefetch_token */);
   if (!frame_->IsMainFrame() && response_.HasMajorCertificateErrors()) {
     MixedContentChecker::HandleCertificateError(
-        GetFrame(), response_, mojom::RequestContextType::HYPERLINK);
+        response_, mojom::RequestContextType::HYPERLINK,
+        GetFrame()->GetSettings()
+            ? GetFrame()
+                  ->GetSettings()
+                  ->GetStrictMixedContentCheckingForPlugin()
+            : false,
+        GetContentSecurityNotifier());
   }
   GetFrameLoader().Progress().IncrementProgress(main_resource_identifier_,
                                                 response_);
@@ -1983,6 +1989,15 @@ base::TimeDelta DocumentLoader::RemainingTimeToLCPLimit() const {
   if (now < lcp_limit)
     return lcp_limit - now;
   return base::TimeDelta();
+}
+
+mojom::blink::ContentSecurityNotifier&
+DocumentLoader::GetContentSecurityNotifier() {
+  if (!content_security_notifier_.is_bound()) {
+    GetFrame()->Client()->GetBrowserInterfaceBroker().GetInterface(
+        content_security_notifier_.BindNewPipeAndPassReceiver());
+  }
+  return *content_security_notifier_;
 }
 
 DEFINE_WEAK_IDENTIFIER_MAP(DocumentLoader)

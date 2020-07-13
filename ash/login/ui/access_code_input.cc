@@ -7,6 +7,7 @@
 #include "ash/public/cpp/login_constants.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string16.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -68,6 +69,10 @@ FlexCodeInput::FlexCodeInput(OnInputChange on_input_change,
 }
 
 FlexCodeInput::~FlexCodeInput() = default;
+
+void FlexCodeInput::SetAccessibleName(const base::string16& name) {
+  code_field_->SetAccessibleName(name);
+}
 
 void FlexCodeInput::InsertDigit(int value) {
   DCHECK_LE(0, value);

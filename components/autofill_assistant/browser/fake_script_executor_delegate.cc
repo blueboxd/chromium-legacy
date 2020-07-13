@@ -158,6 +158,8 @@ void FakeScriptExecutorDelegate::CollapseBottomSheet() {
   expand_or_collapse_value_ = false;
 }
 
+void FakeScriptExecutorDelegate::ExpectNavigation() {}
+
 bool FakeScriptExecutorDelegate::HasNavigationError() {
   return navigation_error_;
 }

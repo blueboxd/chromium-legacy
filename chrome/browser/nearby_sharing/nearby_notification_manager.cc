@@ -90,6 +90,16 @@ base::string16 GetAttachmentsString(const ShareTarget& share_target) {
   return l10n_util::GetPluralStringFUTF16(resource_id, text_count + file_count);
 }
 
+base::string16 GetNotificationTitle(const ShareTarget& share_target) {
+  int resource_id = share_target.is_incoming()
+                        ? IDS_NEARBY_NOTIFICATION_RECEIVE_PROGRESS_TITLE
+                        : IDS_NEARBY_NOTIFICATION_SEND_PROGRESS_TITLE;
+  base::string16 attachments = GetAttachmentsString(share_target);
+  base::string16 device_name = base::ASCIIToUTF16(share_target.device_name());
+
+  return l10n_util::GetStringFUTF16(resource_id, attachments, device_name);
+}
+
 }  // namespace
 
 NearbyNotificationManager::NearbyNotificationManager(Profile* profile)
@@ -107,10 +117,7 @@ void NearbyNotificationManager::ShowProgress(
 
   message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_PROGRESS, kNearbyNotificationId,
-      l10n_util::GetStringFUTF16(
-          IDS_NEARBY_NOTIFICATION_SEND_PROGRESS_TITLE,
-          GetAttachmentsString(share_target),
-          base::ASCIIToUTF16(share_target.device_name())),
+      GetNotificationTitle(share_target),
       /*message=*/base::string16(),
       /*icon=*/gfx::Image(),
       l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_SOURCE),

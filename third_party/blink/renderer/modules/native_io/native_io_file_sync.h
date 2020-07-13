@@ -39,12 +39,12 @@ class NativeIOFileSync final : public ScriptWrappable {
 
   void close();
   uint64_t getLength(ExceptionState&);
-  int read(MaybeShared<DOMArrayBufferView> buffer,
-           uint64_t file_offset,
-           ExceptionState&);
-  int write(MaybeShared<DOMArrayBufferView> buffer,
-            uint64_t file_offset,
-            ExceptionState&);
+  uint64_t read(MaybeShared<DOMArrayBufferView> buffer,
+                uint64_t file_offset,
+                ExceptionState&);
+  uint64_t write(MaybeShared<DOMArrayBufferView> buffer,
+                 uint64_t file_offset,
+                 ExceptionState&);
 
   // GarbageCollected
   void Trace(Visitor* visitor) const override;

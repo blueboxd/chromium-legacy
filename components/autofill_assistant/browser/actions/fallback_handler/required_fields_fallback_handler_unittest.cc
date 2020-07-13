@@ -601,5 +601,56 @@ TEST_F(RequiredFieldsFallbackHandlerTest, CustomDropdownClicksStopOnError) {
                                                   std::move(callback));
 }
 
+TEST_F(RequiredFieldsFallbackHandlerTest, ClearsFilledFields) {
+  Selector full_field_selector({"#full_field"});
+  Selector empty_field_selector({"#empty_field"});
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(full_field_selector, _))
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), "value"));
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(empty_field_selector, _))
+      .Times(0);
+
+  Expectation clear_full_value =
+      EXPECT_CALL(
+          mock_action_delegate_,
+          OnSetFieldValue(EqualsElement(test_util::MockFindElement(
+                              mock_action_delegate_, full_field_selector)),
+                          "", _))
+          .WillOnce(RunOnceCallback<2>(OkClientStatus()));
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(full_field_selector, _))
+      .After(clear_full_value)
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
+  Expectation clear_empty_value =
+      EXPECT_CALL(
+          mock_action_delegate_,
+          OnSetFieldValue(EqualsElement(test_util::MockFindElement(
+                              mock_action_delegate_, empty_field_selector)),
+                          "", _))
+          .WillOnce(RunOnceCallback<2>(OkClientStatus()));
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(empty_field_selector, _))
+      .After(clear_empty_value)
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
+
+  auto non_forced_field = CreateRequiredField("", {"#full_field"});
+  auto forced_field = CreateRequiredField("", {"#empty_field"});
+  forced_field.forced = true;
+  std::vector<RequiredField> required_fields = {non_forced_field, forced_field};
+
+  std::map<std::string, std::string> fallback_values;
+
+  RequiredFieldsFallbackHandler fallback_handler(
+      required_fields, fallback_values, &mock_action_delegate_);
+
+  base::OnceCallback<void(const ClientStatus&,
+                          const base::Optional<ClientStatus>&)>
+      callback =
+          base::BindOnce([](const ClientStatus& status,
+                            const base::Optional<ClientStatus>& detail_status) {
+            EXPECT_EQ(status.proto_status(), ACTION_APPLIED);
+          });
+
+  fallback_handler.CheckAndFallbackRequiredFields(OkClientStatus(),
+                                                  std::move(callback));
+}
+
 }  // namespace
 }  // namespace autofill_assistant

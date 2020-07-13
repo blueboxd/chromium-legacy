@@ -1,7 +1,7 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
+#include <android/multinetwork.h>
 #include <string>
 
 #include "android_webview/browser/aw_pac_processor.h"
@@ -33,7 +33,7 @@ class AwPacProcessorTest : public testing::Test {
  protected:
   base::test::TaskEnvironment task_environment_{
            base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-  AwPacProcessor* pac_processor_ = new AwPacProcessor();
+  AwPacProcessor* pac_processor_ = new AwPacProcessor(NETWORK_UNSPECIFIED);
 };
 
 TEST_F(AwPacProcessorTest, MakeProxyRequest) {
@@ -49,7 +49,8 @@ TEST_F(AwPacProcessorTest, MakeProxyRequestDnsResolve) {
 }
 
 TEST_F(AwPacProcessorTest, MultipleProxyRequest) {
-  AwPacProcessor* other_pac_processor_ = new AwPacProcessor();
+  AwPacProcessor* other_pac_processor_ =
+      new AwPacProcessor(NETWORK_UNSPECIFIED);
   pac_processor_->SetProxyScript(kScript);
   other_pac_processor_->SetProxyScript(kScriptDnsResolve);
 

@@ -7,7 +7,6 @@
 
 # display / resources / quads / passes
 danakj@chromium.org
-ericrk@chromium.org
 vmpstr@chromium.org
 weiliangc@chromium.org
 
@@ -28,12 +27,10 @@ sadrul@chromium.org
 
 # frame sinks / surfaces
 kylechar@chromium.org
-samans@chromium.org
 jonross@chromium.org
 
 # gpu
 danakj@chromium.org
-ericrk@chromium.org
 sadrul@chromium.org
 kylechar@chromium.org
 

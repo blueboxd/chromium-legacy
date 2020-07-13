@@ -1729,6 +1729,59 @@ EventListener* event_handler = JSEventHandler::CreateOrNull(
         body.append(TextNode(text))
         return func_def
 
+    # Binary size reduction hack
+    # When the following conditions are met, the implementation is shared.
+    # 1. The attribute is annotated with [CEReactions, Reflect] and not
+    #   annotated with other extended attributes having side effect.
+    # 2. The interface is implementing Element.
+    def optimize_element_cereactions_reflect():
+        has_cereactions = False
+        has_reflect = False
+        for key in ext_attrs.keys():
+            if key == "CEReactions":
+                has_cereactions = True
+            elif key == "Reflect":
+                has_reflect = True
+            elif key in ("Affects", "CustomElementCallbacks", "DeprecateAs",
+                         "Exposed", "LogActivity", "LogAllWorlds", "Measure",
+                         "MeasureAs", "ReflectEmpty", "ReflectInvalid",
+                         "ReflectMissing", "ReflectOnly",
+                         "RuntimeCallStatsCounter", "RuntimeEnabled",
+                         "SecureContext", "URL", "Unscopable"):
+                pass
+            else:
+                return None
+        if not (has_cereactions and has_reflect):
+            return None
+        if not cg_context.interface.does_implement("Element"):
+            return None
+        content_attribute = _make_reflect_content_attribute_key(
+            body, cg_context)
+        idl_type = cg_context.attribute.idl_type.unwrap(typedef=True)
+        if idl_type.is_boolean:
+            func_name = "PerformAttributeSetCEReactionsReflectTypeBoolean"
+        elif idl_type.type_name == "String":
+            func_name = "PerformAttributeSetCEReactionsReflectTypeString"
+        elif idl_type.type_name == "StringTreatNullAs":
+            func_name = ("PerformAttributeSetCEReactionsReflect"
+                         "TypeStringLegacyNullToEmptyString")
+        elif idl_type.type_name == "StringOrNull":
+            func_name = "PerformAttributeSetCEReactionsReflectTypeStringOrNull"
+        else:
+            return None
+        text = _format(
+            "bindings::{func_name}"
+            "(${info}, {content_attribute}, "
+            "${class_like_name}, ${property_name});",
+            func_name=func_name,
+            content_attribute=content_attribute)
+        return TextNode(text)
+
+    node = optimize_element_cereactions_reflect()
+    if node:
+        body.append(node)
+        return func_def
+
     body.extend([
         make_check_receiver(cg_context),
         make_check_argument_length(cg_context),

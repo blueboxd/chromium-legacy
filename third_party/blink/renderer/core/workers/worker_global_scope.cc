@@ -548,6 +548,12 @@ NOINLINE void WorkerGlobalScope::InitializeURL(const KURL& url) {
   DCHECK(url.IsValid());
   if (GetSecurityOrigin()->IsOpaque()) {
     DCHECK(SecurityOrigin::Create(url)->IsOpaque());
+  } else if (GetSecurityOrigin()->IsLocal()) {
+    // SecurityOrigin::CanRequest called from CanReadContent has a special logic
+    // for local origins, and the logic doesn't work here, so we have this
+    // DCHECK instead.
+    auto origin = SecurityOrigin::Create(url);
+    DCHECK(origin->IsOpaque() || origin->IsLocal());
   } else {
     DCHECK(GetSecurityOrigin()->CanReadContent(url));
   }

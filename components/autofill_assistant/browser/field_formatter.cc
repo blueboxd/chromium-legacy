@@ -10,6 +10,7 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/geo/state_names.h"
 #include "components/autofill_assistant/browser/generic_ui.pb.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "third_party/re2/src/re2/stringpiece.h"
@@ -86,7 +87,21 @@ std::map<std::string, std::string>
 CreateAutofillMappings<autofill::AutofillProfile>(
     const autofill::AutofillProfile& profile,
     const std::string& locale) {
-  return CreateFormGroupMappings(profile, locale);
+  auto mappings = CreateFormGroupMappings(profile, locale);
+
+  auto state = profile.GetInfo(
+      autofill::AutofillType(autofill::ADDRESS_HOME_STATE), locale);
+  if (!state.empty()) {
+    // TODO(b/159309560): Capitalize first letter of the state name.
+    auto state_name =
+        base::UTF16ToUTF8(autofill::state_names::GetNameForAbbreviation(state));
+    if (!state_name.empty()) {
+      mappings[base::NumberToString(static_cast<int>(
+          AutofillFormatProto::ADDRESS_HOME_STATE_NAME))] = state_name;
+    }
+  }
+
+  return mappings;
 }
 
 template <>

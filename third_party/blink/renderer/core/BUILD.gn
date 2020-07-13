@@ -1286,6 +1286,7 @@ jumbo_source_set("unit_tests") {
     "loader/link_loader_test.cc",
     "loader/long_task_detector_test.cc",
     "loader/mixed_content_checker_test.cc",
+    "loader/mock_content_security_notifier.h",
     "loader/modulescript/module_script_loader_test.cc",
     "loader/modulescript/module_tree_linker_test.cc",
     "loader/navigation_policy_test.cc",

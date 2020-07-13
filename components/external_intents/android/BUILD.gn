@@ -27,6 +27,7 @@ android_library("java") {
     "//content/public/android:content_java",
     "//services/network/public/mojom:mojom_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/android_deps:androidx_appcompat_appcompat_java",
     "//ui/android:ui_java",
     "//url:gurl_java",
     "//url:origin_java",
@@ -36,7 +37,10 @@ android_library("java") {
 android_resources("java_resources") {
   sources = []
   custom_package = "org.chromium.components.external_intents"
-  deps = [ "//components/browser_ui/strings/android:browser_ui_strings_grd" ]
+  deps = [
+    "//components/browser_ui/strings/android:browser_ui_strings_grd",
+    "//components/browser_ui/styles/android:java_resources",
+  ]
 }
 
 generate_jni("jni_headers") {

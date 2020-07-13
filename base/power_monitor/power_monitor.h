@@ -11,6 +11,7 @@
 #include "base/no_destructor.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/power_monitor/power_observer.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -59,6 +60,14 @@ class BASE_EXPORT PowerMonitor {
   // Read the current DeviceThermalState if known. Can be called on any thread.
   // May only be called if the PowerMonitor has been initialized.
   static PowerObserver::DeviceThermalState GetCurrentThermalState();
+
+#if defined(OS_ANDROID)
+  // Read and return the current remaining battery capacity (microampere-hours).
+  // Only supported with a device power source (i.e. not in child processes in
+  // Chrome) and on devices with Android >= Lollipop as well as a power supply
+  // that supports this counter. Returns 0 if unsupported.
+  static int GetRemainingBatteryCapacity();
+#endif  // defined(OS_ANDROID)
 
   // Uninitializes the PowerMonitor. Should be called at the end of any unit
   // test that mocks out the PowerMonitor, to avoid affecting subsequent tests.

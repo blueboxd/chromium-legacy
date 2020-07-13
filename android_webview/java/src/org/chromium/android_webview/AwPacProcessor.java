@@ -4,6 +4,15 @@
 
 package org.chromium.android_webview;
 
+import android.annotation.TargetApi;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.LinkAddress;
+import android.net.LinkProperties;
+import android.net.Network;
+import android.net.NetworkRequest;
+
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 
@@ -11,19 +20,53 @@ import org.chromium.base.annotations.NativeMethods;
  * Class to evaluate PAC scripts.
  */
 @JNINamespace("android_webview")
+@TargetApi(28)
 public class AwPacProcessor {
     private long mNativePacProcessor;
+    private long mNetworkHandle;
+
+    public static final long NETWORK_UNSPECIFIED = 0;
 
     private static class LazyHolder {
-        static final AwPacProcessor sInstance = new AwPacProcessor();
+        static final AwPacProcessor sInstance = new AwPacProcessor(NETWORK_UNSPECIFIED);
     }
 
     public static AwPacProcessor getInstance() {
         return LazyHolder.sInstance;
     }
 
-    public AwPacProcessor() {
-        mNativePacProcessor = AwPacProcessorJni.get().createNativePacProcessor();
+    public AwPacProcessor(long networkHandle) {
+        mNetworkHandle = networkHandle;
+        mNativePacProcessor = AwPacProcessorJni.get().createNativePacProcessor(networkHandle);
+
+        if (mNetworkHandle != NETWORK_UNSPECIFIED) {
+            Context context = ContextUtils.getApplicationContext();
+            ConnectivityManager connectivityManager =
+                    (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkRequest.Builder builder = new NetworkRequest.Builder();
+
+            connectivityManager.registerNetworkCallback(
+                    builder.build(), new ConnectivityManager.NetworkCallback() {
+                        @Override
+                        public void onLinkPropertiesChanged(
+                                Network network, LinkProperties linkProperties) {
+                            if (network.getNetworkHandle() == mNetworkHandle) {
+                                updateNetworkLinkAddress(linkProperties);
+                            }
+                        }
+                    });
+
+            updateNetworkLinkAddress(connectivityManager.getLinkProperties(
+                    Network.fromNetworkHandle(mNetworkHandle)));
+        }
+    }
+
+    private void updateNetworkLinkAddress(LinkProperties linkProperties) {
+        String[] addresses = linkProperties.getLinkAddresses()
+                                     .stream()
+                                     .map(LinkAddress::toString)
+                                     .toArray(String[] ::new);
+        AwPacProcessorJni.get().setNetworkLinkAddresses(mNativePacProcessor, addresses);
     }
 
     // The calling code must not call any methods after it called destroy().
@@ -46,9 +89,10 @@ public class AwPacProcessor {
     @NativeMethods
     interface Natives {
         void initializeEnvironment();
-        long createNativePacProcessor();
+        long createNativePacProcessor(long netHandle);
         boolean setProxyScript(long nativeAwPacProcessor, AwPacProcessor caller, String script);
         String makeProxyRequest(long nativeAwPacProcessor, AwPacProcessor caller, String url);
         void destroyNative(long nativeAwPacProcessor, AwPacProcessor caller);
+        void setNetworkLinkAddresses(long nativeAwPacProcessor, String[] adresses);
     }
 }

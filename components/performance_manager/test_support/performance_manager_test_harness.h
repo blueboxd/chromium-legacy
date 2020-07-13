@@ -16,7 +16,7 @@ namespace performance_manager {
 // via content::RenderViewHostTestHarness::task_environment().
 //
 // Meant to be used from components_unittests, but not from unit_tests or
-// browser tests.
+// browser tests. unit_tests should use PerformanceManagerTestHarnessHelper.
 //
 // To set the active WebContents for the test use:
 //

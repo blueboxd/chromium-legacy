@@ -82,6 +82,64 @@ struct VectorTraits<VectorBackedLinkedListNode<ValueType, Allocator>>
       VectorTraits<ValueType>::kCanCopyWithMemcpy;
   static const bool kCanMoveWithMemcpy =
       VectorTraits<ValueType>::kCanMoveWithMemcpy;
+
+  static constexpr bool kCanTraceConcurrently =
+      VectorTraits<ValueType>::kCanTraceConcurrently;
+};
+
+template <typename ValueType, typename Traits, typename Allocator>
+class ConstructTraits<VectorBackedLinkedListNode<ValueType, Allocator>,
+                      Traits,
+                      Allocator> {
+  STATIC_ONLY(ConstructTraits);
+
+  using Node = VectorBackedLinkedListNode<ValueType, Allocator>;
+
+ public:
+  template <typename... Args>
+  static Node* Construct(void* location, Args&&... args) {
+    return new (NotNull, location) Node(std::forward<Args>(args)...);
+  }
+
+  static void NotifyNewElement(Node* element) {
+    Allocator::template NotifyNewObject<Node, Traits>(element);
+  }
+
+  template <typename... Args>
+  static Node* ConstructAndNotifyElement(void* location, Args&&... args) {
+    Node* object = ConstructAndNotifyElementImpl<>::Construct(
+        location, std::forward<Args>(args)...);
+    NotifyNewElement(object);
+    return object;
+  }
+
+  static void NotifyNewElements(Node* array, size_t len) {
+    Allocator::template NotifyNewObjects<Node, Traits>(array, len);
+  }
+
+ private:
+  template <bool = Allocator::kIsGarbageCollected>
+  struct ConstructAndNotifyElementImpl {
+    template <typename... Args>
+    static Node* Construct(void* location, Args&&... args) {
+      return ConstructTraits<Node, Traits, Allocator>::Construct(
+          location, std::forward<Args>(args)...);
+    }
+  };
+
+  template <>
+  struct ConstructAndNotifyElementImpl<true> {
+    static Node* Construct(void* location, Node&& element) {
+      // ConstructAndNotifyElement updates an existing node which might
+      // also be concurrently traced while we update it. The regular ctors
+      // don't use an atomic write which can lead to data races.
+      static_assert(VectorTraits<Node>::kCanMoveWithMemcpy,
+                    "Garbage collected types used in VectorBackedLinkedList "
+                    "should be movable with memcpy");
+      AtomicWriteMemcpy<sizeof(Node)>(location, &element);
+      return reinterpret_cast<Node*>(location);
+    }
+  };
 };
 
 // VectorBackedLinkedList maintains a linked list through its contents such that

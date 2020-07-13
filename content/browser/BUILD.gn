@@ -1109,6 +1109,8 @@ jumbo_source_set("browser") {
     "loader/browser_initiated_resource_request.h",
     "loader/cached_navigation_url_loader.cc",
     "loader/cached_navigation_url_loader.h",
+    "loader/content_security_notifier.cc",
+    "loader/content_security_notifier.h",
     "loader/cross_origin_read_blocking_checker.cc",
     "loader/cross_origin_read_blocking_checker.h",
     "loader/download_utils_impl.cc",

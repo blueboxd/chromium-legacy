@@ -118,15 +118,6 @@ class WebWorkerFetchContext : public base::RefCounted<WebWorkerFetchContext> {
   // or a service worker this is unset.
   virtual base::Optional<WebSecurityOrigin> TopFrameOrigin() const = 0;
 
-  // Reports the certificate error to the browser process.
-  virtual void DidRunContentWithCertificateErrors() {}
-  virtual void DidDisplayContentWithCertificateErrors() {}
-
-  // Reports that the security origin has run active content from an insecure
-  // source.
-  virtual void DidRunInsecureContent(const WebSecurityOrigin&,
-                                     const WebURL& insecure_url) {}
-
   // Sets the builder object of WebDocumentSubresourceFilter on the main thread
   // which will be used in TakeSubresourceFilter() to create a
   // WebDocumentSubresourceFilter on the worker thread.

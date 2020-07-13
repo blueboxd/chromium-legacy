@@ -344,6 +344,82 @@ v8::Local<v8::Array> EnumerateIndexedProperties(v8::Isolate* isolate,
   return v8::Array::New(isolate, elements.data(), elements.size());
 }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
+
+template <typename IDLType,
+          typename ArgType,
+          void (Element::*MemFunc)(const QualifiedName&, ArgType)>
+void PerformAttributeSetCEReactionsReflect(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    const QualifiedName& content_attribute,
+    const char* interface_name,
+    const char* attribute_name) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext,
+                                 interface_name, attribute_name);
+  if (UNLIKELY(info.Length() < 1)) {
+    exception_state.ThrowTypeError(
+        ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    return;
+  }
+
+  // [Reflect]
+  V0CustomElementProcessingStack::CallbackDeliveryScope v0_custom_element_scope;
+  // [CEReactions]
+  CEReactionsScope ce_reactions_scope;
+
+  Element* blink_receiver = V8Element::ToWrappableUnsafe(info.This());
+  auto&& arg_value = NativeValueTraits<IDLType>::NativeValue(isolate, info[0],
+                                                             exception_state);
+  if (exception_state.HadException())
+    return;
+
+  (blink_receiver->*MemFunc)(content_attribute, arg_value);
+}
+
+void PerformAttributeSetCEReactionsReflectTypeBoolean(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    const QualifiedName& content_attribute,
+    const char* interface_name,
+    const char* attribute_name) {
+  PerformAttributeSetCEReactionsReflect<IDLBoolean, bool,
+                                        &Element::SetBooleanAttribute>(
+      info, content_attribute, interface_name, attribute_name);
+}
+
+void PerformAttributeSetCEReactionsReflectTypeString(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    const QualifiedName& content_attribute,
+    const char* interface_name,
+    const char* attribute_name) {
+  PerformAttributeSetCEReactionsReflect<IDLStringV2, const AtomicString&,
+                                        &Element::setAttribute>(
+      info, content_attribute, interface_name, attribute_name);
+}
+
+void PerformAttributeSetCEReactionsReflectTypeStringLegacyNullToEmptyString(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    const QualifiedName& content_attribute,
+    const char* interface_name,
+    const char* attribute_name) {
+  PerformAttributeSetCEReactionsReflect<IDLStringTreatNullAsEmptyStringV2,
+                                        const AtomicString&,
+                                        &Element::setAttribute>(
+      info, content_attribute, interface_name, attribute_name);
+}
+
+void PerformAttributeSetCEReactionsReflectTypeStringOrNull(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    const QualifiedName& content_attribute,
+    const char* interface_name,
+    const char* attribute_name) {
+  PerformAttributeSetCEReactionsReflect<
+      IDLNullable<IDLStringV2>, const AtomicString&, &Element::setAttribute>(
+      info, content_attribute, interface_name, attribute_name);
+}
+
+#endif  // USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE
+
 }  // namespace bindings
 
 }  // namespace blink

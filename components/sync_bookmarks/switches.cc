@@ -18,7 +18,7 @@ const base::Feature kMergeBookmarksUsingGUIDs{"MergeBookmarksUsingGUIDs",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSyncReuploadBookmarkFullTitles{
-    "SyncReuploadBookmarkFullTitles", base::FEATURE_ENABLED_BY_DEFAULT};
+    "SyncReuploadBookmarkFullTitles", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSyncProcessBookmarkRestoreAfterDeletion{
     "SyncProcessBookmarkRestoreAfterDeletion",

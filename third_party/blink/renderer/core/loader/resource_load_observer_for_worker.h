@@ -15,7 +15,7 @@ namespace blink {
 
 class CoreProbeSink;
 class ResourceFetcherProperties;
-class WebWorkerFetchContext;
+class WorkerFetchContext;
 
 // ResourceLoadObserver implementation associated with a worker or worklet.
 class ResourceLoadObserverForWorker final : public ResourceLoadObserver {
@@ -23,7 +23,7 @@ class ResourceLoadObserverForWorker final : public ResourceLoadObserver {
   ResourceLoadObserverForWorker(
       CoreProbeSink& probe,
       const ResourceFetcherProperties& properties,
-      scoped_refptr<WebWorkerFetchContext>,
+      WorkerFetchContext& worker_fetch_context,
       const base::UnguessableToken& devtools_worker_token);
   ~ResourceLoadObserverForWorker() override;
 
@@ -62,7 +62,7 @@ class ResourceLoadObserverForWorker final : public ResourceLoadObserver {
  private:
   const Member<CoreProbeSink> probe_;
   const Member<const ResourceFetcherProperties> fetcher_properties_;
-  const scoped_refptr<WebWorkerFetchContext> web_context_;
+  const Member<WorkerFetchContext> worker_fetch_context_;
   const base::UnguessableToken devtools_worker_token_;
 };
 

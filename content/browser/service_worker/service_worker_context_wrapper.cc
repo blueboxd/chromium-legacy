@@ -353,7 +353,7 @@ void ServiceWorkerContextWrapper::OnRegistrationStored(int64_t registration_id,
                                                        const GURL& scope) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  registered_origins_.insert(url::Origin::Create(scope.GetOrigin()));
+  registered_origins_.insert(url::Origin::Create(scope));
 
   for (auto& observer : observer_list_)
     observer.OnRegistrationStored(registration_id, scope);

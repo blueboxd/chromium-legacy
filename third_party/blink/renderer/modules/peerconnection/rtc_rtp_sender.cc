@@ -17,6 +17,8 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_rtp_header_extension_capability.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_rtp_header_extension_parameters.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
@@ -35,6 +37,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_encoded_audio_stream_transformer.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_encoded_video_stream_transformer.h"
@@ -286,13 +289,14 @@ webrtc::Priority PriorityToEnum(const WTF::String& priority) {
 
 std::tuple<Vector<webrtc::RtpEncodingParameters>,
            absl::optional<webrtc::DegradationPreference>>
-ToRtpParameters(const RTCRtpSendParameters* parameters) {
+ToRtpParameters(ExecutionContext* context,
+                const RTCRtpSendParameters* parameters) {
   Vector<webrtc::RtpEncodingParameters> encodings;
   if (parameters->hasEncodings()) {
     encodings.ReserveCapacity(parameters->encodings().size());
 
     for (const auto& encoding : parameters->encodings()) {
-      encodings.push_back(ToRtpEncodingParameters(encoding));
+      encodings.push_back(ToRtpEncodingParameters(context, encoding));
     }
   }
 
@@ -318,6 +322,7 @@ ToRtpParameters(const RTCRtpSendParameters* parameters) {
 }  // namespace
 
 webrtc::RtpEncodingParameters ToRtpEncodingParameters(
+    ExecutionContext* context,
     const RTCRtpEncodingParameters* encoding) {
   webrtc::RtpEncodingParameters webrtc_encoding;
   if (encoding->hasRid()) {
@@ -345,6 +350,10 @@ webrtc::RtpEncodingParameters ToRtpEncodingParameters(
       webrtc_encoding.num_temporal_layers = 3;
     }
   }
+  if (encoding->adaptivePtime()) {
+    UseCounter::Count(context, WebFeature::kRTCAdaptivePtime);
+  }
+  webrtc_encoding.adaptive_ptime = encoding->adaptivePtime();
   return webrtc_encoding;
 }
 
@@ -502,6 +511,7 @@ RTCRtpSendParameters* RTCRtpSender::getParameters() {
                    << *webrtc_encoding.num_temporal_layers;
       }
     }
+    encoding->setAdaptivePtime(webrtc_encoding.adaptive_ptime);
     encodings.push_back(encoding);
   }
   parameters->setEncodings(encodings);
@@ -557,7 +567,8 @@ ScriptPromise RTCRtpSender::setParameters(
   // parameters.
   Vector<webrtc::RtpEncodingParameters> encodings;
   absl::optional<webrtc::DegradationPreference> degradation_preference;
-  std::tie(encodings, degradation_preference) = ToRtpParameters(parameters);
+  std::tie(encodings, degradation_preference) =
+      ToRtpParameters(pc_->GetExecutionContext(), parameters);
 
   auto* request = MakeGarbageCollected<SetParametersRequest>(resolver, this);
   sender_->SetParameters(std::move(encodings), degradation_preference, request);

@@ -13516,6 +13516,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="26" label="Crash.Chrome.MissedCrashes"/>
   <int value="27" label="Crash.Collector.CollectionCount"/>
   <int value="28" label="Cryptohome.DoubleMountRequest"/>
+  <int value="29" label="SessionManager.SafeModeEnabled"/>
 </enum>
 
 <enum name="CrosFirstRunTutorialCompletionType">
@@ -28380,6 +28381,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3344" label="RTCConstraintEnableRtpDataChannelsTrue"/>
   <int value="3345" label="RTCConstraintEnableRtpDataChannelsFalse"/>
   <int value="3346" label="NativeFileSystemDragAndDrop"/>
+  <int value="3347" label="RTCAdaptivePtime"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

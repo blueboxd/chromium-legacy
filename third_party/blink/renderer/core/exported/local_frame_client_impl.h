@@ -133,11 +133,7 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
   void DidStartLoading() override;
   void DidStopLoading() override;
   bool NavigateBackForward(int offset) const override;
-  void DidRunInsecureContent(const SecurityOrigin*,
-                             const KURL& insecure_url) override;
   void DidDispatchPingLoader(const KURL&) override;
-  void DidDisplayContentWithCertificateErrors() override;
-  void DidRunContentWithCertificateErrors() override;
   void DidChangePerformanceTiming() override;
   void DidObserveInputDelay(base::TimeDelta) override;
   void DidChangeCpuTiming(base::TimeDelta) override;

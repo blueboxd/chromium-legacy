@@ -99,6 +99,8 @@ const char kPrefetchLoopPage[] = "/prerender/prefetch_loop.html";
 const char kPrefetchMetaCSP[] = "/prerender/prefetch_meta_csp.html";
 const char kPrefetchNostorePage[] = "/prerender/prefetch_nostore_page.html";
 const char kPrefetchPage[] = "/prerender/prefetch_page.html";
+const char kPrefetchPageWithFragment[] =
+    "/prerender/prefetch_page.html#fragment";
 const char kPrefetchPage2[] = "/prerender/prefetch_page2.html";
 const char kPrefetchPageBigger[] = "/prerender/prefetch_page_bigger.html";
 const char kPrefetchPageMultipleResourceTypes[] =
@@ -117,6 +119,94 @@ const char kPrefetchDownloadFile[] = "/download-test1.lib";
 const char kPrefetchSubresourceRedirectPage[] =
     "/prerender/prefetch_subresource_redirect.html";
 const char kServiceWorkerLoader[] = "/prerender/service_worker.html";
+const char kNoPrerenderPage[] = "/prerender/no_prerender_page.html";
+const char kNoPrerenderPageFragment[] =
+    "/prerender/no_prerender_page.html#fragment";
+const char kNoPrerenderPageOtherFragment[] =
+    "/prerender/no_prerender_page.html#other_fragment";
+
+// A navigation observer to wait on either a new load or a swap of a
+// WebContents. On swap, if the new WebContents is still loading, wait for that
+// load to complete as well. Note that the load must begin after the observer is
+// attached.
+class NavigationOrSwapObserver : public content::WebContentsObserver,
+                                 public TabStripModelObserver {
+ public:
+  // Waits for either a new load or a swap of |tab_strip_model|'s active
+  // WebContents.
+  NavigationOrSwapObserver(TabStripModel* tab_strip_model,
+                           content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents),
+        tab_strip_model_(tab_strip_model),
+        did_start_loading_(false),
+        number_of_loads_(1) {
+    EXPECT_NE(TabStripModel::kNoTab,
+              tab_strip_model->GetIndexOfWebContents(web_contents));
+    tab_strip_model_->AddObserver(this);
+  }
+
+  // Waits for either |number_of_loads| loads or a swap of |tab_strip_model|'s
+  // active WebContents.
+  NavigationOrSwapObserver(TabStripModel* tab_strip_model,
+                           content::WebContents* web_contents,
+                           int number_of_loads)
+      : content::WebContentsObserver(web_contents),
+        tab_strip_model_(tab_strip_model),
+        did_start_loading_(false),
+        number_of_loads_(number_of_loads) {
+    EXPECT_NE(TabStripModel::kNoTab,
+              tab_strip_model->GetIndexOfWebContents(web_contents));
+    tab_strip_model_->AddObserver(this);
+  }
+
+  ~NavigationOrSwapObserver() override {
+    tab_strip_model_->RemoveObserver(this);
+  }
+
+  void set_did_start_loading() { did_start_loading_ = true; }
+
+  void Wait() { loop_.Run(); }
+
+  // content::WebContentsObserver implementation:
+  void DidStartLoading() override { did_start_loading_ = true; }
+  void DidStopLoading() override {
+    if (!did_start_loading_)
+      return;
+    number_of_loads_--;
+    if (number_of_loads_ == 0)
+      loop_.Quit();
+  }
+
+  // TabStripModelObserver implementation:
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override {
+    if (change.type() != TabStripModelChange::kReplaced)
+      return;
+
+    auto* replace = change.GetReplace();
+    if (replace->old_contents != web_contents())
+      return;
+
+    // Switch to observing the new WebContents.
+    Observe(replace->new_contents);
+    if (replace->new_contents->IsLoading()) {
+      // If the new WebContents is still loading, wait for it to complete.
+      // Only one load post-swap is supported.
+      did_start_loading_ = true;
+      number_of_loads_ = 1;
+    } else {
+      loop_.Quit();
+    }
+  }
+
+ private:
+  TabStripModel* tab_strip_model_;
+  bool did_start_loading_;
+  int number_of_loads_;
+  base::RunLoop loop_;
+};
 
 class NoStatePrefetchBrowserTest
     : public test_utils::PrerenderInProcessBrowserTest {
@@ -214,6 +304,36 @@ class NoStatePrefetchBrowserTest
         content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB, &observer);
     observer.BlockUntilCompletion();
     // BrowsingDataRemover deletes itself.
+  }
+
+  void NavigateToURLWithDisposition(const std::string& dest_html_file,
+                                    content::WebContents* web_contents,
+                                    WindowOpenDisposition disposition,
+                                    bool expect_swap_to_succeed) const {
+    GURL dest_url = embedded_test_server()->GetURL(dest_html_file);
+    NavigateToURLImpl(
+        content::OpenURLParams(dest_url, content::Referrer(), disposition,
+                               ui::PAGE_TRANSITION_TYPED, false),
+        web_contents, expect_swap_to_succeed);
+  }
+
+  void NavigateToURLImpl(const content::OpenURLParams& params,
+                         content::WebContents* web_contents,
+                         bool expect_swap_to_succeed) const {
+    // Navigate and wait for either the load to finish normally or for a swap to
+    // occur.
+    // TODO(davidben): The only handles CURRENT_TAB navigations, which is the
+    // only case tested or prerendered right now.
+    CHECK_EQ(WindowOpenDisposition::CURRENT_TAB, params.disposition);
+    NavigationOrSwapObserver swap_observer(current_browser()->tab_strip_model(),
+                                           GetActiveWebContents());
+    content::WebContents* target_web_contents =
+        current_browser()->OpenURL(params);
+    swap_observer.Wait();
+
+    if (web_contents && expect_swap_to_succeed) {
+      EXPECT_EQ(web_contents, target_web_contents);
+    }
   }
 
   base::SimpleTestTickClock clock_;
@@ -1031,6 +1151,81 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
   // |PrefetchClientRedirect| above.
   WaitForRequestCount(src_server()->GetURL(kPrefetchScript2), 1);
   WaitForRequestCount(src_server()->GetURL(kPrefetchDownloadFile), 0);
+}
+
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchPageWithFragment) {
+  std::unique_ptr<TestPrerender> test_prerender = PrefetchFromFile(
+      kPrefetchPageWithFragment, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+
+  test_prerender->WaitForLoads(0);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchScript), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchScript2), 0);
+}
+
+// Checks that we do not use a prerendered page when navigating from
+// the main page to a fragment.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
+                       NavigateFromMainPageToFragment) {
+  GURL url = src_server()->GetURL(kNoPrerenderPage);
+  GURL loader_url =
+      ServeLoaderURL(kPrefetchLoaderPath, "REPLACE_WITH_PREFETCH_URL", url, "");
+  std::vector<FinalStatus> expected_status_queue(
+      1, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  std::vector<std::unique_ptr<TestPrerender>> prerenders =
+      NavigateWithPrerenders(loader_url, expected_status_queue);
+
+  // Navigate to a fragment.
+  test_utils::TestPrerenderContents* prerender_contents =
+      prerenders[0]->contents();
+  ASSERT_TRUE(prerender_contents);
+
+  NavigateToURLWithDisposition(kNoPrerenderPageFragment,
+                               prerender_contents->prerender_contents(),
+                               WindowOpenDisposition::CURRENT_TAB, false);
+}
+
+// Checks that we do not use a prerendered page when we prerender a fragment
+// but navigate to the main page.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
+                       PrerenderFragmentNavigateToMainPage) {
+  GURL url = src_server()->GetURL(kNoPrerenderPageFragment);
+  GURL loader_url =
+      ServeLoaderURL(kPrefetchLoaderPath, "REPLACE_WITH_PREFETCH_URL", url, "");
+  std::vector<FinalStatus> expected_status_queue(
+      1, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  std::vector<std::unique_ptr<TestPrerender>> prerenders =
+      NavigateWithPrerenders(loader_url, expected_status_queue);
+
+  // Navigate to a fragment.
+  test_utils::TestPrerenderContents* prerender_contents =
+      prerenders[0]->contents();
+  ASSERT_TRUE(prerender_contents);
+
+  NavigateToURLWithDisposition(kNoPrerenderPage,
+                               prerender_contents->prerender_contents(),
+                               WindowOpenDisposition::CURRENT_TAB, false);
+}
+
+// Checks that we do not use a prerendered page when we prerender a fragment
+// but navigate to a different fragment on the same page.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
+                       PrerenderOneFragmentNavigatetoAnother) {
+  GURL url = src_server()->GetURL(kNoPrerenderPageOtherFragment);
+  GURL loader_url =
+      ServeLoaderURL(kPrefetchLoaderPath, "REPLACE_WITH_PREFETCH_URL", url, "");
+  std::vector<FinalStatus> expected_status_queue(
+      1, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  std::vector<std::unique_ptr<TestPrerender>> prerenders =
+      NavigateWithPrerenders(loader_url, expected_status_queue);
+
+  // Navigate to a fragment.
+  test_utils::TestPrerenderContents* prerender_contents =
+      prerenders[0]->contents();
+  ASSERT_TRUE(prerender_contents);
+
+  NavigateToURLWithDisposition(kNoPrerenderPageFragment,
+                               prerender_contents->prerender_contents(),
+                               WindowOpenDisposition::CURRENT_TAB, false);
 }
 
 // Checks that a prefetch of a CRX will result in a cancellation due to

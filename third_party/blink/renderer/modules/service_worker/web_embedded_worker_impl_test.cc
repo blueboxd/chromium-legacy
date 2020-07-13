@@ -16,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink.h"
@@ -138,6 +139,23 @@ class FakeWebServiceWorkerFetchContext final
 
  private:
   FakeWebURLLoaderFactory fake_web_url_loader_factory_;
+};
+
+class FakeBrowserInterfaceBroker final
+    : public mojom::blink::BrowserInterfaceBroker {
+ public:
+  FakeBrowserInterfaceBroker() = default;
+  ~FakeBrowserInterfaceBroker() override = default;
+
+  void GetInterface(mojo::GenericPendingReceiver) override {}
+
+  mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>
+  BindNewPipeAndPassRemote() {
+    return receiver_.BindNewPipeAndPassRemote();
+  }
+
+ private:
+  mojo::Receiver<mojom::blink::BrowserInterfaceBroker> receiver_{this};
 };
 
 class MockServiceWorkerContextClient final
@@ -277,12 +295,14 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
 }  // namespace
 
 TEST_F(WebEmbeddedWorkerImplTest, TerminateSoonAfterStart) {
-  worker_->StartWorkerContext(CreateStartData(),
-                              /*installed_scripts_manager_params=*/nullptr,
-                              /*content_settings_proxy=*/mojo::NullRemote(),
-                              /*cache_storage_remote=*/mojo::NullRemote(),
-                              /*browser_interface_broker=*/mojo::NullRemote(),
-                              Thread::Current()->GetTaskRunner());
+  FakeBrowserInterfaceBroker browser_interface_broker;
+  worker_->StartWorkerContext(
+      CreateStartData(),
+      /*installed_scripts_manager_params=*/nullptr,
+      /*content_settings_proxy=*/mojo::NullRemote(),
+      /*cache_storage_remote=*/mojo::NullRemote(),
+      browser_interface_broker.BindNewPipeAndPassRemote(),
+      Thread::Current()->GetTaskRunner());
   testing::Mock::VerifyAndClearExpectations(mock_client_.get());
 
   // Terminate the worker immediately after start.
@@ -294,12 +314,14 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileWaitingForDebugger) {
   std::unique_ptr<WebEmbeddedWorkerStartData> start_data = CreateStartData();
   start_data->wait_for_debugger_mode =
       WebEmbeddedWorkerStartData::kWaitForDebugger;
-  worker_->StartWorkerContext(std::move(start_data),
-                              /*installed_scripts_manager_params=*/nullptr,
-                              /*content_settings_proxy=*/mojo::NullRemote(),
-                              /*cache_storage_remote=*/mojo::NullRemote(),
-                              /*browser_interface_broker=*/mojo::NullRemote(),
-                              Thread::Current()->GetTaskRunner());
+  FakeBrowserInterfaceBroker browser_interface_broker;
+  worker_->StartWorkerContext(
+      std::move(start_data),
+      /*installed_scripts_manager_params=*/nullptr,
+      /*content_settings_proxy=*/mojo::NullRemote(),
+      /*cache_storage_remote=*/mojo::NullRemote(),
+      browser_interface_broker.BindNewPipeAndPassRemote(),
+      Thread::Current()->GetTaskRunner());
   testing::Mock::VerifyAndClearExpectations(mock_client_.get());
 
   // Terminate the worker while waiting for the debugger.
@@ -312,14 +334,16 @@ TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound) {
   url_test_helpers::RegisterMockedErrorURLLoad(script_url);
   std::unique_ptr<WebEmbeddedWorkerStartData> start_data = CreateStartData();
   start_data->script_url = script_url;
+  FakeBrowserInterfaceBroker browser_interface_broker;
 
   // Start worker and load the script.
-  worker_->StartWorkerContext(std::move(start_data),
-                              /*installed_scripts_manager_params=*/nullptr,
-                              /*content_settings_proxy=*/mojo::NullRemote(),
-                              /*cache_storage_remote=*/mojo::NullRemote(),
-                              /*browser_interface_broker=*/mojo::NullRemote(),
-                              Thread::Current()->GetTaskRunner());
+  worker_->StartWorkerContext(
+      std::move(start_data),
+      /*installed_scripts_manager_params=*/nullptr,
+      /*content_settings_proxy=*/mojo::NullRemote(),
+      /*cache_storage_remote=*/mojo::NullRemote(),
+      browser_interface_broker.BindNewPipeAndPassRemote(),
+      Thread::Current()->GetTaskRunner());
   testing::Mock::VerifyAndClearExpectations(mock_client_.get());
 
   mock_client_->WaitUntilFailedToLoadClassicScript();

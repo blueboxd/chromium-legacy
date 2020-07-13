@@ -169,9 +169,6 @@ class CrostiniPackageServiceTest : public testing::Test {
     fake_seneschal_client_ = static_cast<FakeSeneschalClient*>(
         DBusThreadManager::Get()->GetSeneschalClient());
     ASSERT_TRUE(fake_seneschal_client_);
-    static_cast<FakeConciergeClient*>(
-        DBusThreadManager::Get()->GetConciergeClient())
-        ->set_notify_vm_stopped_on_stop_vm(true);
 
     task_environment_ = std::make_unique<content::BrowserTaskEnvironment>(
         base::test::TaskEnvironment::MainThreadType::UI,

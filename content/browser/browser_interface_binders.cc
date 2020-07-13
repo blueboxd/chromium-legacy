@@ -24,6 +24,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/image_capture/image_capture_impl.h"
 #include "content/browser/keyboard_lock/keyboard_lock_service_impl.h"
+#include "content/browser/loader/content_security_notifier.h"
 #include "content/browser/media/session/media_session_service_impl.h"
 #include "content/browser/picture_in_picture/picture_in_picture_service_impl.h"
 #include "content/browser/process_internals/process_internals.mojom.h"
@@ -88,6 +89,7 @@
 #include "third_party/blink/public/mojom/input/input_host.mojom.h"
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom.h"
 #include "third_party/blink/public/mojom/keyboard_lock/keyboard_lock.mojom.h"
+#include "third_party/blink/public/mojom/loader/content_security_notifier.mojom.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom.h"
 #include "third_party/blink/public/mojom/mediasession/media_session.mojom.h"
@@ -500,6 +502,16 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
   map->Add<blink::mojom::ContactsManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetContactsManager, base::Unretained(host)));
 
+  map->Add<blink::mojom::ContentSecurityNotifier>(base::BindRepeating(
+      [](RenderFrameHostImpl* host,
+         mojo::PendingReceiver<blink::mojom::ContentSecurityNotifier>
+             receiver) {
+        mojo::MakeSelfOwnedReceiver(std::make_unique<ContentSecurityNotifier>(
+                                        host->GetGlobalFrameRoutingId()),
+                                    std::move(receiver));
+      },
+      base::Unretained(host)));
+
   map->Add<blink::mojom::DedicatedWorkerHostFactory>(base::BindRepeating(
       &RenderFrameHostImpl::CreateDedicatedWorkerHostFactory,
       base::Unretained(host)));
@@ -822,6 +834,9 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
                           base::Unretained(host)));
   map->Add<blink::mojom::WakeLockService>(base::BindRepeating(
       &DedicatedWorkerHost::CreateWakeLockService, base::Unretained(host)));
+  map->Add<blink::mojom::ContentSecurityNotifier>(
+      base::BindRepeating(&DedicatedWorkerHost::CreateContentSecurityNotifier,
+                          base::Unretained(host)));
   map->Add<blink::mojom::CacheStorage>(base::BindRepeating(
       &DedicatedWorkerHost::BindCacheStorage, base::Unretained(host)));
 #if !defined(OS_ANDROID)
@@ -876,6 +891,12 @@ void PopulateSharedWorkerBinders(SharedWorkerHost* host, mojo::BinderMap* map) {
   // Do nothing for interfaces that the renderer might request, but doesn't
   // always expect to be bound.
   map->Add<blink::mojom::FeatureObserver>(base::DoNothing());
+  // Ignore the pending receiver because it's not clear how to handle
+  // notifications about content security (e.g., mixed contents and certificate
+  // errors) on shared workers. Generally these notifications are routed to the
+  // ancestor frame's WebContents like dedicated workers, but shared workers
+  // don't have the ancestor frame.
+  map->Add<blink::mojom::ContentSecurityNotifier>(base::DoNothing());
 
   // static binders
   map->Add<shape_detection::mojom::BarcodeDetectionProvider>(
@@ -948,6 +969,12 @@ void PopulateServiceWorkerBinders(ServiceWorkerHost* host,
   // Do nothing for interfaces that the renderer might request, but doesn't
   // always expect to be bound.
   map->Add<blink::mojom::FeatureObserver>(base::DoNothing());
+  // Ignore the pending receiver because it's not clear how to handle
+  // notifications about content security (e.g., mixed contents and certificate
+  // errors) on service workers. Generally these notifications are routed to the
+  // ancestor frame's WebContents like dedicated workers, but service workers
+  // don't have the ancestor frame.
+  map->Add<blink::mojom::ContentSecurityNotifier>(base::DoNothing());
 
   // static binders
   map->Add<shape_detection::mojom::BarcodeDetectionProvider>(

@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/synchronization/lock.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -34,6 +35,11 @@ class BASE_EXPORT PowerMonitorSource {
   // Reads the current DeviceThermalState, if available on the platform.
   // Otherwise, returns kUnknown.
   virtual PowerObserver::DeviceThermalState GetCurrentThermalState();
+
+#if defined(OS_ANDROID)
+  // Read and return the current remaining battery capacity (microampere-hours).
+  virtual int GetRemainingBatteryCapacity();
+#endif  // defined(OS_ANDROID)
 
   static const char* DeviceThermalStateToString(
       PowerObserver::DeviceThermalState state);

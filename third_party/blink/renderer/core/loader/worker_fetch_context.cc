@@ -45,6 +45,7 @@ WorkerFetchContext::WorkerFetchContext(
       web_context_(std::move(web_context)),
       subresource_filter_(subresource_filter),
       content_security_policy_(&content_security_policy),
+      content_security_notifier_(&global_scope),
       resource_timing_notifier_(&resource_timing_notifier),
       save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled()) {
   DCHECK(global_scope.IsContextThread());
@@ -139,7 +140,8 @@ bool WorkerFetchContext::ShouldBlockWebSocketByMixedContentCheck(
     const KURL& url) const {
   // Worklets don't support WebSocket.
   DCHECK(global_scope_->IsWorkerGlobalScope());
-  return !MixedContentChecker::IsWebSocketAllowed(*this, url);
+  return !MixedContentChecker::IsWebSocketAllowed(
+      *const_cast<WorkerFetchContext*>(this), url);
 }
 
 std::unique_ptr<WebSocketHandshakeThrottle>
@@ -160,8 +162,9 @@ bool WorkerFetchContext::ShouldBlockFetchByMixedContentCheck(
   const KURL& url_before_redirects =
       redirect_info ? redirect_info->original_url : url;
   return MixedContentChecker::ShouldBlockFetchOnWorker(
-      *this, request_context, url_before_redirects, redirect_status, url,
-      reporting_disposition, global_scope_->IsWorkletGlobalScope());
+      *const_cast<WorkerFetchContext*>(this), request_context,
+      url_before_redirects, redirect_status, url, reporting_disposition,
+      global_scope_->IsWorkletGlobalScope());
 }
 
 bool WorkerFetchContext::ShouldBlockFetchAsCredentialedSubresource(
@@ -294,10 +297,21 @@ bool WorkerFetchContext::AllowRunningInsecureContent(
       enabled_per_settings, url);
 }
 
+mojom::blink::ContentSecurityNotifier&
+WorkerFetchContext::GetContentSecurityNotifier() {
+  if (!content_security_notifier_.is_bound()) {
+    global_scope_->GetBrowserInterfaceBroker().GetInterface(
+        content_security_notifier_.BindNewPipeAndPassReceiver(
+            global_scope_->GetTaskRunner(TaskType::kInternalLoading)));
+  }
+  return *content_security_notifier_.get();
+}
+
 void WorkerFetchContext::Trace(Visitor* visitor) const {
   visitor->Trace(global_scope_);
   visitor->Trace(subresource_filter_);
   visitor->Trace(content_security_policy_);
+  visitor->Trace(content_security_notifier_);
   BaseFetchContext::Trace(visitor);
 }
 

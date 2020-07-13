@@ -142,7 +142,7 @@ void UseCreditCardAction::OnGetFullCard(
 
   std::vector<RequiredField> required_fields;
   for (const auto& required_field_proto : proto_.use_card().required_fields()) {
-    if (required_field_proto.value_expression().empty()) {
+    if (!required_field_proto.has_value_expression()) {
       continue;
     }
 

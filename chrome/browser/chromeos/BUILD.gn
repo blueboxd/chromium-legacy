@@ -3235,6 +3235,7 @@ source_set("unit_tests") {
     "policy/extension_cache_unittest.cc",
     "policy/extension_install_event_log_collector_unittest.cc",
     "policy/extension_install_event_log_manager_unittest.cc",
+    "policy/extension_install_event_log_manager_wrapper_unittest.cc",
     "policy/extension_install_event_log_unittest.cc",
     "policy/extension_install_event_log_uploader_unittest.cc",
     "policy/extension_install_event_logger_unittest.cc",

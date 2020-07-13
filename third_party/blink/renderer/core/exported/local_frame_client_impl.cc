@@ -742,27 +742,9 @@ bool LocalFrameClientImpl::NavigateBackForward(int offset) const {
   return true;
 }
 
-void LocalFrameClientImpl::DidRunInsecureContent(const SecurityOrigin* origin,
-                                                 const KURL& insecure_url) {
-  if (web_frame_->Client()) {
-    web_frame_->Client()->DidRunInsecureContent(WebSecurityOrigin(origin),
-                                                insecure_url);
-  }
-}
-
 void LocalFrameClientImpl::DidDispatchPingLoader(const KURL& url) {
   if (web_frame_->Client())
     web_frame_->Client()->DidDispatchPingLoader(url);
-}
-
-void LocalFrameClientImpl::DidDisplayContentWithCertificateErrors() {
-  if (web_frame_->Client())
-    web_frame_->Client()->DidDisplayContentWithCertificateErrors();
-}
-
-void LocalFrameClientImpl::DidRunContentWithCertificateErrors() {
-  if (web_frame_->Client())
-    web_frame_->Client()->DidRunContentWithCertificateErrors();
 }
 
 void LocalFrameClientImpl::DidChangePerformanceTiming() {

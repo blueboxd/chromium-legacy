@@ -7,6 +7,7 @@
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
+#include "third_party/blink/public/mojom/loader/content_security_notifier.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
@@ -312,14 +313,13 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
             *MakeGarbageCollected<WorkerResourceFetcherProperties>(
                 *this, fetch_client_settings_object,
                 web_worker_fetch_context_));
-    ResourceFetcherInit init(
-        properties,
-        MakeGarbageCollected<WorkerFetchContext>(
-            properties, *this, web_worker_fetch_context_, subresource_filter_,
-            content_security_policy, resource_timing_notifier),
-        GetTaskRunner(TaskType::kNetworking),
-        MakeGarbageCollected<LoaderFactoryForWorker>(
-            *this, web_worker_fetch_context_));
+    auto* worker_fetch_context = MakeGarbageCollected<WorkerFetchContext>(
+        properties, *this, web_worker_fetch_context_, subresource_filter_,
+        content_security_policy, resource_timing_notifier);
+    ResourceFetcherInit init(properties, worker_fetch_context,
+                             GetTaskRunner(TaskType::kNetworking),
+                             MakeGarbageCollected<LoaderFactoryForWorker>(
+                                 *this, web_worker_fetch_context_));
     init.use_counter = MakeGarbageCollected<DetachableUseCounter>(this);
     init.console_logger = MakeGarbageCollected<DetachableConsoleLogger>(this);
 
@@ -340,7 +340,7 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
     fetcher->SetResourceLoadObserver(
         MakeGarbageCollected<ResourceLoadObserverForWorker>(
             *probe::ToCoreProbeSink(static_cast<ExecutionContext*>(this)),
-            fetcher->GetProperties(), web_worker_fetch_context_,
+            fetcher->GetProperties(), *worker_fetch_context,
             GetDevToolsToken()));
   } else {
     auto& properties =

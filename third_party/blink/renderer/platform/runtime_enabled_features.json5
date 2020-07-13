@@ -1557,6 +1557,11 @@
       status: "stable",
     },
     {
+      name: "RTCAdaptivePtime",
+      origin_trial_feature_name: "RTCAdaptivePtime",
+      status: "experimental",
+    },
+    {
       name: "RtcAudioJitterBufferMaxPackets",
       origin_trial_feature_name: "RtcAudioJitterBufferMaxPackets",
       status: "experimental",

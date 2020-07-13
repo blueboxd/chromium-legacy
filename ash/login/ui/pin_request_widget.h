@@ -55,6 +55,9 @@ class ASH_EXPORT PinRequestWidget {
   // Returns the instance of PinRequestWidget or nullptr if it does not exits.
   static PinRequestWidget* Get();
 
+  // Sets the callback that is called every time the widget is shown.
+  static void SetShownCallbackForTesting(base::RepeatingClosure on_shown);
+
   // Toggles showing an error state and updates displayed strings.
   void UpdateState(PinRequestViewState state,
                    const base::string16& title,

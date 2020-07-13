@@ -167,7 +167,6 @@ class CrostiniManagerTest : public testing::Test {
         chromeos::DBusThreadManager::Get()->GetCiceroneClient());
     fake_concierge_client_ = static_cast<chromeos::FakeConciergeClient*>(
         chromeos::DBusThreadManager::Get()->GetConciergeClient());
-    fake_concierge_client_->set_notify_vm_stopped_on_stop_vm(true);
     fake_anomaly_detector_client_ =
         static_cast<chromeos::FakeAnomalyDetectorClient*>(
             chromeos::DBusThreadManager::Get()->GetAnomalyDetectorClient());

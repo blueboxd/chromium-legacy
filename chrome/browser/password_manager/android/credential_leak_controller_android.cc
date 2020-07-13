@@ -6,11 +6,13 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/feature_list.h"
 #include "chrome/android/chrome_jni_headers/PasswordChangeLauncher_jni.h"
 #include "chrome/android/chrome_jni_headers/PasswordCheckupLauncher_jni.h"
 #include "chrome/browser/ui/android/passwords/credential_leak_dialog_view_android.h"
 #include "chrome/common/url_constants.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "ui/android/window_android.h"
 
 using password_manager::metrics_util::LeakDialogDismissalReason;
@@ -53,15 +55,20 @@ void CredentialLeakControllerAndroid::OnAcceptDialog() {
   }
 
   DCHECK(!(ShouldCheckPasswords() && ShouldShowChangePasswordButton()));
+  JNIEnv* env = base::android::AttachCurrentThread();
   if (ShouldCheckPasswords()) {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    Java_PasswordCheckupLauncher_launchCheckup(
-        env,
-        base::android::ConvertUTF8ToJavaString(
-            env, password_manager::GetPasswordCheckupURL().spec()),
-        window_android_->GetJavaObject());
+    if (base::FeatureList::IsEnabled(
+            password_manager::features::kPasswordCheck)) {
+      Java_PasswordCheckupLauncher_launchLocalCheckup(
+          env, window_android_->GetJavaObject());
+    } else {
+      Java_PasswordCheckupLauncher_launchCheckupInAccount(
+          env,
+          base::android::ConvertUTF8ToJavaString(
+              env, password_manager::GetPasswordCheckupURL().spec()),
+          window_android_->GetJavaObject());
+    }
   } else if (ShouldShowChangePasswordButton()) {
-    JNIEnv* env = base::android::AttachCurrentThread();
     Java_PasswordChangeLauncher_start(
         env, window_android_->GetJavaObject(),
         base::android::ConvertUTF8ToJavaString(env, origin_.spec()),

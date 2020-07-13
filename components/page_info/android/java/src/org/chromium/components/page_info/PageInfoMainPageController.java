@@ -17,6 +17,11 @@ public interface PageInfoMainPageController {
     void launchSubpage(PageInfoSubpageController controller);
 
     /**
+     * Switches back to the main page info view.
+     */
+    void exitSubpage();
+
+    /**
      * @return A BrowserContext for this dialog.
      */
     BrowserContextHandle getBrowserContext();

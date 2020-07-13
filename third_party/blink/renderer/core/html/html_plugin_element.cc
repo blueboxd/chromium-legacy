@@ -726,7 +726,8 @@ bool HTMLPlugInElement::AllowedToLoadObject(const KURL& url,
          !MixedContentChecker::ShouldBlockFetch(
              frame, mojom::RequestContextType::OBJECT, url,
              ResourceRequest::RedirectStatus::kNoRedirect, url,
-             /* devtools_id= */ base::nullopt);
+             /* devtools_id= */ base::nullopt, ReportingDisposition::kReport,
+             GetDocument().Loader()->GetContentSecurityNotifier());
 }
 
 bool HTMLPlugInElement::AllowedToLoadPlugin(const KURL& url,

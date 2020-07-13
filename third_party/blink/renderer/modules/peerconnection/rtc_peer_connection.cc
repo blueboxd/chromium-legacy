@@ -2300,7 +2300,7 @@ RTCRtpTransceiver* RTCPeerConnection::addTransceiver(
   }
   if (ThrowExceptionIfSignalingStateClosed(signaling_state_, &exception_state))
     return nullptr;
-  auto webrtc_init = ToRtpTransceiverInit(init);
+  auto webrtc_init = ToRtpTransceiverInit(GetExecutionContext(), init);
   // Validate sendEncodings.
   for (auto& encoding : webrtc_init.send_encodings) {
     if (encoding.rid.length() > 16) {

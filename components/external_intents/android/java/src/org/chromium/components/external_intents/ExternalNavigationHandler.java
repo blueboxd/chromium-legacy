@@ -9,6 +9,9 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
@@ -22,6 +25,7 @@ import android.provider.Browser;
 import android.provider.Telephony;
 import android.text.TextUtils;
 import android.util.Pair;
+import android.view.WindowManager.BadTokenException;
 import android.webkit.MimeTypeMap;
 import android.webkit.WebView;
 
@@ -49,6 +53,7 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.network.mojom.ReferrerPolicy;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.PermissionCallback;
 import org.chromium.url.URI;
@@ -948,8 +953,7 @@ public class ExternalNavigationHandler {
             boolean shouldProxyForInstantApps) {
         // This intent may leave this app. Warn the user that incognito does not carry over
         // to external apps.
-        if (mDelegate.startIncognitoIntent(targetIntent, params.getReferrerUrl(),
-                    browserFallbackUrl,
+        if (startIncognitoIntent(targetIntent, params.getReferrerUrl(), browserFallbackUrl,
                     params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent(),
                     shouldProxyForInstantApps)) {
             if (DEBUG) Log.i(TAG, "Incognito navigation out");
@@ -957,6 +961,81 @@ public class ExternalNavigationHandler {
         }
         if (DEBUG) Log.i(TAG, "Failed to show incognito alert dialog.");
         return OverrideUrlLoadingResult.NO_OVERRIDE;
+    }
+
+    /**
+     * Display a dialog warning the user that they may be leaving this app by starting this
+     * intent. Give the user the opportunity to cancel the action. And if it is canceled, a
+     * navigation will happen in this app. Catches BadTokenExceptions caused by showing the dialog
+     * on certain devices. (crbug.com/782602)
+     * @param intent The intent for external application that will be sent.
+     * @param referrerUrl The referrer for the current navigation.
+     * @param fallbackUrl The URL to load if the user doesn't proceed with external intent.
+     * @param needsToCloseTab Whether the current tab has to be closed after the intent is sent.
+     * @param proxy Whether we need to proxy the intent through AuthenticatedProxyActivity (this is
+     *              used by Instant Apps intents.
+     * @return True if the function returned error free, false if it threw an exception.
+     */
+    private boolean startIncognitoIntent(final Intent intent, final String referrerUrl,
+            final String fallbackUrl, final boolean needsToCloseTab, final boolean proxy) {
+        try {
+            return startIncognitoIntentInternal(
+                    intent, referrerUrl, fallbackUrl, needsToCloseTab, proxy);
+        } catch (BadTokenException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Internal implementation of startIncognitoIntent(), with all the same parameters.
+     */
+    @VisibleForTesting
+    protected boolean startIncognitoIntentInternal(final Intent intent, final String referrerUrl,
+            final String fallbackUrl, final boolean needsToCloseTab, final boolean proxy) {
+        if (!mDelegate.hasValidTab()) return false;
+        Context context = mDelegate.getContext();
+        if (ContextUtils.activityFromContext(context) == null) return false;
+
+        new UiUtils.CompatibleAlertDialogBuilder(context, R.style.Theme_Chromium_AlertDialog)
+                .setTitle(R.string.external_app_leave_incognito_warning_title)
+                .setMessage(R.string.external_app_leave_incognito_warning)
+                .setPositiveButton(R.string.external_app_leave_incognito_leave,
+                        new OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                try {
+                                    startActivity(intent, proxy, mDelegate);
+                                    if (mDelegate.canCloseTabOnIncognitoIntentLaunch()
+                                            && needsToCloseTab) {
+                                        mDelegate.closeTab();
+                                    }
+                                } catch (ActivityNotFoundException e) {
+                                    // The activity that we thought was going to handle the intent
+                                    // no longer exists, so catch the exception and assume Chrome
+                                    // can handle it.
+                                    loadUrlFromIntent(referrerUrl, fallbackUrl,
+                                            intent.getDataString(), mDelegate, needsToCloseTab,
+                                            true);
+                                }
+                            }
+                        })
+                .setNegativeButton(R.string.external_app_leave_incognito_stay,
+                        new OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                loadUrlFromIntent(referrerUrl, fallbackUrl, intent.getDataString(),
+                                        mDelegate, needsToCloseTab, true);
+                            }
+                        })
+                .setOnCancelListener(new OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        loadUrlFromIntent(referrerUrl, fallbackUrl, intent.getDataString(),
+                                mDelegate, needsToCloseTab, true);
+                    }
+                })
+                .show();
+        return true;
     }
 
     /**
@@ -1240,7 +1319,7 @@ public class ExternalNavigationHandler {
         }
 
         if (params.isIncognito()) {
-            if (!mDelegate.startIncognitoIntent(intent, params.getReferrerUrl(), null,
+            if (!startIncognitoIntent(intent, params.getReferrerUrl(), null,
 
                         params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent(), false)) {
                 if (DEBUG) Log.i(TAG, "Failed to show incognito alert dialog.");

@@ -67,11 +67,15 @@ void MarkingVisitorBase::VisitWeak(const void* object,
                                    const void* object_weak_ref,
                                    TraceDescriptor desc,
                                    WeakCallback callback) {
+  HeapObjectHeader* header =
+      HeapObjectHeader::FromPayload(desc.base_object_payload);
+  if (header->IsInConstruction<HeapObjectHeader::AccessMode::kAtomic>()) {
+    not_fully_constructed_worklist_.Push(desc.base_object_payload);
+    return;
+  }
   // Filter out already marked values. The write barrier for WeakMember
   // ensures that any newly set value after this point is kept alive and does
   // not require the callback.
-  HeapObjectHeader* header =
-      HeapObjectHeader::FromPayload(desc.base_object_payload);
   if (header->IsMarked<HeapObjectHeader::AccessMode::kAtomic>())
     return;
   RegisterWeakCallback(callback, object_weak_ref);
@@ -102,6 +106,15 @@ void MarkingVisitorBase::VisitWeakContainer(
   if (!object)
     return;
 
+  HeapObjectHeader* header = HeapObjectHeader::FromPayload(object);
+  // We shouldn't trace an in-construction backing store of a weak container.
+  // If this container is an ephemeron, we will try to iterate over it's
+  // bucket which is unsafe when the backing store is in construction.
+  if (header->IsInConstruction<HeapObjectHeader::AccessMode::kAtomic>()) {
+    not_fully_constructed_worklist_.Push(object);
+    return;
+  }
+
   // Only trace the container initially. Its buckets will be processed after
   // marking. The interesting cases  are:
   // - The backing of the container is dropped using clear(): The backing can
@@ -111,7 +124,6 @@ void MarkingVisitorBase::VisitWeakContainer(
   //   store and strongified, resulting in all buckets being alive. The old
   //   backing store is marked but only contains empty/deleted buckets as all
   //   non-empty/deleted buckets have been moved to the new backing store.
-  HeapObjectHeader* header = HeapObjectHeader::FromPayload(object);
   MarkHeaderNoTracing(header);
   AccountMarkedBytes(header);
 

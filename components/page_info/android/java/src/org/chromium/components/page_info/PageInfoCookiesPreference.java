@@ -1,0 +1,93 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+package org.chromium.components.page_info;
+
+import android.os.Bundle;
+
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+
+import org.chromium.base.Callback;
+import org.chromium.components.browser_ui.settings.ButtonPreference;
+import org.chromium.components.browser_ui.settings.ChromeBasePreference;
+import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
+import org.chromium.components.browser_ui.settings.SettingsUtils;
+import org.chromium.components.content_settings.CookieControlsStatus;
+import org.chromium.ui.text.NoUnderlineClickableSpan;
+import org.chromium.ui.text.SpanApplier;
+
+/**
+ * View showing a toggle and a description for third-party cookie blocking for a site.
+ */
+public class PageInfoCookiesPreference extends PreferenceFragmentCompat {
+    private static final String COOKIE_SUMMARY_PREFERENCE = "cookie_summary";
+    private static final String COOKIE_SWITCH_PREFERENCE = "cookie_switch";
+    private static final String COOKIE_IN_USE_PREFERENCE = "cookie_in_use";
+    private static final String CLEAR_BUTTON_PREFERENCE = "clear_button";
+
+    private PageInfoCookiesViewParams mParams;
+
+    private ChromeSwitchPreference mCookieSwitch;
+    private ChromeBasePreference mCookieInUse;
+
+    /**  Parameters to configure the cookie controls view. */
+    public static class PageInfoCookiesViewParams {
+        // Called when the toggle controlling third-party cookie blocking changes.
+        public Callback<Boolean> onCheckedChangedCallback;
+        public Runnable onClearCallback;
+    }
+
+    @Override
+    public void onCreatePreferences(Bundle bundle, String s) {
+        SettingsUtils.addPreferencesFromResource(this, R.xml.page_info_cookie_preference);
+
+        Preference cookieSummary = findPreference(COOKIE_SUMMARY_PREFERENCE);
+        // TODO(crbug.com/1077766): Show cookie settings.
+        NoUnderlineClickableSpan linkSpan =
+                new NoUnderlineClickableSpan(getResources(), view -> {});
+        cookieSummary.setSummary(
+                SpanApplier.applySpans(getString(R.string.page_info_cookies_description),
+                        new SpanApplier.SpanInfo("<link>", "</link>", linkSpan)));
+
+        // TODO(crbug.com/1077766): Set a ManagedPreferenceDelegate?
+        mCookieSwitch = findPreference(COOKIE_SWITCH_PREFERENCE);
+        mCookieSwitch.setOnPreferenceChangeListener((preference, newValue) -> {
+            mParams.onCheckedChangedCallback.onResult((Boolean) newValue);
+            return true;
+        });
+
+        mCookieInUse = findPreference(COOKIE_IN_USE_PREFERENCE);
+        mCookieInUse.setIcon(
+                SettingsUtils.getTintedIcon(getContext(), R.drawable.permission_cookie));
+
+        ButtonPreference clearButton = findPreference(CLEAR_BUTTON_PREFERENCE);
+        clearButton.setOnPreferenceClickListener(preference -> {
+            mParams.onClearCallback.run();
+            return true;
+        });
+    }
+
+    public void setParams(PageInfoCookiesViewParams params) {
+        mParams = params;
+    }
+
+    public void setCookieBlockingStatus(@CookieControlsStatus int status, boolean isEnforced) {
+        boolean visible = status != CookieControlsStatus.DISABLED;
+        boolean enabled = status == CookieControlsStatus.ENABLED;
+        mCookieSwitch.setVisible(visible);
+        if (visible) {
+            mCookieSwitch.setIcon(
+                    SettingsUtils.getTintedIcon(getContext(), R.drawable.ic_eye_crossed));
+            mCookieSwitch.setChecked(enabled);
+            mCookieSwitch.setEnabled(!isEnforced);
+        }
+    }
+
+    public void setCookiesCount(int allowedCookies, int blockedCookies) {
+        mCookieSwitch.setSummary(getContext().getResources().getQuantityString(
+                R.plurals.cookie_controls_blocked_cookies, blockedCookies, blockedCookies));
+        mCookieInUse.setTitle(getContext().getResources().getQuantityString(
+                R.plurals.page_info_cookies_in_use, allowedCookies, allowedCookies));
+    }
+}

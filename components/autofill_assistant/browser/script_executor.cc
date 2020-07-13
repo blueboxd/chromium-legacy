@@ -515,6 +515,9 @@ void ScriptExecutor::GetElementTag(
 }
 
 void ScriptExecutor::ExpectNavigation() {
+  // TODO(b/160948417): Clean this up such that the logic is not required in
+  //  both |ScriptExecutor| and |Controller|.
+  delegate_->ExpectNavigation();
   expected_navigation_step_ = ExpectedNavigationStep::EXPECTED;
 }
 

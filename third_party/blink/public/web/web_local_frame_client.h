@@ -454,21 +454,8 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void DidLoadResourceFromMemoryCache(const WebURLRequest&,
                                               const WebURLResponse&) {}
 
-  // The indicated security origin has run active content (such as a
-  // script) from an insecure source.  Note that the insecure content can
-  // spread to other frames in the same origin.
-  virtual void DidRunInsecureContent(const WebSecurityOrigin&,
-                                     const WebURL& insecure_url) {}
-
   // A PingLoader was created, and a request dispatched to a URL.
   virtual void DidDispatchPingLoader(const WebURL&) {}
-
-  // This frame has displayed inactive content (such as an image) from
-  // a connection with certificate errors.
-  virtual void DidDisplayContentWithCertificateErrors() {}
-  // This frame has run active content (such as a script) from a
-  // connection with certificate errors.
-  virtual void DidRunContentWithCertificateErrors() {}
 
   // A performance timing event (e.g. first paint) occurred
   virtual void DidChangePerformanceTiming() {}

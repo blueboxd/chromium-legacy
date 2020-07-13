@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/loader/alternate_signed_exchange_resource_info.h"
@@ -176,8 +177,12 @@ void ResourceLoadObserverForFrame::DidReceiveResponse(
       base::OptionalOrNullptr(response.RecursivePrefetchToken()));
 
   if (response.HasMajorCertificateErrors()) {
-    MixedContentChecker::HandleCertificateError(frame, response,
-                                                request.GetRequestContext());
+    MixedContentChecker::HandleCertificateError(
+        response, request.GetRequestContext(),
+        frame->GetSettings()
+            ? frame->GetSettings()->GetStrictMixedContentCheckingForPlugin()
+            : false,
+        document_loader_->GetContentSecurityNotifier());
   }
 
   if (response.IsLegacyTLSVersion()) {

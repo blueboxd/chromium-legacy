@@ -105,6 +105,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_from_url.h"
@@ -1820,7 +1821,9 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
           current_src_after_redirects_ == current_src_
               ? ResourceRequest::RedirectStatus::kNoRedirect
               : ResourceRequest::RedirectStatus::kFollowedRedirect,
-          current_src_after_redirects_, /* devtools_id= */ base::nullopt);
+          current_src_after_redirects_, /* devtools_id= */ base::nullopt,
+          ReportingDisposition::kReport,
+          GetDocument().Loader()->GetContentSecurityNotifier());
     }
 
     // Prior to kHaveMetadata |network_state_| may be inaccurate to avoid side

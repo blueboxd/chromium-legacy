@@ -8,18 +8,6 @@ danakj@chromium.org
 per-file BUILD.gn=*
 
 # For surface ID propagation and synchronization
-per-file render_frame_proxy*=fsamuel@chromium.org
-per-file render_view_impl*=fsamuel@chromium.org
-per-file render_widget*=fsamuel@chromium.org
-per-file child_frame_compositor*=fsamuel@chromium.org
-per-file child_frame_compositing_helper*=fsamuel@chromium.org
-per-file render_frame_metadata*=fsamuel@chromium.org
-per-file render_frame_proxy*=samans@chromium.org
-per-file render_view_impl*=samans@chromium.org
-per-file render_widget*=samans@chromium.org
-per-file child_frame_compositor*=samans@chromium.org
-per-file child_frame_compositing_helper*=samans@chromium.org
-per-file render_frame_metadata*=samans@chromium.org
 per-file render_frame_proxy*=jonross@chromium.org
 per-file render_view_impl*=jonross@chromium.org
 per-file render_widget*=jonross@chromium.org
@@ -37,4 +25,3 @@ per-file storage_util*=file://storage/OWNERS
 # For security review.
 per-file browser_exposed_renderer_interfaces.cc=set noparent
 per-file browser_exposed_renderer_interfaces.cc=file://ipc/SECURITY_OWNERS
-

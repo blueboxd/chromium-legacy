@@ -9,6 +9,7 @@ import android.content.Context;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.chrome.browser.download.DownloadLaterMetrics.DownloadLaterUiEvent;
 import org.chromium.chrome.browser.download.dialogs.DownloadDateTimePickerDialogCoordinator;
 import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogChoice;
 import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogController;
@@ -154,6 +155,7 @@ public class DownloadDialogBridge
             @DownloadLaterDialogChoice int choice, long startTime) {
         mDownloadLaterChoice = choice;
         mDownloadLaterTime = startTime;
+        DownloadLaterMetrics.recordDownloadLaterDialogChoice(choice);
 
         // When there is no error message, skip the location dialog.
         if (mLocationDialogType == DownloadLocationDialogType.DEFAULT) {
@@ -168,11 +170,15 @@ public class DownloadDialogBridge
 
     @Override
     public void onDownloadLaterDialogCanceled() {
+        DownloadLaterMetrics.recordDownloadLaterUiEvent(
+                DownloadLaterUiEvent.DOWNLOAD_LATER_DIALOG_CANCEL);
         onCancel();
     }
 
     @Override
     public void onEditLocationClicked() {
+        DownloadLaterMetrics.recordDownloadLaterUiEvent(
+                DownloadLaterUiEvent.DOWNLOAD_LATER_DIALOG_EDIT_CLICKED);
         mDownloadLaterDialog.dismissDialog(DialogDismissalCause.ACTION_ON_CONTENT);
 
         // The user clicked the edit location text.
@@ -206,6 +212,8 @@ public class DownloadDialogBridge
 
         mDownloadLaterDialog.showDialog(
                 mContext, mModalDialogManager, mPrefService, builder.build());
+        DownloadLaterMetrics.recordDownloadLaterUiEvent(
+                DownloadLaterUiEvent.DOWNLOAD_LATER_DIALOG_SHOW);
     }
 
     // DownloadLocationDialogController implementation.

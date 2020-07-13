@@ -1981,8 +1981,6 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "image-decoders/webp/webp_image_decoder_test.cc",
     "json/json_parser_test.cc",
     "json/json_values_test.cc",
-    "loader/allowed_by_nosniff_test.cc",
-    "loader/cors/cors_test.cc",
     "mac/graphics_context_canvas_test.mm",
     "media/webaudiosourceprovider_impl_test.cc",
     "mediastream/media_stream_audio_processor_options_test.cc",

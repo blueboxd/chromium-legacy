@@ -23,7 +23,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeviceConditions;
+import org.chromium.chrome.browser.download.DownloadLaterMetrics.DownloadLaterUiEvent;
 import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogHelper;
+import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogHelper.Source;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.infobar.DownloadProgressInfoBar;
@@ -1059,14 +1061,17 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         // Show the download later dialog to let the user change download schedule.
         mDownloadLaterDialogHelper = DownloadLaterDialogHelper.create(
                 activity, activity.getModalDialogManager(), prefService);
-        mDownloadLaterDialogHelper.showChangeScheduleDialog(currentSchedule, (newSchedule) -> {
-            if (mUseNewDownloadPath) {
-                OfflineContentAggregatorFactory.get().changeSchedule(id, newSchedule);
-            } else {
-                DownloadManagerService.getDownloadManagerService().changeSchedule(
-                        id, newSchedule, mIsIncognito);
-            }
-        });
+        DownloadLaterMetrics.recordDownloadLaterUiEvent(
+                DownloadLaterUiEvent.DOWNLOAD_INFOBAR_CHANGE_SCHEDULE_CLICKED);
+        mDownloadLaterDialogHelper.showChangeScheduleDialog(
+                currentSchedule, Source.DOWNLOAD_INFOBAR, (newSchedule) -> {
+                    if (mUseNewDownloadPath) {
+                        OfflineContentAggregatorFactory.get().changeSchedule(id, newSchedule);
+                    } else {
+                        DownloadManagerService.getDownloadManagerService().changeSchedule(
+                                id, newSchedule, mIsIncognito);
+                    }
+                });
     }
 
     private void recordInfoBarState(

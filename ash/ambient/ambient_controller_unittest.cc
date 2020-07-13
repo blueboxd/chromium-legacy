@@ -261,6 +261,20 @@ TEST_F(AmbientControllerTest, ShouldDismissContainerViewWhenKeyPressed) {
   CloseAmbientScreen();
 }
 
+TEST_F(AmbientControllerTest, ShouldDismissContainerViewOnRealMouseMove) {
+  ShowAmbientScreen();
+  EXPECT_TRUE(container_view()->GetWidget()->IsVisible());
+
+  // Simulates a tiny mouse move within the threshold, which should be ignored.
+  GetEventGenerator()->MoveMouseBy(/*x=*/1, /*y=*/1);
+  EXPECT_TRUE(container_view()->GetWidget()->IsVisible());
+
+  // Simulates a big mouse move beyond the threshold, which should take effect
+  // and dismiss the ambient.
+  GetEventGenerator()->MoveMouseBy(/*x=*/15, /*y=*/15);
+  EXPECT_FALSE(container_view()->GetWidget()->IsVisible());
+}
+
 TEST_F(AmbientControllerTest, UpdateUiAndWakeLockWhenSystemSuspendOrResume) {
   // Flush the loop first to ensure the |PowerStatus| has picked up the initial
   // status.

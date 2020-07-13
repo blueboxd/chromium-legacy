@@ -7,6 +7,8 @@
 
 #include <memory>
 #include <ostream>
+#include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -22,6 +24,7 @@
 #include "components/arc/session/arc_stop_reason.h"
 
 class ArcAppLauncher;
+class PrefService;
 class Profile;
 
 namespace arc {
@@ -105,6 +108,9 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
     STOPPING,
   };
 
+  using ExpansionResult = std::pair<std::string /* salt on disk */,
+                                    bool /* expansion successful */>;
+
   // Observer for those services outside of ARC which want to know ARC events.
   class Observer {
    public:
@@ -160,6 +166,15 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   static void SetUiEnabledForTesting(bool enabled);
   static void SetArcTermsOfServiceOobeNegotiatorEnabledForTesting(bool enabled);
   static void EnableCheckAndroidManagementForTesting(bool enable);
+  static std::string GenerateFakeSerialNumberForTesting(
+      const std::string& chromeos_user,
+      const std::string& salt);
+  static std::string GetOrCreateSerialNumberForTesting(
+      PrefService* local_state,
+      const std::string& chromeos_user,
+      const std::string& arc_salt_on_disk);
+  static bool ReadSaltOnDiskForTesting(const base::FilePath& salt_path,
+                                       std::string* out_salt);
 
   // Returns true if ARC is allowed to run for the current session.
   // TODO(hidehiko): The name is very close to IsArcAllowedForProfile(), but
@@ -167,8 +182,9 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   bool IsAllowed() const;
 
   // Start expanding the property files. Note that these property files are
-  // needed to start the mini instance.
-  void ExpandPropertyFiles();
+  // needed to start the mini instance. This function also tries to read
+  // /var/lib/misc/arc_salt when ARCVM is enabled.
+  void ExpandPropertyFilesAndReadSalt();
 
   // Initializes ArcSessionManager. Before this runs, Profile must be set
   // via SetProfile().
@@ -240,6 +256,9 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   void OnProvisioningFinished(ProvisioningResult result,
                               mojom::ArcSignInErrorPtr error);
 
+  // A helper function that calls ArcSessionRunner's SetUserInfo.
+  void SetUserInfo();
+
   // Returns the time when the sign in process started, or a null time if
   // signing in didn't happen during this session.
   base::TimeTicks sign_in_start_time() const { return sign_in_start_time_; }
@@ -289,9 +308,9 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
     OnTermsOfServiceNegotiated(accepted);
   }
 
-  // Invokes OnExpandPropertyFiles as if the expansion is done.
-  void OnExpandPropertyFilesForTesting(bool result) {
-    OnExpandPropertyFiles(result);
+  // Invokes OnExpandPropertyFilesAndReadSalt as if the expansion is done.
+  void OnExpandPropertyFilesAndReadSaltForTesting(bool result) {
+    OnExpandPropertyFilesAndReadSalt(ExpansionResult{{}, result});
   }
 
   void reset_property_files_expansion_result() {
@@ -391,8 +410,8 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // chromeos::SessionManagerClient::Observer:
   void EmitLoginPromptVisibleCalled() override;
 
-  // Called when ExpandPropertyFiles is done.
-  void OnExpandPropertyFiles(bool result);
+  // Called when ExpandPropertyFilesAndReadSalt is done.
+  void OnExpandPropertyFilesAndReadSalt(ExpansionResult result);
 
   std::unique_ptr<ArcSessionRunner> arc_session_runner_;
 
@@ -432,6 +451,9 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   base::Closure attempt_user_exit_callback_;
 
   ArcAppIdProviderImpl app_id_provider_;
+
+  // The content of /var/lib/misc/arc_salt. Empty if the file doesn't exist.
+  base::Optional<std::string> arc_salt_on_disk_;
 
   base::Optional<bool> property_files_expansion_result_;
   base::FilePath property_files_source_dir_;

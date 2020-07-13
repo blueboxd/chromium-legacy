@@ -78,8 +78,36 @@ guestMessagePipe.registerHandler(Message.OPEN_FEEDBACK_DIALOG, () => {
 
 guestMessagePipe.registerHandler(Message.OVERWRITE_FILE, async (message) => {
   const overwrite = /** @type {!OverwriteFileMessage} */ (message);
-  await saveBlobToFile(fileHandleForToken(overwrite.token), overwrite.blob);
+  const originalHandle = fileHandleForToken(overwrite.token);
+  try {
+    await saveBlobToFile(originalHandle, overwrite.blob);
+  } catch (/** @type {!DOMException|!Error} */ e) {
+    // TODO(b/160843424): Collect UMA.
+    console.warn('Showing a picker due to', e);
+    return pickFileForFailedOverwrite(originalHandle.name, e.name, overwrite);
+  }
 });
+
+/**
+ * Shows a file picker and redirects a failed OverwriteFileMessage to the chosen
+ * file. Updates app state and rebinds file tokens if the write is successful.
+ * @param {string} fileName
+ * @param {string} errorName
+ * @param {!OverwriteFileMessage} overwrite
+ * @return {!Promise<!OverwriteFileResponse>}
+ */
+async function pickFileForFailedOverwrite(fileName, errorName, overwrite) {
+  const fileHandle = await pickWritableFile(fileName, overwrite.blob.type);
+  await saveBlobToFile(fileHandle, overwrite.blob);
+
+  // Success. Replace the old handle.
+  tokenMap.set(overwrite.token, fileHandle);
+  const entry = currentFiles.find(i => i.token === overwrite.token);
+  if (entry) {
+    entry.handle = fileHandle;
+  }
+  return {renamedTo: fileHandle.name, errorName};
+}
 
 guestMessagePipe.registerHandler(Message.DELETE_FILE, async (message) => {
   const deleteMsg = /** @type {!DeleteFileMessage} */ (message);
@@ -149,21 +177,7 @@ guestMessagePipe.registerHandler(Message.NAVIGATE, async (message) => {
 
 guestMessagePipe.registerHandler(Message.SAVE_COPY, async (message) => {
   const {blob, suggestedName} = /** @type {!SaveCopyMessage} */ (message);
-  const extension = suggestedName.split('.').reverse()[0];
-  // TODO(b/141587270): Add a default filename when it's supported by the native
-  // file api.
-  /** @type {!FilePickerOptions} */
-  const options = {
-    types: [
-      {description: extension, accept: {[blob.type]: [extension]}},
-    ],
-    excludeAcceptAllOption: true,
-  };
-  // This may throw an error, but we can handle and recover from it on the
-  // unprivileged side.
-  /** @type {!FileSystemHandle} */
-  const fileSystemHandle = /** @type {!FileSystemHandle} */ (
-      await window.showSaveFilePicker(options));
+  const fileSystemHandle = await pickWritableFile(suggestedName, blob.type);
   const {handle} = await getFileFromHandle(fileSystemHandle);
   // Note `handle` could be the same as a `FileSystemFileHandle` that exists in
   // `tokenMap`. Possibly even the `File` currently open. But that's OK. E.g.
@@ -172,6 +186,28 @@ guestMessagePipe.registerHandler(Message.SAVE_COPY, async (message) => {
   // clipboard).
   await saveBlobToFile(handle, blob);
 });
+
+/**
+ * Shows a file picker to get a writable file.
+ * @param {string} suggestedName
+ * @param {string} mimeType
+ * @return {!Promise<!FileSystemFileHandle>}
+ */
+function pickWritableFile(suggestedName, mimeType) {
+  const extension = suggestedName.split('.').reverse()[0];
+  // TODO(b/141587270): Add a default filename when it's supported by the native
+  // file api.
+  /** @type {!FilePickerOptions} */
+  const options = {
+    types: [
+      {description: extension, accept: {[mimeType]: [extension]}},
+    ],
+    excludeAcceptAllOption: true,
+  };
+  // This may throw an error, but we can handle and recover from it on the
+  // unprivileged side.
+  return window.showSaveFilePicker(options);
+}
 
 /**
  * Generator instance for unguessable tokens.

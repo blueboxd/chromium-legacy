@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
-#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -75,12 +74,8 @@ class SensorProxyImpl final : public SensorProxy,
 
   device::mojom::blink::ReportingMode mode_ =
       device::mojom::blink::ReportingMode::CONTINUOUS;
-  HeapMojoRemote<device::mojom::blink::Sensor,
-                 HeapMojoWrapperMode::kForceWithoutContextObserver>
-      sensor_remote_;
-  HeapMojoReceiver<device::mojom::blink::SensorClient,
-                   SensorProxyImpl,
-                   HeapMojoWrapperMode::kForceWithoutContextObserver>
+  HeapMojoRemote<device::mojom::blink::Sensor> sensor_remote_;
+  HeapMojoReceiver<device::mojom::blink::SensorClient, SensorProxyImpl>
       client_receiver_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

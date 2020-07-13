@@ -555,6 +555,31 @@ TEST_F('MediaAppUIBrowserTest', 'OverwriteOriginalIPC', async () => {
   testDone();
 });
 
+// Tests that OverwriteOriginal shows a file picker (and writes to that file) if
+// the write attempt to the original file fails.
+TEST_F('MediaAppUIBrowserTest', 'OverwriteOriginalPickerFallback', async () => {
+  const directory = await launchWithFiles([await createTestImageFile()]);
+
+  directory.files[0].nextCreateWritableError =
+      new DOMException('Fake exception to trigger file picker', 'FakeError');
+
+  const pickedFile = new FakeFileSystemFileHandle('pickme.png');
+  window.showSaveFilePicker = options => Promise.resolve(pickedFile);
+
+  const message = {overwriteLastFile: 'Foo'};
+  const testResponse = await sendTestMessage(message);
+  const writeResult = await pickedFile.lastWritable.closePromise;
+
+  assertEquals(testResponse.testQueryResult, 'overwriteOriginal resolved');
+  assertEquals(testResponse.testQueryResultData['renamedTo'], 'pickme.png');
+  assertEquals(testResponse.testQueryResultData['errorName'], 'FakeError');
+  assertEquals(await writeResult.text(), 'Foo');
+  assertEquals(pickedFile.lastWritable.writes.length, 1);
+  assertDeepEquals(
+      pickedFile.lastWritable.writes[0], {position: 0, size: 'Foo'.length});
+  testDone();
+});
+
 // Tests `MessagePipe.sendMessage()` properly propagates errors and appends
 // stacktraces.
 TEST_F('MediaAppUIBrowserTest', 'CrossContextErrors', async () => {
@@ -569,7 +594,12 @@ TEST_F('MediaAppUIBrowserTest', 'CrossContextErrors', async () => {
   // throw an error (made "here", so MediaAppUIBrowserTest is in the stack).
   const error = new Error('Fake NotAllowedError for CrossContextErrors test.');
   error.name = 'NotAllowedError';
-  directory.files[0].nextCreateWritableError = error;
+  const pickedFile = new FakeFileSystemFileHandle();
+  pickedFile.nextCreateWritableError = error;
+  window.showSaveFilePicker = options => Promise.resolve(pickedFile);
+
+  directory.files[0].nextCreateWritableError =
+      new DOMException('Fake exception to trigger file picker', 'FakeError');
 
   let caughtError = {};
 

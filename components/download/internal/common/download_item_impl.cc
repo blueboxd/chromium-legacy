@@ -644,6 +644,7 @@ void DownloadItemImpl::UpdateResumptionInfo(bool user_resume) {
 
   auto_resume_count_ = user_resume ? 0 : ++auto_resume_count_;
   download_schedule_ = base::nullopt;
+  RecordDownloadLaterEvent(DownloadLaterEvent::kScheduleRemoved);
 }
 
 void DownloadItemImpl::Cancel(bool user_cancel) {
@@ -1152,6 +1153,8 @@ void DownloadItemImpl::OnDownloadScheduleChanged(
       state_ != INTERRUPTED_INTERNAL) {
     return;
   }
+
+  RecordDownloadLaterEvent(DownloadLaterEvent::kScheduleChanged);
 
   SwapDownloadSchedule(std::move(schedule));
 
@@ -1694,6 +1697,8 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
     return;
   }
 
+  if (download_schedule)
+    RecordDownloadLaterEvent(DownloadLaterEvent::kScheduleAdded);
   SwapDownloadSchedule(std::move(download_schedule));
 
   // There were no other pending errors, and we just failed to determined the

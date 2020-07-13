@@ -243,7 +243,7 @@ void ArcSessionRunner::SetUserInfo(
   // can also be called multiple times in tests.
   // TODO(yusukes): Fix tests and add DCHECKs to make sure they are not empty
   // and the function is called only once.
-  DCHECK(!serial_number.empty());
+  DCHECK(!IsArcVmEnabled() || !serial_number.empty());
   cryptohome_id_ = cryptohome_id;
   user_id_hash_ = hash;
   serial_number_ = serial_number;

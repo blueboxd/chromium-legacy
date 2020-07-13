@@ -5,6 +5,8 @@
 #ifndef ASH_AMBIENT_UI_AMBIENT_CONTAINER_VIEW_H_
 #define ASH_AMBIENT_UI_AMBIENT_CONTAINER_VIEW_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
@@ -40,8 +42,8 @@ class ASH_EXPORT AmbientContainerView : public views::View {
   void LayoutGlanceableInfoView();
   void LayoutAssistantView();
 
-  // Invoked on key press events.
-  void HandleKeyEvent();
+  // Invoked on specific types of events.
+  void HandleEvent();
 
   PhotoView* photo_view_for_testing() { return photo_view_; }
 

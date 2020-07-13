@@ -39,6 +39,10 @@ js_library("launch") {
   externs_list = [
     "web_app_file_handling.externs.js",
     "dom_draft.externs.js",
+
+    # The privileged context can't access the app, but shares struct definitions
+    # passed over postMessage.
+    "media_app.externs.js",
   ]
   deps = [
     ":message_pipe",

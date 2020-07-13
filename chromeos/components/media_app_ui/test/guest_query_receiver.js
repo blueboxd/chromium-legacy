@@ -28,6 +28,7 @@ function firstReceivedItem() {
  */
 async function runTestQuery(data) {
   let result = 'no result';
+  let extraResultData;
   if (data.testQuery) {
     const element = await waitForNode(data.testQuery, data.pathToRoot || []);
     result = element.tagName;
@@ -54,8 +55,8 @@ async function runTestQuery(data) {
     }
   } else if (data.overwriteLastFile) {
     const testBlob = new Blob([data.overwriteLastFile]);
-    await assertCast(firstReceivedItem().overwriteOriginal)
-        .call(firstReceivedItem(), testBlob);
+    extraResultData = await assertCast(firstReceivedItem().overwriteOriginal)
+                          .call(firstReceivedItem(), testBlob);
     result = 'overwriteOriginal resolved';
   } else if (data.deleteLastFile) {
     try {
@@ -95,7 +96,7 @@ async function runTestQuery(data) {
     result =
         assertCast(lastReceivedFileList).files.map(file => file.error).join();
   }
-  return {testQueryResult: result};
+  return {testQueryResult: result, testQueryResultData: extraResultData};
 }
 
 /**

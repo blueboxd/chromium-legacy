@@ -9,6 +9,8 @@ import android.view.LayoutInflater;
 
 import androidx.annotation.NonNull;
 
+import org.chromium.chrome.browser.download.DownloadLaterMetrics;
+import org.chromium.chrome.browser.download.DownloadLaterMetrics.DownloadLaterUiEvent;
 import org.chromium.chrome.browser.download.R;
 import org.chromium.chrome.browser.download.dialogs.DownloadDateTimePickerDialogProperties.State;
 import org.chromium.chrome.browser.preferences.Pref;
@@ -160,6 +162,7 @@ public class DownloadLaterDialogCoordinator
                         .build();
 
         mDateTimePickerDialog.showDialog(mContext, mModalDialogManager, model);
+        DownloadLaterMetrics.recordDownloadLaterUiEvent(DownloadLaterUiEvent.DATE_TIME_PICKER_SHOW);
     }
 
     private void notifyComplete(long time) {
@@ -216,11 +219,15 @@ public class DownloadLaterDialogCoordinator
     // DownloadDateTimePickerDialogCoordinator.Controller implementation.
     @Override
     public void onDateTimePicked(long time) {
+        DownloadLaterMetrics.recordDownloadLaterUiEvent(
+                DownloadLaterUiEvent.DATE_TIME_PICKER_COMPLETE);
         notifyComplete(time);
     }
 
     @Override
     public void onDateTimePickerCanceled() {
+        DownloadLaterMetrics.recordDownloadLaterUiEvent(
+                DownloadLaterUiEvent.DATE_TIME_PICKER_CANCEL);
         notifyCancel();
     }
 

@@ -36,6 +36,9 @@ class CORE_EXPORT NGFragmentItems {
     return items_[0];
   }
 
+  // Text content for `::first-line`. Available only if `::first-line` has
+  // different style than non-first-line style.
+  const String& FirstLineText() const { return first_line_text_content_; }
   const String& Text(bool first_line) const {
     return UNLIKELY(first_line) ? first_line_text_content_ : text_content_;
   }

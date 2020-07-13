@@ -79,7 +79,7 @@ std::pair<double, double> SensorProxyImpl::GetFrequencyLimits() const {
 }
 
 void SensorProxyImpl::Suspend() {
-  if (suspended_)
+  if (suspended_ || !sensor_remote_.is_bound())
     return;
 
   sensor_remote_->Suspend();
@@ -88,7 +88,7 @@ void SensorProxyImpl::Suspend() {
 }
 
 void SensorProxyImpl::Resume() {
-  if (!suspended_)
+  if (!suspended_ || !sensor_remote_.is_bound())
     return;
 
   sensor_remote_->Resume();

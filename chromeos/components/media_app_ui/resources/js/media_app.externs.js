@@ -9,6 +9,15 @@
  * TODO(b/142750452): Convert this file to ES6.
  */
 
+/**
+ * Response message to a successful overwrite (no error thrown). If defined,
+ * indicates that an overwrite failed, but the user was able to select a new
+ * file from a file picker. The UI should update to reflect the new name.
+ * `errorName` is the error on the write attempt that triggered the picker.
+ * @typedef {{renamedTo: string, errorName: string}|undefined}
+ */
+let OverwriteFileResponse;
+
 /** @const */
 const mediaApp = {};
 
@@ -57,7 +66,7 @@ mediaApp.AbstractFile.prototype.error;
  * rejects. Upon success, `size` will reflect the new file size.
  * If null, then in-place overwriting is not supported for this file.
  * Note the "overwrite" may be simulated with a download operation.
- * @type {function(!Blob): Promise<undefined>|undefined}
+ * @type {function(!Blob): !Promise<!OverwriteFileResponse>}
  */
 mediaApp.AbstractFile.prototype.overwriteOriginal;
 /**

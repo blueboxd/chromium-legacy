@@ -734,7 +734,7 @@
   {
     "name": "crostini-gpu-support",
     "owners": [ "nverne", "benwells" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 95
   },
   {
     "name": "crostini-port-forwarding",

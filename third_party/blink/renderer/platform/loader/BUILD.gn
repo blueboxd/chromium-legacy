@@ -149,6 +149,8 @@ jumbo_source_set("unit_tests") {
 
   # Source files for blink_platform_unittests.
   sources = [
+    "allowed_by_nosniff_test.cc",
+    "cors/cors_test.cc",
     "fetch/buffering_bytes_consumer_test.cc",
     "fetch/bytes_consumer_test.cc",
     "fetch/client_hints_preferences_test.cc",

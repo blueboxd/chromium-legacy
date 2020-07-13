@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 
+#include <string>
 #include <utility>
 
 #include "ash/public/cpp/default_scale_factor_retriever.h"
@@ -120,7 +121,7 @@ void ArcServiceLauncher::Initialize(
     mojo::PendingRemote<ash::mojom::CrosDisplayConfigController>
         display_config) {
   default_scale_factor_retriever_.Start(std::move(display_config));
-  arc_session_manager_->ExpandPropertyFiles();
+  arc_session_manager_->ExpandPropertyFilesAndReadSalt();
 }
 
 void ArcServiceLauncher::MaybeSetProfile(Profile* profile) {

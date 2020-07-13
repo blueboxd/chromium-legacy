@@ -68,6 +68,8 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "crypto/random.h"
+#include "crypto/sha2.h"
 #include "ui/display/types/display_constants.h"
 
 namespace arc {
@@ -88,6 +90,35 @@ base::Optional<bool> g_enable_check_android_management_in_tests;
 
 constexpr const char kPropertyFilesPathVm[] = "/usr/share/arcvm/properties";
 constexpr const char kPropertyFilesPath[] = "/usr/share/arc/properties";
+constexpr const char kArcSaltPath[] = "/var/lib/misc/arc_salt";
+constexpr const size_t kArcSaltFileSize = 16;
+
+// Generates a unique, 20-character hex string from |chromeos_user| and
+// |salt| which can be used as Android's ro.boot.serialno and ro.serialno
+// properties. Note that Android treats serialno in a case-insensitive manner.
+// |salt| cannot be the hex-encoded one.
+// Note: The function must be the exact copy of the one in platform2/arc/setup/.
+std::string GenerateFakeSerialNumber(const std::string& chromeos_user,
+                                     const std::string& salt) {
+  constexpr size_t kMaxHardwareIdLen = 20;
+  const std::string hash(crypto::SHA256HashString(chromeos_user + salt));
+  return base::HexEncode(hash.data(), hash.length())
+      .substr(0, kMaxHardwareIdLen);
+}
+
+// Returns true if the hex-encoded salt in Local State is valid.
+bool IsValidHexSalt(const std::string& hex_salt) {
+  std::string salt;
+  if (!base::HexStringToString(hex_salt, &salt)) {
+    LOG(WARNING) << "Not a hex string: " << hex_salt;
+    return false;
+  }
+  if (salt.size() != kArcSaltFileSize) {
+    LOG(WARNING) << "Salt size invalid: " << salt.size();
+    return false;
+  }
+  return true;
+}
 
 // Maximum amount of time we'll wait for ARC to finish booting up. Once this
 // timeout expires, keep ARC running in case the user wants to file feedback,
@@ -199,32 +230,90 @@ void SetArcEnabledStateMetric(bool enabled) {
   stability_metrics_manager->SetArcEnabledState(enabled);
 }
 
-std::string GetOrCreateSerialNumber(PrefService* prefs) {
-  DCHECK(prefs);
-  std::string serial_number = prefs->GetString(prefs::kArcSerialNumber);
-  if (!serial_number.empty())
-    return serial_number;
-  constexpr size_t kRandSize = 256;
-  constexpr size_t kMaxHardwareIdLen = 20;
-  serial_number =
-      base::HexEncode(base::RandBytesAsString(kRandSize).data(), kRandSize)
-          .substr(0, kMaxHardwareIdLen);
-  prefs->SetString(prefs::kArcSerialNumber, serial_number);
-  return serial_number;
+// Generates and returns a serial number from the salt in |local_state| and
+// |chromeos_user|. When |local_state| does not have it (or has a corrupted
+// one), this function creates a new random salt. When creates it, the function
+// copies |arc_salt_on_disk| to |local_state| if |arc_salt_on_disk| is not
+// empty.
+std::string GetOrCreateSerialNumber(PrefService* local_state,
+                                    const std::string& chromeos_user,
+                                    const std::string& arc_salt_on_disk) {
+  DCHECK(local_state);
+  DCHECK(!chromeos_user.empty());
+
+  std::string hex_salt = local_state->GetString(prefs::kArcSerialNumberSalt);
+  if (hex_salt.empty() || !IsValidHexSalt(hex_salt)) {
+    // This path is taken 1) on the very first ARC boot, 2) on the first boot
+    // after powerwash, 3) on the first boot after upgrading to ARCVM, or 4)
+    // when the salt in local state is corrupted.
+    if (arc_salt_on_disk.empty()) {
+      // The device doesn't have the salt file for ARC container. Create it from
+      // scratch in the same way as ARC container.
+      char rand_value[kArcSaltFileSize];
+      crypto::RandBytes(rand_value, kArcSaltFileSize);
+      hex_salt = base::HexEncode(rand_value, kArcSaltFileSize);
+    } else {
+      // The device has the one for container. Reuse it for ARCVM.
+      DCHECK_EQ(kArcSaltFileSize, arc_salt_on_disk.size());
+      hex_salt =
+          base::HexEncode(arc_salt_on_disk.data(), arc_salt_on_disk.size());
+    }
+    local_state->SetString(prefs::kArcSerialNumberSalt, hex_salt);
+  }
+
+  // We store hex-encoded version of the salt in the local state, but to compute
+  // the serial number, we use the decoded version to be compatible with the
+  // arc-setup code for P.
+  std::string decoded_salt;
+  const bool result = base::HexStringToString(hex_salt, &decoded_salt);
+  DCHECK(result) << hex_salt;
+  return GenerateFakeSerialNumber(chromeos_user, decoded_salt);
 }
 
-bool ExpandPropertyFilesInternal(const base::FilePath& source_path,
-                                 const base::FilePath& dest_path,
-                                 bool single_file,
-                                 bool add_native_bridge_64bit_support) {
-  if (!arc::ExpandPropertyFiles(source_path, dest_path, single_file,
-                                add_native_bridge_64bit_support))
-    return false;
-  if (!arc::IsArcVmEnabled())
+// Reads a salt from |salt_path| and stores it in |out_salt|. Returns true
+// when the file read is successful or the file does not exist.
+bool ReadSaltOnDisk(const base::FilePath& salt_path, std::string* out_salt) {
+  DCHECK(out_salt);
+  if (!base::PathExists(salt_path)) {
+    VLOG(2) << "ARC salt file doesn't exist: " << salt_path;
     return true;
+  }
+  if (!base::ReadFileToString(salt_path, out_salt)) {
+    PLOG(ERROR) << "Failed to read " << salt_path;
+    return false;
+  }
+  if (out_salt->size() != kArcSaltFileSize) {
+    LOG(WARNING) << "Ignoring invalid ARC salt on disk. size="
+                 << out_salt->size();
+    out_salt->clear();
+  }
+  VLOG(1) << "Successfully read ARC salt on disk: " << salt_path;
+  return true;
+}
+
+ArcSessionManager::ExpansionResult ExpandPropertyFilesAndReadSaltInternal(
+    const base::FilePath& source_path,
+    const base::FilePath& dest_path,
+    bool single_file,
+    bool add_native_bridge_64bit_support) {
+  if (!arc::ExpandPropertyFiles(source_path, dest_path, single_file,
+                                add_native_bridge_64bit_support)) {
+    return ArcSessionManager::ExpansionResult{{}, false};
+  }
+  if (!arc::IsArcVmEnabled())
+    return ArcSessionManager::ExpansionResult{{}, true};
+
   // For ARCVM, the first stage fstab file needs to be generated.
-  return arc::GenerateFirstStageFstab(dest_path,
-                                      dest_path.DirName().Append("fstab"));
+  if (!arc::GenerateFirstStageFstab(dest_path,
+                                    dest_path.DirName().Append("fstab"))) {
+    return ArcSessionManager::ExpansionResult{{}, false};
+  }
+
+  // Finally, for ARCVM, read |kArcSaltPath| if that exists.
+  std::string salt;
+  if (!ReadSaltOnDisk(base::FilePath(kArcSaltPath), &salt))
+    return ArcSessionManager::ExpansionResult{{}, false};
+  return ArcSessionManager::ExpansionResult{salt, true};
 }
 
 }  // namespace
@@ -336,6 +425,28 @@ void ArcSessionManager::SetArcTermsOfServiceOobeNegotiatorEnabledForTesting(
 // static
 void ArcSessionManager::EnableCheckAndroidManagementForTesting(bool enable) {
   g_enable_check_android_management_in_tests = enable;
+}
+
+// static
+std::string ArcSessionManager::GenerateFakeSerialNumberForTesting(
+    const std::string& chromeos_user,
+    const std::string& salt) {
+  return GenerateFakeSerialNumber(chromeos_user, salt);
+}
+
+// static
+std::string ArcSessionManager::GetOrCreateSerialNumberForTesting(
+    PrefService* local_state,
+    const std::string& chromeos_user,
+    const std::string& arc_salt_on_disk) {
+  return GetOrCreateSerialNumber(local_state, chromeos_user, arc_salt_on_disk);
+}
+
+// static
+bool ArcSessionManager::ReadSaltOnDiskForTesting(
+    const base::FilePath& salt_path,
+    std::string* out_salt) {
+  return ReadSaltOnDisk(salt_path, out_salt);
 }
 
 void ArcSessionManager::OnSessionStopped(ArcStopReason reason,
@@ -563,6 +674,27 @@ void ArcSessionManager::SetProfile(Profile* profile) {
   SetArcEnabledStateMetric(false);
 }
 
+void ArcSessionManager::SetUserInfo() {
+  DCHECK(profile_);
+  DCHECK(arc_salt_on_disk_);
+
+  const AccountId account(multi_user_util::GetAccountIdFromProfile(profile_));
+  const cryptohome::Identification cryptohome_id(account);
+  const std::string user_id_hash =
+      chromeos::ProfileHelper::GetUserIdHashFromProfile(profile_);
+
+  std::string serialno;
+  // ARC container doesn't need the serial number.
+  if (arc::IsArcVmEnabled()) {
+    const std::string chormeos_user =
+        cryptohome::CreateAccountIdentifierFromAccountId(account).account_id();
+    serialno = GetOrCreateSerialNumber(g_browser_process->local_state(),
+                                       chormeos_user, *arc_salt_on_disk_);
+  }
+
+  arc_session_runner_->SetUserInfo(cryptohome_id, user_id_hash, serialno);
+}
+
 void ArcSessionManager::Initialize() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
@@ -570,13 +702,13 @@ void ArcSessionManager::Initialize() {
   DCHECK_EQ(state_, State::NOT_INITIALIZED);
   state_ = State::STOPPED;
 
-  auto* prefs = profile_->GetPrefs();
-  const cryptohome::Identification cryptohome_id(
-      multi_user_util::GetAccountIdFromProfile(profile_));
-  arc_session_runner_->SetUserInfo(
-      cryptohome_id,
-      chromeos::ProfileHelper::GetUserIdHashFromProfile(profile_),
-      GetOrCreateSerialNumber(prefs));
+  // If ExpandPropertyFilesAndReadSaltInternal() takes time to finish,
+  // Initialize() may be called before it finishes. In that case,
+  // SetUserInfo() is called in OnExpandPropertyFilesAndReadSalt().
+  if (arc_salt_on_disk_) {
+    VLOG(1) << "Calling SetUserInfo() in ArcSessionManager::Initialize";
+    SetUserInfo();
+  }
 
   // Create the support host at initialization. Note that, practically,
   // ARC support Chrome app is rarely used (only opt-in and re-auth flow).
@@ -587,6 +719,9 @@ void ArcSessionManager::Initialize() {
     support_host_ = std::make_unique<ArcSupportHost>(profile_);
     support_host_->SetErrorDelegate(this);
   }
+  auto* prefs = profile_->GetPrefs();
+  const cryptohome::Identification cryptohome_id(
+      multi_user_util::GetAccountIdFromProfile(profile_));
   data_remover_ = std::make_unique<ArcDataRemover>(prefs, cryptohome_id);
 
   if (g_enable_check_android_management_in_tests.value_or(g_ui_enabled))
@@ -1345,7 +1480,7 @@ void ArcSessionManager::EmitLoginPromptVisibleCalled() {
   arc_session_runner_->RequestStartMiniInstance();
 }
 
-void ArcSessionManager::ExpandPropertyFiles() {
+void ArcSessionManager::ExpandPropertyFilesAndReadSalt() {
   VLOG(1) << "Started expanding *.prop files";
 
   // For ARCVM, generate <dest_path>/{combined.prop,fstab}. For ARC, generate
@@ -1370,23 +1505,34 @@ void ArcSessionManager::ExpandPropertyFiles() {
   }
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&ExpandPropertyFilesInternal, property_files_source_dir_,
+      base::BindOnce(&ExpandPropertyFilesAndReadSaltInternal,
+                     property_files_source_dir_,
                      is_arcvm ? property_files_dest_dir_.Append("combined.prop")
                               : property_files_dest_dir_,
                      /*single_file=*/is_arcvm, add_native_bridge_64bit_support),
-      base::BindOnce(&ArcSessionManager::OnExpandPropertyFiles,
+      base::BindOnce(&ArcSessionManager::OnExpandPropertyFilesAndReadSalt,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ArcSessionManager::OnExpandPropertyFiles(bool result) {
-  // ExpandPropertyFiles() should be called only once.
+void ArcSessionManager::OnExpandPropertyFilesAndReadSalt(
+    ExpansionResult result) {
+  // ExpandPropertyFilesAndReadSalt() should be called only once.
   DCHECK(!property_files_expansion_result_);
 
-  property_files_expansion_result_ = result;
-  if (result)
+  arc_salt_on_disk_ = result.first;
+  property_files_expansion_result_ = result.second;
+
+  // See the comment in Initialize().
+  if (profile_) {
+    VLOG(1) << "Calling SetUserInfo() in "
+            << "ArcSessionManager::OnExpandPropertyFilesAndReadSalt";
+    SetUserInfo();
+  }
+
+  if (result.second)
     arc_session_runner_->ResumeRunner();
   for (auto& observer : observer_list_)
-    observer.OnPropertyFilesExpanded(result);
+    observer.OnPropertyFilesExpanded(*property_files_expansion_result_);
 }
 
 std::ostream& operator<<(std::ostream& os,

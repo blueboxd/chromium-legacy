@@ -6,9 +6,12 @@ package org.chromium.chrome.browser.download.dialogs;
 
 import android.content.Context;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.browser.download.DownloadLaterMetrics;
+import org.chromium.chrome.browser.download.DownloadLaterMetrics.DownloadLaterUiEvent;
 import org.chromium.components.offline_items_collection.OfflineItemSchedule;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -20,12 +23,22 @@ import org.chromium.ui.modelutil.PropertyModel;
  * org.chromium.components.offline_items_collection.OfflineItem}.
  */
 public class DownloadLaterDialogHelper implements DownloadLaterDialogController {
+    /**
+     * Defines the caller of {@link DownloadLaterDialogHelper}. Used in metrics recording.
+     */
+    @IntDef({Source.DOWNLOAD_HOME, Source.DOWNLOAD_INFOBAR})
+    public @interface Source {
+        int DOWNLOAD_HOME = 0;
+        int DOWNLOAD_INFOBAR = 1;
+    }
+
     private final Context mContext;
     private final ModalDialogManager mModalDialogManager;
     private final PrefService mPrefService;
     private final DownloadLaterDialogCoordinator mDownloadLaterDialog;
 
-    Callback<OfflineItemSchedule> mCallback;
+    private Callback<OfflineItemSchedule> mCallback;
+    private @Source int mSource;
 
     /**
      * Creates the download later dialog helper.
@@ -55,11 +68,12 @@ public class DownloadLaterDialogHelper implements DownloadLaterDialogController 
     /**
      * Shows a download later dialog when the user wants to change the {@link OfflineItemSchedule}.
      * @param currentSchedule The current {@link OfflineItemSchedule}.
+     * @param source The caller of this function, used to collect metrics.
      * @param callback The callback to reply the new schedule selected by the user. May reply null
      *                 if the user cancels the dialog.
      */
     public void showChangeScheduleDialog(@Nullable final OfflineItemSchedule currentSchedule,
-            Callback<OfflineItemSchedule> callback) {
+            @Source int source, Callback<OfflineItemSchedule> callback) {
         @DownloadLaterDialogChoice
         int initialChoice = DownloadLaterDialogChoice.DOWNLOAD_NOW;
         if (currentSchedule != null) {
@@ -68,6 +82,7 @@ public class DownloadLaterDialogHelper implements DownloadLaterDialogController 
         }
 
         mCallback = callback;
+        mSource = source;
         PropertyModel model =
                 new PropertyModel.Builder(DownloadLaterDialogProperties.ALL_KEYS)
                         .with(DownloadLaterDialogProperties.CONTROLLER, mDownloadLaterDialog)
@@ -89,6 +104,7 @@ public class DownloadLaterDialogHelper implements DownloadLaterDialogController 
     public void onDownloadLaterDialogComplete(int choice, long startTime) {
         if (mCallback == null) return;
 
+        recordDialogMetrics(true /*complete*/, choice);
         OfflineItemSchedule schedule =
                 new OfflineItemSchedule(choice == DownloadLaterDialogChoice.ON_WIFI, startTime);
         mCallback.onResult(schedule);
@@ -99,6 +115,7 @@ public class DownloadLaterDialogHelper implements DownloadLaterDialogController 
     public void onDownloadLaterDialogCanceled() {
         if (mCallback == null) return;
 
+        recordDialogMetrics(false /*complete*/, -1);
         mCallback.onResult(null);
         mCallback = null;
     }
@@ -106,5 +123,30 @@ public class DownloadLaterDialogHelper implements DownloadLaterDialogController 
     @Override
     public void onEditLocationClicked() {
         // Do nothing, no edit location text for the change schedule dialog.
+    }
+
+    // Collect complete or cancel metrics based on the source of the dialog.
+    private void recordDialogMetrics(boolean complete, @DownloadLaterDialogChoice int choice) {
+        switch (mSource) {
+            case Source.DOWNLOAD_HOME:
+                if (complete) {
+                    DownloadLaterMetrics.recordDownloadHomeChangeScheduleChoice(choice);
+                } else {
+                    DownloadLaterMetrics.recordDownloadLaterUiEvent(
+                            DownloadLaterUiEvent.DOWNLOAD_HOME_CHANGE_SCHEDULE_CANCEL);
+                }
+                break;
+            case Source.DOWNLOAD_INFOBAR:
+                if (complete) {
+                    DownloadLaterMetrics.recordInfobarChangeScheduleChoice(choice);
+                } else {
+                    DownloadLaterMetrics.recordDownloadLaterUiEvent(
+                            DownloadLaterUiEvent.DOWNLOAD_INFOBAR_CHANGE_SCHEDULE_CANCEL);
+                }
+                break;
+            default:
+                assert false : "Unknown source, can't collect metrics.";
+                return;
+        }
     }
 }

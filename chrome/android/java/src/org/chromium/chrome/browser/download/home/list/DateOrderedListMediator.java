@@ -14,7 +14,10 @@ import androidx.core.util.Pair;
 import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.DiscardableReferencePool;
+import org.chromium.chrome.browser.download.DownloadLaterMetrics;
+import org.chromium.chrome.browser.download.DownloadLaterMetrics.DownloadLaterUiEvent;
 import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogHelper;
+import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogHelper.Source;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.FaviconProvider;
 import org.chromium.chrome.browser.download.home.JustNowProvider;
@@ -348,8 +351,10 @@ class DateOrderedListMediator {
 
     private void onChangeItem(OfflineItem item) {
         UmaUtils.recordItemAction(ViewAction.MENU_CHANGE);
-        mDownloadLaterDialogHelper.showChangeScheduleDialog(
-                item.schedule, (newSchedule) -> { mProvider.changeSchedule(item, newSchedule); });
+        DownloadLaterMetrics.recordDownloadLaterUiEvent(
+                DownloadLaterUiEvent.DOWNLOAD_HOME_CHANGE_SCHEDULE_CLICKED);
+        mDownloadLaterDialogHelper.showChangeScheduleDialog(item.schedule, Source.DOWNLOAD_HOME,
+                (newSchedule) -> { mProvider.changeSchedule(item, newSchedule); });
     }
 
     /**

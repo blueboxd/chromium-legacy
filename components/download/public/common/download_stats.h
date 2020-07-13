@@ -235,6 +235,18 @@ enum class ResumptionRestartCountTypes {
   kMaxValue = kMissingStrongValidatorsCount
 };
 
+// Events for user scheduled downloads. Used in histograms, don't reuse or
+// remove items. Keep in sync with DownloadLaterEvent in enums.xml.
+enum class DownloadLaterEvent {
+  // Schedule is added during download target determination process.
+  kScheduleAdded = 0,
+  // Scheduled is changed from the UI after download is scheduled.
+  kScheduleChanged = 1,
+  // Scheduled is removed during resumption.
+  kScheduleRemoved = 2,
+  kMaxValue = kScheduleRemoved
+};
+
 // Increment one of the above counts.
 COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadCount(DownloadCountTypes type);
 
@@ -449,6 +461,10 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadManagerMemoryUsage(
 
 COMPONENTS_DOWNLOAD_EXPORT void RecordParallelRequestCreationFailure(
     DownloadInterruptReason reason);
+
+// Record download later events.
+COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadLaterEvent(
+    DownloadLaterEvent event);
 
 #if defined(OS_ANDROID)
 enum class BackgroudTargetDeterminationResultTypes {

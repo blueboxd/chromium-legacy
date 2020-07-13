@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/public/test/browser_task_environment.h"
@@ -70,13 +69,6 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
   ~ServiceWorkerSingleScriptUpdateCheckerTest() override = default;
-
-  ServiceWorkerStorage* storage() { return helper_->context()->storage(); }
-
-  void SetUp() override {
-    helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
-    storage()->LazyInitializeForTest();
-  }
 
   size_t TotalBytes(const std::vector<std::string>& data_chunks) {
     size_t bytes = 0;
@@ -193,7 +185,6 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
 
  protected:
   BrowserTaskEnvironment task_environment_;
-  std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   std::unique_ptr<TestBrowserContext> browser_context_;
 
  private:

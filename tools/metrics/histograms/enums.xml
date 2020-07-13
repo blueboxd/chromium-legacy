@@ -18134,6 +18134,34 @@ Called by update_document_policy_enum.py.-->
   <int value="18" label="BLOCKED_UNSUPPORTED_FILETYPE"/>
 </enum>
 
+<enum name="DownloadLaterDialogChoice">
+  <int value="0" label="Download now"/>
+  <int value="1" label="On WIFI"/>
+  <int value="2" label="Download later"/>
+</enum>
+
+<enum name="DownloadLaterEvent">
+  <int value="0" label="Schedule added"/>
+  <int value="1" label="Schedule changed"/>
+  <int value="2" label="Schedule removed"/>
+</enum>
+
+<enum name="DownloadLaterUiEvent">
+  <int value="0" label="DOWNLOAD_LATER_DIALOG_SHOW"/>
+  <int value="1" label="DOWNLOAD_LATER_DIALOG_COMPLETE"/>
+  <int value="2" label="DOWNLOAD_LATER_DIALOG_CANCEL"/>
+  <int value="3" label="DATE_TIME_PICKER_SHOW"/>
+  <int value="4" label="DATE_TIME_PICKER_COMPLETE"/>
+  <int value="5" label="DATE_TIME_PICKER_CANCEL"/>
+  <int value="6" label="DOWNLOAD_HOME_CHANGE_SCHEDULE_CLICKED"/>
+  <int value="7" label="DOWNLOAD_HOME_CHANGE_SCHEDULE_COMPLETE"/>
+  <int value="8" label="DOWNLOAD_HOME_CHANGE_SCHEDULE_CANCEL"/>
+  <int value="9" label="DOWNLOAD_INFOBAR_CHANGE_SCHEDULE_CLICKED"/>
+  <int value="10" label="DOWNLOAD_INFOBAR_CHANGE_SCHEDULE_COMPLETE"/>
+  <int value="11" label="DOWNLOAD_INFOBAR_CHANGE_SCHEDULE_CANCEL"/>
+  <int value="12" label="DOWNLOAD_LATER_DIALOG_EDIT_CLICKED"/>
+</enum>
+
 <enum name="DownloadLocationDialogResult">
   <int value="0" label="USER_CONFIRMED"/>
   <int value="1" label="USER_CANCELED"/>

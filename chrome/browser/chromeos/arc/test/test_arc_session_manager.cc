@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
@@ -38,7 +40,7 @@ std::unique_ptr<ArcSessionManager> CreateTestArcSessionManager(
   // be automatically called. Because of that, we can call
   // OnExpandPropertyFilesForTesting() instead with |true| for easier unit
   // testing (without calling base::RunLoop().RunUntilIdle() here and there.)
-  manager->OnExpandPropertyFilesForTesting(true);
+  manager->OnExpandPropertyFilesAndReadSaltForTesting(true);
   return manager;
 }
 
@@ -53,7 +55,7 @@ bool ExpandPropertyFilesForTesting(ArcSessionManager* arc_session_manager,
     return false;
   arc_session_manager->set_property_files_source_dir_for_testing(source_dir);
   arc_session_manager->set_property_files_dest_dir_for_testing(dest_dir);
-  arc_session_manager->ExpandPropertyFiles();
+  arc_session_manager->ExpandPropertyFilesAndReadSalt();
   return true;
 }
 

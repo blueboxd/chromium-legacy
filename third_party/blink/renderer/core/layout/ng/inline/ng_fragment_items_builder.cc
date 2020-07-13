@@ -156,6 +156,13 @@ NGFragmentItemsBuilder::AddPreviousItems(
     DCHECK(node_);
     DCHECK(container_builder);
     DCHECK(text_content_);
+
+    if (UNLIKELY(items.FirstLineText() && !first_line_text_content_)) {
+      // Don't reuse previous items if they have different `::first-line` style
+      // but |this| doesn't. Reaching here means that computed style doesn't
+      // change, but |NGFragmentItem| has wrong |NGStyleVariant|.
+      return AddPreviousItemsResult();
+    }
   } else {
     DCHECK(!container_builder);
     DCHECK(!text_content_);

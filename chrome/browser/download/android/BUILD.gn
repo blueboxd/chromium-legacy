@@ -15,6 +15,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/download/DownloadFileProvider.java",
     "java/src/org/chromium/chrome/browser/download/DownloadFilter.java",
     "java/src/org/chromium/chrome/browser/download/DownloadInfo.java",
+    "java/src/org/chromium/chrome/browser/download/DownloadLaterMetrics.java",
     "java/src/org/chromium/chrome/browser/download/DownloadManagerBridge.java",
     "java/src/org/chromium/chrome/browser/download/DownloadStartupUtils.java",
     "java/src/org/chromium/chrome/browser/download/DownloadStatus.java",
@@ -129,6 +130,7 @@ android_library("junit_tests") {
 
   sources = [
     "java/src/org/chromium/chrome/browser/download/DownloadDialogBridgeUnitTest.java",
+    "java/src/org/chromium/chrome/browser/download/DownloadLaterMetricsUnitTest.java",
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogHelperUnitTest.java",
   ]
 

@@ -803,6 +803,10 @@ void RecordDownloadManagerMemoryUsage(size_t bytes_used) {
                              bytes_used / 1000);
 }
 
+void RecordDownloadLaterEvent(DownloadLaterEvent event) {
+  base::UmaHistogramEnumeration("Download.Later.Events", event);
+}
+
 #if defined(OS_ANDROID)
 void RecordBackgroundTargetDeterminationResult(
     BackgroudTargetDeterminationResultTypes type) {

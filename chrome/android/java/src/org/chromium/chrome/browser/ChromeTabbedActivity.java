@@ -83,8 +83,6 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.gesturenav.NavigationSheet;
-import org.chromium.chrome.browser.gesturenav.TabbedSheetDelegate;
-import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.incognito.IncognitoNotificationManager;
 import org.chromium.chrome.browser.incognito.IncognitoTabHost;
@@ -159,7 +157,6 @@ import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
-import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.components.browser_ui.util.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -257,7 +254,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     private AppIndexingUtil mAppIndexingUtil;
 
     private Runnable mShowHistoryRunnable;
-    private NavigationSheet mNavigationSheet;
 
     private StartSurface mStartSurface;
 
@@ -2198,7 +2194,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         // To work around this, use a postDelayed, which is supported in all versions.
         if (keyCode == KeyEvent.KEYCODE_BACK && !isTablet()
                 && !getFullscreenManager().getPersistentFullscreenMode()) {
-            if (mShowHistoryRunnable == null) mShowHistoryRunnable = this::showFullHistoryForTab;
+            if (mShowHistoryRunnable == null) mShowHistoryRunnable = this::showFullHistorySheet;
             mHandler.postDelayed(mShowHistoryRunnable, ViewConfiguration.getLongPressTimeout());
             return super.onKeyDown(keyCode, event);
         }
@@ -2206,6 +2202,10 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 && (!isTablet() || getCurrentTabModel().getCount() != 0);
         return KeyboardShortcuts.onKeyDown(event, this, isCurrentTabVisible, true)
                 || super.onKeyDown(keyCode, event);
+    }
+
+    private void showFullHistorySheet() {
+        ((TabbedRootUiCoordinator) mRootUiCoordinator).showFullHistorySheet();
     }
 
     @Override
@@ -2225,46 +2225,9 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     }
 
     @VisibleForTesting
-    public NavigationSheet getNavigationSheetForTesting() {
-        ThreadUtils.assertOnUiThread();
-        return mNavigationSheet;
-    }
-
-    @VisibleForTesting
     public boolean hasPendingNavigationRunnableForTesting() {
         ThreadUtils.assertOnUiThread();
         return mShowHistoryRunnable != null;
-    }
-
-    private void showFullHistoryForTab() {
-        Tab tab = getActivityTab();
-        if (tab == null || tab.getWebContents() == null || !tab.isUserInteractable()) return;
-        showFullHistoryOnNavigationSheet(tab);
-    }
-
-    private void showFullHistoryOnNavigationSheet(Tab tab) {
-        // Another instance of NavigationSheet(for gesture navigation) may be running.
-        if (NavigationSheet.isInstanceShowing(getBottomSheetController())) {
-            mNavigationSheet = null;
-            return;
-        }
-        mNavigationSheet = NavigationSheet.create(
-                getWindow().getDecorView().findViewById(android.R.id.content), this,
-                this::getBottomSheetController);
-        mNavigationSheet.setDelegate(new TabbedSheetDelegate(tab, aTab -> {
-            HistoryManagerUtils.showHistoryManager(ChromeTabbedActivity.this, aTab);
-        }, getResources().getString(R.string.show_full_history)));
-        if (!mNavigationSheet.startAndExpand(/* forward=*/false, /* animate=*/true)) {
-            mNavigationSheet = null;
-        } else {
-            getBottomSheetController().addObserver(new EmptyBottomSheetObserver() {
-                @Override
-                public void onSheetClosed(int reason) {
-                    getBottomSheetController().removeObserver(this);
-                    mNavigationSheet = null;
-                }
-            });
-        }
     }
 
     @Override

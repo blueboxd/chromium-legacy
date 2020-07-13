@@ -50,8 +50,6 @@ const base::Feature kShow10_9ObsoleteInfobar{"Show109ObsoleteInfobar",
 
 #if !defined(OS_ANDROID)
 // App Service related flags. See components/services/app_service/README.md.
-const base::Feature kAppServiceContextMenu{"AppServiceContextMenu",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAppServiceInstanceRegistry{
     "AppServiceInstanceRegistry", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAppServiceIntentHandling{"AppServiceIntentHandling",

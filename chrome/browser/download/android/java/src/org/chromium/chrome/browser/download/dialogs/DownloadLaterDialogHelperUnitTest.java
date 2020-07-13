@@ -26,6 +26,7 @@ import org.robolectric.shadows.ShadowLog;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.download.DownloadLaterPromptStatus;
+import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogHelper.Source;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.components.offline_items_collection.OfflineItemSchedule;
 import org.chromium.components.prefs.PrefService;
@@ -79,7 +80,8 @@ public class DownloadLaterDialogHelperUnitTest {
                 .when(mDownloadLaterDialog)
                 .showDialog(any(), any(), any(), any());
 
-        mDownloadLaterDialogHelper.showChangeScheduleDialog(schedule, mMockCallback);
+        mDownloadLaterDialogHelper.showChangeScheduleDialog(
+                schedule, Source.DOWNLOAD_HOME, mMockCallback);
         verify(mDownloadLaterDialog, times(1)).showDialog(any(), any(), any(), any());
         ArgumentCaptor<OfflineItemSchedule> captor =
                 ArgumentCaptor.forClass(OfflineItemSchedule.class);
@@ -98,7 +100,8 @@ public class DownloadLaterDialogHelperUnitTest {
                 .when(mDownloadLaterDialog)
                 .showDialog(any(), any(), any(), any());
 
-        mDownloadLaterDialogHelper.showChangeScheduleDialog(schedule, mMockCallback);
+        mDownloadLaterDialogHelper.showChangeScheduleDialog(
+                schedule, Source.DOWNLOAD_INFOBAR, mMockCallback);
         verify(mDownloadLaterDialog, times(1)).showDialog(any(), any(), any(), any());
         verify(mMockCallback, times(1)).onResult(null);
     }

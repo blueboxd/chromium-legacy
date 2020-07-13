@@ -214,21 +214,21 @@ let FilePickerOptions;
 /**
  * https://wicg.github.io/native-file-system/#native-filesystem
  * @param {(!FilePickerOptions|undefined)} options
- * @return {!Promise<(!FileSystemHandle|!Array<!FileSystemHandle>)>}
+ * @return {!Promise<(!Array<!FileSystemHandle>)>}
  */
 window.showOpenFilePicker;
 
 /**
  * https://wicg.github.io/native-file-system/#native-filesystem
  * @param {(!FilePickerOptions|undefined)} options
- * @return {!Promise<(!FileSystemHandle|!Array<!FileSystemHandle>)>}
+ * @return {!Promise<(!FileSystemFileHandle)>}
  */
 window.showSaveFilePicker;
 
 /**
  * https://wicg.github.io/native-file-system/#native-filesystem
  * @param {(!FilePickerOptions|undefined)} options
- * @return {!Promise<(!FileSystemHandle|!Array<!FileSystemHandle>)>}
+ * @return {!Promise<(!FileSystemDirectoryHandle)>}
  */
 window.showDirectoryPicker;
 

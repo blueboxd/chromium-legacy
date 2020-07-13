@@ -26,6 +26,8 @@ import org.chromium.chrome.browser.datareduction.DataReductionPromoScreen;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationCoordinator;
+import org.chromium.chrome.browser.gesturenav.NavigationSheet;
+import org.chromium.chrome.browser.gesturenav.TabbedSheetDelegate;
 import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.language.LanguageAskPrompt;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
@@ -48,6 +50,7 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.ui.default_browser_promo.DefaultBrowserPromoUtils;
 import org.chromium.chrome.browser.ui.tablet.emptybackground.EmptyBackgroundViewWrapper;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
+import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
@@ -69,6 +72,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
     private @Nullable ToolbarButtonInProductHelpController mToolbarButtonInProductHelpController;
     private boolean mIntentWithEffect;
     private HistoryNavigationCoordinator mHistoryNavigationCoordinator;
+    private NavigationSheet mNavigationSheet;
 
     /**
      * Construct a new TabbedRootUiCoordinator.
@@ -159,6 +163,31 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
      */
     public ToolbarButtonInProductHelpController getToolbarButtonInProductHelpController() {
         return mToolbarButtonInProductHelpController;
+    }
+
+    /**
+     * Show navigation history sheet.
+     */
+    public void showFullHistorySheet() {
+        Tab tab = mActivity.getActivityTabProvider().get();
+        if (tab == null || tab.getWebContents() == null || !tab.isUserInteractable()) return;
+        mNavigationSheet = NavigationSheet.create(
+                mActivity.getWindow().getDecorView().findViewById(android.R.id.content), mActivity,
+                this::getBottomSheetController);
+        mNavigationSheet.setDelegate(new TabbedSheetDelegate(tab, aTab -> {
+            HistoryManagerUtils.showHistoryManager(mActivity, aTab);
+        }, mActivity.getResources().getString(R.string.show_full_history)));
+        if (!mNavigationSheet.startAndExpand(/* forward=*/false, /* animate=*/true)) {
+            mNavigationSheet = null;
+        } else {
+            getBottomSheetController().addObserver(new EmptyBottomSheetObserver() {
+                @Override
+                public void onSheetClosed(int reason) {
+                    getBottomSheetController().removeObserver(this);
+                    mNavigationSheet = null;
+                }
+            });
+        }
     }
 
     @Override
@@ -309,6 +338,11 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
     @VisibleForTesting
     public HistoryNavigationCoordinator getHistoryNavigationCoordinatorForTesting() {
         return mHistoryNavigationCoordinator;
+    }
+
+    @VisibleForTesting
+    public NavigationSheet getNavigationSheetForTesting() {
+        return mNavigationSheet;
     }
 
     /**

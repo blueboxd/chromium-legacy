@@ -91,9 +91,6 @@ const char kArcPushInstallAppsRequested[] = "arc.push_install.requested";
 // A preference that holds the list of apps that the admin requested to be
 // push-installed, but which have not been successfully installed yet.
 const char kArcPushInstallAppsPending[] = "arc.push_install.pending";
-// A preference to keep the ro.serialno and ro.boot.serialno Android properties
-// used to start ARC.
-const char kArcSerialNumber[] = "arc.serialno";
 // A preference to keep deferred requests of setting notifications enabled flag.
 const char kArcSetNotificationsEnabledDeferred[] =
     "arc.set_notifications_enabled_deferred";
@@ -128,7 +125,13 @@ const char kNativeBridge64BitSupportExperimentEnabled[] =
 // crash.
 const char kStabilityMetrics[] = "arc.metrics.stability";
 
+// A preference to keep the salt for generating ro.serialno and ro.boot.serialno
+// Android properties. Used only in ARCVM.
+const char kArcSerialNumberSalt[] = "arc.serialno_salt";
+
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
+  // Sorted in lexicographical order.
+  registry->RegisterStringPref(kArcSerialNumberSalt, std::string());
   registry->RegisterBooleanPref(kNativeBridge64BitSupportExperimentEnabled,
                                 false);
   registry->RegisterDictionaryPref(kStabilityMetrics);
@@ -171,7 +174,6 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(kArcFastAppReinstallPackages);
   registry->RegisterBooleanPref(kArcPolicyComplianceReported, false);
   registry->RegisterBooleanPref(kArcProvisioningInitiatedFromOobe, false);
-  registry->RegisterStringPref(kArcSerialNumber, std::string());
   registry->RegisterBooleanPref(kArcSignedIn, false);
   registry->RegisterBooleanPref(kArcSkippedReportingNotice, false);
   registry->RegisterBooleanPref(kArcTermsAccepted, false);

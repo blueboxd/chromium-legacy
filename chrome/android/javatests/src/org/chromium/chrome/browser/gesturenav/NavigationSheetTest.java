@@ -27,6 +27,8 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.gesturenav.NavigationSheetMediator.ItemProperties;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabbed_mode.TabbedRootUiCoordinator;
+import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.NavigationController;
@@ -111,6 +113,12 @@ public class NavigationSheetTest {
         }
     }
 
+    private NavigationSheet getNavigationSheet() {
+        RootUiCoordinator coordinator =
+                mActivityTestRule.getActivity().getRootUiCoordinatorForTesting();
+        return ((TabbedRootUiCoordinator) coordinator).getNavigationSheetForTesting();
+    }
+
     @Test
     @MediumTest
     public void testFaviconFetching() throws ExecutionException {
@@ -161,7 +169,7 @@ public class NavigationSheetTest {
         CriteriaHelper.pollUiThread(activity::hasPendingNavigationRunnableForTesting);
 
         // Wait for the long press timeout to trigger and show the navigation popup.
-        CriteriaHelper.pollUiThread(() -> activity.getNavigationSheetForTesting() != null);
+        CriteriaHelper.pollUiThread(() -> getNavigationSheet() != null);
     }
 
     @Test
@@ -186,8 +194,7 @@ public class NavigationSheetTest {
         CriteriaHelper.pollUiThread(() -> !activity.hasPendingNavigationRunnableForTesting());
 
         // Ensure no navigation popup is showing.
-        Assert.assertNull(
-                TestThreadUtils.runOnUiThreadBlocking(activity::getNavigationSheetForTesting));
+        Assert.assertNull(TestThreadUtils.runOnUiThreadBlocking(this::getNavigationSheet));
     }
 
     private NavigationSheet showPopup(NavigationController controller) throws ExecutionException {

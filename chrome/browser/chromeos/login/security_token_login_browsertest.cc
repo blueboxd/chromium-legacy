@@ -149,6 +149,7 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
     MixinBasedInProcessBrowserTest::SetUpOnMainThread();
     cert_provider_extension_mixin_.test_certificate_provider_extension()
         ->set_require_pin(kCorrectPin);
+    WaitForLoginScreenWidgetShown();
   }
 
   // LocalStateMixin::Delegate:
@@ -183,6 +184,13 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
         std::move(challenge_response_keys_value));
   }
 
+  void WaitForLoginScreenWidgetShown() {
+    base::RunLoop run_loop;
+    ash::LoginScreenTestApi::AddOnLockScreenShownCallback(
+        run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
   // Unowned (referencing a global singleton)
   ChallengeResponseFakeCryptohomeClient* const cryptohome_client_;
   DeviceStateMixin device_state_mixin_{
@@ -194,8 +202,7 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
                                      /*load_extension_immediately=*/true};
 };
 
-// TODO(crbug.com/1033936): Disabled due to flakiness.
-IN_PROC_BROWSER_TEST_F(SecurityTokenLoginTest, DISABLED_Basic) {
+IN_PROC_BROWSER_TEST_F(SecurityTokenLoginTest, Basic) {
   // The user pod is displayed with the challenge-response "start" button
   // instead of the password input field.
   EXPECT_TRUE(

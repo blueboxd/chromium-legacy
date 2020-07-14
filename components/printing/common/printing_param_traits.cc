@@ -26,7 +26,7 @@ bool ParamTraits<DidPrintContentParamsPtr>::Read(const base::Pickle* m,
   base::ReadOnlySharedMemoryRegion metafile_data_region;
   success &= ReadParam(m, iter, &metafile_data_region);
 
-  base::flat_map<uint32_t, int32_t> subframe_content_info;
+  base::flat_map<uint32_t, base::UnguessableToken> subframe_content_info;
   success &= ReadParam(m, iter, &subframe_content_info);
 
   if (success) {

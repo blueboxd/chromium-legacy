@@ -29,16 +29,16 @@ namespace {
 // TODO(penghuang): Fix vulkan with one copy or zero copy
 // https://crbug.com/979703
 std::vector<PixelResourceTestCase> const kTestCases = {
-    {LayerTreeTest::RENDERER_SOFTWARE, TestRasterType::kBitmap},
-    {LayerTreeTest::RENDERER_GL, TestRasterType::kGpu},
-    {LayerTreeTest::RENDERER_GL, TestRasterType::kOneCopy},
-    {LayerTreeTest::RENDERER_GL, TestRasterType::kZeroCopy},
-    {LayerTreeTest::RENDERER_SKIA_GL, TestRasterType::kGpu},
-    {LayerTreeTest::RENDERER_SKIA_GL, TestRasterType::kOneCopy},
-    {LayerTreeTest::RENDERER_SKIA_GL, TestRasterType::kZeroCopy},
+    {TestRendererType::kSoftware, TestRasterType::kBitmap},
+    {TestRendererType::kGL, TestRasterType::kGpu},
+    {TestRendererType::kGL, TestRasterType::kOneCopy},
+    {TestRendererType::kGL, TestRasterType::kZeroCopy},
+    {TestRendererType::kSkiaGL, TestRasterType::kGpu},
+    {TestRendererType::kSkiaGL, TestRasterType::kOneCopy},
+    {TestRendererType::kSkiaGL, TestRasterType::kZeroCopy},
 #if defined(ENABLE_CC_VULKAN_TESTS)
-    {LayerTreeTest::RENDERER_SKIA_VK, TestRasterType::kOop},
-    {LayerTreeTest::RENDERER_SKIA_VK, TestRasterType::kZeroCopy},
+    {TestRendererType::kSkiaVk, TestRasterType::kOop},
+    {TestRendererType::kSkiaVk, TestRasterType::kZeroCopy},
 #endif  // defined(ENABLE_CC_VULKAN_TESTS)
 };
 
@@ -868,23 +868,20 @@ class LayerTreeHostMaskAsBlendingPixelTest
 };
 
 MaskTestConfig const kTestConfigs[] = {
-    MaskTestConfig{{LayerTreeTest::RENDERER_SOFTWARE, TestRasterType::kBitmap},
-                   0},
-    MaskTestConfig{{LayerTreeTest::RENDERER_GL, TestRasterType::kZeroCopy}, 0},
-    MaskTestConfig{{LayerTreeTest::RENDERER_GL, TestRasterType::kZeroCopy},
+    MaskTestConfig{{TestRendererType::kSoftware, TestRasterType::kBitmap}, 0},
+    MaskTestConfig{{TestRendererType::kGL, TestRasterType::kZeroCopy}, 0},
+    MaskTestConfig{{TestRendererType::kGL, TestRasterType::kZeroCopy},
                    kUseAntialiasing},
-    MaskTestConfig{{LayerTreeTest::RENDERER_GL, TestRasterType::kZeroCopy},
+    MaskTestConfig{{TestRendererType::kGL, TestRasterType::kZeroCopy},
                    kForceShaders},
-    MaskTestConfig{{LayerTreeTest::RENDERER_GL, TestRasterType::kZeroCopy},
+    MaskTestConfig{{TestRendererType::kGL, TestRasterType::kZeroCopy},
                    kUseAntialiasing | kForceShaders},
-    MaskTestConfig{{LayerTreeTest::RENDERER_SKIA_GL, TestRasterType::kZeroCopy},
-                   0},
-    MaskTestConfig{{LayerTreeTest::RENDERER_SKIA_GL, TestRasterType::kZeroCopy},
+    MaskTestConfig{{TestRendererType::kSkiaGL, TestRasterType::kZeroCopy}, 0},
+    MaskTestConfig{{TestRendererType::kSkiaGL, TestRasterType::kZeroCopy},
                    kUseAntialiasing},
 #if defined(ENABLE_CC_VULKAN_TESTS)
-    MaskTestConfig{{LayerTreeTest::RENDERER_SKIA_VK, TestRasterType::kZeroCopy},
-                   0},
-    MaskTestConfig{{LayerTreeTest::RENDERER_SKIA_VK, TestRasterType::kZeroCopy},
+    MaskTestConfig{{TestRendererType::kSkiaVk, TestRasterType::kZeroCopy}, 0},
+    MaskTestConfig{{TestRendererType::kSkiaVk, TestRasterType::kZeroCopy},
                    kUseAntialiasing},
 #endif  // defined(ENABLE_CC_VULKAN_TESTS)
 };

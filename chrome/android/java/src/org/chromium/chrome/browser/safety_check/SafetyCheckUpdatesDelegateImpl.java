@@ -11,8 +11,10 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.omaha.OmahaBase.UpdateStatus;
 import org.chromium.chrome.browser.omaha.OmahaService;
-import org.chromium.chrome.browser.safety_check.SafetyCheckModel.Updates;
+import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.UpdatesState;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+
+import java.lang.ref.WeakReference;
 
 /**
  * Glue code for interactions between Safety check and Omaha on Android.
@@ -21,7 +23,7 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
  * while Safety check is modularized in //chrome/browser. Once Omaha is
  * modularized as well, this class will not be needed anymore.
  */
-public class SafetyCheckOmahaClient implements SafetyCheckUpdatesDelegate {
+public class SafetyCheckUpdatesDelegateImpl implements SafetyCheckUpdatesDelegate {
     private OmahaService mOmaha;
 
     /**
@@ -29,7 +31,7 @@ public class SafetyCheckOmahaClient implements SafetyCheckUpdatesDelegate {
      * {@link SafetyCheckSettingsFragment}.
      * @param context A {@link Context} object, used by Omaha.
      */
-    public SafetyCheckOmahaClient(Context context) {
+    public SafetyCheckUpdatesDelegateImpl(Context context) {
         mOmaha = OmahaService.getInstance(context);
     }
 
@@ -39,33 +41,37 @@ public class SafetyCheckOmahaClient implements SafetyCheckUpdatesDelegate {
      * @param status Update status returned by Omaha.
      * @return A corresponding {@link SafetyCheckModel.Updates} value.
      */
-    public static Updates convertOmahaUpdateStatus(@UpdateStatus int status) {
+    public static @UpdatesState int convertOmahaUpdateStatus(@UpdateStatus int status) {
         switch (status) {
             case UpdateStatus.UPDATED:
-                return Updates.UPDATED;
+                return UpdatesState.UPDATED;
             case UpdateStatus.OUTDATED:
-                return Updates.OUTDATED;
+                return UpdatesState.OUTDATED;
             case UpdateStatus.OFFLINE:
-                return Updates.OFFLINE;
+                return UpdatesState.OFFLINE;
             case UpdateStatus.FAILED: // Intentional fall through.
             default:
-                return Updates.ERROR;
+                return UpdatesState.ERROR;
         }
     }
 
     /**
-     * Assynchronously checks for updates and invokes the provided callback with
+     * Asynchronously checks for updates and invokes the provided callback with
      * the result.
-     * @param statusCallback A callback to invoke with the result.
+     * @param statusCallback A callback to invoke with the result. Takes an element of
+     *                       {@link SafetyCheckProperties.UpdatesState} as an argument.
      */
     @Override
-    public void checkForUpdates(Callback<Updates> statusCallback) {
+    public void checkForUpdates(WeakReference<Callback<Integer>> statusCallback) {
         PostTask.postTask(TaskTraits.USER_VISIBLE, () -> {
             @UpdateStatus
             int status = mOmaha.checkForUpdates();
             // Post the results back to the UI thread.
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT,
-                    () -> { statusCallback.onResult(convertOmahaUpdateStatus(status)); });
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
+                if (statusCallback.get() != null) {
+                    statusCallback.get().onResult(convertOmahaUpdateStatus(status));
+                }
+            });
         });
     }
 }

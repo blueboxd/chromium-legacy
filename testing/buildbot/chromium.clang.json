@@ -8072,6 +8072,12 @@
         "test_id_prefix": "ninja://components/paint_preview/player/android:paint_preview_junit_tests/"
       },
       {
+        "name": "password_check_junit_tests",
+        "swarming": {},
+        "test": "password_check_junit_tests",
+        "test_id_prefix": "ninja://chrome/browser/password_check/android:password_check_junit_tests/"
+      },
+      {
         "name": "service_junit_tests",
         "swarming": {},
         "test": "service_junit_tests",

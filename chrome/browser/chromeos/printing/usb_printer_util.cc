@@ -109,31 +109,6 @@ void OnDeviceOpen(mojo::Remote<device::mojom::UsbDevice> device,
       base::BindOnce(OnClaimInterface, std::move(device), std::move(cb)));
 }
 
-// Escape URI strings the same way cups does it, so we end up with a URI cups
-// recognizes.  Cups hex-encodes '%', ' ', and anything not in the standard
-// ASCII range.  CUPS lets everything else through unchanged.
-//
-// TODO(justincarlson): Determine whether we should apply escaping at the
-// outgoing edge, when we send Printer information to CUPS, instead of
-// pre-escaping at the point the field is filled in.
-//
-// https://crbug.com/701606
-std::string CupsURIEscape(const std::string& uri_in) {
-  static const char kHexDigits[] = "0123456789ABCDEF";
-  std::vector<char> buf;
-  buf.reserve(uri_in.size());
-  for (char c : uri_in) {
-    if (c == ' ' || c == '%' || (c & 0x80)) {
-      buf.push_back('%');
-      buf.push_back(kHexDigits[(c >> 4) & 0xf]);
-      buf.push_back(kHexDigits[c & 0xf]);
-    } else {
-      buf.push_back(c);
-    }
-  }
-  return std::string(buf.data(), buf.size());
-}
-
 // Incorporate the bytes of |val| into the incremental hash carried in |ctx| in
 // big-endian order.  |val| must be a simple integer type
 template <typename T>
@@ -239,7 +214,7 @@ std::string UsbPrinterDeviceDetailsAsString(const UsbDeviceInfo& device_info) {
 
 // Gets the URI CUPS would use to refer to this USB device.  Assumes device
 // is a printer.
-std::string UsbPrinterUri(const UsbDeviceInfo& device_info) {
+Uri UsbPrinterUri(const UsbDeviceInfo& device_info) {
   // Note that serial may, for some devices, be empty or bogus (all zeros, non
   // unique, or otherwise not really a serial number), but having a non-unique
   // or empty serial field in the URI still lets us print, it just means we
@@ -249,9 +224,12 @@ std::string UsbPrinterUri(const UsbDeviceInfo& device_info) {
   // don't supply a serial number, we don't have any reliable way to do that
   // differentiation.
   std::string serial = base::UTF16ToUTF8(GetSerialNumber(device_info));
-  return CupsURIEscape(
-      base::StringPrintf("usb://%04x/%04x?serial=%s", device_info.vendor_id,
-                         device_info.product_id, serial.c_str()));
+  Uri uri;
+  uri.SetScheme("usb");
+  uri.SetHost(base::StringPrintf("%04x", device_info.vendor_id));
+  uri.SetPath({base::StringPrintf("%04x", device_info.product_id)});
+  uri.SetQuery({{"serial", serial}});
+  return uri;
 }
 
 }  // namespace
@@ -314,7 +292,7 @@ std::unique_ptr<Printer> UsbDeviceToPrinter(const UsbDeviceInfo& device_info) {
   }
 
   printer->set_description(printer->display_name());
-  printer->set_uri(UsbPrinterUri(device_info));
+  printer->SetUri(UsbPrinterUri(device_info));
   printer->set_id(CreateUsbPrinterId(device_info));
   printer->set_supports_ippusb(UsbDeviceSupportsIppusb(device_info));
   return printer;

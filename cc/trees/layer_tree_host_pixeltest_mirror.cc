@@ -17,19 +17,19 @@ namespace {
 
 class LayerTreeHostMirrorPixelTest
     : public LayerTreePixelTest,
-      public ::testing::WithParamInterface<LayerTreeTest::RendererType> {
+      public ::testing::WithParamInterface<TestRendererType> {
  protected:
   LayerTreeHostMirrorPixelTest() : LayerTreePixelTest(renderer_type()) {}
 
-  RendererType renderer_type() const { return GetParam(); }
+  TestRendererType renderer_type() const { return GetParam(); }
 };
 
-const LayerTreeTest::RendererType kRendererTypes[] = {
-    LayerTreeTest::RENDERER_GL,
-    LayerTreeTest::RENDERER_SKIA_GL,
-    LayerTreeTest::RENDERER_SOFTWARE,
+const TestRendererType kRendererTypes[] = {
+    TestRendererType::kGL,
+    TestRendererType::kSkiaGL,
+    TestRendererType::kSoftware,
 #if defined(ENABLE_CC_VULKAN_TESTS)
-    LayerTreeTest::RENDERER_SKIA_VK,
+    TestRendererType::kSkiaVk,
 #endif  // defined(ENABLE_CC_VULKAN_TESTS)
 };
 

@@ -180,8 +180,6 @@ android_library("java") {
     "//components/url_formatter/android:url_formatter_java",
     "//components/variations/android:variations_java",
     "//components/version_info/android:version_constants_java",
-    "//components/webapk/android/libs/client:java",
-    "//components/webapk/android/libs/common:java",
     "//components/webrtc/android:java",
     "//content/public/android:content_java",
     "//mojo/public/java:bindings_java",

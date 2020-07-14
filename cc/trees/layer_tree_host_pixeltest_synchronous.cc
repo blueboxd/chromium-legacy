@@ -17,7 +17,7 @@ namespace {
 
 class LayerTreeHostSynchronousPixelTest
     : public LayerTreePixelTest,
-      public ::testing::WithParamInterface<LayerTreeTest::RendererType> {
+      public ::testing::WithParamInterface<TestRendererType> {
  protected:
   LayerTreeHostSynchronousPixelTest() : LayerTreePixelTest(renderer_type()) {}
 
@@ -26,7 +26,7 @@ class LayerTreeHostSynchronousPixelTest
     settings->single_thread_proxy_scheduler = false;
   }
 
-  RendererType renderer_type() const { return GetParam(); }
+  TestRendererType renderer_type() const { return GetParam(); }
 
   void BeginTest() override {
     LayerTreePixelTest::BeginTest();
@@ -50,11 +50,11 @@ class LayerTreeHostSynchronousPixelTest
   }
 };
 
-LayerTreeTest::RendererType const kRendererTypesGpu[] = {
-    LayerTreeTest::RENDERER_GL,
-    LayerTreeTest::RENDERER_SKIA_GL,
+TestRendererType const kRendererTypesGpu[] = {
+    TestRendererType::kGL,
+    TestRendererType::kSkiaGL,
 #if defined(ENABLE_CC_VULKAN_TESTS)
-    LayerTreeTest::RENDERER_SKIA_VK,
+    TestRendererType::kSkiaVk,
 #endif  // defined(ENABLE_CC_VULKAN_TESTS)
 };
 

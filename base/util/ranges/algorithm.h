@@ -7,10 +7,12 @@
 
 #include <algorithm>
 #include <iterator>
+#include <type_traits>
 #include <utility>
 
 #include "base/util/ranges/functional.h"
 #include "base/util/ranges/iterator.h"
+#include "base/util/ranges/ranges.h"
 
 namespace util {
 namespace ranges {
@@ -48,6 +50,14 @@ constexpr auto ProjectedBinaryPredicate(Pred& pred,
 template <typename Iter>
 using iterator_category_t =
     typename std::iterator_traits<Iter>::iterator_category;
+
+// This alias is used below to restrict range based APIs to types for which
+// `iterator_category` is defined for the underlying iterator. This is required
+// in situations where otherwise an undesired overload would be chosen, e.g.
+// transform. In spirit this is similar to C++20's std::ranges::range, a concept
+// that each range should satisfy.
+template <typename Range>
+using range_category_t = iterator_category_t<iterator_t<Range>>;
 
 }  // namespace internal
 
@@ -87,7 +97,10 @@ constexpr bool all_of(InputIterator first,
 // projection.
 //
 // Reference: https://wg21.link/alg.all.of#:~:text=ranges::all_of(R
-template <typename Range, typename Pred, typename Proj = identity>
+template <typename Range,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>>
 constexpr bool all_of(Range&& range, Pred pred, Proj proj = {}) {
   return ranges::all_of(ranges::begin(range), ranges::end(range),
                         std::move(pred), std::move(proj));
@@ -126,7 +139,10 @@ constexpr bool any_of(InputIterator first,
 // projection.
 //
 // Reference: https://wg21.link/alg.any.of#:~:text=ranges::any_of(R
-template <typename Range, typename Pred, typename Proj = identity>
+template <typename Range,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>>
 constexpr bool any_of(Range&& range, Pred pred, Proj proj = {}) {
   return ranges::any_of(ranges::begin(range), ranges::end(range),
                         std::move(pred), std::move(proj));
@@ -165,7 +181,10 @@ constexpr bool none_of(InputIterator first,
 // projection.
 //
 // Reference: https://wg21.link/alg.none.of#:~:text=ranges::none_of(R
-template <typename Range, typename Pred, typename Proj = identity>
+template <typename Range,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>>
 constexpr bool none_of(Range&& range, Pred pred, Proj proj = {}) {
   return ranges::none_of(ranges::begin(range), ranges::end(range),
                          std::move(pred), std::move(proj));
@@ -216,7 +235,10 @@ constexpr auto for_each(InputIterator first,
 // Remarks: If `f` returns a result, the result is ignored.
 //
 // Reference: https://wg21.link/alg.foreach#:~:text=ranges::for_each(R
-template <typename Range, typename Fun, typename Proj = identity>
+template <typename Range,
+          typename Fun,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>>
 constexpr auto for_each(Range&& range, Fun f, Proj proj = {}) {
   return ranges::for_each(ranges::begin(range), ranges::end(range),
                           std::move(f), std::move(proj));
@@ -258,7 +280,10 @@ constexpr auto find(InputIterator first,
 // and any projection.
 //
 // Reference: https://wg21.link/alg.find#:~:text=ranges::find(R
-template <typename Range, typename T, typename Proj = identity>
+template <typename Range,
+          typename T,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>>
 constexpr auto find(Range&& range, const T& value, Proj proj = {}) {
   return ranges::find(ranges::begin(range), ranges::end(range), value,
                       std::move(proj));
@@ -294,7 +319,10 @@ constexpr auto find_if(InputIterator first,
 // and any projection.
 //
 // Reference: https://wg21.link/alg.find#:~:text=ranges::find_if(R
-template <typename Range, typename Pred, typename Proj = identity>
+template <typename Range,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>>
 constexpr auto find_if(Range&& range, Pred pred, Proj proj = {}) {
   return ranges::find_if(ranges::begin(range), ranges::end(range),
                          std::move(pred), std::move(proj));
@@ -330,7 +358,10 @@ constexpr auto find_if_not(InputIterator first,
 // and any projection.
 //
 // Reference: https://wg21.link/alg.find#:~:text=ranges::find_if_not(R
-template <typename Range, typename Pred, typename Proj = identity>
+template <typename Range,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>>
 constexpr auto find_if_not(Range&& range, Pred pred, Proj proj = {}) {
   return ranges::find_if_not(ranges::begin(range), ranges::end(range),
                              std::move(pred), std::move(proj));
@@ -398,7 +429,9 @@ template <typename Range1,
           typename Range2,
           typename Pred = ranges::equal_to,
           typename Proj1 = identity,
-          typename Proj2 = identity>
+          typename Proj2 = identity,
+          typename = internal::range_category_t<Range1>,
+          typename = internal::range_category_t<Range2>>
 constexpr auto find_end(Range1&& range1,
                         Range2&& range2,
                         Pred pred = {},
@@ -461,7 +494,9 @@ template <typename Range1,
           typename Range2,
           typename Pred = ranges::equal_to,
           typename Proj1 = identity,
-          typename Proj2 = identity>
+          typename Proj2 = identity,
+          typename = internal::range_category_t<Range1>,
+          typename = internal::range_category_t<Range2>>
 constexpr auto find_first_of(Range1&& range1,
                              Range2&& range2,
                              Pred pred = {},
@@ -512,7 +547,8 @@ constexpr auto adjacent_find(ForwardIterator first,
 // https://wg21.link/alg.adjacent.find#:~:text=ranges::adjacent_find(R
 template <typename Range,
           typename Pred = ranges::equal_to,
-          typename Proj = identity>
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>>
 constexpr auto adjacent_find(Range&& range, Pred pred = {}, Proj proj = {}) {
   return ranges::adjacent_find(ranges::begin(range), ranges::end(range),
                                std::move(pred), std::move(proj));
@@ -554,7 +590,10 @@ constexpr auto count(InputIterator first,
 // and any projection.
 //
 // Reference: https://wg21.link/alg.count#:~:text=ranges::count(R
-template <typename Range, typename T, typename Proj = identity>
+template <typename Range,
+          typename T,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>>
 constexpr auto count(Range&& range, const T& value, Proj proj = {}) {
   return ranges::count(ranges::begin(range), ranges::end(range), value,
                        std::move(proj));
@@ -590,7 +629,10 @@ constexpr auto count_if(InputIterator first,
 // and any projection.
 //
 // Reference: https://wg21.link/alg.count#:~:text=ranges::count_if(R
-template <typename Range, typename Pred, typename Proj = identity>
+template <typename Range,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>>
 constexpr auto count_if(Range&& range, Pred pred, Proj proj = {}) {
   return ranges::count_if(ranges::begin(range), ranges::end(range),
                           std::move(pred), std::move(proj));
@@ -646,7 +688,9 @@ template <typename Range1,
           typename Range2,
           typename Pred = ranges::equal_to,
           typename Proj1 = identity,
-          typename Proj2 = identity>
+          typename Proj2 = identity,
+          typename = internal::range_category_t<Range1>,
+          typename = internal::range_category_t<Range2>>
 constexpr auto mismatch(Range1&& range1,
                         Range2&& range2,
                         Pred pred = {},
@@ -712,7 +756,9 @@ template <typename Range1,
           typename Range2,
           typename Pred = ranges::equal_to,
           typename Proj1 = identity,
-          typename Proj2 = identity>
+          typename Proj2 = identity,
+          typename = internal::range_category_t<Range1>,
+          typename = internal::range_category_t<Range2>>
 constexpr bool equal(Range1&& range1,
                      Range2&& range2,
                      Pred pred = {},
@@ -791,7 +837,9 @@ constexpr bool is_permutation(ForwardIterator1 first1,
 template <typename Range1,
           typename Range2,
           typename Pred = ranges::equal_to,
-          typename Proj = identity>
+          typename Proj = identity,
+          typename = internal::range_category_t<Range1>,
+          typename = internal::range_category_t<Range2>>
 constexpr bool is_permutation(Range1&& range1,
                               Range2&& range2,
                               Pred pred = {},
@@ -852,7 +900,9 @@ template <typename Range1,
           typename Range2,
           typename Pred = ranges::equal_to,
           typename Proj1 = identity,
-          typename Proj2 = identity>
+          typename Proj2 = identity,
+          typename = internal::range_category_t<Range1>,
+          typename = internal::range_category_t<Range2>>
 constexpr auto search(Range1&& range1,
                       Range2&& range2,
                       Pred pred = {},
@@ -915,7 +965,8 @@ template <typename Range,
           typename Size,
           typename T,
           typename Pred = ranges::equal_to,
-          typename Proj = identity>
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>>
 constexpr auto search_n(Range&& range,
                         Size count,
                         const T& value,
@@ -970,6 +1021,7 @@ constexpr auto copy(InputIterator first,
 // Reference: https://wg21.link/alg.copy#:~:text=ranges::copy(R
 template <typename Range,
           typename OutputIterator,
+          typename = internal::range_category_t<Range>,
           typename = internal::iterator_category_t<OutputIterator>>
 constexpr auto copy(Range&& range, OutputIterator result) {
   return ranges::copy(ranges::begin(range), ranges::end(range), result);
@@ -1049,6 +1101,7 @@ template <typename Range,
           typename OutputIterator,
           typename Pred,
           typename Proj = identity,
+          typename = internal::range_category_t<Range>,
           typename = internal::iterator_category_t<OutputIterator>>
 constexpr auto copy_if(Range&& range,
                        OutputIterator result,
@@ -1096,6 +1149,7 @@ constexpr auto copy_backward(BidirectionalIterator1 first,
 // Reference: https://wg21.link/alg.copy#:~:text=ranges::copy_backward(R
 template <typename Range,
           typename BidirectionalIterator,
+          typename = internal::range_category_t<Range>,
           typename = internal::iterator_category_t<BidirectionalIterator>>
 constexpr auto copy_backward(Range&& range, BidirectionalIterator result) {
   return ranges::copy_backward(ranges::begin(range), ranges::end(range),
@@ -1147,6 +1201,7 @@ constexpr auto move(InputIterator first,
 // Reference: https://wg21.link/alg.move#:~:text=ranges::move(R
 template <typename Range,
           typename OutputIterator,
+          typename = internal::range_category_t<Range>,
           typename = internal::iterator_category_t<OutputIterator>>
 constexpr auto move(Range&& range, OutputIterator result) {
   return ranges::move(ranges::begin(range), ranges::end(range), result);
@@ -1194,6 +1249,7 @@ constexpr auto move_backward(BidirectionalIterator1 first,
 // Reference: https://wg21.link/alg.move#:~:text=ranges::move_backward(R
 template <typename Range,
           typename BidirectionalIterator,
+          typename = internal::range_category_t<Range>,
           typename = internal::iterator_category_t<BidirectionalIterator>>
 constexpr auto move_backward(Range&& range, BidirectionalIterator result) {
   return ranges::move_backward(ranges::begin(range), ranges::end(range),
@@ -1244,7 +1300,10 @@ constexpr auto swap_ranges(ForwardIterator1 first1,
 // Complexity: Exactly `M` swaps.
 //
 // Reference: https://wg21.link/alg.swap#:~:text=ranges::swap_ranges(R1
-template <typename Range1, typename Range2>
+template <typename Range1,
+          typename Range2,
+          typename = internal::range_category_t<Range1>,
+          typename = internal::range_category_t<Range2>>
 constexpr auto swap_ranges(Range1&& range1, Range2&& range2) {
   return ranges::swap_ranges(ranges::begin(range1), ranges::end(range1),
                              ranges::begin(range2), ranges::end(range2));
@@ -1276,7 +1335,9 @@ template <typename InputIterator,
           typename UnaryOperation,
           typename Proj = identity,
           typename = internal::iterator_category_t<InputIterator>,
-          typename = internal::iterator_category_t<OutputIterator>>
+          typename = internal::iterator_category_t<OutputIterator>,
+          typename = indirect_result_t<UnaryOperation&,
+                                       projected<InputIterator, Proj>>>
 constexpr auto transform(InputIterator first1,
                          InputIterator last1,
                          OutputIterator result,
@@ -1308,7 +1369,10 @@ template <typename Range,
           typename OutputIterator,
           typename UnaryOperation,
           typename Proj = identity,
-          typename = internal::iterator_category_t<OutputIterator>>
+          typename = internal::range_category_t<Range>,
+          typename = internal::iterator_category_t<OutputIterator>,
+          typename = indirect_result_t<UnaryOperation&,
+                                       projected<iterator_t<Range>, Proj>>>
 constexpr auto transform(Range&& range,
                          OutputIterator result,
                          UnaryOperation op,
@@ -1317,7 +1381,100 @@ constexpr auto transform(Range&& range,
                            std::move(op), std::move(proj));
 }
 
-// TODO(crbug.com/1071094): Implement binary transform.
+// Let:
+// `N` be `min(last1 - first1, last2 - first2)`,
+// `E(i)` be `invoke(binary_op, invoke(proj1, *(first1 + (i - result))),
+//                              invoke(proj2, *(first2 + (i - result))))`.
+//
+// Preconditions: `binary_op` does not invalidate iterators or subranges, nor
+// modify elements in the ranges `[first1, first1 + N]`, `[first2, first2 + N]`,
+// and `[result, result + N]`.
+//
+// Effects: Assigns through every iterator `i` in the range
+// `[result, result + N)` a new corresponding value equal to `E(i)`.
+//
+// Returns: `result + N`
+//
+// Complexity: Exactly `N` applications of `binary_op`, and any projections.
+//
+// Remarks: `result` may be equal to `first1` or `first2`.
+//
+// Reference: https://wg21.link/alg.transform#:~:text=ranges::transform(I1
+template <typename ForwardIterator1,
+          typename ForwardIterator2,
+          typename OutputIterator,
+          typename BinaryOperation,
+          typename Proj1 = identity,
+          typename Proj2 = identity,
+          typename = internal::iterator_category_t<ForwardIterator1>,
+          typename = internal::iterator_category_t<ForwardIterator2>,
+          typename = internal::iterator_category_t<OutputIterator>,
+          typename = indirect_result_t<BinaryOperation&,
+                                       projected<ForwardIterator1, Proj1>,
+                                       projected<ForwardIterator2, Proj2>>>
+constexpr auto transform(ForwardIterator1 first1,
+                         ForwardIterator1 last1,
+                         ForwardIterator2 first2,
+                         ForwardIterator2 last2,
+                         OutputIterator result,
+                         BinaryOperation binary_op,
+                         Proj1 proj1 = {},
+                         Proj2 proj2 = {}) {
+  // std::transform does not have a `last2` overload. Thus we need to adjust
+  // `last1` to ensure to not read past `last2`.
+  last1 = std::next(first1, std::min(std::distance(first1, last1),
+                                     std::distance(first2, last2)));
+  return std::transform(first1, last1, first2, result,
+                        [&binary_op, &proj1, &proj2](auto&& lhs, auto&& rhs) {
+                          return invoke(
+                              binary_op,
+                              invoke(proj1, std::forward<decltype(lhs)>(lhs)),
+                              invoke(proj2, std::forward<decltype(rhs)>(rhs)));
+                        });
+}
+
+// Let:
+// `N` be `min(size(range1), size(range2)`,
+// `E(i)` be `invoke(binary_op, invoke(proj1, *(begin(range1) + (i - result))),
+//                              invoke(proj2, *(begin(range2) + (i - result))))`
+//
+// Preconditions: `binary_op` does not invalidate iterators or subranges, nor
+// modify elements in the ranges `[begin(range1), end(range1)]`,
+// `[begin(range2), end(range2)]`, and `[result, result + N]`.
+//
+// Effects: Assigns through every iterator `i` in the range
+// `[result, result + N)` a new corresponding value equal to `E(i)`.
+//
+// Returns: `result + N`
+//
+// Complexity: Exactly `N` applications of `binary_op`, and any projections.
+//
+// Remarks: `result` may be equal to `begin(range1)` or `begin(range2)`.
+//
+// Reference: https://wg21.link/alg.transform#:~:text=ranges::transform(R1
+template <typename Range1,
+          typename Range2,
+          typename OutputIterator,
+          typename BinaryOperation,
+          typename Proj1 = identity,
+          typename Proj2 = identity,
+          typename = internal::range_category_t<Range1>,
+          typename = internal::range_category_t<Range2>,
+          typename = internal::iterator_category_t<OutputIterator>,
+          typename = indirect_result_t<BinaryOperation&,
+                                       projected<iterator_t<Range1>, Proj1>,
+                                       projected<iterator_t<Range2>, Proj2>>>
+constexpr auto transform(Range1&& range1,
+                         Range2&& range2,
+                         OutputIterator result,
+                         BinaryOperation binary_op,
+                         Proj1 proj1 = {},
+                         Proj2 proj2 = {}) {
+  return ranges::transform(ranges::begin(range1), ranges::end(range1),
+                           ranges::begin(range2), ranges::end(range2), result,
+                           std::move(binary_op), std::move(proj1),
+                           std::move(proj2));
+}
 
 // [alg.replace] Replace
 // Reference: https://wg21.link/alg.replace

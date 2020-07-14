@@ -42,6 +42,7 @@
 #include "pdf/pdfium/pdfium_permissions.h"
 #include "pdf/pdfium/pdfium_unsupported_features.h"
 #include "pdf/ppapi_migration/bitmap.h"
+#include "pdf/ppapi_migration/geometry_conversions.h"
 #include "pdf/ppapi_migration/input_event_conversions.h"
 #include "pdf/url_loader_wrapper_impl.h"
 #include "ppapi/c/ppb_input_event.h"
@@ -272,19 +273,18 @@ bool IsLinkArea(PDFiumPage::Area area) {
 
 // Normalize a MouseInputEvent. For Mac, this means transforming ctrl + left
 // button down events into a right button down events.
-pp::MouseInputEvent NormalizeMouseEvent(pp::Instance* instance,
-                                        const pp::MouseInputEvent& event) {
-  pp::MouseInputEvent normalized_event = event;
+MouseInputEvent NormalizeMouseEvent(const MouseInputEvent& event) {
+  MouseInputEvent normalized_event = event;
 #if defined(OS_MACOSX)
   uint32_t modifiers = event.GetModifiers();
-  if ((modifiers & PP_INPUTEVENT_MODIFIER_CONTROLKEY) &&
-      event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT &&
-      event.GetType() == PP_INPUTEVENT_TYPE_MOUSEDOWN) {
-    uint32_t new_modifiers = modifiers & ~PP_INPUTEVENT_MODIFIER_CONTROLKEY;
-    normalized_event = pp::MouseInputEvent(
-        instance, PP_INPUTEVENT_TYPE_MOUSEDOWN, event.GetTimeStamp(),
-        new_modifiers, PP_INPUTEVENT_MOUSEBUTTON_RIGHT, event.GetPosition(), 1,
-        event.GetMovement());
+  if ((event.GetModifiers() & kInputEventModifierControlKey) &&
+      event.GetButton() == InputEventMouseButtonType::kLeft &&
+      event.GetEventType() == InputEventType::kMouseDown) {
+    uint32_t new_modifiers = modifiers & ~kInputEventModifierControlKey;
+    normalized_event =
+        MouseInputEvent(InputEventType::kMouseDown, event.GetTimeStamp(),
+                        new_modifiers, InputEventMouseButtonType::kRight,
+                        event.GetPosition(), 1, event.GetMovement());
   }
 #endif
   return normalized_event;
@@ -826,16 +826,16 @@ bool PDFiumEngine::HandleEvent(const pp::InputEvent& event) {
   bool rv = false;
   switch (event.GetType()) {
     case PP_INPUTEVENT_TYPE_MOUSEDOWN:
-      rv = OnMouseDown(pp::MouseInputEvent(event));
+      rv = OnMouseDown(GetMouseInputEvent(pp::MouseInputEvent(event)));
       break;
     case PP_INPUTEVENT_TYPE_MOUSEUP:
-      rv = OnMouseUp(pp::MouseInputEvent(event));
+      rv = OnMouseUp(GetMouseInputEvent(pp::MouseInputEvent(event)));
       break;
     case PP_INPUTEVENT_TYPE_MOUSEMOVE:
-      rv = OnMouseMove(pp::MouseInputEvent(event));
+      rv = OnMouseMove(GetMouseInputEvent(pp::MouseInputEvent(event)));
       break;
     case PP_INPUTEVENT_TYPE_MOUSEENTER:
-      OnMouseEnter(pp::MouseInputEvent(event));
+      OnMouseEnter(GetMouseInputEvent(pp::MouseInputEvent(event)));
       break;
     case PP_INPUTEVENT_TYPE_KEYDOWN:
       rv = OnKeyDown(GetKeyboardInputEvent(pp::KeyboardInputEvent(event)));
@@ -1077,14 +1077,13 @@ PDFiumPage::Area PDFiumEngine::GetCharIndex(const pp::Point& point,
              : result;
 }
 
-bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
-  pp::MouseInputEvent normalized_event =
-      NormalizeMouseEvent(client_->GetPluginInstance(), event);
-  if (normalized_event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT)
+bool PDFiumEngine::OnMouseDown(const MouseInputEvent& event) {
+  MouseInputEvent normalized_event = NormalizeMouseEvent(event);
+  if (normalized_event.GetButton() == InputEventMouseButtonType::kLeft)
     return OnLeftMouseDown(normalized_event);
-  if (normalized_event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_MIDDLE)
+  if (normalized_event.GetButton() == InputEventMouseButtonType::kMiddle)
     return OnMiddleMouseDown(normalized_event);
-  if (normalized_event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_RIGHT)
+  if (normalized_event.GetButton() == InputEventMouseButtonType::kRight)
     return OnRightMouseDown(normalized_event);
   return false;
 }
@@ -1126,7 +1125,7 @@ void PDFiumEngine::OnMultipleClick(int click_count,
     client_->NotifyTouchSelectionOccurred();
 }
 
-bool PDFiumEngine::OnLeftMouseDown(const pp::MouseInputEvent& event) {
+bool PDFiumEngine::OnLeftMouseDown(const MouseInputEvent& event) {
   SetMouseLeftButtonDown(true);
 
   auto selection_invalidator =
@@ -1137,9 +1136,9 @@ bool PDFiumEngine::OnLeftMouseDown(const pp::MouseInputEvent& event) {
   int char_index = -1;
   int form_type = FPDF_FORMFIELD_UNKNOWN;
   PDFiumPage::LinkTarget target;
-  pp::Point point = event.GetPosition();
-  PDFiumPage::Area area =
-      GetCharIndex(point, &page_index, &char_index, &form_type, &target);
+  gfx::Point point = event.GetPosition();
+  PDFiumPage::Area area = GetCharIndex(PPPointFromPoint(point), &page_index,
+                                       &char_index, &form_type, &target);
   DCHECK_GE(form_type, FPDF_FORMFIELD_UNKNOWN);
   mouse_down_state_.Set(area, target);
 
@@ -1153,7 +1152,7 @@ bool PDFiumEngine::OnLeftMouseDown(const pp::MouseInputEvent& event) {
     last_focused_page_ = page_index;
     double page_x;
     double page_y;
-    DeviceToPage(page_index, point, &page_x, &page_y);
+    DeviceToPage(page_index, PPPointFromPoint(point), &page_x, &page_y);
 
     if (form_type != FPDF_FORMFIELD_UNKNOWN) {
       // FORM_OnLButton*() will trigger a callback to
@@ -1191,10 +1190,10 @@ bool PDFiumEngine::OnLeftMouseDown(const pp::MouseInputEvent& event) {
   return true;
 }
 
-bool PDFiumEngine::OnMiddleMouseDown(const pp::MouseInputEvent& event) {
+bool PDFiumEngine::OnMiddleMouseDown(const MouseInputEvent& event) {
   SetMouseLeftButtonDown(false);
   mouse_middle_button_down_ = true;
-  mouse_middle_button_last_position_ = event.GetPosition();
+  mouse_middle_button_last_position_ = PPPointFromPoint(event.GetPosition());
 
   SelectionChangeInvalidator selection_invalidator(this);
   selection_.clear();
@@ -1204,8 +1203,8 @@ bool PDFiumEngine::OnMiddleMouseDown(const pp::MouseInputEvent& event) {
   int unused_form_type = FPDF_FORMFIELD_UNKNOWN;
   PDFiumPage::LinkTarget target;
   PDFiumPage::Area area =
-      GetCharIndex(event.GetPosition(), &unused_page_index, &unused_char_index,
-                   &unused_form_type, &target);
+      GetCharIndex(PPPointFromPoint(event.GetPosition()), &unused_page_index,
+                   &unused_char_index, &unused_form_type, &target);
   mouse_down_state_.Set(area, target);
 
   // Decide whether to open link or not based on user action in mouse up and
@@ -1222,10 +1221,10 @@ bool PDFiumEngine::OnMiddleMouseDown(const pp::MouseInputEvent& event) {
   return false;
 }
 
-bool PDFiumEngine::OnRightMouseDown(const pp::MouseInputEvent& event) {
-  DCHECK_EQ(PP_INPUTEVENT_MOUSEBUTTON_RIGHT, event.GetButton());
+bool PDFiumEngine::OnRightMouseDown(const MouseInputEvent& event) {
+  DCHECK_EQ(InputEventMouseButtonType::kRight, event.GetButton());
 
-  pp::Point point = event.GetPosition();
+  pp::Point point = PPPointFromPoint(event.GetPosition());
   int page_index = -1;
   int char_index = -1;
   int form_type = FPDF_FORMFIELD_UNKNOWN;
@@ -1314,22 +1313,22 @@ bool PDFiumEngine::NavigateToLinkDestination(
   return false;
 }
 
-bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
-  if (event.GetButton() != PP_INPUTEVENT_MOUSEBUTTON_LEFT &&
-      event.GetButton() != PP_INPUTEVENT_MOUSEBUTTON_MIDDLE) {
+bool PDFiumEngine::OnMouseUp(const MouseInputEvent& event) {
+  if (event.GetButton() != InputEventMouseButtonType::kLeft &&
+      event.GetButton() != InputEventMouseButtonType::kMiddle) {
     return false;
   }
 
-  if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT)
+  if (event.GetButton() == InputEventMouseButtonType::kLeft)
     SetMouseLeftButtonDown(false);
-  else if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_MIDDLE)
+  else if (event.GetButton() == InputEventMouseButtonType::kMiddle)
     mouse_middle_button_down_ = false;
 
   int page_index = -1;
   int char_index = -1;
   int form_type = FPDF_FORMFIELD_UNKNOWN;
   PDFiumPage::LinkTarget target;
-  pp::Point point = event.GetPosition();
+  pp::Point point = PPPointFromPoint(event.GetPosition());
   PDFiumPage::Area area =
       GetCharIndex(point, &page_index, &char_index, &form_type, &target);
 
@@ -1350,7 +1349,7 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
       return true;
   }
 
-  if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_MIDDLE) {
+  if (event.GetButton() == InputEventMouseButtonType::kMiddle) {
     if (kViewerImplementedPanning) {
       // Update the cursor when panning stops.
       client_->UpdateCursor(DetermineCursorType(area, form_type));
@@ -1375,12 +1374,12 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
   return true;
 }
 
-bool PDFiumEngine::OnMouseMove(const pp::MouseInputEvent& event) {
+bool PDFiumEngine::OnMouseMove(const MouseInputEvent& event) {
   int page_index = -1;
   int char_index = -1;
   int form_type = FPDF_FORMFIELD_UNKNOWN;
   PDFiumPage::LinkTarget target;
-  pp::Point point = event.GetPosition();
+  pp::Point point = PPPointFromPoint(event.GetPosition());
   PDFiumPage::Area area =
       GetCharIndex(point, &page_index, &char_index, &form_type, &target);
 
@@ -1400,7 +1399,8 @@ bool PDFiumEngine::OnMouseMove(const pp::MouseInputEvent& event) {
                        page_y);
     }
 
-    UpdateLinkUnderCursor(GetLinkAtPosition(event.GetPosition()));
+    UpdateLinkUnderCursor(
+        GetLinkAtPosition(PPPointFromPoint(event.GetPosition())));
 
     // If in form text area while left mouse button is held down, check if form
     // text selection needs to be updated.
@@ -1414,11 +1414,12 @@ bool PDFiumEngine::OnMouseMove(const pp::MouseInputEvent& event) {
       // moving the page, rather than the delta the mouse moved.
       // GetMovement() does not work here, as small mouse movements are
       // considered zero.
-      pp::Point page_position_delta =
-          mouse_middle_button_last_position_ - event.GetPosition();
+      pp::Point page_position_delta = mouse_middle_button_last_position_ -
+                                      PPPointFromPoint(event.GetPosition());
       if (page_position_delta.x() != 0 || page_position_delta.y() != 0) {
         client_->ScrollBy(page_position_delta);
-        mouse_middle_button_last_position_ = event.GetPosition();
+        mouse_middle_button_last_position_ =
+            PPPointFromPoint(event.GetPosition());
       }
     }
 
@@ -1477,11 +1478,12 @@ PP_CursorType_Dev PDFiumEngine::DetermineCursorType(PDFiumPage::Area area,
   }
 }
 
-void PDFiumEngine::OnMouseEnter(const pp::MouseInputEvent& event) {
+void PDFiumEngine::OnMouseEnter(const MouseInputEvent& event) {
   if (event.GetModifiers() & PP_INPUTEVENT_MODIFIER_MIDDLEBUTTONDOWN) {
     if (!mouse_middle_button_down_) {
       mouse_middle_button_down_ = true;
-      mouse_middle_button_last_position_ = event.GetPosition();
+      mouse_middle_button_last_position_ =
+          PPPointFromPoint(event.GetPosition());
     }
   } else {
     if (mouse_middle_button_down_) {
@@ -2382,15 +2384,12 @@ void PDFiumEngine::HandleLongPress(const pp::TouchInputEvent& event) {
   base::AutoReset<bool> handling_long_press_guard(&handling_long_press_, true);
   pp::FloatPoint fp =
       event.GetTouchByIndex(PP_TOUCHLIST_TYPE_TARGETTOUCHES, 0).position();
-  pp::Point point;
-  point.set_x(fp.x());
-  point.set_y(fp.y());
+  gfx::Point point(fp.x(), fp.y());
 
   // Send a fake mouse down to trigger the multi-click selection code.
-  pp::MouseInputEvent mouse_event(
-      client_->GetPluginInstance(), PP_INPUTEVENT_TYPE_MOUSEDOWN,
-      event.GetTimeStamp(), event.GetModifiers(),
-      PP_INPUTEVENT_MOUSEBUTTON_LEFT, point, 2, point);
+  MouseInputEvent mouse_event(
+      InputEventType::kMouseDown, event.GetTimeStamp(), event.GetModifiers(),
+      InputEventMouseButtonType::kLeft, point, 2, point);
 
   OnMouseDown(mouse_event);
 }

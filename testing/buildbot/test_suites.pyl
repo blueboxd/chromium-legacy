@@ -809,6 +809,7 @@
       'module_installer_junit_tests': {},
       'net_junit_tests': {},
       'paint_preview_junit_tests': {},
+      'password_check_junit_tests': {},
       'service_junit_tests': {},
       'touch_to_fill_junit_tests': {},
       'ui_junit_tests': {},

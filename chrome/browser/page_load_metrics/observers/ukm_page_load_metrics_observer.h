@@ -28,6 +28,20 @@ class PageLoad;
 }
 }  // namespace ukm
 
+// This enum represents the type of page load: abort, non-abort, or neither.
+// A page is of type NEVER_FOREGROUND if it was never in the foreground.
+// A page is of type ABORT if it was in the foreground at some point but did not
+// reach FCP. A page is of type REACHED_FCP if it was in the foreground at some
+// point and reached FCP. These values are persisted to logs. Entries should not
+// be renumbered and numeric values should never be reused. For any additions,
+// also update the corresponding enum in enums.xml.
+enum class PageLoadType {
+  kNeverForegrounded = 0,
+  kAborted = 1,
+  kReachedFCP = 2,
+  kMaxValue = kReachedFCP,
+};
+
 // If URL-Keyed-Metrics (UKM) is enabled in the system, this is used to
 // populate it with top-level page-load metrics.
 class UkmPageLoadMetricsObserver
@@ -60,6 +74,8 @@ class UkmPageLoadMetricsObserver
 
   ObservePolicy OnHidden(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
+
+  ObservePolicy OnShown() override;
 
   void OnFailedProvisionalLoad(
       const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info)
@@ -125,6 +141,10 @@ class UkmPageLoadMetricsObserver
       ukm::builders::PageLoad* builder);
 
   void ReportLayoutStability();
+
+  void ReportAbortMetrics(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      base::TimeTicks page_end_time);
 
   void RecordInputTimingMetrics();
 
@@ -229,6 +249,12 @@ class UkmPageLoadMetricsObserver
   int main_document_sequence_number_ = -1;
 
   bool font_preload_started_before_rendering_observed_ = false;
+
+  bool currently_in_foreground_ = false;
+  // The last time the page became foregrounded, or navigation start if the page
+  // started in the foreground and has not been backgrounded.
+  base::TimeTicks last_time_shown_;
+  base::TimeDelta total_foreground_duration_;
 
   // The connection info for the committed URL.
   base::Optional<net::HttpResponseInfo::ConnectionInfo> connection_info_;

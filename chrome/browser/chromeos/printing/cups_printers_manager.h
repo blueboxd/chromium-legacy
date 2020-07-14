@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/printing/printer_installation_manager.h"
 #include "chromeos/printing/printer_configuration.h"
+#include "chromeos/printing/uri.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class PrefService;
@@ -33,7 +34,7 @@ class SyncedPrintersManager;
 class UsbPrinterNotificationController;
 
 // Returns true if |printer_uri| is an IPP uri.
-bool IsIppUri(base::StringPiece printer_uri);
+bool IsIppUri(const Uri& printer_uri);
 
 // Top level manager of available CUPS printers in ChromeOS.  All functions
 // in this class must be called from a sequenced context.

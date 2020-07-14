@@ -4,37 +4,48 @@
 
 import("//third_party/closure_compiler/compile_js.gni")
 import("//ui/webui/resources/cr_components/chromeos/os_cr_components.gni")
+import("//ui/webui/resources/cr_elements/chromeos/os_cr_elements.gni")
 import("../settings.gni")
 
 os_settings_namespace_rewrites =
-    settings_namespace_rewrites + cr_components_chromeos_namespace_rewrites + [
-      "settings.OsResetBrowserProxy|OsResetBrowserProxy",
+    settings_namespace_rewrites + cr_components_chromeos_namespace_rewrites +
+    cr_elements_chromeos_namespace_rewrites +
+    [
+      "settings.AmbientModeBrowserProxy|AmbientModeBrowserProxy",
+      "settings.ChangePictureBrowserProxy|ChangePictureBrowserProxy",
+      "settings.DefaultImage|DefaultImage",
       "settings.MultiDeviceBrowserProxy|MultiDeviceBrowserProxy",
-      "settings.MultiDeviceBrowserProxyImpl|MultiDeviceBrowserProxyImpl",
       "settings.MultiDeviceSettingsMode|MultiDeviceSettingsMode",
       "settings.MultiDeviceFeature|MultiDeviceFeature",
       "settings.MultiDeviceFeatureState|MultiDeviceFeatureState",
       "settings.MultiDevicePageContentData|MultiDevicePageContentData",
+      "settings.OsResetBrowserProxy|OsResetBrowserProxy",
       "settings.RouteObserverBehavior|RouteObserverBehavior",
       "settings.Route|Route",
       "settings.recordSettingChange|recordSettingChange",
       "settings.SmartLockSignInEnabledState|SmartLockSignInEnabledState",
+      "settings.WallpaperBrowserProxy|WallpaperBrowserProxy",
     ]
 
-os_settings_auto_imports =
-    settings_auto_imports + cr_components_chromeos_auto_imports + [
-      "chrome/browser/resources/settings/chromeos/metrics_recorder.html|recordSettingChange",
-      "chrome/browser/resources/settings/chromeos/multidevice_page/multidevice_constants.html|MultiDeviceSettingsMode,MultiDeviceFeature,MultiDeviceFeatureState,MultiDevicePageContentData,SmartLockSignInEnabledState",
-      "chrome/browser/resources/settings/chromeos/multidevice_page/multidevice_feature_behavior.html|MultiDeviceFeatureBehavior",
-      "chrome/browser/resources/settings/chromeos/multidevice_page/multidevice_browser_proxy.html|MultiDeviceBrowserProxy,MultiDeviceBrowserProxyImpl",
-      "chrome/browser/resources/settings/chromeos/os_reset_page/os_reset_browser_proxy.html|OsResetBrowserProxy,OsResetBrowserProxyImpl",
-      "chrome/browser/resources/settings/chromeos/os_settings_routes.html|OsSettingsRoutes",
-      "chrome/browser/resources/settings/chromeos/route_origin_behavior.html|RouteOriginBehaviorImpl,RouteOriginBehavior",
-      "chrome/browser/resources/settings/lifetime_browser_proxy.html|LifetimeBrowserProxy,LifetimeBrowserProxyImpl",
-      "chrome/browser/resources/settings/chromeos/os_route.html|routes",
-      "chrome/browser/resources/settings/route.html|routes",
-      "chrome/browser/resources/settings/router.html|Router,Route,RouteObserverBehavior",
-      "ui/webui/resources/html/polymer.html|Polymer,html,flush",
-    ]
+os_settings_auto_imports = settings_auto_imports +
+                           cr_components_chromeos_auto_imports +
+                           cr_elements_chromeos_auto_imports + [
+                             "chrome/browser/resources/settings/chromeos/ambient_mode_page/constants.html|AmbientModeTopicSource,AmbientModeSettings",
+                             "chrome/browser/resources/settings/chromeos/ambient_mode_page/ambient_mode_browser_proxy.html|AmbientModeBrowserProxy,AmbientModeBrowserProxyImpl",
+                             "chrome/browser/resources/settings/chromeos/metrics_recorder.html|recordSettingChange",
+                             "chrome/browser/resources/settings/chromeos/multidevice_page/multidevice_constants.html|MultiDeviceSettingsMode,MultiDeviceFeature,MultiDeviceFeatureState,MultiDevicePageContentData,SmartLockSignInEnabledState",
+                             "chrome/browser/resources/settings/chromeos/multidevice_page/multidevice_feature_behavior.html|MultiDeviceFeatureBehavior",
+                             "chrome/browser/resources/settings/chromeos/multidevice_page/multidevice_browser_proxy.html|MultiDeviceBrowserProxy,MultiDeviceBrowserProxyImpl",
+                             "chrome/browser/resources/settings/chromeos/os_reset_page/os_reset_browser_proxy.html|OsResetBrowserProxy,OsResetBrowserProxyImpl",
+                             "chrome/browser/resources/settings/chromeos/os_settings_routes.html|OsSettingsRoutes",
+                             "chrome/browser/resources/settings/chromeos/personalization_page/change_picture_browser_proxy.html|ChangePictureBrowserProxy,ChangePictureBrowserProxyImpl,DefaultImage",
+                             "chrome/browser/resources/settings/chromeos/personalization_page/wallpaper_browser_proxy.html|WallpaperBrowserProxy,WallpaperBrowserProxyImpl",
+                             "chrome/browser/resources/settings/chromeos/route_origin_behavior.html|RouteOriginBehaviorImpl,RouteOriginBehavior",
+                             "chrome/browser/resources/settings/lifetime_browser_proxy.html|LifetimeBrowserProxy,LifetimeBrowserProxyImpl",
+                             "chrome/browser/resources/settings/chromeos/os_route.html|routes",
+                             "chrome/browser/resources/settings/route.html|routes",
+                             "chrome/browser/resources/settings/router.html|Router,Route,RouteObserverBehavior",
+                             "ui/webui/resources/html/polymer.html|Polymer,html,flush",
+                           ]
 
 os_settings_migrated_imports = settings_migrated_imports

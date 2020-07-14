@@ -4477,7 +4477,7 @@ void LayoutBlockFlow::SimplifiedNormalFlowInlineLayout() {
 bool LayoutBlockFlow::RecalcInlineChildrenLayoutOverflow() {
   DCHECK(ChildrenInline());
   bool children_layout_overflow_changed = false;
-  LinkedHashSet<RootInlineBox*> line_boxes;
+  HashSet<RootInlineBox*> line_boxes;
   for (InlineWalker walker(LineLayoutBlockFlow(this)); !walker.AtEnd();
        walker.Advance()) {
     LayoutObject* layout_object = walker.Current().GetLayoutObject();
@@ -4497,9 +4497,7 @@ bool LayoutBlockFlow::RecalcInlineChildrenLayoutOverflow() {
   // FIXME: Glyph overflow will get lost in this case, but not really a big
   // deal.
   GlyphOverflowAndFallbackFontsMap text_box_data_map;
-  for (LinkedHashSet<RootInlineBox*>::const_iterator it = line_boxes.begin();
-       it != line_boxes.end(); ++it) {
-    RootInlineBox* box = *it;
+  for (auto* box : line_boxes) {
     box->ClearKnownToHaveNoOverflow();
     box->ComputeOverflow(box->LineTop(), box->LineBottom(), text_box_data_map);
   }

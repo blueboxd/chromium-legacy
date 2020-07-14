@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//printing/buildflags/buildflags.gni")
 import("//third_party/blink/renderer/core/core.gni")
 
 blink_core_sources("frame") {
@@ -228,5 +229,9 @@ blink_core_sources("frame") {
 
   if (is_mac) {
     deps += [ "//ui/base/mojom" ]
+  }
+
+  if (enable_basic_printing) {
+    deps += [ "//printing" ]
   }
 }

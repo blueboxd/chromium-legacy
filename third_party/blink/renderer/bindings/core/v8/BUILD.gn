@@ -12,29 +12,86 @@ import("//third_party/blink/renderer/core/core_idl_files.gni")
 
 visibility = [ "//third_party/blink/renderer/*" ]
 
-blink_core_sources("generated") {
-  sources = generated_enumeration_sources_in_core
-  deps =
-      [ "//third_party/blink/renderer/bindings:generate_bindings_enumeration" ]
+if (use_blink_v8_binding_new_idl_interface) {
+  blink_core_sources("v8") {
+    visibility = []
+    visibility = [ "//third_party/blink/renderer/core" ]
+
+    sources = generated_enumeration_sources_in_core
+    if (use_blink_v8_binding_new_idl_interface) {
+      sources += generated_interface_sources_in_core
+    }
+
+    deps = [
+      ":generated",
+      "//third_party/blink/renderer/platform",
+      "//v8",
+    ]
+  }
+} else {
+  group("v8") {
+  }
 }
 
-blink_core_sources("generated_for_testing") {
-  sources = generated_enumeration_sources_for_testing_in_core
-  deps =
-      [ "//third_party/blink/renderer/bindings:generate_bindings_enumeration" ]
+if (use_blink_v8_binding_new_idl_interface) {
+  jumbo_source_set("testing") {
+    testonly = true
+
+    visibility = []
+    visibility = [ "//third_party/blink/renderer/core/*" ]
+
+    configs += [
+      "//third_party/blink/renderer:config",
+      "//third_party/blink/renderer:inside_blink",
+    ]
+
+    sources = generated_enumeration_sources_for_testing_in_core
+    if (use_blink_v8_binding_new_idl_interface) {
+      sources += generated_interface_sources_for_testing_in_core
+    }
+
+    deps = [
+      ":generated",
+      ":testing_internal",
+      "//third_party/blink/renderer/platform",
+      "//v8",
+    ]
+  }
+} else {
+  group("testing") {
+    testonly = true
+
+    deps = [ ":testing_internal" ]
+  }
 }
 
-generate_origin_trial_features("bindings_core_origin_trial_features") {
-  sources = core_interface_idl_files_core_only +
-            core_interface_idl_files_modules_dependent +
-            core_partial_definition_idl_files +
-            core_global_constructors_generated_idl_files
-  component = "core"
-  output_dir = bindings_core_output_dir + "/v8"
-  deps = [
-    "//third_party/blink/renderer/bindings/core:core_global_constructors_idls",
-    "//third_party/blink/renderer/bindings/core:interfaces_info_core",
+group("generated") {
+  visibility = []
+  visibility = [
+    "//third_party/blink/renderer/bindings/core/v8/*",
+    "//third_party/blink/renderer/core/*",
   ]
+
+  public_deps =
+      [ "//third_party/blink/renderer/bindings:generate_bindings_all" ]
+}
+
+if (use_blink_v8_binding_new_idl_interface) {
+  group("bindings_core_origin_trial_features") {
+  }
+} else {
+  generate_origin_trial_features("bindings_core_origin_trial_features") {
+    sources = core_interface_idl_files_core_only +
+              core_interface_idl_files_modules_dependent +
+              core_partial_definition_idl_files +
+              core_global_constructors_generated_idl_files
+    component = "core"
+    output_dir = bindings_core_output_dir + "/v8"
+    deps = [
+      "//third_party/blink/renderer/bindings/core:core_global_constructors_idls",
+      "//third_party/blink/renderer/bindings/core:interfaces_info_core",
+    ]
+  }
 }
 
 group("bindings_core_v8_generated") {
@@ -54,6 +111,13 @@ group("bindings_core_v8_generated") {
 idl_compiler("generate_bindings_core_v8_interfaces") {
   sources = core_definition_idl_files + core_testing_definition_idl_files +
             generated_webcore_testing_idl_files
+  if (use_blink_v8_binding_new_idl_interface) {
+    sources -=
+        core_interface_idl_files_core_only +
+        core_interface_idl_files_modules_dependent + webcore_testing_idl_files +
+        webcore_testing_idl_with_modules_dependency_files +
+        generated_webcore_testing_idl_files
+  }
   if (use_v8_bind_gen_for_dictionary) {
     sources -= core_dictionary_idl_files
     sources -= core_testing_dictionary_idl_files
@@ -96,8 +160,11 @@ blink_core_sources("bindings_core_impl") {
     _non_testing_sources -= generated_core_testing_dictionary_files
   }
 
-  sources = _non_testing_sources + bindings_core_generated_interface_files +
-            get_target_outputs(":bindings_core_origin_trial_features")
+  sources = _non_testing_sources + bindings_core_generated_interface_files
+
+  if (!use_blink_v8_binding_new_idl_interface) {
+    sources += get_target_outputs(":bindings_core_origin_trial_features")
+  }
 
   deps = [
     ":bindings_core_origin_trial_features",
@@ -109,7 +176,9 @@ blink_core_sources("bindings_core_impl") {
 # Compile the test sources generated above. This test target doesn't count
 # as part of the "core" component so shouldn't use the blink_core_sources for
 # linking on Windows.
-jumbo_source_set("testing") {
+jumbo_source_set("testing_internal") {
+  testonly = true
+
   sources = generated_core_testing_dictionary_files +
             generated_core_testing_callback_function_files
 
@@ -119,8 +188,14 @@ jumbo_source_set("testing") {
   if (!use_v8_bind_gen_for_dictionary) {
     testing_idl_interface_files += core_testing_dictionary_idl_files
   }
+
+  if (use_blink_v8_binding_new_idl_interface) {
+    idl_files = core_testing_dictionary_idl_files
+  } else {
+    idl_files = testing_idl_interface_files
+  }
   sources += process_file_template(
-          testing_idl_interface_files,
+          idl_files,
           [
             "$bindings_core_v8_output_dir/v8_{{source_name_part}}.cc",
             "$bindings_core_v8_output_dir/v8_{{source_name_part}}.h",
@@ -134,7 +209,7 @@ jumbo_source_set("testing") {
     ":bindings_core_v8_generated",
     "//skia",
     "//third_party/blink/renderer/bindings:generate_v8_bindings",
-    "//third_party/blink/renderer/core:all_generators",
+    "//third_party/blink/renderer/core",
     "//third_party/blink/renderer/platform",
     "//v8",
   ]

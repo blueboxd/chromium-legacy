@@ -20,7 +20,6 @@
 class Browser;
 @class NotifyUserAutoSigninViewController;
 @protocol PasswordBreachCommands;
-@protocol PasswordFormFiller;
 @protocol PasswordsUiDelegate;
 @class UIViewController;
 
@@ -58,9 +57,6 @@ class PasswordManagerClient;
 // The PasswordManagerDriver owned by this PasswordController.
 @property(nonatomic, readonly)
     password_manager::PasswordManagerDriver* passwordManagerDriver;
-
-// The PasswordFormFiller owned by this PasswordController.
-@property(nonatomic, readonly) id<PasswordFormFiller> passwordFormFiller;
 
 // The base view controller from which to present UI.
 @property(nonatomic, readwrite, weak) UIViewController* baseViewController;

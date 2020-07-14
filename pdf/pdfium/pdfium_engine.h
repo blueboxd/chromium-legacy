@@ -44,6 +44,7 @@
 namespace chrome_pdf {
 
 class KeyboardInputEvent;
+class MouseInputEvent;
 class PDFiumDocument;
 class PDFiumPermissions;
 
@@ -380,10 +381,10 @@ class PDFiumEngine : public PDFEngine,
                       int current_page);
 
   // Input event handlers.
-  bool OnMouseDown(const pp::MouseInputEvent& event);
-  bool OnMouseUp(const pp::MouseInputEvent& event);
-  bool OnMouseMove(const pp::MouseInputEvent& event);
-  void OnMouseEnter(const pp::MouseInputEvent& event);
+  bool OnMouseDown(const MouseInputEvent& event);
+  bool OnMouseUp(const MouseInputEvent& event);
+  bool OnMouseMove(const MouseInputEvent& event);
+  void OnMouseEnter(const MouseInputEvent& event);
   bool OnKeyDown(const KeyboardInputEvent& event);
   bool OnKeyUp(const KeyboardInputEvent& event);
   bool OnChar(const KeyboardInputEvent& event);
@@ -422,9 +423,9 @@ class PDFiumEngine : public PDFEngine,
 
   void OnSingleClick(int page_index, int char_index);
   void OnMultipleClick(int click_count, int page_index, int char_index);
-  bool OnLeftMouseDown(const pp::MouseInputEvent& event);
-  bool OnMiddleMouseDown(const pp::MouseInputEvent& event);
-  bool OnRightMouseDown(const pp::MouseInputEvent& event);
+  bool OnLeftMouseDown(const MouseInputEvent& event);
+  bool OnMiddleMouseDown(const MouseInputEvent& event);
+  bool OnRightMouseDown(const MouseInputEvent& event);
 
   // Starts a progressive paint operation given a rectangle in screen
   // coordinates. Returns the index in progressive_rects_.

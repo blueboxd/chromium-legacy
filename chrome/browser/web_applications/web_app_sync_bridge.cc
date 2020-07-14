@@ -46,10 +46,12 @@ bool AreAppsLocallyInstalledByDefault() {
 }
 
 std::unique_ptr<syncer::EntityData> CreateSyncEntityData(const WebApp& app) {
+  // The Sync System doesn't allow empty entity_data name.
+  DCHECK(!app.name().empty());
+
   auto entity_data = std::make_unique<syncer::EntityData>();
   entity_data->name = app.name();
-  // The Sync System doesn't allow empty entity_data name.
-  // TODO(crbug.com/1103570): Replace with DCHECK(!app.name().empty());
+  // TODO(crbug.com/1103570): Remove this fallback later.
   if (entity_data->name.empty())
     entity_data->name = app.launch_url().spec();
 
@@ -278,12 +280,12 @@ void WebAppSyncBridge::CheckRegistryUpdateData(
 #if DCHECK_IS_ON()
   for (const std::unique_ptr<WebApp>& web_app : update_data.apps_to_create) {
     DCHECK(!registrar_->GetAppById(web_app->app_id()));
-    // TODO(crbug.com/1103570): Add DCHECK(!web_app->name().empty());
+    DCHECK(!web_app->name().empty());
   }
 
   for (const std::unique_ptr<WebApp>& web_app : update_data.apps_to_update) {
     DCHECK(registrar_->GetAppById(web_app->app_id()));
-    // TODO(crbug.com/1103570): Add DCHECK(!web_app->name().empty());
+    DCHECK(!web_app->name().empty());
   }
 
   for (const AppId& app_id : update_data.apps_to_delete)

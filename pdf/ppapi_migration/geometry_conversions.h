@@ -5,10 +5,12 @@
 #ifndef PDF_PPAPI_MIGRATION_GEOMETRY_CONVERSIONS_H_
 #define PDF_PPAPI_MIGRATION_GEOMETRY_CONVERSIONS_H_
 
+struct PP_Point;
 struct PP_Rect;
 struct PP_Size;
 
 namespace gfx {
+class Point;
 class Rect;
 class Size;
 }  // namespace gfx
@@ -17,6 +19,8 @@ namespace chrome_pdf {
 
 gfx::Rect RectFromPPRect(const PP_Rect& pp_rect);
 gfx::Size SizeFromPPSize(const PP_Size& pp_size);
+gfx::Point PointFromPPPoint(const PP_Point& pp_point);
+PP_Point PPPointFromPoint(const gfx::Point& point);
 
 }  // namespace chrome_pdf
 

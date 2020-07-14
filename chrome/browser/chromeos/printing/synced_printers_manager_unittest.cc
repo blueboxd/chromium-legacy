@@ -116,7 +116,7 @@ TEST_F(SyncedPrintersManagerTest, UpdatePrinterAssignsId) {
 TEST_F(SyncedPrintersManagerTest, UpdatePrinter) {
   manager_->UpdateSavedPrinter(Printer(kTestPrinterId));
   Printer updated_printer(kTestPrinterId);
-  updated_printer.set_uri(kTestUri);
+  updated_printer.SetUri(kTestUri);
 
   // Register observer so it only receives the update event.
   LoggingObserver observer(manager_.get());
@@ -125,7 +125,7 @@ TEST_F(SyncedPrintersManagerTest, UpdatePrinter) {
 
   auto printers = manager_->GetSavedPrinters();
   ASSERT_EQ(1U, printers.size());
-  EXPECT_EQ(kTestUri, printers[0].uri());
+  EXPECT_EQ(kTestUri, printers[0].uri().GetNormalized());
 
   ExpectObservedPrinterIdsAre(observer.saved_printers(), {kTestPrinterId});
 }

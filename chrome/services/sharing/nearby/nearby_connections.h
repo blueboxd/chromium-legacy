@@ -7,7 +7,9 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
+#include "base/run_loop.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections.mojom.h"
+#include "chrome/services/sharing/public/mojom/webrtc_signaling_messenger.mojom.h"
 #include "device/bluetooth/public/mojom/adapter.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -33,21 +35,28 @@ class NearbyConnections : public mojom::NearbyConnections {
   // destroy this instance.
   NearbyConnections(
       mojo::PendingReceiver<mojom::NearbyConnections> nearby_connections,
-      mojo::PendingRemote<mojom::NearbyConnectionsHost> host,
+      mojom::NearbyConnectionsDependenciesPtr dependencies,
       base::OnceClosure on_disconnect);
   NearbyConnections(const NearbyConnections&) = delete;
   NearbyConnections& operator=(const NearbyConnections&) = delete;
   ~NearbyConnections() override;
 
+  // Should only be used by objects within lifetime of NearbyConnections.
+  static NearbyConnections& GetInstance();
+
+  bluetooth::mojom::Adapter* GetBluetoothAdapter();
+  sharing::mojom::WebRtcSignalingMessenger* GetWebRtcSignalingMessenger();
+
  private:
   void OnDisconnect();
-  void OnGetBluetoothAdapter(
-      mojo::PendingRemote<::bluetooth::mojom::Adapter> pending_remote_adapter);
 
   mojo::Receiver<mojom::NearbyConnections> nearby_connections_;
-  mojo::Remote<mojom::NearbyConnectionsHost> host_;
-  mojo::Remote<bluetooth::mojom::Adapter> bluetooth_adapter_;
   base::OnceClosure on_disconnect_;
+
+  // Medium dependencies:
+  mojo::Remote<bluetooth::mojom::Adapter> bluetooth_adapter_;
+  mojo::Remote<sharing::mojom::WebRtcSignalingMessenger>
+      webrtc_signaling_messenger_;
 
   base::WeakPtrFactory<NearbyConnections> weak_ptr_factory_{this};
 };

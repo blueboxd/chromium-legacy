@@ -13,7 +13,6 @@ class Browser;
 @protocol FormSuggestionProvider;
 @class PasswordController;
 @protocol PasswordControllerDelegate;
-@protocol PasswordFormFiller;
 @protocol PasswordsUiDelegate;
 @class UIViewController;
 
@@ -43,9 +42,6 @@ class PasswordTabHelper : public web::WebStateObserver,
   // Returns an object that can provide suggestions from the PasswordController.
   // May return nil.
   id<FormSuggestionProvider> GetSuggestionProvider();
-
-  // Returns the PasswordFormFiller from the PasswordController.
-  id<PasswordFormFiller> GetPasswordFormFiller();
 
   // Returns the PasswordGenerationFrameHelper owned by the PasswordController.
   password_manager::PasswordGenerationFrameHelper* GetGenerationHelper();

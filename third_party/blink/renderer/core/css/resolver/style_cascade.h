@@ -114,14 +114,14 @@ class CORE_EXPORT StyleCascade {
                           CascadeOrigin,
                           CascadeResolver&);
 
- private:
-  friend class TestCascade;
-
   // The maximum number of tokens that may be produced by a var()
   // reference.
   //
   // https://drafts.csswg.org/css-variables/#long-variables
-  static const size_t kMaxSubstitutionTokens = 16384;
+  static const size_t kMaxSubstitutionTokens = 65536;
+
+ private:
+  friend class TestCascade;
 
   // Before we can Apply the cascade, the MatchResult and CascadeInterpolations
   // must be Analyzed. This means going through all the declarations, and

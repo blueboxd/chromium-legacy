@@ -155,17 +155,17 @@ bool ConvertToPrinter(const std::string& service_type,
   printer.set_display_name(service_description.instance_name());
   printer.set_description(metadata.note);
   printer.set_make_and_model(metadata.product);
-  const char* uri_protocol;
+  Uri uri;
   std::string rp = metadata.rp;
   if (service_type == ZeroconfPrinterDetector::kIppServiceName ||
       service_type == ZeroconfPrinterDetector::kIppEverywhereServiceName) {
-    uri_protocol = "ipp";
+    uri.SetScheme("ipp");
   } else if (service_type == ZeroconfPrinterDetector::kIppsServiceName ||
              service_type ==
                  ZeroconfPrinterDetector::kIppsEverywhereServiceName) {
-    uri_protocol = "ipps";
+    uri.SetScheme("ipps");
   } else if (service_type == ZeroconfPrinterDetector::kSocketServiceName) {
-    uri_protocol = "socket";
+    uri.SetScheme("socket");
     // Bonjour Printing Specification v1.2.1 section 9.2.2:
     // If the "rp" key is present in a Socket TXT record, the key/value MUST
     // be ignored.
@@ -177,9 +177,11 @@ bool ConvertToPrinter(const std::string& service_type,
                  << service_description.service_type();
     return false;
   }
-  printer.set_uri(base::StringPrintf(
-      "%s://%s/%s", uri_protocol,
-      service_description.address.ToString().c_str(), rp.c_str()));
+
+  if (!uri.SetHostEncoded(service_description.address.HostForURL()) ||
+      !uri.SetPort(service_description.address.port()) ||
+      !uri.SetPathEncoded("/" + rp) || !printer.SetUri(uri))
+    return false;
 
   // Per the IPP Everywhere Standard 5100.14-2013, section 4.2.1, IPP
   // everywhere-capable printers advertise services prefixed with "_print"

@@ -98,8 +98,6 @@ class CORE_EXPORT NGPhysicalBoxFragment final
     return ComputePaddingAddress()->SnapToDevicePixels();
   }
 
-  bool HasSelfPaintingLayer() const;
-
   // Return true if this is either a container that establishes an inline
   // formatting context, or if it's non-atomic inline content participating in
   // one. Empty blocks don't establish an inline formatting context.

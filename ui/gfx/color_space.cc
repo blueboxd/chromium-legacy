@@ -152,6 +152,12 @@ ColorSpace ColorSpace::CreateHDR10(float sdr_white_point) {
 }
 
 // static
+ColorSpace ColorSpace::CreateHLG() {
+  return ColorSpace(PrimaryID::BT2020, TransferID::ARIB_STD_B67, MatrixID::RGB,
+                    RangeID::FULL);
+}
+
+// static
 ColorSpace ColorSpace::CreatePiecewiseHDR(
     PrimaryID primaries,
     float sdr_joint,

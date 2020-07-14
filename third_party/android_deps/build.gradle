@@ -18,6 +18,7 @@ dependencies {
     compile "androidx.lifecycle:lifecycle-runtime:${androidXArchComponentsVersion}"
     compile "androidx.lifecycle:lifecycle-common:${androidXArchComponentsVersion}"
     compile "androidx.lifecycle:lifecycle-common-java8:${androidXArchComponentsVersion}"
+    compile "androidx.lifecycle:lifecycle-livedata-core:${androidXArchComponentsVersion}"
     compile "androidx.lifecycle:lifecycle-viewmodel:${androidXArchComponentsVersion}"
 
     // Support v4 libraries

@@ -25,11 +25,12 @@ source_set("android") {
 android_library("java") {
   sources = [
     "java/src/org/chromium/chrome/browser/safety_check/SafetyCheckBridge.java",
-    "java/src/org/chromium/chrome/browser/safety_check/SafetyCheckController.java",
-    "java/src/org/chromium/chrome/browser/safety_check/SafetyCheckElement.java",
-    "java/src/org/chromium/chrome/browser/safety_check/SafetyCheckModel.java",
+    "java/src/org/chromium/chrome/browser/safety_check/SafetyCheckCoordinator.java",
+    "java/src/org/chromium/chrome/browser/safety_check/SafetyCheckMediator.java",
+    "java/src/org/chromium/chrome/browser/safety_check/SafetyCheckProperties.java",
     "java/src/org/chromium/chrome/browser/safety_check/SafetyCheckSettingsFragment.java",
     "java/src/org/chromium/chrome/browser/safety_check/SafetyCheckUpdatesDelegate.java",
+    "java/src/org/chromium/chrome/browser/safety_check/SafetyCheckViewBinder.java",
   ]
   deps = [
     ":java_resources",
@@ -38,6 +39,9 @@ android_library("java") {
     "//components/browser_ui/settings/android:java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_fragment_fragment_java",
+    "//third_party/android_deps:androidx_lifecycle_lifecycle_common_java",
+    "//third_party/android_deps:androidx_lifecycle_lifecycle_common_java8_java",
+    "//third_party/android_deps:androidx_lifecycle_lifecycle_livedata_core_java",
     "//third_party/android_deps:androidx_preference_preference_java",
     "//ui/android:ui_full_java",
   ]
@@ -48,14 +52,33 @@ android_library("java") {
   ]
 }
 
+android_library("javatests") {
+  testonly = true
+  sources = [ "javatests/src/org/chromium/chrome/browser/safety_check/SafetyCheckSettingsFragmentTest.java" ]
+  deps = [
+    ":java",
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//base/test:test_support_java",
+    "//chrome/browser/preferences:java",
+    "//chrome/browser/settings:test_support_java",
+    "//chrome/test/android:chrome_java_test_support",
+    "//content/public/test/android:content_java_test_support",
+    "//third_party/android_deps:androidx_preference_preference_java",
+    "//third_party/android_support_test_runner:runner_java",
+    "//third_party/junit:junit",
+    "//third_party/mockito:mockito_java",
+    "//ui/android:ui_full_java",
+  ]
+}
+
 android_library("junit") {
   # Skip platform checks since Robolectric depends on requires_android targets.
   bypass_platform_checks = true
   testonly = true
   sources = [
     "javatests/src/org/chromium/chrome/browser/safety_check/SafetyCheckBridgeTest.java",
-    "javatests/src/org/chromium/chrome/browser/safety_check/SafetyCheckControllerTest.java",
-    "javatests/src/org/chromium/chrome/browser/safety_check/SafetyCheckModelTest.java",
+    "javatests/src/org/chromium/chrome/browser/safety_check/SafetyCheckMediatorTest.java",
   ]
   deps = [
     ":java",
@@ -66,6 +89,7 @@ android_library("junit") {
     "//chrome/browser/preferences:java",
     "//third_party/junit:junit",
     "//third_party/mockito:mockito_java",
+    "//ui/android:ui_full_java",
   ]
 }
 

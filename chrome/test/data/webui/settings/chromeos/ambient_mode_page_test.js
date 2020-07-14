@@ -2,6 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://os-settings/chromeos/os_settings.js';
+
+// #import {AmbientModeBrowserProxyImpl, CrSettingsPrefs} from 'chrome://os-settings/chromeos/os_settings.js';
+// #import {TestBrowserProxy} from '../../test_browser_proxy.m.js';
+// #import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// clang-format on
+
 /**
  * @implements {settings.AmbientModeBrowserProxy}
  */
@@ -45,6 +54,11 @@ suite('AmbientModeHandler', function() {
     return CrSettingsPrefs.initialized.then(function() {
       page = document.createElement('settings-ambient-mode-page');
       page.prefs = prefElement.prefs;
+
+      page.prefs.settings.ambient_mode = {
+        enabled: {value: true},
+      };
+
       document.body.appendChild(page);
       Polymer.dom.flush();
     });

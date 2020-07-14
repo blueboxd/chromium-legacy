@@ -8246,7 +8246,8 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDiscardAckAfterRelease);
 
 class LayerTreeHostTestImageAnimation : public LayerTreeHostTest {
  public:
-  explicit LayerTreeHostTestImageAnimation(RendererType type = RENDERER_GL)
+  explicit LayerTreeHostTestImageAnimation(
+      TestRendererType type = TestRendererType::kGL)
       : LayerTreeHostTest(type) {}
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
@@ -8327,7 +8328,7 @@ class LayerTreeHostTestImageAnimationDrawImage
     : public LayerTreeHostTestImageAnimation {
  public:
   explicit LayerTreeHostTestImageAnimationDrawImage(
-      RendererType type = RENDERER_GL)
+      TestRendererType type = TestRendererType::kGL)
       : LayerTreeHostTestImageAnimation(type) {}
 
  private:
@@ -8383,7 +8384,7 @@ class LayerTreeHostTestImageAnimationSynchronousScheduling
     : public LayerTreeHostTestImageAnimationDrawImage {
  public:
   explicit LayerTreeHostTestImageAnimationSynchronousScheduling(
-      RendererType type = RENDERER_GL)
+      TestRendererType type = TestRendererType::kGL)
       : LayerTreeHostTestImageAnimationDrawImage(type) {}
 
   void InitializeSettings(LayerTreeSettings* settings) override {
@@ -8399,7 +8400,7 @@ class LayerTreeHostTestImageAnimationSynchronousSchedulingSoftwareDraw
  public:
   LayerTreeHostTestImageAnimationSynchronousSchedulingSoftwareDraw()
       : LayerTreeHostTestImageAnimationSynchronousScheduling(
-            RENDERER_SOFTWARE) {}
+            TestRendererType::kSoftware) {}
 
   void AfterTest() override {
     LayerTreeHostTestImageAnimationSynchronousScheduling::AfterTest();

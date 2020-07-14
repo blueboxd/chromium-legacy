@@ -24,6 +24,7 @@ android_library("java") {
     "//base:jni_java",
     "//components/embedder_support/android:util_java",
     "//components/navigation_interception/android:navigation_interception_java",
+    "//components/webapk/android/libs/client:java",
     "//content/public/android:content_java",
     "//services/network/public/mojom:mojom_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",

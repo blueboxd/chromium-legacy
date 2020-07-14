@@ -1227,4 +1227,37 @@ TEST_F(AXTreeSourceArcTest, EventWithWrongSourceId) {
   CallNotifyAccessibilityEvent(event.get());
 }
 
+TEST_F(AXTreeSourceArcTest, EnsureNodeIdMapCleared) {
+  auto event = AXEventData::New();
+  event->source_id = 1;
+  event->task_id = 1;
+
+  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
+  event->window_data->push_back(AXWindowInfoData::New());
+  AXWindowInfoData* root_window = event->window_data->back().get();
+  root_window->window_id = 2;
+  root_window->root_node_id = 1;
+
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* node = event->node_data.back().get();
+  node->id = 1;
+
+  event->event_type = AXEventType::VIEW_SELECTED;
+  CallNotifyAccessibilityEvent(event.get());
+
+  // Ensures that the first event is dropped while handling it.
+  EXPECT_EQ(0, GetDispatchedEventCount(ax::mojom::Event::kFocus));
+  EXPECT_EQ(0, GetDispatchedEventCount(ax::mojom::Event::kValueChanged));
+
+  event->event_type = AXEventType::WINDOW_CONTENT_CHANGED;
+  // Swaps ids of node and root_window.
+  event->source_id = 2;
+  root_window->window_id = 1;
+  root_window->root_node_id = 2;
+  node->id = 2;
+
+  // If the previous node id mapping remains, this will enter infinite loop.
+  CallNotifyAccessibilityEvent(event.get());
+}
+
 }  // namespace arc

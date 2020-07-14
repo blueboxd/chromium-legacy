@@ -132,6 +132,10 @@ bool WasStartedInBackgroundOptionalEventInForeground(
           event.value() <= delegate.GetFirstBackgroundTime().value());
 }
 
+bool WasInForeground(const PageLoadMetricsObserverDelegate& delegate) {
+  return delegate.StartedInForeground() || delegate.GetFirstForegroundTime();
+}
+
 PageAbortInfo GetPageAbortInfo(
     const PageLoadMetricsObserverDelegate& delegate) {
   if (IsBackgroundAbort(delegate)) {

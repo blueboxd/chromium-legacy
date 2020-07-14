@@ -8,15 +8,8 @@
 
 namespace ui {
 
-bool AXActionHandler::RequiresPerformActionPointInPixels() const {
-  return false;
-}
-
 AXActionHandler::AXActionHandler()
-    : tree_id_(AXTreeIDRegistry::GetInstance()->GetOrCreateAXTreeID(this)) {}
-
-AXActionHandler::~AXActionHandler() {
-  AXTreeIDRegistry::GetInstance()->RemoveAXTreeID(tree_id_);
-}
+    : AXActionHandlerBase(
+          AXTreeIDRegistry::GetInstance()->GetOrCreateAXTreeID(this)) {}
 
 }  // namespace ui

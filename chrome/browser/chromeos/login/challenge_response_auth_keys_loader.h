@@ -9,6 +9,9 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "chromeos/login/auth/challenge_response_key.h"
 #include "net/ssl/client_cert_identity.h"
 
@@ -26,7 +29,7 @@ namespace chromeos {
 // (which is the responsibility of this class) and for forwarding the challenge
 // requests to the component that talks to the cryptographic token (which is the
 // responsibility of CryptohomeKeyDelegateServiceProvider).
-class ChallengeResponseAuthKeysLoader final {
+class ChallengeResponseAuthKeysLoader final : public ProfileObserver {
  public:
   using LoadAvailableKeysCallback = base::OnceCallback<void(
       std::vector<ChallengeResponseKey> challenge_response_keys)>;
@@ -40,7 +43,7 @@ class ChallengeResponseAuthKeysLoader final {
       delete;
   ChallengeResponseAuthKeysLoader& operator=(
       const ChallengeResponseAuthKeysLoader&) = delete;
-  ~ChallengeResponseAuthKeysLoader();
+  ~ChallengeResponseAuthKeysLoader() override;
 
   // Prepares the ChallengeResponseKey values containing the currently available
   // cryptographic keys that can be used to authenticate the given user. If
@@ -57,6 +60,9 @@ class ChallengeResponseAuthKeysLoader final {
   void SetMaxWaitTimeForTesting(base::TimeDelta time) {
     maximum_extension_load_waiting_time_ = time;
   }
+
+  // ProfileObserver:
+  void OnProfileWillBeDestroyed(Profile* profile) override;
 
  private:
   // Asynchronous job which is scheduled by LoadAvailableKeys after all
@@ -76,6 +82,11 @@ class ChallengeResponseAuthKeysLoader final {
       net::ClientCertIdentityList cert_identities);
 
   base::TimeDelta maximum_extension_load_waiting_time_;
+
+  // Whether the sign-in profile is destroyed.
+  bool profile_is_destroyed_ = false;
+
+  ScopedObserver<Profile, ProfileObserver> profile_subscription_{this};
 
   base::WeakPtrFactory<ChallengeResponseAuthKeysLoader> weak_ptr_factory_{this};
 };

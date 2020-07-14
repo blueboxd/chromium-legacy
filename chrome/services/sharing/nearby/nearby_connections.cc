@@ -4,27 +4,50 @@
 
 #include "chrome/services/sharing/nearby/nearby_connections.h"
 
+#include "base/run_loop.h"
+
 namespace location {
 namespace nearby {
 namespace connections {
 
+// Should only be accessed by objects within lifetime of NearbyConnections.
+NearbyConnections* g_instance = nullptr;
+
+// static
+NearbyConnections& NearbyConnections::GetInstance() {
+  DCHECK(g_instance);
+  return *g_instance;
+}
+
 NearbyConnections::NearbyConnections(
     mojo::PendingReceiver<mojom::NearbyConnections> nearby_connections,
-    mojo::PendingRemote<mojom::NearbyConnectionsHost> host,
+    mojom::NearbyConnectionsDependenciesPtr dependencies,
     base::OnceClosure on_disconnect)
     : nearby_connections_(this, std::move(nearby_connections)),
-      host_(std::move(host)),
       on_disconnect_(std::move(on_disconnect)) {
   nearby_connections_.set_disconnect_handler(base::BindOnce(
       &NearbyConnections::OnDisconnect, weak_ptr_factory_.GetWeakPtr()));
-  host_.set_disconnect_handler(base::BindOnce(&NearbyConnections::OnDisconnect,
-                                              weak_ptr_factory_.GetWeakPtr()));
-  host_->GetBluetoothAdapter(
-      base::BindOnce(&NearbyConnections::OnGetBluetoothAdapter,
-                     weak_ptr_factory_.GetWeakPtr()));
+
+  if (dependencies->bluetooth_adapter) {
+    bluetooth_adapter_.Bind(std::move(dependencies->bluetooth_adapter));
+    bluetooth_adapter_.set_disconnect_handler(base::BindOnce(
+        &NearbyConnections::OnDisconnect, weak_ptr_factory_.GetWeakPtr()));
+  }
+  webrtc_signaling_messenger_.Bind(
+      std::move(dependencies->webrtc_signaling_messenger));
+  webrtc_signaling_messenger_.set_disconnect_handler(base::BindOnce(
+      &NearbyConnections::OnDisconnect, weak_ptr_factory_.GetWeakPtr()));
+
+  // There should only be one instance of NearbyConnections in a process.
+  DCHECK(!g_instance);
+  g_instance = this;
+  // TODO(alexchau): Create Core here after g_instance is set.
 }
 
-NearbyConnections::~NearbyConnections() = default;
+NearbyConnections::~NearbyConnections() {
+  // TODO(alexhcau): Destroy Core here before g_instance is reset.
+  g_instance = nullptr;
+}
 
 void NearbyConnections::OnDisconnect() {
   if (on_disconnect_)
@@ -32,24 +55,19 @@ void NearbyConnections::OnDisconnect() {
   // Note: |this| might be destroyed here.
 }
 
-void NearbyConnections::OnGetBluetoothAdapter(
-    mojo::PendingRemote<::bluetooth::mojom::Adapter> pending_remote_adapter) {
-  if (!pending_remote_adapter.is_valid()) {
-    VLOG(1) << __func__
-            << " Received invalid Bluetooh adapter in utility process";
-    return;
-  }
+bluetooth::mojom::Adapter* NearbyConnections::GetBluetoothAdapter() {
+  if (!bluetooth_adapter_.is_bound())
+    return nullptr;
 
-  VLOG(1) << __func__ << " Received Bluetooh adapter in utility process";
+  return bluetooth_adapter_.get();
+}
 
-  bluetooth_adapter_.Bind(std::move(pending_remote_adapter));
-  bluetooth_adapter_->GetInfo(
-      base::BindOnce([](bluetooth::mojom::AdapterInfoPtr info) {
-        VLOG(1) << __func__ << "Bluetooh AdapterInfo name: '" << info->name
-                << "' system_name: '" << info->system_name << "' address: '"
-                << info->address << "' present: " << info->present
-                << " powered: " << info->powered;
-      }));
+sharing::mojom::WebRtcSignalingMessenger*
+NearbyConnections::GetWebRtcSignalingMessenger() {
+  if (!webrtc_signaling_messenger_.is_bound())
+    return nullptr;
+
+  return webrtc_signaling_messenger_.get();
 }
 
 }  // namespace connections

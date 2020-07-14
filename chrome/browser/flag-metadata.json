@@ -1031,7 +1031,7 @@
   {
     "name": "display-identification",
     "owners": [ "baileyberro", "cros-peripherals@google.com" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 89
   },
   {
     "name": "dlc-settings-ui",

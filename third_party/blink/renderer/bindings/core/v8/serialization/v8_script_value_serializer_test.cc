@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/mojo/mojo_handle.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
+#include "third_party/blink/renderer/core/streams/transform_stream.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
@@ -1904,6 +1905,63 @@ TEST(V8ScriptValueSerializerTest, RoundTripReadableStream) {
   EXPECT_NE(rs, transferred);
   EXPECT_TRUE(rs->locked());
   EXPECT_FALSE(transferred->locked());
+}
+
+TEST(V8ScriptValueSerializerTest, TransformStreamIntegerOverflow) {
+  ScopedTransferableStreamsForTest enable_transferable_streams(true);
+
+  V8TestingScope scope;
+  auto* isolate = scope.GetIsolate();
+  auto* script_state = scope.GetScriptState();
+
+  // Create a real SerializedScriptValue so that the MessagePorts are set up
+  // properly.
+  auto* ts = TransformStream::Create(script_state, ASSERT_NO_EXCEPTION);
+  v8::Local<v8::Value> wrapper = ToV8(ts, script_state);
+  HeapVector<ScriptValue> transferable_array = {ScriptValue(isolate, wrapper)};
+  Transferables transferables;
+  ASSERT_TRUE(SerializedScriptValue::ExtractTransferables(
+      isolate, transferable_array, transferables, ASSERT_NO_EXCEPTION));
+
+  // Extract message ports and disentangle them.
+  Vector<MessagePortChannel> channels = MessagePort::DisentanglePorts(
+      scope.GetExecutionContext(), transferables.message_ports,
+      ASSERT_NO_EXCEPTION);
+
+  V8ScriptValueSerializer::Options serialize_options;
+  serialize_options.transferables = &transferables;
+  V8ScriptValueSerializer serializer(script_state, serialize_options);
+  scoped_refptr<SerializedScriptValue> serialized_script_value =
+      serializer.Serialize(wrapper, ASSERT_NO_EXCEPTION);
+  ASSERT_TRUE(serialized_script_value);
+
+  // Now create a corrupted SerializedScriptValue using the same message ports.
+  // The final 5 bytes is the offset of the two message ports inside the
+  // transferred message port array. In order to trigger integer overflow this
+  // is set to 0xffffffff, encoded as a varint.
+  char serialized_value[] = {0xff, 0x14, 0xff, 0x0d, 0x5c, 0x6d,
+                             0xff, 0xff, 0xff, 0xff, 0x0f};
+
+  auto corrupted_serialized_script_value =
+      SerializedScriptValue::Create(serialized_value, sizeof(serialized_value));
+  corrupted_serialized_script_value->GetStreamChannels() =
+      serialized_script_value->GetStreamChannels();
+
+  // Entangle the message ports.
+  MessagePortArray* transferred_message_ports = MessagePort::EntanglePorts(
+      *scope.GetExecutionContext(), std::move(channels));
+
+  UnpackedSerializedScriptValue* unpacked = SerializedScriptValue::Unpack(
+      std::move(corrupted_serialized_script_value));
+  V8ScriptValueDeserializer::Options deserialize_options;
+  deserialize_options.message_ports = transferred_message_ports;
+  V8ScriptValueDeserializer deserializer(script_state, unpacked,
+                                         deserialize_options);
+  // If this doesn't crash then the test succeeded.
+  v8::Local<v8::Value> result = deserializer.Deserialize();
+
+  // Deserialization should have failed.
+  EXPECT_TRUE(result->IsNull());
 }
 
 TEST(V8ScriptValueSerializerTest, RoundTripDOMException) {

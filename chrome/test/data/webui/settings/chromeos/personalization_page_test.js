@@ -2,9 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://os-settings/chromeos/os_settings.js';
+
+// #import {WallpaperBrowserProxyImpl, routes, Router} from 'chrome://os-settings/chromeos/os_settings.js';
+// #import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {TestWallpaperBrowserProxy} from './test_wallpaper_browser_proxy.m.js';
+// clang-format on
+
 let personalizationPage = null;
 
-/** @type {?TestWallpaperBrowserProxy} */
+/** @type {?settings.TestWallpaperBrowserProxy} */
 let WallpaperBrowserProxy = null;
 
 function createPersonalizationPage() {
@@ -39,7 +48,7 @@ suite('PersonalizationHandler', function() {
   });
 
   setup(function() {
-    WallpaperBrowserProxy = new TestWallpaperBrowserProxy();
+    WallpaperBrowserProxy = new settings.TestWallpaperBrowserProxy();
     settings.WallpaperBrowserProxyImpl.instance_ = WallpaperBrowserProxy;
     createPersonalizationPage();
   });
@@ -88,12 +97,16 @@ suite('PersonalizationHandler', function() {
   });
 
   test('ambientMode', function() {
-    const row = personalizationPage.$$('#ambientModeRow');
-    assertTrue(!!row);
-    row.click();
-    assertEquals(
-        settings.routes.AMBIENT_MODE,
-        settings.Router.getInstance().getCurrentRoute());
-  });
+    const isGuest = loadTimeData.getBoolean('isGuest');
+    const isAmbientModeEnabled = loadTimeData.getBoolean('isAmbientModeEnabled');
 
+    if(!isGuest && isAmbientModeEnabled){
+      const row = personalizationPage.$$('#ambientModeRow');
+      assertTrue(!!row);
+      row.click();
+      assertEquals(
+          settings.routes.AMBIENT_MODE,
+          settings.Router.getInstance().getCurrentRoute());
+    }
+  });
 });

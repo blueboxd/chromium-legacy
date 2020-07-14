@@ -691,6 +691,15 @@ interface RemoteFrameHost {
                     mojo_base.mojom.String16 source_origin,
                     mojo_base.mojom.String16 target_origin,
                     blink.mojom.TransferableMessage message);
+
+  // Ask the frame host to print a cross-process subframe.
+  // The printed content of this subframe belongs to the document specified by
+  // its document cookie. Document cookie is a unique id for a printed document
+  // associated with a print job.
+  // The content will be rendered in the specified rectangular area in its
+  // parent frame.
+  PrintCrossProcessSubframe(
+      gfx.mojom.Rect frame_content_rect, int32 document_cookie);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

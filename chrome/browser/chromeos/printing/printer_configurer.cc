@@ -111,7 +111,7 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
                     PrinterSetupCallback callback) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     DCHECK(!printer.id().empty());
-    DCHECK(!printer.uri().empty());
+    DCHECK(printer.HasUri());
     PRINTER_LOG(USER) << printer.make_and_model() << " Printer setup requested";
     // Record if autoconf and a PPD are set.  crbug.com/814374.
     RecordValidPpdReference(printer);
@@ -130,7 +130,7 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
                        << " Attempting autoconf setup";
     auto* client = DBusThreadManager::Get()->GetDebugDaemonClient();
     client->CupsAddAutoConfiguredPrinter(
-        printer.id(), printer.uri(),
+        printer.id(), printer.uri().GetNormalized(),
         base::BindOnce(&PrinterConfigurerImpl::OnAddedPrinter,
                        weak_factory_.GetWeakPtr(), printer,
                        std::move(callback)));
@@ -160,7 +160,7 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
 
     PRINTER_LOG(EVENT) << printer.make_and_model() << " Manual printer setup";
     client->CupsAddManuallyConfiguredPrinter(
-        printer.id(), printer.uri(), ppd_contents,
+        printer.id(), printer.uri().GetNormalized(), ppd_contents,
         base::BindOnce(&PrinterConfigurerImpl::OnAddedPrinter,
                        weak_factory_.GetWeakPtr(), printer, std::move(cb)));
   }
@@ -205,7 +205,7 @@ std::string PrinterConfigurer::SetupFingerprint(const Printer& printer) {
   base::MD5Context ctx;
   base::MD5Init(&ctx);
   base::MD5Update(&ctx, printer.id());
-  base::MD5Update(&ctx, printer.uri());
+  base::MD5Update(&ctx, printer.uri().GetNormalized());
   base::MD5Update(&ctx, printer.ppd_reference().user_supplied_ppd_url);
   base::MD5Update(&ctx, printer.ppd_reference().effective_make_and_model);
   char autoconf = printer.ppd_reference().autoconf ? 1 : 0;

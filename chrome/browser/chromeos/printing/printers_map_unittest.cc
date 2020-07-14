@@ -192,27 +192,27 @@ TEST_F(PrintersMapTest, GetSecurePrintersOnlyReturnsSecurePrinters) {
   PrintersMap printers_map;
 
   Printer ipp_printer = Printer("ipp");
-  ipp_printer.set_uri("ipp:printer");
+  ipp_printer.SetUri("ipp://printer");
   printers_map.Insert(PrinterClass::kSaved, ipp_printer);
 
   Printer ipps_printer = Printer("ipps");
-  ipps_printer.set_uri("ipps:printer");
+  ipps_printer.SetUri("ipps://printer");
   printers_map.Insert(PrinterClass::kAutomatic, ipps_printer);
 
   Printer usb_printer = Printer("usb");
-  usb_printer.set_uri("usb:printer");
+  usb_printer.SetUri("usb://printer/path");
   printers_map.Insert(PrinterClass::kDiscovered, usb_printer);
 
   Printer ippusb_printer = Printer("ippusb");
-  ippusb_printer.set_uri("ippusb:printer");
+  ippusb_printer.SetUri("ippusb://printer/path");
   printers_map.Insert(PrinterClass::kEnterprise, ippusb_printer);
 
   Printer http_printer = Printer("http");
-  http_printer.set_uri("http:printer");
+  http_printer.SetUri("http://printer");
   printers_map.Insert(PrinterClass::kDiscovered, http_printer);
 
   Printer https_printer = Printer("https");
-  https_printer.set_uri("https://printer");
+  https_printer.SetUri("https://printer");
   printers_map.Insert(PrinterClass::kDiscovered, https_printer);
 
   // Only HTTPS, IPPS, IPPUSB, and USB printers are returned.
@@ -242,23 +242,23 @@ TEST_F(PrintersMapTest, GetSecurePrintersInClassOnlyReturnsSecurePrinters) {
   PrintersMap printers_map;
 
   Printer ipp_printer = Printer("ipp");
-  ipp_printer.set_uri("ipp:printer");
+  ipp_printer.SetUri("ipp://printer");
   printers_map.Insert(PrinterClass::kSaved, ipp_printer);
 
   Printer ipps_printer = Printer("ipps");
-  ipps_printer.set_uri("ipps:printer");
+  ipps_printer.SetUri("ipps://printer");
   printers_map.Insert(PrinterClass::kSaved, ipps_printer);
 
   Printer usb_printer = Printer("usb");
-  usb_printer.set_uri("usb:printer");
+  usb_printer.SetUri("usb://printer/path");
   printers_map.Insert(PrinterClass::kSaved, usb_printer);
 
   Printer ippusb_printer = Printer("ippusb");
-  ippusb_printer.set_uri("ippusb:printer");
+  ippusb_printer.SetUri("ippusb://printer/path");
   printers_map.Insert(PrinterClass::kSaved, ippusb_printer);
 
   Printer http_printer = Printer("http");
-  http_printer.set_uri("http:printer");
+  http_printer.SetUri("http://printer");
   printers_map.Insert(PrinterClass::kSaved, http_printer);
 
   // Only IPPS, IPPUSB, and USB printers are returned.
@@ -507,7 +507,7 @@ TEST_F(PrintersMapTest, GetSecurePrintersWithStatus) {
   PrintersMap printers_map;
   const std::string printer_id = "id";
   Printer ipps_printer = Printer(printer_id);
-  ipps_printer.set_uri("ipps:printer");
+  ipps_printer.SetUri("ipps://printer");
   printers_map.Insert(PrinterClass::kDiscovered, ipps_printer);
 
   CupsPrinterStatus saved_printer_status = CreatePrinterStatus(printer_id);

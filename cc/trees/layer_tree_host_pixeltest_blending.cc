@@ -213,7 +213,7 @@ class LayerTreeHostBlendingPixelTest
     const int kRootHeight = kRootWidth * kCSSTestColorsCount;
 
     // Force shaders only applies to gl renderer.
-    if (renderer_type_ != RENDERER_GL && flags & kForceShaders)
+    if (renderer_type_ != TestRendererType::kGL && flags & kForceShaders)
       return;
 
     SCOPED_TRACE(TestTypeToString());
@@ -232,8 +232,8 @@ class LayerTreeHostBlendingPixelTest
     force_antialiasing_ = (flags & kUseAntialiasing);
     force_blending_with_shaders_ = (flags & kForceShaders);
 
-    if ((renderer_type_ == RENDERER_GL && force_antialiasing_) ||
-        renderer_type_ == RENDERER_SKIA_VK) {
+    if ((renderer_type_ == TestRendererType::kGL && force_antialiasing_) ||
+        renderer_type_ == TestRendererType::kSkiaVk) {
       // Blending results might differ with one pixel.
       float percentage_pixels_error = 35.f;
       float percentage_pixels_small_error = 0.f;
@@ -260,11 +260,11 @@ class LayerTreeHostBlendingPixelTest
 };
 
 std::vector<PixelResourceTestCase> const kTestCases = {
-    {LayerTreeTest::RENDERER_SOFTWARE, TestRasterType::kBitmap},
-    {LayerTreeTest::RENDERER_GL, TestRasterType::kZeroCopy},
-    {LayerTreeTest::RENDERER_SKIA_GL, TestRasterType::kGpu},
+    {TestRendererType::kSoftware, TestRasterType::kBitmap},
+    {TestRendererType::kGL, TestRasterType::kZeroCopy},
+    {TestRendererType::kSkiaGL, TestRasterType::kGpu},
 #if defined(ENABLE_CC_VULKAN_TESTS)
-    {LayerTreeTest::RENDERER_SKIA_VK, TestRasterType::kOop},
+    {TestRendererType::kSkiaVk, TestRasterType::kOop},
 #endif  // defined(ENABLE_CC_VULKAN_TESTS)
 };
 

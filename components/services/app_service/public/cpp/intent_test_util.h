@@ -19,6 +19,16 @@ apps::mojom::IntentFilterPtr CreateSchemeAndHostOnlyFilter(
     const std::string& scheme,
     const std::string& host);
 
+// Create intent filter for send action.
+apps::mojom::IntentFilterPtr CreateIntentFilterForSend(
+    const std::string& mime_types,
+    const std::string& activity_name = "");
+// Create intent filter for send multiple action.
+
+apps::mojom::IntentFilterPtr CreateIntentFilterForSendMultiple(
+    const std::string& mime_types,
+    const std::string& activity_name = "");
+
 }  // namespace apps_util
 
 #endif  // COMPONENTS_SERVICES_APP_SERVICE_PUBLIC_CPP_INTENT_TEST_UTIL_H_

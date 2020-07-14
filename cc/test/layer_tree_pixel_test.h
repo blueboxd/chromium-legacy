@@ -51,7 +51,7 @@ enum class TestRasterType {
 
 class LayerTreePixelTest : public LayerTreeTest {
  protected:
-  explicit LayerTreePixelTest(RendererType renderer_type);
+  explicit LayerTreePixelTest(TestRendererType renderer_type);
   ~LayerTreePixelTest() override;
 
   // LayerTreeTest overrides.

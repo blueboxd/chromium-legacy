@@ -4,6 +4,7 @@
 
 #include "ash/login/ui/lock_screen.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -43,6 +44,14 @@ LockScreen::TestApi::~TestApi() = default;
 
 LockContentsView* LockScreen::TestApi::contents_view() const {
   return lock_screen_->contents_view_;
+}
+
+void LockScreen::TestApi::AddOnShownCallback(base::OnceClosure on_shown) {
+  if (lock_screen_->is_shown_) {
+    std::move(on_shown).Run();
+    return;
+  }
+  lock_screen_->on_shown_callbacks_.push_back(std::move(on_shown));
 }
 
 LockScreen::LockScreen(ScreenType type) : type_(type) {
@@ -103,13 +112,7 @@ void LockScreen::Show(ScreenType type) {
   // completes, to make the transition smooth. The callback will be dispatched
   // immediately if the animation is already complete (e.g. kLock).
   Shell::Get()->wallpaper_controller()->AddFirstWallpaperAnimationEndCallback(
-      base::BindOnce([]() {
-        // |instance_| may already be destroyed in tests.
-        if (!instance_ || instance_->is_shown_)
-          return;
-        instance_->is_shown_ = true;
-        instance_->widget_->Show();
-      }),
+      base::BindOnce(&LockScreen::ShowWidgetUponWallpaperReady),
       instance_->widget_->GetNativeView());
 }
 
@@ -174,6 +177,20 @@ void LockScreen::OnLockStateChanged(bool locked) {
 
 void LockScreen::OnChromeTerminating() {
   Destroy();
+}
+
+// static
+void LockScreen::ShowWidgetUponWallpaperReady() {
+  // |instance_| may already be destroyed in tests.
+  if (!instance_ || instance_->is_shown_)
+    return;
+  instance_->is_shown_ = true;
+  instance_->widget_->Show();
+
+  std::vector<base::OnceClosure> on_shown_callbacks;
+  swap(instance_->on_shown_callbacks_, on_shown_callbacks);
+  for (auto& callback : on_shown_callbacks)
+    std::move(callback).Run();
 }
 
 }  // namespace ash

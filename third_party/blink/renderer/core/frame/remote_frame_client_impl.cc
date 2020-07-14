@@ -140,11 +140,6 @@ void RemoteFrameClientImpl::UpdateRemoteViewportIntersection(
   web_frame_->Client()->UpdateRemoteViewportIntersection(intersection_state);
 }
 
-uint32_t RemoteFrameClientImpl::Print(const IntRect& rect,
-                                      cc::PaintCanvas* canvas) const {
-  return web_frame_->Client()->Print(rect, canvas);
-}
-
 AssociatedInterfaceProvider*
 RemoteFrameClientImpl::GetRemoteAssociatedInterfaces() {
   return web_frame_->Client()->GetRemoteAssociatedInterfaces();

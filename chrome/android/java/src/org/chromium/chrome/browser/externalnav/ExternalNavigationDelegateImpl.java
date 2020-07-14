@@ -38,7 +38,6 @@ import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.components.external_intents.ExternalNavigationParams;
 import org.chromium.components.external_intents.RedirectHandler;
-import org.chromium.components.webapk.lib.client.WebApkValidator;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
@@ -333,11 +332,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     @Override
     public boolean isIntentToAutofillAssistant(Intent intent) {
         return AutofillAssistantFacade.isAutofillAssistantByIntentTriggeringEnabled(intent);
-    }
-
-    @Override
-    public boolean isValidWebApk(String packageName) {
-        return WebApkValidator.isValidWebApk(ContextUtils.getApplicationContext(), packageName);
     }
 
     @Override

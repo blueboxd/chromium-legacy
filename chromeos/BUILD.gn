@@ -73,8 +73,6 @@ component("chromeos") {
     "printing/printer_translator.h",
     "printing/uri.cc",
     "printing/uri.h",
-    "printing/uri_components.cc",
-    "printing/uri_components.h",
     "printing/uri_impl.cc",
     "printing/uri_impl.h",
     "printing/usb_printer_id.cc",

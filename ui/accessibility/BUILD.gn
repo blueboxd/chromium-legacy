@@ -94,6 +94,8 @@ jumbo_component("accessibility") {
     "ax_action_data.h",
     "ax_action_handler.cc",
     "ax_action_handler.h",
+    "ax_action_handler_base.cc",
+    "ax_action_handler_base.h",
     "ax_action_target.h",
     "ax_active_popup.cc",
     "ax_active_popup.h",

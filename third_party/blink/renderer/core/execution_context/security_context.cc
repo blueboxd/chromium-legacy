@@ -28,10 +28,12 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
+#include "third_party/blink/public/common/feature_policy/document_policy.h"
 #include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/policy_value.mojom-blink.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/execution_context/security_context_init.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -56,7 +58,11 @@ WTF::Vector<unsigned> SecurityContext::SerializeInsecureNavigationSet(
 }
 
 SecurityContext::SecurityContext(SecurityContextType context_type)
-    : context_type_for_asserts_(context_type) {}
+    : insecure_request_policy_(
+          mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone),
+      context_type_for_asserts_(context_type) {}
+
+SecurityContext::~SecurityContext() = default;
 
 void SecurityContext::Initialize(const SecurityContextInit& init) {
   if (security_origin_) {
@@ -157,6 +163,16 @@ void SecurityContext::SetFeaturePolicy(
 void SecurityContext::SetReportOnlyFeaturePolicy(
     std::unique_ptr<FeaturePolicy> feature_policy) {
   report_only_feature_policy_ = std::move(feature_policy);
+}
+
+void SecurityContext::SetDocumentPolicy(
+    std::unique_ptr<DocumentPolicy> policy) {
+  document_policy_ = std::move(policy);
+}
+
+void SecurityContext::SetReportOnlyDocumentPolicy(
+    std::unique_ptr<DocumentPolicy> policy) {
+  report_only_document_policy_ = std::move(policy);
 }
 
 bool SecurityContext::IsFeatureEnabled(

@@ -42,6 +42,12 @@ declare_args() {
   root_extra_deps = []
 }
 
+# Ninja's console pool
+# https://ninja-build.org/manual.html#_the_literal_console_literal_pool
+pool("console") {
+  depth = 1
+}
+
 if (is_official_build) {
   # An official (maximally optimized!) component (optimized for build times)
   # build doesn't make sense and usually doesn't work.

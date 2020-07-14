@@ -15,10 +15,6 @@
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 
-namespace cc {
-class PaintCanvas;
-}
-
 namespace blink {
 class AssociatedInterfaceProvider;
 class IntRect;
@@ -48,8 +44,6 @@ class RemoteFrameClient : public FrameClient {
 
   virtual void UpdateRemoteViewportIntersection(
       const ViewportIntersectionState& intersection_state) = 0;
-
-  virtual uint32_t Print(const IntRect&, cc::PaintCanvas*) const = 0;
 
   virtual AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() = 0;
 };

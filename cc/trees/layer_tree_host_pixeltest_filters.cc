@@ -20,25 +20,25 @@ namespace {
 
 class LayerTreeHostFiltersPixelTest
     : public LayerTreePixelTest,
-      public ::testing::WithParamInterface<LayerTreeTest::RendererType> {
+      public ::testing::WithParamInterface<TestRendererType> {
  protected:
   LayerTreeHostFiltersPixelTest() : LayerTreePixelTest(renderer_type()) {}
 
-  RendererType renderer_type() const { return GetParam(); }
+  TestRendererType renderer_type() const { return GetParam(); }
 
-  // Text string for graphics backend of the RendererType. Suitable for
+  // Text string for graphics backend of the TestRendererType. Suitable for
   // generating separate base line file paths.
   const char* GetRendererSuffix() {
     switch (renderer_type_) {
-      case RENDERER_GL:
+      case TestRendererType::kGL:
         return "gl";
-      case RENDERER_SKIA_GL:
+      case TestRendererType::kSkiaGL:
         return "skia_gl";
-      case RENDERER_SKIA_VK:
+      case TestRendererType::kSkiaVk:
         return "skia_vk";
-      case RENDERER_SKIA_DAWN:
+      case TestRendererType::kSkiaDawn:
         return "skia_dawn";
-      case RENDERER_SOFTWARE:
+      case TestRendererType::kSoftware:
         return "sw";
     }
   }
@@ -72,14 +72,14 @@ class LayerTreeHostFiltersPixelTest
   }
 };
 
-LayerTreeTest::RendererType const kRendererTypes[] = {
-    LayerTreeTest::RENDERER_GL,        LayerTreeTest::RENDERER_SKIA_GL,
-    LayerTreeTest::RENDERER_SOFTWARE,
+TestRendererType const kRendererTypes[] = {
+    TestRendererType::kGL,       TestRendererType::kSkiaGL,
+    TestRendererType::kSoftware,
 #if defined(ENABLE_CC_VULKAN_TESTS)
-    LayerTreeTest::RENDERER_SKIA_VK,
+    TestRendererType::kSkiaVk,
 #endif  // defined(ENABLE_CC_VULKAN_TESTS)
 #if defined(ENABLE_CC_DAWN_TESTS)
-    LayerTreeTest::RENDERER_SKIA_DAWN,
+    TestRendererType::kSkiaDawn,
 #endif  // defined(ENABLE_CC_DAWN_TESTS)
 };
 
@@ -89,14 +89,14 @@ INSTANTIATE_TEST_SUITE_P(All,
 
 using LayerTreeHostFiltersPixelTestGPU = LayerTreeHostFiltersPixelTest;
 
-LayerTreeTest::RendererType const kRendererTypesGpu[] = {
-    LayerTreeTest::RENDERER_GL,
-    LayerTreeTest::RENDERER_SKIA_GL,
+TestRendererType const kRendererTypesGpu[] = {
+    TestRendererType::kGL,
+    TestRendererType::kSkiaGL,
 #if defined(ENABLE_CC_VULKAN_TESTS)
-    LayerTreeTest::RENDERER_SKIA_VK,
+    TestRendererType::kSkiaVk,
 #endif  // defined(ENABLE_CC_VULKAN_TESTS)
 #if defined(ENABLE_CC_DAWN_TESTS)
-    LayerTreeTest::RENDERER_SKIA_DAWN,
+    TestRendererType::kSkiaDawn,
 #endif  // defined(ENABLE_CC_DAWN_TESTS)
 };
 
@@ -382,11 +382,11 @@ class LayerTreeHostBlurFiltersPixelTestGPULayerList
 
 // TODO(sgilhuly): Enable these tests for Skia Dawn, and switch over to using
 // kRendererTypesGpu.
-LayerTreeTest::RendererType const kRendererTypesGpuNonDawn[] = {
-    LayerTreeTest::RENDERER_GL,
-    LayerTreeTest::RENDERER_SKIA_GL,
+TestRendererType const kRendererTypesGpuNonDawn[] = {
+    TestRendererType::kGL,
+    TestRendererType::kSkiaGL,
 #if defined(ENABLE_CC_VULKAN_TESTS)
-    LayerTreeTest::RENDERER_SKIA_VK,
+    TestRendererType::kSkiaVk,
 #endif  // defined(ENABLE_CC_VULKAN_TESTS)
 };
 
@@ -755,12 +755,12 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageRenderSurfaceScaled) {
 // kRendererTypes.
 using LayerTreeHostFiltersPixelTestNonDawn = LayerTreeHostFiltersPixelTest;
 
-LayerTreeTest::RendererType const kRendererTypesNonDawn[] = {
-    LayerTreeTest::RENDERER_GL,
-    LayerTreeTest::RENDERER_SKIA_GL,
-    LayerTreeTest::RENDERER_SOFTWARE,
+TestRendererType const kRendererTypesNonDawn[] = {
+    TestRendererType::kGL,
+    TestRendererType::kSkiaGL,
+    TestRendererType::kSoftware,
 #if defined(ENABLE_CC_VULKAN_TESTS)
-    LayerTreeTest::RENDERER_SKIA_VK,
+    TestRendererType::kSkiaVk,
 #endif  // defined(ENABLE_CC_VULKAN_TESTS)
 };
 
@@ -987,7 +987,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, TranslatedFilter) {
   parent->AddChild(child);
   clip->AddChild(parent);
 
-  if (use_software_renderer() || renderer_type_ == RENDERER_SKIA_DAWN)
+  if (use_software_renderer() || renderer_type_ == TestRendererType::kSkiaDawn)
     pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
 
   RunPixelTest(clip, base::FilePath(

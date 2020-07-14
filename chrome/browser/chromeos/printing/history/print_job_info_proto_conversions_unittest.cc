@@ -64,7 +64,7 @@ TEST(PrintJobInfoProtoConversionsTest, CupsPrintJobToProto) {
 
   chromeos::Printer printer;
   printer.set_display_name(kName);
-  printer.set_uri(kUri);
+  printer.SetUri(kUri);
   printer.set_source(chromeos::Printer::Source::SRC_POLICY);
 
   proto::PrintSettings settings;

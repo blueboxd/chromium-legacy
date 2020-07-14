@@ -587,7 +587,7 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(Bucket* bucket,
     memset(ret, 0, size_with_no_extras);
   }
 
-  if (allow_extras) {
+  if (allow_extras && !bucket->is_direct_mapped()) {
     // TODO(tasak): initialize tag randomly. Temporarily use
     // kTagTemporaryInitialValue to initialize the tag.
     internal::PartitionTagSetValue(ret, internal::kTagTemporaryInitialValue);
@@ -615,9 +615,9 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::Free(void* ptr) {
   // TODO(palmer): See if we can afford to make this a CHECK.
   PA_DCHECK(IsValidPage(page));
   auto* root = PartitionRoot<thread_safe>::FromPage(page);
-  if (root->allow_extras) {
+  if (root->allow_extras && !page->bucket->is_direct_mapped()) {
     // TODO(tasak): clear partition tag. Temporarily set the tag to be 0.
-    internal::PartitionTagSetValue(ptr, 0);
+    internal::PartitionTagClearValue(ptr);
   }
   ptr = internal::PartitionPointerAdjustSubtract(root->allow_extras, ptr);
   internal::DeferredUnmap deferred_unmap;

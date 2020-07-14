@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
@@ -198,6 +199,7 @@ public class AutofillAssistantNavigationIntegrationTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "Flaky - https://crbug.com/1104900")
     public void navigateActionDoesNotCauseError() {
         // Push something to navigation stack so we can use back and forth.
         ChromeTabUtils.loadUrlOnUiThread(

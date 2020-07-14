@@ -100,15 +100,30 @@ void RecordAppLaunchResultHistogram(crostini::CrostiniResult reason) {
   base::UmaHistogramEnumeration(kCrostiniAppLaunchResultHistogram, reason);
 }
 
-void OnLaunchFailed(const std::string& app_id,
-                    crostini::CrostiniResult reason) {
+void OnApplicationLaunched(const std::string& app_id,
+                           crostini::CrostiniSuccessCallback callback,
+                           const crostini::CrostiniResult failure_result,
+                           bool success,
+                           const std::string& failure_reason) {
   // Remove the spinner so it doesn't stay around forever.
-  // TODO(timloh): Consider also displaying a notification of some sort.
+  // TODO(timloh): Consider also displaying a notification of some sort for
+  // failure.
   ChromeLauncherController* chrome_controller =
       ChromeLauncherController::instance();
   DCHECK(chrome_controller);
   chrome_controller->GetShelfSpinnerController()->CloseSpinner(app_id);
-  RecordAppLaunchResultHistogram(reason);
+  RecordAppLaunchResultHistogram(success ? crostini::CrostiniResult::SUCCESS
+                                         : failure_result);
+  std::move(callback).Run(success, failure_reason);
+}
+
+void OnLaunchFailed(
+    const std::string& app_id,
+    crostini::CrostiniSuccessCallback callback,
+    const std::string& failure_reason,
+    crostini::CrostiniResult result = crostini::CrostiniResult::UNKNOWN_ERROR) {
+  OnApplicationLaunched(app_id, std::move(callback), result, false,
+                        failure_reason);
 }
 
 void OnCrostiniRestarted(Profile* profile,
@@ -122,21 +137,9 @@ void OnCrostiniRestarted(Profile* profile,
   }
 
   if (result != crostini::CrostiniResult::SUCCESS) {
-    return OnLaunchFailed(app_id, result);
+    OnLaunchFailed(app_id, base::DoNothing(), "", result);
   }
   std::move(callback).Run();
-}
-
-void OnApplicationLaunched(crostini::CrostiniSuccessCallback callback,
-                           const std::string& app_id,
-                           bool success,
-                           const std::string& failure_reason) {
-  if (!success) {
-    OnLaunchFailed(app_id, crostini::CrostiniResult::UNKNOWN_ERROR);
-  } else {
-    RecordAppLaunchResultHistogram(crostini::CrostiniResult::SUCCESS);
-  }
-  std::move(callback).Run(success, failure_reason);
 }
 
 void OnSharePathForLaunchApplication(
@@ -150,29 +153,26 @@ void OnSharePathForLaunchApplication(
     bool success,
     const std::string& failure_reason) {
   if (!success) {
-    OnLaunchFailed(app_id, crostini::CrostiniResult::UNKNOWN_ERROR);
-    return std::move(callback).Run(
-        success, success ? ""
-                         : "Failed to share paths to launch " + app_id + ":" +
-                               failure_reason);
+    return OnLaunchFailed(
+        app_id, std::move(callback),
+        "failed to share paths to launch " + app_id + ":" + failure_reason);
   }
-  crostini::ContainerId container_id(registration.VmName(),
-                                     registration.ContainerName());
+  const crostini::ContainerId container_id(registration.VmName(),
+                                           registration.ContainerName());
   if (app_id == kCrostiniTerminalSystemAppId) {
-    // Use first file as 'cwd', and manually close spinner for terminal.
+    // Use first file as 'cwd'.
     std::string cwd = !files.empty() ? files[0] : "";
-    ChromeLauncherController::instance()
-        ->GetShelfSpinnerController()
-        ->CloseSpinner(app_id);
     if (!LaunchTerminal(profile, display_id, container_id, cwd)) {
-      return OnApplicationLaunched(std::move(callback), app_id, false,
-                                   "failed to launch terminal");
+      return OnLaunchFailed(app_id, std::move(callback),
+                            "failed to launch terminal");
     }
-    return OnApplicationLaunched(std::move(callback), app_id, true, "");
+    return OnApplicationLaunched(app_id, std::move(callback),
+                                 crostini::CrostiniResult::SUCCESS, true, "");
   }
   crostini::CrostiniManager::GetForProfile(profile)->LaunchContainerApplication(
       container_id, registration.DesktopFileId(), files, display_scaled,
-      base::BindOnce(OnApplicationLaunched, std::move(callback), app_id));
+      base::BindOnce(OnApplicationLaunched, app_id, std::move(callback),
+                     crostini::CrostiniResult::UNKNOWN_ERROR));
 }
 
 void LaunchApplication(
@@ -201,9 +201,9 @@ void LaunchApplication(
     base::FilePath path;
     if (!file_manager::util::ConvertFileSystemURLToPathInsideCrostini(
             profile, url, &path)) {
-      OnLaunchFailed(app_id, crostini::CrostiniResult::UNKNOWN_ERROR);
-      return std::move(callback).Run(
-          false, "Cannot share file with crostini: " + url.DebugString());
+      return OnLaunchFailed(
+          app_id, std::move(callback),
+          "Cannot share file with crostini: " + url.DebugString());
     }
     if (url.mount_filesystem_id() !=
         file_manager::util::GetCrostiniMountPointName(profile)) {

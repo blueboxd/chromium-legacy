@@ -8,6 +8,30 @@
 #include <vector>
 
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
+#include "components/services/app_service/public/cpp/intent_util.h"
+
+namespace {
+
+apps::mojom::IntentFilterPtr CreateIntentFilterForShare(
+    const std::string& action,
+    const std::string& mime_type,
+    const std::string& activity_name) {
+  auto intent_filter = apps::mojom::IntentFilter::New();
+
+  apps_util::AddSingleValueCondition(
+      apps::mojom::ConditionType::kAction, action,
+      apps::mojom::PatternMatchType::kNone, intent_filter);
+
+  apps_util::AddSingleValueCondition(
+      apps::mojom::ConditionType::kMimeType, mime_type,
+      apps::mojom::PatternMatchType::kMimeType, intent_filter);
+
+  intent_filter->activity_name = activity_name;
+
+  return intent_filter;
+}
+
+}  // namespace
 
 namespace apps_util {
 
@@ -46,4 +70,17 @@ apps::mojom::IntentFilterPtr CreateSchemeAndHostOnlyFilter(
   return intent_filter;
 }
 
+apps::mojom::IntentFilterPtr CreateIntentFilterForSend(
+    const std::string& mime_type,
+    const std::string& activity_name) {
+  return CreateIntentFilterForShare(kIntentActionSend, mime_type,
+                                    activity_name);
+}
+
+apps::mojom::IntentFilterPtr CreateIntentFilterForSendMultiple(
+    const std::string& mime_type,
+    const std::string& activity_name) {
+  return CreateIntentFilterForShare(kIntentActionSendMultiple, mime_type,
+                                    activity_name);
+}
 }  // namespace apps_util

@@ -6,6 +6,7 @@ module printing.mojom;
 
 import "mojo/public/mojom/base/shared_memory.mojom";
 import "mojo/public/mojom/base/values.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 import "printing/mojom/print.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 
@@ -36,8 +37,9 @@ struct OptionsFromDocumentParams {
 struct DidPrintContentParams {
   // A shared memory region for the metafile data.
   mojo_base.mojom.ReadOnlySharedMemoryRegion metafile_data_region;
-  // Content id to render frame proxy id mapping for out-of-process subframes.
-  map<uint32, int32> subframe_content_info;
+  // Content id to render frame proxy token mapping for out-of-process
+  // subframes.
+  map<uint32, mojo_base.mojom.UnguessableToken> subframe_content_info;
 };
 
 // Parameters to describe the to-be-rendered preview document.

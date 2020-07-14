@@ -269,6 +269,7 @@ class CC_PAINT_EXPORT PaintImage {
     return paint_worklet_input_ ? nullptr : GetSkImageInfo().colorSpace();
   }
   bool isSRGB() const;
+  bool isHDR() const;
 
   // Returns whether this image will be decoded and rendered from YUV data
   // and fills out plane size info, plane index info, and the matrix for

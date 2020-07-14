@@ -123,6 +123,20 @@ source_set("publisher") {
   deps = [ "//components/services/app_service/public/mojom" ]
 }
 
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "intent_test_util.cc",
+    "intent_test_util.h",
+  ]
+
+  deps = [
+    ":intents",
+    "//components/services/app_service/public/mojom",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
 
@@ -131,8 +145,6 @@ source_set("unit_tests") {
     "app_update_unittest.cc",
     "icon_cache_unittest.cc",
     "icon_coalescer_unittest.cc",
-    "intent_test_util.cc",
-    "intent_test_util.h",
     "intent_util_unittest.cc",
     "preferred_apps_converter_unittest.cc",
     "preferred_apps_list_unittest.cc",
@@ -144,6 +156,7 @@ source_set("unit_tests") {
     ":intents",
     ":preferred_apps",
     ":publisher",
+    ":test_support",
     "//chrome/test:test_support",
     "//content/test:test_support",
     "//testing/gtest",

@@ -23,6 +23,10 @@
 #include <windows.h>
 #endif
 
+namespace base {
+class UnguessableToken;
+}  // namespace base
+
 namespace printing {
 
 struct MetafileSkiaData;
@@ -99,11 +103,12 @@ class PRINTING_EXPORT MetafileSkia : public Metafile {
   // For such a subframe, since the content is in another process, we create a
   // place holder picture now, and replace it with actual content by pdf
   // compositor service later.
-  uint32_t CreateContentForRemoteFrame(const gfx::Rect& rect,
-                                       int render_proxy_id);
+  uint32_t CreateContentForRemoteFrame(
+      const gfx::Rect& rect,
+      const base::UnguessableToken& render_proxy_token);
 
   int GetDocumentCookie() const;
-  const ContentToProxyIdMap& GetSubframeContentInfo() const;
+  const ContentToProxyTokenMap& GetSubframeContentInfo() const;
 
   void UtilizeTypefaceContext(ContentProxySet* typeface_content_info);
 
@@ -119,7 +124,7 @@ class PRINTING_EXPORT MetafileSkia : public Metafile {
   // The following three functions are used for tests only.
   void AppendPage(const SkSize& page_size, sk_sp<cc::PaintRecord> record);
   void AppendSubframeInfo(uint32_t content_id,
-                          int proxy_id,
+                          const base::UnguessableToken& proxy_token,
                           sk_sp<SkPicture> subframe_pic_holder);
   SkStreamAsset* GetPdfData() const;
 

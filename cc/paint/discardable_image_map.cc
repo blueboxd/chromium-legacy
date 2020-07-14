@@ -54,25 +54,9 @@ class DiscardableImageGenerator {
     return std::move(paint_worklet_inputs_);
   }
 
-  void RecordColorHistograms() const {
-    if (color_stats_total_image_count_ > 0) {
-      int srgb_image_percent = (100 * color_stats_srgb_image_count_) /
-                               color_stats_total_image_count_;
-      UMA_HISTOGRAM_PERCENTAGE("Renderer4.ImagesPercentSRGB",
-                               srgb_image_percent);
-    }
-
-    base::CheckedNumeric<int> srgb_pixel_percent =
-        100 * color_stats_srgb_pixel_count_ / color_stats_total_pixel_count_;
-    if (srgb_pixel_percent.IsValid()) {
-      UMA_HISTOGRAM_PERCENTAGE("Renderer4.ImagePixelsPercentSRGB",
-                               srgb_pixel_percent.ValueOrDie());
-    }
-  }
-
-  bool contains_only_srgb_images() const {
-    return color_stats_srgb_image_count_ == color_stats_total_image_count_;
-  }
+  bool contains_only_srgb_images() const { return contains_only_srgb_images_; }
+  bool contains_hbd_images() const { return contains_hbd_images_; }
+  bool contains_hdr_images() const { return contains_hdr_images_; }
 
  private:
   class ImageGatheringProvider : public ImageProvider {
@@ -259,15 +243,12 @@ class DiscardableImageGenerator {
       paint_worklet_inputs_.push_back(std::make_pair(
           paint_image.paint_worklet_input(), paint_image.stable_id()));
     } else {
-      // Make a note if any image was originally specified in a non-sRGB color
-      // space. PaintWorklets do not have the concept of a color space, so
-      // should not be used to accumulate either counter.
-      color_stats_total_pixel_count_ += image_rect.size().GetCheckedArea();
-      color_stats_total_image_count_++;
-      if (paint_image.isSRGB()) {
-        color_stats_srgb_pixel_count_ += image_rect.size().GetCheckedArea();
-        color_stats_srgb_image_count_++;
-      }
+      if (!paint_image.isSRGB())
+        contains_only_srgb_images_ = false;
+      if (paint_image.isHDR())
+        contains_hdr_images_ = true;
+      if (paint_image.is_high_bit_depth())
+        contains_hbd_images_ = true;
     }
 
     auto& rects = image_id_to_rects_[paint_image.stable_id()];
@@ -327,12 +308,9 @@ class DiscardableImageGenerator {
   base::flat_map<PaintImage::Id, PaintImage::DecodingMode> decoding_mode_map_;
   bool only_gather_animated_images_ = false;
 
-  // Statistics about the number of images and pixels that will require color
-  // conversion if the target color space is not sRGB.
-  int color_stats_srgb_image_count_ = 0;
-  int color_stats_total_image_count_ = 0;
-  base::CheckedNumeric<int64_t> color_stats_srgb_pixel_count_ = 0;
-  base::CheckedNumeric<int64_t> color_stats_total_pixel_count_ = 0;
+  bool contains_only_srgb_images_ = true;
+  bool contains_hbd_images_ = false;
+  bool contains_hdr_images_ = false;
 };
 
 }  // namespace
@@ -349,11 +327,12 @@ void DiscardableImageMap::Generate(const PaintOpBuffer* paint_op_buffer,
 
   DiscardableImageGenerator generator(bounds.right(), bounds.bottom(),
                                       paint_op_buffer);
-  generator.RecordColorHistograms();
   image_id_to_rects_ = generator.TakeImageIdToRectsMap();
   animated_images_metadata_ = generator.TakeAnimatedImagesMetadata();
   paint_worklet_inputs_ = generator.TakePaintWorkletInputs();
   decoding_mode_map_ = generator.TakeDecodingModeMap();
+  contains_hdr_images_ = generator.contains_hdr_images();
+  contains_hbd_images_ = generator.contains_hbd_images();
   contains_only_srgb_images_ = generator.contains_only_srgb_images();
   auto images = generator.TakeImages();
   images_rtree_.Build(

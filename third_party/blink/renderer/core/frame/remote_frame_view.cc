@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
 
 #include "components/paint_preview/common/paint_preview_tracker.h"
+#include "printing/buildflags/buildflags.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -20,6 +21,12 @@
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
+
+#if BUILDFLAG(ENABLE_PRINTING)
+// nogncheck because dependency on //printing is conditional upon
+// enable_basic_printing flags.
+#include "printing/metafile_skia.h"  // nogncheck
+#endif
 
 namespace blink {
 
@@ -297,7 +304,25 @@ bool RemoteFrameView::HasIntrinsicSizingInfo() const {
 
 uint32_t RemoteFrameView::Print(const IntRect& rect,
                                 cc::PaintCanvas* canvas) const {
-  return remote_frame_->Client()->Print(rect, canvas);
+#if BUILDFLAG(ENABLE_PRINTING)
+  auto* metafile = canvas->GetPrintingMetafile();
+  DCHECK(metafile);
+
+  // Create a place holder content for the remote frame so it can be replaced
+  // with actual content later.
+  // TODO(crbug.com/1093929): Consider to use an embedding token which
+  // represents the state of the remote frame. See also comments on
+  // https://crrev.com/c/2245430/.
+  uint32_t content_id = metafile->CreateContentForRemoteFrame(
+      rect, remote_frame_->GetFrameToken());
+
+  // Inform browser to print the remote subframe.
+  remote_frame_->GetRemoteFrameHostRemote().PrintCrossProcessSubframe(
+      rect, metafile->GetDocumentCookie());
+  return content_id;
+#else
+  return 0;
+#endif
 }
 
 uint32_t RemoteFrameView::CapturePaintPreview(const IntRect& rect,

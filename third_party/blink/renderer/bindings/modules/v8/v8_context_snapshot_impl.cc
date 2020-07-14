@@ -130,6 +130,7 @@ struct DeserializerData {
 
  public:
   v8::Isolate* isolate;
+  const DOMWrapperWorld& world;
   HTMLDocument* html_document;
 };
 
@@ -206,13 +207,19 @@ void DeserializeInternalFieldCallback(v8::Local<v8::Object> object,
       reinterpret_cast<DeserializerData*>(data);
 
   switch (static_cast<InternalFieldSerializedValue>(value)) {
-    case InternalFieldSerializedValue::kSwHTMLDocument:
+    case InternalFieldSerializedValue::kSwHTMLDocument: {
       CHECK_EQ(index, kV8DOMWrapperObjectIndex);
       CHECK(deserializer_data->html_document);
+      CHECK(deserializer_data->world.IsMainWorld());
       V8DOMWrapper::SetNativeInfo(deserializer_data->isolate, object,
                                   V8HTMLDocument::GetWrapperTypeInfo(),
                                   deserializer_data->html_document);
+      bool result = deserializer_data->html_document->SetWrapper(
+          deserializer_data->isolate, V8HTMLDocument::GetWrapperTypeInfo(),
+          object);
+      CHECK(result);
       break;
+    }
     case InternalFieldSerializedValue::kSwWindow:
       CHECK_EQ(index, kV8DOMWrapperObjectIndex);
       // The global object's internal fields will be set in LocalWindowProxy.
@@ -220,9 +227,9 @@ void DeserializeInternalFieldCallback(v8::Local<v8::Object> object,
     case InternalFieldSerializedValue::kWtiHTMLDocument:
       CHECK_EQ(index, kV8DOMWrapperTypeIndex);
       CHECK(deserializer_data->html_document);
-      V8DOMWrapper::SetNativeInfo(deserializer_data->isolate, object,
-                                  V8HTMLDocument::GetWrapperTypeInfo(),
-                                  deserializer_data->html_document);
+      CHECK(deserializer_data->world.IsMainWorld());
+      // The internal field of WrapperTypeInfo must be filled in
+      // kSwHTMLDocument case.
       break;
     case InternalFieldSerializedValue::kWtiWindow:
       CHECK_EQ(index, kV8DOMWrapperTypeIndex);
@@ -313,7 +320,7 @@ v8::Local<v8::Context> V8ContextSnapshotImpl::CreateContext(
     html_document = nullptr;
   }
 
-  DeserializerData deserializer_data = {isolate, html_document};
+  DeserializerData deserializer_data = {isolate, world, html_document};
   v8::DeserializeInternalFieldsCallback internal_field_desrializer(
       DeserializeInternalFieldCallback, &deserializer_data);
   return v8::Context::FromSnapshot(

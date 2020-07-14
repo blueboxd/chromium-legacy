@@ -46,6 +46,8 @@ import org.chromium.base.task.PostTask;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.embedder_support.util.UrlUtilitiesJni;
+import org.chromium.components.webapk.lib.client.ChromeWebApkHostSignature;
+import org.chromium.components.webapk.lib.client.WebApkValidator;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -1058,6 +1060,19 @@ public class ExternalNavigationHandler {
     }
 
     /**
+     * @param packageName The package to check.
+     * @return Whether the package is a valid WebAPK package.
+     */
+    @VisibleForTesting
+    protected boolean isValidWebApk(String packageName) {
+        // Ensure that WebApkValidator is initialized (note: this method is a no-op after the first
+        // time that it is invoked).
+        WebApkValidator.init(
+                ChromeWebApkHostSignature.EXPECTED_SIGNATURE, ChromeWebApkHostSignature.PUBLIC_KEY);
+        return WebApkValidator.isValidWebApk(ContextUtils.getApplicationContext(), packageName);
+    }
+
+    /**
      * Returns whether the activity belongs to a WebAPK and the URL is within the scope of the
      * WebAPK. The WebAPK's main activity is a bouncer that redirects to the WebAPK Activity in
      * Chrome. In order to avoid bouncing indefinitely, we should not override the navigation if we
@@ -1394,7 +1409,7 @@ public class ExternalNavigationHandler {
     private boolean launchWebApkIfSoleIntentHandler(
             List<ResolveInfo> resolvingInfos, Intent targetIntent) {
         ArrayList<String> packages = getSpecializedHandlers(resolvingInfos);
-        if (packages.size() != 1 || !mDelegate.isValidWebApk(packages.get(0))) return false;
+        if (packages.size() != 1 || !isValidWebApk(packages.get(0))) return false;
         Intent webApkIntent = new Intent(targetIntent);
         webApkIntent.setPackage(packages.get(0));
         try {

@@ -1086,6 +1086,13 @@ std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(
   }
   if (loader && !loader->UnreachableURL().IsEmpty())
     frame_object->setUnreachableUrl(loader->UnreachableURL().GetString());
+  if (frame->IsAdRoot()) {
+    frame_object->setAdFrameType(protocol::Page::AdFrameTypeEnum::Root);
+  } else if (frame->IsAdSubframe()) {
+    frame_object->setAdFrameType(protocol::Page::AdFrameTypeEnum::Child);
+  } else {
+    frame_object->setAdFrameType(protocol::Page::AdFrameTypeEnum::None);
+  }
   return frame_object;
 }
 

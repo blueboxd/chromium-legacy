@@ -249,10 +249,9 @@ bool ClearNV12Padding(const VAImage& image,
 }
 
 // Map of the supported VaProfiles indexed by media's VideoCodecProfile.
-std::map<VideoCodecProfile, VAProfile> kMediaToVAProfileMap = {
-    // VAProfileH264Baseline is marked deprecated in <va/va.h> from libva 2.0.
-    // consider making VAProfileH264ConstrainedBaseline the default one.
-    {H264PROFILE_BASELINE, VAProfileH264Baseline},
+const std::map<VideoCodecProfile, VAProfile> kMediaToVAProfileMap = {
+    // VAProfileH264Baseline is deprecated in <va/va.h> since libva 2.0.0.
+    {H264PROFILE_BASELINE, VAProfileH264ConstrainedBaseline},
     {H264PROFILE_MAIN, VAProfileH264Main},
     // TODO(posciak): See if we can/want to support other variants of
     // H264PROFILE_HIGH*.
@@ -264,6 +263,14 @@ std::map<VideoCodecProfile, VAProfile> kMediaToVAProfileMap = {
     {VP9PROFILE_PROFILE2, VAProfileVP9Profile2},
     {VP9PROFILE_PROFILE3, VAProfileVP9Profile3},
 };
+
+// Maps a VideoCodecProfile |profile| to a VAProfile, or VAProfileNone.
+VAProfile ProfileToVAProfile(VideoCodecProfile profile,
+                             VaapiWrapper::CodecMode mode) {
+  if (!base::Contains(kMediaToVAProfileMap, profile))
+    return VAProfileNone;
+  return kMediaToVAProfileMap.at(profile);
+}
 
 bool IsBlackListedDriver(const std::string& va_vendor_string,
                          VaapiWrapper::CodecMode mode,
@@ -550,9 +557,10 @@ static bool GetRequiredAttribs(const base::Lock* va_lock,
       required_attribs->push_back({VAConfigAttribRateControl, VA_RC_CQP});
   }
 
+  constexpr VAProfile kSupportedH264VaProfilesForEncoding[] = {
+      VAProfileH264ConstrainedBaseline, VAProfileH264Main, VAProfileH264High};
   // VAConfigAttribEncPackedHeaders is H.264 specific.
-  if ((profile >= VAProfileH264Baseline && profile <= VAProfileH264High) ||
-      (profile == VAProfileH264ConstrainedBaseline)) {
+  if (base::Contains(kSupportedH264VaProfilesForEncoding, profile)) {
     // Encode with Packed header if a driver supports.
     VAConfigAttrib attrib;
     attrib.type = VAConfigAttribEncPackedHeaders;
@@ -971,33 +979,6 @@ bool VASupportedProfiles::FillProfileInfo_Locked(
   DLOG_IF(ERROR, !is_any_profile_supported)
       << "No cool internal formats supported";
   return is_any_profile_supported;
-}
-
-// Maps a VideoCodecProfile |profile| to a VAProfile. This function includes a
-// workaround for https://crbug.com/345569: if |va_profile| is h264 baseline and
-// this is not supported, we try constrained baseline.
-VAProfile ProfileToVAProfile(VideoCodecProfile profile,
-                             VaapiWrapper::CodecMode mode) {
-  if (!base::Contains(kMediaToVAProfileMap, profile))
-    return VAProfileNone;
-
-  VAProfile va_profile = kMediaToVAProfileMap[profile];
-
-  // https://crbug.com/345569: VideoCodecProfile has no information whether the
-  // profile is constrained or not, so we have no way to know here. Try for
-  // baseline first, but if it is not supported, try constrained baseline and
-  // hope this is what it actually is (which in practice is true for a great
-  // majority of cases).
-  if (va_profile == VAProfileH264Baseline) {
-    const VASupportedProfiles& supported_profiles = VASupportedProfiles::Get();
-    if (!supported_profiles.IsProfileSupported(mode, VAProfileH264Baseline) &&
-        supported_profiles.IsProfileSupported(
-            mode, VAProfileH264ConstrainedBaseline)) {
-      va_profile = VAProfileH264ConstrainedBaseline;
-    }
-  }
-
-  return va_profile;
 }
 
 void DestroyVAImage(VADisplay va_display, VAImage image) {

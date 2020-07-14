@@ -645,16 +645,6 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_SelectionChanged,
 // The message is delivered using RenderWidget::QueueMessage.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_VisualStateResponse, uint64_t /* id */)
 
-// Ask the frame host to print a cross-process subframe.
-// The printed content of this subframe belongs to the document specified by
-// its document cookie. Document cookie is a unique id for a printed document
-// associated with a print job.
-// The content will be rendered in the specified rectangular area in its parent
-// frame.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_PrintCrossProcessSubframe,
-                    gfx::Rect /* rect area of the frame content */,
-                    int /* rendered document cookie */)
-
 // Adding a new message? Stick to the sort order above: first platform
 // independent FrameMsg, then ifdefs for platform specific FrameMsg, then
 // platform independent FrameHostMsg, then ifdefs for platform specific

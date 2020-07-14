@@ -93,7 +93,6 @@ struct COMPONENT_EXPORT(CHROMEOS_AUDIO) AudioDevice {
   uint64_t deprecated_stable_device_id = 0;
   std::string display_name;
   std::string device_name;
-  std::string mic_positions;
   AudioDeviceType type = AUDIO_TYPE_OTHER;
   uint8_t priority = 0;
   bool active = false;

@@ -10,6 +10,7 @@ import android.util.Size;
 import android.widget.OverScroller;
 
 import org.chromium.components.paintpreview.player.OverscrollHandler;
+import org.chromium.components.paintpreview.player.PlayerUserActionRecorder;
 
 import javax.annotation.Nullable;
 
@@ -56,7 +57,9 @@ public class PlayerFrameScrollController {
      */
     public boolean scrollBy(float distanceX, float distanceY) {
         mScroller.forceFinished(true);
-        return scrollByInternal(distanceX, distanceY);
+        boolean result = scrollByInternal(distanceX, distanceY);
+        if (result) PlayerUserActionRecorder.recordScroll();
+        return result;
     }
 
     /**
@@ -76,6 +79,7 @@ public class PlayerFrameScrollController {
                 scaledContentHeight - viewportRect.height());
 
         mScrollerHandler.post(this::handleFling);
+        if (!mScroller.isFinished()) PlayerUserActionRecorder.recordFling();
         return true;
     }
 

@@ -2226,8 +2226,13 @@ ExtensionFunction::ResponseAction AutotestPrivateUpdatePrinterFunction::Run() {
   if (js_printer.printer_make_and_model)
     printer.set_make_and_model(*js_printer.printer_make_and_model);
 
-  if (js_printer.printer_uri)
-    printer.set_uri(*js_printer.printer_uri);
+  if (js_printer.printer_uri) {
+    std::string message;
+    if (!printer.SetUri(*js_printer.printer_uri, &message)) {
+      LOG(ERROR) << message;
+      return RespondNow(Error("Incorrect URI: " + message));
+    }
+  }
 
   if (js_printer.printer_ppd) {
     const GURL ppd =

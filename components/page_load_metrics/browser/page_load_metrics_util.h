@@ -117,6 +117,10 @@ bool WasStartedInBackgroundOptionalEventInForeground(
     const base::Optional<base::TimeDelta>& event,
     const PageLoadMetricsObserverDelegate& delegate);
 
+// Returns true if |delegate| started in the foreground or became foregrounded
+// at some point in time.
+bool WasInForeground(const PageLoadMetricsObserverDelegate& delegate);
+
 PageAbortInfo GetPageAbortInfo(const PageLoadMetricsObserverDelegate& delegate);
 
 // Get the duration of time that the page spent in the foreground, from

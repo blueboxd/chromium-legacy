@@ -16,6 +16,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
+import org.chromium.base.UnownedUserData;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.ui.base.WindowAndroid;
@@ -30,7 +31,7 @@ import org.chromium.ui.base.WindowAndroid;
  * {@link SnackbarController#onDismissNoAction(Object)}. Note, snackbars of
  * {@link Snackbar#TYPE_PERSISTENT} do not get automatically dismissed after a timeout.
  */
-public class SnackbarManager implements OnClickListener, ActivityStateListener {
+public class SnackbarManager implements OnClickListener, ActivityStateListener, UnownedUserData {
     /**
      * Interface that shows the ability to provide a snackbar manager.
      */

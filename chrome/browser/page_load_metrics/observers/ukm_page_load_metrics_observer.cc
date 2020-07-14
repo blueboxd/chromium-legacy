@@ -153,6 +153,11 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnStart(
   start_url_is_home_page_ =
       IsUserHomePage(browser_context_, navigation_handle->GetURL());
 
+  if (started_in_foreground) {
+    last_time_shown_ = navigation_handle->NavigationStart();
+  }
+  currently_in_foreground_ = started_in_foreground;
+
   if (!started_in_foreground) {
     was_hidden_ = true;
     return CONTINUE_OBSERVING;
@@ -227,13 +232,17 @@ UkmPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
   if (is_portal_)
     return STOP_OBSERVING;
 
+  base::TimeTicks current_time = base::TimeTicks::Now();
   if (!was_hidden_) {
     RecordNavigationTimingMetrics();
-    RecordPageLoadMetrics(base::TimeTicks::Now(), true /* became_hidden */);
+    RecordPageLoadMetrics(current_time, true /* became_hidden */);
     RecordTimingMetrics(timing);
     RecordInputTimingMetrics();
   }
   ReportLayoutStability();
+  // Assume that page ends on this method, as the app could be evicted right
+  // after.
+  ReportAbortMetrics(timing, current_time);
   return STOP_OBSERVING;
 }
 
@@ -242,6 +251,10 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnHidden(
   if (is_portal_)
     return CONTINUE_OBSERVING;
 
+  if (currently_in_foreground_ && !last_time_shown_.is_null()) {
+    total_foreground_duration_ += base::TimeTicks::Now() - last_time_shown_;
+  }
+  currently_in_foreground_ = false;
   if (!was_hidden_) {
     RecordNavigationTimingMetrics();
     RecordPageLoadMetrics(base::TimeTicks() /* no app_background_time */,
@@ -250,6 +263,16 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnHidden(
     RecordInputTimingMetrics();
     was_hidden_ = true;
   }
+  return CONTINUE_OBSERVING;
+}
+
+UkmPageLoadMetricsObserver::ObservePolicy
+UkmPageLoadMetricsObserver::OnShown() {
+  if (is_portal_)
+    return CONTINUE_OBSERVING;
+
+  currently_in_foreground_ = true;
+  last_time_shown_ = base::TimeTicks::Now();
   return CONTINUE_OBSERVING;
 }
 
@@ -280,14 +303,16 @@ void UkmPageLoadMetricsObserver::OnComplete(
   if (is_portal_)
     return;
 
+  base::TimeTicks current_time = base::TimeTicks::Now();
   if (!was_hidden_) {
     RecordNavigationTimingMetrics();
-    RecordPageLoadMetrics(base::TimeTicks() /* no app_background_time */,
+    RecordPageLoadMetrics(current_time /* no app_background_time */,
                           false /* became_hidden */);
     RecordTimingMetrics(timing);
     RecordInputTimingMetrics();
   }
   ReportLayoutStability();
+  ReportAbortMetrics(timing, current_time);
 }
 
 void UkmPageLoadMetricsObserver::OnResourceDataUseObserved(
@@ -842,6 +867,30 @@ void UkmPageLoadMetricsObserver::ReportLayoutStability() {
         page_load_metrics::LayoutShiftUmaValue(
             GetDelegate().GetPageRenderData().layout_shift_score));
   }
+}
+
+void UkmPageLoadMetricsObserver::ReportAbortMetrics(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    base::TimeTicks page_end_time) {
+  PageLoadType page_load_type = PageLoadType::kNeverForegrounded;
+  if (page_load_metrics::WasInForeground(GetDelegate())) {
+    page_load_type = timing.paint_timing->first_contentful_paint.has_value()
+                         ? PageLoadType::kReachedFCP
+                         : PageLoadType::kAborted;
+  }
+  if (currently_in_foreground_ && !last_time_shown_.is_null()) {
+    total_foreground_duration_ += page_end_time - last_time_shown_;
+  }
+  UMA_HISTOGRAM_ENUMERATION("PageLoad.Experimental.PageLoadType",
+                            page_load_type);
+  PAGE_LOAD_LONG_HISTOGRAM("PageLoad.Experimental.TotalForegroundDuration",
+                           total_foreground_duration_);
+  ukm::builders::PageLoad(GetDelegate().GetSourceId())
+      .SetExperimental_PageLoadType(static_cast<int>(page_load_type))
+      .SetExperimental_TotalForegroundDuration(
+          ukm::GetExponentialBucketMinForUserTiming(
+              total_foreground_duration_.InMilliseconds()))
+      .Record(ukm::UkmRecorder::Get());
 }
 
 void UkmPageLoadMetricsObserver::RecordInputTimingMetrics() {

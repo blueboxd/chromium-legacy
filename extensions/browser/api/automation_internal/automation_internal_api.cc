@@ -36,7 +36,7 @@
 #include "extensions/common/manifest_handlers/automation.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "ui/accessibility/ax_action_data.h"
-#include "ui/accessibility/ax_action_handler.h"
+#include "ui/accessibility/ax_action_handler_base.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
 
@@ -299,7 +299,8 @@ ExtensionFunction::ResponseAction AutomationInternalEnableTreeFunction::Run() {
 
   ui::AXTreeID ax_tree_id = ui::AXTreeID::FromString(params->tree_id);
   ui::AXTreeIDRegistry* registry = ui::AXTreeIDRegistry::GetInstance();
-  ui::AXActionHandler* action_handler = registry->GetActionHandler(ax_tree_id);
+  ui::AXActionHandlerBase* action_handler =
+      registry->GetActionHandler(ax_tree_id);
   if (action_handler) {
     // Explicitly invalidate the pre-existing source tree first. This ensures
     // the source tree sends a complete tree when the next event occurs. This
@@ -535,7 +536,7 @@ AutomationInternalPerformActionFunction::Run() {
   std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   ui::AXTreeIDRegistry* registry = ui::AXTreeIDRegistry::GetInstance();
-  ui::AXActionHandler* action_handler = registry->GetActionHandler(
+  ui::AXActionHandlerBase* action_handler = registry->GetActionHandler(
       ui::AXTreeID::FromString(params->args.tree_id));
   if (action_handler) {
     // Handle an AXActionHandler with a rfh first. Some actions require a rfh ->

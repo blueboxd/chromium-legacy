@@ -7,7 +7,10 @@
 #include <memory>
 #include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -20,6 +23,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sharing/webrtc/sharing_mojo_service.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/services/sharing/public/mojom/nearby_connections.mojom.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/service_process_host.h"
@@ -130,6 +134,7 @@ NearbyProcessManager::GetOrStartNearbyConnections(Profile* profile) {
   if (!IsActiveProfile(profile))
     return nullptr;
 
+  active_profile_ = profile;
   // Launch a new Nearby Connections interface if required.
   if (!connections_.is_bound())
     BindNearbyConnections();
@@ -142,6 +147,7 @@ NearbyProcessManager::GetOrStartNearbySharingDecoder(Profile* profile) {
   if (!IsActiveProfile(profile))
     return nullptr;
 
+  active_profile_ = profile;
   // Launch a new Nearby Sharing Decoder interface if required.
   if (!decoder_.is_bound())
     BindNearbySharingDecoder();
@@ -155,7 +161,6 @@ void NearbyProcessManager::StopProcess(Profile* profile) {
 
   bool was_running = sharing_process_.is_bound();
 
-  connections_host_.reset();
   connections_.reset();
   decoder_.reset();
   sharing_process_.reset();
@@ -186,46 +191,6 @@ void NearbyProcessManager::BindSharingProcess(
       &NearbyProcessManager::OnNearbyProcessStopped, base::Unretained(this)));
 }
 
-void NearbyProcessManager::GetBluetoothAdapter(
-    location::nearby::connections::mojom::NearbyConnectionsHost::
-        GetBluetoothAdapterCallback callback) {
-  NS_LOG(VERBOSE) << __func__
-                  << " Request for Bluetooth "
-                     "adapter received on the browser process.";
-  if (device::BluetoothAdapterFactory::IsBluetoothSupported()) {
-    device::BluetoothAdapterFactory::Get()->GetAdapter(
-        base::BindOnce(&NearbyProcessManager::OnGetBluetoothAdapter,
-                       base::Unretained(this), std::move(callback)));
-  } else {
-    NS_LOG(VERBOSE)
-        << __func__
-        << " Bluetooth is not supported on this device, returning NullRemote";
-    std::move(callback).Run(/*adapter=*/mojo::NullRemote());
-  }
-}
-
-void NearbyProcessManager::GetWebRtcSignalingMessenger(
-    location::nearby::connections::mojom::NearbyConnectionsHost::
-        GetWebRtcSignalingMessengerCallback callback) {
-  if (!IsAnyProfileActive()) {
-    std::move(callback).Run(/*messenger=*/mojo::NullRemote());
-    return;
-  }
-
-  auto url_loader_factory =
-      content::BrowserContext::GetDefaultStoragePartition(active_profile_)
-          ->GetURLLoaderFactoryForBrowserProcess();
-  signin::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(active_profile_);
-
-  mojo::PendingRemote<sharing::mojom::WebRtcSignalingMessenger> messenger;
-  mojo::MakeSelfOwnedReceiver(
-      std::make_unique<WebRtcSignalingMessenger>(identity_manager,
-                                                 std::move(url_loader_factory)),
-      messenger.InitWithNewPipeAndPassReceiver());
-  std::move(callback).Run(std::move(messenger));
-}
-
 NearbyProcessManager::NearbyProcessManager() {
   // profile_manager() might be null in tests or during shutdown.
   if (auto* manager = g_browser_process->profile_manager())
@@ -251,20 +216,104 @@ void NearbyProcessManager::BindNearbyConnections() {
   if (!sharing_process_.is_bound())
     LaunchNewProcess();
 
-  // Create the Nearby Connections stack in the sandboxed process.
-  // base::Unretained() calls below are safe as |this| is a singleton.
-  sharing_process_->CreateNearbyConnections(
-      connections_host_.BindNewPipeAndPassRemote(),
-      base::BindOnce(&NearbyProcessManager::OnNearbyConnections,
-                     base::Unretained(this),
-                     connections_.BindNewPipeAndPassReceiver()));
+  mojo::PendingReceiver<NearbyConnectionsMojom> pending_receiver =
+      connections_.BindNewPipeAndPassReceiver();
+  auto dependencies = location::nearby::connections::mojom::
+      NearbyConnectionsDependencies::New();
+  location::nearby::connections::mojom::NearbyConnectionsDependencies*
+      dependencies_ptr = dependencies.get();
+
+  // base::Unretained() is safe as |this| is a singleton.
+  auto done_closure = base::BarrierClosure(
+      /*num_closures=*/2,
+      base::BindOnce(&NearbyProcessManager::OnDependenciesGathered,
+                     base::Unretained(this), std::move(pending_receiver),
+                     std::move(dependencies)));
+
+  GetBluetoothAdapter(dependencies_ptr,
+                      base::ScopedClosureRunner(done_closure));
+
+  GetWebRtcSignalingMessenger(dependencies_ptr,
+                              base::ScopedClosureRunner(done_closure));
 
   // Terminate the process if the Nearby Connections interface disconnects as
   // that indicated an incorrect state and we have to restart the process.
-  connections_host_.set_disconnect_handler(base::BindOnce(
-      &NearbyProcessManager::OnNearbyProcessStopped, base::Unretained(this)));
+  // base::Unretained() is safe as |this| is a singleton.
   connections_.set_disconnect_handler(base::BindOnce(
       &NearbyProcessManager::OnNearbyProcessStopped, base::Unretained(this)));
+}
+
+void NearbyProcessManager::GetBluetoothAdapter(
+    location::nearby::connections::mojom::NearbyConnectionsDependencies*
+        dependencies,
+    base::ScopedClosureRunner done_closure) {
+  NS_LOG(VERBOSE) << __func__
+                  << " Request for Bluetooth "
+                     "adapter received on the browser process.";
+  if (!device::BluetoothAdapterFactory::IsBluetoothSupported()) {
+    NS_LOG(VERBOSE) << __func__ << " Bluetooth is not supported on this device";
+    dependencies->bluetooth_adapter = mojo::NullRemote();
+    return;
+  }
+
+  // base::Unretained() is safe as |this| is a singleton.
+  device::BluetoothAdapterFactory::Get()->GetAdapter(base::BindOnce(
+      &NearbyProcessManager::OnGetBluetoothAdapter, base::Unretained(this),
+      dependencies, std::move(done_closure)));
+}
+
+void NearbyProcessManager::OnGetBluetoothAdapter(
+    location::nearby::connections::mojom::NearbyConnectionsDependencies*
+        dependencies,
+    base::ScopedClosureRunner done_closure,
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  if (!adapter->IsPresent()) {
+    NS_LOG(VERBOSE) << __func__ << " Bluetooth adapter is not present";
+    dependencies->bluetooth_adapter = mojo::NullRemote();
+    return;
+  }
+
+  mojo::PendingRemote<bluetooth::mojom::Adapter> pending_adapter;
+  mojo::MakeSelfOwnedReceiver(std::make_unique<bluetooth::Adapter>(adapter),
+                              pending_adapter.InitWithNewPipeAndPassReceiver());
+
+  NS_LOG(VERBOSE) << __func__ << " Got bluetooth adapter";
+  dependencies->bluetooth_adapter = std::move(pending_adapter);
+}
+
+void NearbyProcessManager::GetWebRtcSignalingMessenger(
+    location::nearby::connections::mojom::NearbyConnectionsDependencies*
+        dependencies,
+    base::ScopedClosureRunner done_closure) {
+  DCHECK(active_profile_);
+
+  auto url_loader_factory = active_profile_->GetURLLoaderFactory();
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(active_profile_);
+
+  mojo::PendingRemote<sharing::mojom::WebRtcSignalingMessenger> messenger;
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<WebRtcSignalingMessenger>(identity_manager,
+                                                 std::move(url_loader_factory)),
+      messenger.InitWithNewPipeAndPassReceiver());
+
+  NS_LOG(VERBOSE) << __func__ << " Got WebRTC signaling messenger";
+  dependencies->webrtc_signaling_messenger = std::move(messenger);
+}
+
+void NearbyProcessManager::OnDependenciesGathered(
+    mojo::PendingReceiver<NearbyConnectionsMojom> receiver,
+    location::nearby::connections::mojom::NearbyConnectionsDependenciesPtr
+        dependencies) {
+  if (!sharing_process_.is_bound())
+    return;
+
+  // Create the Nearby Connections stack in the sandboxed process.
+  // base::Unretained() calls below are safe as |this| is a singleton.
+  sharing_process_->CreateNearbyConnections(
+      std::move(dependencies),
+      base::BindOnce(&NearbyProcessManager::OnNearbyConnections,
+                     base::Unretained(this), std::move(receiver)));
 }
 
 void NearbyProcessManager::OnNearbyConnections(
@@ -312,16 +361,4 @@ void NearbyProcessManager::OnNearbySharingDecoder(
 
   for (auto& observer : observers_)
     observer.OnNearbyProcessStarted();
-}
-
-void NearbyProcessManager::OnGetBluetoothAdapter(
-    location::nearby::connections::mojom::NearbyConnectionsHost::
-        GetBluetoothAdapterCallback callback,
-    scoped_refptr<device::BluetoothAdapter> adapter) {
-  NS_LOG(VERBOSE) << __func__
-                  << " Got adapter instance, returning to utility process";
-  mojo::PendingRemote<bluetooth::mojom::Adapter> pending_adapter;
-  mojo::MakeSelfOwnedReceiver(std::make_unique<bluetooth::Adapter>(adapter),
-                              pending_adapter.InitWithNewPipeAndPassReceiver());
-  std::move(callback).Run(std::move(pending_adapter));
 }

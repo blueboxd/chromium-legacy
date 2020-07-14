@@ -9,6 +9,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/unguessable_token.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkDocument.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -18,7 +19,7 @@
 
 namespace printing {
 
-using ContentToProxyIdMap = base::flat_map<uint32_t, int>;
+using ContentToProxyTokenMap = base::flat_map<uint32_t, base::UnguessableToken>;
 using ContentProxySet = base::flat_set<uint32_t>;
 
 // Stores the mapping between a content's unique id and its actual content.
@@ -28,8 +29,8 @@ using TypefaceDeserializationContext =
     base::flat_map<uint32_t, sk_sp<SkTypeface>>;
 
 // Stores the mapping between content's unique id and its corresponding frame
-// proxy id.
-using PictureSerializationContext = ContentToProxyIdMap;
+// proxy token.
+using PictureSerializationContext = ContentToProxyTokenMap;
 
 // Stores the set of typeface unique ids used by the picture frame content.
 using TypefaceSerializationContext = ContentProxySet;

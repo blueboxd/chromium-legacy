@@ -24,7 +24,6 @@ struct COMPONENT_EXPORT(DBUS_AUDIO) AudioNode {
   std::string device_name;
   std::string type;
   std::string name;
-  std::string mic_positions;
   bool active = false;
   // Time that the node was plugged in.
   uint64_t plugged_time = 0;

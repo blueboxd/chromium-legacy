@@ -78,6 +78,10 @@ void OutOfMemoryReporter::DidFinishNavigation(
 }
 
 void OutOfMemoryReporter::RenderProcessGone(base::TerminationStatus status) {
+  // Don't record OOM metrics (especially not UKM) for unactivated portals
+  // since the user didn't explicitly navigate to it.
+  if (web_contents()->IsPortal())
+    return;
   if (!last_committed_source_id_.has_value())
     return;
   if (web_contents()->GetVisibility() != content::Visibility::VISIBLE)

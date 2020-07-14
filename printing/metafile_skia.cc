@@ -15,6 +15,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "cc/paint/paint_record.h"
 #include "cc/paint/paint_recorder.h"
 #include "cc/paint/skia_paint_canvas.h"
@@ -74,7 +75,7 @@ struct MetafileSkiaData {
 
   std::vector<Page> pages;
   std::unique_ptr<SkStreamAsset> data_stream;
-  ContentToProxyIdMap subframe_content_info;
+  ContentToProxyTokenMap subframe_content_info;
   std::map<uint32_t, sk_sp<SkPicture>> subframe_pics;
   int document_cookie = 0;
   ContentProxySet* typeface_content_info = nullptr;
@@ -388,8 +389,9 @@ std::unique_ptr<MetafileSkia> MetafileSkia::GetMetafileForCurrentPage(
   return metafile;
 }
 
-uint32_t MetafileSkia::CreateContentForRemoteFrame(const gfx::Rect& rect,
-                                                   int render_proxy_id) {
+uint32_t MetafileSkia::CreateContentForRemoteFrame(
+    const gfx::Rect& rect,
+    const base::UnguessableToken& render_proxy_token) {
   // Create a place holder picture.
   sk_sp<SkPicture> pic = SkPicture::MakePlaceholder(
       SkRect::MakeXYWH(rect.x(), rect.y(), rect.width(), rect.height()));
@@ -397,7 +399,7 @@ uint32_t MetafileSkia::CreateContentForRemoteFrame(const gfx::Rect& rect,
   // Store the map between content id and the proxy id.
   uint32_t content_id = pic->uniqueID();
   DCHECK(!base::Contains(data_->subframe_content_info, content_id));
-  data_->subframe_content_info[content_id] = render_proxy_id;
+  data_->subframe_content_info[content_id] = render_proxy_token;
 
   // Store the picture content.
   data_->subframe_pics[content_id] = pic;
@@ -408,7 +410,7 @@ int MetafileSkia::GetDocumentCookie() const {
   return data_->document_cookie;
 }
 
-const ContentToProxyIdMap& MetafileSkia::GetSubframeContentInfo() const {
+const ContentToProxyTokenMap& MetafileSkia::GetSubframeContentInfo() const {
   return data_->subframe_content_info;
 }
 
@@ -418,9 +420,9 @@ void MetafileSkia::AppendPage(const SkSize& page_size,
 }
 
 void MetafileSkia::AppendSubframeInfo(uint32_t content_id,
-                                      int proxy_id,
+                                      const base::UnguessableToken& proxy_token,
                                       sk_sp<SkPicture> pic_holder) {
-  data_->subframe_content_info[content_id] = proxy_id;
+  data_->subframe_content_info[content_id] = proxy_token;
   data_->subframe_pics[content_id] = pic_holder;
 }
 

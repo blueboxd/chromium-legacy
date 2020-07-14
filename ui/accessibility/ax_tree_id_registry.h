@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "ui/accessibility/ax_action_handler.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_tree_id.h"
 
@@ -20,12 +21,12 @@ struct DefaultSingletonTraits;
 
 namespace ui {
 
-class AXActionHandler;
+class AXActionHandlerBase;
 
 // This class generates and saves a runtime id for an accessibility tree.
 // It provides a few distinct forms of generating an id:
 //     - from a frame id (which consists of a process and routing id)
-//     - from a backing |AXActionHandler| object
+//     - from a backing |AXActionHandlerBase| object
 //
 // The first form allows underlying instances to change but refer to the same
 // frame.
@@ -43,8 +44,8 @@ class AX_EXPORT AXTreeIDRegistry {
   // Gets an ax tree id from a frame id.
   AXTreeID GetAXTreeID(FrameID frame_id);
 
-  // Retrieve an |AXActionHandler| based on an ax tree id.
-  AXActionHandler* GetActionHandler(AXTreeID ax_tree_id);
+  // Retrieve an |AXActionHandlerBase| based on an ax tree id.
+  AXActionHandlerBase* GetActionHandler(AXTreeID ax_tree_id);
 
   // Removes an ax tree id, and its associated delegate and frame id (if it
   // exists).
@@ -57,9 +58,14 @@ class AX_EXPORT AXTreeIDRegistry {
  private:
   friend struct base::DefaultSingletonTraits<AXTreeIDRegistry>;
   friend AXActionHandler;
+  friend AXActionHandlerBase;
 
   // Get or create a ax tree id keyed on |handler|.
-  AXTreeID GetOrCreateAXTreeID(AXActionHandler* handler);
+  AXTreeID GetOrCreateAXTreeID(AXActionHandlerBase* handler);
+
+  // Set a mapping between an AXTreeID and AXActionHandlerBase explicitly.
+  void SetAXTreeID(const AXTreeID& ax_tree_id,
+                   AXActionHandlerBase* action_handler);
 
   AXTreeIDRegistry();
   virtual ~AXTreeIDRegistry();
@@ -71,7 +77,7 @@ class AX_EXPORT AXTreeIDRegistry {
   std::map<FrameID, AXTreeID> frame_to_ax_tree_id_map_;
 
   // Maps an id to its handler.
-  std::map<AXTreeID, AXActionHandler*> id_to_action_handler_;
+  std::map<AXTreeID, AXActionHandlerBase*> id_to_action_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AXTreeIDRegistry);
 };

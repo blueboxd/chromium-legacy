@@ -108,7 +108,7 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
       switch (it->second.result) {
         case ServiceWorkerSingleScriptUpdateChecker::Result::kIdentical:
           // Case D.1:
-          context_->storage()->GetNewResourceId(base::BindOnce(
+          context_->GetStorageControl()->GetNewResourceId(base::BindOnce(
               &ServiceWorkerScriptLoaderFactory::CopyScript,
               weak_factory_.GetWeakPtr(), it->first, it->second.old_resource_id,
               base::BindOnce(
@@ -136,7 +136,7 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
 
   // Case D.3:
   // Assign a new resource ID for the script from network.
-  context_->storage()->GetNewResourceId(base::BindOnce(
+  context_->GetStorageControl()->GetNewResourceId(base::BindOnce(
       &ServiceWorkerScriptLoaderFactory::OnResourceIdAssignedForNewScriptLoader,
       weak_factory_.GetWeakPtr(), std::move(receiver), routing_id, request_id,
       options, resource_request, std::move(client), traffic_annotation));

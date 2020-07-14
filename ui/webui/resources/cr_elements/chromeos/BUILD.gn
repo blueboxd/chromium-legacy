@@ -19,7 +19,7 @@ group("closure_compile") {
 group("polymer3_elements") {
   public_deps = [
     ":cros_color_overrides_module",
-    "cr_picture:modulize",
+    "cr_picture:polymer3_elements",
   ]
 }
 

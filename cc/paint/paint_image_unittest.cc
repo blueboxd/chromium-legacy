@@ -127,4 +127,42 @@ TEST(PaintImageTest, BuildPaintWorkletImage) {
   EXPECT_EQ(paint_image.height(), size.height());
 }
 
+TEST(PaintImageTest, HbdImage) {
+  auto generator = sk_make_sp<FakePaintImageGenerator>(
+      SkImageInfo::Make(10, 10, kRGBA_F16_SkColorType, kUnknown_SkAlphaType));
+  PaintImage image = PaintImageBuilder::WithDefault()
+                         .set_id(PaintImage::GetNextId())
+                         .set_paint_image_generator(generator)
+                         .set_is_high_bit_depth(true)
+                         .TakePaintImage();
+  EXPECT_TRUE(image.is_high_bit_depth());
+  EXPECT_FALSE(image.isHDR());
+}
+
+TEST(PaintImageTest, PqHdrImage) {
+  auto generator = sk_make_sp<FakePaintImageGenerator>(
+      SkImageInfo::Make(10, 10, kRGBA_F16_SkColorType, kUnknown_SkAlphaType,
+                        gfx::ColorSpace::CreateHDR10().ToSkColorSpace()));
+  PaintImage image = PaintImageBuilder::WithDefault()
+                         .set_id(PaintImage::GetNextId())
+                         .set_paint_image_generator(generator)
+                         .set_is_high_bit_depth(true)
+                         .TakePaintImage();
+  EXPECT_TRUE(image.is_high_bit_depth());
+  EXPECT_TRUE(image.isHDR());
+}
+
+TEST(PaintImageTest, HlgHdrImage) {
+  auto generator = sk_make_sp<FakePaintImageGenerator>(
+      SkImageInfo::Make(10, 10, kRGBA_F16_SkColorType, kUnknown_SkAlphaType,
+                        gfx::ColorSpace::CreateHLG().ToSkColorSpace()));
+  PaintImage image = PaintImageBuilder::WithDefault()
+                         .set_id(PaintImage::GetNextId())
+                         .set_paint_image_generator(generator)
+                         .set_is_high_bit_depth(true)
+                         .TakePaintImage();
+  EXPECT_TRUE(image.is_high_bit_depth());
+  EXPECT_TRUE(image.isHDR());
+}
+
 }  // namespace cc

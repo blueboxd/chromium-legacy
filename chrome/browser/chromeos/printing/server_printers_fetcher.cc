@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/printing/server_printers_fetcher.h"
 
 #include <string>
+#include <utility>
 
 #include "base/hash/md5.h"
 #include "base/logging.h"
@@ -194,19 +195,20 @@ class ServerPrintersFetcher::PrivateImplementation
     // * http://myprinter:123/abc =>  ipp://myprinter:123/abc
     // * http://myprinter/abc     =>  ipp://myprinter:80/abc
     // * https://myprinter/abc    =>  ipps://myprinter:443/abc
-    std::string url = "ipp";
-    if (server_url_.SchemeIs("https"))
-      url += "s";
-    url += "://";
-    url += server_url_.HostNoBrackets();
-    url += ":";
-    url += base::NumberToString(server_url_.EffectiveIntPort());
+    Uri url;
+    if (server_url_.SchemeIs("https")) {
+      url.SetScheme("ipps");
+    } else {
+      url.SetScheme("ipp");
+    }
+    url.SetHostEncoded(server_url_.HostNoBrackets());
+    url.SetPort(server_url_.EffectiveIntPort());
     // Save the server URI.
-    printer->set_print_server_uri(url);
+    printer->set_print_server_uri(url.GetNormalized());
     // Complete building the printer's URI.
-    url += "/printers/" + name;
-    printer->set_uri(url);
-    printer->set_id(ServerPrinterId(url));
+    url.SetPath({"printers", name});
+    printer->SetUri(url);
+    printer->set_id(ServerPrinterId(url.GetNormalized()));
   }
 
   const ServerPrintersFetcher* owner_;

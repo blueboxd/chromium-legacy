@@ -250,9 +250,13 @@ modules_static_interface_idl_files = modules_callback_function_idl_files
 modules_static_dependency_idl_files =
     modules_dependency_idl_files + modules_testing_dependency_idl_files
 
-modules_generated_dependency_idl_files =
-    modules_core_global_constructors_generated_idl_files +
-    modules_global_constructors_generated_idl_files
+if (use_blink_v8_binding_new_idl_interface) {
+  modules_generated_dependency_idl_files = []
+} else {
+  modules_generated_dependency_idl_files =
+      modules_core_global_constructors_generated_idl_files +
+      modules_global_constructors_generated_idl_files
+}
 
 # 'modules_dependency_idl_files' is already used in Source/modules, so avoid
 # collision

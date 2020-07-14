@@ -5,6 +5,7 @@
 #ifndef CC_PAINT_DISCARDABLE_IMAGE_MAP_H_
 #define CC_PAINT_DISCARDABLE_IMAGE_MAP_H_
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -59,6 +60,8 @@ class CC_PAINT_EXPORT DiscardableImageMap {
   void GetDiscardableImagesInRect(const gfx::Rect& rect,
                                   std::vector<const DrawImage*>* images) const;
   const Rects& GetRectsForImage(PaintImage::Id image_id) const;
+  bool contains_hdr_images() const { return contains_hdr_images_; }
+  bool contains_hbd_images() const { return contains_hbd_images_; }
   bool contains_only_srgb_images() const { return contains_only_srgb_images_; }
   const std::vector<AnimatedImageMetadata>& animated_images_metadata() const {
     return animated_images_metadata_;
@@ -92,6 +95,8 @@ class CC_PAINT_EXPORT DiscardableImageMap {
   std::vector<AnimatedImageMetadata> animated_images_metadata_;
   base::flat_map<PaintImage::Id, PaintImage::DecodingMode> decoding_mode_map_;
   bool contains_only_srgb_images_ = true;
+  bool contains_hbd_images_ = false;
+  bool contains_hdr_images_ = false;
 
   RTree<DrawImage> images_rtree_;
 

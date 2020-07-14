@@ -37,7 +37,8 @@ TEST(MetafileSkiaTest, TestFrameContent) {
   // Finish creating the entire metafile.
   MetafileSkia metafile(mojom::SkiaDocumentType::kMSKP, 1);
   metafile.AppendPage(page_size, std::move(record));
-  metafile.AppendSubframeInfo(content_id, 2, std::move(pic_holder));
+  metafile.AppendSubframeInfo(content_id, base::UnguessableToken::Create(),
+                              std::move(pic_holder));
   metafile.FinishFrameContent();
   SkStreamAsset* metafile_stream = metafile.GetPdfData();
   ASSERT_TRUE(metafile_stream);
@@ -85,7 +86,6 @@ TEST(MetafileSkiaTest, TestMultiPictureDocumentTypefaces) {
   constexpr int kPictureSideLen = 100;
   constexpr int kPageSideLen = 150;
   constexpr int kDocumentCookie = 1;
-  constexpr int kProxyId = 2;
   constexpr int kNumDocumentPages = 2;
 
   // The content tracking for serialization/deserialization.
@@ -155,7 +155,8 @@ TEST(MetafileSkiaTest, TestMultiPictureDocumentTypefaces) {
     record->push<cc::DrawTextBlobOp>(text_blob3, 0, 0, ++node_id, flags_text);
 
     metafile.AppendPage(page_size, std::move(record));
-    metafile.AppendSubframeInfo(content_id, kProxyId, std::move(pic_holder));
+    metafile.AppendSubframeInfo(content_id, base::UnguessableToken::Create(),
+                                std::move(pic_holder));
     metafile.FinishFrameContent();
     SkStreamAsset* metafile_stream = metafile.GetPdfData();
     ASSERT_TRUE(metafile_stream);

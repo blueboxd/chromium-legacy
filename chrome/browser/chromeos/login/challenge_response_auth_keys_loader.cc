@@ -65,16 +65,16 @@ base::flat_set<std::string> GetLoginScreenPolicyExtensionIds() {
   return extension_ids;
 }
 
-content::BrowserContext* GetBrowserContext() {
+Profile* GetProfile() {
   return ProfileHelper::GetSigninProfile()->GetOriginalProfile();
 }
 
 extensions::ExtensionRegistry* GetExtensionRegistry() {
-  return extensions::ExtensionRegistry::Get(GetBrowserContext());
+  return extensions::ExtensionRegistry::Get(GetProfile());
 }
 
 extensions::ProcessManager* GetProcessManager() {
-  return extensions::ProcessManager::Get(GetBrowserContext());
+  return extensions::ProcessManager::Get(GetProfile());
 }
 
 // Loads the persistently stored information about the challenge-response keys
@@ -280,7 +280,7 @@ class ExtensionLoadObserver final
       const extensions::Extension* extension =
           GetExtensionRegistry()->GetInstalledExtension(extension_id);
       if (extension) {
-        OnExtensionInstalled(GetBrowserContext(), extension,
+        OnExtensionInstalled(GetProfile(), extension,
                              /*is_update=*/false);
       }
     }
@@ -362,13 +362,20 @@ bool ChallengeResponseAuthKeysLoader::CanAuthenticateUser(
 
 ChallengeResponseAuthKeysLoader::ChallengeResponseAuthKeysLoader()
     : maximum_extension_load_waiting_time_(
-          kDefaultMaximumExtensionLoadWaitingTime) {}
+          kDefaultMaximumExtensionLoadWaitingTime) {
+  profile_subscription_.Add(GetProfile());
+}
 
 ChallengeResponseAuthKeysLoader::~ChallengeResponseAuthKeysLoader() = default;
 
 void ChallengeResponseAuthKeysLoader::LoadAvailableKeys(
     const AccountId& account_id,
     LoadAvailableKeysCallback callback) {
+  if (profile_is_destroyed_) {
+    // Don't proceed during shutdown.
+    std::move(callback).Run(/*challenge_response_keys=*/{});
+    return;
+  }
   // Load the list of public keys of the cryptographic keys that can be used
   // for authenticating the user.
   std::vector<std::string> suitable_public_key_spki_items;
@@ -391,10 +398,21 @@ void ChallengeResponseAuthKeysLoader::LoadAvailableKeys(
                      std::move(callback)));
 }
 
+void ChallengeResponseAuthKeysLoader::OnProfileWillBeDestroyed(
+    Profile* profile) {
+  profile_is_destroyed_ = true;
+  profile_subscription_.Remove(profile);
+}
+
 void ChallengeResponseAuthKeysLoader::ContinueLoadAvailableKeysExtensionsLoaded(
     const AccountId& account_id,
     const std::vector<std::string>& suitable_public_key_spki_items,
     LoadAvailableKeysCallback callback) {
+  if (profile_is_destroyed_) {
+    // Don't proceed during shutdown.
+    std::move(callback).Run(/*challenge_response_keys=*/{});
+    return;
+  }
   // Asynchronously poll all certificate providers to get the list of
   // currently available cryptographic keys.
   std::unique_ptr<CertificateProvider> cert_provider =
@@ -410,6 +428,11 @@ void ChallengeResponseAuthKeysLoader::ContinueLoadAvailableKeysWithCerts(
     const std::vector<std::string>& suitable_public_key_spki_items,
     LoadAvailableKeysCallback callback,
     net::ClientCertIdentityList /* cert_identities */) {
+  if (profile_is_destroyed_) {
+    // Don't proceed during shutdown.
+    std::move(callback).Run(/*challenge_response_keys=*/{});
+    return;
+  }
   CertificateProviderService* const cert_provider_service =
       GetCertificateProviderService();
   std::vector<ChallengeResponseKey> filtered_keys;

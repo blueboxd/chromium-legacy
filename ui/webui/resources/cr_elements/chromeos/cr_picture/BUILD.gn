@@ -3,7 +3,9 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/polymer/polymer.gni")
 import("//ui/webui/resources/tools/js_modulizer.gni")
+import("../os_cr_elements.gni")
 
 js_type_check("closure_compile") {
   deps = [
@@ -44,12 +46,20 @@ js_library("png") {
 }
 
 js_modulizer("modulize") {
-  input_files = [ "png.js" ]
+  input_files = [
+    "png.js",
+    "cr_picture_types.js",
+  ]
 }
 
 js_type_check("closure_compile_module") {
-  uses_js_modules = true
-  deps = [ ":png.m" ]
+  is_polymer3 = true
+  deps = [
+    ":cr_camera.m",
+    ":cr_picture_list.m",
+    ":cr_picture_pane.m",
+    ":png.m",
+  ]
 }
 
 js_library("png.m") {
@@ -62,4 +72,76 @@ js_library("png.m") {
     "$root_gen_dir/ui/webui/resources/cr_elements/chromeos/cr_picture/png.m.js",
   ]
   extra_deps = [ ":modulize" ]
+}
+
+js_library("cr_picture_types.m") {
+  sources = [ "$root_gen_dir/ui/webui/resources/cr_elements/chromeos/cr_picture/cr_picture_types.m.js" ]
+  extra_deps = [ ":modulize" ]
+}
+
+group("polymer3_elements") {
+  public_deps = [
+    ":cr_camera_module",
+    ":cr_picture_list_module",
+    ":cr_picture_pane_module",
+    ":icons_module",
+    ":modulize",
+  ]
+}
+
+js_library("cr_picture_pane.m") {
+  sources = [ "$root_gen_dir/ui/webui/resources/cr_elements/chromeos/cr_picture/cr_picture_pane.m.js" ]
+  deps = [
+    ":cr_camera.m",
+    ":cr_picture_types.m",
+    ":png.m",
+  ]
+  extra_deps = [ ":cr_picture_pane_module" ]
+}
+
+js_library("cr_camera.m") {
+  sources = [ "$root_gen_dir/ui/webui/resources/cr_elements/chromeos/cr_picture/cr_camera.m.js" ]
+  deps = [ ":png.m" ]
+  extra_deps = [ ":cr_camera_module" ]
+}
+
+js_library("cr_picture_list.m") {
+  sources = [ "$root_gen_dir/ui/webui/resources/cr_elements/chromeos/cr_picture/cr_picture_list.m.js" ]
+  deps = [
+    ":cr_picture_types.m",
+    ":png.m",
+    "//third_party/polymer/v3_0/components-chromium/iron-selector:iron-selector",
+    "//ui/webui/resources/js:assert.m",
+  ]
+  extra_deps = [ ":cr_picture_list_module" ]
+}
+
+polymer_modulizer("cr_camera") {
+  js_file = "cr_camera.js"
+  html_file = "cr_camera.html"
+  html_type = "dom-module"
+  namespace_rewrites = cr_elements_chromeos_namespace_rewrites
+  auto_imports = cr_elements_chromeos_auto_imports
+}
+
+polymer_modulizer("cr_picture_list") {
+  js_file = "cr_picture_list.js"
+  html_file = "cr_picture_list.html"
+  html_type = "dom-module"
+  namespace_rewrites = cr_elements_chromeos_namespace_rewrites
+  auto_imports = cr_elements_chromeos_auto_imports
+}
+
+polymer_modulizer("cr_picture_pane") {
+  js_file = "cr_picture_pane.js"
+  html_file = "cr_picture_pane.html"
+  html_type = "dom-module"
+  namespace_rewrites = cr_elements_chromeos_namespace_rewrites
+  auto_imports = cr_elements_chromeos_auto_imports
+}
+
+polymer_modulizer("icons") {
+  js_file = "icons.m.js"
+  html_file = "icons.html"
+  html_type = "iron-iconset"
 }

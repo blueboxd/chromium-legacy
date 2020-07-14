@@ -460,7 +460,7 @@ void CloudPolicyClient::FetchRobotAuthCodes(
 
   request->set_device_type(device_type);
 
-  policy_fetch_request_job_ = service_->CreateJob(std::move(config));
+  request_jobs_.push_back(service_->CreateJob(std::move(config)));
 }
 
 void CloudPolicyClient::Unregister() {
@@ -1037,6 +1037,10 @@ void CloudPolicyClient::OnFetchRobotAuthCodesCompleted(
     DeviceManagementStatus status,
     int net_error,
     const em::DeviceManagementResponse& response) {
+  // Remove the job before executing the callback because |this| might be
+  // deleted during the callback.
+  RemoveJob(job);
+
   if (status == DM_STATUS_SUCCESS &&
       (!response.has_service_api_access_response())) {
     LOG(WARNING) << "Invalid service api access response.";
@@ -1051,6 +1055,7 @@ void CloudPolicyClient::OnFetchRobotAuthCodesCompleted(
   } else {
     std::move(callback).Run(status, std::string());
   }
+  // |this| might be deleted at this point.
 }
 
 void CloudPolicyClient::OnPolicyFetchCompleted(

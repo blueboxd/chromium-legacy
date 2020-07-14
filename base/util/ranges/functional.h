@@ -52,6 +52,17 @@ decltype(auto) invoke(Functor&& f, Args&&... args) {
   return std::forward<Functor>(f)(std::forward<Args>(args)...);
 }
 
+// Implementation of C++17's std::invoke_result_t.
+//
+// This implementation adds references to `Functor` and `Args` to work around
+// some quirks of std::result_of_t. See the #Notes section of [1] for details.
+//
+// References:
+// [1] https://en.cppreference.com/w/cpp/types/result_of
+// [2] https://wg21.link/meta.type.synop#lib:invoke_result_t
+template <typename Functor, typename... Args>
+using invoke_result_t = std::result_of_t<Functor && (Args && ...)>;
+
 // Simplified implementations of C++20's std::ranges comparison function
 // objects. As opposed to the std::ranges implementation, these versions do not
 // constrain the passed-in types.

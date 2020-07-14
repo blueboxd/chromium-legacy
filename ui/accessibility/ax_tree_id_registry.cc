@@ -6,7 +6,7 @@
 
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
-#include "ui/accessibility/ax_action_handler.h"
+#include "ui/accessibility/ax_action_handler_base.h"
 
 namespace ui {
 
@@ -44,7 +44,7 @@ AXTreeID AXTreeIDRegistry::GetAXTreeID(AXTreeIDRegistry::FrameID frame_id) {
   return ui::AXTreeIDUnknown();
 }
 
-AXTreeID AXTreeIDRegistry::GetOrCreateAXTreeID(AXActionHandler* handler) {
+AXTreeID AXTreeIDRegistry::GetOrCreateAXTreeID(AXActionHandlerBase* handler) {
   for (auto it : id_to_action_handler_) {
     if (it.second == handler)
       return it.first;
@@ -54,11 +54,17 @@ AXTreeID AXTreeIDRegistry::GetOrCreateAXTreeID(AXActionHandler* handler) {
   return new_id;
 }
 
-AXActionHandler* AXTreeIDRegistry::GetActionHandler(AXTreeID ax_tree_id) {
+AXActionHandlerBase* AXTreeIDRegistry::GetActionHandler(AXTreeID ax_tree_id) {
   auto it = id_to_action_handler_.find(ax_tree_id);
   if (it == id_to_action_handler_.end())
     return nullptr;
   return it->second;
+}
+
+void AXTreeIDRegistry::SetAXTreeID(const ui::AXTreeID& id,
+                                   AXActionHandlerBase* action_handler) {
+  DCHECK(id_to_action_handler_.find(id) == id_to_action_handler_.end());
+  id_to_action_handler_[id] = action_handler;
 }
 
 void AXTreeIDRegistry::RemoveAXTreeID(AXTreeID ax_tree_id) {

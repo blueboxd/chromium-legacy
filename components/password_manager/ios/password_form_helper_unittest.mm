@@ -13,11 +13,7 @@
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
-#include "components/password_manager/core/browser/stub_password_manager_client.h"
-#include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/ios/account_select_fill_data.h"
-#import "components/password_manager/ios/js_password_manager.h"
-#import "components/password_manager/ios/password_form_helper.h"
 #include "components/password_manager/ios/test_helpers.h"
 #include "ios/web/public/test/fakes/test_web_client.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
@@ -40,54 +36,6 @@ using base::test::ios::WaitUntilConditionOrTimeout;
 using password_manager::FillData;
 using test_helpers::SetPasswordFormFillData;
 using test_helpers::SetFillData;
-
-@interface PasswordFormHelper (Testing)
-
-// Provides access to replace |jsPasswordManager| with Mock one for test.
-- (void)setJsPasswordManager:(JsPasswordManager*)jsPasswordManager;
-
-@end
-
-// Mocks JsPasswordManager to simluate javascript execution failure.
-@interface MockJsPasswordManager : JsPasswordManager
-
-// For the first |targetFailureCount| calls to
-// |fillPasswordForm:withUserName:password:completionHandler:|, skips the
-// invocation of the real JavaScript manager, giving the effect that password
-// form fill failed. As soon as |_fillPasswordFormFailureCountRemaining| reaches
-// zero, stop mocking and let the original JavaScript manager execute.
-- (void)setFillPasswordFormTargetFailureCount:(NSUInteger)targetFailureCount;
-
-@end
-
-@implementation MockJsPasswordManager {
-  NSUInteger _fillPasswordFormFailureCountRemaining;
-}
-
-- (void)setFillPasswordFormTargetFailureCount:(NSUInteger)targetFailureCount {
-  _fillPasswordFormFailureCountRemaining = targetFailureCount;
-}
-
-- (void)fillPasswordForm:(std::unique_ptr<base::Value>)form
-                 inFrame:(web::WebFrame*)frame
-            withUsername:(NSString*)username
-                password:(NSString*)password
-       completionHandler:(void (^)(NSString*))completionHandler {
-  if (_fillPasswordFormFailureCountRemaining > 0) {
-    --_fillPasswordFormFailureCountRemaining;
-    if (completionHandler) {
-      completionHandler(@"false");
-    }
-    return;
-  }
-  [super fillPasswordForm:std::move(form)
-                  inFrame:frame
-             withUsername:username
-                 password:password
-        completionHandler:completionHandler];
-}
-
-@end
 
 namespace {
 // Returns a string containing the JavaScript loaded from a
@@ -300,16 +248,21 @@ TEST_F(PasswordFormHelperTest, FindAndFillOnePasswordForm) {
   ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
   // Run password forms search to set up unique IDs.
   EXPECT_TRUE(ExecuteJavaScript(@"__gCrWeb.passwords.findPasswordForms();"));
+
+  PasswordFormFillData form_data;
+  SetPasswordFormFillData(BaseUrl(), "gChrome~form~0", 0, "u1", 1,
+                          "john.doe@gmail.com", "p1", 2, "super!secret",
+                          nullptr, nullptr, false, &form_data);
+
   __block int call_counter = 0;
   __block int success_counter = 0;
-  [helper_ findAndFillPasswordFormsWithUserName:@"john.doe@gmail.com"
-                                       password:@"super!secret"
-                              completionHandler:^(BOOL complete) {
-                                ++call_counter;
-                                if (complete) {
-                                  ++success_counter;
-                                }
-                              }];
+  [helper_ fillPasswordForm:form_data
+          completionHandler:^(BOOL complete) {
+            ++call_counter;
+            if (complete) {
+              ++success_counter;
+            }
+          }];
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return call_counter == 1;
   }));
@@ -318,53 +271,9 @@ TEST_F(PasswordFormHelperTest, FindAndFillOnePasswordForm) {
   EXPECT_NSEQ(@"u1=john.doe@gmail.com;p1=super!secret;", result);
 }
 
-// Tests that multiple forms on the same page are found and filled.
-// This test includes an mock injected failure on form filling to verify
-// that completion handler is called with the proper values.
-TEST_F(PasswordFormHelperTest, FindAndFillMultiplePasswordForms) {
-  // Fails the first call to fill password form.
-  MockJsPasswordManager* mockJsPasswordManager =
-      [[MockJsPasswordManager alloc] init];
-  [mockJsPasswordManager setFillPasswordFormTargetFailureCount:1];
-  [helper_ setJsPasswordManager:mockJsPasswordManager];
-  LoadHtml(
-      @"<form><input id='u1' type='text' name='un1'>"
-       "<input id='p1' type='password' name='pw1'></form>"
-       "<form><input id='u2' type='text' name='un2'>"
-       "<input id='p2' type='password' name='pw2'></form>"
-       "<form><input id='u3' type='text' name='un3'>"
-       "<input id='p3' type='password' name='pw3'></form>");
-  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
-  // Run password forms search to set up unique IDs.
-  EXPECT_TRUE(ExecuteJavaScript(@"__gCrWeb.passwords.findPasswordForms();"));
-  __block int call_counter = 0;
-  __block int success_counter = 0;
-  [helper_ findAndFillPasswordFormsWithUserName:@"john.doe@gmail.com"
-                                       password:@"super!secret"
-                              completionHandler:^(BOOL complete) {
-                                ++call_counter;
-                                if (complete) {
-                                  ++success_counter;
-                                }
-                              }];
-  // There should be 3 password forms and only 2 successfully filled forms.
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
-    return call_counter == 3;
-  }));
-  EXPECT_EQ(2, success_counter);
-  id result = ExecuteJavaScript(kInputFieldValueVerificationScript);
-  EXPECT_NSEQ(
-      @"u2=john.doe@gmail.com;p2=super!secret;"
-       "u3=john.doe@gmail.com;p3=super!secret;",
-      result);
-}
-
 // Tests that extractPasswordFormData extracts wanted form on page with mutiple
 // forms.
 TEST_F(PasswordFormHelperTest, ExtractPasswordFormData) {
-  MockJsPasswordManager* mockJsPasswordManager =
-      [[MockJsPasswordManager alloc] init];
-  [helper_ setJsPasswordManager:mockJsPasswordManager];
   LoadHtml(@"<form><input id='u1' type='text' name='un1'>"
             "<input id='p1' type='password' name='pw1'></form>"
             "<form><input id='u2' type='text' name='un2'>"

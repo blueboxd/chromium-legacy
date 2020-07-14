@@ -21,16 +21,16 @@
 namespace cc {
 namespace {
 
-// Can't templatize a class on its own members, so ReadbackType and
+// Can't templatize a class on its own members, so TestReadBackType and
 // ReadbackTestConfig are declared here, before LayerTreeHostReadbackPixelTest.
-enum ReadbackType {
-  READBACK_TEXTURE,
-  READBACK_BITMAP,
+enum class TestReadBackType {
+  kTexture,
+  kBitmap,
 };
 
 struct ReadbackTestConfig {
-  LayerTreeTest::RendererType renderer_type;
-  ReadbackType readback_type;
+  TestRendererType renderer_type;
+  TestReadBackType readback_type;
 };
 
 class LayerTreeHostReadbackPixelTest
@@ -41,21 +41,21 @@ class LayerTreeHostReadbackPixelTest
       : LayerTreePixelTest(renderer_type()),
         insert_copy_request_after_frame_count_(0) {}
 
-  RendererType renderer_type() const { return GetParam().renderer_type; }
+  TestRendererType renderer_type() const { return GetParam().renderer_type; }
 
-  ReadbackType readback_type() const { return GetParam().readback_type; }
+  TestReadBackType readback_type() const { return GetParam().readback_type; }
 
   std::unique_ptr<viz::CopyOutputRequest> CreateCopyOutputRequest() override {
     std::unique_ptr<viz::CopyOutputRequest> request;
 
-    if (readback_type() == READBACK_BITMAP) {
+    if (readback_type() == TestReadBackType::kBitmap) {
       request = std::make_unique<viz::CopyOutputRequest>(
           viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
           base::BindOnce(
               &LayerTreeHostReadbackPixelTest::ReadbackResultAsBitmap,
               base::Unretained(this)));
     } else {
-      DCHECK_NE(renderer_type_, RENDERER_SOFTWARE);
+      DCHECK_NE(renderer_type_, TestRendererType::kSoftware);
       request = std::make_unique<viz::CopyOutputRequest>(
           viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
           base::BindOnce(
@@ -417,17 +417,18 @@ TEST_P(LayerTreeHostReadbackPixelTest, MultipleReadbacksOnLayer) {
 // TODO(crbug.com/971257): Enable these tests for Skia Vulkan using texture
 // readback.
 ReadbackTestConfig const kTestConfigs[] = {
-    ReadbackTestConfig{LayerTreeTest::RENDERER_SOFTWARE, READBACK_BITMAP},
-    ReadbackTestConfig{LayerTreeTest::RENDERER_GL, READBACK_TEXTURE},
-    ReadbackTestConfig{LayerTreeTest::RENDERER_GL, READBACK_BITMAP},
+    ReadbackTestConfig{TestRendererType::kSoftware, TestReadBackType::kBitmap},
+    ReadbackTestConfig{TestRendererType::kGL, TestReadBackType::kTexture},
+    ReadbackTestConfig{TestRendererType::kGL, TestReadBackType::kBitmap},
     // TODO(crbug.com/1046788): The skia readback path doesn't support
     // RGBA_TEXTURE readback requests yet. Don't run these tests on platforms
     // that have UseSkiaForGLReadback enabled by default.
     //
-    // ReadbackTestConfig{LayerTreeTest::RENDERER_SKIA_GL, READBACK_TEXTURE},
-    ReadbackTestConfig{LayerTreeTest::RENDERER_SKIA_GL, READBACK_BITMAP},
+    // ReadbackTestConfig{TestRendererType::kSkiaGL,
+    //                    TestReadBackType::kTexture},
+    ReadbackTestConfig{TestRendererType::kSkiaGL, TestReadBackType::kBitmap},
 #if defined(ENABLE_CC_VULKAN_TESTS)
-    ReadbackTestConfig{LayerTreeTest::RENDERER_SKIA_VK, READBACK_BITMAP},
+    ReadbackTestConfig{TestRendererType::kSkiaVk, TestReadBackType::kBitmap},
 #endif  // defined(ENABLE_CC_VULKAN_TESTS)
 };
 
@@ -438,18 +439,19 @@ INSTANTIATE_TEST_SUITE_P(All,
 // TODO(crbug.com/974283): These tests are crashing with vulkan when TSan or
 // MSan are used.
 ReadbackTestConfig const kMaybeVulkanTestConfigs[] = {
-    ReadbackTestConfig{LayerTreeTest::RENDERER_SOFTWARE, READBACK_BITMAP},
-    ReadbackTestConfig{LayerTreeTest::RENDERER_GL, READBACK_TEXTURE},
-    ReadbackTestConfig{LayerTreeTest::RENDERER_GL, READBACK_BITMAP},
+    ReadbackTestConfig{TestRendererType::kSoftware, TestReadBackType::kBitmap},
+    ReadbackTestConfig{TestRendererType::kGL, TestReadBackType::kTexture},
+    ReadbackTestConfig{TestRendererType::kGL, TestReadBackType::kBitmap},
     // TODO(crbug.com/1046788): The skia readback path doesn't support
     // RGBA_TEXTURE readback requests yet. Don't run these tests on platforms
     // that have UseSkiaForGLReadback enabled by default.
     //
-    // ReadbackTestConfig{LayerTreeTest::RENDERER_SKIA_GL, READBACK_TEXTURE},
-    ReadbackTestConfig{LayerTreeTest::RENDERER_SKIA_GL, READBACK_BITMAP},
+    // ReadbackTestConfig{TestRendererType::kSkiaGL,
+    //                    TestReadBackType::kTexture},
+    ReadbackTestConfig{TestRendererType::kSkiaGL, TestReadBackType::kBitmap},
 #if defined(ENABLE_CC_VULKAN_TESTS) && !defined(THREAD_SANITIZER) && \
     !defined(MEMORY_SANITIZER)
-    ReadbackTestConfig{LayerTreeTest::RENDERER_SKIA_VK, READBACK_BITMAP},
+    ReadbackTestConfig{TestRendererType::kSkiaVk, TestReadBackType::kBitmap},
 #endif
 };
 

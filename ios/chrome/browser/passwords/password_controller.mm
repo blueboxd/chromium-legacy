@@ -55,7 +55,6 @@
 #import "ios/chrome/browser/passwords/ios_chrome_update_password_infobar_delegate.h"
 #import "ios/chrome/browser/passwords/ios_password_infobar_controller.h"
 #import "ios/chrome/browser/passwords/notify_auto_signin_view_controller.h"
-#import "ios/chrome/browser/passwords/password_form_filler.h"
 #include "ios/chrome/browser/passwords/password_manager_features.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
@@ -147,7 +146,6 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 @end
 
 @interface PasswordController () <FormSuggestionProvider,
-                                  PasswordFormFiller,
                                   FormActivityObserver>
 
 // Informs the |_passwordManager| of the password forms (if any were present)
@@ -257,10 +255,6 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 
 #pragma mark - Properties
 
-- (id<PasswordFormFiller>)passwordFormFiller {
-  return self;
-}
-
 - (ukm::SourceId)ukmSourceId {
   return _webState ? ukm::GetSourceIdForWebStateDocument(_webState)
                    : ukm::kInvalidSourceId;
@@ -272,16 +266,6 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 
 - (PasswordManagerDriver*)passwordManagerDriver {
   return _passwordManagerDriver.get();
-}
-
-#pragma mark - PasswordFormFiller
-
-- (void)findAndFillPasswordForms:(NSString*)username
-                        password:(NSString*)password
-               completionHandler:(void (^)(BOOL))completionHandler {
-  [self.formHelper findAndFillPasswordFormsWithUserName:username
-                                               password:password
-                                      completionHandler:completionHandler];
 }
 
 #pragma mark - CRWWebStateObserver

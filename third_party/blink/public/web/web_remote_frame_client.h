@@ -61,15 +61,6 @@ class WebRemoteFrameClient {
     return base::UnguessableToken::Create();
   }
 
-  // Print out this frame.
-  // |rect| is the rectangular area where this frame resides in its parent
-  // frame.
-  // |canvas| is the canvas we are printing on.
-  // Returns the id of the placeholder content.
-  virtual uint32_t Print(const WebRect& rect, cc::PaintCanvas* canvas) {
-    return 0;
-  }
-
  protected:
   virtual ~WebRemoteFrameClient() = default;
 };

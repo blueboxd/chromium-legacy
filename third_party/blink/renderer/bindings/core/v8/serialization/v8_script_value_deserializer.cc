@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/serialization/v8_script_value_deserializer.h"
 
+#include <limits>
+
 #include "base/numerics/checked_math.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -574,6 +576,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
         return nullptr;
       uint32_t index = 0;
       if (!ReadUint32(&index) || !transferred_stream_ports_ ||
+          index == std::numeric_limits<decltype(index)>::max() ||
           index + 1 >= transferred_stream_ports_->size()) {
         return nullptr;
       }

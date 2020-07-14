@@ -13,6 +13,7 @@
 #include "chrome/browser/sharing/mock_sharing_device_source.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/webrtc/sharing_webrtc_connection_host.h"
+#include "chrome/services/sharing/public/mojom/nearby_connections.mojom.h"
 #include "chrome/services/sharing/public/mojom/webrtc.mojom.h"
 #include "components/sync_device_info/fake_device_info_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -29,8 +30,8 @@ namespace {
 class FakeSharingMojoService : public sharing::mojom::Sharing,
                                public sharing::mojom::SignallingReceiver {
  public:
-  using NearbyConnectionsHostMojom =
-      location::nearby::connections::mojom::NearbyConnectionsHost;
+  using NearbyConnectionsDependenciesPtr =
+      location::nearby::connections::mojom::NearbyConnectionsDependenciesPtr;
 
   FakeSharingMojoService() = default;
   ~FakeSharingMojoService() override = default;
@@ -49,7 +50,7 @@ class FakeSharingMojoService : public sharing::mojom::Sharing,
     signaling_set.Add(this, std::move(signalling_receiver));
   }
   void CreateNearbyConnections(
-      mojo::PendingRemote<NearbyConnectionsHostMojom> host,
+      NearbyConnectionsDependenciesPtr dependencies,
       CreateNearbyConnectionsCallback callback) override {
     NOTIMPLEMENTED();
   }

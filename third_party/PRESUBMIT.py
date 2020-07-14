@@ -53,8 +53,6 @@ def _CheckThirdPartyReadmesUpdated(input_api, output_api):
         not local_path.startswith('third_party' + input_api.os_path.sep +
                                   'boringssl' + input_api.os_path.sep) and
         not local_path.startswith('third_party' + input_api.os_path.sep +
-                                  'cacheinvalidation' + input_api.os_path.sep) and
-        not local_path.startswith('third_party' + input_api.os_path.sep +
                                   'closure_compiler' + input_api.os_path.sep +
                                   'externs' + input_api.os_path.sep) and
         not local_path.startswith('third_party' + input_api.os_path.sep +

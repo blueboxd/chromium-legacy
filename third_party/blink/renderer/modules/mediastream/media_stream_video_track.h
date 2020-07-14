@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_TRACK_H_
 
 #include <memory>
-#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -20,6 +19,7 @@
 #include "third_party/blink/public/web/modules/mediastream/encoded_video_frame.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -170,8 +170,8 @@ class MODULES_EXPORT MediaStreamVideoTrack
   // or data flow changes are being called on the main thread.
   THREAD_CHECKER(main_render_thread_checker_);
 
-  std::vector<WebMediaStreamSink*> sinks_;
-  std::vector<WebMediaStreamSink*> encoded_sinks_;
+  Vector<WebMediaStreamSink*> sinks_;
+  Vector<WebMediaStreamSink*> encoded_sinks_;
 
   // |FrameDeliverer| is an internal helper object used for delivering video
   // frames on the IO-thread using callbacks to all registered tracks.

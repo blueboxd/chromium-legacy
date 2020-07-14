@@ -42,6 +42,14 @@ extern const base::Feature kInvalidateBookmarkSyncMetadataIfClientTagDuplicates{
 extern const base::Feature kInvalidateBookmarkSyncMetadataIfClientTagMissing{
     "InvalidateBookmarkSyncMetadataIfClientTagMissing",
     base::FEATURE_DISABLED_BY_DEFAULT};
+// Soft version of the above: it does treat local sync metadata as obsolete if
+// client tags are missing, but only if the local client is in sync with the
+// server, for some definition of in-sync (see implementation in
+// ShouldInvalidateMetadataDueToMissingClientTags()).
+extern const base::Feature
+    kInvalidateBookmarkSyncMetadataIfClientTagMissingWhileInSync{
+        "InvalidateBookmarkSyncMetadataIfClientTagMissingWhileInSync",
+        base::FEATURE_ENABLED_BY_DEFAULT};
 
 namespace {
 
@@ -89,6 +97,37 @@ BuildIdToBookmarkNodeMap(const bookmarks::BookmarkModel* model) {
     id_to_bookmark_node_map[node->id()] = node;
   }
   return id_to_bookmark_node_map;
+}
+
+// Predicate that determines whether a last-synced-time is considered recent
+// enough to activate the logic for
+// |kInvalidateBookmarkSyncMetadataIfClientTagMissingWhileInSync|.
+bool IsRecentEnoughTimeToConsiderInSync(base::Time time) {
+  return base::Time::Now() - time < base::TimeDelta::FromDays(2);
+}
+
+bool ShouldInvalidateMetadataDueToMissingClientTags(
+    bool bookmark_without_client_tag_found,
+    bool has_local_changes,
+    base::Time last_sync_time) {
+  if (!bookmark_without_client_tag_found) {
+    // All good, nothing to invalidate.
+    return false;
+  }
+
+  if (!has_local_changes &&
+      IsRecentEnoughTimeToConsiderInSync(last_sync_time) &&
+      base::FeatureList::IsEnabled(
+          kInvalidateBookmarkSyncMetadataIfClientTagMissingWhileInSync)) {
+    // This seems like a very good time to invalidate metadata, since it's very
+    // likely that the local state is in sync with the remote (server-side)
+    // state. This means there's low change to run into conflicts.
+    return true;
+  }
+
+  // Force-invalidate if the corresponding feature toggle is enabled.
+  return base::FeatureList::IsEnabled(
+      kInvalidateBookmarkSyncMetadataIfClientTagMissing);
 }
 
 }  // namespace
@@ -182,7 +221,8 @@ std::unique_ptr<SyncedBookmarkTracker> SyncedBookmarkTracker::CreateEmpty(
     sync_pb::ModelTypeState model_type_state) {
   // base::WrapUnique() used because the constructor is private.
   auto tracker = base::WrapUnique(new SyncedBookmarkTracker(
-      std::move(model_type_state), /*bookmarks_full_title_reuploaded=*/false));
+      std::move(model_type_state), /*bookmarks_full_title_reuploaded=*/false,
+      /*last_sync_time=*/base::Time::Now()));
   return tracker;
 }
 
@@ -208,6 +248,11 @@ SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
   if (bookmarks_full_title_reuploaded) {
     tracker->SetBookmarksFullTitleReuploaded();
   }
+
+  // If the field is not present, |last_sync_time| will be initialized with the
+  // Unix epoch.
+  tracker->last_sync_time_ =
+      syncer::ProtoTimeToTime(model_metadata.last_sync_time());
 
   const CorruptionReason corruption_reason =
       tracker->InitEntitiesFromModelAndMetadata(model,
@@ -489,9 +534,11 @@ SyncedBookmarkTracker::GetEntitiesWithLocalChanges(size_t max_entries) const {
 
 SyncedBookmarkTracker::SyncedBookmarkTracker(
     sync_pb::ModelTypeState model_type_state,
-    bool bookmarks_full_title_reuploaded)
+    bool bookmarks_full_title_reuploaded,
+    base::Time last_sync_time)
     : model_type_state_(std::move(model_type_state)),
-      bookmarks_full_title_reuploaded_(bookmarks_full_title_reuploaded) {}
+      bookmarks_full_title_reuploaded_(bookmarks_full_title_reuploaded),
+      last_sync_time_(last_sync_time) {}
 
 SyncedBookmarkTracker::CorruptionReason
 SyncedBookmarkTracker::InitEntitiesFromModelAndMetadata(
@@ -639,9 +686,9 @@ SyncedBookmarkTracker::InitEntitiesFromModelAndMetadata(
       GetMetadataClientTagHashHistogramBucket(
           client_tag_mismatch_found, bookmark_without_client_tag_found));
 
-  if (bookmark_without_client_tag_found &&
-      base::FeatureList::IsEnabled(
-          kInvalidateBookmarkSyncMetadataIfClientTagMissing)) {
+  if (ShouldInvalidateMetadataDueToMissingClientTags(
+          bookmark_without_client_tag_found, HasLocalChanges(),
+          last_sync_time_)) {
     return CorruptionReason::MISSING_CLIENT_TAG_HASH;
   }
 

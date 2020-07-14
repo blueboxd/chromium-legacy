@@ -62,9 +62,9 @@ class CountDownLatchTest : public testing::Test {
     wait_run_loop.Run();
   }
 
-  bool MapSizeEquals(size_t size) {
+  size_t MapSize() {
     base::AutoLock al(map_lock_);
-    return id_to_result_map_.size() == size;
+    return id_to_result_map_.size();
   }
 
   void VerifyExceptionResultForAttemptId(
@@ -104,7 +104,7 @@ TEST_F(CountDownLatchTest, InitializeCount0_AwaitTimed_DoesNotBlock) {
   PostAwaitTask(run_loop, attempt_id, base::TimeDelta::FromMilliseconds(1000));
 
   run_loop.Run();
-  EXPECT_TRUE(MapSizeEquals(1u));
+  EXPECT_EQ(1u, MapSize());
   VerifyBoolResultForAttemptId(attempt_id, true);
 }
 
@@ -116,7 +116,7 @@ TEST_F(CountDownLatchTest, InitializeCount0_AwaitInf_DoesNotBlock) {
   PostAwaitTask(run_loop, attempt_id, base::nullopt /* timeout */);
 
   run_loop.Run();
-  EXPECT_TRUE(MapSizeEquals(1u));
+  EXPECT_EQ(1u, MapSize());
   VerifyExceptionResultForAttemptId(attempt_id, Exception::kSuccess);
 }
 
@@ -126,25 +126,25 @@ TEST_F(CountDownLatchTest, InitializeCount2_BlocksUnlessCountIsZero) {
   base::RunLoop run_loop;
   base::UnguessableToken attempt_id = base::UnguessableToken::Create();
   PostAwaitTask(run_loop, attempt_id, base::nullopt /* timeout */);
-  ASSERT_TRUE(MapSizeEquals(0u));
+  ASSERT_EQ(0u, MapSize());
 
   count_down_latch_->CountDown();
-  EXPECT_TRUE(MapSizeEquals(0u));
+  EXPECT_EQ(0u, MapSize());
 
   count_down_latch_->CountDown();
   run_loop.Run();
-  EXPECT_TRUE(MapSizeEquals(1u));
+  EXPECT_EQ(1u, MapSize());
   VerifyExceptionResultForAttemptId(attempt_id, Exception::kSuccess);
 
   // Further CountDown is ignored.
   count_down_latch_->CountDown();
-  EXPECT_TRUE(MapSizeEquals(1u));
+  EXPECT_EQ(1u, MapSize());
   VerifyExceptionResultForAttemptId(attempt_id, Exception::kSuccess);
 }
 
 TEST_F(CountDownLatchTest,
        InitializeCount2_UnblocksAllBlockedThreadsWhenCountIsZero) {
-  InitializeCountDownLatch(1);
+  InitializeCountDownLatch(2);
 
   base::RunLoop run_loop_1;
   base::UnguessableToken attempt_id_1 = base::UnguessableToken::Create();
@@ -155,17 +155,17 @@ TEST_F(CountDownLatchTest,
   base::RunLoop run_loop_3;
   base::UnguessableToken attempt_id_3 = base::UnguessableToken::Create();
   PostAwaitTask(run_loop_3, attempt_id_3, base::nullopt /* timeout */);
-  ASSERT_TRUE(MapSizeEquals(0u));
+  ASSERT_EQ(0u, MapSize());
 
   count_down_latch_->CountDown();
-  ASSERT_TRUE(MapSizeEquals(0u));
+  ASSERT_EQ(0u, MapSize());
 
   count_down_latch_->CountDown();
 
   run_loop_1.Run();
   run_loop_2.Run();
   run_loop_3.Run();
-  EXPECT_TRUE(MapSizeEquals(3u));
+  EXPECT_EQ(3u, MapSize());
   VerifyExceptionResultForAttemptId(attempt_id_1, Exception::kSuccess);
   VerifyExceptionResultForAttemptId(attempt_id_2, Exception::kSuccess);
   VerifyExceptionResultForAttemptId(attempt_id_3, Exception::kSuccess);
@@ -179,7 +179,7 @@ TEST_F(CountDownLatchTest, InitializeCount2_TimedAwaitTimesOut) {
   PostAwaitTask(run_loop, attempt_id, base::TimeDelta::FromMilliseconds(1000));
 
   run_loop.Run();
-  EXPECT_TRUE(MapSizeEquals(1u));
+  EXPECT_EQ(1u, MapSize());
   VerifyBoolResultForAttemptId(attempt_id, false);
 }
 
@@ -196,16 +196,16 @@ TEST_F(CountDownLatchTest, InitializeCount2_LongerTimedAwaitDoesNotTimeOut) {
                 base::TimeDelta::FromMilliseconds(1000));
 
   run_loop_1.Run();
-  ASSERT_TRUE(MapSizeEquals(1u));
+  ASSERT_EQ(1u, MapSize());
   VerifyBoolResultForAttemptId(attempt_id_1, false);
 
   count_down_latch_->CountDown();
-  ASSERT_TRUE(MapSizeEquals(1u));
+  ASSERT_EQ(1u, MapSize());
 
   count_down_latch_->CountDown();
 
   run_loop_2.Run();
-  EXPECT_TRUE(MapSizeEquals(2u));
+  EXPECT_EQ(2u, MapSize());
   VerifyBoolResultForAttemptId(attempt_id_2, true);
 }
 

@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "base/metrics/histogram_macros.h"
+#include "third_party/blink/public/common/feature_policy/policy_value.h"
+#include "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/policy_value.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"

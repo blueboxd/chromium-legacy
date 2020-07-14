@@ -30,9 +30,8 @@ namespace {
 base::Optional<VAProfile> ConvertToVAProfile(VideoCodecProfile profile) {
   // A map between VideoCodecProfile and VAProfile.
   const std::map<VideoCodecProfile, VAProfile> kProfileMap = {
-      // VAProfileH264Baseline is marked deprecated in <va/va.h> from libva 2.0.
-      // consider making VAProfileH264ConstrainedBaseline the default one.
-      {H264PROFILE_BASELINE, VAProfileH264Baseline},
+      // VAProfileH264Baseline is deprecated in <va/va.h> from libva 2.0.0.
+      {H264PROFILE_BASELINE, VAProfileH264ConstrainedBaseline},
       {H264PROFILE_MAIN, VAProfileH264Main},
       {H264PROFILE_HIGH, VAProfileH264High},
       {VP8PROFILE_ANY, VAProfileVP8Version0_3},
@@ -49,6 +48,8 @@ base::Optional<VAProfile> StringToVAProfile(const std::string& va_profile) {
   const std::map<std::string, VAProfile> kStringToVAProfile = {
       {"VAProfileNone", VAProfileNone},
       {"VAProfileH264ConstrainedBaseline", VAProfileH264ConstrainedBaseline},
+      // Even though it's deprecated, we leave VAProfileH264Baseline's
+      // translation here to assert we never encounter it.
       {"VAProfileH264Baseline", VAProfileH264Baseline},
       {"VAProfileH264Main", VAProfileH264Main},
       {"VAProfileH264High", VAProfileH264High},
@@ -152,6 +153,14 @@ TEST_F(VaapiTest, VaapiSandboxInitialization) {
   EXPECT_NE(VaapiWrapper::GetImplementationType(), VAImplementation::kInvalid);
 }
 
+// Commit [1] deprecated VAProfileH264Baseline from libva in 2017 (release
+// 2.0.0). This test verifies that such profile is never seen in the lab.
+// [1] https://github.com/intel/libva/commit/6f69256f8ccc9a73c0b196ab77ac69ab1f4f33c2
+TEST_F(VaapiTest, VerifyNoVAProfileH264Baseline) {
+  const auto va_info = RetrieveVAInfoOutput();
+  EXPECT_FALSE(base::Contains(va_info, VAProfileH264Baseline));
+}
+
 // Verifies that every VAProfile from VaapiWrapper::GetSupportedDecodeProfiles()
 // is indeed supported by the command line vainfo utility and by
 // VaapiWrapper::IsDecodeSupported().
@@ -162,24 +171,12 @@ TEST_F(VaapiTest, GetSupportedDecodeProfiles) {
     const auto va_profile = ConvertToVAProfile(profile.profile);
     ASSERT_TRUE(va_profile.has_value());
 
-    bool is_profile_supported =
-        base::Contains(va_info, *va_profile) &&
-        base::Contains(va_info.at(*va_profile), VAEntrypointVLD);
-    bool is_decode_supported = VaapiWrapper::IsDecodeSupported(*va_profile);
-    // H264PROFILE_BASELINE may be supported by VAProfileH264Baseline
-    // (deprecated) or by VAProfileH264ConstrainedBaseline. This is the same
-    // logic as in vaapi_wrapper.cc.
-    if (profile.profile == H264PROFILE_BASELINE) {
-      is_profile_supported |= base::Contains(
-          va_info.at(VAProfileH264ConstrainedBaseline), VAEntrypointVLD);
-      is_decode_supported |=
-          VaapiWrapper::IsDecodeSupported(VAProfileH264ConstrainedBaseline);
-    }
-
-    EXPECT_TRUE(is_profile_supported)
-        << " profile: " << GetProfileName(profile.profile);
-    EXPECT_TRUE(is_decode_supported)
-        << " profile: " << GetProfileName(profile.profile);
+    EXPECT_TRUE(base::Contains(va_info.at(*va_profile), VAEntrypointVLD))
+        << " profile: " << GetProfileName(profile.profile)
+        << ", va profile: " << vaProfileStr(*va_profile);
+    EXPECT_TRUE(VaapiWrapper::IsDecodeSupported(*va_profile))
+        << " profile: " << GetProfileName(profile.profile)
+        << ", va profile: " << vaProfileStr(*va_profile);
   }
 }
 
@@ -192,23 +189,10 @@ TEST_F(VaapiTest, GetSupportedEncodeProfiles) {
     const auto va_profile = ConvertToVAProfile(profile.profile);
     ASSERT_TRUE(va_profile.has_value());
 
-    bool is_profile_supported =
-        base::Contains(va_info, *va_profile) &&
-        (base::Contains(va_info.at(*va_profile), VAEntrypointEncSlice) ||
-         base::Contains(va_info.at(*va_profile), VAEntrypointEncSliceLP));
-    // H264PROFILE_BASELINE may be supported by VAProfileH264Baseline
-    // (deprecated) or by VAProfileH264ConstrainedBaseline. This is the same
-    // logic as in vaapi_wrapper.cc.
-    if (profile.profile == H264PROFILE_BASELINE) {
-      is_profile_supported |=
-          base::Contains(va_info.at(VAProfileH264ConstrainedBaseline),
-                         VAEntrypointEncSlice) ||
-          base::Contains(va_info.at(VAProfileH264ConstrainedBaseline),
-                         VAEntrypointEncSliceLP);
-    }
-
-    EXPECT_TRUE(is_profile_supported)
-        << " profile: " << GetProfileName(profile.profile);
+    EXPECT_TRUE(base::Contains(va_info.at(*va_profile), VAEntrypointEncSlice) ||
+                base::Contains(va_info.at(*va_profile), VAEntrypointEncSliceLP))
+        << " profile: " << GetProfileName(profile.profile)
+        << ", va profile: " << vaProfileStr(*va_profile);
   }
 }
 

@@ -21,7 +21,7 @@ namespace cc {
 namespace {
 
 struct TilesTestConfig {
-  LayerTreeTest::RendererType renderer_type;
+  TestRendererType renderer_type;
   TestRasterType raster_type;
 };
 
@@ -33,7 +33,7 @@ class LayerTreeHostTilesPixelTest
     set_raster_type(GetParam().raster_type);
   }
 
-  RendererType renderer_type() const { return GetParam().renderer_type; }
+  TestRendererType renderer_type() const { return GetParam().renderer_type; }
 
   void InitializeSettings(LayerTreeSettings* settings) override {
     LayerTreePixelTest::InitializeSettings(settings);
@@ -153,13 +153,13 @@ class LayerTreeHostTilesTestPartialInvalidation
 };
 
 std::vector<TilesTestConfig> const kTestCases = {
-    {LayerTreeTest::RENDERER_SOFTWARE, TestRasterType::kBitmap},
-    {LayerTreeTest::RENDERER_GL, TestRasterType::kOneCopy},
-    {LayerTreeTest::RENDERER_GL, TestRasterType::kGpu},
-    {LayerTreeTest::RENDERER_SKIA_GL, TestRasterType::kOneCopy},
-    {LayerTreeTest::RENDERER_SKIA_GL, TestRasterType::kGpu},
+    {TestRendererType::kSoftware, TestRasterType::kBitmap},
+    {TestRendererType::kGL, TestRasterType::kOneCopy},
+    {TestRendererType::kGL, TestRasterType::kGpu},
+    {TestRendererType::kSkiaGL, TestRasterType::kOneCopy},
+    {TestRendererType::kSkiaGL, TestRasterType::kGpu},
 #if defined(ENABLE_CC_VULKAN_TESTS)
-    {LayerTreeTest::RENDERER_SKIA_VK, TestRasterType::kOop},
+    {TestRendererType::kSkiaVk, TestRasterType::kOop},
 #endif  // defined(ENABLE_CC_VULKAN_TESTS)
 };
 
@@ -188,12 +188,12 @@ TEST_P(LayerTreeHostTilesTestPartialInvalidation, FullRaster) {
 }
 
 std::vector<TilesTestConfig> const kTestCasesMultiThread = {
-    {LayerTreeTest::RENDERER_GL, TestRasterType::kOneCopy},
-    {LayerTreeTest::RENDERER_SKIA_GL, TestRasterType::kOneCopy},
+    {TestRendererType::kGL, TestRasterType::kOneCopy},
+    {TestRendererType::kSkiaGL, TestRasterType::kOneCopy},
 #if defined(ENABLE_CC_VULKAN_TESTS)
     // TODO(sgilhuly): Switch this to one copy raster once is is supported for
     // Vulkan in these tests.
-    {LayerTreeTest::RENDERER_SKIA_VK, TestRasterType::kOop},
+    {TestRendererType::kSkiaVk, TestRasterType::kOop},
 #endif  // defined(ENABLE_CC_VULKAN_TESTS)
 };
 
@@ -244,8 +244,8 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostTilesTestPartialInvalidationLowBitDepth,
     ::testing::Values(
-        TilesTestConfig{LayerTreeTest::RENDERER_SKIA_GL, TestRasterType::kGpu},
-        TilesTestConfig{LayerTreeTest::RENDERER_GL, TestRasterType::kGpu}));
+        TilesTestConfig{TestRendererType::kSkiaGL, TestRasterType::kGpu},
+        TilesTestConfig{TestRendererType::kGL, TestRasterType::kGpu}));
 
 TEST_P(LayerTreeHostTilesTestPartialInvalidationLowBitDepth, PartialRaster) {
   use_partial_raster_ = true;

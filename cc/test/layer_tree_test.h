@@ -38,6 +38,16 @@ class TestContextProvider;
 
 namespace cc {
 
+enum TestRendererType {
+  kGL,
+  kSkiaGL,
+  kSkiaVk,
+  // SkiaRenderer with the Dawn backend will be used; on Linux this will
+  // initialize Vulkan, and on Windows this will initialize D3D12.
+  kSkiaDawn,
+  kSoftware,
+};
+
 class Animation;
 class AnimationHost;
 class LayerTreeHost;
@@ -64,27 +74,17 @@ class LayerTreeHostClientForTesting;
 // thread, but be aware that ending the test is an asynchronous process.
 class LayerTreeTest : public testing::Test, public TestHooks {
  public:
-  enum RendererType {
-    RENDERER_GL,
-    RENDERER_SKIA_GL,
-    RENDERER_SKIA_VK,
-    // SkiaRenderer with the Dawn backend will be used; on Linux this will
-    // initialize Vulkan, and on Windows this will initialize D3D12.
-    RENDERER_SKIA_DAWN,
-    RENDERER_SOFTWARE,
-  };
-
   std::string TestTypeToString() {
     switch (renderer_type_) {
-      case RENDERER_GL:
+      case TestRendererType::kGL:
         return "GL";
-      case RENDERER_SKIA_GL:
+      case TestRendererType::kSkiaGL:
         return "Skia GL";
-      case RENDERER_SKIA_VK:
+      case TestRendererType::kSkiaVk:
         return "Skia Vulkan";
-      case RENDERER_SKIA_DAWN:
+      case TestRendererType::kSkiaDawn:
         return "Skia Dawn";
-      case RENDERER_SOFTWARE:
+      case TestRendererType::kSoftware:
         return "Software";
     }
   }
@@ -128,7 +128,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void SetUseLayerLists() { settings_.use_layer_lists = true; }
 
  protected:
-  explicit LayerTreeTest(RendererType renderer_type = RENDERER_GL);
+  explicit LayerTreeTest(
+      TestRendererType renderer_type = TestRendererType::kGL);
 
   void SkipAllocateInitialLocalSurfaceId();
   const viz::LocalSurfaceIdAllocation& GetCurrentLocalSurfaceIdAllocation()
@@ -218,23 +219,25 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   }
 
   bool use_skia_renderer() const {
-    return renderer_type_ == RENDERER_SKIA_GL ||
-           renderer_type_ == RENDERER_SKIA_VK ||
-           renderer_type_ == RENDERER_SKIA_DAWN;
+    return renderer_type_ == TestRendererType::kSkiaGL ||
+           renderer_type_ == TestRendererType::kSkiaVk ||
+           renderer_type_ == TestRendererType::kSkiaDawn;
   }
   bool use_software_renderer() const {
-    return renderer_type_ == RENDERER_SOFTWARE;
+    return renderer_type_ == TestRendererType::kSoftware;
   }
-  bool use_skia_vulkan() const { return renderer_type_ == RENDERER_SKIA_VK; }
+  bool use_skia_vulkan() const {
+    return renderer_type_ == TestRendererType::kSkiaVk;
+  }
   bool use_d3d12() const {
 #if defined(OS_WIN)
-    return renderer_type_ == RENDERER_SKIA_DAWN;
+    return renderer_type_ == TestRendererType::kSkiaDawn;
 #else
     return false;
 #endif
   }
 
-  const RendererType renderer_type_;
+  const TestRendererType renderer_type_;
 
   const viz::DebugRendererSettings debug_settings_;
 

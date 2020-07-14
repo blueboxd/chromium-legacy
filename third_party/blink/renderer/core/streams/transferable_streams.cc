@@ -487,10 +487,7 @@ void CrossRealmTransformWritable::HandleError(v8::Local<v8::Value> error) {
 class CrossRealmTransformReadable final : public CrossRealmTransformStream {
  public:
   CrossRealmTransformReadable(ScriptState* script_state, MessagePort* port)
-      : script_state_(script_state),
-        message_port_(port),
-        backpressure_promise_(
-            MakeGarbageCollected<StreamPromiseResolver>(script_state)) {}
+      : script_state_(script_state), message_port_(port) {}
 
   ReadableStream* CreateReadableStream(ExceptionState&);
 
@@ -502,7 +499,6 @@ class CrossRealmTransformReadable final : public CrossRealmTransformStream {
   void Trace(Visitor* visitor) const override {
     visitor->Trace(script_state_);
     visitor->Trace(message_port_);
-    visitor->Trace(backpressure_promise_);
     visitor->Trace(controller_);
     CrossRealmTransformStream::Trace(visitor);
   }
@@ -513,7 +509,6 @@ class CrossRealmTransformReadable final : public CrossRealmTransformStream {
 
   const Member<ScriptState> script_state_;
   const Member<MessagePort> message_port_;
-  Member<StreamPromiseResolver> backpressure_promise_;
   Member<ReadableStreamDefaultController> controller_;
   bool finished_ = false;
 };
@@ -542,7 +537,9 @@ class CrossRealmTransformReadable::PullAlgorithm final
       return PromiseReject(script_state, error);
     }
 
-    return readable_->backpressure_promise_->V8Promise(isolate);
+    // The Streams Standard guarantees that PullAlgorithm won't be called again
+    // until Enqueue() is called.
+    return PromiseResolveWithUndefined(script_state);
   }
 
   void Trace(Visitor* visitor) const override {
@@ -624,10 +621,6 @@ void CrossRealmTransformReadable::HandleMessage(MessageType type,
         // 1.0.
         ReadableStreamDefaultController::Enqueue(script_state_, controller_,
                                                  value, ASSERT_NO_EXCEPTION);
-
-        backpressure_promise_->ResolveWithUndefined(script_state_);
-        backpressure_promise_ =
-            MakeGarbageCollected<StreamPromiseResolver>(script_state_);
       }
       return;
     }

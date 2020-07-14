@@ -333,9 +333,9 @@ const char kAvatarToolbarButtonDescription[] =
 
 const char kBackForwardCacheName[] = "Back-forward cache";
 const char kBackForwardCacheDescription[] =
-    "Enables back-forward cache. NOTE: this feature is highly experimental and "
-    "will lead to various breakages, up to and including user data loss. "
-    "Do not enable unless you work on this feature";
+    "If enabled, caches eligible pages after cross-site navigations."
+    "To enable caching pages on same-site navigations too, choose 'enabled "
+    "same-site support'.";
 
 const char kBypassAppBannerEngagementChecksName[] =
     "Bypass user engagement checks";

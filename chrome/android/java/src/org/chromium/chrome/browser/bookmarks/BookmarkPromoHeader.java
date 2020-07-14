@@ -20,6 +20,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
@@ -82,7 +83,8 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
 
         AndroidSyncSettings.get().registerObserver(this);
 
-        mSignInManager = IdentityServicesProvider.get().getSigninManager();
+        mSignInManager = IdentityServicesProvider.get().getSigninManager(
+                Profile.getLastUsedRegularProfile());
         mSignInManager.addSignInStateObserver(this);
 
         mPromoState = calculatePromoState();

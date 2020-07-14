@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+
 cr.define('settings', function() {
   /**
    * An object describing a default image.
@@ -13,10 +15,10 @@ cr.define('settings', function() {
    *   website: (string|undefined)
    * }}
    */
-  let DefaultImage;
+  /* #export */ let DefaultImage;
 
   /** @interface */
-  class ChangePictureBrowserProxy {
+  /* #export */ class ChangePictureBrowserProxy {
     /**
      * Retrieves the initial set of default images, profile image, etc. As a
      * response, the C++ sends these WebUIListener events:
@@ -65,7 +67,7 @@ cr.define('settings', function() {
   /**
    * @implements {settings.ChangePictureBrowserProxy}
    */
-  class ChangePictureBrowserProxyImpl {
+  /* #export */ class ChangePictureBrowserProxyImpl {
     /** @override */
     initialize() {
       chrome.send('onChangePicturePageInitialized');

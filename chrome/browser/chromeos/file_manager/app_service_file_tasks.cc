@@ -28,6 +28,7 @@
 #include "components/arc/intent_helper/intent_constants.h"
 #include "components/arc/mojom/file_system.mojom.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/entry_info.h"
 #include "storage/browser/file_system/file_system_context.h"

@@ -84,13 +84,6 @@ class WebState;
 - (void)fillPasswordFormWithFillData:(const password_manager::FillData&)fillData
                    completionHandler:(nullable void (^)(BOOL))completionHandler;
 
-// Finds password forms in the page and fills them with the |username| and
-// |password|. If not nil, |completionHandler| is called once per form filled.
-- (void)findAndFillPasswordFormsWithUserName:(NSString*)username
-                                    password:(NSString*)password
-                           completionHandler:
-                               (nullable void (^)(BOOL))completionHandler;
-
 // Finds the password form with unique ID |formIdentifier| and calls
 // |completionHandler| with the populated |FormData| data structure. |found| is
 // YES if the current form was found successfully, NO otherwise.

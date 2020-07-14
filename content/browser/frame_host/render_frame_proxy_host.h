@@ -169,6 +169,8 @@ class CONTENT_EXPORT RenderFrameProxyHost
       const base::string16& source_origin,
       const base::string16& target_origin,
       blink::TransferableMessage message) override;
+  void PrintCrossProcessSubframe(const gfx::Rect& rect,
+                                 int document_cookie) override;
 
   // blink::mojom::RemoteMainFrameHost overrides:
   void FocusPage() override;
@@ -200,7 +202,6 @@ class CONTENT_EXPORT RenderFrameProxyHost
 
   // IPC Message handlers.
   void OnDetach();
-  void OnPrintCrossProcessSubframe(const gfx::Rect& rect, int document_cookie);
 
   // IPC::Listener
   void OnAssociatedInterfaceRequest(

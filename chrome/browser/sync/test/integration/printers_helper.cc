@@ -105,7 +105,7 @@ bool EditPrinterDescription(chromeos::SyncedPrintersManager* manager,
 chromeos::Printer CreateTestPrinter(int index) {
   chromeos::Printer printer(PrinterId(index));
   printer.set_description("Description");
-  printer.set_uri(base::StringPrintf("ipp://192.168.1.%d", index));
+  printer.SetUri(base::StringPrintf("ipp://192.168.1.%d", index));
 
   return printer;
 }

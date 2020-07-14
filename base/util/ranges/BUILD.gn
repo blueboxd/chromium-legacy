@@ -7,6 +7,7 @@ source_set("ranges") {
     "algorithm.h",
     "functional.h",
     "iterator.h",
+    "ranges.h",
   ]
 }
 

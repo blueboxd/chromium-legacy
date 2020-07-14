@@ -13,7 +13,7 @@
 namespace cc {
 
 struct PixelResourceTestCase {
-  LayerTreeTest::RendererType renderer_type;
+  TestRendererType renderer_type;
   TestRasterType raster_type;
 };
 
@@ -21,7 +21,7 @@ class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
  public:
   explicit LayerTreeHostPixelResourceTest(PixelResourceTestCase test_case);
 
-  RendererType renderer_type() const { return test_case_.renderer_type; }
+  TestRendererType renderer_type() const { return test_case_.renderer_type; }
 
   const char* GetRendererSuffix() const;
 

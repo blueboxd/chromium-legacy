@@ -238,10 +238,17 @@ class CORE_EXPORT NGPhysicalFragment
   bool HasLayer() const { return IsCSSBox() && layout_object_->HasLayer(); }
 
   // The PaintLayer associated with the fragment.
-  PaintLayer* Layer() const;
+  PaintLayer* Layer() const {
+    if (!HasLayer())
+      return nullptr;
+    return To<LayoutBoxModelObject>(layout_object_)->Layer();
+  }
 
   // Whether this object has a self-painting |Layer()|.
-  bool HasSelfPaintingLayer() const;
+  bool HasSelfPaintingLayer() const {
+    return HasLayer() &&
+           To<LayoutBoxModelObject>(layout_object_)->HasSelfPaintingLayer();
+  }
 
   // True if overflow != 'visible', except for certain boxes that do not allow
   // overflow clip; i.e., AllowOverflowClip() returns false.

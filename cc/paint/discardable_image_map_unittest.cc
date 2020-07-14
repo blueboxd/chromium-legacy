@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <algorithm>
+#include <limits>
 #include <memory>
 
 #include "base/memory/ref_counted.h"
@@ -1130,6 +1132,40 @@ TEST_F(DiscardableImageMapTest, TracksImageRegions) {
   EXPECT_EQ(ImageRectsToRegion(image_map.GetRectsForImage(image.stable_id())),
             expected_region);
 }
+TEST_F(DiscardableImageMapTest, HighBitDepth) {
+  gfx::Rect visible_rect(500, 500);
+
+  SkBitmap bitmap;
+  auto info = SkImageInfo::Make(visible_rect.width(), visible_rect.height(),
+                                kRGBA_F16_SkColorType, kPremul_SkAlphaType,
+                                nullptr /* color_space */);
+  bitmap.allocPixels(info);
+  bitmap.eraseColor(SK_AlphaTRANSPARENT);
+  PaintImage discardable_image = PaintImageBuilder::WithDefault()
+                                     .set_id(PaintImage::GetNextId())
+                                     .set_is_high_bit_depth(true)
+                                     .set_image(SkImage::MakeFromBitmap(bitmap),
+                                                PaintImage::GetNextContentId())
+                                     .TakePaintImage();
+
+  FakeContentLayerClient content_layer_client;
+  content_layer_client.set_bounds(visible_rect.size());
+
+  scoped_refptr<DisplayItemList> display_list =
+      content_layer_client.PaintContentsToDisplayList(
+          ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+  display_list->GenerateDiscardableImagesMetadata();
+  const DiscardableImageMap& image_map = display_list->discardable_image_map();
+  EXPECT_FALSE(image_map.contains_hbd_images());
+
+  content_layer_client.add_draw_image(discardable_image, gfx::Point(0, 0),
+                                      PaintFlags());
+  display_list = content_layer_client.PaintContentsToDisplayList(
+      ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+  display_list->GenerateDiscardableImagesMetadata();
+  const DiscardableImageMap& image_map2 = display_list->discardable_image_map();
+  EXPECT_TRUE(image_map2.contains_hbd_images());
+}
 
 class DiscardableImageMapColorSpaceTest
     : public DiscardableImageMapTest,
@@ -1151,6 +1187,8 @@ TEST_P(DiscardableImageMapColorSpaceTest, ColorSpace) {
   const DiscardableImageMap& image_map = display_list->discardable_image_map();
 
   EXPECT_TRUE(image_map.contains_only_srgb_images());
+  EXPECT_FALSE(image_map.contains_hdr_images());
+  EXPECT_FALSE(image_map.contains_hbd_images());
 
   content_layer_client.add_draw_image(discardable_image, gfx::Point(0, 0),
                                       PaintFlags());
@@ -1165,12 +1203,15 @@ TEST_P(DiscardableImageMapColorSpaceTest, ColorSpace) {
     EXPECT_TRUE(image_map2.contains_only_srgb_images());
   else
     EXPECT_FALSE(image_map2.contains_only_srgb_images());
+
+  if (image_color_space.IsHDR())
+    EXPECT_TRUE(image_map2.contains_hdr_images());
 }
 
 gfx::ColorSpace test_color_spaces[] = {
     gfx::ColorSpace(), gfx::ColorSpace::CreateSRGB(),
-    gfx::ColorSpace::CreateDisplayP3D65(),
-};
+    gfx::ColorSpace::CreateDisplayP3D65(), gfx::ColorSpace::CreateHDR10(),
+    gfx::ColorSpace::CreateHLG()};
 
 INSTANTIATE_TEST_SUITE_P(ColorSpace,
                          DiscardableImageMapColorSpaceTest,

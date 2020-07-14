@@ -153,8 +153,8 @@ TEST(PrinterTranslatorTest, InvalidUriFails) {
   preference.SetString("display_name", kName);
   preference.SetString("ppd_resource.effective_model", kEffectiveMakeAndModel);
 
-  // uri with dangling colon
-  preference.SetString("uri", "ipp://hostname.tld:");
+  // uri with incorrect port
+  preference.SetString("uri", "ipp://hostname.tld:-1");
 
   std::unique_ptr<Printer> printer = RecommendedPrinterToPrinter(preference);
   EXPECT_FALSE(printer);
@@ -197,7 +197,7 @@ TEST(PrinterTranslatorTest, RecommendedPrinterToPrinter) {
   EXPECT_EQ(kMake, printer->manufacturer());
   EXPECT_EQ(kModel, printer->model());
   EXPECT_EQ(kMakeAndModel, printer->make_and_model());
-  EXPECT_EQ(kUri, printer->uri());
+  EXPECT_EQ(kUri, printer->uri().GetNormalized());
   EXPECT_EQ(kUUID, printer->uuid());
 
   EXPECT_EQ(kEffectiveMakeAndModel,
@@ -218,7 +218,7 @@ TEST(PrinterTranslatorTest, RecommendedPrinterToPrinterAutoconf) {
 
   EXPECT_EQ(kHash, printer->id());
   EXPECT_EQ(kName, printer->display_name());
-  EXPECT_EQ(kUri, printer->uri());
+  EXPECT_EQ(kUri, printer->uri().GetNormalized());
 
   EXPECT_EQ(true, printer->ppd_reference().autoconf);
 }
@@ -281,7 +281,7 @@ TEST(PrinterTranslatorTest, GetCupsPrinterInfoGenericPrinter) {
 
 TEST(PrinterTranslatorTest, GetCupsPrinterInfoGenericPrinterWithUri) {
   Printer printer = CreateGenericPrinter();
-  printer.set_uri(kUri);
+  ASSERT_TRUE(printer.SetUri(kUri));
 
   std::unique_ptr<base::DictionaryValue> printer_info =
       GetCupsPrinterInfo(printer);
@@ -295,7 +295,7 @@ TEST(PrinterTranslatorTest, GetCupsPrinterInfoGenericPrinterWithUri) {
 
 TEST(PrinterTranslatorTest, GetCupsPrinterInfoGenericPrinterWithUsbUri) {
   Printer printer = CreateGenericPrinter();
-  printer.set_uri(kUsbUri);
+  ASSERT_TRUE(printer.SetUri(kUsbUri));
 
   std::unique_ptr<base::DictionaryValue> printer_info =
       GetCupsPrinterInfo(printer);

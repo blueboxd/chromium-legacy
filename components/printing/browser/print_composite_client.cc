@@ -34,23 +34,23 @@ uint64_t GenerateFrameGuid(content::RenderFrameHost* render_frame_host) {
   return static_cast<uint64_t>(process_id) << 32 | frame_id;
 }
 
-// Converts a ContentToProxyIdMap to ContentToFrameMap.
-// ContentToProxyIdMap maps content id to the routing id of its corresponding
-// render frame proxy. This is generated when the content holder was created;
-// ContentToFrameMap maps content id to its render frame's global unique id.
-// The global unique id has the render process id concatenated with render
-// frame routing id, which can uniquely identify a render frame.
+// Converts a ContentToProxyTokenMap to ContentToFrameMap.
+// ContentToProxyTokenMap maps content id to the frame token of its
+// corresponding render frame proxy. This is generated when the content holder
+// was created; ContentToFrameMap maps content id to its render frame's global
+// unique id. The global unique id has the render process id concatenated with
+// render frame routing id, which can uniquely identify a render frame.
 ContentToFrameMap ConvertContentInfoMap(
     content::RenderFrameHost* render_frame_host,
-    const ContentToProxyIdMap& content_proxy_map) {
+    const ContentToProxyTokenMap& content_proxy_map) {
   ContentToFrameMap content_frame_map;
   int process_id = render_frame_host->GetProcess()->GetID();
   for (const auto& entry : content_proxy_map) {
     auto content_id = entry.first;
-    auto proxy_id = entry.second;
+    auto proxy_token = entry.second;
     // Find the RenderFrameHost that the proxy id corresponds to.
     content::RenderFrameHost* rfh =
-        content::RenderFrameHost::FromPlaceholderId(process_id, proxy_id);
+        content::RenderFrameHost::FromPlaceholderToken(process_id, proxy_token);
     if (!rfh) {
       // If the corresponding RenderFrameHost cannot be found, just skip it.
       continue;

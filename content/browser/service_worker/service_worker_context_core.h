@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_threadsafe.h"
+#include "components/services/storage/public/mojom/service_worker_storage_control.mojom.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
 #include "content/browser/service_worker/service_worker_registration_status.h"
@@ -176,6 +177,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // TODO(crbug.com/1016064): Remove this accessor once some parts of
   // ServiceWorkerStorage are moved to the Storage Service.
   ServiceWorkerStorage* storage() const;
+  mojo::Remote<storage::mojom::ServiceWorkerStorageControl>&
+  GetStorageControl();
   ServiceWorkerProcessManager* process_manager();
   ServiceWorkerJobCoordinator* job_coordinator() {
     return job_coordinator_.get();

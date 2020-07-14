@@ -467,7 +467,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       GURL* blocked_url,
       network::mojom::SourceLocation* source_location) const override;
 
-  // ui::AXActionHandler:
+  // ui::AXActionHandlerBase:
   void PerformAction(const ui::AXActionData& data) override;
   bool RequiresPerformActionPointInPixels() const override;
 

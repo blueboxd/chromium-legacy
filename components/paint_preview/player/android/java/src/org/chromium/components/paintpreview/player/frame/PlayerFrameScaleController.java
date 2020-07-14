@@ -8,6 +8,8 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.util.Size;
 
+import org.chromium.components.paintpreview.player.PlayerUserActionRecorder;
+
 import javax.annotation.Nullable;
 
 /**
@@ -138,7 +140,6 @@ public class PlayerFrameScaleController {
         }
         mMediatorDelegate.setBitmapScaleMatrix(mBitmapScaleMatrix, mUncommittedScaleFactor);
         if (mUserInteractionCallback != null) mUserInteractionCallback.run();
-
         return true;
     }
 
@@ -171,7 +172,7 @@ public class PlayerFrameScaleController {
         mMediatorDelegate.resetScaleFactorOfAllSubframes();
         mMediatorDelegate.updateVisuals(true);
         mMediatorDelegate.forceRedrawVisibleSubframes();
-
+        PlayerUserActionRecorder.recordZoom();
         return true;
     }
 }

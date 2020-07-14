@@ -27,18 +27,13 @@ import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.CollectionUtil;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.test.CommandLineInitRule;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
-import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.webapps.WebappTestHelper;
 import org.chromium.components.embedder_support.util.UrlConstants;
 
@@ -50,11 +45,9 @@ import java.util.List;
  * TODO(nileshagrawal): Add tests for onNewIntent.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
-@DisableFeatures({ChromeFeatureList.ANDROID_BLOCK_INTENT_NON_SAFELISTED_HEADERS})
 public class IntentHandlerTest {
     @Rule
-    public final RuleChain mChain = RuleChain.outerRule(new Features.JUnitProcessor())
-                                            .around(new CommandLineInitRule(null))
+    public final RuleChain mChain = RuleChain.outerRule(new CommandLineInitRule(null))
                                             .around(new ChromeBrowserTestRule())
                                             .around(new UiThreadTestRule());
 
@@ -453,32 +446,12 @@ public class IntentHandlerTest {
     @SmallTest
     @UiThreadTest
     @Feature({"Android-AppBase"})
-    @EnableFeatures({ChromeFeatureList.ANDROID_BLOCK_INTENT_NON_SAFELISTED_HEADERS})
     public void testStripNonCorsSafelistedCustomHeader() {
         Bundle bundle = new Bundle();
         bundle.putString("X-Some-Header", "1");
         Intent headersIntent = new Intent(Intent.ACTION_VIEW);
         headersIntent.putExtra(Browser.EXTRA_HEADERS, bundle);
         Assert.assertNull(IntentHandler.getExtraHeadersFromIntent(headersIntent));
-    }
-
-    @Test
-    @SmallTest
-    @UiThreadTest
-    @Feature({"Android-AppBase"})
-    public void testLogHeaders() {
-        Bundle bundle = new Bundle();
-        bundle.putString("Content-Length", "1234");
-        Intent headersIntent = new Intent(Intent.ACTION_VIEW);
-        headersIntent.putExtra(Browser.EXTRA_HEADERS, bundle);
-
-        IntentHandler.getExtraHeadersFromIntent(headersIntent);
-        Assert.assertEquals(0,
-                RecordHistogram.getHistogramTotalCountForTesting("Android.IntentHeaders"));
-
-        IntentHandler.getExtraHeadersFromIntent(headersIntent, true);
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramTotalCountForTesting("Android.IntentHeaders"));
     }
 
     @Test

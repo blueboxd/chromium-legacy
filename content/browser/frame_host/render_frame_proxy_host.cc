@@ -200,8 +200,6 @@ bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameProxyHost, msg)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_PrintCrossProcessSubframe,
-                        OnPrintCrossProcessSubframe)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -603,6 +601,12 @@ void RenderFrameProxyHost::RouteMessageEvent(
                                target_origin, std::move(message));
 }
 
+void RenderFrameProxyHost::PrintCrossProcessSubframe(const gfx::Rect& rect,
+                                                     int32_t document_cookie) {
+  RenderFrameHostImpl* rfh = frame_tree_node_->current_frame_host();
+  rfh->delegate()->PrintCrossProcessSubframe(rect, document_cookie, rfh);
+}
+
 void RenderFrameProxyHost::FocusPage() {
   frame_tree_node_->current_frame_host()->FocusPage();
 }
@@ -705,12 +709,6 @@ void RenderFrameProxyHost::AdvanceFocus(
 
 bool RenderFrameProxyHost::IsInertForTesting() {
   return cross_process_frame_connector_->IsInert();
-}
-
-void RenderFrameProxyHost::OnPrintCrossProcessSubframe(const gfx::Rect& rect,
-                                                       int document_cookie) {
-  RenderFrameHostImpl* rfh = frame_tree_node_->current_frame_host();
-  rfh->delegate()->PrintCrossProcessSubframe(rect, document_cookie, rfh);
 }
 
 blink::AssociatedInterfaceProvider*

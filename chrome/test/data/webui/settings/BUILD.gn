@@ -193,7 +193,6 @@ js_type_check("closure_compile") {
     ":test_sync_browser_proxy.m",
     ":test_util",
 
-    #":test_wallpaper_browser_proxy",
     #":zoom_levels_tests",
   ]
 }

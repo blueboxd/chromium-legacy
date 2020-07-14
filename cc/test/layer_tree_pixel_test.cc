@@ -39,12 +39,12 @@ namespace cc {
 
 namespace {
 
-TestRasterType GetDefaultRasterType(LayerTreeTest::RendererType renderer_type) {
+TestRasterType GetDefaultRasterType(TestRendererType renderer_type) {
   switch (renderer_type) {
-    case LayerTreeTest::RENDERER_SOFTWARE:
+    case TestRendererType::kSoftware:
       return TestRasterType::kBitmap;
-    case LayerTreeTest::RENDERER_SKIA_VK:
-    case LayerTreeTest::RENDERER_SKIA_DAWN:
+    case TestRendererType::kSkiaVk:
+    case TestRendererType::kSkiaDawn:
       return TestRasterType::kOop;
     default:
       return TestRasterType::kOneCopy;
@@ -53,8 +53,7 @@ TestRasterType GetDefaultRasterType(LayerTreeTest::RendererType renderer_type) {
 
 }  // namespace
 
-LayerTreePixelTest::LayerTreePixelTest(
-    LayerTreeTest::RendererType renderer_type)
+LayerTreePixelTest::LayerTreePixelTest(TestRendererType renderer_type)
     : LayerTreeTest(renderer_type),
       raster_type_(GetDefaultRasterType(renderer_type)),
       pixel_comparator_(new ExactPixelComparator(true)),
@@ -145,7 +144,7 @@ std::unique_ptr<viz::OutputSurface>
 LayerTreePixelTest::CreateDisplayOutputSurfaceOnThread(
     scoped_refptr<viz::ContextProvider> compositor_context_provider) {
   std::unique_ptr<PixelTestOutputSurface> display_output_surface;
-  if (renderer_type_ == RENDERER_GL) {
+  if (renderer_type_ == TestRendererType::kGL) {
     // Pixel tests use a separate context for the Display to more closely
     // mimic texture transport from the renderer process to the Display
     // compositor.
@@ -160,7 +159,7 @@ LayerTreePixelTest::CreateDisplayOutputSurfaceOnThread(
     display_output_surface = std::make_unique<PixelTestOutputSurface>(
         std::move(display_context_provider), surface_origin);
   } else {
-    EXPECT_EQ(RENDERER_SOFTWARE, renderer_type_);
+    EXPECT_EQ(TestRendererType::kSoftware, renderer_type_);
     display_output_surface = std::make_unique<PixelTestOutputSurface>(
         std::make_unique<viz::SoftwareOutputDevice>());
   }

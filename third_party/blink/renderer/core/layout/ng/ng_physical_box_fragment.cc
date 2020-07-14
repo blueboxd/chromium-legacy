@@ -180,14 +180,6 @@ NGPhysicalBoxFragment::CloneAsHiddenForPaint() const {
   return builder.ToBoxFragment();
 }
 
-bool NGPhysicalBoxFragment::HasSelfPaintingLayer() const {
-  if (!IsCSSBox())
-    return false;
-  SECURITY_DCHECK(GetLayoutObject() && GetLayoutObject()->IsBoxModelObject());
-  return (static_cast<const LayoutBoxModelObject*>(GetLayoutObject()))
-      ->HasSelfPaintingLayer();
-}
-
 PhysicalRect NGPhysicalBoxFragment::OverflowClipRect(
     const PhysicalOffset& location,
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior) const {

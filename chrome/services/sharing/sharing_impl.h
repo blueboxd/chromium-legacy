@@ -40,11 +40,11 @@ class SharingWebRtcConnection;
 
 class SharingImpl : public mojom::Sharing {
  public:
-  using NearbyConnectionsHostMojom =
-      location::nearby::connections::mojom::NearbyConnectionsHost;
   using NearbyConnectionsMojom =
       location::nearby::connections::mojom::NearbyConnections;
   using NearbyConnections = location::nearby::connections::NearbyConnections;
+  using NearbyConnectionsDependenciesPtr =
+      location::nearby::connections::mojom::NearbyConnectionsDependenciesPtr;
 
   explicit SharingImpl(mojo::PendingReceiver<mojom::Sharing> receiver);
   SharingImpl(const SharingImpl&) = delete;
@@ -61,7 +61,7 @@ class SharingImpl : public mojom::Sharing {
       mojo::PendingRemote<network::mojom::MdnsResponder> mdns_responder,
       std::vector<mojom::IceServerPtr> ice_servers) override;
   void CreateNearbyConnections(
-      mojo::PendingRemote<NearbyConnectionsHostMojom> host,
+      NearbyConnectionsDependenciesPtr dependencies,
       CreateNearbyConnectionsCallback callback) override;
   void CreateNearbySharingDecoder(
       CreateNearbySharingDecoderCallback callback) override;

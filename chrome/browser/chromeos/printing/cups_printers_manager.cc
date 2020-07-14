@@ -38,7 +38,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/printing/cups_printer_status.h"
 #include "chromeos/printing/printing_constants.h"
-#include "chromeos/printing/uri_components.h"
+#include "chromeos/printing/uri.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/policy/policy_constants.h"
@@ -51,15 +51,8 @@
 
 namespace chromeos {
 
-bool IsIppUri(base::StringPiece printer_uri) {
-  base::StringPiece::size_type separator_location =
-      printer_uri.find(url::kStandardSchemeSeparator);
-  if (separator_location == base::StringPiece::npos) {
-    return false;
-  }
-
-  base::StringPiece scheme_part = printer_uri.substr(0, separator_location);
-  return scheme_part == kIppScheme || scheme_part == kIppsScheme;
+bool IsIppUri(const Uri& uri) {
+  return (uri.GetScheme() == kIppScheme || uri.GetScheme() == kIppsScheme);
 }
 
 namespace {
@@ -348,9 +341,8 @@ class CupsPrintersManagerImpl
       return;
     }
 
-    base::Optional<UriComponents> parsed_uri = ParseUri(printer->uri());
     // Behavior for querying a non-IPP uri is undefined and disallowed.
-    if (!parsed_uri || !IsIppUri(printer->uri())) {
+    if (IsIppUri(printer->uri())) {
       PRINTER_LOG(ERROR) << "Unable to complete printer status request. "
                          << "Printer uri is invalid. Printer id: "
                          << printer_id;
@@ -362,9 +354,10 @@ class CupsPrintersManagerImpl
       return;
     }
 
-    const UriComponents& uri = parsed_uri.value();
     QueryIppPrinter(
-        uri.host(), uri.port(), uri.path(), uri.encrypted(),
+        printer->uri().GetHostEncoded(), printer->uri().GetPort(),
+        printer->uri().GetPathEncodedAsString(),
+        printer->uri().GetScheme() == kIppsScheme,
         base::BindOnce(&CupsPrintersManagerImpl::OnPrinterInfoFetched,
                        weak_ptr_factory_.GetWeakPtr(), printer_id,
                        std::move(cb)));
@@ -563,10 +556,10 @@ class CupsPrintersManagerImpl
           // If the detected printer supports ipp-over-usb and we could not find
           // a ppd for it, then we switch to the ippusb scheme and mark it as
           // autoconf.
-          printer.set_uri(
-              base::StringPrintf("ippusb://%04x_%04x/ipp/print",
-                                 detected.ppd_search_data.usb_vendor_id,
-                                 detected.ppd_search_data.usb_product_id));
+          printer.SetUri(
+              Uri(base::StringPrintf("ippusb://%04x_%04x/ipp/print",
+                                     detected.ppd_search_data.usb_vendor_id,
+                                     detected.ppd_search_data.usb_product_id)));
           printer.mutable_ppd_reference()->autoconf = true;
           printers_.Insert(PrinterClass::kAutomatic, printer);
         } else {

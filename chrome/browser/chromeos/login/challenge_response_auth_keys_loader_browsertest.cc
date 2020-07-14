@@ -67,7 +67,8 @@ class ChallengeResponseAuthKeysLoaderBrowserTest : public OobeBaseTest {
   }
 
   void TearDownOnMainThread() override {
-    challenge_response_auth_keys_loader_.reset();
+    if (!should_delete_loader_after_shutdown_)
+      challenge_response_auth_keys_loader_.reset();
     OobeBaseTest::TearDownOnMainThread();
   }
 
@@ -171,6 +172,10 @@ class ChallengeResponseAuthKeysLoaderBrowserTest : public OobeBaseTest {
     challenge_response_auth_keys_loader_.reset();
   }
 
+  void set_should_delete_loader_after_shutdown() {
+    should_delete_loader_after_shutdown_ = true;
+  }
+
  private:
   void WaitUntilPrefUpdated() {
     PrefChangeRegistrar pref_change_registrar;
@@ -201,6 +206,10 @@ class ChallengeResponseAuthKeysLoaderBrowserTest : public OobeBaseTest {
 
   std::unique_ptr<ChallengeResponseAuthKeysLoader>
       challenge_response_auth_keys_loader_;
+
+  // Whether |challenge_response_auth_keys_loader_| should be destroyed after
+  // the browser shutdown, not before it.
+  bool should_delete_loader_after_shutdown_ = false;
 
   base::WeakPtrFactory<ChallengeResponseAuthKeysLoaderBrowserTest>
       weak_ptr_factory_{this};
@@ -331,6 +340,27 @@ IN_PROC_BROWSER_TEST_F(ChallengeResponseAuthKeysLoaderBrowserTest,
           }));
   // Destroy the loader immediately.
   DeleteChallengeResponseAuthKeysLoader();
+}
+
+// Tests the case when the load operation isn't completed by the time the
+// browser shuts down.
+IN_PROC_BROWSER_TEST_F(ChallengeResponseAuthKeysLoaderBrowserTest,
+                       AfterShutdown) {
+  RegisterChallengeResponseKey(/*with_extension_id=*/true);
+  InstallExtension(/*wait_on_extension_loaded=*/false);
+  CheckExtensionInstallPolicyApplied();
+
+  // Challenge Response Auth Keys can be loaded.
+  EXPECT_TRUE(
+      ChallengeResponseAuthKeysLoader::CanAuthenticateUser(account_id()));
+
+  // Start the key loading operation. Intentionally do not wait for its
+  // completion.
+  challenge_response_auth_keys_loader()->LoadAvailableKeys(account_id(),
+                                                           base::DoNothing());
+  // Postpone destroying the loader until after the browser shutdown. No crash
+  // should occur.
+  set_should_delete_loader_after_shutdown();
 }
 
 class ChallengeResponseExtensionLoadObserverTest

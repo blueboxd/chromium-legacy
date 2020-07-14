@@ -389,18 +389,11 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
       script_origin(), registration_id(), version_id(),
       embedded_worker()->process_id(), embedded_worker()->thread_id(),
       embedded_worker()->worker_devtools_agent_route_id());
-
-  UMA_HISTOGRAM_COUNTS_10000("ServiceWorker.VersionInfo.ScriptURLLength",
-                             info.script_url.spec().length());
-
   for (const auto& controllee : controllee_map_) {
     ServiceWorkerContainerHost* container_host = controllee.second;
     info.clients.emplace(container_host->client_uuid(),
                          container_host->GetServiceWorkerClientInfo());
   }
-
-  UMA_HISTOGRAM_COUNTS_10000("ServiceWorker.VersionInfo.ClientCount",
-                             info.clients.size());
 
   info.script_response_time = script_response_time_for_devtools_;
   if (!main_script_response_)

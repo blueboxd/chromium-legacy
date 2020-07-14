@@ -31,12 +31,11 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
-#include "third_party/blink/public/common/feature_policy/document_policy.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -47,6 +46,7 @@
 namespace blink {
 
 class ContentSecurityPolicy;
+class DocumentPolicy;
 class FeaturePolicy;
 class PolicyValue;
 class OriginTrialContext;
@@ -78,7 +78,7 @@ class CORE_EXPORT SecurityContext {
   enum SecurityContextType { kWindow, kWorker, kRemoteFrame };
 
   explicit SecurityContext(SecurityContextType context_type);
-  virtual ~SecurityContext() = default;
+  virtual ~SecurityContext();
 
   void Initialize(const SecurityContextInit&);
 
@@ -148,16 +148,12 @@ class CORE_EXPORT SecurityContext {
   const DocumentPolicy* GetDocumentPolicy() const {
     return document_policy_.get();
   }
-  void SetDocumentPolicy(std::unique_ptr<DocumentPolicy> policy) {
-    document_policy_ = std::move(policy);
-  }
+  void SetDocumentPolicy(std::unique_ptr<DocumentPolicy> policy);
 
   const DocumentPolicy* GetReportOnlyDocumentPolicy() const {
     return report_only_document_policy_.get();
   }
-  void SetReportOnlyDocumentPolicy(std::unique_ptr<DocumentPolicy> policy) {
-    report_only_document_policy_ = std::move(policy);
-  }
+  void SetReportOnlyDocumentPolicy(std::unique_ptr<DocumentPolicy> policy);
 
   // Tests whether the policy-controlled feature is enabled in this frame.
   // Use ExecutionContext::IsFeatureEnabled if a failure should be reported.
@@ -198,8 +194,7 @@ class CORE_EXPORT SecurityContext {
 
  private:
   Member<ContentSecurityPolicy> content_security_policy_;
-  mojom::blink::InsecureRequestPolicy insecure_request_policy_ =
-      mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone;
+  mojom::blink::InsecureRequestPolicy insecure_request_policy_;
   InsecureNavigationsSet insecure_navigations_to_upgrade_;
   bool require_safe_types_ = false;
   const SecurityContextType context_type_for_asserts_;

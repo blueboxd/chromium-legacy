@@ -202,6 +202,27 @@
            file="${root_gen_dir}/ui/webui/resources/cr_elements/chromeos/cr_picture/png.m.js"
            use_base_dir="false"
            type="BINDATA" />
+    <include name="IDR_CR_ELEMENTS_CHROMEOS_CR_PICTURE_CAMERA_M_JS"
+           file="${root_gen_dir}/ui/webui/resources/cr_elements/chromeos/cr_picture/cr_camera.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+    <include name="IDR_CR_ELEMENTS_CHROMEOS_CR_PICTURE_PICTURE_LIST_M_JS"
+           file="${root_gen_dir}/ui/webui/resources/cr_elements/chromeos/cr_picture/cr_picture_list.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+    <include name="IDR_CR_ELEMENTS_CHROMEOS_CR_PICTURE_PICTURE_PANE_M_JS"
+           file="${root_gen_dir}/ui/webui/resources/cr_elements/chromeos/cr_picture/cr_picture_pane.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+    <include name="IDR_CR_ELEMENTS_CHROMEOS_CR_PICTURE_PICTURE_TYPES_M_JS"
+           file="${root_gen_dir}/ui/webui/resources/cr_elements/chromeos/cr_picture/cr_picture_types.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+    <include name="IDR_CR_ELEMENTS_CHROMEOS_CR_PICTURE_ICONS_M_JS"
+           file="${root_gen_dir}/ui/webui/resources/cr_elements/chromeos/cr_picture/icons.m.js"
+           use_base_dir="false"
+           preprocess="true"
+           type="BINDATA" />
   </if>
   <include name="IDR_CR_ELEMENTS_LOTTIE_M_JS"
          file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_lottie/cr_lottie.m.js"

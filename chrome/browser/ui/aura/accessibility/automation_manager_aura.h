@@ -57,7 +57,7 @@ class AutomationManagerAura : public ui::AXActionHandler,
   // Handles a textual alert.
   void HandleAlert(const std::string& text);
 
-  // AXActionHandler implementation.
+  // AXActionHandlerBase implementation.
   void PerformAction(const ui::AXActionData& data) override;
 
   // views::AXAuraObjCache::Delegate implementation.

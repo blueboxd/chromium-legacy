@@ -19,12 +19,16 @@ core_global_constructors_original_interfaces = [
 ]
 
 # The size and the order in the following list must match to the previous one.
-core_global_constructors_original_interface_basenames = [
-  "dedicated_worker_global_scope",
-  "layout_worklet_global_scope",
-  "shared_worker_global_scope",
-  "window",
-]
+if (use_blink_v8_binding_new_idl_interface) {
+  core_global_constructors_original_interface_basenames = []
+} else {
+  core_global_constructors_original_interface_basenames = [
+    "dedicated_worker_global_scope",
+    "layout_worklet_global_scope",
+    "shared_worker_global_scope",
+    "window",
+  ]
+}
 
 # The interfaces aren't technically files, but we can treat them as file names
 # to get process_file_template to generate lists of IDL files corresponding

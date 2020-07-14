@@ -415,9 +415,6 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
                          const IntRect& transformed_frame_rect) override {}
   void UpdateRemoteViewportIntersection(
       const ViewportIntersectionState& intersection_state) override {}
-  uint32_t Print(const IntRect& rect, cc::PaintCanvas* canvas) const override {
-    return 0;
-  }
   AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override {
     return AssociatedInterfaceProvider::GetEmptyAssociatedInterfaceProvider();
   }

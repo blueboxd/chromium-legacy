@@ -154,6 +154,15 @@ bool LoginScreenTestApi::IsLockShown() {
 }
 
 // static
+void LoginScreenTestApi::AddOnLockScreenShownCallback(
+    base::OnceClosure on_lock_screen_shown) {
+  if (!LockScreen::HasInstance())
+    FAIL() << "No lock screen";
+  LockScreen::TestApi lock_screen_test(LockScreen::Get());
+  lock_screen_test.AddOnShownCallback(std::move(on_lock_screen_shown));
+}
+
+// static
 bool LoginScreenTestApi::IsLoginShelfShown() {
   LoginShelfView* view = GetLoginShelfView();
   return view && view->GetVisible();

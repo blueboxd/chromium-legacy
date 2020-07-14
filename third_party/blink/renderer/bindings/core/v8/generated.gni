@@ -208,6 +208,17 @@ if (is_win && is_official_build) {
             "$bindings_core_v8_output_dir/v8_{{source_name_part}}.h",
           ])
 }
+if (use_blink_v8_binding_new_idl_interface) {
+  bindings_core_generated_interface_files = []
+  bindings_core_generated_interface_files =
+      process_file_template(
+          core_buffer_source_type_idl_files +
+              core_callback_interface_idl_files + core_dictionary_idl_files,
+          [
+            "$bindings_core_v8_output_dir/v8_{{source_name_part}}.cc",
+            "$bindings_core_v8_output_dir/v8_{{source_name_part}}.h",
+          ])
+}
 
 generated_core_dictionary_files = []
 

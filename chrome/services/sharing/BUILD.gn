@@ -49,8 +49,10 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "nearby/test/mock_nearby_connections_host.cc",
-    "nearby/test/mock_nearby_connections_host.h",
+    "nearby/test/mock_bluetooth_adapter.cc",
+    "nearby/test/mock_bluetooth_adapter.h",
+    "nearby/test/mock_webrtc_signaling_messenger.cc",
+    "nearby/test/mock_webrtc_signaling_messenger.h",
     "sharing_impl_unittest.cc",
     "webrtc/sharing_webrtc_connection_integration_test.cc",
     "webrtc/sharing_webrtc_connection_unittest.cc",

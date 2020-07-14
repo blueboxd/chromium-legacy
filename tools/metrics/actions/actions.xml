@@ -18338,6 +18338,51 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="PaintPreview.Player.Flung">
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>fredmello@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <description>
+    Records when the user fling-scrolls the paint preview player.
+  </description>
+</action>
+
+<action name="PaintPreview.Player.LinkClicked">
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>fredmello@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <description>
+    Records when a link is clicked in the paint preview player.
+  </description>
+</action>
+
+<action name="PaintPreview.Player.Scrolled">
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>fredmello@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <description>
+    Records when the user scrolls the paint preview player.
+  </description>
+</action>
+
+<action name="PaintPreview.Player.Zoomed">
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>fredmello@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <description>
+    Records when the user zooms in/out the paint preview player.
+  </description>
+</action>
+
+<action name="PaintPreview.TabbedPlayer.Removed">
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>fredmello@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <description>
+    Records when the tabbed paint preview player is removed.
+  </description>
+</action>
+
 <action name="Panel_Minimize_Caption_Click">
   <obsolete>Removed 07/2018 since panels were deprecated in M-69.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>

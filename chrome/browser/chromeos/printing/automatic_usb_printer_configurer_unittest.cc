@@ -24,21 +24,21 @@ namespace {
 Printer CreateUsbPrinter(const std::string& id) {
   Printer printer;
   printer.set_id(id);
-  printer.set_uri("usb:printer");
+  printer.SetUri("usb://usb/printer");
   return printer;
 }
 
 Printer CreateIppUsbPrinter(const std::string& id) {
   Printer printer;
   printer.set_id(id);
-  printer.set_uri("ippusb:printer");
+  printer.SetUri("ippusb://usb/printer");
   return printer;
 }
 
 Printer CreateIppPrinter(const std::string& id) {
   Printer printer;
   printer.set_id(id);
-  printer.set_uri("ipp:printer");
+  printer.SetUri("ipp://usb/printer");
   return printer;
 }
 

@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.safety_check;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.browser.safety_check.SafetyCheckModel.Updates;
+
+import java.lang.ref.WeakReference;
 
 /**
  * Interface to interact with the version updater.
@@ -19,7 +20,8 @@ public interface SafetyCheckUpdatesDelegate {
     /**
      * Asynchronously checks for updates and invokes the provided callback with
      * the result.
-     * @param statusCallback A callback to invoke with the result.
+     * @param statusCallback A callback to invoke with the result. Takes an element of
+     *                       {@link SafetyCheckProperties.UpdatesState} as an argument.
      */
-    void checkForUpdates(Callback<Updates> statusCallback);
+    void checkForUpdates(WeakReference<Callback<Integer>> statusCallback);
 }

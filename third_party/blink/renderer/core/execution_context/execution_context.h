@@ -31,13 +31,9 @@
 #include <bitset>
 #include <memory>
 
-#include "base/location.h"
 #include "base/macros.h"
-#include "base/optional.h"
-#include "base/unguessable_token.h"
-#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
@@ -63,7 +59,12 @@
 
 namespace base {
 class SingleThreadTaskRunner;
+class UnguessableToken;
 }
+
+namespace ukm {
+class UkmRecorder;
+}  // namespace ukm
 
 namespace blink {
 
@@ -416,8 +417,7 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
 
   network::mojom::ReferrerPolicy referrer_policy_;
 
-  network::mojom::blink::IPAddressSpace address_space_ =
-      network::mojom::blink::IPAddressSpace::kUnknown;
+  network::mojom::blink::IPAddressSpace address_space_;
 
   // Tracks which feature policies have already been parsed, so as not to count
   // them multiple times.

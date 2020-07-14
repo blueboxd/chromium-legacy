@@ -153,7 +153,6 @@ AudioDevice::AudioDevice(const AudioNode& node) {
   else
     display_name = node.device_name;
   device_name = node.device_name;
-  mic_positions = node.mic_positions;
   priority = GetDevicePriority(type, node.is_input);
   active = node.active;
   plugged_time = node.plugged_time;
@@ -192,7 +191,6 @@ std::string AudioDevice::ToString() const {
                       active ? "true" : "false");
   base::StringAppendF(&result, "plugged_time= %s ",
                       base::NumberToString(plugged_time).c_str());
-  base::StringAppendF(&result, "mic_positions = %s ", mic_positions.c_str());
 
   return result;
 }

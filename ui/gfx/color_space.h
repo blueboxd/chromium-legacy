@@ -192,6 +192,9 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // HDR10 uses BT.2020 primaries with SMPTE ST 2084 PQ transfer function.
   static ColorSpace CreateHDR10(float sdr_white_point = 0.f);
 
+  // HLG uses the BT.2020 primaries with the ARIB_STD_B67 transfer function.
+  static ColorSpace CreateHLG();
+
   // Create a piecewise-HDR color space.
   // - If |primaries| is CUSTOM, then |custom_primary_matrix| must be
   //   non-nullptr.

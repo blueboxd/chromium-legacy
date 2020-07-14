@@ -224,6 +224,11 @@ class SyncedBookmarkTracker {
     model_type_state_ = std::move(model_type_state);
   }
 
+  // Treats the current time as last sync time.
+  // TODO(crbug.com/1032052): Remove this code once all local sync metadata is
+  // required to populate the client tag (and be considered invalid otherwise).
+  void UpdateLastSyncTime() { last_sync_time_ = base::Time::Now(); }
+
   std::vector<const Entity*> GetAllEntities() const;
 
   std::vector<const Entity*> GetEntitiesWithLocalChanges(
@@ -309,7 +314,8 @@ class SyncedBookmarkTracker {
   };
 
   SyncedBookmarkTracker(sync_pb::ModelTypeState model_type_state,
-                        bool bookmarks_full_title_reuploaded);
+                        bool bookmarks_full_title_reuploaded,
+                        base::Time last_sync_time);
 
   // Add entities to |this| tracker based on the content of |*model| and
   // |model_metadata|. Validates the integrity of |*model| and |model_metadata|
@@ -368,6 +374,12 @@ class SyncedBookmarkTracker {
   // TODO(crbug.com/1066962): remove this code when most of bookmarks are
   // reuploaded.
   bool bookmarks_full_title_reuploaded_ = false;
+
+  // The local timestamp corresponding to the last time remote updates were
+  // received.
+  // TODO(crbug.com/1032052): Remove this code once all local sync metadata is
+  // required to populate the client tag (and be considered invalid otherwise).
+  base::Time last_sync_time_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncedBookmarkTracker);
 };

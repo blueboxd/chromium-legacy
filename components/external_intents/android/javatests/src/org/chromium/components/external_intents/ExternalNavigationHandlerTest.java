@@ -127,6 +127,7 @@ public class ExternalNavigationHandlerTest {
     private static final String WEBAPK_SCOPE = "https://www.template.com";
     private static final String WEBAPK_PACKAGE_PREFIX = "org.chromium.webapk";
     private static final String WEBAPK_PACKAGE_NAME = WEBAPK_PACKAGE_PREFIX + ".template";
+    private static final String INVALID_WEBAPK_PACKAGE_NAME = WEBAPK_PACKAGE_PREFIX + ".invalid";
 
     private static final String[] SUPERVISOR_START_ACTIONS = {
             "com.google.android.instantapps.START", "com.google.android.instantapps.nmr1.INSTALL",
@@ -864,8 +865,7 @@ public class ExternalNavigationHandlerTest {
         // IMDB app isn't installed.
         mDelegate.setCanResolveActivityForExternalSchemes(false);
 
-        mDelegate.add(new IntentActivity(IMDB_WEBPAGE_FOR_TOM_HANKS, WEBAPK_PACKAGE_NAME)
-                              .withIsWebApk(true));
+        mDelegate.add(new IntentActivity(IMDB_WEBPAGE_FOR_TOM_HANKS, WEBAPK_PACKAGE_NAME));
         checkUrl(INTENT_URL_WITH_FALLBACK_URL)
                 .withReferrer(SEARCH_RESULT_URL_FOR_TOM_HANKS)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_WEBAPK);
@@ -877,8 +877,7 @@ public class ExternalNavigationHandlerTest {
         // IMDB app isn't installed.
         mDelegate.setCanResolveActivityForExternalSchemes(false);
 
-        mDelegate.add(new IntentActivity(IMDB_WEBPAGE_FOR_TOM_HANKS, WEBAPK_PACKAGE_NAME)
-                              .withIsWebApk(true));
+        mDelegate.add(new IntentActivity(IMDB_WEBPAGE_FOR_TOM_HANKS, WEBAPK_PACKAGE_NAME));
         mDelegate.add(new IntentActivity(IMDB_WEBPAGE_FOR_TOM_HANKS, TEXT_APP_1_PACKAGE_NAME));
         checkUrl(INTENT_URL_WITH_FALLBACK_URL)
                 .withReferrer(SEARCH_RESULT_URL_FOR_TOM_HANKS)
@@ -1007,8 +1006,7 @@ public class ExternalNavigationHandlerTest {
         // IMDB app isn't installed.
         mDelegate.setCanResolveActivityForExternalSchemes(false);
 
-        mDelegate.add(new IntentActivity(IMDB_WEBPAGE_FOR_TOM_HANKS, WEBAPK_PACKAGE_NAME)
-                              .withIsWebApk(true));
+        mDelegate.add(new IntentActivity(IMDB_WEBPAGE_FOR_TOM_HANKS, WEBAPK_PACKAGE_NAME));
 
         RedirectHandler redirectHandler = RedirectHandler.create();
         redirectHandler.updateNewUrlLoading(PageTransition.AUTO_SUBFRAME, true, true, 0, 0);
@@ -1025,8 +1023,7 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testFallbackUrl_NoExternalFallbackWithoutGesture() {
-        mDelegate.add(new IntentActivity(IMDB_WEBPAGE_FOR_TOM_HANKS, WEBAPK_PACKAGE_NAME)
-                              .withIsWebApk(true));
+        mDelegate.add(new IntentActivity(IMDB_WEBPAGE_FOR_TOM_HANKS, WEBAPK_PACKAGE_NAME));
 
         RedirectHandler redirectHandler = RedirectHandler.create();
         redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 0);
@@ -1518,7 +1515,7 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testLaunchWebApk_BypassIntentPicker() {
-        mDelegate.add(new IntentActivity(WEBAPK_SCOPE, WEBAPK_PACKAGE_NAME).withIsWebApk(true));
+        mDelegate.add(new IntentActivity(WEBAPK_SCOPE, WEBAPK_PACKAGE_NAME));
 
         checkUrl(WEBAPK_SCOPE)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_WEBAPK);
@@ -1532,8 +1529,7 @@ public class ExternalNavigationHandlerTest {
     @SmallTest
     public void testLaunchWebApk_ShowIntentPickerMultipleIntentHandlers() {
         final String scope = "https://www.webapk.with.native.com";
-        mDelegate.add(new IntentActivity(scope, WEBAPK_PACKAGE_PREFIX + ".with.native")
-                              .withIsWebApk(true));
+        mDelegate.add(new IntentActivity(scope, WEBAPK_PACKAGE_PREFIX + ".with.native"));
         mDelegate.add(new IntentActivity(scope, "com.webapk.with.native.android"));
 
         checkUrl(scope).expecting(
@@ -1551,9 +1547,9 @@ public class ExternalNavigationHandlerTest {
         final String scope1WebApkPackageName = WEBAPK_PACKAGE_PREFIX + ".with.native";
         final String scope1NativeAppPackageName = "com.webapk.with.native.android";
         final String scope2 = "https://www.template.com";
-        mDelegate.add(new IntentActivity(scope1, scope1WebApkPackageName).withIsWebApk(true));
+        mDelegate.add(new IntentActivity(scope1, scope1WebApkPackageName));
         mDelegate.add(new IntentActivity(scope1, scope1NativeAppPackageName));
-        mDelegate.add(new IntentActivity(scope2, WEBAPK_PACKAGE_NAME).withIsWebApk(true));
+        mDelegate.add(new IntentActivity(scope2, WEBAPK_PACKAGE_NAME));
         mDelegate.setReferrerWebappPackageName(scope1WebApkPackageName);
 
         checkUrl(scope2).withReferrer(scope1).expecting(
@@ -1568,7 +1564,7 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testLaunchWebApk_ShowIntentPickerInvalidWebApk() {
-        mDelegate.add(new IntentActivity(WEBAPK_SCOPE, WEBAPK_PACKAGE_NAME).withIsWebApk(false));
+        mDelegate.add(new IntentActivity(WEBAPK_SCOPE, INVALID_WEBAPK_PACKAGE_NAME));
         checkUrl(WEBAPK_SCOPE)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
@@ -1950,21 +1946,12 @@ public class ExternalNavigationHandlerTest {
             mPackageName = packageName;
         }
 
-        public IntentActivity withIsWebApk(boolean isWebApk) {
-            mIsWebApk = isWebApk;
-            return this;
-        }
-
         public String urlPrefix() {
             return mUrlPrefix;
         }
 
         public String packageName() {
             return mPackageName;
-        }
-
-        public boolean isWebApk() {
-            return mIsWebApk;
         }
 
         public boolean isSpecialized() {
@@ -1986,6 +1973,12 @@ public class ExternalNavigationHandlerTest {
 
         public ExternalNavigationHandlerForTesting(ExternalNavigationDelegate delegate) {
             super(delegate);
+        }
+
+        @Override
+        protected boolean isValidWebApk(String packageName) {
+            return packageName.startsWith(WEBAPK_PACKAGE_PREFIX)
+                    && !packageName.equals(INVALID_WEBAPK_PACKAGE_NAME);
         }
 
         @Override
@@ -2213,16 +2206,6 @@ public class ExternalNavigationHandlerTest {
         @Override
         public boolean isIntentToAutofillAssistant(Intent intent) {
             return mIsIntentToAutofillAssistant;
-        }
-
-        @Override
-        public boolean isValidWebApk(String packageName) {
-            for (IntentActivity activity : mIntentActivities) {
-                if (activity.packageName().equals(packageName)) {
-                    return activity.isWebApk();
-                }
-            }
-            return false;
         }
 
         @Override

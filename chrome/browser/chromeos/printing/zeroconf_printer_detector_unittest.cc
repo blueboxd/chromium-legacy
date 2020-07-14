@@ -97,8 +97,8 @@ PrinterDetector::DetectedPrinter MakeExpectedPrinter(const std::string& name,
       rp = "";
       break;
   }
-  printer.set_uri(base::StringPrintf("%s://%s.local:%d/%s", scheme.c_str(),
-                                     name.c_str(), port, rp.c_str()));
+  printer.SetUri(base::StringPrintf("%s://%s.local:%d/%s", scheme.c_str(),
+                                    name.c_str(), port, rp.c_str()));
 
   printer.set_uuid(base::StrCat({name, "_UUID"}));
   printer.set_display_name(name);

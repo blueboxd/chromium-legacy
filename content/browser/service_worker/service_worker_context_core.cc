@@ -1033,6 +1033,11 @@ ServiceWorkerStorage* ServiceWorkerContextCore::storage() const {
   return registry_->storage();
 }
 
+mojo::Remote<storage::mojom::ServiceWorkerStorageControl>&
+ServiceWorkerContextCore::GetStorageControl() {
+  return registry_->GetRemoteStorageControl();
+}
+
 ServiceWorkerProcessManager* ServiceWorkerContextCore::process_manager() {
   return wrapper_->process_manager();
 }

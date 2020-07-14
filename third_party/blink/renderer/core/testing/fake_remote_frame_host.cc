@@ -46,6 +46,9 @@ void FakeRemoteFrameHost::RouteMessageEvent(
     const String& target_origin,
     BlinkTransferableMessage message) {}
 
+void FakeRemoteFrameHost::PrintCrossProcessSubframe(const gfx::Rect& rect,
+                                                    int document_cookie) {}
+
 void FakeRemoteFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::blink::RemoteFrameHost>(

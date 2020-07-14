@@ -454,7 +454,7 @@ TEST(RangesTest, SwapRanges) {
   EXPECT_THAT(ints2, ElementsAre(0, 0, 0, 6, 6));
 }
 
-TEST(RangesTest, Transform) {
+TEST(RangesTest, UnaryTransform) {
   int input[] = {1, 2, 3, 4, 5};
   auto plus_1 = [](int i) { return i + 1; };
   auto times_2 = [](int i) { return i * 2; };
@@ -472,6 +472,25 @@ TEST(RangesTest, Transform) {
   EXPECT_EQ(values + 4,
             ranges::transform(values, values, times_2, &Int::value));
   EXPECT_THAT(values, ElementsAre(Int{0}, Int{4}, Int{8}, Int{10}));
+}
+
+TEST(RangesTest, BinaryTransform) {
+  int input[] = {1, 2, 3, 4, 5};
+  int output[] = {0, 0, 0, 0, 0};
+
+  EXPECT_EQ(output + 2, ranges::transform(input, input + 2, input + 3,
+                                          input + 5, output, std::plus<>{}));
+  EXPECT_THAT(output, ElementsAre(5, 7, 0, 0, 0));
+
+  EXPECT_EQ(output + 5,
+            ranges::transform(input, input, output, std::multiplies<>{}));
+  EXPECT_THAT(output, ElementsAre(1, 4, 9, 16, 25));
+
+  Int values[] = {{0}, {2}, {4}, {5}};
+  EXPECT_EQ(values + 4,
+            ranges::transform(values, values, values, std::minus<>{},
+                              &Int::value, &Int::value));
+  EXPECT_THAT(values, ElementsAre(Int{0}, Int{0}, Int{0}, Int{0}));
 }
 
 TEST(RangesTest, LowerBound) {

@@ -251,7 +251,8 @@ ALWAYS_INLINE DeferredUnmap PartitionPage<thread_safe>::Free(void* ptr) {
 
   // If these asserts fire, you probably corrupted memory.
   if (root->allow_extras) {
-    PartitionCookieCheckValue(reinterpret_cast<char*>(ptr) + kPartitionTagSize);
+    PartitionCookieCheckValue(reinterpret_cast<char*>(ptr) +
+                              kInSlotTagBufferSize);
     PartitionCookieCheckValue(reinterpret_cast<char*>(ptr) + slot_size -
                               kCookieSize);
   }

@@ -325,25 +325,6 @@ void NGPhysicalFragment::Destroy() const {
   }
 }
 
-PaintLayer* NGPhysicalFragment::Layer() const {
-  if (!HasLayer())
-    return nullptr;
-
-  // If the underlying LayoutObject has a layer it's guaranteed to be a
-  // LayoutBoxModelObject.
-  return static_cast<LayoutBoxModelObject*>(layout_object_)->Layer();
-}
-
-bool NGPhysicalFragment::HasSelfPaintingLayer() const {
-  if (!HasLayer())
-    return false;
-
-  // If the underlying LayoutObject has a layer it's guaranteed to be a
-  // LayoutBoxModelObject.
-  return static_cast<LayoutBoxModelObject*>(layout_object_)
-      ->HasSelfPaintingLayer();
-}
-
 bool NGPhysicalFragment::IsBlockFlow() const {
   return !IsLineBox() && layout_object_->IsLayoutBlockFlow();
 }

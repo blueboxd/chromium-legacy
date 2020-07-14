@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchConfiguration;
 import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
 import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
@@ -96,7 +97,8 @@ public class MainSettings extends PreferenceFragmentCompat
     @Override
     public void onStart() {
         super.onStart();
-        SigninManager signinManager = IdentityServicesProvider.get().getSigninManager();
+        SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(
+                Profile.getLastUsedRegularProfile());
         if (signinManager.isSigninSupported()) {
             signinManager.addSignInStateObserver(this);
             mSignInPreference.registerForUpdates();
@@ -110,7 +112,8 @@ public class MainSettings extends PreferenceFragmentCompat
     @Override
     public void onStop() {
         super.onStop();
-        SigninManager signinManager = IdentityServicesProvider.get().getSigninManager();
+        SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(
+                Profile.getLastUsedRegularProfile());
         if (signinManager.isSigninSupported()) {
             signinManager.removeSignInStateObserver(this);
             mSignInPreference.unregisterForUpdates();
@@ -218,7 +221,9 @@ public class MainSettings extends PreferenceFragmentCompat
     }
 
     private void updatePreferences() {
-        if (IdentityServicesProvider.get().getSigninManager().isSigninSupported()) {
+        if (IdentityServicesProvider.get()
+                        .getSigninManager(Profile.getLastUsedRegularProfile())
+                        .isSigninSupported()) {
             addPreferenceIfAbsent(PREF_SIGN_IN);
         } else {
             removePreferenceIfPresent(PREF_SIGN_IN);

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/printing/print_management/print_job_info_mojom_conversions.h"
 
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
@@ -56,7 +58,7 @@ proto::PrintJobInfo CreatePrintJobInfoProto() {
 std::unique_ptr<CupsPrintJob> CreateCupsPrintJob() {
   Printer printer;
   printer.set_display_name(kName);
-  printer.set_uri(kUri);
+  printer.SetUri(kUri);
   printer.set_id(kPrinterId);
 
   auto cups_print_job = std::make_unique<CupsPrintJob>(

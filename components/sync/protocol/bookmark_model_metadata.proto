@@ -39,4 +39,11 @@ message BookmarkModelMetadata {
   // TODO(crbug.com/1066962): remove this code when most of bookmarks are
   // reuploaded.
   optional bool bookmarks_full_title_reuploaded = 3;
+
+  // The local timestamp corresponding to the last time remote updates were
+  // received, in milliseconds since Unix epoch. Introduced in M86.
+  // TODO(crbug.com/1032052): Remove this code once all local sync metadata
+  // is required to populate the client tag (and be considered invalid
+  // otherwise).
+  optional int64 last_sync_time = 4;
 }

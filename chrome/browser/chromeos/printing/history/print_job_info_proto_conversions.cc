@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/printing/history/print_job_info_proto_conversions.h"
 
+#include <string>
+
 #include "base/optional.h"
 #include "chrome/browser/chromeos/printing/printer_error_codes.h"
 #include "printing/mojom/print.mojom.h"
@@ -133,7 +135,7 @@ int64_t TimeToMillisecondsPastUnixEpoch(const base::Time& time) {
 proto::Printer PrinterToProto(const chromeos::Printer& printer) {
   proto::Printer printer_proto;
   printer_proto.set_name(printer.display_name());
-  printer_proto.set_uri(printer.uri());
+  printer_proto.set_uri(printer.uri().GetNormalized());
   printer_proto.set_source(PrinterSourceToProto(printer.source()));
   return printer_proto;
 }

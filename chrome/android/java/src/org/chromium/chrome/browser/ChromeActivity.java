@@ -149,6 +149,7 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuDelegate;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarManageable;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManagerProvider;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.vr.ArDelegate;
 import org.chromium.chrome.browser.vr.ArDelegateProvider;
@@ -413,8 +414,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 VrModuleProvider.getDelegate().maybeHandleVrIntentPreNative(this, intent);
             }
 
+            // TODO(1099750): Move this to the RootUiCoordinator.
             mSnackbarManager = new SnackbarManager(
                     this, findViewById(R.id.bottom_container), getWindowAndroid());
+            SnackbarManagerProvider.attach(getWindowAndroid(), mSnackbarManager);
 
             mAssistStatusHandler = createAssistStatusHandler();
             if (mAssistStatusHandler != null) {
@@ -1220,6 +1223,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (mContextualSearchManager != null) {
             mContextualSearchManager.destroy();
             mContextualSearchManager = null;
+        }
+
+        if (mSnackbarManager != null) {
+            SnackbarManagerProvider.detach(mSnackbarManager);
         }
 
         if (mTabModelSelectorTabObserver != null) {

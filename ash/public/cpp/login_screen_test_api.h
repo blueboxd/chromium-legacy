@@ -21,6 +21,11 @@ namespace ash {
 class ASH_PUBLIC_EXPORT LoginScreenTestApi {
  public:
   static bool IsLockShown();
+  // Schedules the callback to be run when the LockScreen is shown. Note that
+  // the LockScreen class is used for both the Lock and the Login screens.
+  static void AddOnLockScreenShownCallback(
+      base::OnceClosure on_lock_screen_shown);
+
   static bool IsLoginShelfShown();
   static bool IsRestartButtonShown();
   static bool IsShutdownButtonShown();

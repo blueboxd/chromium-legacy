@@ -43,6 +43,8 @@ class FakeRemoteFrameHost : public mojom::blink::RemoteFrameHost {
       const String& source_origin,
       const String& target_origin,
       BlinkTransferableMessage message) override;
+  void PrintCrossProcessSubframe(const gfx::Rect& rect,
+                                 int document_cookie) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

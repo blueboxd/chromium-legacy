@@ -47,14 +47,14 @@ void SharingImpl::CreateSharingWebRtcConnection(
 }
 
 void SharingImpl::CreateNearbyConnections(
-    mojo::PendingRemote<NearbyConnectionsHostMojom> host,
+    NearbyConnectionsDependenciesPtr dependencies,
     CreateNearbyConnectionsCallback callback) {
   // Reset old instance of Nearby Connections stack.
   nearby_connections_.reset();
 
   mojo::PendingRemote<NearbyConnectionsMojom> remote;
   nearby_connections_ = std::make_unique<NearbyConnections>(
-      remote.InitWithNewPipeAndPassReceiver(), std::move(host),
+      remote.InitWithNewPipeAndPassReceiver(), std::move(dependencies),
       base::BindOnce(&SharingImpl::NearbyConnectionsDisconnected,
                      weak_ptr_factory_.GetWeakPtr()));
   std::move(callback).Run(std::move(remote));

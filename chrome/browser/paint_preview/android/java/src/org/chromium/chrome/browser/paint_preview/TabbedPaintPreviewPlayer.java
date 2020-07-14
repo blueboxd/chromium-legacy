@@ -9,6 +9,7 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.UserData;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabService;
 import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabServiceFactory;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -100,6 +101,7 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
         mTab.getTabViewManager().removeTabViewProvider(this);
         mPlayerManager.destroy();
         mPlayerManager = null;
+        RecordUserAction.record("PaintPreview.TabbedPlayer.Removed");
     }
 
     public boolean isShowing() {

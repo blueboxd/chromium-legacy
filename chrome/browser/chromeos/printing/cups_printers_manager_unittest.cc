@@ -434,7 +434,7 @@ PrinterDetector::DetectedPrinter MakeDiscoveredPrinter(const std::string& id,
                                                        const std::string& uri) {
   PrinterDetector::DetectedPrinter ret;
   ret.printer.set_id(id);
-  ret.printer.set_uri(uri);
+  ret.printer.SetUri(uri);
   return ret;
 }
 
@@ -446,7 +446,7 @@ PrinterDetector::DetectedPrinter MakeDiscoveredPrinter(const std::string& id) {
 // Calls MakeDiscoveredPrinter with the USB protocol as the uri.
 PrinterDetector::DetectedPrinter MakeUsbDiscoveredPrinter(
     const std::string& id) {
-  return MakeDiscoveredPrinter(id, "usb:");
+  return MakeDiscoveredPrinter(id, "usb://host/path");
 }
 
 // Pseudo-constructor for inline creation of a DetectedPrinter that should (in
@@ -747,7 +747,7 @@ TEST_F(CupsPrintersManagerTest, UpdatedPrinterConfiguration) {
   manager_->PrinterInstalled(printer, /*is_automatic=*/false);
 
   Printer updated(printer);
-  updated.set_uri("different value");
+  updated.SetUri("ipp://different.value");
   EXPECT_FALSE(manager_->IsPrinterInstalled(updated));
 
   updated = printer;
@@ -774,7 +774,7 @@ TEST_F(CupsPrintersManagerTest, UpdatedPrinterConfiguration) {
 // Test that we can save non-discovered printers.
 TEST_F(CupsPrintersManagerTest, SavePrinterSucceedsOnManualPrinter) {
   Printer printer(kPrinterId);
-  printer.set_uri("manual uri");
+  printer.SetUri("ipp://manual.uri");
   manager_->SavePrinter(printer);
 
   auto saved_printers = manager_->GetPrinters(PrinterClass::kSaved);
@@ -800,7 +800,7 @@ TEST_F(CupsPrintersManagerTest, SavePrinterUpdatesPreviouslyInstalledPrinter) {
   EXPECT_TRUE(manager_->IsPrinterInstalled(printer));
 
   Printer updated(printer);
-  updated.set_uri("different value");
+  updated.SetUri("ipps://different/value");
   EXPECT_FALSE(manager_->IsPrinterInstalled(updated));
 
   manager_->SavePrinter(updated);
@@ -816,7 +816,7 @@ TEST_F(CupsPrintersManagerTest, SavePrinterUpdatesPreviouslyInstalledPrinter) {
 // Automatic USB Printer is configured automatically.
 TEST_F(CupsPrintersManagerTest, AutomaticUsbPrinterIsInstalledAutomatically) {
   auto automatic_printer = MakeAutomaticPrinter(kPrinterId);
-  automatic_printer.printer.set_uri("usb:");
+  automatic_printer.printer.SetUri("usb://host/path");
 
   usb_detector_->AddDetections({automatic_printer});
 
@@ -832,7 +832,7 @@ TEST_F(CupsPrintersManagerTest, AutomaticUsbPrinterNotInstalledAutomatically) {
   UpdatePolicyValue(prefs::kUserNativePrintersAllowed, false);
 
   auto automatic_printer = MakeAutomaticPrinter(kPrinterId);
-  automatic_printer.printer.set_uri("usb:");
+  automatic_printer.printer.SetUri("usb://host/path");
 
   zeroconf_detector_->AddDetections({automatic_printer});
 
@@ -845,7 +845,7 @@ TEST_F(CupsPrintersManagerTest, AutomaticUsbPrinterNotInstalledAutomatically) {
 // installed.
 TEST_F(CupsPrintersManagerTest, OtherNearbyPrintersNotInstalledAutomatically) {
   auto discovered_printer = MakeDiscoveredPrinter("Discovered");
-  discovered_printer.printer.set_uri("usb:");
+  discovered_printer.printer.SetUri("usb://host/path");
   auto automatic_printer = MakeAutomaticPrinter("Automatic");
 
   usb_detector_->AddDetections({discovered_printer});
@@ -861,7 +861,7 @@ TEST_F(CupsPrintersManagerTest, OtherNearbyPrintersNotInstalledAutomatically) {
 
 TEST_F(CupsPrintersManagerTest, DetectedUsbPrinterConfigurationNotification) {
   auto discovered_printer = MakeDiscoveredPrinter("Discovered");
-  discovered_printer.printer.set_uri("usb:");
+  discovered_printer.printer.SetUri("usb://host/path");
 
   usb_detector_->AddDetections({discovered_printer});
   task_environment_.RunUntilIdle();
@@ -877,7 +877,7 @@ TEST_F(CupsPrintersManagerTest, DetectedUsbPrinterConfigurationNotification) {
 TEST_F(CupsPrintersManagerTest,
        DetectedZeroconfDiscoveredPrinterNoNotification) {
   auto discovered_printer = MakeDiscoveredPrinter("Discovered");
-  discovered_printer.printer.set_uri("ipp:");
+  discovered_printer.printer.SetUri("ipp://host");
 
   zeroconf_detector_->AddDetections({discovered_printer});
   task_environment_.RunUntilIdle();
@@ -935,19 +935,6 @@ TEST_F(CupsPrintersManagerTest, RecordNearbyNetworkPrinterCounts) {
   task_environment_.RunUntilIdle();
   histogram_tester.ExpectBucketCount("Printing.CUPS.NearbyNetworkPrintersCount",
                                      2, 1);
-}
-
-TEST_F(CupsPrintersManagerTest, IsIppUri) {
-  // IPP protocol
-  ASSERT_TRUE(IsIppUri("ipp://1.2.3.4"));
-  // IPPS protocol
-  ASSERT_TRUE(IsIppUri("ipps://1.2.3.4"));
-  // USB protocol
-  ASSERT_FALSE(IsIppUri("usb://1.2.3.4"));
-  // Malformed URI
-  ASSERT_FALSE(IsIppUri("ipp/1.2.3.4"));
-  // Empty URI
-  ASSERT_FALSE(IsIppUri(""));
 }
 
 }  // namespace

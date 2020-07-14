@@ -14,7 +14,7 @@
 #include "base/values.h"
 #include "chromeos/printing/cups_printer_status.h"
 #include "chromeos/printing/printer_configuration.h"
-#include "chromeos/printing/uri_components.h"
+#include "chromeos/printing/uri.h"
 
 using base::DictionaryValue;
 
@@ -37,24 +37,6 @@ const char kPpdResource[] = "ppd_resource";
 const char kAutoconf[] = "autoconf";
 const char kGuid[] = "guid";
 
-// Returns true if the uri was retrieved, is valid, and was set on |printer|.
-// Returns false otherwise.
-bool SetUri(const DictionaryValue& dict, Printer* printer) {
-  std::string uri;
-  if (!dict.GetString(kUri, &uri)) {
-    LOG(WARNING) << "Uri required";
-    return false;
-  }
-
-  if (!chromeos::ParseUri(uri).has_value()) {
-    LOG(WARNING) << "Uri is malformed";
-    return false;
-  }
-
-  printer->set_uri(uri);
-  return true;
-}
-
 // Populates the |printer| object with corresponding fields from |value|.
 // Returns false if |value| is missing a required field.
 bool DictionaryToPrinter(const DictionaryValue& value, Printer* printer) {
@@ -67,7 +49,15 @@ bool DictionaryToPrinter(const DictionaryValue& value, Printer* printer) {
     return false;
   }
 
-  if (!SetUri(value, printer)) {
+  std::string uri;
+  if (value.GetString(kUri, &uri)) {
+    std::string message;
+    if (!printer->SetUri(uri, &message)) {
+      LOG(WARNING) << message;
+      return false;
+    }
+  } else {
+    LOG(WARNING) << "Uri required";
     return false;
   }
 
@@ -122,12 +112,12 @@ std::unique_ptr<base::DictionaryValue> CreateEmptyPrinterInfo() {
 
 // Formats a host and port string. The |port| portion is omitted if it is
 // unspecified or invalid.
-std::string PrinterAddress(const std::string& host, int port) {
-  if (port != url::PORT_UNSPECIFIED && port != url::PORT_INVALID) {
-    return base::StringPrintf("%s:%d", host.c_str(), port);
+std::string PrinterAddress(const Uri& uri) {
+  const int port = uri.GetPort();
+  if (port > -1) {
+    return base::StringPrintf("%s:%d", uri.GetHostEncoded().c_str(), port);
   }
-
-  return host;
+  return uri.GetHostEncoded();
 }
 
 }  // namespace
@@ -199,8 +189,7 @@ std::unique_ptr<base::DictionaryValue> GetCupsPrinterInfo(
                           printer.ppd_reference().user_supplied_ppd_url);
   printer_info->SetString("printServerUri", printer.print_server_uri());
 
-  auto optional = printer.GetUriComponents();
-  if (!optional.has_value()) {
+  if (!printer.HasUri()) {
     // Uri is invalid so we set default values.
     LOG(WARNING) << "Could not parse uri.  Defaulting values";
     printer_info->SetString("printerAddress", "");
@@ -210,24 +199,23 @@ std::unique_ptr<base::DictionaryValue> GetCupsPrinterInfo(
     return printer_info;
   }
 
-  UriComponents uri = optional.value();
-
-  if (base::ToLowerASCII(uri.scheme()) == "usb") {
+  if (printer.uri().GetScheme() == "usb") {
     // USB has URI path (and, maybe, query) components that aren't really
     // associated with a queue -- the mapping between printing semantics and URI
     // semantics breaks down a bit here.  From the user's point of view, the
     // entire host/path/query block is the printer address for USB.
-    printer_info->SetString("printerAddress",
-                            printer.uri().substr(strlen("usb://")));
+    printer_info->SetString(
+        "printerAddress",
+        printer.uri().GetNormalized().substr(strlen("usb://")));
     printer_info->SetString("ppdManufacturer", printer.manufacturer());
   } else {
-    printer_info->SetString("printerAddress",
-                            PrinterAddress(uri.host(), uri.port()));
-    if (!uri.path().empty()) {
-      printer_info->SetString("printerQueue", uri.path().substr(1));
+    printer_info->SetString("printerAddress", PrinterAddress(printer.uri()));
+    if (!printer.uri().GetPath().empty()) {
+      printer_info->SetString("printerQueue",
+                              printer.uri().GetPathEncodedAsString().substr(1));
     }
   }
-  printer_info->SetString("printerProtocol", base::ToLowerASCII(uri.scheme()));
+  printer_info->SetString("printerProtocol", printer.uri().GetScheme());
 
   return printer_info;
 }

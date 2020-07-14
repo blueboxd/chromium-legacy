@@ -36,7 +36,6 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
-#include "printing/buildflags/buildflags.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
@@ -47,12 +46,6 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/gfx/geometry/size_conversions.h"
-
-#if BUILDFLAG(ENABLE_PRINTING)
-// nogncheck because dependency on //printing is conditional upon
-// enable_basic_printing flags.
-#include "printing/metafile_skia.h"          // nogncheck
-#endif
 
 namespace content {
 
@@ -720,26 +713,6 @@ void RenderFrameProxy::SetLayer(scoped_refptr<cc::Layer> layer,
 
 SkBitmap* RenderFrameProxy::GetSadPageBitmap() {
   return GetContentClient()->renderer()->GetSadWebViewBitmap();
-}
-
-uint32_t RenderFrameProxy::Print(const blink::WebRect& rect,
-                                 cc::PaintCanvas* canvas) {
-#if BUILDFLAG(ENABLE_PRINTING)
-  auto* metafile = canvas->GetPrintingMetafile();
-  DCHECK(metafile);
-
-  // Create a place holder content for the remote frame so it can be replaced
-  // with actual content later.
-  uint32_t content_id =
-      metafile->CreateContentForRemoteFrame(rect, routing_id_);
-
-  // Inform browser to print the remote subframe.
-  Send(new FrameHostMsg_PrintCrossProcessSubframe(
-      routing_id_, rect, metafile->GetDocumentCookie()));
-  return content_id;
-#else
-  return 0;
-#endif
 }
 
 const viz::LocalSurfaceId& RenderFrameProxy::GetLocalSurfaceId() const {

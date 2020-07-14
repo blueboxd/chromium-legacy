@@ -2462,6 +2462,8 @@ bool NGBoxFragmentPainter::HitTestFloatingChildItems(
        cursor.MoveToPreviousSibling()) {
     const NGFragmentItem* item = cursor.Current().Item();
     DCHECK(item);
+    if (UNLIKELY(item->IsLayoutObjectDestroyedOrMoved()))
+      continue;
     if (item->Type() == NGFragmentItem::kBox) {
       if (const NGPhysicalBoxFragment* child_box = item->BoxFragment()) {
         if (child_box->HasSelfPaintingLayer())

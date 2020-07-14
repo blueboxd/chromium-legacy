@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
-'use strict';
-
 /**
  * 'settings-personalization-page' is the settings page containing
  * personalization settings.
@@ -98,4 +95,3 @@ Polymer({
         toggleValue ? 'ambientModeEnabled' : 'ambientModeDisabled');
   },
 });
-})();

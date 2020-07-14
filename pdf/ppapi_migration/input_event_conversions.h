@@ -8,8 +8,11 @@
 #include <stdint.h>
 #include <string>
 
+#include "ui/gfx/geometry/point.h"
+
 namespace pp {
 class KeyboardInputEvent;
+class MouseInputEvent;
 }  // namespace pp
 
 namespace chrome_pdf {
@@ -99,6 +102,13 @@ enum class InputEventType {
   kTouchCancel
 };
 
+enum class InputEventMouseButtonType {
+  kNone = 0,
+  kLeft,
+  kMiddle,
+  kRight,
+};
+
 class KeyboardInputEvent {
  public:
   KeyboardInputEvent(InputEventType event_type,
@@ -130,7 +140,50 @@ class KeyboardInputEvent {
   std::string key_char_;
 };
 
+class MouseInputEvent {
+ public:
+  MouseInputEvent(InputEventType event_type,
+                  double time_stamp,
+                  uint32_t modifier,
+                  InputEventMouseButtonType mouse_button_type,
+                  const gfx::Point& point,
+                  int32_t click_count,
+                  const gfx::Point& movement);
+  MouseInputEvent(const MouseInputEvent& other);
+  MouseInputEvent& operator=(const MouseInputEvent& other);
+  ~MouseInputEvent();
+
+  const InputEventType& GetEventType() const { return event_type_; }
+
+  double GetTimeStamp() const { return time_stamp_; }
+
+  uint32_t GetModifiers() const { return modifiers_; }
+
+  const InputEventMouseButtonType& GetButton() const {
+    return mouse_button_type_;
+  }
+
+  const gfx::Point& GetPosition() const { return point_; }
+
+  int32_t GetClickCount() const { return click_count_; }
+
+  const gfx::Point& GetMovement() const { return movement_; }
+
+ private:
+  InputEventType event_type_ = InputEventType::kNone;
+  // The units are in seconds, but are not measured relative to any particular
+  // epoch, so the most you can do is compare two values.
+  double time_stamp_ = 0;
+  uint32_t modifiers_ = kInputEventModifierNone;
+  InputEventMouseButtonType mouse_button_type_;
+  gfx::Point point_;
+  int32_t click_count_ = 0;
+  gfx::Point movement_;
+};
+
 KeyboardInputEvent GetKeyboardInputEvent(const pp::KeyboardInputEvent& event);
+
+MouseInputEvent GetMouseInputEvent(const pp::MouseInputEvent& event);
 
 }  // namespace chrome_pdf
 

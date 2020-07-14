@@ -7,7 +7,6 @@
 #include <memory>
 #include <sstream>
 #include <utility>
-
 #include "base/atomic_sequence_num.h"
 #include "base/hash/hash.h"
 #include "cc/paint/paint_image_builder.h"
@@ -289,6 +288,20 @@ bool PaintImage::isSRGB() const {
   }
 
   return color_space->isSRGB();
+}
+
+bool PaintImage::isHDR() const {
+  // Right now, JS paint worklets can only be in sRGB
+  if (paint_worklet_input_)
+    return false;
+
+  auto* color_space = GetSkImage()->colorSpace();
+  if (!color_space) {
+    // Assume the image will not be HDR if we don't know yet.
+    return false;
+  }
+
+  return gfx::ColorSpace(*color_space).IsHDR();
 }
 
 const ImageHeaderMetadata* PaintImage::GetImageHeaderMetadata() const {

@@ -27,8 +27,7 @@
 namespace cc {
 namespace {
 
-auto CombineWithCompositorModes(
-    const std::vector<LayerTreeTest::RendererType>& types) {
+auto CombineWithCompositorModes(const std::vector<TestRendererType>& types) {
   return ::testing::Combine(::testing::ValuesIn(types),
                             ::testing::Values(CompositorMode::SINGLE_THREADED,
                                               CompositorMode::THREADED));
@@ -37,7 +36,7 @@ auto CombineWithCompositorModes(
 class LayerTreeHostCopyRequestTest
     : public LayerTreeTest,
       public ::testing::WithParamInterface<
-          ::testing::tuple<LayerTreeTest::RendererType, CompositorMode>> {
+          ::testing::tuple<TestRendererType, CompositorMode>> {
  public:
   LayerTreeHostCopyRequestTest() : LayerTreeTest(renderer_type()) {}
   ~LayerTreeHostCopyRequestTest() {
@@ -46,7 +45,9 @@ class LayerTreeHostCopyRequestTest
     CCTestSuite::RunUntilIdle();
   }
 
-  RendererType renderer_type() const { return ::testing::get<0>(GetParam()); }
+  TestRendererType renderer_type() const {
+    return ::testing::get<0>(GetParam());
+  }
 
   CompositorMode compositor_mode() const {
     return ::testing::get<1>(GetParam());
@@ -167,12 +168,11 @@ class LayerTreeHostCopyRequestTestMultipleRequests
   scoped_refptr<FakePictureLayer> grand_child;
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    LayerTreeHostCopyRequestTestMultipleRequests,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL,
-                                LayerTreeTest::RENDERER_SOFTWARE}));
+INSTANTIATE_TEST_SUITE_P(All,
+                         LayerTreeHostCopyRequestTestMultipleRequests,
+                         CombineWithCompositorModes(
+                             {TestRendererType::kGL, TestRendererType::kSkiaGL,
+                              TestRendererType::kSoftware}));
 
 TEST_P(LayerTreeHostCopyRequestTestMultipleRequests, Test) {
   RunTest(compositor_mode());
@@ -206,8 +206,8 @@ class LayerTreeHostCopyRequestTestMultipleRequestsOutOfOrder
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostCopyRequestTestMultipleRequestsOutOfOrder,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes({TestRendererType::kGL,
+                                TestRendererType::kSkiaGL}));
 
 TEST_P(LayerTreeHostCopyRequestTestMultipleRequestsOutOfOrder, Test) {
   RunTest(compositor_mode());
@@ -267,8 +267,8 @@ class LayerTreeHostCopyRequestCompletionCausesCommit
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostCopyRequestCompletionCausesCommit,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes({TestRendererType::kGL,
+                                TestRendererType::kSkiaGL}));
 
 TEST_P(LayerTreeHostCopyRequestCompletionCausesCommit, Test) {
   RunTest(compositor_mode());
@@ -376,10 +376,11 @@ class LayerTreeHostCopyRequestTestLayerDestroyed
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostCopyRequestTestLayerDestroyed,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes({TestRendererType::kGL,
+                                TestRendererType::kSkiaGL}));
 
-TEST_P(LayerTreeHostCopyRequestTestLayerDestroyed, Test) {
+// TODO(crbug/1096962): Investigate flakiness and reenable test once fixed.
+TEST_P(LayerTreeHostCopyRequestTestLayerDestroyed, DISABLED_Test) {
   RunTest(compositor_mode());
 }
 
@@ -482,8 +483,8 @@ class LayerTreeHostCopyRequestTestInHiddenSubtree
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostCopyRequestTestInHiddenSubtree,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes({TestRendererType::kGL,
+                                TestRendererType::kSkiaGL}));
 
 TEST_P(LayerTreeHostCopyRequestTestInHiddenSubtree, Test) {
   RunTest(compositor_mode());
@@ -603,8 +604,8 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes({TestRendererType::kGL,
+                                TestRendererType::kSkiaGL}));
 
 TEST_P(LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest, Test) {
   RunTest(compositor_mode());
@@ -659,8 +660,8 @@ class LayerTreeHostCopyRequestTestClippedOut
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostCopyRequestTestClippedOut,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes({TestRendererType::kGL,
+                                TestRendererType::kSkiaGL}));
 
 TEST_P(LayerTreeHostCopyRequestTestClippedOut, Test) {
   RunTest(compositor_mode());
@@ -719,8 +720,8 @@ class LayerTreeHostCopyRequestTestScaledLayer
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostCopyRequestTestScaledLayer,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes({TestRendererType::kGL,
+                                TestRendererType::kSkiaGL}));
 
 TEST_P(LayerTreeHostCopyRequestTestScaledLayer, Test) {
   RunTest(compositor_mode());
@@ -814,8 +815,8 @@ class LayerTreeHostTestAsyncTwoReadbacksWithoutDraw
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostTestAsyncTwoReadbacksWithoutDraw,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes({TestRendererType::kGL,
+                                TestRendererType::kSkiaGL}));
 
 TEST_P(LayerTreeHostTestAsyncTwoReadbacksWithoutDraw, Test) {
   RunTest(compositor_mode());
@@ -957,8 +958,8 @@ class LayerTreeHostCopyRequestTestDeleteSharedImage
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostCopyRequestTestDeleteSharedImage,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes({TestRendererType::kGL,
+                                TestRendererType::kSkiaGL}));
 
 TEST_P(LayerTreeHostCopyRequestTestDeleteSharedImage, Test) {
   RunTest(compositor_mode());
@@ -1102,8 +1103,8 @@ class LayerTreeHostCopyRequestTestCreatesSharedImage
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostCopyRequestTestCreatesSharedImage,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes({TestRendererType::kGL,
+                                TestRendererType::kSkiaGL}));
 
 TEST_P(LayerTreeHostCopyRequestTestCreatesSharedImage, Test) {
   RunTest(compositor_mode());
@@ -1190,8 +1191,8 @@ class LayerTreeHostCopyRequestTestDestroyBeforeCopy
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostCopyRequestTestDestroyBeforeCopy,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes({TestRendererType::kGL,
+                                TestRendererType::kSkiaGL}));
 
 TEST_P(LayerTreeHostCopyRequestTestDestroyBeforeCopy, Test) {
   RunTest(compositor_mode());
@@ -1273,8 +1274,8 @@ class LayerTreeHostCopyRequestTestShutdownBeforeCopy
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostCopyRequestTestShutdownBeforeCopy,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes({TestRendererType::kGL,
+                                TestRendererType::kSkiaGL}));
 
 TEST_P(LayerTreeHostCopyRequestTestShutdownBeforeCopy, Test) {
   RunTest(compositor_mode());
@@ -1405,8 +1406,8 @@ class LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
-                                LayerTreeTest::RENDERER_SKIA_GL}));
+    CombineWithCompositorModes({TestRendererType::kGL,
+                                TestRendererType::kSkiaGL}));
 
 TEST_P(LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest, Test) {
   RunTest(compositor_mode());

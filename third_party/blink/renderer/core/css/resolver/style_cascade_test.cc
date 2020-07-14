@@ -3308,4 +3308,32 @@ TEST_F(StyleCascadeTest, InitialColor) {
   EXPECT_EQ(Color::kWhite, style->VisitedDependentColor(GetCSSPropertyColor()));
 }
 
+TEST_F(StyleCascadeTest, MaxSubstitutionTokens) {
+  StringBuilder builder;
+  for (size_t i = 0; i < StyleCascade::kMaxSubstitutionTokens; ++i)
+    builder.Append(':');  // <colon-token>
+
+  String at_limit = builder.ToString();
+  String above_limit = builder.ToString() + ":";
+
+  TestCascade cascade(GetDocument());
+  cascade.Add("--at-limit", at_limit);
+  cascade.Add("--above-limit", above_limit);
+  cascade.Add("--at-limit-reference", "var(--at-limit)");
+  cascade.Add("--above-limit-reference", "var(--above-limit)");
+  cascade.Add("--at-limit-reference-fallback",
+              "var(--unknown,var(--at-limit))");
+  cascade.Add("--above-limit-reference-fallback",
+              "var(--unknown,var(--above-limit))");
+  cascade.Apply();
+
+  EXPECT_EQ(at_limit, cascade.ComputedValue("--at-limit"));
+  EXPECT_EQ(above_limit, cascade.ComputedValue("--above-limit"));
+  EXPECT_EQ(at_limit, cascade.ComputedValue("--at-limit-reference"));
+  EXPECT_EQ(g_null_atom, cascade.ComputedValue("--above-limit-reference"));
+  EXPECT_EQ(at_limit, cascade.ComputedValue("--at-limit-reference-fallback"));
+  EXPECT_EQ(g_null_atom,
+            cascade.ComputedValue("--above-limit-reference-fallback"));
+}
+
 }  // namespace blink

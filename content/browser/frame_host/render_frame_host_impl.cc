@@ -6898,11 +6898,11 @@ int RenderFrameHost::GetFrameTreeNodeIdForRoutingId(int process_id,
 }
 
 // static
-RenderFrameHost* RenderFrameHost::FromPlaceholderId(
+RenderFrameHost* RenderFrameHost::FromPlaceholderToken(
     int render_process_id,
-    int placeholder_routing_id) {
-  RenderFrameProxyHost* rfph =
-      RenderFrameProxyHost::FromID(render_process_id, placeholder_routing_id);
+    const base::UnguessableToken& placeholder_frame_token) {
+  RenderFrameProxyHost* rfph = RenderFrameProxyHost::FromFrameToken(
+      render_process_id, placeholder_frame_token);
   FrameTreeNode* node = rfph ? rfph->frame_tree_node() : nullptr;
   return node ? node->current_frame_host() : nullptr;
 }

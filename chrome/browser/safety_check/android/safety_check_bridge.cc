@@ -32,6 +32,9 @@ SafetyCheckBridge::SafetyCheckBridge(
 void SafetyCheckBridge::Destroy(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
+  if (password_check_observed_) {
+    password_check_controller_->RemoveObserver(this);
+  }
   password_check_controller_.reset();
   safety_check_.reset();
   delete this;
@@ -46,6 +49,7 @@ void SafetyCheckBridge::CheckSafeBrowsing(
 void SafetyCheckBridge::CheckPasswords(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
+  password_check_observed_ = true;
   password_check_controller_->AddObserver(this);
   password_check_controller_->StartPasswordCheck();
 }
@@ -66,6 +70,7 @@ void SafetyCheckBridge::StopObservingPasswordsCheck(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   password_check_controller_->RemoveObserver(this);
+  password_check_observed_ = false;
 }
 
 void SafetyCheckBridge::OnSafeBrowsingCheckResult(

@@ -197,7 +197,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void UpdateRemoteViewportIntersection(
       const blink::ViewportIntersectionState& intersection_state) override;
   base::UnguessableToken GetDevToolsFrameToken() override;
-  uint32_t Print(const blink::WebRect& rect, cc::PaintCanvas* canvas) override;
 
   void DidStartLoading();
 

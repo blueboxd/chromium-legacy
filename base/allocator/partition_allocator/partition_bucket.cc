@@ -15,7 +15,7 @@
 #include "base/allocator/partition_allocator/partition_direct_map_extent.h"
 #include "base/allocator/partition_allocator/partition_oom.h"
 #include "base/allocator/partition_allocator/partition_page.h"
-
+#include "base/allocator/partition_allocator/partition_tag_bitmap.h"
 #include "base/check.h"
 #include "build/build_config.h"
 
@@ -275,7 +275,10 @@ ALWAYS_INLINE void* PartitionBucket<thread_safe>::AllocNewSlotSpan(
   //
   // TODO(ajwong): Introduce a DCHECK.
   root->next_super_page = super_page + kSuperPageSize;
-  char* ret = super_page + kPartitionPageSize;
+  // TODO(tasak): Consider starting the bitmap right after metadata to save
+  // space.
+  char* tag_bitmap = super_page + kPartitionPageSize;
+  char* ret = tag_bitmap + kReservedTagBitmapSize;
   root->next_partition_page = ret + total_size;
   root->next_partition_page_end = root->next_super_page - kPartitionPageSize;
   // Make the first partition page in the super page a guard page, but leave a
@@ -286,6 +289,12 @@ ALWAYS_INLINE void* PartitionBucket<thread_safe>::AllocNewSlotSpan(
   SetSystemPagesAccess(super_page + (kSystemPageSize * 2),
                        kPartitionPageSize - (kSystemPageSize * 2),
                        PageInaccessible);
+  if (kActualTagBitmapSize < kReservedTagBitmapSize) {
+    // Make guard pages between tag bitmap and the first slotspan if possible.
+    SetSystemPagesAccess(tag_bitmap + kActualTagBitmapSize,
+                         kReservedTagBitmapSize - kActualTagBitmapSize,
+                         PageInaccessible);
+  }
   //  SetSystemPagesAccess(super_page + (kSuperPageSize -
   //  kPartitionPageSize),
   //                             kPartitionPageSize, PageInaccessible);
@@ -295,9 +304,11 @@ ALWAYS_INLINE void* PartitionBucket<thread_safe>::AllocNewSlotSpan(
   //
   // TODO(ajwong): Refactor Page Allocator API so the SuperPage comes in
   // decommited initially.
-  SetSystemPagesAccess(super_page + kPartitionPageSize + total_size,
-                       (kSuperPageSize - kPartitionPageSize - total_size),
-                       PageInaccessible);
+  SetSystemPagesAccess(
+      super_page + kPartitionPageSize + kReservedTagBitmapSize + total_size,
+      (kSuperPageSize - kPartitionPageSize - kReservedTagBitmapSize -
+       total_size),
+      PageInaccessible);
 
   // If we were after a specific address, but didn't get it, assume that
   // the system chose a lousy address. Here most OS'es have a default

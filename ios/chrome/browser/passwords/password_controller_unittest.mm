@@ -36,7 +36,6 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#import "ios/chrome/browser/passwords/password_form_filler.h"
 #include "ios/chrome/browser/passwords/password_manager_features.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_mediator.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"
@@ -829,67 +828,6 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
     id result = ExecuteJavaScript(kInputFieldValueVerificationScript);
     EXPECT_NSEQ(data.expected_result, result);
   }
-}
-
-// Tests that a form is found and the found form is filled in with the given
-// username and password.
-TEST_F(PasswordControllerTest, FindAndFillOnePasswordForm) {
-  LoadHtml(@"<form><input id='un' type='text' name='u'>"
-            "<input id='pw' type='password' name='p'></form>");
-  __block int call_counter = 0;
-  __block int success_counter = 0;
-  [passwordController_.passwordFormFiller
-      findAndFillPasswordForms:@"john.doe@gmail.com"
-                      password:@"super!secret"
-             completionHandler:^(BOOL complete) {
-               ++call_counter;
-               if (complete)
-                 ++success_counter;
-             }];
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
-    return call_counter == 1;
-  }));
-  EXPECT_EQ(1, success_counter);
-  id result = ExecuteJavaScript(kInputFieldValueVerificationScript);
-  EXPECT_NSEQ(@"un=john.doe@gmail.com;pw=super!secret;", result);
-}
-
-// Tests that multiple forms on the same page are found and filled.
-// This test includes an mock injected failure on form filling to verify
-// that completion handler is called with the proper values.
-TEST_F(PasswordControllerTest, FindAndFillMultiplePasswordForms) {
-  // Fails the first call to fill password form.
-  passwordController_.formHelper.jsPasswordManager =
-      [[FakeJsPasswordManager alloc] init];
-
-  LoadHtml(@"<form><input id='u1' type='text' name='un1'>"
-            "<input id='p1' type='password' name='pw1'></form>"
-            "<form><input id='u2' type='text' name='un2'>"
-            "<input id='p2' type='password' name='pw2'></form>"
-            "<form><input id='u3' type='text' name='un3'>"
-            "<input id='p3' type='password' name='pw3'></form>");
-
-  __block int call_counter = 0;
-  __block int success_counter = 0;
-  [passwordController_.passwordFormFiller
-      findAndFillPasswordForms:@"john.doe@gmail.com"
-                      password:@"super!secret"
-             completionHandler:^(BOOL complete) {
-               ++call_counter;
-               if (complete)
-                 ++success_counter;
-               LOG(INFO) << "HANDLER call " << call_counter << " success "
-                         << success_counter;
-             }];
-  // There should be 3 password forms and only 2 successfully filled forms.
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
-    return call_counter == 3;
-  }));
-  EXPECT_EQ(2, success_counter);
-  id result = ExecuteJavaScript(kInputFieldValueVerificationScript);
-  EXPECT_NSEQ(@"u2=john.doe@gmail.com;p2=super!secret;"
-               "u3=john.doe@gmail.com;p3=super!secret;",
-              result);
 }
 
 BOOL PasswordControllerTest::BasicFormFill(NSString* html) {

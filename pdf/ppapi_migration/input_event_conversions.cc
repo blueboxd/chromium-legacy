@@ -5,6 +5,7 @@
 #include "pdf/ppapi_migration/input_event_conversions.h"
 
 #include "base/notreached.h"
+#include "pdf/ppapi_migration/geometry_conversions.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/var.h"
 
@@ -53,7 +54,21 @@ chrome_pdf::InputEventType GetEventType(const PP_InputEvent_Type& input_type) {
     default:
       NOTREACHED();
       return chrome_pdf::InputEventType::kNone;
-  };
+  }
+}
+
+chrome_pdf::InputEventMouseButtonType GetInputEventMouseButtonType(
+    const PP_InputEvent_MouseButton& mouse_button_type) {
+  switch (mouse_button_type) {
+    case PP_INPUTEVENT_MOUSEBUTTON_LEFT:
+      return chrome_pdf::InputEventMouseButtonType::kLeft;
+    case PP_INPUTEVENT_MOUSEBUTTON_MIDDLE:
+      return chrome_pdf::InputEventMouseButtonType::kMiddle;
+    case PP_INPUTEVENT_MOUSEBUTTON_RIGHT:
+      return chrome_pdf::InputEventMouseButtonType::kRight;
+    default:
+      return chrome_pdf::InputEventMouseButtonType::kNone;
+  }
 }
 
 }  // namespace
@@ -79,10 +94,40 @@ KeyboardInputEvent& KeyboardInputEvent::operator=(
 
 KeyboardInputEvent::~KeyboardInputEvent() = default;
 
+MouseInputEvent::MouseInputEvent(InputEventType event_type,
+                                 double time_stamp,
+                                 uint32_t modifiers,
+                                 InputEventMouseButtonType mouse_button_type,
+                                 const gfx::Point& point,
+                                 int32_t click_count,
+                                 const gfx::Point& movement)
+    : event_type_(event_type),
+      time_stamp_(time_stamp),
+      modifiers_(modifiers),
+      mouse_button_type_(mouse_button_type),
+      point_(point),
+      click_count_(click_count),
+      movement_(movement) {}
+
+MouseInputEvent::MouseInputEvent(const MouseInputEvent& other) = default;
+
+MouseInputEvent& MouseInputEvent::operator=(const MouseInputEvent& other) =
+    default;
+
+MouseInputEvent::~MouseInputEvent() = default;
+
 KeyboardInputEvent GetKeyboardInputEvent(const pp::KeyboardInputEvent& event) {
   return KeyboardInputEvent(GetEventType(event.GetType()), event.GetTimeStamp(),
                             event.GetModifiers(), event.GetKeyCode(),
                             event.GetCharacterText().AsString());
+}
+
+MouseInputEvent GetMouseInputEvent(const pp::MouseInputEvent& event) {
+  return MouseInputEvent(
+      GetEventType(event.GetType()), event.GetTimeStamp(), event.GetModifiers(),
+      GetInputEventMouseButtonType(event.GetButton()),
+      PointFromPPPoint(event.GetPosition()), event.GetClickCount(),
+      PointFromPPPoint(event.GetMovement()));
 }
 
 }  // namespace chrome_pdf

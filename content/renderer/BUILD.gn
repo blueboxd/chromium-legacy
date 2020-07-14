@@ -9,7 +9,6 @@ import("//build/config/ui.gni")
 import("//content/common/features.gni")
 import("//media/media_options.gni")
 import("//ppapi/buildflags/buildflags.gni")
-import("//printing/buildflags/buildflags.gni")
 import("//third_party/webrtc/webrtc.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
@@ -626,10 +625,6 @@ target(link_target_type, "renderer") {
       "//ui/base/cursor:cursor_base",
       "//ui/base/cursor/mojom:cursor_type",
     ]
-  }
-
-  if (enable_basic_printing) {
-    deps += [ "//printing" ]
   }
 
   if (is_linux || is_android) {

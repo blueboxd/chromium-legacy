@@ -49,7 +49,7 @@ TEST(SpecificsTranslationTest, SpecificsToPrinter) {
   EXPECT_EQ(kDisplayName, result->display_name());
   EXPECT_EQ(kDescription, result->description());
   EXPECT_EQ(kMakeAndModel, result->make_and_model());
-  EXPECT_EQ(kUri, result->uri());
+  EXPECT_EQ(kUri, result->uri().GetNormalized());
   EXPECT_EQ(kUuid, result->uuid());
 
   EXPECT_EQ(kEffectiveMakeAndModel,
@@ -63,7 +63,7 @@ TEST(SpecificsTranslationTest, PrinterToSpecifics) {
   printer.set_display_name(kDisplayName);
   printer.set_description(kDescription);
   printer.set_make_and_model(kMakeAndModel);
-  printer.set_uri(kUri);
+  printer.SetUri(kUri);
   printer.set_uuid(kUuid);
 
   Printer::PpdReference ppd;
@@ -91,7 +91,7 @@ TEST(SpecificsTranslationTest, SpecificsToPrinterRoundTrip) {
   printer.set_manufacturer(kManufacturer);
   printer.set_model(kModel);
   printer.set_make_and_model(kMakeAndModel);
-  printer.set_uri(kUri);
+  printer.SetUri(kUri);
   printer.set_uuid(kUuid);
 
   Printer::PpdReference ppd;
@@ -107,7 +107,7 @@ TEST(SpecificsTranslationTest, SpecificsToPrinterRoundTrip) {
   EXPECT_EQ(kManufacturer, result->manufacturer());
   EXPECT_EQ(kModel, result->model());
   EXPECT_EQ(kMakeAndModel, result->make_and_model());
-  EXPECT_EQ(kUri, result->uri());
+  EXPECT_EQ(kUri, result->uri().GetNormalized());
   EXPECT_EQ(kUuid, result->uuid());
 
   EXPECT_TRUE(result->ppd_reference().effective_make_and_model.empty());

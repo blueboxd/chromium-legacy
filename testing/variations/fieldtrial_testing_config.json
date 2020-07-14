@@ -89,21 +89,6 @@
             ]
         }
     ],
-    "AndroidBlockIntentNonSafelistedHeaders": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledLaunch",
-                    "enable_features": [
-                        "AndroidBlockIntentNonSafelistedHeaders"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidDarkSearch": [
         {
             "platforms": [
@@ -5433,6 +5418,21 @@
             ]
         }
     ],
+    "QRCodeGenerationStudy": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "QRCodeGeneration"
+                    ]
+                }
+            ]
+        }
+    ],
     "QUIC": [
         {
             "platforms": [
@@ -8058,21 +8058,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "WinrtSensorsImplementation"
-                    ]
-                }
-            ]
-        }
-    ],
-    "iOSQRCodeGenerator": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "QRCodeGeneration"
                     ]
                 }
             ]

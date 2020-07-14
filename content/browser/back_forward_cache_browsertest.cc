@@ -120,6 +120,9 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest,
     // TODO(sreejakshetty): Initialize ScopedFeatureLists from test constructor.
     EnableFeatureAndSetParams(features::kBackForwardCache,
                               "TimeToLiveInBackForwardCacheInSeconds", "3600");
+    EnableFeatureAndSetParams(
+        features::kBackForwardCache, "enable_same_site",
+        same_site_back_forward_cache_enabled_ ? "true" : "false");
 #if defined(OS_ANDROID)
     EnableFeatureAndSetParams(features::kBackForwardCache,
                               "process_binding_strength", "NORMAL");
@@ -402,6 +405,9 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest,
   net::EmbeddedTestServer* https_server() { return https_server_.get(); }
 
   base::HistogramTester histogram_tester_;
+
+ protected:
+  bool same_site_back_forward_cache_enabled_ = true;
 
  private:
   void AddSampleToBuckets(std::vector<base::Bucket>* buckets,
@@ -701,30 +707,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kRestored,
                 FROM_HERE);
-}
-
-// The BackForwardCache does not cache same-website navigations for now.
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       DoesNotCacheSameWebsiteNavigations) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url_a1(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  GURL url_a2(embedded_test_server()->GetURL("a.com", "/title2.html"));
-
-  // 1) Navigate to A1.
-  EXPECT_TRUE(NavigateToURL(shell(), url_a1));
-  RenderFrameHostImpl* rfh_a1 = current_frame_host();
-  RenderFrameDeletedObserver delete_rfh_a1(rfh_a1);
-  int browsing_instance_id = rfh_a1->GetSiteInstance()->GetBrowsingInstanceId();
-
-  // 2) Navigate to A2.
-  EXPECT_TRUE(NavigateToURL(shell(), url_a2));
-  RenderFrameHostImpl* rfh_a2 = current_frame_host();
-  // The BrowsingInstance shouldn't have changed.
-  EXPECT_EQ(browsing_instance_id,
-            rfh_a2->GetSiteInstance()->GetBrowsingInstanceId());
-  EXPECT_FALSE(rfh_a1->IsInBackForwardCache());
-  // The main frame should have been reused for the navigation.
-  EXPECT_EQ(rfh_a1, rfh_a2);
 }
 
 // The current page can't enter the BackForwardCache if another page can script
@@ -3782,8 +3764,26 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   delete_rfh_a2.WaitUntilDeleted();
 }
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+class BackForwardCacheBrowserTestWithSameSiteDisabled
+    : public BackForwardCacheBrowserTest {
+ public:
+  BackForwardCacheBrowserTestWithSameSiteDisabled() = default;
+  ~BackForwardCacheBrowserTestWithSameSiteDisabled() override = default;
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    same_site_back_forward_cache_enabled_ = false;
+    DisableFeature(features::kProactivelySwapBrowsingInstance);
+    BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithSameSiteDisabled,
                        ConflictingBrowsingInstances) {
+  // This test assumes navigation from A1 to A2 will not switch
+  // BrowsingInstances, which is not true when either BackForwardCache or
+  // ProactivelySwapBrowsingInstance is enabled on same-site navigations.
+  DCHECK(!CanSameSiteMainFrameNavigationsChangeSiteInstances());
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a1(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_a2(embedded_test_server()->GetURL("a.com", "/title2.html"));
@@ -3835,6 +3835,101 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
               kConflictingBrowsingInstance,
       },
       FROM_HERE);
+}
+
+// When same-site bfcache is disabled, we should not cache on same-site
+// navigations.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithSameSiteDisabled,
+                       DoesNotCacheOnSameSiteNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_a2(embedded_test_server()->GetURL("a.com", "/title2.html"));
+  GURL url_a3(
+      embedded_test_server()->GetURL("subdomain.a.com", "/title3.html"));
+
+  // 1) Navigate to A1.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a1));
+  RenderFrameHostImpl* rfh_a1 = current_frame_host();
+  RenderFrameDeletedObserver delete_rfh_a1(rfh_a1);
+  int browsing_instance_id = rfh_a1->GetSiteInstance()->GetBrowsingInstanceId();
+
+  // 2) Navigate same-site and same-origin to A2.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a2));
+  RenderFrameHostImpl* rfh_a2 = current_frame_host();
+  // The BrowsingInstance shouldn't have changed.
+  EXPECT_EQ(browsing_instance_id,
+            rfh_a2->GetSiteInstance()->GetBrowsingInstanceId());
+  // The previous page should not be cached.
+  EXPECT_FALSE(rfh_a1->IsInBackForwardCache());
+
+  // 2) Navigate same-site but cross-origin to A3.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a3));
+  RenderFrameHostImpl* rfh_a3 = current_frame_host();
+  // The BrowsingInstance shouldn't have changed.
+  EXPECT_EQ(browsing_instance_id,
+            rfh_a3->GetSiteInstance()->GetBrowsingInstanceId());
+  // The previous page should not be cached.
+  EXPECT_FALSE(rfh_a2->IsInBackForwardCache());
+}
+
+// Check that during a same-RenderFrameHost cross-document navigation, the
+// disabled reasons is still tracked.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithSameSiteDisabled,
+                       DisableForRenderFrameHostPersistsAcrossNavigations) {
+  // This test assumes navigation from A1 to A2 will not switch
+  // RenderFrameHosts which is not true when BackForwardCache,
+  // ProactivelySwapBrowsingInstance or RenderDocument is enabled on same-site
+  // main frame navigations.
+  DCHECK(!CanSameSiteMainFrameNavigationsChangeRenderFrameHosts());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_a2(embedded_test_server()->GetURL("a.com", "/title2.html"));
+  GURL url_b3(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A1.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a1));
+  RenderFrameHostImpl* rfh_a1 = current_frame_host();
+  RenderFrameDeletedObserver deleted_observer_rfh_a1(rfh_a1);
+  // Disable back-forward cache for A.
+  BackForwardCache::DisableForRenderFrameHost(rfh_a1, kDisabledReasonForTest);
+
+  // 2) Navigate to A2.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a2));
+  EXPECT_FALSE(deleted_observer_rfh_a1.deleted());
+  EXPECT_EQ(rfh_a1, current_frame_host());
+
+  // 3) Navigate to B3.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b3));
+  deleted_observer_rfh_a1.WaitUntilDeleted();
+
+  // 4) Go back to A2.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ExpectDisabledWithReason(kDisabledReasonForTest, FROM_HERE);
+  ExpectNotRestored({BackForwardCacheMetrics::NotRestoredReason::
+                         kDisableForRenderFrameHostCalled},
+                    FROM_HERE);
+}
+
+// The BackForwardCache caches same-website navigations.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SameSiteNavigationCaching) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_a2(embedded_test_server()->GetURL("a.com", "/title2.html"));
+
+  // 1) Navigate to A1.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a1));
+  RenderFrameHostImpl* rfh_a1 = current_frame_host();
+  RenderFrameDeletedObserver delete_rfh_a1(rfh_a1);
+  int browsing_instance_id = rfh_a1->GetSiteInstance()->GetBrowsingInstanceId();
+
+  // 2) Navigate to A2.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a2));
+  RenderFrameHostImpl* rfh_a2 = current_frame_host();
+  EXPECT_NE(browsing_instance_id,
+            rfh_a2->GetSiteInstance()->GetBrowsingInstanceId());
+  EXPECT_TRUE(rfh_a1->IsInBackForwardCache());
+  EXPECT_NE(rfh_a1, rfh_a2);
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
@@ -4201,40 +4296,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   delete_observer_rfh_a.WaitUntilDeleted();
 
   // 3) Go back to A.
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  ExpectDisabledWithReason(kDisabledReasonForTest, FROM_HERE);
-  ExpectNotRestored({BackForwardCacheMetrics::NotRestoredReason::
-                         kDisableForRenderFrameHostCalled},
-                    FROM_HERE);
-}
-
-// Check that during a same-RenderFrameHost cross-document navigation, the
-// disabled reasons is still tracked.
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       DisableForRenderFrameHostPersistsAcrossNavigations) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url_a1(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  GURL url_a2(embedded_test_server()->GetURL("a.com", "/title2.html"));
-  GURL url_b3(embedded_test_server()->GetURL("b.com", "/title1.html"));
-
-  // 1) Navigate to A1.
-  EXPECT_TRUE(NavigateToURL(shell(), url_a1));
-  RenderFrameHostImpl* rfh_a1 = current_frame_host();
-  RenderFrameDeletedObserver deleted_observer_rfh_a1(rfh_a1);
-  // Disable back-forward cache for A.
-  BackForwardCache::DisableForRenderFrameHost(rfh_a1, kDisabledReasonForTest);
-
-  // 2) Navigate to A2.
-  EXPECT_TRUE(NavigateToURL(shell(), url_a2));
-  EXPECT_FALSE(deleted_observer_rfh_a1.deleted());
-  EXPECT_EQ(rfh_a1, current_frame_host());
-
-  // 3) Navigate to B3.
-  EXPECT_TRUE(NavigateToURL(shell(), url_b3));
-  deleted_observer_rfh_a1.WaitUntilDeleted();
-
-  // 4) Go back to A2.
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   ExpectDisabledWithReason(kDisabledReasonForTest, FROM_HERE);

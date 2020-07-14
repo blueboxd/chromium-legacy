@@ -42,10 +42,6 @@ id<FormSuggestionProvider> PasswordTabHelper::GetSuggestionProvider() {
   return controller_.suggestionProvider;
 }
 
-id<PasswordFormFiller> PasswordTabHelper::GetPasswordFormFiller() {
-  return controller_.passwordFormFiller;
-}
-
 password_manager::PasswordGenerationFrameHelper*
 PasswordTabHelper::GetGenerationHelper() {
   return controller_.passwordGenerationHelper;

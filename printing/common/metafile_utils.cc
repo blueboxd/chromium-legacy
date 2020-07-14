@@ -242,8 +242,7 @@ sk_sp<SkDocument> MakePdfDocument(const std::string& creator,
 }
 
 sk_sp<SkData> SerializeOopPicture(SkPicture* pic, void* ctx) {
-  const ContentToProxyIdMap* context =
-      reinterpret_cast<const ContentToProxyIdMap*>(ctx);
+  const auto* context = reinterpret_cast<const ContentToProxyTokenMap*>(ctx);
   uint32_t pic_id = pic->uniqueID();
   auto iter = context->find(pic_id);
   if (iter == context->end())

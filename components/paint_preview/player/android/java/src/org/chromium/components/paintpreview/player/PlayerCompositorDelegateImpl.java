@@ -107,6 +107,7 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
 
     @CalledByNative
     public void onLinkClicked(String url) {
+        PlayerUserActionRecorder.recordLinkClick();
         mLinkClickHandler.onLinkClicked(new GURL(url));
     }
 

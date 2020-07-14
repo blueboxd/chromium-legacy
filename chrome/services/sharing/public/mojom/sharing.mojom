@@ -31,17 +31,15 @@ interface Sharing {
       pending_remote<network.mojom.MdnsResponder> mdns_responder,
       array<IceServer> ice_servers);
 
-  // Creates a new Nearby Connections stack. All dependencies are provided via
-  // the |host| interface at runtime to allow dynamic capabilities like adding
-  // bluetooth adapters without restarting the service. Closing the |host| or
-  // the returned |connections| interface destroys the stack. Calling this
-  // method with an existing instance of the stack shuts down the previous one
-  // and creates a new one.
+  // Creates a new Nearby Connections stack. All dependencies should be provided
+  // via the |dependencies| struct. Closing the returned |connections| interface
+  // destroys the stack. Calling this method with an existing instance of the
+  // stack shuts down the previous one and creates a new one.
   CreateNearbyConnections(
-      pending_remote<location.nearby.connections.mojom.NearbyConnectionsHost>
-          host)
+      location.nearby.connections.mojom.NearbyConnectionsDependencies
+          dependencies)
       => (pending_remote<location.nearby.connections.mojom.NearbyConnections>
-              connections);
+             connections);
 
   // Creates a new Nearby Sharing Decoder.
   CreateNearbySharingDecoder()

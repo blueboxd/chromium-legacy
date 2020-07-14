@@ -1783,10 +1783,18 @@ const FeatureEntry::FeatureVariation kExtensionsCheckupVariations[] = {
 // cache is implemented.
 const FeatureEntry::FeatureParam kBackForwardCache_ForceCaching[] = {
     {"TimeToLiveInBackForwardCacheInSeconds", "300"},
-    {"should_ignore_blocklists", "true"}};
+    {"should_ignore_blocklists", "true"},
+    {"enable_same_site", "true"}};
+
+// With this, back-forward cache will be enabled on eligible pages when doing
+// same-site navigations (instead of only cross-site navigations).
+const FeatureEntry::FeatureParam kBackForwardCache_SameSite[] = {
+    {"enable_same_site", "true"}};
 
 const FeatureEntry::FeatureVariation kBackForwardCacheVariations[] = {
-    {"force caching all pages", kBackForwardCache_ForceCaching,
+    {"same-site support (experimental)", kBackForwardCache_SameSite,
+     base::size(kBackForwardCache_SameSite), nullptr},
+    {"force caching all pages (experimental)", kBackForwardCache_ForceCaching,
      base::size(kBackForwardCache_ForceCaching), nullptr},
 };
 

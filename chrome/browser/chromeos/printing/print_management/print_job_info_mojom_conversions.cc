@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/printing/print_management/print_job_info_mojom_conversions.h"
 
+#include <utility>
+
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
@@ -130,7 +132,7 @@ mojom::PrintJobInfoPtr CupsPrintJobToMojom(const CupsPrintJob& job) {
   print_job_mojom->number_of_pages = job.total_page_number();
   print_job_mojom->printer_name =
       base::UTF8ToUTF16(job.printer().display_name());
-  print_job_mojom->printer_uri = GURL(job.printer().uri());
+  print_job_mojom->printer_uri = GURL(job.printer().uri().GetNormalized());
   return print_job_mojom;
 }
 

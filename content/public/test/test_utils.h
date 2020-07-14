@@ -101,13 +101,13 @@ bool AreDefaultSiteInstancesEnabled();
 void IsolateAllSitesForTesting(base::CommandLine* command_line);
 
 // Whether same-site navigations might result in a change of RenderFrameHosts -
-// this will happen when ProactivelySwapBrowsingInstance or RenderDocument
-// is enabled on same-site main frame navigations.
+// this will happen when ProactivelySwapBrowsingInstance, RenderDocument or
+// back-forward cache is enabled on same-site main frame navigations.
 bool CanSameSiteMainFrameNavigationsChangeRenderFrameHosts();
 
 // Whether same-site navigations might result in a change of SiteInstances -
-// this will happen when ProactivelySwapBrowsingInstance is enabled on
-// same-site main frame navigations.
+// this will happen when ProactivelySwapBrowsingInstance or back-forward cache
+// is enabled on same-site main frame navigations.
 // Note that unlike CanSameSiteMainFrameNavigationsChangeRenderFrameHosts()
 // above, this will not be true when RenderDocument for main-frame is enabled.
 bool CanSameSiteMainFrameNavigationsChangeSiteInstances();

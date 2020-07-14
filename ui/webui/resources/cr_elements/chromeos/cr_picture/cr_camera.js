@@ -129,8 +129,11 @@ Polymer({
     const interval = setInterval(() => {
       /** Stop capturing frames when all allocated frames have been consumed. */
       if (frames.length) {
-        capturedFrames.push(
-            this.captureFrame_(this.$.cameraVideo, frames.pop()));
+        capturedFrames.push(this.captureFrame_(
+            /**
+             * @type {!HTMLVideoElement}
+             */
+            (this.$.cameraVideo), frames.pop()));
       } else {
         clearInterval(interval);
         this.fire(

@@ -91,8 +91,18 @@ bool IsProactivelySwapBrowsingInstanceWithProcessReuseEnabled() {
 }
 
 bool IsProactivelySwapBrowsingInstanceOnSameSiteNavigationEnabled() {
-  return GetProactivelySwapBrowsingInstanceLevel() >=
-         ProactivelySwapBrowsingInstanceLevel::kSameSite;
+  // Same-site proactive BrowsingInstance swap is enabled if we set the level of
+  // the ProactivelySwapBrowsingInstance feature to >= kSameSite, or if we
+  // enable back-forward cache on same-site navigations.
+  if (GetProactivelySwapBrowsingInstanceLevel() >=
+      ProactivelySwapBrowsingInstanceLevel::kSameSite) {
+    return true;
+  }
+  if (!IsBackForwardCacheEnabled())
+    return false;
+  static constexpr base::FeatureParam<bool> enable_same_site_back_forward_cache(
+      &features::kBackForwardCache, "enable_same_site", false);
+  return enable_same_site_back_forward_cache.Get();
 }
 
 const char kRenderDocumentLevelParameterName[] = "level";

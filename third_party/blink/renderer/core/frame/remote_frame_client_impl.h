@@ -8,10 +8,6 @@
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_client.h"
 
-namespace cc {
-class PaintCanvas;
-}
-
 namespace blink {
 class WebRemoteFrameImpl;
 
@@ -45,7 +41,6 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
                          const IntRect& screen_space_rect) override;
   void UpdateRemoteViewportIntersection(
       const ViewportIntersectionState& intersection_state) override;
-  uint32_t Print(const IntRect&, cc::PaintCanvas*) const override;
   AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override;
 
   WebRemoteFrameImpl* GetWebFrame() const { return web_frame_; }

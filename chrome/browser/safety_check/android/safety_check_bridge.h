@@ -69,6 +69,7 @@ class SafetyCheckBridge
   PrefService* pref_service_ = nullptr;
   std::unique_ptr<safety_check::SafetyCheck> safety_check_;
   std::unique_ptr<BulkLeakCheckControllerAndroid> password_check_controller_;
+  bool password_check_observed_ = false;
   base::android::ScopedJavaGlobalRef<jobject> j_safety_check_observer_;
 };
 

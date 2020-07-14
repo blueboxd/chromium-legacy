@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+// #import {AmbientModeTopicSource, AmbientModeSettings} from './constants.m.js';
+
 /**
  * @fileoverview A helper object used from the ambient mode section to interact
  * with the browser.
@@ -9,7 +12,7 @@
 
 cr.define('settings', function() {
   /** @interface */
-  class AmbientModeBrowserProxy {
+  /* #export */ class AmbientModeBrowserProxy {
     /**
      * Retrieves the initial settings from server, such as topic source. As a
      * response, the C++ sends the 'topic-source-changed' WebUIListener event.
@@ -39,7 +42,7 @@ cr.define('settings', function() {
   }
 
   /** @implements {settings.AmbientModeBrowserProxy} */
-  class AmbientModeBrowserProxyImpl {
+  /* #export */ class AmbientModeBrowserProxyImpl {
     /** @override */
     onAmbientModePageReady() {
       chrome.send('onAmbientModePageReady');

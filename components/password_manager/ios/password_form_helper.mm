@@ -13,7 +13,6 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/ios/browser/autofill_util.h"
-#include "components/password_manager/core/browser/form_parsing/form_parser.h"
 #include "components/password_manager/core/browser/password_form_filling.h"
 #include "components/password_manager/ios/account_select_fill_data.h"
 #include "components/password_manager/ios/js_password_manager.h"
@@ -29,10 +28,8 @@
 using autofill::FormData;
 using autofill::FormRendererId;
 using autofill::FieldRendererId;
-using autofill::PasswordForm;
 using autofill::PasswordFormFillData;
 using password_manager::FillData;
-using password_manager::FormDataParser;
 using password_manager::GetPageURLAndCheckTrustLevel;
 using password_manager::SerializePasswordFormFillData;
 
@@ -347,36 +344,6 @@ constexpr char kCommandPrefix[] = "passwordForm";
           completionHandler([result isEqual:@"true"]);
         }
       }];
-}
-
-- (void)findAndFillPasswordFormsWithUserName:(NSString*)username
-                                    password:(NSString*)password
-                           completionHandler:
-                               (nullable void (^)(BOOL))completionHandler {
-  __weak PasswordFormHelper* weakSelf = self;
-  [self findPasswordFormsWithCompletionHandler:^(
-            const std::vector<FormData>& forms, uint32_t maxID) {
-    PasswordFormHelper* strongSelf = weakSelf;
-    for (const auto& form : forms) {
-      std::vector<const PasswordForm*> matches;
-      FormDataParser parser;
-      std::unique_ptr<PasswordForm> passwordForm =
-          parser.Parse(form, FormDataParser::Mode::kFilling);
-      if (!passwordForm)
-        continue;
-
-      passwordForm->username_value = base::SysNSStringToUTF16(username);
-      passwordForm->password_value = base::SysNSStringToUTF16(password);
-      PasswordFormFillData formData =
-          password_manager::CreatePasswordFormFillData(
-              *passwordForm, matches, *passwordForm,
-              /*wait_for_username=*/false);
-      [strongSelf fillPasswordForm:formData
-                      withUsername:base::SysNSStringToUTF16(username)
-                          password:base::SysNSStringToUTF16(password)
-                 completionHandler:completionHandler];
-    }
-  }];
 }
 
 // Finds the password form named |formName| and calls

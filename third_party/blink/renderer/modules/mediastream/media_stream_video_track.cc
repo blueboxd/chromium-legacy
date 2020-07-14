@@ -452,21 +452,21 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
 
 MediaStreamVideoTrack::~MediaStreamVideoTrack() {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
-  DCHECK(sinks_.empty());
-  DCHECK(encoded_sinks_.empty());
+  DCHECK(sinks_.IsEmpty());
+  DCHECK(encoded_sinks_.IsEmpty());
   Stop();
   DVLOG(3) << "~MediaStreamVideoTrack()";
 }
 
-static void AddSinkInternal(std::vector<WebMediaStreamSink*>* sinks,
+static void AddSinkInternal(Vector<WebMediaStreamSink*>* sinks,
                             WebMediaStreamSink* sink) {
   DCHECK(!base::Contains(*sinks, sink));
   sinks->push_back(sink);
 }
 
-static void RemoveSinkInternal(std::vector<WebMediaStreamSink*>* sinks,
+static void RemoveSinkInternal(Vector<WebMediaStreamSink*>* sinks,
                                WebMediaStreamSink* sink) {
-  auto it = std::find(sinks->begin(), sinks->end(), sink);
+  auto** it = std::find(sinks->begin(), sinks->end(), sink);
   DCHECK(it != sinks->end());
   sinks->erase(it);
 }
@@ -522,7 +522,7 @@ void MediaStreamVideoTrack::UpdateSourceHasConsumers() {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   if (!source_)
     return;
-  bool has_consumers = !sinks_.empty() || !encoded_sinks_.empty();
+  bool has_consumers = !sinks_.IsEmpty() || !encoded_sinks_.IsEmpty();
   source_->UpdateHasConsumers(this, has_consumers);
 }
 
@@ -533,7 +533,7 @@ void MediaStreamVideoTrack::SetEnabled(bool enabled) {
   // stream undecodable.
   bool maybe_await_key_frame = false;
   if (enabled && source_ && source_->SupportsEncodedOutput() &&
-      !encoded_sinks_.empty()) {
+      !encoded_sinks_.IsEmpty()) {
     source_->RequestRefreshFrame();
     maybe_await_key_frame = true;
   }

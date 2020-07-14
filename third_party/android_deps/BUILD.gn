@@ -423,6 +423,17 @@ java_prebuilt("androidx_lifecycle_lifecycle_common_java8_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("androidx_lifecycle_lifecycle_livedata_core_java") {
+  aar_path = "libs/androidx_lifecycle_lifecycle_livedata_core/lifecycle-livedata-core-2.2.0.aar"
+  info_path = "libs/androidx_lifecycle_lifecycle_livedata_core/androidx_lifecycle_lifecycle_livedata_core.info"
+  deps = [
+    ":androidx_arch_core_core_common_java",
+    ":androidx_arch_core_core_runtime_java",
+    ":androidx_lifecycle_lifecycle_common_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("androidx_lifecycle_lifecycle_runtime_java") {
   aar_path =
       "libs/androidx_lifecycle_lifecycle_runtime/lifecycle-runtime-2.2.0.aar"
@@ -1786,21 +1797,6 @@ android_aar_prebuilt("androidx_lifecycle_lifecycle_livedata_java") {
     ":androidx_arch_core_core_common_java",
     ":androidx_arch_core_core_runtime_java",
     ":androidx_lifecycle_lifecycle_livedata_core_java",
-  ]
-}
-
-# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("androidx_lifecycle_lifecycle_livedata_core_java") {
-  aar_path = "libs/androidx_lifecycle_lifecycle_livedata_core/lifecycle-livedata-core-2.2.0.aar"
-  info_path = "libs/androidx_lifecycle_lifecycle_livedata_core/androidx_lifecycle_lifecycle_livedata_core.info"
-
-  # To remove visibility constraint, add this dependency to
-  # //third_party/android_deps/build.gradle.
-  visibility = [ ":*" ]
-  deps = [
-    ":androidx_arch_core_core_common_java",
-    ":androidx_arch_core_core_runtime_java",
-    ":androidx_lifecycle_lifecycle_common_java",
   ]
 }
 

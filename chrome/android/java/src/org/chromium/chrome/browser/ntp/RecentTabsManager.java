@@ -105,7 +105,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         mRecentlyClosedTabManager = sRecentlyClosedTabManagerForTests != null
                 ? sRecentlyClosedTabManagerForTests
                 : new RecentlyClosedBridge(profile);
-        mSignInManager = IdentityServicesProvider.get().getSigninManager();
+        mSignInManager = IdentityServicesProvider.get().getSigninManager(mProfile);
 
         mProfileDataCache = ProfileDataCache.createProfileDataCache(context, 0);
         mSigninPromoController = new SigninPromoController(SigninAccessPoint.RECENT_TABS);

@@ -44,7 +44,6 @@ public class FeedStream implements Stream {
     private final FeedStreamSurface mFeedStreamSurface;
     private final ObserverList<ScrollListener> mScrollListeners =
             new ObserverList<ScrollListener>();
-    private final int mLoadMoreTriggerLookahead;
 
     private RecyclerView mRecyclerView;
     // setStreamContentVisibility() is always called once after onCreate(). So we can assume the
@@ -53,7 +52,6 @@ public class FeedStream implements Stream {
     private boolean mIsStreamContentVisible = false;
     // For loading more content.
     private int mAccumulatedDySinceLastLoadMore;
-    private boolean mIsLoadingMoreContent;
 
     public FeedStream(Activity activity, boolean isBackgroundDark, SnackbarManager snackbarManager,
             NativePageNavigationDelegate nativePageNavigationDelegate,
@@ -62,7 +60,6 @@ public class FeedStream implements Stream {
         this.mActivity = activity;
         this.mFeedStreamSurface = new FeedStreamSurface(activity, isBackgroundDark, snackbarManager,
                 nativePageNavigationDelegate, bottomSheetController, HelpAndFeedback.getInstance());
-        this.mLoadMoreTriggerLookahead = FeedServiceBridge.getLoadMoreTriggerLookahead();
     }
 
     @Override
@@ -238,24 +235,10 @@ public class FeedStream implements Stream {
             return;
         }
 
-        LinearLayoutManager layoutManager = (LinearLayoutManager) mRecyclerView.getLayoutManager();
-        if (layoutManager == null) {
-            return;
-        }
-        int totalItemCount = layoutManager.getItemCount();
-        int lastVisibleItem = layoutManager.findLastVisibleItemPosition();
-        if (totalItemCount - lastVisibleItem <= mLoadMoreTriggerLookahead) {
+        boolean canTrigger = mFeedStreamSurface.maybeLoadMore();
+        if (canTrigger) {
             mAccumulatedDySinceLastLoadMore = 0;
-            loadMore();
         }
-    }
-
-    private void loadMore() {
-        if (mIsLoadingMoreContent) {
-            return;
-        }
-        mIsLoadingMoreContent = true;
-        mFeedStreamSurface.loadMoreContent((Boolean success) -> { mIsLoadingMoreContent = false; });
     }
 
     private void restoreScrollState(String savedInstanceState) {

@@ -104,6 +104,18 @@ TEST_F(SelectionModifierTest, PreviousLineWithDisplayNone) {
       GetSelectionTextFromBody(modifier.Selection().AsSelection()));
 }
 
+// For http://crbug.com/1104582
+TEST_F(SelectionModifierTest, PreviousSentenceWithNull) {
+  InsertStyleElement("b {display:inline-block}");
+  const SelectionInDOMTree selection =
+      SetSelectionTextToBody("<b><ruby><a>|</a></ruby></b>");
+  SelectionModifier modifier(GetFrame(), selection);
+  // We call |PreviousSentence()| with null-position.
+  EXPECT_FALSE(modifier.Modify(SelectionModifyAlteration::kMove,
+                               SelectionModifyDirection::kBackward,
+                               TextGranularity::kSentence));
+}
+
 // For http://crbug.com/1100971
 TEST_F(SelectionModifierTest, StartOfSentenceWithNull) {
   InsertStyleElement("b {display:inline-block}");

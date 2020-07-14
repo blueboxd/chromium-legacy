@@ -210,7 +210,6 @@ DesktopWindowTreeHostPlatform::CreateTooltip() {
 std::unique_ptr<aura::client::DragDropClient>
 DesktopWindowTreeHostPlatform::CreateDragDropClient(
     DesktopNativeCursorManager* cursor_manager) {
-#if !defined(USE_X11)
   ui::WmDragHandler* drag_handler = ui::GetWmDragHandler(*(platform_window()));
   std::unique_ptr<DesktopDragDropClientOzone> drag_drop_client =
       std::make_unique<DesktopDragDropClientOzone>(window(), cursor_manager,
@@ -219,11 +218,6 @@ DesktopWindowTreeHostPlatform::CreateDragDropClient(
   // drop action.
   SetWmDropHandler(platform_window(), drag_drop_client.get());
   return std::move(drag_drop_client);
-#else
-  // TODO(https://crbug.com/990756): Move the X11 initialization of dnd here.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return nullptr;
-#endif
 }
 
 void DesktopWindowTreeHostPlatform::Close() {

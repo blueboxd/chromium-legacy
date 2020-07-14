@@ -562,10 +562,13 @@ void AddVersionKeyWorkItems(const InstallParams& install_params,
                                google_update::kRegNameField,
                                InstallUtil::GetDisplayName(),
                                true);  // overwrite name also
-  list->AddSetRegValueWorkItem(root, clients_key, KEY_WOW64_32KEY,
-                               google_update::kRegOopcrashesField,
-                               static_cast<DWORD>(1),
-                               false);  // set during first install
+
+  // Clean up when updating from M85 and older installs.
+  // Can be removed after newer stable builds have been in the wild
+  // enough to have done a reasonable degree of clean up.
+  list->AddDeleteRegValueWorkItem(root, clients_key, KEY_WOW64_32KEY,
+                                  L"oopcrashes");
+
   if (add_language_identifier) {
     // Write the language identifier of the current translation.  Omaha's set of
     // languages is a superset of Chrome's set of translations with this one

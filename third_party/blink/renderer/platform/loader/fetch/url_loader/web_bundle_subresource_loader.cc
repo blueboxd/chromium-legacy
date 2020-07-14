@@ -135,6 +135,12 @@ class LinkWebBundleDataSource : public web_package::mojom::BundleDataSource,
             std::make_unique<mojo::DataPipeDrainer>(this,
                                                     std::move(bundle_body))) {}
 
+  ~LinkWebBundleDataSource() override {
+    // The receiver must be closed before destructing pending callbacks in
+    // |pending_reads_| / |pending_reads_to_data_pipe_|.
+    data_source_receiver_.reset();
+  }
+
   LinkWebBundleDataSource(const LinkWebBundleDataSource&) = delete;
   LinkWebBundleDataSource& operator=(const LinkWebBundleDataSource&) = delete;
 

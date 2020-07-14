@@ -13,16 +13,18 @@ extern const char kDeviceStateMode[];
 extern const char kDeviceStateDisabledMessage[];
 extern const char kDeviceStatePackagedLicense[];
 
+// String constants used to persist the initial state action in the
+// kDeviceStateMode dictionary entry.
+extern const char kDeviceStateInitialModeEnrollmentEnforced[];
+extern const char kDeviceStateInitialModeEnrollmentZeroTouch[];
 // String constants used to persist the restorative action in the
 // kDeviceStateMode dictionary entry.
 extern const char kDeviceStateRestoreModeReEnrollmentRequested[];
 extern const char kDeviceStateRestoreModeReEnrollmentEnforced[];
-extern const char kDeviceStateRestoreModeDisabled[];
 extern const char kDeviceStateRestoreModeReEnrollmentZeroTouch[];
-// The following constants are for an initial action but we do still use
-// the same dictionary entry.
-extern const char kDeviceStateInitialModeEnrollmentEnforced[];
-extern const char kDeviceStateInitialModeEnrollmentZeroTouch[];
+// String constants used to persist either the initial state action
+// or the restorative action in the kDeviceStateMode dictionary entry.
+extern const char kDeviceStateModeDisabled[];
 
 // Mode that a device needs to start in.
 enum DeviceStateMode {

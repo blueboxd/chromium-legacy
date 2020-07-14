@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
@@ -58,6 +59,9 @@ BluetoothDBusClientBundle::BluetoothDBusClientBundle(bool use_fakes)
     alternate_bluetooth_adapter_client_.reset(BluetoothAdapterClient::Create());
     alternate_bluetooth_device_client_.reset(BluetoothDeviceClient::Create());
   } else {
+#if defined(USE_REAL_DBUS_CLIENTS)
+    LOG(FATAL) << "Fakes are unavailable if USE_REAL_DBUS_CLIENTS is defined.";
+#else
     bluetooth_adapter_client_.reset(new FakeBluetoothAdapterClient);
     bluetooth_le_advertising_manager_client_.reset(
         new FakeBluetoothLEAdvertisingManagerClient);
@@ -76,6 +80,7 @@ BluetoothDBusClientBundle::BluetoothDBusClientBundle(bool use_fakes)
 
     alternate_bluetooth_adapter_client_.reset(new FakeBluetoothAdapterClient);
     alternate_bluetooth_device_client_.reset(new FakeBluetoothDeviceClient);
+#endif  // defined(USE_REAL_DBUS_CLIENTS)
   }
 }
 

@@ -10,12 +10,14 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/task_environment.h"
+#include "chrome/browser/profiles/profile_key_android.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "components/download/public/common/simple_download_manager_coordinator.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_download_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,6 +37,7 @@ class DownloadManagerServiceTest : public testing::Test {
             this, &DownloadManagerServiceTest::GetDownloadByGuid));
     coordinator_.SetSimpleDownloadManager(&manager_, false);
     service_->UpdateCoordinator(&coordinator_, false);
+    service_->UseStartupProfileKeyForTesting();
   }
 
   void OnResumptionDone(bool success) {
@@ -46,12 +49,16 @@ class DownloadManagerServiceTest : public testing::Test {
     JNIEnv* env = base::android::AttachCurrentThread();
     service_->set_resume_callback_for_testing(base::Bind(
         &DownloadManagerServiceTest::OnResumptionDone, base::Unretained(this)));
+    ProfileKeyAndroid profile_key_android(profile_.GetProfileKey());
+
     service_->ResumeDownload(
         env, nullptr,
         JavaParamRef<jstring>(
             env,
             base::android::ConvertUTF8ToJavaString(env, download_guid).obj()),
-        false, false);
+        JavaParamRef<jobject>(env,
+                              profile_key_android.GetJavaObject().Release()),
+        false);
     EXPECT_FALSE(success_);
     service_->OnDownloadsInitialized(&coordinator_, false);
     while (!finished_)
@@ -69,11 +76,12 @@ class DownloadManagerServiceTest : public testing::Test {
     return download_.get();
   }
 
-  base::test::SingleThreadTaskEnvironment task_environment_;
+  content::BrowserTaskEnvironment task_environment_;
   DownloadManagerService* service_;
   download::SimpleDownloadManagerCoordinator coordinator_;
   std::unique_ptr<download::MockDownloadItem> download_;
   content::MockDownloadManager manager_;
+  TestingProfile profile_;
   bool finished_;
   bool success_;
 

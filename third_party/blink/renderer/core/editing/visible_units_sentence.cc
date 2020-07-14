@@ -270,6 +270,8 @@ VisiblePositionInFlatTree NextSentencePosition(
 
 PositionInFlatTree PreviousSentencePosition(
     const PositionInFlatTree& position) {
+  if (position.IsNull())
+    return position;
   const PositionInFlatTree result = PreviousSentencePositionInternal(position);
   return AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
              PositionInFlatTreeWithAffinity(result), position)

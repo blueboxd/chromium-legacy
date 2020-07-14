@@ -53,8 +53,7 @@ static const float kTouchDragImageScale = 1.2f;
 static const int kTouchDragImageVerticalOffset = -25;
 
 // Adjusts the drag image bounds such that the new bounds are scaled by |scale|
-// and translated by the |drag_image_offset| and and additional
-// |vertical_offset|.
+// and translated by the |drag_image_offset| and additional |vertical_offset|.
 gfx::Rect AdjustDragImageBoundsForScaleAndOffset(
     const gfx::Rect& drag_image_bounds,
     int vertical_offset,

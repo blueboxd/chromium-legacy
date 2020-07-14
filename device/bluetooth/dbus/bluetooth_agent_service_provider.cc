@@ -454,7 +454,12 @@ BluetoothAgentServiceProvider* BluetoothAgentServiceProvider::Create(
   if (!bluez::BluezDBusManager::Get()->IsUsingFakes()) {
     return new BluetoothAgentServiceProviderImpl(bus, object_path, delegate);
   }
+#if defined(USE_REAL_DBUS_CLIENTS)
+  LOG(FATAL) << "Fake is unavailable if USE_REAL_DBUS_CLIENTS is defined.";
+  return nullptr;
+#else
   return new FakeBluetoothAgentServiceProvider(object_path, delegate);
+#endif  // defined(USE_REAL_DBUS_CLIENTS)
 }
 
 }  // namespace bluez

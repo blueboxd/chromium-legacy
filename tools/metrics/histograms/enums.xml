@@ -6487,13 +6487,13 @@ Called by update_bad_message_reasons.py.-->
 </enum>
 
 <enum name="BluetoothSocketServiceHash">
-  <obsolete>
-    No longer used by active histograms in M73.
-  </obsolete>
   <summary>
     31-bit hash of the service UUID. Values here are populated from
     https://www.bluetooth.com/specifications/assigned-numbers/service-discovery
   </summary>
+  <obsolete>
+    No longer used by active histograms in M73.
+  </obsolete>
   <int value="27577045"
       label="SIM_Access; 0000112d-0000-1000-8000-00805f9b34fb"/>
   <int value="46048502"
@@ -12547,10 +12547,10 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="CorsCompletionStatus">
+  <summary>The completion status of CorsURLLoader request.</summary>
   <obsolete>
     Removed at 06/2019 with Net.Cors.CompletionStatus histogram.
   </obsolete>
-  <summary>The completion status of CorsURLLoader request.</summary>
   <int value="0"
       label="A request finished successfully when CORS flag was not set"/>
   <int value="1" label="A request failed when CORS flag was not set"/>
@@ -34074,10 +34074,10 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="HistoryFaviconsRecoveryEnum">
+  <summary>Error states noted in thumbnail_database.cc recovery code.</summary>
   <obsolete>
     History.FaviconsRecovery no longer tracked as of March 2017.
   </obsolete>
-  <summary>Error states noted in thumbnail_database.cc recovery code.</summary>
   <int value="0" label="RECOVERY_EVENT_RECOVERED">Successful recovery.</int>
   <int value="1" label="RECOVERY_EVENT_FAILED_SCOPER">
     sql::Recovery failed init.
@@ -47963,13 +47963,13 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="NetFilterType">
-  <obsolete>
-    Now only NetFilterType2 is used.
-  </obsolete>
   <summary>
     Specific content decoding filter. See net::Filter::FilterType for more
     details
   </summary>
+  <obsolete>
+    Now only NetFilterType2 is used.
+  </obsolete>
   <int value="0" label="Brotli"/>
   <int value="1" label="Deflate"/>
   <int value="2" label="GZIP"/>
@@ -62909,10 +62909,10 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
     Failed to open the existing db, deleted it, and created a new empty db.
   </int>
   <int value="2" label="Reopen: Total Fail">
-    Failed to open the database and also failed to delete and start over.
     <obsolete>
       Deprecated 2016/11. Replaced by other &quot;Reopen:&quot; errors.
     </obsolete>
+    Failed to open the database and also failed to delete and start over.
   </int>
   <int value="3" label="Reopen: not found">
     Reopen attempt failed with (not found) after successful database delete.

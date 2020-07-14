@@ -6673,10 +6673,6 @@ crbug.com/1071915 fast/hidpi/image-srcset-png-canvas.html [ Pass Failure ]
 crbug.com/1084256 [ Linux ] http/tests/misc/insert-iframe-into-xml-document-before-xsl-transform.html [ Pass Failure ]
 crbug.com/1084276 [ Mac ] http/tests/security/offscreencanvas-placeholder-read-blocked-no-crossorigin.html [ Pass Failure ]
 
-# Sheriff 2020-05-19
-crbug.com/1084509 [ Win ] fast/forms/select/listbox-appearance-basic.html [ Pass Failure ]
-crbug.com/1084509 [ Win ] fast/forms/select/select-disabled-appearance.html [ Pass Failure ]
-
 # Disabled for enabling Wasm BigInt support
 crbug.com/1097765 external/wpt/wasm/jsapi/constructor/instantiate-bad-imports.any.html [ Failure Pass ]
 crbug.com/1097765 external/wpt/wasm/jsapi/constructor/instantiate-bad-imports.any.worker.html [ Failure Pass ]
@@ -6872,9 +6868,6 @@ crbug.com/1101699 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnectio
 # Sheriff 2020-07-07
 # Additionally disabled on mac due to crbug.com/988248
 crbug.com/1083302 media/controls/volumechange-muted-attribute.html [ Pass Failure ]
-
-# Sheriff 2020-07-09
-crbug.com/1103701 [ Win7 ] fast/forms/month/month-picker-appearance-zoom150.html [ Pass Failure ]
 
 # Sheriff 2020-07-10
 crbug.com/1104118 [ Win ] fast/forms/color/color-suggestion-picker-appearance-value-attribute.html [ Pass Failure ]

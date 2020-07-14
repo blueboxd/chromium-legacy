@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
@@ -68,6 +69,7 @@ IN_PROC_BROWSER_TEST_F(WebAppIconManagerBrowserTest, SingleIcon) {
         std::make_unique<WebApplicationInfo>();
     web_application_info->app_url = app_url;
     web_application_info->scope = app_url.GetWithoutFilename();
+    web_application_info->title = base::ASCIIToUTF16("App Name");
     web_application_info->open_as_window = true;
 
     {

@@ -28,18 +28,11 @@ ATTRIBUTE_ORDER = {
 }
 
 # Attribute names that must be explicitly specified on nodes that support them.
-REQUIRED_ATTRIBUTES = {
-    'action': ['name'],
-    'action-suffix': ['separator'],
-    'actions': [],
-    'actions-suffixes': [],
-    'affected-action': ['name'],
-    'description': [],
-    'obsolete': [],
-    'owner': [],
-    'suffix': ['name', 'label'],
-    'with-suffix': ['name'],
-}
+REQUIRED_ATTRIBUTES = [
+    'label',
+    'name',
+    'separator',
+]
 
 # Tag names for top-level nodes whose children we don't want to indent.
 TAGS_THAT_DONT_INDENT = [

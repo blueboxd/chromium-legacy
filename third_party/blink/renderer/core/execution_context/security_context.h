@@ -142,18 +142,22 @@ class CORE_EXPORT SecurityContext {
   const FeaturePolicy* GetFeaturePolicy() const {
     return feature_policy_.get();
   }
-  void SetFeaturePolicy(std::unique_ptr<FeaturePolicy> feature_policy);
+  void SetFeaturePolicy(std::unique_ptr<FeaturePolicy>);
+  void SetReportOnlyFeaturePolicy(std::unique_ptr<FeaturePolicy>);
 
   const DocumentPolicy* GetDocumentPolicy() const {
     return document_policy_.get();
+  }
+  void SetDocumentPolicy(std::unique_ptr<DocumentPolicy> policy) {
+    document_policy_ = std::move(policy);
   }
 
   const DocumentPolicy* GetReportOnlyDocumentPolicy() const {
     return report_only_document_policy_.get();
   }
-
-  void SetDocumentPolicyForTesting(
-      std::unique_ptr<DocumentPolicy> document_policy);
+  void SetReportOnlyDocumentPolicy(std::unique_ptr<DocumentPolicy> policy) {
+    report_only_document_policy_ = std::move(policy);
+  }
 
   // Tests whether the policy-controlled feature is enabled in this frame.
   // Use ExecutionContext::IsFeatureEnabled if a failure should be reported.

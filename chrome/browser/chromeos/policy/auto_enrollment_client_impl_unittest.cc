@@ -727,7 +727,7 @@ TEST_P(AutoEnrollmentClientImplTest, DeviceDisabled) {
   EXPECT_EQ(state_retrieval_job_type_, GetExpectedStateRetrievalJobType());
   EXPECT_EQ(state_, AUTO_ENROLLMENT_STATE_DISABLED);
   VerifyCachedResult(true, kPowerLimit);
-  VerifyServerBackedState("example.com", kDeviceStateRestoreModeDisabled,
+  VerifyServerBackedState("example.com", kDeviceStateModeDisabled,
                           kDisabledMessage, kNotWithLicense);
 }
 

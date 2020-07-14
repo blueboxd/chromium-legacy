@@ -225,6 +225,7 @@ class WebAppInstallManagerTest : public WebAppTest {
 
     web_app->AddSource(source);
     web_app->SetUserDisplayMode(user_display_mode);
+    web_app->SetName("Name");
     return web_app;
   }
 
@@ -342,6 +343,7 @@ class WebAppInstallManagerTest : public WebAppTest {
     auto server_web_application_info = std::make_unique<WebApplicationInfo>();
     server_web_application_info->app_url = url;
     server_web_application_info->open_as_window = server_open_as_window;
+    server_web_application_info->title = base::ASCIIToUTF16("Server Name");
     InstallResult result = InstallBookmarkAppFromSync(
         bookmark_app_id, std::move(server_web_application_info));
 
@@ -1106,6 +1108,7 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_TwoIcons_Success) {
 
   auto server_web_app_info = std::make_unique<WebApplicationInfo>();
   server_web_app_info->app_url = url;
+  server_web_app_info->title = base::ASCIIToUTF16("Server Name");
   {
     WebApplicationIconInfo server_icon1_info;
     server_icon1_info.url = icon1_url;
@@ -1187,6 +1190,7 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_TwoIcons_Fallback) {
 
   auto server_web_app_info = std::make_unique<WebApplicationInfo>();
   server_web_app_info->app_url = url;
+  server_web_app_info->title = base::ASCIIToUTF16("Server Name");
   server_web_app_info->generated_icon_color = SK_ColorBLUE;
   {
     WebApplicationIconInfo server_icon1_info;
@@ -1240,6 +1244,7 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_NoIcons) {
 
   auto web_app_info = std::make_unique<WebApplicationInfo>();
   web_app_info->app_url = url;
+  web_app_info->title = base::ASCIIToUTF16("Server Name");
   // All icons will get the E letter drawn into a rounded yellow background.
   web_app_info->generated_icon_color = SK_ColorYELLOW;
 
@@ -1276,6 +1281,7 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_ExpectAppIdFailed) {
 
   auto server_web_app_info = std::make_unique<WebApplicationInfo>();
   server_web_app_info->app_url = old_url;
+  server_web_app_info->title = base::ASCIIToUTF16("Server Name");
 
   // WebAppInstallTask finishes with kExpectedAppIdCheckFailed but
   // WebAppInstallManager falls back to web application info, received from the
@@ -1311,6 +1317,7 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_QueueNewInstall) {
 
   auto server_web_application_info = std::make_unique<WebApplicationInfo>();
   server_web_application_info->app_url = url;
+  server_web_application_info->title = base::ASCIIToUTF16("Server Name");
 
   // Call InstallBookmarkAppFromSync while WebAppInstallManager is not yet
   // started.
@@ -1461,6 +1468,7 @@ TEST_F(WebAppInstallManagerTest, SyncRace_InstallBookmarkAppFull_ThenWebApp) {
 
   auto server_bookmark_app_info = std::make_unique<WebApplicationInfo>();
   server_bookmark_app_info->app_url = url;
+  server_bookmark_app_info->title = base::ASCIIToUTF16("Server Name");
 
   bool bookmark_app_installed = false;
   bool web_app_install_returns_early = false;
@@ -1524,6 +1532,7 @@ TEST_F(WebAppInstallManagerTest,
 
   auto server_bookmark_app_info = std::make_unique<WebApplicationInfo>();
   server_bookmark_app_info->app_url = url;
+  server_bookmark_app_info->title = base::ASCIIToUTF16("Server Name");
 
   bool bookmark_app_installed = false;
   bool web_app_install_returns_early = false;

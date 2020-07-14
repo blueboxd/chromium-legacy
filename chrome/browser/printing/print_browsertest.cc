@@ -37,7 +37,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "extensions/common/extension.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/dns/mock_host_resolver.h"
@@ -725,9 +724,21 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest,
 
   KillPrintRenderFrame frame_content(subframe_rph);
   frame_content.OverrideBinderForTesting(subframe);
-  content::ScopedAllowRendererCrashes allow_renderer_crashes(subframe_rph);
 
-  PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
+  // Waits for the renderer to be down.
+  content::RenderProcessHostWatcher process_watcher(
+      subframe_rph, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+
+  // Adds the observer to get the status for the preview.
+  PrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/false);
+  StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
+             /*print_renderer=*/mojo::NullAssociatedRemote(),
+             /*print_preview_disabled=*/false, /*has_selection*/ false);
+
+  // Makes sure that |subframe_rph| is terminated.
+  process_watcher.Wait();
+  // Confirms that the preview pages are rendered.
+  print_preview_observer.WaitUntilPreviewIsReady();
 }
 
 // Printing preview a web page with an iframe from an isolated origin.

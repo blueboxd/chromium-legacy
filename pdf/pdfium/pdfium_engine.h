@@ -30,7 +30,6 @@
 #include "ppapi/c/private/ppp_pdf.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/buffer_dev.h"
-#include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/rect.h"
@@ -84,9 +83,9 @@ class PDFiumEngine : public PDFEngine,
   void ScrolledToYPosition(int position) override;
   void PrePaint() override;
   void Paint(const pp::Rect& rect,
-             pp::ImageData* image_data,
-             std::vector<pp::Rect>* ready,
-             std::vector<pp::Rect>* pending) override;
+             SkBitmap& image_data,
+             std::vector<pp::Rect>& ready,
+             std::vector<pp::Rect>& pending) override;
   void PostPaint() override;
   bool HandleDocumentLoad(const pp::URLLoader& loader) override;
   bool HandleEvent(const pp::InputEvent& event) override;
@@ -433,11 +432,11 @@ class PDFiumEngine : public PDFEngine,
 
   // Continues a paint operation that was started earlier.  Returns true if the
   // paint is done, or false if it needs to be continued.
-  bool ContinuePaint(int progressive_index, pp::ImageData* image_data);
+  bool ContinuePaint(int progressive_index, SkBitmap& image_data);
 
   // Called once PDFium is finished rendering a page so that we draw our
   // borders, highlighting etc.
-  void FinishPaint(int progressive_index, pp::ImageData* image_data);
+  void FinishPaint(int progressive_index, SkBitmap& image_data);
 
   // Stops any paints that are in progress.
   void CancelPaints();
@@ -450,15 +449,15 @@ class PDFiumEngine : public PDFEngine,
   // with the page background.
   void FillPageSides(int progressive_index);
 
-  void PaintPageShadow(int progressive_index, pp::ImageData* image_data);
+  void PaintPageShadow(int progressive_index, SkBitmap& image_data);
 
   // Highlight visible find results and selections.
-  void DrawSelections(int progressive_index, pp::ImageData* image_data) const;
+  void DrawSelections(int progressive_index, SkBitmap& image_data) const;
 
   // Paints an page that hasn't finished downloading.
   void PaintUnavailablePage(int page_index,
                             const pp::Rect& dirty,
-                            pp::ImageData* image_data);
+                            SkBitmap& image_data);
 
   // Given a page index, returns the corresponding index in progressive_rects_,
   // or -1 if it doesn't exist.
@@ -516,7 +515,7 @@ class PDFiumEngine : public PDFEngine,
   void DrawPageShadow(const pp::Rect& page_rect,
                       const pp::Rect& shadow_rect,
                       const pp::Rect& clip_rect,
-                      pp::ImageData* image_data);
+                      SkBitmap& image_data);
 
   void GetRegion(const pp::Point& location,
                  SkBitmap& image_data,

@@ -23,7 +23,6 @@
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/private/pdf.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
@@ -44,6 +43,7 @@ typedef void (*PDFEnsureTypefaceCharactersAccessible)(const LOGFONT* font,
 
 struct PP_PdfAccessibilityActionData;
 struct PP_PdfPrintSettings_Dev;
+class SkBitmap;
 
 namespace gfx {
 class Rect;
@@ -335,9 +335,9 @@ class PDFEngine {
   // is called once. After Paint is called n times, PostPaint is called once.
   virtual void PrePaint() = 0;
   virtual void Paint(const pp::Rect& rect,
-                     pp::ImageData* image_data,
-                     std::vector<pp::Rect>* ready,
-                     std::vector<pp::Rect>* pending) = 0;
+                     SkBitmap& image_data,
+                     std::vector<pp::Rect>& ready,
+                     std::vector<pp::Rect>& pending) = 0;
   virtual void PostPaint() = 0;
   virtual bool HandleDocumentLoad(const pp::URLLoader& loader) = 0;
   virtual bool HandleEvent(const pp::InputEvent& event) = 0;

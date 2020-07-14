@@ -49,9 +49,13 @@ int ChunkedDataPipeUploadDataStream::InitInternal(
     return net::ERR_FAILED;
 
   // Get a new data pipe and start.
-  mojo::DataPipe data_pipe;
-  chunked_data_pipe_getter_->StartReading(std::move(data_pipe.producer_handle));
-  data_pipe_ = std::move(data_pipe.consumer_handle);
+  mojo::ScopedDataPipeProducerHandle data_pipe_producer;
+  mojo::ScopedDataPipeConsumerHandle data_pipe_consumer;
+  MojoResult result =
+      mojo::CreateDataPipe(nullptr, &data_pipe_producer, &data_pipe_consumer);
+  DCHECK_EQ(MOJO_RESULT_OK, result);
+  chunked_data_pipe_getter_->StartReading(std::move(data_pipe_producer));
+  data_pipe_ = std::move(data_pipe_consumer);
 
   return net::OK;
 }

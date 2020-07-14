@@ -119,8 +119,10 @@ class VIEWS_EXPORT DesktopDragDropClientOzone
   // Updates |drag_widget_| so it is aligned with the last drag location.
   void UpdateDragWidgetLocation();
 
-  // Resets |drag_drop_delegate_|.  Calls OnDragExited() before resetting.
-  void ResetDragDropTarget();
+  // Resets |drag_drop_delegate_|.
+  // |send_exit| controls whether to call delegate's OnDragExited() before
+  // resetting.
+  void ResetDragDropTarget(bool send_exit);
 
   aura::Window* const root_window_;
 

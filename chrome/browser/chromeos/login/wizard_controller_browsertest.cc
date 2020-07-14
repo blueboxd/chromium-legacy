@@ -1222,7 +1222,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
             GetErrorScreen()->GetParentScreen());
   base::DictionaryValue device_state;
   device_state.SetString(policy::kDeviceStateMode,
-                         policy::kDeviceStateRestoreModeDisabled);
+                         policy::kDeviceStateModeDisabled);
   device_state.SetString(policy::kDeviceStateDisabledMessage, kDisabledMessage);
   g_browser_process->local_state()->Set(prefs::kServerBackedDeviceState,
                                         device_state);
@@ -2715,7 +2715,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupDeviceDisabledTest,
             GetErrorScreen()->GetParentScreen());
   base::DictionaryValue device_state;
   device_state.SetString(policy::kDeviceStateMode,
-                         policy::kDeviceStateRestoreModeDisabled);
+                         policy::kDeviceStateModeDisabled);
   device_state.SetString(policy::kDeviceStateDisabledMessage, kDisabledMessage);
   g_browser_process->local_state()->Set(prefs::kServerBackedDeviceState,
                                         device_state);

@@ -104,6 +104,9 @@ Polymer({
         'profile-image-changed', this.receiveProfileImage_.bind(this));
     this.addWebUIListener(
         'camera-presence-changed', this.receiveCameraPresence_.bind(this));
+
+    // Initialize the announcer once.
+    Polymer.IronA11yAnnouncer.requestAvailability();
   },
 
 
@@ -233,8 +236,9 @@ Polymer({
     this.browserProxy_.photoTaken(event.detail.photoDataUrl);
     this.pictureList_.setOldImageUrl(event.detail.photoDataUrl);
     this.pictureList_.setFocus();
-    announceAccessibleMessage(
-        loadTimeData.getString('photoCaptureAccessibleText'));
+    this.fire(
+        'iron-announce',
+        {text: loadTimeData.getString('photoCaptureAccessibleText')});
   },
 
   /**
@@ -243,8 +247,10 @@ Polymer({
    */
   onSwitchMode_(event) {
     const videomode = event.detail;
-    announceAccessibleMessage(this.i18n(
-        videomode ? 'videoModeAccessibleText' : 'photoModeAccessibleText'));
+    this.fire('iron-announce', {
+      text: this.i18n(
+          videomode ? 'videoModeAccessibleText' : 'photoModeAccessibleText')
+    });
   },
 
   /**
@@ -267,7 +273,7 @@ Polymer({
     this.pictureList_.setOldImageUrl(CrPicture.kDefaultImageUrl);
     // Revert to profile image as we don't know what last used default image is.
     this.browserProxy_.selectProfileImage();
-    announceAccessibleMessage(this.i18n('photoDiscardAccessibleText'));
+    this.fire('iron-announce', {text: this.i18n('photoDiscardAccessibleText')});
   },
 
   /**

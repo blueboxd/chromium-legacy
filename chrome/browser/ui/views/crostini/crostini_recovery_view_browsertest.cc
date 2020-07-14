@@ -16,6 +16,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/crostini/crostini_browser_test_util.h"
+#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "content/public/test/browser_test.h"
@@ -25,6 +27,16 @@ constexpr crostini::CrostiniUISurface kUiSurface =
     crostini::CrostiniUISurface::kAppList;
 constexpr char kDesktopFileId[] = "test_app";
 constexpr int kDisplayId = 0;
+
+namespace {
+
+void ExpectFailure(const std::string& expected_failure_reason,
+                   bool success,
+                   const std::string& failure_reason) {
+  EXPECT_FALSE(success);
+  EXPECT_EQ(expected_failure_reason, failure_reason);
+}
+}  // namespace
 
 class CrostiniRecoveryViewBrowserTest : public CrostiniDialogBrowserTest {
  public:
@@ -39,7 +51,7 @@ class CrostiniRecoveryViewBrowserTest : public CrostiniDialogBrowserTest {
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
     ShowCrostiniRecoveryView(browser()->profile(), kUiSurface, app_id(),
-                             kDisplayId, base::DoNothing());
+                             kDisplayId, {}, base::DoNothing());
   }
 
   void SetUncleanStartup() {
@@ -50,10 +62,6 @@ class CrostiniRecoveryViewBrowserTest : public CrostiniDialogBrowserTest {
   CrostiniRecoveryView* ActiveView() {
     return CrostiniRecoveryView::GetActiveViewForTesting();
   }
-
-  bool HasAcceptButton() { return ActiveView()->GetOkButton() != nullptr; }
-
-  bool HasCancelButton() { return ActiveView()->GetCancelButton() != nullptr; }
 
   void WaitForViewDestroyed() {
     base::RunLoop().RunUntilIdle();
@@ -68,8 +76,10 @@ class CrostiniRecoveryViewBrowserTest : public CrostiniDialogBrowserTest {
     EXPECT_EQ(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
               ActiveView()->GetDialogButtons());
 
-    EXPECT_TRUE(HasAcceptButton());
-    EXPECT_TRUE(HasCancelButton());
+    EXPECT_NE(ActiveView()->GetOkButton(), nullptr);
+    EXPECT_NE(ActiveView()->GetCancelButton(), nullptr);
+    EXPECT_TRUE(ActiveView()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+    EXPECT_TRUE(ActiveView()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
   }
 
   void ExpectNoView() {
@@ -112,30 +122,61 @@ IN_PROC_BROWSER_TEST_F(CrostiniRecoveryViewBrowserTest, NoViewOnNormalStartup) {
 
   crostini::LaunchCrostiniApp(browser()->profile(), app_id(), kDisplayId);
   ExpectNoView();
+
+  histogram_tester.ExpectUniqueSample(
+      "Crostini.RecoverySource",
+      static_cast<base::HistogramBase::Sample>(kUiSurface), 0);
 }
 
-IN_PROC_BROWSER_TEST_F(CrostiniRecoveryViewBrowserTest, ShowsOnUncleanStart) {
+IN_PROC_BROWSER_TEST_F(CrostiniRecoveryViewBrowserTest, Cancel) {
   base::HistogramTester histogram_tester;
 
   SetUncleanStartup();
   RegisterApp();
+  // Ensure Terminal System App is installed.
+  web_app::WebAppProvider::Get(browser()->profile())
+      ->system_web_app_manager()
+      .InstallSystemAppsForTesting();
 
-  crostini::LaunchCrostiniApp(browser()->profile(), app_id(), kDisplayId);
+  // First app should fail with 'cancelled for recovery'.
+  crostini::LaunchCrostiniApp(
+      browser()->profile(), app_id(), kDisplayId, {},
+      base::BindOnce(&ExpectFailure, "cancelled for recovery"));
+  ExpectView();
+
+  // Apps launched while dialog is shown should fail with 'recovery in
+  // progress'.
+  crostini::LaunchCrostiniApp(
+      browser()->profile(), app_id(), kDisplayId, {},
+      base::BindOnce(&ExpectFailure, "recovery in progress"));
+
+  // Click 'Cancel'.
+  ActiveView()->CancelDialog();
+  WaitForViewDestroyed();
+
+  // Terminal should launch after use clicks 'Cancel'.
+  Browser* terminal_browser = web_app::FindSystemWebAppBrowser(
+      browser()->profile(), web_app::SystemAppType::TERMINAL);
+  CHECK_NE(nullptr, terminal_browser);
+  WaitForLoadFinished(terminal_browser->tab_strip_model()->GetWebContentsAt(0));
+
+  // Any new apps launched should show the dialog again.
+  crostini::LaunchCrostiniApp(
+      browser()->profile(), app_id(), kDisplayId, {},
+      base::BindOnce(&ExpectFailure, "cancelled for recovery"));
   ExpectView();
 
   ActiveView()->CancelDialog();
-
   WaitForViewDestroyed();
-  // Canceling means we aren't restarting the VM.
+
   EXPECT_TRUE(IsUncleanStartup());
 
   histogram_tester.ExpectUniqueSample(
       "Crostini.RecoverySource",
-      static_cast<base::HistogramBase::Sample>(kUiSurface), 1);
+      static_cast<base::HistogramBase::Sample>(kUiSurface), 3);
 }
 
-IN_PROC_BROWSER_TEST_F(CrostiniRecoveryViewBrowserTest,
-                       ReshowViewIfRestartNotSelected) {
+IN_PROC_BROWSER_TEST_F(CrostiniRecoveryViewBrowserTest, Accept) {
   base::HistogramTester histogram_tester;
 
   SetUncleanStartup();
@@ -144,41 +185,28 @@ IN_PROC_BROWSER_TEST_F(CrostiniRecoveryViewBrowserTest,
   crostini::LaunchCrostiniApp(browser()->profile(), app_id(), kDisplayId);
   ExpectView();
 
-  ActiveView()->CancelDialog();
-  WaitForViewDestroyed();
+  // Apps launched while dialog is shown should fail with 'recovery in
+  // progress'.
+  crostini::LaunchCrostiniApp(
+      browser()->profile(), app_id(), kDisplayId, {},
+      base::BindOnce(&ExpectFailure, "recovery in progress"));
 
-  crostini::LaunchCrostiniApp(browser()->profile(), app_id(), kDisplayId);
-  ExpectView();
-
-  ActiveView()->CancelDialog();
-  WaitForViewDestroyed();
-
-  EXPECT_TRUE(IsUncleanStartup());
-
-  histogram_tester.ExpectUniqueSample(
-      "Crostini.RecoverySource",
-      static_cast<base::HistogramBase::Sample>(kUiSurface), 2);
-}
-
-IN_PROC_BROWSER_TEST_F(CrostiniRecoveryViewBrowserTest, NoViewAfterRestart) {
-  base::HistogramTester histogram_tester;
-
-  SetUncleanStartup();
-  RegisterApp();
-
-  crostini::LaunchCrostiniApp(browser()->profile(), app_id(), kDisplayId);
-  ExpectView();
-
+  // Click 'Accept'.
   ActiveView()->AcceptDialog();
+
+  // Buttons should be disabled after clicking Accept.
+  EXPECT_FALSE(ActiveView()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+  EXPECT_FALSE(ActiveView()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
 
   WaitForViewDestroyed();
 
   EXPECT_FALSE(IsUncleanStartup());
 
+  // Apps now launch successfully.
   crostini::LaunchCrostiniApp(browser()->profile(), app_id(), kDisplayId);
   ExpectNoView();
 
   histogram_tester.ExpectUniqueSample(
       "Crostini.RecoverySource",
-      static_cast<base::HistogramBase::Sample>(kUiSurface), 1);
+      static_cast<base::HistogramBase::Sample>(kUiSurface), 2);
 }

@@ -133,8 +133,8 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
   if (!manifest.short_name.is_null())
     web_app_info->title = manifest.short_name.string();
 
-  // Give the full length name priority.
-  if (!manifest.name.is_null())
+  // Give the full length name priority if it's not empty.
+  if (!manifest.name.is_null() && !manifest.name.string().empty())
     web_app_info->title = manifest.name.string();
 
   // Set the url based on the manifest value, if any.

@@ -89,7 +89,7 @@ std::string ConvertRestoreMode(
     case em::DeviceStateRetrievalResponse::RESTORE_MODE_REENROLLMENT_ENFORCED:
       return kDeviceStateRestoreModeReEnrollmentEnforced;
     case em::DeviceStateRetrievalResponse::RESTORE_MODE_DISABLED:
-      return kDeviceStateRestoreModeDisabled;
+      return kDeviceStateModeDisabled;
     case em::DeviceStateRetrievalResponse::RESTORE_MODE_REENROLLMENT_ZERO_TOUCH:
       return kDeviceStateRestoreModeReEnrollmentZeroTouch;
   }
@@ -115,7 +115,7 @@ std::string ConvertInitialEnrollmentMode(
       return kDeviceStateInitialModeEnrollmentZeroTouch;
     case em::DeviceInitialEnrollmentStateResponse::
         INITIAL_ENROLLMENT_MODE_DISABLED:
-      return kDeviceStateRestoreModeDisabled;
+      return kDeviceStateModeDisabled;
   }
 }
 

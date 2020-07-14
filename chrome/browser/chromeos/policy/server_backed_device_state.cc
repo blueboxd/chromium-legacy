@@ -20,16 +20,19 @@ const char kDeviceStateMode[] = "device_mode";
 const char kDeviceStateDisabledMessage[] = "disabled_message";
 const char kDeviceStatePackagedLicense[] = "packaged_license";
 
+// Modes for a device after initial state determination.
+const char kDeviceStateInitialModeEnrollmentEnforced[] = "enrollment-enforced";
+const char kDeviceStateInitialModeEnrollmentZeroTouch[] =
+    "enrollment-zero-touch";
+// Modes for a device after secondary state determination (FRE).
 const char kDeviceStateRestoreModeReEnrollmentRequested[] =
     "re-enrollment-requested";
 const char kDeviceStateRestoreModeReEnrollmentEnforced[] =
     "re-enrollment-enforced";
-const char kDeviceStateRestoreModeDisabled[] = "disabled";
 const char kDeviceStateRestoreModeReEnrollmentZeroTouch[] =
     "re-enrollment-zero-touch";
-const char kDeviceStateInitialModeEnrollmentEnforced[] = "enrollment-enforced";
-const char kDeviceStateInitialModeEnrollmentZeroTouch[] =
-    "enrollment-zero-touch";
+// Modes for a device after either initial or secondary state determination.
+const char kDeviceStateModeDisabled[] = "disabled";
 
 DeviceStateMode GetDeviceStateMode() {
   std::string device_state_mode;
@@ -42,7 +45,7 @@ DeviceStateMode GetDeviceStateMode() {
     return RESTORE_MODE_REENROLLMENT_REQUESTED;
   if (device_state_mode == kDeviceStateRestoreModeReEnrollmentEnforced)
     return RESTORE_MODE_REENROLLMENT_ENFORCED;
-  if (device_state_mode == kDeviceStateRestoreModeDisabled)
+  if (device_state_mode == kDeviceStateModeDisabled)
     return RESTORE_MODE_DISABLED;
   if (device_state_mode == kDeviceStateRestoreModeReEnrollmentZeroTouch)
     return RESTORE_MODE_REENROLLMENT_ZERO_TOUCH;

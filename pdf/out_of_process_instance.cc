@@ -31,6 +31,7 @@
 #include "pdf/document_layout.h"
 #include "pdf/document_metadata.h"
 #include "pdf/pdf_features.h"
+#include "pdf/ppapi_migration/bitmap.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_pdf.h"
@@ -39,6 +40,7 @@
 #include "ppapi/cpp/dev/memory_dev.h"
 #include "ppapi/cpp/dev/text_input_dev.h"
 #include "ppapi/cpp/dev/url_util_dev.h"
+#include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/point.h"
@@ -670,6 +672,8 @@ void OutOfProcessInstance::DidChangeView(const pp::View& view) {
     if (new_image_data_size != image_data_.size()) {
       image_data_ = pp::ImageData(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
                                   new_image_data_size, false);
+      skia_image_data_ =
+          SkBitmapFromPPImageData(std::make_unique<pp::ImageData>(image_data_));
       first_paint_ = true;
     }
 
@@ -977,7 +981,7 @@ void OutOfProcessInstance::OnPaint(const std::vector<pp::Rect>& paint_rects,
 
       std::vector<pp::Rect> pdf_ready;
       std::vector<pp::Rect> pdf_pending;
-      engine_->Paint(pdf_rect, &image_data_, &pdf_ready, &pdf_pending);
+      engine_->Paint(pdf_rect, skia_image_data_, pdf_ready, pdf_pending);
       for (auto& ready_rect : pdf_ready) {
         ready_rect.Offset(available_area_.point());
         ready->push_back(

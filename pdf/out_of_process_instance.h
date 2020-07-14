@@ -27,6 +27,7 @@
 #include "ppapi/cpp/private/find_private.h"
 #include "ppapi/cpp/url_loader.h"
 #include "ppapi/utility/completion_callback_factory.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace pp {
 class TextInput_Dev;
@@ -303,6 +304,8 @@ class OutOfProcessInstance : public pp::Instance,
   void InvalidateAfterPaintDone(int32_t /*unused_but_required*/);
 
   pp::ImageData image_data_;
+  SkBitmap skia_image_data_;  // Must be kept in sync with |image_data_|.
+
   // Used when the plugin is embedded in a page and we have to create the loader
   // ourself.
   pp::URLLoader embed_loader_;

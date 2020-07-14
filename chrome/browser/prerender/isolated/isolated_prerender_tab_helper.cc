@@ -253,6 +253,12 @@ void IsolatedPrerenderTabHelper::DidStartNavigation(
     return;
   }
 
+  // This check is only relevant for detecting AMP pages. For this feature, AMP
+  // pages won't get sped up any so just ignore them.
+  if (navigation_handle->IsSameDocument()) {
+    return;
+  }
+
   // Don't take any actions during a prerender since it was probably triggered
   // by another instance of this class and we don't want to interfere.
   prerender::PrerenderManager* prerender_manager =
@@ -413,6 +419,13 @@ void IsolatedPrerenderTabHelper::DidFinishNavigation(
   if (!navigation_handle->IsInMainFrame()) {
     return;
   }
+
+  // This check is only relevant for detecting AMP pages. For this feature, AMP
+  // pages won't get sped up any so just ignore them.
+  if (navigation_handle->IsSameDocument()) {
+    return;
+  }
+
   if (!navigation_handle->HasCommitted()) {
     return;
   }

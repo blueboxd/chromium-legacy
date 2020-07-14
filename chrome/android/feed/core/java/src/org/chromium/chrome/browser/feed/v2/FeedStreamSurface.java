@@ -11,6 +11,7 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.Callback;
@@ -84,7 +85,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     private final long mNativeFeedStreamSurface;
     private final FeedListContentManager mContentManager;
     private final SurfaceScope mSurfaceScope;
-    private final View mRootView;
+    private final RecyclerView mRootView;
     private final HybridListRenderer mHybridListRenderer;
     private final SnackbarManager mSnackbarManager;
     private final Activity mActivity;
@@ -96,6 +97,8 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
 
     private int mHeaderCount;
     private BottomSheetContent mBottomSheetContent;
+    private final int mLoadMoreTriggerLookahead;
+    private boolean mIsLoadingMoreContent;
 
     private static ProcessScope sXSurfaceProcessScope;
 
@@ -248,6 +251,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
 
         mPageNavigationDelegate = pageNavigationDelegate;
         mBottomSheetController = bottomSheetController;
+        mLoadMoreTriggerLookahead = FeedServiceBridge.getLoadMoreTriggerLookahead();
 
         mContentManager = new FeedListContentManager(this, this);
 
@@ -270,12 +274,11 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         }
 
         if (mHybridListRenderer != null) {
-            mRootView = mHybridListRenderer.bind(mContentManager);
             // XSurface returns a View, but it should be a RecyclerView.
-            assert (mRootView instanceof RecyclerView);
+            mRootView = (RecyclerView) mHybridListRenderer.bind(mContentManager);
 
-            mSliceViewTracker = new FeedSliceViewTracker(
-                    (RecyclerView) mRootView, mContentManager, (String sliceId) -> {
+            mSliceViewTracker =
+                    new FeedSliceViewTracker(mRootView, mContentManager, (String sliceId) -> {
                         FeedStreamSurfaceJni.get().reportSliceViewed(
                                 mNativeFeedStreamSurface, FeedStreamSurface.this, sliceId);
                     });
@@ -330,11 +333,30 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     }
 
     /**
-     * Loads more content. The callback will be called upon completion.
+     * Attempts to load more content if it can be triggered.
+     * @return true if loading more content can be triggered.
      */
-    public void loadMoreContent(Callback<Boolean> callback) {
-        FeedStreamSurfaceJni.get().loadMore(
-                mNativeFeedStreamSurface, FeedStreamSurface.this, callback);
+    public boolean maybeLoadMore() {
+        // Checks if loading more can be triggered.
+        boolean canLoadMore = false;
+        LinearLayoutManager layoutManager = (LinearLayoutManager) mRootView.getLayoutManager();
+        if (layoutManager == null) {
+            return false;
+        }
+        int totalItemCount = layoutManager.getItemCount();
+        int lastVisibleItem = layoutManager.findLastVisibleItemPosition();
+        if (totalItemCount - lastVisibleItem > mLoadMoreTriggerLookahead) {
+            return false;
+        }
+
+        // Starts to load more content if not yet.
+        if (!mIsLoadingMoreContent) {
+            mIsLoadingMoreContent = true;
+            FeedStreamSurfaceJni.get().loadMore(mNativeFeedStreamSurface, FeedStreamSurface.this,
+                    (Boolean success) -> { mIsLoadingMoreContent = false; });
+        }
+
+        return true;
     }
 
     @VisibleForTesting
@@ -461,16 +483,25 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     @Override
     public void navigateTab(String url) {
         openUrl(url, WindowOpenDisposition.CURRENT_TAB);
+
+        // Attempts to load more content if needed.
+        maybeLoadMore();
     }
 
     @Override
     public void navigateNewTab(String url) {
         openUrl(url, WindowOpenDisposition.NEW_FOREGROUND_TAB);
+
+        // Attempts to load more content if needed.
+        maybeLoadMore();
     }
 
     @Override
     public void navigateIncognitoTab(String url) {
         openUrl(url, WindowOpenDisposition.OFF_THE_RECORD);
+
+        // Attempts to load more content if needed.
+        maybeLoadMore();
     }
 
     @Override
@@ -572,6 +603,9 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     public void commitDismissal(int changeId) {
         FeedStreamSurfaceJni.get().commitEphemeralChange(
                 mNativeFeedStreamSurface, FeedStreamSurface.this, changeId);
+
+        // Attempts to load more content if needed.
+        maybeLoadMore();
     }
 
     @Override

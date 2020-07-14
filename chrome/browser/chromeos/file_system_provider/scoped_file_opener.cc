@@ -26,7 +26,7 @@ class ScopedFileOpener::Runner
         base::WrapRefCounted(new Runner(file_system, std::move(callback)));
     runner->abort_callback_ = file_system->OpenFile(
         file_path, mode,
-        base::Bind(&ScopedFileOpener::Runner::OnOpenFileCompleted, runner));
+        base::BindOnce(&ScopedFileOpener::Runner::OnOpenFileCompleted, runner));
     return runner;
   }
 

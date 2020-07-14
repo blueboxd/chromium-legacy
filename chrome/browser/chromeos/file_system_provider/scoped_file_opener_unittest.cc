@@ -32,8 +32,8 @@ class TestingProvidedFileSystem : public FakeProvidedFileSystem {
                          OpenFileMode mode,
                          OpenFileCallback callback) override {
     open_callback_ = std::move(callback);
-    return base::Bind(&TestingProvidedFileSystem::AbortOpen,
-                      base::Unretained(this));
+    return base::BindOnce(&TestingProvidedFileSystem::AbortOpen,
+                          base::Unretained(this));
   }
 
   AbortCallback CloseFile(
@@ -46,8 +46,8 @@ class TestingProvidedFileSystem : public FakeProvidedFileSystem {
 
   bool has_open_callback() const { return !!open_callback_; }
   OpenFileCallback open_callback() {
-    return base::Bind(&TestingProvidedFileSystem::CompleteOpen,
-                      base::Unretained(this));
+    return base::BindOnce(&TestingProvidedFileSystem::CompleteOpen,
+                          base::Unretained(this));
   }
   const std::vector<int> close_requests() const { return close_requests_; }
 
@@ -79,7 +79,7 @@ TEST(ScopedFileOpenerTest, AbortWhileOpening) {
   {
     ScopedFileOpener file_opener(&file_system, base::FilePath(),
                                  OPEN_FILE_MODE_READ,
-                                 base::Bind(&LogOpen, &log));
+                                 base::BindOnce(&LogOpen, &log));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(file_system.has_open_callback());
   }
@@ -98,7 +98,7 @@ TEST(ScopedFileOpenerTest, CloseAfterOpening) {
   {
     ScopedFileOpener file_opener(&file_system, base::FilePath(),
                                  OPEN_FILE_MODE_READ,
-                                 base::Bind(&LogOpen, &log));
+                                 base::BindOnce(&LogOpen, &log));
     base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(file_system.has_open_callback());
     file_system.open_callback().Run(123, base::File::FILE_OK);
@@ -119,7 +119,7 @@ TEST(ScopedFileOpenerTest, CloseAfterAborting) {
   {
     ScopedFileOpener file_opener(&file_system, base::FilePath(),
                                  OPEN_FILE_MODE_READ,
-                                 base::Bind(&LogOpen, &log));
+                                 base::BindOnce(&LogOpen, &log));
     base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(file_system.has_open_callback());
     file_system.open_callback().Run(0, base::File::FILE_ERROR_ABORT);

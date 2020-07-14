@@ -19,8 +19,6 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
-class Document;
-class Frame;
 class LocalFrame;
 class OriginTrialContext;
 class ResourceResponse;
@@ -38,30 +36,17 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
 
   void CalculateSecureContextMode(LocalFrame* frame);
   void InitializeOriginTrials(const String& origin_trials_header);
-  void CalculateFeaturePolicy(
-      LocalFrame* frame,
-      const ResourceResponse& response,
-      const base::Optional<WebOriginPolicy>& origin_policy,
-      const FramePolicy& frame_policy);
-  void CalculateDocumentPolicy(
-      const DocumentPolicy::ParsedDocumentPolicy& document_policy,
+  void ApplyFeaturePolicy(LocalFrame* frame,
+                          const ResourceResponse& response,
+                          const base::Optional<WebOriginPolicy>& origin_policy,
+                          const FramePolicy& frame_policy);
+  void ApplyDocumentPolicy(
+      DocumentPolicy::ParsedDocumentPolicy& document_policy,
       const String& report_only_document_policy_header);
 
   const scoped_refptr<SecurityOrigin>& GetSecurityOrigin() const {
     return security_origin_;
   }
-
-  // Returns nullptr if SecurityContext is used for non-Document contexts(i.e.,
-  // workers and tests).
-  std::unique_ptr<FeaturePolicy> CreateFeaturePolicy() const;
-  // Returns nullptr if SecurityContext is used for non-Document contexts(i.e.,
-  // workers and tests).
-  // Returns nullptr if there is no 'Feature-Policy-Report-Only' header present
-  // in http response.
-  std::unique_ptr<FeaturePolicy> CreateReportOnlyFeaturePolicy() const;
-
-  std::unique_ptr<DocumentPolicy> CreateDocumentPolicy() const;
-  std::unique_ptr<DocumentPolicy> CreateReportOnlyDocumentPolicy() const;
 
   const ParsedFeaturePolicy& FeaturePolicyHeader() const {
     return feature_policy_header_;
@@ -82,14 +67,7 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
  private:
   ExecutionContext* execution_context_ = nullptr;
   scoped_refptr<SecurityOrigin> security_origin_;
-  DocumentPolicy::ParsedDocumentPolicy document_policy_;
-  DocumentPolicy::ParsedDocumentPolicy report_only_document_policy_;
-  bool initialized_feature_policy_state_ = false;
   ParsedFeaturePolicy feature_policy_header_;
-  ParsedFeaturePolicy report_only_feature_policy_header_;
-  LocalFrame* frame_for_opener_feature_state_ = nullptr;
-  Frame* parent_frame_ = nullptr;
-  ParsedFeaturePolicy container_policy_;
   OriginTrialContext* origin_trials_ = nullptr;
   base::Optional<SecureContextMode> secure_context_mode_;
 };

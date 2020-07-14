@@ -40,6 +40,7 @@ Registry CreateRegistryForTesting(const std::string& base_url, int num_apps) {
     auto web_app = std::make_unique<WebApp>(app_id);
     web_app->AddSource(Source::kSync);
     web_app->SetLaunchUrl(GURL(url));
+    web_app->SetName("Name" + base::NumberToString(i));
     web_app->SetDisplayMode(DisplayMode::kBrowser);
     web_app->SetUserDisplayMode(DisplayMode::kBrowser);
 
@@ -191,6 +192,7 @@ TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
   web_app2->SetDisplayMode(DisplayMode::kBrowser);
   web_app2->SetUserDisplayMode(DisplayMode::kBrowser);
   web_app2->SetLaunchUrl(launch_url2);
+  web_app2->SetName(name);
 
   EXPECT_EQ(nullptr, registrar().GetAppById(app_id));
   EXPECT_EQ(nullptr, registrar().GetAppById(app_id2));

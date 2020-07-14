@@ -424,7 +424,9 @@ void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
     const WebApplicationInfo& web_app_info,
     std::unique_ptr<WebApp> web_app,
     CommitCallback commit_callback) {
+  // TODO(crbug.com/1103570): Add DCHECK(!web_app_info.title.empty());
   web_app->SetName(base::UTF16ToUTF8(web_app_info.title));
+
   web_app->SetDisplayMode(web_app_info.display_mode);
   web_app->SetDescription(base::UTF16ToUTF8(web_app_info.description));
   web_app->SetScope(web_app_info.scope);

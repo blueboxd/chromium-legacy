@@ -480,11 +480,6 @@ void TestSuite::DisableCheckForThreadAndProcessPriority() {
   check_for_thread_and_process_priority_ = false;
 }
 
-void TestSuite::DisableCheckForThreadPriorityAtTestEnd() {
-  DCHECK(!is_initialized_);
-  check_for_thread_priority_at_test_end_ = false;
-}
-
 void TestSuite::UnitTestAssertHandler(const char* file,
                                       int line,
                                       const StringPiece summary,
@@ -647,11 +642,6 @@ void TestSuite::Initialize() {
   if (check_for_leaked_globals_)
     listeners.Append(new CheckForLeakedGlobals);
   if (check_for_thread_and_process_priority_) {
-#if !defined(OS_ANDROID)
-    // TODO(https://crbug.com/931706): Check thread priority on Android.
-    listeners.Append(
-        new CheckThreadPriority(check_for_thread_priority_at_test_end_));
-#endif
 #if !defined(OS_IOS)
     listeners.Append(new CheckProcessPriority);
 #endif

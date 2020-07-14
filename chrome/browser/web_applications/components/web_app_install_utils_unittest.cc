@@ -158,6 +158,19 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   EXPECT_EQ(protocol_handler.url, GURL("http://example.com/handle=%s"));
 }
 
+TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest_EmptyName) {
+  WebApplicationInfo web_app_info;
+
+  blink::Manifest manifest;
+  manifest.name =
+      base::NullableString16(base::ASCIIToUTF16(""), /*is_null=*/false);
+  manifest.short_name = base::NullableString16(
+      base::ASCIIToUTF16(kAppShortName), /*is_null=*/false);
+
+  UpdateWebAppInfoFromManifest(manifest, &web_app_info);
+  EXPECT_EQ(base::UTF8ToUTF16(kAppShortName), web_app_info.title);
+}
+
 // Tests that WebAppInfo is correctly updated when Manifest contains Shortcuts.
 TEST_F(WebAppInstallUtilsWithShortcutsMenu,
        UpdateWebAppInfoFromManifestWithShortcuts) {

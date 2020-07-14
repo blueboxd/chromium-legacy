@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
@@ -95,6 +96,9 @@ class TestDataRetrieverFactory {
     auto manifest = std::make_unique<blink::Manifest>();
     manifest->start_url = GetSystemAppDataForTask(task_index).url;
     manifest->scope = GetSystemAppDataForTask(task_index).url;
+    manifest->short_name =
+        base::NullableString16(base::ASCIIToUTF16("Manifest SWA Name"), false);
+
     blink::Manifest::ImageResource icon;
     icon.src = GetSystemAppDataForTask(task_index).icon_url;
     icon.purpose.push_back(blink::Manifest::ImageResource::Purpose::ANY);
@@ -271,6 +275,7 @@ class SystemWebAppManagerTest : public WebAppTest {
 
     auto web_app = std::make_unique<WebApp>(app_id);
     web_app->SetLaunchUrl(launch_url);
+    web_app->SetName("App Name");
     web_app->AddSource(source_type);
     web_app->SetDisplayMode(DisplayMode::kStandalone);
     web_app->SetUserDisplayMode(DisplayMode::kStandalone);

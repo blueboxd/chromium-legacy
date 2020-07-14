@@ -1867,7 +1867,7 @@ void CrostiniManager::LaunchContainerApplication(
     std::string desktop_file_id,
     const std::vector<std::string>& files,
     bool display_scaled,
-    BoolCallback callback) {
+    CrostiniSuccessCallback callback) {
   vm_tools::cicerone::LaunchContainerApplicationRequest request;
   request.set_owner_id(owner_id_);
   request.set_vm_name(container_id.vm_name);
@@ -3147,22 +3147,17 @@ void CrostiniManager::OnLxdContainerStarting(
 }
 
 void CrostiniManager::OnLaunchContainerApplication(
-    BoolCallback callback,
+    CrostiniSuccessCallback callback,
     base::Optional<vm_tools::cicerone::LaunchContainerApplicationResponse>
         response) {
   if (!response) {
     LOG(ERROR) << "Failed to launch application. Empty response.";
-    std::move(callback).Run(/*success=*/false);
+    std::move(callback).Run(/*success=*/false,
+                            "Failed to launch application. Empty response.");
     return;
   }
 
-  if (!response->success()) {
-    LOG(ERROR) << "Failed to launch application: "
-               << response->failure_reason();
-    std::move(callback).Run(/*success=*/false);
-    return;
-  }
-  std::move(callback).Run(/*success=*/true);
+  std::move(callback).Run(response->success(), response->failure_reason());
 }
 
 void CrostiniManager::OnGetContainerAppIcons(

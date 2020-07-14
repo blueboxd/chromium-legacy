@@ -497,8 +497,11 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
       // The overflow clip paint property depends on border sizes through
       // overflowClipRect(), and border radii, so we update properties on
       // border size or radii change.
+      //
+      // For some controls, it depends on paddings.
       if (!old_style->BorderSizeEquals(new_style) ||
-          !old_style->RadiiEqual(new_style)) {
+          !old_style->RadiiEqual(new_style) ||
+          (HasControlClip() && !old_style->PaddingEqual(new_style))) {
         SetNeedsPaintPropertyUpdate();
         if (Layer())
           Layer()->SetNeedsCompositingInputsUpdate();

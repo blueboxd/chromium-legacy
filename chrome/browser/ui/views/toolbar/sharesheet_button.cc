@@ -6,7 +6,9 @@
 
 #include <memory>
 
-#include "chrome/browser/sharesheet/sharesheet_service_delegate.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sharesheet/sharesheet_service.h"
+#include "chrome/browser/sharesheet/sharesheet_service_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -30,11 +32,11 @@ void SharesheetButton::UpdateIcon() {
 void SharesheetButton::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   // On button press show sharesheet bubble.
-  auto sharesheet_service_delegate =
-      std::make_unique<sharesheet::SharesheetServiceDelegate>(
-          browser_->tab_strip_model()->GetActiveWebContents(),
-          /* bubble_anchor_view */ this);
-  sharesheet_service_delegate->ShowBubble();
+  auto* profile = Profile::FromBrowserContext(
+      browser_->tab_strip_model()->GetActiveWebContents()->GetBrowserContext());
+  auto* sharesheet_service =
+      sharesheet::SharesheetServiceFactory::GetForProfile(profile);
+  sharesheet_service->ShowBubble(/* bubble_anchor_view */ this);
 }
 
 int SharesheetButton::GetIconSize() const {

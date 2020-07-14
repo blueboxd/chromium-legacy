@@ -15,11 +15,10 @@
 </enum>
 
 <enum name="UkmEventNameHash">
-  <summary>
-    Placeholder enum. The values are UKM event name hashes truncated to 31 bits.
-    This gets populated by the GetEnumsNodes function in merge_xml.py when
-    producing the merged XML file.
-  </summary>
+<!-- Placeholder enum. The values are UKM event name hashes truncated to 31
+     bits. This gets populated by the GetEnumsNodes function in merge_xml.py
+     when producing the merged XML file. -->
+
 </enum>
 
 </enums>

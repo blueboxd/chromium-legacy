@@ -93,6 +93,10 @@ class LabelButtonTest : public test::WidgetTest {
     // used (which could be derived from the Widget's NativeTheme).
     test_widget_ = CreateTopLevelPlatformWidget();
 
+    // Ensure the Widget is active, since LabelButton appearance in inactive
+    // Windows is platform-dependent.
+    test_widget_->Show();
+
     // The test code below is not prepared to handle dark mode.
     test_widget_->GetNativeTheme()->set_use_dark_colors(false);
 

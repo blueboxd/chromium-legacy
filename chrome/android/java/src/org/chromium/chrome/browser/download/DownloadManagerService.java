@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileKey;
 import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.components.browser_ui.util.ConversionUtils;
 import org.chromium.components.download.DownloadCollectionBridge;
@@ -295,6 +296,14 @@ public class DownloadManagerService implements DownloadController.Observer,
         mHandler.postDelayed(() -> mDownloadNotifier.resumePendingDownloads(), RESUME_DELAY_MILLIS);
         // Clean up unused shared prefs. TODO(qinmin): remove this after M84.
         mSharedPrefs.removeKey(ChromePreferenceKeys.DOWNLOAD_UMA_ENTRY);
+    }
+
+    // TODO(https://crbug.com/1060940): Remove this function and update all use cases so that
+    // the profile would be available instead of isOffTheRecord boolean.
+    private static ProfileKey getProfileKey(boolean isOffTheRecord) {
+        Profile profile = Profile.getLastUsedRegularProfile();
+        if (isOffTheRecord) profile = profile.getPrimaryOTRProfile();
+        return profile.getProfileKey();
     }
 
     /**
@@ -998,8 +1007,8 @@ public class DownloadManagerService implements DownloadController.Observer,
             incrementDownloadRetryCount(item.getId(), false);
         }
         DownloadManagerServiceJni.get().resumeDownload(getNativeDownloadManagerService(),
-                DownloadManagerService.this, item.getId(), item.getDownloadInfo().isOffTheRecord(),
-                hasUserGesture);
+                DownloadManagerService.this, item.getId(),
+                getProfileKey(item.getDownloadInfo().isOffTheRecord()), hasUserGesture);
     }
 
     /**
@@ -1010,8 +1019,8 @@ public class DownloadManagerService implements DownloadController.Observer,
      */
     public void retryDownload(ContentId id, DownloadItem item, boolean hasUserGesture) {
         DownloadManagerServiceJni.get().retryDownload(getNativeDownloadManagerService(),
-                DownloadManagerService.this, item.getId(), item.getDownloadInfo().isOffTheRecord(),
-                hasUserGesture);
+                DownloadManagerService.this, item.getId(),
+                getProfileKey(item.getDownloadInfo().isOffTheRecord()), hasUserGesture);
     }
 
     /**
@@ -1022,7 +1031,7 @@ public class DownloadManagerService implements DownloadController.Observer,
     @Override
     public void cancelDownload(ContentId id, boolean isOffTheRecord) {
         DownloadManagerServiceJni.get().cancelDownload(getNativeDownloadManagerService(),
-                DownloadManagerService.this, id.id, isOffTheRecord);
+                DownloadManagerService.this, id.id, getProfileKey(isOffTheRecord));
         DownloadProgress progress = mDownloadProgressMap.get(id.id);
         if (progress != null) {
             DownloadInfo info =
@@ -1046,7 +1055,7 @@ public class DownloadManagerService implements DownloadController.Observer,
     @Override
     public void pauseDownload(ContentId id, boolean isOffTheRecord) {
         DownloadManagerServiceJni.get().pauseDownload(getNativeDownloadManagerService(),
-                DownloadManagerService.this, id.id, isOffTheRecord);
+                DownloadManagerService.this, id.id, getProfileKey(isOffTheRecord));
         DownloadProgress progress = mDownloadProgressMap.get(id.id);
         // Calling pause will stop listening to the download item. Update its progress now.
         // If download is already completed, canceled or failed, there is no need to update the
@@ -1076,7 +1085,7 @@ public class DownloadManagerService implements DownloadController.Observer,
             final String downloadGuid, boolean isOffTheRecord, boolean externallyRemoved) {
         mHandler.post(() -> {
             DownloadManagerServiceJni.get().removeDownload(getNativeDownloadManagerService(),
-                    DownloadManagerService.this, downloadGuid, isOffTheRecord);
+                    DownloadManagerService.this, downloadGuid, getProfileKey(isOffTheRecord));
             removeDownloadProgress(downloadGuid);
         });
 
@@ -1125,7 +1134,7 @@ public class DownloadManagerService implements DownloadController.Observer,
     public void onProfileAdded(Profile profile) {
         ProfileManager.removeObserver(this);
         DownloadManagerServiceJni.get().onProfileAdded(
-                mNativeDownloadManagerService, DownloadManagerService.this);
+                mNativeDownloadManagerService, DownloadManagerService.this, profile);
     }
 
     @Override
@@ -1359,8 +1368,8 @@ public class DownloadManagerService implements DownloadController.Observer,
      * @param isOffTheRecord Whether or not to get downloads for the off the record profile.
      */
     public void getAllDownloads(boolean isOffTheRecord) {
-        DownloadManagerServiceJni.get().getAllDownloads(
-                getNativeDownloadManagerService(), DownloadManagerService.this, isOffTheRecord);
+        DownloadManagerServiceJni.get().getAllDownloads(getNativeDownloadManagerService(),
+                DownloadManagerService.this, getProfileKey(isOffTheRecord));
     }
 
     /**
@@ -1379,7 +1388,7 @@ public class DownloadManagerService implements DownloadController.Observer,
     public void renameDownload(ContentId id, String name,
             Callback<Integer /*RenameResult*/> callback, boolean isOffTheRecord) {
         DownloadManagerServiceJni.get().renameDownload(getNativeDownloadManagerService(),
-                DownloadManagerService.this, id.id, name, callback, isOffTheRecord);
+                DownloadManagerService.this, id.id, name, callback, getProfileKey(isOffTheRecord));
     }
 
     /**
@@ -1393,7 +1402,8 @@ public class DownloadManagerService implements DownloadController.Observer,
         boolean onlyOnWifi = (schedule == null) ? false : schedule.onlyOnWifi;
         long startTimeMs = (schedule == null) ? -1 : schedule.startTimeMs;
         DownloadManagerServiceJni.get().changeSchedule(getNativeDownloadManagerService(),
-                DownloadManagerService.this, id.id, onlyOnWifi, startTimeMs, isOffTheRecord);
+                DownloadManagerService.this, id.id, onlyOnWifi, startTimeMs,
+                getProfileKey(isOffTheRecord));
     }
 
     /**
@@ -1427,7 +1437,8 @@ public class DownloadManagerService implements DownloadController.Observer,
      */
     public void checkForExternallyRemovedDownloads(boolean isOffTheRecord) {
         DownloadManagerServiceJni.get().checkForExternallyRemovedDownloads(
-                getNativeDownloadManagerService(), DownloadManagerService.this, isOffTheRecord);
+                getNativeDownloadManagerService(), DownloadManagerService.this,
+                getProfileKey(isOffTheRecord));
     }
 
     @CalledByNative
@@ -1441,7 +1452,10 @@ public class DownloadManagerService implements DownloadController.Observer,
     }
 
     @CalledByNative
-    private void onAllDownloadsRetrieved(final List<DownloadItem> list, boolean isOffTheRecord) {
+    private void onAllDownloadsRetrieved(final List<DownloadItem> list, ProfileKey profileKey) {
+        // TODO(https://crbug.com/1099577): Pass the profileKey/profile to adapter instead of the
+        // boolean.
+        boolean isOffTheRecord = profileKey.isOffTheRecord();
         for (DownloadObserver adapter : mDownloadObservers) {
             adapter.onAllDownloadsRetrieved(list, isOffTheRecord);
         }
@@ -1566,7 +1580,7 @@ public class DownloadManagerService implements DownloadController.Observer,
      */
     public void openDownload(ContentId id, boolean isOffTheRecord, @DownloadOpenSource int source) {
         DownloadManagerServiceJni.get().openDownload(getNativeDownloadManagerService(),
-                DownloadManagerService.this, id.id, isOffTheRecord, source);
+                DownloadManagerService.this, id.id, getProfileKey(isOffTheRecord), source);
     }
 
     /**
@@ -1794,7 +1808,7 @@ public class DownloadManagerService implements DownloadController.Observer,
         if (TextUtils.isEmpty(downloadGuid)) return;
 
         DownloadManagerServiceJni.get().updateLastAccessTime(getNativeDownloadManagerService(),
-                DownloadManagerService.this, downloadGuid, isOffTheRecord);
+                DownloadManagerService.this, downloadGuid, getProfileKey(isOffTheRecord));
     }
 
     @Override
@@ -1818,29 +1832,30 @@ public class DownloadManagerService implements DownloadController.Observer,
         int getAutoResumptionLimit();
         long init(DownloadManagerService caller, boolean isProfileAdded);
         void openDownload(long nativeDownloadManagerService, DownloadManagerService caller,
-                String downloadGuid, boolean isOffTheRecord, int source);
+                String downloadGuid, ProfileKey profileKey, int source);
         void resumeDownload(long nativeDownloadManagerService, DownloadManagerService caller,
-                String downloadGuid, boolean isOffTheRecord, boolean hasUserGesture);
+                String downloadGuid, ProfileKey profileKey, boolean hasUserGesture);
         void retryDownload(long nativeDownloadManagerService, DownloadManagerService caller,
-                String downloadGuid, boolean isOffTheRecord, boolean hasUserGesture);
+                String downloadGuid, ProfileKey profileKey, boolean hasUserGesture);
         void cancelDownload(long nativeDownloadManagerService, DownloadManagerService caller,
-                String downloadGuid, boolean isOffTheRecord);
+                String downloadGuid, ProfileKey profileKey);
         void pauseDownload(long nativeDownloadManagerService, DownloadManagerService caller,
-                String downloadGuid, boolean isOffTheRecord);
+                String downloadGuid, ProfileKey profileKey);
         void removeDownload(long nativeDownloadManagerService, DownloadManagerService caller,
-                String downloadGuid, boolean isOffTheRecord);
+                String downloadGuid, ProfileKey profileKey);
         void renameDownload(long nativeDownloadManagerService, DownloadManagerService caller,
                 String downloadGuid, String targetName, Callback</*RenameResult*/ Integer> callback,
-                boolean isOffTheRecord);
+                ProfileKey profileKey);
         void changeSchedule(long nativeDownloadManagerService, DownloadManagerService caller,
-                String downloadGuid, boolean onlyOnWifi, long startTimeMs, boolean isOffTheRecord);
+                String downloadGuid, boolean onlyOnWifi, long startTimeMs, ProfileKey profileKey);
         void getAllDownloads(long nativeDownloadManagerService, DownloadManagerService caller,
-                boolean isOffTheRecord);
+                ProfileKey profileKey);
         void checkForExternallyRemovedDownloads(long nativeDownloadManagerService,
-                DownloadManagerService caller, boolean isOffTheRecord);
+                DownloadManagerService caller, ProfileKey profileKey);
         void updateLastAccessTime(long nativeDownloadManagerService, DownloadManagerService caller,
-                String downloadGuid, boolean isOffTheRecord);
-        void onProfileAdded(long nativeDownloadManagerService, DownloadManagerService caller);
+                String downloadGuid, ProfileKey profileKey);
+        void onProfileAdded(
+                long nativeDownloadManagerService, DownloadManagerService caller, Profile profile);
         void createInterruptedDownloadForTest(long nativeDownloadManagerService,
                 DownloadManagerService caller, String url, String guid, String targetPath);
     }

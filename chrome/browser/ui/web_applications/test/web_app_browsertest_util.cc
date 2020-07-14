@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -42,6 +43,9 @@ namespace web_app {
 
 AppId InstallWebApp(Profile* profile,
                     std::unique_ptr<WebApplicationInfo> web_app_info) {
+  if (web_app_info->title.empty())
+    web_app_info->title = base::ASCIIToUTF16("WebApplicationInfo App Name");
+
   AppId app_id;
   base::RunLoop run_loop;
   auto* provider = WebAppProviderBase::GetProviderBase(profile);

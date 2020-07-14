@@ -487,15 +487,10 @@ void ClipboardOzone::WritePortableRepresentations(ClipboardBuffer buffer,
     auto text_iter = objects.find(PortableFormat::kText);
     if (text_iter != objects.end()) {
       const ObjectMapParams& params_vector = text_iter->second;
-      if (params_vector.size()) {
+      if (!params_vector.empty()) {
         const ObjectMapParam& char_vector = params_vector[0];
-        const uint8_t* uint8_data =
-            reinterpret_cast<const uint8_t*>(char_vector.data());
-        if (char_vector.size()) {
-          std::vector<uint8_t> data(uint8_data,
-                                    uint8_data + char_vector.size());
-          async_clipboard_ozone_->InsertData(std::move(data), kMimeTypeText);
-        }
+        if (!char_vector.empty())
+          WriteText(&char_vector.front(), char_vector.size());
       }
       async_clipboard_ozone_->OfferData(ClipboardBuffer::kSelection);
     }

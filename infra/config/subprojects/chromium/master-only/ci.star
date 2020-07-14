@@ -1625,6 +1625,7 @@ ci.fyi_builder(
     os = os.MAC_DEFAULT,
     schedule = 'with 3h interval',
     triggered_by = [],
+    ssd = None,
 )
 
 ci.fyi_builder(

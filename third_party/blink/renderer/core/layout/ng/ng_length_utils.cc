@@ -464,6 +464,24 @@ LayoutUnit ComputeInlineSizeForFragment(
   return ConstrainByMinMax(extent, min, max);
 }
 
+MinMaxSizes ComputeMinMaxBlockSize(
+    const NGConstraintSpace& constraint_space,
+    const ComputedStyle& style,
+    const NGBoxStrut& border_padding,
+    LayoutUnit content_size,
+    const LayoutUnit* opt_percentage_resolution_block_size_for_min_max) {
+  MinMaxSizes result;
+  result.min_size = ResolveMinBlockLength(
+      constraint_space, style, border_padding, style.LogicalMinHeight(),
+      LengthResolvePhase::kLayout,
+      opt_percentage_resolution_block_size_for_min_max);
+  result.max_size = ResolveMaxBlockLength(
+      constraint_space, style, border_padding, style.LogicalMaxHeight(),
+      LengthResolvePhase::kLayout,
+      opt_percentage_resolution_block_size_for_min_max);
+  return result;
+}
+
 namespace {
 
 // Computes the block-size for a fragment, ignoring the fixed block-size if set.
@@ -475,9 +493,8 @@ LayoutUnit ComputeBlockSizeForFragmentInternal(
     base::Optional<LayoutUnit> inline_size,
     const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
         nullptr) {
-  LayoutUnit min = ResolveMinBlockLength(
-      constraint_space, style, border_padding, style.LogicalMinHeight(),
-      LengthResolvePhase::kLayout,
+  MinMaxSizes min_max = ComputeMinMaxBlockSize(
+      constraint_space, style, border_padding, content_size,
       opt_percentage_resolution_block_size_for_min_max);
   const Length& logical_height = style.LogicalHeight();
   // Scrollable percentage-sized children of table cells, in the table
@@ -496,7 +513,7 @@ LayoutUnit ComputeBlockSizeForFragmentInternal(
           NGTableCellChildLayoutMode::kMeasureRestricted &&
       (style.OverflowY() == EOverflow::kAuto ||
        style.OverflowY() == EOverflow::kScroll))
-    return min;
+    return min_max.min_size;
 
   // TODO(cbiesinger): Audit callers of ResolveMainBlockLength to see whether
   // they need to respect aspect ratio.
@@ -514,18 +531,13 @@ LayoutUnit ComputeBlockSizeForFragmentInternal(
     if (style.LogicalMinHeight().IsAuto() &&
         style.OverflowBlockDirection() == EOverflow::kVisible &&
         content_size != kIndefiniteSize)
-      min = content_size;
+      min_max.min_size = content_size;
   } else if (extent == kIndefiniteSize) {
     DCHECK_EQ(content_size, kIndefiniteSize);
     return extent;
   }
 
-  LayoutUnit max = ResolveMaxBlockLength(
-      constraint_space, style, border_padding, style.LogicalMaxHeight(),
-      LengthResolvePhase::kLayout,
-      opt_percentage_resolution_block_size_for_min_max);
-
-  return ConstrainByMinMax(extent, min, max);
+  return min_max.ClampSizeToMinAndMax(extent);
 }
 
 }  // namespace

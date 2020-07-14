@@ -88,13 +88,6 @@ void SetRTL(bool rtl) {
   EXPECT_EQ(rtl, base::i18n::IsRTL());
 }
 
-// Returns true if |current| is bigger than |last|. Sets |last| to |current|.
-bool Increased(int current, int* last) {
-  bool increased = current > *last;
-  *last = current;
-  return increased;
-}
-
 base::string16 GetClipboardText(ui::ClipboardBuffer clipboard_buffer) {
   base::string16 clipboard_text;
   ui::Clipboard::GetForCurrentThread()->ReadText(clipboard_buffer,
@@ -920,11 +913,15 @@ TEST_F(LabelTest, MultilineSupportedRenderText) {
 // Ensures SchedulePaint() calls are not made in OnPaint().
 TEST_F(LabelTest, NoSchedulePaintInOnPaint) {
   TestLabel label;
+  int count = 0;
+  const auto expect_paint_count_increased = [&]() {
+    EXPECT_GT(label.schedule_paint_count(), count);
+    count = label.schedule_paint_count();
+  };
 
   // Initialization should schedule at least one paint, but the precise number
   // doesn't really matter.
-  int count = label.schedule_paint_count();
-  EXPECT_LT(0, count);
+  expect_paint_count_increased();
 
   // Painting should never schedule another paint.
   label.SimulatePaint();
@@ -932,16 +929,16 @@ TEST_F(LabelTest, NoSchedulePaintInOnPaint) {
 
   // Test a few things that should schedule paints. Multiple times is OK.
   label.SetEnabled(false);
-  EXPECT_TRUE(Increased(label.schedule_paint_count(), &count));
+  expect_paint_count_increased();
 
   label.SetText(label.GetText() + ASCIIToUTF16("Changed"));
-  EXPECT_TRUE(Increased(label.schedule_paint_count(), &count));
+  expect_paint_count_increased();
 
   label.SizeToPreferredSize();
-  EXPECT_TRUE(Increased(label.schedule_paint_count(), &count));
+  expect_paint_count_increased();
 
   label.SetEnabledColor(SK_ColorBLUE);
-  EXPECT_TRUE(Increased(label.schedule_paint_count(), &count));
+  expect_paint_count_increased();
 
   label.SimulatePaint();
   EXPECT_EQ(count, label.schedule_paint_count());  // Unchanged.

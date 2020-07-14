@@ -7,16 +7,15 @@
 
 #include "base/macros.h"
 
-class Profile;
 class ProfileKey;
 
 // Native side of DownloadStartupUtils.java.
 class DownloadStartupUtils {
  public:
   // Ensures that the download system is initialized for the targeted profile.
-  // If |profile| is null, reduced mode will be assumed. The returned value is
-  // the ProfileKey that was used.
-  static ProfileKey* EnsureDownloadSystemInitialized(Profile* profile);
+  // If |profile_key| is null, reduced mode will be assumed. The returned value
+  // is the ProfileKey that was used.
+  static ProfileKey* EnsureDownloadSystemInitialized(ProfileKey* profile_key);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(DownloadStartupUtils);

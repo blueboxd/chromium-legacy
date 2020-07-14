@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/optional.h"
@@ -70,9 +71,6 @@ inline bool operator!=(const ContainerId& lhs,
 std::ostream& operator<<(std::ostream& ostream,
                          const ContainerId& container_id);
 
-using LaunchCrostiniAppCallback =
-    base::OnceCallback<void(bool success, const std::string& failure_reason)>;
-
 // Checks if user profile is able to a crostini app with a given app_id.
 bool IsUninstallable(Profile* profile, const std::string& app_id);
 
@@ -90,20 +88,14 @@ bool ShouldConfigureDefaultContainer(Profile* profile);
 bool MaybeShowCrostiniDialogBeforeLaunch(Profile* profile,
                                          CrostiniResult result);
 
-// Launches the Crostini app with ID of |app_id| on the display with ID of
-// |display_id|. |app_id| should be a valid Crostini app list id.
-void LaunchCrostiniApp(Profile* profile,
-                       const std::string& app_id,
-                       int64_t display_id);
-
 // Launch a Crostini App with a given set of files, given as absolute paths in
 // the container. For apps which can only be launched with a single file,
 // launch multiple instances.
 void LaunchCrostiniApp(Profile* profile,
                        const std::string& app_id,
                        int64_t display_id,
-                       const std::vector<storage::FileSystemURL>& files,
-                       LaunchCrostiniAppCallback callback);
+                       const std::vector<storage::FileSystemURL>& files = {},
+                       CrostiniSuccessCallback callback = base::DoNothing());
 
 // Retrieves cryptohome_id from profile.
 std::string CryptohomeIdForProfile(Profile* profile);
@@ -179,7 +171,8 @@ void ShowCrostiniRecoveryView(Profile* profile,
                               CrostiniUISurface ui_surface,
                               const std::string& app_id,
                               int64_t display_id,
-                              LaunchCrostiniAppCallback callback);
+                              const std::vector<storage::FileSystemURL>& files,
+                              CrostiniSuccessCallback callback);
 
 // Add a newly created LXD container to the kCrostiniContainers pref
 void AddNewLxdContainerToPrefs(Profile* profile,

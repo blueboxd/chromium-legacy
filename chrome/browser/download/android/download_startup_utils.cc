@@ -28,15 +28,15 @@ static void JNI_DownloadStartupUtils_EnsureDownloadSystemInitialized(
       profiles.push_back(active_profile);
   }
   for (Profile* profile : profiles)
-    DownloadStartupUtils::EnsureDownloadSystemInitialized(profile);
+    DownloadStartupUtils::EnsureDownloadSystemInitialized(
+        profile->GetProfileKey());
 }
 
 // static
 ProfileKey* DownloadStartupUtils::EnsureDownloadSystemInitialized(
-    Profile* profile) {
-  ProfileKey* profile_key =
-      profile ? profile->GetProfileKey()
-              : ProfileKeyStartupAccessor::GetInstance()->profile_key();
+    ProfileKey* profile_key) {
+  if (!profile_key)
+    profile_key = ProfileKeyStartupAccessor::GetInstance()->profile_key();
   DownloadManagerUtils::GetInProgressDownloadManager(profile_key);
   return profile_key;
 }

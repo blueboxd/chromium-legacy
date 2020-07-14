@@ -75,10 +75,6 @@ void SecurityContext::Initialize(const SecurityContextInit& init) {
   }
   security_origin_ = init.GetSecurityOrigin();
   secure_context_mode_ = init.GetSecureContextMode();
-  feature_policy_ = init.CreateFeaturePolicy();
-  report_only_feature_policy_ = init.CreateReportOnlyFeaturePolicy();
-  document_policy_ = init.CreateDocumentPolicy();
-  report_only_document_policy_ = init.CreateReportOnlyDocumentPolicy();
   origin_trial_context_ = init.GetOriginTrialContext();
 }
 
@@ -158,9 +154,9 @@ void SecurityContext::SetFeaturePolicy(
   feature_policy_ = std::move(feature_policy);
 }
 
-void SecurityContext::SetDocumentPolicyForTesting(
-    std::unique_ptr<DocumentPolicy> document_policy) {
-  document_policy_ = std::move(document_policy);
+void SecurityContext::SetReportOnlyFeaturePolicy(
+    std::unique_ptr<FeaturePolicy> feature_policy) {
+  report_only_feature_policy_ = std::move(feature_policy);
 }
 
 bool SecurityContext::IsFeatureEnabled(

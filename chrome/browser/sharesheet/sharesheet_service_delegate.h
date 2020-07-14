@@ -7,11 +7,9 @@
 
 #include <memory>
 
-class SharesheetBubbleView;
+#include "chrome/browser/sharesheet/sharesheet_controller.h"
 
-namespace content {
-class WebContents;
-}  // namespace content
+class SharesheetBubbleView;
 
 namespace views {
 class View;
@@ -21,20 +19,30 @@ namespace sharesheet {
 
 class SharesheetService;
 
-class SharesheetServiceDelegate {
+// The SharesheetServiceDelegate is the middle point between the UI and the
+// business logic in the sharesheet.
+class SharesheetServiceDelegate : public SharesheetController {
  public:
-  explicit SharesheetServiceDelegate(content::WebContents* web_contents,
-                                     views::View* bubble_anchor_view);
-  ~SharesheetServiceDelegate();
+  explicit SharesheetServiceDelegate(uint32_t id,
+                                     views::View* bubble_anchor_view,
+                                     SharesheetService* sharesheet_service);
+  ~SharesheetServiceDelegate() override;
   SharesheetServiceDelegate(const SharesheetServiceDelegate&) = delete;
   SharesheetServiceDelegate& operator=(const SharesheetServiceDelegate&) =
       delete;
 
+  uint32_t GetId();
+
   void ShowBubble();
+  void OnBubbleClosed();
+
+  // SharesheetController overrides
+  void ShareActionCompleted() override;
 
  private:
+  uint32_t id_;
   std::unique_ptr<SharesheetBubbleView> sharesheet_bubble_view_;
-  std::unique_ptr<SharesheetService> sharesheet_service_;
+  SharesheetService* sharesheet_service_;
 };
 
 }  // namespace sharesheet

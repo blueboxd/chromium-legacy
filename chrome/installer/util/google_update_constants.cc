@@ -52,7 +52,6 @@ const wchar_t kRegMSIField[] = L"msi";
 const wchar_t kRegNameField[] = L"name";
 const wchar_t kRegOemInstallField[] = L"oeminstall";
 const wchar_t kRegOldVersionField[] = L"opv";
-const wchar_t kRegOopcrashesField[] = L"oopcrashes";
 const wchar_t kRegPathField[] = L"path";
 const wchar_t kRegRLZBrandField[] = L"brand";
 const wchar_t kRegRLZReactivationBrandField[] = L"reactivationbrand";

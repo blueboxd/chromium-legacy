@@ -370,7 +370,7 @@ class CrostiniManager : public KeyedService,
                                   std::string desktop_file_id,
                                   const std::vector<std::string>& files,
                                   bool display_scaled,
-                                  BoolCallback callback);
+                                  CrostiniSuccessCallback callback);
 
   // Asynchronously gets app icons as specified by their desktop file ids.
   // |callback| is called after the method call finishes.
@@ -794,7 +794,7 @@ class CrostiniManager : public KeyedService,
 
   // Callback for CrostiniManager::LaunchContainerApplication.
   void OnLaunchContainerApplication(
-      BoolCallback callback,
+      CrostiniSuccessCallback callback,
       base::Optional<vm_tools::cicerone::LaunchContainerApplicationResponse>
           response);
 

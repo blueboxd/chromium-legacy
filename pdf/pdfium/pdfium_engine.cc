@@ -533,13 +533,9 @@ void PDFiumEngine::PrePaint() {
 }
 
 void PDFiumEngine::Paint(const pp::Rect& rect,
-                         pp::ImageData* image_data,
-                         std::vector<pp::Rect>* ready,
-                         std::vector<pp::Rect>* pending) {
-  DCHECK(image_data);
-  DCHECK(ready);
-  DCHECK(pending);
-
+                         SkBitmap& image_data,
+                         std::vector<pp::Rect>& ready,
+                         std::vector<pp::Rect>& pending) {
   pp::Rect leftover = rect;
   for (size_t i = 0; i < visible_pages_.size(); ++i) {
     int index = visible_pages_[i];
@@ -581,7 +577,7 @@ void PDFiumEngine::Paint(const pp::Rect& rect,
           // happened, but it made scrolling up on complex PDFs very slow since
           // there would be a damaged rect at the top (from scroll) and at the
           // bottom (from toolbar).
-          pending->push_back(dirty_in_screen);
+          pending.push_back(dirty_in_screen);
           continue;
         }
       }
@@ -596,13 +592,13 @@ void PDFiumEngine::Paint(const pp::Rect& rect,
       progressive_paints_[progressive].set_painted(true);
       if (ContinuePaint(progressive, image_data)) {
         FinishPaint(progressive, image_data);
-        ready->push_back(dirty_in_screen);
+        ready.push_back(dirty_in_screen);
       } else {
-        pending->push_back(dirty_in_screen);
+        pending.push_back(dirty_in_screen);
       }
     } else {
       PaintUnavailablePage(index, dirty_in_screen, image_data);
-      ready->push_back(dirty_in_screen);
+      ready.push_back(dirty_in_screen);
     }
   }
 }
@@ -2964,11 +2960,9 @@ int PDFiumEngine::StartPaint(int page_index, const pp::Rect& dirty) {
   return progressive_paints_.size() - 1;
 }
 
-bool PDFiumEngine::ContinuePaint(int progressive_index,
-                                 pp::ImageData* image_data) {
+bool PDFiumEngine::ContinuePaint(int progressive_index, SkBitmap& image_data) {
   DCHECK_GE(progressive_index, 0);
   DCHECK_LT(static_cast<size_t>(progressive_index), progressive_paints_.size());
-  DCHECK(image_data);
 
   last_progressive_start_time_ = base::Time::Now();
 #if defined(OS_LINUX)
@@ -2990,9 +2984,7 @@ bool PDFiumEngine::ContinuePaint(int progressive_index,
     pp::Rect dirty = progressive_paints_[progressive_index].rect();
     GetPDFiumRect(page_index, dirty, &start_x, &start_y, &size_x, &size_y);
 
-    SkBitmap skia_image_data =
-        SkBitmapFromPPImageData(std::make_unique<pp::ImageData>(*image_data));
-    ScopedFPDFBitmap new_bitmap = CreateBitmap(dirty, skia_image_data);
+    ScopedFPDFBitmap new_bitmap = CreateBitmap(dirty, image_data);
     FPDFBitmap_FillRect(new_bitmap.get(), start_x, start_y, size_x, size_y,
                         0xFFFFFFFF);
     rv = FPDF_RenderPageBitmap_Start(
@@ -3000,16 +2992,14 @@ bool PDFiumEngine::ContinuePaint(int progressive_index,
         ToPDFiumRotation(layout_.options().default_page_orientation()),
         GetRenderingFlags(), this);
     progressive_paints_[progressive_index].SetBitmapAndImageData(
-        std::move(new_bitmap), std::move(skia_image_data));
+        std::move(new_bitmap), image_data);
   }
   return rv != FPDF_RENDER_TOBECONTINUED;
 }
 
-void PDFiumEngine::FinishPaint(int progressive_index,
-                               pp::ImageData* image_data) {
+void PDFiumEngine::FinishPaint(int progressive_index, SkBitmap& image_data) {
   DCHECK_GE(progressive_index, 0);
   DCHECK_LT(static_cast<size_t>(progressive_index), progressive_paints_.size());
-  DCHECK(image_data);
 
   int page_index = progressive_paints_[progressive_index].page_index();
   const pp::Rect& dirty_in_screen =
@@ -3112,10 +3102,9 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
 }
 
 void PDFiumEngine::PaintPageShadow(int progressive_index,
-                                   pp::ImageData* image_data) {
+                                   SkBitmap& image_data) {
   DCHECK_GE(progressive_index, 0);
   DCHECK_LT(static_cast<size_t>(progressive_index), progressive_paints_.size());
-  DCHECK(image_data);
 
   int page_index = progressive_paints_[progressive_index].page_index();
   const pp::Rect& dirty_in_screen =
@@ -3138,10 +3127,9 @@ void PDFiumEngine::PaintPageShadow(int progressive_index,
 }
 
 void PDFiumEngine::DrawSelections(int progressive_index,
-                                  pp::ImageData* image_data) const {
+                                  SkBitmap& image_data) const {
   DCHECK_GE(progressive_index, 0);
   DCHECK_LT(static_cast<size_t>(progressive_index), progressive_paints_.size());
-  DCHECK(image_data);
 
   int page_index = progressive_paints_[progressive_index].page_index();
   const pp::Rect& dirty_in_screen =
@@ -3149,9 +3137,7 @@ void PDFiumEngine::DrawSelections(int progressive_index,
 
   void* region = nullptr;
   int stride;
-  SkBitmap skia_image_data =
-      SkBitmapFromPPImageData(std::make_unique<pp::ImageData>(*image_data));
-  GetRegion(dirty_in_screen.point(), skia_image_data, region, stride);
+  GetRegion(dirty_in_screen.point(), image_data, region, stride);
 
   std::vector<pp::Rect> highlighted_rects;
   pp::Rect visible_rect = GetVisibleRect();
@@ -3188,15 +3174,13 @@ void PDFiumEngine::DrawSelections(int progressive_index,
 
 void PDFiumEngine::PaintUnavailablePage(int page_index,
                                         const pp::Rect& dirty,
-                                        pp::ImageData* image_data) {
+                                        SkBitmap& image_data) {
   int start_x;
   int start_y;
   int size_x;
   int size_y;
   GetPDFiumRect(page_index, dirty, &start_x, &start_y, &size_x, &size_y);
-  SkBitmap skia_image_data =
-      SkBitmapFromPPImageData(std::make_unique<pp::ImageData>(*image_data));
-  ScopedFPDFBitmap bitmap(CreateBitmap(dirty, skia_image_data));
+  ScopedFPDFBitmap bitmap(CreateBitmap(dirty, image_data));
   FPDFBitmap_FillRect(bitmap.get(), start_x, start_y, size_x, size_y,
                       kPendingPageColor);
 
@@ -3485,7 +3469,7 @@ void PDFiumEngine::SetCurrentPage(int index) {
 void PDFiumEngine::DrawPageShadow(const pp::Rect& page_rc,
                                   const pp::Rect& shadow_rc,
                                   const pp::Rect& clip_rc,
-                                  pp::ImageData* image_data) {
+                                  SkBitmap& image_data) {
   pp::Rect page_rect(page_rc);
   page_rect.Offset(page_offset_);
 
@@ -3509,12 +3493,8 @@ void PDFiumEngine::DrawPageShadow(const pp::Rect& page_rc,
         depth, factor, client_->GetBackgroundColor());
   }
 
-  // TODO(crbug.com/1099020): Converting to SkBitmap here may seem silly, but
-  // this is part of a migration from pp::ImageData to SkBitmap in general.
-  DCHECK(!image_data->is_null());
-  SkBitmap bitmap =
-      SkBitmapFromPPImageData(std::make_unique<pp::ImageData>(*image_data));
-  DrawShadow(bitmap, shadow_rect, page_rect, clip_rect, *page_shadow_);
+  DCHECK(!image_data.isNull());
+  DrawShadow(image_data, shadow_rect, page_rect, clip_rect, *page_shadow_);
 }
 
 void PDFiumEngine::GetRegion(const pp::Point& location,

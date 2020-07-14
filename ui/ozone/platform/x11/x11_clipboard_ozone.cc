@@ -86,6 +86,8 @@ X11ClipboardOzone::X11ClipboardOzone()
       x_property_(gfx::GetAtom(kChromeSelection)),
       connection_(x11::Connection::Get()),
       x_window_(CreateDummyWindow("Chromium Clipboard Window")) {
+  connection_->xfixes().QueryVersion(
+      {x11::XFixes::major_version, x11::XFixes::minor_version});
   if (!connection_->xfixes().present())
     return;
   using_xfixes_ = true;
@@ -114,7 +116,7 @@ bool X11ClipboardOzone::DispatchXEvent(x11::Event* xev) {
   if (auto* notify = xev->As<x11::SelectionNotifyEvent>())
     return notify->requestor == x_window_ && OnSelectionNotify(*notify);
   if (auto* notify = xev->As<x11::XFixes::SelectionNotifyEvent>())
-    return notify->owner == x_window_ && OnSetSelectionOwnerNotify(*notify);
+    return notify->window == x_window_ && OnSetSelectionOwnerNotify(*notify);
 
   return false;
 }

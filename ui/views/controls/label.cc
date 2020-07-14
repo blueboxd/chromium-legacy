@@ -89,7 +89,8 @@ const gfx::FontList& Label::GetDefaultFontList() {
 
 void Label::SetFontList(const gfx::FontList& font_list) {
   full_text_->SetFontList(font_list);
-  ResetLayout();
+  ClearDisplayText();
+  PreferredSizeChanged();
 }
 
 const base::string16& Label::GetText() const {
@@ -100,7 +101,9 @@ void Label::SetText(const base::string16& new_text) {
   if (new_text == GetText())
     return;
   full_text_->SetText(new_text);
-  OnPropertyChanged(&full_text_ + kLabelText, kPropertyEffectsLayout);
+  ClearDisplayText();
+  OnPropertyChanged(&full_text_ + kLabelText,
+                    kPropertyEffectsPreferredSizeChanged);
   stored_selection_range_ = gfx::Range::InvalidRange();
 }
 
@@ -130,6 +133,7 @@ void Label::SetAutoColorReadabilityEnabled(
   if (auto_color_readability_enabled_ == auto_color_readability_enabled)
     return;
   auto_color_readability_enabled_ = auto_color_readability_enabled;
+  RecalculateColors();
   OnPropertyChanged(&auto_color_readability_enabled_, kPropertyEffectsPaint);
 }
 
@@ -142,6 +146,7 @@ void Label::SetEnabledColor(SkColor color) {
     return;
   requested_enabled_color_ = color;
   enabled_color_set_ = true;
+  RecalculateColors();
   OnPropertyChanged(&requested_enabled_color_, kPropertyEffectsPaint);
 }
 
@@ -154,6 +159,7 @@ void Label::SetBackgroundColor(SkColor color) {
     return;
   background_color_ = color;
   background_color_set_ = true;
+  RecalculateColors();
   OnPropertyChanged(&background_color_, kPropertyEffectsPaint);
 }
 
@@ -166,6 +172,7 @@ void Label::SetSelectionTextColor(SkColor color) {
     return;
   requested_selection_text_color_ = color;
   selection_text_color_set_ = true;
+  RecalculateColors();
   OnPropertyChanged(&requested_selection_text_color_, kPropertyEffectsPaint);
 }
 
@@ -178,6 +185,7 @@ void Label::SetSelectionBackgroundColor(SkColor color) {
     return;
   selection_background_color_ = color;
   selection_background_color_set_ = true;
+  RecalculateColors();
   OnPropertyChanged(&selection_background_color_, kPropertyEffectsPaint);
 }
 
@@ -189,7 +197,9 @@ void Label::SetShadows(const gfx::ShadowValues& shadows) {
   if (full_text_->shadows() == shadows)
     return;
   full_text_->set_shadows(shadows);
-  OnPropertyChanged(&full_text_ + kLabelShadows, kPropertyEffectsLayout);
+  ClearDisplayText();
+  OnPropertyChanged(&full_text_ + kLabelShadows,
+                    kPropertyEffectsPreferredSizeChanged);
 }
 
 bool Label::GetSubpixelRenderingEnabled() const {
@@ -212,8 +222,9 @@ void Label::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
   if (GetHorizontalAlignment() == alignment)
     return;
   full_text_->SetHorizontalAlignment(alignment);
+  ClearDisplayText();
   OnPropertyChanged(&full_text_ + kLabelHorizontalAlignment,
-                    kPropertyEffectsLayout);
+                    kPropertyEffectsPaint);
 }
 
 gfx::VerticalAlignment Label::GetVerticalAlignment() const {
@@ -224,9 +235,9 @@ void Label::SetVerticalAlignment(gfx::VerticalAlignment alignment) {
   if (GetVerticalAlignment() == alignment)
     return;
   full_text_->SetVerticalAlignment(alignment);
-  // TODO(dfried): consider if this should be kPropertyEffectsPaint instead.
+  ClearDisplayText();
   OnPropertyChanged(&full_text_ + kLabelVerticalAlignment,
-                    kPropertyEffectsLayout);
+                    kPropertyEffectsPaint);
 }
 
 int Label::GetLineHeight() const {
@@ -237,7 +248,9 @@ void Label::SetLineHeight(int height) {
   if (GetLineHeight() == height)
     return;
   full_text_->SetMinLineHeight(height);
-  OnPropertyChanged(&full_text_ + kLabelLineHeight, kPropertyEffectsLayout);
+  ClearDisplayText();
+  OnPropertyChanged(&full_text_ + kLabelLineHeight,
+                    kPropertyEffectsPreferredSizeChanged);
 }
 
 bool Label::GetMultiLine() const {
@@ -251,7 +264,8 @@ void Label::SetMultiLine(bool multi_line) {
     return;
   multi_line_ = multi_line;
   full_text_->SetMultiline(multi_line);
-  OnPropertyChanged(&multi_line_, kPropertyEffectsLayout);
+  ClearDisplayText();
+  OnPropertyChanged(&multi_line_, kPropertyEffectsPreferredSizeChanged);
 }
 
 int Label::GetMaxLines() const {
@@ -262,7 +276,7 @@ void Label::SetMaxLines(int max_lines) {
   if (max_lines_ == max_lines)
     return;
   max_lines_ = max_lines;
-  OnPropertyChanged(&max_lines_, kPropertyEffectsLayout);
+  OnPropertyChanged(&max_lines_, kPropertyEffectsPreferredSizeChanged);
 }
 
 bool Label::GetObscured() const {
@@ -273,9 +287,11 @@ void Label::SetObscured(bool obscured) {
   if (this->GetObscured() == obscured)
     return;
   full_text_->SetObscured(obscured);
+  ClearDisplayText();
   if (obscured)
     SetSelectable(false);
-  OnPropertyChanged(&full_text_ + kLabelObscured, kPropertyEffectsLayout);
+  OnPropertyChanged(&full_text_ + kLabelObscured,
+                    kPropertyEffectsPreferredSizeChanged);
 }
 
 bool Label::IsDisplayTextTruncated() const {
@@ -290,8 +306,7 @@ bool Label::IsDisplayTextTruncated() const {
 }
 
 bool Label::GetAllowCharacterBreak() const {
-  return full_text_->word_wrap_behavior() == gfx::WRAP_LONG_WORDS ? true
-                                                                  : false;
+  return full_text_->word_wrap_behavior() == gfx::WRAP_LONG_WORDS;
 }
 
 void Label::SetAllowCharacterBreak(bool allow_character_break) {
@@ -300,8 +315,9 @@ void Label::SetAllowCharacterBreak(bool allow_character_break) {
   if (full_text_->word_wrap_behavior() == behavior)
     return;
   full_text_->SetWordWrapBehavior(behavior);
+  ClearDisplayText();
   OnPropertyChanged(&full_text_ + kLabelAllowCharacterBreak,
-                    kPropertyEffectsLayout);
+                    kPropertyEffectsPreferredSizeChanged);
 }
 
 size_t Label::GetTextIndexOfLine(size_t line) const {
@@ -322,7 +338,8 @@ void Label::SetElideBehavior(gfx::ElideBehavior elide_behavior) {
   if (elide_behavior_ == elide_behavior)
     return;
   elide_behavior_ = elide_behavior;
-  OnPropertyChanged(&elide_behavior_, kPropertyEffectsLayout);
+  ClearDisplayText();
+  OnPropertyChanged(&elide_behavior_, kPropertyEffectsPreferredSizeChanged);
 }
 
 base::string16 Label::GetTooltipText() const {
@@ -365,7 +382,7 @@ void Label::SetMaximumWidth(int max_width) {
   if (max_width_ == max_width)
     return;
   max_width_ = max_width;
-  OnPropertyChanged(&max_width_, kPropertyEffectsLayout);
+  OnPropertyChanged(&max_width_, kPropertyEffectsPreferredSizeChanged);
 }
 
 bool Label::GetCollapseWhenHidden() const {
@@ -385,7 +402,6 @@ size_t Label::GetRequiredLines() const {
 }
 
 base::string16 Label::GetDisplayTextForTesting() {
-  ClearDisplayText();
   MaybeBuildDisplayText();
   return display_text_ ? display_text_->GetDisplayText() : base::string16();
 }
@@ -574,15 +590,6 @@ base::string16 Label::GetTooltipText(const gfx::Point& p) const {
   }
 
   return base::string16();
-}
-
-void Label::OnHandlePropertyChangeEffects(PropertyEffects property_effects) {
-  if (property_effects & kPropertyEffectsPreferredSizeChanged)
-    SizeToPreferredSize();
-  if (property_effects & kPropertyEffectsLayout)
-    ResetLayout();
-  if (property_effects & kPropertyEffectsPaint)
-    RecalculateColors();
 }
 
 std::unique_ptr<gfx::RenderText> Label::CreateRenderText() const {
@@ -804,7 +811,7 @@ void Label::OnDeviceScaleFactorChanged(float old_device_scale_factor,
   // When the device scale factor is changed, some font rendering parameters is
   // changed (especially, hinting). The bounding box of the text has to be
   // re-computed based on the new parameters. See crbug.com/441439
-  ResetLayout();
+  PreferredSizeChanged();
 }
 
 void Label::VisibilityChanged(View* starting_from, bool is_visible) {
@@ -983,12 +990,6 @@ void Label::Init(const base::string16& text,
   AddAccelerator(ui::Accelerator(ui::VKEY_C, ui::EF_CONTROL_DOWN));
 }
 
-void Label::ResetLayout() {
-  PreferredSizeChanged();
-  SchedulePaint();
-  ClearDisplayText();
-}
-
 void Label::MaybeBuildDisplayText() const {
   if (display_text_)
     return;
@@ -1087,7 +1088,7 @@ bool Label::ShouldShowDefaultTooltip() const {
           (GetMultiLine() && text_size.height() > size.height()));
 }
 
-void Label::ClearDisplayText() const {
+void Label::ClearDisplayText() {
   // The HasSelection() call below will build |display_text_| in case it is
   // empty. Return early to avoid this.
   if (!display_text_)
@@ -1099,6 +1100,8 @@ void Label::ClearDisplayText() const {
         GetRenderTextForSelectionController()->selection();
   }
   display_text_ = nullptr;
+
+  SchedulePaint();
 }
 
 base::string16 Label::GetSelectedText() const {

@@ -211,6 +211,8 @@ class WebAppInstallTaskTest : public WebAppTest {
 
     auto manifest = std::make_unique<blink::Manifest>();
     manifest->start_url = url;
+    manifest->short_name =
+        base::NullableString16(base::UTF8ToUTF16("Manifest Name"), false);
     data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
 
     data_retriever_->SetIcons(IconsMap{});
@@ -321,6 +323,10 @@ class WebAppInstallTaskTest : public WebAppTest {
   WebAppRegistrar& registrar() { return controller().registrar(); }
   TestAppShortcutManager& test_shortcut_manager() { return *shortcut_manager_; }
   TestWebAppUrlLoader& url_loader() { return *url_loader_; }
+  TestDataRetriever& data_retriever() {
+    DCHECK(data_retriever_);
+    return *data_retriever_;
+  }
 
   std::unique_ptr<WebAppIconManager> icon_manager_;
   std::unique_ptr<WebAppInstallTask> install_task_;
@@ -382,7 +388,7 @@ TEST_F(WebAppInstallTaskTest, InstallFromWebContents) {
   EXPECT_TRUE(AreWebAppsUserInstallable(profile()));
 
   const GURL url = GURL("https://example.com/scope/path");
-  const std::string name = "Name";
+  const std::string manifest_name = "Manifest Name";
   const std::string description = "Description";
   const GURL scope = GURL("https://example.com/scope");
   const base::Optional<SkColor> theme_color = 0xAABBCCDD;
@@ -390,9 +396,18 @@ TEST_F(WebAppInstallTaskTest, InstallFromWebContents) {
 
   const AppId app_id = GenerateAppIdFromURL(url);
 
-  CreateDefaultDataToRetrieve(url, scope);
-  CreateRendererAppInfo(url, name, description, /*scope*/ GURL{}, theme_color,
+  CreateRendererAppInfo(url, "Renderer Name", description, /*scope*/ GURL{},
+                        theme_color,
                         /*open_as_window*/ true);
+  {
+    auto manifest = std::make_unique<blink::Manifest>();
+    manifest->start_url = url;
+    manifest->scope = scope;
+    manifest->short_name =
+        base::NullableString16(base::ASCIIToUTF16(manifest_name), false);
+
+    data_retriever().SetManifest(std::move(manifest), /*is_installable=*/true);
+  }
 
   base::RunLoop run_loop;
   bool callback_called = false;
@@ -416,7 +431,7 @@ TEST_F(WebAppInstallTaskTest, InstallFromWebContents) {
   EXPECT_NE(nullptr, web_app);
 
   EXPECT_EQ(app_id, web_app->app_id());
-  EXPECT_EQ(name, web_app->name());
+  EXPECT_EQ(manifest_name, web_app->name());
   EXPECT_EQ(description, web_app->description());
   EXPECT_EQ(url, web_app->launch_url());
   EXPECT_EQ(scope, web_app->scope());
@@ -429,13 +444,22 @@ TEST_F(WebAppInstallTaskTest, ForceReinstall) {
   const AppId app_id = GenerateAppIdFromURL(url);
 
   CreateDefaultDataToRetrieve(url);
-  CreateRendererAppInfo(url, "Name", "Description");
+  CreateRendererAppInfo(url, "Renderer Name", "Renderer Description");
 
   const AppId installed_web_app = InstallWebAppFromManifestWithFallback();
   EXPECT_EQ(app_id, installed_web_app);
 
   // Force reinstall:
-  CreateRendererAppInfo(url, "Name2", "Description2");
+  CreateRendererAppInfo(url, "Renderer Name2", "Renderer Description2");
+  {
+    auto manifest = std::make_unique<blink::Manifest>();
+    manifest->start_url = url;
+    manifest->scope = url;
+    manifest->short_name =
+        base::NullableString16(base::ASCIIToUTF16("Manifest Name2"), false);
+
+    data_retriever().SetManifest(std::move(manifest), /*is_installable=*/true);
+  }
 
   base::RunLoop run_loop;
   bool callback_called = false;
@@ -449,8 +473,8 @@ TEST_F(WebAppInstallTaskTest, ForceReinstall) {
             EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
             EXPECT_EQ(app_id, force_installed_app_id);
             const WebApp* web_app = registrar().GetAppById(app_id);
-            EXPECT_EQ(web_app->name(), "Name2");
-            EXPECT_EQ(web_app->description(), "Description2");
+            EXPECT_EQ(web_app->name(), "Manifest Name2");
+            EXPECT_EQ(web_app->description(), "Renderer Description2");
             callback_called = true;
             run_loop.Quit();
           }));
@@ -806,6 +830,8 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifest_Success) {
 
   auto manifest = std::make_unique<blink::Manifest>();
   manifest->start_url = url;
+  manifest->short_name =
+      base::NullableString16(base::UTF8ToUTF16("Server Name"), false);
 
   data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
 
@@ -1204,7 +1230,6 @@ TEST_F(WebAppInstallTaskWithRunOnOsLoginTest,
   EXPECT_NE(nullptr, web_app);
 
   EXPECT_EQ(app_id, web_app->app_id());
-  EXPECT_EQ(name, web_app->name());
   EXPECT_EQ(description, web_app->description());
   EXPECT_EQ(url, web_app->launch_url());
   EXPECT_EQ(scope, web_app->scope());
@@ -1251,7 +1276,6 @@ TEST_F(WebAppInstallTaskWithRunOnOsLoginTest,
   EXPECT_NE(nullptr, web_app);
 
   EXPECT_EQ(app_id, web_app->app_id());
-  EXPECT_EQ(name, web_app->name());
   EXPECT_EQ(description, web_app->description());
   EXPECT_EQ(url, web_app->launch_url());
   EXPECT_EQ(scope, web_app->scope());

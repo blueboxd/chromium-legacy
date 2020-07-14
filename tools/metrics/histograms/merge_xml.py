@@ -12,7 +12,7 @@ import xml.dom.minidom
 
 import expand_owners
 import extract_histograms
-import histogram_configuration_model
+import histograms_print_style
 import populate_enums
 
 
@@ -106,7 +106,7 @@ def MergeFiles(filenames=[], files=[]):
 
 
 def PrettyPrintMergedFiles(filenames=[], files=[]):
-  return histogram_configuration_model.PrettifyTree(
+  return histograms_print_style.GetPrintStyle().PrettyPrintXml(
       MergeFiles(filenames=filenames, files=files))
 
 

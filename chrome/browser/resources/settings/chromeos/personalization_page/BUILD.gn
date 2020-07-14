@@ -17,6 +17,7 @@ js_library("change_picture") {
     ":change_picture_browser_proxy",
     "..:metrics_recorder",
     "..:os_route",
+    "//third_party/polymer/v1_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer-extracted",
     "//third_party/polymer/v1_0/components-chromium/iron-selector:iron-selector-extracted",
     "//ui/webui/resources/cr_elements/chromeos/cr_picture:cr_picture_list",
     "//ui/webui/resources/cr_elements/chromeos/cr_picture:cr_picture_pane",
@@ -24,7 +25,6 @@ js_library("change_picture") {
     "//ui/webui/resources/cr_elements/chromeos/cr_picture:png",
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:load_time_data",
-    "//ui/webui/resources/js:util",
     "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
 }

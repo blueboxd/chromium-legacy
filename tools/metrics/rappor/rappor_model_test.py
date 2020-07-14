@@ -96,10 +96,7 @@ PARSED_XML = {
             {
                 rappor_model.models.COMMENT_KEY: [],
                 'name': 'NO_NOISE',
-                'summary': {
-                    rappor_model.models.COMMENT_KEY: [],
-                    'text': 'NO_NOISE description.',
-                },
+                'summary': 'NO_NOISE description.',
                 'values': {
                     rappor_model.models.COMMENT_KEY: [],
                     'fake-prob': 0.0,
@@ -111,10 +108,7 @@ PARSED_XML = {
             {
                 rappor_model.models.COMMENT_KEY: [],
                 'name': 'NORMAL_NOISE',
-                'summary': {
-                    rappor_model.models.COMMENT_KEY: [],
-                    'text': 'NORMAL_NOISE description.',
-                },
+                'summary': 'NORMAL_NOISE description.',
                 'values': {
                     rappor_model.models.COMMENT_KEY: [],
                     'fake-prob': 0.5,
@@ -131,10 +125,7 @@ PARSED_XML = {
             {
                 rappor_model.models.COMMENT_KEY: [],
                 'name': 'ETLD_PLUS_ONE',
-                'summary': {
-                    rappor_model.models.COMMENT_KEY: [],
-                    'text': 'ETLD+1 parameters.',
-                },
+                'summary': 'ETLD+1 parameters.',
                 'parameters': {
                     rappor_model.models.COMMENT_KEY: [],
                     'num-cohorts': 128,
@@ -147,10 +138,7 @@ PARSED_XML = {
             {
                 rappor_model.models.COMMENT_KEY: [],
                 'name': 'SAFEBROWSING_RAPPOR_TYPE',
-                'summary': {
-                    rappor_model.models.COMMENT_KEY: [],
-                    'text': 'SAFEBROWSING parameters.',
-                },
+                'summary': 'SAFEBROWSING parameters.',
                 'parameters': {
                     rappor_model.models.COMMENT_KEY: [],
                     'num-cohorts': 128,
@@ -172,10 +160,8 @@ PARSED_XML = {
                 rappor_model.models.COMMENT_KEY: [],
                 'name':
                     'flags',
-                'summary': {
-                    rappor_model.models.COMMENT_KEY: [],
-                    'text': 'Flags Summary.',
-                },
+                'summary':
+                    'Flags Summary.',
                 'flags': [
                     {
                         rappor_model.models.COMMENT_KEY: [],
@@ -189,22 +175,14 @@ PARSED_XML = {
                     },
                 ],
             }],
-            'owners': [{
-                rappor_model.models.COMMENT_KEY: [],
-                'text': 'holte@chromium.org',
-            }],
+            'owners': ['holte@chromium.org'],
             'strings': [{
                 rappor_model.models.COMMENT_KEY: [],
                 'name': 'domain',
-                'summary': {
-                    rappor_model.models.COMMENT_KEY: [],
-                    'text': 'Domain Summary.',
-                },
+                'summary': 'Domain Summary.',
             }],
-            'summary': {
-                rappor_model.models.COMMENT_KEY: [],
-                'text': 'Metric Summary.',
-            },
+            'summary':
+                'Metric Summary.',
             'type':
                 'SAFEBROWSING_RAPPOR_TYPE',
             'uint64': [],
@@ -212,15 +190,9 @@ PARSED_XML = {
             rappor_model.models.COMMENT_KEY: [],
             'name': 'Search.DefaultSearchProvider',
             'flags': [],
-            'owners': [{
-                rappor_model.models.COMMENT_KEY: [],
-                'text': 'holte@chromium.org',
-            }],
+            'owners': ['holte@chromium.org'],
             'strings': [],
-            'summary': {
-                rappor_model.models.COMMENT_KEY: [],
-                'text': 'BLAH BLAH BLAH',
-            },
+            'summary': 'BLAH BLAH BLAH',
             'type': 'ETLD_PLUS_ONE',
             'uint64': [],
         }]
@@ -302,16 +274,15 @@ PRETTY_PRINTED_XML = """<rappor-configuration>
 class RapporModelTest(unittest.TestCase):
 
   def testParse(self):
-    self.maxDiff = None
     parsed = rappor_model.RAPPOR_XML_TYPE.Parse(PUBLIC_XML_SNIPPET)
-    self.assertDictEqual(PARSED_XML, parsed)
+    self.assertEqual(PARSED_XML, parsed)
 
   def testUpdate(self):
     updated = rappor_model.UpdateXML(PUBLIC_XML_SNIPPET)
     # Compare list of lines for nicer diff on errors.
-    self.assertMultiLineEqual(PRETTY_PRINTED_XML, updated)
+    self.assertEqual(PRETTY_PRINTED_XML.split('\n'), updated.split('\n'))
     reprinted = rappor_model.UpdateXML(updated)
-    self.assertMultiLineEqual(PRETTY_PRINTED_XML, reprinted)
+    self.assertEqual(PRETTY_PRINTED_XML.split('\n'), reprinted.split('\n'))
 
   def testIsValidNoise(self):
     valid_noise_level = {

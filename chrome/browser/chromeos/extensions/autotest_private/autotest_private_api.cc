@@ -1961,51 +1961,6 @@ void AutotestPrivateImportCrostiniFunction::CrostiniImported(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// AutotestPrivateInstallPluginVMFunction
-///////////////////////////////////////////////////////////////////////////////
-
-AutotestPrivateInstallPluginVMFunction::
-    ~AutotestPrivateInstallPluginVMFunction() = default;
-
-ExtensionFunction::ResponseAction
-AutotestPrivateInstallPluginVMFunction::Run() {
-  std::unique_ptr<api::autotest_private::InstallPluginVM::Params> params(
-      api::autotest_private::InstallPluginVM::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
-  DVLOG(1) << "AutotestPrivateInstallPluginVMFunction " << params->image_url
-           << ", " << params->image_hash << ", " << params->license_key;
-
-  Profile* profile = Profile::FromBrowserContext(browser_context());
-  plugin_vm::PluginVmInstallerFactory::GetForProfile(profile)
-      ->SetFreeDiskSpaceForTesting(
-          plugin_vm::PluginVmInstallerFactory::GetForProfile(profile)
-              ->RequiredFreeDiskSpace());
-  plugin_vm::SetFakePluginVmPolicy(profile, params->image_url,
-                                   params->image_hash, params->license_key);
-
-  plugin_vm::ShowPluginVmInstallerView(profile);
-  auto* view = PluginVmInstallerView::GetActiveViewForTesting();
-  view->SetFinishedCallbackForTesting(base::BindOnce(
-      &AutotestPrivateInstallPluginVMFunction::OnInstallFinished, this));
-  // Start the installation.
-  view->AcceptDialog();
-
-  return RespondLater();
-}
-
-void AutotestPrivateInstallPluginVMFunction::OnInstallFinished(bool success) {
-  if (!success) {
-    Respond(Error("Error installing Plugin VM"));
-    return;
-  }
-
-  // Dismiss the dialog and start launching the VM.
-  PluginVmInstallerView::GetActiveViewForTesting()->AcceptDialog();
-
-  Respond(NoArguments());
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateSetPluginVMPolicyFunction
 ///////////////////////////////////////////////////////////////////////////////
 

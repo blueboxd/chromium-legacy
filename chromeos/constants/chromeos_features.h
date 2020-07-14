@@ -74,6 +74,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kDriveFs;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kDlcSettingsUi;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kDriveFsBidirectionalNativeMessaging;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kDriveFsMirroring;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kEmojiSuggestAddition;
@@ -121,6 +123,8 @@ extern const base::Feature kVirtualKeyboardFloatingDefault;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kInstantTethering;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kLacrosSupport;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kLanguageSettingsUpdate;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kLoginDeviceManagementDisclosure;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)

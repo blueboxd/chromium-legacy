@@ -299,6 +299,15 @@ MinMaxSizesResult ComputeMinAndMaxContentContribution(
     NGLayoutInputNode child,
     const MinMaxSizesInput&);
 
+// Computes the min-block-size and max-block-size values for a node.
+MinMaxSizes ComputeMinMaxBlockSize(
+    const NGConstraintSpace&,
+    const ComputedStyle&,
+    const NGBoxStrut& border_padding,
+    LayoutUnit content_size,
+    const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
+        nullptr);
+
 // Tries to compute the inline size of a node from its block size and
 // aspect ratio. If there is no aspect ratio or the block size is indefinite,
 // returns kIndefiniteSize.

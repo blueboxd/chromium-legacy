@@ -183,8 +183,13 @@ BluetoothGattApplicationServiceProvider::Create(
     return base::WrapUnique(new BluetoothGattApplicationServiceProviderImpl(
         bus, object_path, services));
   }
+#if defined(USE_REAL_DBUS_CLIENTS)
+  LOG(FATAL) << "Fake is unavailable if USE_REAL_DBUS_CLIENTS is defined.";
+  return nullptr;
+#else
   return std::make_unique<FakeBluetoothGattApplicationServiceProvider>(
       object_path, services);
+#endif  // defined(USE_REAL_DBUS_CLIENTS)
 }
 
 }  // namespace bluez

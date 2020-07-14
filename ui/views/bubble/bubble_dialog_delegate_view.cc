@@ -217,11 +217,11 @@ class BubbleDialogDelegate::BubbleWidgetObserver : public WidgetObserver {
   }
 
   void OnWidgetDestroying(Widget* widget) override {
-    observer_.Remove(widget);
     owner_->OnWidgetDestroying(widget);
   }
 
   void OnWidgetDestroyed(Widget* widget) override {
+    observer_.Remove(widget);
     owner_->OnWidgetDestroyed(widget);
   }
 

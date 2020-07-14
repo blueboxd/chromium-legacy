@@ -106,8 +106,8 @@ bool SecurityContextInit::FeatureEnabled(OriginTrialFeature feature) const {
   return origin_trials_->IsFeatureEnabled(feature);
 }
 
-void SecurityContextInit::CalculateDocumentPolicy(
-    const DocumentPolicy::ParsedDocumentPolicy& document_policy,
+void SecurityContextInit::ApplyDocumentPolicy(
+    DocumentPolicy::ParsedDocumentPolicy& document_policy,
     const String& report_only_document_policy_header) {
   DCHECK(origin_trials_);
   if (!RuntimeEnabledFeatures::DocumentPolicyEnabled(this))
@@ -117,14 +117,16 @@ void SecurityContextInit::CalculateDocumentPolicy(
   // when origin trial context is not initialized yet.
   // Needs to filter out features that are not in origin trial after
   // we have origin trial information available.
-  document_policy_ = FilterByOriginTrial(document_policy, this);
-  if (!document_policy_.feature_state.empty()) {
+  document_policy = FilterByOriginTrial(document_policy, this);
+  if (!document_policy.feature_state.empty()) {
     UseCounter::Count(execution_context_, WebFeature::kDocumentPolicyHeader);
-    for (const auto& policy_entry : document_policy_.feature_state) {
+    for (const auto& policy_entry : document_policy.feature_state) {
       UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.DocumentPolicy.Header",
                                 policy_entry.first);
     }
   }
+  execution_context_->GetSecurityContext().SetDocumentPolicy(
+      DocumentPolicy::CreateWithHeaderPolicy(document_policy));
 
   // Handle Report-Only-Document-Policy HTTP header.
   // Console messages generated from logger are discarded, because currently
@@ -133,35 +135,38 @@ void SecurityContextInit::CalculateDocumentPolicy(
   // |SecurityContextInit::ApplyPendingDataToDocument| will have no effect,
   // because when the function is called, the document is not fully initialized
   // yet (|document_| field in current frame is not yet initialized yet).
+  DocumentPolicy::ParsedDocumentPolicy report_only_document_policy;
   PolicyParserMessageBuffer logger("%s", /* discard_message */ true);
   base::Optional<DocumentPolicy::ParsedDocumentPolicy>
       report_only_parsed_policy = DocumentPolicyParser::Parse(
           report_only_document_policy_header, logger);
   if (report_only_parsed_policy) {
-    report_only_document_policy_ =
+    report_only_document_policy =
         FilterByOriginTrial(*report_only_parsed_policy, this);
-    if (!report_only_document_policy_.feature_state.empty()) {
+    if (!report_only_document_policy.feature_state.empty()) {
       UseCounter::Count(execution_context_,
                         WebFeature::kDocumentPolicyReportOnlyHeader);
+      execution_context_->GetSecurityContext().SetReportOnlyDocumentPolicy(
+          DocumentPolicy::CreateWithHeaderPolicy(report_only_document_policy));
     }
   }
 }
 
-void SecurityContextInit::CalculateFeaturePolicy(
+void SecurityContextInit::ApplyFeaturePolicy(
     LocalFrame* frame,
     const ResourceResponse& response,
     const base::Optional<WebOriginPolicy>& origin_policy,
     const FramePolicy& frame_policy) {
   DCHECK(origin_trials_);
-  initialized_feature_policy_state_ = true;
+
   // If we are a HTMLViewSourceDocument we use container, header or
   // inherited policies. https://crbug.com/898688.
-  if (frame && frame->InViewSourceMode())
+  if (frame->InViewSourceMode()) {
+    execution_context_->GetSecurityContext().SetFeaturePolicy(
+        FeaturePolicy::CreateFromParentPolicy(nullptr, {},
+                                              security_origin_->ToUrlOrigin()));
     return;
-
-  // For a main frame, get inherited feature policy from the opener if any.
-  if (frame && frame->IsMainFrame() && !frame->OpenerFeatureState().empty())
-    frame_for_opener_feature_state_ = frame;
+  }
 
   const String& permissions_policy_header =
       RuntimeEnabledFeatures::PermissionsPolicyHeaderEnabled()
@@ -177,11 +182,11 @@ void SecurityContextInit::CalculateFeaturePolicy(
   PolicyParserMessageBuffer report_only_feature_policy_logger(
       "Error with Report-Only-Feature-Policy header: ");
 
-  WTF::StringBuilder feature_policy;
-  feature_policy.Append(response.HttpHeaderField(http_names::kFeaturePolicy));
+  WTF::StringBuilder policy_builder;
+  policy_builder.Append(response.HttpHeaderField(http_names::kFeaturePolicy));
   if (origin_policy.has_value())
-    MergeFeaturesFromOriginPolicy(feature_policy, origin_policy.value());
-  String feature_policy_header = feature_policy.ToString();
+    MergeFeaturesFromOriginPolicy(policy_builder, origin_policy.value());
+  String feature_policy_header = policy_builder.ToString();
   if (!feature_policy_header.IsEmpty())
     UseCounter::Count(execution_context_, WebFeature::kFeaturePolicyHeader);
 
@@ -189,30 +194,26 @@ void SecurityContextInit::CalculateFeaturePolicy(
       feature_policy_header, permissions_policy_header, security_origin_,
       feature_policy_logger, this);
 
-  report_only_feature_policy_header_ = FeaturePolicyParser::ParseHeader(
-      response.HttpHeaderField(http_names::kFeaturePolicyReportOnly),
-      report_only_permissions_policy_header, security_origin_,
-      report_only_feature_policy_logger, this);
+  ParsedFeaturePolicy report_only_feature_policy_header =
+      FeaturePolicyParser::ParseHeader(
+          response.HttpHeaderField(http_names::kFeaturePolicyReportOnly),
+          report_only_permissions_policy_header, security_origin_,
+          report_only_feature_policy_logger, this);
 
-  if (!report_only_feature_policy_header_.empty()) {
+  if (!report_only_feature_policy_header.empty()) {
     UseCounter::Count(execution_context_,
                       WebFeature::kFeaturePolicyReportOnlyHeader);
   }
 
-  if (execution_context_) {
-    for (const auto& message : feature_policy_logger.GetMessages()) {
-      execution_context_->AddConsoleMessage(
-          MakeGarbageCollected<ConsoleMessage>(
-              mojom::blink::ConsoleMessageSource::kSecurity, message.level,
-              message.content));
-    }
-    for (const auto& message :
-         report_only_feature_policy_logger.GetMessages()) {
-      execution_context_->AddConsoleMessage(
-          MakeGarbageCollected<ConsoleMessage>(
-              mojom::blink::ConsoleMessageSource::kSecurity, message.level,
-              message.content));
-    }
+  for (const auto& message : feature_policy_logger.GetMessages()) {
+    execution_context_->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kSecurity, message.level,
+        message.content));
+  }
+  for (const auto& message : report_only_feature_policy_logger.GetMessages()) {
+    execution_context_->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kSecurity, message.level,
+        message.content));
   }
 
   // DocumentLoader applied the sandbox flags before calling this function, so
@@ -228,8 +229,9 @@ void SecurityContextInit::CalculateFeaturePolicy(
                                            feature_policy_header_);
   }
 
+  ParsedFeaturePolicy container_policy;
   if (frame && frame->Owner())
-    container_policy_ = frame_policy.container_policy;
+    container_policy = frame_policy.container_policy;
 
   // TODO(icelland): This is problematic querying sandbox flags before
   // feature policy is initialized.
@@ -241,22 +243,31 @@ void SecurityContextInit::CalculateFeaturePolicy(
     // https://crbug.com/954349).
     DisallowFeatureIfNotPresent(
         mojom::blink::FeaturePolicyFeature::kFocusWithoutUserActivation,
-        container_policy_);
+        container_policy);
   }
 
-  if (frame && !frame->IsMainFrame())
-    parent_frame_ = frame->Tree().Parent();
-}
-
-std::unique_ptr<FeaturePolicy>
-SecurityContextInit::CreateReportOnlyFeaturePolicy() const {
-  // For non-Document initialization, returns nullptr directly.
-  if (!initialized_feature_policy_state_)
-    return nullptr;
-
-  // If header not present, returns nullptr directly.
-  if (report_only_feature_policy_header_.empty())
-    return nullptr;
+  // Feature policy should either come from a parent in the case of an
+  // embedded child frame, or from an opener if any when a new window is
+  // created by an opener. A main frame without an opener would not have a
+  // parent policy nor an opener feature state.
+  // For a main frame, get inherited feature policy from the opener if any.
+  std::unique_ptr<FeaturePolicy> feature_policy;
+  if (!frame->IsMainFrame() || frame->OpenerFeatureState().empty() ||
+      !RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
+    auto* parent_feature_policy =
+        frame->Tree().Parent()
+            ? frame->Tree().Parent()->GetSecurityContext()->GetFeaturePolicy()
+            : nullptr;
+    feature_policy = FeaturePolicy::CreateFromParentPolicy(
+        parent_feature_policy, container_policy,
+        security_origin_->ToUrlOrigin());
+  } else {
+    feature_policy = FeaturePolicy::CreateWithOpenerPolicy(
+        frame->OpenerFeatureState(), security_origin_->ToUrlOrigin());
+  }
+  feature_policy->SetHeaderPolicy(feature_policy_header_);
+  execution_context_->GetSecurityContext().SetFeaturePolicy(
+      std::move(feature_policy));
 
   // Report-only feature policy only takes effect when it is stricter than
   // enforced feature policy, i.e. when enforced feature policy allows a feature
@@ -266,56 +277,15 @@ SecurityContextInit::CreateReportOnlyFeaturePolicy() const {
   // is no need to inherit parent policy and container policy for report-only
   // feature policy. For inherited policies, the behavior is dominated by
   // enforced feature policy.
-  DCHECK(security_origin_);
-  std::unique_ptr<FeaturePolicy> report_only_policy =
-      FeaturePolicy::CreateFromParentPolicy(nullptr /* parent_policy */,
-                                            {} /* container_policy */,
-                                            security_origin_->ToUrlOrigin());
-  report_only_policy->SetHeaderPolicy(report_only_feature_policy_header_);
-  return report_only_policy;
-}
-
-std::unique_ptr<FeaturePolicy> SecurityContextInit::CreateFeaturePolicy()
-    const {
-  // For non-Document initialization, returns nullptr directly.
-  if (!initialized_feature_policy_state_)
-    return nullptr;
-
-  // Feature policy should either come from a parent in the case of an
-  // embedded child frame, or from an opener if any when a new window is
-  // created by an opener. A main frame without an opener would not have a
-  // parent policy nor an opener feature state.
-  DCHECK(!parent_frame_ || !frame_for_opener_feature_state_);
-  std::unique_ptr<FeaturePolicy> feature_policy;
-  if (!frame_for_opener_feature_state_ ||
-      !RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
-    auto* parent_feature_policy =
-        parent_frame_ ? parent_frame_->GetSecurityContext()->GetFeaturePolicy()
-                      : nullptr;
-    feature_policy = FeaturePolicy::CreateFromParentPolicy(
-        parent_feature_policy, container_policy_,
-        security_origin_->ToUrlOrigin());
-  } else {
-    DCHECK(!parent_frame_);
-    feature_policy = FeaturePolicy::CreateWithOpenerPolicy(
-        frame_for_opener_feature_state_->OpenerFeatureState(),
-        security_origin_->ToUrlOrigin());
+  if (!report_only_feature_policy_header.empty()) {
+    std::unique_ptr<FeaturePolicy> report_only_policy =
+        FeaturePolicy::CreateFromParentPolicy(nullptr /* parent_policy */,
+                                              {} /* container_policy */,
+                                              security_origin_->ToUrlOrigin());
+    report_only_policy->SetHeaderPolicy(report_only_feature_policy_header);
+    execution_context_->GetSecurityContext().SetReportOnlyFeaturePolicy(
+        std::move(report_only_policy));
   }
-  feature_policy->SetHeaderPolicy(feature_policy_header_);
-  return feature_policy;
-}
-
-std::unique_ptr<DocumentPolicy> SecurityContextInit::CreateDocumentPolicy()
-    const {
-  return DocumentPolicy::CreateWithHeaderPolicy(document_policy_);
-}
-
-std::unique_ptr<DocumentPolicy>
-SecurityContextInit::CreateReportOnlyDocumentPolicy() const {
-  return report_only_document_policy_.feature_state.empty()
-             ? nullptr
-             : DocumentPolicy::CreateWithHeaderPolicy(
-                   report_only_document_policy_);
 }
 
 void SecurityContextInit::CalculateSecureContextMode(LocalFrame* frame) {

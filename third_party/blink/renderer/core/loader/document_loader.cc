@@ -1706,9 +1706,12 @@ void DocumentLoader::CommitNavigation() {
   security_init.CalculateSecureContextMode(frame_.Get());
   security_init.InitializeOriginTrials(
       response_.HttpHeaderField(http_names::kOriginTrial));
+
+  frame_->DomWindow()->Initialize(security_init);
+
   // TODO(iclelland): Add Feature-Policy-Report-Only to Origin Policy.
-  security_init.CalculateFeaturePolicy(frame_.Get(), response_, origin_policy_,
-                                       frame_policy_);
+  security_init.ApplyFeaturePolicy(frame_.Get(), response_, origin_policy_,
+                                   frame_policy_);
   // |document_policy_| is parsed in document loader because it is
   // compared with |frame_policy.required_document_policy| to decide
   // whether to block the document load or not.
@@ -1716,11 +1719,9 @@ void DocumentLoader::CommitNavigation() {
   // initialization is delayed to
   // SecurityContextInit::InitializeDocumentPolicy(), similar to
   // |report_only_feature_policy|.
-  security_init.CalculateDocumentPolicy(
+  security_init.ApplyDocumentPolicy(
       document_policy_,
       response_.HttpHeaderField(http_names::kDocumentPolicyReportOnly));
-
-  frame_->DomWindow()->Initialize(security_init);
 
   frame_->DomWindow()->SetOriginIsolationRestricted(
       origin_isolation_restricted_);

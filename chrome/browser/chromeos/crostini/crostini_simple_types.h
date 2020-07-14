@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
 
@@ -82,6 +83,9 @@ enum class CrostiniResult {
   // When adding a new value, check you've followed the steps in the comment at
   // the top of this enum.
 };
+
+using CrostiniSuccessCallback =
+    base::OnceCallback<void(bool success, const std::string& failure_reason)>;
 
 enum class InstallLinuxPackageProgressStatus {
   SUCCEEDED,

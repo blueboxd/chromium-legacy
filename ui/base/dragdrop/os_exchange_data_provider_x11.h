@@ -34,8 +34,6 @@ class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderX11
 
   // OSExchangeDataProvider:
   std::unique_ptr<OSExchangeDataProvider> Clone() const override;
-  void SetFileContents(const base::FilePath& filename,
-                       const std::string& file_contents) override;
 
   // XEventDispatcher:
   bool DispatchXEvent(x11::Event* xev) override;

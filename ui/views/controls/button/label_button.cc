@@ -156,7 +156,7 @@ void LabelButton::SetMinSize(const gfx::Size& min_size) {
   if (GetMinSize() == min_size)
     return;
   min_size_ = min_size;
-  OnPropertyChanged(&min_size_, kPropertyEffectsNone);
+  OnPropertyChanged(&min_size_, kPropertyEffectsPreferredSizeChanged);
 }
 
 gfx::Size LabelButton::GetMaxSize() const {
@@ -167,7 +167,7 @@ void LabelButton::SetMaxSize(const gfx::Size& max_size) {
   if (GetMaxSize() == max_size)
     return;
   max_size_ = max_size;
-  OnPropertyChanged(&max_size_, kPropertyEffectsNone);
+  OnPropertyChanged(&max_size_, kPropertyEffectsPreferredSizeChanged);
 }
 
 bool LabelButton::GetIsDefault() const {
@@ -195,7 +195,8 @@ void LabelButton::SetImageLabelSpacing(int spacing) {
   if (GetImageLabelSpacing() == spacing)
     return;
   image_label_spacing_ = spacing;
-  OnPropertyChanged(&image_label_spacing_, kPropertyEffectsLayout);
+  OnPropertyChanged(&image_label_spacing_,
+                    kPropertyEffectsPreferredSizeChanged);
 }
 
 bool LabelButton::GetImageCentered() const {
@@ -448,7 +449,7 @@ PropertyEffects LabelButton::UpdateStyleToIndicateDefaultStatus() {
   label_->SetFontList(GetIsDefault() ? cached_default_button_font_list_
                                      : cached_normal_font_list_);
   ResetLabelEnabledColor();
-  return kPropertyEffectsLayout;
+  return kPropertyEffectsPreferredSizeChanged;
 }
 
 void LabelButton::ChildPreferredSizeChanged(View* child) {
@@ -548,7 +549,7 @@ Button::ButtonState LabelButton::GetVisualState() const {
 
 void LabelButton::VisualStateChanged() {
   UpdateImage();
-  label_->SetEnabled(GetState() != STATE_DISABLED);
+  label_->SetEnabled(GetVisualState() != STATE_DISABLED);
 }
 
 void LabelButton::ResetColorsFromNativeTheme() {

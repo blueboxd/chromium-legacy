@@ -309,6 +309,10 @@ if (is_chromeos_device) {
 
       # crbug.com/1099695
       "platform.Drivefs",
+
+      # crbug.com/1105335
+      "graphics.VAAPIUnittest.jpeg_decoder",
+      "graphics.VAAPIUnittest.common",
     ]
   }
 

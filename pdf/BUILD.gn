@@ -156,6 +156,7 @@ if (enable_pdf) {
       "//base",
       "//ppapi/cpp:objects",
       "//ppapi/cpp/private:internal_module",
+      "//skia",
       "//v8",
     ]
   }

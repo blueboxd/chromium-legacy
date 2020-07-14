@@ -45,18 +45,21 @@ class SystemWebAppManagerBrowserTestBase : public InProcessBrowserTest {
   // TestSystemWebAppManager if initialized with |install_mock| true.
   SystemWebAppManager& GetManager();
 
-  // Return SystemAppType of mocked app, only valid if |install_mock| is true.
+  // Returns SystemAppType of mocked app, only valid if |install_mock| is true.
   SystemAppType GetMockAppType();
+
+  // Returns the the launch URL for an installed |system_app_type|.
+  const GURL& GetLaunchURL(SystemAppType system_app_type);
 
   void WaitForTestSystemAppInstall();
 
-  // Wait for system apps to install, then launch one. Waits for launched app
+  // Waits for system apps to install, then launches one. Waits for launched app
   // to load.
   content::WebContents* WaitForSystemAppInstallAndLoad(
       SystemAppType system_app_type);
 
-  // Wait for system apps to install, then launch one. Returns the browser that
-  // contains it.
+  // Waits for system apps to install, then launches one. Returns the browser
+  // that contains it.
   Browser* WaitForSystemAppInstallAndLaunch(SystemAppType system_app_type);
 
   // Creates a default AppLaunchParams for |system_app_type|. Launches a window.

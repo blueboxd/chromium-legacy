@@ -10,7 +10,9 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -18,6 +20,8 @@ import android.app.Activity;
 import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.protobuf.ByteString;
 
@@ -34,6 +38,7 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
@@ -60,8 +65,11 @@ import java.util.Map;
 public class FeedStreamSurfaceTest {
     private static final String TEST_DATA = "test";
     private static final String TEST_URL = "https://www.chromium.org";
+    private static final int LOAD_MORE_TRIGGER_LOOKAHEAD = 5;
     private FeedStreamSurface mFeedStreamSurface;
     private Activity mActivity;
+    private RecyclerView mRecyclerView;
+    private FakeLinearLayoutManager mLayoutManager;
 
     @Mock
     private SnackbarManager mSnackbarManager;
@@ -75,6 +83,8 @@ public class FeedStreamSurfaceTest {
     private HelpAndFeedback mHelpAndFeedback;
     @Mock
     Profile mProfileMock;
+    @Mock
+    private FeedServiceBridge.Natives mFeedServiceBridgeJniMock;
 
     @Captor
     private ArgumentCaptor<Map<String, String>> mMapCaptor;
@@ -94,9 +104,18 @@ public class FeedStreamSurfaceTest {
         MockitoAnnotations.initMocks(this);
         mActivity = Robolectric.buildActivity(Activity.class).get();
         mocker.mock(FeedStreamSurfaceJni.TEST_HOOKS, mFeedStreamSurfaceJniMock);
+        mocker.mock(FeedServiceBridgeJni.TEST_HOOKS, mFeedServiceBridgeJniMock);
+
+        when(mFeedServiceBridgeJniMock.getLoadMoreTriggerLookahead())
+                .thenReturn(LOAD_MORE_TRIGGER_LOOKAHEAD);
+
         Profile.setLastUsedProfileForTesting(mProfileMock);
         mFeedStreamSurface = new FeedStreamSurface(mActivity, false, mSnackbarManager,
                 mPageNavigationDelegate, mBottomSheetController, mHelpAndFeedback);
+
+        mRecyclerView = (RecyclerView) mFeedStreamSurface.getView();
+        mLayoutManager = new FakeLinearLayoutManager(mActivity);
+        mRecyclerView.setLayoutManager(mLayoutManager);
     }
 
     @Test
@@ -503,6 +522,66 @@ public class FeedStreamSurfaceTest {
         assertEquals(v1,
                 ((FeedListContentManager.NativeViewContent) contentManager.getContent(1))
                         .getNativeView(null));
+    }
+
+    @Test
+    @SmallTest
+    public void testLoadMoreOnDismissal() {
+        final int itemCount = 10;
+
+        // loadMore not triggered due to last visible item not falling into lookahead range.
+        mLayoutManager.setLastVisiblePosition(itemCount - LOAD_MORE_TRIGGER_LOOKAHEAD - 1);
+        mLayoutManager.setItemCount(itemCount);
+        mFeedStreamSurface.commitDismissal(0);
+        verify(mFeedStreamSurfaceJniMock, never())
+                .loadMore(anyLong(), any(FeedStreamSurface.class), any(Callback.class));
+
+        // loadMore triggered.
+        mLayoutManager.setLastVisiblePosition(itemCount - LOAD_MORE_TRIGGER_LOOKAHEAD + 1);
+        mLayoutManager.setItemCount(itemCount);
+        mFeedStreamSurface.commitDismissal(0);
+        verify(mFeedStreamSurfaceJniMock)
+                .loadMore(anyLong(), any(FeedStreamSurface.class), any(Callback.class));
+    }
+
+    @Test
+    @SmallTest
+    public void testLoadMoreOnNavigateNewTab() {
+        final int itemCount = 10;
+
+        // loadMore not triggered due to last visible item not falling into lookahead range.
+        mLayoutManager.setLastVisiblePosition(itemCount - LOAD_MORE_TRIGGER_LOOKAHEAD - 1);
+        mLayoutManager.setItemCount(itemCount);
+        mFeedStreamSurface.navigateNewTab("");
+        verify(mFeedStreamSurfaceJniMock, never())
+                .loadMore(anyLong(), any(FeedStreamSurface.class), any(Callback.class));
+
+        // loadMore triggered.
+        mLayoutManager.setLastVisiblePosition(itemCount - LOAD_MORE_TRIGGER_LOOKAHEAD + 1);
+        mLayoutManager.setItemCount(itemCount);
+        mFeedStreamSurface.navigateNewTab("");
+        verify(mFeedStreamSurfaceJniMock)
+                .loadMore(anyLong(), any(FeedStreamSurface.class), any(Callback.class));
+    }
+
+    @Test
+    @SmallTest
+    public void testLoadMoreOnNavigateIncognitoTab() {
+        final int itemCount = 10;
+
+        // loadMore not triggered due to last visible item not falling into lookahead range.
+        mLayoutManager.setLastVisiblePosition(itemCount - LOAD_MORE_TRIGGER_LOOKAHEAD - 1);
+        mLayoutManager.setItemCount(itemCount);
+        mFeedStreamSurface.navigateIncognitoTab("");
+        verify(mFeedStreamSurfaceJniMock, never())
+                .loadMore(anyLong(), any(FeedStreamSurface.class), any(Callback.class));
+
+        // loadMore triggered.
+        mLayoutManager.setLastVisiblePosition(itemCount - LOAD_MORE_TRIGGER_LOOKAHEAD + 1);
+        mLayoutManager.setItemCount(itemCount);
+        mFeedStreamSurface.navigateIncognitoTab("");
+        verify(mFeedStreamSurfaceJniMock)
+                .loadMore(anyLong(), any(FeedStreamSurface.class), any(Callback.class));
     }
 
     private SliceUpdate createSliceUpdateForExistingSlice(String sliceId) {

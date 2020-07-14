@@ -6,6 +6,8 @@
 #define UI_PLATFORM_WINDOW_X11_X11_WINDOW_H_
 
 #include "base/macros.h"
+#include "ui/base/x/x11_drag_drop_client.h"
+#include "ui/base/x/x11_move_loop_delegate.h"
 #include "ui/base/x/x11_window.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/x11/x11_event_source.h"
@@ -13,16 +15,11 @@
 #include "ui/platform_window/extensions/workspace_extension.h"
 #include "ui/platform_window/extensions/x11_extension.h"
 #include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_handler/wm_drag_handler.h"
 #include "ui/platform_window/platform_window_handler/wm_move_loop_handler.h"
 #include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/platform_window/x11/x11_window_export.h"
-
-#if defined(USE_OZONE)
-#include "ui/base/x/x11_drag_drop_client.h"
-#include "ui/base/x/x11_move_loop_delegate.h"
-#include "ui/platform_window/platform_window_handler/wm_drag_handler.h"
-#endif
 
 namespace ui {
 
@@ -53,11 +50,9 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
                                     public XEventDispatcher,
                                     public WorkspaceExtension,
                                     public X11Extension,
-#if defined(USE_OZONE)
                                     public WmDragHandler,
                                     public XDragDropClient::Delegate,
                                     public X11MoveLoopDelegate,
-#endif
                                     public WmMoveLoopHandler {
  public:
   explicit X11Window(PlatformWindowDelegate* platform_window_delegate);
@@ -180,7 +175,6 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   bool RunMoveLoop(const gfx::Vector2d& drag_offset) override;
   void EndMoveLoop() override;
 
-#if defined(USE_OZONE)
   // WmDragHandler
   bool StartDrag(const OSExchangeData& data,
                  int operation,
@@ -207,7 +201,6 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   void OnMoveLoopEnded() override;
 
   void QuitDragLoop();
-#endif  // defined(USE_OZONE)
 
   // Handles |xevent| as a Atk Key Event
   bool HandleAsAtkEvent(x11::Event* xevent, bool transient);
@@ -256,7 +249,6 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
 
   std::unique_ptr<X11DesktopWindowMoveClient> x11_window_move_client_;
 
-#if defined(USE_OZONE)
   // Whether the drop handler has notified that the drag has entered.
   bool notified_enter_ = false;
   // Keeps the last negotiated operation returned by the drop handler.
@@ -273,7 +265,6 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   std::unique_ptr<ui::XScopedEventSelector> source_window_events_;
 
   base::WeakPtrFactory<X11Window> weak_ptr_factory_{this};
-#endif  // defined(USE_OZONE)
 
   DISALLOW_COPY_AND_ASSIGN(X11Window);
 };

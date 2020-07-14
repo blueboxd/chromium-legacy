@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
@@ -23,6 +24,7 @@
 
 using base::android::JavaParamRef;
 
+class Profile;
 class ProfileKey;
 
 namespace download {
@@ -57,7 +59,11 @@ class DownloadManagerService
 
   // Called when the profile is added to the ProfileManager and fully
   // initialized.
-  void OnProfileAdded(JNIEnv* env, jobject obj);
+  void OnProfileAdded(JNIEnv* env,
+                      jobject obj,
+                      const JavaParamRef<jobject>& j_profile);
+
+  void OnProfileAdded(Profile* profile);
 
   // Called to handle subsequent steps, after a download was determined as a OMA
   // download type.
@@ -71,7 +77,7 @@ class DownloadManagerService
   void OpenDownload(JNIEnv* env,
                     jobject obj,
                     const JavaParamRef<jstring>& jdownload_guid,
-                    bool is_off_the_record,
+                    const JavaParamRef<jobject>& j_profile_key,
                     jint source);
 
   // Called to resume downloading the item that has GUID equal to
@@ -79,14 +85,14 @@ class DownloadManagerService
   void ResumeDownload(JNIEnv* env,
                       jobject obj,
                       const JavaParamRef<jstring>& jdownload_guid,
-                      bool is_off_the_record,
+                      const JavaParamRef<jobject>& j_profile_key,
                       bool has_user_gesture);
 
   // Called to retry a download.
   void RetryDownload(JNIEnv* env,
                      jobject obj,
                      const JavaParamRef<jstring>& jdownload_guid,
-                     bool is_off_the_record,
+                     const JavaParamRef<jobject>& j_profile_key,
                      bool has_user_gesture);
 
   // Called to cancel a download item that has GUID equal to |jdownload_guid|.
@@ -94,20 +100,20 @@ class DownloadManagerService
   void CancelDownload(JNIEnv* env,
                       jobject obj,
                       const JavaParamRef<jstring>& jdownload_guid,
-                      bool is_off_the_record);
+                      const JavaParamRef<jobject>& j_profile_key);
 
   // Called to pause a download item that has GUID equal to |jdownload_guid|.
   // If the DownloadItem is not yet created, do nothing as it is already paused.
   void PauseDownload(JNIEnv* env,
                      jobject obj,
                      const JavaParamRef<jstring>& jdownload_guid,
-                     bool is_off_the_record);
+                     const JavaParamRef<jobject>& j_profile_key);
 
   // Called to remove a download item that has GUID equal to |jdownload_guid|.
   void RemoveDownload(JNIEnv* env,
                       jobject obj,
                       const JavaParamRef<jstring>& jdownload_guid,
-                      bool is_off_the_record);
+                      const JavaParamRef<jobject>& j_profile_key);
 
   // Called to rename a download item that has GUID equal to |id|.
   void RenameDownload(JNIEnv* env,
@@ -115,7 +121,7 @@ class DownloadManagerService
                       const JavaParamRef<jstring>& id,
                       const JavaParamRef<jstring>& name,
                       const JavaParamRef<jobject>& callback,
-                      bool is_off_the_record);
+                      const JavaParamRef<jobject>& j_profile_key);
 
   // Called to change the download schedule of a download item that has GUID
   // equal to |id|.
@@ -124,31 +130,32 @@ class DownloadManagerService
                       const JavaParamRef<jstring>& id,
                       jboolean only_on_wifi,
                       jlong start_time,
-                      jboolean is_off_the_record);
+                      const JavaParamRef<jobject>& j_profile_key);
 
   // Returns whether or not the given download can be opened by the browser.
   bool IsDownloadOpenableInBrowser(JNIEnv* env,
                                    jobject obj,
                                    const JavaParamRef<jstring>& jdownload_guid,
-                                   bool is_off_the_record);
+                                   const JavaParamRef<jobject>& j_profile_key);
 
   // Called to request that the DownloadManagerService return data about all
   // downloads in the user's history.
   void GetAllDownloads(JNIEnv* env,
                        const JavaParamRef<jobject>& obj,
-                       bool is_off_the_record);
+                       const JavaParamRef<jobject>& j_profile_key);
 
   // Called to check if the files associated with any downloads have been
   // removed by an external action.
-  void CheckForExternallyRemovedDownloads(JNIEnv* env,
-                                          const JavaParamRef<jobject>& obj,
-                                          bool is_off_the_record);
+  void CheckForExternallyRemovedDownloads(
+      JNIEnv* env,
+      const JavaParamRef<jobject>& obj,
+      const JavaParamRef<jobject>& j_profile_key);
 
   // Called to update the last access time associated with a download.
   void UpdateLastAccessTime(JNIEnv* env,
                             const JavaParamRef<jobject>& obj,
                             const JavaParamRef<jstring>& jdownload_guid,
-                            bool is_off_the_record);
+                            const JavaParamRef<jobject>& j_profile_key);
 
   // AllDownloadEventNotifier::Observer methods.
   void OnDownloadsInitialized(
@@ -184,7 +191,7 @@ class DownloadManagerService
 
   // Gets a download item from DownloadManager or InProgressManager.
   download::DownloadItem* GetDownload(const std::string& download_guid,
-                                      bool is_off_the_record);
+                                      ProfileKey* profile_key);
 
   // Helper method to record the interrupt reason UMA for the first background
   // download.
@@ -194,6 +201,10 @@ class DownloadManagerService
       const JavaParamRef<jstring>& jdownload_guid,
       jboolean download_started);
 
+  void UseStartupProfileKeyForTesting() {
+    use_startup_accessor_profile_key_for_testing_ = true;
+  }
+
  private:
   // For testing.
   friend class DownloadManagerServiceTest;
@@ -201,28 +212,28 @@ class DownloadManagerService
 
   // Helper function to start the download resumption.
   void ResumeDownloadInternal(const std::string& download_guid,
-                              bool is_off_the_record,
+                              ProfileKey* profile_key,
                               bool has_user_gesture);
 
   // Helper function to retry the download.
   void RetryDownloadInternal(const std::string& download_guid,
-                             bool is_off_the_record,
+                             ProfileKey* profile_key,
                              bool has_user_gesture);
 
   // Helper function to cancel a download.
   void CancelDownloadInternal(const std::string& download_guid,
-                              bool is_off_the_record);
+                              ProfileKey* profile_key);
 
   // Helper function to pause a download.
   void PauseDownloadInternal(const std::string& download_guid,
-                             bool is_off_the_record);
+                             ProfileKey* profile_key);
 
   // Helper function to remove a download.
   void RemoveDownloadInternal(const std::string& download_guid,
-                              bool is_off_the_record);
+                              ProfileKey* profile_key);
 
   // Helper function to send info about all downloads to the Java-side.
-  void GetAllDownloadsInternal(bool is_off_the_record);
+  void GetAllDownloadsInternal(ProfileKey* profile_key);
 
   // Called to notify the java side that download resumption failed.
   void OnResumptionFailed(const std::string& download_guid);
@@ -247,13 +258,13 @@ class DownloadManagerService
       bool is_off_the_record);
 
   // Called to get the content::DownloadManager instance.
-  content::DownloadManager* GetDownloadManager(bool is_off_the_record);
+  content::DownloadManager* GetDownloadManager(ProfileKey* profile_key);
 
   // Retrieves the SimpleDownloadManagerCoordinator this object is listening to.
   download::SimpleDownloadManagerCoordinator* GetCoordinator(
-      bool is_off_the_record);
+      ProfileKey* profile_key);
 
-  void InitializeForProfile(Profile* profile);
+  void InitializeForProfile(ProfileKey* profile_key);
 
   // Reference to the Java object.
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
@@ -261,12 +272,7 @@ class DownloadManagerService
   bool is_manager_initialized_;
   bool is_pending_downloads_loaded_;
 
-  enum PendingGetDownloadsFlags {
-    NONE = 0,
-    REGULAR = 1 << 0,
-    OFF_THE_RECORD = 1 << 1,
-  };
-  int pending_get_downloads_actions_;
+  std::vector<ProfileKey*> profiles_with_pending_get_downloads_actions_;
 
   enum DownloadAction { RESUME, RETRY, PAUSE, CANCEL, REMOVE, UNKNOWN };
 
@@ -291,6 +297,8 @@ class DownloadManagerService
   ResumeCallback resume_callback_for_testing_;
 
   ScopedObserver<Profile, ProfileObserver> observed_profiles_{this};
+
+  bool use_startup_accessor_profile_key_for_testing_{false};
 
   download::SimpleDownloadManagerCoordinator* original_coordinator_;
   download::SimpleDownloadManagerCoordinator* off_the_record_coordinator_;

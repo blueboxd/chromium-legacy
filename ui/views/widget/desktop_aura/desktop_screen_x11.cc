@@ -25,7 +25,7 @@
 #include "ui/gfx/switches.h"
 #include "ui/platform_window/x11/x11_topmost_window_finder.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
-#include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
 
 namespace views {
 

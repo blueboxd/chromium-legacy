@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/check.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/common/web_application_info.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
@@ -100,6 +101,8 @@ void TestDataRetriever::BuildDefaultDataToRetrieve(const GURL& url,
   manifest->start_url = url;
   manifest->scope = scope;
   manifest->display = DisplayMode::kStandalone;
+  manifest->short_name =
+      base::NullableString16(base::ASCIIToUTF16("Manifest Name"), false);
 
   SetManifest(std::move(manifest), /*is_installable=*/true);
 

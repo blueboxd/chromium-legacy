@@ -76,6 +76,7 @@ source_set("headers") {
     "feature_policy/document_policy.h",
     "feature_policy/document_policy_features.h",
     "feature_policy/feature_policy.h",
+    "feature_policy/feature_policy_forward.h",
     "feature_policy/policy_value.h",
     "features.h",
     "fetch/fetch_api_request_headers_map.h",

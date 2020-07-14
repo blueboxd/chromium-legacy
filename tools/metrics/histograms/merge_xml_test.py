@@ -32,11 +32,10 @@ class MergeXmlTest(unittest.TestCase):
 </enum>
 
 <enum name="UkmEventNameHash">
-  <summary>
-    Placeholder enum. The values are UKM event name hashes truncated to 31 bits.
-    This gets populated by the GetEnumsNodes function in merge_xml.py when
-    producing the merged XML file.
-  </summary>
+<!-- Placeholder enum. The values are UKM event name hashes truncated to 31
+     bits. This gets populated by the GetEnumsNodes function in merge_xml.py
+     when producing the merged XML file. -->
+
 </enum>
 
 </enums>
@@ -44,15 +43,16 @@ class MergeXmlTest(unittest.TestCase):
 <histograms>
 
 <histogram name="Foo.Bar" units="xxxxxxxxxxxxxxxxxxyyyyyyyyyyyyyyyyyyyyyyzzzz">
-  <owner>person@chromium.org</owner>
   <summary>Foo</summary>
+  <owner>person@chromium.org</owner>
+  <component>Component</component>
 </histogram>
 
 <histogram name="Test.EnumHistogram" enum="TestEnum" expires_after="M81">
+  <owner>uma@chromium.org</owner>
   <obsolete>
     Obsolete message
   </obsolete>
-  <owner>uma@chromium.org</owner>
   <summary>A enum histogram.</summary>
 </histogram>
 
@@ -78,7 +78,7 @@ class MergeXmlTest(unittest.TestCase):
 </histogram-configuration>
 """
     self.maxDiff = None
-    self.assertMultiLineEqual(expected_merged_xml.strip(), merged.strip())
+    self.assertEqual(expected_merged_xml.strip(), merged.strip())
 
   def testMergeFiles_WithXmlEvents(self):
     """Checks that the UkmEventNameHash enum is populated correctly.
@@ -104,11 +104,10 @@ class MergeXmlTest(unittest.TestCase):
 </enum>
 
 <enum name="UkmEventNameHash">
-  <summary>
-    Placeholder enum. The values are UKM event name hashes truncated to 31 bits.
-    This gets populated by the GetEnumsNodes function in merge_xml.py when
-    producing the merged XML file.
-  </summary>
+<!-- Placeholder enum. The values are UKM event name hashes truncated to 31
+     bits. This gets populated by the GetEnumsNodes function in merge_xml.py
+     when producing the merged XML file. -->
+
   <int value="324605288" label="AbusiveExperienceHeuristic.WindowOpen"/>
   <int value="1621538456" label="AbusiveExperienceHeuristic.TabUnder"/>
   <int value="1913876024" label="Autofill.SelectedMaskedServerCard (Obsolete)"/>
@@ -119,15 +118,16 @@ class MergeXmlTest(unittest.TestCase):
 <histograms>
 
 <histogram name="Foo.Bar" units="xxxxxxxxxxxxxxxxxxyyyyyyyyyyyyyyyyyyyyyyzzzz">
-  <owner>person@chromium.org</owner>
   <summary>Foo</summary>
+  <owner>person@chromium.org</owner>
+  <component>Component</component>
 </histogram>
 
 <histogram name="Test.EnumHistogram" enum="TestEnum" expires_after="M81">
+  <owner>uma@chromium.org</owner>
   <obsolete>
     Obsolete message
   </obsolete>
-  <owner>uma@chromium.org</owner>
   <summary>A enum histogram.</summary>
 </histogram>
 
@@ -153,7 +153,7 @@ class MergeXmlTest(unittest.TestCase):
 </histogram-configuration>
 """
     self.maxDiff = None
-    self.assertMultiLineEqual(expected_merged_xml.strip(), merged.strip())
+    self.assertEqual(expected_merged_xml.strip(), merged.strip())
 
 
 if __name__ == '__main__':

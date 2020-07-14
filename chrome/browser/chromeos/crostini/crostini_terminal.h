@@ -103,6 +103,7 @@ Browser* LaunchTerminal(
     Profile* profile,
     int64_t display_id = display::kInvalidDisplayId,
     const ContainerId& container_id = ContainerId::GetDefault(),
+    const std::string& cwd = "",
     const std::vector<std::string>& terminal_args = {});
 
 // Launches the terminal settings popup window.

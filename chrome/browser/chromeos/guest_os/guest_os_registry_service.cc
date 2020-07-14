@@ -30,6 +30,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "extensions/browser/api/file_handlers/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using vm_tools::apps::App;
@@ -364,6 +365,9 @@ std::set<std::string> GuestOsRegistryService::Registration::Extensions() const {
 }
 
 std::set<std::string> GuestOsRegistryService::Registration::MimeTypes() const {
+  if (is_terminal_app_)
+    return std::set<std::string>(
+        {extensions::app_file_handler_util::kMimeTypeInodeDirectory});
   if (pref_.is_none())
     return {};
   return ListToStringSet(pref_.FindKeyOfType(guest_os::prefs::kAppMimeTypesKey,

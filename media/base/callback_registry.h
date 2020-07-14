@@ -38,7 +38,7 @@ class CallbackRegistry;
 // thread. The CallbackRegistry must outlive all CallbackRegistrations returned
 // by Register().
 // TODO(xhwang): This class is similar to base::CallbackList, but is simpler,
-// and provides thread safty. Consider merging these two.
+// and provides thread safety. Consider merging these two.
 template <typename... Args>
 class CallbackRegistry<void(Args...)> {
  public:

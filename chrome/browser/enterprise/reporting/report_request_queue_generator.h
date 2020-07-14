@@ -17,6 +17,8 @@
 
 namespace enterprise_reporting {
 
+class ReportingDelegateFactory;
+
 // Generate a report request queue that contains full profile information. The
 // request number in the queue is decided by the maximum report size setting.
 class ReportRequestQueueGenerator {
@@ -24,7 +26,8 @@ class ReportRequestQueueGenerator {
   using ReportRequests = std::queue<std::unique_ptr<ReportRequest>>;
 
  public:
-  ReportRequestQueueGenerator();
+  explicit ReportRequestQueueGenerator(
+      ReportingDelegateFactory* delegate_factory);
   ReportRequestQueueGenerator(const ReportRequestQueueGenerator&) = delete;
   ReportRequestQueueGenerator& operator=(const ReportRequestQueueGenerator&) =
       delete;

@@ -1064,8 +1064,9 @@ namespace networkingPrivate {
                                      DOMString data,
                                      StringCallback callback);
 
-    // Enables TDLS for WiFi traffic with a specified peer if available.
-    // |ip_or_mac_address|: The IP or MAC address of the peer with which to
+    // Deprecated. Enables TDLS for WiFi traffic with a specified peer if
+    // available. |ip_or_mac_address|: The IP or MAC address of the peer with
+    // which to
     //     enable a TDLS connection.
     // |enabled| If true, enable TDLS, otherwise disable TDLS.
     // |callback|: A callback function that receives a string with an error or
@@ -1073,17 +1074,17 @@ namespace networkingPrivate {
     //     (e.g. MAC address lookup failed). 'Timeout' indicates that the lookup
     //     timed out. Otherwise a valid status is returned (see
     //     $(ref:getWifiTDLSStatus)).
-    [nodoc, deprecated = "Use networking.castPrivate API."]
+    [nodoc, deprecated]
     static void setWifiTDLSEnabledState(DOMString ip_or_mac_address,
                                         boolean enabled,
                                         optional StringCallback callback);
 
-    // Returns the current TDLS status for the specified peer.
+    // Deprecated. Returns the current TDLS status for the specified peer.
     // |ip_or_mac_address|: The IP or MAC address of the peer.
     // |callback|: A callback function that receives a string with the current
     //     TDLS status which can be 'Connected', 'Disabled', 'Disconnected',
     //     'Nonexistent', or 'Unknown'.
-    [nodoc, deprecated = "Use networking.castPrivate API."]
+    [nodoc, deprecated]
     static void getWifiTDLSStatus(DOMString ip_or_mac_address,
                                   StringCallback callback);
 

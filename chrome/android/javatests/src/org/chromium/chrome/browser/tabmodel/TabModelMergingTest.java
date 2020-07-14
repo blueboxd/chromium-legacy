@@ -16,6 +16,7 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.LargeTest;
 
+import java.util.Collections;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -536,6 +537,50 @@ public class TabModelMergingTest {
             Criteria.checkThat("CTA2 should be destroyed", mActivity2State,
                     Matchers.is(ActivityState.DESTROYED));
         });
+        mActivity1.finishAndRemoveTask();
+        mActivity2.finishAndRemoveTask();
+    }
+
+    @Test
+    @LargeTest
+    @EnableFeatures(ChromeFeatureList.ANDROID_MULTIPLE_DISPLAY)
+    @DisableIf.Build(sdk_is_less_than = VERSION_CODES.P)
+    public void testMergeOnMultiDisplay_OnDisplayChanged() throws TimeoutException {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivity1.saveState();
+            mActivity2.saveState();
+        });
+        MultiInstanceManager m1 = mActivity1.getMultiInstanceMangerForTesting();
+        MultiInstanceManager m2 = mActivity2.getMultiInstanceMangerForTesting();
+
+        // Ensure Activity 1 is resumed on the front.
+        Intent intent = new Intent(mActivity1, mActivity1.getClass());
+        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        mActivity1.startActivity(intent);
+        waitForActivityStateChange(ActivityState.RESUMED, mActivity2, false);
+        waitForActivityStateChange(ActivityState.RESUMED, mActivity1, true);
+
+        MultiInstanceManager.setTestDisplayIds(Collections.singletonList(0));
+        m1.setCurrentDisplayIdForTesting(0);
+        m2.setCurrentDisplayIdForTesting(1);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            m1.getDisplayListenerForTesting().onDisplayChanged(1);
+            m2.getDisplayListenerForTesting().onDisplayChanged(1);
+        });
+
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("Total tab count incorrect.",
+                mActivity1.getTabModelSelector().getTotalTabCount(), Matchers.is(7));
+        });
+
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("CTA should not be destroyed", mActivity1State,
+                Matchers.not(ActivityState.DESTROYED));
+            Criteria.checkThat("CTA2 should be destroyed", mActivity2State,
+                Matchers.is(ActivityState.DESTROYED));
+        });
+
         mActivity1.finishAndRemoveTask();
         mActivity2.finishAndRemoveTask();
     }

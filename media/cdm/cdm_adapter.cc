@@ -405,8 +405,7 @@ CdmContext* CdmAdapter::GetCdmContext() {
 
 std::unique_ptr<CallbackRegistration> CdmAdapter::RegisterEventCB(
     EventCB event_cb) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return event_callbacks_.Register(std::move(event_cb));
 }
 
 Decryptor* CdmAdapter::GetDecryptor() {
@@ -417,22 +416,6 @@ Decryptor* CdmAdapter::GetDecryptor() {
 int CdmAdapter::GetCdmId() const {
   DCHECK(task_runner_->BelongsToCurrentThread());
   return CdmContext::kInvalidCdmId;
-}
-
-void CdmAdapter::RegisterNewKeyCB(StreamType stream_type,
-                                  NewKeyCB key_added_cb) {
-  DVLOG(3) << __func__;
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  switch (stream_type) {
-    case kAudio:
-      new_audio_key_cb_ = std::move(key_added_cb);
-      return;
-    case kVideo:
-      new_video_key_cb_ = std::move(key_added_cb);
-      return;
-  }
-
-  NOTREACHED() << "Unexpected StreamType " << stream_type;
 }
 
 void CdmAdapter::Decrypt(StreamType stream_type,
@@ -810,14 +793,8 @@ void CdmAdapter::OnSessionKeysChange(const char* session_id,
         info.system_code));
   }
 
-  // TODO(jrummell): Handling resume playback should be done in the media
-  // player, not in the Decryptors. http://crbug.com/413413.
-  if (has_additional_usable_key) {
-    if (new_audio_key_cb_)
-      new_audio_key_cb_.Run();
-    if (new_video_key_cb_)
-      new_video_key_cb_.Run();
-  }
+  if (has_additional_usable_key)
+    event_callbacks_.Notify(Event::kHasAdditionalUsableKey);
 
   session_keys_change_cb_.Run(session_id_str, has_additional_usable_key,
                               std::move(keys));

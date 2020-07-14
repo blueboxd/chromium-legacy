@@ -21,8 +21,11 @@ namespace {
 
 using chromeos::string_matching::TokenizedString;
 
-std::vector<Token> ExtractDocumentTokens(const Data& data,
-                                         const std::string& locale) {
+std::vector<Token> ExtractDocumentTokens(const Data& data) {
+  // Use input locale unless it's empty. In this case we will use system
+  // default locale.
+  const std::string locale =
+      data.locale.empty() ? base::i18n::GetConfiguredLocale() : data.locale;
   std::vector<Token> document_tokens;
   for (const Content& content : data.contents) {
     DCHECK_GE(content.weight, 0);
@@ -37,9 +40,10 @@ std::vector<Token> ExtractDocumentTokens(const Data& data,
 
 }  // namespace
 
-InvertedIndexSearch::InvertedIndexSearch() {
-  inverted_index_ = std::make_unique<InvertedIndex>();
-}
+InvertedIndexSearch::InvertedIndexSearch(IndexId index_id,
+                                         PrefService* local_state)
+    : Index(index_id, Backend::kInvertedIndex, local_state),
+      inverted_index_(std::make_unique<InvertedIndex>()) {}
 
 InvertedIndexSearch::~InvertedIndexSearch() = default;
 
@@ -48,33 +52,24 @@ uint64_t InvertedIndexSearch::GetSize() {
 }
 
 void InvertedIndexSearch::AddOrUpdate(
-    const std::vector<local_search_service::Data>& data,
-    bool build_index) {
+    const std::vector<local_search_service::Data>& data) {
   for (const Data& d : data) {
-    // Use input locale unless it's empty. In this case we will use system
-    // default locale.
-    const std::string locale =
-        d.locale.empty() ? base::i18n::GetConfiguredLocale() : d.locale;
-    const std::vector<Token> document_tokens = ExtractDocumentTokens(d, locale);
+    const std::vector<Token> document_tokens = ExtractDocumentTokens(d);
     DCHECK(!document_tokens.empty());
     inverted_index_->AddDocument(d.id, document_tokens);
   }
 
-  if (build_index) {
-    inverted_index_->BuildInvertedIndex();
-  }
+  inverted_index_->BuildInvertedIndex();
 }
 
-uint32_t InvertedIndexSearch::Delete(const std::vector<std::string>& ids,
-                                     bool build_index) {
+uint32_t InvertedIndexSearch::Delete(const std::vector<std::string>& ids) {
   uint32_t num_deleted = 0u;
   for (const auto& id : ids) {
     DCHECK(!id.empty());
     num_deleted += inverted_index_->RemoveDocument(id);
   }
-  if (build_index) {
-    inverted_index_->BuildInvertedIndex();
-  }
+
+  inverted_index_->BuildInvertedIndex();
   return num_deleted;
 }
 
@@ -105,9 +100,8 @@ ResponseStatus InvertedIndexSearch::Find(const base::string16& query,
     tokens.insert(token);
   }
 
-  // TODO(jiameng): allow thresholds to be passed in as search params.
   *results = inverted_index_->FindMatchingDocumentsApproximately(
-      tokens, 0.1 /* prefix_threhold */, 0.6 /* block_threshold */);
+      tokens, search_params_.prefix_threshold, search_params_.fuzzy_threshold);
 
   if (results->size() > max_results && max_results > 0u)
     results->resize(max_results);

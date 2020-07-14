@@ -62,10 +62,6 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   void set_container_score(double score) { container_score_ = score; }
   double container_score() const { return container_score_; }
 
-  // Gets the number of down keystrokes from the beginning to the end of this
-  // container.
-  virtual int GetYSize();
-
   // Batching method that actually performs the update and updates layout.
   void Update();
 

@@ -162,6 +162,7 @@ FeedService::FeedService(
     signin::IdentityManager* identity_manager,
     history::HistoryService* history_service,
     offline_pages::PrefetchService* prefetch_service,
+    offline_pages::OfflinePageModel* offline_page_model,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     const std::string& api_key,
@@ -182,7 +183,7 @@ FeedService::FeedService(
   stream_ = std::make_unique<FeedStream>(
       refresh_task_scheduler_.get(), metrics_reporter_.get(),
       stream_delegate_.get(), profile_prefs, feed_network_.get(), store_.get(),
-      prefetch_service, base::DefaultClock::GetInstance(),
+      prefetch_service, offline_page_model, base::DefaultClock::GetInstance(),
       base::DefaultTickClock::GetInstance(), chrome_info);
 
   history_observer_ = std::make_unique<HistoryObserverImpl>(

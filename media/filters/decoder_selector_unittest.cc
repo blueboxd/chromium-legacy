@@ -30,6 +30,7 @@
 using ::base::test::RunCallback;
 using ::base::test::RunOnceCallback;
 using ::testing::_;
+using ::testing::AnyNumber;
 using ::testing::IsNull;
 using ::testing::NiceMock;
 using ::testing::NotNull;
@@ -340,6 +341,8 @@ class DecoderSelectorTest : public ::testing::Test {
     DCHECK(!decoder_selector_);
 
     cdm_context_ = std::make_unique<StrictMock<MockCdmContext>>();
+
+    EXPECT_CALL(*cdm_context_, RegisterEventCB(_)).Times(AnyNumber());
 
     if (capability == kNoDecryptor) {
       EXPECT_CALL(*cdm_context_, GetDecryptor())

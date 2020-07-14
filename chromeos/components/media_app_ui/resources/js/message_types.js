@@ -20,6 +20,7 @@ const Message = {
   OPEN_FEEDBACK_DIALOG: 'open-feedback-dialog',
   OVERWRITE_FILE: 'overwrite-file',
   RENAME_FILE: 'rename-file',
+  REQUEST_SAVE_FILE: 'request-save-file',
   SAVE_COPY: 'save-copy'
 };
 
@@ -101,21 +102,30 @@ let RenameFileResponse;
 
 /**
  * Message sent by the unprivileged context to the privileged context requesting
- * for the provided file to be copied and saved in a new location which the user
- * is prompted for, i.e a 'save as' operation. Once the native filesystem api
- * allows, this save as dialog will have the filename input be pre-filled with
- * `suggestedName`. `suggestedName` is additionally used to determine the file
- * extension which helps inform the save as dialog as to which files should be
- * overwritable. This method can be called with any file, not just the currently
- * writable file.
- * @typedef {{blob: !Blob, suggestedName: string}}
+ * for the user to be prompted with a save file dialog. Once the user selects a
+ * location a new file handle is created and a unique token to that file
+ * will be returned. This token can be then used with saveCopy(). The file
+ * extension on `suggestedName` and the provided `mimeType` are used to inform
+ * the save as dialog what file should be created. Once the native filesystem
+ * api allows, this save as dialog will additionally have the filename input be
+ * pre-filled with `suggestedName`.
+ * @typedef {{suggestedName: string, mimeType: string}}
  */
-let SaveCopyMessage;
+let RequestSaveFileMessage;
 
 /**
- * Response message sent by the privileged context indicating the error message
- * if the associated save as operation could not be performed. Returns nothing
- * if the operation was successful.
- * @typedef {{ errorMessage: ?string }}
+ * Response message sent by the privileged context with a unique identifier for
+ * the new writable file created on disk by the corresponding request save
+ * file message.
+ * @typedef {{token: number}}
  */
-let SaveCopyResponse;
+let RequestSaveFileResponse;
+
+/**
+ * Message sent by the unprivileged context to the privileged context requesting
+ * for the provided file to be copied and saved in the location specified by
+ * `token`. This method can be called with any file, not just the currently
+ * writable file.
+ * @typedef {{blob: !Blob, token: number}}
+ */
+let SaveCopyMessage;

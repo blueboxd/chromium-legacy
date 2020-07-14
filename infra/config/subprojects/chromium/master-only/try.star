@@ -342,6 +342,10 @@ try_.chromium_linux_builder(
 )
 
 try_.chromium_linux_builder(
+    name = 'fuchsia-fyi-arm64-dbg',
+)
+
+try_.chromium_linux_builder(
     name = 'fuchsia-fyi-arm64-rel',
 )
 

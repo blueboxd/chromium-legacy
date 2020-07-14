@@ -93,10 +93,10 @@ class NET_EXPORT_PRIVATE HttpssvcMetrics {
 
   void set_doh_provider_id(base::Optional<std::string> doh_provider_id);
 
+  const bool expect_intact_;
   // RecordIntegrityMetrics() will do nothing when |disqualified_| is true.
   bool disqualified_ = false;
-  const bool expect_intact_;
-  bool in_progress_ = true;
+  bool already_recorded_ = false;
   base::Optional<std::string> doh_provider_id_;
   base::Optional<enum HttpssvcDnsRcode> rcode_integrity_;
   size_t num_integrity_records_ = 0;

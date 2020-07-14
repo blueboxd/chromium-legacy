@@ -269,10 +269,10 @@ bool Validator::ValidateRecommendedField(
     base::DictionaryValue* result) {
   CHECK(result);
 
-  std::unique_ptr<base::Value> recommended_value;
+  base::Optional<base::Value> recommended_value =
+      result->ExtractKey(::onc::kRecommended);
   // This remove passes ownership to |recommended_value|.
-  if (!result->RemoveWithoutPathExpansion(::onc::kRecommended,
-                                          &recommended_value)) {
+  if (!recommended_value) {
     return true;
   }
 
@@ -567,7 +567,7 @@ bool Validator::ValidateSSIDAndHexSSID(base::DictionaryValue* object) {
             << ::onc::wifi::kHexSSID << "' contain inconsistent values.";
         AddValidationIssue(false /* is_error */, msg.str());
         path_.pop_back();
-        object->RemoveWithoutPathExpansion(::onc::wifi::kSSID, nullptr);
+        object->RemoveKey(::onc::wifi::kSSID);
       }
     }
   }

@@ -1,0 +1,186 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ash/assistant/util/resource_util.h"
+
+#include <sstream>
+#include <string>
+
+#include "ash/public/cpp/vector_icons/vector_icons.h"
+#include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
+#include "net/base/url_util.h"
+
+namespace ash {
+namespace assistant {
+namespace util {
+
+namespace {
+
+// Constants -------------------------------------------------------------------
+
+// Prefix for all resource links.
+constexpr char kResourceLinkPrefix[] = "googleassistant://resource";
+
+// Param keys.
+constexpr char kColorParamKey[] = "color";
+constexpr char kNameParamKey[] = "name";
+constexpr char kTypeParamKey[] = "type";
+
+// Resource types.
+constexpr char kIconResourceType[] = "icon";
+
+// Icon names.
+constexpr char kAssistantIconName[] = "assistant";
+
+// Helpers ---------------------------------------------------------------------
+
+SkColor ToColor(const std::string& aarrggbb) {
+  SkColor color = gfx::kPlaceholderColor;
+  std::istringstream hex_stream(aarrggbb);
+  hex_stream >> std::hex >> color;
+  return color;
+}
+
+IconName ToIconName(const std::string& name) {
+  DCHECK_EQ(name, kAssistantIconName);
+  return IconName::kAssistant;
+}
+
+std::string ToString(SkColor color) {
+  std::stringstream hex_stream;
+  hex_stream << std::hex << color;
+  return hex_stream.str();
+}
+
+std::string ToString(IconName name) {
+  switch (name) {
+    case IconName::kAssistant:
+      return kAssistantIconName;
+  }
+  NOTREACHED();
+  return std::string();
+}
+
+std::string ToString(ResourceLinkParam param) {
+  switch (param) {
+    case ResourceLinkParam::kColor:
+      return kColorParamKey;
+    case ResourceLinkParam::kName:
+      return kNameParamKey;
+    case ResourceLinkParam::kType:
+      return kTypeParamKey;
+  }
+  NOTREACHED();
+  return std::string();
+}
+
+std::string ToString(ResourceLinkType type) {
+  switch (type) {
+    case ResourceLinkType::kIcon:
+      return kIconResourceType;
+    case ResourceLinkType::kUnsupported:
+      return std::string();
+  }
+  NOTREACHED();
+  return std::string();
+}
+
+ResourceLinkType ToType(const std::string& type) {
+  if (type == kIconResourceType)
+    return ResourceLinkType::kIcon;
+  return ResourceLinkType::kUnsupported;
+}
+
+const gfx::VectorIcon& ToVectorIcon(IconName name) {
+  switch (name) {
+    case IconName::kAssistant:
+      return ash::kAssistantIcon;
+  }
+  NOTREACHED();
+  return gfx::kNoneIcon;
+}
+
+const gfx::VectorIcon& ToVectorIcon(const std::string& name) {
+  return ToVectorIcon(ToIconName(name));
+}
+
+base::Optional<std::string> GetParam(const GURL& url, ResourceLinkParam param) {
+  if (!url.has_query())
+    return base::nullopt;
+
+  const std::string param_key = ToString(param);
+
+  auto ToString = [&url](const url::Component& component) {
+    if (component.len <= 0)
+      return std::string();
+    return std::string(url.query(), component.begin, component.len);
+  };
+
+  url::Component query(0, url.query().length()), key, value;
+  while (url::ExtractQueryKeyValue(url.query().c_str(), &query, &key, &value)) {
+    if (ToString(key) == param_key)
+      return ToString(value);
+  }
+
+  return base::nullopt;
+}
+
+}  // namespace
+
+// Utilities -------------------------------------------------------------------
+
+GURL AppendOrReplaceColorParam(const GURL& resource_link, SkColor color) {
+  DCHECK(IsResourceLinkType(resource_link, ResourceLinkType::kIcon));
+  return net::AppendOrReplaceQueryParameter(
+      resource_link, ToString(ResourceLinkParam::kColor), ToString(color));
+}
+
+GURL CreateIconResourceLink(IconName name, base::Optional<SkColor> color) {
+  GURL icon_resource_link(kResourceLinkPrefix);
+  icon_resource_link = net::AppendOrReplaceQueryParameter(
+      icon_resource_link, ToString(ResourceLinkParam::kType),
+      ToString(ResourceLinkType::kIcon));
+  icon_resource_link = net::AppendOrReplaceQueryParameter(
+      icon_resource_link, ToString(ResourceLinkParam::kName), ToString(name));
+  if (color.has_value()) {
+    icon_resource_link = net::AppendOrReplaceQueryParameter(
+        icon_resource_link, ToString(ResourceLinkParam::kColor),
+        ToString(color.value()));
+  }
+  return icon_resource_link;
+}
+
+gfx::ImageSkia CreateVectorIcon(const GURL& url, int size) {
+  if (!IsResourceLinkType(url, ResourceLinkType::kIcon))
+    return gfx::ImageSkia();
+
+  const gfx::VectorIcon& icon =
+      ToVectorIcon((GetParam(url, ResourceLinkParam::kName).value_or("")));
+
+  SkColor color = ToColor(GetParam(url, ResourceLinkParam::kColor)
+                              .value_or(ToString(gfx::kPlaceholderColor)));
+
+  return gfx::CreateVectorIcon(gfx::IconDescription(icon, size, color));
+}
+
+ResourceLinkType GetResourceLinkType(const GURL& url) {
+  return IsResourceLinkUrl(url)
+             ? ToType(GetParam(url, ResourceLinkParam::kType).value_or(""))
+             : ResourceLinkType::kUnsupported;
+}
+
+bool IsResourceLinkType(const GURL& url, ResourceLinkType type) {
+  return GetResourceLinkType(url) == type;
+}
+
+bool IsResourceLinkUrl(const GURL& url) {
+  return base::StartsWith(url.spec(), kResourceLinkPrefix,
+                          base::CompareCase::SENSITIVE);
+}
+
+}  // namespace util
+}  // namespace assistant
+}  // namespace ash

@@ -12,10 +12,12 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
 
 namespace content {
 
 class EmbeddedWorkerTestHelper;
+class FakeServiceWorkerInstalledScriptsManager;
 
 // The default fake for blink::mojom::EmbeddedWorkerInstanceClient. It responds
 // to Start/Stop/etc messages without starting an actual service worker thread.
@@ -39,6 +41,8 @@ class FakeEmbeddedWorkerInstanceClient
   void Bind(mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
                 receiver);
   void RunUntilBound();
+
+  blink::mojom::ServiceWorkerScriptInfoPtr WaitForTransferInstalledScript();
 
   // Closes the binding and deletes |this|.
   void Disconnect();
@@ -69,6 +73,9 @@ class FakeEmbeddedWorkerInstanceClient
 
   mojo::Receiver<blink::mojom::EmbeddedWorkerInstanceClient> receiver_{this};
   base::OnceClosure quit_closure_for_bind_;
+
+  std::unique_ptr<FakeServiceWorkerInstalledScriptsManager>
+      installed_scripts_manager_;
 
   base::WeakPtrFactory<FakeEmbeddedWorkerInstanceClient> weak_factory_{this};
 

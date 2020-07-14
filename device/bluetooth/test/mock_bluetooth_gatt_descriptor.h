@@ -27,13 +27,11 @@ class MockBluetoothGattDescriptor : public BluetoothRemoteGattDescriptor {
       MockBluetoothGattCharacteristic* characteristic,
       const std::string& identifier,
       const BluetoothUUID& uuid,
-      bool is_local,
       BluetoothRemoteGattCharacteristic::Permissions permissions);
   ~MockBluetoothGattDescriptor() override;
 
   MOCK_CONST_METHOD0(GetIdentifier, std::string());
   MOCK_CONST_METHOD0(GetUUID, BluetoothUUID());
-  MOCK_CONST_METHOD0(IsLocal, bool());
   MOCK_CONST_METHOD0(GetValue, const std::vector<uint8_t>&());
   MOCK_CONST_METHOD0(GetCharacteristic, BluetoothRemoteGattCharacteristic*());
   MOCK_CONST_METHOD0(GetPermissions,

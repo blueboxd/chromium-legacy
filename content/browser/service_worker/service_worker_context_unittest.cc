@@ -857,7 +857,7 @@ TEST_F(ServiceWorkerContextTest, UnregisterMultiple) {
             registration_id4);
 
   bool called = false;
-  context()->DeleteForOrigin(origin1_s1.GetOrigin(),
+  context()->DeleteForOrigin(url::Origin::Create(origin1_s1),
                              MakeUnregisteredCallback(&called));
 
   ASSERT_FALSE(called);

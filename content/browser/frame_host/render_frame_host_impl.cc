@@ -6198,20 +6198,9 @@ void RenderFrameHostImpl::FailedNavigation(
 
   // Error page will commit in an opaque origin.
   //
-  // The precursor of the opaque origin can be set arbitrarily, because:
-  // 1) we expect that the error page will not issue network requests
-  // 2) network::VerifyRequestInitiatorLock doesn't compare precursors
-  // This observation lets us improve debuggability by using a hardcoded
-  // precursor below.
-  // TODO(lukasza): https://crbug.com/1056949: Stop using error.page.invalid as
-  // the precursor (once https://crbug.com/1056949 is debugged OR once
-  // network::VerifyRequestInitiatorLock starts to compare precursors).
-  //
   // TODO(lukasza): https://crbug.com/888079: Use this origin when committing
   // later on.
-  url::Origin error_page_origin =
-      url::Origin::Create(GURL("https://error.page.invalid"))
-          .DeriveNewOpaqueOrigin();
+  url::Origin error_page_origin = url::Origin();
   isolation_info_ = net::IsolationInfo::CreateTransient();
 
   std::unique_ptr<blink::PendingURLLoaderFactoryBundle>

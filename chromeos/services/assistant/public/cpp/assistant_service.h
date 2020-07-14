@@ -58,6 +58,8 @@ struct COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantSuggestion {
   std::string text;
 
   // Optional URL for icon. e.g. "https://www.gstatic.com/icon.png".
+  // NOTE: This may be an icon resource link. e.g.
+  // "googleassistant://resource?type=icon&name=assistant".
   GURL icon_url;
 
   // Optional URL for action. e.g.

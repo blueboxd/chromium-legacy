@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_functions.h"
-#include "chrome/browser/enterprise/reporting/profile_report_generator_desktop.h"
 
 namespace enterprise_reporting {
 namespace {
@@ -31,10 +30,10 @@ const int kRequestCountMetricMaxValue = 21;
 
 }  // namespace
 
-ReportRequestQueueGenerator::ReportRequestQueueGenerator()
+ReportRequestQueueGenerator::ReportRequestQueueGenerator(
+    ReportingDelegateFactory* delegate_factory)
     : maximum_report_size_(kMaximumReportSize),
-      profile_report_generator_(
-          std::make_unique<ProfileReportGeneratorDesktop>()) {
+      profile_report_generator_(delegate_factory) {
 #if defined(OS_CHROMEOS)
   // For Chrome OS, policy information needn't be uploaded to DM server.
   profile_report_generator_.set_policies_enabled(false);

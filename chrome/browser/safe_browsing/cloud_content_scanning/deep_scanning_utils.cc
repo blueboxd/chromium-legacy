@@ -68,17 +68,17 @@ ContentAnalysisScanResult::~ContentAnalysisScanResult() = default;
 ContentAnalysisScanResult& ContentAnalysisScanResult::operator=(
     const ContentAnalysisScanResult& other) = default;
 
-void MaybeReportDeepScanningVerdict(
-    Profile* profile,
-    const GURL& url,
-    const std::string& file_name,
-    const std::string& download_digest_sha256,
-    const std::string& mime_type,
-    const std::string& trigger,
-    DeepScanAccessPoint access_point,
-    const int64_t content_size,
-    BinaryUploadService::Result result,
-    const DeepScanningClientResponse& response) {
+void MaybeReportDeepScanningVerdict(Profile* profile,
+                                    const GURL& url,
+                                    const std::string& file_name,
+                                    const std::string& download_digest_sha256,
+                                    const std::string& mime_type,
+                                    const std::string& trigger,
+                                    DeepScanAccessPoint access_point,
+                                    const int64_t content_size,
+                                    BinaryUploadService::Result result,
+                                    const DeepScanningClientResponse& response,
+                                    EventResult event_result) {
   DCHECK(std::all_of(download_digest_sha256.begin(),
                      download_digest_sha256.end(), [](const char& c) {
                        return (c >= '0' && c <= '9') ||
@@ -90,7 +90,7 @@ void MaybeReportDeepScanningVerdict(
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
         ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
                                mime_type, trigger, access_point,
-                               unscanned_reason, content_size);
+                               unscanned_reason, content_size, event_result);
   }
 
   if (result != BinaryUploadService::Result::SUCCESS)
@@ -100,9 +100,9 @@ void MaybeReportDeepScanningVerdict(
       response.malware_scan_verdict().verdict() ==
           MalwareDeepScanningVerdict::SCAN_FAILURE) {
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
-        ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
-                               mime_type, trigger, access_point,
-                               "MALWARE_SCAN_FAILED", content_size);
+        ->OnUnscannedFileEvent(
+            url, file_name, download_digest_sha256, mime_type, trigger,
+            access_point, "MALWARE_SCAN_FAILED", content_size, event_result);
   }
 
   if (response.has_dlp_scan_verdict() &&
@@ -110,7 +110,7 @@ void MaybeReportDeepScanningVerdict(
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
         ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
                                mime_type, trigger, access_point,
-                               "DLP_SCAN_FAILED", content_size);
+                               "DLP_SCAN_FAILED", content_size, event_result);
   }
 
   if (response.malware_scan_verdict().verdict() ==
@@ -147,7 +147,8 @@ void MaybeReportDeepScanningVerdict(
     DeepScanAccessPoint access_point,
     const int64_t content_size,
     BinaryUploadService::Result result,
-    const enterprise_connectors::ContentAnalysisResponse& response) {
+    const enterprise_connectors::ContentAnalysisResponse& response,
+    EventResult event_result) {
   DCHECK(std::all_of(download_digest_sha256.begin(),
                      download_digest_sha256.end(), [](const char& c) {
                        return (c >= '0' && c <= '9') ||
@@ -159,7 +160,7 @@ void MaybeReportDeepScanningVerdict(
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
         ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
                                mime_type, trigger, access_point,
-                               unscanned_reason, content_size);
+                               unscanned_reason, content_size, event_result);
   }
 
   if (result != BinaryUploadService::Result::SUCCESS)
@@ -171,7 +172,8 @@ void MaybeReportDeepScanningVerdict(
       extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
           ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
                                  mime_type, trigger, access_point,
-                                 "ANALYSIS_CONNECTOR_FAILED", content_size);
+                                 "ANALYSIS_CONNECTOR_FAILED", content_size,
+                                 event_result);
     } else if (result.triggered_rules_size() > 0) {
       extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
           ->OnAnalysisConnectorResult(url, file_name, download_digest_sha256,
@@ -226,6 +228,23 @@ void ReportAnalysisConnectorWarningBypass(
             url, file_name, download_digest_sha256, mime_type, trigger,
             access_point, result, content_size);
   }
+}
+
+std::string EventResultToString(EventResult result) {
+  switch (result) {
+    case EventResult::UNKNOWN:
+      return "EVENT_RESULT_UNKNOWN";
+    case EventResult::ALLOWED:
+      return "EVENT_RESULT_ALLOWED";
+    case EventResult::WARNED:
+      return "EVENT_RESULT_WARNED";
+    case EventResult::BLOCKED:
+      return "EVENT_RESULT_BLOCKED";
+    case EventResult::BYPASSED:
+      return "EVENT_RESULT_BYPASSED";
+  }
+  NOTREACHED();
+  return "";
 }
 
 std::string DeepScanAccessPointToString(DeepScanAccessPoint access_point) {

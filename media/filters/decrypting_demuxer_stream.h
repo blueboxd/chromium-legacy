@@ -10,6 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/audio_decoder_config.h"
+#include "media/base/callback_registry.h"
+#include "media/base/cdm_context.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/pipeline_status.h"
@@ -56,7 +58,6 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
 
   // DemuxerStream implementation.
   void Read(ReadCB read_cb) override;
-  bool IsReadPending() const override;
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
   Type type() const override;
@@ -125,9 +126,8 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   void OnBufferDecrypted(Decryptor::Status status,
                          scoped_refptr<DecoderBuffer> decrypted_buffer);
 
-  // Callback for the |decryptor_| to notify this object that a new key has been
-  // added.
-  void OnKeyAdded();
+  // Callback for the CDM to notify |this|.
+  void OnCdmContextEvent(CdmContext::Event event);
 
   // Resets decoder and calls |reset_cb_|.
   void DoReset();
@@ -170,7 +170,9 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   // decrypting again in case the newly added key is the correct decryption key.
   bool key_added_while_decrypt_pending_ = false;
 
-  base::WeakPtr<DecryptingDemuxerStream> weak_this_;
+  // To keep the CdmContext event callback registered.
+  std::unique_ptr<CallbackRegistration> event_cb_registration_;
+
   base::WeakPtrFactory<DecryptingDemuxerStream> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DecryptingDemuxerStream);

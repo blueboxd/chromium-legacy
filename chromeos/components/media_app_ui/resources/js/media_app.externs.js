@@ -135,12 +135,28 @@ mediaApp.ClientApiDelegate = function() {};
  */
 mediaApp.ClientApiDelegate.prototype.openFeedbackDialog = function() {};
 /**
- * Saves a copy of `file` in a custom location with a custom
- * name which the user is prompted for via a native save file dialog.
+ * Request for the user to be prompted with a save file dialog. Once the user
+ * selects a location a new file handle is created and a unique token to that
+ * file will be returned. This token can be then used with saveCopy(). The file
+ * extension on `suggestedName` and the provided `mimeType` are used to inform
+ * the save as dialog what file should be created. Once the Native Filesystem
+ * API allows, this save as dialog will additionally have the filename input be
+ * pre-filled with `suggestedName`.
+ * TODO(b/161087799): Update function description once Native Filesystem API
+ * supports suggestedName.
+ * @param {string} suggestedName
+ * @param {string} mimeType
+ * @return {!Promise<number>}
+ */
+mediaApp.ClientApiDelegate.prototype.requestSaveFile = function(
+    suggestedName, mimeType) {};
+/**
+ * Saves a copy of `file` in the file specified by `token`.
  * @param {!mediaApp.AbstractFile} file
+ * @param {number} token
  * @return {!Promise<undefined>}
  */
-mediaApp.ClientApiDelegate.prototype.saveCopy = function(file) {};
+mediaApp.ClientApiDelegate.prototype.saveCopy = function(file, token) {};
 
 /**
  * The client Api for interacting with the media app instance.

@@ -9,7 +9,11 @@ if (is_fuchsia) {
 }
 
 source_set("named_message_port_connector_resources") {
-  data = [ "resources/named_message_port_connector.js" ]
+  data = [
+    "resources/named_message_port_connector.js",
+    "${target_gen_dir}/bindings_resources.pak",
+  ]
+  deps = [ ":bindings_resources" ]
 }
 
 grit("bindings_resources") {

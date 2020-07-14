@@ -796,8 +796,8 @@ class ContentVerifyJobWithHashFetchUnittest : public ContentVerifyJobUnittest {
     verified_contents_ = GetVerifiedContents(extension);
 
     // Delete verified_contents.json.
-    EXPECT_TRUE(base::DeleteFile(
-        file_util::GetVerifiedContentsPath(extension.path()), true));
+    EXPECT_TRUE(base::DeletePathRecursively(
+        file_util::GetVerifiedContentsPath(extension.path())));
 
     // Clear cache so that next extension resource load will fetch hashes as
     // we've already deleted verified_contents.json.

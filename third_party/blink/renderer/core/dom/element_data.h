@@ -64,8 +64,8 @@ class ElementData : public GarbageCollected<ElementData> {
   const AtomicString& IdForStyleResolution() const {
     return id_for_style_resolution_;
   }
-  void SetIdForStyleResolution(const AtomicString& new_id) const {
-    id_for_style_resolution_ = new_id;
+  AtomicString SetIdForStyleResolution(AtomicString new_id) const {
+    return std::exchange(id_for_style_resolution_, std::move(new_id));
   }
 
   const CSSPropertyValueSet* InlineStyle() const { return inline_style_.Get(); }

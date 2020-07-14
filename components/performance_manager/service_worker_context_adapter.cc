@@ -133,7 +133,7 @@ void ServiceWorkerContextAdapter::GetAllOriginsInfo(
   NOTIMPLEMENTED();
 }
 
-void ServiceWorkerContextAdapter::DeleteForOrigin(const GURL& origin_url,
+void ServiceWorkerContextAdapter::DeleteForOrigin(const url::Origin& origin_url,
                                                   ResultCallback callback) {
   NOTIMPLEMENTED();
 }

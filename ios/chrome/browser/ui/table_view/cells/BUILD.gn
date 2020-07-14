@@ -16,6 +16,8 @@ source_set("cells") {
     "table_view_disclosure_header_footer_item.mm",
     "table_view_header_footer_item.h",
     "table_view_header_footer_item.mm",
+    "table_view_illustrated_item.h",
+    "table_view_illustrated_item.mm",
     "table_view_image_item.h",
     "table_view_image_item.mm",
     "table_view_info_button_cell.h",

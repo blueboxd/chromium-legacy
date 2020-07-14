@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "media/base/callback_registry.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_initialized_promise.h"
 #include "media/base/cdm_promise_adapter.h"
@@ -74,6 +75,7 @@ class MojoCdm : public ContentDecryptionModule,
 
   // CdmContext implementation. Can be called on a different thread.
   // All GetDecryptor() calls must be made on the same thread.
+  std::unique_ptr<CallbackRegistration> RegisterEventCB(EventCB event_cb) final;
   Decryptor* GetDecryptor() final;
   int GetCdmId() const final;
 
@@ -94,9 +96,6 @@ class MojoCdm : public ContentDecryptionModule,
       std::vector<std::unique_ptr<CdmKeyInformation>> keys_info) final;
   void OnSessionExpirationUpdate(const std::string& session_id,
                                  double new_expiry_time_sec) final;
-
-  // Callback when new decryption key is available.
-  void OnKeyAdded();
 
   // Callbacks to handle CDM promises.
   void OnSimpleCdmPromiseResult(uint32_t promise_id,
@@ -146,6 +145,8 @@ class MojoCdm : public ContentDecryptionModule,
 
   // Keep track of outstanding promises.
   CdmPromiseAdapter cdm_promise_adapter_;
+
+  CallbackRegistry<EventCB::RunType> event_callbacks_;
 
   // This must be the last member.
   base::WeakPtrFactory<MojoCdm> weak_factory_{this};

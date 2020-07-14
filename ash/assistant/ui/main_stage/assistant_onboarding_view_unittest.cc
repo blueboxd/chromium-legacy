@@ -5,6 +5,7 @@
 #include "ash/assistant/ui/main_stage/assistant_onboarding_view.h"
 
 #include <memory>
+#include <queue>
 #include <string>
 #include <utility>
 #include <vector>
@@ -12,10 +13,13 @@
 #include "ash/assistant/model/assistant_suggestions_model.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/test/assistant_ash_test_base.h"
+#include "ash/assistant/ui/test_support/mock_assistant_view_delegate.h"
+#include "ash/assistant/util/test_support/macros.h"
 #include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/session/session_types.h"
 #include "ash/public/cpp/session/user_info.h"
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/strings/stringprintf.h"
@@ -27,6 +31,9 @@
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/image/image_unittest_util.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 
 namespace ash {
@@ -42,12 +49,27 @@ using chromeos::assistant::AssistantSuggestionType;
 
 // Helpers ---------------------------------------------------------------------
 
+AssistantSuggestion CreateSuggestionWithIconUrl(const std::string& icon_url) {
+  AssistantSuggestion suggestion;
+  suggestion.icon_url = GURL(icon_url);
+  return suggestion;
+}
+
 template <typename T>
-void FindChildByClassName(views::View* parent, T** result) {
+void FindDescendentByClassName(views::View* parent, T** result) {
   DCHECK_EQ(nullptr, *result);
-  for (auto* child : parent->children()) {
-    if (child->GetClassName() == T::kViewClassName)
-      *result = static_cast<T*>(child);
+  std::queue<views::View*> children({parent});
+  while (!children.empty()) {
+    auto* candidate = children.front();
+    children.pop();
+
+    if (candidate->GetClassName() == T::kViewClassName) {
+      *result = static_cast<T*>(candidate);
+      return;
+    }
+
+    for (auto* child : candidate->children())
+      children.push(child);
   }
 }
 
@@ -275,7 +297,7 @@ TEST_F(AssistantOnboardingViewTest, ShouldHaveExpectedSuggestions) {
     // Verify that each suggestion view has the expected message.
     for (size_t i = 0; i < expected_messages.size(); ++i) {
       views::Label* label = nullptr;
-      FindChildByClassName(suggestions_grid()->children().at(i), &label);
+      FindDescendentByClassName(suggestions_grid()->children().at(i), &label);
       ASSERT_NE(label, nullptr);
       EXPECT_EQ(label->GetText(), base::UTF8ToUTF16(expected_messages.at(i)));
     }
@@ -319,9 +341,55 @@ TEST_F(AssistantOnboardingViewTest, ShouldHandleSuggestionUpdates) {
   // Verify view state is updated to reflect model state.
   ASSERT_EQ(suggestions_grid()->children().size(), 1u);
   views::Label* label = nullptr;
-  FindChildByClassName(suggestions_grid()->children().at(0), &label);
+  FindDescendentByClassName(suggestions_grid()->children().at(0), &label);
   ASSERT_NE(nullptr, label);
   EXPECT_EQ(label->GetText(), base::UTF8ToUTF16("Forced suggestion"));
+}
+
+TEST_F(AssistantOnboardingViewTest, ShouldHandleLocalIcons) {
+  MockAssistantViewDelegate delegate;
+  EXPECT_CALL(delegate, GetPrimaryUserGivenName)
+      .WillOnce(testing::Return("Primary User Given Name"));
+
+  AssistantOnboardingView onboarding_view(&delegate);
+  SetOnboardingSuggestions({CreateSuggestionWithIconUrl(
+      "googleassistant://resource?type=icon&name=assistant")});
+
+  views::ImageView* icon_view = nullptr;
+  FindDescendentByClassName(&onboarding_view, &icon_view);
+  ASSERT_NE(nullptr, icon_view);
+
+  const auto& actual = icon_view->GetImage();
+  gfx::ImageSkia expected = gfx::CreateVectorIcon(
+      gfx::IconDescription(ash::kAssistantIcon, /*size=*/24));
+
+  ASSERT_PIXELS_EQ(actual, expected);
+}
+
+TEST_F(AssistantOnboardingViewTest, ShouldHandleRemoteIcons) {
+  const gfx::ImageSkia expected =
+      gfx::test::CreateImageSkia(/*width=*/10, /*height=*/10);
+
+  MockAssistantViewDelegate delegate;
+  EXPECT_CALL(delegate, GetPrimaryUserGivenName)
+      .WillOnce(testing::Return("Primary User Given Name"));
+
+  AssistantOnboardingView onboarding_view(&delegate);
+  EXPECT_CALL(delegate, DownloadImage)
+      .WillOnce(testing::Invoke(
+          [&](const GURL& url, ImageDownloader::DownloadCallback callback) {
+            std::move(callback).Run(expected);
+          }));
+
+  SetOnboardingSuggestions({CreateSuggestionWithIconUrl(
+      "https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png")});
+
+  views::ImageView* icon_view = nullptr;
+  FindDescendentByClassName(&onboarding_view, &icon_view);
+  ASSERT_NE(nullptr, icon_view);
+
+  const auto& actual = icon_view->GetImage();
+  EXPECT_TRUE(actual.BackedBySameObjectAs(expected));
 }
 
 }  // namespace ash

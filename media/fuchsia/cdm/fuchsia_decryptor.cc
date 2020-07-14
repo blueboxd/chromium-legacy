@@ -28,15 +28,6 @@ FuchsiaDecryptor::~FuchsiaDecryptor() {
   }
 }
 
-void FuchsiaDecryptor::RegisterNewKeyCB(StreamType stream_type,
-                                        NewKeyCB new_key_cb) {
-  if (stream_type != kAudio)
-    return;
-
-  base::AutoLock auto_lock(new_key_cb_lock_);
-  new_key_cb_ = std::move(new_key_cb);
-}
-
 void FuchsiaDecryptor::Decrypt(StreamType stream_type,
                                scoped_refptr<DecoderBuffer> encrypted,
                                DecryptCB decrypt_cb) {
@@ -95,12 +86,6 @@ void FuchsiaDecryptor::DeinitializeDecoder(StreamType stream_type) {
 
 bool FuchsiaDecryptor::CanAlwaysDecrypt() {
   return false;
-}
-
-void FuchsiaDecryptor::OnNewKey() {
-  base::AutoLock auto_lock(new_key_cb_lock_);
-  if (new_key_cb_)
-    std::move(new_key_cb_).Run();
 }
 
 }  // namespace media

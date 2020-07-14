@@ -73,10 +73,13 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     private static final int SNACKBAR_DURATION_MS_SHORT = 4000;
     private static final int SNACKBAR_DURATION_MS_LONG = 10000;
 
-    private static final String FEEDBACK_REPORT_TYPE =
+    @VisibleForTesting
+    static final String FEEDBACK_REPORT_TYPE =
             "com.google.chrome.feed.USER_INITIATED_FEEDBACK_REPORT";
-    public static final String FEEDBACK_CONTEXT = "mobile_browser";
-    public static final String XSURFACE_CARD_URL = "Card URL";
+    @VisibleForTesting
+    static final String FEEDBACK_CONTEXT = "mobile_browser";
+    @VisibleForTesting
+    static final String XSURFACE_CARD_URL = "Card URL";
 
     private final long mNativeFeedStreamSurface;
     private final FeedListContentManager mContentManager;
@@ -378,6 +381,16 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         }
 
         updateContentsInPlace(newContentList);
+    }
+
+    @CalledByNative
+    void replaceDataStoreEntry(String key, byte[] data) {
+        if (mSurfaceScope != null) mSurfaceScope.replaceDataStoreEntry(key, data);
+    }
+
+    @CalledByNative
+    void removeDataStoreEntry(String key) {
+        if (mSurfaceScope != null) mSurfaceScope.removeDataStoreEntry(key);
     }
 
     private void updateContentsInPlace(

@@ -40,13 +40,13 @@ class MockServiceWorkerHelper : public ServiceWorkerHelper {
 
   // ServiceWorkerHelper.
   void StartFetching(FetchCallback callback) override;
-  void DeleteServiceWorkers(const GURL& origin) override;
+  void DeleteServiceWorkers(const url::Origin& origin) override;
 
  private:
   ~MockServiceWorkerHelper() override;
 
   FetchCallback callback_;
-  std::map<GURL, bool> origins_;
+  std::map<url::Origin, bool> origins_;
   std::list<content::StorageUsageInfo> response_;
 
   DISALLOW_COPY_AND_ASSIGN(MockServiceWorkerHelper);

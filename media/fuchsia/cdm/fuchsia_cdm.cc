@@ -448,8 +448,7 @@ CdmContext* FuchsiaCdm::GetCdmContext() {
 
 std::unique_ptr<CallbackRegistration> FuchsiaCdm::RegisterEventCB(
     EventCB event_cb) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return event_callbacks_.Register(std::move(event_cb));
 }
 
 Decryptor* FuchsiaCdm::GetDecryptor() {
@@ -465,7 +464,7 @@ FuchsiaCdmContext* FuchsiaCdm::GetFuchsiaCdmContext() {
 }
 
 void FuchsiaCdm::OnNewKey() {
-  decryptor_.OnNewKey();
+  event_callbacks_.Notify(Event::kHasAdditionalUsableKey);
   {
     base::AutoLock auto_lock(new_key_cb_for_video_lock_);
     if (new_key_cb_for_video_)

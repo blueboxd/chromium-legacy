@@ -25,7 +25,6 @@ class APP_LIST_EXPORT SearchResultAnswerCardView
   const char* GetClassName() const override;
 
   // Overridden from SearchResultContainerView:
-  int GetYSize() override;
   int DoUpdate() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   SearchResultBaseView* GetFirstResultView() override;

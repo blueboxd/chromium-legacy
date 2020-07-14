@@ -41,18 +41,17 @@ class ChromeEnterpriseRealTimeUrlLookupService
 
   // RealTimeUrlLookupServiceBase:
   bool CanPerformFullURLLookup() const override;
-
   bool CanCheckSubresourceURL() const override;
-
   bool CanCheckSafeBrowsingDb() const override;
-
-  void StartLookup(const GURL& url,
-                   RTLookupRequestCallback request_callback,
-                   RTLookupResponseCallback response_callback) override;
 
  private:
   // RealTimeUrlLookupServiceBase:
   net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag() const override;
+  bool CanPerformFullURLLookupWithToken() const override;
+  void GetAccessToken(const GURL& url,
+                      RTLookupRequestCallback request_callback,
+                      RTLookupResponseCallback response_callback) override;
+  std::unique_ptr<RTLookupRequest> FillRequestProto(const GURL& url) override;
 
   policy::DMToken GetDMToken() const;
 

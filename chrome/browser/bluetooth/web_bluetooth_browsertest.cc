@@ -114,12 +114,11 @@ class FakeBluetoothGattService
   FakeBluetoothGattService(device::MockBluetoothDevice* device,
                            const std::string& identifier,
                            const device::BluetoothUUID& uuid)
-      : testing::NiceMock<device::MockBluetoothGattService>(device,
-                                                            identifier,
-                                                            uuid,
-                                                            /*is_primary=*/true,
-                                                            /*is_local=*/true) {
-  }
+      : testing::NiceMock<device::MockBluetoothGattService>(
+            device,
+            identifier,
+            uuid,
+            /*is_primary=*/true) {}
 
   // Move-only class
   FakeBluetoothGattService(const FakeBluetoothGattService&) = delete;

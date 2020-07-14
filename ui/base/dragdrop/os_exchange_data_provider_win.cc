@@ -120,7 +120,7 @@ class FormatEtcEnumerator final : public IEnumFORMATETC {
   // The cursor of the active enumeration - an index into |contents_|.
   size_t cursor_;
 
-  LONG ref_count_;
+  ULONG ref_count_;
 
   DISALLOW_COPY_AND_ASSIGN(FormatEtcEnumerator);
 };

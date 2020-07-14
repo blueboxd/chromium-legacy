@@ -39,7 +39,7 @@ class ServiceWorkerPaymentAppCreator {
   ~ServiceWorkerPaymentAppCreator() {}
 
   void CreatePaymentApps(
-      content::PaymentAppProvider::PaymentApps apps,
+      content::InstalledPaymentAppsFinder::PaymentApps apps,
       ServiceWorkerPaymentAppFinder::InstallablePaymentApps installable_apps,
       const std::string& error_message) {
     if (!delegate_) {

@@ -272,16 +272,19 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintCurrentFrame() {
   DCHECK(!overdraw_surface_recorder_);
   DCHECK(debug_settings_->show_overdraw_feedback);
 
+  nway_canvas_.emplace(characterization_.width(), characterization_.height());
+  nway_canvas_->addCanvas(current_paint_->recorder()->getCanvas());
+
   SkSurfaceCharacterization characterization = CreateSkSurfaceCharacterization(
       gfx::Size(characterization_.width(), characterization_.height()),
       BGRA_8888, false /* mipmap */, characterization_.refColorSpace(),
       false /* is_root_render_pass */);
-  overdraw_surface_recorder_.emplace(characterization);
-  overdraw_canvas_.emplace((overdraw_surface_recorder_->getCanvas()));
+  if (characterization.isValid()) {
+    overdraw_surface_recorder_.emplace(characterization);
+    overdraw_canvas_.emplace((overdraw_surface_recorder_->getCanvas()));
+    nway_canvas_->addCanvas(&overdraw_canvas_.value());
+  }
 
-  nway_canvas_.emplace(characterization_.width(), characterization_.height());
-  nway_canvas_->addCanvas(current_paint_->recorder()->getCanvas());
-  nway_canvas_->addCanvas(&overdraw_canvas_.value());
   return &nway_canvas_.value();
 }
 
@@ -476,10 +479,13 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
   DCHECK(!current_paint_);
   DCHECK(resource_sync_tokens_.empty());
 
-  SkSurfaceCharacterization c = CreateSkSurfaceCharacterization(
+  SkSurfaceCharacterization characterization = CreateSkSurfaceCharacterization(
       surface_size, format, mipmap, std::move(color_space),
       false /* is_root_render_pass */);
-  current_paint_.emplace(c, id);
+  if (!characterization.isValid())
+    return nullptr;
+
+  current_paint_.emplace(characterization, id);
   return current_paint_->recorder()->getCanvas();
 }
 
@@ -727,7 +733,6 @@ bool SkiaOutputSurfaceImpl::Initialize() {
       damage_of_buffers_.resize(capabilities_.number_of_buffers);
     }
   }
-
   return result;
 }
 
@@ -759,6 +764,7 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(
   } else {
     capabilities_ = impl_on_gpu_->capabilities();
     is_displayed_as_overlay_ = impl_on_gpu_->IsDisplayedAsOverlay();
+    gr_context_thread_safe_ = impl_on_gpu_->GetGrContextThreadSafeProxy();
     *result = true;
   }
 }
@@ -770,7 +776,9 @@ SkiaOutputSurfaceImpl::CreateSkSurfaceCharacterization(
     bool mipmap,
     sk_sp<SkColorSpace> color_space,
     bool is_root_render_pass) {
-  auto gr_context_thread_safe = impl_on_gpu_->GetGrContextThreadSafeProxy();
+  if (!gr_context_thread_safe_)
+    return SkSurfaceCharacterization();
+
   auto cache_max_resource_bytes = impl_on_gpu_->max_resource_cache_bytes();
   // LegacyFontHost will get LCD text and skia figures out what type to use.
   SkSurfaceProps surface_props(0 /*flags */,
@@ -795,7 +803,7 @@ SkiaOutputSurfaceImpl::CreateSkSurfaceCharacterization(
     DCHECK((capabilities_.uses_default_gl_framebuffer &&
             dependency_->gr_context_type() == gpu::GrContextType::kGL) ||
            !capabilities_.uses_default_gl_framebuffer);
-    auto characterization = gr_context_thread_safe->createCharacterization(
+    auto characterization = gr_context_thread_safe_->createCharacterization(
         cache_max_resource_bytes, image_info, backend_format,
         0 /* sampleCount */, surface_origin, surface_props, mipmap,
         capabilities_.uses_default_gl_framebuffer, false /* isTextureable */,
@@ -825,14 +833,14 @@ SkiaOutputSurfaceImpl::CreateSkSurfaceCharacterization(
 
   auto color_type =
       ResourceFormatToClosestSkColorType(true /* gpu_compositing */, format);
-  auto backend_format = gr_context_thread_safe->defaultBackendFormat(
+  auto backend_format = gr_context_thread_safe_->defaultBackendFormat(
       color_type, GrRenderable::kYes);
   DCHECK(backend_format.isValid());
   auto image_info =
       SkImageInfo::Make(surface_size.width(), surface_size.height(), color_type,
                         kPremul_SkAlphaType, std::move(color_space));
 
-  auto characterization = gr_context_thread_safe->createCharacterization(
+  auto characterization = gr_context_thread_safe_->createCharacterization(
       cache_max_resource_bytes, image_info, backend_format, 0 /* sampleCount */,
       kTopLeft_GrSurfaceOrigin, surface_props, mipmap,
       false /* willUseGLFBO0 */, true /* isTextureable */,
@@ -1037,6 +1045,7 @@ void SkiaOutputSurfaceImpl::PrepareYUVATextureIndices(
 
 void SkiaOutputSurfaceImpl::ContextLost() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  gr_context_thread_safe_.reset();
   for (auto& observer : observers_)
     observer.OnContextLost();
 }

@@ -48,7 +48,6 @@ void DecryptingDemuxerStream::Initialize(DemuxerStream* stream,
   DCHECK(cdm_context);
   DCHECK(!demuxer_stream_);
 
-  weak_this_ = weak_factory_.GetWeakPtr();
   demuxer_stream_ = stream;
   init_cb_ = BindToCurrentLoop(std::move(status_cb));
 
@@ -63,10 +62,8 @@ void DecryptingDemuxerStream::Initialize(DemuxerStream* stream,
 
   decryptor_ = cdm_context->GetDecryptor();
 
-  decryptor_->RegisterNewKeyCB(
-      GetDecryptorStreamType(),
-      BindToCurrentLoop(base::BindRepeating(
-          &DecryptingDemuxerStream::OnKeyAdded, weak_this_)));
+  event_cb_registration_ = cdm_context->RegisterEventCB(base::BindRepeating(
+      &DecryptingDemuxerStream::OnCdmContextEvent, weak_factory_.GetWeakPtr()));
 
   state_ = kIdle;
   std::move(init_cb_).Run(PIPELINE_OK);
@@ -81,12 +78,9 @@ void DecryptingDemuxerStream::Read(ReadCB read_cb) {
 
   read_cb_ = BindToCurrentLoop(std::move(read_cb));
   state_ = kPendingDemuxerRead;
-  demuxer_stream_->Read(base::BindOnce(
-      &DecryptingDemuxerStream::OnBufferReadFromDemuxerStream, weak_this_));
-}
-
-bool DecryptingDemuxerStream::IsReadPending() const {
-  return !read_cb_.is_null();
+  demuxer_stream_->Read(
+      base::BindOnce(&DecryptingDemuxerStream::OnBufferReadFromDemuxerStream,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void DecryptingDemuxerStream::Reset(base::OnceClosure closure) {
@@ -246,10 +240,10 @@ void DecryptingDemuxerStream::DecryptPendingBuffer() {
       "media", "DecryptingDemuxerStream::DecryptPendingBuffer", this, "type",
       DemuxerStream::GetTypeName(demuxer_stream_->type()), "timestamp_us",
       pending_buffer_to_decrypt_->timestamp().InMicroseconds());
-  decryptor_->Decrypt(
-      GetDecryptorStreamType(), pending_buffer_to_decrypt_,
-      BindToCurrentLoop(base::BindOnce(
-          &DecryptingDemuxerStream::OnBufferDecrypted, weak_this_)));
+  decryptor_->Decrypt(GetDecryptorStreamType(), pending_buffer_to_decrypt_,
+                      BindToCurrentLoop(base::BindOnce(
+                          &DecryptingDemuxerStream::OnBufferDecrypted,
+                          weak_factory_.GetWeakPtr())));
 }
 
 void DecryptingDemuxerStream::OnBufferDecrypted(
@@ -321,8 +315,11 @@ void DecryptingDemuxerStream::OnBufferDecrypted(
   std::move(read_cb_).Run(kOk, std::move(decrypted_buffer));
 }
 
-void DecryptingDemuxerStream::OnKeyAdded() {
+void DecryptingDemuxerStream::OnCdmContextEvent(CdmContext::Event event) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (event != CdmContext::Event::kHasAdditionalUsableKey)
+    return;
 
   if (state_ == kPendingDecrypt) {
     key_added_while_decrypt_pending_ = true;

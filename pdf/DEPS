@@ -2,6 +2,7 @@ include_rules = [
   "+net",
   "+ppapi",
   "+printing/units.h",
+  "+third_party/skia/include/core",
   "+ui/base/window_open_disposition.h",
   "+ui/events/keycodes/keyboard_codes.h",
   "+ui/gfx/geometry",

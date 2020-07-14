@@ -149,8 +149,8 @@ void PluginVmTestHelper::OpenShelfItem() {
       std::make_unique<FakeShelfItemDelegate>(shelf_id);
   ChromeLauncherController* laucher_controller =
       ChromeLauncherController::instance();
-  // Similar logic to InternalAppWindowShelfController, for handling pins and
-  // spinners.
+  // Similar logic to AppServiceAppWindowLauncherController, for handling pins
+  // and spinners.
   if (laucher_controller->GetItem(shelf_id)) {
     laucher_controller->shelf_model()->SetShelfItemDelegate(
         shelf_id, std::move(delegate));

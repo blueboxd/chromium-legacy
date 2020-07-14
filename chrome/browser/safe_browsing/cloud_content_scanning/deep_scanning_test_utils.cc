@@ -139,7 +139,8 @@ void EventReportValidator::ExpectUnscannedFileEvent(
     const std::string& expected_trigger,
     const std::string& expected_reason,
     const std::set<std::string>* expected_mimetypes,
-    int expected_content_size) {
+    int expected_content_size,
+    const std::string& expected_result) {
   event_key_ = SafeBrowsingPrivateEventRouter::kKeyUnscannedFileEvent;
   url_ = expected_url;
   filename_ = expected_filename;
@@ -148,6 +149,7 @@ void EventReportValidator::ExpectUnscannedFileEvent(
   trigger_ = expected_trigger;
   unscanned_reason_ = expected_reason;
   content_size_ = expected_content_size;
+  result_ = expected_result;
   EXPECT_CALL(*client_, UploadRealtimeReport_(_, _))
       .WillOnce([this](base::Value& report,
                        base::OnceCallback<void(bool)>& callback) {
@@ -270,6 +272,8 @@ void EventReportValidator::ValidateReport(base::Value* report) {
   ValidateField(event, SafeBrowsingPrivateEventRouter::kKeyTrigger, trigger_);
   ValidateField(event, SafeBrowsingPrivateEventRouter::kKeyContentSize,
                 content_size_);
+  ValidateField(event, SafeBrowsingPrivateEventRouter::kKeyEventResult,
+                result_);
   ValidateField(event, SafeBrowsingPrivateEventRouter::kKeyThreatType,
                 threat_type_);
   ValidateField(event, SafeBrowsingPrivateEventRouter::kKeyUnscannedReason,

@@ -65,7 +65,8 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
                          uint32_t usage,
                          SharedContextState* context_state,
                          std::unique_ptr<VulkanImage> image,
-                         VulkanCommandPool* command_pool);
+                         VulkanCommandPool* command_pool,
+                         bool use_separate_gl_texture);
 
   ~ExternalVkImageBacking() override;
 
@@ -91,6 +92,7 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
         ->GetDeviceQueue()
         ->GetVulkanDevice();
   }
+  bool use_separate_gl_texture() const { return use_separate_gl_texture_; }
   bool need_synchronization() const {
     if (usage() & SHARED_IMAGE_USAGE_WEBGPU) {
       return true;
@@ -101,10 +103,6 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
     }
     return false;
   }
-  bool use_separate_gl_texture() const {
-    return !context_state()->support_vulkan_external_object();
-  }
-
   uint32_t reads_in_progress() const { return reads_in_progress_; }
   uint32_t gl_reads_in_progress() const { return gl_reads_in_progress_; }
 
@@ -185,6 +183,7 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
   std::unique_ptr<VulkanImage> image_;
   GrBackendTexture backend_texture_;
   VulkanCommandPool* const command_pool_;
+  const bool use_separate_gl_texture_;
 
   SemaphoreHandle write_semaphore_handle_;
   std::vector<SemaphoreHandle> read_semaphore_handles_;

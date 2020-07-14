@@ -116,7 +116,7 @@ void LacrosManager::SetLoadCompleteCallback(LoadCompleteCallback callback) {
   load_complete_callback_ = std::move(callback);
 }
 
-void LacrosManager::Start() {
+void LacrosManager::NewWindow() {
   if (!lacros_util::IsLacrosAllowed())
     return;
 
@@ -131,25 +131,20 @@ void LacrosManager::Start() {
     return;
   }
 
-  // If it is on launching Lacros, wait for its async operation's completion.
-  if (state_ == State::STARTING) {
-    ++num_pending_start_;
+  if (state_ == State::STOPPED) {
+    // If lacros-chrome is not running, launch it.
+    bool succeeded = Start();
+    LOG_IF(ERROR, !succeeded)
+        << "lacros-chrome failed to launch. Cannot open a window";
     return;
   }
 
-  if (state_ == State::RUNNING) {
-    StartForeground(true);
-    return;
-  }
-
-  DCHECK_EQ(state_, State::STOPPED);
-  DCHECK(!lacros_process_.IsValid());
-  state_ = State::STARTING;
-  StartForeground(false);
+  DCHECK(lacros_chrome_service_.is_connected());
+  lacros_chrome_service_->NewWindow(base::DoNothing());
 }
 
-void LacrosManager::StartForeground(bool already_running) {
-  DCHECK(state_ == State::STARTING || state_ == State::RUNNING);
+bool LacrosManager::Start() {
+  DCHECK_EQ(state_, State::STOPPED);
   DCHECK(!lacros_path_.empty());
 
   std::string chrome_path = lacros_path_.MaybeAsASCII() + "/chrome";
@@ -192,46 +187,40 @@ void LacrosManager::StartForeground(bool already_running) {
     argv.push_back("--log-file=" + LacrosLogPath().value());
   }
 
-  if (already_running) {
-    DCHECK_EQ(state_, State::RUNNING);
-    DCHECK(lacros_chrome_service_.is_connected());
-    // If Lacros is already running, then the new call to launch process spawns
-    // a new window but does not create a lasting process.
-    lacros_chrome_service_->NewWindow(base::DoNothing());
-  } else {
-    DCHECK_EQ(state_, State::STARTING);
-    // Set up Mojo channel.
-    base::CommandLine command_line(argv);
-    mojo::PlatformChannel channel;
-    channel.PrepareToPassRemoteEndpoint(&options, &command_line);
+  // Set up Mojo channel.
+  base::CommandLine command_line(argv);
+  mojo::PlatformChannel channel;
+  channel.PrepareToPassRemoteEndpoint(&options, &command_line);
 
-    base::RecordAction(base::UserMetricsAction("Lacros.Launch"));
-    // If lacros_process_ already exists, because it does not call waitpid(2),
-    // the process will never be collected.
-    // TODO(hidehiko): Fix the case by collecting the processes.
-    lacros_process_ = base::LaunchProcess(command_line, options);
-
-    // TODO(hidehiko): Clean up the set-up procedure.
-    // Replacing the "already_running" case by Mojo call allows us to
-    // simplify the code.
-    if (lacros_process_.IsValid()) {
-      channel.RemoteProcessLaunchAttempted();
-      mojo::OutgoingInvitation invitation;
-      mojo::Remote<mojo_base::mojom::Binder> binder(
-          mojo::PendingRemote<mojo_base::mojom::Binder>(
-              invitation.AttachMessagePipe(0), /*version=*/0));
-      mojo::OutgoingInvitation::Send(std::move(invitation),
-                                     lacros_process_.Handle(),
-                                     channel.TakeLocalEndpoint());
-      binder->Bind(lacros_chrome_service_.BindNewPipeAndPassReceiver());
-      lacros_chrome_service_.set_disconnect_handler(base::BindOnce(
-          &LacrosManager::OnMojoDisconnected, weak_factory_.GetWeakPtr()));
-      lacros_chrome_service_->RequestAshChromeServiceReceiver(
-          base::BindOnce(&LacrosManager::OnAshChromeServiceReceiverReceived,
-                         weak_factory_.GetWeakPtr()));
-    }
-    LOG(WARNING) << "Launched lacros-chrome with pid " << lacros_process_.Pid();
+  // Create the lacros-chrome subprocess.
+  base::RecordAction(base::UserMetricsAction("Lacros.Launch"));
+  // If lacros_process_ already exists, because it does not call waitpid(2),
+  // the process will never be collected.
+  lacros_process_ = base::LaunchProcess(command_line, options);
+  if (!lacros_process_.IsValid()) {
+    LOG(ERROR) << "Failed to launch lacros-chrome";
+    return false;
   }
+  state_ = State::STARTING;
+  LOG(WARNING) << "Launched lacros-chrome with pid " << lacros_process_.Pid();
+
+  // Invite the lacros-chrome to the mojo universe, and bind
+  // LacrosChromeService and AshChromeService interfaces to each other.
+  channel.RemoteProcessLaunchAttempted();
+  mojo::OutgoingInvitation invitation;
+  mojo::Remote<mojo_base::mojom::Binder> binder(
+      mojo::PendingRemote<mojo_base::mojom::Binder>(
+          invitation.AttachMessagePipe(0), /*version=*/0));
+  mojo::OutgoingInvitation::Send(std::move(invitation),
+                                 lacros_process_.Handle(),
+                                 channel.TakeLocalEndpoint());
+  binder->Bind(lacros_chrome_service_.BindNewPipeAndPassReceiver());
+  lacros_chrome_service_.set_disconnect_handler(base::BindOnce(
+      &LacrosManager::OnMojoDisconnected, weak_factory_.GetWeakPtr()));
+  lacros_chrome_service_->RequestAshChromeServiceReceiver(
+      base::BindOnce(&LacrosManager::OnAshChromeServiceReceiverReceived,
+                     weak_factory_.GetWeakPtr()));
+  return true;
 }
 
 void LacrosManager::OnAshChromeServiceReceiverReceived(
@@ -241,17 +230,6 @@ void LacrosManager::OnAshChromeServiceReceiverReceived(
       std::make_unique<AshChromeServiceImpl>(std::move(pending_receiver));
   state_ = State::RUNNING;
   LOG(WARNING) << "Connection to lacros-chrome is established.";
-
-  // If Start() is called during launching lacros-chrome,
-  // re-call Start() which will trigger to open new windows.
-  // TODO(hidehiko): Simplify the logic. Introducing a Mojo API to control
-  // window opening helps it.
-  if (num_pending_start_ > 0) {
-    int num_pending_start = num_pending_start_;
-    num_pending_start_ = 0;
-    for (int i = 0; i < num_pending_start; ++i)
-      Start();
-  }
 }
 
 void LacrosManager::OnMojoDisconnected() {

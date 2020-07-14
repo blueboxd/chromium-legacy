@@ -198,12 +198,8 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     }
     NetworkHandler::Get()->network_device_handler()->GetDeviceProperties(
         device->path(),
-        base::BindOnce(
-            &NetworkConfigMessageHandler::GetShillDevicePropertiesSuccess,
-            weak_ptr_factory_.GetWeakPtr(), callback_id),
-        base::Bind(&NetworkConfigMessageHandler::ErrorCallback,
-                   weak_ptr_factory_.GetWeakPtr(), callback_id, type,
-                   kGetDeviceProperties));
+        base::BindOnce(&NetworkConfigMessageHandler::OnGetShillDeviceProperties,
+                       weak_ptr_factory_.GetWeakPtr(), callback_id, type));
   }
 
   void GetShillEthernetEAP(const base::ListValue* arg_list) {
@@ -271,18 +267,21 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     InternetConfigDialog::ShowDialogForNetworkType(::onc::network_type::kWiFi);
   }
 
-  void GetShillDevicePropertiesSuccess(
-      const std::string& callback_id,
-      const std::string& device_path,
-      const base::DictionaryValue& dictionary) {
-    std::unique_ptr<base::DictionaryValue> dictionary_copy(
-        dictionary.DeepCopy());
+  void OnGetShillDeviceProperties(const std::string& callback_id,
+                                  const std::string& type,
+                                  const std::string& device_path,
+                                  base::Optional<base::Value> result) {
+    if (!result) {
+      ErrorCallback(callback_id, type, kGetDeviceProperties,
+                    "GetDeviceProperties failed", nullptr);
+      return;
+    }
 
     // Set the 'device_path' property for debugging.
-    dictionary_copy->SetKey("device_path", base::Value(device_path));
+    result->SetKey("device_path", base::Value(device_path));
 
     base::ListValue return_arg_list;
-    return_arg_list.Append(std::move(dictionary_copy));
+    return_arg_list.Append(std::move(*result));
     Respond(callback_id, return_arg_list);
   }
 

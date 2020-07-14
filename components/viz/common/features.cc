@@ -16,6 +16,9 @@
 
 namespace features {
 
+const base::Feature kForcePreferredIntervalForVideo{
+    "ForcePreferredIntervalForVideo", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kUseSkiaForGLReadback{"UseSkiaForGLReadback",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -79,6 +82,10 @@ const base::Feature kWebRtcLogCapturePipeline{
 const base::FeatureParam<int> kNumOfFramesToToggleInterval{
     &kUsePreferredIntervalForVideo, "NumOfFramesToToggleInterval", 60};
 
+bool IsForcePreferredIntervalForVideoEnabled() {
+  return base::FeatureList::IsEnabled(kForcePreferredIntervalForVideo);
+}
+
 bool IsVizHitTestingDebugEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableVizHitTestDebug);
@@ -140,7 +147,8 @@ bool IsUsingVizFrameSubmissionForWebView() {
 }
 
 bool IsUsingPreferredIntervalForVideo() {
-  return base::FeatureList::IsEnabled(kUsePreferredIntervalForVideo);
+  return IsForcePreferredIntervalForVideoEnabled() ||
+         base::FeatureList::IsEnabled(kUsePreferredIntervalForVideo);
 }
 
 int NumOfFramesToToggleInterval() {

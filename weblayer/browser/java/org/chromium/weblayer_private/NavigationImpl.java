@@ -147,6 +147,13 @@ public final class NavigationImpl extends INavigation.Stub {
         return NavigationImplJni.get().wasStopCalled(mNativeNavigationImpl);
     }
 
+    @Override
+    public boolean isRendererInitiated() {
+        StrictModeWorkaround.apply();
+        throwIfNativeDestroyed();
+        return NavigationImplJni.get().isRendererInitiated(mNativeNavigationImpl);
+    }
+
     private void throwIfNativeDestroyed() {
         if (mNativeNavigationImpl == 0) {
             throw new IllegalStateException("Using Navigation after native destroyed");
@@ -195,5 +202,6 @@ public final class NavigationImpl extends INavigation.Stub {
         boolean isValidRequestHeaderName(String name);
         boolean isValidRequestHeaderValue(String value);
         boolean setUserAgentString(long nativeNavigationImpl, String value);
+        boolean isRendererInitiated(long nativeNavigationImpl);
     }
 }

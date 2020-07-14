@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_FEED_CORE_V2_SURFACE_UPDATER_H_
 #define COMPONENTS_FEED_CORE_V2_SURFACE_UPDATER_H_
 
+#include <map>
 #include <string>
+#include <vector>
 
 #include "base/containers/flat_set.h"
 #include "base/observer_list.h"
@@ -59,6 +61,9 @@ class SurfaceUpdater : public StreamModel::Observer {
   // Returns whether or not at least one surface is attached.
   bool HasSurfaceAttached() const;
 
+  void SetOfflinePageAvailability(const std::string& badge_id,
+                                  bool available_offline);
+
   // State that together with |model_| determines what should be sent to a
   // surface. |DrawState| is usually the same for all surfaces, except for the
   // moment when a surface is first attached.
@@ -78,6 +83,8 @@ class SurfaceUpdater : public StreamModel::Observer {
       const std::vector<std::string>& updated_shared_state_ids);
   void SendUpdateToSurface(SurfaceInterface* surface,
                            const feedui::StreamUpdate& update);
+  void InsertDatastoreEntry(const std::string& key, const std::string& value);
+  void RemoveDatastoreEntry(const std::string& key);
 
   // Members that affect what is sent to surfaces. A value change of these may
   // require sending an update to surfaces.
@@ -91,6 +98,10 @@ class SurfaceUpdater : public StreamModel::Observer {
 
   // The set of content that has been sent to all attached surfaces.
   base::flat_set<ContentRevision> sent_content_;
+
+  // XSurface datastore entries that should be sent to all surfaces.
+  // Cached here so that we don't need to recompute for a new surface.
+  std::map<std::string, std::string> xsurface_datastore_entries_;
 
   // Owned by |FeedStream|. Null when the model is not loaded.
   StreamModel* model_ = nullptr;

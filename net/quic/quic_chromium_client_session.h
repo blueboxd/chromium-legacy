@@ -517,19 +517,20 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       const spdy::SpdyStreamPrecedence& new_precedence) override;
 
   // quic::QuicSession methods:
-  void OnStreamFrame(const quic::QuicStreamFrame& frame) override;
   QuicChromiumClientStream* CreateOutgoingBidirectionalStream() override;
   QuicChromiumClientStream* CreateOutgoingUnidirectionalStream() override;
   const quic::QuicCryptoClientStream* GetCryptoStream() const override;
   quic::QuicCryptoClientStream* GetMutableCryptoStream() override;
   void SetDefaultEncryptionLevel(quic::EncryptionLevel level) override;
   void OnOneRttKeysAvailable() override;
+  void OnNewEncryptionKeyAvailable(
+      quic::EncryptionLevel level,
+      std::unique_ptr<quic::QuicEncrypter> encrypter) override;
   void OnCryptoHandshakeMessageSent(
       const quic::CryptoHandshakeMessage& message) override;
   void OnCryptoHandshakeMessageReceived(
       const quic::CryptoHandshakeMessage& message) override;
   void OnGoAway(const quic::QuicGoAwayFrame& frame) override;
-  void OnRstStream(const quic::QuicRstStreamFrame& frame) override;
   void OnCanCreateNewOutgoingStream(bool unidirectional) override;
   bool ValidateStatelessReset(
       const quic::QuicSocketAddress& self_address,
@@ -807,6 +808,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // Called when default encryption level switches to forward secure.
   void OnCryptoHandshakeComplete();
 
+  void LogZeroRttStats();
+
   QuicSessionKey session_key_;
   bool require_confirmation_;
   bool migrate_session_early_v2_;
@@ -903,6 +906,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   Http2PriorityDependencies priority_dependency_state_;
 
   quic::QuicStreamId max_allowed_push_id_;
+
+  bool attempted_zero_rtt_;
 
   base::WeakPtrFactory<QuicChromiumClientSession> weak_factory_{this};
 

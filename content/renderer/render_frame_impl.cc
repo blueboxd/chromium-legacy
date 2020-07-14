@@ -5815,6 +5815,7 @@ RenderFrameImpl::CreateLoaderFactoryBundle(
            GetLoadingUrl().spec() == url::kAboutBlankURL);
     loader_factories->Update(
         CreateDefaultURLLoaderFactoryBundle()->PassInterface());
+    loader_factories->MarkAsDeprecatedProcessWideFactory();
   }
 
   if (info) {

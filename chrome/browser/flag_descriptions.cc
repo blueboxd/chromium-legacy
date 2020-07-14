@@ -428,6 +428,12 @@ const char kForceColorProfileDescription[] =
     "Forces Chrome to use a specific color profile instead of the color "
     "of the window's current monitor, as specified by the operating system.";
 
+const char kForcePreferredIntervalForVideoName[] =
+    "Force preferred interval for video";
+const char kForcePreferredIntervalForVideoDescription[] =
+    "When enabled, the composition rate is reduced to match the video playback "
+    "rate irrespective of the update frequency of other page content";
+
 const char kDynamicColorGamutName[] = "Dynamic color gamut";
 const char kDynamicColorGamutDescription[] =
     "Displays in wide color when the content is wide. When the content is "
@@ -3302,11 +3308,6 @@ const char kAllowScrollSettingsName[] =
 const char kAllowScrollSettingsDescription[] =
     "Shows settings to enable/disable scroll acceleration and to adjust the "
     "sensitivity for scrolling.";
-
-const char kAppServiceInstanceRegistryName[] = "App Service Instance Registry";
-const char kAppServiceInstanceRegistryDescription[] =
-    "Use the App Service to provide app instance information, such as the "
-    "app window running status.";
 
 const char kAppServiceIntentHandlingName[] = "App Service Intent Handling";
 const char kAppServiceIntentHandlingDescription[] =

@@ -146,6 +146,8 @@ class MEDIA_EXPORT DecoderStream {
     return fallback_buffers_.size();
   }
 
+  bool is_demuxer_read_pending() const { return pending_demuxer_read_; }
+
   DecoderSelector<StreamType>& GetDecoderSelectorForTesting(
       util::PassKey<class VideoDecoderStreamTest>) {
     return decoder_selector_;

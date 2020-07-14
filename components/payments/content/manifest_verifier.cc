@@ -32,7 +32,7 @@ namespace {
 void EnableMethodManifestUrlForSupportedApps(
     const GURL& method_manifest_url,
     const std::vector<std::string>& supported_origin_strings,
-    content::PaymentAppProvider::PaymentApps* apps,
+    content::InstalledPaymentAppsFinder::PaymentApps* apps,
     std::vector<int64_t> app_ids,
     std::map<GURL, std::set<GURL>>* prohibited_payment_methods) {
   for (auto app_id : app_ids) {
@@ -68,9 +68,10 @@ ManifestVerifier::~ManifestVerifier() {
   }
 }
 
-void ManifestVerifier::Verify(content::PaymentAppProvider::PaymentApps apps,
-                              VerifyCallback finished_verification,
-                              base::OnceClosure finished_using_resources) {
+void ManifestVerifier::Verify(
+    content::InstalledPaymentAppsFinder::PaymentApps apps,
+    VerifyCallback finished_verification,
+    base::OnceClosure finished_using_resources) {
   DCHECK(apps_.empty());
   DCHECK(finished_verification_callback_.is_null());
   DCHECK(finished_using_resources_callback_.is_null());

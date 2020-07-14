@@ -242,6 +242,11 @@ media::CdmContext* ContentDecryptionModuleAdapter::GetCdmContext() {
   return this;
 }
 
+std::unique_ptr<media::CallbackRegistration>
+ContentDecryptionModuleAdapter::RegisterEventCB(EventCB event_cb) {
+  return event_callbacks_.Register(std::move(event_cb));
+}
+
 media::Decryptor* ContentDecryptionModuleAdapter::GetDecryptor() {
   return this;
 }
@@ -270,13 +275,9 @@ void ContentDecryptionModuleAdapter::OnSessionKeysChange(
   DVLOG(2) << __func__
            << " has_additional_usable_key: " << has_additional_usable_key;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (has_additional_usable_key) {
-    base::AutoLock auto_lock(new_key_cb_lock_);
-    if (new_audio_key_cb_)
-      new_audio_key_cb_.Run();
-    if (new_video_key_cb_)
-      new_video_key_cb_.Run();
-  }
+
+  if (has_additional_usable_key)
+    event_callbacks_.Notify(Event::kHasAdditionalUsableKey);
 
   session_keys_change_cb_.Run(session_id, has_additional_usable_key,
                               std::move(keys_info));
@@ -288,19 +289,6 @@ void ContentDecryptionModuleAdapter::OnSessionExpirationUpdate(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   session_expiration_update_cb_.Run(
       session_id, base::Time::FromDoubleT(new_expiry_time_sec));
-}
-
-void ContentDecryptionModuleAdapter::RegisterNewKeyCB(StreamType stream_type,
-                                                      NewKeyCB new_key_cb) {
-  base::AutoLock auto_lock(new_key_cb_lock_);
-  switch (stream_type) {
-    case kAudio:
-      new_audio_key_cb_ = std::move(new_key_cb);
-      break;
-    case kVideo:
-      new_video_key_cb_ = std::move(new_key_cb);
-      break;
-  }
 }
 
 void ContentDecryptionModuleAdapter::Decrypt(

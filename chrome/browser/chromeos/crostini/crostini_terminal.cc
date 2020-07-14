@@ -45,28 +45,34 @@ constexpr bool kDefaultPassCtrlW = false;
 
 GURL GenerateVshInCroshUrl(Profile* profile,
                            const ContainerId& container_id,
+                           const std::string& cwd,
                            const std::vector<std::string>& terminal_args) {
   std::string vsh_crosh = base::StrCat({chrome::kChromeUIUntrustedTerminalURL,
                                         "html/terminal.html?command=vmshell"});
   std::string vm_name_param = net::EscapeQueryParamValue(
-      base::StringPrintf("--vm_name=%s", container_id.vm_name.c_str()), false);
+      base::StringPrintf("--vm_name=%s", container_id.vm_name.c_str()),
+      /*use_plus=*/true);
   std::string container_name_param = net::EscapeQueryParamValue(
       base::StringPrintf("--target_container=%s",
                          container_id.container_name.c_str()),
-      false);
+      /*use_plus=*/true);
   std::string owner_id_param = net::EscapeQueryParamValue(
       base::StringPrintf("--owner_id=%s",
                          CryptohomeIdForProfile(profile).c_str()),
-      false);
+      /*use_plus=*/true);
 
   std::vector<std::string> pieces = {vsh_crosh, vm_name_param,
                                      container_name_param, owner_id_param};
+  if (!cwd.empty()) {
+    pieces.push_back(net::EscapeQueryParamValue(
+        base::StringPrintf("--cwd=%s", cwd.c_str()), /*use_plus=*/true));
+  }
   if (!terminal_args.empty()) {
     // Separates the command args from the args we are passing into the
     // terminal to be executed.
     pieces.push_back("--");
     for (auto arg : terminal_args) {
-      pieces.push_back(net::EscapeQueryParamValue(arg, false));
+      pieces.push_back(net::EscapeQueryParamValue(arg, /*use_plus=*/true));
     }
   }
 
@@ -78,9 +84,10 @@ GURL GenerateVshInCroshUrl(Profile* profile,
 Browser* LaunchTerminal(Profile* profile,
                         int64_t display_id,
                         const ContainerId& container_id,
+                        const std::string& cwd,
                         const std::vector<std::string>& terminal_args) {
   GURL vsh_in_crosh_url =
-      GenerateVshInCroshUrl(profile, container_id, terminal_args);
+      GenerateVshInCroshUrl(profile, container_id, cwd, terminal_args);
   return web_app::LaunchSystemWebApp(
       profile, web_app::SystemAppType::TERMINAL, vsh_in_crosh_url,
       web_app::CreateSystemWebAppLaunchParams(

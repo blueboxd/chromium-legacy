@@ -8,9 +8,8 @@
 
 #include <utility>
 
-#include "base/macros.h"
-#include "pdf/out_of_process_instance.h"
-#include "pdf/pdf_ppapi.h"
+#include "pdf/pdf_engine.h"
+#include "pdf/pdf_init.h"
 
 namespace chrome_pdf {
 
@@ -22,13 +21,14 @@ class ScopedSdkInitializer {
     if (!IsSDKInitializedViaPepper())
       InitializeSDK(enable_v8);
   }
+
+  ScopedSdkInitializer(const ScopedSdkInitializer&) = delete;
+  ScopedSdkInitializer& operator=(const ScopedSdkInitializer&) = delete;
+
   ~ScopedSdkInitializer() {
     if (!IsSDKInitializedViaPepper())
       ShutdownSDK();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedSdkInitializer);
 };
 
 }  // namespace

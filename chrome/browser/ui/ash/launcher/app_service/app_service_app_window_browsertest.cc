@@ -121,10 +121,6 @@ class AppServiceAppWindowBrowserTest
   ~AppServiceAppWindowBrowserTest() override {}
 
   void SetUp() override {
-    if (!base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry)) {
-      GTEST_SKIP() << "skipping all tests because kAppServiceInstanceRegistry "
-                      "is not enabled";
-    }
     extensions::PlatformAppBrowserTest::SetUp();
   }
 

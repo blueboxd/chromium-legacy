@@ -22,6 +22,8 @@ class MachineLevelUserCloudPolicyManager;
 
 namespace enterprise_reporting {
 
+class ReportingDelegateFactory;
+
 /**
  * A report generator that collects Profile related information that is selected
  * by policies.
@@ -57,11 +59,7 @@ class ProfileReportGenerator {
     GetCloudPolicyManager() = 0;
   };
 
-  // TODO(crbug/1091916): When this class is moved to components, it should use
-  // the reporting delegate factory to get its delegate instead of requiring it
-  // in the constructor.
-  explicit ProfileReportGenerator(
-      std::unique_ptr<ProfileReportGenerator::Delegate> delegate);
+  explicit ProfileReportGenerator(ReportingDelegateFactory* delegate_factory);
   ProfileReportGenerator(const ProfileReportGenerator&) = delete;
   ProfileReportGenerator& operator=(const ProfileReportGenerator&) = delete;
   ~ProfileReportGenerator();

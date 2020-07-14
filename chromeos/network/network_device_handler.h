@@ -54,12 +54,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandler {
   NetworkDeviceHandler();
   virtual ~NetworkDeviceHandler();
 
-  // Gets the properties of the device with id |device_path|. See note on
-  // |callback| and |error_callback|, in class description above.
+  // Invokes |callback| with the properties for the device matching
+  // |device_path| on success, or nullopt on failure.
   virtual void GetDeviceProperties(
       const std::string& device_path,
-      network_handler::DictionaryResultCallback callback,
-      const network_handler::ErrorCallback& error_callback) const = 0;
+      network_handler::ResultCallback callback) const = 0;
 
   // Sets the value of property |name| on device with id |device_path| to
   // |value|. This function provides a generic setter to be used by the UI or
@@ -171,21 +170,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandler {
   // Sets up USB Ethernet MAC address source. This applies to primary enabled
   // USB Ethernet device.
   virtual void SetUsbEthernetMacAddressSource(const std::string& source) = 0;
-
-  // Attempts to enable or disable TDLS for the specified IP or MAC address for
-  // the active wifi device.
-  virtual void SetWifiTDLSEnabled(
-      const std::string& ip_or_mac_address,
-      bool enabled,
-      const network_handler::StringResultCallback& callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
-
-  // Returns the TDLS status for the specified IP or MAC address for
-  // the active wifi device.
-  virtual void GetWifiTDLSStatus(
-      const std::string& ip_or_mac_address,
-      const network_handler::StringResultCallback& callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
 
   // Adds |ip_endpoint| to the list of tcp connections that the wifi device
   // should monitor to wake the system from suspend.

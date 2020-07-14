@@ -115,7 +115,6 @@ class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
   Type type() const override;
   Liveness liveness() const override;
   void Read(ReadCB read_cb) override;
-  bool IsReadPending() const override;
   void EnableBitstreamConverter() override;
   bool SupportsConfigChanges() override;
   AudioDecoderConfig audio_decoder_config() override;

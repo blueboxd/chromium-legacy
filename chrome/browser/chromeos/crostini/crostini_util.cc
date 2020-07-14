@@ -33,7 +33,6 @@
 #include "chrome/browser/ui/ash/launcher/app_service/app_service_app_window_crostini_tracker.h"
 #include "chrome/browser/ui/ash/launcher/app_service/app_service_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/crostini_app_window_shelf_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_item_controller.h"
 #include "chrome/browser/ui/browser.h"
@@ -115,7 +114,6 @@ void OnLaunchFailed(const std::string& app_id,
 void OnCrostiniRestarted(Profile* profile,
                          crostini::ContainerId container_id,
                          const std::string& app_id,
-                         Browser* browser,
                          base::OnceClosure callback,
                          crostini::CrostiniResult result) {
   if (crostini::MaybeShowCrostiniDialogBeforeLaunch(profile, result)) {
@@ -124,10 +122,7 @@ void OnCrostiniRestarted(Profile* profile,
   }
 
   if (result != crostini::CrostiniResult::SUCCESS) {
-    OnLaunchFailed(app_id, result);
-    if (browser && browser->window())
-      browser->window()->Close();
-    return;
+    return OnLaunchFailed(app_id, result);
   }
   std::move(callback).Run();
 }
@@ -147,6 +142,7 @@ void OnSharePathForLaunchApplication(
     Profile* profile,
     const std::string& app_id,
     guest_os::GuestOsRegistryService::Registration registration,
+    int64_t display_id,
     const std::vector<std::string>& files,
     bool display_scaled,
     crostini::LaunchCrostiniAppCallback callback,
@@ -159,10 +155,20 @@ void OnSharePathForLaunchApplication(
                          : "Failed to share paths to launch " + app_id + ":" +
                                failure_reason);
   }
+  crostini::ContainerId container_id(registration.VmName(),
+                                     registration.ContainerName());
+  if (app_id == kCrostiniTerminalSystemAppId) {
+    // Use first file as 'cwd', and manually close spinner for terminal.
+    std::string cwd = !files.empty() ? files[0] : "";
+    ChromeLauncherController::instance()
+        ->GetShelfSpinnerController()
+        ->CloseSpinner(app_id);
+    Browser* browser = LaunchTerminal(profile, display_id, container_id, cwd);
+    return OnApplicationLaunched(std::move(callback), app_id,
+                                 browser != nullptr);
+  }
   crostini::CrostiniManager::GetForProfile(profile)->LaunchContainerApplication(
-      crostini::ContainerId(registration.VmName(),
-                            registration.ContainerName()),
-      registration.DesktopFileId(), files, display_scaled,
+      container_id, registration.DesktopFileId(), files, display_scaled,
       base::BindOnce(OnApplicationLaunched, std::move(callback), app_id));
 }
 
@@ -178,18 +184,11 @@ void LaunchApplication(
       ChromeLauncherController::instance();
   DCHECK(chrome_launcher_controller);
 
-  if (base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry)) {
-    AppServiceAppWindowLauncherController* app_service_controller =
-        chrome_launcher_controller->app_service_app_window_controller();
-    DCHECK(app_service_controller);
-    app_service_controller->app_service_crostini_tracker()
-        ->OnAppLaunchRequested(app_id, display_id);
-  } else {
-    CrostiniAppWindowShelfController* shelf_controller =
-        chrome_launcher_controller->crostini_app_window_shelf_controller();
-    DCHECK(shelf_controller);
-    shelf_controller->OnAppLaunchRequested(app_id, display_id);
-  }
+  AppServiceAppWindowLauncherController* app_service_controller =
+      chrome_launcher_controller->app_service_app_window_controller();
+  DCHECK(app_service_controller);
+  app_service_controller->app_service_crostini_tracker()->OnAppLaunchRequested(
+      app_id, display_id);
 
   // Share any paths not in crostini.  The user will see the spinner while this
   // is happening.
@@ -212,14 +211,16 @@ void LaunchApplication(
 
   if (paths_to_share.empty()) {
     OnSharePathForLaunchApplication(profile, app_id, std::move(registration),
-                                    std::move(files_to_launch), display_scaled,
-                                    std::move(callback), true, "");
+                                    display_id, std::move(files_to_launch),
+                                    display_scaled, std::move(callback), true,
+                                    "");
   } else {
     guest_os::GuestOsSharePath::GetForProfile(profile)->SharePaths(
         registration.VmName(), std::move(paths_to_share), /*persist=*/false,
         base::BindOnce(OnSharePathForLaunchApplication, profile, app_id,
-                       std::move(registration), std::move(files_to_launch),
-                       display_scaled, std::move(callback)));
+                       std::move(registration), display_id,
+                       std::move(files_to_launch), display_scaled,
+                       std::move(callback)));
   }
 }
 
@@ -329,25 +330,36 @@ void LaunchCrostiniAppImpl(
                                  registration->ContainerName());
 
   base::OnceClosure launch_closure;
-  Browser* browser = nullptr;
   if (app_id == kCrostiniTerminalSystemAppId) {
-    DCHECK(files.empty());
-    RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kTerminal);
-
-    auto* browser = LaunchTerminal(profile, display_id, container_id);
-    if (browser == nullptr) {
-      RecordAppLaunchResultHistogram(crostini::CrostiniResult::UNKNOWN_ERROR);
-      return std::move(callback).Run(false, "failed to launch terminal");
+    // If terminal is launched with a 'cwd' file, we may need to launch the VM
+    // and share the path before launching terminal.
+    bool requires_share = false;
+    base::FilePath cwd;
+    if (!files.empty()) {
+      if (files[0].mount_filesystem_id() !=
+          file_manager::util::GetCrostiniMountPointName(profile)) {
+        requires_share = true;
+      } else {
+        file_manager::util::ConvertFileSystemURLToPathInsideCrostini(
+            profile, files[0], &cwd);
+      }
     }
-    RecordAppLaunchResultHistogram(crostini::CrostiniResult::SUCCESS);
-    return std::move(callback).Run(true, "");
-  } else {
-    RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kRegisteredApp);
-    launch_closure =
-        base::BindOnce(&LaunchApplication, profile, app_id,
-                       std::move(*registration), display_id, std::move(files),
-                       registration->IsScaled(), std::move(callback));
+
+    if (!requires_share) {
+      RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kTerminal);
+      if (!LaunchTerminal(profile, display_id, container_id, cwd.value())) {
+        RecordAppLaunchResultHistogram(crostini::CrostiniResult::UNKNOWN_ERROR);
+        return std::move(callback).Run(false, "failed to launch terminal");
+      }
+      RecordAppLaunchResultHistogram(crostini::CrostiniResult::SUCCESS);
+      return std::move(callback).Run(true, "");
+    }
   }
+
+  RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kRegisteredApp);
+  launch_closure = base::BindOnce(
+      &LaunchApplication, profile, app_id, std::move(*registration), display_id,
+      std::move(files), registration->IsScaled(), std::move(callback));
 
   // Update the last launched time and Termina version.
   registry_service->AppLaunched(app_id);
@@ -355,7 +367,7 @@ void LaunchCrostiniAppImpl(
 
   auto restart_id = crostini_manager->RestartCrostini(
       container_id, base::BindOnce(OnCrostiniRestarted, profile, container_id,
-                                   app_id, browser, std::move(launch_closure)));
+                                   app_id, std::move(launch_closure)));
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::BindOnce(&AddSpinner, restart_id, app_id, profile),

@@ -676,7 +676,7 @@ class CookieTreeServiceWorkerNode : public CookieTreeNode {
 
     if (container) {
       container->service_worker_helper_->DeleteServiceWorkers(
-          usage_info_->origin.GetURL());
+          usage_info_->origin);
       container->service_worker_info_list_.erase(usage_info_);
     }
   }

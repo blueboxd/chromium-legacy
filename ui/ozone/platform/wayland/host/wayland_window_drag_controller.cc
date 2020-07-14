@@ -120,6 +120,8 @@ void WaylandWindowDragController::OnDragEnter(WaylandWindow* window,
                                               uint32_t serial) {
   DCHECK_GE(state_, State::kAttached);
   DCHECK(window);
+  DCHECK(data_source_);
+  DCHECK(data_offer_);
 
   // Forward focus change event to the input delegate, so other components, such
   // as WaylandScreen, are able to properly retrieve focus related info during
@@ -128,8 +130,13 @@ void WaylandWindowDragController::OnDragEnter(WaylandWindow* window,
 
   VLOG(1) << "OnEnter. widget=" << window->GetWidget();
 
+  // TODO(crbug.com/1102946): Exo does not support custom mime types. In this
+  // case, |data_offer_| will hold an empty mime_types list and, at this point,
+  // it's safe just to skip the offer checks and requests here.
+  if (data_offer_->mime_types().empty())
+    return;
+
   // Ensure this is a valid "window drag" offer.
-  DCHECK(data_offer_);
   DCHECK_EQ(data_offer_->mime_types().size(), 1u);
   DCHECK_EQ(data_offer_->mime_types().front(), kMimeTypeChromiumWindow);
 

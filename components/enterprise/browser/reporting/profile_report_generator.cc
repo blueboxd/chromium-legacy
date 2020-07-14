@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "components/enterprise/browser/reporting/policy_info.h"
+#include "components/enterprise/browser/reporting/reporting_delegate_factory.h"
 #include "components/policy/core/browser/policy_conversions.h"
 
 namespace em = enterprise_management;
@@ -15,8 +16,8 @@ namespace em = enterprise_management;
 namespace enterprise_reporting {
 
 ProfileReportGenerator::ProfileReportGenerator(
-    std::unique_ptr<ProfileReportGenerator::Delegate> delegate)
-    : delegate_(std::move(delegate)) {}
+    ReportingDelegateFactory* delegate_factory)
+    : delegate_(delegate_factory->GetProfileReportGeneratorDelegate()) {}
 
 ProfileReportGenerator::~ProfileReportGenerator() = default;
 

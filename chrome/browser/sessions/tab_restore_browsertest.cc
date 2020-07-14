@@ -958,6 +958,80 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
   EXPECT_EQ(data->color(), visual_data.color());
 }
 
+// Closing the last tab in a collapsed group then restoring will place the group
+// back expanded with its metadata.
+IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
+                       RestoreCollapsedGroupTab_ExpandsGroup) {
+  const int tab_count = AddSomeTabs(browser(), 1);
+  ASSERT_LE(2, tab_count);
+
+  const int grouped_tab_index = tab_count - 1;
+  tab_groups::TabGroupId group_id =
+      browser()->tab_strip_model()->AddToNewGroup({grouped_tab_index});
+  const tab_groups::TabGroupVisualData visual_data(
+      base::ASCIIToUTF16("Foo"), tab_groups::TabGroupColorId::kCyan, true);
+
+  TabGroup* group =
+      browser()->tab_strip_model()->group_model()->GetTabGroup(group_id);
+  ASSERT_TRUE(group);
+  group->SetVisualData(visual_data);
+
+  CloseTab(grouped_tab_index);
+
+  ASSERT_NO_FATAL_FAILURE(RestoreTab(0, grouped_tab_index));
+  ASSERT_EQ(tab_count, browser()->tab_strip_model()->count());
+
+  EXPECT_EQ(group_id, browser()
+                          ->tab_strip_model()
+                          ->GetTabGroupForTab(grouped_tab_index)
+                          .value());
+  const tab_groups::TabGroupVisualData* data = browser()
+                                                   ->tab_strip_model()
+                                                   ->group_model()
+                                                   ->GetTabGroup(group_id)
+                                                   ->visual_data();
+  ASSERT_TRUE(data);
+  EXPECT_EQ(data->title(), visual_data.title());
+  EXPECT_EQ(data->color(), visual_data.color());
+  EXPECT_FALSE(data->is_collapsed());
+}
+
+// Closing a tab in a collapsed group then restoring the tab will expand the
+// group upon restore.
+IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
+                       RestoreTabIntoCollapsedGroup_ExpandsGroup) {
+  const int tab_count = AddSomeTabs(browser(), 2);
+  ASSERT_LE(3, tab_count);
+
+  const int closed_tab_index = 1;
+
+  tab_groups::TabGroupId group_id =
+      browser()->tab_strip_model()->AddToNewGroup({0, 1});
+  const tab_groups::TabGroupVisualData visual_data(
+      base::ASCIIToUTF16("Foo"), tab_groups::TabGroupColorId::kCyan, true);
+  TabGroup* group =
+      browser()->tab_strip_model()->group_model()->GetTabGroup(group_id);
+  group->SetVisualData(visual_data);
+
+  CloseTab(closed_tab_index);
+
+  ASSERT_NO_FATAL_FAILURE(RestoreTab(0, closed_tab_index));
+  ASSERT_EQ(tab_count, browser()->tab_strip_model()->count());
+
+  EXPECT_EQ(group_id, browser()
+                          ->tab_strip_model()
+                          ->GetTabGroupForTab(closed_tab_index)
+                          .value());
+  const tab_groups::TabGroupVisualData* data = browser()
+                                                   ->tab_strip_model()
+                                                   ->group_model()
+                                                   ->GetTabGroup(group_id)
+                                                   ->visual_data();
+  EXPECT_EQ(data->title(), visual_data.title());
+  EXPECT_EQ(data->color(), visual_data.color());
+  EXPECT_FALSE(data->is_collapsed());
+}
+
 // Closing a tab in a group then updating the metadata before restoring will
 // place the group back without updating the metadata.
 IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,

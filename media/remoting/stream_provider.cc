@@ -340,10 +340,6 @@ void StreamProvider::MediaStream::Read(ReadCB read_cb) {
   CompleteRead(DemuxerStream::kOk);
 }
 
-bool StreamProvider::MediaStream::IsReadPending() const {
-  return !read_complete_callback_.is_null();
-}
-
 void StreamProvider::MediaStream::CompleteRead(DemuxerStream::Status status) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 

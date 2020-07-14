@@ -128,24 +128,22 @@ class TestBluetoothAdapter final : public BluetoothAdapter {
     return nullptr;
   }
 
-  void TestErrorCallback() {}
-
   void OnStartDiscoverySessionQuitLoop(
-      base::Closure run_loop_quit,
+      base::OnceClosure run_loop_quit,
       std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {
     ++callback_count_;
-    run_loop_quit.Run();
+    std::move(run_loop_quit).Run();
     discovery_sessions_holder_.push(std::move(discovery_session));
   }
 
-  void OnRemoveDiscoverySession(base::Closure run_loop_quit) {
+  void OnRemoveDiscoverySession(base::OnceClosure run_loop_quit) {
     ++callback_count_;
-    run_loop_quit.Run();
+    std::move(run_loop_quit).Run();
   }
 
-  void OnRemoveDiscoverySessionError(base::Closure run_loop_quit) {
+  void OnRemoveDiscoverySessionError(base::OnceClosure run_loop_quit) {
     ++callback_count_;
-    run_loop_quit.Run();
+    std::move(run_loop_quit).Run();
   }
 
   void set_discovery_session_outcome(
@@ -153,32 +151,28 @@ class TestBluetoothAdapter final : public BluetoothAdapter {
     discovery_session_outcome_ = outcome;
   }
 
-  void StopDiscoverySession(base::Closure run_loop_quit) {
+  void StopDiscoverySession(base::OnceClosure run_loop_quit) {
+    auto copyable_callback =
+        base::AdaptCallbackForRepeating(std::move(run_loop_quit));
     discovery_sessions_holder_.front()->Stop(
-        base::BindRepeating(&TestBluetoothAdapter::OnRemoveDiscoverySession,
-                            this, run_loop_quit),
-        base::BindRepeating(
-            &TestBluetoothAdapter::OnRemoveDiscoverySessionError, this,
-            run_loop_quit));
+        base::BindOnce(&TestBluetoothAdapter::OnRemoveDiscoverySession, this,
+                       copyable_callback),
+        base::BindOnce(&TestBluetoothAdapter::OnRemoveDiscoverySessionError,
+                       this, copyable_callback));
     discovery_sessions_holder_.pop();
   }
 
-  void StopAllDiscoverySessions(base::Closure run_loop_quit) {
-    int num_stop_requests = discovery_sessions_holder_.size();
+  void StopAllDiscoverySessions(base::OnceClosure run_loop_quit) {
+    base::RepeatingClosure closure = base::BarrierClosure(
+        discovery_sessions_holder_.size(), std::move(run_loop_quit));
     while (!discovery_sessions_holder_.empty()) {
       discovery_sessions_holder_.front()->Stop(
-          base::BindLambdaForTesting(
-              [run_loop_quit, num_stop_requests, this]() {
-                num_requests_returned_++;
-                ++callback_count_;
-                if (num_requests_returned_ == num_stop_requests) {
-                  num_requests_returned_ = 0;
-                  run_loop_quit.Run();
-                }
-              }),
-          base::BindRepeating(
-              &TestBluetoothAdapter::OnRemoveDiscoverySessionError, this,
-              run_loop_quit));
+          base::BindLambdaForTesting([closure, this]() {
+            ++callback_count_;
+            closure.Run();
+          }),
+          base::BindOnce(&TestBluetoothAdapter::OnRemoveDiscoverySessionError,
+                         this, closure));
       discovery_sessions_holder_.pop();
     }
   }
@@ -189,32 +183,29 @@ class TestBluetoothAdapter final : public BluetoothAdapter {
     std::swap(discovery_sessions_holder_, empty_queue);
   }
 
-  void QueueStartRequests(base::Closure run_loop_quit, int num_requests) {
+  void QueueStartRequests(base::OnceClosure run_loop_quit, int num_requests) {
+    base::RepeatingClosure closure =
+        base::BarrierClosure(num_requests, std::move(run_loop_quit));
     for (int i = 0; i < num_requests; ++i) {
       StartDiscoverySession(
           base::BindLambdaForTesting(
-              [run_loop_quit, num_requests,
-               this](std::unique_ptr<device::BluetoothDiscoverySession>
-                         discovery_session) {
+              [closure, this](std::unique_ptr<device::BluetoothDiscoverySession>
+                                  discovery_session) {
                 ++callback_count_;
-                num_requests_returned_++;
                 discovery_sessions_holder_.push(std::move(discovery_session));
-                if (num_requests_returned_ == num_requests) {
-                  num_requests_returned_ = 0;
-                  run_loop_quit.Run();
-                }
+                closure.Run();
               }),
-          base::BindOnce(&TestBluetoothAdapter::TestErrorCallback, this));
-    };
+          closure);
+    }
   }
 
   void StartSessionWithFilter(
       std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
-      base::RepeatingClosure run_loop_quit) {
+      base::OnceClosure run_loop_quit) {
     StartDiscoverySessionWithFilter(
         std::move(discovery_filter),
         base::BindOnce(&TestBluetoothAdapter::OnStartDiscoverySessionQuitLoop,
-                       this, run_loop_quit),
+                       this, std::move(run_loop_quit)),
         base::DoNothing());
   }
 
@@ -289,8 +280,6 @@ class TestBluetoothAdapter final : public BluetoothAdapter {
 
   void RemovePairingDelegateInternal(
       BluetoothDevice::PairingDelegate* pairing_delegate) override {}
-
-  int num_requests_returned_ = 0;
 
  private:
   void PostDelayedTask(base::OnceClosure callback) {

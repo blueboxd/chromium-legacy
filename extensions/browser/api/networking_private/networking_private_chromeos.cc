@@ -523,25 +523,6 @@ void NetworkingPrivateChromeOS::StartActivate(
   success_callback.Run();
 }
 
-void NetworkingPrivateChromeOS::SetWifiTDLSEnabledState(
-    const std::string& ip_or_mac_address,
-    bool enabled,
-    const StringCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  NetworkHandler::Get()->network_device_handler()->SetWifiTDLSEnabled(
-      ip_or_mac_address, enabled, success_callback,
-      base::Bind(&NetworkHandlerFailureCallback, failure_callback));
-}
-
-void NetworkingPrivateChromeOS::GetWifiTDLSStatus(
-    const std::string& ip_or_mac_address,
-    const StringCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  NetworkHandler::Get()->network_device_handler()->GetWifiTDLSStatus(
-      ip_or_mac_address, success_callback,
-      base::Bind(&NetworkHandlerFailureCallback, failure_callback));
-}
-
 void NetworkingPrivateChromeOS::GetCaptivePortalStatus(
     const std::string& guid,
     const StringCallback& success_callback,

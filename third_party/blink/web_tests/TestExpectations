@@ -444,7 +444,7 @@ crbug.com/1056492 external/wpt/svg/painting/reftests/marker-path-001.svg [ Failu
 crbug.com/1050993 [ Linux ] virtual/gpu-rasterization/images/drag-image-descendant-painting-sibling.html [ Crash Pass Timeout ]
 
 # Flaky test.
-crbug.com/1054894 http/tests/images/image-decode-in-frame.html [ Pass Timeout ]
+crbug.com/1054894 [ Mac ] http/tests/images/image-decode-in-frame.html [ Pass Failure ]
 
 # ====== Paint team owned tests to here ======
 
@@ -6074,7 +6074,6 @@ crbug.com/1014327 [ Mac ] external/wpt/preload/onerror-event.html [ Pass Timeout
 
 # Sheriff 2019-10-16
 crbug.com/1014812 external/wpt/animation-worklet/playback-rate.https.html [ Pass Timeout Failure ]
-crbug.com/1014950 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-no-url-end-to-end.js [ Pass Timeout ]
 
 # Sheriff 2019-10-18
 crbug.com/1015859 [ Linux ] http/tests/devtools/a11y-axe-core/performance/landing-page-a11y-test.js [ Pass Failure ]
@@ -6161,7 +6160,6 @@ crbug.com/878878 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-after-keyboard-
 crbug.com/878878 [ Win ] virtual/threaded/fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Pass Timeout ]
 crbug.com/878878 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Pass Timeout Failure ]
 crbug.com/878878 [ Win ] virtual/threaded/fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Pass Timeout Failure ]
-crbug.com/878878 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-for-different-key-granularity.html [ Timeout ]
 
 crbug.com/878878 virtual/threaded/fast/scroll-snap/animate-fling-to-snap-points.html [ Failure Pass Timeout ]
 crbug.com/878878 virtual/threaded/fast/scroll-snap/snap-scrolls-visual-viewport.html [ Failure Pass ]
@@ -6332,7 +6330,6 @@ crbug.com/1044822 [ Release ] http/tests/devtools/cache-storage/cache-entry-dele
 #crbug.com/1044823 [ Release ] http/tests/devtools/extensions/extensions-timeline-api.js [ Pass Timeout ]
 crbug.com/1044829 [ Release Win ] http/tests/devtools/cache-storage/cache-deletion.js [ Pass Timeout ]
 crbug.com/1044829 [ Release Mac ] http/tests/devtools/cache-storage/cache-deletion.js [ Pass Timeout ]
-crbug.com/1043847 [ Release Win ] virtual/threaded/fast/scroll-snap/snaps-for-different-key-granularity.html [ Pass Timeout ]
 crbug.com/1043901 [ Release Win ] external/wpt/preload/preload-with-type.html [ Pass Timeout ]
 crbug.com/1044418 [ Release Mac ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-2.js [ Pass Timeout ]
 
@@ -6890,16 +6887,30 @@ crbug.com/1102167 virtual/omt-worker-fetch/external/wpt/fetch/redirect-navigate/
 
 crbug.com/1104186 [ Win ] fast/forms/color-scheme/suggestion-picker/time-suggestion-picker-appearance.html [ Pass Failure ]
 
-crbug.com/1104195 inspector-protocol/css/css-set-effective-property-value.js [ Pass Failure ]
+crbug.com/1104195 inspector-protocol/css/css-set-effective-property-value.js [ Pass Failure Crash ]
 crbug.com/1104333 http/tests/devtools/bindings/inline-styles-binding.js [ Pass Failure ]
 
 # Sheriff 2020-07-13
 
 crbug.com/1104910 [ Mac ] external/wpt/webaudio/the-audio-api/the-oscillatornode-interface/osc-basic-waveform.html [ Pass Failure ]
-crbug.com/1104910 [ Mac10.13 ] fast/dom/cssTarget-crash.html [ Pass Failure ]
-crbug.com/1104910 [ Mac10.13 ] fast/peerconnection/RTCPeerConnection-reload-interesting-usage.html [ Pass Failure ]
-crbug.com/1104910 [ Win ] http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-no-url-end-to-end.js [ Pass Failure ]
-crbug.com/1104910 [ Linux ] inspector-protocol/stylesheet-tracking-restart.js [ Pass Failure ]
-crbug.com/1104910 [ Linux ] virtual/web-components-v0-disabled/fast/dom/cssTarget-crash.html [ Pass Failure ]
+crbug.com/1104910 fast/dom/cssTarget-crash.html [ Pass Timeout Failure ]
+crbug.com/1104910 fast/peerconnection/RTCPeerConnection-reload-interesting-usage.html [ Pass Failure ]
+crbug.com/1104910 inspector-protocol/stylesheet-tracking-restart.js [ Pass Failure ]
+crbug.com/1104910 virtual/web-components-v0-disabled/fast/dom/cssTarget-crash.html [ Pass Timeout Failure ]
 crbug.com/1104910 [ Win ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/registration-updateviacache.https.html [ Pass Failure ]
 crbug.com/1104910 [ Win ] http/tests/devtools/elements/styles-1/dynamic-style-tag.js [ Pass Failure ]
+
+crbug.com/1104910 [ Mac10.15 ] editing/selection/selection-background.html [ Pass Failure ] 
+crbug.com/1104910 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/unsafe-url/worker-classic.http.html [ Pass Failure ] 
+crbug.com/1104910 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/unset/worker-module.http.html [ Pass Failure ] 
+
+# Sheriff 2020-07-14
+
+crbug.com/1105270 [ Mac10.15 ] fast/events/open-window-from-another-frame.html [ Pass Timeout ]
+crbug.com/1105271 [ Mac ] virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-adjust-on-inactive-pseudo.html [ Pass Failure ]
+crbug.com/1105274 http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-no-url-end-to-end.js [ Pass Timeout Failure ]
+crbug.com/1105275 [ Mac ] fast/dom/Window/window-onFocus.html [ Pass Failure ]
+
+crbug.com/1105276 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-after-keyboard-scrolling-rtl.html [ Pass Failure ]
+crbug.com/1105278 [ Mac ] external/wpt/clipboard-apis/feature-policy/clipboard-write/clipboard-write-enabled-on-self-origin-by-feature-policy.tentative.https.sub.html [ Pass Failure ]
+crbug.com/1105279 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-for-different-key-granularity.html [ Pass Timeout Failure ]

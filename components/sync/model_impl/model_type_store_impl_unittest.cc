@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_store_test_util.h"
@@ -20,6 +21,7 @@
 #include "components/sync/test/test_matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/env_chromium.h"
 
 namespace syncer {
 
@@ -400,6 +402,26 @@ TEST(ModelTypeStoreImplWithTwoStoreTest, DeleteAllWithSharedBackend) {
     EXPECT_THAT(*data_records, IsEmpty());
     EXPECT_THAT(metadata_batch, IsEmptyMetadataBatch());
   }
+}
+
+TEST_F(ModelTypeStoreImplTest, CommitWriteBatchOutcomeHistogram) {
+  base::HistogramTester histograms;
+  static constexpr char kWebAppCommitWriteBatchOutcomeHistogram[] =
+      "Sync.ModelTypeStoreCommitWriteBatchOutcome.WEB_APP";
+
+  auto store =
+      ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(ModelType::WEB_APPS);
+
+  base::Optional<ModelError> error;
+  auto write_batch = store->CreateWriteBatch();
+  write_batch->WriteData("test", "test");
+  store->CommitWriteBatch(std::move(write_batch),
+                          base::BindOnce(&CaptureError, &error));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(error) << error->ToString();
+
+  histograms.ExpectBucketCount(kWebAppCommitWriteBatchOutcomeHistogram,
+                               leveldb_env::LEVELDB_STATUS_OK, 1);
 }
 
 }  // namespace syncer

@@ -4,6 +4,7 @@
 
 #include "ash/app_list/views/expand_arrow_view.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -14,6 +15,7 @@
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
@@ -333,7 +335,7 @@ void ExpandArrowView::AnimationProgressed(const gfx::Animation* animation) {
   }
 
   // Update pulse radius.
-  pulse_radius_ = static_cast<int>(
+  pulse_radius_ = base::Round(
       (kPulseMaxRadius - kPulseMinRadius) *
       gfx::Tween::CalculateValue(
           gfx::Tween::EASE_IN_OUT,
@@ -349,14 +351,14 @@ void ExpandArrowView::AnimationProgressed(const gfx::Animation* animation) {
     const double progress =
         (time - kArrowMoveOutBeginTime).InMillisecondsF() /
         (kArrowMoveOutEndTime - kArrowMoveOutBeginTime).InMillisecondsF();
-    arrow_y_offset_ = static_cast<int>(
-        -kTotalArrowYOffset *
-        gfx::Tween::CalculateValue(gfx::Tween::EASE_IN, progress));
+    arrow_y_offset_ =
+        base::Round(-kTotalArrowYOffset *
+                    gfx::Tween::CalculateValue(gfx::Tween::EASE_IN, progress));
   } else if (time > kArrowMoveInBeginTime && time <= kArrowMoveInEndTime) {
     const double progress =
         (time - kArrowMoveInBeginTime).InMillisecondsF() /
         (kArrowMoveInEndTime - kArrowMoveInBeginTime).InMillisecondsF();
-    arrow_y_offset_ = static_cast<int>(
+    arrow_y_offset_ = base::Round(
         kTotalArrowYOffset *
         (1 - gfx::Tween::CalculateValue(gfx::Tween::EASE_OUT, progress)));
   }

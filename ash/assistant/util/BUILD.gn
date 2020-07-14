@@ -20,10 +20,13 @@ component("util") {
     "histogram_util.h",
     "i18n_util.cc",
     "i18n_util.h",
+    "resource_util.cc",
+    "resource_util.h",
   ]
 
   deps = [
     "//ash/assistant/model",
+    "//ash/public/cpp/vector_icons",
     "//base",
     "//base:i18n",
     "//chromeos/constants",

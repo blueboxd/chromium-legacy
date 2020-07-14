@@ -16,7 +16,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/supports_user_data.h"
 #include "base/token.h"
 #include "components/payments/core/native_error_strings.h"
 #include "components/payments/core/payments_validators.h"
@@ -32,15 +31,12 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_background_services_context.h"
-#include "content/public/browser/permission_controller.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/mojom/base/time.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
-#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container_type.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
@@ -401,22 +397,6 @@ class AbortRespondWithCallback : public RespondWithCallback {
   PaymentAppProvider::AbortCallback callback_;
 };
 
-void DidGetAllPaymentAppsOnCoreThread(
-    PaymentAppProvider::GetAllPaymentAppsCallback callback,
-    PaymentAppProvider::PaymentApps apps) {
-  GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(apps)));
-}
-
-void GetAllPaymentAppsOnCoreThread(
-    scoped_refptr<PaymentAppContextImpl> payment_app_context,
-    PaymentAppProvider::GetAllPaymentAppsCallback callback) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-
-  payment_app_context->payment_app_database()->ReadAllPaymentApps(
-      base::BindOnce(&DidGetAllPaymentAppsOnCoreThread, std::move(callback)));
-}
-
 void DidUpdatePaymentAppIconOnCoreThread(
     PaymentAppProvider::UpdatePaymentAppIconCallback callback,
     payments::mojom::PaymentHandlerStatus status) {
@@ -603,66 +583,6 @@ void OnInstallPaymentApp(
   }
 }
 
-// Callbacks for checking permissions asynchronously. Owned by the browser
-// context to avoid using the browser context after it has been freed. Deleted
-// after the callback is invoked.
-// Sample usage:
-//   PostTask(&PermissionChecker::CheckPermissionForPaymentApps,
-//       PermissionChecker::Create(browser_context), std::move(callback));
-class PermissionChecker : public base::SupportsUserData::Data {
- public:
-  static base::WeakPtr<PermissionChecker> Create(
-      BrowserContext* browser_context) {
-    auto owned = std::make_unique<PermissionChecker>(browser_context);
-    auto weak_pointer_result = owned->weak_ptr_factory_.GetWeakPtr();
-    void* key = owned.get();
-    browser_context->SetUserData(key, std::move(owned));
-    return weak_pointer_result;
-  }
-
-  // Do not use this method directly! Use the static PermissionChecker::Create()
-  // method instead. (The constructor must be public for std::make_unique<> in
-  // the Create() method.)
-  explicit PermissionChecker(BrowserContext* browser_context)
-      : browser_context_(browser_context) {}
-  ~PermissionChecker() override = default;
-
-  // Disallow copy and assign.
-  PermissionChecker(const PermissionChecker& other) = delete;
-  PermissionChecker& operator=(const PermissionChecker& other) = delete;
-
-  void CheckPermissionForPaymentApps(
-      PaymentAppProvider::GetAllPaymentAppsCallback callback,
-      PaymentAppProvider::PaymentApps apps) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-    PermissionController* permission_controller =
-        BrowserContext::GetPermissionController(browser_context_);
-    DCHECK(permission_controller);
-
-    PaymentAppProvider::PaymentApps permitted_apps;
-    for (auto& app : apps) {
-      GURL origin = app.second->scope.GetOrigin();
-      if (permission_controller->GetPermissionStatus(
-              PermissionType::PAYMENT_HANDLER, origin, origin) ==
-          blink::mojom::PermissionStatus::GRANTED) {
-        permitted_apps[app.first] = std::move(app.second);
-      }
-    }
-
-    std::move(callback).Run(std::move(permitted_apps));
-
-    // Deletes this PermissionChecker object.
-    browser_context_->RemoveUserData(/*key=*/this);
-  }
-
- private:
-  // Owns this PermissionChecker object, so it's always valid.
-  BrowserContext* browser_context_;
-
-  base::WeakPtrFactory<PermissionChecker> weak_ptr_factory_{this};
-};
-
 void AbortInvokePaymentApp(WebContents* web_contents,
                            PaymentEventResponseType reason) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
@@ -812,25 +732,6 @@ PaymentAppProvider* PaymentAppProvider::GetInstance() {
 PaymentAppProviderImpl* PaymentAppProviderImpl::GetInstance() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return base::Singleton<PaymentAppProviderImpl>::get();
-}
-
-void PaymentAppProviderImpl::GetAllPaymentApps(
-    BrowserContext* browser_context,
-    GetAllPaymentAppsCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetDefaultStoragePartition(browser_context));
-  scoped_refptr<PaymentAppContextImpl> payment_app_context =
-      partition->GetPaymentAppContext();
-
-  RunOrPostTaskOnThread(
-      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
-      base::BindOnce(
-          &GetAllPaymentAppsOnCoreThread, payment_app_context,
-          base::BindOnce(&PermissionChecker::CheckPermissionForPaymentApps,
-                         PermissionChecker::Create(browser_context),
-                         std::move(callback))));
 }
 
 void PaymentAppProviderImpl::InvokePaymentApp(

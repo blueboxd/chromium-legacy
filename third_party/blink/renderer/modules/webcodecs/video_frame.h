@@ -53,7 +53,7 @@ class MODULES_EXPORT VideoFrame final : public ScriptWrappable,
   scoped_refptr<const media::VideoFrame> frame() const;
 
  private:
-  static constexpr uint64_t kCpuEfficientFrameSize = 480u * 320u;
+  static constexpr uint64_t kCpuEfficientFrameSize = 320u * 240u;
   bool preferAcceleratedImageBitmap() const;
   scoped_refptr<media::VideoFrame> frame_;
 };

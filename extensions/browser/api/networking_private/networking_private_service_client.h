@@ -80,14 +80,6 @@ class NetworkingPrivateServiceClient
   void StartDisconnect(const std::string& guid,
                        const VoidCallback& success_callback,
                        const FailureCallback& failure_callback) override;
-  void SetWifiTDLSEnabledState(
-      const std::string& ip_or_mac_address,
-      bool enabled,
-      const StringCallback& success_callback,
-      const FailureCallback& failure_callback) override;
-  void GetWifiTDLSStatus(const std::string& ip_or_mac_address,
-                         const StringCallback& success_callback,
-                         const FailureCallback& failure_callback) override;
   void GetCaptivePortalStatus(const std::string& guid,
                               const StringCallback& success_callback,
                               const FailureCallback& failure_callback) override;

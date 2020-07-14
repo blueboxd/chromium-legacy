@@ -119,6 +119,33 @@ class ScopedDedicatedMemoryObject {
   GLuint id_;
 };
 
+bool UseSeparateGLTexture(SharedContextState* context_state,
+                          viz::ResourceFormat format) {
+  if (!context_state->support_vulkan_external_object())
+    return true;
+
+  if (format != viz::ResourceFormat::BGRA_8888)
+    return false;
+
+  const auto* version_info = context_state->real_context()->GetVersionInfo();
+  const auto& ext = gl::g_current_gl_driver->ext;
+  if (!ext.b_GL_EXT_texture_format_BGRA8888)
+    return true;
+
+  if (!version_info->is_angle)
+    return false;
+
+  // If ANGLE is using vulkan, there is no problem for importing BGRA8888
+  // textures.
+  if (version_info->is_angle_vulkan)
+    return false;
+
+  // ANGLE claims GL_EXT_texture_format_BGRA8888, but glTexStorageMem2DEXT
+  // doesn't work correctly.
+  // TODO(crbug.com/angleproject/4831): fix ANGLE and return false.
+  return true;
+}
+
 }  // namespace
 
 // static
@@ -138,7 +165,6 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
 
   auto* device_queue = context_state->vk_context_provider()->GetDeviceQueue();
   VkFormat vk_format = ToVkFormat(format);
-
   constexpr auto kUsageNeedsColorAttachment =
       SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_RASTER |
       SHARED_IMAGE_USAGE_OOP_RASTERIZATION | SHARED_IMAGE_USAGE_WEBGPU;
@@ -169,11 +195,12 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
   VkImageCreateFlags vk_flags = 0;
 
   // In protected mode mark the image as protected, except when the image needs
-  // GLES2, but not Raster usage. ANGLE currenctly doesn't support protected
+  // GLES2, but not Raster usage. ANGLE currently doesn't support protected
   // images. Some clients request GLES2 and Raster usage (e.g. see
   // GpuMemoryBufferVideoFramePool). In that case still allocate protected
   // image, which ensures that image can still usable, but it may not work in
   // some scenarios (e.g. when the video frame is used in WebGL).
+  // TODO(https://crbug.com/angleproject/4833)
   if (vulkan_implementation->enforce_protected_memory() &&
       (!(usage & SHARED_IMAGE_USAGE_GLES2) ||
        (usage & SHARED_IMAGE_USAGE_RASTER))) {
@@ -192,9 +219,11 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
   if (!image)
     return nullptr;
 
+  bool use_separate_gl_texture = UseSeparateGLTexture(context_state, format);
   auto backing = std::make_unique<ExternalVkImageBacking>(
       util::PassKey<ExternalVkImageBacking>(), mailbox, format, size,
-      color_space, usage, context_state, std::move(image), command_pool);
+      color_space, usage, context_state, std::move(image), command_pool,
+      use_separate_gl_texture);
 
   if (!pixel_data.empty()) {
     size_t stride = BitsPerPixel(format) / 8 * size.width();
@@ -233,9 +262,12 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
       return nullptr;
     }
 
+    bool use_separate_gl_texture =
+        UseSeparateGLTexture(context_state, resource_format);
     auto backing = std::make_unique<ExternalVkImageBacking>(
         util::PassKey<ExternalVkImageBacking>(), mailbox, resource_format, size,
-        color_space, usage, context_state, std::move(image), command_pool);
+        color_space, usage, context_state, std::move(image), command_pool,
+        use_separate_gl_texture);
     backing->SetCleared();
     return backing;
   }
@@ -270,7 +302,8 @@ ExternalVkImageBacking::ExternalVkImageBacking(
     uint32_t usage,
     SharedContextState* context_state,
     std::unique_ptr<VulkanImage> image,
-    VulkanCommandPool* command_pool)
+    VulkanCommandPool* command_pool,
+    bool use_separate_gl_texture)
     : ClearTrackingSharedImageBacking(mailbox,
                                       format,
                                       size,
@@ -283,7 +316,8 @@ ExternalVkImageBacking::ExternalVkImageBacking(
       backend_texture_(size.width(),
                        size.height(),
                        CreateGrVkImageInfo(image_.get())),
-      command_pool_(command_pool) {}
+      command_pool_(command_pool),
+      use_separate_gl_texture_(use_separate_gl_texture) {}
 
 ExternalVkImageBacking::~ExternalVkImageBacking() {
   GrVkImageInfo image_info;
@@ -477,22 +511,6 @@ GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
   }
 
   GLuint internal_format = viz::TextureStorageFormat(format());
-  bool is_bgra8 = (internal_format == GL_BGRA8_EXT);
-  if (is_bgra8) {
-    const auto& ext = gl::g_current_gl_driver->ext;
-    if (!ext.b_GL_EXT_texture_format_BGRA8888) {
-      bool support_swizzle = ext.b_GL_ARB_texture_swizzle ||
-                             ext.b_GL_EXT_texture_swizzle ||
-                             gl::g_current_gl_version->IsAtLeastGL(3, 3) ||
-                             gl::g_current_gl_version->IsAtLeastGLES(3, 0);
-      if (!support_swizzle) {
-        LOG(ERROR) << "BGRA_88888 is not supported.";
-        return 0;
-      }
-      internal_format = GL_RGBA8;
-    }
-  }
-
   GLuint texture_service_id = 0;
   api->glGenTexturesFn(1, &texture_service_id);
   gl::ScopedTextureBinder scoped_texture_binder(GL_TEXTURE_2D,
@@ -510,11 +528,6 @@ GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
     api->glTexStorageMem2DEXTFn(GL_TEXTURE_2D, 1, internal_format,
                                 size().width(), size().height(),
                                 memory_object->id(), 0);
-  }
-
-  if (is_bgra8 && internal_format == GL_RGBA8) {
-    api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
-    api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_BLUE);
   }
 
   return texture_service_id;

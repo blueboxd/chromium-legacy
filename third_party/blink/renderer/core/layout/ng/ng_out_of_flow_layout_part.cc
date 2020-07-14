@@ -575,7 +575,7 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutCandidate(
   do {
     scoped_refptr<const NGLayoutResult> layout_result =
         Layout(node, candidate_constraint_space, candidate_static_position,
-               container_content_size, container_info,
+               container_content_size, container_info, writing_mode_,
                default_containing_block_.direction, only_layout);
 
     if (!freeze_scrollbars.has_value()) {
@@ -635,6 +635,8 @@ NGOutOfFlowLayoutPart::LayoutFragmentainerDescendant(
       GetContainingBlockInfo(descendant, containing_block_fragment);
   const TextDirection default_direction =
       containing_block_fragment->Style().Direction();
+  const WritingMode default_writing_mode =
+      containing_block_fragment->Style().GetWritingMode();
   const ComputedStyle& descendant_style = node.Style();
   const WritingMode descendant_writing_mode = descendant_style.GetWritingMode();
   const TextDirection descendant_direction = descendant_style.Direction();
@@ -642,7 +644,7 @@ NGOutOfFlowLayoutPart::LayoutFragmentainerDescendant(
   LogicalSize container_content_size =
       container_info.ContentSize(descendant_style.GetPosition());
   PhysicalSize container_physical_content_size =
-      ToPhysicalSize(container_content_size, writing_mode_);
+      ToPhysicalSize(container_content_size, default_writing_mode);
 
   // Adjust the |static_position| (which is currently relative to the default
   // container's border-box). ng_absolute_utils expects the static position to
@@ -652,22 +654,29 @@ NGOutOfFlowLayoutPart::LayoutFragmentainerDescendant(
 
   NGLogicalStaticPosition descendant_static_position =
       static_position
-          .ConvertToPhysical(writing_mode_, default_direction,
+          .ConvertToPhysical(default_writing_mode, default_direction,
                              container_physical_content_size)
           .ConvertToLogical(descendant_writing_mode, descendant_direction,
                             container_physical_content_size);
 
+  // TODO(almaher): The index should be based on the fragmentainer that we will
+  // start layout in (skipping any column spanner fragments) rather than 0 every
+  // time.
+  const NGConstraintSpace& fragmentainer_constraint_space =
+      GetFragmentainerConstraintSpace(/* index */ 0);
+
   // Need a constraint space to resolve offsets.
-  NGConstraintSpaceBuilder builder(writing_mode_, descendant_writing_mode,
-                                   /* is_new_fc */ true);
-  builder.SetTextDirection(descendant_direction);
-  builder.SetAvailableSize(container_content_size);
-  builder.SetPercentageResolutionSize(container_content_size);
-  NGConstraintSpace descendant_constraint_space = builder.ToConstraintSpace();
+  // TODO(almaher): The block offset should be based on the descendant rather
+  // than on the containing block.
+  NGConstraintSpace descendant_constraint_space =
+      CreateConstraintSpaceForFragmentainerDescendant(
+          node, container_content_size,
+          container_info.container_offset.block_offset,
+          fragmentainer_constraint_space, default_writing_mode);
 
   return Layout(node, descendant_constraint_space, descendant_static_position,
-                container_content_size, container_info, default_direction,
-                nullptr);
+                container_content_size, container_info, default_writing_mode,
+                default_direction, nullptr);
 }
 
 scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
@@ -676,6 +685,7 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
     const NGLogicalStaticPosition& candidate_static_position,
     LogicalSize container_content_size,
     const ContainingBlockInfo& container_info,
+    const WritingMode default_writing_mode,
     const TextDirection default_direction,
     const LayoutBox* only_layout) {
   const ComputedStyle& candidate_style = node.Style();
@@ -684,7 +694,7 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
   const TextDirection container_direction = container_info.direction;
 
   PhysicalSize container_physical_content_size =
-      ToPhysicalSize(container_content_size, writing_mode_);
+      ToPhysicalSize(container_content_size, default_writing_mode);
   LogicalSize container_content_size_in_candidate_writing_mode =
       container_physical_content_size.ConvertToLogical(candidate_writing_mode);
   NGBoxStrut border_padding =
@@ -723,7 +733,7 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
       ComputeOutOfFlowBlockDimensions(
           candidate_constraint_space, candidate_style, border_padding,
           candidate_static_position, base::nullopt, base::nullopt,
-          writing_mode_, container_direction, &node_dimensions);
+          default_writing_mode, container_direction, &node_dimensions);
       has_computed_block_dimensions = true;
       input.percentage_resolution_block_size = node_dimensions.size.block_size;
     }
@@ -756,10 +766,10 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
                     kIndefiniteSize};
   }
 
-  ComputeOutOfFlowInlineDimensions(candidate_constraint_space, candidate_style,
-                                   border_padding, candidate_static_position,
-                                   min_max_sizes, replaced_size, writing_mode_,
-                                   container_direction, &node_dimensions);
+  ComputeOutOfFlowInlineDimensions(
+      candidate_constraint_space, candidate_style, border_padding,
+      candidate_static_position, min_max_sizes, replaced_size,
+      default_writing_mode, container_direction, &node_dimensions);
 
   // |should_be_considered_as_replaced| sets the inline-size.
   // It does not set the block-size. This is a compatibility quirk.
@@ -797,15 +807,15 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
   if (!has_computed_block_dimensions) {
     ComputeOutOfFlowBlockDimensions(
         candidate_constraint_space, candidate_style, border_padding,
-        candidate_static_position, block_estimate, replaced_size, writing_mode_,
-        container_direction, &node_dimensions);
+        candidate_static_position, block_estimate, replaced_size,
+        default_writing_mode, container_direction, &node_dimensions);
   }
 
   // Calculate the offsets.
   NGBoxStrut inset =
       node_dimensions.inset
           .ConvertToPhysical(candidate_writing_mode, candidate_direction)
-          .ConvertToLogical(writing_mode_, default_direction);
+          .ConvertToLogical(default_writing_mode, default_direction);
 
   // |inset| is relative to the container's padding-box. Convert this to being
   // relative to the default container's border-box.
@@ -900,7 +910,7 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
       *node.GetLayoutBox(), layout_result->PhysicalFragment().Size().height);
   if (y.has_value()) {
     DCHECK(!container_space_.HasBlockFragmentation());
-    if (IsHorizontalWritingMode(writing_mode_))
+    if (IsHorizontalWritingMode(default_writing_mode))
       offset.block_offset = *y;
     else
       offset.inline_offset = *y;
@@ -975,14 +985,7 @@ void NGOutOfFlowLayoutPart::AddOOFResultToFragmentainer(
   const NGBlockNode& node = container_builder_->Node();
   const auto& fragment =
       To<NGPhysicalBoxFragment>(*fragmentainer.fragment.get());
-  const WritingMode container_writing_mode =
-      container_builder_->Style().GetWritingMode();
-  // TODO(bebeaudr): Need to handle different fragmentation types. It won't
-  // always be multi-column.
-  NGConstraintSpace space = CreateConstraintSpaceForColumns(
-      *container_builder_->ConstraintSpace(), container_writing_mode,
-      fragment.Size().ConvertToLogical(container_writing_mode),
-      /* is_first_fragmentainer */ index == 0, /* balance_columns */ false);
+  const NGConstraintSpace& space = GetFragmentainerConstraintSpace(index);
   NGFragmentGeometry fragment_geometry =
       CalculateInitialFragmentGeometry(space, node);
   NGLayoutAlgorithmParams params(node, fragment_geometry, space,
@@ -999,6 +1002,57 @@ void NGOutOfFlowLayoutPart::AddOOFResultToFragmentainer(
   algorithm.AppendOutOfFlowResult(result, result->OutOfFlowPositionedOffset());
   container_builder_->ReplaceChild(
       index, algorithm.Layout()->PhysicalFragment(), fragmentainer.offset);
+}
+
+const NGConstraintSpace& NGOutOfFlowLayoutPart::GetFragmentainerConstraintSpace(
+    const wtf_size_t index) {
+  DCHECK_LT(index, container_builder_->Children().size());
+
+  // Increase the index by 1 to avoid a key of 0.
+  wtf_size_t stored_index = index + 1;
+
+  auto it = fragmentainer_constraint_space_map_.find(stored_index);
+  if (it != fragmentainer_constraint_space_map_.end())
+    return it->value;
+
+  // TODO(bebeaudr): Need to handle different fragmentation types. It won't
+  // always be multi-column.
+  const auto& fragmentainer = container_builder_->Children()[index];
+  DCHECK(fragmentainer.fragment->IsFragmentainerBox());
+  const auto& fragment =
+      To<NGPhysicalBoxFragment>(*fragmentainer.fragment.get());
+  const WritingMode container_writing_mode =
+      container_builder_->Style().GetWritingMode();
+  NGConstraintSpace fragmentainer_constraint_space =
+      CreateConstraintSpaceForColumns(
+          *container_builder_->ConstraintSpace(), container_writing_mode,
+          fragment.Size().ConvertToLogical(container_writing_mode),
+          /* is_first_fragmentainer */ index == 0, /* balance_columns */ false);
+
+  return fragmentainer_constraint_space_map_
+      .insert(stored_index, fragmentainer_constraint_space)
+      .stored_value->value;
+}
+
+NGConstraintSpace
+NGOutOfFlowLayoutPart::CreateConstraintSpaceForFragmentainerDescendant(
+    const NGBlockNode& descendant,
+    const LogicalSize& content_size,
+    const LayoutUnit block_offset,
+    const NGConstraintSpace& fragmentainer_constraint_space,
+    const WritingMode default_writing_mode) const {
+  const ComputedStyle& descendant_style = descendant.Style();
+  NGConstraintSpaceBuilder builder(default_writing_mode,
+                                   descendant_style.GetWritingMode(),
+                                   /* is_new_fc */ true);
+  builder.SetTextDirection(descendant_style.Direction());
+  builder.SetAvailableSize(content_size);
+  builder.SetPercentageResolutionSize(content_size);
+
+  SetupSpaceBuilderForFragmentation(fragmentainer_constraint_space, descendant,
+                                    block_offset, &builder,
+                                    /* is_new_fc */ true);
+  return builder.ToConstraintSpace();
 }
 
 }  // namespace blink

@@ -38,6 +38,7 @@ namespace {
 
 const char kFailure[] = "Failure";
 const char kSuccess[] = "Success";
+const char kOnline[] = "Online";
 const char kGuid[] = "SOME_GUID";
 
 class TestNetworkingPrivateDelegate : public NetworkingPrivateDelegate {
@@ -78,7 +79,7 @@ class TestNetworkingPrivateDelegate : public NetworkingPrivateDelegate {
                      std::unique_ptr<base::DictionaryValue> properties,
                      const StringCallback& success_callback,
                      const FailureCallback& failure_callback) override {
-    StringResult(success_callback, failure_callback);
+    StringResult(success_callback, failure_callback, kSuccess);
   }
 
   void ForgetNetwork(const std::string& guid,
@@ -126,25 +127,11 @@ class TestNetworkingPrivateDelegate : public NetworkingPrivateDelegate {
     VoidResult(success_callback, failure_callback);
   }
 
-  void SetWifiTDLSEnabledState(
-      const std::string& ip_or_mac_address,
-      bool enabled,
-      const StringCallback& success_callback,
-      const FailureCallback& failure_callback) override {
-    StringResult(success_callback, failure_callback);
-  }
-
-  void GetWifiTDLSStatus(const std::string& ip_or_mac_address,
-                         const StringCallback& success_callback,
-                         const FailureCallback& failure_callback) override {
-    StringResult(success_callback, failure_callback);
-  }
-
   void GetCaptivePortalStatus(
       const std::string& guid,
       const StringCallback& success_callback,
       const FailureCallback& failure_callback) override {
-    StringResult(success_callback, failure_callback);
+    StringResult(success_callback, failure_callback, kOnline);
   }
 
   void UnlockCellularSim(const std::string& guid,
@@ -238,11 +225,12 @@ class TestNetworkingPrivateDelegate : public NetworkingPrivateDelegate {
   }
 
   void StringResult(const StringCallback& success_callback,
-                    const FailureCallback& failure_callback) {
+                    const FailureCallback& failure_callback,
+                    const std::string& result) {
     if (fail_) {
       failure_callback.Run(kFailure);
     } else {
-      success_callback.Run(kSuccess);
+      success_callback.Run(result);
     }
   }
 
@@ -479,14 +467,6 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, VerifyAndEncryptData) {
   EXPECT_TRUE(RunNetworkingSubtest("verifyAndEncryptData")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, SetWifiTDLSEnabledState) {
-  EXPECT_TRUE(RunNetworkingSubtest("setWifiTDLSEnabledState")) << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, GetWifiTDLSStatus) {
-  EXPECT_TRUE(RunNetworkingSubtest("getWifiTDLSStatus")) << message_;
-}
-
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, GetCaptivePortalStatus) {
   EXPECT_TRUE(RunNetworkingSubtest("getCaptivePortalStatus")) << message_;
 }
@@ -586,14 +566,6 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, VerifyDestination) {
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, VerifyAndEncryptData) {
   EXPECT_FALSE(RunNetworkingSubtest("verifyAndEncryptData")) << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, SetWifiTDLSEnabledState) {
-  EXPECT_FALSE(RunNetworkingSubtest("setWifiTDLSEnabledState")) << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, GetWifiTDLSStatus) {
-  EXPECT_FALSE(RunNetworkingSubtest("getWifiTDLSStatus")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, GetCaptivePortalStatus) {

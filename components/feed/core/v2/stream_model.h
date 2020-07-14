@@ -11,6 +11,8 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/proto/v2/wire/content_id.pb.h"
 #include "components/feed/core/v2/proto_util.h"
@@ -62,9 +64,8 @@ class StreamModel {
     std::unique_ptr<StreamModelUpdateRequest> update_request;
   };
 
-  class Observer {
+  class Observer : public base::CheckedObserver {
    public:
-    virtual ~Observer() = default;
     // Called when the UI model changes.
     virtual void OnUiUpdate(const UiUpdate& update) = 0;
   };
@@ -82,7 +83,8 @@ class StreamModel {
   StreamModel(const StreamModel& src) = delete;
   StreamModel& operator=(const StreamModel&) = delete;
 
-  void SetObserver(Observer* observer);
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
   void SetStoreObserver(StoreObserver* store_observer);
 
   // Data access.
@@ -132,7 +134,7 @@ class StreamModel {
 
   void UpdateFlattenedTree();
 
-  Observer* observer_ = nullptr;  // Unowned.
+  base::ObserverList<Observer> observers_;
   StoreObserver* store_observer_ = nullptr;  // Unowned.
   stream_model::ContentMap content_map_;
   stream_model::FeatureTree base_feature_tree_{&content_map_};

@@ -37,7 +37,7 @@ std::vector<std::string> GetContentFrames(const StreamModel& model) {
 
 class TestObserver : public StreamModel::Observer {
  public:
-  explicit TestObserver(StreamModel* model) { model->SetObserver(this); }
+  explicit TestObserver(StreamModel* model) { model->AddObserver(this); }
 
   // StreamModel::Observer.
   void OnUiUpdate(const UiUpdate& update) override { update_ = update; }

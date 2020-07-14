@@ -29,10 +29,7 @@ class LocalSearchService : public KeyedService {
   LocalSearchService(const LocalSearchService&) = delete;
   LocalSearchService& operator=(const LocalSearchService&) = delete;
 
-  // TODO(jiameng): remove default values.
-  Index* GetIndex(IndexId index_id,
-                  Backend backend = Backend::kLinearMap,
-                  PrefService* local_state = nullptr);
+  Index* GetIndex(IndexId index_id, Backend backend, PrefService* local_state);
 
  private:
   std::map<IndexId, std::unique_ptr<Index>> indices_;

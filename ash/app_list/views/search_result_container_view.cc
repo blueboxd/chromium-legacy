@@ -34,11 +34,6 @@ void SearchResultContainerView::SetResults(
   Update();
 }
 
-int SearchResultContainerView::GetYSize() {
-  NOTREACHED();
-  return 0;
-}
-
 void SearchResultContainerView::Update() {
   update_factory_.InvalidateWeakPtrs();
   num_results_ = DoUpdate();

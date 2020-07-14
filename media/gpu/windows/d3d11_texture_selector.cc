@@ -158,6 +158,11 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
   if (base::FeatureList::IsEnabled(kD3D11VideoDecoderAlwaysCopy))
     needs_texture_copy = true;
 
+  // TODO(crbug.com/971952): |use_single_video_decoder_texture| is used to force
+  // a texture copy, to see if it fixes the issue.  If so, it'll be renamed.
+  if (workarounds.use_single_video_decoder_texture)
+    needs_texture_copy = true;
+
   MEDIA_LOG(INFO, media_log)
       << "D3D11VideoDecoder output color space: "
       << (output_color_space ? output_color_space->ToString()

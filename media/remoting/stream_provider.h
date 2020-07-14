@@ -96,7 +96,6 @@ class StreamProvider final : public Demuxer {
 
     // DemuxerStream implementation.
     void Read(ReadCB read_cb) override;
-    bool IsReadPending() const override;
     AudioDecoderConfig audio_decoder_config() override;
     VideoDecoderConfig video_decoder_config() override;
     DemuxerStream::Type type() const override;

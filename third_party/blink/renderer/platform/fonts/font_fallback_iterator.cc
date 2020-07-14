@@ -37,7 +37,11 @@ bool FontFallbackIterator::RangeSetContributesForHint(
     const FontDataForRangeSet* segmented_face) {
   for (auto* it = hint_list.begin(); it != hint_list.end(); ++it) {
     if (segmented_face->Contains(*it)) {
-      if (!AlreadyLoadingRangeForHintChar(*it))
+      // If it's a pending custom font, we need to make sure it can render any
+      // new characters, otherwise we may trigger a redundant load. In other
+      // cases (already loaded or not a custom font), we can use it right away.
+      if (!segmented_face->IsPendingCustomFont() ||
+          !AlreadyLoadingRangeForHintChar(*it))
         return true;
     }
   }

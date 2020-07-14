@@ -18,11 +18,14 @@ import android.widget.FrameLayout;
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Callback;
 import org.chromium.base.MathUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsUtils;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.animation.FloatProperty;
@@ -233,6 +236,10 @@ public abstract class StackLayoutBase extends Layout {
     private final ArrayList<Pair<CompositorAnimator, FloatProperty>> mLayoutAnimations =
             new ArrayList<>();
 
+    private final ObservableSupplier<BrowserControlsStateProvider> mBrowserControlsSupplier;
+    private final BrowserControlsStateProvider.Observer mBrowserControlsObserver;
+    private Callback<BrowserControlsStateProvider> mBrowserControlsSupplierObserver;
+
     private class StackLayoutGestureHandler implements GestureHandler {
         @Override
         public void onDown(float x, float y, boolean fromMouse, int buttons) {
@@ -368,12 +375,17 @@ public abstract class StackLayoutBase extends Layout {
     }
 
     /**
-     * @param context     The current Android's context.
-     * @param updateHost  The {@link LayoutUpdateHost} view for this layout.
-     * @param renderHost  The {@link LayoutRenderHost} view for this layout.
+     * @param context                              The current Android's context.
+     * @param updateHost                           The {@link LayoutUpdateHost} view for this
+     *                                             layout.
+     * @param renderHost                           The {@link LayoutRenderHost} view for this
+     *                                             layout.
+     * @param browserControlsStateProviderSupplier An {@link ObservableSupplier} for the
+     *                                             {@link BrowserControlsStateProvider}.
      */
-    public StackLayoutBase(
-            Context context, LayoutUpdateHost updateHost, LayoutRenderHost renderHost) {
+    public StackLayoutBase(Context context, LayoutUpdateHost updateHost,
+            LayoutRenderHost renderHost,
+            ObservableSupplier<BrowserControlsStateProvider> browserControlsStateProviderSupplier) {
         super(context, updateHost, renderHost);
 
         mGestureHandler = new StackLayoutGestureHandler();
@@ -387,6 +399,32 @@ public abstract class StackLayoutBase extends Layout {
         mViewContainer = new FrameLayout(getContext());
         mSceneLayer = new TabListSceneLayer();
         mDpToPx = context.getResources().getDisplayMetrics().density;
+        mBrowserControlsSupplier = browserControlsStateProviderSupplier;
+        mBrowserControlsObserver = new BrowserControlsStateProvider.Observer() {
+            @Override
+            public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
+                    int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
+                notifySizeChanged(mWidth, mHeight, mOrientation);
+            }
+        };
+
+        // TODO(https://crbug.com/1084528): Replace with OneShotSupplier when it is available.
+        mBrowserControlsSupplierObserver = (browserControlsStateProvider)
+                -> browserControlsStateProvider.addObserver(mBrowserControlsObserver);
+        mBrowserControlsSupplier.addObserver(mBrowserControlsSupplierObserver);
+    }
+
+    @Override
+    public void destroy() {
+        if (mBrowserControlsSupplier != null) {
+            mBrowserControlsSupplier.removeObserver(mBrowserControlsSupplierObserver);
+
+            if (mBrowserControlsSupplier.get() != null) {
+                mBrowserControlsSupplier.get().removeObserver(mBrowserControlsObserver);
+            }
+        }
+
+        super.destroy();
     }
 
     /**
@@ -1006,7 +1044,7 @@ public abstract class StackLayoutBase extends Layout {
         protected float mHeight;
         PortraitViewport() {
             mWidth = StackLayoutBase.this.getWidth();
-            mHeight = StackLayoutBase.this.getHeightMinusBrowserControls();
+            mHeight = StackLayoutBase.this.getHeightMinusContentOffsetsDp();
         }
 
         float getClampedRenderedScrollOffset() {
@@ -1095,14 +1133,14 @@ public abstract class StackLayoutBase extends Layout {
         }
 
         float getTopHeightOffset() {
-            return getTopBrowserControlsHeight() * mStackOffsetYPercent;
+            return getTopContentOffsetDp() * mStackOffsetYPercent;
         }
     }
 
     class LandscapeViewport extends PortraitViewport {
         LandscapeViewport() {
             // This is purposefully inverted.
-            mWidth = StackLayoutBase.this.getHeightMinusBrowserControls();
+            mWidth = StackLayoutBase.this.getHeightMinusContentOffsetsDp();
             mHeight = StackLayoutBase.this.getWidth();
         }
 
@@ -1172,6 +1210,30 @@ public abstract class StackLayoutBase extends Layout {
             if (isHorizontalTabSwitcherFlagEnabled()) return StackLayoutBase.this.getHeight();
             return Math.round(mWidth - getInnerMargin());
         }
+    }
+
+    /**
+     * @return The height of the drawing area minus the top and bottom content offsets in dp.
+     */
+    public float getHeightMinusContentOffsetsDp() {
+        return getHeight() - (getTopContentOffsetDp() + getBottomContentOffsetDp());
+    }
+
+    /**
+     * @return The offset of the content from the top of the screen in dp.
+     */
+    public float getTopContentOffsetDp() {
+        final BrowserControlsStateProvider provider = mBrowserControlsSupplier.get();
+        return provider != null ? provider.getContentOffset() / mDpToPx : 0.f;
+    }
+
+    /**
+     * @return The offset of the content from the bottom of the screen in dp.
+     */
+    private float getBottomContentOffsetDp() {
+        final BrowserControlsStateProvider provider = mBrowserControlsSupplier.get();
+        return provider != null ? BrowserControlsUtils.getBottomContentOffset(provider) / mDpToPx
+                                : 0.f;
     }
 
     private PortraitViewport getViewportParameters() {
@@ -1376,7 +1438,7 @@ public abstract class StackLayoutBase extends Layout {
         // status bar when switching to incognito mode.
         if (isHorizontalTabSwitcherFlagEnabled()) return getHeight();
 
-        float distance = isUsingHorizontalLayout() ? getHeightMinusBrowserControls() : getWidth();
+        float distance = isUsingHorizontalLayout() ? getHeightMinusContentOffsetsDp() : getWidth();
         if (mStacks.size() > 2) {
             return distance - getViewportParameters().getInnerMargin();
         }

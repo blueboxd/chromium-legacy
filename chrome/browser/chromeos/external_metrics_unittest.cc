@@ -46,8 +46,8 @@ TEST_F(ExternalMetricsTest, CustomInterval) {
 
 TEST_F(ExternalMetricsTest, HandleMissingFile) {
   Init();
-  ASSERT_TRUE(base::DeleteFile(
-      base::FilePath(external_metrics_->uma_events_file_), false));
+  ASSERT_TRUE(
+      base::DeleteFile(base::FilePath(external_metrics_->uma_events_file_)));
 
   EXPECT_EQ(0, external_metrics_->CollectEvents());
 }

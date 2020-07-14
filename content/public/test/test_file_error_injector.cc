@@ -182,10 +182,15 @@ DownloadFileWithError::ValidateAndWriteDataToFile(int64_t offset,
                                                   const char* data,
                                                   size_t bytes_to_validate,
                                                   size_t bytes_to_write) {
-  return ShouldReturnError(
-      TestFileErrorInjector::FILE_OPERATION_WRITE,
+  download::DownloadInterruptReason origin_error =
       download::DownloadFileImpl::ValidateAndWriteDataToFile(
-          offset, data, bytes_to_validate, bytes_to_write));
+          offset, data, bytes_to_validate, bytes_to_write);
+  if (error_info_.data_write_offset == -1 ||
+      offset == error_info_.data_write_offset) {
+    return ShouldReturnError(TestFileErrorInjector::FILE_OPERATION_WRITE,
+                             origin_error);
+  }
+  return origin_error;
 }
 
 download::DownloadInterruptReason

@@ -375,7 +375,7 @@ class NetworkingPrivateVerifyAndEncryptDataFunction : public ExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateVerifyAndEncryptDataFunction);
 };
 
-// Implements the chrome.networkingPrivate.setWifiTDLSEnabledState method.
+// Deprecated chrome.networkingPrivate.setWifiTDLSEnabledState method.
 class NetworkingPrivateSetWifiTDLSEnabledStateFunction
     : public ExtensionFunction {
  public:
@@ -389,14 +389,11 @@ class NetworkingPrivateSetWifiTDLSEnabledStateFunction
   // ExtensionFunction:
   ResponseAction Run() override;
 
-  void Success(const std::string& result);
-  void Failure(const std::string& error);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateSetWifiTDLSEnabledStateFunction);
 };
 
-// Implements the chrome.networkingPrivate.getWifiTDLSStatus method.
+// Deprecated chrome.networkingPrivate.getWifiTDLSStatus method.
 class NetworkingPrivateGetWifiTDLSStatusFunction : public ExtensionFunction {
  public:
   NetworkingPrivateGetWifiTDLSStatusFunction() {}
@@ -408,9 +405,6 @@ class NetworkingPrivateGetWifiTDLSStatusFunction : public ExtensionFunction {
 
   // ExtensionFunction:
   ResponseAction Run() override;
-
-  void Success(const std::string& result);
-  void Failure(const std::string& error);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetWifiTDLSStatusFunction);

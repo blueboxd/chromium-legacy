@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/enterprise/reporting/browser_report_generator_desktop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
@@ -31,7 +30,8 @@ namespace em = enterprise_management;
 namespace enterprise_reporting {
 
 ReportGenerator::ReportGenerator()
-    : browser_report_generator_(&delegate_factory_) {}
+    : report_request_queue_generator_(&delegate_factory_),
+      browser_report_generator_(&delegate_factory_) {}
 
 ReportGenerator::~ReportGenerator() = default;
 

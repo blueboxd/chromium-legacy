@@ -5,12 +5,18 @@
 #include "chrome/browser/enterprise/reporting/reporting_delegate_factory_desktop.h"
 
 #include "chrome/browser/enterprise/reporting/browser_report_generator_desktop.h"
+#include "chrome/browser/enterprise/reporting/profile_report_generator_desktop.h"
 
 namespace enterprise_reporting {
 
 std::unique_ptr<BrowserReportGenerator::Delegate>
 ReportingDelegateFactoryDesktop::GetBrowserReportGeneratorDelegate() {
   return std::make_unique<BrowserReportGeneratorDesktop>();
+}
+
+std::unique_ptr<ProfileReportGenerator::Delegate>
+ReportingDelegateFactoryDesktop::GetProfileReportGeneratorDelegate() {
+  return std::make_unique<ProfileReportGeneratorDesktop>();
 }
 
 }  // namespace enterprise_reporting

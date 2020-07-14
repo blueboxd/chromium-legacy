@@ -21,10 +21,11 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 import diff_util
+import etree_util
 import presubmit_util
 
-import etree_util
-import histograms_print_style
+import histogram_configuration_model
+
 
 class Error(Exception):
   pass
@@ -153,7 +154,8 @@ def PrettyPrintHistogramsTree(tree):
   FixMisplacedHistogramsAndHistogramSuffixes(tree)
   canonicalizeUnits(tree)
   fixObsoleteOrder(tree)
-  return histograms_print_style.GetPrintStyle().PrettyPrintXml(tree)
+  return histogram_configuration_model.PrettifyTree(tree)
+
 
 def PrettyPrintEnums(raw_xml):
   """Pretty print the given enums XML."""
@@ -163,11 +165,8 @@ def PrettyPrintEnums(raw_xml):
   # Prevent accidentally adding histograms to enums.xml
   DropNodesByTagName(root, 'histograms')
   DropNodesByTagName(root, 'histogram_suffixes_list')
-
   top_level_content = etree_util.GetTopLevelContent(raw_xml)
-
-  formatted_xml = (histograms_print_style.GetPrintStyle()
-                  .PrettyPrintXml(root))
+  formatted_xml = histogram_configuration_model.PrettifyTree(root)
   return top_level_content + formatted_xml
 
 def main():

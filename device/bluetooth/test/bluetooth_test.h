@@ -632,8 +632,7 @@ class BluetoothTestBase : public testing::Test {
       BluetoothGattService::GattErrorCode error_code);
 
   // Accessors to get callbacks bound to this fixture:
-  base::Closure GetCallback(Call expected);
-  base::OnceClosure GetOnceCallback(Call expected);
+  base::OnceClosure GetCallback(Call expected);
   BluetoothAdapter::CreateAdvertisementCallback GetCreateAdvertisementCallback(
       Call expected);
   BluetoothAdapter::DiscoverySessionCallback GetDiscoverySessionCallback(
@@ -644,21 +643,22 @@ class BluetoothTestBase : public testing::Test {
       Call expected);
   BluetoothRemoteGattCharacteristic::NotifySessionCallback
   GetNotifyCheckForPrecedingCalls(int num_of_preceding_calls);
-  base::Closure GetStopNotifyCallback(Call expected);
-  base::Closure GetStopNotifyCheckForPrecedingCalls(int num_of_preceding_calls);
+  base::OnceClosure GetStopNotifyCallback(Call expected);
+  base::OnceClosure GetStopNotifyCheckForPrecedingCalls(
+      int num_of_preceding_calls);
   BluetoothRemoteGattCharacteristic::ValueCallback GetReadValueCallback(
       Call expected);
   BluetoothAdapter::ErrorCallback GetErrorCallback(Call expected);
   BluetoothAdapter::AdvertisementErrorCallback GetAdvertisementErrorCallback(
       Call expected);
   BluetoothDevice::ConnectErrorCallback GetConnectErrorCallback(Call expected);
-  base::Callback<void(BluetoothRemoteGattService::GattErrorCode)>
+  base::OnceCallback<void(BluetoothRemoteGattService::GattErrorCode)>
   GetGattErrorCallback(Call expected);
   BluetoothRemoteGattCharacteristic::NotifySessionCallback
   GetReentrantStartNotifySessionSuccessCallback(
       Call expected,
       BluetoothRemoteGattCharacteristic* characteristic);
-  base::Callback<void(BluetoothGattService::GattErrorCode)>
+  base::OnceCallback<void(BluetoothGattService::GattErrorCode)>
   GetReentrantStartNotifySessionErrorCallback(
       Call expected,
       BluetoothRemoteGattCharacteristic* characteristic,

@@ -23,8 +23,6 @@ class CONTENT_EXPORT PaymentAppProviderImpl : public PaymentAppProvider {
 
   // PaymentAppProvider implementation:
   // Should be accessed only on the UI thread.
-  void GetAllPaymentApps(BrowserContext* browser_context,
-                         GetAllPaymentAppsCallback callback) override;
   void InvokePaymentApp(WebContents* web_contents,
                         int64_t registration_id,
                         const url::Origin& sw_origin,

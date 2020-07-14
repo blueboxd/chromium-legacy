@@ -185,7 +185,7 @@ public class NavigationHandler implements TouchEventObserver {
             if (mState == GestureState.DRAGGED && mSideSlideLayout != null) {
                 mSideSlideLayout.release(mNavigationSheet.isHidden());
                 mNavigationSheet.release();
-            } else if (mState == GestureState.GLOW && mGlowEffectSupplier != null) {
+            } else if (mState == GestureState.GLOW && mGlowEffectSupplier.get() != null) {
                 mGlowEffectSupplier.get().release();
             }
         }
@@ -270,7 +270,7 @@ public class NavigationHandler implements TouchEventObserver {
      */
     private void showGlow(float startX, float startY) {
         if (mState != GestureState.STARTED) reset();
-        mGlowEffectSupplier.get().prepare(startX, startY);
+        if (mGlowEffectSupplier.get() != null) mGlowEffectSupplier.get().prepare(startX, startY);
         mState = GestureState.GLOW;
     }
 
@@ -309,7 +309,7 @@ public class NavigationHandler implements TouchEventObserver {
                 mState = GestureState.NONE;
             }
         } else if (mState == GestureState.GLOW) {
-            mGlowEffectSupplier.get().onScroll(-delta);
+            if (mGlowEffectSupplier.get() != null) mGlowEffectSupplier.get().onScroll(-delta);
         }
     }
 
@@ -340,7 +340,7 @@ public class NavigationHandler implements TouchEventObserver {
             mSideSlideLayout.release(allowNav && mNavigationSheet.isHidden());
             mNavigationSheet.release();
         } else if (mState == GestureState.GLOW) {
-            mGlowEffectSupplier.get().release();
+            if (mGlowEffectSupplier.get() != null) mGlowEffectSupplier.get().release();
         }
     }
 
@@ -352,7 +352,7 @@ public class NavigationHandler implements TouchEventObserver {
             cancelStopNavigatingRunnable();
             mSideSlideLayout.reset();
         } else if (mState == GestureState.GLOW) {
-            mGlowEffectSupplier.get().reset();
+            if (mGlowEffectSupplier.get() != null) mGlowEffectSupplier.get().reset();
         }
         mState = GestureState.NONE;
     }

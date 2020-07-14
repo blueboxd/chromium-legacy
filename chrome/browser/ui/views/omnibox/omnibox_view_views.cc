@@ -44,6 +44,7 @@
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/prefs/pref_service.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
@@ -2168,6 +2169,14 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
   if (base::FeatureList::IsEnabled(omnibox::kOmniboxContextMenuShowFullUrls)) {
     menu_contents->AddCheckItemWithStringId(IDC_SHOW_FULL_URLS,
                                             IDS_CONTEXT_MENU_SHOW_FULL_URLS);
+
+    const PrefService::Preference* show_full_urls_pref =
+        location_bar_view_->profile()->GetPrefs()->FindPreference(
+            omnibox::kPreventUrlElisionsInOmnibox);
+    if (show_full_urls_pref->IsManaged()) {
+      menu_contents->SetEnabledAt(
+          menu_contents->GetIndexOfCommandId(IDC_SHOW_FULL_URLS), false);
+    }
   }
 }
 

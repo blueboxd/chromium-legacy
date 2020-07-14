@@ -240,7 +240,7 @@ bool ResolveSingleCertRef(const CertPEMsByGUIDMap& certs_by_guid,
   if (!GUIDRefToPEMEncoding(certs_by_guid, guid_ref, &pem_encoded))
     return false;
 
-  onc_object->RemoveWithoutPathExpansion(key_guid_ref, nullptr);
+  onc_object->RemoveKey(key_guid_ref);
   onc_object->SetKey(key_pem, base::Value(pem_encoded));
   return true;
 }
@@ -278,7 +278,7 @@ bool ResolveCertRefList(const CertPEMsByGUIDMap& certs_by_guid,
     pem_list->AppendString(pem_encoded);
   }
 
-  onc_object->RemoveWithoutPathExpansion(key_guid_ref_list, nullptr);
+  onc_object->RemoveKey(key_guid_ref_list);
   onc_object->SetWithoutPathExpansion(key_pem_list, std::move(pem_list));
   return true;
 }
@@ -299,7 +299,7 @@ bool ResolveSingleCertRefToList(const CertPEMsByGUIDMap& certs_by_guid,
 
   std::unique_ptr<base::ListValue> pem_list(new base::ListValue);
   pem_list->AppendString(pem_encoded);
-  onc_object->RemoveWithoutPathExpansion(key_guid_ref, nullptr);
+  onc_object->RemoveKey(key_guid_ref);
   onc_object->SetWithoutPathExpansion(key_pem_list, std::move(pem_list));
   return true;
 }
@@ -316,7 +316,7 @@ bool ResolveCertRefsOrRefToList(const CertPEMsByGUIDMap& certs_by_guid,
     if (onc_object->HasKey(key_guid_ref)) {
       LOG(ERROR) << "Found both " << key_guid_refs << " and " << key_guid_ref
                  << ". Ignoring and removing the latter.";
-      onc_object->RemoveWithoutPathExpansion(key_guid_ref, nullptr);
+      onc_object->RemoveKey(key_guid_ref);
     }
     return ResolveCertRefList(certs_by_guid, key_guid_refs, key_pem_list,
                               onc_object);

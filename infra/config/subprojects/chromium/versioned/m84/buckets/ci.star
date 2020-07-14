@@ -378,18 +378,6 @@ ci.fyi_builder(
     ),
 )
 
-# This is launching & collecting entirely isolated tests.
-# OS shouldn't matter.
-ci.fyi_builder(
-    name = 'mac-osxbeta-rel',
-    console_view_entry = ci.console_view_entry(
-        category = 'mac',
-        short_name = 'beta',
-    ),
-    goma_backend = None,
-    triggered_by = [builder_name('Mac Builder')],
-)
-
 
 ci.fyi_ios_builder(
     name = 'ios-simulator-cronet',
@@ -401,17 +389,6 @@ ci.fyi_ios_builder(
     properties = {
         'xcode_build_version': '11c29',
     },
-)
-
-
-ci.fyi_windows_builder(
-    name = 'Win10 Tests x64 1803',
-    console_view_entry = ci.console_view_entry(
-        category = 'win10|1803',
-    ),
-    goma_backend = None,
-    os = os.WINDOWS_10,
-    triggered_by = [builder_name('Win x64 Builder')],
 )
 
 

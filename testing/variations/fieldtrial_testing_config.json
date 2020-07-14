@@ -2569,6 +2569,21 @@
             ]
         }
     ],
+    "EnableSuggestedFiles": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EnableSuggestedFiles"
+                    ]
+                }
+            ]
+        }
+    ],
     "EnterpriseReportingInChromeOS": [
         {
             "platforms": [
@@ -3786,6 +3801,21 @@
                         "IPH_KeyboardAccessoryPaymentFilling"
                     ],
                     "disable_features": []
+                }
+            ]
+        }
+    ],
+    "LauncherSettingsSearch": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "LauncherSettingsSearch"
+                    ]
                 }
             ]
         }
@@ -6102,11 +6132,25 @@
     "SafeBrowsingRealTimeUrlLookupEnabledWithToken": [
         {
             "platforms": [
-                "android",
                 "chromeos",
                 "linux",
                 "mac",
                 "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingRealTimeUrlLookupEnabledWithToken"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SafeBrowsingRealTimeUrlLookupEnabledWithTokenAndroid": [
+        {
+            "platforms": [
+                "android"
             ],
             "experiments": [
                 {

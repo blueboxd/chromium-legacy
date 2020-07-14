@@ -1377,10 +1377,6 @@ void ArcApps::SetIconEffect(const std::string& app_id) {
 }
 
 void ArcApps::CloseTasks(const std::string& app_id) {
-  if (!base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry)) {
-    return;
-  }
-
   if (!base::Contains(app_id_to_task_ids_, app_id)) {
     return;
   }

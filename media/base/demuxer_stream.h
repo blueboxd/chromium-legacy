@@ -73,10 +73,6 @@ class MEDIA_EXPORT DemuxerStream {
   typedef base::OnceCallback<void(Status, scoped_refptr<DecoderBuffer>)> ReadCB;
   virtual void Read(ReadCB read_cb) = 0;
 
-  // Returns true if a Read() call has been made but the |read_cb| has not yet
-  // been run.
-  virtual bool IsReadPending() const = 0;
-
   // Returns the audio/video decoder configuration. It is an error to call the
   // audio method on a video stream and vice versa. After |kConfigChanged| is
   // returned in a Read(), the caller should call this method again to retrieve

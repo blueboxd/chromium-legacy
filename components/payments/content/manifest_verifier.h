@@ -18,6 +18,7 @@
 #include "components/payments/content/developer_console_logger.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
+#include "content/public/browser/installed_payment_apps_finder.h"
 #include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/origin.h"
@@ -59,7 +60,7 @@ class ManifestVerifier final : public WebDataServiceConsumer {
   // remaining. If a payment handler does not have any valid payment method
   // names, then it's not included in the returned set of handlers.
   using VerifyCallback =
-      base::OnceCallback<void(content::PaymentAppProvider::PaymentApps,
+      base::OnceCallback<void(content::InstalledPaymentAppsFinder::PaymentApps,
                               const std::string& error_message)>;
 
   // Creates the verifier and starts up the parser utility process.
@@ -81,7 +82,7 @@ class ManifestVerifier final : public WebDataServiceConsumer {
 
   // Initiates the verification. This object should be deleted after
   // |finished_using_resources| is invoked.
-  void Verify(content::PaymentAppProvider::PaymentApps apps,
+  void Verify(content::InstalledPaymentAppsFinder::PaymentApps apps,
               VerifyCallback finished_verification,
               base::OnceClosure finished_using_resources);
 
@@ -121,7 +122,7 @@ class ManifestVerifier final : public WebDataServiceConsumer {
   PaymentManifestWebDataService* cache_;
 
   // The list of payment apps being verified.
-  content::PaymentAppProvider::PaymentApps apps_;
+  content::InstalledPaymentAppsFinder::PaymentApps apps_;
 
   // A mapping from the payment app scope to the set of the URL-based payment
   // methods that it claims to support, but is not allowed due to the payment

@@ -350,15 +350,16 @@ class SecureChannelBluetoothLowEnergyWeaveClientConnectionTest
             adapter_.get(), 0, multidevice::kTestRemoteDeviceName,
             kTestRemoteDeviceBluetoothAddress, false, false);
     service_ = std::make_unique<NiceMock<device::MockBluetoothGattService>>(
-        mock_bluetooth_device_.get(), kServiceID, service_uuid_, true, false);
+        mock_bluetooth_device_.get(), kServiceID, service_uuid_,
+        /*is_primary=*/true);
     tx_characteristic_ =
         std::make_unique<NiceMock<device::MockBluetoothGattCharacteristic>>(
-            service_.get(), kTXCharacteristicID, tx_characteristic_uuid_, false,
+            service_.get(), kTXCharacteristicID, tx_characteristic_uuid_,
             kCharacteristicProperties,
             device::BluetoothRemoteGattCharacteristic::PERMISSION_NONE);
     rx_characteristic_ =
         std::make_unique<NiceMock<device::MockBluetoothGattCharacteristic>>(
-            service_.get(), kRXCharacteristicID, rx_characteristic_uuid_, false,
+            service_.get(), kRXCharacteristicID, rx_characteristic_uuid_,
             kCharacteristicProperties,
             device::BluetoothRemoteGattCharacteristic::PERMISSION_NONE);
 

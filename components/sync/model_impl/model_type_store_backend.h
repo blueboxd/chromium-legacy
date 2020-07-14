@@ -64,9 +64,11 @@ class ModelTypeStoreBackend
       const std::string& prefix,
       ModelTypeStore::RecordList* record_list);
 
-  // Writes modifications accumulated in |write_batch| to database.
+  // Writes modifications accumulated in |write_batch| to database. If |outcome|
+  // is not null, it will contain the leveldb::Status of this operation.
   base::Optional<ModelError> WriteModifications(
-      std::unique_ptr<leveldb::WriteBatch> write_batch);
+      std::unique_ptr<leveldb::WriteBatch> write_batch,
+      leveldb::Status* outcome = nullptr);
 
   base::Optional<ModelError> DeleteDataAndMetadataForPrefix(
       const std::string& prefix);

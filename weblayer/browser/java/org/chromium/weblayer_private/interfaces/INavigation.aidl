@@ -29,4 +29,7 @@ interface INavigation {
   boolean isDownload() = 9;
 
   boolean wasStopCalled() = 10;
+
+  // @since 86
+  boolean isRendererInitiated() = 11;
 }

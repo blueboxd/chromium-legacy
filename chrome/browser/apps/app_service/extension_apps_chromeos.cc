@@ -778,10 +778,6 @@ void ExtensionAppsChromeOs::SetIconEffect(const std::string& app_id) {
 
 bool ExtensionAppsChromeOs::ShouldRecordAppWindowActivity(
     extensions::AppWindow* app_window) {
-  if (!base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry)) {
-    return false;
-  }
-
   DCHECK(app_window);
 
   const extensions::Extension* extension = app_window->GetExtension();

@@ -10,6 +10,7 @@
 
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/assistant/util/resource_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -23,6 +24,8 @@
 namespace ash {
 
 namespace {
+
+using assistant::util::ResourceLinkType;
 
 // Appearance.
 constexpr SkColor kBackgroundColor = SK_ColorWHITE;
@@ -104,15 +107,19 @@ void SuggestionChipView::InitLayout(const AssistantSuggestion& suggestion) {
   icon_view_->SetImageSize(gfx::Size(kIconSizeDip, kIconSizeDip));
   icon_view_->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
 
-  // Download our icon if necessary. Note that we *don't* hide the associated
-  // view while an image is being downloaded. This prevents layout jank that
-  // would otherwise occur when the image is finally rendered.
-  if (suggestion.icon_url.is_empty()) {
-    icon_view_->SetVisible(false);
+  const GURL& url = suggestion.icon_url;
+  if (assistant::util::IsResourceLinkType(url, ResourceLinkType::kIcon)) {
+    // Handle local images.
+    icon_view_->SetImage(assistant::util::CreateVectorIcon(url, kIconSizeDip));
+  } else if (!suggestion.icon_url.is_empty()) {
+    // Handle remote images.
+    delegate_->DownloadImage(url, base::BindOnce(&SuggestionChipView::SetIcon,
+                                                 weak_factory_.GetWeakPtr()));
   } else {
-    delegate_->DownloadImage(suggestion.icon_url,
-                             base::BindOnce(&SuggestionChipView::SetIcon,
-                                            weak_factory_.GetWeakPtr()));
+    // Only hide the view if we have neither a local or a remote image. In the
+    // case of a remote image, this prevents layout jank that would otherwise
+    // occur if we updated the view visibility only after the image downloaded.
+    icon_view_->SetVisible(false);
   }
 
   // Text.
@@ -168,6 +175,10 @@ bool SuggestionChipView::OnKeyPressed(const ui::KeyEvent& event) {
 void SuggestionChipView::SetIcon(const gfx::ImageSkia& icon) {
   icon_view_->SetImage(icon);
   icon_view_->SetVisible(!icon.isNull());
+}
+
+const gfx::ImageSkia& SuggestionChipView::GetIcon() const {
+  return icon_view_->GetImage();
 }
 
 void SuggestionChipView::SetText(const base::string16& text) {

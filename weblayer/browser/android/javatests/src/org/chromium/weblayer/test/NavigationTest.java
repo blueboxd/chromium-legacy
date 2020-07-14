@@ -67,6 +67,7 @@ public class NavigationTest {
             private List<Uri> mRedirectChain;
             private @LoadError int mLoadError;
             private @NavigationState int mNavigationState;
+            private boolean mIsRendererInitiatedNavigation;
 
             public void notifyCalled(Navigation navigation) {
                 mUri = navigation.getUri();
@@ -75,6 +76,7 @@ public class NavigationTest {
                 mRedirectChain = navigation.getRedirectChain();
                 mLoadError = navigation.getLoadError();
                 mNavigationState = navigation.getState();
+                mIsRendererInitiatedNavigation = navigation.isRendererInitiated();
                 notifyCalled();
             }
 
@@ -110,6 +112,10 @@ public class NavigationTest {
             @NavigationState
             public int getNavigationState() {
                 return mNavigationState;
+            }
+
+            public boolean isRendererInitiated() {
+                return mIsRendererInitiatedNavigation;
             }
         }
 
@@ -224,6 +230,7 @@ public class NavigationTest {
         mCallback.onReadyToCommitCallback.assertCalledWith(curCommittedCount, URL2);
         mCallback.onCompletedCallback.assertCalledWith(curCompletedCount, URL2);
         mCallback.onFirstContentfulPaintCallback.waitForCallback(curOnFirstContentfulPaintCount);
+        assertFalse(mCallback.onStartedCallback.isRendererInitiated());
         assertEquals(mCallback.onCompletedCallback.getHttpStatusCode(), 200);
     }
 
@@ -774,5 +781,19 @@ public class NavigationTest {
             return;
         }
         Assert.fail("Expected IndexOutOfBoundsException.");
+    }
+
+    @Test
+    @SmallTest
+    @MinWebLayerVersion(86)
+    public void testRendererInitiated() throws Exception {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(null);
+        setNavigationCallback(activity);
+        String initialUrl = mActivityTestRule.getTestDataURL("simple_page4.html");
+        mActivityTestRule.navigateAndWait(initialUrl);
+        String refreshUrl = mActivityTestRule.getTestDataURL("simple_page.html");
+        mCallback.onCompletedCallback.assertCalledWith(
+                mCallback.onCompletedCallback.getCallCount(), refreshUrl);
+        assertTrue(mCallback.onCompletedCallback.isRendererInitiated());
     }
 }

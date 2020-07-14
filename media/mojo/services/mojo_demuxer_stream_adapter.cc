@@ -42,10 +42,6 @@ void MojoDemuxerStreamAdapter::Read(ReadCB read_cb) {
                                        weak_factory_.GetWeakPtr()));
 }
 
-bool MojoDemuxerStreamAdapter::IsReadPending() const {
-  return !read_cb_.is_null();
-}
-
 AudioDecoderConfig MojoDemuxerStreamAdapter::audio_decoder_config() {
   DCHECK_EQ(type_, AUDIO);
   return audio_config_;

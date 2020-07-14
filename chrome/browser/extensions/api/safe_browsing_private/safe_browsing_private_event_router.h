@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
@@ -77,6 +78,7 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   static const char kKeyContentType[];
   static const char kKeyContentSize[];
   static const char kKeyTrigger[];
+  static const char kKeyEventResult[];
 
   static const char kKeyPasswordReuseEvent[];
   static const char kKeyPasswordChangedEvent[];
@@ -152,7 +154,8 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
                             const std::string& trigger,
                             safe_browsing::DeepScanAccessPoint access_point,
                             const std::string& reason,
-                            const int64_t content_size);
+                            const int64_t content_size,
+                            safe_browsing::EventResult event_result);
 
   // Notifies listeners that the user saw a download warning.
   // - |url| is the download URL

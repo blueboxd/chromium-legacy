@@ -84,7 +84,7 @@ bool AppSupportsAtLeastOneRequestedMethodData(
 }
 
 void RemovePortNumbersFromScopesForTest(
-    content::PaymentAppProvider::PaymentApps* apps) {
+    content::InstalledPaymentAppsFinder::PaymentApps* apps) {
   GURL::Replacements replacements;
   replacements.ClearPort();
   for (auto& app : *apps) {
@@ -160,9 +160,9 @@ class SelfDeletingServiceWorkerPaymentAppFinder
     finished_using_resources_callback_ =
         std::move(finished_using_resources_callback);
 
-    content::PaymentAppProvider::GetInstance()->GetAllPaymentApps(
-        web_contents->GetBrowserContext(),
-        base::BindOnce(
+    content::InstalledPaymentAppsFinder::GetInstance(
+        web_contents->GetBrowserContext())
+        ->GetAllPaymentApps(base::BindOnce(
             &SelfDeletingServiceWorkerPaymentAppFinder::OnGotAllPaymentApps,
             weak_ptr_factory_.GetWeakPtr()));
   }
@@ -179,7 +179,7 @@ class SelfDeletingServiceWorkerPaymentAppFinder
 
   static void RemoveUnrequestedMethods(
       const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,
-      content::PaymentAppProvider::PaymentApps* apps) {
+      content::InstalledPaymentAppsFinder::PaymentApps* apps) {
     std::set<std::string> requested_methods;
     for (const auto& requested_method_datum : requested_method_data) {
       requested_methods.insert(requested_method_datum->supported_method);
@@ -193,7 +193,8 @@ class SelfDeletingServiceWorkerPaymentAppFinder
     }
   }
 
-  void OnGotAllPaymentApps(content::PaymentAppProvider::PaymentApps apps) {
+  void OnGotAllPaymentApps(
+      content::InstalledPaymentAppsFinder::PaymentApps apps) {
     if (ignore_port_in_origin_comparison_for_testing_)
       RemovePortNumbersFromScopesForTest(&apps);
 
@@ -220,8 +221,9 @@ class SelfDeletingServiceWorkerPaymentAppFinder
                        weak_ptr_factory_.GetWeakPtr()));
   }
 
-  void OnPaymentAppsVerified(content::PaymentAppProvider::PaymentApps apps,
-                             const std::string& error_message) {
+  void OnPaymentAppsVerified(
+      content::InstalledPaymentAppsFinder::PaymentApps apps,
+      const std::string& error_message) {
     if (first_error_message_.empty())
       first_error_message_ = error_message;
 
@@ -382,7 +384,7 @@ class SelfDeletingServiceWorkerPaymentAppFinder
 
   bool ignore_port_in_origin_comparison_for_testing_ = false;
 
-  content::PaymentAppProvider::PaymentApps installed_apps_;
+  content::InstalledPaymentAppsFinder::PaymentApps installed_apps_;
 
   size_t number_of_app_icons_to_update_ = 0;
 
@@ -410,7 +412,7 @@ void ServiceWorkerPaymentAppFinder::GetAllPaymentApps(
                 });
   if (requested_method_data.empty()) {
     std::move(callback).Run(
-        content::PaymentAppProvider::PaymentApps(),
+        content::InstalledPaymentAppsFinder::PaymentApps(),
         std::map<GURL, std::unique_ptr<WebAppInstallationInfo>>(),
         /*error_message=*/"");
     return;
@@ -444,7 +446,7 @@ void ServiceWorkerPaymentAppFinder::GetAllPaymentApps(
 // static
 void ServiceWorkerPaymentAppFinder::RemoveAppsWithoutMatchingMethodData(
     const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,
-    content::PaymentAppProvider::PaymentApps* apps) {
+    content::InstalledPaymentAppsFinder::PaymentApps* apps) {
   for (auto it = apps->begin(); it != apps->end();) {
     if (AppSupportsAtLeastOneRequestedMethodData(*it->second,
                                                  requested_method_data)) {

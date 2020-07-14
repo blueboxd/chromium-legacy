@@ -538,7 +538,7 @@ void ServiceWorkerContextCore::UnregisterServiceWorker(
                      AsWeakPtr(), scope, std::move(callback)));
 }
 
-void ServiceWorkerContextCore::DeleteForOrigin(const GURL& origin,
+void ServiceWorkerContextCore::DeleteForOrigin(const url::Origin& origin,
                                                StatusCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   registry()->GetRegistrationsForOrigin(
@@ -555,7 +555,7 @@ void ServiceWorkerContextCore::PerformStorageCleanup(
 }
 
 void ServiceWorkerContextCore::DidGetRegistrationsForDeleteForOrigin(
-    const GURL& origin,
+    const url::Origin& origin,
     base::OnceCallback<void(blink::ServiceWorkerStatusCode)> callback,
     blink::ServiceWorkerStatusCode status,
     const std::vector<scoped_refptr<ServiceWorkerRegistration>>&

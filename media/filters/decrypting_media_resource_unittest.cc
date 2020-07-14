@@ -34,8 +34,8 @@ using ::testing::StrictMock;
 namespace media {
 
 static constexpr int kFakeBufferSize = 16;
-static constexpr uint8_t kFakeKeyId[] = {0x4b, 0x65, 0x79, 0x20, 0x49, 0x44};
-static constexpr uint8_t kFakeIv[DecryptConfig::kDecryptionKeySize] = {0};
+static constexpr char kFakeKeyId[] = "Key ID";
+static constexpr char kFakeIv[] = "0123456789abcdef";
 
 // Use anonymous namespace here to prevent the actions to be defined multiple
 // times across multiple test files. Sadly we can't use static for them.
@@ -51,20 +51,15 @@ ACTION_P(ReturnBuffer, buffer) {
 class DecryptingMediaResourceTest : public testing::Test {
  public:
   DecryptingMediaResourceTest() {
-    encrypted_buffer_ =
-        scoped_refptr<DecoderBuffer>(new DecoderBuffer(kFakeBufferSize));
-    encrypted_buffer_->set_decrypt_config(DecryptConfig::CreateCencConfig(
-        std::string(reinterpret_cast<const char*>(kFakeKeyId),
-                    base::size(kFakeKeyId)),
-        std::string(reinterpret_cast<const char*>(kFakeIv),
-                    base::size(kFakeIv)),
-        {}));
+    encrypted_buffer_ = base::MakeRefCounted<DecoderBuffer>(kFakeBufferSize);
+    encrypted_buffer_->set_decrypt_config(
+        DecryptConfig::CreateCencConfig(kFakeKeyId, kFakeIv, {}));
 
+    EXPECT_CALL(cdm_context_, RegisterEventCB(_)).Times(AnyNumber());
     EXPECT_CALL(cdm_context_, GetDecryptor())
         .WillRepeatedly(Return(&decryptor_));
     EXPECT_CALL(decryptor_, CanAlwaysDecrypt()).WillRepeatedly(Return(true));
     EXPECT_CALL(decryptor_, CancelDecrypt(_)).Times(AnyNumber());
-    EXPECT_CALL(decryptor_, RegisterNewKeyCB(_, _)).Times(AnyNumber());
     EXPECT_CALL(demuxer_, GetAllStreams())
         .WillRepeatedly(
             Invoke(this, &DecryptingMediaResourceTest::GetAllStreams));

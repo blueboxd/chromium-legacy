@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
@@ -101,7 +102,7 @@ BluetoothSocketWin::~BluetoothSocketWin() {
 void BluetoothSocketWin::Connect(const BluetoothDeviceWin* device,
                                  const BluetoothUUID& uuid,
                                  base::OnceClosure success_callback,
-                                 ErrorCompletionOnceCallback error_callback) {
+                                 ErrorCompletionCallback error_callback) {
   DCHECK(ui_task_runner()->RunsTasksInCurrentSequence());
   DCHECK(device);
 
@@ -137,7 +138,7 @@ void BluetoothSocketWin::Listen(scoped_refptr<BluetoothAdapter> adapter,
                                 const BluetoothUUID& uuid,
                                 const BluetoothAdapter::ServiceOptions& options,
                                 base::OnceClosure success_callback,
-                                ErrorCompletionOnceCallback error_callback) {
+                                ErrorCompletionCallback error_callback) {
   DCHECK(ui_task_runner()->RunsTasksInCurrentSequence());
 
   adapter_ = adapter;
@@ -160,18 +161,18 @@ void BluetoothSocketWin::ResetData() {
   }
 }
 
-void BluetoothSocketWin::Accept(
-    const AcceptCompletionCallback& success_callback,
-    const ErrorCompletionCallback& error_callback) {
+void BluetoothSocketWin::Accept(AcceptCompletionCallback success_callback,
+                                ErrorCompletionCallback error_callback) {
   DCHECK(ui_task_runner()->RunsTasksInCurrentSequence());
 
   socket_thread()->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&BluetoothSocketWin::DoAccept, this,
-                                success_callback, error_callback));
+      FROM_HERE,
+      base::BindOnce(&BluetoothSocketWin::DoAccept, this,
+                     std::move(success_callback), std::move(error_callback)));
 }
 
 void BluetoothSocketWin::DoConnect(base::OnceClosure success_callback,
-                                   ErrorCompletionOnceCallback error_callback) {
+                                   ErrorCompletionCallback error_callback) {
   DCHECK(socket_thread()->task_runner()->RunsTasksInCurrentSequence());
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
@@ -229,7 +230,7 @@ void BluetoothSocketWin::DoConnect(base::OnceClosure success_callback,
 void BluetoothSocketWin::DoListen(const BluetoothUUID& uuid,
                                   int rfcomm_channel,
                                   base::OnceClosure success_callback,
-                                  ErrorCompletionOnceCallback error_callback) {
+                                  ErrorCompletionCallback error_callback) {
   DCHECK(socket_thread()->task_runner()->RunsTasksInCurrentSequence());
   DCHECK(!tcp_socket() && !service_reg_data_);
 
@@ -330,42 +331,44 @@ void BluetoothSocketWin::DoListen(const BluetoothUUID& uuid,
   PostSuccess(std::move(success_callback));
 }
 
-void BluetoothSocketWin::DoAccept(
-    const AcceptCompletionCallback& success_callback,
-    const ErrorCompletionCallback& error_callback) {
+void BluetoothSocketWin::DoAccept(AcceptCompletionCallback success_callback,
+                                  ErrorCompletionCallback error_callback) {
   DCHECK(socket_thread()->task_runner()->RunsTasksInCurrentSequence());
+  auto copyable_error_callback =
+      base::AdaptCallbackForRepeating(std::move(error_callback));
   int result = tcp_socket()->Accept(
       &accept_socket_, &accept_address_,
       base::BindOnce(&BluetoothSocketWin::OnAcceptOnSocketThread, this,
-                     success_callback, error_callback));
+                     std::move(success_callback), copyable_error_callback));
   if (result != net::OK && result != net::ERR_IO_PENDING) {
     LOG(WARNING) << "Failed to accept, net err=" << result;
-    PostErrorCompletion(error_callback, kFailedToAccept);
+    PostErrorCompletion(copyable_error_callback, kFailedToAccept);
   }
 }
 
 void BluetoothSocketWin::OnAcceptOnSocketThread(
-    const AcceptCompletionCallback& success_callback,
-    const ErrorCompletionCallback& error_callback,
+    AcceptCompletionCallback success_callback,
+    ErrorCompletionCallback error_callback,
     int accept_result) {
   DCHECK(socket_thread()->task_runner()->RunsTasksInCurrentSequence());
   if (accept_result != net::OK) {
     LOG(WARNING) << "OnAccept error, net err=" << accept_result;
-    PostErrorCompletion(error_callback, kFailedToAccept);
+    PostErrorCompletion(std::move(error_callback), kFailedToAccept);
     return;
   }
 
   ui_task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&BluetoothSocketWin::OnAcceptOnUI, this,
-                                std::move(accept_socket_), accept_address_,
-                                success_callback, error_callback));
+      FROM_HERE,
+      base::BindOnce(&BluetoothSocketWin::OnAcceptOnUI, this,
+                     std::move(accept_socket_), accept_address_,
+                     std::move(success_callback), std::move(error_callback)));
 }
 
 void BluetoothSocketWin::OnAcceptOnUI(
     std::unique_ptr<net::TCPSocket> accept_socket,
     const net::IPEndPoint& peer_address,
-    const AcceptCompletionCallback& success_callback,
-    const ErrorCompletionCallback& error_callback) {
+    AcceptCompletionCallback success_callback,
+    ErrorCompletionCallback error_callback) {
   DCHECK(ui_task_runner()->RunsTasksInCurrentSequence());
 
   const std::string peer_device_address =
@@ -374,14 +377,14 @@ void BluetoothSocketWin::OnAcceptOnUI(
   if (!peer_device) {
     LOG(WARNING) << "OnAccept failed with unknown device, addr="
                  << peer_device_address;
-    error_callback.Run(kFailedToAccept);
+    std::move(error_callback).Run(kFailedToAccept);
     return;
   }
 
   scoped_refptr<BluetoothSocketWin> peer_socket =
       CreateBluetoothSocket(ui_task_runner(), socket_thread());
   peer_socket->SetTCPSocket(std::move(accept_socket));
-  success_callback.Run(peer_device, peer_socket);
+  std::move(success_callback).Run(peer_device, peer_socket);
 }
 
 }  // namespace device

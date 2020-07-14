@@ -99,7 +99,7 @@ class V8StringResource {
                                mode_);
     }
 
-    return g_null_atom;
+    return string_;
   }
 
  private:

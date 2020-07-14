@@ -144,11 +144,26 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
   // Mock out demuxer reads.
   void ConfigureDemuxerStream(bool supports_config_changes) {
     EXPECT_CALL(demuxer_stream_, OnRead(_))
-        .WillRepeatedly(RunOnceCallback<0>(
-            DemuxerStream::kOk,
-            scoped_refptr<DecoderBuffer>(new DecoderBuffer(0))));
+        .WillRepeatedly(Invoke(this, &AudioRendererImplTest::OnDemuxerRead));
     EXPECT_CALL(demuxer_stream_, SupportsConfigChanges())
         .WillRepeatedly(Return(supports_config_changes));
+  }
+
+  void OnDemuxerRead(DemuxerStream::ReadCB& read_cb) {
+    if (simulate_demuxer_stall_) {
+      simulate_demuxer_stall_ = false;
+      stalled_demixer_read_cb_ = std::move(read_cb);
+      return;
+    }
+    scoped_refptr<DecoderBuffer> decoder_buffer(new DecoderBuffer(0));
+    std::move(read_cb).Run(DemuxerStream::kOk, decoder_buffer);
+  }
+
+  bool IsDemuxerStalled() { return !!stalled_demixer_read_cb_; }
+
+  void UnstallDemuxer() {
+    EXPECT_TRUE(IsDemuxerStalled());
+    OnDemuxerRead(stalled_demixer_read_cb_);
   }
 
   // Reconfigures a renderer without config change support using given params.
@@ -295,7 +310,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
     SatisfyPendingRead(InputFrames(kInputFramesChunk));
     flush_event.RunAndWait();
 
-    EXPECT_FALSE(IsReadPending());
+    EXPECT_FALSE(IsDecodePending());
   }
 
   void Preroll() { Preroll(base::TimeDelta(), base::TimeDelta(), PIPELINE_OK); }
@@ -324,7 +339,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
 
   void StopTicking() { renderer_->StopTicking(); }
 
-  bool IsReadPending() const { return !!decode_cb_; }
+  bool IsDecodePending() const { return !!decode_cb_; }
 
   void WaitForPendingRead() {
     SCOPED_TRACE("WaitForPendingRead()");
@@ -387,12 +402,12 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
   // Delivers frames until |renderer_|'s internal buffer is full and no longer
   // has pending reads.
   void DeliverRemainingAudio() {
-    // NOTE: !IsReadPending() -> frames_remaining_in_buffer() == 0... but the
+    // NOTE: !IsDecodePending() -> frames_remaining_in_buffer() == 0... but the
     // arrow is unidirectional! DecoderStream does its own buffering of decoded
     // output such that it generally triggers reads even after the renderer's
     // buffer is full. Hence, the loop below must check both of the conditions
     // to ensure no pending reads exist after the function returns.
-    while (frames_remaining_in_buffer().value > 0 || IsReadPending()) {
+    while (frames_remaining_in_buffer().value > 0 || IsDecodePending()) {
       SatisfyPendingRead(InputFrames(kInputFramesChunk));
     }
   }
@@ -559,6 +574,11 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
   MockDemuxerStream demuxer_stream_;
   MockMediaClient media_client_;
 
+  // When |simulate_demuxer_stall_| is set OnDemuxerRead() will put the callback
+  // in  |stalled_demixer_read_cb_| instead of calling it.
+  bool simulate_demuxer_stall_ = false;
+  DemuxerStream::ReadCB stalled_demixer_read_cb_;
+
   // Used for satisfying reads.
   AudioDecoder::OutputCB output_cb_;
   AudioDecoder::DecodeCB decode_cb_;
@@ -595,7 +615,7 @@ TEST_F(AudioRendererImplTest, ReinitializeForDifferentStream) {
 
   // Stop playback and flush
   StopTicking();
-  EXPECT_TRUE(IsReadPending());
+  EXPECT_TRUE(IsDecodePending());
   // Flush and expect to be notified that we have nothing.
   EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING, _));
   FlushDuringPendingRead();
@@ -711,7 +731,6 @@ TEST_F(AudioRendererImplTest, DecoderUnderflow) {
   // pending read.
   EXPECT_CALL(
       *this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING, DECODER_UNDERFLOW));
-  EXPECT_CALL(demuxer_stream_, IsReadPending()).WillOnce(Return(false));
   EXPECT_FALSE(ConsumeBufferedData(OutputFrames(1)));
 
   // Verify we're still not getting audio data.
@@ -741,7 +760,6 @@ TEST_F(AudioRendererImplTest, DemuxerUnderflow) {
   // pending read.
   EXPECT_CALL(
       *this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING, DEMUXER_UNDERFLOW));
-  EXPECT_CALL(demuxer_stream_, IsReadPending()).WillOnce(Return(true));
   EXPECT_FALSE(ConsumeBufferedData(OutputFrames(1)));
 
   // Verify we're still not getting audio data.
@@ -751,6 +769,12 @@ TEST_F(AudioRendererImplTest, DemuxerUnderflow) {
   // Deliver enough data to have enough for buffering.
   EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH,
                                             BUFFERING_CHANGE_REASON_UNKNOWN));
+
+  // Stall the demuxer to trigger underflow.
+  simulate_demuxer_stall_ = true;
+  SatisfyPendingRead(InputFrames(kInputFramesChunk));
+  UnstallDemuxer();
+
   DeliverRemainingAudio();
 
   // Verify we're getting audio data.
@@ -943,7 +967,7 @@ TEST_F(AudioRendererImplTest, PendingRead_Flush) {
 
   StopTicking();
 
-  EXPECT_TRUE(IsReadPending());
+  EXPECT_TRUE(IsDecodePending());
 
   // Flush and expect to be notified that we have nothing.
   EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING, _));
@@ -967,7 +991,7 @@ TEST_F(AudioRendererImplTest, PendingRead_Destroy) {
 
   StopTicking();
 
-  EXPECT_TRUE(IsReadPending());
+  EXPECT_TRUE(IsDecodePending());
 
   renderer_.reset();
 }
@@ -984,7 +1008,7 @@ TEST_F(AudioRendererImplTest, PendingFlush_Destroy) {
 
   StopTicking();
 
-  EXPECT_TRUE(IsReadPending());
+  EXPECT_TRUE(IsDecodePending());
 
   // Start flushing.
   WaitableMessageLoopEvent flush_event;

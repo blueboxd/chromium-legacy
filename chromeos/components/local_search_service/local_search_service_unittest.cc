@@ -21,8 +21,18 @@ class LocalSearchServiceTest : public testing::Test {
   LocalSearchService service_;
 };
 
-TEST_F(LocalSearchServiceTest, GetIndex) {
-  Index* const index = service_.GetIndex(IndexId::kCrosSettings);
+TEST_F(LocalSearchServiceTest, GetLinearMapSearch) {
+  Index* const index = service_.GetIndex(
+      IndexId::kCrosSettings, Backend::kLinearMap, nullptr /* local_state */);
+  CHECK(index);
+
+  EXPECT_EQ(index->GetSize(), 0u);
+}
+
+TEST_F(LocalSearchServiceTest, GetInvertedIndexSearch) {
+  Index* const index =
+      service_.GetIndex(IndexId::kCrosSettings, Backend::kInvertedIndex,
+                        nullptr /* local_state */);
   CHECK(index);
 
   EXPECT_EQ(index->GetSize(), 0u);

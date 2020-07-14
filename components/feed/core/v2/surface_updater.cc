@@ -5,9 +5,11 @@
 #include "components/feed/core/v2/surface_updater.h"
 
 #include <tuple>
+#include <utility>
 
 #include "base/check.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/feed/core/proto/v2/xsurface.pb.h"
 #include "components/feed/core/v2/feed_stream.h"
 #include "components/feed/core/v2/metrics_reporter.h"
 
@@ -171,11 +173,11 @@ void SurfaceUpdater::SetModel(StreamModel* model) {
   if (model_ == model)
     return;
   if (model_)
-    model_->SetObserver(nullptr);
+    model_->RemoveObserver(this);
   model_ = model;
   sent_content_.clear();
   if (model_) {
-    model_->SetObserver(this);
+    model_->AddObserver(this);
     loading_initial_ = loading_initial_ && model_->GetContentList().empty();
     loading_more_ = false;
     SendStreamUpdate(model_->GetSharedStateIds());
@@ -200,6 +202,12 @@ void SurfaceUpdater::OnUiUpdate(const StreamModel::UiUpdate& update) {
 
 void SurfaceUpdater::SurfaceAdded(SurfaceInterface* surface) {
   SendUpdateToSurface(surface, GetUpdateForNewSurface(GetState(), model_));
+
+  for (const auto& datastore_entry : xsurface_datastore_entries_) {
+    surface->ReplaceDataStoreEntry(datastore_entry.first,
+                                   datastore_entry.second);
+  }
+
   surfaces_.AddObserver(surface);
 }
 
@@ -292,6 +300,35 @@ void SurfaceUpdater::SendUpdateToSurface(SurfaceInterface* surface,
   if (!update_has_content)
     return;
   metrics_reporter_->SurfaceReceivedContent(surface->GetSurfaceId());
+}
+
+void SurfaceUpdater::SetOfflinePageAvailability(const std::string& badge_id,
+                                                bool available_offline) {
+  feedxsurface::OfflineBadgeContent testbadge;
+  if (available_offline) {
+    std::string badge_serialized;
+    testbadge.set_available_offline(available_offline);
+    testbadge.SerializeToString(&badge_serialized);
+    InsertDatastoreEntry(badge_id, badge_serialized);
+  } else {
+    RemoveDatastoreEntry(badge_id);
+  }
+}
+
+void SurfaceUpdater::InsertDatastoreEntry(const std::string& key,
+                                          const std::string& value) {
+  xsurface_datastore_entries_[key] = value;
+  for (SurfaceInterface& surface : surfaces_) {
+    surface.ReplaceDataStoreEntry(key, value);
+  }
+}
+
+void SurfaceUpdater::RemoveDatastoreEntry(const std::string& key) {
+  if (xsurface_datastore_entries_.erase(key) == 1) {
+    for (SurfaceInterface& surface : surfaces_) {
+      surface.RemoveDataStoreEntry(key);
+    }
+  }
 }
 
 }  // namespace feed

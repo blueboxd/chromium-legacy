@@ -11,12 +11,12 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/display/display.h"
+#include "ui/display/types/native_display_delegate.h"
 #include "ui/display/types/native_display_observer.h"
 
 namespace display {
 class DisplayMode;
 class DisplaySnapshot;
-class NativeDisplayDelegate;
 struct GammaRampRGBEntry;
 }  // namespace display
 
@@ -45,8 +45,8 @@ class CastDisplayConfigurator : public display::NativeDisplayObserver {
   void OnConfigurationChanged() override;
   void OnDisplaySnapshotsInvalidated() override {}
 
-  void EnableDisplay();
-  void DisableDisplay();
+  void EnableDisplay(display::ConfigureCallback callback);
+  void DisableDisplay(display::ConfigureCallback callback);
 
   void ConfigureDisplayFromCommandLine();
   void SetColorMatrix(const std::vector<float>& color_matrix);

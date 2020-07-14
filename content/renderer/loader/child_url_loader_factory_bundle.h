@@ -58,9 +58,18 @@ class CONTENT_EXPORT ChildPendingURLLoaderFactoryBundle
     return pending_prefetch_loader_factory_;
   }
 
+  void MarkAsDeprecatedProcessWideFactory() {
+    is_deprecated_process_wide_factory_ = true;
+  }
+  bool is_deprecated_process_wide_factory() const {
+    return is_deprecated_process_wide_factory_;
+  }
+
  protected:
   // PendingURLLoaderFactoryBundle overrides.
   scoped_refptr<network::SharedURLLoaderFactory> CreateFactory() override;
+
+  bool is_deprecated_process_wide_factory_ = false;
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory>
       direct_network_factory_remote_;
@@ -119,6 +128,10 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
 
   virtual bool IsHostChildURLLoaderFactoryBundle() const;
 
+  void MarkAsDeprecatedProcessWideFactory() {
+    is_deprecated_process_wide_factory_ = true;
+  }
+
  protected:
   ~ChildURLLoaderFactoryBundle() override;
 
@@ -134,6 +147,8 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
   FactoryGetterCallback direct_network_factory_getter_;
   mojo::Remote<network::mojom::URLLoaderFactory> direct_network_factory_;
   mojo::Remote<network::mojom::URLLoaderFactory> prefetch_loader_factory_;
+
+  bool is_deprecated_process_wide_factory_ = false;
 
   std::map<GURL, mojom::TransferrableURLLoaderPtr> subresource_overrides_;
 };

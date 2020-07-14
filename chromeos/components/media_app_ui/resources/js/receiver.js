@@ -191,14 +191,39 @@ const DELEGATE = {
     return /** @type {?string} */ (response['errorMessage']);
   },
   /**
+   * @param {string} suggestedName
+   * @param {string} mimeType
+   * @return {!Promise<number>}
+   */
+  async requestSaveFile(suggestedName, mimeType) {
+    /** @type {!RequestSaveFileMessage} */
+    const msg = {suggestedName, mimeType};
+    const response =
+        /** @type {!RequestSaveFileResponse} */ (
+            await parentMessagePipe.sendMessage(
+                Message.REQUEST_SAVE_FILE, msg));
+    return response.token;
+  },
+  /**
    * @param {!mediaApp.AbstractFile} abstractFile
+   * @param {number} token
+   * @this {mediaApp.ClientApiDelegate}
    * @return {!Promise<undefined>}
    */
-  async saveCopy(abstractFile) {
+  async saveCopy(abstractFile, token) {
+    if (token === undefined) {
+      // The guest frame must be running an older version of backlight which is
+      // assuming the `saveCopy(abstractFile)` interface. Make the
+      // requestSaveFile call on its behalf for backwards compatibility.
+      // TODO(b/160938402): remove this.
+      token =
+          await this.requestSaveFile(abstractFile.name, abstractFile.mimeType);
+    }
+
     /** @type {!SaveCopyMessage} */
-    const msg = {blob: abstractFile.blob, suggestedName: abstractFile.name};
+    const msg = {blob: abstractFile.blob, token};
     await parentMessagePipe.sendMessage(Message.SAVE_COPY, msg);
-  }
+  },
 };
 
 /**

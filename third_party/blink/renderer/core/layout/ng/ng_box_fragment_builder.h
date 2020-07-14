@@ -201,6 +201,15 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // descendants, propagating fragmentainer breaks, and more.
   void AddResult(const NGLayoutResult&, const LogicalOffset);
 
+  void AddChild(scoped_refptr<const NGPhysicalTextFragment> child,
+                const LogicalOffset& offset) {
+    AddChildInternal(child, offset);
+  }
+
+  void AddChild(const NGPhysicalContainerFragment&,
+                const LogicalOffset&,
+                const LayoutInline* inline_container = nullptr);
+
   // Manually add a break token to the builder. Note that we're assuming that
   // this break token is for content in the same flow as this parent.
   void AddBreakToken(scoped_refptr<const NGBreakToken>,
@@ -492,6 +501,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   NGBlockNode column_spanner_ = nullptr;
 
   NGPhysicalFragment::NGBoxType box_type_;
+  bool may_have_descendant_above_block_start_ = false;
   bool is_fieldset_container_ = false;
   bool is_initial_block_size_indefinite_ = false;
   bool is_inline_formatting_context_;

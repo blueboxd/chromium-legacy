@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "content/public/browser/navigation_handle_timing.h"
+#include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
@@ -42,10 +43,10 @@ class NavigationHandleObserver : public WebContentsObserver {
     return resolve_error_info_;
   }
   base::TimeTicks navigation_start() { return navigation_start_; }
-
   const NavigationHandleTiming& navigation_handle_timing() {
     return navigation_handle_timing_;
   }
+  ReloadType reload_type() { return reload_type_; }
 
  private:
   // A reference to the NavigationHandle so this class will track only
@@ -70,6 +71,7 @@ class NavigationHandleObserver : public WebContentsObserver {
   net::ResolveErrorInfo resolve_error_info_;
   base::TimeTicks navigation_start_;
   NavigationHandleTiming navigation_handle_timing_;
+  ReloadType reload_type_ = ReloadType::NONE;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationHandleObserver);
 };

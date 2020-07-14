@@ -13,7 +13,7 @@ class ServiceWorkerPaymentAppFinderTest : public testing::Test {
  protected:
   void RemoveAppsWithoutMatchingMethodData(
       const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,
-      content::PaymentAppProvider::PaymentApps* apps) {
+      content::InstalledPaymentAppsFinder::PaymentApps* apps) {
     ServiceWorkerPaymentAppFinder::RemoveAppsWithoutMatchingMethodData(
         requested_method_data, apps);
   }
@@ -24,7 +24,7 @@ TEST_F(ServiceWorkerPaymentAppFinderTest,
   std::vector<mojom::PaymentMethodDataPtr> requested_methods;
   requested_methods.emplace_back(mojom::PaymentMethodData::New());
   requested_methods.back()->supported_method = "method";
-  content::PaymentAppProvider::PaymentApps no_apps;
+  content::InstalledPaymentAppsFinder::PaymentApps no_apps;
 
   RemoveAppsWithoutMatchingMethodData(requested_methods, &no_apps);
 
@@ -34,7 +34,7 @@ TEST_F(ServiceWorkerPaymentAppFinderTest,
 TEST_F(ServiceWorkerPaymentAppFinderTest,
        RemoveAppsWithoutMatchingMethodData_NoMethods) {
   std::vector<mojom::PaymentMethodDataPtr> no_requested_methods;
-  content::PaymentAppProvider::PaymentApps apps;
+  content::InstalledPaymentAppsFinder::PaymentApps apps;
   apps[0] = std::make_unique<content::StoredPaymentApp>();
   apps[0]->enabled_methods = {"method1", "method2"};
 
@@ -52,7 +52,7 @@ TEST_F(ServiceWorkerPaymentAppFinderTest,
   requested_methods.back()->supported_method = "method2";
   requested_methods.emplace_back(mojom::PaymentMethodData::New());
   requested_methods.back()->supported_method = "method3";
-  content::PaymentAppProvider::PaymentApps apps;
+  content::InstalledPaymentAppsFinder::PaymentApps apps;
   apps[0] = std::make_unique<content::StoredPaymentApp>();
   apps[0]->enabled_methods = {"method2"};
   apps[1] = std::make_unique<content::StoredPaymentApp>();
@@ -76,7 +76,7 @@ TEST_F(ServiceWorkerPaymentAppFinderTest,
   std::vector<mojom::PaymentMethodDataPtr> requested_methods;
   requested_methods.emplace_back(mojom::PaymentMethodData::New());
   requested_methods.back()->supported_method = "basic-card";
-  content::PaymentAppProvider::PaymentApps apps;
+  content::InstalledPaymentAppsFinder::PaymentApps apps;
   apps[0] = std::make_unique<content::StoredPaymentApp>();
   apps[0]->enabled_methods = {"basic-card"};
 
@@ -95,7 +95,7 @@ TEST_F(ServiceWorkerPaymentAppFinderTest,
   requested_methods.back()->supported_method = "basic-card";
   requested_methods.back()->supported_networks = {
       mojom::BasicCardNetwork::AMEX};
-  content::PaymentAppProvider::PaymentApps apps;
+  content::InstalledPaymentAppsFinder::PaymentApps apps;
   apps[0] = std::make_unique<content::StoredPaymentApp>();
   apps[0]->enabled_methods = {"basic-card"};
 
@@ -111,7 +111,7 @@ TEST_F(ServiceWorkerPaymentAppFinderTest,
   requested_methods.back()->supported_method = "basic-card";
   requested_methods.back()->supported_networks = {
       mojom::BasicCardNetwork::AMEX};
-  content::PaymentAppProvider::PaymentApps apps;
+  content::InstalledPaymentAppsFinder::PaymentApps apps;
   apps[0] = std::make_unique<content::StoredPaymentApp>();
   apps[0]->enabled_methods = {"basic-card"};
   apps[0]->capabilities.emplace_back();
@@ -128,7 +128,7 @@ TEST_F(ServiceWorkerPaymentAppFinderTest,
   std::vector<mojom::PaymentMethodDataPtr> requested_methods;
   requested_methods.emplace_back(mojom::PaymentMethodData::New());
   requested_methods.back()->supported_method = "basic-card";
-  content::PaymentAppProvider::PaymentApps apps;
+  content::InstalledPaymentAppsFinder::PaymentApps apps;
   apps[0] = std::make_unique<content::StoredPaymentApp>();
   apps[0]->enabled_methods = {"basic-card"};
   apps[0]->capabilities.emplace_back();
@@ -155,7 +155,7 @@ TEST_F(ServiceWorkerPaymentAppFinderTest,
   requested_methods.back()->supported_method = "basic-card";
   requested_methods.back()->supported_networks = {
       mojom::BasicCardNetwork::AMEX, mojom::BasicCardNetwork::DINERS};
-  content::PaymentAppProvider::PaymentApps apps;
+  content::InstalledPaymentAppsFinder::PaymentApps apps;
   apps[0] = std::make_unique<content::StoredPaymentApp>();
   apps[0]->enabled_methods = {"basic-card"};
   apps[0]->capabilities.emplace_back();
@@ -182,7 +182,7 @@ TEST_F(ServiceWorkerPaymentAppFinderTest,
   std::vector<mojom::PaymentMethodDataPtr> requested_methods;
   requested_methods.emplace_back(mojom::PaymentMethodData::New());
   requested_methods.back()->supported_method = "unknown-method";
-  content::PaymentAppProvider::PaymentApps apps;
+  content::InstalledPaymentAppsFinder::PaymentApps apps;
   apps[0] = std::make_unique<content::StoredPaymentApp>();
   apps[0]->enabled_methods = {"unknown-method"};
   apps[0]->capabilities.emplace_back();

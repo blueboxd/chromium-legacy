@@ -140,7 +140,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
                                  FindRegistrationDataCallback callback);
 
   // Returns all stored registrations for a given origin.
-  void GetRegistrationsForOrigin(const GURL& origin,
+  void GetRegistrationsForOrigin(const url::Origin& origin,
                                  GetRegistrationsDataCallback callback);
 
   // Reads the total resource size stored in the storage for a given origin.

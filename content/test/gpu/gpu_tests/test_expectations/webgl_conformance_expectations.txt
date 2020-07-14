@@ -133,6 +133,13 @@ crbug.com/979444 [ mac no-passthrough no-asan ] conformance/textures/misc/textur
 crbug.com/979444 [ win ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ android ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 
+# TODO(crbug.com/1097338): simplify this expectation once fuchsia case is fixed
+crbug.com/1105129 [ android ] conformance/context/context-creation.html [ RetryOnFailure ]
+crbug.com/1105129 [ chromeos ] conformance/context/context-creation.html [ RetryOnFailure ]
+crbug.com/1105129 [ linux ] conformance/context/context-creation.html [ RetryOnFailure ]
+crbug.com/1105129 [ mac ] conformance/context/context-creation.html [ RetryOnFailure ]
+crbug.com/1105129 [ win ] conformance/context/context-creation.html [ RetryOnFailure ]
+
 # Win / AMD / Passthrough command decoder / D3D11
 crbug.com/685232 [ win amd d3d11 passthrough ] conformance/textures/misc/copytexsubimage2d-subrects.html [ RetryOnFailure ]
 crbug.com/772037 [ win7 debug amd d3d11 passthrough ] conformance/textures/misc/texture-sub-image-cube-maps.html [ RetryOnFailure ]

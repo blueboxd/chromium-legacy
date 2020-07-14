@@ -38,9 +38,9 @@ class ScopedFreezeBlinkAXTreeSource {
   DISALLOW_COPY_AND_ASSIGN(ScopedFreezeBlinkAXTreeSource);
 };
 
-class BlinkAXTreeSource : public ui::AXTreeSource<blink::WebAXObject,
-                                                  AXContentNodeData,
-                                                  ui::AXTreeData> {
+class CONTENT_EXPORT BlinkAXTreeSource
+    : public ui::
+          AXTreeSource<blink::WebAXObject, AXContentNodeData, ui::AXTreeData> {
  public:
   BlinkAXTreeSource(RenderFrameImpl* render_frame, ui::AXMode mode);
   ~BlinkAXTreeSource() override;

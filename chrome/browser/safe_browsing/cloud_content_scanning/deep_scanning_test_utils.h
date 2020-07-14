@@ -67,7 +67,8 @@ class EventReportValidator {
                                 const std::string& expected_trigger,
                                 const std::string& expected_reason,
                                 const std::set<std::string>* expected_mimetypes,
-                                int expected_content_size);
+                                int expected_content_size,
+                                const std::string& expected_result);
 
   // Closure to run once all expected events are validated.
   void SetDoneClosure(base::RepeatingClosure closure);
@@ -101,6 +102,7 @@ class EventReportValidator {
   base::Optional<bool> clicked_through_ = base::nullopt;
   base::Optional<int> content_size_ = base::nullopt;
   const std::set<std::string>* mimetypes_ = nullptr;
+  base::Optional<std::string> result_ = base::nullopt;
 
   base::RepeatingClosure done_closure_;
 };

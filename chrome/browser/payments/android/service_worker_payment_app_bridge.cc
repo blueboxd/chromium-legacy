@@ -24,6 +24,7 @@
 #include "components/payments/content/service_worker_payment_app_finder.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/installed_payment_apps_finder.h"
 #include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -64,7 +65,7 @@ using ::payments::mojom::PaymentShippingType;
 
 void OnHasServiceWorkerPaymentAppsResponse(
     const JavaRef<jobject>& jcallback,
-    content::PaymentAppProvider::PaymentApps apps) {
+    content::InstalledPaymentAppsFinder::PaymentApps apps) {
   JNIEnv* env = AttachCurrentThread();
 
   Java_ServiceWorkerPaymentAppBridge_onHasServiceWorkerPaymentApps(
@@ -73,7 +74,7 @@ void OnHasServiceWorkerPaymentAppsResponse(
 
 void OnGetServiceWorkerPaymentAppsInfo(
     const JavaRef<jobject>& jcallback,
-    content::PaymentAppProvider::PaymentApps apps) {
+    content::InstalledPaymentAppsFinder::PaymentApps apps) {
   JNIEnv* env = AttachCurrentThread();
 
   base::android::ScopedJavaLocalRef<jobject> jappsInfo =
@@ -100,19 +101,21 @@ static void JNI_ServiceWorkerPaymentAppBridge_HasServiceWorkerPaymentApps(
     const JavaParamRef<jobject>& jcallback) {
   // Checks whether there is a installed service worker payment app through
   // GetAllPaymentApps.
-  content::PaymentAppProvider::GetInstance()->GetAllPaymentApps(
-      ProfileManager::GetActiveUserProfile(),
-      base::BindOnce(&OnHasServiceWorkerPaymentAppsResponse,
-                     ScopedJavaGlobalRef<jobject>(env, jcallback)));
+  content::InstalledPaymentAppsFinder::GetInstance(
+      ProfileManager::GetActiveUserProfile())
+      ->GetAllPaymentApps(
+          base::BindOnce(&OnHasServiceWorkerPaymentAppsResponse,
+                         ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
 
 static void JNI_ServiceWorkerPaymentAppBridge_GetServiceWorkerPaymentAppsInfo(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcallback) {
-  content::PaymentAppProvider::GetInstance()->GetAllPaymentApps(
-      ProfileManager::GetActiveUserProfile(),
-      base::BindOnce(&OnGetServiceWorkerPaymentAppsInfo,
-                     ScopedJavaGlobalRef<jobject>(env, jcallback)));
+  content::InstalledPaymentAppsFinder::GetInstance(
+      ProfileManager::GetActiveUserProfile())
+      ->GetAllPaymentApps(
+          base::BindOnce(&OnGetServiceWorkerPaymentAppsInfo,
+                         ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
 
 static void JNI_ServiceWorkerPaymentAppBridge_OnClosingPaymentAppWindow(

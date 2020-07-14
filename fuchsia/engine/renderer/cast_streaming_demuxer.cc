@@ -121,7 +121,6 @@ class CastStreamingDemuxerStream : public media::DemuxerStream,
     pending_read_cb_ = std::move(read_cb);
     CompletePendingRead();
   }
-  bool IsReadPending() const final { return !pending_read_cb_.is_null(); }
   Liveness liveness() const final { return Liveness::LIVENESS_LIVE; }
   bool SupportsConfigChanges() final { return false; }
 

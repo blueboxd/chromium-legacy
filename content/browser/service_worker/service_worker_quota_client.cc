@@ -66,8 +66,7 @@ void ServiceWorkerQuotaClient::DeleteOriginData(const url::Origin& origin,
                                                 DeletionCallback callback) {
   DCHECK_EQ(type, StorageType::kTemporary);
   context_->DeleteForOrigin(
-      origin.GetURL(),
-      base::BindOnce(&ReportToQuotaStatus, std::move(callback)));
+      origin, base::BindOnce(&ReportToQuotaStatus, std::move(callback)));
 }
 
 void ServiceWorkerQuotaClient::PerformStorageCleanup(

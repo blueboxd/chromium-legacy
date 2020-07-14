@@ -16,7 +16,6 @@
 #include "base/time/time.h"
 #include "crypto/symmetric_key.h"
 #include "media/base/audio_decoder_config.h"
-#include "media/base/callback_registry.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
@@ -338,18 +337,8 @@ bool AesDecryptor::UpdateSessionWithJWK(const std::string& session_id,
 void AesDecryptor::FinishUpdate(const std::string& session_id,
                                 bool key_added,
                                 std::unique_ptr<SimpleCdmPromise> promise) {
-  {
-    base::AutoLock auto_lock(new_key_cb_lock_);
-
-    if (new_audio_key_cb_)
-      new_audio_key_cb_.Run();
-
-    if (new_video_key_cb_)
-      new_video_key_cb_.Run();
-  }
-
+  event_callbacks_.Notify(Event::kHasAdditionalUsableKey);
   promise->resolve();
-
   session_keys_change_cb_.Run(
       session_id, key_added,
       GenerateKeysInfoList(session_id, CdmKeyInformation::USABLE));
@@ -457,8 +446,7 @@ CdmContext* AesDecryptor::GetCdmContext() {
 
 std::unique_ptr<CallbackRegistration> AesDecryptor::RegisterEventCB(
     EventCB event_cb) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return event_callbacks_.Register(std::move(event_cb));
 }
 
 Decryptor* AesDecryptor::GetDecryptor() {
@@ -467,22 +455,6 @@ Decryptor* AesDecryptor::GetDecryptor() {
 
 int AesDecryptor::GetCdmId() const {
   return kInvalidCdmId;
-}
-
-void AesDecryptor::RegisterNewKeyCB(StreamType stream_type,
-                                    NewKeyCB new_key_cb) {
-  base::AutoLock auto_lock(new_key_cb_lock_);
-
-  switch (stream_type) {
-    case kAudio:
-      new_audio_key_cb_ = std::move(new_key_cb);
-      break;
-    case kVideo:
-      new_video_key_cb_ = std::move(new_key_cb);
-      break;
-    default:
-      NOTREACHED();
-  }
 }
 
 void AesDecryptor::Decrypt(StreamType stream_type,

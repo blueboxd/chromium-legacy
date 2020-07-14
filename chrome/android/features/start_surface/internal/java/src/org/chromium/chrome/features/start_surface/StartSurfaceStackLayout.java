@@ -6,6 +6,8 @@ package org.chromium.chrome.features.start_surface;
 
 import android.content.Context;
 
+import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
@@ -18,8 +20,9 @@ public class StartSurfaceStackLayout extends StackLayout {
     private boolean mIsInitialized;
 
     public StartSurfaceStackLayout(Context context, LayoutUpdateHost updateHost,
-            LayoutRenderHost renderHost, StartSurface startSurface) {
-        super(context, updateHost, renderHost);
+            LayoutRenderHost renderHost, StartSurface startSurface,
+            ObservableSupplier<BrowserControlsStateProvider> browserControlsStateProviderSupplier) {
+        super(context, updateHost, renderHost, browserControlsStateProviderSupplier);
 
         mCoordinator = (StartSurfaceCoordinator) startSurface;
         mCoordinator.setOnTabSelectingListener(this::onTabSelecting);

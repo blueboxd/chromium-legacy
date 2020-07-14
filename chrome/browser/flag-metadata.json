@@ -144,11 +144,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "app-service-instance-registry",
-    "owners": [ "//components/services/app_service/OWNERS" ],
-    "expiry_milestone": 85
-  },
-  {
     "name": "app-service-intent-handling",
     "owners": [ "chromeos-apps-foundation-team@google.com" ],
     "expiry_milestone": 85
@@ -2674,6 +2669,11 @@
   {
     "name": "force-empty-CORB-and-CORS-allowlist",
     "owners": [ "lukasza", "creis", "rdcronin" ],
+    "expiry_milestone": 89
+  },
+  {
+    "name": "force-preferred-interval-for-video",
+    "owners": [ "khushalsagar" ],
     "expiry_milestone": 89
   },
   {

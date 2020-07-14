@@ -4,6 +4,9 @@
 
 #include "cc/metrics/frame_sequence_tracker_collection.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/memory/ptr_util.h"
 #include "cc/metrics/compositor_frame_reporting_controller.h"
 #include "cc/metrics/frame_sequence_tracker.h"
@@ -33,6 +36,8 @@ FrameSequenceTrackerCollection::FrameSequenceTrackerCollection(
 FrameSequenceTrackerCollection::~FrameSequenceTrackerCollection() {
   frame_trackers_.clear();
   removal_trackers_.clear();
+  custom_frame_trackers_.clear();
+  accumulated_metrics_.clear();
 }
 
 FrameSequenceTracker* FrameSequenceTrackerCollection::StartSequenceInternal(

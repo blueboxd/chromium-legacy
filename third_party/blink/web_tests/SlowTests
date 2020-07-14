@@ -544,3 +544,5 @@ crbug.com/1048136 http/tests/subresource_filter/overlay-popup-non-ad-followed-by
 
 crbug.com/1093849 external/wpt/dom/nodes/Element-classlist.html [ Slow ]
 crbug.com/1093853 external/wpt/dom/ranges/Range-surroundContents.html [ Slow ]
+
+crbug.com/1104091 [ Linux ] webcodecs/videoframe-imagebitmap.html [ Slow ]

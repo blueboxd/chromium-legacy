@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 
@@ -231,6 +232,15 @@ void NGSimplifiedLayoutAlgorithm::AddChildFragment(
       WritingModeConverter(writing_direction_,
                            previous_physical_container_size_)
           .ToLogical(old_fragment.Offset(), new_fragment.Size());
+
+  // Un-apply the relative position offset.
+  if (const auto* box_child = DynamicTo<NGPhysicalBoxFragment>(*old_fragment)) {
+    if (box_child->Style().GetPosition() == EPosition::kRelative) {
+      child_offset -= ComputeRelativeOffsetForBoxFragment(
+          *box_child, ConstraintSpace().GetWritingDirection(),
+          container_builder_.ChildAvailableSize());
+    }
+  }
 
   // Add the new fragment to the builder.
   container_builder_.AddChild(new_fragment, child_offset);

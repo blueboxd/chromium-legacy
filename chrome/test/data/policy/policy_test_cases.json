@@ -7647,5 +7647,15 @@
         }
       }
     ]
+  },
+  "ShowFullUrlsInAddressBar": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "can_be_recommended": true,
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "ShowFullUrlsInAddressBar": true },
+        "prefs": { "omnibox.prevent_url_elisions": {} }
+      }
+    ]
   }
 }

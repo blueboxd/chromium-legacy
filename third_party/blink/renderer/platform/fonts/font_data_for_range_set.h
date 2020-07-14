@@ -58,6 +58,12 @@ class PLATFORM_EXPORT FontDataForRangeSet
   bool HasFontData() const { return font_data_.get(); }
   const SimpleFontData* FontData() const { return font_data_.get(); }
 
+  // TODO(xiaochengh): |FontData::IsLoadingFallback()| returns true if the
+  // FontData is a pending custom font. We should rename it for better clarity.
+  bool IsPendingCustomFont() const {
+    return font_data_ && font_data_->IsLoadingFallback();
+  }
+
  protected:
   scoped_refptr<SimpleFontData> font_data_;
   scoped_refptr<UnicodeRangeSet> range_set_;

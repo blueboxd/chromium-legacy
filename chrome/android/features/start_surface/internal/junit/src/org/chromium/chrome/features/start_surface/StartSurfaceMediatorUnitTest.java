@@ -38,7 +38,7 @@ import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SECONDARY_SURFACE_VISIBLE;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_OVERVIEW;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_STACK_TAB_SWITCHER;
-import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_BAR_HEIGHT;
+import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_MARGIN;
 
 import android.content.res.Resources;
 import android.view.View;
@@ -1491,7 +1491,7 @@ public class StartSurfaceMediatorUnitTest {
     }
 
     @Test
-    public void changeTopControlsHeight() {
+    public void changeTopContentOffset() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
         doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
         doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
@@ -1505,10 +1505,14 @@ public class StartSurfaceMediatorUnitTest {
         verify(mBrowserControlsStateProvider).addObserver(ArgumentMatchers.any());
 
         mBrowserControlsStateProviderCaptor.getValue().onTopControlsHeightChanged(100, 20);
-        assertEquals("Wrong top bar height.", 100, mPropertyModel.get(TOP_BAR_HEIGHT));
+        doReturn(100).when(mBrowserControlsStateProvider).getContentOffset();
+        mBrowserControlsStateProviderCaptor.getValue().onControlsOffsetChanged(
+                100, 20, 0, 0, false);
+        assertEquals("Wrong top content offset.", 100, mPropertyModel.get(TOP_MARGIN));
 
-        mBrowserControlsStateProviderCaptor.getValue().onTopControlsHeightChanged(50, 20);
-        assertEquals("Wrong top bar height.", 50, mPropertyModel.get(TOP_BAR_HEIGHT));
+        doReturn(50).when(mBrowserControlsStateProvider).getContentOffset();
+        mBrowserControlsStateProviderCaptor.getValue().onControlsOffsetChanged(50, 20, 0, 0, false);
+        assertEquals("Wrong top content offset.", 50, mPropertyModel.get(TOP_MARGIN));
     }
 
     @Test

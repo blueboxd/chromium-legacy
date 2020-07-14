@@ -69,6 +69,7 @@ class NavigationImpl : public Navigation {
   jboolean SetUserAgentString(
       JNIEnv* env,
       const base::android::JavaParamRef<jstring>& value);
+  jboolean IsRendererInitiated(JNIEnv* env) { return IsRendererInitiated(); }
 
   base::android::ScopedJavaGlobalRef<jobject> java_navigation() {
     return java_navigation_;
@@ -89,6 +90,7 @@ class NavigationImpl : public Navigation {
   void SetRequestHeader(const std::string& name,
                         const std::string& value) override;
   void SetUserAgentString(const std::string& value) override;
+  bool IsRendererInitiated() override;
 
   content::NavigationHandle* navigation_handle_;
 

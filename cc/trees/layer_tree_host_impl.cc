@@ -2521,8 +2521,15 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
       frame->use_default_lower_bound_deadline);
 
   frame_rate_estimator_.WillDraw(CurrentBeginFrameArgs().frame_time);
-  metadata.preferred_frame_interval =
-      frame_rate_estimator_.GetPreferredInterval();
+
+  if (settings_.force_preferred_interval_for_video) {
+    // Use max interval to ensure the compositor's updates don't affect
+    // display's refresh rate.
+    metadata.preferred_frame_interval = base::TimeDelta::Max();
+  } else {
+    metadata.preferred_frame_interval =
+        frame_rate_estimator_.GetPreferredInterval();
+  }
 
   metadata.activation_dependencies = std::move(frame->activation_dependencies);
   active_tree()->FinishSwapPromises(&metadata);

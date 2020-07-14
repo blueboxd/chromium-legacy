@@ -134,7 +134,7 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
                                  FindRegistrationCallback callback);
 
   // Returns all stored and installing registrations for a given origin.
-  void GetRegistrationsForOrigin(const GURL& origin,
+  void GetRegistrationsForOrigin(const url::Origin& origin,
                                  GetRegistrationsCallback callback);
 
   // Reads the total resource size stored in the storage for a given origin.
@@ -149,7 +149,7 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   ServiceWorkerRegistration* GetUninstallingRegistration(const GURL& scope);
 
   std::vector<scoped_refptr<ServiceWorkerRegistration>>
-  GetUninstallingRegistrationsForOrigin(const GURL& origin);
+  GetUninstallingRegistrationsForOrigin(const url::Origin& origin);
 
   // Commits |registration| with the installed but not activated |version|
   // to storage, overwriting any pre-existing registration data for the scope.
@@ -289,7 +289,7 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
 
   void DidGetRegistrationsForOrigin(
       GetRegistrationsCallback callback,
-      const GURL& origin_filter,
+      const url::Origin& origin_filter,
       storage::mojom::ServiceWorkerDatabaseStatus database_status,
       std::unique_ptr<RegistrationList> registration_data_list,
       std::unique_ptr<std::vector<ResourceList>> resources_list);

@@ -60,18 +60,19 @@ struct GL_EXPORT GLVersionInfo {
     return !is_angle && !is_swiftshader && (is_es3 || is_desktop_core_profile);
   }
 
-  bool is_es;
-  bool is_angle;
-  bool is_d3d;
-  bool is_mesa;
-  bool is_swiftshader;
-  bool is_angle_swiftshader;
-  unsigned major_version;
-  unsigned minor_version;
-  bool is_es2;
-  bool is_es3;
-  bool is_desktop_core_profile;
-  bool is_es3_capable;
+  bool is_es = false;
+  bool is_angle = false;
+  bool is_d3d = false;
+  bool is_mesa = false;
+  bool is_swiftshader = false;
+  bool is_angle_swiftshader = false;
+  bool is_angle_vulkan = false;
+  unsigned major_version = 0;
+  unsigned minor_version = 0;
+  bool is_es2 = false;
+  bool is_es3 = false;
+  bool is_desktop_core_profile = false;
+  bool is_es3_capable = false;
   std::string driver_vendor;
   std::string driver_version;
 

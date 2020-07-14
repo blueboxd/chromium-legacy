@@ -99,9 +99,5 @@ chrome.test.runTests([
       chrome.networking.onc.verifyAndEncryptData(
           stubVerificationProperties, '',
           chrome.test.callbackFail(expectedError));
-      chrome.networking.onc.setWifiTDLSEnabledState('', false,
-          chrome.test.callbackFail(expectedError));
-      chrome.networking.onc.getWifiTDLSStatus('',
-          chrome.test.callbackFail(expectedError));
     }
 ]);

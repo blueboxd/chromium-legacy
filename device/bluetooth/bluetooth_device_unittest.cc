@@ -147,7 +147,7 @@ TEST_P(BluetoothTestWinrtOnly, DevicePairRequestPinCodeCorrect) {
 
   SimulatePairingPinCode(device, "123456");
   TestPairingDelegate pairing_delegate;
-  device->Pair(&pairing_delegate, GetOnceCallback(Call::EXPECTED),
+  device->Pair(&pairing_delegate, GetCallback(Call::EXPECTED),
                GetConnectErrorCallback(Call::NOT_EXPECTED));
   base::RunLoop().RunUntilIdle();
 
@@ -178,7 +178,7 @@ TEST_P(BluetoothTestWinrtOnly, DevicePairRequestPinCodeWrong) {
 
   SimulatePairingPinCode(device, "123456");
   TestPairingDelegate pairing_delegate;
-  device->Pair(&pairing_delegate, GetOnceCallback(Call::NOT_EXPECTED),
+  device->Pair(&pairing_delegate, GetCallback(Call::NOT_EXPECTED),
                GetConnectErrorCallback(Call::EXPECTED));
   base::RunLoop().RunUntilIdle();
 
@@ -210,7 +210,7 @@ TEST_P(BluetoothTestWinrtOnly, DevicePairRequestPinCodeRejectPairing) {
 
   SimulatePairingPinCode(device, "123456");
   TestPairingDelegate pairing_delegate;
-  device->Pair(&pairing_delegate, GetOnceCallback(Call::NOT_EXPECTED),
+  device->Pair(&pairing_delegate, GetCallback(Call::NOT_EXPECTED),
                GetConnectErrorCallback(Call::EXPECTED));
   base::RunLoop().RunUntilIdle();
 
@@ -242,7 +242,7 @@ TEST_P(BluetoothTestWinrtOnly, DevicePairRequestPinCodeCancelPairing) {
 
   SimulatePairingPinCode(device, "123456");
   TestPairingDelegate pairing_delegate;
-  device->Pair(&pairing_delegate, GetOnceCallback(Call::NOT_EXPECTED),
+  device->Pair(&pairing_delegate, GetCallback(Call::NOT_EXPECTED),
                GetConnectErrorCallback(Call::EXPECTED));
   base::RunLoop().RunUntilIdle();
 

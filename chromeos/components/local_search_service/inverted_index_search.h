@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "chromeos/components/local_search_service/index.h"
 #include "chromeos/components/local_search_service/shared_structs.h"
 
 namespace chromeos {
@@ -19,32 +20,31 @@ namespace local_search_service {
 
 class InvertedIndex;
 
+// An implementation of Index.
 // A search via the inverted index backend with TF-IDF based document ranking.
-class InvertedIndexSearch {
+class InvertedIndexSearch : public Index {
  public:
-  InvertedIndexSearch();
-  ~InvertedIndexSearch();
+  InvertedIndexSearch(IndexId index_id, PrefService* local_state);
+  ~InvertedIndexSearch() override;
 
   InvertedIndexSearch(const InvertedIndexSearch&) = delete;
   InvertedIndexSearch& operator=(const InvertedIndexSearch&) = delete;
 
-  // Returns number of data items.
-  uint64_t GetSize();
-
-  // Adds or updates data.
-  // IDs of data should not be empty.
-  void AddOrUpdate(const std::vector<Data>& data, bool build_index = true);
-
-  // Deletes data with |ids| and returns number of items deleted.
-  // If an id doesn't exist in the InvertedIndexSearch, no operation will be
-  // done. IDs should not be empty.
-  uint32_t Delete(const std::vector<std::string>& ids, bool build_index = true);
-
-  // Returns matching results for a given query.
-  // Zero |max_results| means no max.
+  // Index overrides:
+  uint64_t GetSize() override;
+  // TODO(jiameng): we always build the index after documents are updated. May
+  // revise this strategy if there is a different use case.
+  void AddOrUpdate(const std::vector<Data>& data) override;
+  // TODO(jiameng): we always build the index after documents are deleted. May
+  // revise this strategy if there is a different use case.
+  uint32_t Delete(const std::vector<std::string>& ids) override;
+  // Returns matching results for a given query by approximately matching the
+  // query with terms in the documents. Documents are ranked by TF-IDF scores.
+  // Scores in results are positive but not guaranteed to be in any particular
+  // range.
   ResponseStatus Find(const base::string16& query,
                       uint32_t max_results,
-                      std::vector<Result>* results);
+                      std::vector<Result>* results) override;
 
   // Returns document id and number of occurrences of |term|.
   // Document ids are sorted in alphabetical order.

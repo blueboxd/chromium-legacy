@@ -73,7 +73,7 @@ class GattBatteryPercentageFetcherTest : public testing::Test {
     mock_service_ =
         std::make_unique<NiceMock<device::MockBluetoothGattService>>(
             mock_device_.get(), kServiceID, GetBatteryServiceUUID(),
-            true /* is_primary */, false /* is_local */);
+            /*is_primary=*/true);
     std::vector<device::BluetoothRemoteGattService*> services = {
         mock_service_.get()};
     ON_CALL(*mock_device_, GetGattServices()).WillByDefault(Return(services));
@@ -81,7 +81,6 @@ class GattBatteryPercentageFetcherTest : public testing::Test {
     mock_characteristic_ =
         std::make_unique<NiceMock<device::MockBluetoothGattCharacteristic>>(
             mock_service_.get(), kCharacteristicID, GetBatteryLevelUUID(),
-            false /* is_local */,
             BluetoothRemoteGattCharacteristic::PROPERTY_READ,
             BluetoothRemoteGattCharacteristic::PERMISSION_READ);
     std::vector<BluetoothRemoteGattCharacteristic*> characteristics = {

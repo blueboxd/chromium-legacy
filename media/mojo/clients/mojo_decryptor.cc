@@ -90,21 +90,6 @@ MojoDecryptor::~MojoDecryptor() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void MojoDecryptor::RegisterNewKeyCB(StreamType stream_type,
-                                     NewKeyCB key_added_cb) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  switch (stream_type) {
-    case kAudio:
-      new_audio_key_cb_ = std::move(key_added_cb);
-      break;
-    case kVideo:
-      new_video_key_cb_ = std::move(key_added_cb);
-      break;
-    default:
-      NOTREACHED();
-  }
-}
-
 void MojoDecryptor::Decrypt(StreamType stream_type,
                             scoped_refptr<DecoderBuffer> encrypted,
                             DecryptCB decrypt_cb) {
@@ -206,17 +191,6 @@ void MojoDecryptor::DeinitializeDecoder(StreamType stream_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   remote_decryptor_->DeinitializeDecoder(stream_type);
-}
-
-void MojoDecryptor::OnKeyAdded() {
-  DVLOG(1) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (new_audio_key_cb_)
-    new_audio_key_cb_.Run();
-
-  if (new_video_key_cb_)
-    new_video_key_cb_.Run();
 }
 
 void MojoDecryptor::OnBufferDecrypted(DecryptCB decrypt_cb,

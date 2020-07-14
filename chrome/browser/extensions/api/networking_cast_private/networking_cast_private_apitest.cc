@@ -103,7 +103,6 @@ class NetworkingCastPrivateApiTest : public ExtensionApiTest {
     device_test->ClearDevices();
     device_test->AddDevice("/device/stub_wifi_device1", shill::kTypeWifi,
                            "stub_wifi_device");
-    device_test->SetTDLSState(shill::kTDLSConnectedState);
 
     chromeos::ShillServiceClient::TestInterface* service_test =
         dbus_manager->GetShillServiceClient()->GetTestInterface();
@@ -119,14 +118,6 @@ class NetworkingCastPrivateApiTest : public ExtensionApiTest {
     ChromeNetworkingCastPrivateDelegate::SetFactoryCallbackForTest(nullptr);
   }
 
-  bool TdlsSupported() {
-#if defined(OS_CHROMEOS)
-    return true;
-#else
-    return false;
-#endif
-  }
-
  private:
   std::unique_ptr<ChromeNetworkingCastPrivateDelegate>
   CreateNetworkingCastPrivateDelegate() {
@@ -140,10 +131,7 @@ class NetworkingCastPrivateApiTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(NetworkingCastPrivateApiTest, Basic) {
-  const std::string arg =
-      base::StringPrintf("{\"tdlsSupported\": %d}", TdlsSupported());
-  EXPECT_TRUE(RunPlatformAppTestWithArg("networking_cast_private", arg.c_str()))
-      << message_;
+  EXPECT_TRUE(RunPlatformAppTest("networking_cast_private")) << message_;
 }
 
 }  // namespace extensions

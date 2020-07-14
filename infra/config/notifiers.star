@@ -59,25 +59,26 @@ luci.tree_closer(
     tree_status_host = 'chromium-status.appspot.com',
 )
 
-def tree_closure_notifier(name, notify_emails):
+def tree_closure_notifier(**kwargs):
   return luci.notifier(
-      name = name,
-      notify_emails = notify_emails,
       on_occurrence = ['FAILURE'],
       failed_step_regexp = TREE_CLOSING_STEPS,
+      **kwargs,
   )
 
 tree_closure_notifier(
     name = 'chromium-tree-closer-email',
-    # Stand-in for the chromium build sheriff, while testing.
-    notify_emails = ['orodley+test-tree-closing-notifier@chromium.org'],
+    notify_rotation_urls = [
+        "https://chrome-ops-rotation-proxy.appspot.com/current/oncallator:chrome-build-sheriff",
+    ],
 )
 
 tree_closure_notifier(
     name = 'gpu-tree-closer-email',
-    # Stand-in for chrome-gpu-build-failures@google.com and the GPU build
-    # sheriff, while testing.
-    notify_emails = ['orodley+gpu-test-tree-closing-notifier@chromium.org'],
+    notify_emails = ['chrome-gpu-build-failures@google.com'],
+    notify_rotation_urls = [
+        "https://rota-ng.appspot.com/legacy/sheriff_gpu.json",
+    ],
 )
 
 tree_closure_notifier(

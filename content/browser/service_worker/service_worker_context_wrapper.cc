@@ -632,7 +632,7 @@ void ServiceWorkerContextWrapper::GetAllOriginsInfoOnCoreThread(
       std::move(callback_runner)));
 }
 
-void ServiceWorkerContextWrapper::DeleteForOrigin(const GURL& origin,
+void ServiceWorkerContextWrapper::DeleteForOrigin(const url::Origin& origin,
                                                   ResultCallback callback) {
   RunOrPostTaskOnCoreThread(
       FROM_HERE,
@@ -642,7 +642,7 @@ void ServiceWorkerContextWrapper::DeleteForOrigin(const GURL& origin,
 }
 
 void ServiceWorkerContextWrapper::DeleteForOriginOnCoreThread(
-    const GURL& origin,
+    const url::Origin& origin,
     ResultCallback callback,
     scoped_refptr<base::TaskRunner> callback_runner) {
   DCHECK_CURRENTLY_ON(GetCoreThreadId());
@@ -652,7 +652,7 @@ void ServiceWorkerContextWrapper::DeleteForOriginOnCoreThread(
     return;
   }
   context()->DeleteForOrigin(
-      origin.GetOrigin(),
+      origin,
       base::BindOnce(
           [](ResultCallback callback,
              scoped_refptr<base::TaskRunner> callback_runner,
@@ -1187,7 +1187,7 @@ void ServiceWorkerContextWrapper::GetRegistrationsForOrigin(
             std::vector<scoped_refptr<ServiceWorkerRegistration>>()));
     return;
   }
-  context_core_->registry()->GetRegistrationsForOrigin(origin.GetURL(),
+  context_core_->registry()->GetRegistrationsForOrigin(origin,
                                                        std::move(callback));
 }
 

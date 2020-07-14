@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "content/browser/payments/installed_payment_apps_finder_impl.h"
 #include "content/browser/payments/payment_app_content_unittest_base.h"
 #include "content/browser/payments/payment_app_provider_impl.h"
 #include "content/public/browser/permission_type.h"
@@ -37,8 +38,9 @@ void SetPaymentInstrumentCallback(PaymentHandlerStatus* out_status,
   *out_status = status;
 }
 
-void GetAllPaymentAppsCallback(PaymentAppProvider::PaymentApps* out_apps,
-                               PaymentAppProvider::PaymentApps apps) {
+void GetAllPaymentAppsCallback(
+    InstalledPaymentAppsFinder::PaymentApps* out_apps,
+    InstalledPaymentAppsFinder::PaymentApps apps) {
   *out_apps = std::move(apps);
 }
 
@@ -95,9 +97,9 @@ class PaymentAppProviderTest : public PaymentAppContentUnitTestBase {
   }
 
   void GetAllPaymentApps(
-      PaymentAppProvider::GetAllPaymentAppsCallback callback) {
-    PaymentAppProviderImpl::GetInstance()->GetAllPaymentApps(
-        browser_context(), std::move(callback));
+      InstalledPaymentAppsFinder::GetAllPaymentAppsCallback callback) {
+    InstalledPaymentAppsFinderImpl::GetInstance(browser_context())
+        ->GetAllPaymentApps(std::move(callback));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -153,7 +155,7 @@ TEST_F(PaymentAppProviderTest, AbortPaymentTest) {
                        payments::mojom::PaymentInstrument::New(),
                        base::BindOnce(&SetPaymentInstrumentCallback, &status));
 
-  PaymentAppProvider::PaymentApps apps;
+  InstalledPaymentAppsFinder::PaymentApps apps;
   GetAllPaymentApps(base::BindOnce(&GetAllPaymentAppsCallback, &apps));
   ASSERT_EQ(1U, apps.size());
 
@@ -176,7 +178,7 @@ TEST_F(PaymentAppProviderTest, CanMakePaymentTest) {
                        payments::mojom::PaymentInstrument::New(),
                        base::BindOnce(&SetPaymentInstrumentCallback, &status));
 
-  PaymentAppProvider::PaymentApps apps;
+  InstalledPaymentAppsFinder::PaymentApps apps;
   GetAllPaymentApps(base::BindOnce(&GetAllPaymentAppsCallback, &apps));
   ASSERT_EQ(1U, apps.size());
 
@@ -215,7 +217,7 @@ TEST_F(PaymentAppProviderTest, InvokePaymentAppTest) {
                        payments::mojom::PaymentInstrument::New(),
                        base::BindOnce(&SetPaymentInstrumentCallback, &status));
 
-  PaymentAppProvider::PaymentApps apps;
+  InstalledPaymentAppsFinder::PaymentApps apps;
   GetAllPaymentApps(base::BindOnce(&GetAllPaymentAppsCallback, &apps));
   ASSERT_EQ(2U, apps.size());
 
@@ -260,7 +262,7 @@ TEST_F(PaymentAppProviderTest, GetAllPaymentAppsTest) {
   SetPaymentInstrument(manager2, "test_key3", std::move(instrument_3),
                        base::BindOnce(&SetPaymentInstrumentCallback, &status));
 
-  PaymentAppProvider::PaymentApps apps;
+  InstalledPaymentAppsFinder::PaymentApps apps;
   GetAllPaymentApps(base::BindOnce(&GetAllPaymentAppsCallback, &apps));
 
   ASSERT_EQ(2U, apps.size());
@@ -293,7 +295,7 @@ TEST_F(PaymentAppProviderTest, GetAllPaymentAppsFromTheSameOriginTest) {
   SetPaymentInstrument(manager2, "test_key3", std::move(instrument_3),
                        base::BindOnce(&SetPaymentInstrumentCallback, &status));
 
-  PaymentAppProvider::PaymentApps apps;
+  InstalledPaymentAppsFinder::PaymentApps apps;
   GetAllPaymentApps(base::BindOnce(&GetAllPaymentAppsCallback, &apps));
 
   ASSERT_EQ(2U, apps.size());
@@ -318,7 +320,7 @@ TEST_F(PaymentAppProviderTest, AbortPaymentWhenClosingOpenedWindow) {
                        payments::mojom::PaymentInstrument::New(),
                        base::BindOnce(&SetPaymentInstrumentCallback, &status));
 
-  PaymentAppProvider::PaymentApps apps;
+  InstalledPaymentAppsFinder::PaymentApps apps;
   GetAllPaymentApps(base::BindOnce(&GetAllPaymentAppsCallback, &apps));
   ASSERT_EQ(2U, apps.size());
 

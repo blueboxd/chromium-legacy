@@ -84,13 +84,24 @@ async function runTestQuery(data) {
     } catch (/** @type{!Error} */ error) {
       result = `renameOriginalFile failed Error: ${error}`;
     }
+  } else if (data.requestSaveFile) {
+    const existingFile = assertCast(lastReceivedFileList).item(0);
+    if (!existingFile) {
+      result = 'requestSaveFile failed, no file loaded';
+    } else {
+      const token = await DELEGATE.requestSaveFile(
+          existingFile.name, existingFile.mimeType);
+      result = token.toString();
+    }
   } else if (data.saveCopy) {
     const existingFile = assertCast(lastReceivedFileList).item(0);
     if (!existingFile) {
       result = 'saveCopy failed, no file loaded';
     } else {
-      DELEGATE.saveCopy(existingFile);
-      result = 'boo yah!';
+      const token = await DELEGATE.requestSaveFile(
+          existingFile.name, existingFile.mimeType);
+      await DELEGATE.saveCopy(existingFile, token);
+      result = 'file successfully saved';
     }
   } else if (data.getFileErrors) {
     result =

@@ -40,6 +40,7 @@
 #include "third_party/pdfium/public/fpdf_formfill.h"
 #include "third_party/pdfium/public/fpdf_progressive.h"
 #include "third_party/pdfium/public/fpdfview.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace chrome_pdf {
 
@@ -465,7 +466,7 @@ class PDFiumEngine : public PDFEngine,
 
   // Creates a FPDF_BITMAP from a rectangle in screen coordinates.
   ScopedFPDFBitmap CreateBitmap(const pp::Rect& rect,
-                                pp::ImageData* image_data) const;
+                                SkBitmap& image_data) const;
 
   // Given a rectangle in screen coordinates, returns the coordinates in the
   // units that PDFium rendering functions expect.
@@ -518,9 +519,9 @@ class PDFiumEngine : public PDFEngine,
                       pp::ImageData* image_data);
 
   void GetRegion(const pp::Point& location,
-                 pp::ImageData* image_data,
-                 void** region,
-                 int* stride) const;
+                 SkBitmap& image_data,
+                 void*& region,
+                 int& stride) const;
 
   // Called when the selection changes.
   void OnSelectionTextChanged();
@@ -776,9 +777,8 @@ class PDFiumEngine : public PDFEngine,
    public:
     ProgressivePaint(int page_index, const pp::Rect& rect);
     ProgressivePaint(ProgressivePaint&& that);
-    ~ProgressivePaint();
-
     ProgressivePaint& operator=(ProgressivePaint&& that);
+    ~ProgressivePaint();
 
     int page_index() const { return page_index_; }
     const pp::Rect& rect() const { return rect_; }
@@ -786,19 +786,16 @@ class PDFiumEngine : public PDFEngine,
     bool painted() const { return painted_; }
 
     void set_painted(bool enable) { painted_ = enable; }
-    void SetBitmapAndImageData(ScopedFPDFBitmap bitmap,
-                               pp::ImageData image_data);
+    void SetBitmapAndImageData(ScopedFPDFBitmap bitmap, SkBitmap image_data);
 
    private:
     int page_index_;
     pp::Rect rect_;             // In screen coordinates.
-    pp::ImageData image_data_;  // Maintains reference while |bitmap_| exists.
+    SkBitmap image_data_;       // Maintains reference while |bitmap_| exists.
     ScopedFPDFBitmap bitmap_;   // Must come after |image_data_|.
     // Temporary used to figure out if in a series of Paint() calls whether this
     // pending paint was updated or not.
     bool painted_ = false;
-
-    DISALLOW_COPY_AND_ASSIGN(ProgressivePaint);
   };
   std::vector<ProgressivePaint> progressive_paints_;
 

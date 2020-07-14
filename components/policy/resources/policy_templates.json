@@ -22018,6 +22018,28 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       If this policy is left unset, then suggestions for new content to explore will be disabled for managed users.
       '''
     },
+    {
+      'name': 'ShowFullUrlsInAddressBar',
+      'owners': ['livvielin@chromium.org', 'enamelites@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:86-', 'chrome.*:86-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': False,
+      'default_for_enterprise_users': False,
+      'id': 739,
+      'caption': 'Show Full URLs',
+      'tags': [],
+      'desc': '''This feature enables display of the full URL in the address bar.
+      If this policy is set to True, then the full URL will be shown in the address bar, including schemes and subdomains.
+      If this policy is set to False, then the default URL display will apply.
+      If this policy is left unset, then the default URL display will apply and the user will be able to toggle between default and full URL display with a context menu option.
+      '''
+    },
   ],
 
   'messages': {
@@ -22909,6 +22931,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 738,
+  'highest_id_currently_used': 739,
   'highest_atomic_group_id_currently_used': 38
 }

@@ -384,19 +384,6 @@ void DeepScanningRequest::OnScanComplete(BinaryUploadService::Result result,
       /*duration=*/base::TimeTicks::Now() - upload_start_time_,
       /*total_size=*/item_->GetTotalBytes(), /*result=*/result,
       /*response=*/response);
-  Profile* profile = Profile::FromBrowserContext(
-      content::DownloadItemUtils::GetBrowserContext(item_));
-  if (profile && trigger_ == DeepScanTrigger::TRIGGER_POLICY) {
-    std::string raw_digest_sha256 = item_->GetHash();
-    MaybeReportDeepScanningVerdict(
-        profile, item_->GetURL(), item_->GetTargetFilePath().AsUTF8Unsafe(),
-        base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
-        item_->GetMimeType(),
-        extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
-        DeepScanAccessPoint::DOWNLOAD, item_->GetTotalBytes(), result,
-        response);
-  }
-
   DownloadCheckResult download_result = DownloadCheckResult::UNKNOWN;
   if (result == BinaryUploadService::Result::SUCCESS) {
     ResponseToDownloadCheckResult(response, &download_result);
@@ -420,6 +407,49 @@ void DeepScanningRequest::OnScanComplete(BinaryUploadService::Result result,
              BinaryUploadService::Result::DLP_SCAN_UNSUPPORTED_FILE_TYPE) {
     if (analysis_settings_.block_unsupported_file_types)
       download_result = DownloadCheckResult::BLOCKED_UNSUPPORTED_FILE_TYPE;
+  }
+
+  // Determine if the user is allowed to access the downloaded file.
+  EventResult event_result = EventResult::UNKNOWN;
+  switch (download_result) {
+    case DownloadCheckResult::UNKNOWN:
+    case DownloadCheckResult::SAFE:
+    case DownloadCheckResult::WHITELISTED_BY_POLICY:
+    case DownloadCheckResult::DEEP_SCANNED_SAFE:
+      event_result = EventResult::ALLOWED;
+      break;
+
+    case DownloadCheckResult::UNCOMMON:
+    case DownloadCheckResult::POTENTIALLY_UNWANTED:
+    case DownloadCheckResult::SENSITIVE_CONTENT_WARNING:
+    case DownloadCheckResult::DANGEROUS:
+    case DownloadCheckResult::DANGEROUS_HOST:
+      event_result = EventResult::WARNED;
+      break;
+
+    case DownloadCheckResult::BLOCKED_PASSWORD_PROTECTED:
+    case DownloadCheckResult::BLOCKED_TOO_LARGE:
+    case DownloadCheckResult::SENSITIVE_CONTENT_BLOCK:
+    case DownloadCheckResult::BLOCKED_UNSUPPORTED_FILE_TYPE:
+      event_result = EventResult::BLOCKED;
+      break;
+
+    default:
+      NOTREACHED() << "Should never be final result";
+      break;
+  }
+
+  Profile* profile = Profile::FromBrowserContext(
+      content::DownloadItemUtils::GetBrowserContext(item_));
+  if (profile && trigger_ == DeepScanTrigger::TRIGGER_POLICY) {
+    std::string raw_digest_sha256 = item_->GetHash();
+    MaybeReportDeepScanningVerdict(
+        profile, item_->GetURL(), item_->GetTargetFilePath().AsUTF8Unsafe(),
+        base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
+        item_->GetMimeType(),
+        extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
+        DeepScanAccessPoint::DOWNLOAD, item_->GetTotalBytes(), result, response,
+        event_result);
   }
 
   FinishRequest(download_result);

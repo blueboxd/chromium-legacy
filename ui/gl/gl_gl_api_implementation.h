@@ -81,6 +81,14 @@ class GL_EXPORT RealGLApi : public GLApiBase {
                            GLsizei width,
                            GLsizei height) override;
 
+  void glTexStorageMem2DEXTFn(GLenum target,
+                              GLsizei levels,
+                              GLenum internalformat,
+                              GLsizei width,
+                              GLsizei height,
+                              GLuint memory,
+                              GLuint64 offset) override;
+
   void glRenderbufferStorageEXTFn(GLenum target,
                                   GLenum internalformat,
                                   GLsizei width,

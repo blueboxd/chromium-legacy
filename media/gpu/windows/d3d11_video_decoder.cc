@@ -258,13 +258,17 @@ D3D11VideoDecoder::CreateD3D11Decoder() {
   // 14 is clear, then it's the former, else it's the latter.
   //
   // Let the workaround override array texture mode, if enabled.
+  // TODO(crbug.com/971952): Ignore |use_single_video_decoder_texture_| here,
+  // since it might be the case that it's not actually the right fix.  Instead,
+  // We use this workaround to force a copy later.  The workaround will be
+  // renamed if this turns out to fix the issue, but we might need to merge back
+  // and smaller changes are better.
   //
   // For more information, please see:
   // https://download.microsoft.com/download/9/2/A/92A4E198-67E0-4ABD-9DB7-635D711C2752/DXVA_VPx.pdf
   // https://download.microsoft.com/download/5/f/c/5fc4ec5c-bd8c-4624-8034-319c1bab7671/DXVA_H264.pdf
   use_single_video_decoder_texture_ =
-      !!(dec_config.ConfigDecoderSpecific & (1 << 14)) ||
-      gpu_workarounds_.use_single_video_decoder_texture;
+      !!(dec_config.ConfigDecoderSpecific & (1 << 14));
   if (use_single_video_decoder_texture_)
     MEDIA_LOG(INFO, media_log_) << "D3D11VideoDecoder is using single textures";
   else

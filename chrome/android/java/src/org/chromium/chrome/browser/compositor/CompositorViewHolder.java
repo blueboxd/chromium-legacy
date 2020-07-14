@@ -40,6 +40,8 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.compat.ApiHelperForN;
 import org.chromium.base.compat.ApiHelperForO;
+import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsUtils;
@@ -144,6 +146,8 @@ public class CompositorViewHolder extends FrameLayout
 
     private TabModelSelector mTabModelSelector;
     private @Nullable BrowserControlsManager mBrowserControlsManager;
+    private ObservableSupplierImpl<BrowserControlsManager> mBrowserControlsManagerSupplier =
+            new ObservableSupplierImpl<>();
     private View mAccessibilityView;
     private CompositorAccessibilityProvider mNodeProvider;
 
@@ -1106,6 +1110,11 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     @Override
+    public ObservableSupplier<BrowserControlsManager> getBrowserControlsManagerSupplier() {
+        return mBrowserControlsManagerSupplier;
+    }
+
+    @Override
     public FullscreenManager getFullscreenManager() {
         return mBrowserControlsManager.getFullscreenManager();
     }
@@ -1117,6 +1126,7 @@ public class CompositorViewHolder extends FrameLayout
     public void setBrowserControlsManager(BrowserControlsManager manager) {
         mBrowserControlsManager = manager;
         mBrowserControlsManager.addObserver(this);
+        mBrowserControlsManagerSupplier.set(mBrowserControlsManager);
         onViewportChanged();
     }
 

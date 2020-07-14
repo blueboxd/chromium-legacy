@@ -824,8 +824,8 @@ TEST_F('MediaAppUIBrowserTest', 'RenameOriginalIPC', async () => {
   testDone();
 });
 
-// Tests the IPC behind the saveCopy delegate function.
-TEST_F('MediaAppUIBrowserTest', 'SaveCopyIPC', async () => {
+// Tests the IPC behind the requestSaveFile delegate function.
+TEST_F('MediaAppUIBrowserTest', 'RequestSaveFileIPC', async () => {
   // Mock out choose file system entries since it can only be interacted with
   // via trusted user gestures.
   const newFileHandle = new FakeFileSystemFileHandle();
@@ -838,13 +838,27 @@ TEST_F('MediaAppUIBrowserTest', 'SaveCopyIPC', async () => {
   const testImage = await createTestImageFile(10, 10);
   await loadFile(testImage, new FakeFileSystemFileHandle());
 
-  const result = await sendTestMessage({saveCopy: true});
-  assertEquals(result.testQueryResult, 'boo yah!');
+  const result = await sendTestMessage({requestSaveFile: true});
   const options = await chooseEntries;
-
+  const lastToken = [...tokenMap.keys()].slice(-1)[0];
+  assertMatch(result.testQueryResult, lastToken);
   assertEquals(options.types.length, 1);
   assertEquals(options.types[0].description, 'png');
   assertDeepEquals(options.types[0].accept['image/png'], ['png']);
+  testDone();
+});
+
+// Tests the IPC behind the saveCopy delegate function.
+TEST_F('MediaAppUIBrowserTest', 'SaveCopyIPC', async () => {
+  // Mock out choose file system entries since it can only be interacted with
+  // via trusted user gestures.
+  const newFileHandle = new FakeFileSystemFileHandle();
+  window.showSaveFilePicker = () => Promise.resolve(newFileHandle);
+  const testImage = await createTestImageFile(10, 10);
+  await loadFile(testImage, new FakeFileSystemFileHandle());
+
+  const result = await sendTestMessage({saveCopy: true});
+  assertEquals(result.testQueryResult, 'file successfully saved');
 
   const writeResult = await newFileHandle.lastWritable.closePromise;
   assertEquals(await writeResult.text(), await testImage.text());

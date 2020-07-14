@@ -79,10 +79,10 @@ class BluetoothAdapterWinTest : public testing::Test {
       active_discovery_sessions_;
 
   void DiscoverySessionCallbackPassthrough(
-      const base::RepeatingClosure& callback,
+      base::OnceClosure callback,
       std::unique_ptr<BluetoothDiscoverySession> new_session) {
     active_discovery_sessions_.push(std::move(new_session));
-    callback.Run();
+    std::move(callback).Run();
   }
 
   void IncrementNumStartDiscoveryCallbacks() {
@@ -107,7 +107,7 @@ class BluetoothAdapterWinTest : public testing::Test {
   typedef base::OnceCallback<void(UMABluetoothDiscoverySessionOutcome)>
       DiscoverySessionErrorCallback;
 
-  using ErrorCallback = base::RepeatingClosure;
+  using ErrorCallback = base::OnceClosure;
 
   void CallStartDiscoverySession() {
     adapter_win_->StartDiscoverySession(
@@ -122,9 +122,10 @@ class BluetoothAdapterWinTest : public testing::Test {
             base::Unretained(this)));
   }
 
-  void StopTopDiscoverySession(const base::RepeatingClosure& callback,
+  void StopTopDiscoverySession(base::OnceClosure callback,
                                ErrorCallback error_callback) {
-    active_discovery_sessions_.front()->Stop(callback, error_callback);
+    active_discovery_sessions_.front()->Stop(std::move(callback),
+                                             std::move(error_callback));
     active_discovery_sessions_.pop();
   }
 

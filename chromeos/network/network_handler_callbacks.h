@@ -23,6 +23,13 @@ COMPONENT_EXPORT(CHROMEOS_NETWORK) extern const char kErrorDetail[];
 COMPONENT_EXPORT(CHROMEOS_NETWORK) extern const char kDbusErrorName[];
 COMPONENT_EXPORT(CHROMEOS_NETWORK) extern const char kDbusErrorMessage[];
 
+// Modern callback for updated methods using a single OnceCallback with an
+// optional result. This can be used when error logging is handled at the point
+// of failure and there is no need to pass additional details to the caller,
+// other than a nullopt to indicate failure.
+using ResultCallback = base::OnceCallback<void(const std::string& service_path,
+                                               base::Optional<base::Value>)>;
+
 // An error callback used by both the configuration handler and the state
 // handler to receive error results from the API.
 typedef base::RepeatingCallback<void(

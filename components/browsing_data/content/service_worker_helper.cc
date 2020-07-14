@@ -61,7 +61,7 @@ void ServiceWorkerHelper::StartFetching(FetchCallback callback) {
           std::move(callback)));
 }
 
-void ServiceWorkerHelper::DeleteServiceWorkers(const GURL& origin) {
+void ServiceWorkerHelper::DeleteServiceWorkers(const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::RunOrPostTaskOnThread(
       FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
@@ -78,7 +78,8 @@ void ServiceWorkerHelper::FetchServiceWorkerUsageInfoOnCoreThread(
       &GetAllOriginsInfoForServiceWorkerCallback, std::move(callback)));
 }
 
-void ServiceWorkerHelper::DeleteServiceWorkersOnCoreThread(const GURL& origin) {
+void ServiceWorkerHelper::DeleteServiceWorkersOnCoreThread(
+    const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   service_worker_context_->DeleteForOrigin(origin, base::DoNothing());
 }
@@ -124,8 +125,9 @@ void CannedServiceWorkerHelper::StartFetching(FetchCallback callback) {
       FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
-void CannedServiceWorkerHelper::DeleteServiceWorkers(const GURL& origin) {
-  pending_origins_.erase(url::Origin::Create(origin));
+void CannedServiceWorkerHelper::DeleteServiceWorkers(
+    const url::Origin& origin) {
+  pending_origins_.erase(origin);
   ServiceWorkerHelper::DeleteServiceWorkers(origin);
 }
 

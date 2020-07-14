@@ -990,6 +990,8 @@ Navigator::GetNavigationEntryForRendererInitiatedNavigation(
               controller_->GetBrowserContext(),
               nullptr /* blob_url_loader_factory */,
               common_params.should_replace_current_entry));
+  entry->set_reload_type(NavigationRequest::NavigationTypeToReloadType(
+      common_params.navigation_type));
 
   controller_->SetPendingEntry(std::move(entry));
   if (delegate_)

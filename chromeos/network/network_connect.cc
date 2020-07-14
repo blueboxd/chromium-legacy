@@ -282,7 +282,7 @@ void NetworkConnectImpl::SetPropertiesToClear(
   // Remove cleared properties from properties_to_set.
   for (std::vector<std::string>::iterator iter = properties_to_clear->begin();
        iter != properties_to_clear->end(); ++iter) {
-    properties_to_set->RemoveWithoutPathExpansion(*iter, NULL);
+    properties_to_set->RemoveKey(*iter);
   }
 }
 

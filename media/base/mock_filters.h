@@ -18,6 +18,7 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_renderer.h"
+#include "media/base/callback_registry.h"
 #include "media/base/cdm_config.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_factory.h"
@@ -195,7 +196,6 @@ class MockDemuxerStream : public DemuxerStream {
   Liveness liveness() const override;
   void Read(ReadCB read_cb) { OnRead(read_cb); }
   MOCK_METHOD1(OnRead, void(ReadCB& read_cb));
-  MOCK_CONST_METHOD0(IsReadPending, bool());
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
   MOCK_METHOD0(EnableBitstreamConverter, void());
@@ -513,8 +513,6 @@ class MockDecryptor : public Decryptor {
   MockDecryptor();
   ~MockDecryptor() override;
 
-  MOCK_METHOD2(RegisterNewKeyCB,
-               void(StreamType stream_type, NewKeyCB new_key_cb));
   MOCK_METHOD3(Decrypt,
                void(StreamType stream_type,
                     scoped_refptr<DecoderBuffer> encrypted,
@@ -543,6 +541,8 @@ class MockCdmContext : public CdmContext {
   MockCdmContext();
   ~MockCdmContext() override;
 
+  MOCK_METHOD1(RegisterEventCB,
+               std::unique_ptr<CallbackRegistration>(EventCB event_cb));
   MOCK_METHOD0(GetDecryptor, Decryptor*());
   MOCK_METHOD0(RequiresMediaFoundationRenderer, bool());
 

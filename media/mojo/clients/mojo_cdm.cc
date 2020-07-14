@@ -239,6 +239,11 @@ CdmContext* MojoCdm::GetCdmContext() {
   return this;
 }
 
+std::unique_ptr<CallbackRegistration> MojoCdm::RegisterEventCB(
+    EventCB event_cb) {
+  return event_callbacks_.Register(std::move(event_cb));
+}
+
 Decryptor* MojoCdm::GetDecryptor() {
   base::AutoLock auto_lock(lock_);
 
@@ -289,17 +294,8 @@ void MojoCdm::OnSessionKeysChange(
   DVLOG(2) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // TODO(jrummell): Handling resume playback should be done in the media
-  // player, not in the Decryptors. http://crbug.com/413413.
-  if (has_additional_usable_key) {
-    base::AutoLock auto_lock(lock_);
-    if (decryptor_) {
-      DCHECK(decryptor_task_runner_);
-      decryptor_task_runner_->PostTask(
-          FROM_HERE,
-          base::BindOnce(&MojoCdm::OnKeyAdded, weak_factory_.GetWeakPtr()));
-    }
-  }
+  if (has_additional_usable_key)
+    event_callbacks_.Notify(Event::kHasAdditionalUsableKey);
 
   session_keys_change_cb_.Run(session_id, has_additional_usable_key,
                               std::move(keys_info));
@@ -312,16 +308,6 @@ void MojoCdm::OnSessionExpirationUpdate(const std::string& session_id,
 
   session_expiration_update_cb_.Run(
       session_id, base::Time::FromDoubleT(new_expiry_time_sec));
-}
-
-void MojoCdm::OnKeyAdded() {
-  base::AutoLock auto_lock(lock_);
-
-  DCHECK(decryptor_task_runner_);
-  DCHECK(decryptor_task_runner_->BelongsToCurrentThread());
-  DCHECK(decryptor_);
-
-  decryptor_->OnKeyAdded();
 }
 
 void MojoCdm::OnSimpleCdmPromiseResult(uint32_t promise_id,

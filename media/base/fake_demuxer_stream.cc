@@ -94,10 +94,6 @@ void FakeDemuxerStream::Read(ReadCB read_cb) {
   DoRead();
 }
 
-bool FakeDemuxerStream::IsReadPending() const {
-  return !read_cb_.is_null();
-}
-
 AudioDecoderConfig FakeDemuxerStream::audio_decoder_config() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   NOTREACHED();

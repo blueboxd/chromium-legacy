@@ -726,7 +726,7 @@ WebTestBluetoothAdapterProvider::GetDisconnectingHealthThermometer(
     const std::string descriptorName = kCharacteristicUserDescription;
     auto user_description = std::make_unique<NiceMockBluetoothGattDescriptor>(
         measurement_interval.get(), descriptorName,
-        BluetoothUUID(kUserDescriptionUUID), false /* is_local */,
+        BluetoothUUID(kUserDescriptionUUID),
         device::BluetoothRemoteGattCharacteristic::PROPERTY_READ);
 
     ON_CALL(*user_description, ReadRemoteDescriptor_(_, _))
@@ -744,7 +744,7 @@ WebTestBluetoothAdapterProvider::GetDisconnectingHealthThermometer(
 
     auto client_config = std::make_unique<NiceMockBluetoothGattDescriptor>(
         measurement_interval.get(), "gatt.client_characteristic_configuration",
-        BluetoothUUID(kClientConfigUUID), false /* is_local */,
+        BluetoothUUID(kClientConfigUUID),
         device::BluetoothRemoteGattCharacteristic::PROPERTY_READ |
             device::BluetoothRemoteGattCharacteristic::PROPERTY_WRITE);
 
@@ -760,7 +760,7 @@ WebTestBluetoothAdapterProvider::GetDisconnectingHealthThermometer(
 
     auto no_read_descriptor = std::make_unique<NiceMockBluetoothGattDescriptor>(
         measurement_interval.get(), kBlocklistedReadDescriptorUUID,
-        BluetoothUUID(kBlocklistedReadDescriptorUUID), false,
+        BluetoothUUID(kBlocklistedReadDescriptorUUID),
         device::BluetoothRemoteGattCharacteristic::PROPERTY_READ |
             device::BluetoothRemoteGattCharacteristic::PROPERTY_WRITE);
 
@@ -780,7 +780,7 @@ WebTestBluetoothAdapterProvider::GetDisconnectingHealthThermometer(
     auto blocklisted_descriptor =
         std::make_unique<NiceMockBluetoothGattDescriptor>(
             measurement_interval.get(), kBlocklistedDescriptorUUID,
-            BluetoothUUID(kBlocklistedDescriptorUUID), false,
+            BluetoothUUID(kBlocklistedDescriptorUUID),
             device::BluetoothRemoteGattCharacteristic::PROPERTY_READ |
                 device::BluetoothRemoteGattCharacteristic::PROPERTY_WRITE);
 
@@ -1119,7 +1119,7 @@ scoped_refptr<NiceMockBluetoothAdapter> WebTestBluetoothAdapterProvider::
 
   auto user_descriptor = std::make_unique<NiceMockBluetoothGattDescriptor>(
       measurement_interval.get(), kCharacteristicUserDescription,
-      BluetoothUUID(kUserDescriptionUUID), false,
+      BluetoothUUID(kUserDescriptionUUID),
       device::BluetoothRemoteGattCharacteristic::PROPERTY_READ);
 
   ON_CALL(*user_descriptor, ReadRemoteDescriptor_(_, _))
@@ -1440,8 +1440,7 @@ WebTestBluetoothAdapterProvider::GetBaseGATTService(
     MockBluetoothDevice* device,
     const std::string& uuid) {
   auto service = std::make_unique<NiceMockBluetoothGattService>(
-      device, identifier, BluetoothUUID(uuid), true /* is_primary */,
-      false /* is_local */);
+      device, identifier, BluetoothUUID(uuid), /*is_primary=*/true);
 
   return service;
 }
@@ -1698,8 +1697,8 @@ WebTestBluetoothAdapterProvider::GetBaseGATTCharacteristic(
     const std::string& uuid,
     BluetoothRemoteGattCharacteristic::Properties properties) {
   auto characteristic = std::make_unique<NiceMockBluetoothGattCharacteristic>(
-      service, identifier, BluetoothUUID(uuid), false /* is_local */,
-      properties, BluetoothGattCharacteristic::Permission::PERMISSION_NONE);
+      service, identifier, BluetoothUUID(uuid), properties,
+      BluetoothGattCharacteristic::Permission::PERMISSION_NONE);
 
   ON_CALL(*characteristic, ReadRemoteCharacteristic_(_, _))
       .WillByDefault(
@@ -1753,7 +1752,7 @@ WebTestBluetoothAdapterProvider::GetErrorCharacteristic(
   // Add error descriptor to |characteristic|
   auto error_descriptor = std::make_unique<NiceMockBluetoothGattDescriptor>(
       characteristic.get(), kCharacteristicUserDescription,
-      BluetoothUUID(kUserDescriptionUUID), false,
+      BluetoothUUID(kUserDescriptionUUID),
       device::BluetoothRemoteGattCharacteristic::PROPERTY_READ);
 
   ON_CALL(*error_descriptor, ReadRemoteDescriptor_(_, _))

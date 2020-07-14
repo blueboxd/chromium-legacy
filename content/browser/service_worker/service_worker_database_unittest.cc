@@ -453,8 +453,8 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   std::vector<storage::mojom::ServiceWorkerRegistrationDataPtr> registrations;
   std::vector<std::vector<ResourceRecordPtr>> resources_list;
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
-            database->GetRegistrationsForOrigin(origin1, &registrations,
-                                                &resources_list));
+            database->GetRegistrationsForOrigin(
+                url::Origin::Create(origin1), &registrations, &resources_list));
   EXPECT_TRUE(registrations.empty());
   EXPECT_TRUE(resources_list.empty());
 
@@ -476,8 +476,8 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   registrations.clear();
   resources_list.clear();
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
-            database->GetRegistrationsForOrigin(origin1, &registrations,
-                                                &resources_list));
+            database->GetRegistrationsForOrigin(
+                url::Origin::Create(origin1), &registrations, &resources_list));
   EXPECT_EQ(1U, registrations.size());
   VerifyRegistrationData(data1, *registrations[0]);
   EXPECT_EQ(1U, resources_list.size());
@@ -499,8 +499,8 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   registrations.clear();
   resources_list.clear();
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
-            database->GetRegistrationsForOrigin(origin2, &registrations,
-                                                &resources_list));
+            database->GetRegistrationsForOrigin(
+                url::Origin::Create(origin2), &registrations, &resources_list));
   EXPECT_EQ(1U, registrations.size());
   VerifyRegistrationData(data2, *registrations[0]);
   EXPECT_EQ(1U, resources_list.size());
@@ -536,8 +536,8 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   registrations.clear();
   resources_list.clear();
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
-            database->GetRegistrationsForOrigin(origin3, &registrations,
-                                                &resources_list));
+            database->GetRegistrationsForOrigin(
+                url::Origin::Create(origin3), &registrations, &resources_list));
   EXPECT_EQ(2U, registrations.size());
   VerifyRegistrationData(data3, *registrations[0]);
   VerifyRegistrationData(data4, *registrations[1]);
@@ -548,9 +548,9 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   // The third parameter |opt_resources_list| to GetRegistrationsForOrigin()
   // is optional. So, nullptr should be acceptable.
   registrations.clear();
-  EXPECT_EQ(
-      ServiceWorkerDatabase::Status::kOk,
-      database->GetRegistrationsForOrigin(origin1, &registrations, nullptr));
+  EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
+            database->GetRegistrationsForOrigin(url::Origin::Create(origin1),
+                                                &registrations, nullptr));
   EXPECT_EQ(1U, registrations.size());
   VerifyRegistrationData(data1, *registrations[0]);
 }
@@ -1987,9 +1987,9 @@ TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
 
   // The registrations for |origin1| should be removed.
   std::vector<storage::mojom::ServiceWorkerRegistrationDataPtr> registrations;
-  EXPECT_EQ(
-      ServiceWorkerDatabase::Status::kOk,
-      database->GetRegistrationsForOrigin(origin1, &registrations, nullptr));
+  EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
+            database->GetRegistrationsForOrigin(url::Origin::Create(origin1),
+                                                &registrations, nullptr));
   EXPECT_TRUE(registrations.empty());
   GURL origin_out;
   EXPECT_EQ(
@@ -2130,8 +2130,8 @@ TEST(ServiceWorkerDatabaseTest, Corruption_GetRegistrationsForOrigin) {
   std::vector<storage::mojom::ServiceWorkerRegistrationDataPtr> registrations;
   std::vector<std::vector<ResourceRecordPtr>> resources_list;
   EXPECT_EQ(ServiceWorkerDatabase::Status::kErrorCorrupted,
-            database->GetRegistrationsForOrigin(origin, &registrations,
-                                                &resources_list));
+            database->GetRegistrationsForOrigin(
+                url::Origin::Create(origin), &registrations, &resources_list));
   EXPECT_TRUE(registrations.empty());
   EXPECT_TRUE(resources_list.empty());
 
@@ -2218,9 +2218,10 @@ TEST(ServiceWorkerDatabaseTest, CrossOriginEmbedderPolicyStoreRestore) {
     // Restore.
     std::vector<storage::mojom::ServiceWorkerRegistrationDataPtr> registrations;
     std::vector<std::vector<ResourceRecordPtr>> resources_list;
-    EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
-              database->GetRegistrationsForOrigin(origin, &registrations,
-                                                  &resources_list));
+    EXPECT_EQ(
+        ServiceWorkerDatabase::Status::kOk,
+        database->GetRegistrationsForOrigin(url::Origin::Create(origin),
+                                            &registrations, &resources_list));
 
     // The data must not have been altered.
     VerifyRegistrationData(data, *registrations[0]);

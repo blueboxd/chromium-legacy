@@ -1038,6 +1038,7 @@ if (!is_android) {
       "../browser/pdf/pdf_extension_test_util.h",
       "../browser/performance_manager/background_tab_loading_policy_browsertest.cc",
       "../browser/performance_manager/graph/page_node_impl_browsertest.cc",
+      "../browser/performance_manager/mechanisms/page_discarder_browsertest.cc",
       "../browser/performance_manager/page_load_tracker_decorator_browsertest.cc",
       "../browser/performance_manager/tab_properties_decorator_browsertest.cc",
       "../browser/permissions/permission_delegation_browsertest.cc",
@@ -4068,6 +4069,7 @@ test("unit_tests") {
       "../browser/memory/enterprise_memory_limit_evaluator_unittest.cc",
       "../browser/memory/swap_thrashing_monitor_delegate_win_unittest.cc",
       "../browser/metrics/desktop_session_duration/desktop_session_duration_tracker_unittest.cc",
+      "../browser/metrics/desktop_session_duration/touch_mode_stats_tracker_unittest.cc",
       "../browser/metrics/tab_stats_data_store_unittest.cc",
       "../browser/metrics/tab_stats_tracker_unittest.cc",
       "../browser/page_load_metrics/observers/session_restore_page_load_metrics_observer_unittest.cc",
@@ -4338,6 +4340,7 @@ test("unit_tests") {
       "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
       "//chrome/browser/resource_coordinator/tab_ranker:tab_features_test_helper",
       "//chrome/services/sharing:unit_tests",
+      "//chrome/services/sharing/nearby/platform_v2:unit_tests",
       "//chrome/services/sharing/nearby_decoder:unit_tests",
       "//chrome/services/sharing/public/cpp:unit_tests",
       "//chrome/services/speech:unit_tests",
@@ -6240,6 +6243,7 @@ test("chrome_app_unittests") {
     "//components/gwp_asan/buildflags",
     "//components/heap_profiling/in_process",
     "//components/safe_browsing:buildflags",
+    "//pdf:pdf_ppapi",
   ]
   if (!is_fuchsia) {
     # TODO(crbug.com/753619): Enable crash reporting on Fuchsia.

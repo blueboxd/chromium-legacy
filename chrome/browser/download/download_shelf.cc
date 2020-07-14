@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/location.h"
+#include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/download_core_service.h"
@@ -37,50 +37,6 @@ namespace {
 
 // Delay before we show a transient download.
 const int64_t kDownloadShowDelayInSeconds = 2;
-
-void OnGetDownloadDoneForOfflineItem(
-    Profile* profile,
-    base::OnceCallback<void(DownloadUIModel::DownloadUIModelPtr)> callback,
-    const base::Optional<offline_items_collection::OfflineItem>& offline_item) {
-  if (!offline_item.has_value())
-    return;
-
-  OfflineItemModelManager* manager =
-      OfflineItemModelManagerFactory::GetForBrowserContext(profile);
-  DownloadUIModel::DownloadUIModelPtr model =
-      OfflineItemModel::Wrap(manager, offline_item.value());
-
-  std::move(callback).Run(std::move(model));
-}
-
-void GetDownload(
-    Profile* profile,
-    const offline_items_collection::ContentId& id,
-    base::OnceCallback<void(DownloadUIModel::DownloadUIModelPtr)> callback) {
-  if (OfflineItemUtils::IsDownload(id)) {
-    content::DownloadManager* download_manager =
-        content::BrowserContext::GetDownloadManager(profile);
-    if (!download_manager)
-      return;
-
-    download::DownloadItem* download =
-        download_manager->GetDownloadByGuid(id.id);
-    if (!download)
-      return;
-
-    DownloadUIModel::DownloadUIModelPtr model =
-        DownloadItemModel::Wrap(download);
-    std::move(callback).Run(std::move(model));
-  } else {
-    offline_items_collection::OfflineContentAggregator* aggregator =
-        OfflineContentAggregatorFactory::GetForKey(profile->GetProfileKey());
-    if (!aggregator)
-      return;
-
-    aggregator->GetItemById(id, base::BindOnce(&OnGetDownloadDoneForOfflineItem,
-                                               profile, std::move(callback)));
-  }
-}
 
 }  // namespace
 
@@ -184,7 +140,36 @@ void DownloadShelf::ShowDownload(DownloadUIModel::DownloadUIModelPtr download) {
 
 void DownloadShelf::ShowDownloadById(
     const offline_items_collection::ContentId& id) {
-  GetDownload(profile_, id,
-              base::BindOnce(&DownloadShelf::ShowDownload,
-                             weak_ptr_factory_.GetWeakPtr()));
+  if (OfflineItemUtils::IsDownload(id)) {
+    content::DownloadManager* download_manager =
+        content::BrowserContext::GetDownloadManager(profile_);
+    if (!download_manager)
+      return;
+
+    download::DownloadItem* download =
+        download_manager->GetDownloadByGuid(id.id);
+    if (!download)
+      return;
+
+    ShowDownload(DownloadItemModel::Wrap(download));
+  } else {
+    offline_items_collection::OfflineContentAggregator* aggregator =
+        OfflineContentAggregatorFactory::GetForKey(profile_->GetProfileKey());
+    if (!aggregator)
+      return;
+
+    aggregator->GetItemById(
+        id, base::BindOnce(&DownloadShelf::OnGetDownloadDoneForOfflineItem,
+                           weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void DownloadShelf::OnGetDownloadDoneForOfflineItem(
+    const base::Optional<offline_items_collection::OfflineItem>& item) {
+  if (!item.has_value())
+    return;
+
+  OfflineItemModelManager* manager =
+      OfflineItemModelManagerFactory::GetForBrowserContext(profile_);
+  ShowDownload(OfflineItemModel::Wrap(manager, item.value()));
 }

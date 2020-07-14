@@ -11,8 +11,7 @@
 #include "chrome/browser/ui/app_list/app_service/app_service_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_item_controller.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_window_delegate.h"
 #include "chrome/common/chrome_features.h"
 #include "components/arc/arc_util.h"
 #include "components/exo/shell_surface_base.h"
@@ -44,8 +43,7 @@ ArcAppWindow::ArcAppWindow(int task_id,
   DCHECK(owner_);
 
   // AppService uses app_shelf_id as the app_id to construct ShelfID.
-  if (base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry))
-    set_shelf_id(ash::ShelfID(app_shelf_id.ToString()));
+  set_shelf_id(ash::ShelfID(app_shelf_id.ToString()));
 
   SetDefaultAppIcon();
 }

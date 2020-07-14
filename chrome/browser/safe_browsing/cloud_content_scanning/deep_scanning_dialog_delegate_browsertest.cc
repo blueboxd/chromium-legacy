@@ -629,7 +629,11 @@ IN_PROC_BROWSER_TEST_P(
       /*reason*/ "FILE_PASSWORD_PROTECTED",
       /*mimetypes*/ ZipMimeTypes(),
       // du chrome/test/data/safe_browsing/download_protection/encrypted.zip -b
-      /*size*/ 20015);
+      /*size*/ 20015,
+      /*result*/
+      expected_result()
+          ? EventResultToString(safe_browsing::EventResult::ALLOWED)
+          : EventResultToString(safe_browsing::EventResult::BLOCKED));
 
   // Start test.
   DeepScanningDialogDelegate::ShowForWebContents(
@@ -721,7 +725,11 @@ IN_PROC_BROWSER_TEST_P(
       /*trigger*/ SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
       /*reason*/ "DLP_SCAN_UNSUPPORTED_FILE_TYPE",
       /*mimetype*/ ShellScriptMimeTypes(),
-      /*size*/ std::string("file content").size());
+      /*size*/ std::string("file content").size(),
+      /*result*/
+      expected_result()
+          ? EventResultToString(safe_browsing::EventResult::ALLOWED)
+          : EventResultToString(safe_browsing::EventResult::BLOCKED));
 
   bool called = false;
   base::RunLoop run_loop;
@@ -822,7 +830,11 @@ IN_PROC_BROWSER_TEST_P(
       /*trigger*/ SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
       /*reason*/ "FILE_TOO_LARGE",
       /*mimetypes*/ DocMimeTypes(),
-      /*size*/ BinaryUploadService::kMaxUploadSizeBytes + 1);
+      /*size*/ BinaryUploadService::kMaxUploadSizeBytes + 1,
+      /*result*/
+      expected_result()
+          ? EventResultToString(safe_browsing::EventResult::ALLOWED)
+          : EventResultToString(safe_browsing::EventResult::BLOCKED));
 
   bool called = false;
   base::RunLoop run_loop;

@@ -271,6 +271,9 @@ extern const char kForceColorProfileHDR10[];
 extern const char kForceColorProfileName[];
 extern const char kForceColorProfileDescription[];
 
+extern const char kForcePreferredIntervalForVideoName[];
+extern const char kForcePreferredIntervalForVideoDescription[];
+
 extern const char kDynamicColorGamutName[];
 extern const char kDynamicColorGamutDescription[];
 
@@ -1908,9 +1911,6 @@ extern const char kAllowScrollSettingsDescription[];
 
 extern const char kAppServiceAdaptiveIconName[];
 extern const char kAppServiceAdaptiveIconDescription[];
-
-extern const char kAppServiceInstanceRegistryName[];
-extern const char kAppServiceInstanceRegistryDescription[];
 
 extern const char kAppServiceIntentHandlingName[];
 extern const char kAppServiceIntentHandlingDescription[];

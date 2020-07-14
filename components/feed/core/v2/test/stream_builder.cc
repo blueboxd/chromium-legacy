@@ -105,7 +105,7 @@ feedstore::Content MakeContent(int id_number) {
   prefetch_metadata.set_snippet("snippet" + suffix);
   prefetch_metadata.set_image_url("http://image" + suffix);
   prefetch_metadata.set_favicon_url("http://favicon" + suffix);
-
+  prefetch_metadata.set_badge_id("app/badge" + suffix);
   return result;
 }
 

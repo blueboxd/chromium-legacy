@@ -225,6 +225,10 @@ class CONTENT_EXPORT NavigationRequest
 
   static NavigationRequest* From(NavigationHandle* handle);
 
+  // If |type| is a reload, returns the equivalent ReloadType. Otherwise returns
+  // ReloadType::NONE.
+  static ReloadType NavigationTypeToReloadType(mojom::NavigationType type);
+
   ~NavigationRequest() override;
 
   // Returns true if this request's URL matches |origin| and the request state

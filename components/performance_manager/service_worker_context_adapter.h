@@ -66,7 +66,7 @@ class ServiceWorkerContextAdapter
       base::Optional<std::string> host_filter,
       GetInstalledRegistrationOriginsCallback callback) override;
   void GetAllOriginsInfo(GetUsageInfoCallback callback) override;
-  void DeleteForOrigin(const GURL& origin_url,
+  void DeleteForOrigin(const url::Origin& origin_url,
                        ResultCallback callback) override;
   void PerformStorageCleanup(base::OnceClosure callback) override;
   void CheckHasServiceWorker(const GURL& url,

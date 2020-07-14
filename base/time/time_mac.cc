@@ -32,7 +32,7 @@
 namespace {
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-int64_t MachAbsoluteTimeToTicks(uint64_t mach_absolute_time) {
+int64_t MachTimeToMicroseconds(uint64_t mach_time) {
   static mach_timebase_info_data_t timebase_info;
   if (timebase_info.denom == 0) {
     // Zero-initialization of statics guarantees that denom will be 0 before
@@ -46,7 +46,7 @@ int64_t MachAbsoluteTimeToTicks(uint64_t mach_absolute_time) {
 
   // timebase_info converts absolute time tick units into nanoseconds.  Convert
   // to microseconds up front to stave off overflows.
-  base::CheckedNumeric<uint64_t> result(mach_absolute_time /
+  base::CheckedNumeric<uint64_t> result(mach_time /
                                         base::Time::kNanosecondsPerMicrosecond);
   result *= timebase_info.numer;
   result /= timebase_info.denom;
@@ -90,7 +90,7 @@ int64_t ComputeCurrentTicks() {
   // mach_absolute_time is it when it comes to ticks on the Mac.  Other calls
   // with less precision (such as TickCount) just call through to
   // mach_absolute_time.
-  return MachAbsoluteTimeToTicks(mach_absolute_time());
+  return MachTimeToMicroseconds(mach_absolute_time());
 #endif  // defined(OS_IOS)
 }
 
@@ -175,6 +175,15 @@ CFAbsoluteTime Time::ToCFAbsoluteTime() const {
          kCFAbsoluteTimeIntervalSince1970;
 }
 
+// TimeDelta ------------------------------------------------------------------
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+// static
+TimeDelta TimeDelta::FromMachTime(uint64_t mach_time) {
+  return TimeDelta::FromMicroseconds(MachTimeToMicroseconds(mach_time));
+}
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
 // TimeTicks ------------------------------------------------------------------
 
 namespace subtle {
@@ -196,7 +205,7 @@ bool TimeTicks::IsConsistentAcrossProcesses() {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 // static
 TimeTicks TimeTicks::FromMachAbsoluteTime(uint64_t mach_absolute_time) {
-  return TimeTicks(MachAbsoluteTimeToTicks(mach_absolute_time));
+  return TimeTicks(MachTimeToMicroseconds(mach_absolute_time));
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 

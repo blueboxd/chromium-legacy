@@ -38,6 +38,7 @@
 #include "ppapi/c/private/ppp_pdf.h"
 #include "services/image_annotation/public/cpp/image_processor.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
+#include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -885,8 +886,8 @@ class AXImageAnnotatorTest : public RenderAccessibilityImplTest {
     GetRenderAccessibilityImpl()->ax_image_annotator_ =
         std::make_unique<TestAXImageAnnotator>(GetRenderAccessibilityImpl(),
                                                mock_annotator().GetRemote());
-    GetRenderAccessibilityImpl()->tree_source_.RemoveImageAnnotator();
-    GetRenderAccessibilityImpl()->tree_source_.AddImageAnnotator(
+    GetRenderAccessibilityImpl()->tree_source_->RemoveImageAnnotator();
+    GetRenderAccessibilityImpl()->tree_source_->AddImageAnnotator(
         GetRenderAccessibilityImpl()->ax_image_annotator_.get());
   }
 
@@ -1005,6 +1006,137 @@ TEST_F(AXImageAnnotatorTest, OnImageUpdated) {
   EXPECT_TRUE(mock_annotator().image_processors_[1].is_bound());
   EXPECT_TRUE(mock_annotator().image_processors_[2].is_bound());
   EXPECT_EQ(3u, mock_annotator().callbacks_.size());
+}
+
+// URL-keyed metrics recorder implementation that just counts the number
+// of times it's been called.
+class MockUkmRecorder : public ukm::MojoUkmRecorder {
+ public:
+  MockUkmRecorder()
+      : ukm::MojoUkmRecorder(
+            mojo::PendingRemote<ukm::mojom::UkmRecorderInterface>()) {}
+
+  void AddEntry(ukm::mojom::UkmEntryPtr entry) override { calls_++; }
+
+  int calls() const { return calls_; }
+
+ private:
+  int calls_ = 0;
+};
+
+// Subclass of BlinkAXTreeSource that retains the functionality but
+// enables simulating a serialize operation taking an arbitrarily long
+// amount of time (using simulated time).
+class TimeDelayBlinkAXTreeSource : public BlinkAXTreeSource {
+ public:
+  TimeDelayBlinkAXTreeSource(RenderFrameImpl* rfi,
+                             ui::AXMode mode,
+                             base::test::TaskEnvironment* task_environment)
+      : BlinkAXTreeSource(rfi, mode), task_environment_(task_environment) {}
+
+  void SetTimeDelayForNextSerialize(int time_delay_ms) {
+    time_delay_ms_ = time_delay_ms;
+  }
+
+  void SerializeNode(blink::WebAXObject node,
+                     AXContentNodeData* out_data) const override {
+    BlinkAXTreeSource::SerializeNode(node, out_data);
+    if (time_delay_ms_) {
+      task_environment_->FastForwardBy(
+          base::TimeDelta::FromMilliseconds(time_delay_ms_));
+      time_delay_ms_ = 0;
+    }
+  }
+
+ private:
+  mutable int time_delay_ms_ = 0;
+  base::test::TaskEnvironment* task_environment_;
+};
+
+// Tests for URL-keyed metrics.
+class RenderAccessibilityImplUKMTest : public RenderAccessibilityImplTest {
+ public:
+  void SetUp() override {
+    RenderAccessibilityImplTest::SetUp();
+    GetRenderAccessibilityImpl()->ukm_recorder_ =
+        std::make_unique<MockUkmRecorder>();
+    GetRenderAccessibilityImpl()->tree_source_ =
+        std::make_unique<TimeDelayBlinkAXTreeSource>(
+            GetRenderAccessibilityImpl()->render_frame_,
+            GetRenderAccessibilityImpl()->GetAccessibilityMode(),
+            &task_environment_);
+    GetRenderAccessibilityImpl()->serializer_ =
+        std::make_unique<BlinkAXTreeSerializer>(
+            GetRenderAccessibilityImpl()->tree_source_.get());
+  }
+
+  void TearDown() override { RenderAccessibilityImplTest::TearDown(); }
+
+  MockUkmRecorder* ukm_recorder() {
+    return static_cast<MockUkmRecorder*>(
+        GetRenderAccessibilityImpl()->ukm_recorder_.get());
+  }
+
+  void SetTimeDelayForNextSerialize(int time_delay_ms) {
+    static_cast<TimeDelayBlinkAXTreeSource*>(
+        GetRenderAccessibilityImpl()->tree_source_.get())
+        ->SetTimeDelayForNextSerialize(time_delay_ms);
+  }
+};
+
+TEST_F(RenderAccessibilityImplUKMTest, TestFireUKMs) {
+  LoadHTMLAndRefreshAccessibilityTree(R"HTML(
+      <body>
+        <input id="text" value="Hello, World">
+      </body>
+      )HTML");
+
+  // No URL-keyed metrics should be fired initially.
+  EXPECT_EQ(0, ukm_recorder()->calls());
+
+  // No URL-keyed metrics should be fired after we send one event.
+  WebDocument document = GetMainFrame()->GetDocument();
+  WebAXObject root_obj = WebAXObject::FromWebDocument(document);
+  GetRenderAccessibilityImpl()->HandleAXEvent(
+      ui::AXEvent(root_obj.AxID(), ax::mojom::Event::kChildrenChanged));
+  SendPendingAccessibilityEvents();
+  EXPECT_EQ(0, ukm_recorder()->calls());
+
+  // No URL-keyed metrics should be fired even after an event that takes
+  // 300 ms, but we should now have something to send.
+  // This must be >= kMinSerializationTimeToSendInMS
+  SetTimeDelayForNextSerialize(300);
+  GetRenderAccessibilityImpl()->HandleAXEvent(
+      ui::AXEvent(root_obj.AxID(), ax::mojom::Event::kChildrenChanged));
+  SendPendingAccessibilityEvents();
+  EXPECT_EQ(0, ukm_recorder()->calls());
+
+  // After 1000 seconds have passed, the next time we send an event we should
+  // send URL-keyed metrics.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1000));
+  GetRenderAccessibilityImpl()->HandleAXEvent(
+      ui::AXEvent(root_obj.AxID(), ax::mojom::Event::kChildrenChanged));
+  SendPendingAccessibilityEvents();
+  EXPECT_EQ(1, ukm_recorder()->calls());
+
+  // Send another event that takes a long (simulated) time to serialize.
+  // This must be >= kMinSerializationTimeToSendInMS
+  SetTimeDelayForNextSerialize(200);
+  GetRenderAccessibilityImpl()->HandleAXEvent(
+      ui::AXEvent(root_obj.AxID(), ax::mojom::Event::kChildrenChanged));
+  SendPendingAccessibilityEvents();
+
+  // We shouldn't have a new call to the UKM recorder yet, not enough
+  // time has elapsed.
+  EXPECT_EQ(1, ukm_recorder()->calls());
+
+  // Navigate to a new page.
+  GetRenderAccessibilityImpl()->DidCommitProvisionalLoad(
+      ui::PAGE_TRANSITION_LINK);
+
+  // Now we should have yet another UKM recorded because of the page
+  // transition.
+  EXPECT_EQ(2, ukm_recorder()->calls());
 }
 
 }  // namespace content

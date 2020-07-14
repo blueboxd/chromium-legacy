@@ -20,6 +20,7 @@
 #include "base/scoped_native_library.h"
 #include "base/threading/thread.h"
 #include "media/base/audio_buffer.h"
+#include "media/base/callback_registry.h"
 #include "media/base/cdm_config.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_factory.h"
@@ -96,7 +97,6 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   int GetCdmId() const final;
 
   // Decryptor implementation.
-  void RegisterNewKeyCB(StreamType stream_type, NewKeyCB key_added_cb) final;
   void Decrypt(StreamType stream_type,
                scoped_refptr<DecoderBuffer> encrypted,
                DecryptCB decrypt_cb) final;
@@ -233,9 +233,7 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   DecoderInitCB audio_init_cb_;
   DecoderInitCB video_init_cb_;
 
-  // Callbacks for new keys added.
-  NewKeyCB new_audio_key_cb_;
-  NewKeyCB new_video_key_cb_;
+  CallbackRegistry<EventCB::RunType> event_callbacks_;
 
   // Keep track of audio parameters.
   int audio_samples_per_second_ = 0;

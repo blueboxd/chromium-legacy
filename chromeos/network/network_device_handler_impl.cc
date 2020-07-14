@@ -25,8 +25,8 @@
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_ipconfig_client.h"
 #include "chromeos/network/device_state.h"
+#include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state_handler.h"
-#include "components/device_event_log/device_event_log.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -50,6 +50,18 @@ std::string GetErrorNameForShillError(const std::string& shill_error_name) {
   if (shill_error_name == shill::kErrorResultNotFound)
     return NetworkDeviceHandler::kErrorDeviceMissing;
   return NetworkDeviceHandler::kErrorUnknown;
+}
+
+void GetPropertiesCallback(const std::string& device_path,
+                           network_handler::ResultCallback callback,
+                           DBusMethodCallStatus call_status,
+                           base::Value result) {
+  if (call_status != DBUS_METHOD_CALL_SUCCESS) {
+    NET_LOG(ERROR) << "GetProperties failed: " << NetworkPathId(device_path)
+                   << " Status: " << call_status;
+    std::move(callback).Run(device_path, base::nullopt);
+  }
+  std::move(callback).Run(device_path, std::move(result));
 }
 
 void InvokeErrorCallback(const std::string& device_path,
@@ -83,142 +95,6 @@ void SetDevicePropertyInternal(
       base::BindOnce(&HandleShillCallFailure, device_path, error_callback));
 }
 
-// Struct containing TDLS Operation parameters.
-struct TDLSOperationParams {
-  TDLSOperationParams() : retry_count(0) {}
-  std::string operation;
-  std::string next_operation;
-  std::string ip_or_mac_address;
-  int retry_count;
-};
-
-// Forward declare for PostDelayedTask.
-void CallPerformTDLSOperation(
-    const std::string& device_path,
-    const TDLSOperationParams& params,
-    const network_handler::StringResultCallback& callback,
-    const network_handler::ErrorCallback& error_callback);
-
-void TDLSSuccessCallback(const std::string& device_path,
-                         const TDLSOperationParams& params,
-                         const network_handler::StringResultCallback& callback,
-                         const network_handler::ErrorCallback& error_callback,
-                         const std::string& result) {
-  std::string event_desc = "TDLSSuccessCallback: " + params.operation;
-  if (!result.empty())
-    event_desc += ": " + result;
-  NET_LOG(EVENT) << event_desc << ": " << device_path;
-
-  if (params.operation != shill::kTDLSStatusOperation && !result.empty()) {
-    NET_LOG(ERROR) << "Unexpected TDLS result: " + result << ": "
-                   << device_path;
-  }
-
-  TDLSOperationParams new_params;
-  const int64_t kRequestStatusDelayMs = 500;
-  int64_t request_delay_ms = 0;
-  if (params.operation == shill::kTDLSStatusOperation) {
-    // If this is the last operation, or the result is 'Nonexistent',
-    // return the result.
-    if (params.next_operation.empty() ||
-        result == shill::kTDLSNonexistentState) {
-      if (!callback.is_null())
-        callback.Run(result);
-      return;
-    }
-    // Otherwise start the next operation.
-    new_params.operation = params.next_operation;
-  } else if (params.operation == shill::kTDLSDiscoverOperation) {
-    // Send a delayed Status request followed by a Setup request.
-    request_delay_ms = kRequestStatusDelayMs;
-    new_params.operation = shill::kTDLSStatusOperation;
-    new_params.next_operation = shill::kTDLSSetupOperation;
-  } else if (params.operation == shill::kTDLSSetupOperation ||
-             params.operation == shill::kTDLSTeardownOperation) {
-    // Send a delayed Status request.
-    request_delay_ms = kRequestStatusDelayMs;
-    new_params.operation = shill::kTDLSStatusOperation;
-  } else {
-    NET_LOG(ERROR) << "Unexpected TDLS operation: " + params.operation;
-    return;
-  }
-
-  new_params.ip_or_mac_address = params.ip_or_mac_address;
-
-  base::TimeDelta request_delay;
-  if (!ShillDeviceClient::Get()->GetTestInterface())
-    request_delay = base::TimeDelta::FromMilliseconds(request_delay_ms);
-
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&CallPerformTDLSOperation, device_path, new_params,
-                     callback, error_callback),
-      request_delay);
-}
-
-void TDLSErrorCallback(const std::string& device_path,
-                       const TDLSOperationParams& params,
-                       const network_handler::StringResultCallback& callback,
-                       const network_handler::ErrorCallback& error_callback,
-                       const std::string& dbus_error_name,
-                       const std::string& dbus_error_message) {
-  // If a Setup operation receives an InProgress error, retry.
-  const int kMaxRetries = 5;
-  if ((params.operation == shill::kTDLSDiscoverOperation ||
-       params.operation == shill::kTDLSSetupOperation) &&
-      dbus_error_name == shill::kErrorResultInProgress &&
-      params.retry_count < kMaxRetries) {
-    TDLSOperationParams retry_params = params;
-    ++retry_params.retry_count;
-    NET_LOG(EVENT) << "TDLS Retry: " << params.retry_count << ": "
-                   << device_path;
-    const int64_t kReRequestDelayMs = 1000;
-    base::TimeDelta request_delay;
-    if (!ShillDeviceClient::Get()->GetTestInterface())
-      request_delay = base::TimeDelta::FromMilliseconds(kReRequestDelayMs);
-
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&CallPerformTDLSOperation, device_path, retry_params,
-                       callback, error_callback),
-        request_delay);
-    return;
-  }
-
-  NET_LOG(ERROR) << "TDLS Operation: " << params.operation
-                 << " Error: " << dbus_error_name << ": " << dbus_error_message
-                 << ": " << device_path;
-  if (error_callback.is_null())
-    return;
-
-  const std::string error_name =
-      dbus_error_name == shill::kErrorResultInProgress
-          ? NetworkDeviceHandler::kErrorTimeout
-          : NetworkDeviceHandler::kErrorUnknown;
-  const std::string& error_detail = params.ip_or_mac_address;
-  std::unique_ptr<base::DictionaryValue> error_data(
-      network_handler::CreateDBusErrorData(device_path, error_name,
-                                           error_detail, dbus_error_name,
-                                           dbus_error_message));
-  error_callback.Run(error_name, std::move(error_data));
-}
-
-void CallPerformTDLSOperation(
-    const std::string& device_path,
-    const TDLSOperationParams& params,
-    const network_handler::StringResultCallback& callback,
-    const network_handler::ErrorCallback& error_callback) {
-  LOG(ERROR) << "TDLS: " << params.operation;
-  NET_LOG(EVENT) << "CallPerformTDLSOperation: " << params.operation << ": "
-                 << device_path;
-  ShillDeviceClient::Get()->PerformTDLSOperation(
-      dbus::ObjectPath(device_path), params.operation, params.ip_or_mac_address,
-      base::BindOnce(&TDLSSuccessCallback, device_path, params, callback,
-                     error_callback),
-      base::BindOnce(&TDLSErrorCallback, device_path, params, callback,
-                     error_callback));
-}
-
 }  // namespace
 
 NetworkDeviceHandlerImpl::NetworkDeviceHandlerImpl() = default;
@@ -230,12 +106,10 @@ NetworkDeviceHandlerImpl::~NetworkDeviceHandlerImpl() {
 
 void NetworkDeviceHandlerImpl::GetDeviceProperties(
     const std::string& device_path,
-    network_handler::DictionaryResultCallback callback,
-    const network_handler::ErrorCallback& error_callback) const {
+    network_handler::ResultCallback callback) const {
   ShillDeviceClient::Get()->GetProperties(
       dbus::ObjectPath(device_path),
-      base::BindOnce(&network_handler::GetPropertiesCallback,
-                     std::move(callback), error_callback, device_path));
+      base::BindOnce(&GetPropertiesCallback, device_path, std::move(callback)));
 }
 
 void NetworkDeviceHandlerImpl::SetDeviceProperty(
@@ -341,38 +215,6 @@ void NetworkDeviceHandlerImpl::SetUsbEthernetMacAddressSource(
   usb_ethernet_mac_address_source_ = source;
   mac_address_change_not_supported_.clear();
   ApplyUsbEthernetMacAddressSourceToShill();
-}
-
-void NetworkDeviceHandlerImpl::SetWifiTDLSEnabled(
-    const std::string& ip_or_mac_address,
-    bool enabled,
-    const network_handler::StringResultCallback& callback,
-    const network_handler::ErrorCallback& error_callback) {
-  const DeviceState* device_state = GetWifiDeviceState(error_callback);
-  if (!device_state)
-    return;
-
-  TDLSOperationParams params;
-  params.operation =
-      enabled ? shill::kTDLSDiscoverOperation : shill::kTDLSTeardownOperation;
-  params.ip_or_mac_address = ip_or_mac_address;
-  CallPerformTDLSOperation(device_state->path(), params, callback,
-                           error_callback);
-}
-
-void NetworkDeviceHandlerImpl::GetWifiTDLSStatus(
-    const std::string& ip_or_mac_address,
-    const network_handler::StringResultCallback& callback,
-    const network_handler::ErrorCallback& error_callback) {
-  const DeviceState* device_state = GetWifiDeviceState(error_callback);
-  if (!device_state)
-    return;
-
-  TDLSOperationParams params;
-  params.operation = shill::kTDLSStatusOperation;
-  params.ip_or_mac_address = ip_or_mac_address;
-  CallPerformTDLSOperation(device_state->path(), params, callback,
-                           error_callback);
 }
 
 void NetworkDeviceHandlerImpl::AddWifiWakeOnPacketConnection(
@@ -517,8 +359,7 @@ void NetworkDeviceHandlerImpl::ApplyMACAddressRandomizationToShill() {
           device_state->path(),
           base::BindOnce(
               &NetworkDeviceHandlerImpl::HandleMACAddressRandomization,
-              weak_ptr_factory_.GetWeakPtr()),
-          network_handler::ErrorCallback());
+              weak_ptr_factory_.GetWeakPtr()));
       return;
     case MACAddressRandomizationSupport::SUPPORTED:
       SetDevicePropertyInternal(
@@ -665,10 +506,12 @@ void NetworkDeviceHandlerImpl::
 
 void NetworkDeviceHandlerImpl::HandleMACAddressRandomization(
     const std::string& device_path,
-    const base::DictionaryValue& properties) {
-  bool supported;
-  if (!properties.GetBooleanWithoutPathExpansion(
-          shill::kMacAddressRandomizationSupportedProperty, &supported)) {
+    base::Optional<base::Value> properties) {
+  if (!properties)
+    return;
+  base::Optional<bool> supported =
+      properties->FindBoolKey(shill::kMacAddressRandomizationSupportedProperty);
+  if (!supported.has_value()) {
     if (base::SysInfo::IsRunningOnChromeOS()) {
       NET_LOG(ERROR) << "Failed to determine if device " << device_path
                      << " supports MAC address randomization";
@@ -677,7 +520,7 @@ void NetworkDeviceHandlerImpl::HandleMACAddressRandomization(
   }
 
   // Try to set MAC address randomization if it's supported.
-  if (supported) {
+  if (*supported) {
     mac_addr_randomization_supported_ =
         MACAddressRandomizationSupport::SUPPORTED;
     ApplyMACAddressRandomizationToShill();

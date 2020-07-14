@@ -247,7 +247,9 @@
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
+#include "chrome/browser/metrics/desktop_session_duration/touch_mode_stats_tracker.h"
 #include "chrome/browser/profiles/profile_activity_metrics_recorder.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #endif
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
@@ -956,6 +958,9 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   metrics::DesktopSessionDurationTracker::Initialize();
   ProfileActivityMetricsRecorder::Initialize();
+  TouchModeStatsTracker::Initialize(
+      metrics::DesktopSessionDurationTracker::Get(),
+      ui::TouchUiController::Get());
 #endif
   metrics::RendererUptimeTracker::Initialize();
 

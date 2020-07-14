@@ -186,7 +186,7 @@ class CONTENT_EXPORT ServiceWorkerContext {
   // service workers belonging to the registrations. All clients controlled by
   // those service workers will lose their controllers immediately after this
   // operation.
-  virtual void DeleteForOrigin(const GURL& origin_url,
+  virtual void DeleteForOrigin(const url::Origin& origin_url,
                                ResultCallback callback) = 0;
 
   // Performs internal storage cleanup. Operations to the storage in the past

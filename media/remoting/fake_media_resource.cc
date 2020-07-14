@@ -51,10 +51,6 @@ void FakeDemuxerStream::FakeRead(ReadCB read_cb) {
   std::move(read_cb).Run(kOk, buffer);
 }
 
-bool FakeDemuxerStream::IsReadPending() const {
-  return !pending_read_cb_.is_null();
-}
-
 AudioDecoderConfig FakeDemuxerStream::audio_decoder_config() {
   return audio_config_;
 }

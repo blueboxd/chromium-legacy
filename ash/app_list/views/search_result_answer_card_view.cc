@@ -338,10 +338,6 @@ const char* SearchResultAnswerCardView::GetClassName() const {
   return "SearchResultAnswerCardView";
 }
 
-int SearchResultAnswerCardView::GetYSize() {
-  return num_results();
-}
-
 int SearchResultAnswerCardView::DoUpdate() {
   std::vector<SearchResult*> display_results =
       SearchModel::FilterSearchResultsByDisplayType(

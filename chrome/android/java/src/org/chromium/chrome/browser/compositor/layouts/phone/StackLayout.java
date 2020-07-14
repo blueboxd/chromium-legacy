@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.compositor.layouts.phone;
 import android.content.Context;
 
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
@@ -33,12 +35,17 @@ public class StackLayout extends StackLayoutBase {
     private boolean mAnimatingStackSwitch;
 
     /**
-     * @param context     The current Android's context.
-     * @param updateHost  The {@link LayoutUpdateHost} view for this layout.
-     * @param renderHost  The {@link LayoutRenderHost} view for this layout.
+     * @param context                              The current Android's context.
+     * @param updateHost                           The {@link LayoutUpdateHost} view for this
+     *                                             layout.
+     * @param renderHost                           The {@link LayoutRenderHost} view for this
+     *                                             layout.
+     * @param browserControlsStateProviderSupplier The {@link ObservableSupplier} for the
+     *                                             {@link BrowserControlsStateProvider}.
      */
-    public StackLayout(Context context, LayoutUpdateHost updateHost, LayoutRenderHost renderHost) {
-        super(context, updateHost, renderHost);
+    public StackLayout(Context context, LayoutUpdateHost updateHost, LayoutRenderHost renderHost,
+            ObservableSupplier<BrowserControlsStateProvider> browserControlsStateProviderSupplier) {
+        super(context, updateHost, renderHost, browserControlsStateProviderSupplier);
     }
 
     @Override

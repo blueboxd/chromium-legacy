@@ -780,40 +780,7 @@ NetworkingPrivateSetWifiTDLSEnabledStateFunction::
 
 ExtensionFunction::ResponseAction
 NetworkingPrivateSetWifiTDLSEnabledStateFunction::Run() {
-  // This method is private - as such, it should not be exposed through public
-  // networking.onc API.
-  // TODO(tbarzic): Consider exposing this via separate API.
-  // http://crbug.com/678737
-  if (!HasPrivateNetworkingAccess(extension(), source_context_type(),
-                                  source_url())) {
-    return RespondNow(Error(kPrivateOnlyError));
-  }
-  std::unique_ptr<private_api::SetWifiTDLSEnabledState::Params> params =
-      private_api::SetWifiTDLSEnabledState::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  GetDelegate(browser_context())
-      ->SetWifiTDLSEnabledState(
-          params->ip_or_mac_address, params->enabled,
-          base::Bind(&NetworkingPrivateSetWifiTDLSEnabledStateFunction::Success,
-                     this),
-          base::Bind(&NetworkingPrivateSetWifiTDLSEnabledStateFunction::Failure,
-                     this));
-  // Success() or Failure() might have been called synchronously at this point.
-  // In that case this function has already called Respond(). Return
-  // AlreadyResponded() in that case.
-  return did_respond() ? AlreadyResponded() : RespondLater();
-}
-
-void NetworkingPrivateSetWifiTDLSEnabledStateFunction::Success(
-    const std::string& result) {
-  Respond(ArgumentList(
-      private_api::SetWifiTDLSEnabledState::Results::Create(result)));
-}
-
-void NetworkingPrivateSetWifiTDLSEnabledStateFunction::Failure(
-    const std::string& error) {
-  Respond(Error(error));
+  return RespondNow(Error("Not supported"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -825,40 +792,7 @@ NetworkingPrivateGetWifiTDLSStatusFunction::
 
 ExtensionFunction::ResponseAction
 NetworkingPrivateGetWifiTDLSStatusFunction::Run() {
-  // This method is private - as such, it should not be exposed through public
-  // networking.onc API.
-  // TODO(tbarzic): Consider exposing this via separate API.
-  // http://crbug.com/678737
-  if (!HasPrivateNetworkingAccess(extension(), source_context_type(),
-                                  source_url())) {
-    return RespondNow(Error(kPrivateOnlyError));
-  }
-  std::unique_ptr<private_api::GetWifiTDLSStatus::Params> params =
-      private_api::GetWifiTDLSStatus::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  GetDelegate(browser_context())
-      ->GetWifiTDLSStatus(
-          params->ip_or_mac_address,
-          base::Bind(&NetworkingPrivateGetWifiTDLSStatusFunction::Success,
-                     this),
-          base::Bind(&NetworkingPrivateGetWifiTDLSStatusFunction::Failure,
-                     this));
-  // Success() or Failure() might have been called synchronously at this point.
-  // In that case this function has already called Respond(). Return
-  // AlreadyResponded() in that case.
-  return did_respond() ? AlreadyResponded() : RespondLater();
-}
-
-void NetworkingPrivateGetWifiTDLSStatusFunction::Success(
-    const std::string& result) {
-  Respond(
-      ArgumentList(private_api::GetWifiTDLSStatus::Results::Create(result)));
-}
-
-void NetworkingPrivateGetWifiTDLSStatusFunction::Failure(
-    const std::string& error) {
-  Respond(Error(error));
+  return RespondNow(Error("Not supported"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

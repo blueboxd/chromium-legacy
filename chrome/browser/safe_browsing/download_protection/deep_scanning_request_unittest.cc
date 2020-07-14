@@ -947,7 +947,9 @@ TEST_P(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         /*reason*/
         use_legacy_policies() ? "DLP_SCAN_FAILED" : "ANALYSIS_CONNECTOR_FAILED",
         /*mimetypes*/ ExeMimeTypes(),
-        /*size*/ std::string("download contents").size());
+        /*size*/ std::string("download contents").size(),
+        /*result*/
+        EventResultToString(EventResult::ALLOWED));
 
     request.Start();
 
@@ -992,7 +994,9 @@ TEST_P(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         use_legacy_policies() ? "MALWARE_SCAN_FAILED"
                               : "ANALYSIS_CONNECTOR_FAILED",
         /*mimetypes*/ ExeMimeTypes(),
-        /*size*/ std::string("download contents").size());
+        /*size*/ std::string("download contents").size(),
+        /*result*/
+        EventResultToString(EventResult::ALLOWED));
 
     request.Start();
 

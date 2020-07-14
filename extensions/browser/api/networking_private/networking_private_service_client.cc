@@ -306,21 +306,6 @@ void NetworkingPrivateServiceClient::StartDisconnect(
                      base::Owned(error)));
 }
 
-void NetworkingPrivateServiceClient::SetWifiTDLSEnabledState(
-    const std::string& ip_or_mac_address,
-    bool enabled,
-    const StringCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  failure_callback.Run(networking_private::kErrorNotSupported);
-}
-
-void NetworkingPrivateServiceClient::GetWifiTDLSStatus(
-    const std::string& ip_or_mac_address,
-    const StringCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  failure_callback.Run(networking_private::kErrorNotSupported);
-}
-
 void NetworkingPrivateServiceClient::GetCaptivePortalStatus(
     const std::string& guid,
     const StringCallback& success_callback,

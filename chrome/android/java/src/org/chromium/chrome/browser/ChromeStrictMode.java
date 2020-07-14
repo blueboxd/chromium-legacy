@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser;
 
-import android.app.ApplicationErrorReport;
 import android.os.Build;
 import android.os.Looper;
 import android.os.StrictMode;
+import android.text.TextUtils;
 
 import androidx.annotation.UiThread;
 
@@ -18,8 +18,13 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.components.strictmode.KnownViolations;
+import org.chromium.components.strictmode.StrictModePolicyViolation;
+import org.chromium.components.strictmode.ThreadStrictModeInterceptor;
+import org.chromium.components.strictmode.Violation;
 
-import java.lang.reflect.Field;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,28 +39,9 @@ public class ChromeStrictMode {
     private static final double MAX_UPLOADS_PER_SESSION = 3;
 
     private static boolean sIsStrictModeAlreadyConfigured;
-    private static List<Object> sCachedStackTraces =
-            Collections.synchronizedList(new ArrayList<Object>());
+    private static List<Violation> sCachedViolations =
+            Collections.synchronizedList(new ArrayList<>());
     private static AtomicInteger sNumUploads = new AtomicInteger();
-
-    private static class SnoopingArrayList<T> extends ArrayList<T> {
-        @Override
-        public void clear() {
-            for (int i = 0; i < size(); i++) {
-                // It is likely that we have at most one violation pass this check each time around.
-                if (Math.random() < UPLOAD_PROBABILITY) {
-                    // Ensure that we do not upload too many StrictMode violations in any single
-                    // session. To prevent races, we allow sNumUploads to increase beyond the
-                    // limit, but just skip actually uploading the stack trace then.
-                    if (sNumUploads.getAndAdd(1) >= MAX_UPLOADS_PER_SESSION) {
-                        break;
-                    }
-                    sCachedStackTraces.add(get(i));
-                }
-            }
-            super.clear();
-        }
-    }
 
     /**
      * Always process the violation on the UI thread. This ensures other crash reports are not
@@ -65,45 +51,36 @@ public class ChromeStrictMode {
      * @param violationInfo The violation info from the StrictMode violation in question.
      */
     @UiThread
-    private static void reportStrictModeViolation(Object violationInfo) {
-        try {
-            Field crashInfoField = violationInfo.getClass().getField("crashInfo");
-            ApplicationErrorReport.CrashInfo crashInfo =
-                    (ApplicationErrorReport.CrashInfo) crashInfoField.get(violationInfo);
-            String stackTrace = crashInfo.stackTrace;
-            if (stackTrace == null) {
-                Log.d(TAG, "StrictMode violation stack trace was null.");
-            } else {
-                Log.d(TAG, "Upload stack trace: " + stackTrace);
-                JavaExceptionReporter.reportStackTrace(stackTrace);
-            }
-        } catch (Exception e) {
-            // Ignore all exceptions.
-            Log.d(TAG, "Could not handle observed StrictMode violation.", e);
+    private static void reportStrictModeViolation(Violation violation) {
+        StringWriter stackTraceWriter = new StringWriter();
+        new StrictModePolicyViolation(violation).printStackTrace(new PrintWriter(stackTraceWriter));
+        String stackTrace = stackTraceWriter.toString();
+        if (TextUtils.isEmpty(stackTrace)) {
+            Log.d(TAG, "StrictMode violation stack trace was empty.");
+        } else {
+            Log.d(TAG, "Upload stack trace: " + stackTrace);
+            JavaExceptionReporter.reportStackTrace(stackTrace);
         }
     }
 
     /**
-     * Replace Android OS's StrictMode.violationsBeingTimed with a custom ArrayList acting as an
-     * observer into violation stack traces. Set up an idle handler so StrictMode violations that
-     * occur on startup are not ignored.
+     * Add custom {@link ThreadStrictModeInterceptor} penalty which records strict mode violations.
+     * Set up an idle handler so StrictMode violations that occur on startup are not ignored.
      */
-    @SuppressWarnings({"unchecked", "rawtypes" })
     @UiThread
-    private static void initializeStrictModeWatch() {
-        try {
-            Field violationsBeingTimedField =
-                    StrictMode.class.getDeclaredField("violationsBeingTimed");
-            violationsBeingTimedField.setAccessible(true);
-            ThreadLocal<ArrayList> violationsBeingTimed =
-                    (ThreadLocal<ArrayList>) violationsBeingTimedField.get(null);
-            ArrayList replacementList = new SnoopingArrayList();
-            violationsBeingTimed.set(replacementList);
-        } catch (Exception e) {
-            // Terminate watch if any exceptions are raised.
-            Log.w(TAG, "Could not initialize StrictMode watch.", e);
-            return;
-        }
+    private static void initializeStrictModeWatch(
+            ThreadStrictModeInterceptor.Builder threadInterceptor) {
+        threadInterceptor.setCustomPenalty(violation -> {
+            if (Math.random() < UPLOAD_PROBABILITY) {
+                // Ensure that we do not upload too many StrictMode violations in any single
+                // session. To prevent races, we allow sNumUploads to increase beyond the limit, but
+                // just skip actually uploading the stack trace then.
+                if (sNumUploads.getAndAdd(1) < MAX_UPLOADS_PER_SESSION) {
+                    sCachedViolations.add(violation);
+                }
+            }
+        });
+
         sNumUploads.set(0);
         // Delay handling StrictMode violations during initialization until the main loop is idle.
         Looper.myQueue().addIdleHandler(() -> {
@@ -111,14 +88,14 @@ public class ChromeStrictMode {
             if (!LibraryLoader.getInstance().isInitialized()) return true;
             // Check again next time if no more cached stack traces to upload, and we have not
             // reached the max number of uploads for this session.
-            if (sCachedStackTraces.isEmpty()) {
+            if (sCachedViolations.isEmpty()) {
                 // TODO(wnwen): Add UMA count when this happens.
                 // In case of races, continue checking an extra time (equal condition).
                 return sNumUploads.get() <= MAX_UPLOADS_PER_SESSION;
             }
             // Since this is the only place we are removing elements, no need for additional
             // synchronization to ensure it is still non-empty.
-            reportStrictModeViolation(sCachedStackTraces.remove(0));
+            reportStrictModeViolation(sCachedViolations.remove(0));
             return true;
         });
     }
@@ -139,14 +116,12 @@ public class ChromeStrictMode {
         }
     }
 
-    private static void addDefaultPenalties(StrictMode.ThreadPolicy.Builder threadPolicy,
-            StrictMode.VmPolicy.Builder vmPolicy) {
+    private static void addDefaultThreadPenalties(StrictMode.ThreadPolicy.Builder threadPolicy) {
         threadPolicy.penaltyLog().penaltyFlashScreen().penaltyDeathOnNetwork();
-        vmPolicy.penaltyLog();
     }
 
-    private static void addThreadDeathPenalty(StrictMode.ThreadPolicy.Builder threadPolicy) {
-        threadPolicy.penaltyDeath();
+    private static void addDefaultVmPenalties(StrictMode.VmPolicy.Builder vmPolicy) {
+        vmPolicy.penaltyLog();
     }
 
     private static void addVmDeathPenalty(StrictMode.VmPolicy.Builder vmPolicy) {
@@ -188,25 +163,28 @@ public class ChromeStrictMode {
                 new StrictMode.ThreadPolicy.Builder(StrictMode.getThreadPolicy());
         StrictMode.VmPolicy.Builder vmPolicy =
                 new StrictMode.VmPolicy.Builder(StrictMode.getVmPolicy());
+        ThreadStrictModeInterceptor.Builder threadInterceptor =
+                new ThreadStrictModeInterceptor.Builder();
+        turnOnDetection(threadPolicy, vmPolicy);
 
         if (shouldApplyPenalties) {
-            turnOnDetection(threadPolicy, vmPolicy);
-            addDefaultPenalties(threadPolicy, vmPolicy);
+            addDefaultVmPenalties(vmPolicy);
             if ("death".equals(commandLine.getSwitchValue(ChromeSwitches.STRICT_MODE))) {
-                addThreadDeathPenalty(threadPolicy);
+                threadInterceptor.replaceAllPenaltiesWithDeathPenalty();
                 addVmDeathPenalty(vmPolicy);
             } else if ("testing".equals(commandLine.getSwitchValue(ChromeSwitches.STRICT_MODE))) {
-                addThreadDeathPenalty(threadPolicy);
+                threadInterceptor.replaceAllPenaltiesWithDeathPenalty();
                 // Currently VmDeathPolicy kills the process, and is not visible on bot test output.
+            } else {
+                addDefaultThreadPenalties(threadPolicy);
             }
         }
-
         if (enableStrictModeWatch) {
-            turnOnDetection(threadPolicy, vmPolicy);
-            initializeStrictModeWatch();
+            initializeStrictModeWatch(threadInterceptor);
         }
 
-        StrictMode.setThreadPolicy(threadPolicy.build());
+        KnownViolations.addExemptions(threadInterceptor);
+        threadInterceptor.build().install(threadPolicy.build());
         StrictMode.setVmPolicy(vmPolicy.build());
     }
 }

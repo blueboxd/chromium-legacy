@@ -167,11 +167,14 @@ base::Optional<ModelError> ModelTypeStoreBackend::ReadAllRecordsWithPrefix(
 }
 
 base::Optional<ModelError> ModelTypeStoreBackend::WriteModifications(
-    std::unique_ptr<leveldb::WriteBatch> write_batch) {
+    std::unique_ptr<leveldb::WriteBatch> write_batch,
+    leveldb::Status* outcome) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(db_);
   leveldb::Status status =
       db_->Write(leveldb::WriteOptions(), write_batch.get());
+  if (outcome)
+    *outcome = status;
   return status.ok()
              ? base::nullopt
              : base::Optional<ModelError>({FROM_HERE, status.ToString()});

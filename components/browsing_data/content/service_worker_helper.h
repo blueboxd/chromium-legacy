@@ -44,7 +44,7 @@ class ServiceWorkerHelper
   // |callback|. This must be called only in the UI thread.
   virtual void StartFetching(FetchCallback callback);
   // Requests the Service Worker data for an origin be deleted.
-  virtual void DeleteServiceWorkers(const GURL& origin);
+  virtual void DeleteServiceWorkers(const url::Origin& origin);
 
  protected:
   virtual ~ServiceWorkerHelper();
@@ -59,7 +59,7 @@ class ServiceWorkerHelper
   void FetchServiceWorkerUsageInfoOnCoreThread(FetchCallback callback);
 
   // Deletes Service Workers for an origin on the service worker core thread.
-  void DeleteServiceWorkersOnCoreThread(const GURL& origin);
+  void DeleteServiceWorkersOnCoreThread(const url::Origin& origin);
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerHelper);
 };
@@ -89,7 +89,7 @@ class CannedServiceWorkerHelper : public ServiceWorkerHelper {
 
   // ServiceWorkerHelper methods.
   void StartFetching(FetchCallback callback) override;
-  void DeleteServiceWorkers(const GURL& origin) override;
+  void DeleteServiceWorkers(const url::Origin& origin) override;
 
  private:
   ~CannedServiceWorkerHelper() override;

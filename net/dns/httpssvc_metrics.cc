@@ -59,7 +59,6 @@ bool HttpssvcExperimentDomainCache::IsExperimental(base::StringPiece domain) {
 }
 
 bool HttpssvcExperimentDomainCache::IsControl(base::StringPiece domain) {
-  std::vector<base::StringPiece> control_domains;
   if (!base::FeatureList::IsEnabled(features::kDnsHttpssvc))
     return false;
   if (features::kDnsHttpssvcControlDomainWildcard.Get())
@@ -153,8 +152,8 @@ void HttpssvcMetrics::RecordIntegrityMetrics() {
   DCHECK(base::FeatureList::IsEnabled(features::kDnsHttpssvc));
   DCHECK(features::kDnsHttpssvcUseIntegrity.Get());
 
-  DCHECK(in_progress_);
-  in_progress_ = false;
+  DCHECK(!already_recorded_);
+  already_recorded_ = true;
 
   // We really have no metrics to record without |integrity_resolve_time_| and
   // |non_integrity_resolve_times_|. If this HttpssvcMetrics is in an

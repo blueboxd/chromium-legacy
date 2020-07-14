@@ -542,21 +542,6 @@ void NetworkingPrivateLinux::StartDisconnect(
                      success_callback, failure_callback));
 }
 
-void NetworkingPrivateLinux::SetWifiTDLSEnabledState(
-    const std::string& ip_or_mac_address,
-    bool enabled,
-    const StringCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  ReportNotSupported("SetWifiTDLSEnabledState", failure_callback);
-}
-
-void NetworkingPrivateLinux::GetWifiTDLSStatus(
-    const std::string& ip_or_mac_address,
-    const StringCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  ReportNotSupported("GetWifiTDLSStatus", failure_callback);
-}
-
 void NetworkingPrivateLinux::GetCaptivePortalStatus(
     const std::string& guid,
     const StringCallback& success_callback,

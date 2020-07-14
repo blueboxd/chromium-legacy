@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -129,6 +130,7 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "Flaky - crbug.com/1105164")
     public void overscrollRefreshTest() throws Exception {
         initPlayerManager();
         UiDevice uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());

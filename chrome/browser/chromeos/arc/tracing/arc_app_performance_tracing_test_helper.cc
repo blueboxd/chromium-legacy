@@ -48,7 +48,7 @@ views::Widget* ArcAppPerformanceTracingTestHelper::CreateArcWindow(
   views::Widget* widget = new views::Widget();
   widget->Init(std::move(params));
   // Set ARC id before showing the window to be recognized in
-  // ArcAppWindowLauncherController.
+  // AppServiceAppWindowLauncherController.
   exo::SetShellApplicationId(widget->GetNativeWindow(), window_app_id);
   exo::SetShellMainSurface(widget->GetNativeWindow(), new exo::Surface());
   widget->Show();

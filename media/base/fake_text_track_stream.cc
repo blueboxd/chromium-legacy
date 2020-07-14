@@ -37,10 +37,6 @@ void FakeTextTrackStream::Read(ReadCB read_cb) {
   }
 }
 
-bool FakeTextTrackStream::IsReadPending() const {
-  return !read_cb_.is_null();
-}
-
 DemuxerStream::Type FakeTextTrackStream::type() const {
   return DemuxerStream::TEXT;
 }

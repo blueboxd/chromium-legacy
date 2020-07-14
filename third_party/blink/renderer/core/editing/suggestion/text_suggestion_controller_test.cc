@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_controller.h"
 
+#include "build/build_config.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
@@ -81,6 +82,12 @@ TEST_F(TextSuggestionControllerTest, ApplySpellCheckSuggestion) {
   EXPECT_EQ(10, selection.End().ComputeOffsetInContainerNode());
 }
 
+// Flaky on Android: http://crbug.com/1104700
+#if defined(OS_ANDROID)
+#define MAYBE_ApplyTextSuggestion DISABLED_ApplyTextSuggestion
+#else
+#define MAYBE_ApplyTextSuggestion ApplyTextSuggestion
+#endif
 TEST_F(TextSuggestionControllerTest, ApplyTextSuggestion) {
   SetBodyContent(
       "<div contenteditable>"

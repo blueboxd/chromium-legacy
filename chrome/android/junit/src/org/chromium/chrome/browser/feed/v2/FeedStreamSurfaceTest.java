@@ -4,10 +4,13 @@
 
 package org.chromium.chrome.browser.feed.v2;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -23,7 +26,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
@@ -33,6 +38,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.xsurface.FeedActionsHandler;
@@ -45,6 +51,8 @@ import org.chromium.components.feed.proto.FeedUiProto.XSurfaceSlice;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /** Unit tests for {@link FeedStreamSurface}. */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -65,6 +73,11 @@ public class FeedStreamSurfaceTest {
     private NativePageNavigationDelegate mPageNavigationDelegate;
     @Mock
     private HelpAndFeedback mHelpAndFeedback;
+    @Mock
+    Profile mProfileMock;
+
+    @Captor
+    private ArgumentCaptor<Map<String, String>> mMapCaptor;
 
     @Rule
     public JniMocker mocker = new JniMocker();
@@ -81,6 +94,7 @@ public class FeedStreamSurfaceTest {
         MockitoAnnotations.initMocks(this);
         mActivity = Robolectric.buildActivity(Activity.class).get();
         mocker.mock(FeedStreamSurfaceJni.TEST_HOOKS, mFeedStreamSurfaceJniMock);
+        Profile.setLastUsedProfileForTesting(mProfileMock);
         mFeedStreamSurface = new FeedStreamSurface(mActivity, false, mSnackbarManager,
                 mPageNavigationDelegate, mBottomSheetController, mHelpAndFeedback);
     }
@@ -402,6 +416,33 @@ public class FeedStreamSurfaceTest {
         verify(mPageNavigationDelegate)
                 .openUrl(ArgumentMatchers.eq(WindowOpenDisposition.OFF_THE_RECORD), any());
     }
+
+    @Test
+    @SmallTest
+    public void testSendFeedback() {
+        final String testUrl = "https://www.chromium.org";
+        final String testTitle = "Chromium based browsers for the win!";
+        final String xSurfaceCardTitle = "Card Title";
+        final String cardTitle = "CardTitle";
+        final String cardUrl = "CardUrl";
+        // Arrange.
+        Map<String, String> productSpecificDataMap = new HashMap<>();
+        productSpecificDataMap.put(FeedStreamSurface.XSURFACE_CARD_URL, testUrl);
+        productSpecificDataMap.put(xSurfaceCardTitle, testTitle);
+
+        // Act.
+        mFeedStreamSurface.sendFeedback(productSpecificDataMap);
+
+        // Assert.
+        verify(mHelpAndFeedback)
+                .showFeedback(any(), any(), eq(testUrl), eq(FeedStreamSurface.FEEDBACK_REPORT_TYPE),
+                        mMapCaptor.capture(), eq(FeedStreamSurface.FEEDBACK_CONTEXT));
+
+        // Check that the map contents are as expected.
+        assertThat(mMapCaptor.getValue()).containsEntry(cardUrl, testUrl);
+        assertThat(mMapCaptor.getValue()).containsEntry(cardTitle, testTitle);
+    }
+
     @Test
     @SmallTest
     public void testShowSnackbar() {

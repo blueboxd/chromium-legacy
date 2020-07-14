@@ -141,13 +141,14 @@ bool RemovePrefix(const std::string& str,
   return true;
 }
 
-std::string CreateRegistrationKeyPrefix(const GURL& origin) {
+std::string CreateRegistrationKeyPrefix(const url::Origin& origin) {
   return base::StringPrintf("%s%s%c", service_worker_internals::kRegKeyPrefix,
-                            origin.GetOrigin().spec().c_str(),
+                            origin.GetURL().spec().c_str(),
                             service_worker_internals::kKeySeparator);
 }
 
-std::string CreateRegistrationKey(int64_t registration_id, const GURL& origin) {
+std::string CreateRegistrationKey(int64_t registration_id,
+                                  const url::Origin& origin) {
   return CreateRegistrationKeyPrefix(origin).append(
       base::NumberToString(registration_id));
 }
@@ -377,7 +378,7 @@ ServiceWorkerDatabase::GetOriginsWithRegistrations(std::set<GURL>* origins) {
 }
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetRegistrationsForOrigin(
-    const GURL& origin,
+    const url::Origin& origin,
     std::vector<storage::mojom::ServiceWorkerRegistrationDataPtr>*
         registrations,
     std::vector<std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>>*
@@ -462,7 +463,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetUsageForOrigin(
   if (status != Status::kOk)
     return status;
 
-  std::string prefix = CreateRegistrationKeyPrefix(origin.GetURL());
+  std::string prefix = CreateRegistrationKeyPrefix(origin);
 
   // Read all registrations.
   {
@@ -558,7 +559,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadRegistration(
   if (status != Status::kOk)
     return status;
 
-  status = ReadRegistrationData(registration_id, origin, registration);
+  status = ReadRegistrationData(registration_id, url::Origin::Create(origin),
+                                registration);
   if (status != Status::kOk)
     return status;
 
@@ -660,9 +662,9 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
 
   // Retrieve a previous version to sweep purgeable resources.
   storage::mojom::ServiceWorkerRegistrationDataPtr old_registration;
-  status =
-      ReadRegistrationData(registration.registration_id,
-                           registration.scope.GetOrigin(), &old_registration);
+  status = ReadRegistrationData(registration.registration_id,
+                                url::Origin::Create(registration.scope),
+                                &old_registration);
   if (status != Status::kOk && status != Status::kErrorNotFound)
     return status;
   if (status == Status::kOk) {
@@ -704,7 +706,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::UpdateVersionToActive(
     return Status::kErrorFailed;
 
   storage::mojom::ServiceWorkerRegistrationDataPtr registration;
-  status = ReadRegistrationData(registration_id, origin, &registration);
+  status = ReadRegistrationData(registration_id, url::Origin::Create(origin),
+                                &registration);
   if (status != Status::kOk)
     return status;
 
@@ -729,7 +732,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::UpdateLastCheckTime(
     return Status::kErrorFailed;
 
   storage::mojom::ServiceWorkerRegistrationDataPtr registration;
-  status = ReadRegistrationData(registration_id, origin, &registration);
+  status = ReadRegistrationData(registration_id, url::Origin::Create(origin),
+                                &registration);
   if (status != Status::kOk)
     return status;
 
@@ -754,7 +758,8 @@ ServiceWorkerDatabase::UpdateNavigationPreloadEnabled(int64_t registration_id,
     return Status::kErrorFailed;
 
   storage::mojom::ServiceWorkerRegistrationDataPtr registration;
-  status = ReadRegistrationData(registration_id, origin, &registration);
+  status = ReadRegistrationData(registration_id, url::Origin::Create(origin),
+                                &registration);
   if (status != Status::kOk)
     return status;
 
@@ -779,7 +784,8 @@ ServiceWorkerDatabase::UpdateNavigationPreloadHeader(int64_t registration_id,
     return Status::kErrorFailed;
 
   storage::mojom::ServiceWorkerRegistrationDataPtr registration;
-  status = ReadRegistrationData(registration_id, origin, &registration);
+  status = ReadRegistrationData(registration_id, url::Origin::Create(origin),
+                                &registration);
   if (status != Status::kOk)
     return status;
 
@@ -811,7 +817,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteRegistration(
   // |registration_id| is the only one for |origin|.
   // TODO(nhiroki): Check the uniqueness by more efficient way.
   std::vector<storage::mojom::ServiceWorkerRegistrationDataPtr> registrations;
-  status = GetRegistrationsForOrigin(origin, &registrations, nullptr);
+  status = GetRegistrationsForOrigin(url::Origin::Create(origin),
+                                     &registrations, nullptr);
   if (status != Status::kOk)
     return status;
 
@@ -821,7 +828,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteRegistration(
   }
 
   // Delete a registration specified by |registration_id|.
-  batch.Delete(CreateRegistrationKey(registration_id, origin));
+  batch.Delete(
+      CreateRegistrationKey(registration_id, url::Origin::Create(origin)));
   batch.Delete(CreateRegistrationIdToOriginKey(registration_id));
 
   // Delete resource records and user data associated with the registration.
@@ -990,7 +998,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteUserData(
 
   // There should be the registration specified by |registration_id|.
   storage::mojom::ServiceWorkerRegistrationDataPtr registration;
-  status = ReadRegistrationData(registration_id, origin, &registration);
+  status = ReadRegistrationData(registration_id, url::Origin::Create(origin),
+                                &registration);
   if (status != Status::kOk)
     return status;
 
@@ -1354,13 +1363,15 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteAllDataForOrigins(
     batch.Delete(CreateUniqueOriginKey(origin));
 
     std::vector<storage::mojom::ServiceWorkerRegistrationDataPtr> registrations;
-    status = GetRegistrationsForOrigin(origin, &registrations, nullptr);
+    status = GetRegistrationsForOrigin(url::Origin::Create(origin),
+                                       &registrations, nullptr);
     if (status != Status::kOk)
       return status;
 
     // Delete registrations, resource records and user data.
     for (const auto& data : registrations) {
-      batch.Delete(CreateRegistrationKey(data->registration_id, origin));
+      batch.Delete(CreateRegistrationKey(data->registration_id,
+                                         url::Origin::Create(origin)));
       batch.Delete(CreateRegistrationIdToOriginKey(data->registration_id));
 
       status = DeleteResourceRecords(data->version_id,
@@ -1494,7 +1505,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadNextAvailableId(
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadRegistrationData(
     int64_t registration_id,
-    const GURL& origin,
+    const url::Origin& origin,
     storage::mojom::ServiceWorkerRegistrationDataPtr* registration) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(registration);
@@ -1717,7 +1728,7 @@ void ServiceWorkerDatabase::WriteRegistrationDataInBatch(
   std::string value;
   bool success = data.SerializeToString(&value);
   DCHECK(success);
-  GURL origin = registration.scope.GetOrigin();
+  url::Origin origin = url::Origin::Create(registration.scope);
   batch->Put(CreateRegistrationKey(data.registration_id(), origin), value);
 }
 

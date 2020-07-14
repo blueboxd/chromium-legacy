@@ -1939,6 +1939,19 @@
           'chrome',
         ],
       },
+      'fuchsia-fyi-arm64-dbg': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'gtest_tests': 'fuchsia_gtests',
+        },
+        'mixins': [
+          'arm64',
+          'docker',
+          'linux-xenial',
+        ],
+      },
       'fuchsia-fyi-arm64-rel': {
         'additional_compile_targets': [
           'all',

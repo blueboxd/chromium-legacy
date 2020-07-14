@@ -9,7 +9,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "content/browser/frame_host/debug_urls.h"
+#include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -1547,6 +1549,63 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestHttpsUpgradeBrowserTest,
   GURL cross_site_iframe_secure_url("https://other.com/title1.html");
 
   CheckHttpsUpgradedIframeNavigation(start_url, cross_site_iframe_secure_url);
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
+                       BrowserInitiatedMainFrameReload) {
+  GURL url = embedded_test_server()->GetURL("/hello.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  NavigationHandleObserver handle_observer(shell()->web_contents(), url);
+  TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+  shell()->Reload();
+  navigation_observer.Wait();
+
+  EXPECT_EQ(handle_observer.reload_type(), ReloadType::NORMAL);
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
+                       BrowserInitiatedSubFrameReload) {
+  GURL url = embedded_test_server()->GetURL("/page_with_iframe.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  NavigationHandleObserver handle_observer(
+      shell()->web_contents(), embedded_test_server()->GetURL("/title1.html"));
+  TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+
+  auto frames = shell()->web_contents()->GetMainFrame()->GetFramesInSubtree();
+  ASSERT_EQ(frames.size(), 2u);
+  auto* frame = static_cast<RenderFrameHostImpl*>(frames[1]);
+  auto* navigation_controller = static_cast<NavigationControllerImpl*>(
+      &shell()->web_contents()->GetController());
+  navigation_controller->ReloadFrame(frame->frame_tree_node());
+  navigation_observer.Wait();
+
+  EXPECT_EQ(handle_observer.reload_type(), ReloadType::NORMAL);
+  EXPECT_FALSE(handle_observer.is_main_frame());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
+                       RendererInitiatedMainFrameReload) {
+  GURL url = embedded_test_server()->GetURL("/hello.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  NavigationHandleObserver observer(shell()->web_contents(), url);
+  EXPECT_TRUE(ExecuteScript(shell(), "location.reload();"));
+  EXPECT_EQ(observer.reload_type(), ReloadType::NORMAL);
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
+                       RendererInitiatedSubFrameReload) {
+  GURL url = embedded_test_server()->GetURL("/page_with_iframe.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  NavigationHandleObserver handle_observer(
+      shell()->web_contents(), embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(ExecuteScript(shell(),
+                            "document.getElementById('test_iframe')."
+                            "contentWindow.location.reload();"));
+  EXPECT_EQ(handle_observer.reload_type(), ReloadType::NORMAL);
+  EXPECT_FALSE(handle_observer.is_main_frame());
 }
 
 // Ensure that browser-initiated same-document navigations are detected and

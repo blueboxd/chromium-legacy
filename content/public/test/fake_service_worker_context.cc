@@ -68,7 +68,7 @@ void FakeServiceWorkerContext::GetAllOriginsInfo(
     GetUsageInfoCallback callback) {
   NOTREACHED();
 }
-void FakeServiceWorkerContext::DeleteForOrigin(const GURL& origin,
+void FakeServiceWorkerContext::DeleteForOrigin(const url::Origin& origin,
                                                ResultCallback callback) {
   NOTREACHED();
 }

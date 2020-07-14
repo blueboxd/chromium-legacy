@@ -10,8 +10,8 @@
 #include <algorithm>
 
 #include "base/check_op.h"
-#include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/rect.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace chrome_pdf {
 namespace draw_utils {
@@ -110,7 +110,7 @@ ShadowMatrix::~ShadowMatrix() = default;
 
 namespace {
 
-void PaintShadow(pp::ImageData* image,
+void PaintShadow(SkBitmap& image,
                  const pp::Rect& clip_rc,
                  const pp::Rect& shadow_rc,
                  const ShadowMatrix& matrix) {
@@ -125,7 +125,7 @@ void PaintShadow(pp::ImageData* image,
                                   depth - shadow_rc.right() + x);
       int32_t matrix_y = std::max(depth + shadow_rc.y() - y - 1,
                                   depth - shadow_rc.bottom() + y);
-      uint32_t* pixel = image->GetAddr32(pp::Point(x, y));
+      uint32_t* pixel = image.getAddr32(x, y);
 
       if (matrix_x < 0)
         matrix_x = 0;
@@ -144,7 +144,7 @@ void PaintShadow(pp::ImageData* image,
 
 }  // namespace
 
-void DrawShadow(pp::ImageData* image,
+void DrawShadow(SkBitmap& image,
                 const pp::Rect& shadow_rc,
                 const pp::Rect& object_rc,
                 const pp::Rect& clip_rc,

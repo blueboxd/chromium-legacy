@@ -161,6 +161,22 @@ crbug.com/1078769 [ Linux ] external/wpt/wasm/jsapi/idlharness.any.html [ Pass F
 # Also crbug.com/867532
 crbug.com/1098782 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-import.any.worker.html [ Pass Timeout Crash ]
 
+# Sheriff 2020-07-14
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/strict-origin-when-cross-origin/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] virtual/cors/external/wpt/referrer-policy/gen/worker-module.http-rp/strict-origin/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/no-referrer/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/unsafe-url/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/unset/worker-module.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/no-referrer-when-downgrade/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/origin-when-cross-origin/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/strict-origin/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http-rp/strict-origin-when-cross-origin/worker-module.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/unset/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/origin/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http-rp/same-origin/worker-module.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http-rp/origin-when-cross-origin/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] virtual/cors/external/wpt/referrer-policy/gen/worker-classic.http-rp/origin-when-cross-origin/worker-classic.http.html [ Pass Timeout ]
+
 # This test triggers existing leaky behavior, but this test also catches
 # a prior crash.
 crbug.com/1103082 [ Linux ] fast/forms/select/select-change-layout-object-crash.html [ Failure ]

@@ -27,6 +27,7 @@ namespace {
 const char kDefaultCellularDevicePath[] = "stub_cellular_device";
 const char kUnknownCellularDevicePath[] = "unknown_cellular_device";
 const char kDefaultWifiDevicePath[] = "stub_wifi_device";
+const char kResultFailure[] = "failure";
 const char kResultSuccess[] = "success";
 const char kDefaultPin[] = "1111";
 
@@ -88,10 +89,15 @@ class NetworkDeviceHandlerTest : public testing::Test {
 
   void SuccessCallback() { result_ = kResultSuccess; }
 
-  void PropertiesSuccessCallback(const std::string& device_path,
-                                 const base::DictionaryValue& properties) {
+  void GetPropertiesCallback(const std::string& device_path,
+                             base::Optional<base::Value> properties) {
+    if (!properties) {
+      result_ = kResultFailure;
+      return;
+    }
     result_ = kResultSuccess;
-    properties_.reset(properties.DeepCopy());
+    properties_ = base::DictionaryValue::From(
+        std::make_unique<base::Value>(std::move(*properties)));
   }
 
   void StringSuccessCallback(const std::string& result) {
@@ -103,9 +109,8 @@ class NetworkDeviceHandlerTest : public testing::Test {
                            const std::string& expected_result) {
     network_device_handler_->GetDeviceProperties(
         device_path,
-        base::BindOnce(&NetworkDeviceHandlerTest::PropertiesSuccessCallback,
-                       base::Unretained(this)),
-        error_callback_);
+        base::BindOnce(&NetworkDeviceHandlerTest::GetPropertiesCallback,
+                       base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
     ASSERT_EQ(expected_result, result_);
   }
@@ -421,74 +426,6 @@ TEST_F(NetworkDeviceHandlerTest, UsbEthernetMacAddressSource) {
   ASSERT_NO_FATAL_FAILURE(ExpectDeviceProperty(
       kUsbEthernetDevicePath1, shill::kUsbEthernetMacAddressSourceProperty,
       kSource3));
-}
-
-TEST_F(NetworkDeviceHandlerTest, SetWifiTDLSEnabled) {
-  // We add a wifi device by default, initial call should succeed.
-  fake_device_client_->GetTestInterface()->SetTDLSState(
-      shill::kTDLSConnectedState);
-  network_device_handler_->SetWifiTDLSEnabled(
-      "fake_ip_address", true, string_success_callback_, error_callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(shill::kTDLSConnectedState, result_);
-}
-
-TEST_F(NetworkDeviceHandlerTest, SetWifiTDLSEnabledNonexistent) {
-  // Set the TDLS state to 'Nonexistant'. Call should fail with 'Nonexistant'
-  // result.
-  fake_device_client_->GetTestInterface()->SetTDLSState(
-      shill::kTDLSNonexistentState);
-  network_device_handler_->SetWifiTDLSEnabled(
-      "fake_ip_address", true, string_success_callback_, error_callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(shill::kTDLSNonexistentState, result_);
-}
-
-TEST_F(NetworkDeviceHandlerTest, SetWifiTDLSEnabledMissing) {
-  // Remove the wifi device. Call should fail with "device missing" error.
-  fake_device_client_->GetTestInterface()->RemoveDevice(kDefaultWifiDevicePath);
-  base::RunLoop().RunUntilIdle();
-  network_device_handler_->SetWifiTDLSEnabled(
-      "fake_ip_address", true, string_success_callback_, error_callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(NetworkDeviceHandler::kErrorDeviceMissing, result_);
-}
-
-TEST_F(NetworkDeviceHandlerTest, SetWifiTDLSEnabledBusy) {
-  // Set the busy count, call should succeed after repeat attempt.
-  fake_device_client_->GetTestInterface()->SetTDLSState(
-      shill::kTDLSConnectedState);
-  fake_device_client_->GetTestInterface()->SetTDLSBusyCount(1);
-  network_device_handler_->SetWifiTDLSEnabled(
-      "fake_ip_address", true, string_success_callback_, error_callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(shill::kTDLSConnectedState, result_);
-
-  // Set the busy count to a large number, call should fail after max number
-  // of repeat attempt.
-  fake_device_client_->GetTestInterface()->SetTDLSBusyCount(100000);
-  network_device_handler_->SetWifiTDLSEnabled(
-      "fake_ip_address", true, string_success_callback_, error_callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(NetworkDeviceHandler::kErrorTimeout, result_);
-}
-
-TEST_F(NetworkDeviceHandlerTest, GetWifiTDLSStatus) {
-  // We add a wifi device by default, initial call should succeed.
-  fake_device_client_->GetTestInterface()->SetTDLSState(
-      shill::kTDLSConnectedState);
-  network_device_handler_->GetWifiTDLSStatus(
-      "fake_ip_address", string_success_callback_, error_callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(shill::kTDLSConnectedState, result_);
-
-  // Remove the wifi device. Call should fail with "device missing" error.
-  fake_device_client_->GetTestInterface()->RemoveDevice(kDefaultWifiDevicePath);
-  base::RunLoop().RunUntilIdle();
-  network_device_handler_->GetWifiTDLSStatus(
-      "fake_ip_address", string_success_callback_, error_callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(NetworkDeviceHandler::kErrorDeviceMissing, result_);
 }
 
 TEST_F(NetworkDeviceHandlerTest, RequirePin) {

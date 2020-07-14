@@ -14,6 +14,7 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
+#include "ash/assistant/util/resource_util.h"
 #include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -36,6 +37,7 @@ namespace ash {
 
 namespace {
 
+using assistant::util::ResourceLinkType;
 using chromeos::assistant::AssistantSuggestion;
 using chromeos::assistant::AssistantSuggestionType;
 
@@ -108,13 +110,13 @@ SkColor GetSuggestionBackgroundColor(int index) {
   return background_colors[index];
 }
 
-SkColor GetSuggestionTextColor(int index) {
+SkColor GetSuggestionForegroundColor(int index) {
   DCHECK_GE(index, 0);
   DCHECK_LT(index, kSuggestionsMaxCount);
-  constexpr SkColor text_colors[kSuggestionsMaxCount] = {
+  constexpr SkColor foreground_colors[kSuggestionsMaxCount] = {
       gfx::kGoogleBlue700,   gfx::kGoogleYellow900, gfx::kGoogleGreen800,
       gfx::kGoogleYellow900, gfx::kGoogleGreen800,  gfx::kGoogleRed800};
-  return text_colors[index];
+  return foreground_colors[index];
 }
 
 // SuggestionView --------------------------------------------------------------
@@ -171,8 +173,16 @@ class SuggestionView : public views::Button, public views::ButtonListener {
     icon_->SetImageSize({kSuggestionsIconSizeDip, kSuggestionsIconSizeDip});
     icon_->SetPreferredSize({kSuggestionsIconSizeDip, kSuggestionsIconSizeDip});
 
-    if (suggestion.icon_url.is_valid()) {
-      delegate_->DownloadImage(suggestion.icon_url,
+    const GURL& url = suggestion.icon_url;
+    if (assistant::util::IsResourceLinkType(url, ResourceLinkType::kIcon)) {
+      // Handle local images.
+      icon_->SetImage(assistant::util::CreateVectorIcon(
+          assistant::util::AppendOrReplaceColorParam(
+              url, GetSuggestionForegroundColor(index_)),
+          kSuggestionsIconSizeDip));
+    } else if (url.is_valid()) {
+      // Handle remote images.
+      delegate_->DownloadImage(url,
                                base::BindOnce(&SuggestionView::OnIconDownloaded,
                                               weak_factory_.GetWeakPtr()));
     }
@@ -180,7 +190,7 @@ class SuggestionView : public views::Button, public views::ButtonListener {
     // Label.
     label_ = AddChildView(std::make_unique<views::Label>());
     label_->SetAutoColorReadabilityEnabled(false);
-    label_->SetEnabledColor(GetSuggestionTextColor(index_));
+    label_->SetEnabledColor(GetSuggestionForegroundColor(index_));
     label_->SetFontList(assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(
         kSuggestionsLabelSizeDelta));
     label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);

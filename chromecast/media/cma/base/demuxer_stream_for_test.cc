@@ -18,8 +18,7 @@ DemuxerStreamForTest::DemuxerStreamForTest(int total_frames,
       cycle_count_(cycle_count),
       delayed_frame_count_(delayed_frame_count),
       config_idx_(config_idx),
-      frame_count_(0),
-      has_pending_read_(false) {
+      frame_count_(0) {
   DCHECK_LE(delayed_frame_count, cycle_count);
 }
 
@@ -27,10 +26,8 @@ DemuxerStreamForTest::~DemuxerStreamForTest() {
 }
 
 void DemuxerStreamForTest::Read(ReadCB read_cb) {
-  has_pending_read_ = true;
   if (!config_idx_.empty() && config_idx_.front() == frame_count_) {
     config_idx_.pop_front();
-    has_pending_read_ = false;
     std::move(read_cb).Run(kConfigChanged,
                            scoped_refptr<::media::DecoderBuffer>());
     return;
@@ -72,13 +69,7 @@ bool DemuxerStreamForTest::SupportsConfigChanges() {
   return true;
 }
 
-bool DemuxerStreamForTest::IsReadPending() const {
-  return has_pending_read_;
-}
-
 void DemuxerStreamForTest::DoRead(ReadCB read_cb) {
-  has_pending_read_ = false;
-
   if (total_frame_count_ != -1 && frame_count_ >= total_frame_count_) {
     // End of stream
     std::move(read_cb).Run(kOk, ::media::DecoderBuffer::CreateEOSBuffer());

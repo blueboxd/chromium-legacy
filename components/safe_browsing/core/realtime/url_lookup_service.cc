@@ -31,12 +31,6 @@
 
 namespace safe_browsing {
 
-namespace {
-
-constexpr char kAuthHeaderBearer[] = "Bearer ";
-
-}  // namespace
-
 RealTimeUrlLookupService::RealTimeUrlLookupService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     VerdictCacheManager* cache_manager,
@@ -60,36 +54,16 @@ RealTimeUrlLookupService::RealTimeUrlLookupService(
       std::make_unique<SafeBrowsingTokenFetcher>(identity_manager_);
 }
 
-void RealTimeUrlLookupService::StartLookup(
+void RealTimeUrlLookupService::GetAccessToken(
     const GURL& url,
     RTLookupRequestCallback request_callback,
     RTLookupResponseCallback response_callback) {
-  DCHECK(CurrentlyOnThread(ThreadID::UI));
-  DCHECK(url.is_valid());
-
-  // Check cache.
-  std::unique_ptr<RTLookupResponse> cache_response =
-      GetCachedRealTimeUrlVerdict(url);
-  if (cache_response) {
-    base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::IO),
-                   base::BindOnce(std::move(response_callback),
-                                  /* is_rt_lookup_successful */ true,
-                                  std::move(cache_response)));
-    return;
-  }
-
-  if (CanPerformFullURLLookupWithToken()) {
-    token_fetcher_->Start(
-        signin::ConsentLevel::kNotRequired,
-        base::BindOnce(&RealTimeUrlLookupService::OnGetAccessToken,
-                       weak_factory_.GetWeakPtr(), url,
-                       std::move(request_callback),
-                       std::move(response_callback), base::TimeTicks::Now()));
-  } else {
-    std::unique_ptr<RTLookupRequest> request = FillRequestProto(url);
-    SendRequest(url, /* access_token_info */ base::nullopt, std::move(request),
-                std::move(request_callback), std::move(response_callback));
-  }
+  token_fetcher_->Start(
+      signin::ConsentLevel::kNotRequired,
+      base::BindOnce(&RealTimeUrlLookupService::OnGetAccessToken,
+                     weak_factory_.GetWeakPtr(), url,
+                     std::move(request_callback), std::move(response_callback),
+                     base::TimeTicks::Now()));
 }
 
 void RealTimeUrlLookupService::OnGetAccessToken(
@@ -98,72 +72,17 @@ void RealTimeUrlLookupService::OnGetAccessToken(
     RTLookupResponseCallback response_callback,
     base::TimeTicks get_token_start_time,
     base::Optional<signin::AccessTokenInfo> access_token_info) {
-  std::unique_ptr<RTLookupRequest> request = FillRequestProto(url);
   base::UmaHistogramTimes("SafeBrowsing.RT.GetToken.Time",
                           base::TimeTicks::Now() - get_token_start_time);
   base::UmaHistogramBoolean("SafeBrowsing.RT.HasTokenFromFetcher",
                             access_token_info.has_value());
-  SendRequest(url, access_token_info, std::move(request),
-              std::move(request_callback), std::move(response_callback));
-}
-
-void RealTimeUrlLookupService::SendRequest(
-    const GURL& url,
-    base::Optional<signin::AccessTokenInfo> access_token_info,
-    std::unique_ptr<RTLookupRequest> request,
-    RTLookupRequestCallback request_callback,
-    RTLookupResponseCallback response_callback) {
-  DCHECK(CurrentlyOnThread(ThreadID::UI));
-  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.RT.Request.UserPopulation",
-                            request->population().user_population(),
-                            ChromeUserPopulation::UserPopulation_MAX + 1);
-  std::string req_data;
-  request->SerializeToString(&req_data);
-
-  auto resource_request = GetResourceRequest();
-  if (access_token_info.has_value()) {
-    resource_request->headers.SetHeader(
-        net::HttpRequestHeaders::kAuthorization,
-        base::StrCat({kAuthHeaderBearer, access_token_info.value().token}));
-  }
-  base::UmaHistogramBoolean("SafeBrowsing.RT.HasTokenInRequest",
-                            access_token_info.has_value());
-
-  SendRequestInternal(std::move(resource_request), req_data, url,
-                      std::move(response_callback));
-
-  base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::IO),
-                 base::BindOnce(std::move(request_callback), std::move(request),
-                                access_token_info.has_value()
-                                    ? access_token_info.value().token
-                                    : ""));
+  std::string access_token_string =
+      access_token_info.value_or(signin::AccessTokenInfo()).token;
+  SendRequest(url, access_token_string, std::move(request_callback),
+              std::move(response_callback));
 }
 
 RealTimeUrlLookupService::~RealTimeUrlLookupService() {}
-
-std::unique_ptr<RTLookupRequest> RealTimeUrlLookupService::FillRequestProto(
-    const GURL& url) {
-  auto request = std::make_unique<RTLookupRequest>();
-  request->set_url(SanitizeURL(url).spec());
-  request->set_lookup_type(RTLookupRequest::NAVIGATION);
-
-  ChromeUserPopulation* user_population = request->mutable_population();
-  user_population->set_user_population(
-      IsEnhancedProtectionEnabled(*pref_service_)
-          ? ChromeUserPopulation::ENHANCED_PROTECTION
-          : IsExtendedReportingEnabled(*pref_service_)
-                ? ChromeUserPopulation::EXTENDED_REPORTING
-                : ChromeUserPopulation::SAFE_BROWSING);
-
-  user_population->set_profile_management_status(profile_management_status_);
-  user_population->set_is_history_sync_enabled(IsHistorySyncEnabled());
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-  user_population->set_is_under_advanced_protection(
-      is_under_advanced_protection_);
-#endif
-  user_population->set_is_incognito(is_off_the_record_);
-  return request;
-}
 
 // TODO(bdea): Refactor this method into a util class as multiple SB classes
 // have this method.
@@ -193,6 +112,30 @@ bool RealTimeUrlLookupService::CanCheckSafeBrowsingDb() const {
   // Always return true, because consumer real time URL check only works when
   // safe browsing is enabled.
   return true;
+}
+
+std::unique_ptr<RTLookupRequest> RealTimeUrlLookupService::FillRequestProto(
+    const GURL& url) {
+  auto request = std::make_unique<RTLookupRequest>();
+  request->set_url(SanitizeURL(url).spec());
+  request->set_lookup_type(RTLookupRequest::NAVIGATION);
+
+  ChromeUserPopulation* user_population = request->mutable_population();
+  user_population->set_user_population(
+      IsEnhancedProtectionEnabled(*pref_service_)
+          ? ChromeUserPopulation::ENHANCED_PROTECTION
+          : IsExtendedReportingEnabled(*pref_service_)
+                ? ChromeUserPopulation::EXTENDED_REPORTING
+                : ChromeUserPopulation::SAFE_BROWSING);
+
+  user_population->set_profile_management_status(profile_management_status_);
+  user_population->set_is_history_sync_enabled(IsHistorySyncEnabled());
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+  user_population->set_is_under_advanced_protection(
+      is_under_advanced_protection_);
+#endif
+  user_population->set_is_incognito(is_off_the_record_);
+  return request;
 }
 
 net::NetworkTrafficAnnotationTag

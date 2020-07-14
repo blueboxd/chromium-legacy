@@ -98,14 +98,6 @@ class NetworkingPrivateDelegate : public KeyedService {
                              const std::string& carrier,
                              const VoidCallback& success_callback,
                              const FailureCallback& failure_callback);
-  virtual void SetWifiTDLSEnabledState(
-      const std::string& ip_or_mac_address,
-      bool enabled,
-      const StringCallback& success_callback,
-      const FailureCallback& failure_callback) = 0;
-  virtual void GetWifiTDLSStatus(const std::string& ip_or_mac_address,
-                                 const StringCallback& success_callback,
-                                 const FailureCallback& failure_callback) = 0;
   virtual void GetCaptivePortalStatus(
       const std::string& guid,
       const StringCallback& success_callback,

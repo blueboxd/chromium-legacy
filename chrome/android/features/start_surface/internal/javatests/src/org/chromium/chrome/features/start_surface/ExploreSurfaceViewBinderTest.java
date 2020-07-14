@@ -14,7 +14,7 @@ import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_BOTTOM_BAR_VISIBLE;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_EXPLORE_SURFACE_VISIBLE;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_OVERVIEW;
-import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_BAR_HEIGHT;
+import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_MARGIN;
 
 import android.view.View;
 import android.view.ViewGroup;
@@ -118,7 +118,7 @@ public class ExploreSurfaceViewBinderTest {
             mPropertyModel.set(FEED_SURFACE_COORDINATOR, mFeedSurfaceCoordinator);
             mPropertyModel.set(IS_BOTTOM_BAR_VISIBLE, true);
             mPropertyModel.set(BOTTOM_BAR_HEIGHT, 10);
-            mPropertyModel.set(TOP_BAR_HEIGHT, 20);
+            mPropertyModel.set(TOP_MARGIN, 20);
             mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
             mPropertyModel.set(IS_EXPLORE_SURFACE_VISIBLE, true);
         });
@@ -191,7 +191,7 @@ public class ExploreSurfaceViewBinderTest {
 
     @Test
     @SmallTest
-    public void testSetTopBarHeightWithBottomBarVisible() {
+    public void testSetTopMarginWithBottomBarVisible() {
         assertFalse(mPropertyModel.get(IS_SHOWING_OVERVIEW));
         assertFalse(mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE));
         assertNull(mFeedSurfaceView.getParent());
@@ -200,23 +200,23 @@ public class ExploreSurfaceViewBinderTest {
             mPropertyModel.set(FEED_SURFACE_COORDINATOR, mFeedSurfaceCoordinator);
             mPropertyModel.set(IS_BOTTOM_BAR_VISIBLE, true);
             mPropertyModel.set(BOTTOM_BAR_HEIGHT, 10);
-            mPropertyModel.set(TOP_BAR_HEIGHT, 20);
+            mPropertyModel.set(TOP_MARGIN, 20);
             mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
             mPropertyModel.set(IS_EXPLORE_SURFACE_VISIBLE, true);
         });
 
         ViewGroup.MarginLayoutParams layoutParams =
                 (ViewGroup.MarginLayoutParams) mFeedSurfaceView.getLayoutParams();
-        assertEquals("Top bar height isn't initialized correctly.", 20, layoutParams.topMargin);
+        assertEquals("Top margin isn't initialized correctly.", 20, layoutParams.topMargin);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> mPropertyModel.set(TOP_BAR_HEIGHT, 40));
+        TestThreadUtils.runOnUiThreadBlocking(() -> mPropertyModel.set(TOP_MARGIN, 40));
         layoutParams = (ViewGroup.MarginLayoutParams) mFeedSurfaceView.getLayoutParams();
-        assertEquals("Wrong top bar height.", 40, layoutParams.topMargin);
+        assertEquals("Wrong top margin.", 40, layoutParams.topMargin);
     }
 
     @Test
     @SmallTest
-    public void testSetTopBarHeightWithBottomBarNotVisible() {
+    public void testSetTopMarginWithBottomBarNotVisible() {
         assertFalse(mPropertyModel.get(IS_SHOWING_OVERVIEW));
         assertFalse(mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE));
         assertNull(mFeedSurfaceView.getParent());
@@ -224,19 +224,19 @@ public class ExploreSurfaceViewBinderTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mPropertyModel.set(FEED_SURFACE_COORDINATOR, mFeedSurfaceCoordinator);
-            mPropertyModel.set(TOP_BAR_HEIGHT, 20);
+            mPropertyModel.set(TOP_MARGIN, 20);
             mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
             mPropertyModel.set(IS_EXPLORE_SURFACE_VISIBLE, true);
         });
 
         ViewGroup.MarginLayoutParams layoutParams =
                 (ViewGroup.MarginLayoutParams) mFeedSurfaceView.getLayoutParams();
-        assertEquals("Wrong top bar height.", 0, layoutParams.topMargin);
+        assertEquals("Wrong top margin.", 0, layoutParams.topMargin);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> mPropertyModel.set(TOP_BAR_HEIGHT, 40));
+        TestThreadUtils.runOnUiThreadBlocking(() -> mPropertyModel.set(TOP_MARGIN, 40));
 
-        // Top bar height shouldn't add a margin if the bottom bar is not visible.
+        // Top margin shouldn't add a margin if the bottom bar is not visible.
         layoutParams = (ViewGroup.MarginLayoutParams) mFeedSurfaceView.getLayoutParams();
-        assertEquals("Wrong top bar height.", 0, layoutParams.topMargin);
+        assertEquals("Wrong top margin.", 0, layoutParams.topMargin);
     }
 }

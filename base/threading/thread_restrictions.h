@@ -187,6 +187,14 @@ class GpuChannelHost;
 namespace leveldb_env {
 class DBTracker;
 }
+namespace location {
+namespace nearby {
+namespace chrome {
+class ScheduledExecutor;
+class SubmittableExecutor;
+}  // namespace chrome
+}  // namespace nearby
+}  // namespace location
 namespace media {
 class AudioInputDevice;
 class AudioOutputDevice;
@@ -448,6 +456,8 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class history_report::HistoryReportJniBridge;
   friend class internal::TaskTracker;
   friend class leveldb_env::DBTracker;
+  friend class location::nearby::chrome::ScheduledExecutor;
+  friend class location::nearby::chrome::SubmittableExecutor;
   friend class media::BlockingUrlProtocol;
   friend class mojo::core::ScopedIPCSupport;
   friend class net::MultiThreadedCertVerifierScopedAllowBaseSyncPrimitives;

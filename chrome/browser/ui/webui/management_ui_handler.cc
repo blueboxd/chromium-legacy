@@ -133,6 +133,10 @@ const char kManagementOnBulkDataEntryEvent[] = "managementOnBulkDataEntryEvent";
 const char kManagementOnBulkDataEntryVisibleData[] =
     "managementOnBulkDataEntryVisibleData";
 
+const char kManagementOnPageVisitedEvent[] = "managementOnPageVisitedEvent";
+const char kManagementOnPageVisitedVisibleData[] =
+    "managementOnPageVisitedVisibleData";
+
 const char kReportingTypeDevice[] = "device";
 const char kReportingTypeExtensions[] = "extensions";
 const char kReportingTypeSecurity[] = "security";
@@ -778,6 +782,17 @@ base::Value ManagementUIHandler::GetThreatProtectionInfo(
     base::Value value(base::Value::Type::DICTIONARY);
     value.SetStringKey("title", kManagementEnterpriseReportingEvent);
     value.SetStringKey("permission", kManagementEnterpriseReportingVisibleData);
+    info.Append(std::move(value));
+  }
+
+  auto* on_page_visited_event =
+      chrome_policies.GetValue(policy::key::kEnterpriseRealTimeUrlCheckMode);
+  if (on_page_visited_event && on_page_visited_event->is_int() &&
+      on_page_visited_event->GetInt() !=
+          safe_browsing::REAL_TIME_CHECK_DISABLED) {
+    base::Value value(base::Value::Type::DICTIONARY);
+    value.SetStringKey("title", kManagementOnPageVisitedEvent);
+    value.SetStringKey("permission", kManagementOnPageVisitedVisibleData);
     info.Append(std::move(value));
   }
 

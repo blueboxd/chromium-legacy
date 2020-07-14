@@ -32,8 +32,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
   // NetworkDeviceHandler overrides
   void GetDeviceProperties(
       const std::string& device_path,
-      network_handler::DictionaryResultCallback callback,
-      const network_handler::ErrorCallback& error_callback) const override;
+      network_handler::ResultCallback callback) const override;
 
   void SetDeviceProperty(
       const std::string& device_path,
@@ -78,17 +77,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
   void SetMACAddressRandomizationEnabled(bool enabled) override;
 
   void SetUsbEthernetMacAddressSource(const std::string& source) override;
-
-  void SetWifiTDLSEnabled(
-      const std::string& ip_or_mac_address,
-      bool enabled,
-      const network_handler::StringResultCallback& callback,
-      const network_handler::ErrorCallback& error_callback) override;
-
-  void GetWifiTDLSStatus(
-      const std::string& ip_or_mac_address,
-      const network_handler::StringResultCallback& callback,
-      const network_handler::ErrorCallback& error_callback) override;
 
   void AddWifiWakeOnPacketConnection(
       const net::IPEndPoint& ip_endpoint,
@@ -178,7 +166,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
   // supported, also apply |mac_addr_randomization_enabled_| to the
   // shill device.
   void HandleMACAddressRandomization(const std::string& device_path,
-                                     const base::DictionaryValue& properties);
+                                     base::Optional<base::Value> properties);
 
   // Get the DeviceState for the wifi device, if any.
   const DeviceState* GetWifiDeviceState(

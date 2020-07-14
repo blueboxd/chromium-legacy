@@ -66,6 +66,7 @@ class MockCryptoClientStream : public quic::QuicCryptoClientStream,
       const override;
   quic::CryptoMessageParser* crypto_message_parser() override;
   void OnOneRttPacketAcknowledged() override;
+  bool EarlyDataAccepted() const override;
 
   // Notify session that 1-RTT key is available.
   void NotifySessionOneRttKeyAvailable();

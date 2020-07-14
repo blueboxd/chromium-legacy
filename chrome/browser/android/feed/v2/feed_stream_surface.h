@@ -28,6 +28,9 @@ class FeedStreamSurface : public FeedStreamApi::SurfaceInterface {
 
   // SurfaceInterface implementation.
   void StreamUpdate(const feedui::StreamUpdate& update) override;
+  void ReplaceDataStoreEntry(base::StringPiece key,
+                             base::StringPiece data) override;
+  void RemoveDataStoreEntry(base::StringPiece key) override;
 
   void OnStreamUpdated(const feedui::StreamUpdate& stream_update);
 

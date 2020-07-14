@@ -72,6 +72,7 @@ const char kSwitchOwnerId[] = "owner_id";
 const char kSwitchVmName[] = "vm_name";
 const char kSwitchTargetContainer[] = "target_container";
 const char kSwitchStartupId[] = "startup_id";
+const char kSwitchCurrentWorkingDir[] = "cwd";
 
 // Copies the value of |switch_name| if present from |src| to |dst|.  If not
 // present, uses |default_value|.  Returns the value set into |dst|.
@@ -233,8 +234,8 @@ TerminalPrivateOpenTerminalProcessFunction::OpenProcess(
     if (!crostini::CrostiniFeatures::Get()->IsAllowed(profile))
       return RespondNow(Error("vmshell not allowed"));
 
-    // command=vmshell: ensure --owner_id, --vm_name, and --target_container are
-    // set and the specified vm/container is running.
+    // command=vmshell: ensure --owner_id, --vm_name, --target_container, --cwd
+    // are set, and the specified vm/container is running.
     base::CommandLine vmshell_cmd({kVmShellCommand});
     if (!args)
       args = std::make_unique<std::vector<std::string>>();
@@ -247,6 +248,7 @@ TerminalPrivateOpenTerminalProcessFunction::OpenProcess(
     std::string container_name =
         GetSwitch(&params_args, &vmshell_cmd, kSwitchTargetContainer,
                   crostini::kCrostiniDefaultContainerName);
+    GetSwitch(&params_args, &vmshell_cmd, kSwitchCurrentWorkingDir, "");
     std::string startup_id = params_args.GetSwitchValueASCII(kSwitchStartupId);
     crostini::ContainerId container_id(vm_name, container_name);
 

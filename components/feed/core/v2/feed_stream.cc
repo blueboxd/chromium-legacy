@@ -23,6 +23,7 @@
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/feed_store.h"
 #include "components/feed/core/v2/metrics_reporter.h"
+#include "components/feed/core/v2/offline_page_spy.h"
 #include "components/feed/core/v2/prefs.h"
 #include "components/feed/core/v2/protocol_translator.h"
 #include "components/feed/core/v2/refresh_task_scheduler.h"
@@ -113,6 +114,7 @@ FeedStream::FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
                        FeedNetwork* feed_network,
                        FeedStore* feed_store,
                        offline_pages::PrefetchService* prefetch_service,
+                       offline_pages::OfflinePageModel* offline_page_model,
                        const base::Clock* clock,
                        const base::TickClock* tick_clock,
                        const ChromeInfo& chrome_info)
@@ -133,6 +135,8 @@ FeedStream::FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
   wire_response_translator_ = &default_translator;
 
   surface_updater_ = std::make_unique<SurfaceUpdater>(metrics_reporter_);
+  offline_page_spy_ = std::make_unique<OfflinePageSpy>(surface_updater_.get(),
+                                                       offline_page_model);
 
   if (prefetch_service_) {
     offline_suggestions_provider_ =
@@ -344,6 +348,8 @@ DebugStreamData FeedStream::GetDebugStreamData() {
 }
 
 void FeedStream::ForceRefreshForDebugging() {
+  // Avoid request throttling for debug refreshes.
+  feed::prefs::SetThrottlerRequestCounts({}, *profile_prefs_);
   task_queue_.AddTask(
       std::make_unique<offline_pages::ClosureTask>(base::BindOnce(
           &FeedStream::ForceRefreshForDebuggingTask, base::Unretained(this))));
@@ -548,6 +554,7 @@ void FeedStream::LoadModel(std::unique_ptr<StreamModel> model) {
   model_ = std::move(model);
   model_->SetStoreObserver(this);
   surface_updater_->SetModel(model_.get());
+  offline_page_spy_->SetModel(model_.get());
   ScheduleModelUnloadIfNoSurfacesAttached();
 }
 
@@ -567,6 +574,7 @@ void FeedStream::UnloadModel() {
   // the model remains loaded.
   if (!model_)
     return;
+  offline_page_spy_->SetModel(nullptr);
   surface_updater_->SetModel(nullptr);
   model_.reset();
 }

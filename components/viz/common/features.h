@@ -13,6 +13,7 @@
 
 namespace features {
 
+VIZ_COMMON_EXPORT extern const base::Feature kForcePreferredIntervalForVideo;
 VIZ_COMMON_EXPORT extern const base::Feature kUseSkiaForGLReadback;
 VIZ_COMMON_EXPORT extern const base::Feature kUseSkiaRenderer;
 VIZ_COMMON_EXPORT extern const base::Feature kRecordSkPicture;
@@ -30,6 +31,7 @@ VIZ_COMMON_EXPORT extern const base::Feature kUseSkiaOutputDeviceBufferQueue;
 VIZ_COMMON_EXPORT extern const base::Feature kSplitPartiallyOccludedQuads;
 VIZ_COMMON_EXPORT extern const base::Feature kWebRtcLogCapturePipeline;
 
+VIZ_COMMON_EXPORT bool IsForcePreferredIntervalForVideoEnabled();
 VIZ_COMMON_EXPORT bool IsVizHitTestingDebugEnabled();
 VIZ_COMMON_EXPORT bool IsUsingSkiaForGLReadback();
 VIZ_COMMON_EXPORT bool IsUsingSkiaRenderer();

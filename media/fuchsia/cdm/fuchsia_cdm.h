@@ -10,6 +10,7 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "media/base/callback_registry.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_promise_adapter.h"
 #include "media/base/content_decryption_module.h"
@@ -100,6 +101,8 @@ class FuchsiaCdm : public ContentDecryptionModule,
   base::Lock new_key_cb_for_video_lock_;
   base::RepeatingClosure new_key_cb_for_video_
       GUARDED_BY(new_key_cb_for_video_lock_);
+
+  CallbackRegistry<EventCB::RunType> event_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(FuchsiaCdm);
 };

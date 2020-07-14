@@ -157,8 +157,8 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
         // TODO(shaktisahu): Find out if there is a better way for this animation.
         Drawable presentedDrawable = favicon;
         if (mCurrentFavicon != null && !(mCurrentFavicon instanceof TransitionDrawable)) {
-            TransitionDrawable transitionDrawable = ApiCompatibilityUtils.createTransitionDrawable(
-                    new Drawable[] {mCurrentFavicon, favicon});
+            TransitionDrawable transitionDrawable =
+                    new TransitionDrawable(new Drawable[] {mCurrentFavicon, favicon});
             transitionDrawable.setCrossFadeEnabled(true);
             transitionDrawable.startTransition(BASE_ANIMATION_DURATION_MS);
             presentedDrawable = transitionDrawable;

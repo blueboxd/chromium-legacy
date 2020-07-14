@@ -48,10 +48,12 @@ void StreamModel::SetStoreObserver(StoreObserver* store_observer) {
   store_observer_ = store_observer;
 }
 
-void StreamModel::SetObserver(Observer* observer) {
-  DCHECK(!observer || !observer_)
-      << "Attempting to set the observer multiple times";
-  observer_ = observer;
+void StreamModel::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void StreamModel::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 const feedstore::Content* StreamModel::FindContent(
@@ -222,8 +224,8 @@ void StreamModel::UpdateFlattenedTree() {
     shared_state.updated = false;
   }
 
-  if (observer_)
-    observer_->OnUiUpdate(update);
+  for (Observer& observer : observers_)
+    observer.OnUiUpdate(update);
 }
 
 stream_model::FeatureTree* StreamModel::GetFinalFeatureTree() {

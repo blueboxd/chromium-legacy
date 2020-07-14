@@ -9,7 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/util/values/values_util.h"
-#include "chrome/browser/enterprise/reporting/profile_report_generator_desktop.h"
+#include "chrome/browser/enterprise/reporting/reporting_delegate_factory_desktop.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -54,7 +54,7 @@ constexpr char kBlockedExtensionSettings[] = R"({
 class ProfileReportGeneratorTest : public ::testing::Test {
  public:
   ProfileReportGeneratorTest()
-      : generator_(std::make_unique<ProfileReportGeneratorDesktop>()),
+      : generator_(&reporting_delegate_factory_),
         profile_manager_(TestingBrowserProcess::GetGlobal()) {}
   ~ProfileReportGeneratorTest() override = default;
 
@@ -134,6 +134,7 @@ class ProfileReportGeneratorTest : public ::testing::Test {
   TestingProfile* profile() { return profile_; }
   TestingProfileManager* profile_manager() { return &profile_manager_; }
 
+  ReportingDelegateFactoryDesktop reporting_delegate_factory_;
   ProfileReportGenerator generator_;
 
  private:

@@ -68,7 +68,7 @@ void RemoveFakeCredentials(const onc::OncValueSignature& signature,
     }
   }
   for (auto field_name : entries_to_remove)
-    onc_object->RemoveWithoutPathExpansion(field_name, nullptr);
+    onc_object->RemoveKey(field_name);
 }
 
 // Returns true if |policy| matches |actual_network|, which must be part of a

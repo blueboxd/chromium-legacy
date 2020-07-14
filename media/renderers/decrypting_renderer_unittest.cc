@@ -41,12 +41,12 @@ class DecryptingRendererTest : public testing::Test {
         std::move(renderer), &null_media_log_,
         task_environment_.GetMainThreadTaskRunner());
 
+    EXPECT_CALL(cdm_context_, RegisterEventCB(_)).Times(AnyNumber());
     EXPECT_CALL(cdm_context_, GetDecryptor())
         .WillRepeatedly(Return(&decryptor_));
     EXPECT_CALL(decryptor_, CanAlwaysDecrypt())
         .WillRepeatedly(ReturnPointee(&use_aes_decryptor_));
     EXPECT_CALL(decryptor_, CancelDecrypt(_)).Times(AnyNumber());
-    EXPECT_CALL(decryptor_, RegisterNewKeyCB(_, _)).Times(AnyNumber());
     EXPECT_CALL(media_resource_, GetAllStreams())
         .WillRepeatedly(Invoke(this, &DecryptingRendererTest::GetAllStreams));
     EXPECT_CALL(media_resource_, GetType())

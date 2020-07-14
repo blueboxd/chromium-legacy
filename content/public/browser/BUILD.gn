@@ -192,6 +192,7 @@ jumbo_source_set("browser_sources") {
     "idle_manager.h",
     "installability_error.cc",
     "installability_error.h",
+    "installed_payment_apps_finder.h",
     "invalidate_type.h",
     "javascript_dialog_manager.cc",
     "javascript_dialog_manager.h",

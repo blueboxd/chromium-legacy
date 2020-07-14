@@ -96,8 +96,8 @@ class TSFInputScope final : public ITfInputScope {
   // The corresponding text input types.
   std::vector<InputScope> input_scopes_;
 
-  // The refrence count of this instance.
-  volatile LONG ref_count_;
+  // The reference count of this instance.
+  volatile ULONG ref_count_;
 
   DISALLOW_COPY_AND_ASSIGN(TSFInputScope);
 };

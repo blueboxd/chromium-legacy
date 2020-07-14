@@ -226,6 +226,11 @@ bool MockCryptoClientStream::one_rtt_keys_available() const {
   return handshake_confirmed_;
 }
 
+bool MockCryptoClientStream::EarlyDataAccepted() const {
+  // This value is only used for logging. The return value doesn't matter.
+  return false;
+}
+
 const QuicCryptoNegotiatedParameters&
 MockCryptoClientStream::crypto_negotiated_params() const {
   return *crypto_negotiated_params_;

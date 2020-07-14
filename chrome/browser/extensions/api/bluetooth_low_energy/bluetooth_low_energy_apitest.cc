@@ -123,80 +123,67 @@ class BluetoothLowEnergyApiTest : public extensions::ExtensionApiTest {
 
     event_router()->SetAdapterForTesting(mock_adapter_);
 
-    device0_.reset(
-        new testing::NiceMock<MockBluetoothDevice>(mock_adapter_,
-                                                   0,
-                                                   kTestLeDeviceName0,
-                                                   kTestLeDeviceAddress0,
-                                                   false /* paired */,
-                                                   true /* connected */));
+    device0_ = std::make_unique<testing::NiceMock<MockBluetoothDevice>>(
+        mock_adapter_, 0, kTestLeDeviceName0, kTestLeDeviceAddress0,
+        /*paired=*/false, /*connected=*/true);
 
-    device1_.reset(
-        new testing::NiceMock<MockBluetoothDevice>(mock_adapter_,
-                                                   0,
-                                                   kTestLeDeviceName1,
-                                                   kTestLeDeviceAddress1,
-                                                   false /* paired */,
-                                                   false /* connected */));
+    device1_ = std::make_unique<testing::NiceMock<MockBluetoothDevice>>(
+        mock_adapter_, 0, kTestLeDeviceName1, kTestLeDeviceAddress1,
+        /*paired=*/false, /*connected=*/true);
 
-    service0_.reset(new testing::NiceMock<MockBluetoothGattService>(
-        device0_.get(),
-        kTestServiceId0,
-        BluetoothUUID(kTestServiceUuid0),
-        true /* is_primary */,
-        false /* is_local */));
+    service0_ = std::make_unique<testing::NiceMock<MockBluetoothGattService>>(
+        device0_.get(), kTestServiceId0, BluetoothUUID(kTestServiceUuid0),
+        /*is_primary=*/true);
 
-    service1_.reset(new testing::NiceMock<MockBluetoothGattService>(
-        device0_.get(),
-        kTestServiceId1,
-        BluetoothUUID(kTestServiceUuid1),
-        false /* is_primary */,
-        false /* is_local */));
+    service1_ = std::make_unique<testing::NiceMock<MockBluetoothGattService>>(
+        device0_.get(), kTestServiceId1, BluetoothUUID(kTestServiceUuid1),
+        /*is_primary=*/false);
 
     // Assign characteristics some random properties and permissions. They don't
     // need to reflect what the characteristic is actually capable of, since
     // the JS API just passes values through from
     // device::BluetoothRemoteGattCharacteristic.
     std::vector<uint8_t> default_value;
-    chrc0_.reset(new testing::NiceMock<MockBluetoothGattCharacteristic>(
-        service0_.get(), kTestCharacteristicId0,
-        BluetoothUUID(kTestCharacteristicUuid0), false /* is_local */,
-        kTestCharacteristicProperties0,
-        BluetoothRemoteGattCharacteristic::PERMISSION_NONE));
+    chrc0_ =
+        std::make_unique<testing::NiceMock<MockBluetoothGattCharacteristic>>(
+            service0_.get(), kTestCharacteristicId0,
+            BluetoothUUID(kTestCharacteristicUuid0),
+            kTestCharacteristicProperties0,
+            BluetoothRemoteGattCharacteristic::PERMISSION_NONE);
     default_value.assign(kTestCharacteristicDefaultValue0,
                          (kTestCharacteristicDefaultValue0 +
                           sizeof(kTestCharacteristicDefaultValue0)));
     ON_CALL(*chrc0_, GetValue()).WillByDefault(ReturnRefOfCopy(default_value));
 
-    chrc1_.reset(new testing::NiceMock<MockBluetoothGattCharacteristic>(
-        service0_.get(), kTestCharacteristicId1,
-        BluetoothUUID(kTestCharacteristicUuid1), false /* is_local */,
-        kTestCharacteristicProperties1,
-        BluetoothRemoteGattCharacteristic::PERMISSION_NONE));
+    chrc1_ =
+        std::make_unique<testing::NiceMock<MockBluetoothGattCharacteristic>>(
+            service0_.get(), kTestCharacteristicId1,
+            BluetoothUUID(kTestCharacteristicUuid1),
+            kTestCharacteristicProperties1,
+            BluetoothRemoteGattCharacteristic::PERMISSION_NONE);
     default_value.assign(kTestCharacteristicDefaultValue1,
                          (kTestCharacteristicDefaultValue1 +
                           sizeof(kTestCharacteristicDefaultValue1)));
     ON_CALL(*chrc1_, GetValue()).WillByDefault(ReturnRefOfCopy(default_value));
 
-    chrc2_.reset(new testing::NiceMock<MockBluetoothGattCharacteristic>(
-        service1_.get(), kTestCharacteristicId2,
-        BluetoothUUID(kTestCharacteristicUuid2), false /* is_local */,
-        kTestCharacteristicProperties2,
-        BluetoothRemoteGattCharacteristic::PERMISSION_NONE));
+    chrc2_ =
+        std::make_unique<testing::NiceMock<MockBluetoothGattCharacteristic>>(
+            service1_.get(), kTestCharacteristicId2,
+            BluetoothUUID(kTestCharacteristicUuid2),
+            kTestCharacteristicProperties2,
+            BluetoothRemoteGattCharacteristic::PERMISSION_NONE);
 
-    desc0_.reset(new testing::NiceMock<MockBluetoothGattDescriptor>(
+    desc0_ = std::make_unique<testing::NiceMock<MockBluetoothGattDescriptor>>(
         chrc0_.get(), kTestDescriptorId0, BluetoothUUID(kTestDescriptorUuid0),
-        false /* is_local */,
-        BluetoothRemoteGattCharacteristic::PERMISSION_NONE));
+        BluetoothRemoteGattCharacteristic::PERMISSION_NONE);
     default_value.assign(
         kTestDescriptorDefaultValue0,
         (kTestDescriptorDefaultValue0 + sizeof(kTestDescriptorDefaultValue0)));
     ON_CALL(*desc0_, GetValue()).WillByDefault(ReturnRefOfCopy(default_value));
 
-    desc1_.reset(new testing::NiceMock<MockBluetoothGattDescriptor>(
+    desc1_ = std::make_unique<testing::NiceMock<MockBluetoothGattDescriptor>>(
         chrc0_.get(), kTestDescriptorId1, BluetoothUUID(kTestDescriptorUuid1),
-        false /* is_local */,
-        BluetoothRemoteGattCharacteristic::PERMISSION_NONE));
+        BluetoothRemoteGattCharacteristic::PERMISSION_NONE);
     default_value.assign(
         kTestDescriptorDefaultValue1,
         (kTestDescriptorDefaultValue1 + sizeof(kTestDescriptorDefaultValue1)));

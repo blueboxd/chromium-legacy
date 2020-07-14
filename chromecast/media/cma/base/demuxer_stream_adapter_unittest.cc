@@ -149,7 +149,6 @@ void DemuxerStreamAdapterTest::OnNewFrame(
 
 void DemuxerStreamAdapterTest::OnFlushCompleted() {
   ASSERT_EQ(frame_received_count_, total_expected_frames_);
-  ASSERT_FALSE(demuxer_stream_->IsReadPending());
   base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 

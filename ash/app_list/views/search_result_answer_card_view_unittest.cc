@@ -90,8 +90,6 @@ class SearchResultAnswerCardViewTest : public views::ViewsTestBase {
 
   views::View* search_card_view() const { return search_card_view_.get(); }
 
-  int GetYSize() const { return result_container_view_->GetYSize(); }
-
   int GetResultCountFromView() { return result_container_view_->num_results(); }
 
   double GetContainerScore() const {
@@ -125,7 +123,6 @@ TEST_F(SearchResultAnswerCardViewTest, Basic) {
   EXPECT_EQ(kDisplayScore, GetContainerScore());
   EXPECT_EQ(1, GetResultCountFromView());
   ASSERT_TRUE(search_card_view()->GetVisible());
-  EXPECT_EQ(1, GetYSize());
 }
 
 TEST_F(SearchResultAnswerCardViewTest, OpenResult) {
@@ -144,7 +141,6 @@ TEST_F(SearchResultAnswerCardViewTest, SpokenFeedback) {
 TEST_F(SearchResultAnswerCardViewTest, DeleteResult) {
   DeleteResult();
   EXPECT_EQ(0UL, GetResults()->item_count());
-  EXPECT_EQ(0, GetYSize());
   ASSERT_FALSE(search_card_view()->GetVisible());
   EXPECT_EQ(-1, GetContainerScore());
 }

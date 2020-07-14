@@ -50,7 +50,6 @@ class APP_LIST_EXPORT SearchResultListView : public SearchResultContainerView {
 
   // Overridden from SearchResultContainerView:
   SearchResultView* GetResultViewAt(size_t index) override;
-  int GetYSize() override;
   SearchResultBaseView* GetFirstResultView() override;
 
   AppListMainView* app_list_main_view() const { return main_view_; }

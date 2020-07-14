@@ -30,10 +30,6 @@ class NullDemuxerStream : public media::DemuxerStream {
   ~NullDemuxerStream() override = default;
 
   void Read(ReadCB read_cb) override { NOTREACHED(); }
-  bool IsReadPending() const override {
-    NOTREACHED();
-    return false;
-  }
 
   void Configure(DecoderConfigType config);
 

@@ -60,7 +60,7 @@ class LacrosManager : public session_manager::SessionManagerObserver {
   // class, so there's no way for callers to handle such error cases properly.
   // This design often leads the flakiness behavior of the product and testing,
   // so should be avoided.
-  void Start();
+  void NewWindow();
 
  private:
   enum class State {
@@ -91,12 +91,10 @@ class LacrosManager : public session_manager::SessionManagerObserver {
     TERMINATING,
   };
 
-  // Starting Lacros requires a hop to a background thread. The flow is
-  // Start(), then StartBackground() in (the anonymous namespace),
-  // then StartForeground().
-  // The parameter |already_running| refers to whether the Lacros binary is
-  // already launched and running.
-  void StartForeground(bool already_running);
+  // Starts the lacros-chrome process. Returns whether the subprocess is
+  // created. Note that the subprocess may be crashed immediately, even if this
+  // returns true. This can be called only in STOPPED state.
+  bool Start();
 
   // Called when PendingReceiver of AshChromeService is passed from
   // lacros-chrome.
@@ -120,8 +118,6 @@ class LacrosManager : public session_manager::SessionManagerObserver {
   void OnLoadComplete(const base::FilePath& path);
 
   State state_ = State::NOT_INITIALIZED;
-
-  int num_pending_start_ = 0;
 
   // May be null in tests.
   scoped_refptr<component_updater::CrOSComponentManager> component_manager_;

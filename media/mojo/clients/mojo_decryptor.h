@@ -34,7 +34,6 @@ class MojoDecryptor : public Decryptor {
   ~MojoDecryptor() final;
 
   // Decryptor implementation.
-  void RegisterNewKeyCB(StreamType stream_type, NewKeyCB key_added_cb) final;
   void Decrypt(StreamType stream_type,
                scoped_refptr<DecoderBuffer> encrypted,
                DecryptCB decrypt_cb) final;
@@ -49,9 +48,6 @@ class MojoDecryptor : public Decryptor {
                              const VideoDecodeCB& video_decode_cb) final;
   void ResetDecoder(StreamType stream_type) final;
   void DeinitializeDecoder(StreamType stream_type) final;
-
-  // Called when keys have changed and an additional key is available.
-  void OnKeyAdded();
 
  private:
   // These are once callbacks corresponding to repeating callbacks DecryptCB,
@@ -99,9 +95,6 @@ class MojoDecryptor : public Decryptor {
   // Helper class to receive decrypted DecoderBuffer from the
   // |remote_decryptor_|, shared by audio and video.
   std::unique_ptr<MojoDecoderBufferReader> decrypted_buffer_reader_;
-
-  NewKeyCB new_audio_key_cb_;
-  NewKeyCB new_video_key_cb_;
 
   base::WeakPtrFactory<MojoDecryptor> weak_factory_{this};
 

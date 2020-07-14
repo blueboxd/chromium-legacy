@@ -31,45 +31,16 @@ ChromeEnterpriseRealTimeUrlLookupService::
 ChromeEnterpriseRealTimeUrlLookupService::
     ~ChromeEnterpriseRealTimeUrlLookupService() = default;
 
-void ChromeEnterpriseRealTimeUrlLookupService::StartLookup(
-    const GURL& url,
-    RTLookupRequestCallback request_callback,
-    RTLookupResponseCallback response_callback) {
-  DCHECK(CurrentlyOnThread(ThreadID::UI));
-  DCHECK(url.is_valid());
-
-  // Check cache.
-  std::unique_ptr<RTLookupResponse> cache_response =
-      GetCachedRealTimeUrlVerdict(url);
-  if (cache_response) {
-    base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::IO),
-                   base::BindOnce(std::move(response_callback),
-                                  /* is_rt_lookup_successful */ true,
-                                  std::move(cache_response)));
-    return;
-  }
-
-  auto request = std::make_unique<RTLookupRequest>();
-  request->set_url(SanitizeURL(url).spec());
-  request->set_lookup_type(RTLookupRequest::NAVIGATION);
-  DCHECK(GetDMToken().is_valid());
-  request->set_dm_token(GetDMToken().value());
-
-  std::string req_data;
-  request->SerializeToString(&req_data);
-
-  SendRequestInternal(GetResourceRequest(), req_data, url,
-                      std::move(response_callback));
-
-  base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::IO),
-                 base::BindOnce(std::move(request_callback), std::move(request),
-                                /*access_token=*/""));
-}
-
 bool ChromeEnterpriseRealTimeUrlLookupService::CanPerformFullURLLookup() const {
   return RealTimePolicyEngine::CanPerformEnterpriseFullURLLookup(
       profile_->GetPrefs(), GetDMToken().is_valid(),
       profile_->IsOffTheRecord());
+}
+
+bool ChromeEnterpriseRealTimeUrlLookupService::
+    CanPerformFullURLLookupWithToken() const {
+  // URL lookup with token is disabled for enterprise users.
+  return false;
 }
 
 bool ChromeEnterpriseRealTimeUrlLookupService::CanCheckSubresourceURL() const {
@@ -78,6 +49,25 @@ bool ChromeEnterpriseRealTimeUrlLookupService::CanCheckSubresourceURL() const {
 
 bool ChromeEnterpriseRealTimeUrlLookupService::CanCheckSafeBrowsingDb() const {
   return safe_browsing::IsSafeBrowsingEnabled(*profile_->GetPrefs());
+}
+
+void ChromeEnterpriseRealTimeUrlLookupService::GetAccessToken(
+    const GURL& url,
+    RTLookupRequestCallback request_callback,
+    RTLookupResponseCallback response_callback) {
+  NOTREACHED() << "URL lookup with token is disabled for enterprise users.";
+}
+
+std::unique_ptr<RTLookupRequest>
+ChromeEnterpriseRealTimeUrlLookupService::FillRequestProto(const GURL& url) {
+  DCHECK(GetDMToken().is_valid())
+      << "Send a request only if the dm token is valid.";
+  auto request = std::make_unique<RTLookupRequest>();
+  request->set_url(SanitizeURL(url).spec());
+  request->set_lookup_type(RTLookupRequest::NAVIGATION);
+  request->set_dm_token(GetDMToken().value());
+  // TODO(crbug.com/1085261): Fill in user population.
+  return request;
 }
 
 policy::DMToken ChromeEnterpriseRealTimeUrlLookupService::GetDMToken() const {

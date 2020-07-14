@@ -80,6 +80,7 @@ const SAConstants = {
     MISSING_BASE_NODE: 12,
     NEXT_INVALID: 13,
     PREVIOUS_INVALID: 14,
+    INVALID_SELECTION_BOUNDS: 15,
   },
 
   /**

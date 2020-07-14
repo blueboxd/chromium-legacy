@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
+#include "media/base/callback_registry.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
@@ -68,7 +69,6 @@ class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
   int GetCdmId() const override;
 
   // Decryptor implementation.
-  void RegisterNewKeyCB(StreamType stream_type, NewKeyCB key_added_cb) override;
   void Decrypt(StreamType stream_type,
                scoped_refptr<DecoderBuffer> encrypted,
                DecryptCB decrypt_cb) override;
@@ -194,11 +194,7 @@ class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
   // CdmSessionType for each session.
   std::map<std::string, CdmSessionType> open_sessions_;
 
-  // Protect |new_audio_key_cb_| and |new_video_key_cb_| as they are set on the
-  // main thread but called on the media thread.
-  mutable base::Lock new_key_cb_lock_;
-  NewKeyCB new_audio_key_cb_ GUARDED_BY(new_key_cb_lock_);
-  NewKeyCB new_video_key_cb_ GUARDED_BY(new_key_cb_lock_);
+  CallbackRegistry<EventCB::RunType> event_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(AesDecryptor);
 };

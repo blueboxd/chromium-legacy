@@ -95,7 +95,6 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
     const ComputedStyle& container_style,
     TextHeightType height_type) const {
   const WritingMode container_writing_mode = container_style.GetWritingMode();
-  const TextDirection container_direction = container_style.Direction();
   PhysicalRect overflow;
   for (const auto& child : Children()) {
     PhysicalRect child_scroll_overflow =
@@ -105,16 +104,6 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
     if (UNLIKELY(has_hanging_ && !child->IsFloatingOrOutOfFlowPositioned())) {
       AdjustScrollableOverflowForHanging(LocalRect(), container_writing_mode,
                                          &child_scroll_overflow);
-    }
-
-    // For implementation reasons, text nodes inherit computed style from their
-    // container, including everything, also non-inherited properties. So, if
-    // the container has a relative offset, this will be falsely reflected on
-    // text children. We need to guard against this.
-    if (!child->IsText()) {
-      child_scroll_overflow.offset +=
-          ComputeRelativeOffset(child->Style(), container_writing_mode,
-                                container_direction, container.Size());
     }
     overflow.Unite(child_scroll_overflow);
   }

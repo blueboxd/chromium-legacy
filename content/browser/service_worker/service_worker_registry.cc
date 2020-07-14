@@ -277,7 +277,7 @@ void ServiceWorkerRegistry::FindRegistrationForIdOnly(
 }
 
 void ServiceWorkerRegistry::GetRegistrationsForOrigin(
-    const GURL& origin,
+    const url::Origin& origin,
     GetRegistrationsCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   storage()->GetRegistrationsForOrigin(
@@ -326,11 +326,11 @@ ServiceWorkerRegistration* ServiceWorkerRegistry::GetUninstallingRegistration(
 
 std::vector<scoped_refptr<ServiceWorkerRegistration>>
 ServiceWorkerRegistry::GetUninstallingRegistrationsForOrigin(
-    const GURL& origin) {
+    const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   std::vector<scoped_refptr<ServiceWorkerRegistration>> results;
   for (const auto& registration : uninstalling_registrations_) {
-    if (registration.second->scope().GetOrigin() == origin) {
+    if (url::Origin::Create(registration.second->scope()) == origin) {
       results.push_back(registration.second);
     }
   }
@@ -1002,12 +1002,11 @@ void ServiceWorkerRegistry::DidFindRegistrationForId(
 
 void ServiceWorkerRegistry::DidGetRegistrationsForOrigin(
     GetRegistrationsCallback callback,
-    const GURL& origin_filter,
+    const url::Origin& origin_filter,
     storage::mojom::ServiceWorkerDatabaseStatus database_status,
     std::unique_ptr<RegistrationList> registration_data_list,
     std::unique_ptr<std::vector<ResourceList>> resources_list) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  DCHECK(origin_filter.is_valid());
 
   blink::ServiceWorkerStatusCode status =
       DatabaseStatusToStatusCode(database_status);
@@ -1035,7 +1034,7 @@ void ServiceWorkerRegistry::DidGetRegistrationsForOrigin(
 
   // Add unstored registrations that are being installed.
   for (const auto& registration : installing_registrations_) {
-    if (registration.second->scope().GetOrigin() != origin_filter)
+    if (url::Origin::Create(registration.second->scope()) != origin_filter)
       continue;
     if (registration_ids.insert(registration.first).second)
       registrations.push_back(registration.second);

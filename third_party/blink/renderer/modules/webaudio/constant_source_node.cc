@@ -108,6 +108,13 @@ bool ConstantSourceHandler::PropagatesSilence() const {
 void ConstantSourceHandler::HandleStoppableSourceNode() {
   double now = Context()->currentTime();
 
+  MutexTryLocker try_locker(process_lock_);
+  if (!try_locker.Locked()) {
+    // Can't get the lock, so just return.  It's ok to handle these at a later
+    // time; this was just a hint anyway so stopping them a bit later is ok.
+    return;
+  }
+
   // If we know the end time, and the source was started and the current time is
   // definitely past the end time, we can stop this node.  (This handles the
   // case where the this source is not connected to the destination and we want

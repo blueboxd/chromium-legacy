@@ -4775,8 +4775,8 @@ void LayoutBox::ComputeInlineStaticDistance(
         if (curr->IsInsideFlowThread())
           static_position += AccumulateStaticOffsetForFlowThread(
               *ToLayoutBox(curr), static_position, static_block_position);
-      } else if (curr->IsInline()) {
-        if (curr->IsInFlowPositioned()) {
+      } else if (curr->IsInline() && curr->IsInFlowPositioned()) {
+        if (!curr->IsInLayoutNGInlineFormattingContext()) {
           if (!curr->StyleRef().LogicalLeft().IsAuto())
             static_position +=
                 ValueForLength(curr->StyleRef().LogicalLeft(),
@@ -4816,8 +4816,8 @@ void LayoutBox::ComputeInlineStaticDistance(
             static_position -= AccumulateStaticOffsetForFlowThread(
                 *ToLayoutBox(curr), static_position, static_block_position);
         }
-      } else if (curr->IsInline()) {
-        if (curr->IsInFlowPositioned()) {
+      } else if (curr->IsInline() && curr->IsInFlowPositioned()) {
+        if (!curr->IsInLayoutNGInlineFormattingContext()) {
           if (!curr->StyleRef().LogicalLeft().IsAuto())
             static_position -=
                 ValueForLength(curr->StyleRef().LogicalLeft(),

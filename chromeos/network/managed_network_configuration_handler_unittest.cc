@@ -475,10 +475,8 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUpdateManagedNewGUID) {
 
   // The passphrase isn't sent again, because it's configured by the user and
   // Shill doesn't send it on GetProperties calls.
-  expected_shill_properties->RemoveWithoutPathExpansion(
-      shill::kPassphraseProperty, nullptr);
-  expected_shill_properties->RemoveWithoutPathExpansion(
-      shill::kPassphraseRequiredProperty, nullptr);
+  expected_shill_properties->RemoveKey(shill::kPassphraseProperty);
+  expected_shill_properties->RemoveKey(shill::kPassphraseRequiredProperty);
 
   // Before setting policy, old_entry_path should exist.
   ASSERT_TRUE(GetShillProfileClient()->HasService("old_entry_path"));
@@ -620,10 +618,8 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyReapplyToManaged) {
 
   // The passphrase isn't sent again, because it's configured by the user and
   // Shill doesn't send it on GetProperties calls.
-  expected_shill_properties->RemoveWithoutPathExpansion(
-      shill::kPassphraseProperty, nullptr);
-  expected_shill_properties->RemoveWithoutPathExpansion(
-      shill::kPassphraseRequiredProperty, nullptr);
+  expected_shill_properties->RemoveKey(shill::kPassphraseProperty);
+  expected_shill_properties->RemoveKey(shill::kPassphraseRequiredProperty);
 
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
   base::RunLoop().RunUntilIdle();

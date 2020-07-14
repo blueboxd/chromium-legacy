@@ -615,8 +615,9 @@ void HTMLFrameOwnerElement::ParseAttribute(
     // requests, just as unsetting the loading attribute does if automatic lazy
     // loading is disabled.
     if (loading == LoadingAttributeValue::kEager ||
-        !ShouldLazilyLoadFrame(GetDocument(),
-                               loading == LoadingAttributeValue::kLazy)) {
+        (GetDocument().GetSettings() &&
+         !ShouldLazilyLoadFrame(GetDocument(),
+                                loading == LoadingAttributeValue::kLazy))) {
       should_lazy_load_children_ = false;
       if (lazy_load_frame_observer_ &&
           lazy_load_frame_observer_->IsLazyLoadPending()) {

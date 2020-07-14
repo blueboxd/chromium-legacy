@@ -112,11 +112,7 @@ def _ReadPropertiesFile(path):
 
 
 def _RunGnGen(output_dir, args=None):
-  cmd = [
-      os.path.join(_DEPOT_TOOLS_PATH, 'gn'),
-      'gen',
-      output_dir,
-  ]
+  cmd = [os.path.join(_DEPOT_TOOLS_PATH, 'gn'), 'gen', output_dir]
   if args:
     cmd.extend(args)
   logging.info('Running: %r', cmd)
@@ -126,36 +122,19 @@ def _RunGnGen(output_dir, args=None):
 def _RunNinja(output_dir, args):
   # Don't use version within _DEPOT_TOOLS_PATH, since most devs don't use
   # that one when building.
-  cmd = [
-      'autoninja',
-      '-C',
-      output_dir,
-  ]
+  cmd = ['autoninja', '-C', output_dir]
   cmd.extend(args)
   logging.info('Running: %r', cmd)
   subprocess.check_call(cmd)
 
 
 def _QueryForAllGnTargets(output_dir):
-  # Query ninja rather than GN since it's faster.
   cmd = [
-      'ninja',
-      '-C',
-      output_dir,
-      '-t',
-      'targets',
+      os.path.join(_BUILD_ANDROID, 'list_java_targets.py'), '--gn-labels',
+      '--nested', '--build-build-configs', '--output-directory', output_dir
   ]
   logging.info('Running: %r', cmd)
-  ninja_output = build_utils.CheckOutput(cmd)
-  ret = []
-  SUFFIX_LEN = len('__build_config_crbug_908819')
-  for line in ninja_output.splitlines():
-    ninja_target = line.rsplit(':', 1)[0]
-    # Ignore root aliases by ensure a : exists.
-    if ':' in ninja_target and ninja_target.endswith(
-        '__build_config_crbug_908819'):
-      ret.append('//' + ninja_target[:-SUFFIX_LEN])
-  return ret
+  return subprocess.check_output(cmd).splitlines()
 
 
 class _ProjectEntry(object):
@@ -203,9 +182,6 @@ class _ProjectEntry(object):
 
   def GnBuildConfigTarget(self):
     return '%s__build_config_crbug_908819' % self._gn_target
-
-  def NinjaBuildConfigTarget(self):
-    return '%s__build_config_crbug_908819' % self.NinjaTarget()
 
   def GradleSubdir(self):
     """Returns the output subdirectory."""
@@ -869,9 +845,6 @@ def main():
       channel)
 
   main_entries = [_ProjectEntry.FromGnTarget(t) for t in targets]
-
-  logging.warning('Building .build_config files...')
-  _RunNinja(output_dir, [e.NinjaBuildConfigTarget() for e in main_entries])
 
   if args.all:
     # There are many unused libraries, so restrict to those that are actually

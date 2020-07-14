@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/installed_payment_apps_finder.h"
 #include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -36,9 +37,10 @@ using ::payments::mojom::PaymentMethodData;
 using ::payments::mojom::PaymentRequestEventData;
 using ::payments::mojom::PaymentRequestEventDataPtr;
 
-void GetAllPaymentAppsCallback(base::OnceClosure done_callback,
-                               PaymentAppProvider::PaymentApps* out_apps,
-                               PaymentAppProvider::PaymentApps apps) {
+void GetAllPaymentAppsCallback(
+    base::OnceClosure done_callback,
+    InstalledPaymentAppsFinder::PaymentApps* out_apps,
+    InstalledPaymentAppsFinder::PaymentApps apps) {
   *out_apps = std::move(apps);
   std::move(done_callback).Run();
 }
@@ -110,11 +112,11 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
 
   std::vector<int64_t> GetAllPaymentAppRegistrationIDs() {
     base::RunLoop run_loop;
-    PaymentAppProvider::PaymentApps apps;
-    PaymentAppProvider::GetInstance()->GetAllPaymentApps(
-        shell()->web_contents()->GetBrowserContext(),
-        base::BindOnce(&GetAllPaymentAppsCallback, run_loop.QuitClosure(),
-                       &apps));
+    InstalledPaymentAppsFinder::PaymentApps apps;
+    InstalledPaymentAppsFinder::GetInstance(
+        shell()->web_contents()->GetBrowserContext())
+        ->GetAllPaymentApps(base::BindOnce(&GetAllPaymentAppsCallback,
+                                           run_loop.QuitClosure(), &apps));
     run_loop.Run();
 
     std::vector<int64_t> registrationIds;

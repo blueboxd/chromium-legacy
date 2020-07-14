@@ -175,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
 
   // Verify that no other files exist and remove temp dir.
   EXPECT_TRUE(base::IsDirectoryEmpty(temp_dir_path));
-  EXPECT_TRUE(base::DeleteFile(temp_dir_path, false));
+  EXPECT_TRUE(base::DeleteFile(temp_dir_path));
 
   base::ThreadRestrictions::SetIOAllowed(prev_io_allowed);
 }
@@ -228,7 +228,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
 
   // Verify that no files exist and remove temp dir.
   EXPECT_TRUE(base::IsDirectoryEmpty(temp_dir_path));
-  EXPECT_TRUE(base::DeleteFile(temp_dir_path, false));
+  EXPECT_TRUE(base::DeleteFile(temp_dir_path));
 
   base::ThreadRestrictions::SetIOAllowed(prev_io_allowed);
 }
@@ -333,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
 
   // Verify that no other files exist and remove temp dir.
   EXPECT_TRUE(base::IsDirectoryEmpty(temp_dir_path));
-  EXPECT_TRUE(base::DeleteFile(temp_dir_path, false));
+  EXPECT_TRUE(base::DeleteFile(temp_dir_path));
 
   base::ThreadRestrictions::SetIOAllowed(prev_io_allowed);
 }

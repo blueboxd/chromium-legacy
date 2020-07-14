@@ -78,32 +78,32 @@ class BluetoothInterfaceDeviceTest : public testing::Test {
 
     auto service1 = std::make_unique<NiceMockBluetoothGattService>(
         &device_, kTestServiceId0, device::BluetoothUUID(kTestServiceUuid0),
-        true /* is_primary */, false /* is_local */);
+        /*is_primary=*/true);
 
     auto characteristic1 =
         std::make_unique<NiceMockBluetoothGattCharacteristic>(
             service1.get(), kTestCharacteristicId0,
             device::BluetoothUUID(kTestCharacteristicUuid0),
-            false /* is_local */, kReadWriteProperties, 0 /* permissions */);
+            kReadWriteProperties, 0 /* permissions */);
 
     auto characteristic2 =
         std::make_unique<NiceMockBluetoothGattCharacteristic>(
             service1.get(), kTestCharacteristicId1,
             device::BluetoothUUID(kTestCharacteristicUuid1),
-            false /* is_local */, kReadWriteProperties, 0 /* permissions */);
+            kReadWriteProperties, 0 /* permissions */);
 
     service1->AddMockCharacteristic(std::move(characteristic1));
     service1->AddMockCharacteristic(std::move(characteristic2));
 
     auto service2 = std::make_unique<NiceMockBluetoothGattService>(
         &device_, kTestServiceId1, device::BluetoothUUID(kTestServiceUuid1),
-        true /* is_primary */, false /* is_local */);
+        /*is_primary=*/true);
 
     auto characteristic3 =
         std::make_unique<NiceMockBluetoothGattCharacteristic>(
             service2.get(), kTestCharacteristicId2,
-            device::BluetoothUUID(kTestCharacteristicUuid2),
-            false /* is_local */, kAllProperties, 0 /* permissions */);
+            device::BluetoothUUID(kTestCharacteristicUuid2), kAllProperties,
+            0 /* permissions */);
 
     service2->AddMockCharacteristic(std::move(characteristic3));
 

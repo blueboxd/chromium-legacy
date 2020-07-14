@@ -138,8 +138,10 @@ class DecryptingDemuxerStreamTest : public testing::Test {
 
   void Initialize() {
     SetCdmType(CDM_WITH_DECRYPTOR);
-    EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kAudio, _))
-        .WillOnce(SaveArg<1>(&key_added_cb_));
+    EXPECT_CALL(*cdm_context_, RegisterEventCB(_)).WillOnce([&](auto cb) {
+      event_cb_ = cb;
+      return std::make_unique<CallbackRegistration>();
+    });
 
     AudioDecoderConfig input_config(kCodecVorbis, kSampleFormatPlanarF32,
                                     CHANNEL_LAYOUT_STEREO, 44100,
@@ -284,7 +286,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
   std::unique_ptr<StrictMock<MockDemuxerStream>> input_video_stream_;
 
   DemuxerStream::ReadCB pending_demuxer_read_cb_;
-  Decryptor::NewKeyCB key_added_cb_;
+  CdmContext::EventCB event_cb_;
   Decryptor::DecryptCB pending_decrypt_cb_;
 
   // Constant buffers to be returned by the input demuxer streams and the
@@ -304,8 +306,10 @@ TEST_F(DecryptingDemuxerStreamTest, Initialize_NormalAudio) {
 
 TEST_F(DecryptingDemuxerStreamTest, Initialize_NormalVideo) {
   SetCdmType(CDM_WITH_DECRYPTOR);
-  EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kVideo, _))
-      .WillOnce(SaveArg<1>(&key_added_cb_));
+  EXPECT_CALL(*cdm_context_, RegisterEventCB(_)).WillOnce([&](auto cb) {
+    event_cb_ = cb;
+    return std::make_unique<CallbackRegistration>();
+  });
 
   VideoDecoderConfig input_config = TestVideoConfig::NormalEncrypted();
   InitializeVideoAndExpectStatus(input_config, PIPELINE_OK);
@@ -399,7 +403,7 @@ TEST_F(DecryptingDemuxerStreamTest, KeyAdded_DuringWaitingForKey) {
       .WillRepeatedly(
           RunOnceCallback<2>(Decryptor::kSuccess, decrypted_buffer_));
   EXPECT_CALL(*this, BufferReady(DemuxerStream::kOk, decrypted_buffer_));
-  key_added_cb_.Run();
+  event_cb_.Run(CdmContext::Event::kHasAdditionalUsableKey);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -417,7 +421,7 @@ TEST_F(DecryptingDemuxerStreamTest, KeyAdded_DuringPendingDecrypt) {
           RunOnceCallback<2>(Decryptor::kSuccess, decrypted_buffer_));
   EXPECT_CALL(*this, BufferReady(DemuxerStream::kOk, decrypted_buffer_));
   // The decrypt callback is returned after the correct decryption key is added.
-  key_added_cb_.Run();
+  event_cb_.Run(CdmContext::Event::kHasAdditionalUsableKey);
   std::move(pending_decrypt_cb_).Run(Decryptor::kNoKey, nullptr);
   base::RunLoop().RunUntilIdle();
 }

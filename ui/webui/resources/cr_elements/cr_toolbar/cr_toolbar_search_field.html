@@ -142,9 +142,11 @@
       }
 
       :host(:not([narrow])) #prompt {
-        margin-inline-start:
-            var(--cr-toolbar-search-field-prompt-margin-inline-start);
         opacity: var(--cr-toolbar-search-field-prompt-opacity);
+      }
+
+      :host([narrow]) #prompt {
+        opacity: var(--cr-toolbar-search-field-narrow-mode-prompt-opacity, 0);
       }
 
       :host([narrow]:not([showing-search])) #searchTerm {

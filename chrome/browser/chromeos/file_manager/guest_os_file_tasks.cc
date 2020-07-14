@@ -41,6 +41,8 @@
 namespace file_manager {
 namespace file_tasks {
 
+const char kGuestOsAppActionID[] = "open-with";
+
 namespace {
 
 // When MIME type detection is done; if we can't be properly determined then

@@ -26,7 +26,7 @@ namespace file_manager {
 namespace file_tasks {
 
 // Guest OS apps all use the same action ID.
-constexpr char kGuestOsAppActionID[] = "open-with";
+extern const char kGuestOsAppActionID[];
 
 // Finds the Guest OS |app_ids| and |app_names| that can handle |entries|.
 // VisibleForTesting.  Called by |FindGuestOsTasks|.

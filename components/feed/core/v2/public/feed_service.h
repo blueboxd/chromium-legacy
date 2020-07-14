@@ -35,6 +35,7 @@ namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
 namespace offline_pages {
+class OfflinePageModel;
 class PrefetchService;
 }  // namespace offline_pages
 namespace signin {
@@ -78,6 +79,7 @@ class FeedService : public KeyedService {
       signin::IdentityManager* identity_manager,
       history::HistoryService* history_service,
       offline_pages::PrefetchService* prefetch_service,
+      offline_pages::OfflinePageModel* offline_page_model,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       const std::string& api_key,

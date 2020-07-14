@@ -346,8 +346,9 @@ void VideoRendererImpl::OnBufferingStateChange(BufferingState buffering_state) {
   // the decoder for an "underflow" that is really just a seek.
   BufferingStateChangeReason reason = BUFFERING_CHANGE_REASON_UNKNOWN;
   if (state_ == kPlaying && buffering_state == BUFFERING_HAVE_NOTHING) {
-    reason = demuxer_stream_->IsReadPending() ? DEMUXER_UNDERFLOW
-                                              : DECODER_UNDERFLOW;
+    reason = video_decoder_stream_->is_demuxer_read_pending()
+                 ? DEMUXER_UNDERFLOW
+                 : DECODER_UNDERFLOW;
   }
 
   media_log_->AddEvent<MediaLogEvent::kBufferingStateChanged>(

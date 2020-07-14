@@ -32,6 +32,8 @@ const size_t kMaxBackOffResetDurationInSeconds = 30 * 60;  // 30 minutes.
 
 const size_t kURLLookupTimeoutDurationInSeconds = 10;  // 10 seconds.
 
+constexpr char kAuthHeaderBearer[] = "Bearer ";
+
 }  // namespace
 
 RealTimeUrlLookupServiceBase::RealTimeUrlLookupServiceBase(
@@ -206,13 +208,63 @@ void RealTimeUrlLookupServiceBase::MayBeCacheRealTimeUrlVerdict(
   }
 }
 
-std::unique_ptr<network::ResourceRequest>
-RealTimeUrlLookupServiceBase::GetResourceRequest() {
-  auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = GetRealTimeLookupUrl();
-  resource_request->load_flags = net::LOAD_DISABLE_CACHE;
-  resource_request->method = "POST";
-  return resource_request;
+void RealTimeUrlLookupServiceBase::StartLookup(
+    const GURL& url,
+    RTLookupRequestCallback request_callback,
+    RTLookupResponseCallback response_callback) {
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
+  DCHECK(url.is_valid());
+
+  // Check cache.
+  std::unique_ptr<RTLookupResponse> cache_response =
+      GetCachedRealTimeUrlVerdict(url);
+  if (cache_response) {
+    base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::IO),
+                   base::BindOnce(std::move(response_callback),
+                                  /* is_rt_lookup_successful */ true,
+                                  std::move(cache_response)));
+    return;
+  }
+
+  if (CanPerformFullURLLookupWithToken()) {
+    GetAccessToken(url, std::move(request_callback),
+                   std::move(response_callback));
+  } else {
+    SendRequest(url, /* access_token_string */ base::nullopt,
+                std::move(request_callback), std::move(response_callback));
+  }
+}
+
+void RealTimeUrlLookupServiceBase::SendRequest(
+    const GURL& url,
+    base::Optional<std::string> access_token_string,
+    RTLookupRequestCallback request_callback,
+    RTLookupResponseCallback response_callback) {
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
+  std::unique_ptr<RTLookupRequest> request = FillRequestProto(url);
+  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.RT.Request.UserPopulation",
+                            request->population().user_population(),
+                            ChromeUserPopulation::UserPopulation_MAX + 1);
+  std::string req_data;
+  request->SerializeToString(&req_data);
+
+  auto resource_request = GetResourceRequest();
+  if (access_token_string.has_value()) {
+    resource_request->headers.SetHeader(
+        net::HttpRequestHeaders::kAuthorization,
+        base::StrCat({kAuthHeaderBearer, access_token_string.value()}));
+  }
+  base::UmaHistogramBoolean("SafeBrowsing.RT.HasTokenInRequest",
+                            access_token_string.has_value());
+
+  SendRequestInternal(std::move(resource_request), req_data, url,
+                      std::move(response_callback));
+
+  base::PostTask(
+      FROM_HERE, CreateTaskTraits(ThreadID::IO),
+      base::BindOnce(
+          std::move(request_callback), std::move(request),
+          access_token_string.has_value() ? access_token_string.value() : ""));
 }
 
 void RealTimeUrlLookupServiceBase::SendRequestInternal(
@@ -274,6 +326,15 @@ void RealTimeUrlLookupServiceBase::OnURLLoaderComplete(
 
   delete it->first;
   pending_requests_.erase(it);
+}
+
+std::unique_ptr<network::ResourceRequest>
+RealTimeUrlLookupServiceBase::GetResourceRequest() {
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = GetRealTimeLookupUrl();
+  resource_request->load_flags = net::LOAD_DISABLE_CACHE;
+  resource_request->method = "POST";
+  return resource_request;
 }
 
 void RealTimeUrlLookupServiceBase::Shutdown() {

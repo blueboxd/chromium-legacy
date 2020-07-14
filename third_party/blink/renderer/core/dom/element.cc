@@ -2187,11 +2187,10 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
   GetDocument().IncDOMTreeVersion();
 
   if (name == html_names::kIdAttr) {
-    AtomicString old_id = GetElementData()->IdForStyleResolution();
     AtomicString new_id = MakeIdForStyleResolution(
         params.new_value, GetDocument().InQuirksMode());
-    if (new_id != old_id) {
-      GetElementData()->SetIdForStyleResolution(new_id);
+    if (new_id != GetElementData()->IdForStyleResolution()) {
+      AtomicString old_id = GetElementData()->SetIdForStyleResolution(new_id);
       GetDocument().GetStyleEngine().IdChangedForElement(old_id, new_id, *this);
     }
   } else if (name == html_names::kClassAttr) {

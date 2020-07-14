@@ -136,9 +136,7 @@ class CONTENT_EXPORT NavigationHandle {
   virtual const GURL& GetSearchableFormURL() = 0;
   virtual const std::string& GetSearchableFormEncoding() = 0;
 
-  // Returns the reload type for this navigation. Note that renderer-initiated
-  // reloads (via location.reload()) won't count as a reload and do return
-  // ReloadType::NONE.
+  // Returns the reload type for this navigation.
   virtual ReloadType GetReloadType() = 0;
 
   // Returns the restore type for this navigation. RestoreType::NONE is returned

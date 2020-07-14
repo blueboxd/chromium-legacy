@@ -36,6 +36,7 @@ void NavigationHandleObserver::DidStartNavigation(
   frame_tree_node_id_ = navigation_handle->GetFrameTreeNodeId();
   navigation_id_ = navigation_handle->GetNavigationId();
   navigation_start_ = navigation_handle->NavigationStart();
+  reload_type_ = navigation_handle->GetReloadType();
 }
 
 void NavigationHandleObserver::DidFinishNavigation(

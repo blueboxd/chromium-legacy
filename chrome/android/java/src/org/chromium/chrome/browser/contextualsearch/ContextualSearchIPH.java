@@ -20,12 +20,14 @@ import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.feature_engagement.TriggerState;
+import org.chromium.ui.widget.AnchoredPopupWindow;
 import org.chromium.ui.widget.RectProvider;
 
 /**
  * Helper class for displaying In-Product Help UI for Contextual Search.
  */
 public class ContextualSearchIPH {
+    private static final int FLOATING_BUBBLE_SPACING_FACTOR = 10;
     private View mParentView;
     private ContextualSearchPanel mSearchPanel;
     private TextBubble mHelpBubble;
@@ -174,6 +176,7 @@ public class ContextualSearchIPH {
             mDismissListener = null;
         }
 
+        maybeSetPreferredOrientation();
         mHelpBubble.show();
         mIsShowing = true;
     }
@@ -194,16 +197,34 @@ public class ContextualSearchIPH {
         int yInsetPx = mParentView.getResources().getDimensionPixelOffset(
                 R.dimen.contextual_search_bubble_y_inset);
         if (!mIsPositionedByPanel) {
-            // Position the bubble to point to the tap location, since there's no panel, just a
-            // selected word.  It would be better to point to the rectangle of the selected word,
-            // but that's not easy to get.
-            return new Rect(mFloatingBubbleAnchorPoint.x, mFloatingBubbleAnchorPoint.y,
-                    mFloatingBubbleAnchorPoint.x, mFloatingBubbleAnchorPoint.y);
+            // Position the bubble to point to an adjusted tap location, since there's no panel,
+            // just a selected word.  It would be better to point to the rectangle of the selected
+            // word, but that's not easy to get.
+            int adjustFactor = shouldPositionBubbleBelowArrow() ? -1 : 1;
+            int yAdjust = FLOATING_BUBBLE_SPACING_FACTOR * yInsetPx * adjustFactor;
+            return new Rect(mFloatingBubbleAnchorPoint.x, mFloatingBubbleAnchorPoint.y + yAdjust,
+                    mFloatingBubbleAnchorPoint.x, mFloatingBubbleAnchorPoint.y + yAdjust);
         }
 
         Rect anchorRect = mSearchPanel.getPanelRect();
         anchorRect.top -= yInsetPx;
         return anchorRect;
+    }
+
+    /** Overrides the preferred orientation if the bubble is not anchored to the panel. */
+    private void maybeSetPreferredOrientation() {
+        if (mIsPositionedByPanel) return;
+
+        mHelpBubble.setPreferredVerticalOrientation(shouldPositionBubbleBelowArrow()
+                        ? AnchoredPopupWindow.VerticalOrientation.BELOW
+                        : AnchoredPopupWindow.VerticalOrientation.ABOVE);
+    }
+
+    /** @return whether the bubble should be positioned below it's arrow pointer. */
+    private boolean shouldPositionBubbleBelowArrow() {
+        // The bubble looks best when above the arrow, so we use that for most of the screen,
+        // but needs to appear below the arrow near the top.
+        return mFloatingBubbleAnchorPoint.y < mParentView.getHeight() / 3;
     }
 
     /**

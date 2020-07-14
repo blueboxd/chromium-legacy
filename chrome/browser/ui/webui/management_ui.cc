@@ -114,6 +114,9 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
     {kManagementOnBulkDataEntryEvent, IDS_MANAGEMENT_TEXT_ENTERED_EVENT},
     {kManagementOnBulkDataEntryVisibleData,
      IDS_MANAGEMENT_TEXT_ENTERED_VISIBLE_DATA},
+    {kManagementOnPageVisitedEvent, IDS_MANAGEMENT_PAGE_VISITED_EVENT},
+    {kManagementOnPageVisitedVisibleData,
+     IDS_MANAGEMENT_PAGE_VISITED_VISIBLE_DATA},
   };
 
   AddLocalizedStringsBulk(source, kLocalizedStrings);

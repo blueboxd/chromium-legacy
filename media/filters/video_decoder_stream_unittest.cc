@@ -124,6 +124,7 @@ class VideoDecoderStreamTest
     if (GetParam().is_encrypted) {
       cdm_context_.reset(new StrictMock<MockCdmContext>());
 
+      EXPECT_CALL(*cdm_context_, RegisterEventCB(_)).Times(AnyNumber());
       EXPECT_CALL(*cdm_context_, GetDecryptor())
           .WillRepeatedly(Return(decryptor_.get()));
     }
@@ -514,8 +515,7 @@ class VideoDecoderStreamTest
   std::unique_ptr<FakeDemuxerStream> demuxer_stream_;
   std::unique_ptr<StrictMock<MockCdmContext>> cdm_context_;
 
-  // Use NiceMock since we don't care about most of calls on the decryptor,
-  // e.g. RegisterNewKeyCB().
+  // Use NiceMock since we don't care about most of calls on the decryptor.
   std::unique_ptr<NiceMock<MockDecryptor>> decryptor_;
 
   // References to the list of decoders to be select from by DecoderSelector.

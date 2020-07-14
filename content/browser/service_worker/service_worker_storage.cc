@@ -260,7 +260,7 @@ void ServiceWorkerStorage::FindRegistrationForIdOnly(
 }
 
 void ServiceWorkerStorage::GetRegistrationsForOrigin(
-    const GURL& origin,
+    const url::Origin& origin,
     GetRegistrationsDataCallback callback) {
   switch (state_) {
     case STORAGE_STATE_DISABLED:
@@ -1359,7 +1359,8 @@ void ServiceWorkerStorage::DeleteRegistrationFromDB(
   // TODO(nhiroki): Add convenient method to ServiceWorkerDatabase to check the
   // unique origin list.
   RegistrationList registrations;
-  status = database->GetRegistrationsForOrigin(origin, &registrations, nullptr);
+  status = database->GetRegistrationsForOrigin(url::Origin::Create(origin),
+                                               &registrations, nullptr);
   if (status != ServiceWorkerDatabase::Status::kOk) {
     original_task_runner->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), OriginState::kKeep,
@@ -1399,7 +1400,7 @@ void ServiceWorkerStorage::FindForClientUrlInDB(
   GURL origin = client_url.GetOrigin();
   RegistrationList registration_data_list;
   ServiceWorkerDatabase::Status status = database->GetRegistrationsForOrigin(
-      origin, &registration_data_list, nullptr);
+      url::Origin::Create(origin), &registration_data_list, nullptr);
   if (status != ServiceWorkerDatabase::Status::kOk) {
     original_task_runner->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
@@ -1435,7 +1436,7 @@ void ServiceWorkerStorage::FindForScopeInDB(
   GURL origin = scope.GetOrigin();
   RegistrationList registration_data_list;
   ServiceWorkerDatabase::Status status = database->GetRegistrationsForOrigin(
-      origin, &registration_data_list, nullptr);
+      url::Origin::Create(origin), &registration_data_list, nullptr);
   if (status != ServiceWorkerDatabase::Status::kOk) {
     original_task_runner->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),

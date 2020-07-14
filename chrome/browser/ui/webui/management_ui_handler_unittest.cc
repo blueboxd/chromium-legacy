@@ -1153,10 +1153,12 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
   SetConnectorPolicyValue(policy::key::kOnSecurityEventEnterpriseConnector,
                           "[{\"service_provider\":\"google\"}]",
                           chrome_policies);
+  SetConnectorPolicyValue(policy::key::kEnterpriseRealTimeUrlCheckMode, "1",
+                          chrome_policies);
 
   info = handler_.GetThreatProtectionInfo(profile_no_domain.get());
   info.GetAsDictionary(&threat_protection_info);
-  EXPECT_EQ(4u, threat_protection_info->FindListKey("info")->GetList().size());
+  EXPECT_EQ(5u, threat_protection_info->FindListKey("info")->GetList().size());
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION),
       base::UTF8ToUTF16(*threat_protection_info->FindStringKey("description")));
@@ -1184,6 +1186,12 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
     base::Value value(base::Value::Type::DICTIONARY);
     value.SetStringKey("title", kManagementEnterpriseReportingEvent);
     value.SetStringKey("permission", kManagementEnterpriseReportingVisibleData);
+    expected_info.Append(std::move(value));
+  }
+  {
+    base::Value value(base::Value::Type::DICTIONARY);
+    value.SetStringKey("title", kManagementOnPageVisitedEvent);
+    value.SetStringKey("permission", kManagementOnPageVisitedVisibleData);
     expected_info.Append(std::move(value));
   }
 

@@ -250,8 +250,8 @@ class TestBluetoothAdapterObserver : public BluetoothAdapter::Observer {
   device::BluetoothDevice::ServiceDataMap last_service_data_map_;
   device::BluetoothDevice::ManufacturerDataMap last_manufacturer_data_map_;
 
-  base::Closure discovering_changed_callback_;
-  base::Closure discovery_change_completed_callback_;
+  base::RepeatingClosure discovering_changed_callback_;
+  base::RepeatingClosure discovery_change_completed_callback_;
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
   int device_paired_changed_count_;

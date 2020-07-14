@@ -1379,7 +1379,7 @@ void SkiaOutputSurfaceImplOnGpu::EndAccessImages(
 
 sk_sp<GrContextThreadSafeProxy>
 SkiaOutputSurfaceImplOnGpu::GetGrContextThreadSafeProxy() {
-  return gr_context()->threadSafeProxy();
+  return gr_context() ? gr_context()->threadSafeProxy() : nullptr;
 }
 
 void SkiaOutputSurfaceImplOnGpu::ReleaseImageContexts(

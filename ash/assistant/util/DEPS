@@ -2,6 +2,7 @@ include_rules = [
   "-ash",
   "+ash/assistant/model",
   "+ash/assistant/util",
+  "+ash/public/cpp/vector_icons",
   "+net",
   "+ui/base",
   "+ui/gfx",

@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_ENTERPRISE_REPORTING_REPORTING_DELEGATE_FACTORY_DESKTOP_H_
 #define CHROME_BROWSER_ENTERPRISE_REPORTING_REPORTING_DELEGATE_FACTORY_DESKTOP_H_
 
-#include <memory>
-
-#include "components/enterprise/browser/reporting/browser_report_generator.h"
 #include "components/enterprise/browser/reporting/reporting_delegate_factory.h"
 
+#include <memory>
+
 namespace enterprise_reporting {
+
+class BrowserReportGenerator;
+class ProfileReportGenerator;
 
 // Desktop implementation of the reporting delegate factory. Creates desktop-
 // specific delegates for the enterprise reporting classes.
@@ -25,6 +27,9 @@ class ReportingDelegateFactoryDesktop : public ReportingDelegateFactory {
 
   std::unique_ptr<BrowserReportGenerator::Delegate>
   GetBrowserReportGeneratorDelegate() override;
+
+  std::unique_ptr<ProfileReportGenerator::Delegate>
+  GetProfileReportGeneratorDelegate() override;
 };
 
 }  // namespace enterprise_reporting

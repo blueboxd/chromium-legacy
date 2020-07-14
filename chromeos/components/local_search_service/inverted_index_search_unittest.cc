@@ -25,8 +25,13 @@ using TermOccurrence = std::vector<std::pair<std::string, uint32_t>>;
 }  // namespace
 
 class InvertedIndexSearchTest : public testing::Test {
+  void SetUp() override {
+    search_ = std::make_unique<InvertedIndexSearch>(IndexId::kCrosSettings,
+                                                    nullptr /* local_state */);
+  }
+
  protected:
-  InvertedIndexSearch search_;
+  std::unique_ptr<InvertedIndexSearch> search_;
 };
 
 TEST_F(InvertedIndexSearchTest, Add) {
@@ -37,20 +42,20 @@ TEST_F(InvertedIndexSearchTest, Add) {
       {"id2", {{"cid_3", "help article on wi-fi"}}}};
 
   const std::vector<Data> data = CreateTestData(data_to_register);
-  search_.AddOrUpdate(data);
-  EXPECT_EQ(search_.GetSize(), 2u);
+  search_->AddOrUpdate(data);
+  EXPECT_EQ(search_->GetSize(), 2u);
 
   {
     // "network" does not exist in the index.
     const TermOccurrence doc_with_freq =
-        search_.FindTermForTesting(base::UTF8ToUTF16("network"));
+        search_->FindTermForTesting(base::UTF8ToUTF16("network"));
     EXPECT_TRUE(doc_with_freq.empty());
   }
 
   {
     // "help" exists in the index.
     const TermOccurrence doc_with_freq =
-        search_.FindTermForTesting(base::UTF8ToUTF16("help"));
+        search_->FindTermForTesting(base::UTF8ToUTF16("help"));
     EXPECT_EQ(doc_with_freq.size(), 2u);
     EXPECT_EQ(doc_with_freq[0].first, "id1");
     EXPECT_EQ(doc_with_freq[0].second, 3u);
@@ -61,25 +66,25 @@ TEST_F(InvertedIndexSearchTest, Add) {
   {
     // "wifi" exists in the index but "wi-fi" doesn't because of normalization.
     TermOccurrence doc_with_freq =
-        search_.FindTermForTesting(base::UTF8ToUTF16("wifi"));
+        search_->FindTermForTesting(base::UTF8ToUTF16("wifi"));
     EXPECT_EQ(doc_with_freq.size(), 2u);
     EXPECT_EQ(doc_with_freq[0].first, "id1");
     EXPECT_EQ(doc_with_freq[0].second, 2u);
     EXPECT_EQ(doc_with_freq[1].first, "id2");
     EXPECT_EQ(doc_with_freq[1].second, 1u);
 
-    doc_with_freq = search_.FindTermForTesting(base::UTF8ToUTF16("wi-fi"));
+    doc_with_freq = search_->FindTermForTesting(base::UTF8ToUTF16("wi-fi"));
     EXPECT_TRUE(doc_with_freq.empty());
 
     // "WiFi" doesn't exist because the index stores normalized word.
-    doc_with_freq = search_.FindTermForTesting(base::UTF8ToUTF16("WiFi"));
+    doc_with_freq = search_->FindTermForTesting(base::UTF8ToUTF16("WiFi"));
     EXPECT_TRUE(doc_with_freq.empty());
   }
 
   {
     // "this" does not exist in the index because it's a stopword
     const TermOccurrence doc_with_freq =
-        search_.FindTermForTesting(base::UTF8ToUTF16("this"));
+        search_->FindTermForTesting(base::UTF8ToUTF16("this"));
     EXPECT_TRUE(doc_with_freq.empty());
   }
 }
@@ -92,8 +97,8 @@ TEST_F(InvertedIndexSearchTest, Update) {
       {"id2", {{"cid_3", "help article on wi-fi"}}}};
 
   const std::vector<Data> data = CreateTestData(data_to_register);
-  search_.AddOrUpdate(data);
-  EXPECT_EQ(search_.GetSize(), 2u);
+  search_->AddOrUpdate(data);
+  EXPECT_EQ(search_->GetSize(), 2u);
 
   const std::map<std::string, std::vector<ContentWithId>> data_to_update = {
       {"id1",
@@ -102,12 +107,12 @@ TEST_F(InvertedIndexSearchTest, Update) {
       {"id3", {{"cid_3", "Google Map"}}}};
 
   const std::vector<Data> updated_data = CreateTestData(data_to_update);
-  search_.AddOrUpdate(updated_data);
-  EXPECT_EQ(search_.GetSize(), 3u);
+  search_->AddOrUpdate(updated_data);
+  EXPECT_EQ(search_->GetSize(), 3u);
 
   {
     const TermOccurrence doc_with_freq =
-        search_.FindTermForTesting(base::UTF8ToUTF16("bluetooth"));
+        search_->FindTermForTesting(base::UTF8ToUTF16("bluetooth"));
     EXPECT_EQ(doc_with_freq.size(), 1u);
     EXPECT_EQ(doc_with_freq[0].first, "id1");
     EXPECT_EQ(doc_with_freq[0].second, 1u);
@@ -115,7 +120,7 @@ TEST_F(InvertedIndexSearchTest, Update) {
 
   {
     const TermOccurrence doc_with_freq =
-        search_.FindTermForTesting(base::UTF8ToUTF16("wifi"));
+        search_->FindTermForTesting(base::UTF8ToUTF16("wifi"));
     EXPECT_EQ(doc_with_freq.size(), 1u);
     EXPECT_EQ(doc_with_freq[0].first, "id2");
     EXPECT_EQ(doc_with_freq[0].second, 1u);
@@ -123,7 +128,7 @@ TEST_F(InvertedIndexSearchTest, Update) {
 
   {
     const TermOccurrence doc_with_freq =
-        search_.FindTermForTesting(base::UTF8ToUTF16("google"));
+        search_->FindTermForTesting(base::UTF8ToUTF16("google"));
     EXPECT_EQ(doc_with_freq.size(), 2u);
     EXPECT_EQ(doc_with_freq[0].first, "id1");
     EXPECT_EQ(doc_with_freq[0].second, 2u);
@@ -140,14 +145,14 @@ TEST_F(InvertedIndexSearchTest, Delete) {
       {"id2", {{"cid_3", "help article on wi-fi"}}}};
 
   const std::vector<Data> data = CreateTestData(data_to_register);
-  search_.AddOrUpdate(data);
-  EXPECT_EQ(search_.GetSize(), 2u);
+  search_->AddOrUpdate(data);
+  EXPECT_EQ(search_->GetSize(), 2u);
 
-  EXPECT_EQ(search_.Delete({"id1", "id3"}), 1u);
+  EXPECT_EQ(search_->Delete({"id1", "id3"}), 1u);
 
   {
     const TermOccurrence doc_with_freq =
-        search_.FindTermForTesting(base::UTF8ToUTF16("wifi"));
+        search_->FindTermForTesting(base::UTF8ToUTF16("wifi"));
     EXPECT_EQ(doc_with_freq.size(), 1u);
     EXPECT_EQ(doc_with_freq[0].first, "id2");
     EXPECT_EQ(doc_with_freq[0].second, 1u);
@@ -165,40 +170,40 @@ TEST_F(InvertedIndexSearchTest, Find) {
   // Nothing has been added to the index.
   std::vector<Result> results;
   EXPECT_EQ(
-      search_.Find(base::UTF8ToUTF16("network"), /*max_results=*/10, &results),
+      search_->Find(base::UTF8ToUTF16("network"), /*max_results=*/10, &results),
       ResponseStatus::kEmptyIndex);
   EXPECT_TRUE(results.empty());
 
   // Data is added and then deleted from index, making the index empty.
-  search_.AddOrUpdate(data);
-  EXPECT_EQ(search_.GetSize(), 2u);
-  EXPECT_EQ(search_.Delete({"id1", "id2"}), 2u);
-  EXPECT_EQ(search_.GetSize(), 0u);
+  search_->AddOrUpdate(data);
+  EXPECT_EQ(search_->GetSize(), 2u);
+  EXPECT_EQ(search_->Delete({"id1", "id2"}), 2u);
+  EXPECT_EQ(search_->GetSize(), 0u);
 
   EXPECT_EQ(
-      search_.Find(base::UTF8ToUTF16("network"), /*max_results=*/10, &results),
+      search_->Find(base::UTF8ToUTF16("network"), /*max_results=*/10, &results),
       ResponseStatus::kEmptyIndex);
   EXPECT_TRUE(results.empty());
 
   // Index is populated again, but query is empty.
-  search_.AddOrUpdate(data);
-  EXPECT_EQ(search_.GetSize(), 2u);
+  search_->AddOrUpdate(data);
+  EXPECT_EQ(search_->GetSize(), 2u);
 
-  EXPECT_EQ(search_.Find(base::UTF8ToUTF16(""), /*max_results=*/10, &results),
+  EXPECT_EQ(search_->Find(base::UTF8ToUTF16(""), /*max_results=*/10, &results),
             ResponseStatus::kEmptyQuery);
   EXPECT_TRUE(results.empty());
 
   // No document is found for a given query.
-  EXPECT_EQ(search_.Find(base::UTF8ToUTF16("networkstuff"), /*max_results=*/10,
-                         &results),
+  EXPECT_EQ(search_->Find(base::UTF8ToUTF16("networkstuff"), /*max_results=*/10,
+                          &results),
             ResponseStatus::kSuccess);
   EXPECT_TRUE(results.empty());
 
   {
     // A document is found.
     // Query's case is normalized.
-    EXPECT_EQ(search_.Find(base::UTF8ToUTF16("ANOTHER networkstuff"),
-                           /*max_results=*/10, &results),
+    EXPECT_EQ(search_->Find(base::UTF8ToUTF16("ANOTHER networkstuff"),
+                            /*max_results=*/10, &results),
               ResponseStatus::kSuccess);
     EXPECT_EQ(results.size(), 1u);
 
@@ -214,8 +219,8 @@ TEST_F(InvertedIndexSearchTest, Find) {
 
   {
     // Two documents are found.
-    EXPECT_EQ(search_.Find(base::UTF8ToUTF16("another help"),
-                           /*max_results=*/10, &results),
+    EXPECT_EQ(search_->Find(base::UTF8ToUTF16("another help"),
+                            /*max_results=*/10, &results),
               ResponseStatus::kSuccess);
     EXPECT_EQ(results.size(), 2u);
 
@@ -245,8 +250,8 @@ TEST_F(InvertedIndexSearchTest, Find) {
 
   {
     // Same as above,  but max number of results is set to 1.
-    EXPECT_EQ(search_.Find(base::UTF8ToUTF16("another help"), /*max_results=*/1,
-                           &results),
+    EXPECT_EQ(search_->Find(base::UTF8ToUTF16("another help"),
+                            /*max_results=*/1, &results),
               ResponseStatus::kSuccess);
     EXPECT_EQ(results.size(), 1u);
     EXPECT_EQ(results[0].id, "id1");
@@ -254,8 +259,8 @@ TEST_F(InvertedIndexSearchTest, Find) {
 
   {
     // Same as above, but set max_results to 0, meaning no max.
-    EXPECT_EQ(search_.Find(base::UTF8ToUTF16("another help"), /*max_results=*/0,
-                           &results),
+    EXPECT_EQ(search_->Find(base::UTF8ToUTF16("another help"),
+                            /*max_results=*/0, &results),
               ResponseStatus::kSuccess);
     EXPECT_EQ(results.size(), 2u);
   }

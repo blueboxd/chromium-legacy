@@ -167,6 +167,10 @@ class CORE_EXPORT NGConstraintSpace final {
     return static_cast<WritingMode>(bitfields_.writing_mode);
   }
 
+  WritingDirectionMode GetWritingDirection() const {
+    return {GetWritingMode(), Direction()};
+  }
+
   bool IsOrthogonalWritingModeRoot() const {
     return bitfields_.is_orthogonal_writing_mode_root;
   }

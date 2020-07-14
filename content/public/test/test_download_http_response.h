@@ -45,7 +45,8 @@ class TestDownloadHttpResponse {
     HttpResponseData(int64_t min_offset,
                      int64_t max_offset,
                      const std::string& response,
-                     bool is_transient);
+                     bool is_transient,
+                     bool delay_response);
     HttpResponseData(const HttpResponseData& other) = default;
 
     // The range for first byte position in range header to use this response.
@@ -57,6 +58,8 @@ class TestDownloadHttpResponse {
     // Whether the response data is transient and will be invalidated after
     // sending once.
     bool is_transient = false;
+
+    bool delay_response = false;
   };
 
   struct Parameters {
@@ -86,10 +89,13 @@ class TestDownloadHttpResponse {
     // later responses will be calculated from the parameters. If
     // |is_transient| is false, the |response| will be applied to the
     // given range request forever.
+    // if |delay_response| is true, the response body will be sent when
+    // SendDelayedResponse() is called.
     void SetResponseForRangeRequest(int64_t min_offset,
                                     int64_t max_offset,
                                     const std::string& response,
-                                    bool is_transient = false);
+                                    bool is_transient = false,
+                                    bool delay_response = false);
 
     // Contents of the ETag header field of the response.  No Etag header is
     // sent if this field is empty.
@@ -256,6 +262,9 @@ class TestDownloadHttpResponse {
   void SendResponse(const net::test_server::SendBytesCallback& send,
                     net::test_server::SendCompleteCallback done);
 
+  // Runs |delayed_response_callback_| to send the delayed response.
+  void SendDelayedResponse();
+
  private:
   // Parses the request headers.
   void ParseRequestHeader();
@@ -275,9 +284,9 @@ class TestDownloadHttpResponse {
   std::string GetDefaultResponseHeaders();
 
   // Gets response header and body for range request starts from
-  // |first_byte_position|.
+  // |first_byte_position|, and whether to delay sending the response.
   // Returns false if no specific responses are found.
-  bool GetResponseForRangeRequest(std::string* output);
+  bool GetResponseForRangeRequest(std::string* output, bool* delay_response);
 
   // Gets response body chunk based on random seed in |parameters_|.
   std::string GetResponseChunk(const net::HttpByteRange& buffer_range);
@@ -334,6 +343,11 @@ class TestDownloadHttpResponse {
   // Callback to run when the response is sent.
   OnResponseSentCallback on_response_sent_callback_;
 
+  // If |delay_response| is true in SetResponseForRangeRequest(), this
+  // callback will be used to send the delayed response when
+  // SendDelayedResponse() is called.
+  base::OnceClosure delayed_response_callback_;
+
   base::WeakPtrFactory<TestDownloadHttpResponse> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestDownloadHttpResponse);
@@ -369,6 +383,9 @@ class TestDownloadResponseHandler {
 
   // Wait for a certain number of requests to complete.
   void WaitUntilCompletion(size_t request_count);
+
+  // Called to dispatch all delayed responses if there are any.
+  void DispatchDelayedResponses();
 
   using CompletedRequests =
       std::vector<std::unique_ptr<TestDownloadHttpResponse::CompletedRequest>>;

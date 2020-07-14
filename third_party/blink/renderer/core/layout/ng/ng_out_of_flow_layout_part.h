@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_absolute_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/style/computed_style_base_constants.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -21,7 +22,6 @@ class LayoutBox;
 class LayoutObject;
 class NGBlockNode;
 class NGBoxFragmentBuilder;
-class NGConstraintSpace;
 class NGLayoutResult;
 class NGPhysicalContainerFragment;
 struct NGLogicalOutOfFlowPositionedNode;
@@ -120,6 +120,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
                                              const NGLogicalStaticPosition&,
                                              LogicalSize container_content_size,
                                              const ContainingBlockInfo&,
+                                             const WritingMode,
                                              const TextDirection,
                                              const LayoutBox* only_layout);
 
@@ -127,6 +128,14 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
 
   void AddOOFResultToFragmentainer(scoped_refptr<const NGLayoutResult> result,
                                    const wtf_size_t index);
+  NGConstraintSpace CreateConstraintSpaceForFragmentainerDescendant(
+      const NGBlockNode& descendant,
+      const LogicalSize& content_size,
+      const LayoutUnit block_offset,
+      const NGConstraintSpace& fragmentainer_constraint_space,
+      const WritingMode default_writing_mode) const;
+  const NGConstraintSpace& GetFragmentainerConstraintSpace(
+      const wtf_size_t index);
   scoped_refptr<const NGLayoutResult> GenerateFragment(
       NGBlockNode node,
       const LogicalSize& container_content_size_in_child_writing_mode,
@@ -137,6 +146,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   NGBoxFragmentBuilder* container_builder_;
   ContainingBlockInfo default_containing_block_;
   HashMap<const LayoutObject*, ContainingBlockInfo> containing_blocks_map_;
+  HashMap<wtf_size_t, NGConstraintSpace> fragmentainer_constraint_space_map_;
   const WritingMode writing_mode_;
   bool is_absolute_container_;
   bool is_fixed_container_;

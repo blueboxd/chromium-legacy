@@ -208,14 +208,14 @@ class SafeBrowsingPrivateEventRouterTest : public testing::Test {
             safe_browsing::DeepScanAccessPoint::UPLOAD, result, 12345);
   }
 
-  void TriggerOnUnscannedFileEvent() {
+  void TriggerOnUnscannedFileEvent(safe_browsing::EventResult result) {
     SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
         ->OnUnscannedFileEvent(
             GURL("https://evil.com/sensitive_data.txt"), "sensitive_data.txt",
             "sha256_of_data", "text/plain",
             SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
             safe_browsing::DeepScanAccessPoint::DOWNLOAD,
-            "filePasswordProtected", 12345);
+            "filePasswordProtected", 12345, result);
   }
 
   void SetReportingPolicy(bool enabled) {
@@ -741,14 +741,14 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnSensitiveDataEvent) {
                 SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleName));
 }
 
-TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnUnscannedFileEvent) {
+TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnUnscannedFileEvent_Allowed) {
   SetUpRouters(/*realtime_reporting_enable=*/true, /*authorized=*/true);
 
   base::Value report;
   EXPECT_CALL(*client_, UploadRealtimeReport_(_, _))
       .WillOnce(CaptureArg(&report));
 
-  TriggerOnUnscannedFileEvent();
+  TriggerOnUnscannedFileEvent(safe_browsing::EventResult::ALLOWED);
   base::RunLoop().RunUntilIdle();
 
   Mock::VerifyAndClearExpectations(client_.get());
@@ -780,6 +780,53 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnUnscannedFileEvent) {
   EXPECT_EQ("filePasswordProtected",
             *event->FindStringKey(
                 SafeBrowsingPrivateEventRouter::kKeyUnscannedReason));
+  EXPECT_EQ(
+      EventResultToString(safe_browsing::EventResult::ALLOWED),
+      *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyEventResult));
+}
+
+TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnUnscannedFileEvent_Blocked) {
+  SetUpRouters(/*realtime_reporting_enable=*/true, /*authorized=*/true);
+
+  base::Value report;
+  EXPECT_CALL(*client_, UploadRealtimeReport_(_, _))
+      .WillOnce(CaptureArg(&report));
+
+  TriggerOnUnscannedFileEvent(safe_browsing::EventResult::BLOCKED);
+  base::RunLoop().RunUntilIdle();
+
+  Mock::VerifyAndClearExpectations(client_.get());
+  EXPECT_EQ(base::Value::Type::DICTIONARY, report.type());
+  base::Value* event_list =
+      report.FindKey(policy::RealtimeReportingJobConfiguration::kEventListKey);
+  ASSERT_NE(nullptr, event_list);
+  EXPECT_EQ(base::Value::Type::LIST, event_list->type());
+  base::Value::ListView mutable_list = event_list->GetList();
+  ASSERT_EQ(1, (int)mutable_list.size());
+  base::Value wrapper = std::move(mutable_list[0]);
+  EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper.type());
+  base::Value* event =
+      wrapper.FindKey(SafeBrowsingPrivateEventRouter::kKeyUnscannedFileEvent);
+  ASSERT_NE(nullptr, event);
+
+  EXPECT_EQ(12345, *event->FindIntKey(
+                       SafeBrowsingPrivateEventRouter::kKeyContentSize));
+  EXPECT_EQ("text/plain", *event->FindStringKey(
+                              SafeBrowsingPrivateEventRouter::kKeyContentType));
+  EXPECT_EQ("sha256_of_data",
+            *event->FindStringKey(
+                SafeBrowsingPrivateEventRouter::kKeyDownloadDigestSha256));
+  EXPECT_EQ(
+      "sensitive_data.txt",
+      *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyFileName));
+  EXPECT_EQ(SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
+            *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyTrigger));
+  EXPECT_EQ("filePasswordProtected",
+            *event->FindStringKey(
+                SafeBrowsingPrivateEventRouter::kKeyUnscannedReason));
+  EXPECT_EQ(
+      EventResultToString(safe_browsing::EventResult::BLOCKED),
+      *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyEventResult));
 }
 
 TEST_F(SafeBrowsingPrivateEventRouterTest, TestProfileUsername) {

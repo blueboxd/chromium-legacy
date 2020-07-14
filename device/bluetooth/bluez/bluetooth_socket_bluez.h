@@ -50,7 +50,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothSocketBlueZ
                        const device::BluetoothUUID& uuid,
                        SecurityLevel security_level,
                        base::OnceClosure success_callback,
-                       ErrorCompletionOnceCallback error_callback);
+                       ErrorCompletionCallback error_callback);
 
   // Listens using this socket using a service published on |adapter|. The
   // service is either RFCOMM or L2CAP depending on |socket_type| and published
@@ -65,13 +65,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothSocketBlueZ
       const device::BluetoothUUID& uuid,
       const device::BluetoothAdapter::ServiceOptions& service_options,
       base::OnceClosure success_callback,
-      ErrorCompletionOnceCallback error_callback);
+      ErrorCompletionCallback error_callback);
 
   // BluetoothSocket:
   void Close() override;
-  void Disconnect(const base::Closure& callback) override;
-  void Accept(const AcceptCompletionCallback& success_callback,
-              const ErrorCompletionCallback& error_callback) override;
+  void Disconnect(base::OnceClosure callback) override;
+  void Accept(AcceptCompletionCallback success_callback,
+              ErrorCompletionCallback error_callback) override;
 
  protected:
   ~BluetoothSocketBlueZ() override;
@@ -84,16 +84,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothSocketBlueZ
   // Register the underlying profile client object with the Bluetooth Daemon.
   void RegisterProfile(BluetoothAdapterBlueZ* adapter,
                        base::OnceClosure success_callback,
-                       ErrorCompletionOnceCallback error_callback);
+                       ErrorCompletionCallback error_callback);
   void OnRegisterProfile(base::OnceClosure success_callback,
-                         ErrorCompletionOnceCallback error_callback,
+                         ErrorCompletionCallback error_callback,
                          BluetoothAdapterProfileBlueZ* profile);
-  void OnRegisterProfileError(ErrorCompletionOnceCallback error_callback,
+  void OnRegisterProfileError(ErrorCompletionCallback error_callback,
                               const std::string& error_message);
 
   // Called by dbus:: on completion of the ConnectProfile() method.
   void OnConnectProfile(base::OnceClosure success_callback);
-  void OnConnectProfileError(ErrorCompletionOnceCallback error_callback,
+  void OnConnectProfileError(ErrorCompletionCallback error_callback,
                              const std::string& error_name,
                              const std::string& error_message);
 

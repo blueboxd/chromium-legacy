@@ -12,7 +12,7 @@ import static org.junit.Assert.assertNull;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_HEIGHT;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_OVERVIEW;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_STACK_TAB_SWITCHER;
-import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_BAR_HEIGHT;
+import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_MARGIN;
 
 import android.support.test.annotation.UiThreadTest;
 import android.view.View;
@@ -67,7 +67,7 @@ public class TasksSurfaceViewBinderTest extends DummyUiActivityTestCase {
         assertNull(mTasksSurfaceView.getParent());
 
         mPropertyModel.set(BOTTOM_BAR_HEIGHT, 10);
-        mPropertyModel.set(TOP_BAR_HEIGHT, 20);
+        mPropertyModel.set(TOP_MARGIN, 20);
 
         mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
         assertEquals(mTasksSurfaceView.getVisibility(), View.VISIBLE);
@@ -90,7 +90,7 @@ public class TasksSurfaceViewBinderTest extends DummyUiActivityTestCase {
         assertNull(mTasksSurfaceView.getParent());
 
         mPropertyModel.set(BOTTOM_BAR_HEIGHT, 10);
-        mPropertyModel.set(TOP_BAR_HEIGHT, 20);
+        mPropertyModel.set(TOP_MARGIN, 20);
 
         mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
         assertEquals(mTasksSurfaceView.getVisibility(), View.VISIBLE);
@@ -130,12 +130,12 @@ public class TasksSurfaceViewBinderTest extends DummyUiActivityTestCase {
     @UiThreadTest
     @SmallTest
     public void testSetTopBarHeight() {
-        mPropertyModel.set(TOP_BAR_HEIGHT, 10);
+        mPropertyModel.set(TOP_MARGIN, 10);
         mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
         MarginLayoutParams layoutParams = (MarginLayoutParams) mTasksSurfaceView.getLayoutParams();
         assertEquals(10, layoutParams.topMargin);
 
-        mPropertyModel.set(TOP_BAR_HEIGHT, 20);
+        mPropertyModel.set(TOP_MARGIN, 20);
         layoutParams = (MarginLayoutParams) mTasksSurfaceView.getLayoutParams();
         assertEquals(20, layoutParams.topMargin);
     }

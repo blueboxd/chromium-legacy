@@ -174,21 +174,6 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
                                           std::move(error_callback));
   }
 
-  void PerformTDLSOperation(const dbus::ObjectPath& device_path,
-                            const std::string& operation,
-                            const std::string& peer,
-                            StringCallback callback,
-                            ErrorCallback error_callback) override {
-    dbus::MethodCall method_call(shill::kFlimflamDeviceInterface,
-                                 shill::kPerformTDLSOperationFunction);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendString(operation);
-    writer.AppendString(peer);
-    GetHelper(device_path)
-        ->CallStringMethodWithErrorCallback(&method_call, std::move(callback),
-                                            std::move(error_callback));
-  }
-
   void AddWakeOnPacketConnection(const dbus::ObjectPath& device_path,
                                  const net::IPEndPoint& ip_endpoint,
                                  base::OnceClosure callback,

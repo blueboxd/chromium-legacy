@@ -175,10 +175,18 @@ guestMessagePipe.registerHandler(Message.NAVIGATE, async (message) => {
   await advance(navigate.direction);
 });
 
+guestMessagePipe.registerHandler(Message.REQUEST_SAVE_FILE, async (message) => {
+  const {suggestedName, mimeType} =
+      /** @type {!RequestSaveFileMessage} */ (message);
+  const handle = await pickWritableFile(suggestedName, mimeType);
+  /** @type {!RequestSaveFileResponse} */
+  const response = {token: generateToken(handle)};
+  return response;
+});
+
 guestMessagePipe.registerHandler(Message.SAVE_COPY, async (message) => {
-  const {blob, suggestedName} = /** @type {!SaveCopyMessage} */ (message);
-  const fileSystemHandle = await pickWritableFile(suggestedName, blob.type);
-  const {handle} = await getFileFromHandle(fileSystemHandle);
+  const {blob, token} = /** @type {!SaveCopyMessage} */ (message);
+  const handle = tokenMap.get(token);
   // Note `handle` could be the same as a `FileSystemFileHandle` that exists in
   // `tokenMap`. Possibly even the `File` currently open. But that's OK. E.g.
   // the next overwrite-file request will just invoke `saveBlobToFile` in the
@@ -195,8 +203,8 @@ guestMessagePipe.registerHandler(Message.SAVE_COPY, async (message) => {
  */
 function pickWritableFile(suggestedName, mimeType) {
   const extension = suggestedName.split('.').reverse()[0];
-  // TODO(b/141587270): Add a default filename when it's supported by the native
-  // file api.
+  // TODO(b/161087799): Add a default filename when it's supported by the
+  // native file api.
   /** @type {!FilePickerOptions} */
   const options = {
     types: [

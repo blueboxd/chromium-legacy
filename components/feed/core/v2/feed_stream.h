@@ -36,6 +36,7 @@ class TickClock;
 }  // namespace base
 
 namespace offline_pages {
+class OfflinePageModel;
 class PrefetchService;
 }  // namespace offline_pages
 
@@ -43,6 +44,7 @@ namespace feed {
 class FeedNetwork;
 class FeedStore;
 class MetricsReporter;
+class OfflinePageSpy;
 class RefreshTaskScheduler;
 class StreamModel;
 class SurfaceUpdater;
@@ -101,6 +103,7 @@ class FeedStream : public FeedStreamApi,
              FeedNetwork* feed_network,
              FeedStore* feed_store,
              offline_pages::PrefetchService* prefetch_service,
+             offline_pages::OfflinePageModel* offline_page_model,
              const base::Clock* clock,
              const base::TickClock* tick_clock,
              const ChromeInfo& chrome_info);
@@ -288,6 +291,7 @@ class FeedStream : public FeedStreamApi,
   bool model_loading_in_progress_ = false;
   std::unique_ptr<SurfaceUpdater> surface_updater_;
   std::unique_ptr<OfflineSuggestionsProvider> offline_suggestions_provider_;
+  std::unique_ptr<OfflinePageSpy> offline_page_spy_;
   // The stream model. Null if not yet loaded.
   // Internally, this should only be changed by |LoadModel()| and
   // |UnloadModel()|.

@@ -184,10 +184,11 @@ class Xcode11LogParser(object):
                     xcresult, test['summaryRef']['id']['_value']))
             failure_message = []
             for failure in rootFailure['failureSummaries']['_values']:
+              failure_location = '<unknown>'
               if 'lineNumber' in failure:
                 failure_location = '%s:%s' % (failure['fileName'].get(
                     '_value', ''), failure['lineNumber'].get('_value', ''))
-              else:
+              elif 'fileName' in failure:
                 failure_location = failure['fileName'].get('_value', '')
               failure_message += [failure_location
                                  ] + failure['message']['_value'].splitlines()

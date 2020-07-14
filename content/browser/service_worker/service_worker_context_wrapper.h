@@ -172,7 +172,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       base::Optional<std::string> host_filter,
       GetInstalledRegistrationOriginsCallback callback) override;
   void GetAllOriginsInfo(GetUsageInfoCallback callback) override;
-  void DeleteForOrigin(const GURL& origin, ResultCallback callback) override;
+  void DeleteForOrigin(const url::Origin& origin,
+                       ResultCallback callback) override;
   void PerformStorageCleanup(base::OnceClosure callback) override;
   void CheckHasServiceWorker(const GURL& url,
                              CheckHasServiceWorkerCallback callback) override;
@@ -518,7 +519,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       FindRegistrationCallback callback,
       scoped_refptr<base::TaskRunner> callback_runner);
   void DeleteForOriginOnCoreThread(
-      const GURL& origin,
+      const url::Origin& origin,
       ResultCallback callback,
       scoped_refptr<base::TaskRunner> callback_runner);
   void FindRegistrationForScopeOnCoreThread(

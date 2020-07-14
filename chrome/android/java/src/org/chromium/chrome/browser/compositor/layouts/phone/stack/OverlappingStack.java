@@ -631,9 +631,9 @@ public class OverlappingStack extends Stack {
         // eventually when overview mode is visible. Hence, we pre-acknowledge the fact and assume
         // the bottom control height to be 0 here so that the animation is correctly set up.
         if (TabUiFeatureUtilities.isConditionalTabStripEnabled()) {
-            return mLayout.getHeight() - mLayout.getTopBrowserControlsHeight();
+            return mLayout.getHeight() - mLayout.getTopContentOffsetDp();
         }
-        return mLayout.getHeightMinusBrowserControls();
+        return mLayout.getHeightMinusContentOffsetsDp();
     }
 
     @Override

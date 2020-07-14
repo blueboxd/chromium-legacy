@@ -11,10 +11,6 @@
 #include "base/macros.h"
 #include "extensions/browser/extension_function.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace extensions {
 
 class NetworkingCastPrivateVerifyDestinationFunction
@@ -57,6 +53,7 @@ class NetworkingCastPrivateVerifyAndEncryptDataFunction
   DISALLOW_COPY_AND_ASSIGN(NetworkingCastPrivateVerifyAndEncryptDataFunction);
 };
 
+// Deprecated.
 class NetworkingCastPrivateSetWifiTDLSEnabledStateFunction
     : public ExtensionFunction {
  public:
@@ -70,17 +67,12 @@ class NetworkingCastPrivateSetWifiTDLSEnabledStateFunction
   // ExtensionFunction:
   ResponseAction Run() override;
 
-#if defined(OS_CHROMEOS)
-  void Success(const std::string& result);
-  void Failure(const std::string& error,
-               std::unique_ptr<base::DictionaryValue> error_data);
-#endif
-
  private:
   DISALLOW_COPY_AND_ASSIGN(
       NetworkingCastPrivateSetWifiTDLSEnabledStateFunction);
 };
 
+// Deprecated.
 class NetworkingCastPrivateGetWifiTDLSStatusFunction
     : public ExtensionFunction {
  public:
@@ -93,12 +85,6 @@ class NetworkingCastPrivateGetWifiTDLSStatusFunction
 
   // ExtensionFunction:
   ResponseAction Run() override;
-
-#if defined(OS_CHROMEOS)
-  void Success(const std::string& result);
-  void Failure(const std::string& error,
-               std::unique_ptr<base::DictionaryValue> error_data);
-#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingCastPrivateGetWifiTDLSStatusFunction);

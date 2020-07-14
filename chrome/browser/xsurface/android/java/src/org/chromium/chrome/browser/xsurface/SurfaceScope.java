@@ -22,4 +22,7 @@ public interface SurfaceScope {
     default SurfaceRenderer provideSurfaceRenderer() {
         return null;
     }
+
+    default void replaceDataStoreEntry(String key, byte[] data) {}
+    default void removeDataStoreEntry(String key) {}
 }

@@ -1220,7 +1220,7 @@ BASE_EXPORT bool IsPathExecutable(const FilePath& path) {
 
   ScopedFD fd = CreateAndOpenFdForTemporaryFileInDir(path, &tmp_file_path);
   if (fd.is_valid()) {
-    DeleteFile(tmp_file_path, false);
+    DeleteFile(tmp_file_path);
     long sysconf_result = sysconf(_SC_PAGESIZE);
     CHECK_GE(sysconf_result, 0);
     size_t pagesize = static_cast<size_t>(sysconf_result);

@@ -1084,19 +1084,12 @@ ScaledLinearHistogram::ScaledLinearHistogram(const std::string& name,
   CHECK_EQ(static_cast<Sample>(bucket_count), maximum - minimum + 2)
       << " ScaledLinearHistogram requires buckets of size 1";
 
-  // Normally, |histogram_| should have type LINEAR_HISTOGRAM or be
-  // inherited from it. However, if it's expired, it will be DUMMY_HISTOGRAM.
-  if (histogram_->GetHistogramType() == DUMMY_HISTOGRAM)
-    return;
-
   remainders_.resize(histogram_->bucket_count(), 0);
 }
 
 ScaledLinearHistogram::~ScaledLinearHistogram() = default;
 
 void ScaledLinearHistogram::AddScaledCount(Sample value, int count) {
-  if (histogram_->GetHistogramType() == DUMMY_HISTOGRAM)
-    return;
   if (count == 0)
     return;
   if (count < 0) {

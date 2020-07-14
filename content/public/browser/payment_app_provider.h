@@ -5,14 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_PAYMENT_APP_PROVIDER_H_
 #define CONTENT_PUBLIC_BROWSER_PAYMENT_APP_PROVIDER_H_
 
-#include <stdint.h>
-#include <memory>
-#include <utility>
-#include <vector>
-
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/stored_payment_app.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 
@@ -26,6 +20,7 @@ namespace content {
 
 class BrowserContext;
 class WebContents;
+struct SupportedDelegations;
 
 // This is providing the service worker based payment app related APIs to
 // Chrome layer. This class is a singleton, the instance of which can be
@@ -40,8 +35,6 @@ class CONTENT_EXPORT PaymentAppProvider {
   // Please see: content/browser/payments/payment_app_provider_impl.cc
   static PaymentAppProvider* GetInstance();
 
-  using PaymentApps = std::map<int64_t, std::unique_ptr<StoredPaymentApp>>;
-  using GetAllPaymentAppsCallback = base::OnceCallback<void(PaymentApps)>;
   using RegistrationIdCallback =
       base::OnceCallback<void(int64_t registration_id)>;
   using InvokePaymentAppCallback =
@@ -53,8 +46,6 @@ class CONTENT_EXPORT PaymentAppProvider {
       base::OnceCallback<void(payments::mojom::PaymentHandlerStatus status)>;
 
   // Should be accessed only on the UI thread.
-  virtual void GetAllPaymentApps(BrowserContext* browser_context,
-                                 GetAllPaymentAppsCallback callback) = 0;
   virtual void InvokePaymentApp(
       WebContents* web_contents,
       int64_t registration_id,

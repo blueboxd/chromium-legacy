@@ -767,16 +767,8 @@ url::Origin GetOriginForURLLoaderFactoryUnchecked(
   // make network requests on behalf of the real origin).
   //
   // TODO(lukasza): Cover MHTML main frames here.
-  if (navigation_request->IsForMhtmlSubframe()) {
-    // TODO(lukasza): https://crbug.com/1056949: Stop using
-    // mhtml.subframe.invalid as the precursor (once https://crbug.com/1056949
-    // is debugged OR once network::VerifyRequestInitiatorLock starts to compare
-    // precursors).
-    url::Origin mhtml_subframe_origin =
-        url::Origin::Create(GURL("https://mhtml.subframe.invalid"))
-            .DeriveNewOpaqueOrigin();
-    return mhtml_subframe_origin;
-  }
+  if (navigation_request->IsForMhtmlSubframe())
+    return url::Origin();
 
   // Srcdoc subframes need to inherit their origin from their parent frame.
   if (navigation_request->GetURL().IsAboutSrcdoc()) {
@@ -788,19 +780,11 @@ url::Origin GetOriginForURLLoaderFactoryUnchecked(
     return parent->GetLastCommittedOrigin();
   }
 
-  // TODO(lukasza): https://crbug.com/1056949: Stop using
-  // browser.initiated.invalid as the precursor (once https://crbug.com/1056949
-  // is debugged OR once network::VerifyRequestInitiatorLock starts to compare
-  // precursors).
-  url::Origin browser_initiated_fallback_origin =
-      url::Origin::Create(GURL("https://browser.initiated.invalid"))
-          .DeriveNewOpaqueOrigin();
-
   // In cases not covered above, URLLoaderFactory should be associated with the
   // origin of |common_params.url| and/or |common_params.initiator_origin|.
-  return url::Origin::Resolve(common_params.url,
-                              common_params.initiator_origin.value_or(
-                                  browser_initiated_fallback_origin));
+  return url::Origin::Resolve(
+      common_params.url,
+      common_params.initiator_origin.value_or(url::Origin()));
 }
 
 }  // namespace
@@ -1093,7 +1077,12 @@ NavigationRequest::NavigationRequest(
       navigation_ui_data_(std::move(navigation_ui_data)),
       state_(NOT_STARTED),
       restore_type_(entry ? entry->restore_type() : RestoreType::NONE),
-      reload_type_(entry ? entry->reload_type() : ReloadType::NONE),
+      // Some navigations, such as renderer-initiated subframe navigations,
+      // won't have a NavigationEntryImpl. Set |reload_type_| if applicable
+      // for them.
+      reload_type_(
+          entry ? entry->reload_type()
+                : NavigationTypeToReloadType(common_params_->navigation_type)),
       nav_entry_id_(entry ? entry->GetUniqueID() : 0),
       is_view_source_(false),
       bindings_(FrameNavigationEntry::kInvalidBindings),
@@ -4218,14 +4207,8 @@ url::Origin NavigationRequest::GetOriginForURLLoaderFactory() {
 
   // Check that |result| origin is allowed to be accessed from the process that
   // is the target of this navigation.
-  //
-  // TODO(lukasza): https://crbug.com/1056949: Stop excluding opaque origins
-  // from the security checks once the *.invalid diagnostics are no longer
-  // needed.
-  if (target_frame->ShouldBypassSecurityChecksForErrorPage(this) ||
-      result.opaque()) {
+  if (target_frame->ShouldBypassSecurityChecksForErrorPage(this))
     return result;
-  }
   int process_id = target_frame->GetProcess()->GetID();
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   CHECK(policy->CanAccessDataForOrigin(process_id, result));
@@ -4677,6 +4660,18 @@ bool NavigationRequest::GetIsOverridingUserAgent() {
 // static
 NavigationRequest* NavigationRequest::From(NavigationHandle* handle) {
   return static_cast<NavigationRequest*>(handle);
+}
+
+// static
+ReloadType NavigationRequest::NavigationTypeToReloadType(
+    mojom::NavigationType type) {
+  if (type == mojom::NavigationType::RELOAD)
+    return ReloadType::NORMAL;
+  if (type == mojom::NavigationType::RELOAD_BYPASSING_CACHE)
+    return ReloadType::BYPASSING_CACHE;
+  if (type == mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL)
+    return ReloadType::ORIGINAL_REQUEST_URL;
+  return ReloadType::NONE;
 }
 
 bool NavigationRequest::IsNavigationStarted() const {

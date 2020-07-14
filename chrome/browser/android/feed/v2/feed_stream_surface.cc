@@ -76,6 +76,21 @@ void FeedStreamSurface::StreamUpdate(
   Java_FeedStreamSurface_onStreamUpdated(env, java_ref_, j_data);
 }
 
+void FeedStreamSurface::ReplaceDataStoreEntry(base::StringPiece key,
+                                              base::StringPiece data) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_FeedStreamSurface_replaceDataStoreEntry(
+      env, java_ref_, base::android::ConvertUTF8ToJavaString(env, key),
+      base::android::ToJavaByteArray(
+          env, reinterpret_cast<const uint8_t*>(data.data()), data.size()));
+}
+
+void FeedStreamSurface::RemoveDataStoreEntry(base::StringPiece key) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_FeedStreamSurface_removeDataStoreEntry(
+      env, java_ref_, base::android::ConvertUTF8ToJavaString(env, key));
+}
+
 void FeedStreamSurface::LoadMore(JNIEnv* env,
                                  const JavaParamRef<jobject>& obj,
                                  const JavaParamRef<jobject>& callback_obj) {

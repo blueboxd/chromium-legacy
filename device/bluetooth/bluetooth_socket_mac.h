@@ -47,7 +47,7 @@ class BluetoothSocketMac : public BluetoothSocket {
   void Connect(IOBluetoothDevice* device,
                const BluetoothUUID& uuid,
                base::OnceClosure success_callback,
-               ErrorCompletionOnceCallback error_callback);
+               ErrorCompletionCallback error_callback);
 
   // Listens for incoming RFCOMM connections using this socket: Publishes an
   // RFCOMM service on the |adapter| as UUID |uuid| with Channel
@@ -60,7 +60,7 @@ class BluetoothSocketMac : public BluetoothSocket {
                          const BluetoothUUID& uuid,
                          const BluetoothAdapter::ServiceOptions& options,
                          base::OnceClosure success_callback,
-                         ErrorCompletionOnceCallback error_callback);
+                         ErrorCompletionCallback error_callback);
 
   // Listens for incoming L2CAP connections using this socket: Publishes an
   // L2CAP service on the |adapter| as UUID |uuid| with PSM |options.psm|, or an
@@ -73,20 +73,20 @@ class BluetoothSocketMac : public BluetoothSocket {
                         const BluetoothUUID& uuid,
                         const BluetoothAdapter::ServiceOptions& options,
                         base::OnceClosure success_callback,
-                        ErrorCompletionOnceCallback error_callback);
+                        ErrorCompletionCallback error_callback);
 
   // BluetoothSocket:
   void Close() override;
-  void Disconnect(const base::Closure& callback) override;
+  void Disconnect(base::OnceClosure callback) override;
   void Receive(int /* buffer_size */,
-               const ReceiveCompletionCallback& success_callback,
-               const ReceiveErrorCompletionCallback& error_callback) override;
+               ReceiveCompletionCallback success_callback,
+               ReceiveErrorCompletionCallback error_callback) override;
   void Send(scoped_refptr<net::IOBuffer> buffer,
             int buffer_size,
-            const SendCompletionCallback& success_callback,
-            const ErrorCompletionCallback& error_callback) override;
-  void Accept(const AcceptCompletionCallback& success_callback,
-              const ErrorCompletionCallback& error_callback) override;
+            SendCompletionCallback success_callback,
+            ErrorCompletionCallback error_callback) override;
+  void Accept(AcceptCompletionCallback success_callback,
+              ErrorCompletionCallback error_callback) override;
 
   // Callback that is invoked when the OS completes an SDP query.
   // |status| is the returned status from the SDP query, |device| is the
@@ -95,7 +95,7 @@ class BluetoothSocketMac : public BluetoothSocket {
   void OnSDPQueryComplete(IOReturn status,
                           IOBluetoothDevice* device,
                           base::OnceClosure success_callback,
-                          ErrorCompletionOnceCallback error_callback);
+                          ErrorCompletionCallback error_callback);
 
   // Called by BluetoothRfcommConnectionListener and
   // BluetoothL2capConnectionListener.
@@ -140,7 +140,7 @@ class BluetoothSocketMac : public BluetoothSocket {
     ConnectCallbacks();
     ~ConnectCallbacks();
     base::OnceClosure success_callback;
-    ErrorCompletionOnceCallback error_callback;
+    ErrorCompletionCallback error_callback;
   };
 
   BluetoothSocketMac();

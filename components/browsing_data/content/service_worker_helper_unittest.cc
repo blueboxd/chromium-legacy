@@ -62,7 +62,7 @@ TEST_F(CannedServiceWorkerHelperTest, Delete) {
   helper->Add(url::Origin::Create(origin1));
   helper->Add(url::Origin::Create(origin2));
   EXPECT_EQ(2u, helper->GetCount());
-  helper->DeleteServiceWorkers(origin2);
+  helper->DeleteServiceWorkers(url::Origin::Create(origin2));
   EXPECT_EQ(1u, helper->GetCount());
 }
 

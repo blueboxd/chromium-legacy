@@ -19,7 +19,6 @@
 #include "chromecast/graphics/cast_screen.h"
 #include "chromecast/public/graphics_properties_shlib.h"
 #include "ui/display/types/display_snapshot.h"
-#include "ui/display/types/native_display_delegate.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/ozone/public/ozone_platform.h"
 
@@ -127,26 +126,24 @@ void CastDisplayConfigurator::OnConfigurationChanged() {
       false /* force_initial_configure */));
 }
 
-void CastDisplayConfigurator::EnableDisplay() {
+void CastDisplayConfigurator::EnableDisplay(
+    display::ConfigureCallback callback) {
   if (!delegate_ || !display_)
     return;
 
   display::DisplayConfigurationParams display_config_params(
       display_->display_id(), gfx::Point(), display_->native_mode());
-  delegate_->Configure(display_config_params, base::BindOnce([](bool status) {
-                         LOG_IF(FATAL, !status) << "Failed to enable display";
-                       }));
+  delegate_->Configure(display_config_params, std::move(callback));
 }
 
-void CastDisplayConfigurator::DisableDisplay() {
+void CastDisplayConfigurator::DisableDisplay(
+    display::ConfigureCallback callback) {
   if (!delegate_ || !display_)
     return;
 
   display::DisplayConfigurationParams display_config_params(
       display_->display_id(), gfx::Point(), nullptr);
-  delegate_->Configure(display_config_params, base::BindOnce([](bool status) {
-                         LOG_IF(ERROR, !status) << "Failed to disable display";
-                       }));
+  delegate_->Configure(display_config_params, std::move(callback));
 }
 
 void CastDisplayConfigurator::ConfigureDisplayFromCommandLine() {

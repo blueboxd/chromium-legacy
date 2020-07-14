@@ -151,6 +151,9 @@ class BASE_EXPORT TimeDelta {
 #if defined(OS_FUCHSIA)
   static TimeDelta FromZxDuration(zx_duration_t nanos);
 #endif
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  static TimeDelta FromMachTime(uint64_t mach_time);
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
   // From Go's doc at https://golang.org/pkg/time/#ParseDuration
   //   [ParseDuration] parses a duration string. A duration string is

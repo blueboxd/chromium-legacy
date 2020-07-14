@@ -142,6 +142,7 @@ const char SafeBrowsingPrivateEventRouter::kKeyThreatType[] = "threatType";
 const char SafeBrowsingPrivateEventRouter::kKeyContentType[] = "contentType";
 const char SafeBrowsingPrivateEventRouter::kKeyContentSize[] = "contentSize";
 const char SafeBrowsingPrivateEventRouter::kKeyTrigger[] = "trigger";
+const char SafeBrowsingPrivateEventRouter::kKeyEventResult[] = "result";
 
 const char SafeBrowsingPrivateEventRouter::kKeyPasswordReuseEvent[] =
     "passwordReuseEvent";
@@ -555,7 +556,8 @@ void SafeBrowsingPrivateEventRouter::OnUnscannedFileEvent(
     const std::string& trigger,
     safe_browsing::DeepScanAccessPoint access_point,
     const std::string& reason,
-    const int64_t content_size) {
+    const int64_t content_size,
+    safe_browsing::EventResult event_result) {
   if (!IsRealtimeReportingEnabled())
     return;
 
@@ -567,7 +569,8 @@ void SafeBrowsingPrivateEventRouter::OnUnscannedFileEvent(
              const std::string& profile_user_name, const std::string& mime_type,
              const std::string& trigger,
              safe_browsing::DeepScanAccessPoint access_point,
-             const std::string& reason, const int64_t content_size) {
+             const std::string& reason, const int64_t content_size,
+             safe_browsing::EventResult event_result) {
             // Create a real-time event dictionary from the arguments and
             // report it.
             base::Value event(base::Value::Type::DICTIONARY);
@@ -583,10 +586,14 @@ void SafeBrowsingPrivateEventRouter::OnUnscannedFileEvent(
             if (content_size >= 0)
               event.SetIntKey(kKeyContentSize, content_size);
             event.SetStringKey(kKeyTrigger, trigger);
+            event.SetStringKey(
+                kKeyEventResult,
+                safe_browsing::EventResultToString(event_result));
             return event;
           },
           url.spec(), file_name, download_digest_sha256, GetProfileUserName(),
-          mime_type, trigger, access_point, reason, content_size));
+          mime_type, trigger, access_point, reason, content_size,
+          event_result));
 }
 
 void SafeBrowsingPrivateEventRouter::OnDangerousDownloadWarning(

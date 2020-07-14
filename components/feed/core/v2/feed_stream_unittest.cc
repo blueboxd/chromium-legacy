@@ -6,6 +6,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -29,6 +30,7 @@
 #include "components/feed/core/proto/v2/wire/action_request.pb.h"
 #include "components/feed/core/proto/v2/wire/request.pb.h"
 #include "components/feed/core/proto/v2/wire/there_and_back_again_data.pb.h"
+#include "components/feed/core/proto/v2/xsurface.pb.h"
 #include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/feed/core/v2/config.h"
 #include "components/feed/core/v2/feed_network.h"
@@ -42,7 +44,10 @@
 #include "components/feed/core/v2/test/proto_printer.h"
 #include "components/feed/core/v2/test/stream_builder.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
+#include "components/offline_pages/core/client_namespace_constants.h"
+#include "components/offline_pages/core/page_criteria.h"
 #include "components/offline_pages/core/prefetch/stub_prefetch_service.h"
+#include "components/offline_pages/core/stub_offline_page_model.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -114,6 +119,14 @@ std::vector<feedstore::StoredAction> ReadStoredActions(FeedStore* store) {
   return std::move(*cr.GetResult());
 }
 
+std::string SerializedOfflineBadgeContent() {
+  feedxsurface::OfflineBadgeContent testbadge;
+  std::string badge_serialized;
+  testbadge.set_available_offline(true);
+  testbadge.SerializeToString(&badge_serialized);
+  return badge_serialized;
+}
+
 // This is EXPECT_EQ, but also dumps the string values for ease of reading.
 #define EXPECT_STRINGS_EQUAL(WANT, GOT)                                       \
   {                                                                           \
@@ -160,6 +173,13 @@ class TestSurface : public FeedStream::SurfaceInterface {
 
     described_updates_.push_back(CurrentState());
   }
+  void ReplaceDataStoreEntry(base::StringPiece key,
+                             base::StringPiece data) override {
+    data_store_entries_[key.as_string()] = data.as_string();
+  }
+  void RemoveDataStoreEntry(base::StringPiece key) override {
+    data_store_entries_.erase(key.as_string());
+  }
 
   // Test functions.
 
@@ -175,6 +195,10 @@ class TestSurface : public FeedStream::SurfaceInterface {
     std::string result = base::JoinString(described_updates_, " -> ");
     described_updates_.clear();
     return result;
+  }
+
+  std::map<std::string, std::string> GetDataStoreEntries() const {
+    return data_store_entries_;
   }
 
   // The initial state of the stream, if it was received. This is nullopt if
@@ -227,6 +251,7 @@ class TestSurface : public FeedStream::SurfaceInterface {
   // The stream if it was attached using the constructor.
   FeedStream* stream_ = nullptr;
   std::vector<std::string> described_updates_;
+  std::map<std::string, std::string> data_store_entries_;
 };
 
 class TestFeedNetwork : public FeedNetwork {
@@ -426,6 +451,59 @@ class TestPrefetchService : public offline_pages::StubPrefetchService {
   int new_suggestions_available_call_count_ = 0;
 };
 
+class TestOfflinePageModel : public offline_pages::StubOfflinePageModel {
+ public:
+  // offline_pages::OfflinePageModel
+  void AddObserver(Observer* observer) override {
+    CHECK(observers_.insert(observer).second);
+  }
+  void RemoveObserver(Observer* observer) override {
+    CHECK_EQ(1UL, observers_.erase(observer));
+  }
+  void GetPagesWithCriteria(
+      const offline_pages::PageCriteria& criteria,
+      offline_pages::MultipleOfflinePageItemCallback callback) override {
+    std::vector<offline_pages::OfflinePageItem> result;
+    for (const offline_pages::OfflinePageItem& item : items_) {
+      if (MeetsCriteria(criteria, item)) {
+        result.push_back(item);
+      }
+    }
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), result));
+  }
+
+  // Test functions.
+
+  void AddTestPage(const GURL& url) {
+    offline_pages::OfflinePageItem item;
+    item.url = url;
+    item.client_id =
+        offline_pages::ClientId(offline_pages::kSuggestedArticlesNamespace, "");
+    items_.push_back(item);
+  }
+
+  std::vector<offline_pages::OfflinePageItem>& items() { return items_; }
+
+  void CallObserverOfflinePageAdded(
+      const offline_pages::OfflinePageItem& item) {
+    for (Observer* observer : observers_) {
+      observer->OfflinePageAdded(this, item);
+    }
+  }
+
+  void CallObserverOfflinePageDeleted(
+      const offline_pages::OfflinePageItem& item) {
+    for (Observer* observer : observers_) {
+      observer->OfflinePageDeleted(item);
+    }
+  }
+
+ private:
+  std::vector<offline_pages::OfflinePageItem> items_;
+  std::set<Observer*> observers_;
+};
+
 class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
  public:
   void SetUp() override {
@@ -471,7 +549,7 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
     chrome_info.version = base::Version({99, 1, 9911, 2});
     stream_ = std::make_unique<FeedStream>(
         &refresh_scheduler_, metrics_reporter_.get(), this, &profile_prefs_,
-        &network_, store_.get(), &prefetch_service_,
+        &network_, store_.get(), &prefetch_service_, &offline_page_model_,
         task_environment_.GetMockClock(), task_environment_.GetMockTickClock(),
         chrome_info);
 
@@ -542,6 +620,7 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
           task_environment_.GetMainThreadTaskRunner()));
   FakeRefreshTaskScheduler refresh_scheduler_;
   TestPrefetchService prefetch_service_;
+  TestOfflinePageModel offline_page_model_;
   std::unique_ptr<FeedStream> stream_;
   bool is_eula_accepted_ = true;
   bool is_offline_ = false;
@@ -1636,6 +1715,110 @@ TEST_F(FeedStreamTest, ScrubsUrlsInProvidedPrefetchSuggestions) {
   EXPECT_EQ("", suggestions[0].article_url.possibly_invalid_spec());
   EXPECT_EQ("", suggestions[0].thumbnail_url.possibly_invalid_spec());
   EXPECT_EQ("", suggestions[0].favicon_url.possibly_invalid_spec());
+}
+
+TEST_F(FeedStreamTest, OfflineBadgesArePopulatedInitially) {
+  // Add two offline pages. We exclude tab-bound pages, so only the first is
+  // used.
+  offline_page_model_.AddTestPage(GURL("http://content0/"));
+  offline_page_model_.AddTestPage(GURL("http://content1/"));
+  offline_page_model_.items()[1].client_id.name_space =
+      offline_pages::kLastNNamespace;
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  EXPECT_EQ((std::map<std::string, std::string>(
+                {{"app/badge0", SerializedOfflineBadgeContent()}})),
+            surface.GetDataStoreEntries());
+}
+
+TEST_F(FeedStreamTest, OfflineBadgesArePopulatedOnNewOfflineItemAdded) {
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  ASSERT_EQ((std::map<std::string, std::string>({})),
+            surface.GetDataStoreEntries());
+
+  // Add an offline page.
+  offline_page_model_.AddTestPage(GURL("http://content1/"));
+  offline_page_model_.CallObserverOfflinePageAdded(
+      offline_page_model_.items()[0]);
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1));
+
+  EXPECT_EQ((std::map<std::string, std::string>(
+                {{"app/badge1", SerializedOfflineBadgeContent()}})),
+            surface.GetDataStoreEntries());
+}
+
+TEST_F(FeedStreamTest, OfflineBadgesAreRemovedWhenOfflineItemRemoved) {
+  offline_page_model_.AddTestPage(GURL("http://content0/"));
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  ASSERT_EQ((std::map<std::string, std::string>(
+                {{"app/badge0", SerializedOfflineBadgeContent()}})),
+            surface.GetDataStoreEntries());
+
+  // Remove the offline page.
+  offline_page_model_.CallObserverOfflinePageDeleted(
+      offline_page_model_.items()[0]);
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1));
+
+  EXPECT_EQ((std::map<std::string, std::string>()),
+            surface.GetDataStoreEntries());
+}
+
+TEST_F(FeedStreamTest, OfflineBadgesAreProvidedToNewSurfaces) {
+  offline_page_model_.AddTestPage(GURL("http://content0/"));
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  TestSurface surface2(stream_.get());
+  WaitForIdleTaskQueue();
+
+  EXPECT_EQ((std::map<std::string, std::string>(
+                {{"app/badge0", SerializedOfflineBadgeContent()}})),
+            surface2.GetDataStoreEntries());
+}
+
+TEST_F(FeedStreamTest, OfflineBadgesAreRemovedWhenModelIsUnloaded) {
+  offline_page_model_.AddTestPage(GURL("http://content0/"));
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  stream_->UnloadModel();
+
+  // Offline badge no longer present.
+  EXPECT_EQ((std::map<std::string, std::string>()),
+            surface.GetDataStoreEntries());
+}
+
+TEST_F(FeedStreamTest, MultipleOfflineBadgesWithSameUrl) {
+  {
+    std::unique_ptr<StreamModelUpdateRequest> state =
+        MakeTypicalInitialModelState();
+    const feedwire::PrefetchMetadata& prefetch_metadata1 =
+        state->content[0].prefetch_metadata(0);
+    feedwire::PrefetchMetadata& prefetch_metadata2 =
+        *state->content[0].add_prefetch_metadata();
+    prefetch_metadata2 = prefetch_metadata1;
+    prefetch_metadata2.set_badge_id("app/badge0b");
+    response_translator_.InjectResponse(std::move(state));
+  }
+  offline_page_model_.AddTestPage(GURL("http://content0/"));
+
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  EXPECT_EQ((std::map<std::string, std::string>(
+                {{"app/badge0", SerializedOfflineBadgeContent()},
+                 {"app/badge0b", SerializedOfflineBadgeContent()}})),
+            surface.GetDataStoreEntries());
 }
 
 }  // namespace

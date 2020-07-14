@@ -159,7 +159,7 @@ void ServiceWorkerStorageControlImpl::GetRegistrationsForOrigin(
     const GURL& origin,
     GetRegistrationsForOriginCallback callback) {
   storage_->GetRegistrationsForOrigin(
-      origin,
+      url::Origin::Create(origin),
       base::BindOnce(&DidGetRegistrationsForOrigin, std::move(callback)));
 }
 

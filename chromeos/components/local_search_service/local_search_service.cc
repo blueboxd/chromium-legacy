@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "chromeos/components/local_search_service/inverted_index_search.h"
 #include "chromeos/components/local_search_service/linear_map_search.h"
 
 namespace chromeos {
@@ -20,8 +21,6 @@ Index* LocalSearchService::GetIndex(IndexId index_id,
                                     PrefService* local_state) {
   auto it = indices_.find(index_id);
   if (it == indices_.end()) {
-    // TODO(jiameng): allow inverted index in the next cl.
-    DCHECK_EQ(backend, Backend::kLinearMap);
     switch (backend) {
       case Backend::kLinearMap:
         it = indices_
@@ -29,9 +28,9 @@ Index* LocalSearchService::GetIndex(IndexId index_id,
                                         index_id, local_state))
                  .first;
         break;
-      default:
+      case Backend::kInvertedIndex:
         it = indices_
-                 .emplace(index_id, std::make_unique<LinearMapSearch>(
+                 .emplace(index_id, std::make_unique<InvertedIndexSearch>(
                                         index_id, local_state))
                  .first;
     }

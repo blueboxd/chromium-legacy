@@ -138,12 +138,6 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
   // TODO(ikilpatrick): Remove this flag as its not used anymore.
   bool HasOrthogonalFlowRoots() const { return has_orthogonal_flow_roots_; }
 
-  // Returns true if we have a descendant within this formatting context, which
-  // is potentially above our block-start edge.
-  bool MayHaveDescendantAboveBlockStart() const {
-    return may_have_descendant_above_block_start_;
-  }
-
   // Returns true if we aren't able to re-use this fragment if the
   // |NGConstraintSpace::PercentageResolutionBlockSize| changes.
   bool DependsOnPercentageBlockSize() const {

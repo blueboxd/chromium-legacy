@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "dbus/bus.h"
@@ -72,7 +73,7 @@ bool BluetoothAdapterProfileBlueZ::SetDelegate(
 
 void BluetoothAdapterProfileBlueZ::RemoveDelegate(
     const dbus::ObjectPath& device_path,
-    const base::Closure& unregistered_callback) {
+    base::OnceClosure unregistered_callback) {
   DVLOG(1) << object_path_.value() << " dev " << device_path.value()
            << ": RemoveDelegate";
 
@@ -87,23 +88,26 @@ void BluetoothAdapterProfileBlueZ::RemoveDelegate(
   DVLOG(1) << device_path.value() << " No delegates left, unregistering.";
 
   // No users left, release the profile.
+  auto copyable_callback =
+      base::AdaptCallbackForRepeating(std::move(unregistered_callback));
   bluez::BluezDBusManager::Get()
       ->GetBluetoothProfileManagerClient()
       ->UnregisterProfile(
-          object_path_, unregistered_callback,
-          base::Bind(&BluetoothAdapterProfileBlueZ::OnUnregisterProfileError,
-                     weak_ptr_factory_.GetWeakPtr(), unregistered_callback));
+          object_path_, copyable_callback,
+          base::BindOnce(
+              &BluetoothAdapterProfileBlueZ::OnUnregisterProfileError,
+              weak_ptr_factory_.GetWeakPtr(), copyable_callback));
 }
 
 void BluetoothAdapterProfileBlueZ::OnUnregisterProfileError(
-    const base::Closure& unregistered_callback,
+    base::OnceClosure unregistered_callback,
     const std::string& error_name,
     const std::string& error_message) {
   LOG(WARNING) << this->object_path().value()
                << ": Failed to unregister profile: " << error_name << ": "
                << error_message;
 
-  unregistered_callback.Run();
+  std::move(unregistered_callback).Run();
 }
 
 // bluez::BluetoothProfileServiceProvider::Delegate:

@@ -22,6 +22,7 @@
         --cr-toolbar-focused-min-height: 40px;
         --cr-toolbar-icon-container-size: 32px;
         --cr-toolbar-icon-margin: 8px 16px;
+        --cr-toolbar-search-field-narrow-mode-prompt-opacity: 0.7;
         --cr-toolbar-search-icon-margin-inline-start: 16px;
         --cr-toolbar-query-exists-min-height:
             var(--cr-toolbar-focused-min-height);
@@ -30,6 +31,12 @@
         display: flex;
         flex-basis: var(--cr-toolbar-field-width);
         transition: width 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :host {
+          --cr-toolbar-search-field-narrow-mode-prompt-opacity: 1;
+        }
       }
 
       /* Only search icon is visible in this mode */
@@ -50,10 +57,14 @@
         --cr-toolbar-search-field-term-margin: 0;
         --cr-toolbar-search-field-border-radius: 20px;
         --cr-toolbar-search-field-paper-spinner-margin: 0 12px;
-        --cr-toolbar-search-field-prompt-margin-inline-start: 140px;
         --cr-toolbar-search-field-input-text-color:
             var(--cr-primary-text-color);
         font-size: 13px;
+      }
+
+      :host([showing-search]) cr-toolbar-search-field {
+        background:
+            var(--cr-toolbar-search-field-background, rgba(0, 0, 0, 0.22));
       }
 
       :host(:focus-within[showing-search]) cr-toolbar-search-field {

@@ -44,9 +44,6 @@ AppServiceInstanceRegistryHelper::AppServiceInstanceRegistryHelper(
 AppServiceInstanceRegistryHelper::~AppServiceInstanceRegistryHelper() = default;
 
 void AppServiceInstanceRegistryHelper::ActiveUserChanged() {
-  if (!base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry))
-    return;
-
   proxy_ = apps::AppServiceProxyFactory::GetForProfile(
       ProfileManager::GetActiveUserProfile());
 }
@@ -59,9 +56,6 @@ void AppServiceInstanceRegistryHelper::AdditionalUserAddedToSession(
 void AppServiceInstanceRegistryHelper::OnActiveTabChanged(
     content::WebContents* old_contents,
     content::WebContents* new_contents) {
-  if (!base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry))
-    return;
-
   if (old_contents) {
     auto* window = old_contents->GetNativeView();
 
@@ -116,18 +110,12 @@ void AppServiceInstanceRegistryHelper::OnActiveTabChanged(
 void AppServiceInstanceRegistryHelper::OnTabReplaced(
     content::WebContents* old_contents,
     content::WebContents* new_contents) {
-  if (!base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry))
-    return;
-
   OnTabClosing(old_contents);
   OnTabInserted(new_contents);
 }
 
 void AppServiceInstanceRegistryHelper::OnTabInserted(
     content::WebContents* contents) {
-  if (!base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry))
-    return;
-
   std::string app_id = GetAppId(contents);
   aura::Window* window = GetWindow(contents);
 
@@ -152,9 +140,6 @@ void AppServiceInstanceRegistryHelper::OnTabInserted(
 
 void AppServiceInstanceRegistryHelper::OnTabClosing(
     content::WebContents* contents) {
-  if (!base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry))
-    return;
-
   aura::Window* window = GetWindow(contents);
 
   // When the tab is closed, if the window does not exists in the AppService
@@ -224,9 +209,6 @@ void AppServiceInstanceRegistryHelper::OnInstances(const std::string& app_id,
 
 void AppServiceInstanceRegistryHelper::OnSetShelfIDForBrowserWindowContents(
     content::WebContents* contents) {
-  if (!base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry))
-    return;
-
   aura::Window* window = GetWindow(contents);
   if (!window || !window->GetToplevelWindow())
     return;

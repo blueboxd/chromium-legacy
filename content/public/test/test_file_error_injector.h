@@ -67,6 +67,9 @@ class TestFileErrorInjector
     download::DownloadInterruptReason error;  // Error to inject.
     int64_t stream_offset = -1;     // Offset of the error stream.
     int64_t stream_bytes_written = -1;  // Bytes written to the error stream.
+    // If > 0, only write calls to this offset will generate errors.
+    // Otherwise, all file writes will generate errors.
+    int64_t data_write_offset = -1;
   };
 
   // Creates an instance.  May only be called once.

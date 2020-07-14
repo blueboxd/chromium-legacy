@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/layout/layout_geometry_map.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
@@ -760,9 +761,14 @@ bool LayoutBoxModelObject::HasAutoHeightOrContainingBlockWithAutoHeight(
 
 PhysicalOffset LayoutBoxModelObject::RelativePositionOffset() const {
   DCHECK(IsRelPositioned());
-  PhysicalOffset offset = AccumulateRelativePositionOffsets();
-
   LayoutBlock* containing_block = ContainingBlock();
+
+  // If this object was placed by LayoutNG it's offset already includes the
+  // relative adjustment.
+  if (IsLayoutNGContainingBlock(containing_block))
+    return PhysicalOffset();
+
+  PhysicalOffset offset = AccumulateRelativePositionOffsets();
 
   // Objects that shrink to avoid floats normally use available line width when
   // computing containing block width. However in the case of relative

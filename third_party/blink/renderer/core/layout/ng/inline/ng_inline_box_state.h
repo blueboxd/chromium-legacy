@@ -132,13 +132,16 @@ class CORE_EXPORT NGInlineLayoutStateStack {
                               NGLogicalLineItems* line_box);
 
   // Pop a box state stack.
-  NGInlineBoxState* OnCloseTag(NGLogicalLineItems*,
+  NGInlineBoxState* OnCloseTag(const NGConstraintSpace& space,
+                               NGLogicalLineItems*,
                                NGInlineBoxState*,
                                FontBaseline,
                                bool has_end_edge = true);
 
   // Compute all the pending positioning at the end of a line.
-  void OnEndPlaceItems(NGLogicalLineItems*, FontBaseline);
+  void OnEndPlaceItems(const NGConstraintSpace& space,
+                       NGLogicalLineItems*,
+                       FontBaseline);
 
   bool HasBoxFragments() const { return !box_data_list_.IsEmpty(); }
 
@@ -169,6 +172,8 @@ class CORE_EXPORT NGInlineLayoutStateStack {
   // Compute inline positions of fragments and boxes.
   LayoutUnit ComputeInlinePositions(NGLogicalLineItems*, LayoutUnit position);
 
+  void ApplyRelativePositioning(const NGConstraintSpace&, NGLogicalLineItems*);
+
   // Create box fragments. This function turns a flat list of children into
   // a box tree.
   void CreateBoxFragments(NGLogicalLineItems*);
@@ -180,12 +185,17 @@ class CORE_EXPORT NGInlineLayoutStateStack {
  private:
   // End of a box state, either explicitly by close tag, or implicitly at the
   // end of a line.
-  void EndBoxState(NGInlineBoxState*, NGLogicalLineItems*, FontBaseline);
+  void EndBoxState(const NGConstraintSpace&,
+                   NGInlineBoxState*,
+                   NGLogicalLineItems*,
+                   FontBaseline);
 
   void AddBoxFragmentPlaceholder(NGInlineBoxState*,
                                  NGLogicalLineItems*,
                                  FontBaseline);
-  void AddBoxData(NGInlineBoxState*, NGLogicalLineItems*);
+  void AddBoxData(const NGConstraintSpace&,
+                  NGInlineBoxState*,
+                  NGLogicalLineItems*);
 
   enum PositionPending { kPositionNotPending, kPositionPending };
 

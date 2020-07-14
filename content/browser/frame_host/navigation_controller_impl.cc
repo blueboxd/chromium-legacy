@@ -2238,13 +2238,15 @@ bool NavigationControllerImpl::ReloadFrame(FrameTreeNode* frame_tree_node) {
   FrameNavigationEntry* frame_entry = entry->GetFrameEntry(frame_tree_node);
   if (!frame_entry)
     return false;
+  ReloadType reload_type = ReloadType::NORMAL;
+  entry->set_reload_type(reload_type);
   std::unique_ptr<NavigationRequest> request = CreateNavigationRequestFromEntry(
-      frame_tree_node, entry, frame_entry, ReloadType::NORMAL,
+      frame_tree_node, entry, frame_entry, reload_type,
       false /* is_same_document_history_load */,
       false /* is_history_navigation_in_new_child */);
   if (!request)
     return false;
-  frame_tree_node->navigator().Navigate(std::move(request), ReloadType::NORMAL,
+  frame_tree_node->navigator().Navigate(std::move(request), reload_type,
                                         RestoreType::NONE);
   return true;
 }

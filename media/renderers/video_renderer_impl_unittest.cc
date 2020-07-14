@@ -107,24 +107,9 @@ class VideoRendererImplTest : public testing::Test {
     demuxer_stream_.set_video_decoder_config(TestVideoConfig::Normal());
 
     // We expect these to be called but we don't care how/when. Tests can
-    // customize the provided buffer returned via MakeDecoderBuffer().
+    // customize the provided buffer returned via OnDemuxerRead().
     ON_CALL(demuxer_stream_, OnRead(_))
-        .WillByDefault(Invoke(this, &VideoRendererImplTest::MakeDecoderBuffer));
-  }
-
-  void MakeDecoderBuffer(DemuxerStream::ReadCB& read_cb) {
-    scoped_refptr<DecoderBuffer> decoder_buffer(new DecoderBuffer(0));
-
-    // Set |decoder_buffer| timestamp such that it won't match any of the
-    // times provided to QueueFrames(). Otherwise the default timestamp of 0 may
-    // match some frames and not others, which causes non-uniform handling in
-    // DecoderStreamTraits.
-    decoder_buffer->set_timestamp(kNoTimestamp);
-
-    // Test hook for to specify a custom buffer duration.
-    decoder_buffer->set_duration(buffer_duration_);
-
-    std::move(read_cb).Run(DemuxerStream::kOk, decoder_buffer);
+        .WillByDefault(Invoke(this, &VideoRendererImplTest::OnDemuxerRead));
   }
 
   ~VideoRendererImplTest() override = default;
@@ -188,6 +173,35 @@ class VideoRendererImplTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  void OnDemuxerRead(DemuxerStream::ReadCB& read_cb) {
+    if (simulate_demuxer_stall_after_n_reads_ >= 0) {
+      if (simulate_demuxer_stall_after_n_reads_-- == 0) {
+        stalled_demixer_read_cb_ = std::move(read_cb);
+        return;
+      }
+    }
+
+    scoped_refptr<DecoderBuffer> decoder_buffer(new DecoderBuffer(0));
+
+    // Set |decoder_buffer| timestamp such that it won't match any of the
+    // times provided to QueueFrames(). Otherwise the default timestamp of 0 may
+    // match some frames and not others, which causes non-uniform handling in
+    // DecoderStreamTraits.
+    decoder_buffer->set_timestamp(kNoTimestamp);
+
+    // Test hook for to specify a custom buffer duration.
+    decoder_buffer->set_duration(buffer_duration_);
+
+    std::move(read_cb).Run(DemuxerStream::kOk, decoder_buffer);
+  }
+
+  bool IsDemuxerStalled() { return !!stalled_demixer_read_cb_; }
+
+  void UnstallDemuxer() {
+    EXPECT_TRUE(IsDemuxerStalled());
+    OnDemuxerRead(stalled_demixer_read_cb_);
+  }
+
   // Parses a string representation of video frames and generates corresponding
   // VideoFrame objects in |decode_results_|.
   //
@@ -234,7 +248,7 @@ class VideoRendererImplTest : public testing::Test {
     decode_results_.push_back(std::make_pair(status, frame));
   }
 
-  bool IsReadPending() { return !!decode_cb_; }
+  bool IsDecodePending() { return !!decode_cb_; }
 
   void WaitForError(PipelineStatus expected) {
     SCOPED_TRACE(base::StringPrintf("WaitForError(%d)", expected));
@@ -339,6 +353,10 @@ class VideoRendererImplTest : public testing::Test {
 
   bool expect_init_success_;
 
+  // Specifies how many reads should complete before demuxer stalls.
+  int simulate_demuxer_stall_after_n_reads_ = -1;
+  DemuxerStream::ReadCB stalled_demixer_read_cb_;
+
   // Use StrictMock<T> to catch missing/extra callbacks.
   class MockCB : public MockRendererClient {
    public:
@@ -351,7 +369,7 @@ class VideoRendererImplTest : public testing::Test {
 
   WallClockTimeSource time_source_;
 
-  // Duration set on DecoderBuffers. See MakeDecoderBuffer().
+  // Duration set on DecoderBuffers. See OnDemuxerRead().
   base::TimeDelta buffer_duration_;
 
  private:
@@ -680,7 +698,7 @@ TEST_F(VideoRendererImplTest, DestroyDuringOutstandingRead) {
   StartPlayingFrom(0);
 
   // Check that there is an outstanding Read() request.
-  EXPECT_TRUE(IsReadPending());
+  EXPECT_TRUE(IsDecodePending());
 
   Destroy();
 }
@@ -704,7 +722,7 @@ TEST_F(VideoRendererImplTest, RenderingStopsAfterFirstFrame) {
         .WillOnce(RunOnceClosure(event.GetClosure()));
     StartPlayingFrom(0);
 
-    EXPECT_TRUE(IsReadPending());
+    EXPECT_TRUE(IsDecodePending());
     SatisfyPendingDecodeWithEndOfStream();
 
     event.RunAndWait();
@@ -733,7 +751,7 @@ TEST_F(VideoRendererImplTest, RenderingStopsAfterOneFrameWithEOS) {
     StartPlayingFrom(0);
     renderer_->OnTimeProgressing();
 
-    EXPECT_TRUE(IsReadPending());
+    EXPECT_TRUE(IsDecodePending());
     SatisfyPendingDecodeWithEndOfStream();
     WaitForEnded();
 
@@ -1225,6 +1243,9 @@ class UnderflowTest
     if (test_type == UnderflowTestType::CANT_READ_WITHOUT_STALLING)
       ON_CALL(*decoder_, CanReadWithoutStalling()).WillByDefault(Return(false));
 
+    if (underflow_type == DEMUXER_UNDERFLOW) {
+      simulate_demuxer_stall_after_n_reads_ = 4;
+    }
     QueueFrames("0 20 40 60");
 
     {
@@ -1269,8 +1290,6 @@ class UnderflowTest
     {
       SCOPED_TRACE("Waiting for BUFFERING_HAVE_NOTHING");
       WaitableMessageLoopEvent event;
-      EXPECT_CALL(demuxer_stream_, IsReadPending())
-          .WillOnce(Return(underflow_type == DEMUXER_UNDERFLOW));
       EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING,
                                                    underflow_type))
           .WillOnce(RunOnceClosure(event.GetClosure()));
@@ -1283,7 +1302,8 @@ class UnderflowTest
     time_source_.StopTicking();
     renderer_->OnTimeStopped();
     EXPECT_EQ(0u, renderer_->frames_queued_for_testing());
-    ASSERT_TRUE(IsReadPending());
+    ASSERT_EQ(underflow_type == DEMUXER_UNDERFLOW, IsDemuxerStalled());
+    ASSERT_EQ(underflow_type == DECODER_UNDERFLOW, IsDecodePending());
 
     // Stopping time signals a confirmed underflow to VRI. Verify updates to
     // buffering limits.
@@ -1313,6 +1333,9 @@ class UnderflowTest
 TEST_P(UnderflowTest, UnderflowAndEosTest) {
   TestBufferToHaveEnoughThenUnderflow();
 
+  if (IsDemuxerStalled())
+    UnstallDemuxer();
+
   // Receiving end of stream should signal having enough.
   {
     SCOPED_TRACE("Waiting for BUFFERING_HAVE_ENOUGH");
@@ -1332,6 +1355,9 @@ TEST_P(UnderflowTest, UnderflowAndEosTest) {
 
 TEST_P(UnderflowTest, UnderflowAndRecoverTest) {
   TestBufferToHaveEnoughThenUnderflow();
+
+  if (IsDemuxerStalled())
+    UnstallDemuxer();
 
   // Queue some frames, satisfy reads, and make sure expired frames are gone
   // when the renderer paints the first frame.
@@ -1536,6 +1562,9 @@ TEST_F(VideoRendererLatencyHintTest,
   // Set latency hint to a medium value.
   renderer_->SetLatencyHint(base::TimeDelta::FromMilliseconds(200));
 
+  // Stall the demuxer after 7 frames.
+  simulate_demuxer_stall_after_n_reads_ = 7;
+
   // Queue up enough frames to trigger HAVE_ENOUGH. Each frame is 30 ms apart.
   // At this spacing, 200ms rounds to 7 frames.
   EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(0)));
@@ -1556,7 +1585,6 @@ TEST_F(VideoRendererLatencyHintTest,
     SCOPED_TRACE("Waiting for BUFFERING_HAVE_NOTHING");
     WaitableMessageLoopEvent event;
     EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(180)));
-    EXPECT_CALL(demuxer_stream_, IsReadPending()).WillOnce(Return(true));
     EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING,
                                                  DEMUXER_UNDERFLOW))
         .WillOnce(RunOnceClosure(event.GetClosure()));

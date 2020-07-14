@@ -26,7 +26,7 @@ import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SECONDARY_SURFACE_VISIBLE;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_OVERVIEW;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_STACK_TAB_SWITCHER;
-import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_BAR_HEIGHT;
+import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_MARGIN;
 
 import android.content.res.Resources;
 import android.view.View;
@@ -257,9 +257,10 @@ class StartSurfaceMediator
 
             mBrowserControlsObserver = new BrowserControlsStateProvider.Observer() {
                 @Override
-                public void onTopControlsHeightChanged(
-                        int topControlsHeight, int topControlsMinHeight) {
-                    mPropertyModel.set(TOP_BAR_HEIGHT, topControlsHeight);
+                public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
+                        int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
+                    mPropertyModel.set(
+                            TOP_MARGIN, mBrowserControlsStateProvider.getContentOffset());
                 }
 
                 @Override
@@ -559,8 +560,7 @@ class StartSurfaceMediator
                 mBrowserControlsStateProvider.addObserver(mBrowserControlsObserver);
             }
 
-            mPropertyModel.set(
-                    TOP_BAR_HEIGHT, mBrowserControlsStateProvider.getTopControlsHeight());
+            mPropertyModel.set(TOP_MARGIN, mBrowserControlsStateProvider.getTopControlsHeight());
 
             mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
             if (mFakeboxDelegate != null) {

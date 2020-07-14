@@ -612,6 +612,14 @@ bool AudioBufferSourceHandler::PropagatesSilence() const {
 
 void AudioBufferSourceHandler::HandleStoppableSourceNode() {
   DCHECK(Context()->IsAudioThread());
+
+  MutexTryLocker try_locker(process_lock_);
+  if (!try_locker.Locked()) {
+    // Can't get the lock, so just return.  It's ok to handle these at a later
+    // time; this was just a hint anyway so stopping them a bit later is ok.
+    return;
+  }
+
   // If the source node has been scheduled to stop, we can stop the node once
   // the current time reaches that value.  Usually,
   // AudioScheduledSourceHandler::UpdateSchedulingInfo handles stopped nodes,

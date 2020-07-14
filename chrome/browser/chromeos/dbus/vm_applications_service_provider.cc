@@ -115,6 +115,7 @@ void VmApplicationsServiceProvider::LaunchTerminal(
     crostini::LaunchTerminal(
         profile, display::kInvalidDisplayId,
         crostini::ContainerId(request.vm_name(), request.container_name()),
+        "",  // TODO(crbug.com/1097715): Use request.cwd() after roll-dep.
         std::vector<std::string>(request.params().begin(),
                                  request.params().end()));
   }

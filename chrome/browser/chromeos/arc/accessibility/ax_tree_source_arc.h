@@ -96,6 +96,10 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
  private:
   friend class arc::AXTreeSourceArcTest;
 
+  // Actual implementation of NotifyAccessibilityEvent.
+  void NotifyAccessibilityEventInternal(
+      const mojom::AccessibilityEventData& event_data);
+
   // virtual for testing.
   virtual extensions::AutomationEventRouterInterface* GetAutomationEventRouter()
       const;

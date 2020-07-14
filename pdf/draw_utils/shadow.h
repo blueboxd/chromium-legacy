@@ -9,8 +9,9 @@
 
 #include <vector>
 
+class SkBitmap;
+
 namespace pp {
-class ImageData;
 class Rect;
 }  // namespace pp
 
@@ -46,7 +47,7 @@ class ShadowMatrix {
 // shadow_rc - rectangle occupied by shadow
 // object_rc - rectangle that drops the shadow
 // clip_rc - clipping region
-void DrawShadow(pp::ImageData* image,
+void DrawShadow(SkBitmap& image,
                 const pp::Rect& shadow_rc,
                 const pp::Rect& object_rc,
                 const pp::Rect& clip_rc,

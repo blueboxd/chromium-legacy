@@ -264,7 +264,8 @@ void RenderViewTest::RendererBlinkPlatformImplTestOverride::Shutdown() {
   blink_platform_impl_->Shutdown();
 }
 
-RenderViewTest::RenderViewTest(bool hook_render_frame_creation) {
+RenderViewTest::RenderViewTest(bool hook_render_frame_creation)
+    : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
   // Overrides creation of RenderFrameImpl. Subclasses may wish to do this
   // themselves and it can only be done once.
   if (hook_render_frame_creation)

@@ -312,7 +312,7 @@ source_set("core_v2_internal") {
     "src/cpp/core_v2/internal/wifi_lan_service_info.cc",
   ]
   public = [
-    "src/cpp/core/internal/mediums/message_lite.h",
+    "src/cpp/core/internal/message_lite.h",
     "src/cpp/core_v2/internal/base_endpoint_channel.h",
     "src/cpp/core_v2/internal/base_pcp_handler.h",
     "src/cpp/core_v2/internal/ble_advertisement.h",

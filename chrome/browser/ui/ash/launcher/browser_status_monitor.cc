@@ -97,12 +97,10 @@ BrowserStatusMonitor::BrowserStatusMonitor(
       browser_tab_strip_tracker_(this, nullptr) {
   DCHECK(launcher_controller_);
 
-  if (base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry)) {
-    app_service_instance_helper_ =
-        launcher_controller->app_service_app_window_controller()
-            ->app_service_instance_helper();
-    DCHECK(app_service_instance_helper_);
-  }
+  app_service_instance_helper_ =
+      launcher_controller->app_service_app_window_controller()
+          ->app_service_instance_helper();
+  DCHECK(app_service_instance_helper_);
 }
 
 BrowserStatusMonitor::~BrowserStatusMonitor() {

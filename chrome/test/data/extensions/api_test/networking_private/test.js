@@ -103,16 +103,8 @@ var availableTests = [
     chrome.networkingPrivate.verifyAndEncryptData(
         verificationProperties, 'data', callbackPass(callbackResult));
   },
-  function setWifiTDLSEnabledState() {
-    chrome.networkingPrivate.setWifiTDLSEnabledState(
-        '', true, callbackPass(callbackResult));
-  },
-  function getWifiTDLSStatus() {
-    chrome.networkingPrivate.getWifiTDLSStatus(
-        '', callbackPass(callbackResult));
-  },
   function getCaptivePortalStatus() {
-    chrome.networkingPrivate.getWifiTDLSStatus(
+    chrome.networkingPrivate.getCaptivePortalStatus(
         kGuid, callbackPass(callbackResult));
   },
   function unlockCellularSim() {

@@ -324,6 +324,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
   // See |cancel_request_callback_|.
   void CancelRequest(int64_t offset);
 
+  // Called when the download is completed.
+  void OnDownloadCompleted();
+
   // Print the internal states for debugging.
   void DebugStates() const;
 

@@ -107,11 +107,13 @@ TestDownloadHttpResponse::HttpResponseData::HttpResponseData(
     int64_t min_offset,
     int64_t max_offset,
     const std::string& response,
-    bool is_transient)
+    bool is_transient,
+    bool delay_response)
     : min_offset(min_offset),
       max_offset(max_offset),
       response(response),
-      is_transient(is_transient) {}
+      is_transient(is_transient),
+      delay_response(delay_response) {}
 
 // static
 TestDownloadHttpResponse::Parameters
@@ -151,9 +153,10 @@ void TestDownloadHttpResponse::Parameters::SetResponseForRangeRequest(
     int64_t min_offset,
     int64_t max_offset,
     const std::string& response,
-    bool is_transient) {
-  range_request_responses.emplace_back(
-      HttpResponseData(min_offset, max_offset, response, is_transient));
+    bool is_transient,
+    bool delay_response) {
+  range_request_responses.emplace_back(HttpResponseData(
+      min_offset, max_offset, response, is_transient, delay_response));
 }
 
 TestDownloadHttpResponse::CompletedRequest::CompletedRequest(
@@ -294,8 +297,15 @@ void TestDownloadHttpResponse::SendResponseHeaders() {
   // Send static |range_request_responses| in |parameters_| and close
   // connection.
   std::string response;
-  if (GetResponseForRangeRequest(&response)) {
-    bytes_sender_.Run(response, GenerateResultClosure());
+  bool delay_response = false;
+  if (GetResponseForRangeRequest(&response, &delay_response)) {
+    if (delay_response) {
+      delayed_response_callback_ =
+          base::BindOnce(bytes_sender_, response, GenerateResultClosure()),
+      bytes_sender_.Run(GetDefaultResponseHeaders(), base::DoNothing());
+    } else {
+      bytes_sender_.Run(response, GenerateResultClosure());
+    }
     return;
   }
 
@@ -352,7 +362,9 @@ std::string TestDownloadHttpResponse::GetDefaultResponseHeaders() {
   return headers;
 }
 
-bool TestDownloadHttpResponse::GetResponseForRangeRequest(std::string* output) {
+bool TestDownloadHttpResponse::GetResponseForRangeRequest(
+    std::string* output,
+    bool* delay_response) {
   if (!range_.IsValid())
     return false;
 
@@ -369,6 +381,7 @@ bool TestDownloadHttpResponse::GetResponseForRangeRequest(std::string* output) {
 
     if (it->max_offset == -1 || requset_offset <= it->max_offset) {
       *output = it->response;
+      *delay_response = it->delay_response;
       // Update the global parameter for transient response, so the
       // next response will be different.
       if (it->is_transient) {
@@ -583,6 +596,11 @@ TestDownloadHttpResponse::SendNextBodyChunkClosure() {
                         base::Unretained(this));
 }
 
+void TestDownloadHttpResponse::SendDelayedResponse() {
+  if (delayed_response_callback_)
+    std::move(delayed_response_callback_).Run();
+}
+
 void TestDownloadHttpResponse::GenerateResult() {
   auto completed_request = std::make_unique<CompletedRequest>(request_);
   // Transferred bytes in [range_.first_byte_position(), response_sent_offset_).
@@ -667,6 +685,16 @@ void TestDownloadResponseHandler::WaitUntilCompletion(size_t request_count) {
 
   run_loop_ = std::make_unique<base::RunLoop>();
   run_loop_->Run();
+}
+
+void TestDownloadResponseHandler::DispatchDelayedResponses() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (auto& response : responses_) {
+    server_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&TestDownloadHttpResponse::SendDelayedResponse,
+                       base::Unretained(response.get())));
+  }
 }
 
 }  // namespace content

@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/observer_list_types.h"
+#include "base/strings/string_piece_forward.h"
 #include "components/feed/core/v2/public/types.h"
 
 namespace feedui {
@@ -35,6 +36,10 @@ class FeedStreamApi {
     // Returns a unique ID for the surface. The ID will not be reused until
     // after the Chrome process is closed.
     SurfaceId GetSurfaceId() const;
+
+    virtual void ReplaceDataStoreEntry(base::StringPiece key,
+                                       base::StringPiece data) = 0;
+    virtual void RemoveDataStoreEntry(base::StringPiece key) = 0;
 
    private:
     SurfaceId surface_id_;

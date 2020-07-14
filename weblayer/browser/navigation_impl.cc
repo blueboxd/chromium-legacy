@@ -87,6 +87,10 @@ jboolean NavigationImpl::SetUserAgentString(
 
 #endif
 
+bool NavigationImpl::IsRendererInitiated() {
+  return navigation_handle_->IsRendererInitiated();
+}
+
 GURL NavigationImpl::GetURL() {
   return navigation_handle_->GetURL();
 }

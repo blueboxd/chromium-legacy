@@ -29,6 +29,10 @@
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/gfx/geometry/rect_f.h"
 
+namespace base {
+class ElapsedTimer;
+}  // namespace base
+
 namespace blink {
 class WebDocument;
 }  // namespace blink
@@ -114,7 +118,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   ~RenderAccessibilityImpl() override;
 
   ui::AXMode GetAccessibilityMode() {
-    return tree_source_.accessibility_mode();
+    return tree_source_->accessibility_mode();
   }
 
   // RenderAccessibility implementation.
@@ -233,6 +237,16 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   // Cancels scheduled events that are not yet in flight
   void CancelScheduledEvents();
 
+  // Sends the URL-keyed metrics for the maximum amount of time spent in
+  // SendPendingAccessibilityEvents if they meet the minimum criteria for
+  // sending.
+  void MaybeSendUKM();
+
+  // Reset all of the UKM data. This can be called after sending UKM data,
+  // or after navigating to a new page when any previous data will no
+  // longer be valid.
+  void ResetUKMData();
+
   // The RenderAccessibilityManager that owns us.
   RenderAccessibilityManager* render_accessibility_manager_;
 
@@ -255,10 +269,10 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   std::vector<DirtyObject> dirty_objects_;
 
   // The adapter that exposes Blink's accessibility tree to AXTreeSerializer.
-  BlinkAXTreeSource tree_source_;
+  std::unique_ptr<BlinkAXTreeSource> tree_source_;
 
   // The serializer that sends accessibility messages to the browser process.
-  BlinkAXTreeSerializer serializer_;
+  std::unique_ptr<BlinkAXTreeSerializer> serializer_;
 
   using PluginAXTreeSerializer = ui::AXTreeSerializer<const ui::AXNode*,
                                                       ui::AXNodeData,
@@ -296,7 +310,22 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   // The specified page language, or empty if unknown.
   std::string page_language_;
 
+  // The URL-keyed metrics recorder interface.
   std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder_;
+
+  // The longest amount of time spent serializing the accessibility tree
+  // in SendPendingAccessibilityEvents. This is periodically uploaded as
+  // a UKM and then reset.
+  int slowest_serialization_ms_ = 0;
+
+  // The amount of time since the last UKM upload.
+  std::unique_ptr<base::ElapsedTimer> ukm_timer_;
+
+  // The UKM Source ID that corresponds to the web page represented by
+  // slowest_serialization_ms_. We report UKM before the user navigates
+  // away, or every few minutes.
+  ukm::SourceId last_ukm_source_id_;
+  std::string last_ukm_url_;
 
   // So we can queue up tasks to be executed later.
   base::WeakPtrFactory<RenderAccessibilityImpl>
@@ -305,6 +334,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   friend class AXImageAnnotatorTest;
   friend class PluginActionHandlingTest;
   friend class RenderAccessibilityImplTest;
+  friend class RenderAccessibilityImplUKMTest;
 
   DISALLOW_COPY_AND_ASSIGN(RenderAccessibilityImpl);
 };

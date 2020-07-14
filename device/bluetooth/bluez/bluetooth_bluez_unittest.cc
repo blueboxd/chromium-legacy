@@ -191,10 +191,7 @@ class BluetoothBlueZTest : public testing::Test {
     std::move(closure).Run();
   }
 
-  base::Closure GetCallback() {
-    return base::Bind(&BluetoothBlueZTest::Callback, base::Unretained(this));
-  }
-  base::OnceClosure GetOnceCallback() {
+  base::OnceClosure GetCallback() {
     return base::BindOnce(&BluetoothBlueZTest::Callback,
                           base::Unretained(this));
   }
@@ -229,15 +226,15 @@ class BluetoothBlueZTest : public testing::Test {
     ErrorCallback();
   }
 
-  base::Closure GetErrorCallback() {
-    return base::Bind(&BluetoothBlueZTest::ErrorCallback,
-                      base::Unretained(this));
+  base::OnceClosure GetErrorCallback() {
+    return base::BindOnce(&BluetoothBlueZTest::ErrorCallback,
+                          base::Unretained(this));
   }
 
-  base::Callback<void(device::UMABluetoothDiscoverySessionOutcome)>
+  base::OnceCallback<void(device::UMABluetoothDiscoverySessionOutcome)>
   GetDiscoveryErrorCallback() {
-    return base::Bind(&BluetoothBlueZTest::DiscoveryErrorCallback,
-                      base::Unretained(this));
+    return base::BindOnce(&BluetoothBlueZTest::DiscoveryErrorCallback,
+                          base::Unretained(this));
   }
 
   void DBusErrorCallback(const std::string& error_name,
@@ -2323,7 +2320,7 @@ TEST_F(BluetoothBlueZTest, ForgetUnpairedDevice) {
   ASSERT_FALSE(device->IsPaired());
 
   // Connect the device so it becomes trusted and remembered.
-  device->Connect(nullptr, GetOnceCallback(),
+  device->Connect(nullptr, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
 
@@ -2373,7 +2370,7 @@ TEST_F(BluetoothBlueZTest, ConnectPairedDevice) {
 
   // Connect without a pairing delegate; since the device is already Paired
   // this should succeed and the device should become connected.
-  device->Connect(nullptr, GetOnceCallback(),
+  device->Connect(nullptr, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
 
@@ -2406,7 +2403,7 @@ TEST_F(BluetoothBlueZTest, ConnectUnpairableDevice) {
 
   // Connect without a pairing delegate; since the device does not require
   // pairing, this should succeed and the device should become connected.
-  device->Connect(nullptr, GetOnceCallback(),
+  device->Connect(nullptr, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
 
@@ -2446,7 +2443,7 @@ TEST_F(BluetoothBlueZTest, ConnectConnectedDevice) {
   ASSERT_TRUE(device != nullptr);
   ASSERT_TRUE(device->IsPaired());
 
-  device->Connect(nullptr, GetOnceCallback(),
+  device->Connect(nullptr, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
 
@@ -2464,7 +2461,7 @@ TEST_F(BluetoothBlueZTest, ConnectConnectedDevice) {
   // anything to initiate the connection.
   TestBluetoothAdapterObserver observer(adapter_);
 
-  device->Connect(nullptr, GetOnceCallback(),
+  device->Connect(nullptr, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
 
@@ -2496,7 +2493,7 @@ TEST_F(BluetoothBlueZTest, ConnectDeviceFails) {
 
   // Connect without a pairing delegate; since the device requires pairing,
   // this should fail with an error.
-  device->Connect(nullptr, GetOnceCallback(),
+  device->Connect(nullptr, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
 
@@ -2524,7 +2521,7 @@ TEST_F(BluetoothBlueZTest, RemoveDeviceDuringConnection) {
   ASSERT_TRUE(device != nullptr);
 
   fake_bluetooth_device_client_->LeaveConnectionsPending();
-  device->Connect(nullptr, GetOnceCallback(),
+  device->Connect(nullptr, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
   // We pause discovery before connecting.
@@ -2559,7 +2556,7 @@ TEST_F(BluetoothBlueZTest, DisconnectDevice) {
   ASSERT_TRUE(device != nullptr);
   ASSERT_TRUE(device->IsPaired());
 
-  device->Connect(nullptr, GetOnceCallback(),
+  device->Connect(nullptr, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
 
@@ -2639,7 +2636,7 @@ TEST_F(BluetoothBlueZTest, PairTrustedDevice) {
   TestPairingDelegate pairing_delegate;
   adapter_->AddPairingDelegate(
       &pairing_delegate, BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH);
-  device->Pair(&pairing_delegate, GetOnceCallback(),
+  device->Pair(&pairing_delegate, GetCallback(),
                base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                               base::Unretained(this)));
   EXPECT_EQ(1, pairing_delegate.call_count_);
@@ -2680,7 +2677,7 @@ TEST_F(BluetoothBlueZTest, PairAlreadyPairedDevice) {
   TestPairingDelegate pairing_delegate;
   adapter_->AddPairingDelegate(
       &pairing_delegate, BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH);
-  device->Pair(&pairing_delegate, GetOnceCallback(),
+  device->Pair(&pairing_delegate, GetCallback(),
                base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                               base::Unretained(this)));
 
@@ -2707,7 +2704,7 @@ TEST_F(BluetoothBlueZTest, PairLegacyAutopair) {
   TestBluetoothAdapterObserver observer(adapter_);
 
   TestPairingDelegate pairing_delegate;
-  device->Connect(&pairing_delegate, GetOnceCallback(),
+  device->Connect(&pairing_delegate, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
 
@@ -2762,7 +2759,7 @@ TEST_F(BluetoothBlueZTest, PairDisplayPinCode) {
   TestBluetoothAdapterObserver observer(adapter_);
 
   TestPairingDelegate pairing_delegate;
-  device->Connect(&pairing_delegate, GetOnceCallback(),
+  device->Connect(&pairing_delegate, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
 
@@ -2820,7 +2817,7 @@ TEST_F(BluetoothBlueZTest, PairDisplayPasskey) {
   TestBluetoothAdapterObserver observer(adapter_);
 
   TestPairingDelegate pairing_delegate;
-  device->Connect(&pairing_delegate, GetOnceCallback(),
+  device->Connect(&pairing_delegate, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
 
@@ -2897,7 +2894,7 @@ TEST_F(BluetoothBlueZTest, PairRequestPinCode) {
   TestBluetoothAdapterObserver observer(adapter_);
 
   TestPairingDelegate pairing_delegate;
-  device->Connect(&pairing_delegate, GetOnceCallback(),
+  device->Connect(&pairing_delegate, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
 
@@ -2955,7 +2952,7 @@ TEST_F(BluetoothBlueZTest, PairConfirmPasskey) {
   TestBluetoothAdapterObserver observer(adapter_);
 
   TestPairingDelegate pairing_delegate;
-  device->Connect(&pairing_delegate, GetOnceCallback(),
+  device->Connect(&pairing_delegate, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
 
@@ -3011,7 +3008,7 @@ TEST_F(BluetoothBlueZTest, PairRequestPasskey) {
   TestBluetoothAdapterObserver observer(adapter_);
 
   TestPairingDelegate pairing_delegate;
-  device->Connect(&pairing_delegate, GetOnceCallback(),
+  device->Connect(&pairing_delegate, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
 
@@ -3066,7 +3063,7 @@ TEST_F(BluetoothBlueZTest, PairJustWorks) {
   TestBluetoothAdapterObserver observer(adapter_);
 
   TestPairingDelegate pairing_delegate;
-  device->Connect(&pairing_delegate, GetOnceCallback(),
+  device->Connect(&pairing_delegate, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
 
@@ -3115,7 +3112,7 @@ TEST_F(BluetoothBlueZTest, PairUnpairableDeviceFails) {
   TestBluetoothAdapterObserver observer(adapter_);
 
   TestPairingDelegate pairing_delegate;
-  device->Connect(&pairing_delegate, GetOnceCallback(),
+  device->Connect(&pairing_delegate, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
 
@@ -3154,7 +3151,7 @@ TEST_F(BluetoothBlueZTest, PairingFails) {
   TestBluetoothAdapterObserver observer(adapter_);
 
   TestPairingDelegate pairing_delegate;
-  device->Connect(&pairing_delegate, GetOnceCallback(),
+  device->Connect(&pairing_delegate, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
 
@@ -3194,7 +3191,7 @@ TEST_F(BluetoothBlueZTest, PairingFailsAtConnection) {
   TestBluetoothAdapterObserver observer(adapter_);
 
   TestPairingDelegate pairing_delegate;
-  device->Connect(&pairing_delegate, GetOnceCallback(),
+  device->Connect(&pairing_delegate, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
 
@@ -3244,7 +3241,7 @@ TEST_F(BluetoothBlueZTest, PairingRejectedAtPinCode) {
   TestBluetoothAdapterObserver observer(adapter_);
 
   TestPairingDelegate pairing_delegate;
-  device->Connect(&pairing_delegate, GetOnceCallback(),
+  device->Connect(&pairing_delegate, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
 
@@ -3286,7 +3283,7 @@ TEST_F(BluetoothBlueZTest, PairingCancelledAtPinCode) {
   TestBluetoothAdapterObserver observer(adapter_);
 
   TestPairingDelegate pairing_delegate;
-  device->Connect(&pairing_delegate, GetOnceCallback(),
+  device->Connect(&pairing_delegate, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
 
@@ -3328,7 +3325,7 @@ TEST_F(BluetoothBlueZTest, PairingRejectedAtPasskey) {
   TestBluetoothAdapterObserver observer(adapter_);
 
   TestPairingDelegate pairing_delegate;
-  device->Connect(&pairing_delegate, GetOnceCallback(),
+  device->Connect(&pairing_delegate, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
 
@@ -3370,7 +3367,7 @@ TEST_F(BluetoothBlueZTest, PairingCancelledAtPasskey) {
   TestBluetoothAdapterObserver observer(adapter_);
 
   TestPairingDelegate pairing_delegate;
-  device->Connect(&pairing_delegate, GetOnceCallback(),
+  device->Connect(&pairing_delegate, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
 
@@ -3412,7 +3409,7 @@ TEST_F(BluetoothBlueZTest, PairingRejectedAtConfirmation) {
   TestBluetoothAdapterObserver observer(adapter_);
 
   TestPairingDelegate pairing_delegate;
-  device->Connect(&pairing_delegate, GetOnceCallback(),
+  device->Connect(&pairing_delegate, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
 
@@ -3454,7 +3451,7 @@ TEST_F(BluetoothBlueZTest, PairingCancelledAtConfirmation) {
   TestBluetoothAdapterObserver observer(adapter_);
 
   TestPairingDelegate pairing_delegate;
-  device->Connect(&pairing_delegate, GetOnceCallback(),
+  device->Connect(&pairing_delegate, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
 
@@ -3496,7 +3493,7 @@ TEST_F(BluetoothBlueZTest, PairingCancelledInFlight) {
   TestBluetoothAdapterObserver observer(adapter_);
 
   TestPairingDelegate pairing_delegate;
-  device->Connect(&pairing_delegate, GetOnceCallback(),
+  device->Connect(&pairing_delegate, GetCallback(),
                   base::BindOnce(&BluetoothBlueZTest::ConnectErrorCallback,
                                  base::Unretained(this)));
 

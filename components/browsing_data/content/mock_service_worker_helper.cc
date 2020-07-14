@@ -29,19 +29,19 @@ void MockServiceWorkerHelper::StartFetching(FetchCallback callback) {
   callback_ = std::move(callback);
 }
 
-void MockServiceWorkerHelper::DeleteServiceWorkers(const GURL& origin) {
+void MockServiceWorkerHelper::DeleteServiceWorkers(const url::Origin& origin) {
   ASSERT_TRUE(base::Contains(origins_, origin));
   origins_[origin] = false;
 }
 
 void MockServiceWorkerHelper::AddServiceWorkerSamples() {
-  const GURL kOrigin1("https://swhost1:1/");
-  const GURL kOrigin2("https://swhost2:2/");
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://swhost1:1/"));
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://swhost2:2/"));
 
-  response_.emplace_back(url::Origin::Create(kOrigin1), 1, base::Time());
+  response_.emplace_back(kOrigin1, 1, base::Time());
   origins_[kOrigin1] = true;
 
-  response_.emplace_back(url::Origin::Create(kOrigin2), 2, base::Time());
+  response_.emplace_back(kOrigin2, 2, base::Time());
   origins_[kOrigin2] = true;
 }
 

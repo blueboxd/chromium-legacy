@@ -61,8 +61,7 @@ const char FakeShillDeviceClient::kSimPuk[] = "12345678";
 const char FakeShillDeviceClient::kDefaultSimPin[] = "1111";
 const int FakeShillDeviceClient::kSimPinRetryCount = 3;
 
-FakeShillDeviceClient::FakeShillDeviceClient()
-    : initial_tdls_busy_count_(0), tdls_busy_count_(0) {}
+FakeShillDeviceClient::FakeShillDeviceClient() {}
 
 FakeShillDeviceClient::~FakeShillDeviceClient() = default;
 
@@ -266,52 +265,6 @@ void FakeShillDeviceClient::Reset(const dbus::ObjectPath& device_path,
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
-void FakeShillDeviceClient::PerformTDLSOperation(
-    const dbus::ObjectPath& device_path,
-    const std::string& operation,
-    const std::string& peer,
-    StringCallback callback,
-    ErrorCallback error_callback) {
-  if (!stub_devices_.HasKey(device_path.value())) {
-    PostNotFoundError(std::move(error_callback));
-    return;
-  }
-  // Use -1 to emulate a TDLS failure.
-  if (tdls_busy_count_ == -1) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(error_callback),
-                                  shill::kErrorDhcpFailed, "Failed"));
-    return;
-  }
-  if (operation != shill::kTDLSStatusOperation && tdls_busy_count_ > 0) {
-    --tdls_busy_count_;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(error_callback), shill::kErrorResultInProgress,
-                       "In-Progress"));
-    return;
-  }
-
-  tdls_busy_count_ = initial_tdls_busy_count_;
-
-  std::string result;
-  if (operation == shill::kTDLSDiscoverOperation) {
-    if (tdls_state_.empty())
-      tdls_state_ = shill::kTDLSDisconnectedState;
-  } else if (operation == shill::kTDLSSetupOperation) {
-    if (tdls_state_.empty())
-      tdls_state_ = shill::kTDLSConnectedState;
-  } else if (operation == shill::kTDLSTeardownOperation) {
-    if (tdls_state_.empty())
-      tdls_state_ = shill::kTDLSDisconnectedState;
-  } else if (operation == shill::kTDLSStatusOperation) {
-    result = tdls_state_;
-  }
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), result));
-}
-
 void FakeShillDeviceClient::AddWakeOnPacketConnection(
     const dbus::ObjectPath& device_path,
     const net::IPEndPoint& ip_endpoint,
@@ -489,14 +442,6 @@ std::string FakeShillDeviceClient::GetDevicePathForType(
     return iter.key();
   }
   return std::string();
-}
-
-void FakeShillDeviceClient::SetTDLSBusyCount(int count) {
-  tdls_busy_count_ = std::max(count, -1);
-}
-
-void FakeShillDeviceClient::SetTDLSState(const std::string& state) {
-  tdls_state_ = state;
 }
 
 void FakeShillDeviceClient::SetSimLocked(const std::string& device_path,

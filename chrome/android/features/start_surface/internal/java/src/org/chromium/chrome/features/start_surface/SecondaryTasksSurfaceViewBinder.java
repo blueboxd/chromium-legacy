@@ -7,7 +7,7 @@ package org.chromium.chrome.features.start_surface;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SECONDARY_SURFACE_VISIBLE;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_OVERVIEW;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_STACK_TAB_SWITCHER;
-import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_BAR_HEIGHT;
+import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_MARGIN;
 
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
@@ -25,8 +25,8 @@ class SecondaryTasksSurfaceViewBinder {
             updateVisibility(viewHolder, model);
         } else if (IS_SHOWING_STACK_TAB_SWITCHER == propertyKey) {
             updateVisibility(viewHolder, model);
-        } else if (TOP_BAR_HEIGHT == propertyKey) {
-            setTopBarHeight(viewHolder, model.get(TOP_BAR_HEIGHT));
+        } else if (TOP_MARGIN == propertyKey) {
+            setTopBarHeight(viewHolder, model.get(TOP_MARGIN));
         }
     }
 
@@ -39,7 +39,7 @@ class SecondaryTasksSurfaceViewBinder {
             viewHolder.parentView.addView(viewHolder.tasksSurfaceView);
             MarginLayoutParams layoutParams =
                     (MarginLayoutParams) viewHolder.tasksSurfaceView.getLayoutParams();
-            layoutParams.topMargin = model.get(TOP_BAR_HEIGHT);
+            layoutParams.topMargin = model.get(TOP_MARGIN);
         }
 
         viewHolder.tasksSurfaceView.setVisibility(isShowing ? View.VISIBLE : View.GONE);

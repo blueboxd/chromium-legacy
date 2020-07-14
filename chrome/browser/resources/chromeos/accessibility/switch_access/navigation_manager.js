@@ -178,6 +178,9 @@ class NavigationManager {
       }
     }
 
+    // Make sure the menu isn't open.
+    MenuManager.exit();
+
     const child = navigator.group_.firstValidChild();
     if (groupIsValid && child) {
       navigator.setNode_(child);

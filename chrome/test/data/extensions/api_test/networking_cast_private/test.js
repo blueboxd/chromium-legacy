@@ -19,9 +19,7 @@ var verificationProperties = {
   deviceBssid: '00:01:02:03:04:05'
 };
 
-chrome.test.getConfig(function(config) {
-  var args = JSON.parse(config.customArg);
-
+chrome.test.getConfig(function() {
   chrome.test.runTests([
     function verifyDestination() {
       chrome.networking.castPrivate.verifyDestination(
@@ -37,28 +35,6 @@ chrome.test.getConfig(function(config) {
           callbackPass(function(result) {
             assertEq('encrypted_data', result);
           }));
-    },
-    function setWifiTDLSEnabledState() {
-      if (args.tdlsSupported) {
-        chrome.networking.castPrivate.setWifiTDLSEnabledState(
-            'aa:bb:cc:dd:ee:ff', true, callbackPass(function(result) {
-              assertEq('CONNECTED', result);
-            }));
-      } else {
-        chrome.networking.castPrivate.setWifiTDLSEnabledState(
-            'aa:bb:cc:dd:ee:ff', true, callbackFail('Not supported'));
-      }
-    },
-    function getWifiTDLSStatus() {
-      if (args.tdlsSupported) {
-        chrome.networking.castPrivate.getWifiTDLSStatus(
-            'aa:bb:cc:dd:ee:ff', callbackPass(function(result) {
-              assertEq('CONNECTED', result);
-            }));
-      } else {
-        chrome.networking.castPrivate.getWifiTDLSStatus(
-            'aa:bb:cc:dd:ee:ff', callbackFail('Not supported'));
-      }
     },
   ]);
 });

@@ -120,8 +120,10 @@ bool TabGroupHeader::OnKeyPressed(const ui::KeyEvent& event) {
       bool successful_toggle =
           tab_strip_->controller()->ToggleTabGroupCollapsedState(
               group().value(), true);
-      if (successful_toggle)
+      if (successful_toggle) {
+        NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
         LogCollapseTime();
+      }
     } else {
       editor_bubble_tracker_.Opened(TabGroupEditorBubbleView::Show(
           tab_strip_->controller()->GetBrowser(), group().value(), this));

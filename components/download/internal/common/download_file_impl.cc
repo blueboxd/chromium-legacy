@@ -693,23 +693,7 @@ void DownloadFileImpl::NotifyObserver(SourceStream* source_stream,
 
     // All the stream reader are completed, shut down file IO processing.
     if (IsDownloadCompleted()) {
-      RecordFileBandwidth(bytes_seen_,
-                          base::TimeTicks::Now() - download_start_);
-      if (record_stream_bandwidth_) {
-        RecordParallelizableDownloadStats(
-            bytes_seen_with_parallel_streams_,
-            download_time_with_parallel_streams_,
-            bytes_seen_without_parallel_streams_,
-            download_time_without_parallel_streams_, IsSparseFile());
-      }
-      weak_factory_.InvalidateWeakPtrs();
-      std::unique_ptr<crypto::SecureHash> hash_state = file_.Finish();
-      update_timer_.reset();
-      main_task_runner_->PostTask(
-          FROM_HERE,
-          base::BindOnce(&DownloadDestinationObserver::DestinationCompleted,
-                         observer_, TotalBytesReceived(),
-                         std::move(hash_state)));
+      OnDownloadCompleted();
     } else {
       // If all the stream completes and we still not able to complete, trigger
       // a content length mismatch error so auto resumption will be performed.
@@ -717,6 +701,23 @@ void DownloadFileImpl::NotifyObserver(SourceStream* source_stream,
           DOWNLOAD_INTERRUPT_REASON_SERVER_CONTENT_LENGTH_MISMATCH);
     }
   }
+}
+
+void DownloadFileImpl::OnDownloadCompleted() {
+  RecordFileBandwidth(bytes_seen_, base::TimeTicks::Now() - download_start_);
+  if (record_stream_bandwidth_) {
+    RecordParallelizableDownloadStats(
+        bytes_seen_with_parallel_streams_, download_time_with_parallel_streams_,
+        bytes_seen_without_parallel_streams_,
+        download_time_without_parallel_streams_, IsSparseFile());
+  }
+  weak_factory_.InvalidateWeakPtrs();
+  std::unique_ptr<crypto::SecureHash> hash_state = file_.Finish();
+  update_timer_.reset();
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DownloadDestinationObserver::DestinationCompleted,
+                     observer_, TotalBytesReceived(), std::move(hash_state)));
 }
 
 void DownloadFileImpl::RegisterAndActivateStream(SourceStream* source_stream) {
@@ -839,8 +840,12 @@ void DownloadFileImpl::HandleStreamError(SourceStream* source_stream,
 
   SendUpdate();  // Make info up to date before error.
 
+  // If the download can recover from error, check if it already finishes.
+  // Otherwise, send an error update when all streams are finished.
   if (!can_recover_from_error)
     SendErrorUpdateIfFinished(reason);
+  else if (IsDownloadCompleted())
+    OnDownloadCompleted();
 }
 
 void DownloadFileImpl::SendErrorUpdateIfFinished(

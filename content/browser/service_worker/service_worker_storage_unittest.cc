@@ -399,7 +399,7 @@ class ServiceWorkerStorageTest : public testing::Test {
   }
 
   blink::ServiceWorkerStatusCode GetRegistrationsForOrigin(
-      const GURL& origin,
+      const url::Origin& origin,
       std::vector<scoped_refptr<ServiceWorkerRegistration>>* registrations) {
     base::Optional<blink::ServiceWorkerStatusCode> result;
     base::RunLoop loop;
@@ -675,9 +675,9 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
   EXPECT_FALSE(registry()->GetUninstallingRegistration(kScope.GetOrigin()));
 
   std::vector<scoped_refptr<ServiceWorkerRegistration>> found_registrations;
-  EXPECT_EQ(
-      blink::ServiceWorkerStatusCode::kErrorAbort,
-      GetRegistrationsForOrigin(kScope.GetOrigin(), &found_registrations));
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorAbort,
+            GetRegistrationsForOrigin(url::Origin::Create(kScope),
+                                      &found_registrations));
 
   std::vector<ServiceWorkerRegistrationInfo> all_registrations;
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorAbort,
@@ -860,15 +860,16 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   // Finding by origin should provide the same result if origin is kScope.
   std::vector<scoped_refptr<ServiceWorkerRegistration>>
       registrations_for_origin;
-  EXPECT_EQ(
-      blink::ServiceWorkerStatusCode::kOk,
-      GetRegistrationsForOrigin(kScope.GetOrigin(), &registrations_for_origin));
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            GetRegistrationsForOrigin(url::Origin::Create(kScope),
+                                      &registrations_for_origin));
   EXPECT_EQ(1u, registrations_for_origin.size());
   registrations_for_origin.clear();
 
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            GetRegistrationsForOrigin(GURL("http://example.com/").GetOrigin(),
-                                      &registrations_for_origin));
+            GetRegistrationsForOrigin(
+                url::Origin::Create(GURL("http://example.com/")),
+                &registrations_for_origin));
   EXPECT_TRUE(registrations_for_origin.empty());
 
   found_registration = nullptr;
@@ -971,14 +972,15 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
 
   std::vector<scoped_refptr<ServiceWorkerRegistration>>
       registrations_for_origin;
-  EXPECT_EQ(
-      blink::ServiceWorkerStatusCode::kOk,
-      GetRegistrationsForOrigin(kScope.GetOrigin(), &registrations_for_origin));
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            GetRegistrationsForOrigin(url::Origin::Create(kScope),
+                                      &registrations_for_origin));
   EXPECT_TRUE(registrations_for_origin.empty());
 
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            GetRegistrationsForOrigin(GURL("http://example.com/").GetOrigin(),
-                                      &registrations_for_origin));
+            GetRegistrationsForOrigin(
+                url::Origin::Create(GURL("http://example.com/")),
+                &registrations_for_origin));
   EXPECT_TRUE(registrations_for_origin.empty());
 
   // Notify storage of it being installed.
@@ -1012,15 +1014,16 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
   all_registrations.clear();
 
   // Finding by origin should provide the same result if origin is kScope.
-  EXPECT_EQ(
-      blink::ServiceWorkerStatusCode::kOk,
-      GetRegistrationsForOrigin(kScope.GetOrigin(), &registrations_for_origin));
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            GetRegistrationsForOrigin(url::Origin::Create(kScope),
+                                      &registrations_for_origin));
   EXPECT_EQ(1u, registrations_for_origin.size());
   registrations_for_origin.clear();
 
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            GetRegistrationsForOrigin(GURL("http://example.com/").GetOrigin(),
-                                      &registrations_for_origin));
+            GetRegistrationsForOrigin(
+                url::Origin::Create(GURL("http://example.com/")),
+                &registrations_for_origin));
   EXPECT_TRUE(registrations_for_origin.empty());
 
   // Notify storage of installation no longer happening.
@@ -1049,14 +1052,15 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
             GetAllRegistrationsInfos(&all_registrations));
   EXPECT_TRUE(all_registrations.empty());
 
-  EXPECT_EQ(
-      blink::ServiceWorkerStatusCode::kOk,
-      GetRegistrationsForOrigin(kScope.GetOrigin(), &registrations_for_origin));
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            GetRegistrationsForOrigin(url::Origin::Create(kScope),
+                                      &registrations_for_origin));
   EXPECT_TRUE(registrations_for_origin.empty());
 
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            GetRegistrationsForOrigin(GURL("http://example.com/").GetOrigin(),
-                                      &registrations_for_origin));
+            GetRegistrationsForOrigin(
+                url::Origin::Create(GURL("http://example.com/")),
+                &registrations_for_origin));
   EXPECT_TRUE(registrations_for_origin.empty());
 }
 

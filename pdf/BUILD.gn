@@ -54,9 +54,12 @@ if (enable_pdf) {
       "paint_manager.h",
       "pdf.cc",
       "pdf_engine.h",
-      "pdf_ppapi.cc",
+      "pdf_init.cc",
+      "pdf_init.h",
       "pdf_transform.cc",
       "pdf_transform.h",
+      "ppapi_migration/bitmap.cc",
+      "ppapi_migration/bitmap.h",
       "ppapi_migration/callback.cc",
       "ppapi_migration/callback.h",
       "ppapi_migration/geometry_conversions.cc",
@@ -74,14 +77,12 @@ if (enable_pdf) {
 
     configs += [ ":pdf_common_config" ]
 
-    public = [
-      "pdf.h",
-      "pdf_ppapi.h",
-    ]
+    public = [ "pdf.h" ]
 
     friend = [
       ":pdf_unittests",
       ":pdf_test_utils",
+      ":pdf_ppapi",
     ]
 
     deps = [
@@ -91,6 +92,7 @@ if (enable_pdf) {
       "//net",
       "//ppapi/cpp:objects",
       "//ppapi/cpp/private:internal_module",
+      "//skia",
       "//ui/base",
       "//ui/gfx/range",
     ]
@@ -138,6 +140,24 @@ if (enable_pdf) {
         ]
       }
     }
+  }
+
+  component("pdf_ppapi") {
+    sources = [ "pdf_ppapi.cc" ]
+
+    configs += [ ":pdf_common_config" ]
+
+    defines = [ "IS_PDF_PPAPI_IMPL" ]
+
+    public = [ "pdf_ppapi.h" ]
+
+    deps = [
+      ":pdf",
+      "//base",
+      "//ppapi/cpp:objects",
+      "//ppapi/cpp/private:internal_module",
+      "//v8",
+    ]
   }
 
   source_set("features") {
@@ -203,6 +223,7 @@ if (enable_pdf) {
       "//ppapi/c",
       "//ppapi/cpp:objects",
       "//printing",
+      "//skia",
       "//testing/gmock",
       "//testing/gtest",
       "//ui/gfx/geometry",
@@ -241,5 +262,7 @@ if (enable_pdf) {
   group("features") {
   }
   group("pdf") {
+  }
+  group("pdf_ppapi") {
   }
 }

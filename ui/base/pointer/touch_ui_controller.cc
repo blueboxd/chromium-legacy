@@ -56,6 +56,11 @@ TouchUiController::TouchUiScoperForTesting::~TouchUiScoperForTesting() {
   controller_->SetTouchUiState(old_state_);
 }
 
+void TouchUiController::TouchUiScoperForTesting::UpdateState(bool enabled) {
+  controller_->SetTouchUiState(enabled ? TouchUiState::kEnabled
+                                       : TouchUiState::kDisabled);
+}
+
 // static
 TouchUiController* TouchUiController::Get() {
   static base::NoDestructor<TouchUiController> instance([] {

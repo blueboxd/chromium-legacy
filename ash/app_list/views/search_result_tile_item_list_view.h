@@ -32,7 +32,6 @@ class APP_LIST_EXPORT SearchResultTileItemListView
 
   // Overridden from SearchResultContainerView:
   SearchResultTileItemView* GetResultViewAt(size_t index) override;
-  int GetYSize() override;
   SearchResultBaseView* GetFirstResultView() override;
 
   // Overridden from views::View:

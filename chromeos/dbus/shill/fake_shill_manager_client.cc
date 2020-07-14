@@ -37,8 +37,6 @@ namespace chromeos {
 
 namespace {
 
-// Allow parsed command line option 'tdls_busy' to set the fake busy count.
-int s_tdls_busy_count = 0;
 int s_extra_wifi_networks = 0;
 
 // For testing dynamic WEP networks (uses wifi2).
@@ -816,11 +814,6 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
   }
 
   // Wifi
-  if (s_tdls_busy_count != 0) {
-    ShillDeviceClient::Get()->GetTestInterface()->SetTDLSBusyCount(
-        s_tdls_busy_count);
-  }
-
   state = GetInitialStateForType(shill::kTypeWifi, &enabled);
   if (state != kTechnologyUnavailable) {
     bool portaled = false;
@@ -1235,12 +1228,6 @@ bool FakeShillManagerClient::ParseOption(const std::string& arg0,
                               [shill::kSIMPresentProperty] = sim_present;
     if (!present)
       shill_initial_state_map_[shill::kTypeCellular] = kNetworkDisabled;
-    return true;
-  } else if (arg0 == "tdls_busy") {
-    if (!arg1.empty())
-      base::StringToInt(arg1, &s_tdls_busy_count);
-    else
-      s_tdls_busy_count = 1;
     return true;
   } else if (arg0 == "olp") {
     cellular_olp_ = arg1;

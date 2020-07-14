@@ -105,7 +105,7 @@ void LacrosApps::Launch(const std::string& app_id,
                         apps::mojom::LaunchSource launch_source,
                         int64_t display_id) {
   DCHECK_EQ(extension_misc::kLacrosAppId, app_id);
-  LacrosManager::Get()->Start();
+  LacrosManager::Get()->NewWindow();
 }
 
 void LacrosApps::GetMenuModel(const std::string& app_id,

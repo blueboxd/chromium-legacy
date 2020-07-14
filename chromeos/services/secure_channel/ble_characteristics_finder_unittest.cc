@@ -137,8 +137,7 @@ class SecureChannelBluetoothLowEnergyCharacteristicFinderTest
                              bool valid = true) {
     std::unique_ptr<device::MockBluetoothGattCharacteristic> characteristic(
         new NiceMock<device::MockBluetoothGattCharacteristic>(
-            /* service */ nullptr, id, uuid, /* is_local */ false,
-            kCharacteristicProperties,
+            /*service=*/nullptr, id, uuid, kCharacteristicProperties,
             device::BluetoothRemoteGattCharacteristic::PERMISSION_NONE));
 
     ON_CALL(*characteristic.get(), GetUUID()).WillByDefault(Return(uuid));
@@ -185,7 +184,7 @@ class SecureChannelBluetoothLowEnergyCharacteristicFinderTest
       bool is_discovery_complete) {
     auto service = std::make_unique<NiceMock<device::MockBluetoothGattService>>(
         device_.get(), service_id, device::BluetoothUUID(kServiceUUID),
-        /* is_primary */ true, /* is_local */ false);
+        /*is_primary=*/true);
     device::MockBluetoothGattService* service_ptr = service.get();
     services_.push_back(std::move(service));
     ON_CALL(*device_, GetGattServices())

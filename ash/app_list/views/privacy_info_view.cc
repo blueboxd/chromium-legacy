@@ -129,8 +129,6 @@ void PrivacyInfoView::InitText() {
       l10n_util::GetStringFUTF16(info_string_id_, link, &offset);
   auto text_view = std::make_unique<views::StyledLabel>(text, this);
   views::StyledLabel::RangeStyleInfo style;
-  style.custom_font = text_view->GetDefaultFontList().Derive(
-      0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL);
   style.override_color = gfx::kGoogleGrey900;
   text_view->AddStyleRange(gfx::Range(0, offset), style);
 

@@ -1100,42 +1100,29 @@ void ManagedNetworkConfigurationHandlerImpl::GetPropertiesCallback(
 
   // Request the device properties. On success or failure pass (a possibly
   // modified) |shill_properties| to |send_callback|.
-  std::unique_ptr<base::DictionaryValue> shill_properties_copy_error_copy(
-      shill_properties_copy->DeepCopy());
-  auto repeating_send_callback =
-      base::AdaptCallbackForRepeating(std::move(send_callback));
   network_device_handler_->GetDeviceProperties(
       device_path,
       base::BindOnce(
-          &ManagedNetworkConfigurationHandlerImpl::GetDevicePropertiesSuccess,
+          &ManagedNetworkConfigurationHandlerImpl::OnGetDeviceProperties,
           weak_ptr_factory_.GetWeakPtr(), service_path,
-          std::move(shill_properties_copy), repeating_send_callback),
-      base::Bind(
-          &ManagedNetworkConfigurationHandlerImpl::GetDevicePropertiesFailure,
-          weak_ptr_factory_.GetWeakPtr(), service_path,
-          base::Passed(&shill_properties_copy_error_copy),
-          repeating_send_callback));
+          std::move(shill_properties_copy), std::move(send_callback)));
 }
 
-void ManagedNetworkConfigurationHandlerImpl::GetDevicePropertiesSuccess(
+void ManagedNetworkConfigurationHandlerImpl::OnGetDeviceProperties(
     const std::string& service_path,
     std::unique_ptr<base::DictionaryValue> network_properties,
     GetDevicePropertiesCallback send_callback,
     const std::string& device_path,
-    const base::DictionaryValue& device_properties) {
+    base::Optional<base::Value> device_properties) {
+  if (!device_properties) {
+    NET_LOG(ERROR) << "Error getting device properties: "
+                   << NetworkPathId(service_path);
+    std::move(send_callback).Run(service_path, std::move(network_properties));
+    return;
+  }
   // Create a "Device" dictionary in |network_properties|.
-  network_properties->SetKey(shill::kDeviceProperty, device_properties.Clone());
-  std::move(send_callback).Run(service_path, std::move(network_properties));
-}
-
-void ManagedNetworkConfigurationHandlerImpl::GetDevicePropertiesFailure(
-    const std::string& service_path,
-    std::unique_ptr<base::DictionaryValue> network_properties,
-    GetDevicePropertiesCallback send_callback,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
-  NET_LOG(ERROR) << "Error getting device properties: "
-                 << NetworkPathId(service_path);
+  network_properties->SetKey(shill::kDeviceProperty,
+                             std::move(*device_properties));
   std::move(send_callback).Run(service_path, std::move(network_properties));
 }
 

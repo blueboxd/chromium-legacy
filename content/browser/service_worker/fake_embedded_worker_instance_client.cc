@@ -13,6 +13,38 @@
 
 namespace content {
 
+class FakeServiceWorkerInstalledScriptsManager
+    : public blink::mojom::ServiceWorkerInstalledScriptsManager {
+ public:
+  explicit FakeServiceWorkerInstalledScriptsManager(
+      mojo::PendingReceiver<blink::mojom::ServiceWorkerInstalledScriptsManager>
+          receiver)
+      : receiver_(this, std::move(receiver)) {}
+
+  blink::mojom::ServiceWorkerScriptInfoPtr WaitForTransferInstalledScript() {
+    if (!script_info_) {
+      base::RunLoop loop;
+      quit_closure_ = loop.QuitClosure();
+      loop.Run();
+      DCHECK(script_info_);
+    }
+    return std::move(script_info_);
+  }
+
+ private:
+  void TransferInstalledScript(
+      blink::mojom::ServiceWorkerScriptInfoPtr script_info) override {
+    script_info_ = std::move(script_info);
+    if (quit_closure_)
+      std::move(quit_closure_).Run();
+  }
+
+  base::OnceClosure quit_closure_;
+  blink::mojom::ServiceWorkerScriptInfoPtr script_info_;
+
+  mojo::Receiver<blink::mojom::ServiceWorkerInstalledScriptsManager> receiver_;
+};
+
 FakeEmbeddedWorkerInstanceClient::FakeEmbeddedWorkerInstanceClient(
     EmbeddedWorkerTestHelper* helper)
     : helper_(helper) {}
@@ -44,6 +76,12 @@ void FakeEmbeddedWorkerInstanceClient::RunUntilBound() {
   loop.Run();
 }
 
+blink::mojom::ServiceWorkerScriptInfoPtr
+FakeEmbeddedWorkerInstanceClient::WaitForTransferInstalledScript() {
+  DCHECK(installed_scripts_manager_);
+  return installed_scripts_manager_->WaitForTransferInstalledScript();
+}
+
 void FakeEmbeddedWorkerInstanceClient::Disconnect() {
   receiver_.reset();
   CallOnConnectionError();
@@ -71,6 +109,9 @@ void FakeEmbeddedWorkerInstanceClient::StartWorker(
       devtools_agent_host_remote.BindNewPipeAndPassReceiver());
 
   if (start_params_->is_installed) {
+    installed_scripts_manager_ =
+        std::make_unique<FakeServiceWorkerInstalledScriptsManager>(
+            std::move(start_params_->installed_scripts_info->manager_receiver));
     EvaluateScript();
     return;
   }

@@ -6487,13 +6487,13 @@ Called by update_bad_message_reasons.py.-->
 </enum>
 
 <enum name="BluetoothSocketServiceHash">
+  <obsolete>
+    No longer used by active histograms in M73.
+  </obsolete>
   <summary>
     31-bit hash of the service UUID. Values here are populated from
     https://www.bluetooth.com/specifications/assigned-numbers/service-discovery
   </summary>
-  <obsolete>
-    No longer used by active histograms in M73.
-  </obsolete>
   <int value="27577045"
       label="SIM_Access; 0000112d-0000-1000-8000-00805f9b34fb"/>
   <int value="46048502"
@@ -12547,10 +12547,10 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="CorsCompletionStatus">
-  <summary>The completion status of CorsURLLoader request.</summary>
   <obsolete>
     Removed at 06/2019 with Net.Cors.CompletionStatus histogram.
   </obsolete>
+  <summary>The completion status of CorsURLLoader request.</summary>
   <int value="0"
       label="A request finished successfully when CORS flag was not set"/>
   <int value="1" label="A request failed when CORS flag was not set"/>
@@ -21138,6 +21138,7 @@ Called by update_document_policy_enum.py.-->
   <int value="736" label="URLBlocklist"/>
   <int value="737" label="URLAllowlist"/>
   <int value="738" label="ExtensionInstallAllowlist"/>
+  <int value="739" label="ShowFullUrlsInAddressBar"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -34073,10 +34074,10 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="HistoryFaviconsRecoveryEnum">
-  <summary>Error states noted in thumbnail_database.cc recovery code.</summary>
   <obsolete>
     History.FaviconsRecovery no longer tracked as of March 2017.
   </obsolete>
+  <summary>Error states noted in thumbnail_database.cc recovery code.</summary>
   <int value="0" label="RECOVERY_EVENT_RECOVERED">Successful recovery.</int>
   <int value="1" label="RECOVERY_EVENT_FAILED_SCOPER">
     sql::Recovery failed init.
@@ -40569,6 +40570,7 @@ from previous Chrome versions.
   <int value="-1064302126"
       label="OmniboxAlternateMatchDescriptionSeparator:enabled"/>
   <int value="-1062119671" label="enable-password-force-saving"/>
+  <int value="-1060541241" label="ForcePreferredIntervalForVideo:enabled"/>
   <int value="-1060395248" label="PasswordSearchMobile:enabled"/>
   <int value="-1056860259"
       label="OmniboxEnableClipboardProviderImageSuggestions:enabled"/>
@@ -42413,6 +42415,7 @@ from previous Chrome versions.
   <int value="1004909189"
       label="ContentSuggestionsThumbnailDominantColor:disabled"/>
   <int value="1005684777" label="PictureInPicture:disabled"/>
+  <int value="1006080779" label="ForcePreferredIntervalForVideo:disabled"/>
   <int value="1006608931" label="ArcEnableUnifiedAudioFocus:disabled"/>
   <int value="1006691801" label="ConditionalTabStripAndroid:disabled"/>
   <int value="1007444341" label="enable-prefixed-encrypted-media"/>
@@ -47960,13 +47963,13 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="NetFilterType">
+  <obsolete>
+    Now only NetFilterType2 is used.
+  </obsolete>
   <summary>
     Specific content decoding filter. See net::Filter::FilterType for more
     details
   </summary>
-  <obsolete>
-    Now only NetFilterType2 is used.
-  </obsolete>
   <int value="0" label="Brotli"/>
   <int value="1" label="Deflate"/>
   <int value="2" label="GZIP"/>
@@ -62906,10 +62909,10 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
     Failed to open the existing db, deleted it, and created a new empty db.
   </int>
   <int value="2" label="Reopen: Total Fail">
+    Failed to open the database and also failed to delete and start over.
     <obsolete>
       Deprecated 2016/11. Replaced by other &quot;Reopen:&quot; errors.
     </obsolete>
-    Failed to open the database and also failed to delete and start over.
   </int>
   <int value="3" label="Reopen: not found">
     Reopen attempt failed with (not found) after successful database delete.
@@ -75951,6 +75954,12 @@ Called by update_scheduler_enums.py.-->
   <int value="3" label="Embed not rewritten, JS API enabled">
     Embed was not rewritten because JS API was enabled.
   </int>
+</enum>
+
+<enum name="ZeroRttState">
+  <int value="0" label="Attempted and succeeded"/>
+  <int value="1" label="Attempted and rejected"/>
+  <int value="2" label="Not Attempted"/>
 </enum>
 
 <enum name="ZeroStateResultType">

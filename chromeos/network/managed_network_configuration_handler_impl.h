@@ -200,18 +200,12 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
       const std::string& service_path,
       const base::DictionaryValue& shill_properties);
 
-  void GetDevicePropertiesSuccess(
+  void OnGetDeviceProperties(
       const std::string& service_path,
       std::unique_ptr<base::DictionaryValue> network_properties,
       GetDevicePropertiesCallback send_callback,
       const std::string& device_path,
-      const base::DictionaryValue& device_properties);
-  void GetDevicePropertiesFailure(
-      const std::string& service_path,
-      std::unique_ptr<base::DictionaryValue> network_properties,
-      GetDevicePropertiesCallback send_callback,
-      const std::string& error_name,
-      std::unique_ptr<base::DictionaryValue> error_data);
+      base::Optional<base::Value> device_properties);
 
   // Called from SetProperties, calls NCH::SetShillProperties.
   void SetShillProperties(

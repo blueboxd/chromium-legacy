@@ -343,18 +343,17 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
 
     /**
      * Called when the size of the viewport has changed.
-     * @param visibleViewport        The visible viewport that represents the area on the screen
-     *                               this {@link Layout} gets to draw to in px (potentially takes
-     *                               into account browser controls).
-     * @param screenViewport         The viewport of the screen in px.
-     * @param heightMinusBrowserControls The height the {@link Layout} gets excluding the height of
-     *                               the browser controls in px. TODO(dtrainor): Look at getting rid
-     *                               of this.
-     * @param orientation            The new orientation.  Valid values are defined by
-     *                               {@link Orientation}.
+     * @param visibleViewportPx             The visible viewport that represents the area on the
+     *                                      screen this {@link Layout} gets to draw to in px
+     *                                      (potentially takes into account browser controls).
+     * @param screenViewportPx              The viewport of the screen in px.
+     * @param topBrowserControlsHeightPx    The top browser controls height in px.
+     * @param bottomBrowserControlsHeightPx The bottom browser controls height in px.
+     * @param orientation                   The new orientation.  Valid values are defined by
+     *                                      {@link Orientation}.
      */
-    public final void sizeChanged(RectF visibleViewportPx, RectF screenViewportPx,
-            float topBrowserControlsHeightPx, float bottomBrowserControlsHeightPx,
+    final void sizeChanged(RectF visibleViewportPx, RectF screenViewportPx,
+            int topBrowserControlsHeightPx, int bottomBrowserControlsHeightPx,
             @Orientation int orientation) {
         // 1. Pull out this Layout's width and height properties based on the viewport.
         float width = screenViewportPx.width() / mDpToPx;
@@ -551,24 +550,10 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     }
 
     /**
-     * @return The height of the top browser controls in dp.
-     */
-    public float getTopBrowserControlsHeight() {
-        return mTopBrowserControlsHeightDp;
-    }
-
-    /**
      * @return The height of the bottom browser controls in dp.
      */
     public float getBottomBrowserControlsHeight() {
         return mBottomBrowserControlsHeightDp;
-    }
-
-    /**
-     * @return The height of the drawing area minus the browser controls in dp.
-     */
-    public float getHeightMinusBrowserControls() {
-        return getHeight() - (getTopBrowserControlsHeight() + getBottomBrowserControlsHeight());
     }
 
     /**

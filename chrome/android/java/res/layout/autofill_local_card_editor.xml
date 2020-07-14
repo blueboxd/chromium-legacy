@@ -117,7 +117,7 @@
         app:errorEnabled="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/pref_autofill_field_large_top_margin"
+        android:layout_marginTop="@dimen/pref_autofill_field_extra_large_top_margin"
         android:layout_marginBottom="@dimen/pref_autofill_field_bottom_margin">
 
         <EditText
@@ -127,7 +127,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:imeOptions="flagNoExtractUi"
-            android:inputType="text"
+            android:inputType="textCapWords"
             android:hint="@string/autofill_credit_card_editor_nickname" />
 
     </com.google.android.material.textfield.TextInputLayout>

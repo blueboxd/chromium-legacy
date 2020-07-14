@@ -47,7 +47,7 @@ class ManifestVerifierBrowserTest : public InProcessBrowserTest {
 
   // Runs the verifier on the |apps| and blocks until the verifier has finished
   // using all resources.
-  void Verify(content::PaymentAppProvider::PaymentApps apps) {
+  void Verify(content::InstalledPaymentAppsFinder::PaymentApps apps) {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     content::BrowserContext* context = web_contents->GetBrowserContext();
@@ -75,7 +75,8 @@ class ManifestVerifierBrowserTest : public InProcessBrowserTest {
   }
 
   // Returns the apps that have been verified by the Verify() method.
-  const content::PaymentAppProvider::PaymentApps& verified_apps() const {
+  const content::InstalledPaymentAppsFinder::PaymentApps& verified_apps()
+      const {
     return verified_apps_;
   }
 
@@ -102,8 +103,9 @@ class ManifestVerifierBrowserTest : public InProcessBrowserTest {
  private:
   // Called by the verifier upon completed verification. These |apps| have only
   // valid payment methods.
-  void OnPaymentAppsVerified(content::PaymentAppProvider::PaymentApps apps,
-                             const std::string& error_message) {
+  void OnPaymentAppsVerified(
+      content::InstalledPaymentAppsFinder::PaymentApps apps,
+      const std::string& error_message) {
     verified_apps_ = std::move(apps);
     error_message_ = error_message;
   }
@@ -112,7 +114,7 @@ class ManifestVerifierBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
 
   // The apps that have been verified by the Verify() method.
-  content::PaymentAppProvider::PaymentApps verified_apps_;
+  content::InstalledPaymentAppsFinder::PaymentApps verified_apps_;
 
   std::string error_message_;
 
@@ -123,7 +125,7 @@ class ManifestVerifierBrowserTest : public InProcessBrowserTest {
 // handlers.
 IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest, NoApps) {
   {
-    Verify(content::PaymentAppProvider::PaymentApps());
+    Verify(content::InstalledPaymentAppsFinder::PaymentApps());
 
     EXPECT_TRUE(verified_apps().empty());
     EXPECT_TRUE(error_message().empty()) << error_message();
@@ -131,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest, NoApps) {
 
   // Repeat verifications should have identical results.
   {
-    Verify(content::PaymentAppProvider::PaymentApps());
+    Verify(content::InstalledPaymentAppsFinder::PaymentApps());
 
     EXPECT_TRUE(verified_apps().empty());
     EXPECT_TRUE(error_message().empty()) << error_message();
@@ -141,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest, NoApps) {
 // A payment handler without any payment method names is not valid.
 IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest, NoMethods) {
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://bobpay.com/webpay");
 
@@ -153,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest, NoMethods) {
 
   // Repeat verifications should have identical results.
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://bobpay.com/webpay");
 
@@ -168,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest, NoMethods) {
 IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
                        UnknownPaymentMethodNameIsRemoved) {
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://bobpay.com/webpay");
     apps[0]->enabled_methods.push_back("unknown");
@@ -181,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 
   // Repeat verifications should have identical results.
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://bobpay.com/webpay");
     apps[0]->enabled_methods.push_back("unknown");
@@ -196,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 // A payment handler with "basic-card" payment method name is valid.
 IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest, KnownPaymentMethodName) {
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://bobpay.com/webpay");
     apps[0]->enabled_methods.push_back("basic-card");
@@ -210,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest, KnownPaymentMethodName) {
 
   // Repeat verifications should have identical results.
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://bobpay.com/webpay");
     apps[0]->enabled_methods.push_back("basic-card");
@@ -228,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest, KnownPaymentMethodName) {
 IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
                        TwoKnownPaymentMethodNames) {
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://bobpay.com/webpay");
     apps[0]->enabled_methods.push_back("basic-card");
@@ -244,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 
   // Repeat verifications should have identical results.
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://bobpay.com/webpay");
     apps[0]->enabled_methods.push_back("basic-card");
@@ -263,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
                        TwoAppsWithKnownPaymentMethodNames) {
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://bobpay.com/webpay");
     apps[0]->enabled_methods.push_back("basic-card");
@@ -281,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 
   // Repeat verifications should have identical results.
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://bobpay.com/webpay");
     apps[0]->enabled_methods.push_back("basic-card");
@@ -304,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
                        BobPayHandlerCanNotUseMethodWithOriginWildcard) {
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://bobpay.com/webpay");
     apps[0]->enabled_methods.push_back("https://frankpay.com/webpay");
@@ -317,7 +319,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 
   // Repeat verifications should have identical results.
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://bobpay.com/webpay");
     apps[0]->enabled_methods.push_back("https://frankpay.com/webpay");
@@ -335,7 +337,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
                        Handler404CanNotUseMethodWithOriginWildcard) {
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://404.com/webpay");
     apps[0]->enabled_methods.push_back("https://frankpay.com/webpay");
@@ -348,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 
   // Repeat verifications should have identical results.
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://404.com/webpay");
     apps[0]->enabled_methods.push_back("https://frankpay.com/webpay");
@@ -365,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
                        BobPayCanUseAnyMethodOnOwnOrigin) {
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://bobpay.com/anything/here");
     apps[0]->enabled_methods.push_back(
@@ -381,7 +383,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 
   // Repeat verifications should have identical results.
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://bobpay.com/anything/here");
     apps[0]->enabled_methods.push_back(
@@ -401,7 +403,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
                        Handler404CanUseAnyMethodOnOwnOrigin) {
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://404.com/anything/here");
     apps[0]->enabled_methods.push_back(
@@ -417,7 +419,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 
   // Repeat verifications should have identical results.
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://404.com/anything/here");
     apps[0]->enabled_methods.push_back(
@@ -439,7 +441,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 // cannot use these payment methods, however.
 IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest, OneSupportedOrigin) {
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://alicepay.com/webpay");
     apps[0]->enabled_methods.push_back("https://georgepay.com/webpay");
@@ -460,7 +462,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest, OneSupportedOrigin) {
 
   // Repeat verifications should have identical results.
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://alicepay.com/webpay");
     apps[0]->enabled_methods.push_back("https://georgepay.com/webpay");
@@ -485,7 +487,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest, OneSupportedOrigin) {
 // and different-origin URL payment method name.
 IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest, ThreeTypesOfMethods) {
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://alicepay.com/webpay");
     apps[0]->enabled_methods.push_back("basic-card");
@@ -504,7 +506,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest, ThreeTypesOfMethods) {
 
   // Repeat verifications should have identical results.
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://alicepay.com/webpay");
     apps[0]->enabled_methods.push_back("basic-card");
@@ -531,7 +533,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
       "Unable to download payment manifest "
       "\"https://127.0.0.1:\\d+/404.test/webpay\".";
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://bobpay.test/webpay");
     apps[0]->enabled_methods.push_back("https://404.test/webpay");
@@ -546,7 +548,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 
   // Repeat verifications should have identical results.
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://bobpay.test/webpay");
     apps[0]->enabled_methods.push_back("https://404.test/webpay");
@@ -570,7 +572,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
       "Unable to download payment manifest "
       "\"https://127.0.0.1:\\d+/404(aswell)?.test/webpay\".";
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://bobpay.test/webpay");
     apps[0]->enabled_methods.push_back("https://404.test/webpay");
@@ -586,7 +588,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 
   // Repeat verifications should have identical results.
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://bobpay.test/webpay");
     apps[0]->enabled_methods.push_back("https://404.test/webpay");
@@ -605,7 +607,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
                        AllKnownPaymentMethodNames) {
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://bobpay.com/webpay");
     apps[0]->enabled_methods.push_back("basic-card");
@@ -627,7 +629,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 
   // Repeat verifications should have identical results.
   {
-    content::PaymentAppProvider::PaymentApps apps;
+    content::InstalledPaymentAppsFinder::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
     apps[0]->scope = GURL("https://bobpay.com/webpay");
     apps[0]->enabled_methods.push_back("basic-card");

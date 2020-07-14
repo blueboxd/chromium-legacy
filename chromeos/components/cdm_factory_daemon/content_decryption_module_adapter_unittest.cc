@@ -440,19 +440,26 @@ TEST_F(ContentDecryptionModuleAdapterTest, OnSessionExpirationUpdate) {
 }
 
 TEST_F(ContentDecryptionModuleAdapterTest, RegisterNewKeyCB) {
-  base::MockRepeatingClosure closure;
-  cdm_adapter_->RegisterNewKeyCB(media::Decryptor::kVideo, closure.Get());
-  cdm_adapter_->RegisterNewKeyCB(media::Decryptor::kAudio, closure.Get());
+  base::MockCallback<media::CdmContext::EventCB> event_cb_1;
+  base::MockCallback<media::CdmContext::EventCB> event_cb_2;
+  auto cb_registration_1 = cdm_adapter_->RegisterEventCB(event_cb_1.Get());
+  auto cb_registration_2 = cdm_adapter_->RegisterEventCB(event_cb_2.Get());
 
-  // It should get invoked for each audio & video.
-  EXPECT_CALL(closure, Run()).Times(2);
+  // All registered event callbacks should be invoked.
+  EXPECT_CALL(event_cb_1,
+              Run(media::CdmContext::Event::kHasAdditionalUsableKey));
+  EXPECT_CALL(event_cb_2,
+              Run(media::CdmContext::Event::kHasAdditionalUsableKey));
   EXPECT_CALL(mock_session_keys_change_cb_, Run(kFakeSessionId1, true, _));
   cdm_adapter_->OnSessionKeysChange(kFakeSessionId1, true, {});
+  base::RunLoop().RunUntilIdle();
 
-  // If no keys change, they should not get called.
-  EXPECT_CALL(closure, Run()).Times(0);
+  // If no keys change, no registered event callbacks should be invoked.
+  EXPECT_CALL(event_cb_1, Run(_)).Times(0);
+  EXPECT_CALL(event_cb_2, Run(_)).Times(0);
   EXPECT_CALL(mock_session_keys_change_cb_, Run(kFakeSessionId1, false, _));
   cdm_adapter_->OnSessionKeysChange(kFakeSessionId1, false, {});
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ContentDecryptionModuleAdapterTest, Decrypt_Unencrypted) {

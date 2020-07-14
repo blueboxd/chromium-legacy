@@ -1478,8 +1478,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
     const std::string kCorruptedContent("// corrupted\n");
     ASSERT_TRUE(base::WriteFile(resource_path, kCorruptedContent));
     ASSERT_TRUE(base::DeleteFile(
-        extensions::file_util::GetComputedHashesPath(extension->path()),
-        /*recursive=*/false));
+        extensions::file_util::GetComputedHashesPath(extension->path())));
 
     service->EnableExtension(kGoodCrxId);
   }

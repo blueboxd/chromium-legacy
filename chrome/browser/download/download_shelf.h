@@ -14,8 +14,14 @@
 
 class Browser;
 
+namespace base {
+template <typename T>
+class Optional;
+}  // namespace base
+
 namespace offline_items_collection {
 struct ContentId;
+struct OfflineItem;
 }  // namespace offline_items_collection
 
 // This is an abstract base class for platform specific download shelf
@@ -81,6 +87,11 @@ class DownloadShelf {
 
   // Similar to ShowDownload() but refers to the download using an ID.
   void ShowDownloadById(const offline_items_collection::ContentId& id);
+
+  // Callback used by ShowDownloadById() to trigger ShowDownload() once |item|
+  // has been fetched.
+  void OnGetDownloadDoneForOfflineItem(
+      const base::Optional<offline_items_collection::OfflineItem>& item);
 
   Browser* const browser_;
   Profile* const profile_;

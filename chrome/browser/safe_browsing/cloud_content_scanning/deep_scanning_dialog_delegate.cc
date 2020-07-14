@@ -191,6 +191,11 @@ bool* UIEnabledStorage() {
   return &enabled;
 }
 
+EventResult CalculateEventResult(bool allowed, bool should_warn) {
+  return allowed ? EventResult::ALLOWED
+                 : (should_warn ? EventResult::WARNED : EventResult::BLOCKED);
+}
+
 }  // namespace
 
 DeepScanningDialogDelegate::Data::Data() = default;
@@ -474,21 +479,23 @@ void DeepScanningDialogDelegate::StringRequestCallback(
                         base::TimeTicks::Now() - upload_start_time_,
                         content_size, result, response);
 
+  text_request_complete_ = true;
+  bool text_complies = ResultShouldAllowDataUse(result, data_.settings) &&
+                       DlpVerdictAllowsDataUse(response.dlp_scan_verdict());
+  bool should_warn = ShouldShowWarning(response.dlp_scan_verdict());
+  std::fill(result_.text_results.begin(), result_.text_results.end(),
+            text_complies);
+
   MaybeReportDeepScanningVerdict(
       Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
       web_contents_->GetLastCommittedURL(), "Text data", std::string(),
       "text/plain",
       extensions::SafeBrowsingPrivateEventRouter::kTriggerWebContentUpload,
-      access_point_, content_size, result, response);
-
-  text_request_complete_ = true;
-  bool text_complies = ResultShouldAllowDataUse(result, data_.settings) &&
-                       DlpVerdictAllowsDataUse(response.dlp_scan_verdict());
-  std::fill(result_.text_results.begin(), result_.text_results.end(),
-            text_complies);
+      access_point_, content_size, result, response,
+      CalculateEventResult(text_complies, should_warn));
 
   if (!text_complies) {
-    if (ShouldShowWarning(response.dlp_scan_verdict())) {
+    if (should_warn) {
       text_warning_ = true;
       text_response_ = std::move(response);
       UpdateFinalResult(DeepScanningFinalResult::WARNING);
@@ -510,23 +517,26 @@ void DeepScanningDialogDelegate::ConnectorStringRequestCallback(
                         base::TimeTicks::Now() - upload_start_time_,
                         content_size, result, response);
 
+  text_request_complete_ = true;
+  auto action = enterprise_connectors::GetHighestPrecedenceAction(response);
+  bool text_complies = ResultShouldAllowDataUse(result, data_.settings) &&
+                       ContentAnalysisActionAllowsDataUse(action);
+  bool should_warn = action == enterprise_connectors::ContentAnalysisResponse::
+                                   Result::TriggeredRule::WARN;
+
+  std::fill(result_.text_results.begin(), result_.text_results.end(),
+            text_complies);
+
   MaybeReportDeepScanningVerdict(
       Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
       web_contents_->GetLastCommittedURL(), "Text data", std::string(),
       "text/plain",
       extensions::SafeBrowsingPrivateEventRouter::kTriggerWebContentUpload,
-      access_point_, content_size, result, response);
-
-  text_request_complete_ = true;
-  auto action = enterprise_connectors::GetHighestPrecedenceAction(response);
-  bool text_complies = ResultShouldAllowDataUse(result, data_.settings) &&
-                       ContentAnalysisActionAllowsDataUse(action);
-  std::fill(result_.text_results.begin(), result_.text_results.end(),
-            text_complies);
+      access_point_, content_size, result, response,
+      CalculateEventResult(text_complies, should_warn));
 
   if (!text_complies) {
-    if (action == enterprise_connectors::ContentAnalysisResponse::Result::
-                      TriggeredRule::WARN) {
+    if (should_warn) {
       text_warning_ = true;
       content_analysis_text_response_ = std::move(response);
       UpdateFinalResult(DeepScanningFinalResult::WARNING);
@@ -545,12 +555,6 @@ void DeepScanningDialogDelegate::CompleteFileRequestCallback(
     DeepScanningClientResponse response,
     std::string mime_type) {
   file_info_[index].mime_type = mime_type;
-  MaybeReportDeepScanningVerdict(
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
-      web_contents_->GetLastCommittedURL(), path.AsUTF8Unsafe(),
-      file_info_[index].sha256, mime_type,
-      extensions::SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
-      access_point_, file_info_[index].size, result, response);
 
   bool dlp_ok = DlpVerdictAllowsDataUse(response.dlp_scan_verdict());
   bool malware_ok = true;
@@ -561,7 +565,16 @@ void DeepScanningDialogDelegate::CompleteFileRequestCallback(
 
   bool file_complies =
       ResultShouldAllowDataUse(result, data_.settings) && dlp_ok && malware_ok;
+  bool should_warn = ShouldShowWarning(response.dlp_scan_verdict());
   result_.paths_results[index] = file_complies;
+
+  MaybeReportDeepScanningVerdict(
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
+      web_contents_->GetLastCommittedURL(), path.AsUTF8Unsafe(),
+      file_info_[index].sha256, mime_type,
+      extensions::SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
+      access_point_, file_info_[index].size, result, response,
+      CalculateEventResult(file_complies, should_warn));
 
   ++file_result_count_;
 
@@ -570,7 +583,7 @@ void DeepScanningDialogDelegate::CompleteFileRequestCallback(
       UpdateFinalResult(DeepScanningFinalResult::LARGE_FILES);
     } else if (result == BinaryUploadService::Result::FILE_ENCRYPTED) {
       UpdateFinalResult(DeepScanningFinalResult::ENCRYPTED_FILES);
-    } else if (ShouldShowWarning(response.dlp_scan_verdict())) {
+    } else if (should_warn) {
       file_warnings_[index] = std::move(response);
       UpdateFinalResult(DeepScanningFinalResult::WARNING);
     } else {
@@ -588,17 +601,21 @@ void DeepScanningDialogDelegate::CompleteConnectorFileRequestCallback(
     enterprise_connectors::ContentAnalysisResponse response,
     std::string mime_type) {
   file_info_[index].mime_type = mime_type;
+
+  auto action = GetHighestPrecedenceAction(response);
+  bool file_complies = ResultShouldAllowDataUse(result, data_.settings) &&
+                       ContentAnalysisActionAllowsDataUse(action);
+  bool should_warn = action == enterprise_connectors::ContentAnalysisResponse::
+                                   Result::TriggeredRule::WARN;
+  result_.paths_results[index] = file_complies;
+
   MaybeReportDeepScanningVerdict(
       Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
       web_contents_->GetLastCommittedURL(), path.AsUTF8Unsafe(),
       file_info_[index].sha256, mime_type,
       extensions::SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
-      access_point_, file_info_[index].size, result, response);
-
-  auto action = GetHighestPrecedenceAction(response);
-  bool file_complies = ResultShouldAllowDataUse(result, data_.settings) &&
-                       ContentAnalysisActionAllowsDataUse(action);
-  result_.paths_results[index] = file_complies;
+      access_point_, file_info_[index].size, result, response,
+      CalculateEventResult(file_complies, should_warn));
 
   ++file_result_count_;
 
@@ -607,8 +624,7 @@ void DeepScanningDialogDelegate::CompleteConnectorFileRequestCallback(
       UpdateFinalResult(DeepScanningFinalResult::LARGE_FILES);
     } else if (result == BinaryUploadService::Result::FILE_ENCRYPTED) {
       UpdateFinalResult(DeepScanningFinalResult::ENCRYPTED_FILES);
-    } else if (action == enterprise_connectors::ContentAnalysisResponse::
-                             Result::TriggeredRule::WARN) {
+    } else if (should_warn) {
       content_analysis_file_warnings_[index] = std::move(response);
       UpdateFinalResult(DeepScanningFinalResult::WARNING);
     } else {

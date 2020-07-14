@@ -4,7 +4,7 @@
 
 // The networking.castPrivate API is a private API that exposes networking
 // utilities needed by cast extension and setup app.
-[nodoc] namespace networking.castPrivate {
+[nodoc, deprecated] namespace networking.castPrivate {
   enum TDLSStatus {
     // TDLS is connected.
     CONNECTED,
@@ -78,20 +78,23 @@
                                      DOMString data,
                                      StringCallback callback);
 
-    // Enables TDLS for WiFi traffic with a specified peer if available.
-    // |ip_or_mac_address|: The IP or MAC address of the peer with which to
+    // Deprecated. Enables TDLS for WiFi traffic with a specified peer if
+    // available. |ip_or_mac_address|: The IP or MAC address of the peer with
+    // which to
     //     enable a TDLS connection.
     // |enabled|: If true, enable TDLS, otherwise disable TDLS.
     // |callback|: A callback function that receives a string with an error or
     //     the current TDLS status.
+    [nodoc, deprecated]
     static void setWifiTDLSEnabledState(DOMString ip_or_mac_address,
                                         boolean enabled,
                                         optional TDLSStatusCallback callback);
 
-    // Returns the current TDLS status for the specified peer.
+    // Deprecated. Returns the current TDLS status for the specified peer.
     // |ip_or_mac_address|: The IP or MAC address of the peer.
     // |callback|: A callback function that receives a string with the current
     //     TDLS status.
+    [nodoc, deprecated]
     static void getWifiTDLSStatus(DOMString ip_or_mac_address,
                                   TDLSStatusCallback callback);
   };

@@ -1309,8 +1309,8 @@ void BluetoothAdapterBlueZ::ReleaseProfile(
   released_profiles_[uuid] = iter->second;
   profiles_.erase(iter);
   profile->RemoveDelegate(device_path,
-                          base::Bind(&BluetoothAdapterBlueZ::RemoveProfile,
-                                     weak_ptr_factory_.GetWeakPtr(), uuid));
+                          base::BindOnce(&BluetoothAdapterBlueZ::RemoveProfile,
+                                         weak_ptr_factory_.GetWeakPtr(), uuid));
 }
 
 void BluetoothAdapterBlueZ::RemoveProfile(const BluetoothUUID& uuid) {

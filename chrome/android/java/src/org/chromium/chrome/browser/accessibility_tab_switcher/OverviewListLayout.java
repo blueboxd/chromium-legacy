@@ -16,6 +16,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.accessibility_tab_switcher.AccessibilityTabModelAdapter.AccessibilityTabModelAdapterListener;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
@@ -39,13 +40,34 @@ public class OverviewListLayout extends Layout
     private final float mDensity;
     private final BlackHoleEventFilter mBlackHoleEventFilter;
     private final SceneLayer mSceneLayer;
+    private final BrowserControlsStateProvider mBrowserControlsStateProvider;
+    private final BrowserControlsStateProvider.Observer mBrowserControlsObserver;
 
-    public OverviewListLayout(
-            Context context, LayoutUpdateHost updateHost, LayoutRenderHost renderHost) {
+    public OverviewListLayout(Context context, LayoutUpdateHost updateHost,
+            LayoutRenderHost renderHost,
+            BrowserControlsStateProvider browserControlsStateProvider) {
         super(context, updateHost, renderHost);
         mBlackHoleEventFilter = new BlackHoleEventFilter(context);
         mDensity = context.getResources().getDisplayMetrics().density;
         mSceneLayer = new SceneLayer();
+        mBrowserControlsStateProvider = browserControlsStateProvider;
+        mBrowserControlsObserver = new BrowserControlsStateProvider.Observer() {
+            @Override
+            public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
+                    int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
+                adjustForFullscreen();
+            }
+        };
+        mBrowserControlsStateProvider.addObserver(mBrowserControlsObserver);
+    }
+
+    @Override
+    public void destroy() {
+        if (mBrowserControlsStateProvider != null) {
+            mBrowserControlsStateProvider.removeObserver(mBrowserControlsObserver);
+        }
+
+        super.destroy();
     }
 
     @Override
@@ -84,7 +106,7 @@ public class OverviewListLayout extends Layout
         if (params == null) return;
 
         params.bottomMargin = (int) (getBottomBrowserControlsHeight() * mDensity);
-        params.topMargin = (int) (getTopBrowserControlsHeight() * mDensity);
+        params.topMargin = mBrowserControlsStateProvider.getContentOffset();
 
         mTabModelWrapper.setLayoutParams(params);
     }

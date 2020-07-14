@@ -422,7 +422,6 @@ class CORE_EXPORT NGPhysicalFragment
   unsigned has_floating_descendants_for_paint_ : 1;
   unsigned has_adjoining_object_descendants_ : 1;
   unsigned has_orthogonal_flow_roots_ : 1;
-  unsigned may_have_descendant_above_block_start_ : 1;
   unsigned depends_on_percentage_block_size_ : 1;
 
   // The following bitfields are only to be used by NGPhysicalLineBoxFragment
@@ -450,6 +449,7 @@ class CORE_EXPORT NGPhysicalFragment
   unsigned is_math_fraction_ : 1;
   // base (line box) or resolve (text) direction
   unsigned base_or_resolved_direction_ : 1;  // TextDirection
+  unsigned may_have_descendant_above_block_start_ : 1;
 
   // The following are only used by NGPhysicalBoxFragment but are initialized
   // for all types to allow methods using them to be inlined.

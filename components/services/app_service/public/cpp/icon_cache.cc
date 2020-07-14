@@ -65,7 +65,8 @@ std::unique_ptr<IconLoader::Releaser> IconCache::LoadIconFromIconKey(
       cache_hit = &iter->second;
     }
 
-    iter->second.ref_count_++;
+    auto new_ref_count = ++iter->second.ref_count_;
+    CHECK(new_ref_count != std::numeric_limits<decltype(new_ref_count)>::max());
     ref_count_incremented = true;
   }
 
@@ -146,8 +147,8 @@ void IconCache::OnRelease(IconLoader::Key key) {
     return;
   }
 
-  uint64_t n = iter->second.ref_count_;
-  DCHECK(n > 0);
+  auto n = iter->second.ref_count_;
+  CHECK(n > 0);
   n--;
   iter->second.ref_count_ = n;
 

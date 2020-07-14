@@ -12,7 +12,9 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.accessibility_tab_switcher.OverviewListLayout;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.TitleCache;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
@@ -106,8 +108,11 @@ public class LayoutManagerChrome
                         }
                     }
                 });
-                mOverviewLayout = tabManagementDelegate.createStartSurfaceLayout(
-                        context, this, renderHost, startSurface);
+                final ObservableSupplier<? extends BrowserControlsStateProvider>
+                        browserControlsSupplier = mHost.getBrowserControlsManagerSupplier();
+                mOverviewLayout = tabManagementDelegate.createStartSurfaceLayout(context, this,
+                        renderHost, startSurface,
+                        (ObservableSupplier<BrowserControlsStateProvider>) browserControlsSupplier);
             } else {
                 mCreateOverviewLayout = true;
             }
@@ -145,13 +150,19 @@ public class LayoutManagerChrome
             DynamicResourceLoader dynamicResourceLoader) {
         Context context = mHost.getContext();
         LayoutRenderHost renderHost = mHost.getLayoutRenderHost();
+        BrowserControlsStateProvider browserControlsStateProvider =
+                mHost.getBrowserControlsManager();
 
         // Build Layouts
-        mOverviewListLayout = new OverviewListLayout(context, this, renderHost);
+        mOverviewListLayout =
+                new OverviewListLayout(context, this, renderHost, browserControlsStateProvider);
         mToolbarSwipeLayout = new ToolbarSwipeLayout(context, this, renderHost);
 
         if (mCreateOverviewLayout) {
-            mOverviewLayout = new StackLayout(context, this, renderHost);
+            final ObservableSupplier<? extends BrowserControlsStateProvider>
+                    browserControlsSupplier = mHost.getBrowserControlsManagerSupplier();
+            mOverviewLayout = new StackLayout(context, this, renderHost,
+                    (ObservableSupplier<BrowserControlsStateProvider>) browserControlsSupplier);
         }
 
         super.init(selector, creator, content, androidContentContainer, controlContainer,

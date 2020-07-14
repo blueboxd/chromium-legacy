@@ -21,7 +21,6 @@ ORIGINAL_XML = """
 
         It has multiple paragraphs.
    </summary>
-   Mixed content.
    <obsolete>
        Removed 1/2019.
    </obsolete>
@@ -32,8 +31,6 @@ ORIGINAL_XML = """
   <obsolete>Obsolete 1</obsolete>
   <obsolete>Obsolete 2</obsolete>
   <enums>This shouldn't be here</enums>
-  <component>Component</component>
-  <component>Other&gt;Component</component>
  </histogram>
 
  <histogram_suffixes name="Test.HistogramSuffixes" separator=".">
@@ -47,9 +44,9 @@ ORIGINAL_XML = """
 
 <histogram name="Test.MisplacedHistogram" units="us">
    <owner>person@chromium.org</owner>
+   Misplaced content.
    <summary>A misplaced histogram
    </summary>
-   Misplaced content.
  </histogram>
 
 </histogram_suffixes_list>
@@ -73,8 +70,6 @@ PRETTY_XML = """
     Obsolete 1
   </obsolete>
   <summary>Foo</summary>
-  <component>Component</component>
-  <component>Other&gt;Component</component>
 </histogram>
 
 <histogram name="Test.Histogram" units="microseconds">
@@ -88,13 +83,11 @@ PRETTY_XML = """
 
     It has multiple paragraphs.
   </summary>
-  Mixed content.
 </histogram>
 
 <histogram name="Test.MisplacedHistogram" units="microseconds">
   <owner>person@chromium.org</owner>
   <summary>A misplaced histogram</summary>
-  Misplaced content.
 </histogram>
 
 </histograms>
